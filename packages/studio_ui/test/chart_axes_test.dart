@@ -30,6 +30,7 @@ Future<({List<(Offset, Offset)> rules, List<Rect> words})> _paint(
   WidgetTester tester,
   List<double> hours, {
   double scale = 1,
+  double height = 150,
 }) async {
   tester.view.devicePixelRatio = 2;
   tester.view.physicalSize = const Size(390 * 2, 600 * 2);
@@ -48,7 +49,7 @@ Future<({List<(Offset, Offset)> rules, List<Rect> words})> _paint(
             width: 300,
             child: StudioBarChart(
               semanticLabel: 'Hours logged',
-              height: 150,
+              height: height,
               labels: _week,
               series: [StudioSeries('Hours logged', hours)],
             ),
@@ -86,6 +87,13 @@ Future<({List<(Offset, Offset)> rules, List<Rect> words})> _paint(
 
 void main() {
   setUpAll(studioLoadFonts);
+
+  testWidgets('a shallow scope keeps partial labels out of its frame', (
+    tester,
+  ) async {
+    final (:words, rules: _) = await _paint(tester, [1, 2, 3], height: 24);
+    expect(words, isEmpty);
+  });
 
   testWidgets('a five-hour top steps by whole hours', (tester) async {
     final (:rules, :words) = await _paint(tester, [2.5, 3, 3.5, 4, 5, 0, 0]);

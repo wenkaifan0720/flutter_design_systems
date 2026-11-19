@@ -53,4 +53,4 @@ Set the indicator and panel finish with `StudioThemeData.from`. Set a component 
 
 ## Fonts
 
-Studio bundles Barlow under the SIL Open Font License 1.1. The license is included in `assets/fonts/LICENSES/`.
+Studio bundles Barlow and Noto Sans Arabic under the SIL Open Font License 1.1. Chart labels use Noto Sans Arabic for Arabic letters and digits that Barlow lacks. Both licenses are included in `assets/fonts/LICENSES/`.

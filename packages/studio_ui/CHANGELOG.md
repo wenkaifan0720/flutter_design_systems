@@ -1,3 +1,8 @@
+## 0.1.4
+
+- Bar, line and area charts draw Arabic day names and axis digits with the bundled Noto Sans Arabic face. The charts measure labels in the reader’s locale and repaint when additional script fonts arrive.
+- Requires ui_core 0.3.3 and uses ui_core_test 0.1.3 for qualification.
+
 ## 0.1.3
 
 - A time drum reads hours then minutes, left to right, in a right-to-left language too, as a clock does and Material's time picker keeps it: in Arabic the hours stood on the right of the minutes before. Tab reaches the hours first and the arrows follow what is on screen.

@@ -12,6 +12,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
+import 'fonts.dart';
 import 'internal/label_stride.dart';
 import 'surface.dart';
 import 'theme.dart';
@@ -134,7 +135,7 @@ abstract class _AxesPainter extends CustomPainter {
     required this.labels,
     required this.series,
     required this.direction,
-  });
+  }) : super(repaint: PaintingBinding.instance.systemFonts);
 
   final StudioColors colors;
   final TextStyle text;
@@ -170,12 +171,23 @@ abstract class _AxesPainter extends CustomPainter {
   /// The scale's steps, their figures in the reader's digits.
   late final List<DesignScaleTick> _ticks = _scale.ticks(words);
 
+  // These resolved family names may come from different packages. Inherit
+  // the rest of the caption style from the enclosing span.
+  late final _families = TextStyle(
+    fontFamily: text.fontFamily,
+    fontFamilyFallback: [
+      ...?text.fontFamilyFallback,
+      studioRegisteredFamily('NotoSansArabic'),
+    ],
+  );
+
   TextPainter _words(String s, {Color? color}) => TextPainter(
     text: TextSpan(
-      text: s,
       style: text.copyWith(color: color),
+      children: [TextSpan(text: s, style: _families)],
     ),
     textDirection: direction,
+    locale: text.locale,
     maxLines: 1,
   )..layout();
 
@@ -193,16 +205,16 @@ abstract class _AxesPainter extends CustomPainter {
       p.dispose();
     }
     var half = 0.0;
-    if (!between) {
-      for (final l in labels) {
-        final p = _words(l);
-        half = math.max(half, p.width / 2);
-        p.dispose();
-      }
+    var dayHeight = labels.isEmpty ? labelHeight : 0.0;
+    for (final label in labels) {
+      final day = _words(label);
+      dayHeight = math.max(dayHeight, day.height);
+      if (!between) half = math.max(half, day.width / 2);
+      day.dispose();
     }
     // The steps' labels stand clear under the base figure ("0"), which is
     // centred on the base line.
-    final under = 1.5 * labelHeight + StudioSpacing.tight;
+    final under = labelHeight / 2 + StudioSpacing.tight + dayHeight;
     final start = math.min(size.width, gutter + StudioSpacing.small);
     half = math.min(half, math.max(0.0, (size.width - start) / 2 - 1));
     final plotTop = math.min(size.height, labelHeight / 2);
@@ -232,7 +244,7 @@ abstract class _AxesPainter extends CustomPainter {
       canvas.drawLine(Offset(r.left, yAt(i)), Offset(r.right, yAt(i)), line);
     }
     final rows = studioLabelStride(figures.length, (every) {
-      var floor = double.infinity;
+      var floor = size.height;
       for (var i = 0; i < figures.length; i += every) {
         final p = figures[i];
         final above = yAt(i) - p.height / 2;
@@ -273,7 +285,11 @@ abstract class _AxesPainter extends CustomPainter {
         ..sort((a, b) => leftOf(a).compareTo(leftOf(b)));
       var end = double.negativeInfinity;
       for (final i in kept) {
-        if (names[i].width > size.width || leftOf(i) < end) return false;
+        if (names[i].height > size.height - r.bottom ||
+            names[i].width > size.width ||
+            leftOf(i) < end) {
+          return false;
+        }
         end = leftOf(i) + names[i].width + _labelGap;
       }
       return true;
@@ -282,7 +298,7 @@ abstract class _AxesPainter extends CustomPainter {
       for (var i = 0; i < n; i += steps) {
         names[i].paint(
           canvas,
-          Offset(leftOf(i), r.bottom + names[i].height / 2 + 4),
+          Offset(leftOf(i), size.height - names[i].height),
         );
       }
     }
@@ -465,6 +481,7 @@ abstract class _AxesChart extends StatelessWidget {
     final c = theme.colors;
     final words = DesignLocalizations.of(context);
     final text = theme.textTheme.caption.copyWith(
+      locale: Localizations.maybeLocaleOf(context),
       fontSize: MediaQuery.textScalerOf(context).scale(11),
       fontFeatures: const [FontFeature.tabularFigures()],
     );

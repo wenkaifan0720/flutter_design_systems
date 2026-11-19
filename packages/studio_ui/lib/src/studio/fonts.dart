@@ -1,6 +1,6 @@
-/// Where Studio's face comes from. The `studio_ui` package bundles Barlow
+/// Where Studio's faces come from. The `studio_ui` package bundles them
 /// and sets [studioFontPackage] to its own name; a host app that bundles the
-/// face itself leaves it null.
+/// faces itself leaves it null.
 library;
 
 import 'package:flutter/services.dart';
@@ -10,7 +10,7 @@ import 'package:flutter/services.dart';
 // ignore: unnecessary_nullable_for_final_variable_declarations, the package's build names it.
 const String? studioFontPackage = 'studio_ui';
 
-/// Studio's one typeface: Barlow, the plain grotesque of instrument legends,
+/// Studio's primary typeface: Barlow, the plain grotesque of instrument legends,
 /// in four weights (400 to 700), with tabular figures for readouts.
 const String studioFontFamily = 'Barlow';
 
@@ -35,23 +35,22 @@ const List<(String, int)> _faces = [
 String studioRegisteredFamily(String family) =>
     studioFontPackage == null ? family : 'packages/$studioFontPackage/$family';
 
-/// Loads the face Studio bundles, so the first frame is set in it. Await it
+/// Loads Barlow and the Arabic chart face for the first frame. Await it
 /// before `runApp`: on the web a bundled face otherwise arrives after the
 /// first frames, which flash in a fallback face.
 ///
 /// ```dart
 /// Future<void> main() async {WidgetsFlutterBinding.ensureInitialized(); await studioLoadFonts(); runApp(const MyApp());}
 /// ```
-Future<void> studioLoadFonts() {
+Future<void> studioLoadFonts() async {
+  final assets = studioFontPackage == null
+      ? 'assets/fonts'
+      : 'packages/$studioFontPackage/assets/fonts';
   final loader = FontLoader(studioRegisteredFamily(studioFontFamily));
   for (final (file, _) in _faces) {
-    loader.addFont(
-      rootBundle.load(
-        studioFontPackage == null
-            ? 'assets/fonts/$file'
-            : 'packages/$studioFontPackage/assets/fonts/$file',
-      ),
-    );
+    loader.addFont(rootBundle.load('$assets/$file'));
   }
-  return loader.load();
+  final arabic = FontLoader(studioRegisteredFamily('NotoSansArabic'))
+    ..addFont(rootBundle.load('$assets/NotoSansArabic-400.ttf'));
+  await Future.wait([loader.load(), arabic.load()]);
 }
