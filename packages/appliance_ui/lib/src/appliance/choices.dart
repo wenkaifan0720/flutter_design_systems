@@ -281,12 +281,13 @@ class ApplianceRadio<T> extends StatelessWidget {
   }
 }
 
-/// A switch: a slide switch. A key-like cap rides in a sunken slot; on, it
-/// snaps to the slot's end side and the lamp in it lights, and the slot's
-/// start side shows its moulded on mark (a bar); off, it rests at the start
-/// side over the on mark and shows the off mark (a ring). So on and off
-/// read from the cap's place, its lamp and the mark beside it, with no
-/// colour needed, and a screen reader hears on or off.
+/// A switch: an illuminated slide switch. A key-like cap rides in a sunken
+/// slot; on, it snaps to the slot's end side, the slot lights in the signal
+/// and the lamp in the cap lights, and the slot's start side shows its on
+/// mark (a bar); off, it rests at the start side over the on mark, the slot
+/// is unlit plastic and shows the off mark (a ring). So on and off read at
+/// a glance from the lit slot, and without colour from the cap's place and
+/// the mark beside it; a screen reader hears on or off.
 ///
 /// A null [onChanged] disables it. Reads [style]'s `fill` (the slot) and
 /// `edge` in its states, then [ApplianceThemeData.toggleStyle]'s.
@@ -340,13 +341,21 @@ class ApplianceSwitch extends StatelessWidget {
         final layered = DesignStyleOf([style, theme.toggleStyle], states);
         final disabled = states.contains(WidgetState.disabled);
         final held = states.contains(WidgetState.pressed);
+        // On, the slot is lit in the signal (dimmed while disabled).
+        final lit = value
+            ? Color.lerp(c.trough, c.signal, disabled ? 0.35 : 1)!
+            : c.trough;
         final slot = layered.on(
           ApplianceFace(
-            top: c.trough,
-            bottom: c.trough,
+            top: lit,
+            bottom: value ? Color.lerp(lit, c.signalBottom, 0.5)! : lit,
             lift: -1,
             radius: BorderRadius.circular(ApplianceMetrics.smallKeyRadius),
-            foreground: disabled ? c.printDisabled : c.print,
+            foreground: disabled
+                ? c.printDisabled
+                : value
+                ? c.onSignal
+                : c.print,
             focus: states.contains(WidgetState.focused)
                 ? c.focus
                 : _none(c.focus),
@@ -521,13 +530,18 @@ class ApplianceSegment<T> {
   final String? semanticLabel;
 }
 
+// A segment's lamp, a little smaller than a key's.
+const double _segmentLamp = ApplianceMetrics.lampSize - 2;
+
 /// Two to five short choices as the positions of a slide selector: a
-/// sunken trough, its positions printed along it, and a raised block that
-/// slides to the chosen one and snaps into its detent. Every position is
-/// the same width, and a label never moves; the chosen one reads in the
-/// print's full weight, the rest muted. Below 600 px it spans its column;
+/// sunken trough, its positions printed along it, each with a lamp before
+/// its glyph and words, and a raised block that slides to the chosen one and snaps
+/// into its detent. Every position is the same width, and a label never
+/// moves; the chosen one's lamp is lit and its words read in the print's
+/// full weight, the rest muted. Below 600 px it spans its column;
 /// wider, each position takes the widest label's width. In a narrow space,
-/// each icon moves above its label. Longer labels can wrap onto another line.
+/// each icon moves above its label, its lamp beside it. Longer labels can
+/// wrap onto another line.
 ///
 /// A null [onChanged] disables it. Left and Right move the choice, Home and
 /// End to the ends.
@@ -596,8 +610,11 @@ class ApplianceSegmentedButton<T> extends StatelessWidget {
     final direction = Directionality.of(context);
     final legendStyle = words.copyWith(fontWeight: FontWeight.w600);
     final iconSize = frame.iconSize ?? 18.0;
-    final iconGap = math.max(28.0, iconSize + ApplianceSpacing.small);
+    final iconGap = iconSize + ApplianceSpacing.small;
     var widest = 0.0;
+    // Each legend's lamp stands before its glyph and words, as a chip's
+    // does.
+    const lampRoom = _segmentLamp + ApplianceSpacing.tight;
     var lineHeight = 0.0;
     for (final segment in segments) {
       final painter = TextPainter(
@@ -608,7 +625,7 @@ class ApplianceSegmentedButton<T> extends StatelessWidget {
       )..layout();
       widest = math.max(
         widest,
-        painter.width + (segment.icon == null ? 0 : iconGap),
+        painter.width + lampRoom + (segment.icon == null ? 0 : iconGap),
       );
       lineHeight = math.max(lineHeight, painter.height);
       painter.dispose();
@@ -640,9 +657,10 @@ class ApplianceSegmentedButton<T> extends StatelessWidget {
                 )..layout(
                   maxWidth: math.max(0.0, each - 2 * ApplianceSpacing.hair),
                 );
-            final extra = segment.icon == null
-                ? 0.0
-                : iconSize + ApplianceSpacing.tight;
+            // Stacked, the lamp stands beside the glyph, or over the words.
+            final extra =
+                math.max(_segmentLamp, segment.icon == null ? 0.0 : iconSize) +
+                ApplianceSpacing.tight;
             height = math.max(height, painter.height + extra + 2 * inset + 4);
             painter.dispose();
           }
@@ -671,20 +689,6 @@ class ApplianceSegmentedButton<T> extends StatelessWidget {
             radius:
                 ApplianceMetrics.troughRadius - ApplianceMetrics.troughInset,
           ).copyWith(lift: off ? 0.4 : 1),
-          // The lamp says which position is chosen, as a latched key's does.
-          child: Align(
-            alignment: AlignmentDirectional.topStart,
-            child: Padding(
-              padding: const EdgeInsetsDirectional.only(
-                start: ApplianceSpacing.small,
-                top: ApplianceSpacing.small,
-              ),
-              child: ApplianceLamp(
-                lit: !off,
-                size: ApplianceMetrics.lampSize - 2,
-              ),
-            ),
-          ),
         );
         final control = Semantics(
           // Tabs are named by ui_core's tab bar.
@@ -847,7 +851,11 @@ class ApplianceSegmentedButton<T> extends StatelessWidget {
             ? c.print
             : c.printMuted);
     final radius = ApplianceMetrics.troughRadius - ApplianceMetrics.troughInset;
-    final label = DesignCapCenter(
+    // The lamp before the glyph and words says which position is chosen, as
+    // a chip's does. Stacked in a narrow space, it stands beside the glyph,
+    // or over the words, so the words keep the whole width.
+    final lamp = ApplianceLamp(lit: chosen && !disabled, size: _segmentLamp);
+    final legend = DesignCapCenter(
       capHeightFactor: theme.capHeightFactor,
       child: Text(
         s.label,
@@ -861,6 +869,14 @@ class ApplianceSegmentedButton<T> extends StatelessWidget {
             data: IconThemeData(size: layered.iconSize ?? 18),
             child: s.icon!,
           );
+    // Stacked over the words, the lamp stands a small gap above their
+    // capitals, not above the room their line leaves over them, and the
+    // lamp and words are centred as one.
+    final size = MediaQuery.textScalerOf(context).scale(words.fontSize ?? 15);
+    final rise = math.max(
+      0.0,
+      (size * (words.height ?? 1.2) - size * theme.capHeightFactor) / 2,
+    );
     return Padding(
       padding: const EdgeInsets.symmetric(
         vertical: ApplianceMetrics.troughInset,
@@ -883,24 +899,46 @@ class ApplianceSegmentedButton<T> extends StatelessWidget {
                 : ApplianceSpacing.small,
           ),
           child: stacked
-              ? Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    if (icon != null) ...[
-                      icon,
-                      const SizedBox(height: ApplianceSpacing.tight),
-                    ],
-                    label,
-                  ],
-                )
+              ? icon != null
+                    ? Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              lamp,
+                              const SizedBox(width: ApplianceSpacing.small),
+                              icon,
+                            ],
+                          ),
+                          const SizedBox(height: ApplianceSpacing.tight),
+                          legend,
+                        ],
+                      )
+                    : Transform.translate(
+                        offset: Offset(0, rise),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            lamp,
+                            const SizedBox(height: ApplianceSpacing.tight),
+                            Transform.translate(
+                              offset: Offset(0, -rise),
+                              child: legend,
+                            ),
+                          ],
+                        ),
+                      )
               : Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
+                    lamp,
+                    const SizedBox(width: ApplianceSpacing.tight),
                     if (icon != null) ...[
                       icon,
                       const SizedBox(width: ApplianceSpacing.small),
                     ],
-                    Flexible(child: label),
+                    Flexible(child: legend),
                   ],
                 ),
         ),
@@ -1066,9 +1104,10 @@ class _MoveIntent extends Intent {
   final int by;
 }
 
-/// A whole number stepped down and up: two keys round a small sunken
-/// display window, its figure lit. A key at its bound stands disabled. A
-/// null [onChanged] disables it.
+/// A whole number stepped down and up by [step]: two keys round a sunken
+/// display window as tall as they are and wide enough for the longest number
+/// it can show, at any text size. A step that would pass a bound stops at it,
+/// and a key at its bound stands disabled. A null [onChanged] disables it.
 ///
 /// Reads [style]'s `fill` (the window), `foreground` (the keys' glyphs),
 /// `textStyle` (the figure) and `minimumSize` (its height) in its states,
@@ -1076,6 +1115,10 @@ class _MoveIntent extends Intent {
 ///
 /// ```dart
 /// ApplianceStepper(value: quantity, min: 1, max: 9, onChanged: (value) => setState(() => quantity = value), semanticLabel: 'Quantity')
+/// ```
+///
+/// ```dart
+/// ApplianceStepper(value: minutes, min: 5, max: 480, step: 15, onChanged: (value) => setState(() => minutes = value), semanticLabel: 'Estimate in minutes')
 /// ```
 class ApplianceStepper extends StatelessWidget {
   /// A stepper between [min] and [max].
@@ -1085,11 +1128,13 @@ class ApplianceStepper extends StatelessWidget {
     required this.onChanged,
     this.min = 0,
     this.max = 99,
+    this.step = 1,
     this.semanticLabel,
     this.decreaseLabel = 'Decrease',
     this.increaseLabel = 'Increase',
     this.style,
-  }) : assert(min <= value && value <= max);
+  }) : assert(min <= value && value <= max),
+       assert(step > 0);
 
   /// The number.
   final int value;
@@ -1102,6 +1147,9 @@ class ApplianceStepper extends StatelessWidget {
 
   /// The most.
   final int max;
+
+  /// How far one press of a key moves the number: one by default.
+  final int step;
 
   /// What the number counts, for a screen reader.
   final String? semanticLabel;
@@ -1125,9 +1173,41 @@ class ApplianceStepper extends StatelessWidget {
     final off = onChanged == null;
     final layers = [style, theme.stepperStyle];
     final frame = DesignStyleOf(layers, {if (off) WidgetState.disabled});
-    final h = frame.minimumSize?.height ?? theme.controlHeight;
-    Widget step(bool up, String label, int to) {
-      final can = !off && to >= min && to <= max;
+    final figure = frame.text(
+      theme.textTheme.figure.copyWith(
+        fontSize: 18,
+        color: off ? c.onDisplay.withValues(alpha: 0.5) : c.onDisplay,
+        fontFeatures: const [FontFeature.tabularFigures()],
+      ),
+    );
+    // The longest number the window shows, as it will be set.
+    final scaler = MediaQuery.textScalerOf(context);
+    var figureSize = Size.zero;
+    for (final n in [min, max]) {
+      final painter = TextPainter(
+        text: TextSpan(text: '$n', style: figure),
+        textDirection: TextDirection.ltr,
+        textScaler: scaler,
+      )..layout();
+      figureSize = Size(
+        math.max(figureSize.width, painter.width),
+        math.max(figureSize.height, painter.height),
+      );
+      painter.dispose();
+    }
+    // The keys and the window are one height: the control's, or taller as
+    // the text grows.
+    final h = math.max(
+      frame.minimumSize?.height ?? theme.controlHeight,
+      figureSize.height + 2 * ApplianceSpacing.small,
+    );
+    final windowWidth = math.max(
+      52.0,
+      figureSize.width + 2 * ApplianceSpacing.medium,
+    );
+    Widget stepKey(bool up, String label) {
+      final to = (up ? value + step : value - step).clamp(min, max);
+      final can = !off && to != value;
       return DesignPressable(
         onPressed: can ? () => onChanged!(to) : null,
         semanticLabel: label,
@@ -1176,14 +1256,14 @@ class ApplianceStepper extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            step(false, _name(decreaseLabel), value - 1),
+            stepKey(false, _name(decreaseLabel)),
             const SizedBox(width: ApplianceSpacing.small),
             Semantics(
               label: semanticLabel,
               value: '$value',
               child: SizedBox(
-                width: 52,
-                height: h - ApplianceSpacing.small,
+                width: windowWidth,
+                height: h,
                 child: ApplianceSurface(
                   face: window,
                   child: Center(
@@ -1191,14 +1271,9 @@ class ApplianceStepper extends StatelessWidget {
                       capHeightFactor: theme.capHeightFactor,
                       child: Text(
                         '$value',
-                        style: frame.text(
-                          theme.textTheme.figure.copyWith(
-                            fontSize: 18,
-                            color: off
-                                ? c.onDisplay.withValues(alpha: 0.5)
-                                : c.onDisplay,
-                          ),
-                        ),
+                        maxLines: 1,
+                        softWrap: false,
+                        style: figure,
                       ),
                     ),
                   ),
@@ -1206,7 +1281,7 @@ class ApplianceStepper extends StatelessWidget {
               ),
             ),
             const SizedBox(width: ApplianceSpacing.small),
-            step(true, _name(increaseLabel), value + 1),
+            stepKey(true, _name(increaseLabel)),
           ],
         ),
       ),
@@ -1219,7 +1294,8 @@ class ApplianceStepper extends StatelessWidget {
     properties
       ..add(IntProperty('value', value))
       ..add(IntProperty('min', min))
-      ..add(IntProperty('max', max));
+      ..add(IntProperty('max', max))
+      ..add(IntProperty('step', step, defaultValue: 1));
   }
 }
 

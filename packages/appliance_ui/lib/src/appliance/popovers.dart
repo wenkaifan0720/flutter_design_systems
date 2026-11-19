@@ -235,11 +235,7 @@ class ApplianceTooltip extends StatelessWidget {
                 horizontal: ApplianceSpacing.small + 2,
                 vertical: ApplianceSpacing.tight + 2,
               ),
-          decoration: BoxDecoration(
-            color: layered.fill ?? c.display,
-            borderRadius: BorderRadius.circular(ApplianceSpacing.tight),
-            border: Border.all(color: c.metalDark, width: 1.5),
-          ),
+          decoration: _tooltipGlass(c, layered.fill ?? c.display),
           child: Text(
             message,
             style: layered.text(
@@ -259,6 +255,29 @@ class ApplianceTooltip extends StatelessWidget {
     super.debugFillProperties(properties);
     properties.add(StringProperty('message', message));
   }
+}
+
+// A tooltip's glass: by night smoked glass in a metal bezel; by day a pale
+// LCD in a dark bezel, standing off the panel on a soft shadow.
+BoxDecoration _tooltipGlass(ApplianceColors c, Color glass) {
+  final lcd = glass.computeLuminance() > 0.4;
+  return BoxDecoration(
+    color: glass,
+    borderRadius: BorderRadius.circular(ApplianceSpacing.tight),
+    border: Border.all(
+      color: lcd ? Color.lerp(glass, c.onDisplay, 0.55)! : c.metalDark,
+      width: 1.5,
+    ),
+    boxShadow: lcd
+        ? [
+            BoxShadow(
+              color: c.shade.withValues(alpha: 0.22),
+              blurRadius: 10,
+              offset: const Offset(0, 3),
+            ),
+          ]
+        : null,
+  );
 }
 
 /// A menu's rows on a plate, each closing it and running its entry.

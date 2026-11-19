@@ -5,6 +5,8 @@
 /// [ApplianceColorPicker] (a colour window over two faders).
 library;
 
+import 'dart:math' as math;
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
@@ -699,7 +701,24 @@ class ApplianceChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = ApplianceTheme.of(context);
     final c = theme.colors;
-    final height = theme.controlHeight - ApplianceSpacing.regular;
+    // A chip's face holds its words whole as the text grows.
+    final words = TextPainter(
+      text: TextSpan(
+        text: label,
+        style: DesignStyleOf([
+          style,
+          theme.chipStyle,
+        ], const {}).text(theme.textTheme.secondary),
+      ),
+      textDirection: Directionality.of(context),
+      textScaler: MediaQuery.textScalerOf(context),
+      maxLines: 1,
+    )..layout();
+    final height = math.max(
+      theme.controlHeight - ApplianceSpacing.regular,
+      words.height + 2 * ApplianceSpacing.tight,
+    );
+    words.dispose();
     final latches = onSelected != null;
     Widget body(Set<WidgetState> states) {
       final layered = DesignStyleOf([style, theme.chipStyle], states);
@@ -783,7 +802,10 @@ class ApplianceChip extends StatelessWidget {
       }
       // A remove key reaches a finger's height: the chip stands in a row that
       // tall, its face drawn in the middle (as a tag in a tag input's well).
-      final row = theme.controlHeight - 2 * ApplianceSpacing.nudge;
+      final row = math.max(
+        theme.controlHeight - 2 * ApplianceSpacing.nudge,
+        height,
+      );
       final inset = (row - height) / 2;
       return SizedBox(
         height: row,

@@ -79,11 +79,15 @@ abstract final class ApplianceMetrics {
   /// How far a pressed key travels into the panel.
   static const double pressTravel = 1.5;
 
-  /// The room between a face and its focus bezel.
+  /// The room a focus ring once kept round a face.
+  @Deprecated(
+    'Focus lights the part\'s own rim from inside since 0.1.2; nothing is '
+    'drawn round it.',
+  )
   static const double focusGap = 2;
 
-  /// The focus bezel's width.
-  static const double focusWidth = 2;
+  /// The width of a focused part's lit rim, inside its edge.
+  static const double focusWidth = 2.5;
 
   /// A lamp's diameter.
   static const double lampSize = 8;
@@ -103,10 +107,12 @@ abstract final class ApplianceMetrics {
   /// The widest a form, a dialog or a reading column stands.
   static const double readingWidth = 560;
 
-  /// The focus bezel's corner round a face of corner [radius]: concentric,
-  /// out by the gap and half the bezel.
-  static double focusRadius(double radius) =>
-      radius + focusGap + focusWidth / 2;
+  /// The corner a focus ring once had round a face of corner [radius].
+  @Deprecated(
+    'Focus lights the part\'s own rim from inside since 0.1.2; nothing is '
+    'drawn round it.',
+  )
+  static double focusRadius(double radius) => radius + 3;
 }
 
 /// Appliance's spacing, on a 4 px grid ([DesignSpacingScope] declares it).
@@ -197,8 +203,9 @@ abstract final class ApplianceMotion {
 
 /// Appliance's colours, by role: the plastic (the grained housing, the
 /// smooth faceplates, the keys and wells), the print (the legends), the
-/// signal (the main key, the lamps, the focus bezel) and the display (a
-/// toast's smoked window).
+/// signal (the main key, the lamps, the focus backlight) and the display (by
+/// day a pale LCD with dark figures, as on a clock radio; by night smoked
+/// glass with lit ones).
 ///
 /// [ApplianceColors.light] is warm-white plastic in a lit room;
 /// [ApplianceColors.dark] the same plastic in a dim one, its legends
@@ -274,8 +281,8 @@ class ApplianceColors with Diagnosticable {
     lampOff: Color(0xFFC9C4BB),
     danger: Color(0xFFB3261E),
     onDanger: Color(0xFFFFFFFF),
-    display: Color(0xFF2B2A27),
-    onDisplay: Color(0xFFF1EBE1),
+    display: Color(0xFFD9DCCB),
+    onDisplay: Color(0xFF1F221C),
     metalLight: Color(0xFFE9EAEB),
     metalDark: Color(0xFFB9BBBE),
     scrim: Color(0x6626201A),
@@ -324,7 +331,7 @@ class ApplianceColors with Diagnosticable {
   /// Appliance by [brightness] with the plastic tinted toward [finish] (its
   /// hue and a little of its saturation; the tones stay the look's, so the
   /// print keeps its contrast) and [signal] for the main key, the lamps and
-  /// the focus bezel (its ink tones darkened or lightened until they read).
+  /// the focus backlight (its ink tones darkened or lightened until they read).
   ///
   /// ```dart
   /// final mint = ApplianceColors.from(brightness: Brightness.light, finish: const Color(0xFFD9EDE4), signal: const Color(0xFF1F8A70));
@@ -472,7 +479,8 @@ class ApplianceColors with Diagnosticable {
   /// 4.5:1.
   final Color signalInk;
 
-  /// The focus bezel: the signal, deep enough for 3:1 on the housing.
+  /// The focus backlight: the signal, deep enough for 3:1 on the housing and
+  /// on a key.
   final Color focus;
 
   /// A lamp that is out.
@@ -484,10 +492,12 @@ class ApplianceColors with Diagnosticable {
   /// Legends on a danger key.
   final Color onDanger;
 
-  /// A display window's smoked glass (a toast).
+  /// A display window's glass (a chart's, a readout's, a toast's): by day a
+  /// pale LCD, by night smoked glass.
   final Color display;
 
-  /// A display's lit legend.
+  /// A display's figures: dark segments on the day's LCD, a lit legend on
+  /// the night's glass.
   final Color onDisplay;
 
   /// Brushed aluminium in the light.

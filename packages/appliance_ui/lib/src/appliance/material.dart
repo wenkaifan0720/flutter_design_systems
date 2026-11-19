@@ -1,6 +1,6 @@
 /// Appliance's material: moulded plastic lit from the top, at three depths
 /// ([ApplianceDepth]), joined at parting lines; the grained housing every
-/// bar and panel surround is moulded in; the lamp; the focus bezel. Every
+/// bar and panel surround is moulded in; the lamp; the focus backlight. Every
 /// part paints with these, so a key, a field and a faceplate are one
 /// material in one light.
 library;
@@ -20,7 +20,7 @@ const Color _clear = Color(0x00000000);
 /// [top] to [bottom]), how far it stands out of or sinks into the panel
 /// ([lift], 1 raised, 0 level, -1 sunken), whether it is seated at a parting
 /// line ([seam]), how far a press has carried it in ([travel]), its corners
-/// and its focus bezel. Every value lerps, so a press, a latch or a focus
+/// and its focus backlight. Every value lerps, so a press, a latch or a focus
 /// moves continuously from one face to the next.
 @immutable
 class ApplianceFace with Diagnosticable {
@@ -35,6 +35,7 @@ class ApplianceFace with Diagnosticable {
     this.circle = false,
     this.foreground = _clear,
     this.focus = _clear,
+    this.focusReach = 0,
     this.edge = _clear,
   });
 
@@ -118,8 +119,16 @@ class ApplianceFace with Diagnosticable {
   /// The legend's colour on this face.
   final Color foreground;
 
-  /// The focus bezel's colour; clear when unfocused.
+  /// The light a focused part's rim is lit with from inside; clear when
+  /// unfocused. On a face too close to it in tone (the signal key) the rim
+  /// takes the face's own legend ink instead, so it still reads at 3:1.
   final Color focus;
+
+  /// How far beyond the face its focus light stands: zero for a part with a
+  /// rim of its own to light. A part with no face (a printed legend, a link)
+  /// lights a plate this far beyond its words instead, so the light crosses
+  /// no letter.
+  final double focusReach;
 
   /// A fine edge drawn over the face's rim (an error, high contrast); clear
   /// by default.
@@ -136,6 +145,7 @@ class ApplianceFace with Diagnosticable {
     bool? circle,
     Color? foreground,
     Color? focus,
+    double? focusReach,
     Color? edge,
   }) => ApplianceFace(
     top: top ?? this.top,
@@ -147,6 +157,7 @@ class ApplianceFace with Diagnosticable {
     circle: circle ?? this.circle,
     foreground: foreground ?? this.foreground,
     focus: focus ?? this.focus,
+    focusReach: focusReach ?? this.focusReach,
     edge: edge ?? this.edge,
   );
 
@@ -165,6 +176,7 @@ class ApplianceFace with Diagnosticable {
       circle: t < 0.5 ? a.circle : b.circle,
       foreground: Color.lerp(a.foreground, b.foreground, t)!,
       focus: Color.lerp(a.focus, b.focus, t)!,
+      focusReach: at(a.focusReach, b.focusReach),
       edge: Color.lerp(a.edge, b.edge, t)!,
     );
   }
@@ -181,6 +193,7 @@ class ApplianceFace with Diagnosticable {
       other.circle == circle &&
       other.foreground == foreground &&
       other.focus == focus &&
+      other.focusReach == focusReach &&
       other.edge == edge;
 
   @override
@@ -194,6 +207,7 @@ class ApplianceFace with Diagnosticable {
     circle,
     foreground,
     focus,
+    focusReach,
     edge,
   );
 
@@ -206,12 +220,13 @@ class ApplianceFace with Diagnosticable {
       ..add(DoubleProperty('lift', lift))
       ..add(DoubleProperty('seam', seam, defaultValue: 0))
       ..add(DoubleProperty('travel', travel, defaultValue: 0))
-      ..add(ColorProperty('focus', focus, defaultValue: _clear));
+      ..add(ColorProperty('focus', focus, defaultValue: _clear))
+      ..add(DoubleProperty('focusReach', focusReach, defaultValue: 0));
   }
 }
 
 /// [child] on a moulded [face]: the plastic, its depth's light and shade,
-/// its parting line, its focus bezel. The legend moves with a press.
+/// its parting line, its focus backlight. The legend moves with a press.
 ///
 /// ```dart
 /// ApplianceSurface(face: ApplianceFace.key(colors), child: const Text('Start'))
@@ -411,17 +426,80 @@ void paintApplianceFace(
     );
   }
 
-  // The focus bezel: concentric, outside the face.
+  // The focus backlight: the part's own rim lit from inside, as a key's
+  // translucent edge glows over a lamp, and the light fading in from it.
+  // Nothing is drawn round the part, and its legend stays clear. A part with
+  // no face of its own lights a plate [ApplianceFace.focusReach] beyond its
+  // words instead.
   if (face.focus.a > 0) {
-    final out = ApplianceMetrics.focusGap + ApplianceMetrics.focusWidth / 2;
-    canvas.drawRRect(
-      r.inflate(out),
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = ApplianceMetrics.focusWidth
-        ..color = face.focus,
+    final light = applianceFocusLight(
+      face.focus,
+      face.top,
+      bottom: face.bottom,
+      ink: face.foreground,
     );
+    const w = ApplianceMetrics.focusWidth;
+    final plate = face.focusReach > 0 ? r.inflate(face.focusReach) : r;
+    canvas
+      ..save()
+      ..clipRRect(plate)
+      ..drawRRect(
+        plate,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = w * 2 + 4
+          ..color = light.withValues(alpha: light.a * 0.3)
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2),
+      )
+      ..drawRRect(
+        plate.deflate(w / 2),
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = w
+          ..color = light,
+      )
+      ..restore();
   }
+}
+
+/// The light a focused part's rim takes on a face running from [fill] to
+/// [bottom]: [focus], deepened a little on a pale face or brightened on a
+/// dark one until it reads at 4.5:1, so the whole rim clears 3:1 where the
+/// face's own shading falls. On a face too close to it in tone (a signal
+/// key, a lit slot) it goes the way [focus] goes from the face: by day,
+/// where focus is deeper than the face, the face's legend [ink], so the
+/// part keeps its edge on the pale housing; by night white, a glow on the
+/// dark one. For a part that paints its own focus the way
+/// [ApplianceSurface] does.
+Color applianceFocusLight(
+  Color focus,
+  Color fill, {
+  Color? bottom,
+  Color? ink,
+}) {
+  if (fill.a < 1) return focus;
+  double reads(Color light) => math.min(
+    applianceContrast(light, fill),
+    applianceContrast(light, bottom ?? fill),
+  );
+  final solid = focus.withValues(alpha: 1);
+  final toward = fill.computeLuminance() > 0.18
+      ? const Color(0xFF000000)
+      : const Color(0xFFFFFFFF);
+  for (var step = 0; step <= 8; step++) {
+    final light = Color.lerp(solid, toward, step * 0.05)!;
+    if (reads(light) >= 4.5) return light.withValues(alpha: focus.a);
+  }
+  if (reads(solid) >= 3) return focus;
+  var best = solid;
+  const white = Color(0xFFFFFFFF);
+  final deeper = solid.computeLuminance() < fill.computeLuminance();
+  for (final other in deeper ? [?ink, white] : [white, ?ink]) {
+    if (other.a < 1) continue;
+    if (reads(other) >= 3) return other.withValues(alpha: focus.a);
+    if (reads(other) > reads(best)) best = other;
+  }
+  return best.withValues(alpha: focus.a);
 }
 
 Color _scaled(Color c, double by) =>

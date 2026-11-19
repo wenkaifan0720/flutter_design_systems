@@ -654,7 +654,15 @@ class _Toast extends StatelessWidget {
     final glass = layered.fill ?? c.display;
     final legend = layered.foreground ?? c.onDisplay;
     final words = DesignLocalizations.of(context);
-    final glow = c.signalTop;
+    // The lamp and the action light in the signal: bright on the night's
+    // glass, a deep ink on the day's LCD, walked toward the figures' ink
+    // until the action's words read at 4.5:1.
+    final glow = glass.computeLuminance() > 0.4 ? c.signal : c.signalTop;
+    var action = glass.computeLuminance() > 0.4 ? c.signalInk : c.signalTop;
+    for (var t = 0.05; t <= 1 && applianceContrast(action, glass) < 4.5;) {
+      action = Color.lerp(c.signalInk, legend, t)!;
+      t += 0.05;
+    }
     const glassRadius =
         ApplianceMetrics.lidRadius - ApplianceMetrics.windowInset;
     const keyInset = ApplianceSpacing.tight;
@@ -756,7 +764,7 @@ class _Toast extends StatelessWidget {
                           child: (ink) => Text(
                             t.actionLabel!.toUpperCase(),
                             style: theme.textTheme.legend.copyWith(
-                              color: glow,
+                              color: action,
                               fontWeight: FontWeight.w600,
                             ),
                           ),

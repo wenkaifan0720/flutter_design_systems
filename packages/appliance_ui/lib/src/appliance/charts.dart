@@ -1,6 +1,6 @@
-/// Appliance's charts, read as an energy monitor's display: traces lit on
-/// smoked glass in a window sunk in the panel, the scale printed faint on
-/// the glass, the legend's lamps on the panel under it. [ApplianceLineChart],
+/// Appliance's charts, read as an energy monitor's display: traces on its
+/// glass in a window sunk in the panel (dark inks on a pale LCD by day, lit
+/// traces on smoked glass by night), the scale printed faint on the glass, the legend's lamps on the panel under it. [ApplianceLineChart],
 /// [ApplianceAreaChart], [ApplianceBarChart], [ApplianceDonutChart] and the
 /// small [ApplianceSparkline].
 ///
@@ -37,15 +37,32 @@ class ApplianceChartSeries {
   final Color? color;
 }
 
-/// The display's traces, in order: the signal, then lights that stay apart
-/// from it and from each other on the glass.
-List<Color> _traces(ApplianceColors c) => [
-  c.signal,
-  const Color(0xFF7FC8D8),
-  c.onDisplay,
-  c.ready,
-  const Color(0xFFD9A6E8),
-];
+// Whether the display is a pale LCD (by day) rather than smoked glass.
+bool _lcd(ApplianceColors c) => c.display.computeLuminance() > 0.4;
+
+/// The display's traces, in order: the signal, then colours that stay apart
+/// from it and from each other on the glass: inks at 3:1 and more on the
+/// day's LCD, lights on the night's glass.
+List<Color> _traces(ApplianceColors c) => _lcd(c)
+    ? [
+        c.signalInk,
+        const Color(0xFF1D6A7A),
+        c.onDisplay,
+        c.ready,
+        const Color(0xFF7B3F8F),
+      ]
+    : [
+        c.signal,
+        const Color(0xFF7FC8D8),
+        c.onDisplay,
+        c.ready,
+        const Color(0xFFD9A6E8),
+      ];
+
+// The display's faint words (the scale, a caption): [night]'s strength on
+// the glass, stronger on the LCD, where dark ink fades faster; 4.5:1 on both.
+Color _faint(ApplianceColors c, double night) =>
+    c.onDisplay.withValues(alpha: _lcd(c) ? math.max(night, 0.76) : night);
 
 /// A figure with no needless decimals.
 String _plain(double v) {
@@ -126,7 +143,7 @@ class _Idle extends StatelessWidget {
                 Text(
                   emptyLabel,
                   style: theme.textTheme.secondary.copyWith(
-                    color: c.onDisplay.withValues(alpha: 0.7),
+                    color: _faint(c, 0.7),
                   ),
                 ),
               ],
@@ -249,9 +266,7 @@ class _SeriesChartState extends State<_SeriesChart> {
       );
     }
     final scale = MediaQuery.textScalerOf(context);
-    final axisStyle = theme.textTheme.legend.copyWith(
-      color: c.onDisplay.withValues(alpha: 0.6),
-    );
+    final axisStyle = theme.textTheme.legend.copyWith(color: _faint(c, 0.6));
     final line = applianceLabelSize(context, '0', axisStyle).height;
     final factor = scale.scale(axisStyle.fontSize!) / axisStyle.fontSize!;
     final foot = math.max(18.0, line + 2);
@@ -414,10 +429,7 @@ class _Readout extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
-            title,
-            style: t.legend.copyWith(color: c.onDisplay.withValues(alpha: 0.7)),
-          ),
+          Text(title, style: t.legend.copyWith(color: _faint(c, 0.7))),
           for (final (label, value, color) in lines)
             Row(
               mainAxisSize: MainAxisSize.min,
@@ -938,9 +950,7 @@ class _ApplianceDonutChartState extends State<ApplianceDonutChart> {
                   ),
                   Text(
                     a == null ? 'Total' : widget.slices[a].$1,
-                    style: t.legend.copyWith(
-                      color: c.onDisplay.withValues(alpha: 0.65),
-                    ),
+                    style: t.legend.copyWith(color: _faint(c, 0.65)),
                   ),
                 ],
               ),

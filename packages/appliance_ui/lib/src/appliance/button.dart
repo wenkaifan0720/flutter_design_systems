@@ -241,6 +241,7 @@ ApplianceFace _keyFace(
             ? c.print
             : c.signalInk,
         focus: focus,
+        focusReach: ApplianceSpacing.tight + ApplianceMetrics.focusWidth,
       );
     case _ButtonKind.key:
       if (disabled) {

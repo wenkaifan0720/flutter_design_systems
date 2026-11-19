@@ -573,11 +573,16 @@ class _KnobPainter extends CustomPainter {
         ..strokeCap = StrokeCap.round,
     );
     if (focused) {
+      // The knurled ring backlit from inside its edge, as a key's rim is.
       canvas.drawCircle(
         c,
-        r + 3,
+        r - ApplianceMetrics.focusWidth / 2,
         Paint()
-          ..color = colors.focus
+          ..color = applianceFocusLight(
+            colors.focus,
+            colors.metalLight,
+            bottom: colors.metalDark,
+          )
           ..style = PaintingStyle.stroke
           ..strokeWidth = ApplianceMetrics.focusWidth,
       );

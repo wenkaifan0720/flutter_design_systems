@@ -17,7 +17,6 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import 'actions.dart';
 import 'button.dart';
-import 'internal/glyphs.dart';
 import 'material.dart';
 import 'theme.dart';
 
@@ -542,11 +541,17 @@ double _navigationKeyWidth(
     {WidgetState.selected},
   ]) {
     final label = _navLabel(context, DesignStyleOf(layers, states));
+    // Measured as the keys set their names: at most 1.3x.
+    final scaler = MediaQuery.textScalerOf(context)
+        .clamp(maxScaleFactor: _navigationTextScale);
     for (final d in destinations) {
-      width = math.max(
-        width,
-        applianceLabelSize(context, d.label, label).width.ceilToDouble() + 8,
-      );
+      final painter = TextPainter(
+        text: TextSpan(text: d.label, style: label),
+        textDirection: Directionality.of(context),
+        textScaler: scaler,
+      )..layout();
+      width = math.max(width, painter.width.ceilToDouble() + 8);
+      painter.dispose();
     }
   }
   return width;
@@ -567,6 +572,27 @@ Widget _stackedKey(
     textAlign: TextAlign.center,
     style: _navLabel(context, layered).copyWith(color: face.foreground),
   );
+  // A key's name and badge grow with the text up to 1.3x, as Material's
+  // navigation bar labels do, so the name keeps its words whole and the
+  // badge stays on its glyph.
+  return MediaQuery.withClampedTextScaling(
+    maxScaleFactor: _navigationTextScale,
+    child: _stackedFace(context, d, current, face, layered, name, rail: rail),
+  );
+}
+
+/// How far a strip's or a rail's key lets its words grow.
+const double _navigationTextScale = 1.3;
+
+Widget _stackedFace(
+  BuildContext context,
+  ApplianceDestination d,
+  bool current,
+  ApplianceFace face,
+  DesignStyleOf layered,
+  Widget name, {
+  required bool rail,
+}) {
   return ConstrainedBox(
     constraints: BoxConstraints(
       minHeight: rail ? 60 : ApplianceNavigationBar.keyHeight,

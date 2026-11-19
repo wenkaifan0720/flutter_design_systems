@@ -5,6 +5,8 @@
 /// its up and down keys).
 library;
 
+import 'dart:math' as math;
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
@@ -22,8 +24,26 @@ import 'theme.dart';
 export 'package:ui_core/ui_core.dart'
     show DesignCalendarController, DesignCalendarMode, DesignDateRange;
 
-/// A day cell's height.
+/// A day cell's height at 1x text.
 const double _dayHeight = 44;
+
+/// A day cell's height: 44, or taller as the text grows so its key holds a
+/// two-figure day whole.
+double _dayHeightOf(BuildContext context) {
+  final theme = ApplianceTheme.of(context);
+  final painter = TextPainter(
+    text: TextSpan(text: '28', style: theme.textTheme.body),
+    textDirection: TextDirection.ltr,
+    textScaler: MediaQuery.textScalerOf(context),
+    maxLines: 1,
+  )..layout();
+  final height = math.max(
+    _dayHeight,
+    painter.height + 2 * ApplianceSpacing.tight + 2 * ApplianceSpacing.hair,
+  );
+  painter.dispose();
+  return height;
+}
 
 /// A chevron, pointing to the start side when [back].
 class _Chevron extends StatelessWidget {
@@ -120,13 +140,23 @@ Widget _header(BuildContext context, DesignCalendarHeader header) {
 /// A weekday's heading, in the legend's small capitals.
 Widget _weekday(BuildContext context, int weekday, String label) {
   final theme = ApplianceTheme.of(context);
+  final style = theme.textTheme.legend.copyWith(color: theme.colors.printMuted);
+  final painter = TextPainter(
+    text: TextSpan(text: label, style: style),
+    textDirection: Directionality.of(context),
+    textScaler: MediaQuery.textScalerOf(context),
+    maxLines: 1,
+  )..layout();
+  final height = math.max(28.0, painter.height + 2 * ApplianceSpacing.hair);
+  painter.dispose();
+  // Grown with the text, an initial wider than its column is scaled down to
+  // fit it rather than run into its neighbour.
   return SizedBox(
-    height: 28,
+    height: height,
     child: Center(
-      child: Text(
-        label,
-        maxLines: 1,
-        style: theme.textTheme.legend.copyWith(color: theme.colors.printMuted),
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Text(label, maxLines: 1, softWrap: false, style: style),
       ),
     ),
   );
@@ -183,10 +213,11 @@ Widget _day(
   }
   final startCap = day.isRangeStart;
   final endCap = day.isRangeEnd || previewEnd;
+  final height = _dayHeightOf(context);
   return MouseRegion(
     cursor: day.enabled ? SystemMouseCursors.click : SystemMouseCursors.basic,
     child: SizedBox(
-      height: _dayHeight,
+      height: height,
       child: Stack(
         alignment: Alignment.center,
         children: [
@@ -208,24 +239,38 @@ Widget _day(
                 ),
               ),
             ),
-          SizedBox.square(
-            dimension: _dayHeight - 2 * ApplianceSpacing.tight,
+          // The key is square while its column allows, and keeps its height
+          // in a narrower column, its figures scaled down to fit its width.
+          _DayKey(
+            side: height - 2 * ApplianceSpacing.tight,
             child: AnimatedApplianceSurface(
               face: layered.on(face),
               child: Stack(
                 alignment: Alignment.center,
                 children: [
-                  DesignCapCenter(
-                    capHeightFactor: theme.capHeightFactor,
-                    child: Text(
-                      '${day.date.day}',
-                      style: layered.text(
-                        theme.textTheme.body.copyWith(
-                          color: face.foreground,
-                          fontWeight: day.isToday || end
-                              ? FontWeight.w600
-                              : FontWeight.w400,
-                          fontFeatures: const [FontFeature.tabularFigures()],
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: ApplianceSpacing.hair,
+                    ),
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: DesignCapCenter(
+                        capHeightFactor: theme.capHeightFactor,
+                        child: Text(
+                          '${day.date.day}',
+                          maxLines: 1,
+                          softWrap: false,
+                          style: layered.text(
+                            theme.textTheme.body.copyWith(
+                              color: face.foreground,
+                              fontWeight: day.isToday || end
+                                  ? FontWeight.w600
+                                  : FontWeight.w400,
+                              fontFeatures: const [
+                                FontFeature.tabularFigures(),
+                              ],
+                            ),
+                          ),
                         ),
                       ),
                     ),
@@ -249,10 +294,30 @@ Widget _day(
   );
 }
 
+// A day's key: square while its column allows; in a narrower column it
+// keeps its height and takes the column's width.
+class _DayKey extends StatelessWidget {
+  const _DayKey({required this.side, required this.child});
+
+  final double side;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, box) => SizedBox(
+      width: math.min(side, box.maxWidth),
+      height: side,
+      child: child,
+    ),
+  );
+}
+
 /// A calendar: a month of days on the panel, with keys to turn it. The day
 /// chosen (a range's ends) is a lit signal key, the days between them a
 /// trough; today carries a small lit lamp. The arrows walk the days, Page
-/// Up and Down the months; Enter or Space chooses.
+/// Up and Down the months; Enter or Space chooses. Its days grow with the
+/// text up to twice their size, as Material's calendar's do, their keys
+/// with them.
 ///
 /// [controller] holds the month, the selection and its mode (one day, a
 /// range, several days).
@@ -290,8 +355,15 @@ class ApplianceCalendar extends StatelessWidget {
   /// Its style, over [ApplianceThemeData.calendarStyle]: fill, foreground, textStyle (each day).
   final ApplianceStyle? style;
 
+  // The days grow with the text up to 2x, as Material's calendar's do, and
+  // their keys with them.
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => MediaQuery.withClampedTextScaling(
+    maxScaleFactor: 2,
+    child: Builder(builder: _month),
+  );
+
+  Widget _month(BuildContext context) {
     return DesignCalendar(
       controller: controller,
       onChanged: onChanged,
@@ -376,9 +448,11 @@ class _PickerKey extends StatelessWidget {
                   : c.focus.withValues(alpha: 0),
             ),
           );
+          // The key's height, or taller as the text grows: the date wraps
+          // before it is cut.
           return DesignTapTarget(
-            child: SizedBox(
-              height: theme.controlHeight,
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minHeight: theme.controlHeight),
               child: AnimatedApplianceSurface(
                 face: f,
                 child: Padding(
@@ -387,6 +461,8 @@ class _PickerKey extends StatelessWidget {
                       const EdgeInsetsDirectional.only(
                         start: ApplianceSpacing.regular,
                         end: ApplianceSpacing.medium,
+                        top: ApplianceSpacing.tight,
+                        bottom: ApplianceSpacing.tight,
                       ),
                   child: Row(
                     children: [
@@ -395,8 +471,6 @@ class _PickerKey extends StatelessWidget {
                           capHeightFactor: theme.capHeightFactor,
                           child: Text(
                             text,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
                             style: layered.text(
                               theme.textTheme.body.copyWith(
                                 color: !enabled
@@ -794,6 +868,7 @@ class _TimeDigits extends StatelessWidget {
     required this.shown,
     required this.semanticLabel,
     required this.onChanged,
+    required this.fill,
   });
 
   final int value;
@@ -802,6 +877,9 @@ class _TimeDigits extends StatelessWidget {
   final String shown;
   final String semanticLabel;
   final ValueChanged<int>? onChanged;
+
+  // The window's glass, which a focused figure's cell is backlit on.
+  final Color fill;
 
   int _wrap(int v) {
     final n = max + 1;
@@ -814,6 +892,23 @@ class _TimeDigits extends StatelessWidget {
     final c = theme.colors;
     final enabled = onChanged != null;
     final change = onChanged;
+    final figure = theme.textTheme.display.copyWith(
+      color: enabled ? c.onDisplay : c.onDisplay.withValues(alpha: 0.4),
+      fontFeatures: const [FontFeature.tabularFigures()],
+    );
+    // The cell holds two figures whole as the text grows, so the keys over
+    // and under it stay clear of them.
+    final painter = TextPainter(
+      text: TextSpan(text: '00', style: figure),
+      textDirection: TextDirection.ltr,
+      textScaler: MediaQuery.textScalerOf(context),
+      maxLines: 1,
+    )..layout();
+    final cell = Size(
+      math.max(48, painter.width + 2 * ApplianceSpacing.tight),
+      math.max(44, painter.height + 2 * ApplianceSpacing.hair),
+    );
+    painter.dispose();
     Widget arrow({required bool up}) => _SmallKey(
       semanticLabel: '${up ? 'More' : 'Fewer'} $semanticLabel',
       onPressed: change == null
@@ -863,26 +958,21 @@ class _TimeDigits extends StatelessWidget {
                   }
                   return KeyEventResult.ignored;
                 },
-          builder: (context, states) => Container(
-            width: 48,
-            height: 44,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(ApplianceSpacing.tight),
-              border: Border.all(
-                color: states.contains(WidgetState.focused)
+          // A focused figure's cell is backlit, as a key's rim is.
+          builder: (context, states) => SizedBox.fromSize(
+            size: cell,
+            child: AnimatedApplianceSurface(
+              control: false,
+              face: ApplianceFace(
+                top: fill,
+                bottom: fill,
+                radius: BorderRadius.circular(ApplianceSpacing.tight),
+                focus: states.contains(WidgetState.focused)
                     ? c.focus
                     : c.focus.withValues(alpha: 0),
-                width: ApplianceMetrics.focusWidth,
               ),
-            ),
-            child: Text(
-              shown,
-              style: theme.textTheme.display.copyWith(
-                color: enabled
-                    ? c.onDisplay
-                    : c.onDisplay.withValues(alpha: 0.4),
-                fontFeatures: const [FontFeature.tabularFigures()],
+              child: Center(
+                child: Text(shown, maxLines: 1, softWrap: false, style: figure),
               ),
             ),
           ),
@@ -898,7 +988,8 @@ class _TimeDigits extends StatelessWidget {
 /// up key over it and a down key under it. The arrows change the figure
 /// focused, wrapping round; Page Up and Down change it faster. With
 /// [twentyFourHour] false a latching key beside the window chooses the
-/// afternoon.
+/// afternoon. Its figures grow with the text up to twice their size, as
+/// Material's time picker's do, the window with them.
 ///
 /// ```dart
 /// ApplianceTimePicker(value: const ApplianceTime(18, 30), onChanged: (time) {})
@@ -934,8 +1025,15 @@ class ApplianceTimePicker extends StatelessWidget {
   /// Its style, over [ApplianceThemeData.displayStyle]: fill (the window), foreground, textStyle (the figures).
   final ApplianceStyle? style;
 
+  // The figures grow with the text up to 2x, as Material's time picker's
+  // do, their cells with them, so they show whole and the keys stay clear.
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => MediaQuery.withClampedTextScaling(
+    maxScaleFactor: 2,
+    child: Builder(builder: _picker),
+  );
+
+  Widget _picker(BuildContext context) {
     final look = DesignStyleOf([
       style,
       ApplianceTheme.of(context).displayStyle,
@@ -963,6 +1061,7 @@ class ApplianceTimePicker extends StatelessWidget {
                   ? value.hour.toString().padLeft(2, '0')
                   : '$hour12',
               semanticLabel: 'Hours',
+              fill: look.fill ?? c.display,
               onChanged: change == null
                   ? null
                   : (h) => change(value.copyWith(hour: h)),
@@ -981,6 +1080,7 @@ class ApplianceTimePicker extends StatelessWidget {
               step: minuteStep,
               shown: value.minute.toString().padLeft(2, '0'),
               semanticLabel: 'Minutes',
+              fill: look.fill ?? c.display,
               onChanged: change == null
                   ? null
                   : (m) => change(value.copyWith(minute: m)),

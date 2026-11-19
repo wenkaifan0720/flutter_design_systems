@@ -462,7 +462,7 @@ class ApplianceSplitButton extends StatelessWidget {
 
 /// A key's face as Appliance draws it in a state: the plain key or the
 /// signal key ([filled]), [down] when held or latched, lower and greyed
-/// when [disabled], with the focus bezel when [focused].
+/// when [disabled], its rim backlit when [focused].
 ApplianceFace applianceKeyFace(
   ApplianceColors c, {
   bool filled = false,
@@ -558,6 +558,7 @@ class ApplianceLink extends StatelessWidget {
               focus: states.contains(WidgetState.focused)
                   ? c.focus
                   : c.focus.withValues(alpha: 0),
+              focusReach: ApplianceSpacing.tight + ApplianceMetrics.focusWidth,
             ),
             child: Text(
               label,
