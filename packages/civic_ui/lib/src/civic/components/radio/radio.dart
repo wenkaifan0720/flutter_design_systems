@@ -10,7 +10,11 @@ import '../../theme.dart';
 /// A question with one answer: its [labelText] asks it (on a question page,
 /// as the page's heading with [isPageHeading]), its [CivicRadio]s are the
 /// answers, each with a hint where the words alone don't decide it. The
-/// arrow keys move the choice, as a browser's radios do.
+/// group is one stop for Tab, as a browser's radios and Flutter's
+/// `RadioGroup` are: Tab and Shift+Tab come to the chosen answer (the first,
+/// while none is) and leave the group, and the arrow keys move the choice
+/// between the answers that can be chosen, Left and Right swapped right to
+/// left.
 ///
 /// ```dart
 /// CivicRadioGroup<String>(
@@ -92,7 +96,7 @@ class _CivicRadioGroupState<T> extends State<CivicRadioGroup<T>> {
 
   List<T> get _values => [
     for (final c in widget.children)
-      if (c is CivicRadio<T>) c.value,
+      if (c is CivicRadio<T> && c.enabled) c.value,
   ];
 
   void _step(int by) {
@@ -122,7 +126,6 @@ class _CivicRadioGroupState<T> extends State<CivicRadioGroup<T>> {
       labelText: labelText,
       helperText: helperText,
       errorText: errorText,
-      mergeSemantics: false,
       enabled: onChanged != null,
       builder: (context, parts) => CivicFieldFrame(
         parts: parts,
@@ -133,43 +136,82 @@ class _CivicRadioGroupState<T> extends State<CivicRadioGroup<T>> {
         groupValue: groupValue,
         onChanged: onChanged,
         focus: _focus,
-        child: CallbackShortcuts(
-          bindings: {
-            const SingleActivator(LogicalKeyboardKey.arrowDown): () => _step(1),
-            const SingleActivator(LogicalKeyboardKey.arrowUp): () => _step(-1),
-            SingleActivator(
-              rtl
-                  ? LogicalKeyboardKey.arrowLeft
-                  : LogicalKeyboardKey.arrowRight,
-            ): () =>
-                _step(1),
-            SingleActivator(
-              rtl
-                  ? LogicalKeyboardKey.arrowRight
-                  : LogicalKeyboardKey.arrowLeft,
-            ): () =>
-                _step(-1),
-          },
-          // In an app the answers stand on a card, each a row; on the site
-          // they stand on the page.
-          child: CivicCardScope.cards(context)
-              ? CivicOptionCard(children: children)
-              : Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  mainAxisSize: MainAxisSize.min,
-                  spacing: CivicSpacing.s4,
-                  children: children,
-                ),
+        child: FocusTraversalGroup(
+          policy: _CivicRadioStop<T>(_focus, groupValue),
+          child: CallbackShortcuts(
+            bindings: {
+              const SingleActivator(LogicalKeyboardKey.arrowDown): () =>
+                  _step(1),
+              const SingleActivator(LogicalKeyboardKey.arrowUp): () =>
+                  _step(-1),
+              SingleActivator(
+                rtl
+                    ? LogicalKeyboardKey.arrowLeft
+                    : LogicalKeyboardKey.arrowRight,
+              ): () =>
+                  _step(1),
+              SingleActivator(
+                rtl
+                    ? LogicalKeyboardKey.arrowRight
+                    : LogicalKeyboardKey.arrowLeft,
+              ): () =>
+                  _step(-1),
+            },
+            // In an app the answers stand on a card, each a row; on the site
+            // they stand on the page.
+            child: CivicCardScope.cards(context)
+                ? CivicOptionCard(children: children)
+                : Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    mainAxisSize: MainAxisSize.min,
+                    spacing: CivicSpacing.s4,
+                    children: children,
+                  ),
+          ),
         ),
       ),
     );
   }
 }
 
-/// Where the focus goes after the arrow keys choose.
+/// The group's answers by their focus, and where the focus goes after the
+/// arrow keys choose.
 class _CivicRadioFocus {
+  final Map<FocusNode, Object?> answers = {};
   Object? target;
   bool pending = false;
+}
+
+/// Tab's order in a group: the chosen answer stands for the group (the first
+/// that takes the focus, while none is chosen), and the others are passed
+/// over, but the one that has the focus, so Tab leaves from it.
+class _CivicRadioStop<T> extends ReadingOrderTraversalPolicy {
+  _CivicRadioStop(this.focus, this.groupValue);
+
+  final _CivicRadioFocus focus;
+  final T? groupValue;
+
+  @override
+  Iterable<FocusNode> sortDescendants(
+    Iterable<FocusNode> descendants,
+    FocusNode currentNode,
+  ) {
+    final inOrder = super.sortDescendants(descendants, currentNode);
+    final answers = focus.answers;
+    final open = [
+      for (final node in inOrder)
+        if (answers.containsKey(node) && node.canRequestFocus) node,
+    ];
+    if (open.isEmpty) return inOrder;
+    final stop = open.firstWhere(
+      (node) => answers[node] == groupValue,
+      orElse: () => open.first,
+    );
+    return inOrder.where(
+      (node) =>
+          node == stop || node == currentNode || !answers.containsKey(node),
+    );
+  }
 }
 
 class _CivicRadioScope<T> extends InheritedWidget {
@@ -259,8 +301,27 @@ class _CivicRadioState<T> extends State<CivicRadio<T>> {
   FocusNode? _own;
   FocusNode get _node => widget.focusNode ?? (_own ??= FocusNode());
 
+  /// The group this answer stands in, and the focus it is known there by.
+  _CivicRadioFocus? _group;
+  FocusNode? _known;
+
+  void _join(_CivicRadioFocus? group) {
+    if (_group != group || _known != _node) _leave();
+    _group = group;
+    _known = _node;
+    group?.answers[_node] = widget.value;
+  }
+
+  void _leave() {
+    final known = _known;
+    if (known != null) _group?.answers.remove(known);
+    _group = null;
+    _known = null;
+  }
+
   @override
   void dispose() {
+    _leave();
     _own?.dispose();
     super.dispose();
   }
@@ -273,6 +334,7 @@ class _CivicRadioState<T> extends State<CivicRadio<T>> {
     final chosen = scope?.groupValue == widget.value;
     final change = scope?.onChanged;
     final focus = scope?.focus;
+    _join(focus);
     if (chosen &&
         focus != null &&
         focus.pending &&

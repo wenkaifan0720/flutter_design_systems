@@ -61,7 +61,6 @@ class CivicFieldset extends StatelessWidget {
     labelText: labelText,
     helperText: helperText,
     errorText: errorText,
-    mergeSemantics: false,
     builder: (context, parts) => CivicFieldFrame(
       parts: parts,
       isPageHeading: isPageHeading,

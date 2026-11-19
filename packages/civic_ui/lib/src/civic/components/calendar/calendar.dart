@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
@@ -14,6 +16,9 @@ export 'package:ui_core/ui_core.dart'
 
 /// A month of days to choose from: the month's name between the ways to
 /// the month before and after, the weekdays, and the days on square faces.
+/// A month stands at most [monthWidth] wide from the start of its column, as
+/// Material's calendar does, wider only as far as larger text needs; its
+/// words grow at most [textScaleMost] times with the reader's text.
 /// The day chosen is solid in the action colour; a range's days between
 /// its ends stand on the action's tint; today's number is bold over a short
 /// rule; a pointer greys a day; the keyboard's day stands on the yellow
@@ -76,8 +81,46 @@ class CivicCalendar extends StatefulWidget {
   /// A day's least width: a finger's target.
   static const double dayWidth = 44;
 
+  /// A month's widest at the reader's usual text: seven days of 56, near
+  /// Material's 360-wide calendar. On a wide page a month stretched to
+  /// the page's width spread its days apart; larger text widens it as far
+  /// as the widest day's number needs.
+  static const double monthWidth = 7 * 56;
+
   /// The gap between months side by side.
   static const double monthGap = CivicSpacing.s32;
+
+  /// The most a calendar's words (the month's name, the weekdays, the days)
+  /// grow with the reader's text: twice, as Material's calendar on a phone.
+  /// Larger, seven days' numbers outgrow a phone's width and break, and the
+  /// month's name breaks beside its arrows.
+  static const double textScaleMost = 2;
+
+  /// How wide a month stands in [context]: [monthWidth], or seven of the
+  /// widest day's number (bold, as today's and a chosen day's, at most
+  /// [textScaleMost] times) with [CivicSpacing.s8] either side, where the
+  /// reader's text needs more.
+  static double monthWidthOf(BuildContext context) {
+    final words = DesignLocalizations.of(context);
+    final painter = TextPainter(
+      textDirection: Directionality.of(context),
+      textScaler: MediaQuery.textScalerOf(context)
+          .clamp(maxScaleFactor: textScaleMost),
+      maxLines: 1,
+    );
+    var day = 0.0;
+    for (var d = 1; d <= 31; d++) {
+      painter
+        ..text = TextSpan(
+          text: words.formatDecimal(d),
+          style: context.civicText.label.copyWith(height: 1.2),
+        )
+        ..layout();
+      day = math.max(day, painter.width);
+    }
+    painter.dispose();
+    return math.max(monthWidth, 7 * (day + 2 * CivicSpacing.s8)).ceilToDouble();
+  }
 
   @override
   State<CivicCalendar> createState() => _CivicCalendarState();
@@ -123,7 +166,8 @@ class _CivicCalendarState extends State<CivicCalendar> {
     final text = context.civicText;
     final words = DesignLocalizations.of(context);
     final rtl = Directionality.of(context) == TextDirection.rtl;
-    return DesignCalendar(
+    final widest = CivicCalendar.monthWidthOf(context);
+    final calendar = DesignCalendar(
       controller: controller,
       onChanged: widget.onChanged,
       months: widget.months,
@@ -134,7 +178,13 @@ class _CivicCalendarState extends State<CivicCalendar> {
       monthsBuilder: (context, list) => Wrap(
         spacing: CivicCalendar.monthGap,
         runSpacing: CivicSpacing.s24,
-        children: list,
+        children: [
+          for (final month in list)
+            ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: widest),
+              child: month,
+            ),
+        ],
       ),
       headerBuilder: (context, header) => Padding(
         padding: const EdgeInsets.only(bottom: CivicSpacing.s8),
@@ -196,6 +246,10 @@ class _CivicCalendarState extends State<CivicCalendar> {
             : states.difference(const {WidgetState.focused}),
         styles: [style, t.calendarStyle],
       ),
+    );
+    return MediaQuery.withClampedTextScaling(
+      maxScaleFactor: CivicCalendar.textScaleMost,
+      child: calendar,
     );
   }
 }

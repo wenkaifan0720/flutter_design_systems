@@ -176,7 +176,6 @@ class CivicWheelPicker extends StatelessWidget {
       helperText: helperText,
       errorText: errorText,
       enabled: onChanged != null,
-      mergeSemantics: false,
       builder: (context, parts) => CivicFieldFrame(parts: parts),
       child: Align(alignment: AlignmentDirectional.centerStart, child: picker),
     );

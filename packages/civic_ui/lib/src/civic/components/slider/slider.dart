@@ -328,7 +328,6 @@ class _CivicSliderState extends State<CivicSlider> {
       helperText: widget.helperText,
       errorText: widget.errorText,
       enabled: live,
-      mergeSemantics: false,
       builder: (context, parts) => CivicFieldFrame(parts: parts),
       child: body,
     );
@@ -529,7 +528,6 @@ class CivicRangeSlider extends StatelessWidget {
       helperText: helperText,
       errorText: errorText,
       enabled: live,
-      mergeSemantics: false,
       builder: (context, parts) => CivicFieldFrame(parts: parts),
       child: body,
     );

@@ -170,7 +170,6 @@ class CivicMultiSelect<T extends Object> extends StatelessWidget {
       helperText: helperText,
       errorText: errorText,
       enabled: enabled,
-      mergeSemantics: false,
       builder: (context, parts) => CivicFieldFrame(parts: parts),
       child: input,
     );

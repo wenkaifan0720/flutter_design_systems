@@ -212,7 +212,6 @@ class _CivicCodeFieldState extends State<CivicCodeField> {
       errorText: widget.errorText,
       enabled: widget.enabled,
       focusNode: _focus,
-      mergeSemantics: false,
       builder: (context, parts) =>
           CivicFieldFrame(parts: parts, labelFocuses: true),
       child: field,

@@ -77,6 +77,11 @@ class CivicDateSegment extends StatelessWidget {
   }
 }
 
+/// The most a typed date's or time's figures grow with the reader's text:
+/// twice, as Material's typed date. Larger, a date's figures outgrow a
+/// phone's well; the field's question and hint keep growing above it.
+const double civicSegmentScaleMost = 2;
+
 /// The text between a date's or a time's segments, in the hint's grey.
 Widget civicSegmentLiteral(BuildContext context, String literal) => Text(
   literal,
@@ -87,7 +92,8 @@ Widget civicSegmentLiteral(BuildContext context, String literal) => Text(
 
 /// The well a typed date or time stands in: the field's square well, its
 /// edge doubled and ringed in yellow while a segment takes the typing, in
-/// the error colour on an error.
+/// the error colour on an error. Its figures grow at most
+/// [civicSegmentScaleMost] times with the reader's text.
 Widget civicSegmentWell(
   BuildContext context,
   Set<WidgetState> states,
@@ -126,7 +132,10 @@ Widget civicSegmentWell(
             alignment: AlignmentDirectional.centerStart,
             widthFactor: 1,
             heightFactor: 1,
-            child: segments,
+            child: MediaQuery.withClampedTextScaling(
+              maxScaleFactor: civicSegmentScaleMost,
+              child: segments,
+            ),
           ),
         ),
       ),

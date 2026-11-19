@@ -1,3 +1,25 @@
+## 0.3.1
+
+- A calendar's month stands at most `CivicCalendar.monthWidth` wide (392: seven days of 56, near Material's calendar),
+  from the start of its column, and widens only as far as the reader's larger text needs (`CivicCalendar.monthWidthOf`).
+  On a wide page a month stretched to the page's width, its days 200 apart. Its words (the month's name, the weekdays,
+  the days) grow at most twice with the reader's text (`CivicCalendar.textScaleMost`), as Material's calendar on a
+  phone: at three times a phone's days broke mid-number.
+- The date picker's, the date range picker's and the time input's typed figures grow at most twice with the reader's
+  text, as Material's typed date does. The question above them keeps growing. At three times the text a date
+  outgrew a phone's well.
+- A field's question is read once (ui_core 0.3.2). Civic's fields no longer set `mergeSemantics: false`: where a
+  control already says the question (the number field's stepper, the time input, the date picker), the field no
+  longer says it again over it, and every control keeps a node of its own. A date range's ends say From and To under
+  the question, not the question twice.
+- The inventory's wheel of hours and minutes names its columns in the app's language: ui_core's
+  `DesignLocalizations.timePickerHourLabel` and `timePickerMinuteLabel`, in its 30 languages. It said "Hour" and
+  "Minute" in English in every one.
+- A `CivicRadioGroup` is one stop for Tab, as Flutter's `RadioGroup` and a browser's radios are: Tab and Shift+Tab
+  come to the chosen answer (the first, while none is) and leave the group, where a second Tab walked its answers one
+  by one. The arrow keys move the choice, Left and Right swapped right to left, and pass over an answer that cannot
+  be chosen.
+
 ## 0.3.0
 
 Civic now has its own version of every common part, in the same look: large type, plain words, the yellow

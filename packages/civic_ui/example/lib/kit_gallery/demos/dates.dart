@@ -116,12 +116,13 @@ class _WheelState extends State<_Wheel> {
           DesignWheelColumn(
             itemCount: 24,
             itemLabel: (i) => '$i'.padLeft(2, '0'),
-            semanticLabel: 'Hour',
+            semanticLabel: DesignLocalizations.of(context).timePickerHourLabel,
           ),
           DesignWheelColumn(
             itemCount: 4,
             itemLabel: (i) => '${i * 15}'.padLeft(2, '0'),
-            semanticLabel: 'Minute',
+            semanticLabel: DesignLocalizations.of(context)
+                .timePickerMinuteLabel,
           ),
         ],
         selection: _slot,

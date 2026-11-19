@@ -211,7 +211,6 @@ class _CivicRatingState extends State<CivicRating> {
       helperText: widget.helperText,
       errorText: widget.errorText,
       enabled: widget.onChanged != null,
-      mergeSemantics: false,
       builder: (context, parts) => CivicFieldFrame(parts: parts),
       child: body,
     );

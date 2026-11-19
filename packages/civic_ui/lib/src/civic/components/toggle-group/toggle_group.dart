@@ -223,7 +223,6 @@ class _CivicChoiceGroup<T> extends StatelessWidget {
       labelText: labelText,
       helperText: helperText,
       errorText: errorText,
-      mergeSemantics: false,
       enabled: change != null,
       builder: (context, parts) =>
           CivicFieldFrame(parts: parts, isLegend: false),

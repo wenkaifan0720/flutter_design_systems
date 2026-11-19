@@ -167,7 +167,6 @@ class CivicNumberField extends StatelessWidget {
       helperText: helperText,
       errorText: errorText,
       enabled: enabled,
-      mergeSemantics: false,
       builder: (context, parts) => CivicFieldFrame(parts: parts),
       child: row,
     );

@@ -230,7 +230,6 @@ class _CivicDatePickerState extends State<CivicDatePicker> {
       helperText: widget.helperText,
       errorText: widget.errorText,
       enabled: change != null,
-      mergeSemantics: false,
       builder: (context, parts) => CivicFieldFrame(parts: parts),
       child: row,
     );
@@ -484,7 +483,9 @@ class _CivicDateRangePickerState extends State<CivicDateRangePicker> {
           onChanged: widget.onChanged == null ? null : set,
           firstDate: widget.firstDate,
           lastDate: widget.lastDate,
-          semanticLabel: [widget.labelText, label].nonNulls.join(', '),
+          // The field says the question once; each end says only its own
+          // name (From, To).
+          semanticLabel: label,
           segmentBuilder: (context, details) =>
               CivicDateSegment(details: details),
           literalBuilder: civicSegmentLiteral,
@@ -545,7 +546,6 @@ class _CivicDateRangePickerState extends State<CivicDateRangePicker> {
       helperText: widget.helperText,
       errorText: widget.errorText,
       enabled: change != null,
-      mergeSemantics: false,
       builder: (context, parts) =>
           CivicFieldFrame(parts: parts, isLegend: widget.labelText != null),
       child: row,
@@ -642,7 +642,6 @@ class CivicTimeInput extends StatelessWidget {
       helperText: helperText,
       errorText: errorText,
       enabled: onChanged != null,
-      mergeSemantics: false,
       builder: (context, parts) => CivicFieldFrame(parts: parts),
       child: field,
     );

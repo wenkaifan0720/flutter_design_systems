@@ -5,6 +5,7 @@
 // reason a to-do).
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/inventory.dart';
+import 'package:ui_core/ui_core.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import 'components/avatar/avatar.dart';
@@ -585,18 +586,20 @@ final DesignInventory civicInventory = DesignInventory(
     DesignInventoryEntry.present('Calendar', (_) => const _Days()),
     DesignInventoryEntry.present(
       'WheelPicker',
-      (_) => CivicWheelPicker(
+      // The columns' names in the app's language: ui_core's words.
+      (context) => CivicWheelPicker(
         labelText: 'Collection time',
         columns: (_) => [
           DesignWheelColumn(
             itemCount: 24,
             itemLabel: (i) => '$i'.padLeft(2, '0'),
-            semanticLabel: 'Hour',
+            semanticLabel: DesignLocalizations.of(context).timePickerHourLabel,
           ),
           DesignWheelColumn(
             itemCount: 4,
             itemLabel: (i) => '${i * 15}'.padLeft(2, '0'),
-            semanticLabel: 'Minute',
+            semanticLabel: DesignLocalizations.of(context)
+                .timePickerMinuteLabel,
           ),
         ],
         selection: const [9, 2],
