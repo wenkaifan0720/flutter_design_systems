@@ -1,3 +1,7 @@
+## 0.3.2
+
+- A chart's axes are measured again when a face arrives after the first frame, in the reader's locale. An Arabic reader's values (on the web their digits come from a fallback face fetched after the first frame) read whole instead of ending in "…٤", and the day letters under the chart are no longer clipped.
+
 ## 0.3.1
 
 - Keyboard focus follows the rounded ends of Platinum button groups, toggles and split buttons. On parts joined to their neighbours (folder tabs, the places on the menu bar, a number field's value) Platinum draws its focus ring inside the part, clear of the next one.

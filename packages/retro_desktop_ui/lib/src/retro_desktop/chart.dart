@@ -163,8 +163,16 @@ class _ChartState extends State<RetroDesktopChart> {
     return (share * n).floor().clamp(0, n - 1);
   }
 
+  // The gutter is measured as the values are laid out: when a face arrives
+  // (an Arabic or a CJK fallback on the web, fetched after the first frame)
+  // its values relay out, so the gutter is measured again with them.
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => ListenableBuilder(
+    listenable: PaintingBinding.instance.systemFonts,
+    builder: (context, _) => _build(context),
+  );
+
+  Widget _build(BuildContext context) {
     final kind = widget.kind;
     final series = widget.series;
     final labels = widget.labels;
@@ -432,8 +440,9 @@ class _ChartState extends State<RetroDesktopChart> {
           ),
       ],
     );
-    // The gutter is as wide as its widest value, so that value starts on the chart's start edge, the keyline the words
-    // and buttons above and below it stand on (a 60 px floor left "4h" 44 px in). It grows with the reader's text up
+    // The gutter is as wide as its widest value as the reader's locale lays it out (its words, digits and faces), so
+    // that value starts on the chart's start edge, the keyline the words and buttons above and below it stand on (a
+    // 60 px floor left "4h" 44 px in). It grows with the reader's text up
     // to 60 scaled (twice the text cut "30 GB" to "30…"); a value longer than that still ends in an ellipsis rather
     // than push the plot out.
     final most = MediaQuery.textScalerOf(context).scale(60);
@@ -443,6 +452,7 @@ class _ChartState extends State<RetroDesktopChart> {
         text: TextSpan(text: fmt(v), style: note),
         textDirection: Directionality.of(context),
         textScaler: MediaQuery.textScalerOf(context),
+        locale: Localizations.maybeLocaleOf(context),
         maxLines: 1,
       )..layout();
       gutter = math.max(gutter, tp.width.ceilToDouble() + 1);
@@ -573,6 +583,7 @@ class _ChartState extends State<RetroDesktopChart> {
                         text: TextSpan(text: text, style: note),
                         textDirection: Directionality.of(context),
                         textScaler: MediaQuery.textScalerOf(context),
+                        locale: Localizations.maybeLocaleOf(context),
                         maxLines: 1,
                       )..layout(),
                   ];

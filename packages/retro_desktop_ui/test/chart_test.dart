@@ -1,6 +1,9 @@
+import 'dart:io';
 import 'dart:ui' as ui;
 
 import 'package:material_ui/material_ui.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:retro_desktop_ui/retro_desktop_ui.dart';
 
@@ -112,4 +115,99 @@ void main() {
       },
     );
   }
+
+  // On the web an Arabic reader's digits and words come from a fallback face that arrives after the first frame. The
+  // chart measured its axes once, against the face it had then, so the wider face cut its values to "…٤" and clipped
+  // the day letters. Here the axes' family stands in a narrow face for the first frame, and the reader's wider face
+  // joins it after (a face added to a family later takes its glyphs over).
+  testWidgets('an Arabic chart names every value and day whole once its face '
+      'arrives', (tester) async {
+    Future<void> load(String file) async {
+      final bytes = File('assets/fonts/$file.ttf').readAsBytesSync();
+      await tester.runAsync(
+        () => (FontLoader(
+          'ChartArrivingFace',
+        )..addFont(Future.value(ByteData.sublistView(bytes)))).load(),
+      );
+    }
+
+    await load('Jersey15-OneFace');
+    const digits = '٠١٢٣٤٥٦٧٨٩';
+    await tester.pumpWidget(
+      Directionality(
+        textDirection: TextDirection.rtl,
+        child: Localizations(
+          locale: const Locale('ar'),
+          delegates: const [DefaultWidgetsLocalizations.delegate],
+          child: MediaQuery(
+            data: const MediaQueryData(),
+            child: RetroDesktopTheme(
+              data: RetroDesktopThemeData.classic(),
+              child: Center(
+                child: SizedBox(
+                  width: 358,
+                  child: RetroDesktopChart(
+                    label: 'الساعات',
+                    series: [
+                      RetroDesktopChartSeries('الساعات', [
+                        0,
+                        3,
+                        4,
+                        3.5,
+                        3,
+                        2.5,
+                        0,
+                      ]),
+                    ],
+                    labels: const ['ن', 'ث', 'ر', 'خ', 'ج', 'س', 'ح'],
+                    format: (v) => '${digits[v.round()]} س',
+                    style: const RetroDesktopStyle(
+                      textStyle: WidgetStatePropertyAll(
+                        TextStyle(fontFamily: 'ChartArrivingFace'),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    void expectWhole(String when) {
+      final names = tester.renderObjectList<RenderParagraph>(
+        find.descendant(
+          of: find.byType(RetroDesktopChart),
+          matching: find.byType(RichText),
+        ),
+      );
+      final axis = [
+        for (final name in names)
+          if (name.text.toPlainText().length <= 3) name,
+      ];
+      expect(axis, hasLength(greaterThanOrEqualTo(7 + 3)), reason: when);
+      for (final name in axis) {
+        final words = name.text.toPlainText();
+        // Measured afresh: a paragraph keeps its intrinsic widths from before a face arrives.
+        final whole = TextPainter(
+          text: name.text,
+          textDirection: name.textDirection,
+          textScaler: name.textScaler,
+          locale: name.locale,
+        )..layout();
+        expect(name.didExceedMaxLines, isFalse, reason: '$words $when');
+        expect(
+          name.size.width,
+          greaterThanOrEqualTo(whole.width - 0.5),
+          reason: '$words $when',
+        );
+        whole.dispose();
+      }
+    }
+
+    expectWhole('in the first face');
+    await load('AtkinsonMono-400');
+    await tester.pumpAndSettle();
+    expectWhole('once the wider face arrived');
+  });
 }

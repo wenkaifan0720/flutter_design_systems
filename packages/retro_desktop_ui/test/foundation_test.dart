@@ -409,7 +409,9 @@ void main() {
     await tester.pump();
     expect(seen, contains(WidgetState.pressed));
     await mouse.up();
-    // A press shows for its least time (ui_core's minimumPressDuration) once let go.
+    // A quick press shows for its least time (ui_core's minimumPressDuration, kPressTimeout) once let go, then goes.
+    await tester.pump();
+    expect(seen, contains(WidgetState.pressed));
     await tester.pump(kPressTimeout);
     expect(seen, isNot(contains(WidgetState.pressed)));
   });
