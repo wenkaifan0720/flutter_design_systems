@@ -67,7 +67,7 @@ final Map<RegExp, String> _held = {
   ): "the filter square stands inside "
       "the search entry's face, and the entry holds two lines (its label "
       'over its detail)',
-  RegExp(r'^a button "(Archive habit|Export as CSV)": \d+ px wide'):
+  RegExp(r'^a button "(Archive habit|Export as CSV|Copy as CSV)": \d+ px wide'):
       'a form row that is itself the act (its icon, its label, its '
       'chevron) is a list row and spans its form',
   RegExp(r'^a button "(Share|Save to files)": \d+ px wide'):

@@ -86,6 +86,10 @@ class MinimalActionSheet extends StatelessWidget {
     final header = title != null || message != null;
     final cancel = onCancel;
     final count = actions.length + (header ? 1 : 0) + (cancel != null ? 1 : 0);
+    final modal = ModalRoute.of(context) is DesignBottomSheetRoute<void>;
+    final firstEnabled = actions.indexWhere(
+      (action) => action.onPressed != null,
+    );
     final rows = <Widget>[
       if (header)
         Container(
@@ -114,6 +118,7 @@ class MinimalActionSheet extends StatelessWidget {
       for (var i = 0; i < actions.length; i++)
         _Row(
           action: actions[i],
+          autofocus: modal && firstEnabled == i,
           shape: minimalCell(
             shape,
             index: i + (header ? 1 : 0),
@@ -138,6 +143,7 @@ class MinimalActionSheet extends StatelessWidget {
           ),
           last: true,
           quiet: true,
+          autofocus: modal && firstEnabled == -1,
         ),
     ];
     return MinimalBottomSheet.frame(
@@ -171,11 +177,13 @@ class _Row extends StatelessWidget {
     required this.shape,
     required this.last,
     this.quiet = false,
+    required this.autofocus,
   });
 
   final MinimalActionSheetAction action;
   final OutlinedBorder shape;
   final bool last;
+  final bool autofocus;
 
   /// Cancel's register: centred in the muted ink.
   final bool quiet;
@@ -189,6 +197,7 @@ class _Row extends StatelessWidget {
     final icon = action.icon;
     return MinimalPressable(
       onPressed: action.onPressed,
+      autofocus: autofocus,
       enabled: action.onPressed != null,
       shape: shape,
       focusInside: true,

@@ -426,8 +426,7 @@ class MinimalListTile extends StatelessWidget {
 /// the same register, its rows padded only by what the card's own padding
 /// leaves of the inset. The rules are drawn from the rows' laid-out
 /// heights, so a [MinimalReveal] child that has folded away draws none, and
-/// the last row still showing is the one left bare. `gutter: false` is Cody's
-/// bare-ground register: the rows take no side padding of their own, so a
+/// the last row still showing is the one left bare. `gutter: false` removes the gutter: the rows take no side padding of their own, so a
 /// group standing in a padded page lines up with everything beside it.
 ///
 /// Rule ownership: a [MinimalListTile] draws no rule of its own — put list

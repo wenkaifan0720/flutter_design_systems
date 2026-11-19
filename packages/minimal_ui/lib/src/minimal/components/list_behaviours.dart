@@ -106,18 +106,7 @@ class MinimalReorderableListView<T extends Object> extends StatelessWidget {
         child: Row(
           children: [
             r.handle(
-              Semantics(
-                label: words.reorder,
-                child: SizedBox(
-                  width: 40,
-                  height: 44,
-                  child: MinimalIcon(
-                    LucideIcons.gripVertical,
-                    size: MinimalIconSize.i16,
-                    color: t.textTertiary,
-                  ),
-                ),
-              ),
+              Semantics(label: words.reorder, child: const _ReorderGrip()),
             ),
             Expanded(
               child: DefaultTextStyle(
@@ -165,6 +154,66 @@ class MinimalReorderableListView<T extends Object> extends StatelessWidget {
           defaultValue: null,
         ),
       );
+  }
+}
+
+class _ReorderGrip extends StatefulWidget {
+  const _ReorderGrip();
+
+  @override
+  State<_ReorderGrip> createState() => _ReorderGripState();
+}
+
+class _ReorderGripState extends State<_ReorderGrip> {
+  @override
+  void initState() {
+    super.initState();
+    FocusManager.instance.addHighlightModeListener(_inputModeChanged);
+  }
+
+  void _inputModeChanged(FocusHighlightMode mode) {
+    if (Focus.maybeOf(context, createDependency: false)?.hasPrimaryFocus ??
+        false) {
+      setState(() {});
+    }
+  }
+
+  @override
+  void dispose() {
+    FocusManager.instance.removeHighlightModeListener(_inputModeChanged);
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.minimalTheme;
+    final focused =
+        (Focus.maybeOf(context)?.hasPrimaryFocus ?? false) &&
+        FocusManager.instance.highlightMode == FocusHighlightMode.traditional;
+    return SizedBox(
+      width: 40,
+      height: 44,
+      child: Center(
+        child: AnimatedContainer(
+          width: 28,
+          height: 28,
+          alignment: Alignment.center,
+          duration: context.minimalStill ? Duration.zero : MinimalMotion.fast,
+          decoration: minimalFrame(
+            t.shapes.small,
+            side: BorderSide(
+              color: focused ? t.ring : t.ring.withValues(alpha: 0),
+              width: t.focusWidth,
+            ),
+          ),
+          child: MinimalIcon(
+            LucideIcons.gripVertical,
+            size: MinimalIconSize.i16,
+            color: t.textTertiary,
+          ),
+        ),
+      ),
+    );
   }
 }
 

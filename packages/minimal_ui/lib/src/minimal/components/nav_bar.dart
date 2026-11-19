@@ -9,11 +9,9 @@ import '../theme.dart';
 import 'pressable.dart';
 import '../ground.dart';
 
-/// One destination in a [MinimalNavigationBar]: its glyph, its label, and the
-/// walkthrough [key] its tab carries. Every tab says what it is: the label
-/// is required (Cody's positional shape), and a glyph-only tab is
-/// [MinimalNavItem.iconOnly], which prints no words but still announces its
-/// [semanticLabel].
+/// A destination in a [MinimalNavigationBar].
+/// The standard constructor shows its icon and text. [MinimalNavItem.iconOnly]
+/// uses [semanticLabel] to announce a destination with a hidden label.
 @immutable
 class MinimalNavItem {
   /// A destination showing [icon] and [label].

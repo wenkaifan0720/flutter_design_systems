@@ -23,7 +23,7 @@ import 'sheet.dart';
 /// record's details beside a list, filters, settings, a phone's navigation.
 /// The surface with a rim on its inner edge and the large shadow, square:
 /// it runs from the screen's top edge to its bottom, where a round corner
-/// would show the shadow square behind it (shadcn's sheet is square too). A
+/// would expose the shadow behind it. A
 /// style's shape rounds its inner corners alone. A header prints [title] (and [subtitle]
 /// as its pill) with a close button; [child] scrolls under it, and the
 /// footer holds [leading] and [trailing] over a hairline.
@@ -258,9 +258,8 @@ Future<T?> showMinimalSheet<T>(
   );
 }
 
-/// A side, as shadcn's `side`: where a [MinimalPopover] or
-/// [MinimalHoverCard] opens beside its anchor, and which edge of the screen
-/// a side sheet comes from (the start or the end).
+/// The edge of an anchor where a popover or hover card opens.
+/// Side sheets use the start or end edge of the screen.
 enum MinimalSide {
   /// Over it.
   top,

@@ -4,7 +4,7 @@ library;
 
 import 'dart:io' show Platform;
 
-import 'package:flutter/widgets.dart';
+import 'package:flutter/services.dart';
 
 /// Which way a page demo reads (`TEMPLATE_DIRECTION=rtl` on a render;
 /// left to right by default), so a render can show a page right to left.
@@ -12,3 +12,7 @@ TextDirection get templateDirection =>
     Platform.environment['TEMPLATE_DIRECTION'] == 'rtl'
     ? TextDirection.rtl
     : TextDirection.ltr;
+
+/// Exports the current habits to the clipboard on native platforms.
+Future<void> exportHabitsCsv(String csv, String filename) =>
+    Clipboard.setData(ClipboardData(text: csv));

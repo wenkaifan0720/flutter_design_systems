@@ -13,11 +13,8 @@ import 'button.dart';
 /// as a small bordered button — a status report in type, not an
 /// illustration, with nothing drawn around the glyph.
 
-/// The centred, screen-reader-announced loading state — the loading render
-/// state for any page that waits. Its glyph turns while motion runs (still
-/// under [MinimalMotionContext.minimalStill], so tests and goldens settle), and
-/// as
-/// a screen's whole body it stands in the middle of the page.
+/// A centered loading indicator with a screen-reader announcement.
+/// The icon stays still under reduced motion.
 ///
 /// ```dart
 /// MinimalScaffold(body: MinimalLoadingState(message: 'Loading habits'))
@@ -349,10 +346,7 @@ class _CenteredState extends StatelessWidget {
   }
 }
 
-/// One turn a second, the way a loader glyph is read: a spinner standing
-/// still reads as a stuck app. It stands at rest — the frame it starts from —
-/// while [MinimalMotionContext.minimalStill] holds (tests, goldens, reduced
-/// motion).
+/// A loading icon that rotates once per second and respects reduced motion.
 class _Spin extends StatefulWidget {
   const _Spin({required this.child});
 

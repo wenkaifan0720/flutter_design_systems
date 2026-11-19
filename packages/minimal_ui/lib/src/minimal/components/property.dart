@@ -74,7 +74,7 @@ class MinimalDescriptionList extends StatelessWidget {
 /// figures of its [detail] with it; [tone] leads the value with a status
 /// dot; [detail] follows it in the quiet ink after a middle dot (`12d ·
 /// best 21d`); [child] replaces the value with any widget (an avatar and a
-/// name). A property with no value prints [placeholder] in the faint ink.
+/// name). A property with no value prints [placeholder] in the quiet ink.
 /// [onPressed] makes the row the control that edits it; [items] instead opens
 /// the property's choices as a [MinimalMenu] anchored to the row, which is
 /// what a status, a priority or an assignee usually wants.
@@ -185,7 +185,7 @@ class MinimalProperty extends StatelessWidget {
     } else if (value == null) {
       shown = Text(
         placeholder ?? MinimalLocalizations.of(context).empty,
-        style: type.c(t.textTertiary),
+        style: type.c(t.mutedForeground),
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
       );

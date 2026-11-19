@@ -25,8 +25,8 @@ import 'pressable.dart';
 /// Minimal's text field: a 32 px box (the control height a md button
 /// shares) on a 1 px rule at the control radius, a 12 px label above it, a
 /// helper or an error under it. Focus turns the rule to the accent (the
-/// danger's when the field is in error); keyboard focus also draws the kit's
-/// solid 2 px ring outside it. `mono: true` sets the value in Geist Mono
+/// danger's when the field is in error). Keyboard focus draws a single
+/// 2 px accent ring over the rule. `mono: true` sets the value in Geist Mono
 /// with tabular figures, for a number, an id, a time; a [suffix] prints its
 /// unit at the end. Read-only and disabled fields sink onto the quiet
 /// [MinimalThemeData.sunken] fill; a disabled one dims to the kit's 0.45.
@@ -44,7 +44,8 @@ import 'pressable.dart';
 /// with [WidgetState.focused], [WidgetState.error] and
 /// [WidgetState.disabled]: fill, edge or side, shape (else `shapes.small`),
 /// padding and minimumSize. `density` moves its height and side inset;
-/// `t.rim` is its rule and `t.focusWidth` its ring.
+/// `t.rim` is its rule; focused, the accent covers it and half a pixel
+/// more, with no ring outside the box.
 ///
 /// A caller that prints and announces the field's name and failure itself
 /// (a form kit with its own announcement rules) passes no [label] and no
@@ -436,7 +437,7 @@ class _MinimalTextFieldState extends State<MinimalTextField>
       style: valueStyle.c(ink),
       decoration: minimalBareDecoration(
         hint: widget.hint,
-        hintStyle: valueStyle.c(t.textTertiary),
+        hintStyle: valueStyle.c(t.mutedForeground),
       ),
     );
     // A one-line field's line by its capitals, as every label beside it:
@@ -515,12 +516,7 @@ class _MinimalTextFieldState extends State<MinimalTextField>
         fill: so.fill ?? (muted ? t.sunken : t.card),
         side: so.rim(ruleColor, t.rim),
       ),
-      foregroundDecoration: minimalFieldRing(
-        t,
-        shown: keyboardFocused,
-        error: inError,
-        shape: shape,
-      ),
+      foregroundDecoration: minimalFocusEdge(t, shown: focused, shape: shape),
       builder: (context, _) => Row(
         crossAxisAlignment: multiline
             ? CrossAxisAlignment.start

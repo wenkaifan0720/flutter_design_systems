@@ -11,10 +11,12 @@ import 'package:ui_core/ui_core.dart';
 import '../chrome_metrics.dart';
 import '../component_themes.dart';
 import '../internal/cap_label.dart';
+import '../internal/controls.dart';
 import '../internal/kit_paint.dart';
 import '../internal/page_foot.dart';
 import '../internal/styled.dart';
 import '../localizations.dart';
+import '../shapes.dart';
 import '../theme.dart';
 import 'pressable.dart';
 import 'shell_frame.dart';
@@ -270,31 +272,33 @@ class MinimalSnackBar extends StatelessWidget {
     final so = MinimalStyleOf([style, t.components.snackBar], const {});
     final rim = so.rim(t.border, t.rim);
     final ink = so.foreground;
-    return Container(
-      // A touch target tall inside its rims, so the card never cuts off the
-      // action's padded hit area.
-      constraints: BoxConstraints(
-        minHeight: MinimalLayout.minHitTarget + 2 * rim.width,
-      ),
-      padding:
-          so.paddingIn(context) ??
-          const EdgeInsetsDirectional.only(
-            start: MinimalSpacing.s12,
-            end: MinimalSpacing.s4,
+    final shape = so.shape ?? t.shapes.medium;
+    final padding =
+        so.paddingIn(context) ??
+        const EdgeInsetsDirectional.only(
+          start: MinimalSpacing.s12,
+          end: MinimalSpacing.s4,
+        );
+    final direction = Directionality.of(context);
+    final edges = padding.resolve(direction);
+    final end = direction == TextDirection.ltr ? edges.right : edges.left;
+    final row = Row(
+      crossAxisAlignment: actionLabel == null
+          ? CrossAxisAlignment.center
+          : CrossAxisAlignment.stretch,
+      children: [
+        if (icon != null) ...[
+          Center(
+            widthFactor: 1,
+            heightFactor: 1,
+            child: MinimalIcon(icon, size: MinimalIconSize.i16, color: ink),
           ),
-      decoration: minimalFrame(
-        so.shape ?? t.shapes.medium,
-        fill: so.fill ?? t.card,
-        side: rim,
-        shadows: t.shadowMd,
-      ),
-      child: Row(
-        children: [
-          if (icon != null) ...[
-            MinimalIcon(icon, size: MinimalIconSize.i16, color: ink),
-            const MinimalGap(MinimalSpacing.s8),
-          ],
-          Expanded(
+          const MinimalGap(MinimalSpacing.s8),
+        ],
+        Expanded(
+          child: Align(
+            alignment: AlignmentDirectional.centerStart,
+            heightFactor: 1,
             child: Padding(
               padding: const EdgeInsets.symmetric(
                 vertical: MinimalChromeMetrics.toastPad,
@@ -305,29 +309,59 @@ class MinimalSnackBar extends StatelessWidget {
               ),
             ),
           ),
-          if (actionLabel != null)
-            MinimalGroundFill(
-              fill: so.fill ?? t.card,
-              child: MinimalPressable(
-                onPressed: onAction ?? () {},
+        ),
+        if (actionLabel != null)
+          MinimalGroundFill(
+            fill: so.fill ?? t.card,
+            child: MinimalPressable(
+              onPressed: onAction ?? () {},
+              focusInside: true,
+              shape: MinimalShapes.inset(shape, rim.strokeInset + end),
+              // Paint inside the action's full-height touch target.
+              outset: EdgeInsets.only(
+                top: -math.max(0.0, end - edges.top),
+                bottom: -math.max(0.0, end - edges.bottom),
+              ),
+              tapTarget: false,
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  minWidth: minimalTapFloor(context),
+                  minHeight: minimalTapFloor(context),
+                ),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
                     horizontal: MinimalSpacing.s8,
                     vertical: MinimalChromeMetrics.toastActionPad,
                   ),
-                  child: minimalCapLabel(
-                    Text(
-                      actionLabel,
-                      style: t.bodySmall.medium.c(t.primaryInk),
+                  child: Center(
+                    widthFactor: 1,
+                    child: minimalCapLabel(
+                      Text(
+                        actionLabel,
+                        style: t.bodySmall.medium.c(t.primaryInk),
+                      ),
                     ),
                   ),
                 ),
               ),
-            )
-          else
-            const MinimalGap(MinimalSpacing.s8),
-        ],
+            ),
+          )
+        else
+          const MinimalGap(MinimalSpacing.s8),
+      ],
+    );
+    return Container(
+      constraints: BoxConstraints(
+        minHeight: MinimalLayout.minHitTarget + 2 * rim.width,
       ),
+      padding: padding,
+      decoration: minimalFrame(
+        shape,
+        fill: so.fill ?? t.card,
+        side: rim,
+        shadows: t.shadowMd,
+      ),
+      child: actionLabel == null ? row : IntrinsicHeight(child: row),
     );
   }
 

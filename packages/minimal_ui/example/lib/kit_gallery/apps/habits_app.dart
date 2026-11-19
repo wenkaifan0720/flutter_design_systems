@@ -7,6 +7,7 @@
 /// each change can be undone from its toast.
 library;
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:material_ui/material_ui.dart';
 import 'package:minimal_ui/minimal_ui.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -14,6 +15,8 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../habit_form.dart';
 import '../habit_page.dart';
 import '../habits.dart';
+import '../host_bridge.dart'
+    if (dart.library.js_interop) '../host_bridge_web.dart';
 import '../kit_words.dart';
 import '../today_page.dart';
 import 'app_frame.dart';
@@ -321,6 +324,28 @@ class _SettingsState extends State<_Settings> {
   bool _summary = false;
   String _weekStarts = ar('Monday', 'الاثنين');
 
+  Future<void> _export() async {
+    final filename = 'ritual-${MinimalFormat.isoDate(kitHabitsToday)}.csv';
+    try {
+      await exportHabitsCsv(widget.habits.toCsv(), filename);
+    } catch (_) {
+      if (!mounted) return;
+      showMinimalSnackBar(
+        context,
+        ar('Could not export habits', 'تعذر تصدير العادات'),
+      );
+      return;
+    }
+    if (!mounted) return;
+    showMinimalSnackBar(
+      context,
+      kIsWeb
+          ? ar('Download started: $filename', 'بدأ تنزيل $filename')
+          : ar('Habits copied as CSV', 'نُسخت العادات بصيغة CSV'),
+      icon: kIsWeb ? LucideIcons.download : LucideIcons.copy,
+    );
+  }
+
   Future<void> _erase() async {
     final sure =
         await showMinimalDialog<bool>(
@@ -424,16 +449,11 @@ class _SettingsState extends State<_Settings> {
         title: ar('Data', 'البيانات'),
         children: [
           MinimalFormRow(
-            label: ar('Export as CSV', 'تصدير بصيغة CSV'),
-            icon: LucideIcons.download,
-            onPressed: () => showMinimalSnackBar(
-              context,
-              ar(
-                'ritual-2026-08-28.csv saved to Downloads',
-                'حُفظ ritual-2026-08-28.csv في التنزيلات',
-              ),
-              icon: LucideIcons.download,
-            ),
+            label: kIsWeb
+                ? ar('Export as CSV', 'تصدير بصيغة CSV')
+                : ar('Copy as CSV', 'نسخ بصيغة CSV'),
+            icon: kIsWeb ? LucideIcons.download : LucideIcons.copy,
+            onPressed: _export,
           ),
         ],
       ),

@@ -1,22 +1,10 @@
 import 'localizations.dart';
 
-/// Minimal's display formatting: money, dates, clock times, the relative
-/// day and the mono stamps a Minimal row prints — the strings a screen
-/// actually shows.
+/// Formats currency, dates and times for display.
 ///
-/// PURE AND DETERMINISTIC, no intl. A generated app renders inside
-/// walkthroughs and golden frames, and a locale-aware formatter makes the
-/// same record read differently on two machines, which turns a diff into a
-/// false failure. The vocabulary here is English and the shapes are fixed, so
-/// a screen's text is a function of its data and nothing else. An app that
-/// genuinely ships to several locales replaces these at that point; it does
-/// not need them to be half-localised now: the functions that print a
-/// word take `words:` (an app passes `MinimalLocalizations.of(context)`),
-/// English unless given.
-///
-/// Nothing here touches [DateTime.now]: [relative] takes the moment to
-/// measure against as an argument, because a formatter that reads the clock
-/// cannot be tested.
+/// Date and number formats are fixed. For translated words, pass
+/// [MinimalLocalizations.of] to the formatter's `words` argument.
+/// [relative] accepts both timestamps so the caller controls the reference time.
 ///
 /// ```dart
 /// Text(MinimalFormat.money(128400, symbol: '€', cents: false), style: t.giant)
@@ -69,9 +57,8 @@ abstract final class MinimalFormat {
     return short && latin && name.length > 3 ? name.substring(0, 3) : name;
   }
 
-  /// The time of day in Minimal's register: the 24-hour [clock],
-  /// "07:12". Cody's name, so transferred code prints the system's clock;
-  /// [time12] is the 12-hour face for an app that asks for it.
+  /// Formats a time on the 24-hour [clock], for example `07:12`.
+  /// Use [time12] for a 12-hour clock.
   static String time(DateTime d) => clock(d);
 
   /// The 12-hour clock: "9:41 AM". No leading zero on the hour — a clock

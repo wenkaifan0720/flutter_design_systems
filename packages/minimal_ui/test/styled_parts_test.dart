@@ -1,7 +1,7 @@
 // Per-part styles and the theme-wide knobs, read back from what each part
 // paints: the look's own frames are unchanged at the defaults; a part's
 // `style:` beats its component theme, which beats the knobs, which beat
-// the look; and a hovering pointer changes nothing (polish round 3, §1).
+// the look; and a hovering pointer changes nothing but a switch's ring.
 import 'package:flutter/gestures.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
@@ -580,7 +580,8 @@ void main() {
 
   group('a hovering pointer changes nothing', () {
     final parts = <String, Widget>{
-      for (final c in _cases) c.name: c.build(null),
+      for (final c in _cases)
+        if (c.name != 'switch') c.name: c.build(null),
       'ghost button': MinimalButton(
         'More',
         onPressed: () {},
@@ -613,6 +614,25 @@ void main() {
         expect(_record(box), idle);
       });
     }
+
+    // The exception: a switch rings its track while the pointer is over it,
+    // and the ring goes when the pointer leaves.
+    testWidgets('but a switch rings its track', (tester) async {
+      final part = _cases.firstWhere((c) => c.name == 'switch').build(null);
+      await tester.pumpWidget(_host(RepaintBoundary(key: _part, child: part)));
+      await tester.pumpAndSettle();
+      final box = tester.renderObject(find.byKey(_part));
+      final idle = _record(box);
+      final mouse = await tester.createGesture(kind: PointerDeviceKind.mouse);
+      await mouse.addPointer(location: Offset.zero);
+      addTearDown(mouse.removePointer);
+      await mouse.moveTo(tester.getCenter(find.byKey(_part)));
+      await tester.pumpAndSettle();
+      expect(_record(box), isNot(idle));
+      await mouse.moveTo(Offset.zero);
+      await tester.pumpAndSettle();
+      expect(_record(box), idle);
+    });
   });
 
   test('a layered style falls through state by state', () {

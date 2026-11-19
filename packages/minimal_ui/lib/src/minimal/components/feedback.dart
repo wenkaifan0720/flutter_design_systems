@@ -11,13 +11,10 @@ import '../localizations.dart';
 import '../theme.dart';
 import 'tag.dart';
 
-/// A small ring for work in flight — a button's wait, a row that syncs, a
-/// panel that loads: a track in the hairline's grey (by night the stronger
-/// hairline's) with an arc in the ink (or a status [tone]'s colour) on it.
-/// With a
-/// [value] it is determinate, the arc that fraction of the ring from the
-/// top; without, a quarter arc turns once a second (and stands still under
-/// reduced motion, in tests and goldens).
+/// A circular progress indicator in the current [tone].
+///
+/// With [value], the arc shows the fraction complete. Without a value, a
+/// quarter arc turns once a second unless reduced motion is enabled.
 ///
 /// ```dart
 /// MinimalCircularProgressIndicator(label: 'Syncing')

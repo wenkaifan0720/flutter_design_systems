@@ -19,14 +19,8 @@ Widget kitToggleCheckDemo(Brightness brightness) => kitScreen(
       'Toggle · states',
       children: [
         _Strip([
-          _Labeled(
-            'On',
-            MinimalSwitch(value: true, label: 'On', onChanged: (_) {}),
-          ),
-          _Labeled(
-            'Off',
-            MinimalSwitch(value: false, label: 'Off', onChanged: (_) {}),
-          ),
+          const _LiveExample(initialValue: true, toggle: true),
+          const _LiveExample(initialValue: false, toggle: true),
           const _Labeled(
             'Disabled on',
             MinimalSwitch(value: true, label: 'Disabled on'),
@@ -45,14 +39,8 @@ Widget kitToggleCheckDemo(Brightness brightness) => kitScreen(
       'Check · states',
       children: [
         _Strip([
-          _Labeled(
-            'Off',
-            MinimalCheckbox(value: false, label: 'Off', onChanged: (_) {}),
-          ),
-          _Labeled(
-            'On',
-            MinimalCheckbox(value: true, label: 'On', onChanged: (_) {}),
-          ),
+          const _LiveExample(initialValue: false),
+          const _LiveExample(initialValue: true),
           const _Labeled(
             'Disabled',
             MinimalCheckbox(value: false, label: 'Disabled', onChanged: null),
@@ -65,15 +53,7 @@ Widget kitToggleCheckDemo(Brightness brightness) => kitScreen(
             'Read-only',
             MinimalCheckMark(value: true, label: 'Kept'),
           ),
-          _Labeled(
-            'Large',
-            MinimalCheckbox(
-              value: true,
-              label: 'Large',
-              size: 20,
-              onChanged: (_) {},
-            ),
-          ),
+          const _LiveExample(initialValue: true, large: true),
         ]),
         kitNote(
           'A read-only check marks a fact: it stays at full strength and '
@@ -84,6 +64,45 @@ Widget kitToggleCheckDemo(Brightness brightness) => kitScreen(
     kitSection('Check · required', children: const [_Agreement()]),
   ],
 );
+
+class _LiveExample extends StatefulWidget {
+  const _LiveExample({
+    required this.initialValue,
+    this.toggle = false,
+    this.large = false,
+  });
+  final bool initialValue;
+  final bool toggle;
+  final bool large;
+
+  @override
+  State<_LiveExample> createState() => _LiveExampleState();
+}
+
+class _LiveExampleState extends State<_LiveExample> {
+  late bool _value = widget.initialValue;
+
+  @override
+  Widget build(BuildContext context) {
+    final caption = widget.large
+        ? 'Large'
+        : _value
+        ? 'On'
+        : 'Off';
+    void change(bool next) => setState(() => _value = next);
+    return _Labeled(
+      caption,
+      widget.toggle
+          ? MinimalSwitch(value: _value, label: caption, onChanged: change)
+          : MinimalCheckbox(
+              value: _value,
+              label: caption,
+              size: widget.large ? 20 : 16,
+              onChanged: change,
+            ),
+    );
+  }
+}
 
 /// A states strip: its columns align at the top, so every control stands
 /// on one line however many lines a caption wraps to.
@@ -112,8 +131,8 @@ class _Labeled extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.minimalTheme;
-    return SizedBox(
-      width: 80,
+    return ConstrainedBox(
+      constraints: const BoxConstraints(minWidth: 80),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -124,16 +143,12 @@ class _Labeled extends StatelessWidget {
             height: MinimalLayout.minHitTarget,
             child: Align(
               alignment: AlignmentDirectional.centerStart,
+              widthFactor: 1,
               child: control,
             ),
           ),
           const MinimalGap(MinimalSpacing.s8),
-          Text(
-            caption,
-            style: t.caption,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
+          Text(caption, style: t.caption),
         ],
       ),
     );
@@ -182,14 +197,7 @@ class _Row extends StatelessWidget {
             leading,
             const MinimalGap(MinimalSpacing.s12),
           ],
-          Expanded(
-            child: Text(
-              title,
-              style: t.body,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
+          Expanded(child: Text(title, style: t.body)),
           if (caption != null) ...[
             const MinimalGap(MinimalSpacing.s8),
             Text(

@@ -4,14 +4,9 @@ import 'package:ui_core/ui_core.dart';
 import '../chrome_metrics.dart';
 import '../theme.dart';
 
-/// Minimal's route registers: [MinimalPage], the go_router page every push
-/// rides, [MinimalFadeRoute], the peer register that replaces a page in
-/// place, and [minimalPageTransitions], the push every page route plays.
-///
-/// Both registers take their durations from [MinimalChromeMetrics] and
-/// collapse to nothing when [MinimalMotion.animate] is off, so golden and
-/// walkthrough frames stay deterministic; under the platform's reduce-motion
-/// setting the page appears in place.
+/// Page transitions shared by [MinimalPage], [MinimalFadeRoute] and
+/// [minimalPageTransitions]. Durations come from [MinimalChromeMetrics].
+/// Reduced motion presents the destination in place.
 
 /// Minimal's push for every platform, for a `PageTransitionsTheme`: a page
 /// fades in over [MinimalChromeMetrics.pushSlide] and a pop reverses it, where

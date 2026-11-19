@@ -12,9 +12,8 @@ import 'icon_button.dart';
 import 'route_chrome.dart';
 
 /// The page's header band: 52 px on the ground over a 1 px hairline, its
-/// register derived from the route ([MinimalRouteChrome]). [title] and
-/// [subtitle] keep Cody's meaning everywhere — the page's own name and one
-/// secondary line — and Minimal prints the subtitle as mono meta.
+/// appearance follows the route ([MinimalRouteChrome]). [title] names the
+/// page and [subtitle] appears beside it in monospace.
 ///
 /// On a nav root the [title] leads at 17 px semibold with its meta beside
 /// it (`Today  Fri 28 Aug`). On a pushed page the route's back button leads

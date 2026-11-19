@@ -6,10 +6,8 @@ library;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
-/// The app-level act beside the shell's tabs: the one thing reachable from
-/// every root — new issue, add, capture — with the glyph it wears, what it
-/// does, and the words a screen reader says for it. [key] is the
-/// walkthrough key of the declared step it performs.
+/// An action available on every tab in the shell.
+/// The action supplies its icon, callback and screen-reader label.
 @immutable
 class MinimalShellAction {
   /// The act beside the shell's tabs.
@@ -35,7 +33,7 @@ class MinimalShellAction {
   /// invitation; otherwise it wears the ink.
   final bool primary;
 
-  /// The walkthrough key of the step it performs.
+  /// The key of the action button.
   final Key? key;
 }
 

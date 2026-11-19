@@ -137,7 +137,7 @@ Widget kitPropertiesDemo(Brightness brightness) => kitScreen(
                   const MinimalGap(MinimalSpacing.s8),
                   Text('Stretch before bed', style: t.h2),
                   const MinimalGap(MinimalSpacing.s4),
-                  Text('Add a note…', style: t.body.c(t.textTertiary)),
+                  Text('Add a note…', style: t.body.c(t.mutedForeground)),
                   const MinimalGap(MinimalSpacing.s16),
                   MinimalPropertyBar(
                     pills: [

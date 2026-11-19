@@ -147,9 +147,7 @@ class MinimalSheetFooter extends StatelessWidget {
 /// 1 px border at the theme's sheet radius, a large soft shadow, a header
 /// band (the context pill, the title, the close `x`), the content, and a
 /// footer row of actions over a hairline. [showMinimalBottomSheet] presents
-/// this
-/// same widget modally; compose it statically for an anchored panel or a
-/// gallery frame.
+/// the same widget modally. It can also be used as an anchored panel.
 ///
 /// `floating: true` is the modal card's register (inset from the screen by
 /// [MinimalChromeMetrics.sheetInset], rounded on every corner); the default is

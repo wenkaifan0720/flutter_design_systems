@@ -164,7 +164,7 @@ class _NewHabitForm extends StatelessWidget {
           ],
         ),
         const MinimalGap(MinimalSpacing.s4),
-        Text('Add a note…', style: t.body.c(t.textTertiary)),
+        Text('Add a note…', style: t.body.c(t.mutedForeground)),
         const MinimalGap(MinimalSpacing.s16),
         Wrap(
           spacing: MinimalChromeMetrics.iconGap,

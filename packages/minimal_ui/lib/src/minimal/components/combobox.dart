@@ -30,17 +30,8 @@ String _text(Object option) => option.toString();
 /// The open list's inset inside its card.
 const EdgeInsets _cardInset = EdgeInsets.all(MinimalSpacing.s4);
 
-/// The tag box's inset around its tags and its entry. Its height is the
-/// text field's (the box centres one line of tags in it), so this inset is
-/// the floor once the tags wrap onto more lines.
-const EdgeInsetsDirectional _tagBoxInset = EdgeInsetsDirectional.symmetric(
-  horizontal: MinimalSpacing.s4,
-  vertical: MinimalSpacing.s2,
-);
-
-/// A tag's height at 100%: one line of tags stands inside a 28 px field,
-/// 3 px clear of its rim, so the box stays its sibling fields' height.
-const double _tagHeight = 20;
+/// Space between the field's hairline and its chips, including wrapped rows.
+const EdgeInsets _tagBoxInset = EdgeInsets.all(MinimalSpacing.s4);
 
 /// The air before a tag's words, inside its hairline.
 const double _tagWords = MinimalSpacing.s8;
@@ -68,11 +59,7 @@ double _cardStart(BuildContext context, MinimalStyle? style) {
   return _startOf(card ?? _cardInset, Directionality.of(context));
 }
 
-/// The leading air of an option row whose words start where the field's
-/// value does, [value] in from the edge the list's card stands on. The
-/// card lies on the field's edges at its width, so the card's inset plus
-/// the row's leading air is the field's text inset (shadcn's Select:
-/// trigger 12, content 4 + item 8); the check stands at the trailing end.
+/// The leading padding that aligns an option's label with the field value.
 double _rowStart(BuildContext context, double value, MinimalStyle? style) =>
     math.max(0, value - _cardStart(context, style));
 
@@ -543,6 +530,24 @@ class _MinimalMultiSelectState<T extends Object>
       widget.fieldStyle,
       t.components.textField,
     ], const {});
+    final inset =
+        tagBox.rim(t.border, t.rim).width +
+        (tagBox.paddingIn(context) ?? _tagBoxInset)
+            .resolve(Directionality.of(context))
+            .top;
+    final height =
+        tagBox.minimumSize?.height ??
+        minimalGrownHeight(
+          context,
+          t.density.height(MinimalChromeMetrics.control),
+        );
+    // A run can grow to the editable line before the nominal control height,
+    // especially at 200% text or compact density. Its chips fill that line.
+    final entryLine = minimalLineHeight(context, t.body);
+    final tagHeight = math.max(
+      math.max(entryLine, MinimalIconSize.i14 + 2 * t.hairline),
+      height - 2 * inset,
+    );
     final start = _rowStart(
       context,
       tagBox.rim(t.border, t.rim).width +
@@ -559,9 +564,9 @@ class _MinimalMultiSelectState<T extends Object>
 
     Widget tag(T value, DesignTagDetails tag) {
       final name = widget.displayString(value);
-      final shape = t.shapes.mark;
+      final shape = MinimalShapes.inset(tagBox.shape ?? t.shapes.small, inset);
       return Container(
-        height: minimalGrownHeight(context, _tagHeight),
+        height: tagHeight,
         padding: const EdgeInsetsDirectional.only(
           start: _tagWords,
           end: MinimalSpacing.s2,
@@ -586,15 +591,14 @@ class _MinimalMultiSelectState<T extends Object>
               // air above and below the tag reaches it.
               if (widget.enabled)
                 SizedBox(
-                  height:
-                      minimalGrownHeight(context, _tagHeight) - 2 * t.hairline,
+                  height: tagHeight - 2 * t.hairline,
                   child: MinimalPressable(
                     onPressed: tag.onDeleted,
                     focusable: false,
                     semanticLabel: words.removeItem(name),
                     shape: MinimalShapes.inset(shape, MinimalSpacing.s2),
                     child: SizedBox.square(
-                      dimension: _tagHeight - 2 * MinimalSpacing.s2,
+                      dimension: MinimalIconSize.i16,
                       child: MinimalIcon(
                         LucideIcons.x,
                         size: MinimalIconSize.i14,
@@ -621,10 +625,6 @@ class _MinimalMultiSelectState<T extends Object>
         ], states);
         final shape = so.shape ?? t.shapes.small;
         final within = states.contains(WidgetState.focused);
-        final keyboard =
-            within &&
-            FocusManager.instance.highlightMode ==
-                FocusHighlightMode.traditional;
         return Container(
           constraints: BoxConstraints(
             minHeight:
@@ -634,8 +634,6 @@ class _MinimalMultiSelectState<T extends Object>
                   t.density.height(MinimalChromeMetrics.control),
                 ),
           ),
-          alignment: AlignmentDirectional.centerStart,
-          padding: so.paddingIn(context) ?? _tagBoxInset,
           decoration: minimalFrame(
             shape,
             fill: so.fill ?? (states.off ? t.sunken : t.card),
@@ -648,13 +646,20 @@ class _MinimalMultiSelectState<T extends Object>
               t.rim,
             ),
           ),
-          foregroundDecoration: minimalFieldRing(
+          foregroundDecoration: minimalFocusEdge(
             t,
-            shown: keyboard,
-            error: states.wrong,
+            shown: within,
             shape: shape,
           ),
-          child: child,
+          child: MinimalTapReach(
+            child: Padding(
+              padding: so.paddingIn(context) ?? _tagBoxInset,
+              child: Align(
+                alignment: AlignmentDirectional.centerStart,
+                child: child,
+              ),
+            ),
+          ),
         );
       },
     );
@@ -687,7 +692,7 @@ class _MinimalMultiSelectState<T extends Object>
           style: t.body.c(t.foreground),
           decoration: minimalBareDecoration(
             hint: widget.values.isEmpty ? widget.hint : null,
-            hintStyle: t.body.c(t.textTertiary),
+            hintStyle: t.body.c(t.mutedForeground),
           ),
         );
         // The line by its capitals, level with the tags' words beside it.

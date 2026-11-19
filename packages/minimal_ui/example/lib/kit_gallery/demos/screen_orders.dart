@@ -65,6 +65,7 @@ typedef _Order = ({
   String due,
   _Stage stage,
   bool overdue,
+  int daysAgo,
 });
 
 _Order _order(
@@ -74,6 +75,7 @@ _Order _order(
   String due,
   _Stage stage, {
   bool overdue = false,
+  int daysAgo = 0,
 }) => (
   id: id,
   customer: customer,
@@ -81,6 +83,7 @@ _Order _order(
   due: due,
   stage: stage,
   overdue: overdue,
+  daysAgo: daysAgo,
 );
 
 /// Not yet on the shelf: two past their slot, two in the oven, two
@@ -160,8 +163,65 @@ List<String> get _regulars => [
 String _clock(int minutes) =>
     MinimalFormat.clock(DateTime(2026, 8, 28, minutes ~/ 60, minutes % 60));
 
-/// Revenue by day, Saturday to Friday, ending on today.
-const List<double> _week = [6, 11, 4, 14, 18, 13, 22];
+final DateTime _friday = DateTime(2026, 8, 28);
+
+/// Previous trading days, including the comparable period a week earlier.
+List<_Order> _pastOrders() {
+  const counts = [35, 32, 29, 34, 17, 24, 37, 30, 28, 33, 30, 19, 25];
+  final rows = <_Order>[];
+  final customers = _regulars;
+  var id = 1014;
+  for (final (day, count) in counts.indexed) {
+    for (var row = 0; row < count; row++) {
+      final stage = day == 0 && row == 0
+          ? _Stage.late
+          : day == 0 && row == 1
+          ? _Stage.ready
+          : _Stage.pickedUp;
+      rows.add(
+        _order(
+          id--,
+          customers[(row + day + 2) % customers.length],
+          const [2, 4, 1, 6, 3, 12, 2, 5][(row + day) % 8],
+          _clock(16 * 60 - row * 14 - day % 4),
+          stage,
+          overdue: stage == _Stage.late,
+          daysAgo: day + 1,
+        ),
+      );
+    }
+  }
+  return rows;
+}
+
+enum _Range {
+  today,
+  yesterday,
+  week;
+
+  String get label => switch (this) {
+    today => ar('Today', 'اليوم'),
+    yesterday => ar('Yesterday', 'أمس'),
+    week => ar('This week', 'هذا الأسبوع'),
+  };
+
+  String get comparison => switch (this) {
+    today => ar('vs last Fri', 'مقارنة بالجمعة الماضية'),
+    yesterday => ar('vs last Thu', 'مقارنة بالخميس الماضي'),
+    week => ar('vs last week', 'مقارنة بالأسبوع الماضي'),
+  };
+
+  bool includes(int daysAgo) => switch (this) {
+    today => daysAgo == 0,
+    yesterday => daysAgo == 1,
+    week => daysAgo >= 0 && daysAgo < _friday.weekday,
+  };
+}
+
+String _orderDay(BuildContext context, _Order order) {
+  final date = _friday.subtract(Duration(days: order.daysAgo));
+  return MinimalFormat.dayMonth(date, words: MinimalLocalizations.of(context));
+}
 
 /// From this wide the orders stand in a table rather than a list.
 const double _tableFrom = MinimalLayout.compact;
@@ -184,7 +244,7 @@ String _placed(_Order o) {
       int.parse(o.due.substring(0, 2)) * 60 + int.parse(o.due.substring(3));
   final placed = due - 40 - (o.id % 4) * 10 - (o.qty > 10 ? 60 : 0);
   final latest = 9 * 60 + 40 - (o.id % 4) * 5;
-  return _clock(placed < latest ? placed : latest);
+  return _clock(o.daysAgo > 0 || placed < latest ? placed : latest);
 }
 
 /// An item's price, in cents: everything on the counter is €3.40.
@@ -233,42 +293,42 @@ class KitOrdersPage extends StatefulWidget {
 }
 
 class _KitOrdersPageState extends State<KitOrdersPage> {
-  static List<String> get _ranges => [
-    ar('Today', 'اليوم'),
-    ar('Yesterday', 'أمس'),
-    ar('This week', 'هذا الأسبوع'),
-  ];
-
-  String _range = _ranges.first;
+  _Range _range = _Range.today;
   int _view = 0;
   // The rows stand in due order, and the Due header says so.
   _Col? _sort = _Col.due;
   bool _ascending = true;
   int? _selected;
 
-  // The day so far, which the orders' actions move on.
-  final List<_Order> _openRows = [..._open];
-  final List<_Order> _readyRows = [..._ready];
-  final List<_Order> _doneRows = [..._done];
+  final List<_Order> _orders = [
+    ..._open,
+    ..._ready,
+    ..._done,
+    ..._pastOrders(),
+  ];
 
-  List<_Order> get _rows {
-    final rows = [
-      ...switch (_view) {
-        0 => _openRows,
-        1 => _readyRows,
-        _ => _doneRows,
-      },
-    ];
+  int _revenue(Iterable<_Order> orders) =>
+      orders.fold(0, (sum, order) => sum + order.qty * _each);
+
+  List<_Order> _sorted(Iterable<_Order> orders) {
+    final rows = orders.toList();
     final sort = _sort;
     if (sort == null) return rows;
     int compare(_Order a, _Order b) => switch (sort) {
       _Col.id => a.id.compareTo(b.id),
       _Col.qty || _Col.total => a.qty.compareTo(b.qty),
-      _ => a.due.compareTo(b.due),
+      _ => _byDue(a, b),
     };
     rows.sort((a, b) => _ascending ? compare(a, b) : compare(b, a));
     return rows;
   }
+
+  static int _byDue(_Order a, _Order b) => a.daysAgo == b.daysAgo
+      ? a.due.compareTo(b.due)
+      : b.daysAgo.compareTo(a.daysAgo);
+
+  String _due(_Order o) =>
+      _range == _Range.week ? '${_orderDay(context, o)} · ${o.due}' : o.due;
 
   /// What moves [o] on, by where it stands; null once it is collected.
   String? _next(_Order o) => switch (o.stage) {
@@ -279,19 +339,17 @@ class _KitOrdersPageState extends State<KitOrdersPage> {
 
   /// Moves [o] to its next list, with a toast whose Undo puts it back.
   void _advance(_Order o) {
-    final from = o.stage == _Stage.ready ? _readyRows : _openRows;
-    final to = o.stage == _Stage.ready ? _doneRows : _readyRows;
+    final at = _orders.indexWhere((order) => order.id == o.id);
     final moved = _order(
       o.id,
       o.customer,
       o.qty,
       o.due,
       o.stage == _Stage.ready ? _Stage.pickedUp : _Stage.ready,
+      daysAgo: o.daysAgo,
     );
-    final at = from.indexOf(o);
     setState(() {
-      from.removeAt(at);
-      to.insert(0, moved);
+      _orders[at] = moved;
       if (_selected == o.id) _selected = null;
     });
     showMinimalSnackBar(
@@ -303,10 +361,7 @@ class _KitOrdersPageState extends State<KitOrdersPage> {
       actionLabel: ar('Undo', 'تراجع'),
       onAction: () {
         if (!mounted) return;
-        setState(() {
-          to.remove(moved);
-          from.insert(at.clamp(0, from.length), o);
-        });
+        setState(() => _orders[at] = o);
       },
     );
   }
@@ -342,7 +397,6 @@ class _KitOrdersPageState extends State<KitOrdersPage> {
           topBar: MinimalAppBar(
             parent: ar('Orders', 'الطلبات'),
             title: '#${o.id}',
-            subtitle: o.customer,
           ),
           footer: next == null
               ? null
@@ -355,7 +409,7 @@ class _KitOrdersPageState extends State<KitOrdersPage> {
                     _advance(o);
                   },
                 ),
-          body: _OrderDetails(o),
+          body: _OrderDetails(o, showCustomer: true),
         ),
       ),
     );
@@ -375,17 +429,33 @@ class _KitOrdersPageState extends State<KitOrdersPage> {
     required bool table,
     required bool wide,
   }) {
-    final rows = _rows;
-    final late = [
-      for (final o in _openRows)
-        if (o.overdue) o,
-    ]..sort((a, b) => a.due.compareTo(b.due));
+    final period = _orders.where((o) => _range.includes(o.daysAgo)).toList();
+    final open = period.where(
+      (o) => o.stage != _Stage.ready && o.stage != _Stage.pickedUp,
+    );
+    final ready = period.where((o) => o.stage == _Stage.ready);
+    final done = period.where((o) => o.stage == _Stage.pickedUp);
+    final rows = _sorted([open, ready, done][_view]);
+    final late = open.where((o) => o.overdue).toList()..sort(_byDue);
     final views = [
-      (ar('Open', 'مفتوحة'), _openRows.length),
-      (ar('Ready', 'جاهزة'), _readyRows.length),
-      (ar('Done', 'منتهية'), _doneRows.length),
+      (ar('Open', 'مفتوحة'), open.length),
+      (ar('Ready', 'جاهزة'), ready.length),
+      (ar('Done', 'منتهية'), done.length),
     ];
-    final orders = _openRows.length + _readyRows.length + _doneRows.length;
+    final revenue = _revenue(period);
+    final previous = _revenue(
+      _orders.where((o) => _range.includes(o.daysAgo - 7)),
+    );
+    final delta = ((revenue - previous) * 100 / previous).round();
+    final lastDay = _range == _Range.yesterday ? 1 : 0;
+    final spark = [
+      for (
+        var day = _range == _Range.week ? _friday.weekday - 1 : lastDay + 6;
+        day >= lastDay;
+        day--
+      )
+        _revenue(_orders.where((o) => o.daysAgo == day)).toDouble(),
+    ];
     return MinimalScaffold(
       topBar: MinimalAppBar(
         leading: widget.leading,
@@ -393,12 +463,12 @@ class _KitOrdersPageState extends State<KitOrdersPage> {
         // The range menu stands beside the title it scopes.
         titleTrailing: MinimalMenu.button(
           LucideIcons.calendarDays,
-          text: _range,
+          text: _range.label,
           label: ar('Date range', 'النطاق الزمني'),
           items: [
-            for (final range in _ranges)
+            for (final range in _Range.values)
               MinimalMenuItem(
-                range,
+                range.label,
                 selected: range == _range,
                 onPressed: () => setState(() => _range = range),
               ),
@@ -421,19 +491,21 @@ class _KitOrdersPageState extends State<KitOrdersPage> {
                 children: [
                   MinimalStat(
                     label: ar('Revenue', 'الإيرادات'),
-                    value: '€1,284',
-                    delta: '12%',
-                    detail: ar('vs last Fri', 'مقارنة بالجمعة الماضية'),
-                    spark: _week,
+                    value: MinimalFormat.money(
+                      revenue,
+                      symbol: '€',
+                      cents: false,
+                    ),
+                    delta: '${delta.abs()}%',
+                    deltaUp: delta >= 0,
+                    detail: _range.comparison,
+                    spark: spark,
                     weight: 1.3,
                   ),
                   MinimalStat(
                     label: ar('Orders', 'الطلبات'),
-                    value: '$orders',
-                    detail: ar(
-                      '${_openRows.length} open',
-                      '${_openRows.length} مفتوحة',
-                    ),
+                    value: '${period.length}',
+                    detail: ar('${open.length} open', '${open.length} مفتوحة'),
                   ),
                   MinimalStat(
                     label: ar('Late', 'متأخرة'),
@@ -441,8 +513,8 @@ class _KitOrdersPageState extends State<KitOrdersPage> {
                     detail: late.isEmpty
                         ? ar('none', 'لا شيء')
                         : ar(
-                            'since ${late.first.due}',
-                            'منذ ${late.first.due}',
+                            'since ${_due(late.first)}',
+                            'منذ ${_due(late.first)}',
                           ),
                     tone: late.isEmpty ? null : MinimalTone.warning,
                   ),
@@ -477,7 +549,7 @@ class _KitOrdersPageState extends State<KitOrdersPage> {
                   for (final o in rows)
                     MinimalListTile(
                       title: o.customer,
-                      subtitle: '#${o.id} · ${_items(o.qty)} · ${o.due}',
+                      subtitle: '#${o.id} · ${_items(o.qty)} · ${_due(o)}',
                       muted: o.stage == _Stage.pickedUp,
                       trailing: MinimalStatusBadge(
                         o.stage.label,
@@ -534,7 +606,7 @@ class _KitOrdersPageState extends State<KitOrdersPage> {
             ),
             _Col.due => MinimalColumn(
               ar('Due', 'الموعد'),
-              width: 56,
+              width: _range == _Range.week ? 124 : 56,
               numeric: true,
               sortable: true,
             ),
@@ -570,7 +642,7 @@ class _KitOrdersPageState extends State<KitOrdersPage> {
                   _Col.placed => MinimalCell(_placed(o)),
                   _Col.qty => MinimalCell('${o.qty}'),
                   _Col.due => MinimalCell(
-                    o.due,
+                    _due(o),
                     tone: o.overdue ? MinimalTone.warning : null,
                   ),
                   _Col.total => MinimalCell(_total(o)),
@@ -584,10 +656,10 @@ class _KitOrdersPageState extends State<KitOrdersPage> {
             selected: o.id == _selected,
             semanticLabel: kitArabic
                 ? 'الطلب ${o.id}، ${o.customer}، ${_items(o.qty)}، '
-                      'الموعد ${o.due}، ${o.stage.label}'
+                      'الموعد ${_due(o)}، ${o.stage.label}'
                       '${o.overdue && o.stage != _Stage.late ? '، متأخر' : ''}'
                 : 'Order ${o.id}, ${o.customer}, ${o.qty} items, '
-                      'due ${o.due}, ${o.stage.label}'
+                      'due ${_due(o)}, ${o.stage.label}'
                       '${o.overdue && o.stage != _Stage.late ? ', overdue' : ''}',
           ),
       ],
@@ -597,9 +669,10 @@ class _KitOrdersPageState extends State<KitOrdersPage> {
 
 /// One order: where it stands, then what is in it and what it comes to.
 class _OrderDetails extends StatelessWidget {
-  const _OrderDetails(this.order);
+  const _OrderDetails(this.order, {this.showCustomer = false});
 
   final _Order order;
+  final bool showCustomer;
 
   @override
   Widget build(BuildContext context) {
@@ -607,6 +680,13 @@ class _OrderDetails extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        if (showCustomer) ...[
+          Semantics(
+            header: true,
+            child: Text(o.customer, style: context.minimalTheme.h1),
+          ),
+          const MinimalGap(MinimalSpacing.s16),
+        ],
         MinimalDescriptionList(
           properties: [
             MinimalProperty(
@@ -618,7 +698,9 @@ class _OrderDetails extends StatelessWidget {
             MinimalProperty(
               icon: LucideIcons.clock,
               label: ar('Due', 'الموعد'),
-              value: o.due,
+              value: o.daysAgo == 0
+                  ? o.due
+                  : '${_orderDay(context, o)} · ${o.due}',
               detail: o.overdue ? ar('overdue', 'متأخر') : null,
               mono: true,
             ),

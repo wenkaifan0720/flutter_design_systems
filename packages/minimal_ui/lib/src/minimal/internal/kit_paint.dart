@@ -304,6 +304,38 @@ class _RingFramePainter extends BoxPainter {
   }
 }
 
+/// Fades a disabled control while keeping an explicitly supplied label legible.
+double minimalDisabledOpacity({
+  Color? ink,
+  Color? face,
+  required Color ground,
+}) {
+  const restingOpacity = 0.45;
+  if (ink == null) return restingOpacity;
+  final surface = Color.alphaBlend(face ?? const Color(0x00000000), ground);
+  final label = Color.alphaBlend(ink, surface);
+  bool readable(double alpha) =>
+      _contrast(
+        Color.lerp(ground, label, alpha)!,
+        Color.lerp(ground, surface, alpha)!,
+      ) >=
+      4.55;
+  if (readable(restingOpacity)) return restingOpacity;
+  if (!readable(1)) return 1;
+  // Search to within one alpha step of the quietest readable color.
+  var low = restingOpacity;
+  var high = 1.0;
+  while (high - low > 1 / 255) {
+    final middle = (low + high) / 2;
+    if (readable(middle)) {
+      high = middle;
+    } else {
+      low = middle;
+    }
+  }
+  return high;
+}
+
 /// WCAG's contrast of [a] on [b], from 1 to 21.
 double _contrast(Color a, Color b) {
   final la = a.computeLuminance();

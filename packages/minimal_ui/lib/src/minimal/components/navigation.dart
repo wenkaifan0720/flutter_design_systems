@@ -1,6 +1,8 @@
 /// Navigation for wide windows: a rail of glyphs, and a sidebar of rows.
 library;
 
+import 'dart:math' as math;
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
@@ -64,22 +66,44 @@ class MinimalNavigationRail extends StatelessWidget {
   /// At the rail's foot: the account, settings.
   final Widget? trailing;
 
-  /// The rail's width.
+  /// The rail's width at the default text size.
   static const double width = 72;
 
-  /// A destination's cell.
+  /// The minimum size of a destination cell.
   static const double cell = 56;
 
   @override
   Widget build(BuildContext context) {
     final t = context.minimalTheme;
+    const fontSize = MinimalChromeMetrics.tabLabel;
+    final scaler = MediaQuery.textScalerOf(context);
+    var cellWidth = cell;
+    if (scaler.scale(fontSize) > fontSize) {
+      final caption = t.caption.copyWith(fontSize: fontSize).medium;
+      for (final item in destinations) {
+        for (final word
+            in item.label?.split(RegExp(r'\s+')) ?? const <String>[]) {
+          final wordWidth = TextPainter.computeWidth(
+            text: TextSpan(text: word, style: caption),
+            textScaler: scaler,
+            textDirection: Directionality.of(context),
+            maxLines: 1,
+          ).ceilToDouble();
+          if (wordWidth > cellWidth) cellWidth = wordWidth;
+        }
+      }
+      cellWidth = cellWidth.clamp(
+        cell,
+        math.max(cell, MediaQuery.sizeOf(context).width / 2),
+      );
+    }
     final shape = t.shapes.small;
     final select = onDestinationSelected;
     final rtl = Directionality.of(context) == TextDirection.rtl;
     final lead = leading;
     final trail = trailing;
     return Container(
-      width: width,
+      width: cellWidth + width - cell,
       decoration: BoxDecoration(
         color: t.card,
         border: rtl ? Border(left: t.rule) : Border(right: t.rule),
@@ -109,7 +133,7 @@ class MinimalNavigationRail extends StatelessWidget {
                               bottom: MinimalSpacing.s4,
                             ),
                             child: _RailCell(
-                              // A tab's walkthrough key finds it in the rail too.
+                              width: cellWidth, // A tab's walkthrough key finds it in the rail too.
                               key: destinations[i].key,
                               item: destinations[i],
                               selected: i == selectedIndex,
@@ -151,12 +175,14 @@ class _RailCell extends StatelessWidget {
   const _RailCell({
     super.key,
     required this.item,
+    required this.width,
     required this.selected,
     required this.shape,
     required this.onPressed,
   });
 
   final MinimalNavItem item;
+  final double width;
   final bool selected;
   final OutlinedBorder shape;
   final VoidCallback? onPressed;
@@ -174,7 +200,7 @@ class _RailCell extends StatelessWidget {
       semanticLabel: label ?? item.semanticLabel,
       // The current place's ink fades in, the last one's out.
       child: MinimalFace(
-        width: MinimalNavigationRail.cell,
+        width: width,
         constraints: const BoxConstraints(
           minHeight: MinimalNavigationRail.cell,
         ),
@@ -196,8 +222,6 @@ class _RailCell extends StatelessWidget {
                   const MinimalGap(MinimalChromeMetrics.tabLabelGap),
                   Text(
                     label,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
                     textAlign: TextAlign.center,
                     style: (selected ? caption.medium : caption).c(ink),
                   ),

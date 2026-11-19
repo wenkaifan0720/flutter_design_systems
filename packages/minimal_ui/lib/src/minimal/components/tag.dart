@@ -9,8 +9,7 @@ import '../internal/cap_label.dart';
 import '../internal/styled.dart';
 import '../theme.dart';
 
-/// The semantic tones a status, badge, tag or KPI delta speaks in — the
-/// same five Cody names, so a transferred page keeps its meaning.
+/// Semantic colors for statuses, badges, tags and changes in a metric.
 enum MinimalTone {
   /// Plain: no meaning beyond the words.
   neutral,

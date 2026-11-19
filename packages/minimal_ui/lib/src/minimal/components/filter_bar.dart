@@ -86,8 +86,10 @@ class MinimalFilter extends StatelessWidget {
       selected: selected,
       shape: MinimalShapes.inset(t.shapes.small, 1),
       semanticLabel: count == null ? label : '$label, $count',
-      child: ExcludeSemantics(
-        child: Container(
+      builder: (context, states) => ExcludeSemantics(
+        child: AnimatedContainer(
+          duration: context.minimalStill ? Duration.zero : MinimalMotion.fast,
+          curve: MinimalMotion.out,
           // A small control's height at the theme's density, level with a
           // small button or icon button beside the strip.
           constraints: BoxConstraints(
@@ -96,6 +98,9 @@ class MinimalFilter extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: _FilterMetrics.pad),
           decoration: minimalFrame(
             MinimalShapes.inset(t.shapes.small, 1),
+            fill: t.foreground.withValues(
+              alpha: states.contains(WidgetState.hovered) ? 0.07 : 0,
+            ),
             // Every filter keeps the hairline's width so selecting one
             // never shifts its neighbours; only the selected one shows it,
             // in the ink, as a chosen chip's does (no tinted pill).

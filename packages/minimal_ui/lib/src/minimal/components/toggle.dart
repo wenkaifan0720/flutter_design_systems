@@ -231,10 +231,23 @@ class _MinimalSwitchState extends State<MinimalSwitch> {
       on.fill ?? t.primary,
       fraction,
     );
+    // Under a hovering pointer, a neutral halo just outside the track.
+    final hovered =
+        states.contains(WidgetState.hovered) &&
+        !states.contains(WidgetState.pressed) &&
+        now.wash == null;
     return minimalFrame(
       now.shape ?? track,
       fill: fill,
       side: now.rim(null, t.rim),
+      shadows: hovered
+          ? [
+              BoxShadow(
+                color: t.foreground.withValues(alpha: 0.22),
+                spreadRadius: 2,
+              ),
+            ]
+          : null,
     );
   }
 

@@ -10,6 +10,7 @@ import '../internal/kit_paint.dart';
 import '../internal/styled.dart';
 import '../internal/text_entry.dart';
 import '../localizations.dart';
+import '../shapes.dart';
 import '../theme.dart';
 import 'button.dart';
 import 'icon_button.dart';
@@ -87,15 +88,16 @@ class MinimalBanner extends StatelessWidget {
     final message = this.message;
     final dismiss = onDismissed;
     final titleStyle = so.text(t.body.medium, t.foreground);
+    final padding =
+        so.paddingIn(context) ??
+        EdgeInsetsDirectional.fromSTEB(
+          MinimalSpacing.s12,
+          MinimalSpacing.s12,
+          dismiss == null ? MinimalSpacing.s8 : MinimalSpacing.s12,
+          MinimalSpacing.s12,
+        );
     final body = Padding(
-      padding:
-          so.paddingIn(context) ??
-          const EdgeInsetsDirectional.fromSTEB(
-            MinimalSpacing.s12,
-            MinimalSpacing.s12,
-            MinimalSpacing.s8,
-            MinimalSpacing.s12,
-          ),
+      padding: padding,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -142,6 +144,14 @@ class MinimalBanner extends StatelessWidget {
               LucideIcons.x,
               size: MinimalButtonSize.small,
               variant: MinimalIconButtonVariant.ghost,
+              style: MinimalStyle(
+                shape: WidgetStatePropertyAll(
+                  MinimalShapes.inset(
+                    shape,
+                    padding.resolve(Directionality.of(context)).top,
+                  ),
+                ),
+              ),
               label: MinimalLocalizations.of(context).dismissAlert,
               onPressed: dismiss,
             ),

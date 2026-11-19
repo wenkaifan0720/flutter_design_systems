@@ -36,8 +36,8 @@ enum MinimalComposerStyle {
 /// control's 40 px at rest in `messages`, growing line by line as the draft
 /// does, with the 32 px attach control and send square inside it, centred on
 /// the first line. Focus draws the box's hairline in the focus colour, and
-/// keyboard focus on the draft also draws the kit's solid 2 px ring, as a
-/// text field's does.
+/// focus on the draft takes the accent 1.5 px in from the box's outline,
+/// with no ring outside it, as a text field's does.
 ///
 /// Send is derived from the draft: the arrow when there is something to
 /// send (a dimmed arrow when there is not), the solid stop square while
@@ -186,7 +186,7 @@ class _MinimalComposerState extends State<MinimalComposer> {
       widget.controller ?? TextEditingController();
   bool _focused = false;
 
-  /// The draft's focus, the caller's or one of its own: the keyboard ring
+  /// The draft's focus, the caller's or one of its own: the accent edge
   /// shows while it has it.
   FocusNode? _ownedDraft;
   FocusNode get _draft =>
@@ -197,14 +197,11 @@ class _MinimalComposerState extends State<MinimalComposer> {
   void initState() {
     super.initState();
     _draft.addListener(_rebuild);
-    FocusManager.instance.addHighlightModeListener(_modeChanged);
   }
 
   void _rebuild() {
     if (mounted) setState(() {});
   }
-
-  void _modeChanged(FocusHighlightMode mode) => _rebuild();
 
   @override
   void didUpdateWidget(covariant MinimalComposer oldWidget) {
@@ -221,7 +218,6 @@ class _MinimalComposerState extends State<MinimalComposer> {
 
   @override
   void dispose() {
-    FocusManager.instance.removeHighlightModeListener(_modeChanged);
     _draft.removeListener(_rebuild);
     _ownedDraft?.dispose();
     if (widget.controller == null) _controller.dispose();
@@ -294,7 +290,7 @@ class _MinimalComposerState extends State<MinimalComposer> {
                 widget.hint ??
                 MinimalLocalizations.of(context)
                     .composerHint(assistant: assistant),
-            hintStyle: t.body.c(t.textTertiary),
+            hintStyle: t.body.c(t.mutedForeground),
             // A chat's box starts one line tall, so its hint is one line, cut
             // with an ellipsis: a wrapped hint would hold the box at two.
             hintMaxLines: assistant ? null : 1,
@@ -535,13 +531,9 @@ class _MinimalComposerState extends State<MinimalComposer> {
                       width: t.hairline,
                     ),
                   ),
-                  foregroundDecoration: minimalFieldRing(
+                  foregroundDecoration: minimalFocusEdge(
                     t,
-                    shown:
-                        enabled &&
-                        _draft.hasFocus &&
-                        FocusManager.instance.highlightMode ==
-                            FocusHighlightMode.traditional,
+                    shown: enabled && _draft.hasFocus,
                     shape: assistant ? t.shapes.medium : t.shapes.small,
                   ),
                   child: box,

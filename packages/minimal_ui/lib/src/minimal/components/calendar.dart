@@ -591,7 +591,7 @@ class _MinimalDateRangePickerState extends State<MinimalDateRangePicker> {
                       // The dates are figures, in mono; the prompt is words,
                       // in every field's placeholder face.
                       style: value == null
-                          ? t.body.c(t.textTertiary)
+                          ? t.body.c(t.mutedForeground)
                           : t.monoValue.c(t.foreground),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,

@@ -144,6 +144,15 @@ class MinimalButtonPaint {
   /// The style at rest, as a pressable reads it.
   MinimalStyleOf get rest => MinimalStyleOf(layers, const {});
 
+  /// The surface and label colors for this button's current state.
+  (Color?, Color) colors(MinimalStyleOf style) {
+    final disabled = style.states.contains(WidgetState.disabled);
+    return (
+      style.fill ?? (disabled && bg != null ? t.muted : bg),
+      style.foreground ?? (disabled ? t.foreground : fg),
+    );
+  }
+
   /// The face for [states], its [content] drawn in the ink of the moment;
   /// [expand] fills the width.
   Widget face(
@@ -155,9 +164,10 @@ class MinimalButtonPaint {
   }) {
     final so = MinimalStyleOf(layers, states);
     final least = so.minimumSize;
+    final (fill, foreground) = colors(so);
     // The face lerps to each state (Minimal's short plain fade).
     return MinimalFace(
-      ink: so.foreground ?? fg,
+      ink: foreground,
       constraints: BoxConstraints(
         minWidth: least?.width ?? 0,
         minHeight:
@@ -176,11 +186,11 @@ class MinimalButtonPaint {
           ),
       decoration: minimalFrame(
         so.shape ?? t.shapes.small,
-        fill: so.fill ?? bg,
+        fill: fill,
         side: so.rim(border, t.rim),
       ),
       foregroundDecoration: foregroundDecoration,
-      builder: (context, ink) => content(so, ink ?? fg),
+      builder: (context, ink) => content(so, ink ?? foreground),
     );
   }
 }

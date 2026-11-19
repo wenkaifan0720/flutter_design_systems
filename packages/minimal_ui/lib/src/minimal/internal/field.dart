@@ -11,8 +11,7 @@ import 'tap_band.dart';
 /// the form, picker, choice and date rows — named once so a field and a
 /// row cannot drift apart. Not exported: pages never need it.
 abstract final class MinimalFieldMetrics {
-  /// The air between a row's glyph and its label: the reference mock's
-  /// property row (`.wb-row`, gap 10 px), shared with every row.
+  /// The horizontal gap between a row icon and its label.
   static const double rowIconGap = MinimalChromeMetrics.rowIconGap;
 
   /// A boxed field's side inset, before the glyph and after the value.
@@ -26,6 +25,12 @@ abstract final class MinimalFieldMetrics {
   static const EdgeInsets rowReach = EdgeInsets.symmetric(
     horizontal: MinimalSpacing.s12,
   );
+
+  /// How far a focused field's accent edge reaches in from its outline: its
+  /// rim and half a pixel more. A field shows focus by its own edge, never
+  /// by a ring outside it, so the accent stays within the 1.5 px a thin
+  /// line can carry and the field keeps its size and its words' places.
+  static const double focusEdge = 1.5;
 
   /// The text cursor's width: a hair heavier than the 1 px rule it sits
   /// beside, so it reads at a glance.
@@ -74,36 +79,29 @@ extension MinimalFieldType on MinimalThemeData {
   );
 }
 
-/// The keyboard focus ring a text field draws outside its box: a solid
-/// [MinimalThemeData.ring] (the danger in error) at `t.focusWidth`,
-/// the same ring [MinimalPressable] draws, round [shape] (else
-/// `shapes.small`). Always a border, transparent when not [shown]: a
-/// Container that gains or loses a foreground decoration re-parents its
-/// child, and the text field would be rebuilt (and lose its input) on the
-/// first focus.
-Decoration minimalFieldRing(
+/// A focused field's edge: the accent over the field's rim, reaching
+/// [MinimalFieldMetrics.focusEdge] in from [shape]'s outline and never past
+/// it. However focus came (a tap, a click, Tab), the field shows it the same
+/// way, with no ring outside, and an invalid field takes the accent while it
+/// has focus. Always a border, transparent when not [shown]: a Container
+/// that gains or loses a foreground decoration re-parents its child, and
+/// the text field would be rebuilt (and lose its input) on the first focus.
+Decoration minimalFocusEdge(
   MinimalThemeData t, {
   required bool shown,
-  bool error = false,
   OutlinedBorder? shape,
 }) => minimalFrame(
   shape ?? t.shapes.small,
   side: BorderSide(
-    color: !shown
-        ? const Color(0x00000000)
-        : error
-        ? t.destructive
-        : t.ring,
-    width: t.focusWidth,
-    strokeAlign: BorderSide.strokeAlignOutside,
+    color: shown ? t.ring : const Color(0x00000000),
+    width: MinimalFieldMetrics.focusEdge,
   ),
 );
 
 /// The controller and focus node a text field owns when its caller passes
 /// none, re-wired when the caller swaps them, and the state rebuilt on
-/// every edit, focus change and switch between pointer and keyboard (the
-/// ring shows for the keyboard only). Shared by the boxed field and the
-/// search field.
+/// every edit and focus change. Shared by the boxed field and the search
+/// field.
 mixin MinimalFieldOwner<W extends StatefulWidget> on State<W> {
   TextEditingController? _ownedController;
   FocusNode? _ownedFocus;
@@ -124,18 +122,11 @@ mixin MinimalFieldOwner<W extends StatefulWidget> on State<W> {
   /// The field's focus node: the one given, else one it owns.
   FocusNode get focusNode => externalFocusNode ?? (_ownedFocus ??= FocusNode());
 
-  /// Whether the field holds focus that the keyboard brought: when its
-  /// ring shows.
-  bool get keyboardFocused =>
-      focusNode.hasFocus &&
-      FocusManager.instance.highlightMode == FocusHighlightMode.traditional;
-
   @override
   void initState() {
     super.initState();
     controller.addListener(_refresh);
     focusNode.addListener(_focusChanged);
-    FocusManager.instance.addHighlightModeListener(_modeChanged);
   }
 
   void _refresh() {
@@ -145,10 +136,6 @@ mixin MinimalFieldOwner<W extends StatefulWidget> on State<W> {
   void _focusChanged() {
     _refresh();
     focusChanged(focusNode.hasFocus);
-  }
-
-  void _modeChanged(FocusHighlightMode mode) {
-    if (focusNode.hasFocus) _refresh();
   }
 
   /// Re-wires the listeners after the widget changed its controller or its
@@ -175,7 +162,6 @@ mixin MinimalFieldOwner<W extends StatefulWidget> on State<W> {
 
   @override
   void dispose() {
-    FocusManager.instance.removeHighlightModeListener(_modeChanged);
     controller.removeListener(_refresh);
     focusNode.removeListener(_focusChanged);
     _ownedController?.dispose();

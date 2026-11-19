@@ -86,8 +86,8 @@ void main() {
       handle.dispose();
     });
 
-    testWidgets('focus turns the rule to the accent; the keyboard adds '
-        'the solid ring', (tester) async {
+    testWidgets('focus turns the outline to the accent, 1.5 px drawn inward, '
+        'after a tap as after the keyboard', (tester) async {
       final focus = <bool>[];
       await tester.pumpWidget(
         _host(MinimalTextField(label: 'Name', onFocusChanged: focus.add)),
@@ -104,22 +104,27 @@ void main() {
             )
             .first,
       );
-      Color ring() =>
+      BorderSide edge() =>
           ((box().foregroundDecoration! as BoxDecoration).border! as Border)
-              .top
-              .color;
+              .top;
       final t = MinimalThemeData.preset('standard', Brightness.light);
       expect(
         (box().decoration! as BoxDecoration).border,
         Border.all(color: t.ring, width: t.hairline),
       );
-      // A pointer brought the focus: the rule says it, no ring.
-      expect(ring().a, 0);
+      // The field's own edge shows the focus, inside its outline: no ring
+      // stands outside it, whether a pointer or the keyboard brought it.
+      const shown = BorderSide(
+        color: Color(0x00000000),
+        width: 1.5,
+        strokeAlign: BorderSide.strokeAlignInside,
+      );
+      expect(edge(), shown.copyWith(color: t.ring));
       FocusManager.instance.highlightStrategy =
           FocusHighlightStrategy.alwaysTraditional;
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 200));
-      expect(ring(), t.ring);
+      expect(edge(), shown.copyWith(color: t.ring));
       FocusManager.instance.highlightStrategy =
           FocusHighlightStrategy.automatic;
     });

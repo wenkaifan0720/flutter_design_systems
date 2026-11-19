@@ -21,7 +21,7 @@ enum MinimalIconButtonVariant {
   /// The bare glyph.
   ghost,
 
-  /// A quiet filled square, as shadcn's secondary button.
+  /// A square button with a neutral fill.
   secondary,
 
   /// The accent square of the one primary act, as a primary button's face.
@@ -32,11 +32,8 @@ enum MinimalIconButtonVariant {
 /// holding an 18 px Lucide glyph — the top bar's actions, a row's overflow,
 /// a sheet's close. The hit area pads out to 44.
 ///
-/// Cody's call shape transfers: `MinimalIconButton(icon, onPressed: f)` compiles,
-/// and with no [variant] it draws Cody's default, the bare `ghost` glyph —
-/// except among a [MinimalAppBar]'s actions, where it wears the bar's
-/// bordered `outline` square. Icon-only, so pass a [label]: without one a
-/// screen reader hears only "button".
+/// The default [variant] is ghost, or outline in a [MinimalAppBar].
+/// Supply a [label] so screen readers announce the button's action.
 ///
 /// [selected] makes it an on/off control (a favourite star, a pin): on is
 /// said in ink, as every Minimal choice is (the glyph goes from the muted

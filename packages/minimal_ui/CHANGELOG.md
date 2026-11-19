@@ -1,3 +1,17 @@
+## 0.3.1
+
+- A focused field shows focus by its own edge: text fields, fields with add-ons, search, multi-select, combobox, password, text area and the composer turn their outline to the accent, 1.5 px thick and drawn inward, with no ring outside it. A click or a tap shows it as Tab does, and an invalid field takes the accent while it has focus. The active verification-code cell uses the same 1.5 px accent, and keeps it when validation fails.
+- Multi-select chips follow the field’s corner radius and have even padding at compact and standard density, including at large text sizes.
+- Menu highlights fill the entire touch row and follow custom menu corners.
+- Snack-bar actions and banner close buttons sit evenly inside the message outline.
+- Keyboard focus outlines the reorder grip. Navigation rails grow with text size. Chart callouts show the full series name and value.
+- Escape dismisses an empty command palette on the first press. Enter or Space activates the first enabled action in a newly opened action sheet.
+- Field prompts and disabled button labels are easier to read in light and dark themes.
+- Picker rows and the gallery’s customization choices wrap at large text sizes. Settings rows show the full label, and the switch and checkbox examples respond to taps and keyboard input.
+- Filters and switches give pointer hover feedback. Picker labels and dialog actions stay vertically centered.
+- Ritual downloads current habits as CSV on the web and copies them on native platforms. Favourite choices survive navigation. After erasing all habits, Today offers to create one.
+- Lund Bakery filters orders and revenue by date. Order details show the customer’s full name at large text sizes.
+
 ## 0.3.0
 
 Built on ui_core 0.3.0. Minimal's menus, tooltips, dialogs, sheets, tabs, swipe-to-delete, rating and charts now take

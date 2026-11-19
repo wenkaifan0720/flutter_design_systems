@@ -1,7 +1,6 @@
 # minimal_ui
 
-A precise, quiet design system for Flutter, in the family of Linear and shadcn/ui: hairlines instead of containers,
-dense rows, numbers in mono tabular figures and one primary colour spent on the action, by day and by night.
+Compact Flutter components for dashboards, forms and data tables. Minimal uses fine borders, tabular numbers and a single accent color, with light and dark themes.
 
 ![Minimal's issue tracker at 1440 px by day, beside the same tracker on a 390 px phone by night](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/minimal_ui/screenshots/hero_tracker.png)
 
@@ -15,8 +14,7 @@ flutter pub add minimal_ui
 
 ## Set up
 
-`MinimalTheme` is the whole install. Put it in your app's `builder:`, under a `MaterialApp`, a `CupertinoApp` or a
-`WidgetsApp`, with a `MinimalToaster` inside it if the app shows snack bars:
+Wrap your app’s navigator in `MinimalTheme`. Add `MinimalToaster` if the app shows snack bars.
 
 ```dart
 import 'package:flutter/material.dart';
@@ -33,7 +31,7 @@ class App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => MaterialApp(
-    // Minimal's push and pop for the app's own page routes (Page motion, below).
+    // Use Minimal’s page transitions.
     theme: ThemeData(pageTransitionsTheme: const PageTransitionsTheme(builders: minimalPageTransitions)),
     builder: (context, child) => MinimalTheme(
       data: MinimalThemeData.preset('standard', MediaQuery.platformBrightnessOf(context)),
@@ -47,34 +45,24 @@ class App extends StatelessWidget {
 }
 ```
 
-A `CupertinoApp` or a `WidgetsApp` takes the same `builder:`; nothing in the package needs Material's app around it.
-`context.minimalTheme` (or `MinimalTheme.of(context)`) reads the theme, a nested `MinimalTheme` restyles a subtree,
-and `AnimatedMinimalTheme` eases between two. The package takes no router: its pages are plain widgets for any
-navigator.
+The same builder works with `CupertinoApp` and `WidgetsApp`. Read the theme with `context.minimalTheme`. Nest `MinimalTheme` to style a subtree or use `AnimatedMinimalTheme` to animate changes.
 
-**Page motion.** A page pushed in Minimal fades in over 8 px, and a pop reverses it; a tab, rail or side-bar switch
-changes in place, and `MinimalFadeRoute` replaces a page with no travel. `minimalPageTransitions` maps that push to
-every platform. `MinimalTheme` sets it on the Material the package is built on (`material_ui`); a `MaterialPageRoute`
-from Flutter's own `package:flutter/material.dart` reads your app's `ThemeData` instead, so name the map there, as the
-setup above does, or the platform's slide or zoom flies the page in. The map's iOS entry wraps the push in ui_core's
-`DesignSwipeBackPageTransitionsBuilder`, so a swipe from a page's leading edge still takes it back, the page following
-the finger as on every iOS screen (for a map you build yourself, `designSwipeBack(map)` does the same). Android's back
-closes what is open over the page (a menu, a combobox's list, a popover, a sheet, a dialog) before it pops the page.
+**Navigation.** Push transitions fade and move 8 px. Tabs switch in place.
+`MinimalFadeRoute` replaces a page with a fade. When using Flutter's
+`MaterialApp`, set `ThemeData.pageTransitionsTheme` to `minimalPageTransitions`
+as shown above. This also preserves the iOS back gesture. On Android, Back
+dismisses an open menu, dialog or sheet before leaving the page.
 
 ## What is inside
 
-Hierarchy comes from weight rather than size, rows are a dense 44 px, and the one primary colour is spent on the
-action. Three presets (standard, graphite, ember) are each designed by day and by night, and the parts read as well
-on a 1440 px desktop window as on a phone.
+Choose from the standard, graphite and ember presets. Each includes light and dark colors. The examples below show the same application on desktop and phone.
 
 | Desktop, by day | Phone, by night |
 | --- | --- |
 | ![A habit tracker on Minimal at 1440 px](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/minimal_ui/screenshots/ritual_1440_light.png) | ![The habit tracker on a phone, by night](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/minimal_ui/screenshots/ritual_390_dark.png) |
 | ![A bakery's back office at 1440 px](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/minimal_ui/screenshots/bakery_1440_light.png) | ![The bakery's orders on a phone, by night](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/minimal_ui/screenshots/bakery_390_dark.png) |
 
-The parts carry the names Material gives them (`MinimalButton`, `MinimalTextField`, `MinimalAppBar`,
-`MinimalNavigationBar`, `MinimalListTile`, `MinimalCheckbox`, `MinimalSwitch`, `MinimalSegmentedButton`,
-`MinimalTabBar`, ...) and shadcn's names for its colours (`primary`, `foreground`, `muted`, `destructive`, `ring`).
+The package includes buttons and fields, navigation, lists and tables, charts, menus, dialogs and sheets. The gallery includes a habit tracker, an issue tracker and a bakery back office.
 
 ## Everyday parts
 
@@ -128,72 +116,24 @@ MinimalNavigationBar(
 );
 ```
 
-The example app (`example/`) shows every part on its own page and three whole apps built on them: a habit tracker, an
-issue tracker and a bakery's back office.
+## Customization
 
-## How Minimal is built
-
-Minimal is type, ink and space. A part the style never had is built from these rules rather than borrowed from
-another system, and a part you add should follow them too.
-
-- **Material.** Everything stands on one flat ground, in type and ink. A hairline divides only where space can't;
-  a card is a hairline round a group, not a raised slab.
-- **Choice.** A choice is said in ink and weight. The current page, a chosen row, chip or card, a toggled glyph turn
-  to the full ink (the words at medium weight, or a hairline turning to ink); the rest stay muted. No tinted pill,
-  no glow.
-- **Colour.** The accent goes on the act to take and on a control's own value (a checked box, a switch that is on,
-  a picked day). The status tones go on what has that status. The one wash is the selection's, behind the rows
-  picked in a table or a list and the command palette's row the keyboard is on. In an open list, the row under the
-  pointer or the keyboard takes the neutral muted fill, so a place never reads as a choice. Nothing else is
-  coloured.
-- **Depth.** Two layers: the page, and what floats over it while it is needed (a menu, a dialog, a sheet, a toast,
-  a row held in a drag). Only a floating thing has a shadow, one soft one; nothing on the page casts any.
-- **Light.** None falls on it: no gradient, bevel, inner shadow or glow. A key cap is flat; a colour picker's
-  gradients are its content, not light.
-- **Stacking.** Parts stand side by side or one above another, divided by space. Where faces must stack (an avatar
-  group), a ring of the ground cuts them apart.
-- **Motion.** Short and plain: a fade or a few-pixel slide in 90 to 160 ms, easing out. Nothing springs, bounces or
-  overshoots, and reduced motion shows the end state.
-
-So a swipe reveals its acts as words on the muted ground, not blocks of colour; a pull to refresh shows a bare
-spinner in the space the pull opens, not a floating disc; an action sheet is one card with Cancel as its quiet last
-row; the current step of a run is an ink rim, not the accent.
-
-## Make it yours
-
-`MinimalThemeData` is shaped like Material's `ThemeData`: `copyWith`, `lerp` (`a.lerp(b, t)`), value equality. Start
-from a preset (`MinimalThemeData.standard()`, `.graphite()`, `.ember()`) or from your own colours, then turn the knobs:
+Start with `MinimalThemeData.standard()`, `.graphite()` or `.ember()`, or supply your app’s colors. Use `copyWith` to change individual settings.
 
 ```dart
 final theme = MinimalThemeData.from(
-  primary: const Color(0xFF7A1F5C), // the one colour spent on the action
-  neutral: const Color(0xFF8B7355), // tints the greys warm or cool
+  primary: const Color(0xFF7A1F5C),
+  neutral: const Color(0xFF8B7355),
 ).copyWith(
-  shapes: const MinimalShapes(radius: 12), // one radius, as shadcn's --radius
-  density: MinimalDensity.compact, // unset, the platform's own
+  shapes: const MinimalShapes(radius: 12),
+  density: MinimalDensity.compact,
 );
 ```
 
-- `MinimalThemeData.from` adjusts rather than asserts: the label on the primary colour, the primary colour as text,
-  the inks and every mark keep their contrast whatever colours you give it.
-- `shapes` is one radius and the corner scale derived from it (mark, small, medium, large), and every part reads its
-  role's step: a tag the mark, a button or a field the small step, a card the medium, a dialog the large. Capsules by
-  role (chips, a switch's track, progress and slider tracks, count badges, page dots) take `shapes.pill`, so they
-  square up at `MinimalShapes(radius: 0)`. A part inside another is its frame's outline moved in
-  (`MinimalShapes.inset`). What is round by meaning stays round: a radio, a slider's thumb, an avatar, a step's marker.
-- `typeface` sets the sans and mono faces (`MinimalTypeface.app(sans:, mono:)` for your own), `shadowSm`, `shadowMd`
-  and `shadowLg` the three shadows of what floats, and `iconStroke` the icons' stroke, between 1.5 and 2 (a debug build
-  asserts it: past 2 the icons stop reading thin).
-- `components` holds a style for 23 kinds of part (`MinimalStyle`, with `ButtonStyle`'s slots as
-  `WidgetStateProperty`s): the four button variants, the icon button, the text field, the chip, the checks, the
-  slider, the segmented button, cards, list sections, dialogs, sheets, menus, toasts, the command palette, avatars,
-  badges, tooltips and banners. The same style also goes on one widget through its `style:` (a text field's box
-  through `fieldStyle:`). A widget's style beats its component theme, which beats the knobs, which beat the look; each
-  part's doc lists the slots it reads. The app bar, tabs, navigation, list rows and select take no style yet.
-- Two settings can draw what Minimal never does, so they are yours to keep in its terms: a `fill` for a selected chip
-  or segment is the tinted pill (Minimal says a choice in ink and weight), and a coloured or spread shadow is a glow.
-- A hovering pointer changes nothing by default. An app that wants a hover wash sets `overlay` for
-  `WidgetState.hovered`.
+- `MinimalThemeData.from` derives readable label and accent colors from the supplied palette.
+- `MinimalShapes` derives corners for tags, fields, cards and dialogs from one radius. A radius of zero squares off capsules. Radios, slider thumbs and avatars stay round.
+- `MinimalTypeface.app(sans:, mono:)` selects your fonts. The theme also exposes density, shadow styles and icon stroke width.
+- Set a `MinimalStyle` in `theme.components` to style a component throughout the app. A widget’s `style` takes precedence. Text fields use `fieldStyle`. Use `WidgetStateProperty` to distinguish hover, press and focus.
 
 ```dart
 MinimalButton(
@@ -210,28 +150,14 @@ MinimalButton(
 
 ## The host library
 
-`package:minimal_ui/minimal_host.dart` holds the layer an app builder's host draws pages under: `MinimalHost` (the
-theme, page transitions, ground and toasts in one mount), `MinimalPreview`, the route pages and the chrome metrics. An
-ordinary app does not need it.
+Import `package:minimal_ui/minimal_host.dart` for `MinimalHost`, which sets up the theme, transitions and toaster together. The library also includes `MinimalPreview` for embedding a themed preview.
 
 ## Accessibility and languages
 
-- **Right to left.** Every part lays out from its start edge: insets and alignments are directional, back and next
-  chevrons and arrows flip, sliders and progress fill from the start side, tabs, carousels and swipe-to-dismiss follow
-  the reading direction. Code stays left to right. Public parameters take `EdgeInsetsGeometry` and say start and end,
-  never left and right. The example gallery's Customize panel has a Direction control (`?dir=rtl` in its address).
-- **Large text.** Parts follow the platform's text scale up to 200%: `MinimalHost` clamps larger settings at
-  `MinimalChromeMetrics.maxTextScale` (2.0). Up to it, rows and controls grow taller rather than cut words, and long
-  labels wrap or end in an ellipsis. The gallery's Customize panel shows every page at 130%, 160% and 200%
-  (`?text=2`).
-- **Other scripts.** Geist covers Latin. Arabic, Hebrew, Chinese, Japanese, Hindi, Thai and the rest are
-  drawn by the platform's fallback fonts (on the web, Flutter fetches Noto). Line heights are set for Latin; tall
-  scripts are not yet checked in every part.
-- **Built-in words.** English is the default, with nothing to set up. The words a part says on its own that every
-  look shares (Back, Close, Cancel, OK, Search, Clear, Today, Next month, Loading, "Slide 2 of 5", a screen reader's
-  names for a carousel, a menu bar or a split view's handle) come from `DesignLocalizations`, exported with the
-  package, in 30 languages (`DesignLocalizations.supportedLocales`). Opt in with its delegate beside Flutter's, from
-  `flutter_localizations` (add `flutter_localizations: sdk: flutter` to your pubspec):
+- **Direction and text size.** Controls follow the reading direction. The gallery’s Customize panel lets you try RTL and text sizes up to 200%. `MinimalHost` caps larger scales at 200%. Geist supplies Latin glyphs. Other scripts use Flutter’s font fallback.
+- **Keyboard and screen readers.** Tab moves between controls. Arrow keys select tabs, inspect chart values and navigate menus. Enter activates the focused action. Escape dismisses menus, dialogs and sheets and returns focus to the opener. A destructive dialog focuses its safe action first.
+- **Touch and motion.** The minimum hit area is 44 × 44 for touch and 24 × 24 for a pointer. Controls honor the platform’s reduced-motion setting.
+- **Localization.** English is the default. To use the built-in translations for shared labels, add `flutter_localizations` from the Flutter SDK and register `DesignLocalizations.delegate` alongside Flutter’s delegates.
 
   ```dart
   import 'package:flutter_localizations/flutter_localizations.dart';
@@ -246,30 +172,7 @@ ordinary app does not need it.
   )
   ```
 
-  A text field's menu (Copy, Paste) speaks Material's and Cupertino's own translations, which Minimal loads itself; a
-  language they don't speak gets English. Words only Minimal says (the composer's buttons, "Step 2 of 4", task
-  statuses and priorities) are English until you give your own: extend `MinimalLocalizationsEn`, override the words
-  you translate, and add `MinimalLocalizations.delegateOf(yourWords)` to `localizationsDelegates`. For a language of
-  your own for the shared words, extend `DefaultDesignLocalizations` the same way.
-- **Dates and numbers.** The month and year over a calendar, a day's full name and the first day of the week come
-  from `DesignLocalizations`, and the time pickers take `use24HourFormat`. Numbers and money print as you pass them;
-  the parts do no locale formatting of their own.
-- **Screen readers and keyboard.** Every control announces its role, label, value and state (checked, selected,
-  expanded, disabled); decorative paint is excluded. Everything works by keyboard, with a visible ring (in an open
-  list, the muted fill on the row the keyboard is on), and focus follows reading order in both directions. A menu
-  takes a menu button's keys: Enter, Space or Down opens it on the chosen item, the arrows, Home, End and a letter
-  move through it, and Enter or Escape hands the keys back to the control. A dialog opens on its safe answer and keeps
-  Tab inside; a sheet closes on Escape or a drag down and gives focus back to what opened it; a tab bar is one Tab
-  stop whose arrows choose; a chart's arrows walk its points and say each one. Interactive parts take an optional
-  `focusNode` and `autofocus`. Every
-  control's tap target is at least 44 × 44 under a finger and 24 × 24 under a pointer (ui_core's `DesignTapTarget`;
-  `MinimalTheme` declares the floors with `DesignTapTargetScope`): the compact faces keep their size and the target
-  grows round them, whatever the density. Text meets 4.5:1 contrast, and with reduced motion
-  (Android's Remove animations, iOS's Reduce Motion or the web's prefers-reduced-motion, read through ui_core's
-  `designReduceMotionOf`) every change switches at once.
-- **Labels as strings.** Some parts take a `String` label or an `IconData` where Flutter would take a widget
-  (`MinimalButton`'s label, `MinimalListTile`'s title, `MinimalChip`'s label). A widget slot beside each, when one
-  comes, will be optional, so nothing that compiles today breaks.
+For Minimal-specific words such as status names and composer actions, extend `MinimalLocalizationsEn` and register `MinimalLocalizations.delegateOf(yourWords)`. Calendars use localized month and day names and the local first day of the week. Time pickers accept `use24HourFormat`. Format numeric and monetary values before passing them to the components.
 
 ## Fonts and icons
 

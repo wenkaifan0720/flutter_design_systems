@@ -46,6 +46,7 @@ class KitHabit {
     DateTime? started,
     this.record = const [],
     this.paused = false,
+    this.favourite = false,
   }) : started = started ?? kitHabitsToday,
        repeat = repeat ?? ar('Every day', 'كل يوم');
 
@@ -73,6 +74,7 @@ class KitHabit {
   /// 0 missed, 1 partly, 2 kept. Empty for a habit started today.
   final List<int> record;
   bool paused;
+  bool favourite;
 }
 
 /// Morning run's last twelve weeks, one line per weekday (Monday first),
@@ -270,6 +272,47 @@ class KitHabits extends ChangeNotifier {
         ..addAll(all);
       notifyListeners();
     };
+  }
+
+  /// Changes this habit's favourite status.
+  void toggleFavourite(KitHabit habit) {
+    habit.favourite = !habit.favourite;
+    notifyListeners();
+  }
+
+  /// The current habits as UTF-8-ready CSV, including a header for an empty list.
+  String toCsv() {
+    String field(String value) => '"${value.replaceAll('"', '""')}"';
+    final rows = [
+      [
+        'ID',
+        'Name',
+        'Group',
+        'Note',
+        'Repeat',
+        'Reminder',
+        'Started',
+        'Paused',
+        'Favourite',
+        'Kept today',
+        'Streak',
+      ],
+      for (final h in habits)
+        [
+          h.id,
+          h.name,
+          h.group,
+          h.note,
+          h.repeat,
+          h.reminder ?? '',
+          h.started.toIso8601String().split('T').first,
+          '${h.paused}',
+          '${h.favourite}',
+          '${kept(h)}',
+          '${streak(h)}',
+        ],
+    ];
+    return '${rows.map((row) => row.map(field).join(',')).join('\r\n')}\r\n';
   }
 
   /// Sets how often [habit] repeats.

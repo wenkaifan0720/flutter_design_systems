@@ -46,7 +46,6 @@ class KitHabitPage extends StatefulWidget {
 class _HabitPageState extends State<KitHabitPage> {
   late final KitHabits _own = KitHabits();
   KitHabits get _habits => widget.habits ?? _own;
-  bool _favourite = false;
 
   @override
   void initState() {
@@ -133,8 +132,8 @@ class _HabitPageState extends State<KitHabitPage> {
           MinimalIconButton(
             LucideIcons.star,
             label: ar('Favourite', 'مفضلة'),
-            selected: _favourite,
-            onPressed: () => setState(() => _favourite = !_favourite),
+            selected: habit.favourite,
+            onPressed: () => _habits.toggleFavourite(habit),
           ),
           MinimalMenu.button(
             LucideIcons.ellipsis,

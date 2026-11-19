@@ -11,9 +11,7 @@ import '../internal/styled.dart';
 import '../theme.dart';
 import 'pressable.dart';
 
-/// A [MinimalButton]'s variant, as shadcn's: the primary fill for the one
-/// thing to act on, a bordered neutral for everything beside it, bare ink
-/// for the quiet action, the destructive fill for the one that deletes.
+/// The visual treatment of a [MinimalButton].
 enum MinimalButtonVariant {
   /// The primary fill: the one thing to act on.
   primary,
@@ -40,23 +38,13 @@ enum MinimalButtonSize {
   large,
 }
 
-/// Minimal's only button — every action a page offers is one of these, in
-/// one of four variants and three sizes: a compact control in the theme's
-/// [MinimalThemeData.control] type with 8 px corners, never taller than it
-/// needs to be. The hit area pads
-/// out to 44 whatever it paints.
+/// An action button with an optional icon or leading widget.
 ///
-/// [style] dresses one button and the variant's component theme
-/// (`components.primaryButton`, `secondaryButton`, `ghostButton`,
-/// `destructiveButton`) every one; they read every slot: fill, foreground,
-/// edge or side, overlay, shape (else `shapes.small`), padding,
-/// minimumSize, textStyle and iconSize. `density` moves its height and side
-/// padding; `t.rim` is its rim.
+/// Choose [variant] for the action's role and [size] for its height. Touch
+/// targets are at least 44 px. [style] overrides the variant's component theme.
 ///
-/// `busy: true` is an action under way: a small spinner in the label's ink
-/// takes the glyph's seat at the leading edge, and the button takes no
-/// presses while its face keeps its full strength, so it reads as busy, not
-/// disabled. Its [label] says what is happening (`Creating…`).
+/// Set [busy] while work is in progress. The button shows a spinner and
+/// ignores further presses. Supply a [label] that describes the operation.
 ///
 /// ```dart
 /// MinimalButton('Create habit', onPressed: create)
@@ -139,10 +127,11 @@ class MinimalButton extends StatelessWidget {
       },
       style: style,
     );
-    final bg = paint.bg;
-    final fg = paint.fg;
+    final rest = onPressed == null && !busy
+        ? MinimalStyleOf(paint.layers, const {WidgetState.disabled})
+        : paint.rest;
+    final (bg, fg) = paint.colors(rest);
     final lead = leading;
-    final rest = paint.rest;
 
     Widget face(BuildContext context, Set<WidgetState> states) => paint.face(
       context,
@@ -171,8 +160,8 @@ class MinimalButton extends StatelessWidget {
             enabled: onPressed != null,
             style: rest.press,
             shape: t.shapes.small,
-            face: rest.fill ?? bg,
-            ink: rest.foreground ?? fg,
+            face: bg,
+            ink: fg,
             builder: face,
           );
     // Filling its column on a phone; from the compact width up an expanded
@@ -258,10 +247,7 @@ class MinimalButton extends StatelessWidget {
   }
 }
 
-/// A busy button's spinner: a quarter arc in [ink] on a faint ring of it,
-/// [size] square like the glyph it stands in for, turning once a second. It
-/// stands at rest while [MinimalMotionContext.minimalStill] holds (tests,
-/// goldens, reduced motion).
+/// A busy button's icon-sized spinner. It stays still under reduced motion.
 class _BusyMark extends StatefulWidget {
   const _BusyMark({required this.size, required this.ink});
 

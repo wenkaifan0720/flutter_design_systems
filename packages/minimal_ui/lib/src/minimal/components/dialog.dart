@@ -240,13 +240,17 @@ class MinimalDialog extends StatelessWidget {
                   faceInk: paint.rest.foreground ?? paint.fg,
                   ground: fill,
                 ),
-                content: (so, ink) => minimalCapLabel(
-                  Text(
-                    action.label,
-                    style: so.text(paint.type, ink),
-                    maxLines: 2,
-                    softWrap: true,
-                    textAlign: TextAlign.center,
+                content: (so, ink) => Align(
+                  widthFactor: 1,
+                  heightFactor: 1,
+                  child: minimalCapLabel(
+                    Text(
+                      action.label,
+                      style: so.text(paint.type, ink),
+                      maxLines: 2,
+                      softWrap: true,
+                      textAlign: TextAlign.center,
+                    ),
                   ),
                 ),
               ),

@@ -234,66 +234,59 @@ class _MinimalSelectState<T> extends State<MinimalSelect<T>> {
           child: Container(
             key: _fieldKey,
             constraints: BoxConstraints(minHeight: t.rowHeight),
+            alignment: AlignmentDirectional.centerStart,
             padding: const EdgeInsets.symmetric(vertical: MinimalSpacing.s8),
-            child: Row(
+            child: OverflowBar(
+              alignment: MainAxisAlignment.spaceBetween,
+              spacing: MinimalSpacing.s12,
+              overflowSpacing: MinimalSpacing.s4,
               children: [
-                if (icon != null) ...[
-                  MinimalIcon(icon),
-                  const MinimalGap(MinimalFieldMetrics.rowIconGap),
-                ],
-                Expanded(
-                  flex: 2,
-                  child: minimalCapLabel(
-                    Text(
-                      widget.label,
-                      style: t.body.c(t.mutedForeground),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (icon != null) ...[
+                      MinimalIcon(icon),
+                      const MinimalGap(MinimalFieldMetrics.rowIconGap),
+                    ],
+                    Flexible(
+                      child: minimalCapLabel(
+                        Text(widget.label, style: t.body.c(t.mutedForeground)),
+                      ),
                     ),
-                  ),
+                  ],
                 ),
-                const MinimalGap(MinimalSpacing.s12),
-                Flexible(
-                  flex: 3,
-                  child: Align(
-                    alignment: AlignmentDirectional.centerEnd,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        if (chosenIcon != null) ...[
-                          MinimalIcon(
-                            chosenIcon,
-                            size: MinimalIconSize.i16,
-                            color: valueInk,
-                          ),
-                          const MinimalGap(MinimalChromeMetrics.iconGap),
-                        ],
-                        Flexible(
-                          child: minimalCapLabel(
-                            Text(
-                              chosen?.label ??
-                                  widget.prompt ??
-                                  MinimalLocalizations.of(context).choose,
-                              style: t.body.c(
-                                chosen == null ? t.textTertiary : valueInk,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              textAlign: TextAlign.end,
-                            ),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (chosenIcon != null) ...[
+                      MinimalIcon(
+                        chosenIcon,
+                        size: MinimalIconSize.i16,
+                        color: valueInk,
+                      ),
+                      const MinimalGap(MinimalChromeMetrics.iconGap),
+                    ],
+                    Flexible(
+                      child: minimalCapLabel(
+                        Text(
+                          chosen?.label ??
+                              widget.prompt ??
+                              MinimalLocalizations.of(context).choose,
+                          style: t.body.c(
+                            chosen == null ? t.mutedForeground : valueInk,
                           ),
                         ),
-                        const MinimalGap(MinimalChromeMetrics.iconGap),
-                        MinimalIcon(
-                          widget.presentation == MinimalSelectPresentation.menu
-                              ? LucideIcons.chevronsUpDown
-                              : LucideIcons.chevronRightDir,
-                          size: MinimalIconSize.i16,
-                          color: t.textTertiary,
-                        ),
-                      ],
+                      ),
                     ),
-                  ),
+                    const MinimalGap(MinimalChromeMetrics.iconGap),
+                    MinimalIcon(
+                      widget.presentation == MinimalSelectPresentation.menu
+                          ? LucideIcons.chevronsUpDown
+                          : LucideIcons.chevronRightDir,
+                      size: MinimalIconSize.i16,
+                      color: t.textTertiary,
+                    ),
+                  ],
                 ),
               ],
             ),

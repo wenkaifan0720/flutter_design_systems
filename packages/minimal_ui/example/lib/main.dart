@@ -974,8 +974,7 @@ class _CustomizePanelState extends State<CustomizePanel> {
         ),
         MinimalSection(
           title: 'Density',
-          child: _natural(
-            3,
+          child: _choices(
             MinimalSegmentedButton<Density>(
               segments: const [
                 MinimalButtonSegment(Density.platform, 'Platform'),
@@ -1007,8 +1006,7 @@ class _CustomizePanelState extends State<CustomizePanel> {
         ),
         MinimalSection(
           title: 'Direction',
-          child: _natural(
-            2,
+          child: _choices(
             MinimalSegmentedButton<TextDirection>(
               segments: const [
                 MinimalButtonSegment(TextDirection.ltr, 'Left to right'),
@@ -1022,8 +1020,7 @@ class _CustomizePanelState extends State<CustomizePanel> {
         ),
         MinimalSection(
           title: 'Text size',
-          child: _natural(
-            4,
+          child: _choices(
             MinimalSegmentedButton<double>(
               segments: const [
                 // MinimalHost lays text out at most at maxTextScale (200%).
@@ -1056,6 +1053,42 @@ Widget _natural(int segments, Widget child) => Align(
   child: ConstrainedBox(
     constraints: BoxConstraints(maxWidth: 112.0 * segments),
     child: child,
+  ),
+);
+
+// A segmented control needs equal room for every label. Use wrapping radio
+// choices when the panel is too narrow at the current text size.
+Widget _choices<T>(MinimalSegmentedButton<T> group) => _natural(
+  group.segments.length,
+  LayoutBuilder(
+    builder: (context, constraints) {
+      final style = context.minimalTheme.bodySmall.medium;
+      final measure = TextPainter(
+        textDirection: Directionality.of(context),
+        textScaler: MediaQuery.textScalerOf(context),
+        maxLines: 1,
+      );
+      var widest = 0.0;
+      for (final segment in group.segments) {
+        measure.text = TextSpan(text: segment.label, style: style);
+        measure.layout();
+        if (measure.width > widest) widest = measure.width;
+      }
+      measure.dispose();
+      if ((widest + 20) * group.segments.length + 4 <= constraints.maxWidth) {
+        return group;
+      }
+      return MinimalRadioGroup<T>(
+        options: [
+          for (final segment in group.segments)
+            MinimalRadioOption(value: segment.value, label: segment.label),
+        ],
+        value: group.value,
+        label: group.label,
+        onChanged: group.onChanged,
+        direction: Axis.horizontal,
+      );
+    },
   ),
 );
 

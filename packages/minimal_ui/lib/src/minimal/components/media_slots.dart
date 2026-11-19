@@ -188,13 +188,8 @@ class _MinimalMediaImageState extends State<MinimalMediaImage> {
   );
 }
 
-/// The pending sign over a placeholder: a soft band of light that sweeps
-/// across it corner to corner in one finite [_sweepTime], rests [_restTime]
-/// and sweeps again. Never a repeating animation: a capture (App Preview's
-/// headless frames, a page check) runs a finite animation to its end, where
-/// the band is off and the placeholder plain, and settles in the rest; a
-/// looping one would hold every capture to its budget. Under reduced motion
-/// and the test kill-switch it does not run: the placeholder stands plain.
+/// A diagonal shimmer for a loading placeholder.
+/// The highlight pauses between passes and stays still under reduced motion.
 class _Sheen extends StatefulWidget {
   const _Sheen({required this.child});
 

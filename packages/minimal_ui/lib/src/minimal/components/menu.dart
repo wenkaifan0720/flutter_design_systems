@@ -270,7 +270,8 @@ Future<void> showMinimalMenu(
     // an expanded button covers that control's width.
     width: math.max(width, anchor.width),
     style: style,
-    builder: (context) => _MenuSurface(items: items, fromKeys: fromKeys),
+    builder: (context) =>
+        _MenuSurface(items: items, fromKeys: fromKeys, style: style),
   );
   if (chosen != null) items[chosen].onPressed?.call();
 }
@@ -717,7 +718,9 @@ class _PopoverLayout extends SingleChildLayoutDelegate {
 /// [MinimalMenu]). One item at most is the place, the one with the keys,
 /// which the pointer moves too; it takes the muted fill.
 class _MenuSurface extends StatefulWidget {
-  const _MenuSurface({required this.items, required this.fromKeys});
+  const _MenuSurface({required this.items, required this.fromKeys, this.style});
+
+  final MinimalStyle? style;
 
   final List<MinimalMenuItem> items;
 
@@ -865,6 +868,11 @@ class _MenuSurfaceState extends State<_MenuSurface> {
   Widget build(BuildContext context) {
     final t = context.minimalTheme;
     final items = widget.items;
+    final panel = MinimalStyleOf([widget.style, t.components.menu], const {});
+    final rowShape = MinimalShapes.inset(
+      panel.shape ?? t.shapes.medium,
+      MinimalSpacing.s4 + panel.rim(t.border, t.rim).strokeInset,
+    );
     // A menu that picks one announces every item's selected state; a menu
     // of plain actions announces none.
     final choosing = items.any((item) => item.selected);
@@ -899,6 +907,7 @@ class _MenuSurfaceState extends State<_MenuSurface> {
                     }
                   },
                   child: _MenuAction(
+                    shape: rowShape,
                     item: item,
                     choosing: choosing,
                     focusNode: _items[i],
@@ -921,6 +930,7 @@ class _MenuSurfaceState extends State<_MenuSurface> {
 class _MenuAction extends StatelessWidget {
   const _MenuAction({
     required this.item,
+    required this.shape,
     required this.choosing,
     required this.focusNode,
     required this.place,
@@ -928,6 +938,7 @@ class _MenuAction extends StatelessWidget {
   });
 
   final MinimalMenuItem item;
+  final OutlinedBorder shape;
   final bool choosing;
   final FocusNode focusNode;
   final bool place;
@@ -947,20 +958,22 @@ class _MenuAction extends StatelessWidget {
     final enabled = item.onPressed != null;
     final shortcut = item.shortcut;
     final icon = item.icon;
-    final shape = MinimalShapes.inset(t.shapes.medium, MinimalSpacing.s4);
+    final rowHeight = math.max(
+      _MenuMetrics.itemHeight,
+      minimalTapFloor(context),
+    );
     return ConstrainedBox(
-      constraints: const BoxConstraints(minHeight: _MenuMetrics.itemHeight),
+      constraints: BoxConstraints(minHeight: rowHeight),
       child: MinimalPaintsFocus(
         child: MinimalPressable(
           focusNode: focusNode,
+          tapTarget: false,
           onPressed: enabled ? onPressed : null,
           enabled: enabled,
           shape: shape,
           selected: choosing ? item.selected : null,
           child: Container(
-            constraints: const BoxConstraints(
-              minHeight: _MenuMetrics.itemHeight,
-            ),
+            constraints: BoxConstraints(minHeight: rowHeight),
             decoration: minimalFrame(shape, fill: place ? t.muted : null),
             child: Padding(
               padding: const EdgeInsets.symmetric(

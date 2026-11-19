@@ -8,7 +8,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
 
 /// The corner scale every framed part reads, on `MinimalThemeData.shapes`:
-/// one [radius], as a shadcn theme sets one `--radius` and derives the rest.
+/// each size is derived from the base [radius].
 ///
 /// | step | from [radius] | at 8 | parts |
 /// |---|---|---|---|

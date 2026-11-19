@@ -609,17 +609,44 @@ class _ReadoutCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.minimalTheme;
-    final rtl = Directionality.of(context) == TextDirection.rtl;
-    final gx = rtl ? width - x : x;
-    // Beside the guide, on the side with room.
-    final left = gx + 8 + _width <= width
-        ? gx + 8
-        : math.max(0.0, gx - 8 - _width);
+    final direction = Directionality.of(context);
+    final scaler = MediaQuery.textScalerOf(context);
+    double measure(String text, TextStyle style) => TextPainter.computeWidth(
+      text: TextSpan(text: text, style: style),
+      textDirection: direction,
+      textScaler: scaler,
+      maxLines: 1,
+    );
+    const dot = 6.0, gap = MinimalSpacing.s4 + 2;
     final label = this.label;
+    final rowWidth = rows.fold<double>(
+      0,
+      (widest, row) => math.max(
+        widest,
+        dot +
+            gap +
+            measure(row.$1, t.caption) +
+            MinimalSpacing.s4 +
+            measure(row.$2, t.countFigure),
+      ),
+    );
+    final contentWidth = math.max(
+      rowWidth,
+      label == null ? 0.0 : measure(label, t.caption.medium),
+    );
+    final desired = (contentWidth + 2 * (MinimalSpacing.s8 + t.hairline))
+        .ceilToDouble();
+    final cardWidth = math.min(width, math.max(_width, desired));
+    final stackRows =
+        rowWidth + 2 * (MinimalSpacing.s8 + t.hairline) > cardWidth;
+    final gx = direction == TextDirection.rtl ? width - x : x;
+    final left = gx + 8 + cardWidth <= width
+        ? gx + 8
+        : math.max(0.0, gx - 8 - cardWidth);
     return Positioned(
       left: left,
       top: 0,
-      width: _width,
+      width: cardWidth,
       child: IgnorePointer(
         child: ExcludeSemantics(
           child: Container(
@@ -651,15 +678,26 @@ class _ReadoutCard extends StatelessWidget {
                         ),
                       ),
                       const MinimalGap(MinimalSpacing.s4 + 2),
-                      Expanded(
-                        child: Text(
-                          name,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: t.caption.c(t.mutedForeground),
+                      if (stackRows)
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(name, style: t.caption.c(t.mutedForeground)),
+                              Text(value, style: t.countFigure.c(t.foreground)),
+                            ],
+                          ),
+                        )
+                      else ...[
+                        Expanded(
+                          child: Text(
+                            name,
+                            style: t.caption.c(t.mutedForeground),
+                          ),
                         ),
-                      ),
-                      Text(value, style: t.countFigure.c(t.foreground)),
+                        const MinimalGap(MinimalSpacing.s4),
+                        Text(value, style: t.countFigure.c(t.foreground)),
+                      ],
                     ],
                   ),
               ],

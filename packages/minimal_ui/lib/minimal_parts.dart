@@ -1,12 +1,8 @@
-/// Everything `minimal_ui`'s component files use, public: the look, the foundation, and the helpers the look's barrel
-/// keeps back (internal/bar_actions.dart, internal/button_paint.dart, internal/cap_label.dart, internal/centred_sheet_route.dart, internal/column_plan.dart, internal/controls.dart, internal/edge_fade.dart, internal/face.dart, internal/field.dart, internal/give_way_row.dart, internal/kit_paint.dart, internal/lucide_cut.g.dart, internal/menu_keys.dart, internal/page_foot.dart, internal/platform_words.dart, internal/rail_action.dart, internal/sheet_header.dart, internal/styled.dart, internal/tap_band.dart, internal/text_entry.dart, internal/today_mark.dart, internal/trailing_glyph.dart).
+/// Helpers for customizing components copied from `minimal_ui`.
 ///
-/// Import it in a component you copied out of the package to change, in place of the `src/` imports it had; the
-/// rest of your app stays on the package:
+/// Import this library in the copied widget to use its theme and component helpers.
 ///
 /// ```dart
-/// // lib/ui/my_card.dart, copied from package:minimal_ui/src/minimal/... and renamed.
-/// import 'package:flutter/widgets.dart';
 /// import 'package:minimal_ui/minimal_parts.dart';
 /// ```
 ///

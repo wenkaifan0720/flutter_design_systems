@@ -128,15 +128,11 @@ abstract final class MinimalMotion {
   /// Minimal's one curve: a decelerate, no overshoot.
   static const Curve out = Curves.easeOutCubic;
 
-  /// Cody's spring register, kept by name so code transfers: Minimal has
-  /// no overshoot, so it is the same decelerate as [out].
+  /// The decelerating curve for spring-style transitions. Equivalent to [out].
   static const Curve spring = Curves.easeOutCubic;
 
-  /// Kill-switch for continuous or repeating animation. Golden and
-  /// walkthrough tests set this false so frames are deterministic and
-  /// pumpAndSettle terminates; any widget that starts a repeating
-  /// AnimationController must check it. One-shot feedback ignores it, and
-  /// the route transitions collapse to nothing. Never set in app code.
+  /// Whether continuous animations and page transitions are enabled.
+  /// Set to false to keep indicators still and present pages immediately.
   static bool animate = true;
 }
 
@@ -510,7 +506,7 @@ class MinimalColors with Diagnosticable {
   /// the ground.
   final Color mutedForeground;
 
-  /// The faintest ink: a placeholder, a disabled label.
+  /// Faint ink for decorative marks and secondary icons.
   final Color textTertiary;
 
   /// Ink on [surfaceInverse].
@@ -1937,13 +1933,10 @@ extension MinimalThemeContext on BuildContext {
 
 /// The one motion switch every Minimal component reads.
 extension MinimalMotionContext on BuildContext {
-  /// True when motion should collapse to its end state: the test and
-  /// walkthrough kill-switch ([MinimalMotion.animate] false) or the reader's
-  /// Reduce Motion, whichever platform asked (ui_core's
-  /// [designReduceMotionOf]: Android's and the web's
-  /// `MediaQuery.disableAnimations`, iOS's `AccessibilityFeatures.reduceMotion`).
-  /// iOS's change comes as a build, so a State reads it in `build` or as it
-  /// acts, not once in `didChangeDependencies`.
+  /// Whether to show the final frame immediately.
+  ///
+  /// Returns true when [MinimalMotion.animate] is false or the platform
+  /// requests reduced motion. Read it during build to follow changes.
   bool get minimalStill => !MinimalMotion.animate || designReduceMotionOf(this);
 }
 
@@ -2296,11 +2289,8 @@ MinimalColors _colors(_Palette p) => MinimalColors(
   selection: p.primarySubtle,
 );
 
-/// The look's shadows for [colors]' appearance, by [level]: 0 the faint
-/// lift, 1 what floats, 2 a sheet or a dialog. Floating shadows draw in
-/// from their edges (a negative spread, as shadcn's shadow-xl and
-/// shadow-2xl), so one soft shadow falls under the surface rather than a
-/// halo round it.
+/// Returns the shadows for [colors] at [level].
+/// Levels 0, 1 and 2 are used for raised surfaces, floating controls and dialogs.
 List<BoxShadow> _shadow(MinimalColors colors, int level) =>
     (colors.brightness == Brightness.dark
     ? _shadowsDark

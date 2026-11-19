@@ -37,8 +37,8 @@ enum MinimalSearchPresentation {
 /// Search as Minimal draws it: a 32 px field on a hairline at the control
 /// radius — the search glyph, the query, and at the end the [shortcut]'s
 /// key caps while the field is empty, the clear glyph once it holds text.
-/// Escape clears a query, then leaves the field. Focus turns the rule to
-/// the accent; keyboard focus also draws the kit's solid 2 px ring.
+/// Escape clears a query. When empty, Escape dismisses the enclosing popup or leaves the field. Focus turns the rule to
+/// the accent, 1.5 px in from the outline, with no ring outside it.
 /// `showCancel` adds a quiet Cancel beside the focused field; [scopes] (two
 /// or more) print a strip of [MinimalFilter]s under it.
 ///
@@ -271,7 +271,7 @@ class _MinimalSearchFieldState extends State<MinimalSearchField>
       cursorWidth: MinimalFieldMetrics.cursor,
       decoration: minimalBareDecoration(
         hint: widget.hint ?? MinimalLocalizations.of(context).search,
-        hintStyle: t.body.c(t.textTertiary),
+        hintStyle: t.body.c(t.mutedForeground),
       ),
     );
     // The line by its capitals, as every label beside it: caret, hint and
@@ -295,7 +295,7 @@ class _MinimalSearchFieldState extends State<MinimalSearchField>
         side: BorderSide(color: focused ? t.ring : t.border, width: t.hairline),
         shadows: toolbar ? t.shadowMd : null,
       ),
-      foregroundDecoration: minimalFieldRing(t, shown: keyboardFocused),
+      foregroundDecoration: minimalFocusEdge(t, shown: focused),
       builder: (context, _) => Row(
         children: [
           MinimalIcon(
@@ -308,9 +308,23 @@ class _MinimalSearchFieldState extends State<MinimalSearchField>
           // so no box round the line stops a tap past it.
           Expanded(
             child: MinimalFieldTarget(
-              child: CallbackShortcuts(
-                bindings: <ShortcutActivator, VoidCallback>{
-                  const SingleActivator(LogicalKeyboardKey.escape): _escape,
+              child: Focus(
+                canRequestFocus: false,
+                skipTraversal: true,
+                includeSemantics: false,
+                onKeyEvent: (_, event) {
+                  if (event is! KeyDownEvent ||
+                      event.logicalKey != LogicalKeyboardKey.escape) {
+                    return KeyEventResult.ignored;
+                  }
+                  // Check the controller at the keypress, including an edit
+                  // that has not drawn its next frame yet.
+                  if (controller.text.isEmpty &&
+                      ModalRoute.of(context) is PopupRoute<dynamic>) {
+                    return KeyEventResult.ignored;
+                  }
+                  _escape();
+                  return KeyEventResult.handled;
                 },
                 child: input,
               ),
@@ -598,7 +612,7 @@ class MinimalSearchEntry extends StatelessWidget {
                   children: [
                     Text(
                       label,
-                      style: t.body.c(t.textTertiary),
+                      style: t.body.c(t.mutedForeground),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),

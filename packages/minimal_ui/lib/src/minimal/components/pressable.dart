@@ -10,51 +10,25 @@ import '../internal/styled.dart';
 import '../internal/tap_band.dart';
 import '../theme.dart';
 
-/// Minimal's press feedback for a surface the kit does not already cover
-/// — screens rarely need it, because [MinimalButton], [MinimalIconButton] and
-/// the rows carry it already.
+/// Adds keyboard, pointer and screen reader support to a custom control.
 ///
-/// The feedback is the instrument's own: no scale, no bounce — the surface
-/// takes a faint wash of the ink while pressed, dims when disabled, and
-/// draws the [MinimalThemeData.ring] (`t.focusWidth`, 2 px) outside
-/// its edge, past 2 px of the ground it stands on, when the keyboard
-/// focuses it. A hovering pointer changes
-/// nothing: [style]'s `overlay` is the hook for an app that wants a hover
-/// wash. Enter and Space activate it like a tap. [shape] (or [radius])
-/// outlines the wash and the ring; it defaults to the theme's
-/// `shapes.small`.
+/// Enter, Space and a tap invoke [onPressed]. A pressed control takes a
+/// light wash. Keyboard focus draws a 2 px outline using the theme’s accent.
+/// [shape] or [radius] determines both outlines. Supply [face] and [ink] for
+/// a colored surface so feedback can preserve its label contrast.
 ///
-/// [builder] builds the child for the control's states (pressed, hovered,
-/// focused, disabled, selected), for a part whose face resolves a
-/// `MinimalStyle` for them.
+/// Use [builder] to resolve the child's appearance for each [WidgetState].
+/// Set [enabled] to false for an unavailable control. With [enabled] true
+/// and [onPressed] null, the child handles its own interactions.
 ///
-/// DISABLED IS SOMETHING A CALLER SAYS, NOT SOMETHING WE INFER. A pressable
-/// with no [onPressed] that is not declared disabled is not a control at all:
-/// it renders its bare child and lets taps through. A component that owns a
-/// control API passes `enabled: onPressed != null`.
+/// The hit target is at least 44 px for touch and 24 px for a pointer.
+/// [tapAlignment] places the painted control inside it. A larger control
+/// can provide a shared target for its parts with [tapTarget] false.
 ///
-/// Also the kit's touch-target guarantee: the control is laid out at least
-/// the tap-target floor for what reaches it ([DesignTapTarget]: 44 px square
-/// at a finger, 24 at a pointer, from [MinimalLayout.tapTargets]), its face
-/// placed by [tapAlignment] (centred unless a part says otherwise: a bare
-/// checkbox stands on its start keyline, a field's trailing key on its
-/// end) and painted at its own size — a 32 px bar button still LOOKS 32
-/// px, with the room round it in the layout, so the area a tap reaches, the
-/// box a screen reader outlines and the layout agree (Material's padded tap
-/// target). Density tightens the face, never the target. A part of a larger
-/// control that lays the target out itself (a segment in its track) passes
-/// `tapTarget: false`; inside a box that holds it tight, the target cannot
-/// grow and the box is the target.
-///
-/// [toggled] and [checked] put a switch's or a checkbox's state on the
-/// control's own node. `focusable: false` is a part of a larger focus stop
-/// (a segment of a track, a tab of a strip): still a tap and a screen
-/// reader's button, never a keyboard stop, and it announces no focus.
-/// `focusInside: true` draws the ring inside the edge, for a full-bleed
-/// surface (a row, a table header) that has no outside to draw on, or one a
-/// parent clips; a square-cornered surface (`radius: 0`) takes it by default.
-/// A [focusNode] lets a form move focus to the control itself (the first
-/// agreement still to tick).
+/// [toggled] and [checked] announce the value on the control's own node.
+/// Use [focusable] false for a part of a composite focus stop, such as a
+/// tab. [focusInside] places the outline within clipped surfaces. Supply
+/// [focusNode] to move focus programmatically.
 ///
 /// ```dart
 /// MinimalPressable(onPressed: open, shape: t.shapes.medium, child: tile)
@@ -100,9 +74,8 @@ class MinimalPressable extends StatefulWidget {
   /// Its press; null disables it.
   final VoidCallback? onPressed;
 
-  /// Whether this is a control that is currently UNAVAILABLE. False dims the
-  /// child and swallows taps; true with no [onPressed] is not a control at all
-  /// and renders as its bare child.
+  /// Whether the control can receive input. A disabled control is dimmed
+  /// and announces its unavailable state to screen readers.
   final bool enabled;
 
   /// How it takes hits on its empty parts.
@@ -340,7 +313,7 @@ class _MinimalPressableState extends State<MinimalPressable> {
       checked: widget.checked,
       inMutuallyExclusiveGroup: widget.inMutuallyExclusiveGroup ? true : null,
       label: widget.semanticLabel,
-      child: _focusScope(
+      child: _interactionScope(
         FocusableActionDetector(
           focusNode: widget.focusNode,
           autofocus: widget.autofocus,
@@ -350,7 +323,6 @@ class _MinimalPressableState extends State<MinimalPressable> {
               ? SystemMouseCursors.click
               : SystemMouseCursors.basic,
           onShowFocusHighlight: (v) => setState(() => _focus = v),
-          onShowHoverHighlight: (v) => setState(() => _hover = v),
           actions: <Type, Action<Intent>>{
             ActivateIntent: CallbackAction<ActivateIntent>(
               onInvoke: (_) {
@@ -377,7 +349,13 @@ class _MinimalPressableState extends State<MinimalPressable> {
             onTapUp: enabled ? (_) => _setDown(false) : null,
             onTapCancel: enabled ? () => _setDown(false) : null,
             child: AnimatedOpacity(
-              opacity: enabled ? 1 : 0.45,
+              opacity: enabled
+                  ? 1
+                  : minimalDisabledOpacity(
+                      ink: widget.ink,
+                      face: widget.face,
+                      ground: minimalGround(context),
+                    ),
               duration: context.minimalStill
                   ? Duration.zero
                   : MinimalMotion.fast,
@@ -465,9 +443,13 @@ class _MinimalPressableState extends State<MinimalPressable> {
     );
   }
 
-  /// A part of a larger focus stop is kept out of keyboard traversal.
-  Widget _focusScope(Widget child) =>
-      widget.focusable ? child : ExcludeFocus(child: child);
+  Widget _interactionScope(Widget child) => MouseRegion(
+    // A pointer can hover even when touch was the last input. Keyboard
+    // highlight mode only controls the focus outline.
+    onEnter: (_) => setState(() => _hover = true),
+    onExit: (_) => setState(() => _hover = false),
+    child: widget.focusable ? child : ExcludeFocus(child: child),
+  );
 }
 
 /// Hands the [MinimalLayout.minHitTarget] margin on through a parent that

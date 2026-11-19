@@ -111,45 +111,67 @@ class _KitTodayPageState extends State<KitTodayPage> {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: MinimalChromeMetrics.gutter,
-              vertical: MinimalSpacing.s12,
+          if (active.isNotEmpty)
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: MinimalChromeMetrics.gutter,
+                vertical: MinimalSpacing.s12,
+              ),
+              decoration: BoxDecoration(border: Border(bottom: t.rule)),
+              child: MinimalSegmentBar(
+                value: kept,
+                total: active.length,
+                label: ar('kept', 'منجزة'),
+                showPercent: true,
+              ),
             ),
-            decoration: BoxDecoration(border: Border(bottom: t.rule)),
-            child: MinimalSegmentBar(
-              value: kept,
-              total: active.length,
-              label: ar('kept', 'منجزة'),
-              showPercent: true,
+          if (all.isNotEmpty)
+            MinimalFilterBar(
+              children: [
+                for (final view in _View.values)
+                  MinimalFilter(
+                    switch (view) {
+                      _View.all => ar('All', 'الكل'),
+                      _View.open => ar('Open', 'مفتوحة'),
+                      _View.done => ar('Done', 'منجزة'),
+                      _View.paused => ar('Paused', 'متوقفة'),
+                    },
+                    count: _count(view),
+                    selected: view == _view,
+                    onPressed: () => setState(() => _view = view),
+                  ),
+              ],
             ),
-          ),
-          MinimalFilterBar(
-            children: [
-              for (final view in _View.values)
-                MinimalFilter(
-                  switch (view) {
-                    _View.all => ar('All', 'الكل'),
-                    _View.open => ar('Open', 'مفتوحة'),
-                    _View.done => ar('Done', 'منجزة'),
-                    _View.paused => ar('Paused', 'متوقفة'),
-                  },
-                  count: _count(view),
-                  selected: view == _view,
-                  onPressed: () => setState(() => _view = view),
-                ),
-            ],
-          ),
-          if (shown.isEmpty)
+          if (all.isEmpty)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: MinimalSpacing.s48),
               child: MinimalEmptyState(
-                icon: LucideIcons.circleCheck,
-                title: ar('Nothing open', 'لا شيء مفتوح'),
+                icon: LucideIcons.listChecks,
+                title: ar('No habits yet', 'لا عادات بعد'),
                 body: ar(
-                  'Every habit on today\'s list is kept.',
-                  'كل عادات قائمة اليوم منجزة.',
+                  'Start with one small thing you want to do every day.',
+                  'ابدأ بشيء صغير تريد فعله كل يوم.',
                 ),
+                actionLabel: widget.onNew == null
+                    ? null
+                    : ar('New habit', 'عادة جديدة'),
+                onAction: widget.onNew,
+              ),
+            )
+          else if (shown.isEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: MinimalSpacing.s48),
+              child: MinimalEmptyState(
+                icon: LucideIcons.listFilter,
+                title: switch (_view) {
+                  _View.open => ar('No open habits', 'لا عادات مفتوحة'),
+                  _View.done => ar(
+                    'No habits kept yet',
+                    'لم تُنجز أي عادة بعد',
+                  ),
+                  _View.paused => ar('No paused habits', 'لا عادات متوقفة'),
+                  _View.all => ar('No habits yet', 'لا عادات بعد'),
+                },
                 actionLabel: ar('Show all', 'عرض الكل'),
                 onAction: () => setState(() => _view = _View.all),
               ),

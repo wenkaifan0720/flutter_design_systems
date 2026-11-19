@@ -32,8 +32,8 @@ import 'pressable.dart';
 /// A field with add-ons inside one box: a fixed text before or after the
 /// value (`https://`, `.com`, `kg`), a glyph, a button. The box is a
 /// [MinimalTextField]'s, and so are its states: its rule turns to the focus
-/// colour while anything in it has focus, the ring shows for the keyboard
-/// only, the danger rule when [error] says. A text add-on stands on the
+/// accent, 1.5 px in from the outline, while anything in it has focus, and
+/// the danger rule at rest when [error] says. A text add-on stands on the
 /// quiet fill behind a hairline, as one part of the box. A tap on the box
 /// or a plain add-on puts the caret in the field.
 ///
@@ -231,7 +231,7 @@ class _MinimalInputGroupState extends State<MinimalInputGroup>
       style: valueStyle.c(ink),
       decoration: minimalBareDecoration(
         hint: widget.hint,
-        hintStyle: valueStyle.c(t.textTertiary),
+        hintStyle: valueStyle.c(t.mutedForeground),
       ),
     );
     // The line by its capitals: caret, hint and taps move with it.
@@ -324,10 +324,6 @@ class _MinimalInputGroupState extends State<MinimalInputGroup>
         ], states);
         final shape = so.shape ?? t.shapes.small;
         final within = states.contains(WidgetState.focused);
-        final keyboard =
-            within &&
-            FocusManager.instance.highlightMode ==
-                FocusHighlightMode.traditional;
         return Container(
           constraints: BoxConstraints(
             minHeight:
@@ -349,10 +345,9 @@ class _MinimalInputGroupState extends State<MinimalInputGroup>
               t.rim,
             ),
           ),
-          foregroundDecoration: minimalFieldRing(
+          foregroundDecoration: minimalFocusEdge(
             t,
-            shown: keyboard,
-            error: states.wrong,
+            shown: within,
             shape: shape,
           ),
           child: minimalClip(
@@ -730,7 +725,7 @@ class MinimalInputOtp extends StatelessWidget {
         foregroundDecoration: active
             ? minimalFrame(
                 cell,
-                side: so.rim(s.isError ? t.destructive : t.ring, t.focusWidth),
+                side: so.rim(t.ring, MinimalFieldMetrics.focusEdge),
               )
             : null,
         // A figure by its capitals, on the cell's middle (a bullet, which has
