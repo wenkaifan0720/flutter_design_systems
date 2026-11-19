@@ -34,10 +34,27 @@ abstract class MinimalLocalizations {
   /// The words in force at [context]: the app's own, when its
   /// `localizationsDelegates` load a [MinimalLocalizations]
   /// ([delegateOf]); else the shared words of [DesignLocalizations.of], and
-  /// Minimal's own in English.
-  static MinimalLocalizations of(BuildContext context) =>
-      Localizations.of<MinimalLocalizations>(context, MinimalLocalizations) ??
-      MinimalLocalizationsEn(DesignLocalizations.of(context));
+  /// Minimal's own in English ([delegate], or no delegate at all).
+  static MinimalLocalizations of(BuildContext context) {
+    final words = Localizations.of<MinimalLocalizations>(
+      context,
+      MinimalLocalizations,
+    );
+    return words == null || words is _SharedWords
+        ? MinimalLocalizationsEn(DesignLocalizations.of(context))
+        : words;
+  }
+
+  /// Loads Minimal's words for every locale: the words every look shares in
+  /// the locale's language, from the [DesignLocalizations] in force (ui_core's
+  /// translations, or an app's own), and Minimal's own in English. The
+  /// same words [of] gives with no delegate registered.
+  ///
+  /// ```dart
+  /// MaterialApp(localizationsDelegates: const [MinimalLocalizations.delegate, DesignLocalizations.delegate])
+  /// ```
+  static const LocalizationsDelegate<MinimalLocalizations> delegate =
+      _SharedWordsDelegate();
 
   /// A delegate that loads [words] for the locales [isSupported] accepts
   /// (every locale when null), for an app's `localizationsDelegates`.
@@ -203,6 +220,12 @@ abstract class MinimalLocalizations {
 
   /// A time picker's minutes column.
   String get minute;
+
+  /// A 12-hour clock's mark before noon ("AM").
+  String get anteMeridiem => 'AM';
+
+  /// A 12-hour clock's mark from noon ("PM").
+  String get postMeridiem => 'PM';
 
   /// The months, January first.
   List<String> get months;
@@ -525,9 +548,13 @@ class MinimalLocalizationsEn extends MinimalLocalizations {
   @override
   String get nextMonth => shared.nextMonthTooltip;
   @override
-  String get hour => 'Hour';
+  String get hour => shared.timePickerHourLabel;
   @override
-  String get minute => 'Minute';
+  String get minute => shared.timePickerMinuteLabel;
+  @override
+  String get anteMeridiem => shared.anteMeridiemAbbreviation;
+  @override
+  String get postMeridiem => shared.postMeridiemAbbreviation;
   @override
   List<String> get months => const [
     'January',
@@ -697,4 +724,28 @@ class _MinimalWordsDelegate
 
   @override
   String toString() => 'MinimalLocalizations.delegateOf(${words.runtimeType})';
+}
+
+/// What [MinimalLocalizations.delegate] loads: a mark that [MinimalLocalizations.of]
+/// reads as the shared words in force at its context.
+class _SharedWords extends MinimalLocalizationsEn {
+  const _SharedWords();
+}
+
+/// [MinimalLocalizations.delegate]: every locale.
+class _SharedWordsDelegate extends LocalizationsDelegate<MinimalLocalizations> {
+  const _SharedWordsDelegate();
+
+  @override
+  bool isSupported(Locale locale) => true;
+
+  @override
+  Future<MinimalLocalizations> load(Locale locale) =>
+      SynchronousFuture<MinimalLocalizations>(const _SharedWords());
+
+  @override
+  bool shouldReload(_SharedWordsDelegate old) => false;
+
+  @override
+  String toString() => 'MinimalLocalizations.delegate';
 }

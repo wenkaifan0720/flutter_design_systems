@@ -1,9 +1,9 @@
 // A date picker's value and a bar chart's axis labels at 100%, 200% and
 // 300% text on a phone, against Material at the same size: a date pill grows
 // and wraps between its words, as Material's text field grows, rather than
-// cutting the date short; a chart's labels grow to 1.3x, as Material's
-// navigation bar labels do, and stay whole in their columns (Stint's Due
-// date and Hours logged at 300%).
+// cutting the date short, and keeps the row's inset under it; a chart's
+// labels grow to 1.3x, as Material's navigation bar labels do, and stay whole
+// in their columns (Stint's Due date and Hours logged at 300%).
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -90,13 +90,21 @@ void main() {
       // The figures inside the pill's hairline, the pill inside the row.
       expect(value.top, greaterThanOrEqualTo(pill.top), reason: '$pill');
       expect(value.bottom, lessThanOrEqualTo(pill.bottom), reason: '$pill');
+      // The pill keeps the row's inset above and below it, (44 - 28) / 2
+      // at the standard density, as at 100%: never on the row's rule.
       final row = t.getRect(find.byType(MinimalDatePicker));
-      expect(pill.top, greaterThanOrEqualTo(row.top));
-      expect(pill.bottom, lessThanOrEqualTo(row.bottom));
+      expect(pill.top - row.top, greaterThanOrEqualTo(8 - 0.01), reason: at);
+      expect(
+        row.bottom - pill.bottom,
+        greaterThanOrEqualTo(8 - 0.01),
+        reason: at,
+      );
       expect(row.height, greaterThanOrEqualTo(MinimalLayout.minHitTarget));
       if (scale == 1) {
-        // At 100% the row is as it was: one line in a 28 px pill.
+        // At 100% the row is as it was: one line in a 28 px pill, in the
+        // row's 44 px.
         expect(pill.height, 28);
+        expect(row.height, MinimalLayout.minHitTarget);
         expect(
           t.renderObject<RenderParagraph>(find.text(date)).size.height,
           lessThan(28),

@@ -378,13 +378,14 @@ void main() {
       expect([for (final r in radios) r.selected], [false, true, false]);
     });
 
-    testWidgets('arrows walk the options and Space chooses', (tester) async {
+    testWidgets('the arrows choose as they walk, past a disabled option and '
+        'round from the last', (tester) async {
       final seen = <String>[];
       await tester.pumpWidget(_host(group(seen.add)));
       await _key(tester, LogicalKeyboardKey.tab);
       await _key(tester, LogicalKeyboardKey.arrowDown);
-      await _key(tester, LogicalKeyboardKey.space);
-      expect(seen, ['pro']);
+      await _key(tester, LogicalKeyboardKey.arrowDown);
+      expect(seen, ['pro', 'free']);
     });
   });
 

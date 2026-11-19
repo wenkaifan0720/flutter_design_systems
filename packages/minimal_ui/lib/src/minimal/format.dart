@@ -62,10 +62,14 @@ abstract final class MinimalFormat {
   static String time(DateTime d) => clock(d);
 
   /// The 12-hour clock: "9:41 AM". No leading zero on the hour — a clock
-  /// face, not a timestamp.
-  static String time12(DateTime d) {
+  /// face, not a timestamp. The marks are [words]' (Arabic's "9:41 ص").
+  static String time12(
+    DateTime d, {
+    MinimalLocalizations words = const MinimalLocalizationsEn(),
+  }) {
     final hour = d.hour % 12 == 0 ? 12 : d.hour % 12;
-    return '$hour:${d.minute.toString().padLeft(2, '0')} ${d.hour < 12 ? 'AM' : 'PM'}';
+    final mark = d.hour < 12 ? words.anteMeridiem : words.postMeridiem;
+    return '$hour:${d.minute.toString().padLeft(2, '0')} $mark';
   }
 
   /// The 24-hour clock Minimal prints in mono: "07:00", "21:30".

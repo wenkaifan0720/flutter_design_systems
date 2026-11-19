@@ -1272,6 +1272,13 @@ final Map<String, DocExample> _examples = {
           DesignLocalizations.delegate,
         ],
       ),
+  'MaterialApp 5': (context) =>
+      () => const MaterialApp(
+        localizationsDelegates: [
+          MinimalLocalizations.delegate,
+          DesignLocalizations.delegate,
+        ],
+      ),
   'MinimalThemeData 4': (context) {
     final softer = MinimalThemeData.standard().copyWith(
       shapes: const MinimalShapes(radius: 12),

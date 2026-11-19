@@ -2,6 +2,8 @@
 /// an inline calendar.
 library;
 
+import 'dart:math' as math;
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
@@ -227,11 +229,15 @@ class _MinimalDatePickerState extends State<MinimalDatePicker> {
 
   void _change(DateTime v) => widget.onChanged?.call(_clamp(v));
 
-  String _dateText() => MinimalFormat.date(widget.value);
+  String _dateText() =>
+      MinimalFormat.date(widget.value, words: MinimalLocalizations.of(context));
 
   String _timeText() => widget.use24HourFormat
       ? MinimalFormat.clock(widget.value)
-      : MinimalFormat.time12(widget.value);
+      : MinimalFormat.time12(
+          widget.value,
+          words: MinimalLocalizations.of(context),
+        );
 
   /// A picker for [mode] alone, standing in a popover or a sheet.
   MinimalDatePicker _panel(
@@ -375,9 +381,20 @@ class _MinimalDatePickerState extends State<MinimalDatePicker> {
           ),
         ),
       );
-      // At least a 44 px slot (the row's height) around the 28 px pill, so
-      // the row leaves room for the pill's whole touch target; taller when
-      // the value is.
+      // The row's inset above and below the pill, inside its slot: at 100%
+      // the 28 px pill stands in the row's 44 px, as it always has, and the
+      // whole slot takes the tap. When a large text size makes the pill
+      // taller, the slot grows with it and keeps the inset, as the label
+      // keeps its gap: never on the row's rule. The wash and the ring stay
+      // on the pill.
+      final inset = math.max(
+        0.0,
+        (t.rowHeight - MinimalChromeMetrics.controlSm) / 2,
+      );
+      final slot = Padding(
+        padding: EdgeInsets.symmetric(vertical: inset),
+        child: face,
+      );
       return ConstrainedBox(
         constraints: BoxConstraints(minHeight: t.rowHeight),
         child: Align(
@@ -388,8 +405,9 @@ class _MinimalDatePickerState extends State<MinimalDatePicker> {
                   builder: (pillContext) => MinimalPressable(
                     onPressed: () => _open(mode, pillContext),
                     shape: MinimalShapes.inset(t.shapes.small, 1),
+                    outset: EdgeInsets.symmetric(vertical: -inset),
                     semanticLabel: label,
-                    child: face,
+                    child: slot,
                   ),
                 )
               // The row dims as a whole; the pill still says what it is.
@@ -398,7 +416,7 @@ class _MinimalDatePickerState extends State<MinimalDatePicker> {
                   button: true,
                   enabled: false,
                   label: label,
-                  child: face,
+                  child: slot,
                 ),
         ),
       );
@@ -751,9 +769,11 @@ class _MinimalDatePickerState extends State<MinimalDatePicker> {
       for (var m = 0; m < 60; m += _DateMetrics.minuteStep) m,
       value.minute,
     }.toList()..sort();
+    final words = MinimalLocalizations.of(context);
     String hourText(int h) => widget.use24HourFormat
         ? h.toString().padLeft(2, '0')
-        : '${h % 12 == 0 ? 12 : h % 12} ${h < 12 ? 'AM' : 'PM'}';
+        : '${h % 12 == 0 ? 12 : h % 12} '
+              '${h < 12 ? words.anteMeridiem : words.postMeridiem}';
     DateTime at(int hour, int minute) => value.isUtc
         ? DateTime.utc(value.year, value.month, value.day, hour, minute)
         : DateTime(value.year, value.month, value.day, hour, minute);
@@ -764,7 +784,7 @@ class _MinimalDatePickerState extends State<MinimalDatePicker> {
       children: [
         Expanded(
           child: _TimeColumn(
-            label: MinimalLocalizations.of(context).hour,
+            label: words.hour,
             values: List<int>.generate(24, (h) => h),
             selected: value.hour,
             text: hourText,
@@ -776,7 +796,7 @@ class _MinimalDatePickerState extends State<MinimalDatePicker> {
         const MinimalGap(MinimalSpacing.s8),
         Expanded(
           child: _TimeColumn(
-            label: MinimalLocalizations.of(context).minute,
+            label: words.minute,
             values: minutes,
             selected: value.minute,
             text: (m) => m.toString().padLeft(2, '0'),

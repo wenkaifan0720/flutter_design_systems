@@ -1,3 +1,12 @@
+## 0.3.3
+
+- The time picker's column names and a 12-hour clock's AM and PM come from ui_core's `DesignLocalizations` (`timePickerHourLabel`, `timePickerMinuteLabel`, `anteMeridiemAbbreviation`, `postMeridiemAbbreviation`), in all 30 of its locales: a screen reader says "Stunde" in German, and Arabic prints 7:30 م. Previously they were "Hour", "Minute", "AM" and "PM" in English in every locale. `MinimalLocalizations` gains `anteMeridiem` and `postMeridiem` (English by default, so a subclass keeps compiling), and `MinimalFormat.time12` takes `words`.
+- `MinimalLocalizations.delegate` loads Minimal's words for every locale: the shared ones in the locale's language, from ui_core's translations or the app's own `DesignLocalizations`, and Minimal's own in English. These are the words the parts already used with no Minimal delegate registered.
+- A date picker's compact row prints its date with the words in force (an app's own `MinimalLocalizations` months).
+- When a date picker's pill grows at a large text size, the row keeps its inset above and below the pill, so the pill no longer sits on the row's rule.
+- `MinimalRadioGroup` works from the keyboard as Flutter's `RadioGroup` does. It is one Tab stop: Tab lands on the chosen option (the first while none is chosen) and the next Tab leaves the group. The arrow keys choose the next or previous option, skipping disabled ones and wrapping at the ends: Down and Right for the next, Up and Left for the previous, with Left and Right swapped in a right-to-left layout. Previously Tab stepped through every option and the arrows moved focus without choosing.
+- A `MinimalRadioGroup` with `direction: Axis.horizontal` lays its options side by side, each as wide as its words. Previously each option took the full width, so the options stacked as in a column.
+
 ## 0.3.2
 
 - At large text sizes a date picker's value grows with the text: its pill and row get taller and the date wraps between its words (20 Nov over 2026) instead of losing the year or the foot of its figures.

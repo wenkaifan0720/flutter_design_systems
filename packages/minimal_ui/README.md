@@ -172,7 +172,7 @@ Import `package:minimal_ui/minimal_host.dart` for `MinimalHost`, which sets up t
   )
   ```
 
-For Minimal-specific words such as status names and composer actions, extend `MinimalLocalizationsEn` and register `MinimalLocalizations.delegateOf(yourWords)`. Calendars use localized month and day names and the local first day of the week. Time pickers accept `use24HourFormat`. Format numeric and monetary values before passing them to the components.
+For Minimal-specific words such as status names and composer actions, extend `MinimalLocalizationsEn` and register `MinimalLocalizations.delegateOf(yourWords)`. `MinimalLocalizations.delegate` gives every locale the shared words in its language with Minimal's own in English, as no delegate does. Calendars use localized month and day names and the local first day of the week. Time pickers accept `use24HourFormat`. Format numeric and monetary values before passing them to the components.
 
 ## Fonts and icons
 
