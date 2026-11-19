@@ -1,3 +1,8 @@
+## 0.1.4
+
+- Date pickers show the month, digits and date order from the reader’s ui_core localization. For example, 20 November 2026 reads «٢٠ نوفمبر ٢٠٢٦» in Arabic. Date ranges use the same words and show both years when they cross New Year.
+- Requires ui_core 0.3.3 and uses ui_core_test 0.1.3 for qualification.
+
 ## 0.1.3
 
 - A time picker speaks the reader's language, from ui_core's words: a screen reader names its figures "Stunde" and "Minute" in German, "ساعة" and "دقيقة" in Arabic ("Hour" and "Minute" in English, where they were "Hours" and "Minutes"), and its keys for the halves of the day read "ص" and "م" in Arabic. They were English in every language before.

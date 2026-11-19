@@ -11,7 +11,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
-import 'package:ui_core/host.dart';
 
 import 'actions.dart';
 import 'lists.dart';
@@ -23,6 +22,26 @@ import 'theme.dart';
 // The ui_core types this part's API takes, through the look's barrel.
 export 'package:ui_core/ui_core.dart'
     show DesignCalendarController, DesignCalendarMode, DesignDateRange;
+
+// Keep ui_core’s compact month and day, and the year in the same position
+// and with the same punctuation as the reader’s named date.
+String _dateLabel(DesignLocalizations words, DateTime date) {
+  final monthDay = words.formatShortMonthDay(date);
+  final full = words.formatFullDate(date);
+  final separatedYear = '${words.listSeparator}${words.formatYear(date)}';
+  if (words.dateFieldPattern.startsWith('M') || full.endsWith(separatedYear)) {
+    return '$monthDay$separatedYear';
+  }
+
+  final monthYear = words.formatMonthYear(date);
+  for (final month in [words.formatMonth(date), words.formatShortMonth(date)]) {
+    if (month.isNotEmpty && monthYear.contains(month)) {
+      return monthYear.replaceFirst(month, monthDay);
+    }
+  }
+  // A host can supply its own date wording with a different month form.
+  return full;
+}
 
 /// A day cell's height at 1x text.
 const double _dayHeight = 44;
@@ -657,6 +676,7 @@ class ApplianceDatePicker extends StatelessWidget {
   Widget build(BuildContext context) {
     final enabled = onChanged != null;
     final chosen = value;
+    final words = DesignLocalizations.of(context);
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -666,14 +686,12 @@ class ApplianceDatePicker extends StatelessWidget {
             child: ApplianceFieldLabel(label!, enabled: enabled),
           ),
         _PickerKey(
-          text: chosen == null ? hint : DisplayFormat.date(chosen),
+          text: chosen == null ? hint : _dateLabel(words, chosen),
           empty: chosen == null,
           enabled: enabled,
           error: error != null,
           semanticLabel: semanticLabel ?? label,
-          semanticValue: chosen == null
-              ? null
-              : DesignLocalizations.of(context).formatFullDate(chosen),
+          semanticValue: chosen == null ? null : words.formatFullDate(chosen),
           style: style,
           plate: (context, close) => _CalendarPlate(
             make: () => DesignCalendarController(
@@ -768,12 +786,15 @@ class ApplianceDateRangePicker extends StatelessWidget {
     final enabled = onChanged != null;
     final range = value;
     final end = range?.end;
-    final text = range == null
-        ? hint
-        : end == null
-        ? DisplayFormat.dayMonth(range.start)
-        : '${DisplayFormat.dayMonth(range.start)} – ${DisplayFormat.date(end)}';
-    final loc = DesignLocalizations.of(context);
+    final words = DesignLocalizations.of(context);
+    String rangeText(DesignDateRange dates) {
+      final last = dates.end;
+      final start = last == null || dates.start.year == last.year
+          ? words.formatShortMonthDay(dates.start)
+          : _dateLabel(words, dates.start);
+      return last == null ? start : '$start – ${_dateLabel(words, last)}';
+    }
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -783,14 +804,19 @@ class ApplianceDateRangePicker extends StatelessWidget {
             child: ApplianceFieldLabel(label!, enabled: enabled),
           ),
         _PickerKey(
-          text: text,
+          text: range == null ? hint : rangeText(range),
           empty: range == null,
           enabled: enabled,
           error: error != null,
           semanticLabel: semanticLabel ?? label,
-          semanticValue: range == null || end == null
+          semanticValue: range == null
               ? null
-              : '${loc.formatFullDate(range.start)} to ${loc.formatFullDate(end)}',
+              : end == null
+              ? words.formatFullDate(range.start)
+              : words.chartRangeLabel(
+                  words.formatFullDate(range.start),
+                  words.formatFullDate(end),
+                ),
           style: style,
           plate: (context, close) => _CalendarPlate(
             make: () => DesignCalendarController(

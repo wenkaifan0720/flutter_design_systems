@@ -217,7 +217,7 @@ void main() {
           width: width,
           scale: scale,
         );
-        final words = find.text('20 Nov 2026');
+        final words = find.text('Nov 20, 2026');
         final paragraph = tester.renderObject<RenderParagraph>(words);
         expect(paragraph.didExceedMaxLines, isFalse);
         final face = tester.getRect(
