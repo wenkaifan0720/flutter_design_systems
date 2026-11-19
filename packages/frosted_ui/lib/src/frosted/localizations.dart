@@ -13,8 +13,12 @@ import 'package:flutter/widgets.dart';
 /// English ships ([FrostedLocalizationsEn]); another language is a subclass
 /// and a delegate that loads it. ui_core speaks the shared words in 30
 /// languages (`DesignLocalizations.delegate`); an app words them its own way
-/// with a `DefaultDesignLocalizations` subclass. With no delegate installed
-/// the parts speak English.
+/// with a `DefaultDesignLocalizations` subclass. [delegate] serves every
+/// locale with the English words: where a part says a word every design
+/// system shares (Done, Try again, a day's or a month's name, a time, the
+/// time wheel's columns), a reader of another language hears
+/// `DesignLocalizations`' word for it, unless the app gives Frosted words of
+/// its own. With no delegate installed the parts speak English.
 ///
 /// ```dart
 /// MaterialApp(
@@ -35,7 +39,10 @@ abstract class FrostedLocalizations {
       Localizations.of<FrostedLocalizations>(context, FrostedLocalizations) ??
       const FrostedLocalizationsEn();
 
-  /// Loads Frosted's English words for an English locale.
+  /// Loads Frosted's English words, for every locale: an app in any
+  /// language installs it beside `DesignLocalizations.delegate`, and the
+  /// words the two share come from `DesignLocalizations` in the reader's
+  /// language.
   static const LocalizationsDelegate<FrostedLocalizations> delegate =
       _FrostedLocalizationsDelegate();
 
@@ -670,8 +677,10 @@ class _FrostedLocalizationsDelegate
     extends LocalizationsDelegate<FrostedLocalizations> {
   const _FrostedLocalizationsDelegate();
 
+  // Every locale: the shared words come from DesignLocalizations, and an
+  // app missing a delegate for its locale is warned at startup.
   @override
-  bool isSupported(Locale locale) => locale.languageCode == 'en';
+  bool isSupported(Locale locale) => true;
 
   @override
   Future<FrostedLocalizations> load(Locale locale) =>

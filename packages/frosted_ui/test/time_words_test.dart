@@ -1,6 +1,7 @@
 // The time wheel names its columns, and says its halves of the day, in the reader's language: ui_core's shared words
 // (DesignLocalizations, 30 languages) while Frosted's own are left at English, an app's own Frosted words when it
-// gives them. It said Hour and Minute in English in every locale.
+// gives them. It said Hour and Minute in English in every locale. FrostedLocalizations.delegate serves every locale,
+// so an app in German installs it and is not warned that its locale lacks a delegate.
 import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -15,6 +16,21 @@ class _Own extends FrostedLocalizationsEn {
 
   @override
   String get minute => 'Minuta';
+}
+
+// Frosted's delegate as it was: English alone.
+class _EnglishOnly extends LocalizationsDelegate<FrostedLocalizations> {
+  const _EnglishOnly();
+
+  @override
+  bool isSupported(Locale locale) => locale.languageCode == 'en';
+
+  @override
+  Future<FrostedLocalizations> load(Locale locale) =>
+      SynchronousFuture<FrostedLocalizations>(const FrostedLocalizationsEn());
+
+  @override
+  bool shouldReload(_EnglishOnly old) => false;
 }
 
 class _OwnDelegate extends LocalizationsDelegate<FrostedLocalizations> {
@@ -35,6 +51,7 @@ Future<void> _pump(
   WidgetTester tester,
   Locale locale, {
   bool own = false,
+  bool englishOnly = false,
 }) async {
   tester.view.physicalSize = const Size(390, 700);
   tester.view.devicePixelRatio = 1;
@@ -46,11 +63,11 @@ Future<void> _pump(
       supportedLocales: DesignLocalizations.supportedLocales,
       localizationsDelegates: [
         DesignLocalizations.delegate,
-        // Frosted ships English words alone; another language has none of
-        // its own unless the app gives them.
         if (own)
           const _OwnDelegate()
-        else if (locale.languageCode == 'en')
+        else if (englishOnly)
+          const _EnglishOnly()
+        else
           FrostedLocalizations.delegate,
       ],
       pageRouteBuilder: <T>(settings, builder) => PageRouteBuilder<T>(
@@ -109,6 +126,26 @@ void main() {
       semantics.dispose();
     });
   }
+
+  testWidgets('a German app with the delegate is not warned and hears '
+      'Stunde', (tester) async {
+    final semantics = tester.ensureSemantics();
+    await _pump(tester, const Locale('de'));
+    expect(tester.takeException(), isNull);
+    expect(_named(tester, 'Stunde'), isTrue);
+    expect(_named(tester, 'Hour'), isFalse);
+    semantics.dispose();
+  });
+
+  testWidgets('a delegate for English alone is warned of in a German app', (
+    tester,
+  ) async {
+    await _pump(tester, const Locale('de'), englishOnly: true);
+    expect(
+      '${tester.takeException()}',
+      contains('is not supported by all of its localization delegates'),
+    );
+  });
 
   testWidgets("an app's own Frosted words name the columns", (tester) async {
     final semantics = tester.ensureSemantics();

@@ -10,9 +10,10 @@ import '../internal/css_shadow.dart';
 import '../internal/face.dart';
 import '../theme.dart';
 import 'button/button.dart';
-import '../localizations.dart';
 
 import 'package:ui_core/ui_core.dart';
+
+import '../internal/shared_words.dart';
 
 /// What a page shows while its content loads (DERIVED, as the error state:
 /// the source draws neither): a thin ring of the faint line with an ink arc
@@ -106,7 +107,7 @@ class FrostedErrorState extends StatelessWidget {
       action: onRetry == null
           ? null
           : FrostedButton.glass(
-              FrostedLocalizations.of(context).tryAgain,
+              FrostedSharedWords.of(context).tryAgain,
               icon: FrostedGlyphs.rotateCw,
               onPressed: onRetry,
             ),

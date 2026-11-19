@@ -8,10 +8,10 @@ import '../../chrome_metrics.dart';
 import '../../glyphs.dart';
 import '../../internal/face.dart';
 import '../../internal/hit_slop.dart';
-import '../../localizations.dart';
 import '../../theme.dart';
 import '../pressable/pressable.dart';
 import '../../internal/dim.dart';
+import '../../internal/shared_words.dart';
 
 export 'package:ui_core/ui_core.dart' show DesignDateRange;
 
@@ -286,7 +286,6 @@ class _FrostedMonths extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.frostedTheme;
-    final words = FrostedLocalizations.of(context);
     const cell = 38.0;
     // A day's row and its least width are the touch target (48 under a
     // finger, 44 under a pointer, never under the source's 44): where seven
@@ -334,8 +333,8 @@ class _FrostedMonths extends StatelessWidget {
       // The behaviour gives the day chosen; the choice (a day, or a range
       // in range mode) is the controller's.
       onChanged: onChanged == null ? null : (_) => onChanged!(controller),
-      dayLabel: words.fullDate,
-      monthLabel: (m) => '${words.monthName(m.month)} ${m.year}',
+      dayLabel: FrostedSharedWords.of(context).fullDate,
+      monthLabel: FrostedSharedWords.of(context).monthYear,
       weekdayLabel: DesignLocalizations.of(context).formatShortWeekday,
       monthsBuilder: (context, grids) => Row(
         crossAxisAlignment: CrossAxisAlignment.start,

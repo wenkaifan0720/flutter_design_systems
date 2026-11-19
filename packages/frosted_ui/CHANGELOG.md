@@ -1,3 +1,7 @@
+## 0.3.2
+
+- `FrostedLocalizations.delegate` now serves every locale. It served English alone, so an app in another language that installed it was warned at startup that its locale had no Frosted delegate. With it installed, a reader of another language hears ui_core's `DesignLocalizations` words wherever a part says a word every design system shares: the month and day names of the calendar and the date picker, a picked time (`FrostedTime.format`), the error state's Try again, the done mark's Done, and the time wheel's columns. An app's own Frosted words still win, and English readers keep Frosted's own ("Monday, March 9, 2026").
+
 ## 0.3.1
 
 - The time wheel names its hour, minute and day-period columns, and says AM and PM, in the reader's language: Frosted's own words when an app gives them, else ui_core's `DesignLocalizations` (it said Hour and Minute in English in every locale).

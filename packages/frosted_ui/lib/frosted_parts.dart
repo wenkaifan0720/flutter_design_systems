@@ -51,6 +51,7 @@ export 'src/frosted/internal/press_face.dart';
 export 'src/frosted/internal/provider_marks.dart';
 export 'src/frosted/internal/report_height.dart';
 export 'src/frosted/internal/rest_ring.dart';
+export 'src/frosted/internal/shared_words.dart';
 export 'src/frosted/internal/side_inset.dart';
 export 'src/frosted/internal/sliding_pill.dart';
 export 'src/frosted/internal/soft_routes.dart';

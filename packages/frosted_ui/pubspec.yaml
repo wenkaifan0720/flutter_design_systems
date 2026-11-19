@@ -1,7 +1,7 @@
 name: frosted_ui
 description: >-
   Frosted glass for Flutter: panes rimmed with light stand on a canvas lit by soft washes of colour, and one ink act carries each page, by day and by night.
-version: 0.3.1
+version: 0.3.2
 homepage: https://wenkaifan0720.github.io/flutter_design_systems/frosted/
 repository: https://github.com/wenkaifan0720/flutter_design_systems/tree/main/packages/frosted_ui
 issue_tracker: https://github.com/wenkaifan0720/flutter_design_systems/issues

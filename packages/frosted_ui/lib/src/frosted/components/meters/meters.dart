@@ -25,6 +25,8 @@ import '../../localizations.dart';
 
 import 'package:ui_core/ui_core.dart';
 
+import '../../internal/shared_words.dart';
+
 // The source's inks and hues the CSS names in place, which the theme has no
 // role for; its whites and its ink's hairlines are the theme's sheens
 // (FrostedSheens), so the dark appearance has its own.
@@ -3243,7 +3245,7 @@ class FrostedDoneMark extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final label = this.label ?? FrostedLocalizations.of(context).done;
+    final label = this.label ?? FrostedSharedWords.of(context).done;
     final t = context.frostedTheme;
     const art = FrostedChromeMetrics.doneArt;
     const pull =

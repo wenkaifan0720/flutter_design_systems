@@ -19,6 +19,8 @@ import '../../internal/dim.dart';
 
 import 'package:ui_core/ui_core.dart';
 
+import '../../internal/shared_words.dart';
+
 // ---------------------------------------------------------------------------
 // Time of day
 // ---------------------------------------------------------------------------
@@ -55,14 +57,8 @@ class FrostedTime {
 
   /// The time in the installed words: 9:30 AM, or 09:30 where the platform
   /// or the words keep the 24-hour clock.
-  String format(BuildContext context) {
-    final words = FrostedLocalizations.of(context);
-    if (_use24(context)) {
-      return '${_two(hour)}:${_two(minute)}';
-    }
-    final h = hour % 12 == 0 ? 12 : hour % 12;
-    return '$h:${_two(minute)} ${hour < 12 ? words.am : words.pm}';
-  }
+  String format(BuildContext context) =>
+      FrostedSharedWords.of(context).time(hour, minute, use24: _use24(context));
 
   @override
   bool operator ==(Object other) =>
@@ -597,7 +593,6 @@ class _FrostedDatePickerState extends State<FrostedDatePicker> {
   @override
   Widget build(BuildContext context) {
     final t = context.frostedTheme;
-    final words = FrostedLocalizations.of(context);
     final today = _day(widget.currentDate ?? DateTime.now());
     final first = widget.first;
     final last = widget.last;
@@ -606,7 +601,8 @@ class _FrostedDatePickerState extends State<FrostedDatePicker> {
     final days = DateTime(_month.year, _month.month + 1, 0).day;
     final lead =
         (_month.weekday - DesignLocalizations.of(context).firstDayOfWeek) % 7;
-    final title = '${words.monthName(_month.month)} ${_month.year}';
+    final shared = FrostedSharedWords.of(context);
+    final title = shared.monthYear(_month);
 
     Widget step(IconData glyph, String label, VoidCallback? go) =>
         FrostedPressable(
@@ -731,7 +727,7 @@ class _FrostedDatePickerState extends State<FrostedDatePicker> {
 
       return FrostedPressable(
         onPressed: allowed && change != null ? () => change(day) : null,
-        label: words.fullDate(day),
+        label: shared.fullDate(day),
         selected: chosen,
         radius: dayCorner,
         shape: dayCut,
