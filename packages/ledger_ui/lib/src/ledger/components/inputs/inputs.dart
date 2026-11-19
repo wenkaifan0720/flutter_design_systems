@@ -1871,8 +1871,9 @@ enum LedgerStepperSize {
 ///
 /// [LedgerStepperSize.figure], the default, is the budget's stepper
 /// (`.stepper`): the sum in the serif, 72 (88 on the desktop), between two
-/// 48 rings that lower and raise it by [step], read as an adjustable value
-/// and formatted as whole dollars unless [format] says otherwise; each ring says
+/// 48 rings that lower and raise it by [step], read as an adjustable value:
+/// the plain number unless [format] says otherwise (a budget passes whole
+/// dollars, `format: (v) => LedgerFormat.money(v, showCents: false)`); each ring says
 /// its [lowerLabel] or [raiseLabel] whole ('Lower the budget'), or, left
 /// unset, Lower or Raise and the [label]. The sum stands on its input's
 /// own line, 1.05 of its size (75.6 at 72, 92.4 at 88, as the budget and
@@ -1883,15 +1884,15 @@ enum LedgerStepperSize {
 /// slot's start from 600, as the rings are.
 ///
 /// ```dart
-/// LedgerStepper(value: 250, label: 'Monthly budget', onChanged: (v) {})
+/// LedgerStepper(value: 250, label: 'Monthly budget', format: (v) => LedgerFormat.money(v, showCents: false), onChanged: (v) {})
 /// ```
 ///
 /// ```dart
-/// LedgerStepper(value: 250, label: 'Monthly budget', lowerLabel: 'Lower the budget', raiseLabel: 'Raise the budget', onChanged: (v) {})
+/// LedgerStepper(value: 250, label: 'Monthly budget', format: (v) => LedgerFormat.money(v, showCents: false), lowerLabel: 'Lower the budget', raiseLabel: 'Raise the budget', onChanged: (v) {})
 /// ```
 ///
 /// ```dart
-/// LedgerStepper(value: 110, label: 'Amount to add', step: 1, showRings: false)
+/// LedgerStepper(value: 110, label: 'Amount to add', step: 1, showRings: false, format: (v) => LedgerFormat.money(v, showCents: false))
 /// ```
 ///
 /// ```dart
@@ -1936,9 +1937,11 @@ class LedgerStepper extends StatelessWidget {
   /// form's [LedgerStepperSize.field].
   final LedgerStepperSize size;
 
-  /// Formats the value a screen reader hears, and the figure's words. A
-  /// figure defaults to whole dollars (for quantities, pass `(value) =>
-  /// '$value'`); a field shows the plain number and defaults to it.
+  /// Formats the value a screen reader hears, and the figure's words. Null
+  /// is the plain number in the reader's digits, on both sizes; money is
+  /// the caller's (`(value) => LedgerFormat.money(value, showCents: false)`
+  /// for a budget's whole dollars). A field shows the plain number either
+  /// way.
   final String Function(num value)? format;
 
   /// The lower ring's words; null reads 'Lower' and the [label].
@@ -1987,8 +1990,10 @@ class LedgerStepper extends StatelessWidget {
     }
     final t = context.ledgerTheme;
     final wide = LedgerLayout.isWide(context);
+    // The plain number unless the caller formats it: money is opt-in.
     String display(num amount) =>
-        format?.call(amount) ?? LedgerFormat.money(amount, showCents: false);
+        format?.call(amount) ??
+        DesignLocalizations.of(context).formatDecimal(amount);
     final words = display(value);
     final canLower = onChanged != null && value - step >= min;
     final canRaise = onChanged != null && (max == null || value + step <= max!);

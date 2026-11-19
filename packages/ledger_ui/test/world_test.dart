@@ -98,6 +98,9 @@ Future<void> _fit(WidgetTester t, double width) async {
   await t.pumpAndSettle();
 }
 
+/// A budget's whole dollars, as an app passes them.
+String _dollars(num v) => LedgerFormat.money(v, showCents: false);
+
 void main() {
   setUpAll(_loadFonts);
   setUpAll(_stillMotion);
@@ -249,7 +252,12 @@ void main() {
         t,
         (d) => _app(
           d,
-          LedgerStepper(value: 250, label: 'Monthly budget', onChanged: (_) {}),
+          LedgerStepper(
+            value: 250,
+            label: 'Monthly budget',
+            format: _dollars,
+            onChanged: (_) {},
+          ),
         ),
         parts: [find.byIcon(LucideIcons.minus), find.byIcon(LucideIcons.plus)],
       );

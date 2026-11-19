@@ -104,7 +104,7 @@ LedgerSelect<String>(
 );
 ```
 
-For a number in a form, such as an estimate in minutes or a number of copies, use `LedgerStepper(size: LedgerStepperSize.field, …)`. The number sits on a text field's rule at the same height, accepts typing within `min` and `max`, and shows the plain number. `format` sets what a screen reader announces. The default size is the budget's large figure in whole dollars; to show quantities in it, set `format` to `(value) => value.toString()`.
+For a number in a form, such as an estimate in minutes or a number of copies, use `LedgerStepper(size: LedgerStepperSize.field, …)`. The number sits on a text field's rule at the same height, accepts typing within `min` and `max`, and shows the plain number. `format` sets what a screen reader announces. The default size is the budget's large figure. Both sizes show the plain number in the reader's digits; money is yours to ask for, for instance `format: (value) => LedgerFormat.money(value, showCents: false)` for a budget in whole dollars. `LedgerPieChart` works the same way: pass `format: LedgerFormat.money` when its shares are money.
 
 To display tab content, give `LedgerTabs` a bounded height and supply one child per tab. The pages follow the tab selection, accept swipes and use their tab labels as accessible names.
 

@@ -1,3 +1,8 @@
+## 0.3.2
+
+- `LedgerStepper` and `LedgerPieChart` no longer assume money. Without a `format`, both show the plain number in the reader's digits, so a count of copies reads 2 instead of $2 and an estimate in minutes reads 45. To show money, pass a format: `format: (value) => LedgerFormat.money(value, showCents: false)` for a budget in whole dollars, or `format: LedgerFormat.money` for a pie chart of amounts. The gallery, the inventory and Quill pass these where their numbers are money. If your app relied on the dollar default, add the format.
+- `LedgerPieChart` speaks the reader's language. Its parts of the whole use the language's digits and percent sign (٧٠٪ in Arabic). The word under the whole, Total in English, comes from the new `totalLabel`. Outside English, if `totalLabel` is not set, the whole stands alone rather than showing an English word.
+
 ## 0.3.1
 
 - `LedgerTabs.children` displays swipeable pages and gives each panel its tab's accessible name. The Selection example includes Entries, Notes and Files panels.

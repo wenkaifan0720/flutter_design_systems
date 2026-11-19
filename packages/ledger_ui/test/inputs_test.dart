@@ -211,6 +211,9 @@ const double _transferAmount = 500;
 const String _transferWords = 'Five hundred and 00/100';
 const double _diningBudget = 250;
 
+/// A budget's whole dollars, as an app passes them.
+String _dollars(num v) => LedgerFormat.money(v, showCents: false);
+
 void main() {
   setUpAll(_loadFonts);
   setUpAll(_stillMotion);
@@ -989,6 +992,7 @@ void main() {
         LedgerStepper(
           value: _diningBudget,
           label: 'Monthly budget',
+          format: _dollars,
           onChanged: moves.add,
         ),
         (wide, theme) {
@@ -1030,6 +1034,7 @@ void main() {
         LedgerStepper(
           value: _diningBudget,
           label: 'Monthly budget',
+          format: _dollars,
           min: _diningBudget,
           onChanged: moves.add,
         ),
@@ -1056,7 +1061,11 @@ void main() {
     testWidgets('with no onChanged it holds its sum', (t) async {
       await _everywhere(
         t,
-        const LedgerStepper(value: _diningBudget, label: 'Monthly budget'),
+        const LedgerStepper(
+          value: _diningBudget,
+          label: 'Monthly budget',
+          format: _dollars,
+        ),
         (wide, theme) {
           expect(
             _node(t, 'Monthly budget'),
@@ -1079,6 +1088,7 @@ void main() {
         LedgerStepper(
           value: _diningBudget,
           label: 'Monthly budget',
+          format: _dollars,
           lowerLabel: 'Lower the budget',
           raiseLabel: 'Raise the budget',
           onChanged: (_) {},
@@ -1098,6 +1108,7 @@ void main() {
         LedgerStepper(
           value: _diningBudget,
           label: 'Monthly budget',
+          format: _dollars,
           max: _diningBudget,
           onChanged: moves.add,
         ),

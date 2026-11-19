@@ -71,6 +71,9 @@ Future<void> _flips(
   expect(t.takeException(), isNull);
 }
 
+/// A budget's whole dollars, as an app passes them.
+String _dollars(num v) => LedgerFormat.money(v, showCents: false);
+
 void main() {
   setUpAll(_stillMotion);
   tearDownAll(_movingMotion);
@@ -190,7 +193,12 @@ void main() {
   testWidgets("a stepper: its lower and its raise", (t) async {
     await _flips(
       t,
-      LedgerStepper(value: 250, label: 'Monthly budget', onChanged: (_) {}),
+      LedgerStepper(
+        value: 250,
+        label: 'Monthly budget',
+        format: _dollars,
+        onChanged: (_) {},
+      ),
       find.byIcon(LucideIcons.minus),
       find.byIcon(LucideIcons.plus),
     );

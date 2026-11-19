@@ -189,6 +189,7 @@ Widget kitWorkingDemo(Brightness brightness) => kitScreen(
       children: const [
         LedgerPieChart(
           label: 'October by category',
+          format: LedgerFormat.money,
           shares: [
             LedgerShare('Rent', 1150),
             LedgerShare('Groceries', 486.20),

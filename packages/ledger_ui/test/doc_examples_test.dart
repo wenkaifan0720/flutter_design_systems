@@ -738,6 +738,7 @@ void main() {
       ),
       'LedgerPieChart': (context) => LedgerPieChart(
         label: 'October by category',
+        format: LedgerFormat.money,
         shares: const [
           LedgerShare('Rent', 1150),
           LedgerShare('Groceries', 486),
@@ -1266,11 +1267,16 @@ void main() {
         amount: 500,
         typed: true,
       ),
-      'LedgerStepper': (context) =>
-          LedgerStepper(value: 250, label: 'Monthly budget', onChanged: (v) {}),
+      'LedgerStepper': (context) => LedgerStepper(
+        value: 250,
+        label: 'Monthly budget',
+        format: (v) => LedgerFormat.money(v, showCents: false),
+        onChanged: (v) {},
+      ),
       'LedgerStepper 2': (context) => LedgerStepper(
         value: 250,
         label: 'Monthly budget',
+        format: (v) => LedgerFormat.money(v, showCents: false),
         lowerLabel: 'Lower the budget',
         raiseLabel: 'Raise the budget',
         onChanged: (v) {},
@@ -1280,6 +1286,7 @@ void main() {
         label: 'Amount to add',
         step: 1,
         showRings: false,
+        format: (v) => LedgerFormat.money(v, showCents: false),
       ),
       'LedgerStepper 4': (context) => LedgerStepper(
         size: LedgerStepperSize.field,

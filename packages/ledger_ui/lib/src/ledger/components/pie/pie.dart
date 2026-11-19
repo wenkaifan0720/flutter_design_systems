@@ -7,8 +7,8 @@ import 'package:flutter/foundation.dart';
 import 'dart:math' as math;
 
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
 
-import '../../format.dart';
 import '../../theme.dart';
 
 /// One share of a [LedgerPieChart]: its [label] and its [value].
@@ -30,10 +30,11 @@ class LedgerShare {
 /// whole in the serif in its middle; beside or under it a key, each share's
 /// swatch, its words, its amount in the mono and its part of the whole.
 /// Five shares at most; fold the rest into one ("Other"). A screen reader
-/// hears the whole and each share with its part.
+/// hears the whole and each share with its part. The figures and parts are
+/// in the reader's digits; the word under the whole is [totalLabel].
 ///
 /// ```dart
-/// LedgerPieChart(label: 'October by category', shares: const [LedgerShare('Rent', 1150), LedgerShare('Groceries', 486)])
+/// LedgerPieChart(label: 'October by category', format: LedgerFormat.money, shares: const [LedgerShare('Rent', 1150), LedgerShare('Groceries', 486)])
 /// ```
 class LedgerPieChart extends StatelessWidget {
   /// A ring of [shares].
@@ -41,6 +42,7 @@ class LedgerPieChart extends StatelessWidget {
     required this.label,
     required this.shares,
     this.format,
+    this.totalLabel,
     super.key,
   });
 
@@ -50,10 +52,17 @@ class LedgerPieChart extends StatelessWidget {
   /// The shares, largest first.
   final List<LedgerShare> shares;
 
-  /// How an amount prints; null: money.
+  /// How an amount prints; null: the plain number in the reader's digits
+  /// ("1,150"). Money is the caller's: `format: LedgerFormat.money`.
   final String Function(double value)? format;
 
-  String _print(double v) => format?.call(v) ?? LedgerFormat.money(v);
+  /// The word under the whole, in the small capitals; null: Total in
+  /// English, and in another language none (the whole stands alone; pass
+  /// the app's word, 'الإجمالي', 'Gesamt').
+  final String? totalLabel;
+
+  String _print(BuildContext context, double v) =>
+      format?.call(v) ?? DesignLocalizations.of(context).formatDecimal(v);
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -61,13 +70,17 @@ class LedgerPieChart extends StatelessWidget {
     properties.add(ObjectFlagProperty<Object?>.has('format', format));
     properties
       ..add(StringProperty('label', label))
-      ..add(IterableProperty<LedgerShare>('shares', shares));
+      ..add(IterableProperty<LedgerShare>('shares', shares))
+      ..add(StringProperty('totalLabel', totalLabel, defaultValue: null));
   }
 
   @override
   Widget build(BuildContext context) {
     assert(shares.isNotEmpty && shares.length <= 5);
     final t = context.ledgerTheme;
+    final english =
+        (Localizations.maybeLocaleOf(context)?.languageCode ?? 'en') == 'en';
+    final word = totalLabel ?? (english ? 'Total' : null);
     final inks = [
       t.textPrimary,
       t.moneyIn,
@@ -77,7 +90,8 @@ class LedgerPieChart extends StatelessWidget {
     ];
     final total = shares.fold<double>(0, (a, s) => a + s.value);
     String part(double v) =>
-        total == 0 ? '0%' : '${(v / total * 100).round()}%';
+        DesignLocalizations.of(context)
+            .formatPercent(total == 0 ? 0 : v / total);
     final ring = SizedBox.square(
       dimension: _across,
       child: CustomPaint(
@@ -98,10 +112,14 @@ class LedgerPieChart extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    _print(total),
+                    _print(context, total),
                     style: t.figureSmall.colored(t.textPrimary),
                   ),
-                  Text('TOTAL', style: t.meta.colored(t.textTertiary)),
+                  if (word != null)
+                    Text(
+                      word.toUpperCase(),
+                      style: t.meta.colored(t.textTertiary),
+                    ),
                 ],
               ),
             ),
@@ -150,7 +168,7 @@ class LedgerPieChart extends StatelessWidget {
                   spacing: LedgerSpacing.s10,
                   children: [
                     Text(
-                      _print(s.value),
+                      _print(context, s.value),
                       style: t.amount.colored(t.textPrimary),
                     ),
                     ConstrainedBox(
@@ -173,9 +191,9 @@ class LedgerPieChart extends StatelessWidget {
     return Semantics(
       container: true,
       label: [
-        '$label, ${_print(total)}',
+        '$label, ${_print(context, total)}',
         for (final s in shares)
-          '${s.label} ${_print(s.value)}, ${part(s.value)}',
+          '${s.label} ${_print(context, s.value)}, ${part(s.value)}',
       ].join('; '),
       excludeSemantics: true,
       child: LayoutBuilder(

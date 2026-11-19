@@ -152,6 +152,9 @@ const String _transferWords = 'Five hundred and 00/100';
 const double _transferAmount = 500;
 const String _transferNote = 'November top-up';
 
+/// A budget's whole dollars, as an app passes them.
+String _dollars(num v) => LedgerFormat.money(v, showCents: false);
+
 void main() {
   setUpAll(_loadFonts);
   setUpAll(_stillMotion);
@@ -706,12 +709,14 @@ void main() {
               key: const ValueKey('rings'),
               value: 250,
               label: 'Monthly budget',
+              format: _dollars,
               onChanged: (_) {},
             ),
             LedgerStepper(
               key: const ValueKey('alone'),
               value: 110,
               label: 'Amount to add',
+              format: _dollars,
               showRings: false,
               onChanged: (_) {},
             ),

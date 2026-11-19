@@ -232,6 +232,7 @@ class _LiveState extends State<_Live> {
       LedgerStepper(
         value: _budget,
         label: 'Monthly budget',
+        format: (v) => LedgerFormat.money(v, showCents: false),
         lowerLabel: 'Lower the budget',
         raiseLabel: 'Raise the budget',
         onChanged: (v) => setState(() => _budget = v),
@@ -422,6 +423,7 @@ Widget kitSpecimenStepperAlone() => LedgerStepper(
   value: kitAddAmount,
   label: 'Amount to add',
   showRings: false,
+  format: (v) => LedgerFormat.money(v, showCents: false),
   onChanged: (_) {},
 );
 
@@ -440,6 +442,7 @@ Widget kitSpecimenStepperField() => LedgerStepper(
 Widget kitSpecimenStepper() => LedgerStepper(
   value: kitDiningBudget,
   label: 'Monthly budget',
+  format: (v) => LedgerFormat.money(v, showCents: false),
   lowerLabel: 'Lower the budget',
   raiseLabel: 'Raise the budget',
   onChanged: (_) {},
