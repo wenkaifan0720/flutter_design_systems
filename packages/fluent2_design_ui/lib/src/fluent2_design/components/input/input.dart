@@ -396,8 +396,19 @@ class _Fluent2TextFieldState extends State<Fluent2TextField>
         ],
       ),
     );
-    if (validationMessage == null) return input;
-    return Fluent2FormField(validationMessage: validationMessage, child: input);
+    // Under a Fluent2FormField (the caller's, or the one a validation
+    // message brings) the frame leaves its node to the field. With a button
+    // at its end the field keeps each control's own node, and the entry's
+    // is still the frame's size, not its 20-tall line's.
+    final field = scope != null || validationMessage != null;
+    final framed = field && after.isNotEmpty
+        ? Semantics(container: true, child: input)
+        : input;
+    if (validationMessage == null) return framed;
+    return Fluent2FormField(
+      validationMessage: validationMessage,
+      child: framed,
+    );
   }
 }
 
@@ -731,7 +742,7 @@ class _Fluent2SearchBoxState extends State<Fluent2SearchBox>
     final filled = fieldController.text.isNotEmpty;
     final hint =
         widget.hint ?? DesignLocalizations.of(context).searchFieldLabel;
-    return Fluent2FieldFrame(
+    final frame = Fluent2FieldFrame(
       appearance: widget.appearance,
       style: widget.style,
       focused: fieldFocus.hasFocus,
@@ -787,6 +798,12 @@ class _Fluent2SearchBoxState extends State<Fluent2SearchBox>
         ],
       ),
     );
+    // Under a Fluent2FormField the frame leaves its node to the field; with
+    // the clear button beside the query the field keeps each control's own
+    // node, and the entry's is still the frame's size.
+    return filled && Fluent2FieldScope.maybeOf(context) != null
+        ? Semantics(container: true, child: frame)
+        : frame;
   }
 }
 

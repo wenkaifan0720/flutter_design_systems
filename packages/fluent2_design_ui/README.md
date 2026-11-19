@@ -196,8 +196,10 @@ The package respects the system's reduced-motion setting.
 
 The calendar reads month and day names from `MaterialLocalizations`. Use
 `DesignLocalizations.delegate` for shared labels such as Cancel and Search, and
-`Fluent2Localizations.delegate` for Fluent-specific labels. You can provide translations
-by extending `Fluent2LocalizationsEn` and adding a localization delegate to your app.
+`Fluent2Localizations.delegate` for Fluent-specific labels. A time picker's hour and minute
+and the AM and PM marks come from `DesignLocalizations` too, in its 30 languages. You can
+provide translations by extending `Fluent2LocalizationsEn` and adding a localization delegate
+to your app.
 The standalone `Fluent2Format` helpers use US English.
 
 The bundled text font is Selawik. Other scripts use platform fallback fonts.

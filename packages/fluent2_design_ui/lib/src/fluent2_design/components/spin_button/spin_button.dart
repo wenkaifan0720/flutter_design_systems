@@ -175,6 +175,16 @@ class _Fluent2SpinButtonState extends State<Fluent2SpinButton> {
     // figures keep theirs.
     final touch = Fluent2Layout.padded(context);
     const target = Fluent2Layout.touchHitTarget;
+    // The line grows with its words at every text size, as a text field's
+    // does (its editor a line of [style] tall), and the steppers take its
+    // height: never under the control's own.
+    final wordsTall =
+        MediaQuery.textScalerOf(context).scale(style.fontSize ?? 14) *
+        (style.height ?? 1);
+    final line = math.max(
+      touch ? target : math.max(h - strokes.vertical, 0.0),
+      wordsTall,
+    );
     // Asked to take its parent's width, from 600 it stops at 320, its
     // buttons beside it under a finger included.
     final width = widget.width.isInfinite && fluent2Roomy(context)
@@ -282,7 +292,7 @@ class _Fluent2SpinButtonState extends State<Fluent2SpinButton> {
                   strokes.left,
             ),
             child: SizedBox(
-              height: touch ? target : math.max(h - strokes.vertical, 0),
+              height: line,
               child: Row(
                 spacing: Fluent2Spacing.xs,
                 children: touch

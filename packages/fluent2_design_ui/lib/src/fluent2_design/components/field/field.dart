@@ -8,10 +8,6 @@ import '../../localizations.dart';
 import '../../theme.dart';
 import '../input/field_core.dart';
 import '../pressable/pressable.dart';
-import '../radio/radio.dart';
-import '../segmented/segmented.dart';
-import '../tag/tag.dart';
-import '../toolbar/toolbar.dart';
 
 /// What a field's validation says, Fluent's `validationState`: [error]
 /// the red diamond and red words (and the control's red stroke),
@@ -164,10 +160,22 @@ class Fluent2InfoLabel extends StatefulWidget {
     this.size = Fluent2InputSize.medium,
     this.enabled = true,
     super.key,
-  });
+  }) : _says = true;
+
+  // A form field's label: the field's own node says the words, so only the
+  // info button is read here.
+  const Fluent2InfoLabel._inField(
+    this.text, {
+    required this.info,
+    required this.required,
+    required this.size,
+  }) : enabled = true,
+       _says = false;
 
   /// The label's words.
   final String text;
+
+  final bool _says;
 
   /// What the popover says.
   final String info;
@@ -293,11 +301,14 @@ class _Fluent2InfoLabelState extends State<Fluent2InfoLabel> {
       mainAxisSize: MainAxisSize.min,
       children: [
         Flexible(
-          child: Fluent2Label(
-            widget.text,
-            required: widget.required,
-            size: widget.size,
-            enabled: widget.enabled,
+          child: ExcludeSemantics(
+            excluding: !widget._says,
+            child: Fluent2Label(
+              widget.text,
+              required: widget.required,
+              size: widget.size,
+              enabled: widget.enabled,
+            ),
           ),
         ),
         button,
@@ -367,10 +378,12 @@ class _Validation extends StatelessWidget {
 /// caption1 in the third ink, 2 apart. The control takes the field's label
 /// as its spoken name and, for an error, its red stroke.
 /// [Fluent2FieldOrientation.horizontal] stands the label in the start third.
-/// A group of choices (a radio group, a segmented control, toolbar toggles,
-/// tags) is named by the label as a group, each choice keeping its own
-/// node a screen reader reaches; a single control takes the label, hint
-/// and validity into its own node.
+/// A single control (a text field, a select, a switch, a slider) takes the
+/// label, hint and validity into its own node; a child of several controls
+/// (a spin button's steppers round its entry, a radio group, a segmented
+/// control, toolbar toggles, tags) is named by the label as a group, each
+/// control keeping its own node a screen reader's tap reaches; the label is
+/// read once ([mergeSemantics]).
 ///
 /// ```dart
 /// Fluent2FormField(label: 'Email', required: true, helper: 'We send the invite here.', child: Fluent2TextField(value: email, onChanged: (v) => setState(() => email = v)))
@@ -387,6 +400,7 @@ class Fluent2FormField extends StatelessWidget {
     this.info,
     this.orientation = Fluent2FieldOrientation.vertical,
     this.size = Fluent2InputSize.medium,
+    this.mergeSemantics,
     super.key,
   });
 
@@ -417,6 +431,13 @@ class Fluent2FormField extends StatelessWidget {
   /// Fluent's `size`: the label's type.
   final Fluent2InputSize size;
 
+  /// Whether the label, hint and validity join the control's own node:
+  /// true always (one node for the whole child), false never (the label
+  /// names the child as a group, each control keeping its node), null as
+  /// the child's controls say: one control is one node with the label,
+  /// several keep their own (the design kit's [DesignField]).
+  final bool? mergeSemantics;
+
   @override
   Widget build(BuildContext context) {
     final t = context.fluent2Theme;
@@ -429,7 +450,12 @@ class Fluent2FormField extends StatelessWidget {
     final Widget? head = words == null
         ? null
         : info != null
-        ? Fluent2InfoLabel(words, info: info!, required: required, size: size)
+        ? Fluent2InfoLabel._inField(
+            words,
+            info: info!,
+            required: required,
+            size: size,
+          )
         : ExcludeSemantics(
             child: Fluent2Label(words, required: required, size: size),
           );
@@ -454,7 +480,7 @@ class Fluent2FormField extends StatelessWidget {
     // control invalid.
     final help = [if (message != null && !error) message, ?helper];
     return DesignField(
-      mergeSemantics: !_isGroup(child),
+      mergeSemantics: mergeSemantics,
       labelText: words,
       helperText: help.isEmpty ? null : help.join(' '),
       errorText: error ? message : null,
@@ -472,20 +498,6 @@ class Fluent2FormField extends StatelessWidget {
           _layout(context, head: head, control: parts.control, under: under),
     );
   }
-
-  /// Whether [w] is a group of choices, through the boxes that place it.
-  static bool _isGroup(Widget w) => switch (w) {
-    Fluent2RadioGroup() ||
-    Fluent2SegmentedButton() ||
-    Fluent2ToolbarToggleGroup() ||
-    Fluent2ToolbarGroup() ||
-    Fluent2TagGroup() => true,
-    Align(:final child?) ||
-    Padding(:final child?) ||
-    SizedBox(:final child?) ||
-    ConstrainedBox(:final child?) => _isGroup(child),
-    _ => false,
-  };
 
   Widget _layout(
     BuildContext context, {
@@ -573,6 +585,13 @@ class Fluent2FormField extends StatelessWidget {
       ..add(StringProperty('label', label, defaultValue: null))
       ..add(FlagProperty('required', value: required, ifTrue: 'required'))
       ..add(StringProperty('helper', helper, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<bool>(
+          'mergeSemantics',
+          mergeSemantics,
+          defaultValue: null,
+        ),
+      )
       ..add(
         StringProperty(
           'validationMessage',

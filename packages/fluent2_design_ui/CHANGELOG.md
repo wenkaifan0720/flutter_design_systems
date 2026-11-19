@@ -1,3 +1,29 @@
+## 0.3.3
+
+- A spin button grows with the system text size, as a text field does, so its
+  value is no longer cut at the bottom at 200%; its stepper buttons take the
+  field's height.
+- `Fluent2FormField` builds on ui_core 0.3.2's `DesignField` (this release
+  needs ui_core 0.3.2). One control in a field, such as a text field, a
+  switch or a slider, is still one accessibility node with the field's
+  label, help and error. A spin button's entry and steppers, a range
+  slider's thumbs and a group of choices keep their own nodes under the
+  label. With a screen reader on, a click on a spin button's stepper now
+  steps it instead of landing on the field. The label is read once. The
+  new `mergeSemantics` argument, null by default, forces one node (`true`)
+  or a group (`false`).
+- A text field with a button at its end (a password field's reveal button,
+  a search field's clear button) keeps an accessibility node as large as
+  its frame inside a form field or with a validation message, rather than
+  the 20-pixel line of its words, so it meets the 44 and 48 pixel touch
+  target sizes.
+- A form field's info label no longer reads the label a second time: the
+  field says it once, and the info button says "Information about" it.
+- A time picker's hour and minute and the AM and PM marks are ui_core's
+  words in the app's language (Arabic's ساعة and ص, German's Stunde), where
+  they were English in every language. `Fluent2Localizations.of` takes them
+  from the `DesignLocalizations` in force; an app's own words still win.
+
 ## 0.3.2
 
 - The password visibility button now responds to Tab, Space and Enter.
