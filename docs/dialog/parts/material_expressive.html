@@ -1,0 +1,54 @@
+<section class="example" id="draft-details" data-example="draft-details">
+  <div class="section-title"><h2>Read draft details</h2><a class="permalink" href="#draft-details" aria-label="Link to Read draft details">#</a></div>
+  <p>Open the details and dismiss the dialog to return to its trigger. Changing the theme closes the dialog so you can reopen it in the new palette.</p>
+
+  <p class="keyboard-note" hidden></p>
+  <div class="workbench">
+    <div class="example-tabs" role="tablist" aria-label="Read draft details example">
+      <button type="button" role="tab" id="draft-details-preview-tab" aria-selected="true" aria-controls="draft-details-preview">Preview</button>
+      <button type="button" role="tab" id="draft-details-code-tab" aria-selected="false" aria-controls="draft-details-code" tabindex="-1">Code</button>
+    </div>
+    <div role="tabpanel" id="draft-details-preview" aria-labelledby="draft-details-preview-tab">
+    <div class="tools" aria-label="Preview settings">
+      <div class="frame-options" role="group" aria-label="Frame width">
+        <button type="button" data-width="1440" aria-pressed="true" title="Use the available preview width"><i class="monitor" aria-hidden="true"></i>Desktop</button>
+        <button type="button" data-width="390" aria-pressed="false" title="390 px phone frame"><i class="phone" aria-hidden="true"></i>Phone</button>
+      </div>
+      <div class="environment">
+        <button type="button" data-setting="theme" aria-label="Night theme" aria-pressed="false"><span aria-hidden="true" class="sun"></span><span data-value>Day</span></button>
+        <button type="button" data-setting="dir" aria-label="Right-to-left direction" aria-pressed="false"><span data-value>LTR</span></button>
+        <button type="button" data-setting="scale" aria-label="Double text size" aria-pressed="false"><span aria-hidden="true" class="type-icon">Aa</span><span data-value>100%</span></button>
+      </div>
+    </div>
+    <div class="stage"><div class="viewport"><div class="frame"><iframe loading="lazy" title="Material Expressive Dialog interactive example"></iframe></div></div></div>
+    <div class="caption"><span><i class="status-dot" aria-hidden="true"></i>Flutter preview <span class="frame-size"></span></span><a class="open-preview" target="_blank" rel="noopener">Open preview <span aria-hidden="true">↗</span></a></div>
+    </div>
+    <div class="source" role="tabpanel" id="draft-details-code" aria-labelledby="draft-details-code-tab" hidden>
+      <div class="source-head"><span class="filename">components&#47;dialog&#47;material_expressive&#47;draft_details.dart</span><button type="button" class="copy">Copy code</button></div>
+      <pre tabindex="0" aria-label="Dart source"><code><span class="hljs-keyword">import</span> <span class="hljs-string">'package:flutter/widgets.dart'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-string">'package:material_expressive_ui/material_expressive_ui.dart'</span>;
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">DraftDetails</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">StatelessWidget</span> </span>{
+  <span class="hljs-keyword">const</span> DraftDetails({<span class="hljs-keyword">super</span>.key});
+
+  <span class="hljs-meta">@override</span>
+  Widget build(BuildContext context) =&gt; ExpressiveFilledButton(
+    <span class="hljs-string">'View draft details'</span>,
+    onPressed: () =&gt; showExpressiveDialog&lt;<span class="hljs-keyword">void</span>&gt;(
+      context: context,
+      builder: (_) =&gt; <span class="hljs-keyword">const</span> ExpressiveDialog(
+        title: <span class="hljs-string">'Draft details'</span>,
+        text: <span class="hljs-string">'Only visible to you until you publish'</span>,
+        actions: [ExpressiveDialogAction(<span class="hljs-string">'Done'</span>)],
+      ),
+    ),
+  );
+}
+</code></pre>
+    </div>
+  </div>
+</section>
+<section class="reference" id="parameters">
+  <div class="section-title"><h2>Parameters</h2><a class="api" href="https:&#47;&#47;pub.dev&#47;documentation&#47;material_expressive_ui&#47;latest&#47;material_expressive_ui&#47;ExpressiveDialog-class.html">ExpressiveDialog API ↗</a></div>
+  <dl><div><dt><code>title</code></dt><dd>Heading that names the decision.</dd></div><div><dt><code>text</code></dt><dd>Plain body text, as an alternative to the content widget.</dd></div><div><dt><code>actions</code></dt><dd>ExpressiveDialogAction entries with labels and results.</dd></div><div><dt><code>style</code></dt><dd>Overrides the component’s themed appearance.</dd></div><div><dt><code>content</code></dt><dd>Supplies a body widget in place of plain text.</dd></div><div><dt><code>icon</code></dt><dd>Adds a glyph to the component.</dd></div></dl>
+</section>

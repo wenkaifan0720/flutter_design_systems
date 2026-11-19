@@ -1,0 +1,51 @@
+<section class="example" id="inspect-file" data-example="inspect-file">
+  <div class="section-title"><h2>Inspect a file</h2><a class="permalink" href="#inspect-file" aria-label="Link to Inspect a file">#</a></div>
+  <p>Open File details, read the owner and last edit, then close the panel. Switch to RTL and open it again to see which edge it uses.</p>
+
+  <p class="keyboard-note" hidden></p>
+  <div class="workbench">
+    <div class="example-tabs" role="tablist" aria-label="Inspect a file example">
+      <button type="button" role="tab" id="inspect-file-preview-tab" aria-selected="true" aria-controls="inspect-file-preview">Preview</button>
+      <button type="button" role="tab" id="inspect-file-code-tab" aria-selected="false" aria-controls="inspect-file-code" tabindex="-1">Code</button>
+    </div>
+    <div role="tabpanel" id="inspect-file-preview" aria-labelledby="inspect-file-preview-tab">
+    <div class="tools" aria-label="Preview settings">
+      <div class="frame-options" role="group" aria-label="Frame width">
+        <button type="button" data-width="1440" aria-pressed="true" title="Use the available preview width"><i class="monitor" aria-hidden="true"></i>Desktop</button>
+        <button type="button" data-width="390" aria-pressed="false" title="390 px phone frame"><i class="phone" aria-hidden="true"></i>Phone</button>
+      </div>
+      <div class="environment">
+        <button type="button" data-setting="theme" aria-label="Night theme" aria-pressed="false"><span aria-hidden="true" class="sun"></span><span data-value>Day</span></button>
+        <button type="button" data-setting="dir" aria-label="Right-to-left direction" aria-pressed="false"><span data-value>LTR</span></button>
+        <button type="button" data-setting="scale" aria-label="Double text size" aria-pressed="false"><span aria-hidden="true" class="type-icon">Aa</span><span data-value>100%</span></button>
+      </div>
+    </div>
+    <div class="stage"><div class="viewport"><div class="frame"><iframe loading="lazy" title="Material Expressive Side sheet interactive example"></iframe></div></div></div>
+    <div class="caption"><span><i class="status-dot" aria-hidden="true"></i>Flutter preview <span class="frame-size"></span></span><a class="open-preview" target="_blank" rel="noopener">Open preview <span aria-hidden="true">↗</span></a></div>
+    </div>
+    <div class="source" role="tabpanel" id="inspect-file-code" aria-labelledby="inspect-file-code-tab" hidden>
+      <div class="source-head"><span class="filename">components&#47;side-sheet&#47;material_expressive&#47;inspect_file.dart</span><button type="button" class="copy">Copy code</button></div>
+      <pre tabindex="0" aria-label="Dart source"><code><span class="hljs-keyword">import</span> <span class="hljs-string">'package:flutter/widgets.dart'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-string">'package:material_expressive_ui/material_expressive_ui.dart'</span>;
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">InspectFile</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">StatelessWidget</span> </span>{
+  <span class="hljs-keyword">const</span> InspectFile({<span class="hljs-keyword">super</span>.key});
+
+  <span class="hljs-meta">@override</span>
+  Widget build(BuildContext context) =&gt; ExpressiveFilledButton(
+    <span class="hljs-string">'File details'</span>,
+    onPressed: () =&gt; ExpressiveSheet.<span class="hljs-keyword">show</span>&lt;<span class="hljs-keyword">void</span>&gt;(
+      context,
+      title: <span class="hljs-string">'File details'</span>,
+      builder: (_) =&gt; <span class="hljs-keyword">const</span> Text(<span class="hljs-string">'Owner: Mara Chen\nLast edited: 14 June'</span>),
+    ),
+  );
+}
+</code></pre>
+    </div>
+  </div>
+</section>
+<section class="reference" id="parameters">
+  <div class="section-title"><h2>Parameters</h2><a class="api" href="https:&#47;&#47;pub.dev&#47;documentation&#47;material_expressive_ui&#47;latest&#47;material_expressive_ui&#47;ExpressiveSheet-class.html">ExpressiveSheet API ↗</a></div>
+  <dl><div><dt><code>title</code></dt><dd>Heading at the top of the panel.</dd></div><div><dt><code>builder</code></dt><dd>Builds the content inside the sheet.</dd></div><div><dt><code>edge</code></dt><dd>Chooses the reading start or end.</dd></div><div><dt><code>width</code></dt><dd>Requested panel width.</dd></div></dl>
+</section>

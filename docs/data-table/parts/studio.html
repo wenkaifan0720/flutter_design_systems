@@ -1,0 +1,76 @@
+<section class="example" id="sort-stock" data-example="sort-stock">
+  <div class="section-title"><h2>Sort the stock list</h2><a class="permalink" href="#sort-stock" aria-label="Link to Sort the stock list">#</a></div>
+  <p>Sort by Units to put the smallest quantity first, then reverse the order. Select a row or move to the next page to inspect the remaining record.</p>
+
+  <p class="keyboard-note" hidden></p>
+  <div class="workbench">
+    <div class="example-tabs" role="tablist" aria-label="Sort the stock list example">
+      <button type="button" role="tab" id="sort-stock-preview-tab" aria-selected="true" aria-controls="sort-stock-preview">Preview</button>
+      <button type="button" role="tab" id="sort-stock-code-tab" aria-selected="false" aria-controls="sort-stock-code" tabindex="-1">Code</button>
+    </div>
+    <div role="tabpanel" id="sort-stock-preview" aria-labelledby="sort-stock-preview-tab">
+    <div class="tools" aria-label="Preview settings">
+      <div class="frame-options" role="group" aria-label="Frame width">
+        <button type="button" data-width="1440" aria-pressed="true" title="Use the available preview width"><i class="monitor" aria-hidden="true"></i>Desktop</button>
+        <button type="button" data-width="390" aria-pressed="false" title="390 px phone frame"><i class="phone" aria-hidden="true"></i>Phone</button>
+      </div>
+      <div class="environment">
+        <button type="button" data-setting="theme" aria-label="Night theme" aria-pressed="false"><span aria-hidden="true" class="sun"></span><span data-value>Day</span></button>
+        <button type="button" data-setting="dir" aria-label="Right-to-left direction" aria-pressed="false"><span data-value>LTR</span></button>
+        <button type="button" data-setting="scale" aria-label="Double text size" aria-pressed="false"><span aria-hidden="true" class="type-icon">Aa</span><span data-value>100%</span></button>
+      </div>
+    </div>
+    <div class="stage"><div class="viewport"><div class="frame"><iframe loading="lazy" title="Studio Data table interactive example"></iframe></div></div></div>
+    <div class="caption"><span><i class="status-dot" aria-hidden="true"></i>Flutter preview <span class="frame-size"></span></span><a class="open-preview" target="_blank" rel="noopener">Open preview <span aria-hidden="true">↗</span></a></div>
+    </div>
+    <div class="source" role="tabpanel" id="sort-stock-code" aria-labelledby="sort-stock-code-tab" hidden>
+      <div class="source-head"><span class="filename">components&#47;data-table&#47;studio&#47;sort_stock.dart</span><button type="button" class="copy">Copy code</button></div>
+      <pre tabindex="0" aria-label="Dart source"><code><span class="hljs-keyword">import</span> <span class="hljs-string">'package:flutter/widgets.dart'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-string">'package:studio_ui/studio_ui.dart'</span>;
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">SortStock</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">StatefulWidget</span> </span>{
+  <span class="hljs-keyword">const</span> SortStock({<span class="hljs-keyword">super</span>.key});
+  <span class="hljs-meta">@override</span>
+  State&lt;SortStock&gt; createState() =&gt; _SortStockState();
+}
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">_SortStockState</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">State</span>&lt;<span class="hljs-title">SortStock</span>&gt; </span>{
+  <span class="hljs-keyword">final</span> stock = StudioTableController&lt;(<span class="hljs-built_in">String</span>, <span class="hljs-built_in">int</span>)&gt;(
+    rows: <span class="hljs-keyword">const</span> [(<span class="hljs-string">'Ink'</span>, <span class="hljs-number">12</span>), (<span class="hljs-string">'Paper'</span>, <span class="hljs-number">4</span>), (<span class="hljs-string">'Pens'</span>, <span class="hljs-number">8</span>)],
+    rowKey: (item) =&gt; item.$<span class="hljs-number">1</span>,
+    pageSize: <span class="hljs-number">2</span>,
+    columns: [
+      StudioDataColumn(id: <span class="hljs-string">'item'</span>, label: <span class="hljs-string">'Item'</span>, sortKey: (item) =&gt; item.$<span class="hljs-number">1</span>),
+      StudioDataColumn(
+        id: <span class="hljs-string">'units'</span>,
+        label: <span class="hljs-string">'Units'</span>,
+        numeric: <span class="hljs-keyword">true</span>,
+        sortKey: (item) =&gt; item.$<span class="hljs-number">2</span>,
+      ),
+    ],
+  );
+  <span class="hljs-meta">@override</span>
+  <span class="hljs-keyword">void</span> dispose() {
+    stock.dispose();
+    <span class="hljs-keyword">super</span>.dispose();
+  }
+
+  <span class="hljs-meta">@override</span>
+  Widget build(BuildContext context) =&gt; ConstrainedBox(
+    constraints: <span class="hljs-keyword">const</span> BoxConstraints(maxWidth: <span class="hljs-number">620</span>),
+    child: SingleChildScrollView(
+      child: StudioDataTable&lt;(<span class="hljs-built_in">String</span>, <span class="hljs-built_in">int</span>)&gt;(
+        controller: stock,
+        cell: (item, column) =&gt; column == <span class="hljs-string">'item'</span> ? item.$<span class="hljs-number">1</span> : <span class="hljs-string">'<span class="hljs-subst">${item.$<span class="hljs-number">2</span>}</span>'</span>,
+      ),
+    ),
+  );
+}
+</code></pre>
+    </div>
+  </div>
+</section>
+<section class="reference" id="parameters">
+  <div class="section-title"><h2>Parameters</h2><a class="api" href="https:&#47;&#47;pub.dev&#47;documentation&#47;studio_ui&#47;latest&#47;studio_ui&#47;StudioDataTable-class.html">StudioDataTable API ↗</a></div>
+  <dl><div><dt><code>controller</code></dt><dd>The rows, columns, sort, selection and page.</dd></div><div><dt><code>cell</code></dt><dd>Supplies the display value for a row and column.</dd></div><div><dt><code>selectable</code></dt><dd>Whether rows can be chosen.</dd></div><div><dt><code>onActivate</code></dt><dd>Opens a row (Enter, a double press).</dd></div><div><dt><code>emptyText</code></dt><dd>What it says with no rows.</dd></div><div><dt><code>style</code></dt><dd>Its style, over StudioThemeData.dataTableStyle.</dd></div></dl>
+</section>

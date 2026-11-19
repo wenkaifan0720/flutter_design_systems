@@ -1,0 +1,50 @@
+<section class="example" id="read-sharing-details" data-example="read-sharing-details">
+  <div class="section-title"><h2>Read sharing details</h2><a class="permalink" href="#read-sharing-details" aria-label="Link to Read sharing details">#</a></div>
+  <p>Open Sharing details to see who can read the file. Dismiss the note and open it once more with the keyboard.</p>
+
+  <p class="keyboard-note" hidden></p>
+  <div class="workbench">
+    <div class="example-tabs" role="tablist" aria-label="Read sharing details example">
+      <button type="button" role="tab" id="read-sharing-details-preview-tab" aria-selected="true" aria-controls="read-sharing-details-preview">Preview</button>
+      <button type="button" role="tab" id="read-sharing-details-code-tab" aria-selected="false" aria-controls="read-sharing-details-code" tabindex="-1">Code</button>
+    </div>
+    <div role="tabpanel" id="read-sharing-details-preview" aria-labelledby="read-sharing-details-preview-tab">
+    <div class="tools" aria-label="Preview settings">
+      <div class="frame-options" role="group" aria-label="Frame width">
+        <button type="button" data-width="1440" aria-pressed="true" title="Use the available preview width"><i class="monitor" aria-hidden="true"></i>Desktop</button>
+        <button type="button" data-width="390" aria-pressed="false" title="390 px phone frame"><i class="phone" aria-hidden="true"></i>Phone</button>
+      </div>
+      <div class="environment">
+        <button type="button" data-setting="theme" aria-label="Night theme" aria-pressed="false"><span aria-hidden="true" class="sun"></span><span data-value>Day</span></button>
+        <button type="button" data-setting="dir" aria-label="Right-to-left direction" aria-pressed="false"><span data-value>LTR</span></button>
+        <button type="button" data-setting="scale" aria-label="Double text size" aria-pressed="false"><span aria-hidden="true" class="type-icon">Aa</span><span data-value>100%</span></button>
+      </div>
+    </div>
+    <div class="stage"><div class="viewport"><div class="frame"><iframe loading="lazy" title="Gloss Popover interactive example"></iframe></div></div></div>
+    <div class="caption"><span><i class="status-dot" aria-hidden="true"></i>Flutter preview <span class="frame-size"></span></span><a class="open-preview" target="_blank" rel="noopener">Open preview <span aria-hidden="true">↗</span></a></div>
+    </div>
+    <div class="source" role="tabpanel" id="read-sharing-details-code" aria-labelledby="read-sharing-details-code-tab" hidden>
+      <div class="source-head"><span class="filename">components&#47;popover&#47;gloss&#47;read_sharing_details.dart</span><button type="button" class="copy">Copy code</button></div>
+      <pre tabindex="0" aria-label="Dart source"><code><span class="hljs-keyword">import</span> <span class="hljs-string">'package:flutter/widgets.dart'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-string">'package:gloss_ui/gloss_ui.dart'</span>;
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">ReadSharingDetails</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">StatelessWidget</span> </span>{
+  <span class="hljs-keyword">const</span> ReadSharingDetails({<span class="hljs-keyword">super</span>.key});
+
+  <span class="hljs-meta">@override</span>
+  Widget build(BuildContext context) =&gt; GlossPopover(
+    semanticLabel: <span class="hljs-string">'Sharing details'</span>,
+    builder: (_, toggle, open) =&gt;
+        GlossButton(<span class="hljs-string">'Sharing details'</span>, onPressed: toggle),
+    content: (_, close) =&gt;
+        <span class="hljs-keyword">const</span> Text(<span class="hljs-string">'Only invited people can read this file.'</span>),
+  );
+}
+</code></pre>
+    </div>
+  </div>
+</section>
+<section class="reference" id="parameters">
+  <div class="section-title"><h2>Parameters</h2><a class="api" href="https:&#47;&#47;pub.dev&#47;documentation&#47;gloss_ui&#47;latest&#47;gloss_ui&#47;GlossPopover-class.html">GlossPopover API ↗</a></div>
+  <dl><div><dt><code>builder</code></dt><dd>Builds the control that opens the popover.</dd></div><div><dt><code>content</code></dt><dd>Supplies the note inside the open panel.</dd></div><div><dt><code>semanticLabel</code></dt><dd>Names the panel for assistive technology.</dd></div><div><dt><code>width</code></dt><dd>Sets the preferred width of the open panel.</dd></div><div><dt><code>side</code></dt><dd>Chooses the preferred side of the anchor.</dd></div></dl>
+</section>

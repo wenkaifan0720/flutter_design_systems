@@ -1,0 +1,88 @@
+<section class="example" id="pick-day" data-example="pick-day">
+  <div class="section-title"><h2>Choose a day on the calendar</h2><a class="permalink" href="#pick-day" aria-label="Link to Choose a day on the calendar">#</a></div>
+  <p>Choose a day in November, then browse to December and choose another. The date below the calendar follows the selection.</p>
+
+  <p class="keyboard-note">Tab reaches the month’s days; the arrow keys move a day or a week, Page Up and Page Down a month, and Enter or Space chooses.</p>
+  <div class="workbench">
+    <div class="example-tabs" role="tablist" aria-label="Choose a day on the calendar example">
+      <button type="button" role="tab" id="pick-day-preview-tab" aria-selected="true" aria-controls="pick-day-preview">Preview</button>
+      <button type="button" role="tab" id="pick-day-code-tab" aria-selected="false" aria-controls="pick-day-code" tabindex="-1">Code</button>
+    </div>
+    <div role="tabpanel" id="pick-day-preview" aria-labelledby="pick-day-preview-tab">
+    <div class="tools" aria-label="Preview settings">
+      <div class="frame-options" role="group" aria-label="Frame width">
+        <button type="button" data-width="1440" aria-pressed="true" title="Use the available preview width"><i class="monitor" aria-hidden="true"></i>Desktop</button>
+        <button type="button" data-width="390" aria-pressed="false" title="390 px phone frame"><i class="phone" aria-hidden="true"></i>Phone</button>
+      </div>
+      <div class="environment">
+        <button type="button" data-setting="theme" aria-label="Night theme" aria-pressed="false"><span aria-hidden="true" class="sun"></span><span data-value>Day</span></button>
+        <button type="button" data-setting="dir" aria-label="Right-to-left direction" aria-pressed="false"><span data-value>LTR</span></button>
+        <button type="button" data-setting="scale" aria-label="Double text size" aria-pressed="false"><span aria-hidden="true" class="type-icon">Aa</span><span data-value>100%</span></button>
+      </div>
+    </div>
+    <div class="stage"><div class="viewport" data-height="560"><div class="frame"><iframe loading="lazy" title="Civic Inline calendar interactive example"></iframe></div></div></div>
+    <div class="caption"><span><i class="status-dot" aria-hidden="true"></i>Flutter preview <span class="frame-size"></span></span><a class="open-preview" target="_blank" rel="noopener">Open preview <span aria-hidden="true">↗</span></a></div>
+    </div>
+    <div class="source" role="tabpanel" id="pick-day-code" aria-labelledby="pick-day-code-tab" hidden>
+      <div class="source-head"><span class="filename">components&#47;calendar&#47;civic&#47;pick_day.dart</span><button type="button" class="copy">Copy code</button></div>
+      <pre tabindex="0" aria-label="Dart source"><code><span class="hljs-keyword">import</span> <span class="hljs-string">'package:civic_ui/civic_ui.dart'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-string">'package:flutter/widgets.dart'</span>;
+
+<span class="hljs-keyword">const</span> _months = [
+  <span class="hljs-string">'January'</span>,
+  <span class="hljs-string">'February'</span>,
+  <span class="hljs-string">'March'</span>,
+  <span class="hljs-string">'April'</span>,
+  <span class="hljs-string">'May'</span>,
+  <span class="hljs-string">'June'</span>,
+  <span class="hljs-string">'July'</span>,
+  <span class="hljs-string">'August'</span>,
+  <span class="hljs-string">'September'</span>,
+  <span class="hljs-string">'October'</span>,
+  <span class="hljs-string">'November'</span>,
+  <span class="hljs-string">'December'</span>,
+];
+
+<span class="hljs-built_in">String</span> _date(<span class="hljs-built_in">DateTime</span> day) =&gt;
+    <span class="hljs-string">'<span class="hljs-subst">${day.day}</span> <span class="hljs-subst">${_months[day.month - <span class="hljs-number">1</span>]}</span> <span class="hljs-subst">${day.year}</span>'</span>;
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">PickDay</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">StatefulWidget</span> </span>{
+  <span class="hljs-keyword">const</span> PickDay({<span class="hljs-keyword">super</span>.key});
+  <span class="hljs-meta">@override</span>
+  State&lt;PickDay&gt; createState() =&gt; _PickDayState();
+}
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">_PickDayState</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">State</span>&lt;<span class="hljs-title">PickDay</span>&gt; </span>{
+  <span class="hljs-built_in">DateTime</span> chosen = <span class="hljs-built_in">DateTime</span>(<span class="hljs-number">2026</span>, <span class="hljs-number">11</span>, <span class="hljs-number">12</span>);
+  late <span class="hljs-keyword">final</span> dates = DesignCalendarController(
+    firstDate: <span class="hljs-built_in">DateTime</span>(<span class="hljs-number">2026</span>, <span class="hljs-number">11</span>),
+    lastDate: <span class="hljs-built_in">DateTime</span>(<span class="hljs-number">2026</span>, <span class="hljs-number">12</span>, <span class="hljs-number">31</span>),
+    selectedDate: chosen,
+  );
+  <span class="hljs-meta">@override</span>
+  <span class="hljs-keyword">void</span> dispose() {
+    dates.dispose();
+    <span class="hljs-keyword">super</span>.dispose();
+  }
+
+  <span class="hljs-meta">@override</span>
+  Widget build(BuildContext context) =&gt; Column(
+    mainAxisSize: MainAxisSize.min,
+    spacing: <span class="hljs-number">16</span>,
+    children: [
+      CivicCalendar(
+        controller: dates,
+        onChanged: (day) =&gt; setState(() =&gt; chosen = day),
+      ),
+      Text(<span class="hljs-string">'Chosen: <span class="hljs-subst">${_date(chosen)}</span>'</span>),
+    ],
+  );
+}
+</code></pre>
+    </div>
+  </div>
+</section>
+<section class="reference" id="parameters">
+  <div class="section-title"><h2>Parameters</h2><a class="api" href="https:&#47;&#47;pub.dev&#47;documentation&#47;civic_ui&#47;latest&#47;civic_ui&#47;CivicCalendar-class.html">CivicCalendar API ↗</a></div>
+  <dl><div><dt><code>controller</code></dt><dd>Holds the month shown, the dates that can be chosen and the date chosen.</dd></div><div><dt><code>onChanged</code></dt><dd>Receives the day chosen.</dd></div><div><dt><code>months</code></dt><dd>How many months stand side by side where there is room.</dd></div><div><dt><code>focusNode</code></dt><dd>Supplies the FocusNode owned by the caller.</dd></div></dl>
+</section>

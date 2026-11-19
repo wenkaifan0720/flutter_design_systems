@@ -1,0 +1,75 @@
+<section class="example" id="resize-cover" data-example="resize-cover">
+  <div class="section-title"><h2>Resize a missing cover</h2><a class="permalink" href="#resize-cover" aria-label="Link to Resize a missing cover">#</a></div>
+  <p>A route guide has no cover image. Switch between a wide and a square frame to see how the look draws its fallback at each size.</p>
+
+  <p class="keyboard-note" hidden></p>
+  <div class="workbench">
+    <div class="example-tabs" role="tablist" aria-label="Resize a missing cover example">
+      <button type="button" role="tab" id="resize-cover-preview-tab" aria-selected="true" aria-controls="resize-cover-preview">Preview</button>
+      <button type="button" role="tab" id="resize-cover-code-tab" aria-selected="false" aria-controls="resize-cover-code" tabindex="-1">Code</button>
+    </div>
+    <div role="tabpanel" id="resize-cover-preview" aria-labelledby="resize-cover-preview-tab">
+    <div class="tools" aria-label="Preview settings">
+      <div class="frame-options" role="group" aria-label="Frame width">
+        <button type="button" data-width="1440" aria-pressed="true" title="Use the available preview width"><i class="monitor" aria-hidden="true"></i>Desktop</button>
+        <button type="button" data-width="390" aria-pressed="false" title="390 px phone frame"><i class="phone" aria-hidden="true"></i>Phone</button>
+      </div>
+      <div class="environment">
+        <button type="button" data-setting="theme" aria-label="Night theme" aria-pressed="false"><span aria-hidden="true" class="sun"></span><span data-value>Day</span></button>
+        <button type="button" data-setting="dir" aria-label="Right-to-left direction" aria-pressed="false"><span data-value>LTR</span></button>
+        <button type="button" data-setting="scale" aria-label="Double text size" aria-pressed="false"><span aria-hidden="true" class="type-icon">Aa</span><span data-value>100%</span></button>
+      </div>
+    </div>
+    <div class="stage"><div class="viewport"><div class="frame"><iframe loading="lazy" title="Fluent 2 Media with fallback interactive example"></iframe></div></div></div>
+    <div class="caption"><span><i class="status-dot" aria-hidden="true"></i>Flutter preview <span class="frame-size"></span></span><a class="open-preview" target="_blank" rel="noopener">Open preview <span aria-hidden="true">↗</span></a></div>
+    </div>
+    <div class="source" role="tabpanel" id="resize-cover-code" aria-labelledby="resize-cover-code-tab" hidden>
+      <div class="source-head"><span class="filename">components&#47;media&#47;fluent2&#47;resize_cover.dart</span><button type="button" class="copy">Copy code</button></div>
+      <pre tabindex="0" aria-label="Dart source"><code><span class="hljs-keyword">import</span> <span class="hljs-string">'package:flutter/widgets.dart'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-string">'package:fluent2_design_ui/fluent2_design_ui.dart'</span>;
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">ResizeCover</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">StatefulWidget</span> </span>{
+  <span class="hljs-keyword">const</span> ResizeCover({<span class="hljs-keyword">super</span>.key});
+  <span class="hljs-meta">@override</span>
+  State&lt;ResizeCover&gt; createState() =&gt; _ResizeCoverState();
+}
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">_ResizeCoverState</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">State</span>&lt;<span class="hljs-title">ResizeCover</span>&gt; </span>{
+  <span class="hljs-built_in">bool</span> square = <span class="hljs-keyword">false</span>;
+  <span class="hljs-meta">@override</span>
+  Widget build(BuildContext context) {
+    <span class="hljs-keyword">final</span> aspect = square ? <span class="hljs-number">1.0</span> : <span class="hljs-number">16</span> / <span class="hljs-number">9</span>;
+    <span class="hljs-keyword">return</span> ConstrainedBox(
+      constraints: <span class="hljs-keyword">const</span> BoxConstraints(maxWidth: <span class="hljs-number">440</span>),
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(
+              width: <span class="hljs-number">156</span>,
+              child: Fluent2Image(
+                width: <span class="hljs-number">156</span>,
+                height: <span class="hljs-number">156</span> / aspect,
+                semanticLabel: <span class="hljs-string">'Route guide cover'</span>,
+              ),
+            ),
+            <span class="hljs-keyword">const</span> SizedBox(height: <span class="hljs-number">12</span>),
+            Fluent2Button(
+              square ? <span class="hljs-string">'Wide cover'</span> : <span class="hljs-string">'Square cover'</span>,
+              onPressed: () =&gt; setState(() =&gt; square = !square),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+</code></pre>
+    </div>
+  </div>
+</section>
+<section class="reference" id="parameters">
+  <div class="section-title"><h2>Parameters</h2><a class="api" href="https:&#47;&#47;pub.dev&#47;documentation&#47;fluent2_design_ui&#47;latest&#47;fluent2_design_ui&#47;Fluent2Image-class.html">Fluent2Image API ↗</a></div>
+  <dl><div><dt><code>image</code></dt><dd>Supplies the photo when one is available. The component uses its fallback otherwise.</dd></div><div><dt><code>width</code></dt><dd>Sets the width of the media frame.</dd></div><div><dt><code>height</code></dt><dd>Sets the height of the media frame.</dd></div><div><dt><code>aspectRatio</code></dt><dd>The box&#39;s width over its height, where one side is not given.</dd></div><div><dt><code>fit</code></dt><dd>Controls how the image fits inside its frame.</dd></div><div><dt><code>shape</code></dt><dd>Chooses the outline of the component.</dd></div><div><dt><code>bordered</code></dt><dd>Whether a hairline frames it.</dd></div><div><dt><code>shadow</code></dt><dd>Whether it stands raised in a shadow.</dd></div><div><dt><code>block</code></dt><dd>Takes its parent&#39;s whole width.</dd></div><div><dt><code>semanticLabel</code></dt><dd>Describes the picture independently of its fallback.</dd></div></dl>
+</section>

@@ -1,0 +1,65 @@
+<section class="example" id="set-reminders" data-example="set-reminders">
+  <div class="section-title"><h2>Set reminders</h2><a class="permalink" href="#set-reminders" aria-label="Link to Set reminders">#</a></div>
+  <p>Turn reminders on, then off. The message below the switch shows the current setting.</p>
+
+  <p class="keyboard-note" hidden></p>
+  <div class="workbench">
+    <div class="example-tabs" role="tablist" aria-label="Set reminders example">
+      <button type="button" role="tab" id="set-reminders-preview-tab" aria-selected="true" aria-controls="set-reminders-preview">Preview</button>
+      <button type="button" role="tab" id="set-reminders-code-tab" aria-selected="false" aria-controls="set-reminders-code" tabindex="-1">Code</button>
+    </div>
+    <div role="tabpanel" id="set-reminders-preview" aria-labelledby="set-reminders-preview-tab">
+    <div class="tools" aria-label="Preview settings">
+      <div class="frame-options" role="group" aria-label="Frame width">
+        <button type="button" data-width="1440" aria-pressed="true" title="Use the available preview width"><i class="monitor" aria-hidden="true"></i>Desktop</button>
+        <button type="button" data-width="390" aria-pressed="false" title="390 px phone frame"><i class="phone" aria-hidden="true"></i>Phone</button>
+      </div>
+      <div class="environment">
+        <button type="button" data-setting="theme" aria-label="Night theme" aria-pressed="false"><span aria-hidden="true" class="sun"></span><span data-value>Day</span></button>
+        <button type="button" data-setting="dir" aria-label="Right-to-left direction" aria-pressed="false"><span data-value>LTR</span></button>
+        <button type="button" data-setting="scale" aria-label="Double text size" aria-pressed="false"><span aria-hidden="true" class="type-icon">Aa</span><span data-value>100%</span></button>
+      </div>
+    </div>
+    <div class="stage"><div class="viewport"><div class="frame"><iframe loading="lazy" title="Studio Switch interactive example"></iframe></div></div></div>
+    <div class="caption"><span><i class="status-dot" aria-hidden="true"></i>Flutter preview <span class="frame-size"></span></span><a class="open-preview" target="_blank" rel="noopener">Open preview <span aria-hidden="true">↗</span></a></div>
+    </div>
+    <div class="source" role="tabpanel" id="set-reminders-code" aria-labelledby="set-reminders-code-tab" hidden>
+      <div class="source-head"><span class="filename">components&#47;switch&#47;studio&#47;set_reminders.dart</span><button type="button" class="copy">Copy code</button></div>
+      <pre tabindex="0" aria-label="Dart source"><code><span class="hljs-keyword">import</span> <span class="hljs-string">'package:flutter/widgets.dart'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-string">'package:studio_ui/studio_ui.dart'</span>;
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">SetReminders</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">StatefulWidget</span> </span>{
+  <span class="hljs-keyword">const</span> SetReminders({<span class="hljs-keyword">super</span>.key});
+
+  <span class="hljs-meta">@override</span>
+  State&lt;SetReminders&gt; createState() =&gt; _SetRemindersState();
+}
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">_SetRemindersState</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">State</span>&lt;<span class="hljs-title">SetReminders</span>&gt; </span>{
+  <span class="hljs-built_in">bool</span> reminders = <span class="hljs-keyword">false</span>;
+
+  <span class="hljs-meta">@override</span>
+  Widget build(BuildContext context) =&gt; ConstrainedBox(
+    constraints: <span class="hljs-keyword">const</span> BoxConstraints(maxWidth: <span class="hljs-number">360</span>),
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        StudioSwitch(
+          semanticLabel: <span class="hljs-string">'Reminders'</span>,
+          value: reminders,
+          onChanged: (next) =&gt; setState(() =&gt; reminders = next),
+        ),
+        <span class="hljs-keyword">const</span> SizedBox(height: <span class="hljs-number">12</span>),
+        Text(reminders ? <span class="hljs-string">'Reminders on'</span> : <span class="hljs-string">'Reminders off'</span>),
+      ],
+    ),
+  );
+}
+</code></pre>
+    </div>
+  </div>
+</section>
+<section class="reference" id="parameters">
+  <div class="section-title"><h2>Parameters</h2><a class="api" href="https:&#47;&#47;pub.dev&#47;documentation&#47;studio_ui&#47;latest&#47;studio_ui&#47;StudioSwitch-class.html">StudioSwitch API ↗</a></div>
+  <dl><div><dt><code>semanticLabel</code></dt><dd>Names the setting in both states.</dd></div><div><dt><code>value</code></dt><dd>Whether reminders are on.</dd></div><div><dt><code>onChanged</code></dt><dd>Applies the new setting immediately.</dd></div></dl>
+</section>

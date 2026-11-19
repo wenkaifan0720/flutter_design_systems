@@ -1,0 +1,70 @@
+<section class="example" id="load-file-details" data-example="load-file-details">
+  <div class="section-title"><h2>Load file details</h2><a class="permalink" href="#load-file-details" aria-label="Link to Load file details">#</a></div>
+  <p>Read the loading state, then choose Show details. The placeholder gives way to a file name and its owner. Choose Reload to try again.</p>
+
+  <p class="keyboard-note" hidden></p>
+  <div class="workbench">
+    <div class="example-tabs" role="tablist" aria-label="Load file details example">
+      <button type="button" role="tab" id="load-file-details-preview-tab" aria-selected="true" aria-controls="load-file-details-preview">Preview</button>
+      <button type="button" role="tab" id="load-file-details-code-tab" aria-selected="false" aria-controls="load-file-details-code" tabindex="-1">Code</button>
+    </div>
+    <div role="tabpanel" id="load-file-details-preview" aria-labelledby="load-file-details-preview-tab">
+    <div class="tools" aria-label="Preview settings">
+      <div class="frame-options" role="group" aria-label="Frame width">
+        <button type="button" data-width="1440" aria-pressed="true" title="Use the available preview width"><i class="monitor" aria-hidden="true"></i>Desktop</button>
+        <button type="button" data-width="390" aria-pressed="false" title="390 px phone frame"><i class="phone" aria-hidden="true"></i>Phone</button>
+      </div>
+      <div class="environment">
+        <button type="button" data-setting="theme" aria-label="Night theme" aria-pressed="false"><span aria-hidden="true" class="sun"></span><span data-value>Day</span></button>
+        <button type="button" data-setting="dir" aria-label="Right-to-left direction" aria-pressed="false"><span data-value>LTR</span></button>
+        <button type="button" data-setting="scale" aria-label="Double text size" aria-pressed="false"><span aria-hidden="true" class="type-icon">Aa</span><span data-value>100%</span></button>
+      </div>
+    </div>
+    <div class="stage"><div class="viewport"><div class="frame"><iframe loading="lazy" title="Minimal Skeleton interactive example"></iframe></div></div></div>
+    <div class="caption"><span><i class="status-dot" aria-hidden="true"></i>Flutter preview <span class="frame-size"></span></span><a class="open-preview" target="_blank" rel="noopener">Open preview <span aria-hidden="true">↗</span></a></div>
+    </div>
+    <div class="source" role="tabpanel" id="load-file-details-code" aria-labelledby="load-file-details-code-tab" hidden>
+      <div class="source-head"><span class="filename">components&#47;skeleton&#47;minimal&#47;load_file_details.dart</span><button type="button" class="copy">Copy code</button></div>
+      <pre tabindex="0" aria-label="Dart source"><code><span class="hljs-keyword">import</span> <span class="hljs-string">'package:flutter/widgets.dart'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-string">'package:minimal_ui/minimal_ui.dart'</span>;
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">LoadFileDetails</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">StatefulWidget</span> </span>{
+  <span class="hljs-keyword">const</span> LoadFileDetails({<span class="hljs-keyword">super</span>.key});
+  <span class="hljs-meta">@override</span>
+  State&lt;LoadFileDetails&gt; createState() =&gt; _LoadFileDetailsState();
+}
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">_LoadFileDetailsState</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">State</span>&lt;<span class="hljs-title">LoadFileDetails</span>&gt; </span>{
+  <span class="hljs-built_in">bool</span> loading = <span class="hljs-keyword">true</span>;
+
+  <span class="hljs-meta">@override</span>
+  Widget build(BuildContext context) =&gt; ConstrainedBox(
+    constraints: <span class="hljs-keyword">const</span> BoxConstraints(maxWidth: <span class="hljs-number">280</span>),
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      spacing: <span class="hljs-number">10</span>,
+      children: [
+        <span class="hljs-keyword">if</span> (loading) ...[
+          <span class="hljs-keyword">const</span> Text(<span class="hljs-string">'Loading file details'</span>),
+          <span class="hljs-keyword">const</span> MinimalSkeleton.text(lines: <span class="hljs-number">2</span>),
+        ] <span class="hljs-keyword">else</span> ...[
+          <span class="hljs-keyword">const</span> Text(<span class="hljs-string">'Planning notes'</span>),
+          <span class="hljs-keyword">const</span> Text(<span class="hljs-string">'Owner: Mara Chen'</span>),
+        ],
+        MinimalButton(
+          loading ? <span class="hljs-string">'Show details'</span> : <span class="hljs-string">'Reload'</span>,
+          onPressed: () =&gt; setState(() =&gt; loading = !loading),
+        ),
+      ],
+    ),
+  );
+}
+</code></pre>
+    </div>
+  </div>
+</section>
+<section class="reference" id="parameters">
+  <div class="section-title"><h2>Parameters</h2><a class="api" href="https:&#47;&#47;pub.dev&#47;documentation&#47;minimal_ui&#47;latest&#47;minimal_ui&#47;MinimalSkeleton-class.html">MinimalSkeleton API ↗</a></div>
+  <dl><div><dt><code>lines</code></dt><dd>Number of placeholder text lines.</dd></div></dl>
+</section>

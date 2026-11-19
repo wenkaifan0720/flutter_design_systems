@@ -1,0 +1,51 @@
+<section class="example" id="read-pickup" data-example="read-pickup">
+  <div class="section-title"><h2>Read pickup instructions</h2><a class="permalink" href="#read-pickup" aria-label="Link to Read pickup instructions">#</a></div>
+  <p>Open Pickup instructions to find the collection point. Close the section and the instructions disappear.</p>
+
+  <p class="keyboard-note" hidden></p>
+  <div class="workbench">
+    <div class="example-tabs" role="tablist" aria-label="Read pickup instructions example">
+      <button type="button" role="tab" id="read-pickup-preview-tab" aria-selected="true" aria-controls="read-pickup-preview">Preview</button>
+      <button type="button" role="tab" id="read-pickup-code-tab" aria-selected="false" aria-controls="read-pickup-code" tabindex="-1">Code</button>
+    </div>
+    <div role="tabpanel" id="read-pickup-preview" aria-labelledby="read-pickup-preview-tab">
+    <div class="tools" aria-label="Preview settings">
+      <div class="frame-options" role="group" aria-label="Frame width">
+        <button type="button" data-width="1440" aria-pressed="true" title="Use the available preview width"><i class="monitor" aria-hidden="true"></i>Desktop</button>
+        <button type="button" data-width="390" aria-pressed="false" title="390 px phone frame"><i class="phone" aria-hidden="true"></i>Phone</button>
+      </div>
+      <div class="environment">
+        <button type="button" data-setting="theme" aria-label="Night theme" aria-pressed="false"><span aria-hidden="true" class="sun"></span><span data-value>Day</span></button>
+        <button type="button" data-setting="dir" aria-label="Right-to-left direction" aria-pressed="false"><span data-value>LTR</span></button>
+        <button type="button" data-setting="scale" aria-label="Double text size" aria-pressed="false"><span aria-hidden="true" class="type-icon">Aa</span><span data-value>100%</span></button>
+      </div>
+    </div>
+    <div class="stage"><div class="viewport"><div class="frame"><iframe loading="lazy" title="Minimal Disclosure interactive example"></iframe></div></div></div>
+    <div class="caption"><span><i class="status-dot" aria-hidden="true"></i>Flutter preview <span class="frame-size"></span></span><a class="open-preview" target="_blank" rel="noopener">Open preview <span aria-hidden="true">↗</span></a></div>
+    </div>
+    <div class="source" role="tabpanel" id="read-pickup-code" aria-labelledby="read-pickup-code-tab" hidden>
+      <div class="source-head"><span class="filename">components&#47;disclosure&#47;minimal&#47;read_pickup.dart</span><button type="button" class="copy">Copy code</button></div>
+      <pre tabindex="0" aria-label="Dart source"><code><span class="hljs-keyword">import</span> <span class="hljs-string">'package:flutter/widgets.dart'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-string">'package:minimal_ui/minimal_ui.dart'</span>;
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">ReadPickup</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">StatelessWidget</span> </span>{
+  <span class="hljs-keyword">const</span> ReadPickup({<span class="hljs-keyword">super</span>.key});
+  <span class="hljs-meta">@override</span>
+  Widget build(BuildContext context) =&gt; ConstrainedBox(
+    constraints: <span class="hljs-keyword">const</span> BoxConstraints(maxWidth: <span class="hljs-number">440</span>),
+    child: SingleChildScrollView(
+      child: <span class="hljs-keyword">const</span> MinimalDisclosure(
+        title: <span class="hljs-string">'Pickup instructions'</span>,
+        child: Text(<span class="hljs-string">'Collect your parcel at the front desk.'</span>),
+      ),
+    ),
+  );
+}
+</code></pre>
+    </div>
+  </div>
+</section>
+<section class="reference" id="parameters">
+  <div class="section-title"><h2>Parameters</h2><a class="api" href="https:&#47;&#47;pub.dev&#47;documentation&#47;minimal_ui&#47;latest&#47;minimal_ui&#47;MinimalDisclosure-class.html">MinimalDisclosure API ↗</a></div>
+  <dl><div><dt><code>title</code></dt><dd>What it holds.</dd></div><div><dt><code>child</code></dt><dd>What opens under the row.</dd></div><div><dt><code>subtitle</code></dt><dd>A line under the title.</dd></div><div><dt><code>leading</code></dt><dd>A glyph before the title.</dd></div><div><dt><code>initiallyExpanded</code></dt><dd>Open on first build, when the page does not hold the state.</dd></div><div><dt><code>expanded</code></dt><dd>The open state, when the page holds it.</dd></div><div><dt><code>onChanged</code></dt><dd>Receives the new expanded state.</dd></div><div><dt><code>padding</code></dt><dd>The air around child under the row.</dd></div><div><dt><code>focusNode</code></dt><dd>Supplies a focus node owned and disposed by the caller.</dd></div><div><dt><code>autofocus</code></dt><dd>Requests focus when the control first appears.</dd></div></dl>
+</section>

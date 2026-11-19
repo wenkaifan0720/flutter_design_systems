@@ -1,0 +1,76 @@
+<section class="example" id="edit-note" data-example="edit-note">
+  <div class="section-title"><h2>Run an editing command</h2><a class="permalink" href="#edit-note" aria-label="Link to Run an editing command">#</a></div>
+  <p>Open Edit and choose Mark reviewed. Reopen Edit and choose Clear review to restore the draft.</p>
+
+  <p class="keyboard-note" hidden></p>
+  <div class="workbench">
+    <div class="example-tabs" role="tablist" aria-label="Run an editing command example">
+      <button type="button" role="tab" id="edit-note-preview-tab" aria-selected="true" aria-controls="edit-note-preview">Preview</button>
+      <button type="button" role="tab" id="edit-note-code-tab" aria-selected="false" aria-controls="edit-note-code" tabindex="-1">Code</button>
+    </div>
+    <div role="tabpanel" id="edit-note-preview" aria-labelledby="edit-note-preview-tab">
+    <div class="tools" aria-label="Preview settings">
+      <div class="frame-options" role="group" aria-label="Frame width">
+        <button type="button" data-width="1440" aria-pressed="true" title="Use the available preview width"><i class="monitor" aria-hidden="true"></i>Desktop</button>
+        <button type="button" data-width="390" aria-pressed="false" title="390 px phone frame"><i class="phone" aria-hidden="true"></i>Phone</button>
+      </div>
+      <div class="environment">
+        <button type="button" data-setting="theme" aria-label="Night theme" aria-pressed="false"><span aria-hidden="true" class="sun"></span><span data-value>Day</span></button>
+        <button type="button" data-setting="dir" aria-label="Right-to-left direction" aria-pressed="false"><span data-value>LTR</span></button>
+        <button type="button" data-setting="scale" aria-label="Double text size" aria-pressed="false"><span aria-hidden="true" class="type-icon">Aa</span><span data-value>100%</span></button>
+      </div>
+    </div>
+    <div class="stage"><div class="viewport"><div class="frame"><iframe loading="lazy" title="Comic Menu bar interactive example"></iframe></div></div></div>
+    <div class="caption"><span><i class="status-dot" aria-hidden="true"></i>Flutter preview <span class="frame-size"></span></span><a class="open-preview" target="_blank" rel="noopener">Open preview <span aria-hidden="true">↗</span></a></div>
+    </div>
+    <div class="source" role="tabpanel" id="edit-note-code" aria-labelledby="edit-note-code-tab" hidden>
+      <div class="source-head"><span class="filename">components&#47;menu-bar&#47;comic&#47;edit_note.dart</span><button type="button" class="copy">Copy code</button></div>
+      <pre tabindex="0" aria-label="Dart source"><code><span class="hljs-keyword">import</span> <span class="hljs-string">'package:flutter/widgets.dart'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-string">'package:comic_ui/comic_ui.dart'</span>;
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">EditNote</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">StatefulWidget</span> </span>{
+  <span class="hljs-keyword">const</span> EditNote({<span class="hljs-keyword">super</span>.key});
+  <span class="hljs-meta">@override</span>
+  State&lt;EditNote&gt; createState() =&gt; _EditNoteState();
+}
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">_EditNoteState</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">State</span>&lt;<span class="hljs-title">EditNote</span>&gt; </span>{
+  <span class="hljs-built_in">bool</span> reviewed = <span class="hljs-keyword">false</span>;
+
+  <span class="hljs-meta">@override</span>
+  Widget build(BuildContext context) =&gt; ConstrainedBox(
+    constraints: <span class="hljs-keyword">const</span> BoxConstraints(maxWidth: <span class="hljs-number">460</span>),
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        ComicMenuBar(
+          menus: [
+            DesignMenuEntry(
+              label: <span class="hljs-string">'Edit'</span>,
+              children: [
+                DesignMenuEntry(
+                  label: <span class="hljs-string">'Mark reviewed'</span>,
+                  onPressed: () =&gt; setState(() =&gt; reviewed = <span class="hljs-keyword">true</span>),
+                ),
+                DesignMenuEntry(
+                  label: <span class="hljs-string">'Clear review'</span>,
+                  onPressed: () =&gt; setState(() =&gt; reviewed = <span class="hljs-keyword">false</span>),
+                ),
+              ],
+            ),
+          ],
+        ),
+        <span class="hljs-keyword">const</span> SizedBox(height: <span class="hljs-number">12</span>),
+        Text(reviewed ? <span class="hljs-string">'Reviewed'</span> : <span class="hljs-string">'Draft'</span>),
+      ],
+    ),
+  );
+}
+</code></pre>
+    </div>
+  </div>
+</section>
+<section class="reference" id="parameters">
+  <div class="section-title"><h2>Parameters</h2><a class="api" href="https:&#47;&#47;pub.dev&#47;documentation&#47;comic_ui&#47;latest&#47;comic_ui&#47;ComicMenuBar-class.html">ComicMenuBar API ↗</a></div>
+  <dl><div><dt><code>menus</code></dt><dd>Top-level menus and their ordered commands.</dd></div></dl>
+</section>

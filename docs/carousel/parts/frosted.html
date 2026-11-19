@@ -1,0 +1,54 @@
+<section class="example" id="browse-rooms" data-example="browse-rooms">
+  <div class="section-title"><h2>Browse the rooms</h2><a class="permalink" href="#browse-rooms" aria-label="Link to Browse the rooms">#</a></div>
+  <p>Move from the Hall to the Studio, then return. Try the carousel’s navigation as well as dragging the slides.</p>
+
+  <p class="keyboard-note" hidden></p>
+  <div class="workbench">
+    <div class="example-tabs" role="tablist" aria-label="Browse the rooms example">
+      <button type="button" role="tab" id="browse-rooms-preview-tab" aria-selected="true" aria-controls="browse-rooms-preview">Preview</button>
+      <button type="button" role="tab" id="browse-rooms-code-tab" aria-selected="false" aria-controls="browse-rooms-code" tabindex="-1">Code</button>
+    </div>
+    <div role="tabpanel" id="browse-rooms-preview" aria-labelledby="browse-rooms-preview-tab">
+    <div class="tools" aria-label="Preview settings">
+      <div class="frame-options" role="group" aria-label="Frame width">
+        <button type="button" data-width="1440" aria-pressed="true" title="Use the available preview width"><i class="monitor" aria-hidden="true"></i>Desktop</button>
+        <button type="button" data-width="390" aria-pressed="false" title="390 px phone frame"><i class="phone" aria-hidden="true"></i>Phone</button>
+      </div>
+      <div class="environment">
+        <button type="button" data-setting="theme" aria-label="Night theme" aria-pressed="false"><span aria-hidden="true" class="sun"></span><span data-value>Day</span></button>
+        <button type="button" data-setting="dir" aria-label="Right-to-left direction" aria-pressed="false"><span data-value>LTR</span></button>
+        <button type="button" data-setting="scale" aria-label="Double text size" aria-pressed="false"><span aria-hidden="true" class="type-icon">Aa</span><span data-value>100%</span></button>
+      </div>
+    </div>
+    <div class="stage"><div class="viewport"><div class="frame"><iframe loading="lazy" title="Frosted Carousel interactive example"></iframe></div></div></div>
+    <div class="caption"><span><i class="status-dot" aria-hidden="true"></i>Flutter preview <span class="frame-size"></span></span><a class="open-preview" target="_blank" rel="noopener">Open preview <span aria-hidden="true">↗</span></a></div>
+    </div>
+    <div class="source" role="tabpanel" id="browse-rooms-code" aria-labelledby="browse-rooms-code-tab" hidden>
+      <div class="source-head"><span class="filename">components&#47;carousel&#47;frosted&#47;browse_rooms.dart</span><button type="button" class="copy">Copy code</button></div>
+      <pre tabindex="0" aria-label="Dart source"><code><span class="hljs-keyword">import</span> <span class="hljs-string">'package:flutter/widgets.dart'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-string">'package:frosted_ui/frosted_ui.dart'</span>;
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">BrowseRooms</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">StatelessWidget</span> </span>{
+  <span class="hljs-keyword">const</span> BrowseRooms({<span class="hljs-keyword">super</span>.key});
+  <span class="hljs-meta">@override</span>
+  Widget build(BuildContext context) =&gt; ConstrainedBox(
+    constraints: <span class="hljs-keyword">const</span> BoxConstraints(maxWidth: <span class="hljs-number">440</span>),
+    child: <span class="hljs-keyword">const</span> FrostedCarouselView(
+      label: <span class="hljs-string">'Rooms'</span>,
+      height: <span class="hljs-number">112</span>,
+      children: [
+        Center(child: Text(<span class="hljs-string">'Hall'</span>)),
+        Center(child: Text(<span class="hljs-string">'Studio'</span>)),
+        Center(child: Text(<span class="hljs-string">'Loft'</span>)),
+      ],
+    ),
+  );
+}
+</code></pre>
+    </div>
+  </div>
+</section>
+<section class="reference" id="parameters">
+  <div class="section-title"><h2>Parameters</h2><a class="api" href="https:&#47;&#47;pub.dev&#47;documentation&#47;frosted_ui&#47;latest&#47;frosted_ui&#47;FrostedCarouselView-class.html">FrostedCarouselView API ↗</a></div>
+  <dl><div><dt><code>children</code></dt><dd>The child widgets in reading order.</dd></div><div><dt><code>height</code></dt><dd>The vertical space reserved for the component.</dd></div><div><dt><code>viewportFraction</code></dt><dd>Sets the share of the viewport used by one slide.</dd></div><div><dt><code>loop</code></dt><dd>Allows the sequence to wrap around.</dd></div><div><dt><code>onPageChanged</code></dt><dd>Receives the index of the new slide.</dd></div><div><dt><code>label</code></dt><dd>The label exposed to a screen reader.</dd></div></dl>
+</section>

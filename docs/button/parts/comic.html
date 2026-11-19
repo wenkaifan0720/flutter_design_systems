@@ -1,0 +1,64 @@
+<section class="example" id="save-draft" data-example="save-draft">
+  <div class="section-title"><h2>Save a draft</h2><a class="permalink" href="#save-draft" aria-label="Link to Save a draft">#</a></div>
+  <p>Save the draft, then reset the example to try the action again.</p>
+
+  <p class="keyboard-note" hidden></p>
+  <div class="workbench">
+    <div class="example-tabs" role="tablist" aria-label="Save a draft example">
+      <button type="button" role="tab" id="save-draft-preview-tab" aria-selected="true" aria-controls="save-draft-preview">Preview</button>
+      <button type="button" role="tab" id="save-draft-code-tab" aria-selected="false" aria-controls="save-draft-code" tabindex="-1">Code</button>
+    </div>
+    <div role="tabpanel" id="save-draft-preview" aria-labelledby="save-draft-preview-tab">
+    <div class="tools" aria-label="Preview settings">
+      <div class="frame-options" role="group" aria-label="Frame width">
+        <button type="button" data-width="1440" aria-pressed="true" title="Use the available preview width"><i class="monitor" aria-hidden="true"></i>Desktop</button>
+        <button type="button" data-width="390" aria-pressed="false" title="390 px phone frame"><i class="phone" aria-hidden="true"></i>Phone</button>
+      </div>
+      <div class="environment">
+        <button type="button" data-setting="theme" aria-label="Night theme" aria-pressed="false"><span aria-hidden="true" class="sun"></span><span data-value>Day</span></button>
+        <button type="button" data-setting="dir" aria-label="Right-to-left direction" aria-pressed="false"><span data-value>LTR</span></button>
+        <button type="button" data-setting="scale" aria-label="Double text size" aria-pressed="false"><span aria-hidden="true" class="type-icon">Aa</span><span data-value>100%</span></button>
+      </div>
+    </div>
+    <div class="stage"><div class="viewport"><div class="frame"><iframe loading="lazy" title="Comic Button interactive example"></iframe></div></div></div>
+    <div class="caption"><span><i class="status-dot" aria-hidden="true"></i>Flutter preview <span class="frame-size"></span></span><a class="open-preview" target="_blank" rel="noopener">Open preview <span aria-hidden="true">↗</span></a></div>
+    </div>
+    <div class="source" role="tabpanel" id="save-draft-code" aria-labelledby="save-draft-code-tab" hidden>
+      <div class="source-head"><span class="filename">components&#47;button&#47;comic&#47;save_draft.dart</span><button type="button" class="copy">Copy code</button></div>
+      <pre tabindex="0" aria-label="Dart source"><code><span class="hljs-keyword">import</span> <span class="hljs-string">'package:flutter/widgets.dart'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-string">'package:comic_ui/comic_ui.dart'</span>;
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">SaveDraft</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">StatefulWidget</span> </span>{
+  <span class="hljs-keyword">const</span> SaveDraft({<span class="hljs-keyword">super</span>.key});
+  <span class="hljs-meta">@override</span>
+  State&lt;SaveDraft&gt; createState() =&gt; _SaveDraftState();
+}
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">_SaveDraftState</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">State</span>&lt;<span class="hljs-title">SaveDraft</span>&gt; </span>{
+  <span class="hljs-built_in">bool</span> saved = <span class="hljs-keyword">false</span>;
+
+  <span class="hljs-meta">@override</span>
+  Widget build(BuildContext context) =&gt; Wrap(
+    alignment: WrapAlignment.center,
+    spacing: <span class="hljs-number">12</span>,
+    runSpacing: <span class="hljs-number">12</span>,
+    children: [
+      ComicButton.filled(
+        saved ? <span class="hljs-string">'Draft saved'</span> : <span class="hljs-string">'Save draft'</span>,
+        onPressed: saved ? <span class="hljs-keyword">null</span> : () =&gt; setState(() =&gt; saved = <span class="hljs-keyword">true</span>),
+      ),
+      ComicButton(
+        <span class="hljs-string">'Reset'</span>,
+        onPressed: saved ? () =&gt; setState(() =&gt; saved = <span class="hljs-keyword">false</span>) : <span class="hljs-keyword">null</span>,
+      ),
+    ],
+  );
+}
+</code></pre>
+    </div>
+  </div>
+</section>
+<section class="reference" id="parameters">
+  <div class="section-title"><h2>Parameters</h2><a class="api" href="https:&#47;&#47;pub.dev&#47;documentation&#47;comic_ui&#47;latest&#47;comic_ui&#47;ComicButton-class.html">ComicButton API ↗</a></div>
+  <dl><div><dt><code>label</code></dt><dd>Words on the button face.</dd></div><div><dt><code>onPressed</code></dt><dd>Runs the action. Pass null to disable it.</dd></div><div><dt><code>size</code></dt><dd>Selects a small, medium or large button.</dd></div><div><dt><code>wide</code></dt><dd>Stretches the face to the available width.</dd></div><div><dt><code>icon</code></dt><dd>Adds a glyph to the component.</dd></div><div><dt><code>leading</code></dt><dd>Places a widget before the label.</dd></div><div><dt><code>busy</code></dt><dd>Suppresses activation while the action is in progress.</dd></div><div><dt><code>showBusy</code></dt><dd>Overrides whether the busy indicator is visible.</dd></div><div><dt><code>focusNode</code></dt><dd>Supplies the FocusNode owned by the caller.</dd></div><div><dt><code>autofocus</code></dt><dd>Requests keyboard focus when the control first appears.</dd></div><div><dt><code>style</code></dt><dd>Overrides the component’s themed appearance.</dd></div><div><dt><code>isDestructiveAction</code></dt><dd>Applies the destructive action treatment.</dd></div></dl>
+</section>

@@ -1,0 +1,57 @@
+<section class="example" id="set-volume" data-example="set-volume">
+  <div class="section-title"><h2>Set the volume</h2><a class="permalink" href="#set-volume" aria-label="Link to Set the volume">#</a></div>
+  <p>Move the thumb and watch the volume readout change in five-point steps.</p>
+
+  <p class="keyboard-note">Tab reaches the thumb; the arrow keys move it a step, Home and End to its ends.</p>
+  <div class="workbench">
+    <div class="example-tabs" role="tablist" aria-label="Set the volume example">
+      <button type="button" role="tab" id="set-volume-preview-tab" aria-selected="true" aria-controls="set-volume-preview">Preview</button>
+      <button type="button" role="tab" id="set-volume-code-tab" aria-selected="false" aria-controls="set-volume-code" tabindex="-1">Code</button>
+    </div>
+    <div role="tabpanel" id="set-volume-preview" aria-labelledby="set-volume-preview-tab">
+    <div class="tools" aria-label="Preview settings">
+      <div class="frame-options" role="group" aria-label="Frame width">
+        <button type="button" data-width="1440" aria-pressed="true" title="Use the available preview width"><i class="monitor" aria-hidden="true"></i>Desktop</button>
+        <button type="button" data-width="390" aria-pressed="false" title="390 px phone frame"><i class="phone" aria-hidden="true"></i>Phone</button>
+      </div>
+      <div class="environment">
+        <button type="button" data-setting="theme" aria-label="Night theme" aria-pressed="false"><span aria-hidden="true" class="sun"></span><span data-value>Day</span></button>
+        <button type="button" data-setting="dir" aria-label="Right-to-left direction" aria-pressed="false"><span data-value>LTR</span></button>
+        <button type="button" data-setting="scale" aria-label="Double text size" aria-pressed="false"><span aria-hidden="true" class="type-icon">Aa</span><span data-value>100%</span></button>
+      </div>
+    </div>
+    <div class="stage"><div class="viewport"><div class="frame"><iframe loading="lazy" title="Civic Slider interactive example"></iframe></div></div></div>
+    <div class="caption"><span><i class="status-dot" aria-hidden="true"></i>Flutter preview <span class="frame-size"></span></span><a class="open-preview" target="_blank" rel="noopener">Open preview <span aria-hidden="true">↗</span></a></div>
+    </div>
+    <div class="source" role="tabpanel" id="set-volume-code" aria-labelledby="set-volume-code-tab" hidden>
+      <div class="source-head"><span class="filename">components&#47;slider&#47;civic&#47;set_volume.dart</span><button type="button" class="copy">Copy code</button></div>
+      <pre tabindex="0" aria-label="Dart source"><code><span class="hljs-keyword">import</span> <span class="hljs-string">'package:civic_ui/civic_ui.dart'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-string">'package:flutter/widgets.dart'</span>;
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">SetVolume</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">StatefulWidget</span> </span>{
+  <span class="hljs-keyword">const</span> SetVolume({<span class="hljs-keyword">super</span>.key});
+  <span class="hljs-meta">@override</span>
+  State&lt;SetVolume&gt; createState() =&gt; _SetVolumeState();
+}
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">_SetVolumeState</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">State</span>&lt;<span class="hljs-title">SetVolume</span>&gt; </span>{
+  <span class="hljs-built_in">double</span> volume = <span class="hljs-number">50</span>;
+
+  <span class="hljs-meta">@override</span>
+  Widget build(BuildContext context) =&gt; CivicSlider(
+    labelText: <span class="hljs-string">'Volume'</span>,
+    value: volume,
+    max: <span class="hljs-number">100</span>,
+    divisions: <span class="hljs-number">20</span>,
+    valueLabel: (v) =&gt; <span class="hljs-string">'Volume <span class="hljs-subst">${v.round()}</span>%'</span>,
+    onChanged: (next) =&gt; setState(() =&gt; volume = next),
+  );
+}
+</code></pre>
+    </div>
+  </div>
+</section>
+<section class="reference" id="parameters">
+  <div class="section-title"><h2>Parameters</h2><a class="api" href="https:&#47;&#47;pub.dev&#47;documentation&#47;civic_ui&#47;latest&#47;civic_ui&#47;CivicSlider-class.html">CivicSlider API ↗</a></div>
+  <dl><div><dt><code>value</code></dt><dd>The value.</dd></div><div><dt><code>onChanged</code></dt><dd>Receives the value as it moves.</dd></div><div><dt><code>min</code></dt><dd>The track’s start.</dd></div><div><dt><code>max</code></dt><dd>The track’s end.</dd></div><div><dt><code>divisions</code></dt><dd>How many steps the track has.</dd></div><div><dt><code>labelText</code></dt><dd>Asks for the value.</dd></div><div><dt><code>valueLabel</code></dt><dd>Says the value in words, over the track and to a screen reader.</dd></div></dl>
+</section>

@@ -1,0 +1,61 @@
+<section class="example" id="rate-guide" data-example="rate-guide">
+  <div class="section-title"><h2>Rate a guide</h2><a class="permalink" href="#rate-guide" aria-label="Link to Rate a guide">#</a></div>
+  <p>Choose a rating for the guide and read the score out of five.</p>
+
+  <p class="keyboard-note">Read the score out of five below the stars.</p>
+  <div class="workbench">
+    <div class="example-tabs" role="tablist" aria-label="Rate a guide example">
+      <button type="button" role="tab" id="rate-guide-preview-tab" aria-selected="true" aria-controls="rate-guide-preview">Preview</button>
+      <button type="button" role="tab" id="rate-guide-code-tab" aria-selected="false" aria-controls="rate-guide-code" tabindex="-1">Code</button>
+    </div>
+    <div role="tabpanel" id="rate-guide-preview" aria-labelledby="rate-guide-preview-tab">
+    <div class="tools" aria-label="Preview settings">
+      <div class="frame-options" role="group" aria-label="Frame width">
+        <button type="button" data-width="1440" aria-pressed="true" title="Use the available preview width"><i class="monitor" aria-hidden="true"></i>Desktop</button>
+        <button type="button" data-width="390" aria-pressed="false" title="390 px phone frame"><i class="phone" aria-hidden="true"></i>Phone</button>
+      </div>
+      <div class="environment">
+        <button type="button" data-setting="theme" aria-label="Night theme" aria-pressed="false"><span aria-hidden="true" class="sun"></span><span data-value>Day</span></button>
+        <button type="button" data-setting="dir" aria-label="Right-to-left direction" aria-pressed="false"><span data-value>LTR</span></button>
+        <button type="button" data-setting="scale" aria-label="Double text size" aria-pressed="false"><span aria-hidden="true" class="type-icon">Aa</span><span data-value>100%</span></button>
+      </div>
+    </div>
+    <div class="stage"><div class="viewport"><div class="frame"><iframe loading="lazy" title="Brutal Rating interactive example"></iframe></div></div></div>
+    <div class="caption"><span><i class="status-dot" aria-hidden="true"></i>Flutter preview <span class="frame-size"></span></span><a class="open-preview" target="_blank" rel="noopener">Open preview <span aria-hidden="true">↗</span></a></div>
+    </div>
+    <div class="source" role="tabpanel" id="rate-guide-code" aria-labelledby="rate-guide-code-tab" hidden>
+      <div class="source-head"><span class="filename">components&#47;rating&#47;brutal&#47;rate_guide.dart</span><button type="button" class="copy">Copy code</button></div>
+      <pre tabindex="0" aria-label="Dart source"><code><span class="hljs-keyword">import</span> <span class="hljs-string">'package:flutter/widgets.dart'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-string">'package:brutal_ui/brutal_ui.dart'</span>;
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">RateGuide</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">StatefulWidget</span> </span>{
+  <span class="hljs-keyword">const</span> RateGuide({<span class="hljs-keyword">super</span>.key});
+  <span class="hljs-meta">@override</span>
+  State&lt;RateGuide&gt; createState() =&gt; _RateGuideState();
+}
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">_RateGuideState</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">State</span>&lt;<span class="hljs-title">RateGuide</span>&gt; </span>{
+  <span class="hljs-built_in">int</span> score = <span class="hljs-number">3</span>;
+
+  <span class="hljs-meta">@override</span>
+  Widget build(BuildContext context) =&gt; Column(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      BrutalRating(
+        semanticLabel: <span class="hljs-string">'Rate the guide'</span>,
+        value: score,
+        onChanged: (next) =&gt; setState(() =&gt; score = next),
+      ),
+      <span class="hljs-keyword">const</span> SizedBox(height: <span class="hljs-number">12</span>),
+      Text(<span class="hljs-string">'Rated <span class="hljs-subst">$score</span> out of 5'</span>),
+    ],
+  );
+}
+</code></pre>
+    </div>
+  </div>
+</section>
+<section class="reference" id="parameters">
+  <div class="section-title"><h2>Parameters</h2><a class="api" href="https:&#47;&#47;pub.dev&#47;documentation&#47;brutal_ui&#47;latest&#47;brutal_ui&#47;BrutalRating-class.html">BrutalRating API ↗</a></div>
+  <dl><div><dt><code>value</code></dt><dd>Score currently shown by the marks.</dd></div><div><dt><code>semanticLabel</code></dt><dd>Names what the reader is rating.</dd></div><div><dt><code>onChanged</code></dt><dd>Receives the new score.</dd></div></dl>
+</section>

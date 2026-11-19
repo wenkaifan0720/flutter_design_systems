@@ -1,0 +1,56 @@
+<section class="example" id="read-message" data-example="read-message">
+  <div class="section-title"><h2>Read a message</h2><a class="permalink" href="#read-message" aria-label="Link to Read a message">#</a></div>
+  <p>Activate the message row to mark it read. Activate it again to return it to Unread.</p>
+
+  <p class="keyboard-note">Neumorphism takes the pressed row’s title as its accessible name. This example keeps the read status in the title so it is also spoken.</p>
+  <div class="workbench">
+    <div class="example-tabs" role="tablist" aria-label="Read a message example">
+      <button type="button" role="tab" id="read-message-preview-tab" aria-selected="true" aria-controls="read-message-preview">Preview</button>
+      <button type="button" role="tab" id="read-message-code-tab" aria-selected="false" aria-controls="read-message-code" tabindex="-1">Code</button>
+    </div>
+    <div role="tabpanel" id="read-message-preview" aria-labelledby="read-message-preview-tab">
+    <div class="tools" aria-label="Preview settings">
+      <div class="frame-options" role="group" aria-label="Frame width">
+        <button type="button" data-width="1440" aria-pressed="true" title="Use the available preview width"><i class="monitor" aria-hidden="true"></i>Desktop</button>
+        <button type="button" data-width="390" aria-pressed="false" title="390 px phone frame"><i class="phone" aria-hidden="true"></i>Phone</button>
+      </div>
+      <div class="environment">
+        <button type="button" data-setting="theme" aria-label="Night theme" aria-pressed="false"><span aria-hidden="true" class="sun"></span><span data-value>Day</span></button>
+        <button type="button" data-setting="dir" aria-label="Right-to-left direction" aria-pressed="false"><span data-value>LTR</span></button>
+        <button type="button" data-setting="scale" aria-label="Double text size" aria-pressed="false"><span aria-hidden="true" class="type-icon">Aa</span><span data-value>100%</span></button>
+      </div>
+    </div>
+    <div class="stage"><div class="viewport"><div class="frame"><iframe loading="lazy" title="Neumorphism List row interactive example"></iframe></div></div></div>
+    <div class="caption"><span><i class="status-dot" aria-hidden="true"></i>Flutter preview <span class="frame-size"></span></span><a class="open-preview" target="_blank" rel="noopener">Open preview <span aria-hidden="true">↗</span></a></div>
+    </div>
+    <div class="source" role="tabpanel" id="read-message-code" aria-labelledby="read-message-code-tab" hidden>
+      <div class="source-head"><span class="filename">components&#47;list-row&#47;neumorphism&#47;read_message.dart</span><button type="button" class="copy">Copy code</button></div>
+      <pre tabindex="0" aria-label="Dart source"><code><span class="hljs-keyword">import</span> <span class="hljs-string">'package:flutter/widgets.dart'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-string">'package:neumorphism_ui/neumorphism_ui.dart'</span>;
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">ReadMessage</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">StatefulWidget</span> </span>{
+  <span class="hljs-keyword">const</span> ReadMessage({<span class="hljs-keyword">super</span>.key});
+  <span class="hljs-meta">@override</span>
+  State&lt;ReadMessage&gt; createState() =&gt; _ReadMessageState();
+}
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">_ReadMessageState</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">State</span>&lt;<span class="hljs-title">ReadMessage</span>&gt; </span>{
+  <span class="hljs-built_in">bool</span> read = <span class="hljs-keyword">false</span>;
+  <span class="hljs-meta">@override</span>
+  Widget build(BuildContext context) =&gt; ConstrainedBox(
+    constraints: <span class="hljs-keyword">const</span> BoxConstraints(maxWidth: <span class="hljs-number">440</span>),
+    child: NeumorphicListTile(
+      title: read ? <span class="hljs-string">'Route change, read'</span> : <span class="hljs-string">'Route change, unread'</span>,
+      subtitle: <span class="hljs-string">'Service notice'</span>,
+      onPressed: () =&gt; setState(() =&gt; read = !read),
+    ),
+  );
+}
+</code></pre>
+    </div>
+  </div>
+</section>
+<section class="reference" id="parameters">
+  <div class="section-title"><h2>Parameters</h2><a class="api" href="https:&#47;&#47;pub.dev&#47;documentation&#47;neumorphism_ui&#47;latest&#47;neumorphism_ui&#47;NeumorphicListTile-class.html">NeumorphicListTile API ↗</a></div>
+  <dl><div><dt><code>focusNode</code></dt><dd>Supplies a focus node owned and disposed by the caller.</dd></div><div><dt><code>autofocus</code></dt><dd>Whether the control takes focus when it first appears.</dd></div><div><dt><code>title</code></dt><dd>The primary heading.</dd></div><div><dt><code>subtitle</code></dt><dd>Secondary information displayed beside the heading.</dd></div><div><dt><code>note</code></dt><dd>Supporting text displayed with the primary content.</dd></div><div><dt><code>leading</code></dt><dd>Places a widget before the main label.</dd></div><div><dt><code>trailing</code></dt><dd>A figure or a NeumorphicStatus beside the title, held to a share of the row.</dd></div><div><dt><code>action</code></dt><dd>Places a secondary action beside the row’s contents.</dd></div><div><dt><code>onPressed</code></dt><dd>The whole row opens something.</dd></div><div><dt><code>selected</code></dt><dd>Indicates whether the item is selected.</dd></div><div><dt><code>isFirst</code></dt><dd>Applies the treatment for the first row in a group.</dd></div><div><dt><code>dense</code></dt><dd>Uses tighter row spacing.</dd></div><div><dt><code>top</code></dt><dd>The mark stands at the row&#39;s top, for a meta that may wrap.</dd></div></dl>
+</section>

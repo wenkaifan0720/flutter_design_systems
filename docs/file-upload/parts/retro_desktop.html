@@ -1,0 +1,69 @@
+<section class="example" id="attach-file" data-example="attach-file">
+  <div class="section-title"><h2>Attach a file</h2><a class="permalink" href="#attach-file" aria-label="Link to Attach a file">#</a></div>
+  <p>Choose a local file. Its name appears in the preview. The example reads only the file’s name and size and keeps the selection in this browser tab.</p>
+
+  <p class="keyboard-note" hidden></p>
+  <div class="workbench">
+    <div class="example-tabs" role="tablist" aria-label="Attach a file example">
+      <button type="button" role="tab" id="attach-file-preview-tab" aria-selected="true" aria-controls="attach-file-preview">Preview</button>
+      <button type="button" role="tab" id="attach-file-code-tab" aria-selected="false" aria-controls="attach-file-code" tabindex="-1">Code</button>
+    </div>
+    <div role="tabpanel" id="attach-file-preview" aria-labelledby="attach-file-preview-tab">
+    <div class="tools" aria-label="Preview settings">
+      <div class="frame-options" role="group" aria-label="Frame width">
+        <button type="button" data-width="1440" aria-pressed="true" title="Use the available preview width"><i class="monitor" aria-hidden="true"></i>Desktop</button>
+        <button type="button" data-width="390" aria-pressed="false" title="390 px phone frame"><i class="phone" aria-hidden="true"></i>Phone</button>
+      </div>
+      <div class="environment">
+        <button type="button" data-setting="theme" aria-label="Night theme" aria-pressed="false"><span aria-hidden="true" class="sun"></span><span data-value>Day</span></button>
+        <button type="button" data-setting="dir" aria-label="Right-to-left direction" aria-pressed="false"><span data-value>LTR</span></button>
+        <button type="button" data-setting="scale" aria-label="Double text size" aria-pressed="false"><span aria-hidden="true" class="type-icon">Aa</span><span data-value>100%</span></button>
+      </div>
+    </div>
+    <div class="stage"><div class="viewport"><div class="frame"><iframe loading="lazy" title="Retro Desktop File upload interactive example"></iframe></div></div></div>
+    <div class="caption"><span><i class="status-dot" aria-hidden="true"></i>Flutter preview <span class="frame-size"></span></span><a class="open-preview" target="_blank" rel="noopener">Open preview <span aria-hidden="true">↗</span></a></div>
+    </div>
+    <div class="source" role="tabpanel" id="attach-file-code" aria-labelledby="attach-file-code-tab" hidden>
+      <div class="source-head"><span class="filename">components&#47;file-upload&#47;retro_desktop&#47;attach_file.dart</span><button type="button" class="copy">Copy code</button></div>
+      <pre tabindex="0" aria-label="Dart source"><code><span class="hljs-keyword">import</span> <span class="hljs-string">'package:flutter/widgets.dart'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-string">'package:web/web.dart'</span> <span class="hljs-keyword">as</span> web;
+<span class="hljs-keyword">import</span> <span class="hljs-string">'package:retro_desktop_ui/retro_desktop_ui.dart'</span>;
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">AttachFile</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">StatefulWidget</span> </span>{
+  <span class="hljs-keyword">const</span> AttachFile({<span class="hljs-keyword">super</span>.key});
+  <span class="hljs-meta">@override</span>
+  State&lt;AttachFile&gt; createState() =&gt; _AttachFileState();
+}
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">_AttachFileState</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">State</span>&lt;<span class="hljs-title">AttachFile</span>&gt; </span>{
+  web.File? attachment;
+  <span class="hljs-keyword">void</span> chooseFile() {
+    <span class="hljs-keyword">final</span> input = web.HTMLInputElement()..type = <span class="hljs-string">'file'</span>;
+    input.onChange.first.then((_) {
+      <span class="hljs-keyword">final</span> file = input.files?.item(<span class="hljs-number">0</span>);
+      <span class="hljs-keyword">if</span> (mounted &amp;&amp; file != <span class="hljs-keyword">null</span>) setState(() =&gt; attachment = file);
+    });
+    input.click();
+  }
+
+  <span class="hljs-meta">@override</span>
+  Widget build(BuildContext context) =&gt; ConstrainedBox(
+    constraints: <span class="hljs-keyword">const</span> BoxConstraints(maxWidth: <span class="hljs-number">400</span>),
+    child: SingleChildScrollView(
+      child: RetroDesktopFileUpload(
+        label: <span class="hljs-string">'Attachment'</span>,
+        onChoose: chooseFile,
+        files: [<span class="hljs-keyword">if</span> (attachment <span class="hljs-keyword">case</span> <span class="hljs-keyword">final</span> file?) file.name],
+        onRemove: (_) =&gt; setState(() =&gt; attachment = <span class="hljs-keyword">null</span>),
+      ),
+    ),
+  );
+}
+</code></pre>
+    </div>
+  </div>
+</section>
+<section class="reference" id="parameters">
+  <div class="section-title"><h2>Parameters</h2><a class="api" href="https:&#47;&#47;pub.dev&#47;documentation&#47;retro_desktop_ui&#47;latest&#47;retro_desktop_ui&#47;RetroDesktopFileUpload-class.html">RetroDesktopFileUpload API ↗</a></div>
+  <dl><div><dt><code>label</code></dt><dd>Identifies the attachment field.</dd></div><div><dt><code>onChoose</code></dt><dd>Opens the browser’s file chooser.</dd></div><div><dt><code>files</code></dt><dd>Files already selected.</dd></div><div><dt><code>onRemove</code></dt><dd>Removes the chosen file from this example.</dd></div></dl>
+</section>

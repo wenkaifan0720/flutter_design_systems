@@ -1,0 +1,56 @@
+<section class="example" id="read-message" data-example="read-message">
+  <div class="section-title"><h2>Read a message</h2><a class="permalink" href="#read-message" aria-label="Link to Read a message">#</a></div>
+  <p>Activate the message row to mark it read. Activate it again to return it to Unread.</p>
+
+  <p class="keyboard-note" hidden></p>
+  <div class="workbench">
+    <div class="example-tabs" role="tablist" aria-label="Read a message example">
+      <button type="button" role="tab" id="read-message-preview-tab" aria-selected="true" aria-controls="read-message-preview">Preview</button>
+      <button type="button" role="tab" id="read-message-code-tab" aria-selected="false" aria-controls="read-message-code" tabindex="-1">Code</button>
+    </div>
+    <div role="tabpanel" id="read-message-preview" aria-labelledby="read-message-preview-tab">
+    <div class="tools" aria-label="Preview settings">
+      <div class="frame-options" role="group" aria-label="Frame width">
+        <button type="button" data-width="1440" aria-pressed="true" title="Use the available preview width"><i class="monitor" aria-hidden="true"></i>Desktop</button>
+        <button type="button" data-width="390" aria-pressed="false" title="390 px phone frame"><i class="phone" aria-hidden="true"></i>Phone</button>
+      </div>
+      <div class="environment">
+        <button type="button" data-setting="theme" aria-label="Night theme" aria-pressed="false"><span aria-hidden="true" class="sun"></span><span data-value>Day</span></button>
+        <button type="button" data-setting="dir" aria-label="Right-to-left direction" aria-pressed="false"><span data-value>LTR</span></button>
+        <button type="button" data-setting="scale" aria-label="Double text size" aria-pressed="false"><span aria-hidden="true" class="type-icon">Aa</span><span data-value>100%</span></button>
+      </div>
+    </div>
+    <div class="stage"><div class="viewport"><div class="frame"><iframe loading="lazy" title="Fluent 2 List row interactive example"></iframe></div></div></div>
+    <div class="caption"><span><i class="status-dot" aria-hidden="true"></i>Flutter preview <span class="frame-size"></span></span><a class="open-preview" target="_blank" rel="noopener">Open preview <span aria-hidden="true">↗</span></a></div>
+    </div>
+    <div class="source" role="tabpanel" id="read-message-code" aria-labelledby="read-message-code-tab" hidden>
+      <div class="source-head"><span class="filename">components&#47;list-row&#47;fluent2&#47;read_message.dart</span><button type="button" class="copy">Copy code</button></div>
+      <pre tabindex="0" aria-label="Dart source"><code><span class="hljs-keyword">import</span> <span class="hljs-string">'package:flutter/widgets.dart'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-string">'package:fluent2_design_ui/fluent2_design_ui.dart'</span>;
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">ReadMessage</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">StatefulWidget</span> </span>{
+  <span class="hljs-keyword">const</span> ReadMessage({<span class="hljs-keyword">super</span>.key});
+  <span class="hljs-meta">@override</span>
+  State&lt;ReadMessage&gt; createState() =&gt; _ReadMessageState();
+}
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">_ReadMessageState</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">State</span>&lt;<span class="hljs-title">ReadMessage</span>&gt; </span>{
+  <span class="hljs-built_in">bool</span> read = <span class="hljs-keyword">false</span>;
+  <span class="hljs-meta">@override</span>
+  Widget build(BuildContext context) =&gt; ConstrainedBox(
+    constraints: <span class="hljs-keyword">const</span> BoxConstraints(maxWidth: <span class="hljs-number">440</span>),
+    child: Fluent2ListItem(
+      title: <span class="hljs-string">'Route change'</span>,
+      subtitle: read ? <span class="hljs-string">'Read'</span> : <span class="hljs-string">'Unread'</span>,
+      onTap: () =&gt; setState(() =&gt; read = !read),
+    ),
+  );
+}
+</code></pre>
+    </div>
+  </div>
+</section>
+<section class="reference" id="parameters">
+  <div class="section-title"><h2>Parameters</h2><a class="api" href="https:&#47;&#47;pub.dev&#47;documentation&#47;fluent2_design_ui&#47;latest&#47;fluent2_design_ui&#47;Fluent2ListItem-class.html">Fluent2ListItem API ↗</a></div>
+  <dl><div><dt><code>title</code></dt><dd>The item&#39;s main words.</dd></div><div><dt><code>subtitle</code></dt><dd>The line under the title.</dd></div><div><dt><code>leading</code></dt><dd>Places a widget before the main label.</dd></div><div><dt><code>icon</code></dt><dd>A glyph at the start where there is no leading part.</dd></div><div><dt><code>value</code></dt><dd>A value at the end, before trailing (Monthly, 12 MB).</dd></div><div><dt><code>trailing</code></dt><dd>Places a widget at the trailing edge.</dd></div><div><dt><code>chevron</code></dt><dd>The chevron of a row that opens a page.</dd></div><div><dt><code>onTap</code></dt><dd>What a press on the row does.</dd></div><div><dt><code>onLongPress</code></dt><dd>What a long press does (the row&#39;s menu on a phone).</dd></div><div><dt><code>selected</code></dt><dd>Marks the row the page is about (the open thread).</dd></div><div><dt><code>checked</code></dt><dd>Sets the row’s checked state.</dd></div><div><dt><code>onChanged</code></dt><dd>Asked for the other state when a selection row is pressed.</dd></div><div><dt><code>enabled</code></dt><dd>False draws the row disabled and inert.</dd></div><div><dt><code>semanticLabel</code></dt><dd>Names the component for a screen reader.</dd></div><div><dt><code>style</code></dt><dd>Overrides the component’s themed appearance for this instance.</dd></div><div><dt><code>focusNode</code></dt><dd>Supplies a focus node owned and disposed by the caller.</dd></div><div><dt><code>autofocus</code></dt><dd>Requests focus when the control first appears.</dd></div></dl>
+</section>

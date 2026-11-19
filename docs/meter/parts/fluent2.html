@@ -1,0 +1,66 @@
+<section class="example" id="check-capacity" data-example="check-capacity">
+  <div class="section-title"><h2>Check room capacity</h2><a class="permalink" href="#check-capacity" aria-label="Link to Check room capacity">#</a></div>
+  <p>The room holds eight people. Add two at a time and watch the level and count change. Reset the room when all eight places are taken.</p>
+
+  <p class="keyboard-note" hidden></p>
+  <div class="workbench">
+    <div class="example-tabs" role="tablist" aria-label="Check room capacity example">
+      <button type="button" role="tab" id="check-capacity-preview-tab" aria-selected="true" aria-controls="check-capacity-preview">Preview</button>
+      <button type="button" role="tab" id="check-capacity-code-tab" aria-selected="false" aria-controls="check-capacity-code" tabindex="-1">Code</button>
+    </div>
+    <div role="tabpanel" id="check-capacity-preview" aria-labelledby="check-capacity-preview-tab">
+    <div class="tools" aria-label="Preview settings">
+      <div class="frame-options" role="group" aria-label="Frame width">
+        <button type="button" data-width="1440" aria-pressed="true" title="Use the available preview width"><i class="monitor" aria-hidden="true"></i>Desktop</button>
+        <button type="button" data-width="390" aria-pressed="false" title="390 px phone frame"><i class="phone" aria-hidden="true"></i>Phone</button>
+      </div>
+      <div class="environment">
+        <button type="button" data-setting="theme" aria-label="Night theme" aria-pressed="false"><span aria-hidden="true" class="sun"></span><span data-value>Day</span></button>
+        <button type="button" data-setting="dir" aria-label="Right-to-left direction" aria-pressed="false"><span data-value>LTR</span></button>
+        <button type="button" data-setting="scale" aria-label="Double text size" aria-pressed="false"><span aria-hidden="true" class="type-icon">Aa</span><span data-value>100%</span></button>
+      </div>
+    </div>
+    <div class="stage"><div class="viewport"><div class="frame"><iframe loading="lazy" title="Fluent 2 Meter interactive example"></iframe></div></div></div>
+    <div class="caption"><span><i class="status-dot" aria-hidden="true"></i>Flutter preview <span class="frame-size"></span></span><a class="open-preview" target="_blank" rel="noopener">Open preview <span aria-hidden="true">↗</span></a></div>
+    </div>
+    <div class="source" role="tabpanel" id="check-capacity-code" aria-labelledby="check-capacity-code-tab" hidden>
+      <div class="source-head"><span class="filename">components&#47;meter&#47;fluent2&#47;check_capacity.dart</span><button type="button" class="copy">Copy code</button></div>
+      <pre tabindex="0" aria-label="Dart source"><code><span class="hljs-keyword">import</span> <span class="hljs-string">'package:flutter/widgets.dart'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-string">'package:fluent2_design_ui/fluent2_design_ui.dart'</span>;
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">CheckCapacity</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">StatefulWidget</span> </span>{
+  <span class="hljs-keyword">const</span> CheckCapacity({<span class="hljs-keyword">super</span>.key});
+  <span class="hljs-meta">@override</span>
+  State&lt;CheckCapacity&gt; createState() =&gt; _CheckCapacityState();
+}
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">_CheckCapacityState</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">State</span>&lt;<span class="hljs-title">CheckCapacity</span>&gt; </span>{
+  <span class="hljs-built_in">int</span> people = <span class="hljs-number">2</span>;
+
+  <span class="hljs-meta">@override</span>
+  Widget build(BuildContext context) =&gt; ConstrainedBox(
+    constraints: <span class="hljs-keyword">const</span> BoxConstraints(maxWidth: <span class="hljs-number">320</span>),
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Fluent2Spinner(label: <span class="hljs-string">'Room capacity'</span>, value: people / <span class="hljs-number">8</span>, below: <span class="hljs-keyword">false</span>),
+        <span class="hljs-keyword">const</span> SizedBox(height: <span class="hljs-number">12</span>),
+        Text(<span class="hljs-string">'Using <span class="hljs-subst">$people</span> of 8 places'</span>),
+        <span class="hljs-keyword">const</span> SizedBox(height: <span class="hljs-number">12</span>),
+        Fluent2Button(
+          people == <span class="hljs-number">8</span> ? <span class="hljs-string">'Reset room'</span> : <span class="hljs-string">'Add two people'</span>,
+          onPressed: () =&gt;
+              setState(() =&gt; people = people == <span class="hljs-number">8</span> ? <span class="hljs-number">2</span> : people + <span class="hljs-number">2</span>),
+        ),
+      ],
+    ),
+  );
+}
+</code></pre>
+    </div>
+  </div>
+</section>
+<section class="reference" id="parameters">
+  <div class="section-title"><h2>Parameters</h2><a class="api" href="https:&#47;&#47;pub.dev&#47;documentation&#47;fluent2_design_ui&#47;latest&#47;fluent2_design_ui&#47;Fluent2Spinner-class.html">Fluent2Spinner API ↗</a></div>
+  <dl><div><dt><code>label</code></dt><dd>Names the quantity being measured.</dd></div><div><dt><code>value</code></dt><dd>Fraction of the room currently occupied.</dd></div><div><dt><code>below</code></dt><dd>Places the label beside or below the ring.</dd></div></dl>
+</section>

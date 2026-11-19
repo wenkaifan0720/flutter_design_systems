@@ -1,0 +1,73 @@
+<section class="example" id="archive-note" data-example="archive-note">
+  <div class="section-title"><h2>Archive a note</h2><a class="permalink" href="#archive-note" aria-label="Link to Archive a note">#</a></div>
+  <p>Reveal Archive from the trailing side of the Route note row. Archive it and use Restore note to bring it back.</p>
+
+  <p class="keyboard-note" hidden></p>
+  <div class="workbench">
+    <div class="example-tabs" role="tablist" aria-label="Archive a note example">
+      <button type="button" role="tab" id="archive-note-preview-tab" aria-selected="true" aria-controls="archive-note-preview">Preview</button>
+      <button type="button" role="tab" id="archive-note-code-tab" aria-selected="false" aria-controls="archive-note-code" tabindex="-1">Code</button>
+    </div>
+    <div role="tabpanel" id="archive-note-preview" aria-labelledby="archive-note-preview-tab">
+    <div class="tools" aria-label="Preview settings">
+      <div class="frame-options" role="group" aria-label="Frame width">
+        <button type="button" data-width="1440" aria-pressed="true" title="Use the available preview width"><i class="monitor" aria-hidden="true"></i>Desktop</button>
+        <button type="button" data-width="390" aria-pressed="false" title="390 px phone frame"><i class="phone" aria-hidden="true"></i>Phone</button>
+      </div>
+      <div class="environment">
+        <button type="button" data-setting="theme" aria-label="Night theme" aria-pressed="false"><span aria-hidden="true" class="sun"></span><span data-value>Day</span></button>
+        <button type="button" data-setting="dir" aria-label="Right-to-left direction" aria-pressed="false"><span data-value>LTR</span></button>
+        <button type="button" data-setting="scale" aria-label="Double text size" aria-pressed="false"><span aria-hidden="true" class="type-icon">Aa</span><span data-value>100%</span></button>
+      </div>
+    </div>
+    <div class="stage"><div class="viewport"><div class="frame"><iframe loading="lazy" title="Minimal Swipe actions interactive example"></iframe></div></div></div>
+    <div class="caption"><span><i class="status-dot" aria-hidden="true"></i>Flutter preview <span class="frame-size"></span></span><a class="open-preview" target="_blank" rel="noopener">Open preview <span aria-hidden="true">↗</span></a></div>
+    </div>
+    <div class="source" role="tabpanel" id="archive-note-code" aria-labelledby="archive-note-code-tab" hidden>
+      <div class="source-head"><span class="filename">components&#47;swipe-actions&#47;minimal&#47;archive_note.dart</span><button type="button" class="copy">Copy code</button></div>
+      <pre tabindex="0" aria-label="Dart source"><code><span class="hljs-keyword">import</span> <span class="hljs-string">'package:flutter/widgets.dart'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-string">'package:minimal_ui/minimal_ui.dart'</span>;
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">ArchiveNote</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">StatefulWidget</span> </span>{
+  <span class="hljs-keyword">const</span> ArchiveNote({<span class="hljs-keyword">super</span>.key});
+  <span class="hljs-meta">@override</span>
+  State&lt;ArchiveNote&gt; createState() =&gt; _ArchiveNoteState();
+}
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">_ArchiveNoteState</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">State</span>&lt;<span class="hljs-title">ArchiveNote</span>&gt; </span>{
+  <span class="hljs-built_in">bool</span> archived = <span class="hljs-keyword">false</span>;
+  <span class="hljs-built_in">bool</span> read = <span class="hljs-keyword">false</span>;
+  <span class="hljs-meta">@override</span>
+  Widget build(BuildContext context) =&gt; ConstrainedBox(
+    constraints: <span class="hljs-keyword">const</span> BoxConstraints(maxWidth: <span class="hljs-number">440</span>),
+    child: archived
+        ? MinimalButton(
+            <span class="hljs-string">'Restore note'</span>,
+            onPressed: () =&gt; setState(() {
+              archived = <span class="hljs-keyword">false</span>;
+              read = <span class="hljs-keyword">false</span>;
+            }),
+          )
+        : MinimalSwipeActions(
+            trailing: [
+              MinimalSwipeAction(
+                <span class="hljs-string">'Archive'</span>,
+                onPressed: () =&gt; setState(() =&gt; archived = <span class="hljs-keyword">true</span>),
+              ),
+            ],
+            child: MinimalListTile(
+              title: <span class="hljs-string">'Route note'</span>,
+              subtitle: read ? <span class="hljs-string">'Read'</span> : <span class="hljs-string">'Unread'</span>,
+              onTap: () =&gt; setState(() =&gt; read = !read),
+            ),
+          ),
+  );
+}
+</code></pre>
+    </div>
+  </div>
+</section>
+<section class="reference" id="parameters">
+  <div class="section-title"><h2>Parameters</h2><a class="api" href="https:&#47;&#47;pub.dev&#47;documentation&#47;minimal_ui&#47;latest&#47;minimal_ui&#47;MinimalSwipeActions-class.html">MinimalSwipeActions API ↗</a></div>
+  <dl><div><dt><code>child</code></dt><dd>The row — usually a MinimalThemeData.rowHeight row with its own hairline.</dd></div><div><dt><code>leading</code></dt><dd>Actions revealed by a drag toward the trailing edge, first nearest the leading edge.</dd></div><div><dt><code>trailing</code></dt><dd>Actions revealed by a drag toward the leading edge, first nearest the trailing edge.</dd></div><div><dt><code>allowsFullSwipe</code></dt><dd>A long swipe past 60 % of the row performs the first action on that edge.</dd></div><div><dt><code>initiallyOpen</code></dt><dd>Starts the row with its actions revealed.</dd></div></dl>
+</section>

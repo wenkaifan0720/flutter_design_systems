@@ -1,0 +1,63 @@
+<section class="example" id="preview-owner" data-example="preview-owner">
+  <div class="section-title"><h2>Preview a file owner</h2><a class="permalink" href="#preview-owner" aria-label="Link to Preview a file owner">#</a></div>
+  <p>Rest the pointer on Mara Chen to preview her role. Activate her name to read the same detail in the page.</p>
+
+  <p class="keyboard-note" hidden></p>
+  <div class="workbench">
+    <div class="example-tabs" role="tablist" aria-label="Preview a file owner example">
+      <button type="button" role="tab" id="preview-owner-preview-tab" aria-selected="true" aria-controls="preview-owner-preview">Preview</button>
+      <button type="button" role="tab" id="preview-owner-code-tab" aria-selected="false" aria-controls="preview-owner-code" tabindex="-1">Code</button>
+    </div>
+    <div role="tabpanel" id="preview-owner-preview" aria-labelledby="preview-owner-preview-tab">
+    <div class="tools" aria-label="Preview settings">
+      <div class="frame-options" role="group" aria-label="Frame width">
+        <button type="button" data-width="1440" aria-pressed="true" title="Use the available preview width"><i class="monitor" aria-hidden="true"></i>Desktop</button>
+        <button type="button" data-width="390" aria-pressed="false" title="390 px phone frame"><i class="phone" aria-hidden="true"></i>Phone</button>
+      </div>
+      <div class="environment">
+        <button type="button" data-setting="theme" aria-label="Night theme" aria-pressed="false"><span aria-hidden="true" class="sun"></span><span data-value>Day</span></button>
+        <button type="button" data-setting="dir" aria-label="Right-to-left direction" aria-pressed="false"><span data-value>LTR</span></button>
+        <button type="button" data-setting="scale" aria-label="Double text size" aria-pressed="false"><span aria-hidden="true" class="type-icon">Aa</span><span data-value>100%</span></button>
+      </div>
+    </div>
+    <div class="stage"><div class="viewport"><div class="frame"><iframe loading="lazy" title="Neumorphism Hover card interactive example"></iframe></div></div></div>
+    <div class="caption"><span><i class="status-dot" aria-hidden="true"></i>Flutter preview <span class="frame-size"></span></span><a class="open-preview" target="_blank" rel="noopener">Open preview <span aria-hidden="true">↗</span></a></div>
+    </div>
+    <div class="source" role="tabpanel" id="preview-owner-code" aria-labelledby="preview-owner-code-tab" hidden>
+      <div class="source-head"><span class="filename">components&#47;hover-card&#47;neumorphism&#47;preview_owner.dart</span><button type="button" class="copy">Copy code</button></div>
+      <pre tabindex="0" aria-label="Dart source"><code><span class="hljs-keyword">import</span> <span class="hljs-string">'package:flutter/widgets.dart'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-string">'package:neumorphism_ui/neumorphism_ui.dart'</span>;
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">PreviewOwner</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">StatefulWidget</span> </span>{
+  <span class="hljs-keyword">const</span> PreviewOwner({<span class="hljs-keyword">super</span>.key});
+  <span class="hljs-meta">@override</span>
+  State&lt;PreviewOwner&gt; createState() =&gt; _PreviewOwnerState();
+}
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">_PreviewOwnerState</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">State</span>&lt;<span class="hljs-title">PreviewOwner</span>&gt; </span>{
+  <span class="hljs-built_in">bool</span> showProfile = <span class="hljs-keyword">false</span>;
+
+  <span class="hljs-meta">@override</span>
+  Widget build(BuildContext context) =&gt; Column(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      NeumorphicHoverCard(
+        content: <span class="hljs-keyword">const</span> Text(<span class="hljs-string">'Design lead in Toronto.'</span>),
+        child: NeumorphicLink(
+          <span class="hljs-string">'Mara Chen'</span>,
+          onPressed: () =&gt; setState(() =&gt; showProfile = !showProfile),
+        ),
+      ),
+      <span class="hljs-keyword">const</span> SizedBox(height: <span class="hljs-number">12</span>),
+      <span class="hljs-keyword">if</span> (showProfile) <span class="hljs-keyword">const</span> Text(<span class="hljs-string">'Mara Chen · Design lead in Toronto.'</span>),
+    ],
+  );
+}
+</code></pre>
+    </div>
+  </div>
+</section>
+<section class="reference" id="parameters">
+  <div class="section-title"><h2>Parameters</h2><a class="api" href="https:&#47;&#47;pub.dev&#47;documentation&#47;neumorphism_ui&#47;latest&#47;neumorphism_ui&#47;NeumorphicHoverCard-class.html">NeumorphicHoverCard API ↗</a></div>
+  <dl><div><dt><code>child</code></dt><dd>The named link that anchors the preview.</dd></div><div><dt><code>content</code></dt><dd>Supplies the profile information shown on hover.</dd></div><div><dt><code>width</code></dt><dd>Maximum width of the preview.</dd></div><div><dt><code>openDelay</code></dt><dd>Sets how long the pointer rests before the card opens.</dd></div></dl>
+</section>

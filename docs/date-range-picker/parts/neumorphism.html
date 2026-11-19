@@ -1,0 +1,85 @@
+<section class="example" id="book-dates" data-example="book-dates">
+  <div class="section-title"><h2>Book a date range</h2><a class="permalink" href="#book-dates" aria-label="Link to Book a date range">#</a></div>
+  <p>Choose the first and last days of a stay. Try another pair to replace the original booking.</p>
+
+  <p class="keyboard-note" hidden></p>
+  <div class="workbench">
+    <div class="example-tabs" role="tablist" aria-label="Book a date range example">
+      <button type="button" role="tab" id="book-dates-preview-tab" aria-selected="true" aria-controls="book-dates-preview">Preview</button>
+      <button type="button" role="tab" id="book-dates-code-tab" aria-selected="false" aria-controls="book-dates-code" tabindex="-1">Code</button>
+    </div>
+    <div role="tabpanel" id="book-dates-preview" aria-labelledby="book-dates-preview-tab">
+    <div class="tools" aria-label="Preview settings">
+      <div class="frame-options" role="group" aria-label="Frame width">
+        <button type="button" data-width="1440" aria-pressed="true" title="Use the available preview width"><i class="monitor" aria-hidden="true"></i>Desktop</button>
+        <button type="button" data-width="390" aria-pressed="false" title="390 px phone frame"><i class="phone" aria-hidden="true"></i>Phone</button>
+      </div>
+      <div class="environment">
+        <button type="button" data-setting="theme" aria-label="Night theme" aria-pressed="false"><span aria-hidden="true" class="sun"></span><span data-value>Day</span></button>
+        <button type="button" data-setting="dir" aria-label="Right-to-left direction" aria-pressed="false"><span data-value>LTR</span></button>
+        <button type="button" data-setting="scale" aria-label="Double text size" aria-pressed="false"><span aria-hidden="true" class="type-icon">Aa</span><span data-value>100%</span></button>
+      </div>
+    </div>
+    <div class="stage"><div class="viewport" data-height="640"><div class="frame"><iframe loading="lazy" title="Neumorphism Date range picker interactive example"></iframe></div></div></div>
+    <div class="caption"><span><i class="status-dot" aria-hidden="true"></i>Flutter preview <span class="frame-size"></span></span><a class="open-preview" target="_blank" rel="noopener">Open preview <span aria-hidden="true">↗</span></a></div>
+    </div>
+    <div class="source" role="tabpanel" id="book-dates-code" aria-labelledby="book-dates-code-tab" hidden>
+      <div class="source-head"><span class="filename">components&#47;date-range-picker&#47;neumorphism&#47;book_dates.dart</span><button type="button" class="copy">Copy code</button></div>
+      <pre tabindex="0" aria-label="Dart source"><code><span class="hljs-keyword">import</span> <span class="hljs-string">'package:flutter/widgets.dart'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-string">'package:material_ui/material_ui.dart'</span> <span class="hljs-keyword">show</span> MaterialLocalizations;
+<span class="hljs-keyword">import</span> <span class="hljs-string">'package:neumorphism_ui/neumorphism_ui.dart'</span>;
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">BookDates</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">StatefulWidget</span> </span>{
+  <span class="hljs-keyword">const</span> BookDates({<span class="hljs-keyword">super</span>.key});
+  <span class="hljs-meta">@override</span>
+  State&lt;BookDates&gt; createState() =&gt; _BookDatesState();
+}
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">_BookDatesState</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">State</span>&lt;<span class="hljs-title">BookDates</span>&gt; </span>{
+  <span class="hljs-keyword">final</span> stay = DesignCalendarController(
+    firstDate: <span class="hljs-built_in">DateTime</span>(<span class="hljs-number">2026</span>, <span class="hljs-number">11</span>),
+    lastDate: <span class="hljs-built_in">DateTime</span>(<span class="hljs-number">2026</span>, <span class="hljs-number">12</span>, <span class="hljs-number">31</span>),
+    currentDate: <span class="hljs-built_in">DateTime</span>(<span class="hljs-number">2026</span>, <span class="hljs-number">11</span>, <span class="hljs-number">12</span>),
+    mode: DesignCalendarMode.range,
+  );
+  <span class="hljs-meta">@override</span>
+  <span class="hljs-keyword">void</span> dispose() {
+    stay.dispose();
+    <span class="hljs-keyword">super</span>.dispose();
+  }
+
+  <span class="hljs-built_in">String</span> bookingSummary(BuildContext context) {
+    <span class="hljs-keyword">final</span> start = stay.selectedRange?.start;
+    <span class="hljs-keyword">final</span> end = stay.selectedRange?.end;
+    <span class="hljs-keyword">if</span> (start == <span class="hljs-keyword">null</span>) <span class="hljs-keyword">return</span> <span class="hljs-string">'Choose an arrival date'</span>;
+    <span class="hljs-keyword">final</span> dates = MaterialLocalizations.of(context);
+    <span class="hljs-keyword">if</span> (end == <span class="hljs-keyword">null</span>) <span class="hljs-keyword">return</span> <span class="hljs-string">'Arrival: <span class="hljs-subst">${dates.formatCompactDate(start)}</span>'</span>;
+    <span class="hljs-keyword">return</span> <span class="hljs-string">'Stay: <span class="hljs-subst">${dates.formatCompactDate(start)}</span> – <span class="hljs-subst">${dates.formatCompactDate(end)}</span>'</span>;
+  }
+
+  <span class="hljs-meta">@override</span>
+  Widget build(BuildContext context) =&gt; ConstrainedBox(
+    constraints: <span class="hljs-keyword">const</span> BoxConstraints(maxWidth: <span class="hljs-number">440</span>),
+    child: SingleChildScrollView(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          NeumorphicDateRangePicker(controller: stay),
+          <span class="hljs-keyword">const</span> SizedBox(height: <span class="hljs-number">12</span>),
+          ListenableBuilder(
+            listenable: stay,
+            builder: (context, _) =&gt; Text(bookingSummary(context)),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+</code></pre>
+    </div>
+  </div>
+</section>
+<section class="reference" id="parameters">
+  <div class="section-title"><h2>Parameters</h2><a class="api" href="https:&#47;&#47;pub.dev&#47;documentation&#47;neumorphism_ui&#47;latest&#47;neumorphism_ui&#47;NeumorphicDateRangePicker-class.html">NeumorphicDateRangePicker API ↗</a></div>
+  <dl><div><dt><code>controller</code></dt><dd>Tracks the visible month, available dates and selected interval.</dd></div></dl>
+</section>

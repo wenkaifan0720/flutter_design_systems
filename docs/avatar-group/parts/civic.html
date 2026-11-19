@@ -1,0 +1,66 @@
+<section class="example" id="invite-reviewer" data-example="invite-reviewer">
+  <div class="section-title"><h2>Invite a reviewer</h2><a class="permalink" href="#invite-reviewer" aria-label="Link to Invite a reviewer">#</a></div>
+  <p>Start with Ana and Jo. Invite Kim to see how the look fits a third reviewer, then remove Kim.</p>
+
+  <p class="keyboard-note" hidden></p>
+  <div class="workbench">
+    <div class="example-tabs" role="tablist" aria-label="Invite a reviewer example">
+      <button type="button" role="tab" id="invite-reviewer-preview-tab" aria-selected="true" aria-controls="invite-reviewer-preview">Preview</button>
+      <button type="button" role="tab" id="invite-reviewer-code-tab" aria-selected="false" aria-controls="invite-reviewer-code" tabindex="-1">Code</button>
+    </div>
+    <div role="tabpanel" id="invite-reviewer-preview" aria-labelledby="invite-reviewer-preview-tab">
+    <div class="tools" aria-label="Preview settings">
+      <div class="frame-options" role="group" aria-label="Frame width">
+        <button type="button" data-width="1440" aria-pressed="true" title="Use the available preview width"><i class="monitor" aria-hidden="true"></i>Desktop</button>
+        <button type="button" data-width="390" aria-pressed="false" title="390 px phone frame"><i class="phone" aria-hidden="true"></i>Phone</button>
+      </div>
+      <div class="environment">
+        <button type="button" data-setting="theme" aria-label="Night theme" aria-pressed="false"><span aria-hidden="true" class="sun"></span><span data-value>Day</span></button>
+        <button type="button" data-setting="dir" aria-label="Right-to-left direction" aria-pressed="false"><span data-value>LTR</span></button>
+        <button type="button" data-setting="scale" aria-label="Double text size" aria-pressed="false"><span aria-hidden="true" class="type-icon">Aa</span><span data-value>100%</span></button>
+      </div>
+    </div>
+    <div class="stage"><div class="viewport"><div class="frame"><iframe loading="lazy" title="Civic Avatar group interactive example"></iframe></div></div></div>
+    <div class="caption"><span><i class="status-dot" aria-hidden="true"></i>Flutter preview <span class="frame-size"></span></span><a class="open-preview" target="_blank" rel="noopener">Open preview <span aria-hidden="true">↗</span></a></div>
+    </div>
+    <div class="source" role="tabpanel" id="invite-reviewer-code" aria-labelledby="invite-reviewer-code-tab" hidden>
+      <div class="source-head"><span class="filename">components&#47;avatar-group&#47;civic&#47;invite_reviewer.dart</span><button type="button" class="copy">Copy code</button></div>
+      <pre tabindex="0" aria-label="Dart source"><code><span class="hljs-keyword">import</span> <span class="hljs-string">'package:civic_ui/civic_ui.dart'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-string">'package:flutter/widgets.dart'</span>;
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">InviteReviewer</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">StatefulWidget</span> </span>{
+  <span class="hljs-keyword">const</span> InviteReviewer({<span class="hljs-keyword">super</span>.key});
+  <span class="hljs-meta">@override</span>
+  State&lt;InviteReviewer&gt; createState() =&gt; _InviteReviewerState();
+}
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">_InviteReviewerState</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">State</span>&lt;<span class="hljs-title">InviteReviewer</span>&gt; </span>{
+  <span class="hljs-keyword">final</span> reviewers = [<span class="hljs-string">'Ana Lee'</span>, <span class="hljs-string">'Jo Ray'</span>];
+
+  <span class="hljs-meta">@override</span>
+  Widget build(BuildContext context) =&gt; Column(
+    mainAxisSize: MainAxisSize.min,
+    spacing: <span class="hljs-number">12</span>,
+    children: [
+      CivicAvatarGroup(names: reviewers),
+      Text(reviewers.join(<span class="hljs-string">', '</span>)),
+      CivicButton.secondary(
+        expand: <span class="hljs-keyword">false</span>,
+        onPressed: () =&gt; setState(
+          () =&gt; reviewers.contains(<span class="hljs-string">'Kim Yu'</span>)
+              ? reviewers.remove(<span class="hljs-string">'Kim Yu'</span>)
+              : reviewers.add(<span class="hljs-string">'Kim Yu'</span>),
+        ),
+        child: Text(reviewers.contains(<span class="hljs-string">'Kim Yu'</span>) ? <span class="hljs-string">'Remove Kim'</span> : <span class="hljs-string">'Invite Kim'</span>),
+      ),
+    ],
+  );
+}
+</code></pre>
+    </div>
+  </div>
+</section>
+<section class="reference" id="parameters">
+  <div class="section-title"><h2>Parameters</h2><a class="api" href="https:&#47;&#47;pub.dev&#47;documentation&#47;civic_ui&#47;latest&#47;civic_ui&#47;CivicAvatarGroup-class.html">CivicAvatarGroup API ↗</a></div>
+  <dl><div><dt><code>names</code></dt><dd>The people, in order; a screen reader reads every name.</dd></div><div><dt><code>images</code></dt><dd>Pictures by name, where there are any.</dd></div><div><dt><code>max</code></dt><dd>How many faces show before the rest are counted.</dd></div><div><dt><code>total</code></dt><dd>How many there are in all, where the list is a part.</dd></div><div><dt><code>othersLabel</code></dt><dd>Says the people not shown.</dd></div></dl>
+</section>

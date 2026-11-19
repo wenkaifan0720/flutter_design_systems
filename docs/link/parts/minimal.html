@@ -1,0 +1,69 @@
+<section class="example" id="read-guide" data-example="read-guide">
+  <div class="section-title"><h2>Read the guide</h2><a class="permalink" href="#read-guide" aria-label="Link to Read the guide">#</a></div>
+  <p>Follow Reading guide to its own screen. Use Back to library to return and follow the link again.</p>
+
+  <p class="keyboard-note" hidden></p>
+  <div class="workbench">
+    <div class="example-tabs" role="tablist" aria-label="Read the guide example">
+      <button type="button" role="tab" id="read-guide-preview-tab" aria-selected="true" aria-controls="read-guide-preview">Preview</button>
+      <button type="button" role="tab" id="read-guide-code-tab" aria-selected="false" aria-controls="read-guide-code" tabindex="-1">Code</button>
+    </div>
+    <div role="tabpanel" id="read-guide-preview" aria-labelledby="read-guide-preview-tab">
+    <div class="tools" aria-label="Preview settings">
+      <div class="frame-options" role="group" aria-label="Frame width">
+        <button type="button" data-width="1440" aria-pressed="true" title="Use the available preview width"><i class="monitor" aria-hidden="true"></i>Desktop</button>
+        <button type="button" data-width="390" aria-pressed="false" title="390 px phone frame"><i class="phone" aria-hidden="true"></i>Phone</button>
+      </div>
+      <div class="environment">
+        <button type="button" data-setting="theme" aria-label="Night theme" aria-pressed="false"><span aria-hidden="true" class="sun"></span><span data-value>Day</span></button>
+        <button type="button" data-setting="dir" aria-label="Right-to-left direction" aria-pressed="false"><span data-value>LTR</span></button>
+        <button type="button" data-setting="scale" aria-label="Double text size" aria-pressed="false"><span aria-hidden="true" class="type-icon">Aa</span><span data-value>100%</span></button>
+      </div>
+    </div>
+    <div class="stage"><div class="viewport"><div class="frame"><iframe loading="lazy" title="Minimal Link interactive example"></iframe></div></div></div>
+    <div class="caption"><span><i class="status-dot" aria-hidden="true"></i>Flutter preview <span class="frame-size"></span></span><a class="open-preview" target="_blank" rel="noopener">Open preview <span aria-hidden="true">↗</span></a></div>
+    </div>
+    <div class="source" role="tabpanel" id="read-guide-code" aria-labelledby="read-guide-code-tab" hidden>
+      <div class="source-head"><span class="filename">components&#47;link&#47;minimal&#47;read_guide.dart</span><button type="button" class="copy">Copy code</button></div>
+      <pre tabindex="0" aria-label="Dart source"><code><span class="hljs-keyword">import</span> <span class="hljs-string">'package:flutter/widgets.dart'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-string">'package:minimal_ui/minimal_ui.dart'</span>;
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">ReadGuide</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">StatelessWidget</span> </span>{
+  <span class="hljs-keyword">const</span> ReadGuide({<span class="hljs-keyword">super</span>.key});
+
+  <span class="hljs-meta">@override</span>
+  Widget build(BuildContext context) =&gt; MinimalLink(
+    <span class="hljs-string">'Reading guide'</span>,
+    onPressed: () =&gt; Navigator.of(context).push&lt;<span class="hljs-keyword">void</span>&gt;(
+      PageRouteBuilder&lt;<span class="hljs-keyword">void</span>&gt;(
+        pageBuilder: (context, animation, secondaryAnimation) =&gt; Padding(
+          padding: <span class="hljs-keyword">const</span> EdgeInsets.all(<span class="hljs-number">20</span>),
+          child: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                <span class="hljs-keyword">const</span> Text(
+                  <span class="hljs-string">'Borrow a book for up to three weeks.'</span>,
+                  textAlign: TextAlign.center,
+                ),
+                <span class="hljs-keyword">const</span> SizedBox(height: <span class="hljs-number">12</span>),
+                MinimalLink(
+                  <span class="hljs-string">'Back to library'</span>,
+                  onPressed: () =&gt; Navigator.of(context).pop(),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
+}
+</code></pre>
+    </div>
+  </div>
+</section>
+<section class="reference" id="parameters">
+  <div class="section-title"><h2>Parameters</h2><a class="api" href="https:&#47;&#47;pub.dev&#47;documentation&#47;minimal_ui&#47;latest&#47;minimal_ui&#47;MinimalLink-class.html">MinimalLink API ↗</a></div>
+  <dl><div><dt><code>label</code></dt><dd>Destination name shown to the reader.</dd></div><div><dt><code>onPressed</code></dt><dd>Opens the guide or returns to the library.</dd></div></dl>
+</section>

@@ -1,0 +1,71 @@
+<section class="example" id="order-stops" data-example="order-stops">
+  <div class="section-title"><h2>Order the stops</h2><a class="permalink" href="#order-stops" aria-label="Link to Order the stops">#</a></div>
+  <p>Move Park below Market, then move it back. A row labelled Make first can also be activated to bring that stop to the top.</p>
+
+  <p class="keyboard-note" hidden></p>
+  <div class="workbench">
+    <div class="example-tabs" role="tablist" aria-label="Order the stops example">
+      <button type="button" role="tab" id="order-stops-preview-tab" aria-selected="true" aria-controls="order-stops-preview">Preview</button>
+      <button type="button" role="tab" id="order-stops-code-tab" aria-selected="false" aria-controls="order-stops-code" tabindex="-1">Code</button>
+    </div>
+    <div role="tabpanel" id="order-stops-preview" aria-labelledby="order-stops-preview-tab">
+    <div class="tools" aria-label="Preview settings">
+      <div class="frame-options" role="group" aria-label="Frame width">
+        <button type="button" data-width="1440" aria-pressed="true" title="Use the available preview width"><i class="monitor" aria-hidden="true"></i>Desktop</button>
+        <button type="button" data-width="390" aria-pressed="false" title="390 px phone frame"><i class="phone" aria-hidden="true"></i>Phone</button>
+      </div>
+      <div class="environment">
+        <button type="button" data-setting="theme" aria-label="Night theme" aria-pressed="false"><span aria-hidden="true" class="sun"></span><span data-value>Day</span></button>
+        <button type="button" data-setting="dir" aria-label="Right-to-left direction" aria-pressed="false"><span data-value>LTR</span></button>
+        <button type="button" data-setting="scale" aria-label="Double text size" aria-pressed="false"><span aria-hidden="true" class="type-icon">Aa</span><span data-value>100%</span></button>
+      </div>
+    </div>
+    <div class="stage"><div class="viewport"><div class="frame"><iframe loading="lazy" title="Minimal Reorderable list interactive example"></iframe></div></div></div>
+    <div class="caption"><span><i class="status-dot" aria-hidden="true"></i>Flutter preview <span class="frame-size"></span></span><a class="open-preview" target="_blank" rel="noopener">Open preview <span aria-hidden="true">↗</span></a></div>
+    </div>
+    <div class="source" role="tabpanel" id="order-stops-code" aria-labelledby="order-stops-code-tab" hidden>
+      <div class="source-head"><span class="filename">components&#47;reorderable-list&#47;minimal&#47;order_stops.dart</span><button type="button" class="copy">Copy code</button></div>
+      <pre tabindex="0" aria-label="Dart source"><code><span class="hljs-keyword">import</span> <span class="hljs-string">'package:flutter/widgets.dart'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-string">'package:minimal_ui/minimal_ui.dart'</span>;
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">OrderStops</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">StatefulWidget</span> </span>{
+  <span class="hljs-keyword">const</span> OrderStops({<span class="hljs-keyword">super</span>.key});
+  <span class="hljs-meta">@override</span>
+  State&lt;OrderStops&gt; createState() =&gt; _OrderStopsState();
+}
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">_OrderStopsState</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">State</span>&lt;<span class="hljs-title">OrderStops</span>&gt; </span>{
+  <span class="hljs-keyword">final</span> stops = [<span class="hljs-string">'Park'</span>, <span class="hljs-string">'Market'</span>, <span class="hljs-string">'Pier'</span>];
+  <span class="hljs-keyword">void</span> move(<span class="hljs-built_in">int</span> from, <span class="hljs-built_in">int</span> to) {
+    setState(() {
+      <span class="hljs-keyword">final</span> stop = stops.removeAt(from);
+      stops.insert(to, stop);
+    });
+  }
+
+  <span class="hljs-meta">@override</span>
+  Widget build(BuildContext context) =&gt; ConstrainedBox(
+    constraints: <span class="hljs-keyword">const</span> BoxConstraints(maxWidth: <span class="hljs-number">440</span>),
+    child: SizedBox(
+      height: <span class="hljs-number">200</span>,
+      child: MinimalReorderableListView&lt;<span class="hljs-built_in">String</span>&gt;(
+        items: stops,
+        labelOf: (stop) =&gt; stop,
+        onReorder: move,
+        itemBuilder: (context, stop) =&gt; MinimalListTile(
+          title: stop,
+          subtitle: <span class="hljs-string">'Make first'</span>,
+          onTap: () =&gt; move(stops.indexOf(stop), <span class="hljs-number">0</span>),
+        ),
+      ),
+    ),
+  );
+}
+</code></pre>
+    </div>
+  </div>
+</section>
+<section class="reference" id="parameters">
+  <div class="section-title"><h2>Parameters</h2><a class="api" href="https:&#47;&#47;pub.dev&#47;documentation&#47;minimal_ui&#47;latest&#47;minimal_ui&#47;MinimalReorderableListView-class.html">MinimalReorderableListView API ↗</a></div>
+  <dl><div><dt><code>items</code></dt><dd>The items, in order.</dd></div><div><dt><code>onReorder</code></dt><dd>Moves the item at from to to (counted after it left).</dd></div><div><dt><code>labelOf</code></dt><dd>What a screen reader calls an item.</dd></div><div><dt><code>itemBuilder</code></dt><dd>Paints a row&#39;s content, after the grip.</dd></div><div><dt><code>keyOf</code></dt><dd>Returns a stable identity for each item as its position changes.</dd></div><div><dt><code>shrinkWrap</code></dt><dd>Whether the list is only as tall as its rows (in a page that scrolls).</dd></div><div><dt><code>controller</code></dt><dd>Its scroll position, when it scrolls itself.</dd></div></dl>
+</section>

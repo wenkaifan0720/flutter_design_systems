@@ -1,0 +1,56 @@
+<section class="example" id="read-message" data-example="read-message">
+  <div class="section-title"><h2>Read a message</h2><a class="permalink" href="#read-message" aria-label="Link to Read a message">#</a></div>
+  <p>Activate the message row to mark it read. Activate it again to return it to Unread.</p>
+
+  <p class="keyboard-note" hidden></p>
+  <div class="workbench">
+    <div class="example-tabs" role="tablist" aria-label="Read a message example">
+      <button type="button" role="tab" id="read-message-preview-tab" aria-selected="true" aria-controls="read-message-preview">Preview</button>
+      <button type="button" role="tab" id="read-message-code-tab" aria-selected="false" aria-controls="read-message-code" tabindex="-1">Code</button>
+    </div>
+    <div role="tabpanel" id="read-message-preview" aria-labelledby="read-message-preview-tab">
+    <div class="tools" aria-label="Preview settings">
+      <div class="frame-options" role="group" aria-label="Frame width">
+        <button type="button" data-width="1440" aria-pressed="true" title="Use the available preview width"><i class="monitor" aria-hidden="true"></i>Desktop</button>
+        <button type="button" data-width="390" aria-pressed="false" title="390 px phone frame"><i class="phone" aria-hidden="true"></i>Phone</button>
+      </div>
+      <div class="environment">
+        <button type="button" data-setting="theme" aria-label="Night theme" aria-pressed="false"><span aria-hidden="true" class="sun"></span><span data-value>Day</span></button>
+        <button type="button" data-setting="dir" aria-label="Right-to-left direction" aria-pressed="false"><span data-value>LTR</span></button>
+        <button type="button" data-setting="scale" aria-label="Double text size" aria-pressed="false"><span aria-hidden="true" class="type-icon">Aa</span><span data-value>100%</span></button>
+      </div>
+    </div>
+    <div class="stage"><div class="viewport"><div class="frame"><iframe loading="lazy" title="Ledger List row interactive example"></iframe></div></div></div>
+    <div class="caption"><span><i class="status-dot" aria-hidden="true"></i>Flutter preview <span class="frame-size"></span></span><a class="open-preview" target="_blank" rel="noopener">Open preview <span aria-hidden="true">↗</span></a></div>
+    </div>
+    <div class="source" role="tabpanel" id="read-message-code" aria-labelledby="read-message-code-tab" hidden>
+      <div class="source-head"><span class="filename">components&#47;list-row&#47;ledger&#47;read_message.dart</span><button type="button" class="copy">Copy code</button></div>
+      <pre tabindex="0" aria-label="Dart source"><code><span class="hljs-keyword">import</span> <span class="hljs-string">'package:flutter/widgets.dart'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-string">'package:ledger_ui/ledger_ui.dart'</span>;
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">ReadMessage</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">StatefulWidget</span> </span>{
+  <span class="hljs-keyword">const</span> ReadMessage({<span class="hljs-keyword">super</span>.key});
+  <span class="hljs-meta">@override</span>
+  State&lt;ReadMessage&gt; createState() =&gt; _ReadMessageState();
+}
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">_ReadMessageState</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">State</span>&lt;<span class="hljs-title">ReadMessage</span>&gt; </span>{
+  <span class="hljs-built_in">bool</span> read = <span class="hljs-keyword">false</span>;
+  <span class="hljs-meta">@override</span>
+  Widget build(BuildContext context) =&gt; ConstrainedBox(
+    constraints: <span class="hljs-keyword">const</span> BoxConstraints(maxWidth: <span class="hljs-number">440</span>),
+    child: LedgerRow(
+      title: <span class="hljs-string">'Route change'</span>,
+      subtitle: read ? <span class="hljs-string">'Read'</span> : <span class="hljs-string">'Unread'</span>,
+      onTap: () =&gt; setState(() =&gt; read = !read),
+    ),
+  );
+}
+</code></pre>
+    </div>
+  </div>
+</section>
+<section class="reference" id="parameters">
+  <div class="section-title"><h2>Parameters</h2><a class="api" href="https:&#47;&#47;pub.dev&#47;documentation&#47;ledger_ui&#47;latest&#47;ledger_ui&#47;LedgerRow-class.html">LedgerRow API ↗</a></div>
+  <dl><div><dt><code>title</code></dt><dd>The row&#39;s words, joined to its value by the dot leader.</dd></div><div><dt><code>leading</code></dt><dd>A mark before the words (a glyph, a monogram).</dd></div><div><dt><code>value</code></dt><dd>The value at the line&#39;s end, on the leader (a LedgerAmount).</dd></div><div><dt><code>subtitle</code></dt><dd>The sub line&#39;s start words.</dd></div><div><dt><code>trailingSubtitle</code></dt><dd>The sub line&#39;s end words.</dd></div><div><dt><code>subtitleMonospace</code></dt><dd>The start words in the mono (an account&#39;s kind and mask).</dd></div><div><dt><code>subtitleTone</code></dt><dd>The ink of the sub line&#39;s start words.</dd></div><div><dt><code>trailingSubtitleTone</code></dt><dd>The ink of the sub line&#39;s end words.</dd></div><div><dt><code>tag</code></dt><dd>A tag after the title (Pending).</dd></div><div><dt><code>trailing</code></dt><dd>A mark at the row&#39;s end (a chevron, a switch).</dd></div><div><dt><code>onTap</code></dt><dd>Makes the whole row one link.</dd></div><div><dt><code>semanticLabel</code></dt><dd>What a screen reader says when the row&#39;s words say too little.</dd></div><div><dt><code>focusNode</code></dt><dd>Supplies a focus node owned and disposed by the caller.</dd></div><div><dt><code>autofocus</code></dt><dd>Requests focus when the control first appears.</dd></div></dl>
+</section>

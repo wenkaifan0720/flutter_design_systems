@@ -1,0 +1,67 @@
+<section class="example" id="browse-days" data-example="browse-days">
+  <div class="section-title"><h2>Browse the agenda</h2><a class="permalink" href="#browse-days" aria-label="Link to Browse the agenda">#</a></div>
+  <p>Read today’s agenda, then switch to the other day. The heading and the appointment beneath it change together.</p>
+
+  <p class="keyboard-note" hidden></p>
+  <div class="workbench">
+    <div class="example-tabs" role="tablist" aria-label="Browse the agenda example">
+      <button type="button" role="tab" id="browse-days-preview-tab" aria-selected="true" aria-controls="browse-days-preview">Preview</button>
+      <button type="button" role="tab" id="browse-days-code-tab" aria-selected="false" aria-controls="browse-days-code" tabindex="-1">Code</button>
+    </div>
+    <div role="tabpanel" id="browse-days-preview" aria-labelledby="browse-days-preview-tab">
+    <div class="tools" aria-label="Preview settings">
+      <div class="frame-options" role="group" aria-label="Frame width">
+        <button type="button" data-width="1440" aria-pressed="true" title="Use the available preview width"><i class="monitor" aria-hidden="true"></i>Desktop</button>
+        <button type="button" data-width="390" aria-pressed="false" title="390 px phone frame"><i class="phone" aria-hidden="true"></i>Phone</button>
+      </div>
+      <div class="environment">
+        <button type="button" data-setting="theme" aria-label="Night theme" aria-pressed="false"><span aria-hidden="true" class="sun"></span><span data-value>Day</span></button>
+        <button type="button" data-setting="dir" aria-label="Right-to-left direction" aria-pressed="false"><span data-value>LTR</span></button>
+        <button type="button" data-setting="scale" aria-label="Double text size" aria-pressed="false"><span aria-hidden="true" class="type-icon">Aa</span><span data-value>100%</span></button>
+      </div>
+    </div>
+    <div class="stage"><div class="viewport"><div class="frame"><iframe loading="lazy" title="Fluent 2 Section header interactive example"></iframe></div></div></div>
+    <div class="caption"><span><i class="status-dot" aria-hidden="true"></i>Flutter preview <span class="frame-size"></span></span><a class="open-preview" target="_blank" rel="noopener">Open preview <span aria-hidden="true">↗</span></a></div>
+    </div>
+    <div class="source" role="tabpanel" id="browse-days-code" aria-labelledby="browse-days-code-tab" hidden>
+      <div class="source-head"><span class="filename">components&#47;section-header&#47;fluent2&#47;browse_days.dart</span><button type="button" class="copy">Copy code</button></div>
+      <pre tabindex="0" aria-label="Dart source"><code><span class="hljs-keyword">import</span> <span class="hljs-string">'package:flutter/widgets.dart'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-string">'package:fluent2_design_ui/fluent2_design_ui.dart'</span>;
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">BrowseDays</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">StatefulWidget</span> </span>{
+  <span class="hljs-keyword">const</span> BrowseDays({<span class="hljs-keyword">super</span>.key});
+  <span class="hljs-meta">@override</span>
+  State&lt;BrowseDays&gt; createState() =&gt; _BrowseDaysState();
+}
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">_BrowseDaysState</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">State</span>&lt;<span class="hljs-title">BrowseDays</span>&gt; </span>{
+  <span class="hljs-built_in">bool</span> tomorrow = <span class="hljs-keyword">false</span>;
+  <span class="hljs-meta">@override</span>
+  Widget build(BuildContext context) =&gt; ConstrainedBox(
+    constraints: <span class="hljs-keyword">const</span> BoxConstraints(maxWidth: <span class="hljs-number">440</span>),
+    child: SingleChildScrollView(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Fluent2SectionHeader(tomorrow ? <span class="hljs-string">'Tomorrow'</span> : <span class="hljs-string">'Today'</span>),
+          <span class="hljs-keyword">const</span> SizedBox(height: <span class="hljs-number">12</span>),
+          Text(tomorrow ? <span class="hljs-string">'10 am · Walk'</span> : <span class="hljs-string">'2 pm · Workshop'</span>),
+          <span class="hljs-keyword">const</span> SizedBox(height: <span class="hljs-number">12</span>),
+          Fluent2Button(
+            tomorrow ? <span class="hljs-string">'Show today'</span> : <span class="hljs-string">'Show tomorrow'</span>,
+            onPressed: () =&gt; setState(() =&gt; tomorrow = !tomorrow),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+</code></pre>
+    </div>
+  </div>
+</section>
+<section class="reference" id="parameters">
+  <div class="section-title"><h2>Parameters</h2><a class="api" href="https:&#47;&#47;pub.dev&#47;documentation&#47;fluent2_design_ui&#47;latest&#47;fluent2_design_ui&#47;Fluent2SectionHeader-class.html">Fluent2SectionHeader API ↗</a></div>
+  <dl><div><dt><code>title</code></dt><dd>The header&#39;s words.</dd></div><div><dt><code>aside</code></dt><dd>A count or a note after the title.</dd></div><div><dt><code>action</code></dt><dd>Supplies an action alongside the content.</dd></div></dl>
+</section>

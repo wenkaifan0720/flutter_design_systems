@@ -1,0 +1,66 @@
+<section class="example" id="switch-destination" data-example="switch-destination">
+  <div class="section-title"><h2>Switch destinations</h2><a class="permalink" href="#switch-destination" aria-label="Link to Switch destinations">#</a></div>
+  <p>Choose Search and then Home. The page content changes with the selected destination.</p>
+
+  <p class="keyboard-note" hidden></p>
+  <div class="workbench">
+    <div class="example-tabs" role="tablist" aria-label="Switch destinations example">
+      <button type="button" role="tab" id="switch-destination-preview-tab" aria-selected="true" aria-controls="switch-destination-preview">Preview</button>
+      <button type="button" role="tab" id="switch-destination-code-tab" aria-selected="false" aria-controls="switch-destination-code" tabindex="-1">Code</button>
+    </div>
+    <div role="tabpanel" id="switch-destination-preview" aria-labelledby="switch-destination-preview-tab">
+    <div class="tools" aria-label="Preview settings">
+      <div class="frame-options" role="group" aria-label="Frame width">
+        <button type="button" data-width="1440" aria-pressed="true" title="Use the available preview width"><i class="monitor" aria-hidden="true"></i>Desktop</button>
+        <button type="button" data-width="390" aria-pressed="false" title="390 px phone frame"><i class="phone" aria-hidden="true"></i>Phone</button>
+      </div>
+      <div class="environment">
+        <button type="button" data-setting="theme" aria-label="Night theme" aria-pressed="false"><span aria-hidden="true" class="sun"></span><span data-value>Day</span></button>
+        <button type="button" data-setting="dir" aria-label="Right-to-left direction" aria-pressed="false"><span data-value>LTR</span></button>
+        <button type="button" data-setting="scale" aria-label="Double text size" aria-pressed="false"><span aria-hidden="true" class="type-icon">Aa</span><span data-value>100%</span></button>
+      </div>
+    </div>
+    <div class="stage"><div class="viewport"><div class="frame"><iframe loading="lazy" title="Brutal Bottom navigation bar interactive example"></iframe></div></div></div>
+    <div class="caption"><span><i class="status-dot" aria-hidden="true"></i>Flutter preview <span class="frame-size"></span></span><a class="open-preview" target="_blank" rel="noopener">Open preview <span aria-hidden="true">↗</span></a></div>
+    </div>
+    <div class="source" role="tabpanel" id="switch-destination-code" aria-labelledby="switch-destination-code-tab" hidden>
+      <div class="source-head"><span class="filename">components&#47;navigation-bar&#47;brutal&#47;switch_destination.dart</span><button type="button" class="copy">Copy code</button></div>
+      <pre tabindex="0" aria-label="Dart source"><code><span class="hljs-keyword">import</span> <span class="hljs-string">'package:flutter/widgets.dart'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-string">'package:material_ui/material_ui.dart'</span> <span class="hljs-keyword">show</span> Icons;
+<span class="hljs-keyword">import</span> <span class="hljs-string">'package:brutal_ui/brutal_ui.dart'</span>;
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">SwitchDestination</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">StatefulWidget</span> </span>{
+  <span class="hljs-keyword">const</span> SwitchDestination({<span class="hljs-keyword">super</span>.key});
+  <span class="hljs-meta">@override</span>
+  State&lt;SwitchDestination&gt; createState() =&gt; _SwitchDestinationState();
+}
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">_SwitchDestinationState</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">State</span>&lt;<span class="hljs-title">SwitchDestination</span>&gt; </span>{
+  <span class="hljs-built_in">int</span> selected = <span class="hljs-number">0</span>;
+  <span class="hljs-keyword">static</span> <span class="hljs-keyword">const</span> destinations = [
+    BrutalDestination(icon: Icons.home_outlined, label: <span class="hljs-string">'Home'</span>),
+    BrutalDestination(icon: Icons.search, label: <span class="hljs-string">'Search'</span>),
+  ];
+
+  <span class="hljs-meta">@override</span>
+  Widget build(BuildContext context) =&gt; Column(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      Text(selected == <span class="hljs-number">0</span> ? <span class="hljs-string">'Home page'</span> : <span class="hljs-string">'Search page'</span>),
+      <span class="hljs-keyword">const</span> SizedBox(height: <span class="hljs-number">12</span>),
+      BrutalNavigationBar(
+        destinations: destinations,
+        selectedIndex: selected,
+        onSelected: (next) =&gt; setState(() =&gt; selected = next),
+      ),
+    ],
+  );
+}
+</code></pre>
+    </div>
+  </div>
+</section>
+<section class="reference" id="parameters">
+  <div class="section-title"><h2>Parameters</h2><a class="api" href="https:&#47;&#47;pub.dev&#47;documentation&#47;brutal_ui&#47;latest&#47;brutal_ui&#47;BrutalNavigationBar-class.html">BrutalNavigationBar API ↗</a></div>
+  <dl><div><dt><code>destinations</code></dt><dd>The destinations in reading order.</dd></div><div><dt><code>selectedIndex</code></dt><dd>Zero-based index of the visible page.</dd></div><div><dt><code>onSelected</code></dt><dd>Receives the index of the chosen destination.</dd></div></dl>
+</section>

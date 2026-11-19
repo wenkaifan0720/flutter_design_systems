@@ -1,0 +1,67 @@
+<section class="example" id="set-reminder" data-example="set-reminder">
+  <div class="section-title"><h2>Set a reminder time</h2><a class="permalink" href="#set-reminder" aria-label="Link to Set a reminder time">#</a></div>
+  <p>Move the reminder from 09:30 to another time. Some looks present the hour and minute inline, while others open a picker from the displayed time.</p>
+
+  <p class="keyboard-note" hidden></p>
+  <div class="workbench">
+    <div class="example-tabs" role="tablist" aria-label="Set a reminder time example">
+      <button type="button" role="tab" id="set-reminder-preview-tab" aria-selected="true" aria-controls="set-reminder-preview">Preview</button>
+      <button type="button" role="tab" id="set-reminder-code-tab" aria-selected="false" aria-controls="set-reminder-code" tabindex="-1">Code</button>
+    </div>
+    <div role="tabpanel" id="set-reminder-preview" aria-labelledby="set-reminder-preview-tab">
+    <div class="tools" aria-label="Preview settings">
+      <div class="frame-options" role="group" aria-label="Frame width">
+        <button type="button" data-width="1440" aria-pressed="true" title="Use the available preview width"><i class="monitor" aria-hidden="true"></i>Desktop</button>
+        <button type="button" data-width="390" aria-pressed="false" title="390 px phone frame"><i class="phone" aria-hidden="true"></i>Phone</button>
+      </div>
+      <div class="environment">
+        <button type="button" data-setting="theme" aria-label="Night theme" aria-pressed="false"><span aria-hidden="true" class="sun"></span><span data-value>Day</span></button>
+        <button type="button" data-setting="dir" aria-label="Right-to-left direction" aria-pressed="false"><span data-value>LTR</span></button>
+        <button type="button" data-setting="scale" aria-label="Double text size" aria-pressed="false"><span aria-hidden="true" class="type-icon">Aa</span><span data-value>100%</span></button>
+      </div>
+    </div>
+    <div class="stage"><div class="viewport" data-height="540"><div class="frame"><iframe loading="lazy" title="Retro Desktop Time picker interactive example"></iframe></div></div></div>
+    <div class="caption"><span><i class="status-dot" aria-hidden="true"></i>Flutter preview <span class="frame-size"></span></span><a class="open-preview" target="_blank" rel="noopener">Open preview <span aria-hidden="true">↗</span></a></div>
+    </div>
+    <div class="source" role="tabpanel" id="set-reminder-code" aria-labelledby="set-reminder-code-tab" hidden>
+      <div class="source-head"><span class="filename">components&#47;time-picker&#47;retro_desktop&#47;set_reminder.dart</span><button type="button" class="copy">Copy code</button></div>
+      <pre tabindex="0" aria-label="Dart source"><code><span class="hljs-keyword">import</span> <span class="hljs-string">'package:flutter/widgets.dart'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-string">'package:retro_desktop_ui/retro_desktop_ui.dart'</span>;
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">SetReminder</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">StatefulWidget</span> </span>{
+  <span class="hljs-keyword">const</span> SetReminder({<span class="hljs-keyword">super</span>.key});
+  <span class="hljs-meta">@override</span>
+  State&lt;SetReminder&gt; createState() =&gt; _SetReminderState();
+}
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">_SetReminderState</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">State</span>&lt;<span class="hljs-title">SetReminder</span>&gt; </span>{
+  <span class="hljs-keyword">var</span> reminder = <span class="hljs-keyword">const</span> RetroDesktopTime(<span class="hljs-number">9</span>, <span class="hljs-number">30</span>);
+
+  <span class="hljs-meta">@override</span>
+  Widget build(BuildContext context) =&gt; ConstrainedBox(
+    constraints: <span class="hljs-keyword">const</span> BoxConstraints(maxWidth: <span class="hljs-number">440</span>),
+    child: SingleChildScrollView(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          RetroDesktopTimePicker(
+            value: reminder,
+            onChanged: (next) =&gt; setState(() =&gt; reminder = next),
+          ),
+          <span class="hljs-keyword">const</span> SizedBox(height: <span class="hljs-number">12</span>),
+          Text(
+            <span class="hljs-string">"Reminder: <span class="hljs-subst">${reminder.hour.toString().padLeft(<span class="hljs-number">2</span>, <span class="hljs-string">'0'</span>)}</span>:<span class="hljs-subst">${reminder.minute.toString().padLeft(<span class="hljs-number">2</span>, <span class="hljs-string">'0'</span>)}</span>"</span>,
+          ),
+        ],
+      ),
+    ),
+  );
+}
+</code></pre>
+    </div>
+  </div>
+</section>
+<section class="reference" id="parameters">
+  <div class="section-title"><h2>Parameters</h2><a class="api" href="https:&#47;&#47;pub.dev&#47;documentation&#47;retro_desktop_ui&#47;latest&#47;retro_desktop_ui&#47;RetroDesktopTimePicker-class.html">RetroDesktopTimePicker API ↗</a></div>
+  <dl><div><dt><code>value</code></dt><dd>Hour and minute of the reminder.</dd></div><div><dt><code>onChanged</code></dt><dd>Receives the updated reminder time.</dd></div></dl>
+</section>

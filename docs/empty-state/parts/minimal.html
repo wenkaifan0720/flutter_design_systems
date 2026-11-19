@@ -1,0 +1,74 @@
+<section class="example" id="start-list" data-example="start-list">
+  <div class="section-title"><h2>Start a reading list</h2><a class="permalink" href="#start-list" aria-label="Link to Start a reading list">#</a></div>
+  <p>Add the first book. It replaces the empty state. Remove it to see the original invitation again.</p>
+
+  <p class="keyboard-note" hidden></p>
+  <div class="workbench">
+    <div class="example-tabs" role="tablist" aria-label="Start a reading list example">
+      <button type="button" role="tab" id="start-list-preview-tab" aria-selected="true" aria-controls="start-list-preview">Preview</button>
+      <button type="button" role="tab" id="start-list-code-tab" aria-selected="false" aria-controls="start-list-code" tabindex="-1">Code</button>
+    </div>
+    <div role="tabpanel" id="start-list-preview" aria-labelledby="start-list-preview-tab">
+    <div class="tools" aria-label="Preview settings">
+      <div class="frame-options" role="group" aria-label="Frame width">
+        <button type="button" data-width="1440" aria-pressed="true" title="Use the available preview width"><i class="monitor" aria-hidden="true"></i>Desktop</button>
+        <button type="button" data-width="390" aria-pressed="false" title="390 px phone frame"><i class="phone" aria-hidden="true"></i>Phone</button>
+      </div>
+      <div class="environment">
+        <button type="button" data-setting="theme" aria-label="Night theme" aria-pressed="false"><span aria-hidden="true" class="sun"></span><span data-value>Day</span></button>
+        <button type="button" data-setting="dir" aria-label="Right-to-left direction" aria-pressed="false"><span data-value>LTR</span></button>
+        <button type="button" data-setting="scale" aria-label="Double text size" aria-pressed="false"><span aria-hidden="true" class="type-icon">Aa</span><span data-value>100%</span></button>
+      </div>
+    </div>
+    <div class="stage"><div class="viewport"><div class="frame"><iframe loading="lazy" title="Minimal Empty state interactive example"></iframe></div></div></div>
+    <div class="caption"><span><i class="status-dot" aria-hidden="true"></i>Flutter preview <span class="frame-size"></span></span><a class="open-preview" target="_blank" rel="noopener">Open preview <span aria-hidden="true">↗</span></a></div>
+    </div>
+    <div class="source" role="tabpanel" id="start-list-code" aria-labelledby="start-list-code-tab" hidden>
+      <div class="source-head"><span class="filename">components&#47;empty-state&#47;minimal&#47;start_list.dart</span><button type="button" class="copy">Copy code</button></div>
+      <pre tabindex="0" aria-label="Dart source"><code><span class="hljs-keyword">import</span> <span class="hljs-string">'package:flutter/widgets.dart'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-string">'package:minimal_ui/minimal_ui.dart'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-string">'package:material_ui/material_ui.dart'</span> <span class="hljs-keyword">show</span> Icons;
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">StartList</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">StatefulWidget</span> </span>{
+  <span class="hljs-keyword">const</span> StartList({<span class="hljs-keyword">super</span>.key});
+  <span class="hljs-meta">@override</span>
+  State&lt;StartList&gt; createState() =&gt; _StartListState();
+}
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">_StartListState</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">State</span>&lt;<span class="hljs-title">StartList</span>&gt; </span>{
+  <span class="hljs-built_in">bool</span> added = <span class="hljs-keyword">false</span>;
+  <span class="hljs-meta">@override</span>
+  Widget build(BuildContext context) =&gt; ConstrainedBox(
+    constraints: <span class="hljs-keyword">const</span> BoxConstraints(maxWidth: <span class="hljs-number">440</span>),
+    child: SingleChildScrollView(
+      child: added
+          ? Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                <span class="hljs-keyword">const</span> Text(<span class="hljs-string">'A Field Guide'</span>),
+                <span class="hljs-keyword">const</span> SizedBox(height: <span class="hljs-number">12</span>),
+                MinimalButton(
+                  <span class="hljs-string">'Remove book'</span>,
+                  onPressed: () =&gt; setState(() =&gt; added = <span class="hljs-keyword">false</span>),
+                ),
+              ],
+            )
+          : MinimalEmptyState(
+              icon: Icons.inbox_outlined,
+              title: <span class="hljs-string">'No books yet'</span>,
+              body: <span class="hljs-string">'Books you save will appear here.'</span>,
+              actionLabel: <span class="hljs-string">'Add book'</span>,
+              onAction: () =&gt; setState(() =&gt; added = <span class="hljs-keyword">true</span>),
+            ),
+    ),
+  );
+}
+</code></pre>
+    </div>
+  </div>
+</section>
+<section class="reference" id="parameters">
+  <div class="section-title"><h2>Parameters</h2><a class="api" href="https:&#47;&#47;pub.dev&#47;documentation&#47;minimal_ui&#47;latest&#47;minimal_ui&#47;MinimalEmptyState-class.html">MinimalEmptyState API ↗</a></div>
+  <dl><div><dt><code>icon</code></dt><dd>Its glyph.</dd></div><div><dt><code>title</code></dt><dd>What is empty.</dd></div><div><dt><code>body</code></dt><dd>What fills it.</dd></div><div><dt><code>actionLabel</code></dt><dd>What its button says.</dd></div><div><dt><code>onAction</code></dt><dd>Runs the empty state’s action.</dd></div></dl>
+</section>

@@ -1,0 +1,74 @@
+<section class="example" id="choose-channel" data-example="choose-channel">
+  <div class="section-title"><h2>Choose a delivery channel</h2><a class="permalink" href="#choose-channel" aria-label="Link to Choose a delivery channel">#</a></div>
+  <p>Choose Email or Post under Delivery. The line beneath the group shows which channel will be used.</p>
+
+  <p class="keyboard-note" hidden></p>
+  <div class="workbench">
+    <div class="example-tabs" role="tablist" aria-label="Choose a delivery channel example">
+      <button type="button" role="tab" id="choose-channel-preview-tab" aria-selected="true" aria-controls="choose-channel-preview">Preview</button>
+      <button type="button" role="tab" id="choose-channel-code-tab" aria-selected="false" aria-controls="choose-channel-code" tabindex="-1">Code</button>
+    </div>
+    <div role="tabpanel" id="choose-channel-preview" aria-labelledby="choose-channel-preview-tab">
+    <div class="tools" aria-label="Preview settings">
+      <div class="frame-options" role="group" aria-label="Frame width">
+        <button type="button" data-width="1440" aria-pressed="true" title="Use the available preview width"><i class="monitor" aria-hidden="true"></i>Desktop</button>
+        <button type="button" data-width="390" aria-pressed="false" title="390 px phone frame"><i class="phone" aria-hidden="true"></i>Phone</button>
+      </div>
+      <div class="environment">
+        <button type="button" data-setting="theme" aria-label="Night theme" aria-pressed="false"><span aria-hidden="true" class="sun"></span><span data-value>Day</span></button>
+        <button type="button" data-setting="dir" aria-label="Right-to-left direction" aria-pressed="false"><span data-value>LTR</span></button>
+        <button type="button" data-setting="scale" aria-label="Double text size" aria-pressed="false"><span aria-hidden="true" class="type-icon">Aa</span><span data-value>100%</span></button>
+      </div>
+    </div>
+    <div class="stage"><div class="viewport"><div class="frame"><iframe loading="lazy" title="Material Expressive Grouped list interactive example"></iframe></div></div></div>
+    <div class="caption"><span><i class="status-dot" aria-hidden="true"></i>Flutter preview <span class="frame-size"></span></span><a class="open-preview" target="_blank" rel="noopener">Open preview <span aria-hidden="true">↗</span></a></div>
+    </div>
+    <div class="source" role="tabpanel" id="choose-channel-code" aria-labelledby="choose-channel-code-tab" hidden>
+      <div class="source-head"><span class="filename">components&#47;grouped-list&#47;material_expressive&#47;choose_channel.dart</span><button type="button" class="copy">Copy code</button></div>
+      <pre tabindex="0" aria-label="Dart source"><code><span class="hljs-keyword">import</span> <span class="hljs-string">'package:flutter/widgets.dart'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-string">'package:material_expressive_ui/material_expressive_ui.dart'</span>;
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">ChooseChannel</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">StatefulWidget</span> </span>{
+  <span class="hljs-keyword">const</span> ChooseChannel({<span class="hljs-keyword">super</span>.key});
+  <span class="hljs-meta">@override</span>
+  State&lt;ChooseChannel&gt; createState() =&gt; _ChooseChannelState();
+}
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">_ChooseChannelState</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">State</span>&lt;<span class="hljs-title">ChooseChannel</span>&gt; </span>{
+  <span class="hljs-built_in">String</span> channel = <span class="hljs-string">'Email'</span>;
+  <span class="hljs-meta">@override</span>
+  Widget build(BuildContext context) =&gt; ConstrainedBox(
+    constraints: <span class="hljs-keyword">const</span> BoxConstraints(maxWidth: <span class="hljs-number">440</span>),
+    child: SingleChildScrollView(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ExpressiveListSection(
+            header: <span class="hljs-string">'Delivery'</span>,
+            children: [
+              ExpressiveListTile(
+                title: Text(<span class="hljs-string">'Email'</span>),
+                onTap: () =&gt; setState(() =&gt; channel = <span class="hljs-string">'Email'</span>),
+              ),
+              ExpressiveListTile(
+                title: Text(<span class="hljs-string">'Post'</span>),
+                onTap: () =&gt; setState(() =&gt; channel = <span class="hljs-string">'Post'</span>),
+              ),
+            ],
+          ),
+          <span class="hljs-keyword">const</span> SizedBox(height: <span class="hljs-number">12</span>),
+          Text(<span class="hljs-string">'Deliver by <span class="hljs-subst">$channel</span>'</span>),
+        ],
+      ),
+    ),
+  );
+}
+</code></pre>
+    </div>
+  </div>
+</section>
+<section class="reference" id="parameters">
+  <div class="section-title"><h2>Parameters</h2><a class="api" href="https:&#47;&#47;pub.dev&#47;documentation&#47;material_expressive_ui&#47;latest&#47;material_expressive_ui&#47;ExpressiveListSection-class.html">ExpressiveListSection API ↗</a></div>
+  <dl><div><dt><code>children</code></dt><dd>The items, top to bottom.</dd></div><div><dt><code>header</code></dt><dd>The group&#39;s title, above it.</dd></div><div><dt><code>footer</code></dt><dd>A note beneath the group.</dd></div><div><dt><code>segmented</code></dt><dd>Whether the items are segments (gapped, cornered) or a plain list.</dd></div><div><dt><code>divider</code></dt><dd>Supplies the divider between adjacent rows.</dd></div><div><dt><code>containerColor</code></dt><dd>Overrides the group’s background colour.</dd></div></dl>
+</section>

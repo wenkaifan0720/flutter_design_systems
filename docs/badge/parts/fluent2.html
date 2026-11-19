@@ -1,0 +1,66 @@
+<section class="example" id="read-messages" data-example="read-messages">
+  <div class="section-title"><h2>Read messages</h2><a class="permalink" href="#read-messages" aria-label="Link to Read messages">#</a></div>
+  <p>Begin with three unread messages. Mark one read to see the count fall, then reset the inbox when it is empty.</p>
+
+  <p class="keyboard-note" hidden></p>
+  <div class="workbench">
+    <div class="example-tabs" role="tablist" aria-label="Read messages example">
+      <button type="button" role="tab" id="read-messages-preview-tab" aria-selected="true" aria-controls="read-messages-preview">Preview</button>
+      <button type="button" role="tab" id="read-messages-code-tab" aria-selected="false" aria-controls="read-messages-code" tabindex="-1">Code</button>
+    </div>
+    <div role="tabpanel" id="read-messages-preview" aria-labelledby="read-messages-preview-tab">
+    <div class="tools" aria-label="Preview settings">
+      <div class="frame-options" role="group" aria-label="Frame width">
+        <button type="button" data-width="1440" aria-pressed="true" title="Use the available preview width"><i class="monitor" aria-hidden="true"></i>Desktop</button>
+        <button type="button" data-width="390" aria-pressed="false" title="390 px phone frame"><i class="phone" aria-hidden="true"></i>Phone</button>
+      </div>
+      <div class="environment">
+        <button type="button" data-setting="theme" aria-label="Night theme" aria-pressed="false"><span aria-hidden="true" class="sun"></span><span data-value>Day</span></button>
+        <button type="button" data-setting="dir" aria-label="Right-to-left direction" aria-pressed="false"><span data-value>LTR</span></button>
+        <button type="button" data-setting="scale" aria-label="Double text size" aria-pressed="false"><span aria-hidden="true" class="type-icon">Aa</span><span data-value>100%</span></button>
+      </div>
+    </div>
+    <div class="stage"><div class="viewport"><div class="frame"><iframe loading="lazy" title="Fluent 2 Count badge interactive example"></iframe></div></div></div>
+    <div class="caption"><span><i class="status-dot" aria-hidden="true"></i>Flutter preview <span class="frame-size"></span></span><a class="open-preview" target="_blank" rel="noopener">Open preview <span aria-hidden="true">↗</span></a></div>
+    </div>
+    <div class="source" role="tabpanel" id="read-messages-code" aria-labelledby="read-messages-code-tab" hidden>
+      <div class="source-head"><span class="filename">components&#47;badge&#47;fluent2&#47;read_messages.dart</span><button type="button" class="copy">Copy code</button></div>
+      <pre tabindex="0" aria-label="Dart source"><code><span class="hljs-keyword">import</span> <span class="hljs-string">'package:flutter/widgets.dart'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-string">'package:fluent2_design_ui/fluent2_design_ui.dart'</span>;
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">ReadMessages</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">StatefulWidget</span> </span>{
+  <span class="hljs-keyword">const</span> ReadMessages({<span class="hljs-keyword">super</span>.key});
+  <span class="hljs-meta">@override</span>
+  State&lt;ReadMessages&gt; createState() =&gt; _ReadMessagesState();
+}
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">_ReadMessagesState</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">State</span>&lt;<span class="hljs-title">ReadMessages</span>&gt; </span>{
+  <span class="hljs-built_in">int</span> unread = <span class="hljs-number">3</span>;
+  <span class="hljs-meta">@override</span>
+  Widget build(BuildContext context) =&gt; ConstrainedBox(
+    constraints: <span class="hljs-keyword">const</span> BoxConstraints(maxWidth: <span class="hljs-number">440</span>),
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        <span class="hljs-keyword">const</span> Text(<span class="hljs-string">'Inbox'</span>),
+        <span class="hljs-keyword">const</span> SizedBox(height: <span class="hljs-number">12</span>),
+        Fluent2Badge(unread, label: <span class="hljs-string">'<span class="hljs-subst">$unread</span> unread messages'</span>),
+        <span class="hljs-keyword">const</span> SizedBox(height: <span class="hljs-number">12</span>),
+        Fluent2Button(
+          unread == <span class="hljs-number">0</span> ? <span class="hljs-string">'Reset inbox'</span> : <span class="hljs-string">'Mark one read'</span>,
+          onPressed: () =&gt;
+              setState(() =&gt; unread = unread == <span class="hljs-number">0</span> ? <span class="hljs-number">3</span> : unread - <span class="hljs-number">1</span>),
+        ),
+      ],
+    ),
+  );
+}
+</code></pre>
+    </div>
+  </div>
+</section>
+<section class="reference" id="parameters">
+  <div class="section-title"><h2>Parameters</h2><a class="api" href="https:&#47;&#47;pub.dev&#47;documentation&#47;fluent2_design_ui&#47;latest&#47;fluent2_design_ui&#47;Fluent2Badge-class.html">Fluent2Badge API ↗</a></div>
+  <dl><div><dt><code>count</code></dt><dd>What it counts.</dd></div><div><dt><code>label</code></dt><dd>Names what the badge counts for a screen reader.</dd></div><div><dt><code>child</code></dt><dd>Supplies the content inside the component.</dd></div><div><dt><code>overflowCount</code></dt><dd>The largest count shown before it reads N+.</dd></div><div><dt><code>showZero</code></dt><dd>Draw a zero count instead of nothing.</dd></div><div><dt><code>color</code></dt><dd>Fluent&#39;s color.</dd></div><div><dt><code>appearance</code></dt><dd>Selects the component’s visual treatment.</dd></div><div><dt><code>size</code></dt><dd>Selects the size of the component.</dd></div><div><dt><code>shape</code></dt><dd>Chooses the outline of the component.</dd></div></dl>
+</section>

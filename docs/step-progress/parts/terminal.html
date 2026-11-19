@@ -1,0 +1,77 @@
+<section class="example" id="review-order" data-example="review-order">
+  <div class="section-title"><h2>Review an order</h2><a class="permalink" href="#review-order" aria-label="Link to Review an order">#</a></div>
+  <p>Start at Cart, continue to Address and Review, then start again. The current step and its name change together.</p>
+
+  <p class="keyboard-note" hidden></p>
+  <div class="workbench">
+    <div class="example-tabs" role="tablist" aria-label="Review an order example">
+      <button type="button" role="tab" id="review-order-preview-tab" aria-selected="true" aria-controls="review-order-preview">Preview</button>
+      <button type="button" role="tab" id="review-order-code-tab" aria-selected="false" aria-controls="review-order-code" tabindex="-1">Code</button>
+    </div>
+    <div role="tabpanel" id="review-order-preview" aria-labelledby="review-order-preview-tab">
+    <div class="tools" aria-label="Preview settings">
+      <div class="frame-options" role="group" aria-label="Frame width">
+        <button type="button" data-width="1440" aria-pressed="true" title="Use the available preview width"><i class="monitor" aria-hidden="true"></i>Desktop</button>
+        <button type="button" data-width="390" aria-pressed="false" title="390 px phone frame"><i class="phone" aria-hidden="true"></i>Phone</button>
+      </div>
+      <div class="environment">
+        <button type="button" data-setting="theme" aria-label="Night theme" aria-pressed="false"><span aria-hidden="true" class="sun"></span><span data-value>Day</span></button>
+        <button type="button" data-setting="dir" aria-label="Right-to-left direction" aria-pressed="false"><span data-value>LTR</span></button>
+        <button type="button" data-setting="scale" aria-label="Double text size" aria-pressed="false"><span aria-hidden="true" class="type-icon">Aa</span><span data-value>100%</span></button>
+      </div>
+    </div>
+    <div class="stage"><div class="viewport"><div class="frame"><iframe loading="lazy" title="Terminal Step progress interactive example"></iframe></div></div></div>
+    <div class="caption"><span><i class="status-dot" aria-hidden="true"></i>Flutter preview <span class="frame-size"></span></span><a class="open-preview" target="_blank" rel="noopener">Open preview <span aria-hidden="true">↗</span></a></div>
+    </div>
+    <div class="source" role="tabpanel" id="review-order-code" aria-labelledby="review-order-code-tab" hidden>
+      <div class="source-head"><span class="filename">components&#47;step-progress&#47;terminal&#47;review_order.dart</span><button type="button" class="copy">Copy code</button></div>
+      <pre tabindex="0" aria-label="Dart source"><code><span class="hljs-keyword">import</span> <span class="hljs-string">'package:flutter/widgets.dart'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-string">'package:terminal_ui/terminal_ui.dart'</span>;
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">ReviewOrder</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">StatefulWidget</span> </span>{
+  <span class="hljs-keyword">const</span> ReviewOrder({<span class="hljs-keyword">super</span>.key});
+  <span class="hljs-meta">@override</span>
+  State&lt;ReviewOrder&gt; createState() =&gt; _ReviewOrderState();
+}
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">_ReviewOrderState</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">State</span>&lt;<span class="hljs-title">ReviewOrder</span>&gt; </span>{
+  <span class="hljs-built_in">int</span> step = <span class="hljs-number">0</span>;
+  <span class="hljs-keyword">static</span> <span class="hljs-keyword">const</span> labels = [<span class="hljs-string">'Cart'</span>, <span class="hljs-string">'Address'</span>, <span class="hljs-string">'Review'</span>];
+  TermStepState stateFor(<span class="hljs-built_in">int</span> index) {
+    <span class="hljs-keyword">if</span> (index &lt; step) <span class="hljs-keyword">return</span> TermStepState.done;
+    <span class="hljs-keyword">return</span> index == step ? TermStepState.current : TermStepState.upcoming;
+  }
+
+  <span class="hljs-meta">@override</span>
+  Widget build(BuildContext context) =&gt; ConstrainedBox(
+    constraints: <span class="hljs-keyword">const</span> BoxConstraints(maxWidth: <span class="hljs-number">520</span>),
+    child: SingleChildScrollView(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TermSteps(
+            steps: [
+              <span class="hljs-keyword">for</span> (<span class="hljs-keyword">var</span> i = <span class="hljs-number">0</span>; i &lt; labels.length; i++)
+                (label: labels[i], state: stateFor(i)),
+            ],
+          ),
+          <span class="hljs-keyword">const</span> SizedBox(height: <span class="hljs-number">12</span>),
+          Text(<span class="hljs-string">'Step <span class="hljs-subst">${step + <span class="hljs-number">1</span>}</span>: <span class="hljs-subst">${labels[step]}</span>'</span>),
+          <span class="hljs-keyword">const</span> SizedBox(height: <span class="hljs-number">12</span>),
+          TermButton(
+            label: step == labels.length - <span class="hljs-number">1</span> ? <span class="hljs-string">'Start again'</span> : <span class="hljs-string">'Continue'</span>,
+            onPressed: () =&gt; setState(() =&gt; step = (step + <span class="hljs-number">1</span>) % labels.length),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+</code></pre>
+    </div>
+  </div>
+</section>
+<section class="reference" id="parameters">
+  <div class="section-title"><h2>Parameters</h2><a class="api" href="https:&#47;&#47;pub.dev&#47;documentation&#47;terminal_ui&#47;latest&#47;terminal_ui&#47;TermSteps-class.html">TermSteps API ↗</a></div>
+  <dl><div><dt><code>steps</code></dt><dd>Names and completion states in reading order.</dd></div></dl>
+</section>

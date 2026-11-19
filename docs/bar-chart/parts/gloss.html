@@ -1,0 +1,79 @@
+<section class="example" id="compare-quarters" data-example="compare-quarters">
+  <div class="section-title"><h2>Compare monthly orders</h2><a class="permalink" href="#compare-quarters" aria-label="Link to Compare monthly orders">#</a></div>
+  <p>Compare orders in the first and second quarters. The second month has the most orders in the first quarter and the fewest in the second.</p>
+
+  <p class="keyboard-note" hidden></p>
+  <div class="workbench">
+    <div class="example-tabs" role="tablist" aria-label="Compare monthly orders example">
+      <button type="button" role="tab" id="compare-quarters-preview-tab" aria-selected="true" aria-controls="compare-quarters-preview">Preview</button>
+      <button type="button" role="tab" id="compare-quarters-code-tab" aria-selected="false" aria-controls="compare-quarters-code" tabindex="-1">Code</button>
+    </div>
+    <div role="tabpanel" id="compare-quarters-preview" aria-labelledby="compare-quarters-preview-tab">
+    <div class="tools" aria-label="Preview settings">
+      <div class="frame-options" role="group" aria-label="Frame width">
+        <button type="button" data-width="1440" aria-pressed="true" title="Use the available preview width"><i class="monitor" aria-hidden="true"></i>Desktop</button>
+        <button type="button" data-width="390" aria-pressed="false" title="390 px phone frame"><i class="phone" aria-hidden="true"></i>Phone</button>
+      </div>
+      <div class="environment">
+        <button type="button" data-setting="theme" aria-label="Night theme" aria-pressed="false"><span aria-hidden="true" class="sun"></span><span data-value>Day</span></button>
+        <button type="button" data-setting="dir" aria-label="Right-to-left direction" aria-pressed="false"><span data-value>LTR</span></button>
+        <button type="button" data-setting="scale" aria-label="Double text size" aria-pressed="false"><span aria-hidden="true" class="type-icon">Aa</span><span data-value>100%</span></button>
+      </div>
+    </div>
+    <div class="stage"><div class="viewport"><div class="frame"><iframe loading="lazy" title="Gloss Bar chart interactive example"></iframe></div></div></div>
+    <div class="caption"><span><i class="status-dot" aria-hidden="true"></i>Flutter preview <span class="frame-size"></span></span><a class="open-preview" target="_blank" rel="noopener">Open preview <span aria-hidden="true">↗</span></a></div>
+    </div>
+    <div class="source" role="tabpanel" id="compare-quarters-code" aria-labelledby="compare-quarters-code-tab" hidden>
+      <div class="source-head"><span class="filename">components&#47;bar-chart&#47;gloss&#47;compare_quarters.dart</span><button type="button" class="copy">Copy code</button></div>
+      <pre tabindex="0" aria-label="Dart source"><code><span class="hljs-keyword">import</span> <span class="hljs-string">'package:flutter/widgets.dart'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-string">'package:gloss_ui/gloss_ui.dart'</span>;
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">CompareQuarters</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">StatefulWidget</span> </span>{
+  <span class="hljs-keyword">const</span> CompareQuarters({<span class="hljs-keyword">super</span>.key});
+  <span class="hljs-meta">@override</span>
+  State&lt;CompareQuarters&gt; createState() =&gt; _CompareQuartersState();
+}
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">_CompareQuartersState</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">State</span>&lt;<span class="hljs-title">CompareQuarters</span>&gt; </span>{
+  <span class="hljs-built_in">bool</span> alternate = <span class="hljs-keyword">false</span>;
+
+  <span class="hljs-built_in">String</span> <span class="hljs-keyword">get</span> period =&gt; alternate ? <span class="hljs-string">'Q2'</span> : <span class="hljs-string">'Q1'</span>;
+
+  <span class="hljs-built_in">List</span>&lt;<span class="hljs-built_in">double</span>&gt; <span class="hljs-keyword">get</span> orders =&gt;
+      alternate ? <span class="hljs-keyword">const</span> [<span class="hljs-number">18</span>, <span class="hljs-number">10</span>, <span class="hljs-number">24</span>] : <span class="hljs-keyword">const</span> [<span class="hljs-number">12</span>, <span class="hljs-number">20</span>, <span class="hljs-number">16</span>];
+
+  <span class="hljs-built_in">List</span>&lt;<span class="hljs-built_in">String</span>&gt; <span class="hljs-keyword">get</span> months =&gt;
+      alternate ? <span class="hljs-keyword">const</span> [<span class="hljs-string">'Apr'</span>, <span class="hljs-string">'May'</span>, <span class="hljs-string">'Jun'</span>] : <span class="hljs-keyword">const</span> [<span class="hljs-string">'Jan'</span>, <span class="hljs-string">'Feb'</span>, <span class="hljs-string">'Mar'</span>];
+
+  <span class="hljs-meta">@override</span>
+  Widget build(BuildContext context) =&gt; SingleChildScrollView(
+    child: ConstrainedBox(
+      constraints: <span class="hljs-keyword">const</span> BoxConstraints(maxWidth: <span class="hljs-number">420</span>),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(<span class="hljs-string">'<span class="hljs-subst">$period</span> · monthly orders'</span>),
+          <span class="hljs-keyword">const</span> SizedBox(height: <span class="hljs-number">12</span>),
+          GlossBarChart(
+            labels: months,
+            series: [GlossSeries(<span class="hljs-string">'Orders'</span>, orders)],
+            semanticLabel: <span class="hljs-string">'<span class="hljs-subst">$period</span> monthly orders'</span>,
+          ),
+          <span class="hljs-keyword">const</span> SizedBox(height: <span class="hljs-number">12</span>),
+          GlossButton(
+            alternate ? <span class="hljs-string">'Show Q1'</span> : <span class="hljs-string">'Show Q2'</span>,
+            onPressed: () =&gt; setState(() =&gt; alternate = !alternate),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+</code></pre>
+    </div>
+  </div>
+</section>
+<section class="reference" id="parameters">
+  <div class="section-title"><h2>Parameters</h2><a class="api" href="https:&#47;&#47;pub.dev&#47;documentation&#47;gloss_ui&#47;latest&#47;gloss_ui&#47;GlossBarChart-class.html">GlossBarChart API ↗</a></div>
+  <dl><div><dt><code>labels</code></dt><dd>A label for each position along the horizontal axis.</dd></div><div><dt><code>series</code></dt><dd>The series name and ordered measurements.</dd></div><div><dt><code>semanticLabel</code></dt><dd>Names the chart and period.</dd></div><div><dt><code>height</code></dt><dd>Sets the plot height.</dd></div></dl>
+</section>

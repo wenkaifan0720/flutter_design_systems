@@ -1,0 +1,72 @@
+<section class="example" id="choose-ink" data-example="choose-ink">
+  <div class="section-title"><h2>Choose an ink colour</h2><a class="permalink" href="#choose-ink" aria-label="Link to Choose an ink colour">#</a></div>
+  <p>Change the hue and then adjust the colour. The hexadecimal readout shows the red, green and blue channels of the new ink.</p>
+
+  <p class="keyboard-note" hidden></p>
+  <div class="workbench">
+    <div class="example-tabs" role="tablist" aria-label="Choose an ink colour example">
+      <button type="button" role="tab" id="choose-ink-preview-tab" aria-selected="true" aria-controls="choose-ink-preview">Preview</button>
+      <button type="button" role="tab" id="choose-ink-code-tab" aria-selected="false" aria-controls="choose-ink-code" tabindex="-1">Code</button>
+    </div>
+    <div role="tabpanel" id="choose-ink-preview" aria-labelledby="choose-ink-preview-tab">
+    <div class="tools" aria-label="Preview settings">
+      <div class="frame-options" role="group" aria-label="Frame width">
+        <button type="button" data-width="1440" aria-pressed="true" title="Use the available preview width"><i class="monitor" aria-hidden="true"></i>Desktop</button>
+        <button type="button" data-width="390" aria-pressed="false" title="390 px phone frame"><i class="phone" aria-hidden="true"></i>Phone</button>
+      </div>
+      <div class="environment">
+        <button type="button" data-setting="theme" aria-label="Night theme" aria-pressed="false"><span aria-hidden="true" class="sun"></span><span data-value>Day</span></button>
+        <button type="button" data-setting="dir" aria-label="Right-to-left direction" aria-pressed="false"><span data-value>LTR</span></button>
+        <button type="button" data-setting="scale" aria-label="Double text size" aria-pressed="false"><span aria-hidden="true" class="type-icon">Aa</span><span data-value>100%</span></button>
+      </div>
+    </div>
+    <div class="stage"><div class="viewport"><div class="frame"><iframe loading="lazy" title="Retro Desktop Color picker interactive example"></iframe></div></div></div>
+    <div class="caption"><span><i class="status-dot" aria-hidden="true"></i>Flutter preview <span class="frame-size"></span></span><a class="open-preview" target="_blank" rel="noopener">Open preview <span aria-hidden="true">↗</span></a></div>
+    </div>
+    <div class="source" role="tabpanel" id="choose-ink-code" aria-labelledby="choose-ink-code-tab" hidden>
+      <div class="source-head"><span class="filename">components&#47;color-picker&#47;retro_desktop&#47;choose_ink.dart</span><button type="button" class="copy">Copy code</button></div>
+      <pre tabindex="0" aria-label="Dart source"><code><span class="hljs-keyword">import</span> <span class="hljs-string">'package:flutter/widgets.dart'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-string">'package:retro_desktop_ui/retro_desktop_ui.dart'</span>;
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">ChooseInk</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">StatefulWidget</span> </span>{
+  <span class="hljs-keyword">const</span> ChooseInk({<span class="hljs-keyword">super</span>.key});
+  <span class="hljs-meta">@override</span>
+  State&lt;ChooseInk&gt; createState() =&gt; _ChooseInkState();
+}
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">_ChooseInkState</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">State</span>&lt;<span class="hljs-title">ChooseInk</span>&gt; </span>{
+  <span class="hljs-keyword">final</span> ink = DesignColorController(<span class="hljs-keyword">const</span> Color(<span class="hljs-number">0xff32628c</span>));
+  <span class="hljs-meta">@override</span>
+  <span class="hljs-keyword">void</span> dispose() {
+    ink.dispose();
+    <span class="hljs-keyword">super</span>.dispose();
+  }
+
+  <span class="hljs-meta">@override</span>
+  Widget build(BuildContext context) =&gt; ConstrainedBox(
+    constraints: <span class="hljs-keyword">const</span> BoxConstraints(maxWidth: <span class="hljs-number">320</span>),
+    child: SingleChildScrollView(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          RetroDesktopColorPicker(controller: ink),
+          <span class="hljs-keyword">const</span> SizedBox(height: <span class="hljs-number">12</span>),
+          ListenableBuilder(
+            listenable: ink,
+            builder: (context, _) =&gt; Text(
+              <span class="hljs-string">"Ink: #<span class="hljs-subst">${(ink.color.toARGB32() &amp; <span class="hljs-number">0xffffff</span>).toRadixString(<span class="hljs-number">16</span>).padLeft(<span class="hljs-number">6</span>, <span class="hljs-string">'0'</span>).toUpperCase()}</span>"</span>,
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+</code></pre>
+    </div>
+  </div>
+</section>
+<section class="reference" id="parameters">
+  <div class="section-title"><h2>Parameters</h2><a class="api" href="https:&#47;&#47;pub.dev&#47;documentation&#47;retro_desktop_ui&#47;latest&#47;retro_desktop_ui&#47;RetroDesktopColorPicker-class.html">RetroDesktopColorPicker API ↗</a></div>
+  <dl><div><dt><code>controller</code></dt><dd>Owns the selected colour and notifies listeners when it changes.</dd></div><div><dt><code>showAlpha</code></dt><dd>Includes a control for opacity.</dd></div></dl>
+</section>

@@ -1,0 +1,69 @@
+<section class="example" id="pin-note" data-example="pin-note">
+  <div class="section-title"><h2>Pin a note</h2><a class="permalink" href="#pin-note" aria-label="Link to Pin a note">#</a></div>
+  <p>Pin the route note. Its action changes to Unpin so you can remove the pin again.</p>
+
+  <p class="keyboard-note" hidden></p>
+  <div class="workbench">
+    <div class="example-tabs" role="tablist" aria-label="Pin a note example">
+      <button type="button" role="tab" id="pin-note-preview-tab" aria-selected="true" aria-controls="pin-note-preview">Preview</button>
+      <button type="button" role="tab" id="pin-note-code-tab" aria-selected="false" aria-controls="pin-note-code" tabindex="-1">Code</button>
+    </div>
+    <div role="tabpanel" id="pin-note-preview" aria-labelledby="pin-note-preview-tab">
+    <div class="tools" aria-label="Preview settings">
+      <div class="frame-options" role="group" aria-label="Frame width">
+        <button type="button" data-width="1440" aria-pressed="true" title="Use the available preview width"><i class="monitor" aria-hidden="true"></i>Desktop</button>
+        <button type="button" data-width="390" aria-pressed="false" title="390 px phone frame"><i class="phone" aria-hidden="true"></i>Phone</button>
+      </div>
+      <div class="environment">
+        <button type="button" data-setting="theme" aria-label="Night theme" aria-pressed="false"><span aria-hidden="true" class="sun"></span><span data-value>Day</span></button>
+        <button type="button" data-setting="dir" aria-label="Right-to-left direction" aria-pressed="false"><span data-value>LTR</span></button>
+        <button type="button" data-setting="scale" aria-label="Double text size" aria-pressed="false"><span aria-hidden="true" class="type-icon">Aa</span><span data-value>100%</span></button>
+      </div>
+    </div>
+    <div class="stage"><div class="viewport"><div class="frame"><iframe loading="lazy" title="Studio Card interactive example"></iframe></div></div></div>
+    <div class="caption"><span><i class="status-dot" aria-hidden="true"></i>Flutter preview <span class="frame-size"></span></span><a class="open-preview" target="_blank" rel="noopener">Open preview <span aria-hidden="true">↗</span></a></div>
+    </div>
+    <div class="source" role="tabpanel" id="pin-note-code" aria-labelledby="pin-note-code-tab" hidden>
+      <div class="source-head"><span class="filename">components&#47;card&#47;studio&#47;pin_note.dart</span><button type="button" class="copy">Copy code</button></div>
+      <pre tabindex="0" aria-label="Dart source"><code><span class="hljs-keyword">import</span> <span class="hljs-string">'package:flutter/widgets.dart'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-string">'package:studio_ui/studio_ui.dart'</span>;
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">PinNote</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">StatefulWidget</span> </span>{
+  <span class="hljs-keyword">const</span> PinNote({<span class="hljs-keyword">super</span>.key});
+  <span class="hljs-meta">@override</span>
+  State&lt;PinNote&gt; createState() =&gt; _PinNoteState();
+}
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">_PinNoteState</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">State</span>&lt;<span class="hljs-title">PinNote</span>&gt; </span>{
+  <span class="hljs-built_in">bool</span> pinned = <span class="hljs-keyword">false</span>;
+  <span class="hljs-meta">@override</span>
+  Widget build(BuildContext context) =&gt; ConstrainedBox(
+    constraints: <span class="hljs-keyword">const</span> BoxConstraints(maxWidth: <span class="hljs-number">440</span>),
+    child: SingleChildScrollView(
+      child: StudioPanel(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            <span class="hljs-keyword">const</span> Text(<span class="hljs-string">'Route note'</span>),
+            <span class="hljs-keyword">const</span> SizedBox(height: <span class="hljs-number">12</span>),
+            <span class="hljs-keyword">const</span> Text(<span class="hljs-string">'Meet at the west entrance.'</span>),
+            <span class="hljs-keyword">const</span> SizedBox(height: <span class="hljs-number">12</span>),
+            StudioButton(
+              pinned ? <span class="hljs-string">'Unpin'</span> : <span class="hljs-string">'Pin'</span>,
+              onPressed: () =&gt; setState(() =&gt; pinned = !pinned),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+</code></pre>
+    </div>
+  </div>
+</section>
+<section class="reference" id="parameters">
+  <div class="section-title"><h2>Parameters</h2><a class="api" href="https:&#47;&#47;pub.dev&#47;documentation&#47;studio_ui&#47;latest&#47;studio_ui&#47;StudioPanel-class.html">StudioPanel API ↗</a></div>
+  <dl><div><dt><code>child</code></dt><dd>What stands on it.</dd></div><div><dt><code>padding</code></dt><dd>Sets the space between the frame and its content.</dd></div><div><dt><code>style</code></dt><dd>Its style, over StudioThemeData.panelStyle.</dd></div></dl>
+</section>

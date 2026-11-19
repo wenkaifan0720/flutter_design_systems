@@ -1,0 +1,71 @@
+<section class="example" id="track-parcel" data-example="track-parcel">
+  <div class="section-title"><h2>Track a parcel</h2><a class="permalink" href="#track-parcel" aria-label="Link to Track a parcel">#</a></div>
+  <p>Read the packing event, then record delivery. A second dated entry appears. Reset the example to return to the first event.</p>
+
+  <p class="keyboard-note" hidden></p>
+  <div class="workbench">
+    <div class="example-tabs" role="tablist" aria-label="Track a parcel example">
+      <button type="button" role="tab" id="track-parcel-preview-tab" aria-selected="true" aria-controls="track-parcel-preview">Preview</button>
+      <button type="button" role="tab" id="track-parcel-code-tab" aria-selected="false" aria-controls="track-parcel-code" tabindex="-1">Code</button>
+    </div>
+    <div role="tabpanel" id="track-parcel-preview" aria-labelledby="track-parcel-preview-tab">
+    <div class="tools" aria-label="Preview settings">
+      <div class="frame-options" role="group" aria-label="Frame width">
+        <button type="button" data-width="1440" aria-pressed="true" title="Use the available preview width"><i class="monitor" aria-hidden="true"></i>Desktop</button>
+        <button type="button" data-width="390" aria-pressed="false" title="390 px phone frame"><i class="phone" aria-hidden="true"></i>Phone</button>
+      </div>
+      <div class="environment">
+        <button type="button" data-setting="theme" aria-label="Night theme" aria-pressed="false"><span aria-hidden="true" class="sun"></span><span data-value>Day</span></button>
+        <button type="button" data-setting="dir" aria-label="Right-to-left direction" aria-pressed="false"><span data-value>LTR</span></button>
+        <button type="button" data-setting="scale" aria-label="Double text size" aria-pressed="false"><span aria-hidden="true" class="type-icon">Aa</span><span data-value>100%</span></button>
+      </div>
+    </div>
+    <div class="stage"><div class="viewport"><div class="frame"><iframe loading="lazy" title="Comic Timeline interactive example"></iframe></div></div></div>
+    <div class="caption"><span><i class="status-dot" aria-hidden="true"></i>Flutter preview <span class="frame-size"></span></span><a class="open-preview" target="_blank" rel="noopener">Open preview <span aria-hidden="true">↗</span></a></div>
+    </div>
+    <div class="source" role="tabpanel" id="track-parcel-code" aria-labelledby="track-parcel-code-tab" hidden>
+      <div class="source-head"><span class="filename">components&#47;timeline&#47;comic&#47;track_parcel.dart</span><button type="button" class="copy">Copy code</button></div>
+      <pre tabindex="0" aria-label="Dart source"><code><span class="hljs-keyword">import</span> <span class="hljs-string">'package:flutter/widgets.dart'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-string">'package:comic_ui/comic_ui.dart'</span>;
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">TrackParcel</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">StatefulWidget</span> </span>{
+  <span class="hljs-keyword">const</span> TrackParcel({<span class="hljs-keyword">super</span>.key});
+  <span class="hljs-meta">@override</span>
+  State&lt;TrackParcel&gt; createState() =&gt; _TrackParcelState();
+}
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">_TrackParcelState</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">State</span>&lt;<span class="hljs-title">TrackParcel</span>&gt; </span>{
+  <span class="hljs-built_in">bool</span> delivered = <span class="hljs-keyword">false</span>;
+  <span class="hljs-meta">@override</span>
+  Widget build(BuildContext context) =&gt; ConstrainedBox(
+    constraints: <span class="hljs-keyword">const</span> BoxConstraints(maxWidth: <span class="hljs-number">440</span>),
+    child: SingleChildScrollView(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ComicTimeline(
+            entries: [
+              <span class="hljs-keyword">const</span> ComicTimelineEntry(<span class="hljs-string">'Packed'</span>, time: <span class="hljs-string">'10 am'</span>),
+              <span class="hljs-keyword">if</span> (delivered)
+                <span class="hljs-keyword">const</span> ComicTimelineEntry(<span class="hljs-string">'Delivered'</span>, time: <span class="hljs-string">'2 pm'</span>),
+            ],
+          ),
+          <span class="hljs-keyword">const</span> SizedBox(height: <span class="hljs-number">12</span>),
+          ComicButton(
+            delivered ? <span class="hljs-string">'Reset'</span> : <span class="hljs-string">'Record delivery'</span>,
+            onPressed: () =&gt; setState(() =&gt; delivered = !delivered),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+</code></pre>
+    </div>
+  </div>
+</section>
+<section class="reference" id="parameters">
+  <div class="section-title"><h2>Parameters</h2><a class="api" href="https:&#47;&#47;pub.dev&#47;documentation&#47;comic_ui&#47;latest&#47;comic_ui&#47;ComicTimeline-class.html">ComicTimeline API ↗</a></div>
+  <dl><div><dt><code>entries</code></dt><dd>The events, oldest first.</dd></div></dl>
+</section>
