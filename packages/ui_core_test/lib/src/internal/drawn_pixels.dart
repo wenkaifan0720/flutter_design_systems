@@ -121,6 +121,14 @@ class DrawnPixels {
     return _solids[bounds] = (colour: most.key, share: most.value / all);
   }
 
+  /// The pixel at [x], [y] (logical, from the boundary's top left), RGBA;
+  /// the image's [ground] outside it.
+  int pixelAt(double x, double y) {
+    final px = (x * ratio).floor(), py = (y * ratio).floor();
+    if (px < 0 || py < 0 || px >= width || py >= height) return ground;
+    return _at(px, py);
+  }
+
   /// The commonest colour in a band [by] logical pixels wide around [rect]
   /// (logical, from the boundary's top left): what [rect] is drawn over,
   /// read where it is, so a gradient or a card under it counts. The
@@ -281,12 +289,13 @@ class DrawnPixels {
       }
     }
     if (first == null) return null;
-    return Rect.fromLTRB(
+    final ink = Rect.fromLTRB(
       minX / ratio,
       first / ratio,
       (maxX + 1) / ratio,
       (last! + 1) / ratio,
-    );
+    ).intersect(rect);
+    return ink.isEmpty ? null : ink;
   }
 
   /// The top of what is drawn inside [rects] (logical, from the boundary's
@@ -484,12 +493,13 @@ class DrawnPixels {
     }
     final first = rowOff.indexOf(true);
     if (first < 0) return null;
-    return Rect.fromLTRB(
+    final ink = Rect.fromLTRB(
       (left + _edge(colMost, colOff.indexOf(true), 1)) / ratio,
       (top + _edge(rowMost, first, 1)) / ratio,
       (left + _edge(colMost, colOff.lastIndexOf(true), -1)) / ratio,
       (top + _edge(rowMost, rowOff.lastIndexOf(true), -1)) / ratio,
-    );
+    ).intersect(rect);
+    return ink.isEmpty ? null : ink;
   }
 
   // The pixels of row [py] from [left] to [right] whose middles are inside
@@ -626,6 +636,27 @@ class DrawnPixels {
     return lighter > 2 * darker;
   }
 
+  /// Whether [rect] (logical, from the boundary's top left) is painted in
+  /// [colour], a colour other than [over], however faintly it differs: nine
+  /// in ten of the pixels wholly inside it alike [colour]. A face's own fill
+  /// round a frame drawn inside it. False when no pixel is wholly inside
+  /// [rect].
+  bool paintedIn(Rect rect, {required int colour, required int over}) {
+    if (alike(colour, over, by: 2)) return false;
+    final left = math.max(0, (rect.left * ratio - 1e-6).ceil());
+    final top = math.max(0, (rect.top * ratio - 1e-6).ceil());
+    final right = math.min(width, (rect.right * ratio + 1e-6).floor());
+    final bottom = math.min(height, (rect.bottom * ratio + 1e-6).floor());
+    if (right <= left || bottom <= top) return false;
+    var painted = 0;
+    for (var y = top; y < bottom; y++) {
+      for (var x = left; x < right; x++) {
+        if (alike(_at(x, y), colour)) painted++;
+      }
+    }
+    return painted * 10 >= (right - left) * (bottom - top) * 9;
+  }
+
   /// How much of [rect] (logical, from the boundary's top left) is drawn in
   /// something other than [over]: 0 to 1.
   double inkShare(Rect rect, {required int over}) {
@@ -654,6 +685,8 @@ class DrawnPixels {
     return most;
   }
 
+  // Include every pixel the rectangle touches. A measured rectangle can use
+  // only the part of an edge pixel inside the original logical bounds.
   (int, int, int, int) _span(Rect rect) => (
     (rect.left * ratio).floor().clamp(0, width),
     (rect.top * ratio).floor().clamp(0, height),

@@ -469,6 +469,36 @@ class _Framed extends CustomPainter {
   bool shouldRepaint(_Framed oldDelegate) => false;
 }
 
+// A pane a shade darker than the page, too faint to stand off it, with two
+// 1 px frame lines 2 and 6 in: its 2 px outside the outer line in [margin]
+// (the pane's own tint, else what it is drawn round).
+const _tint = Color(0xFFF1EFE9);
+const _shade = Color(0xFFE5E2DA);
+const _teal = Color(0xFF0B6870);
+
+class _DoubleFramed extends CustomPainter {
+  const _DoubleFramed(this.margin);
+
+  final Color margin;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final box = Offset.zero & size;
+    final frame = Paint()
+      ..color = _teal
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1;
+    canvas
+      ..drawRect(box, Paint()..color = margin)
+      ..drawRect(box.deflate(2), Paint()..color = _tint)
+      ..drawRect(box.deflate(2.5), frame)
+      ..drawRect(box.deflate(6.5), frame);
+  }
+
+  @override
+  bool shouldRepaint(_DoubleFramed oldDelegate) => margin != oldDelegate.margin;
+}
+
 class _InsetSurface extends SingleChildRenderObjectWidget {
   const _InsetSurface({required this.inset, super.child});
 
@@ -1795,6 +1825,178 @@ void main() {
         ),
       );
     });
+
+    testWidgets('a custom-painted field and its list at a fractional x '
+        'are measured inside their faces', (tester) async {
+      const menu = ValueKey('menu');
+      Widget field(BuildContext context, DesignOverlayAnchor anchor) =>
+          Semantics(
+            button: true,
+            label: 'Europe',
+            child: GestureDetector(
+              key: _fieldKey,
+              onTap: anchor.toggle,
+              child: CustomPaint(
+                painter: const _Framed(),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: _words('Europe'),
+                  ),
+                ),
+              ),
+            ),
+          );
+
+      // The Fluent Forms field starts at 397⅓ in a transparent layer. Its
+      // 250 px menu has its own layer with a different pixel origin.
+      for (final narrowerBy in [0.0, 1.5]) {
+        await _pump(
+          tester,
+          RepaintBoundary(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(373 + 1 / 3, 12, 0, 12),
+              child: _hugging(
+                SizedBox(
+                  width: 250,
+                  height: 32,
+                  child: DesignAnchoredOverlay(
+                    placement: const DesignOverlayPlacement(
+                      matchAnchorWidth: false,
+                    ),
+                    focusOnOpen: false,
+                    anchorBuilder: field,
+                    overlayBuilder: (context, info) => SizedBox(
+                      key: menu,
+                      width: 250 - narrowerBy,
+                      child: _InsetSurface(
+                        inset: 0,
+                        child: _options(const ['Europe', 'Asia'], info.close),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          width: 1440,
+          wrap: (context, navigator) => RepaintBoundary(child: navigator),
+        );
+        await _open(tester);
+        final button = tester.getRect(find.byKey(_fieldKey));
+        final list = tester.getRect(find.byKey(menu));
+        expect(button.left, closeTo(397 + 1 / 3, 1e-6));
+        expect(list.left, closeTo(button.left, 1e-6));
+        expect(button.width, closeTo(250, 1e-6));
+        expect(list.width, closeTo(250 - narrowerBy, 1e-6));
+        for (final ratio in [1.0, 4.0]) {
+          final issues = await _list(
+            tester,
+            DesignWidthCheck(look: 'Fixture', pixelRatio: ratio),
+          );
+          if (narrowerBy == 0) {
+            expect(issues, isEmpty);
+          } else {
+            expect(
+              issues,
+              _one(r'.*narrower than the field \(250, 250 as drawn\)'),
+            );
+          }
+        }
+        await tester.tap(find.text('Asia'));
+        await tester.pumpAndSettle();
+      }
+    });
+
+    for (final (width, direction) in [
+      (390.0, TextDirection.ltr),
+      (390.0, TextDirection.rtl),
+      (1440.0, TextDirection.ltr),
+    ]) {
+      testWidgets('a tinted list with a double frame inside its fill is '
+          'measured by its fill, not its frame (${width.round()}, '
+          '${direction.name})', (tester) async {
+        // A pane a shade darker than the page, too faint to stand off it,
+        // its two frame lines 2 and 6 in; the field above it, the same
+        // tint unframed, and as wide. With the page's colour round its
+        // outer line, or a darker shade (a shadow cast inside its box), the
+        // pane is its frame, narrower than its field.
+        for (final margin in [_tint, _page, _shade]) {
+          await _pump(
+            tester,
+            _hugging(
+              SizedBox(
+                width: 198,
+                child: DesignAnchoredOverlay(
+                  placement: const DesignOverlayPlacement(gap: 0),
+                  focusOnOpen: false,
+                  anchorBuilder: (context, anchor) => Semantics(
+                    button: true,
+                    label: 'staging',
+                    child: GestureDetector(
+                      key: _fieldKey,
+                      onTap: anchor.toggle,
+                      child: ColoredBox(
+                        color: _tint,
+                        child: SizedBox(
+                          height: 48,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 18),
+                            child: Align(
+                              alignment: AlignmentDirectional.centerStart,
+                              child: _words('staging'),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  overlayBuilder: (context, info) => CustomPaint(
+                    painter: _DoubleFramed(margin),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 12,
+                      ),
+                      child: _options(const [
+                        'preview',
+                        'staging',
+                        'production',
+                      ], info.close),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            width: width,
+            direction: direction,
+          );
+          await _open(tester);
+          for (final ratio in [1.0, 4.0]) {
+            final issues = await _list(
+              tester,
+              DesignWidthCheck(look: 'Fixture', pixelRatio: ratio),
+            );
+            if (margin == _tint) {
+              expect(issues, isEmpty, reason: 'at ${ratio}x');
+            } else {
+              expect(
+                issues,
+                contains(
+                  'a list opened from a select "staging": 198 px wide as '
+                  'laid out, 194 as drawn, narrower than the field (198, 198 '
+                  'as drawn)',
+                ),
+                reason: '$margin at ${ratio}x',
+              );
+            }
+          }
+          await tester.tap(find.text('preview'));
+          await tester.pumpAndSettle();
+        }
+      });
+    }
 
     testWidgets('off its leading edge is named, and its words with it', (
       tester,

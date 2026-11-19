@@ -17,6 +17,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
 import 'internal/back.dart';
+import 'internal/focus_visible.dart';
 import 'internal/placement.dart';
 import 'internal/quiet_focus.dart';
 import 'internal/surface_focus.dart';
@@ -1219,10 +1220,9 @@ class _DesignAnchoredOverlayState extends State<DesignAnchoredOverlay>
               skipTraversal: true,
               includeSemantics: false,
               onFocusChange: (focused) {
-                // A keyboard's focus shows the card; a tap's does not.
-                final keyboard =
-                    FocusManager.instance.highlightMode ==
-                    FocusHighlightMode.traditional;
+                // A keyboard's focus shows the card; a tap's or a click's
+                // does not, as for :focus-visible.
+                final keyboard = DesignFocusVisible.shown;
                 if (focused && keyboard) {
                   intent.enter();
                 } else if (!focused) {

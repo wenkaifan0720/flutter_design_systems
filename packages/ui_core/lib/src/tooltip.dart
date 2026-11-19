@@ -13,6 +13,7 @@ import 'package:flutter/widgets.dart';
 
 import 'anchored_overlay.dart';
 import 'haptics.dart';
+import 'internal/focus_visible.dart';
 import 'internal/placement.dart';
 import 'motion.dart';
 
@@ -385,9 +386,9 @@ class _DesignTooltipState extends State<DesignTooltip>
   }
 
   void _focusChanged(bool focused) {
-    _focused =
-        focused &&
-        FocusManager.instance.highlightMode == FocusHighlightMode.traditional;
+    // The keys' focus shows the tip; a pointer's does not (a dialog a click
+    // opened, its safe action focused), as for :focus-visible.
+    _focused = focused && DesignFocusVisible.shown;
     if (_focused) {
       _show();
     } else {

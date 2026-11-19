@@ -7,7 +7,7 @@ A design system's tests take it as a dev dependency, as an app takes `flutter_te
 
 ```yaml
 dev_dependencies:
-  ui_core_test: ^0.1.1
+  ui_core_test: ^0.1.2
 ```
 
 ```dart
@@ -122,7 +122,7 @@ screen repainted since its last frame stops a check with that reason.
 
 ## The checks a look is held to
 
-Beside the alignment checks, four read any screen, each from its root (a gallery page, an app screen), and say what
+Beside the alignment checks, six read any screen, each from its root (a gallery page, an app screen), and say what
 they find in words:
 - `DesignTapTargetCheck`: every control's tap target reaches the look's floor for the input (a phone's screen is
   read for a finger, a desk's for a pointer), and its target is where it is drawn; a text field's own keys (a clear
@@ -134,6 +134,12 @@ they find in words:
   round face. A scroll view's edge along its scroll, with more content past it, is scrolling, not a cut; at the end
   of its content, and across its scroll, the cut counts. Given `near:` (a control's rect), it reads only the casts
   that reach it, as a test of one control's press, hover or focus needs.
+- `DesignFieldPartsCheck`: a date or time field's segments hold their text at least 4 px in from their frame on both
+  sides, and the parts of one field that stand in a row share one height (within 1 px): a date field's segments, or
+  its frame, and the button that opens its picker; a stepper's buttons and its field. Run it at 100% and 200% text.
+- `DesignFieldSemanticsCheck`: each control inside a `DesignField` takes a tap through the semantics tree (a
+  screen reader's, or a click on the web with semantics on) on a node of its own, a stepper's buttons lie under no
+  node that would take their tap, and the field's label is read once. It reads the semantics tree.
 - `DesignSpacingCheck`: a page's margin, the insets of shapes set in shapes (concentric corners), and gaps on the
   grid; `literals` reads a look's sources for spacing off the grid its `DesignSpacingScope` declares.
 
@@ -142,6 +148,6 @@ a look declares in its theme.
 
 ## Versions
 
-Version 0.1.1 supports ui_core ^0.3.1 and requires Flutter 3.47 or later (Dart 3.13).
+Version 0.1.2 supports ui_core ^0.3.2 and requires Flutter 3.47 or later (Dart 3.13).
 
 See the CHANGELOG for changes to measurements and migration instructions.

@@ -20,6 +20,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
 import 'haptics.dart';
+import 'internal/focus_visible.dart';
 import 'motion.dart';
 
 /// One column of a [DesignWheelPicker]: its rows, their names and which of
@@ -401,6 +402,8 @@ class _DesignWheelPickerState extends State<DesignWheelPicker> {
   final List<BallisticScrollActivity?> _springs = [];
   final List<bool> _forward = [];
   final List<bool> _focused = [];
+  // Each column's focus, shown as a browser's :focus-visible shows it.
+  final List<DesignFocusShown> _focus = [];
   final List<bool> _hovered = [];
   final List<bool> _dragged = [];
   late List<DesignWheelColumn> _columns;
@@ -430,6 +433,7 @@ class _DesignWheelPickerState extends State<DesignWheelPicker> {
     while (_controllers.length > selection.length) {
       _controllers.removeLast().dispose();
       _nodes.removeLast().dispose();
+      _focus.removeLast().dispose();
       for (final list in <List<Object?>>[
         _centre,
         _heading,
@@ -450,6 +454,11 @@ class _DesignWheelPickerState extends State<DesignWheelPicker> {
       _springs.add(null);
       _forward.add(true);
       _focused.add(false);
+      _focus.add(
+        DesignFocusShown((on) {
+          if (mounted) setState(() => _focused[c] = on);
+        }),
+      );
       _hovered.add(false);
       _dragged.add(false);
     }
@@ -484,6 +493,9 @@ class _DesignWheelPickerState extends State<DesignWheelPicker> {
     }
     for (final node in _nodes) {
       node.dispose();
+    }
+    for (final focus in _focus) {
+      focus.dispose();
     }
     super.dispose();
   }
@@ -776,7 +788,14 @@ class _DesignWheelPickerState extends State<DesignWheelPicker> {
           enabled: enabled,
           focusNode: _nodes[c],
           autofocus: widget.autofocus && c == 0,
-          onShowFocusHighlight: (on) => setState(() => _focused[c] = on),
+          onShowFocusHighlight: _focus[c].focused,
+          // A mouse turns a wheel by dragging it: it grabs, and grabbing
+          // while it turns.
+          mouseCursor: !enabled
+              ? SystemMouseCursors.basic
+              : _dragged[c]
+              ? SystemMouseCursors.grabbing
+              : SystemMouseCursors.grab,
           child: MouseRegion(
             onEnter: (_) => setState(() => _hovered[c] = true),
             onExit: (_) => setState(() => _hovered[c] = false),

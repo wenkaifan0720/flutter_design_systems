@@ -47,6 +47,8 @@ import 'internal/drawn_pixels.dart';
 import 'internal/label_line.dart';
 
 part 'checks/cursor_check.dart';
+part 'checks/field_parts_check.dart';
+part 'checks/field_semantics_check.dart';
 part 'checks/shadow_clip_check.dart';
 part 'checks/spacing_check.dart';
 part 'checks/tap_target_check.dart';
@@ -6677,16 +6679,25 @@ class _RowReader extends _DrawnReader {
   }
 
   // [drawn], the outline read inside [face] (both global), out to [face]'s
-  // edge on each side it stops short of over a lit band: a face lit from
-  // one corner (a groove under a light from the top left) shows its far
-  // sides in a highlight too faint to stand off, lighter than its ground
-  // ([ground], else what is just around [face]). A darker band (a shadow
-  // cast inside the box) stays out.
+  // edge on each side it stops short of over a band of the face itself. A
+  // band painted in the face's own fill (the commonest colour inside
+  // [drawn]) is the face round a frame drawn inside it, however faint that
+  // fill is against its ground ([ground], else what is just around
+  // [face]). A lit band is the face too: a face lit from one corner (a
+  // groove under a light from the top left) shows its far sides in a
+  // highlight too faint to stand off, lighter than its ground. A darker
+  // band of another colour (a shadow cast inside the box) stays out.
   Rect _litTo(Rect face, Rect drawn, {int? ground}) {
     final p = pixels;
     if (p == null || boundary == null) return drawn;
     final over = ground ?? p.groundAround(_toBoundary(face), 2);
-    bool lit(Rect band) => p.lit(_toBoundary(band), over: over);
+    final fill = p.solidIn(_toBoundary(drawn)).colour;
+    bool lit(Rect band) {
+      final local = _toBoundary(band);
+      return p.paintedIn(local, colour: fill, over: over) ||
+          p.lit(local, over: over);
+    }
+
     var (left, top, right, bottom) = (
       drawn.left,
       drawn.top,

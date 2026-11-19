@@ -10,8 +10,10 @@
 /// field that is wrong, and tells a screen reader how many need attention.
 library;
 
+import 'dart:math' as math;
+
 import 'package:flutter/foundation.dart';
-import 'package:flutter/semantics.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 
 import 'internal/announce.dart';
@@ -83,10 +85,17 @@ typedef DesignFieldBuilder = Widget Function(
 
 /// A control with its label, help and error.
 ///
-/// With [mergeSemantics] (a single control: a text field, a select, a
-/// switch) the control's node takes the label as its name and the error
-/// and help as its hint; a group of controls (radios) sets it false and
-/// the label names the group instead.
+/// By default ([mergeSemantics] null) the field reads what its child brings
+/// to the semantics tree. A child that holds one control (a text field, a
+/// select, a switch, a slider) is one node, which takes the label as its
+/// name and the error and help as its hint. A child that holds several (a
+/// stepper's buttons and entry, segmented buttons, a wrap of chips, radios)
+/// keeps each control's own node, so a tap through the semantics tree (a
+/// screen reader's, or a click on the web with semantics on) reaches the
+/// control under it; the label names them as a group. When the child
+/// already says the label (a stepper named as its field, or a group that
+/// names itself on its own node), the label is not added again, so it is
+/// read once.
 ///
 /// ```dart
 /// DesignField(labelText: 'Email', builder: (context, parts) => Column(children: [?parts.label, parts.control]), child: const Text('field'))
@@ -103,7 +112,7 @@ class DesignField extends StatefulWidget {
     this.required = false,
     this.enabled = true,
     this.focusNode,
-    this.mergeSemantics = true,
+    this.mergeSemantics,
     this.requiredHint,
   });
 
@@ -132,8 +141,11 @@ class DesignField extends StatefulWidget {
   /// who disposes it; the field only requests it.
   final FocusNode? focusNode;
 
-  /// Whether the label, hint and validity join the control's own node.
-  final bool mergeSemantics;
+  /// Whether the label, hint and validity join the control's own node:
+  /// true always (one node for the whole child), false never (the label
+  /// names the child as a group and each control keeps its node), null as
+  /// the child's controls say (see [DesignField]).
+  final bool? mergeSemantics;
 
   /// Added to the name of a required field; null:
   /// [DesignLocalizations.requiredHint].
@@ -174,11 +186,10 @@ class DesignField extends StatefulWidget {
         ),
       )
       ..add(
-        FlagProperty(
+        DiagnosticsProperty<bool>(
           'mergeSemantics',
-          value: mergeSemantics,
-          ifFalse: 'mergeSemantics: false',
-          defaultValue: true,
+          mergeSemantics,
+          defaultValue: null,
         ),
       )
       ..add(StringProperty('requiredHint', requiredHint, defaultValue: null));
@@ -204,11 +215,14 @@ class _DesignFieldState extends State<DesignField> {
     final label = widget.labelText;
     final error = widget.errorText;
     final help = widget.helperText;
+    final needed = widget.required
+        ? widget.requiredHint ?? DesignLocalizations.of(context).requiredHint
+        : null;
     final name = label == null
         ? null
-        : widget.required
-        ? '$label, ${widget.requiredHint ?? DesignLocalizations.of(context).requiredHint}'
-        : label;
+        : needed == null
+        ? label
+        : '$label, $needed';
     final hint = [?error, ?help].join('. ');
     Widget control = Focus(
       canRequestFocus: false,
@@ -217,7 +231,18 @@ class _DesignFieldState extends State<DesignField> {
       onFocusChange: (focused) => setState(() => _focused = focused),
       child: widget.child,
     );
-    if (widget.mergeSemantics) {
+    final merge = widget.mergeSemantics;
+    if (merge == null) {
+      control = _FieldSemantics(
+        label: name,
+        words: label,
+        needed: needed,
+        hint: hint.isEmpty ? null : hint,
+        invalid: error != null,
+        textDirection: Directionality.maybeOf(context),
+        child: control,
+      );
+    } else if (merge) {
       control = MergeSemantics(
         child: Semantics(
           label: name,
@@ -262,7 +287,7 @@ class _DesignFieldState extends State<DesignField> {
       focused: _focused,
     );
     final field = widget.builder(context, parts);
-    if (widget.mergeSemantics) return field;
+    if (merge != false) return field;
     // A group: the label names the group, the error and help are its hint.
     return Semantics(
       container: true,
@@ -457,4 +482,246 @@ class _DesignFormScope extends InheritedWidget {
 
   @override
   bool updateShouldNotify(_DesignFormScope old) => state != old.state;
+}
+
+// The field's own node, shaped by the controls under it: one control is
+// merged with the label, hint and validity; several keep their own nodes
+// under a node that names them. The label is left out when a control
+// already says it; a required field then says it is required first in its
+// hint, unless the control says that too.
+class _FieldSemantics extends SingleChildRenderObjectWidget {
+  const _FieldSemantics({
+    required this.label,
+    required this.words,
+    required this.needed,
+    required this.hint,
+    required this.invalid,
+    required this.textDirection,
+    required super.child,
+  });
+
+  final String? label;
+  final String? words;
+  final String? needed;
+  final String? hint;
+  final bool invalid;
+  final TextDirection? textDirection;
+
+  @override
+  RenderObject createRenderObject(BuildContext context) =>
+      _RenderFieldSemantics(label, words, needed, hint, invalid, textDirection);
+
+  @override
+  void updateRenderObject(
+    BuildContext context,
+    _RenderFieldSemantics renderObject,
+  ) {
+    renderObject
+      ..label = label
+      ..words = words
+      ..needed = needed
+      ..hint = hint
+      ..invalid = invalid
+      ..textDirection = textDirection
+      // A rebuild may change what the child says (a control named as the
+      // field, or no longer) and leave the field's size as it was: read the
+      // child again in the layout that follows, once it is built.
+      ..markNeedsLayout();
+  }
+}
+
+class _RenderFieldSemantics extends RenderProxyBox {
+  _RenderFieldSemantics(
+    this._label,
+    this._words,
+    this._needed,
+    this._hint,
+    this._invalid,
+    this._textDirection,
+  );
+
+  String? _label;
+  set label(String? value) {
+    if (value == _label) return;
+    _label = value;
+    markNeedsSemanticsUpdate();
+  }
+
+  String? _words;
+  set words(String? value) {
+    if (value == _words) return;
+    _words = value;
+    markNeedsSemanticsUpdate();
+  }
+
+  // The words a required field adds to its name; null when it is not
+  // required.
+  String? _needed;
+  set needed(String? value) {
+    if (value == _needed) return;
+    _needed = value;
+    markNeedsSemanticsUpdate();
+  }
+
+  String? _hint;
+  set hint(String? value) {
+    if (value == _hint) return;
+    _hint = value;
+    markNeedsSemanticsUpdate();
+  }
+
+  bool _invalid;
+  set invalid(bool value) {
+    if (value == _invalid) return;
+    _invalid = value;
+    markNeedsSemanticsUpdate();
+  }
+
+  TextDirection? _textDirection;
+  set textDirection(TextDirection? value) {
+    if (value == _textDirection) return;
+    _textDirection = value;
+    markNeedsSemanticsUpdate();
+  }
+
+  // The controls under the field as last described, to describe it again
+  // when a layout or a rebuild changes them.
+  ({bool single, bool said, bool saidWhole})? _shape;
+
+  @override
+  void performLayout() {
+    super.performLayout();
+    if (_shape != null && _read() != _shape) markNeedsSemanticsUpdate();
+  }
+
+  @override
+  void describeSemanticsConfiguration(SemanticsConfiguration config) {
+    super.describeSemanticsConfiguration(config);
+    final shape = _shape = _read();
+    config.isSemanticBoundary = true;
+    if (shape.single) {
+      config.isMergingSemanticsOfDescendants = true;
+    } else {
+      config.explicitChildNodes = true;
+    }
+    final label = _label;
+    if (label != null && !shape.said) config.label = label;
+    final hint = [if (shape.said && !shape.saidWhole) ?_needed, ?_hint];
+    if (hint.isNotEmpty) config.hint = hint.join(', ');
+    if (config.label.isNotEmpty || config.hint.isNotEmpty) {
+      config.textDirection = _textDirection;
+    }
+    config.validationResult = _invalid
+        ? SemanticsValidationResult.invalid
+        : SemanticsValidationResult.none;
+  }
+
+  // Whether the child holds one control at most, whether anything it
+  // brings to the semantics tree already says the label's words (a control,
+  // or a group's own node that names it: a line of its own that is the
+  // words, or starts with them and a comma, as a required field's name
+  // does), and whether it says the whole name, a required field's included.
+  ({bool single, bool said, bool saidWhole}) _read() {
+    var controls = 0;
+    final words = _words?.trim().toLowerCase() ?? '';
+    final name = _label?.trim().toLowerCase() ?? '';
+    bool says(String text, String said) => text
+        .split('\n')
+        .map((line) => line.trim().toLowerCase())
+        .any((line) => line == said || line.startsWith('$said,'));
+    ({bool said, bool saidWhole}) hears(RenderObject child) {
+      if (words.isEmpty) return (said: false, saidWhole: false);
+      var said = false;
+      var whole = false;
+      void heard(String text) {
+        if (says(text, words)) said = true;
+        if (name.isNotEmpty && says(text, name)) whole = true;
+      }
+
+      void hear(RenderObject n) {
+        if ((said && whole) || (n is RenderExcludeSemantics && n.excluding)) {
+          return;
+        }
+        if (n is RenderSemanticsAnnotations) {
+          heard(n.properties.label ?? '');
+          if (n.excludeSemantics) return;
+        }
+        if (n is RenderParagraph) {
+          heard(n.text.toPlainText(includeSemanticsLabels: true));
+        }
+        n.visitChildrenForSemantics(hear);
+      }
+
+      child.visitChildrenForSemantics(hear);
+      return (said: said, saidWhole: whole);
+    }
+
+    bool holdsEntry(RenderObject n) {
+      if (n is RenderEditable) return true;
+      var found = false;
+      n.visitChildrenForSemantics((c) => found = found || holdsEntry(c));
+      return found;
+    }
+
+    // Counts the controls under [n]: those that hold no control of their
+    // own (a text field's tap wraps its entry: one control), and an
+    // adjustment round an entry (a stepper's value round the field it
+    // types in), which a tap on its parts would not reach once merged
+    // with them.
+    int leaves(RenderObject n) {
+      if (n is RenderExcludeSemantics && n.excluding) return 0;
+      if (n is RenderEditable) return 1;
+      var below = 0;
+      if (!(n is RenderSemanticsAnnotations && n.excludeSemantics)) {
+        n.visitChildrenForSemantics((c) => below += leaves(c));
+      }
+      if (below == 0) return _acts(n) ? 1 : 0;
+      final adjusts =
+          n is RenderSemanticsAnnotations &&
+          (n.properties.onIncrease != null ||
+              n.properties.onDecrease != null) &&
+          holdsEntry(n);
+      return below + (adjusts ? 1 : 0);
+    }
+
+    void visit(RenderObject n) {
+      if (n is RenderExcludeSemantics && n.excluding) return;
+      if (n is RenderEditable || _acts(n)) {
+        controls += math.max(1, leaves(n));
+        return;
+      }
+      n.visitChildrenForSemantics(visit);
+    }
+
+    visitChildrenForSemantics(visit);
+    final (:said, :saidWhole) = hears(this);
+    return (single: controls <= 1, said: said, saidWhole: saidWhole);
+  }
+
+  // A node a press, a drag or an adjustment acts on, or one with a value
+  // or a state of its own.
+  static bool _acts(RenderObject n) {
+    if (n is RenderSemanticsGestureHandler) {
+      return n.onTap != null ||
+          n.onLongPress != null ||
+          n.onHorizontalDragUpdate != null ||
+          n.onVerticalDragUpdate != null;
+    }
+    if (n is RenderSemanticsAnnotations) {
+      final p = n.properties;
+      return p.button == true ||
+          p.link == true ||
+          p.textField == true ||
+          p.slider == true ||
+          p.toggled != null ||
+          p.checked != null ||
+          p.inMutuallyExclusiveGroup == true ||
+          p.onTap != null ||
+          p.onLongPress != null ||
+          p.onIncrease != null ||
+          p.onDecrease != null ||
+          (p.value?.isNotEmpty ?? false);
+    }
+    return false;
+  }
 }

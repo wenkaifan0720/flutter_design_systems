@@ -1,3 +1,15 @@
+## 0.1.2
+
+- `DesignFieldPartsCheck` holds a field's own parts: each segment of a date or time field keeps its text at least
+  4 px from its frame on both sides, and a date field's segments or frame match the height of the button that opens
+  its picker, as a stepper's buttons match its field's, within 1 px.
+- `DesignFieldSemanticsCheck` holds each control inside a `DesignField` to a node of its own: two controls that a
+  tap through the semantics tree reaches as one node fail, as do a stepper's button under a node that takes the tap in
+  its place and a field label read more than once.
+- List width checks now accept an equally wide field and menu when their painted edges fall between pixels.
+- List width checks measure a menu by its painted surface when it draws a frame inside a fill that barely differs
+  from the page, instead of by the frame.
+
 ## 0.1.1
 
 - Selected-tab fills are measured against the visible tab face, including when a larger touch target surrounds it.

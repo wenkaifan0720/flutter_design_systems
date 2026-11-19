@@ -10,6 +10,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
+import 'internal/focus_visible.dart';
 import 'localizations.dart';
 import 'value_handle.dart';
 
@@ -226,8 +227,22 @@ class DesignColorArea extends StatefulWidget {
 
 class _DesignColorAreaState extends State<DesignColorArea> {
   bool _focused = false;
+  // Shown as a browser's :focus-visible shows it (internal/focus_visible.dart).
+  late final DesignFocusShown _focus;
   bool _hovered = false;
   bool _dragging = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _focus = DesignFocusShown((on) => setState(() => _focused = on));
+  }
+
+  @override
+  void dispose() {
+    _focus.dispose();
+    super.dispose();
+  }
 
   DesignColorController get _c => widget.controller;
 
@@ -300,7 +315,7 @@ class _DesignColorAreaState extends State<DesignColorArea> {
                 focusNode: widget.focusNode,
                 autofocus: widget.autofocus,
                 mouseCursor: SystemMouseCursors.precise,
-                onShowFocusHighlight: (on) => setState(() => _focused = on),
+                onShowFocusHighlight: _focus.focused,
                 onShowHoverHighlight: (on) => setState(() => _hovered = on),
                 child: LayoutBuilder(
                   builder: (context, box) {
@@ -466,59 +481,67 @@ class _DesignColorSliderState extends State<DesignColorSlider> {
           }
 
           final f = ch.of(hsv) / ch.max;
-          return GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onHorizontalDragDown: (d) => at(d.localPosition.dx),
-            onHorizontalDragStart: (_) => setState(() => _dragging = true),
-            onHorizontalDragUpdate: (d) => at(d.localPosition.dx),
-            onHorizontalDragEnd: (_) => setState(() => _dragging = false),
-            onHorizontalDragCancel: () => setState(() => _dragging = false),
-            child: SizedBox(
-              height: t.height,
-              width: box.maxWidth,
-              child: Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  Positioned(
-                    left: t.width / 2,
-                    right: t.width / 2,
-                    top: 0,
-                    bottom: 0,
-                    // The track spans the row; its own height, centred.
-                    child: Center(
-                      child: SizedBox(
-                        width: double.infinity,
-                        child: ExcludeSemantics(
-                          child: widget.trackBuilder(context, ch, hsv),
+          // A press on the track moves the thumb there (the click cursor);
+          // the thumb grabs, and a drag holds (grabbing) over the slider.
+          return MouseRegion(
+            cursor: _dragging
+                ? SystemMouseCursors.grabbing
+                : SystemMouseCursors.click,
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onHorizontalDragDown: (d) => at(d.localPosition.dx),
+              onHorizontalDragStart: (_) => setState(() => _dragging = true),
+              onHorizontalDragUpdate: (d) => at(d.localPosition.dx),
+              onHorizontalDragEnd: (_) => setState(() => _dragging = false),
+              onHorizontalDragCancel: () => setState(() => _dragging = false),
+              child: SizedBox(
+                height: t.height,
+                width: box.maxWidth,
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    Positioned(
+                      left: t.width / 2,
+                      right: t.width / 2,
+                      top: 0,
+                      bottom: 0,
+                      // The track spans the row; its own height, centred.
+                      child: Center(
+                        child: SizedBox(
+                          width: double.infinity,
+                          child: ExcludeSemantics(
+                            child: widget.trackBuilder(context, ch, hsv),
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                  Positioned(
-                    left: (rtl ? 1 - f : f) * usable,
-                    top: 0,
-                    width: t.width,
-                    height: t.height,
-                    child: DesignValueHandle(
-                      value: ch.of(hsv),
-                      max: ch.max,
-                      step: ch == DesignColorChannel.hue ? 1 : 0.01,
-                      pageStep: ch == DesignColorChannel.hue ? 10 : 0.1,
-                      dragging: _dragging,
-                      minimumSize: t,
-                      focusNode: widget.focusNode,
-                      autofocus: widget.autofocus,
-                      semanticLabel:
-                          widget.semanticLabel ??
-                          DesignLocalizations.of(context).colorChannelLabel(ch),
-                      semanticFormatterCallback: ch == DesignColorChannel.hue
-                          ? (v) => '${v.round()} degrees'
-                          : _percent,
-                      onChanged: (v) => _setChannel(c, ch, v),
-                      builder: widget.thumbBuilder,
+                    Positioned(
+                      left: (rtl ? 1 - f : f) * usable,
+                      top: 0,
+                      width: t.width,
+                      height: t.height,
+                      child: DesignValueHandle(
+                        value: ch.of(hsv),
+                        max: ch.max,
+                        step: ch == DesignColorChannel.hue ? 1 : 0.01,
+                        pageStep: ch == DesignColorChannel.hue ? 10 : 0.1,
+                        dragging: _dragging,
+                        minimumSize: t,
+                        focusNode: widget.focusNode,
+                        autofocus: widget.autofocus,
+                        semanticLabel:
+                            widget.semanticLabel ??
+                            DesignLocalizations.of(context)
+                                .colorChannelLabel(ch),
+                        semanticFormatterCallback: ch == DesignColorChannel.hue
+                            ? (v) => '${v.round()} degrees'
+                            : _percent,
+                        onChanged: (v) => _setChannel(c, ch, v),
+                        builder: widget.thumbBuilder,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           );

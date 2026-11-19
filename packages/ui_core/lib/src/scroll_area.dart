@@ -9,6 +9,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
+import 'internal/focus_visible.dart';
 import 'motion.dart';
 
 /// When a [DesignScrollArea]'s scrollbar shows.
@@ -229,7 +230,11 @@ class _DesignScrollAreaState extends State<DesignScrollArea> {
   bool _scrolling = false;
   bool _hovered = false;
   bool _dragging = false;
+  // The area's focus, shown as a browser's :focus-visible shows it.
   bool _focused = false;
+  late final DesignFocusShown _focus = DesignFocusShown(
+    (on) => setState(() => _focused = on),
+  );
   Timer? _hide;
 
   ScrollPosition? get _position =>
@@ -238,6 +243,7 @@ class _DesignScrollAreaState extends State<DesignScrollArea> {
   @override
   void dispose() {
     _hide?.cancel();
+    _focus.dispose();
     super.dispose();
   }
 
@@ -445,12 +451,7 @@ class _DesignScrollAreaState extends State<DesignScrollArea> {
         // The named area says it is a tab stop, and when it has the focus.
         includeSemantics: widget.focusable,
         onKeyEvent: _key,
-        onFocusChange: (on) => setState(
-          () => _focused =
-              on &&
-              FocusManager.instance.highlightMode ==
-                  FocusHighlightMode.traditional,
-        ),
+        onFocusChange: (on) => _focus.focused(on),
         child: Builder(
           builder: (context) =>
               widget.frameBuilder?.call(context, _focused, area) ?? area,

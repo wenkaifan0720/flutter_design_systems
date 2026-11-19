@@ -12,6 +12,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
 import 'haptics.dart';
+import 'internal/focus_visible.dart';
 
 /// Builds a handle's face for its [states] (focused while the keyboard is
 /// on it, hovered, pressed while dragged, disabled).
@@ -121,7 +122,9 @@ class DesignValueHandle extends StatefulWidget {
   /// Whether it takes focus when it first shows.
   final bool autofocus;
 
-  /// The cursor over it; null: a grab cursor along its axis.
+  /// The cursor over it; null: a grab cursor ([SystemMouseCursors.grab]),
+  /// grabbing ([SystemMouseCursors.grabbing]) while [dragging], and the
+  /// basic arrow when disabled.
   final MouseCursor? mouseCursor;
 
   /// The least size of its target.
@@ -222,6 +225,20 @@ class DesignValueHandle extends StatefulWidget {
 class _DesignValueHandleState extends State<DesignValueHandle> {
   bool _hovered = false;
   bool _focused = false;
+  // Shown as a browser's :focus-visible shows it (internal/focus_visible.dart).
+  late final DesignFocusShown _focus;
+
+  @override
+  void initState() {
+    super.initState();
+    _focus = DesignFocusShown((on) => setState(() => _focused = on));
+  }
+
+  @override
+  void dispose() {
+    _focus.dispose();
+    super.dispose();
+  }
 
   double get _range => widget.max - widget.min;
 
@@ -323,11 +340,11 @@ class _DesignValueHandleState extends State<DesignValueHandle> {
     };
     final cursor =
         widget.mouseCursor ??
-        (enabled
-            ? (widget.axis == Axis.horizontal
-                  ? SystemMouseCursors.resizeLeftRight
-                  : SystemMouseCursors.resizeUpDown)
-            : MouseCursor.defer);
+        (!enabled
+            ? SystemMouseCursors.basic
+            : widget.dragging
+            ? SystemMouseCursors.grabbing
+            : SystemMouseCursors.grab);
     return Semantics(
       container: true,
       slider: true,
@@ -348,7 +365,7 @@ class _DesignValueHandleState extends State<DesignValueHandle> {
           focusNode: widget.focusNode,
           autofocus: widget.autofocus,
           mouseCursor: cursor,
-          onShowFocusHighlight: (on) => setState(() => _focused = on),
+          onShowFocusHighlight: _focus.focused,
           child: MouseRegion(
             onEnter: (_) => setState(() => _hovered = true),
             onExit: (_) => setState(() => _hovered = false),

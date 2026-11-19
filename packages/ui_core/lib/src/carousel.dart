@@ -15,6 +15,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
 import 'internal/announce.dart';
+import 'internal/focus_visible.dart';
 import 'localizations.dart';
 import 'motion.dart';
 
@@ -285,7 +286,11 @@ class _DesignCarouselState extends State<DesignCarousel> {
   bool _hovered = false;
   bool _dragging = false;
   bool _focusWithin = false;
+  // The slides' focus, shown as a browser's :focus-visible shows it.
   bool _focused = false;
+  late final DesignFocusShown _focus = DesignFocusShown(
+    (on) => setState(() => _focused = on),
+  );
   Timer? _timer;
 
   bool get _still => designReduceMotionOf(context);
@@ -334,6 +339,7 @@ class _DesignCarouselState extends State<DesignCarousel> {
   @override
   void dispose() {
     _timer?.cancel();
+    _focus.dispose();
     _pages.dispose();
     _position.dispose();
     _ownSlides?.dispose();
@@ -433,13 +439,10 @@ class _DesignCarouselState extends State<DesignCarousel> {
       skipTraversal: !widget.focusable,
       includeSemantics: false,
       onKeyEvent: _key,
-      onFocusChange: (on) => setState(() {
-        _slidesFocused = on;
-        _focused =
-            on &&
-            FocusManager.instance.highlightMode ==
-                FocusHighlightMode.traditional;
-      }),
+      onFocusChange: (on) {
+        setState(() => _slidesFocused = on);
+        _focus.focused(on);
+      },
       child: NotificationListener<ScrollNotification>(
         onNotification: (n) {
           if (n is ScrollStartNotification && n.dragDetails != null) {

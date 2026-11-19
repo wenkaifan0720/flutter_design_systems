@@ -24,6 +24,8 @@ import 'package:flutter/rendering.dart' show RenderProxyBox;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
+import 'internal/focus_visible.dart';
+
 /// Builds a pressable's face for its current [states] (hovered, focused,
 /// pressed, disabled, selected, error). [child] is the pressable's own
 /// child, passed through so a face that does not change with state is
@@ -386,10 +388,15 @@ class DesignPressableState extends State<DesignPressable> {
   bool _heldLongEnough = false;
   // Whether the pointer lifted while the press still had to show.
   bool _lifted = false;
+  // The focus shown as a browser's :focus-visible shows it: not after a
+  // pointer's press (a dialog a click opened, its safe action focused),
+  // until a key.
+  late final DesignFocusShown _focus;
 
   @override
   void initState() {
     super.initState();
+    _focus = DesignFocusShown((shown) => _set(WidgetState.focused, shown));
     _controller.addListener(_changed);
     _sync();
   }
@@ -412,6 +419,7 @@ class DesignPressableState extends State<DesignPressable> {
   void dispose() {
     _pressDelay?.cancel();
     _hold?.cancel();
+    _focus.dispose();
     _controller.removeListener(_changed);
     _own?.dispose();
     super.dispose();
@@ -588,7 +596,7 @@ class DesignPressableState extends State<DesignPressable> {
       autofocus: widget.autofocus,
       mouseCursor: WidgetStateProperty.resolveAs<MouseCursor>(cursor, current),
       shortcuts: widget.shortcuts,
-      onShowFocusHighlight: (on) => _set(WidgetState.focused, on && enabled),
+      onShowFocusHighlight: (on) => _focus.focused(on && enabled),
       actions: {
         ActivateIntent: CallbackAction<ActivateIntent>(onInvoke: _activate),
         ButtonActivateIntent: CallbackAction<ButtonActivateIntent>(

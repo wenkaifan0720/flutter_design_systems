@@ -299,6 +299,10 @@ class _DesignRangeSliderState extends State<DesignRangeSlider> {
             step: widget.step,
             pageStep: widget.pageStep,
             dragging: _dragging == index,
+            // While the other thumb is dragged, the pointer holds it here too.
+            mouseCursor: _dragging != null && _dragging != index
+                ? SystemMouseCursors.grabbing
+                : null,
             minimumSize: thumb,
             semanticLabel: index == 0
                 ? widget.startLabel ??
@@ -319,75 +323,85 @@ class _DesignRangeSliderState extends State<DesignRangeSlider> {
 
         // The track's press and drag are the pointer's: a screen reader
         // reaches the two thumbs, each a labelled slider, so the track
-        // adds no unlabelled node of its own.
-        return GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          excludeFromSemantics: true,
-          onHorizontalDragStart: !enabled
-              ? null
-              : (d) {
-                  final v = _valueAt(d.localPosition.dx, width);
-                  final i = _nearer(v);
-                  setState(() {
-                    _dragging = i;
-                    _onTop = i;
-                  });
-                  widget.onChangeStart?.call(widget.values);
-                  _set(_dragging!, v);
-                },
-          onHorizontalDragUpdate: !enabled
-              ? null
-              : (d) {
-                  final i = _dragging;
-                  if (i != null) _set(i, _valueAt(d.localPosition.dx, width));
-                },
-          onHorizontalDragEnd: !enabled
-              ? null
-              : (_) {
-                  setState(() => _dragging = null);
-                  widget.onChangeEnd?.call(widget.values);
-                },
-          onTapUp: !enabled
-              ? null
-              : (d) {
-                  final v = _valueAt(d.localPosition.dx, width);
-                  final i = _nearer(v);
-                  _moving(i);
-                  _set(i, v);
-                },
-          child: SizedBox(
-            height: thumb.height,
-            width: width,
-            child: Stack(
-              clipBehavior: Clip.none,
-              children: [
-                Positioned(
-                  left: thumb.width / 2,
-                  right: thumb.width / 2,
-                  top: 0,
-                  bottom: 0,
-                  // The track spans the row; its own height, centred.
-                  child: Center(
-                    child: SizedBox(
-                      width: double.infinity,
-                      child: ExcludeSemantics(
-                        child: widget.trackBuilder(
-                          context,
-                          DesignRangeTrack(
-                            start: _fraction(r.start),
-                            end: _fraction(r.end),
-                            enabled: enabled,
+        // adds no unlabelled node of its own. A press on it moves a thumb
+        // (the click cursor), the thumbs grab, and a drag holds (grabbing)
+        // wherever the pointer goes over the slider.
+        final track = !enabled
+            ? SystemMouseCursors.basic
+            : _dragging != null
+            ? SystemMouseCursors.grabbing
+            : SystemMouseCursors.click;
+        return MouseRegion(
+          cursor: track,
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            excludeFromSemantics: true,
+            onHorizontalDragStart: !enabled
+                ? null
+                : (d) {
+                    final v = _valueAt(d.localPosition.dx, width);
+                    final i = _nearer(v);
+                    setState(() {
+                      _dragging = i;
+                      _onTop = i;
+                    });
+                    widget.onChangeStart?.call(widget.values);
+                    _set(_dragging!, v);
+                  },
+            onHorizontalDragUpdate: !enabled
+                ? null
+                : (d) {
+                    final i = _dragging;
+                    if (i != null) _set(i, _valueAt(d.localPosition.dx, width));
+                  },
+            onHorizontalDragEnd: !enabled
+                ? null
+                : (_) {
+                    setState(() => _dragging = null);
+                    widget.onChangeEnd?.call(widget.values);
+                  },
+            onTapUp: !enabled
+                ? null
+                : (d) {
+                    final v = _valueAt(d.localPosition.dx, width);
+                    final i = _nearer(v);
+                    _moving(i);
+                    _set(i, v);
+                  },
+            child: SizedBox(
+              height: thumb.height,
+              width: width,
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Positioned(
+                    left: thumb.width / 2,
+                    right: thumb.width / 2,
+                    top: 0,
+                    bottom: 0,
+                    // The track spans the row; its own height, centred.
+                    child: Center(
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: ExcludeSemantics(
+                          child: widget.trackBuilder(
+                            context,
+                            DesignRangeTrack(
+                              start: _fraction(r.start),
+                              end: _fraction(r.end),
+                              enabled: enabled,
+                            ),
                           ),
                         ),
                       ),
                     ),
                   ),
-                ),
-                // The one moved last on top, so a thumb dragged over the
-                // other stays in front of it.
-                handle(1 - _onTop),
-                handle(_onTop),
-              ],
+                  // The one moved last on top, so a thumb dragged over the
+                  // other stays in front of it.
+                  handle(1 - _onTop),
+                  handle(_onTop),
+                ],
+              ),
             ),
           ),
         );

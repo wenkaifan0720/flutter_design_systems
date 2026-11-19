@@ -63,6 +63,16 @@ Future<void> _rowCheck(WidgetTester tester) async {
   report.verify();
 }
 
+/// [DesignFieldPartsCheck]'s example, run by field_parts_check_test.dart's
+/// shape.
+Future<void> _fieldPartsCheck(WidgetTester tester) async {
+  final report = await const DesignFieldPartsCheck(look: 'Comic').check(
+    tester.element(find.byType(SettingsScreen)),
+    runAsync: tester.runAsync,
+  );
+  report.verify();
+}
+
 /// [DesignWidthCheck]'s example, run by width_check_test.dart's shape.
 Future<void> _widthCheck(WidgetTester tester, Key fieldKey) async {
   const widths = DesignWidthCheck(look: 'Comic');
@@ -87,11 +97,15 @@ void _fitChecks(WidgetTester tester) {
       .verify();
 }
 
-/// [DesignCursorCheck]'s, [DesignTapTargetCheck]'s, [DesignSpacingCheck]'s
-/// and [DesignShadowClipCheck]'s examples, run by their own tests' shapes
+/// [DesignCursorCheck]'s, [DesignTapTargetCheck]'s,
+/// [DesignFieldSemanticsCheck]'s, [DesignSpacingCheck]'s and
+/// [DesignShadowClipCheck]'s examples, run by their own tests' shapes
 /// (cursor_check_test.dart and its neighbours).
 Future<void> _screenChecks(WidgetTester tester) async {
   const DesignCursorCheck(look: 'Comic')
+      .check(tester.element(find.byType(SettingsScreen)))
+      .verify();
+  const DesignFieldSemanticsCheck(look: 'Comic')
       .check(tester.element(find.byType(SettingsScreen)))
       .verify();
   const DesignTapTargetCheck(look: 'Comic')
@@ -168,6 +182,7 @@ Future<void> _settleImages(WidgetTester tester) async {
 const Set<String> _checksFiles = {
   'alignment.dart',
   'cursor_check.dart',
+  'field_parts_check.dart',
   'shadow_clip_check.dart',
   'spacing_check.dart',
   'tap_target_check.dart',
@@ -183,6 +198,7 @@ void main() {
     expect(_labelDensities, isNotNull);
     expect(_settleImages, isNotNull);
     expect(_rowCheck, isNotNull);
+    expect(_fieldPartsCheck, isNotNull);
     expect(_widthCheck, isNotNull);
     expect(_fitChecks, isNotNull);
     expect(_screenChecks, isNotNull);

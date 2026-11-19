@@ -720,6 +720,8 @@ const Set<String> _hostAppOnly = {
 const Set<String> _checksFiles = {
   'alignment.dart',
   'cursor_check.dart',
+  'field_parts_check.dart',
+  'field_semantics_check.dart',
   'shadow_clip_check.dart',
   'spacing_check.dart',
   'tap_target_check.dart',

@@ -8,9 +8,10 @@
 /// paints, with one tab stop: arrows move a day or a week, Home and End to
 /// the week's ends, Page Up and Down a month (with Shift a year), Enter or
 /// Space selects; moving off a month's edge turns the page, so a range can
-/// span months. Dates are calendar days (local midnight); arithmetic goes
-/// through the day of the month, so a daylight-saving change never skips or
-/// repeats a day.
+/// span months, and a scroll view round the grid scrolls the least that
+/// shows the day the keyboard moved to. Dates are calendar days (local
+/// midnight); arithmetic goes through the day of the month, so a
+/// daylight-saving change never skips or repeats a day.
 library;
 
 import 'package:flutter/foundation.dart';
@@ -19,6 +20,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
 import 'internal/announce.dart';
+import 'internal/focus_visible.dart';
 import 'localizations.dart';
 import 'pressable.dart';
 
@@ -620,7 +622,11 @@ class _DesignCalendarState extends State<DesignCalendar> {
       DesignLocalizations.of(context).formatShortWeekday)(weekday);
 
   FocusNode? _own;
+  // Whether the keyboard's day is lit: the calendar's focus, shown as a
+  // browser's :focus-visible shows it (a popover a click opened lights no
+  // day until a key).
   bool _keyboard = false;
+  late final DesignFocusShown _focus;
 
   FocusNode get _node =>
       widget.focusNode ?? (_own ??= FocusNode(debugLabel: 'DesignCalendar'));
@@ -628,6 +634,7 @@ class _DesignCalendarState extends State<DesignCalendar> {
   @override
   void initState() {
     super.initState();
+    _focus = DesignFocusShown((on) => setState(() => _keyboard = on));
     widget.controller.addListener(_changed);
   }
 
@@ -643,6 +650,7 @@ class _DesignCalendarState extends State<DesignCalendar> {
   @override
   void dispose() {
     widget.controller.removeListener(_changed);
+    _focus.dispose();
     _own?.dispose();
     super.dispose();
   }
@@ -690,9 +698,24 @@ class _DesignCalendarState extends State<DesignCalendar> {
       return KeyEventResult.ignored;
     }
     if (c.mode == DesignCalendarMode.range) c.hovered = c.focusedDay;
-    // The keyboard's day is no node's focus: a screen reader is told it.
-    if (c.focusedDay != day) designAnnounce(context, _dayLabel(c.focusedDay));
+    // The keyboard's day is no node's focus: a screen reader is told it,
+    // and what scrolls round the grid shows it.
+    if (c.focusedDay != day) {
+      designAnnounce(context, _dayLabel(c.focusedDay));
+      WidgetsBinding.instance.addPostFrameCallback((_) => _reveal());
+    }
     return KeyEventResult.handled;
+  }
+
+  // The keyboard's day as last built, in its own month.
+  BuildContext? _focusedCell;
+
+  // Scrolls each scroll view round the grid (a popup's, the page's) the
+  // least that shows the keyboard's day whole.
+  void _reveal() {
+    final cell = _focusedCell;
+    if (!mounted || cell == null || !cell.mounted) return;
+    cell.findRenderObject()?.showOnScreen();
   }
 
   Widget _monthGrid(BuildContext context, int index) {
@@ -732,7 +755,15 @@ class _DesignCalendarState extends State<DesignCalendar> {
       if (c.mode == DesignCalendarMode.range && day.enabled) {
         face = MouseRegion(onEnter: (_) => c.hovered = date, child: face);
       }
-      return ExcludeFocus(child: face);
+      final shown = face;
+      return ExcludeFocus(
+        child: Builder(
+          builder: (context) {
+            if (day.focused && day.inMonth) _focusedCell = context;
+            return shown;
+          },
+        ),
+      );
     }
 
     final weeks = c.weeksOf(month, _firstWeekday);
@@ -778,6 +809,7 @@ class _DesignCalendarState extends State<DesignCalendar> {
 
   @override
   Widget build(BuildContext context) {
+    _focusedCell = null;
     final months = [
       for (var i = 0; i < widget.months; i++) _monthGrid(context, i),
     ];
@@ -792,12 +824,7 @@ class _DesignCalendarState extends State<DesignCalendar> {
       autofocus: widget.autofocus,
       onKeyEvent: _key,
       onFocusChange: (focused) {
-        setState(() {
-          _keyboard =
-              focused &&
-              FocusManager.instance.highlightMode ==
-                  FocusHighlightMode.traditional;
-        });
+        _focus.focused(focused);
         if (focused) {
           designAnnounce(context, _dayLabel(widget.controller.focusedDay));
         }

@@ -607,6 +607,68 @@ void main() {
     expect(find.text('July 2026'), findsOneWidget, reason: 'the new one');
   });
 
+  testWidgets('a key that moves the keyboard\'s day out of a short scroll '
+      'view scrolls it the least that shows the day', (tester) async {
+    // 1 January 2026 is a Thursday: weeks from Sunday, the 29th is in the
+    // fifth row, 4 x 44 under the 1st, below a 200 high view.
+    final c = _controller(month: DateTime(2026, 1, 1));
+    addTearDown(c.dispose);
+    final node = FocusNode();
+    addTearDown(node.dispose);
+    final scroll = ScrollController();
+    addTearDown(scroll.dispose);
+    await tester.pumpWidget(
+      harness(
+        Align(
+          alignment: Alignment.topCenter,
+          child: SizedBox(
+            width: 340,
+            height: 200,
+            child: SingleChildScrollView(
+              controller: scroll,
+              child: DesignCalendar(
+                controller: c,
+                focusNode: node,
+                firstWeekday: DateTime.sunday,
+                dayBuilder: _day,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    node.requestFocus();
+    await tester.pump();
+    final view = tester.getRect(find.byType(SingleChildScrollView));
+    Rect day(int d) => tester.getRect(find.byKey(ValueKey('day-1-$d')));
+    bool shown(int d) =>
+        day(d).top >= view.top - 0.01 && day(d).bottom <= view.bottom + 0.01;
+    expect(shown(1), isTrue);
+    expect(shown(29), isFalse);
+
+    for (var i = 0; i < 4; i++) {
+      await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
+      await tester.pump();
+    }
+    expect(c.focusedDay, DateTime(2026, 1, 29));
+    expect(shown(29), isTrue);
+    expect(day(29).bottom, moreOrLessEquals(view.bottom), reason: 'no more');
+    final offset = scroll.offset;
+    expect(offset, greaterThan(0));
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
+    await tester.pump();
+    expect(scroll.offset, offset, reason: 'the 30th shows already');
+
+    for (var i = 0; i < 4; i++) {
+      await tester.sendKeyEvent(LogicalKeyboardKey.arrowUp);
+      await tester.pump();
+    }
+    expect(c.focusedDay, DateTime(2026, 1, 2));
+    expect(shown(2), isTrue);
+    expect(day(2).top, moreOrLessEquals(view.top), reason: 'no more');
+  });
+
   testWidgets('with no firstWeekday a week starts where the locale says, '
       'and Home goes there; one passed in wins', (tester) async {
     final controller = _controller();

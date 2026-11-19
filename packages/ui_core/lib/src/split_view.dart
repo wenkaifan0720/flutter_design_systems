@@ -215,6 +215,10 @@ class _DesignSplitViewState extends State<DesignSplitView> {
           minimumSize: Size.zero,
           focusNode: widget.focusNode,
           autofocus: widget.autofocus,
+          // A divider resizes the panes: the resize cursor along its axis.
+          mouseCursor: horizontal
+              ? SystemMouseCursors.resizeLeftRight
+              : SystemMouseCursors.resizeUpDown,
           semanticLabel:
               widget.semanticLabel ??
               DesignLocalizations.of(context).splitViewHandleLabel,
