@@ -312,56 +312,63 @@ class StudioListTile extends StatelessWidget {
                   top: StudioSpacing.small,
                   bottom: StudioSpacing.small,
                 ),
-            child: Row(
-              children: [
-                if (leading != null) ...[
-                  IconTheme.merge(
-                    data: IconThemeData(
-                      size: layered.iconSize ?? 24,
-                      color: ink,
-                    ),
-                    child: leading!,
-                  ),
-                  const SizedBox(width: StudioSpacing.medium),
-                ],
-                Expanded(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      DesignCapCenter(
-                        capHeightFactor: theme.capHeightFactor,
-                        child: Text(
-                          title,
-                          style: layered.text(
-                            theme.textTheme.body.copyWith(
-                              color: ink,
-                              fontWeight: FontWeight.w500,
-                              height: 22 / 16,
-                            ),
-                          ),
-                        ),
+            // A value at the end takes its own width (up to under half the
+            // row), the title the rest, so a short value leaves the title
+            // the row.
+            child: LayoutBuilder(
+              builder: (context, box) => Row(
+                children: [
+                  if (leading != null) ...[
+                    IconTheme.merge(
+                      data: IconThemeData(
+                        size: layered.iconSize ?? 24,
+                        color: ink,
                       ),
-                      if (subtitle != null)
-                        Padding(
-                          padding: const EdgeInsets.only(
-                            top: StudioSpacing.hair,
-                          ),
+                      child: leading!,
+                    ),
+                    const SizedBox(width: StudioSpacing.medium),
+                  ],
+                  Expanded(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        DesignCapCenter(
+                          capHeightFactor: theme.capHeightFactor,
                           child: Text(
-                            subtitle!,
-                            style: theme.textTheme.secondary.copyWith(
-                              color: muted,
+                            title,
+                            style: layered.text(
+                              theme.textTheme.body.copyWith(
+                                color: ink,
+                                fontWeight: FontWeight.w500,
+                                height: 22 / 16,
+                              ),
                             ),
                           ),
                         ),
-                    ],
+                        if (subtitle != null)
+                          Padding(
+                            padding: const EdgeInsets.only(
+                              top: StudioSpacing.hair,
+                            ),
+                            child: Text(
+                              subtitle!,
+                              style: theme.textTheme.secondary.copyWith(
+                                color: muted,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
                   ),
-                ),
-                if (trailingText != null) ...[
-                  const SizedBox(width: StudioSpacing.medium),
-                  Flexible(
-                    child: Align(
-                      alignment: AlignmentDirectional.centerEnd,
+                  if (trailingText != null) ...[
+                    const SizedBox(width: StudioSpacing.medium),
+                    ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxWidth: box.maxWidth.isFinite
+                            ? box.maxWidth * 0.45
+                            : double.infinity,
+                      ),
                       child: Text(
                         trailingText!,
                         textAlign: TextAlign.end,
@@ -370,42 +377,42 @@ class StudioListTile extends StatelessWidget {
                         style: theme.textTheme.body.copyWith(color: muted),
                       ),
                     ),
-                  ),
-                ],
-                if (trailing != null) ...[
-                  const SizedBox(width: StudioSpacing.medium),
-                  trailing!,
-                ],
-                if (toggle) ...[
-                  const SizedBox(width: StudioSpacing.medium),
-                  // The row is the switch: the one in it only shows it.
-                  ExcludeSemantics(
-                    child: ExcludeFocus(
-                      child: IgnorePointer(
-                        child: StudioSwitch(
-                          value: value,
-                          onChanged: disabled ? null : (_) {},
+                  ],
+                  if (trailing != null) ...[
+                    const SizedBox(width: StudioSpacing.medium),
+                    trailing!,
+                  ],
+                  if (toggle) ...[
+                    const SizedBox(width: StudioSpacing.medium),
+                    // The row is the switch: the one in it only shows it.
+                    ExcludeSemantics(
+                      child: ExcludeFocus(
+                        child: IgnorePointer(
+                          child: StudioSwitch(
+                            value: value,
+                            onChanged: disabled ? null : (_) {},
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                ],
-                // The chosen row's lamp, at the end as a key's is.
-                if (selected) ...[
-                  const SizedBox(width: StudioSpacing.medium),
-                  const StudioLamp(on: true, size: StudioMetrics.lampSize),
-                ],
-                if (chevron) ...[
-                  const SizedBox(width: StudioSpacing.small),
-                  Transform.flip(
-                    flipX: Directionality.of(context) == TextDirection.rtl,
-                    child: CustomPaint(
-                      size: const Size(16, 16),
-                      painter: _ChevronPainter(muted),
+                  ],
+                  // The chosen row's lamp, at the end as a key's is.
+                  if (selected) ...[
+                    const SizedBox(width: StudioSpacing.medium),
+                    const StudioLamp(on: true, size: StudioMetrics.lampSize),
+                  ],
+                  if (chevron) ...[
+                    const SizedBox(width: StudioSpacing.small),
+                    Transform.flip(
+                      flipX: Directionality.of(context) == TextDirection.rtl,
+                      child: CustomPaint(
+                        size: const Size(16, 16),
+                        painter: _ChevronPainter(muted),
+                      ),
                     ),
-                  ),
+                  ],
                 ],
-              ],
+              ),
             ),
           ),
         ),

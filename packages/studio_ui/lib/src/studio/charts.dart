@@ -12,6 +12,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
+import 'internal/label_stride.dart';
 import 'surface.dart';
 import 'theme.dart';
 
@@ -45,14 +46,8 @@ List<Color> _lights(StudioColors c) => [
 Color _lightOf(StudioColors c, int i, Color? own) =>
     own ?? _lights(c)[i % _lights(c).length];
 
-double _niceMax(double max) {
-  if (max <= 0) return 1;
-  final power = math.pow(10, (math.log(max) / math.ln10).floor()).toDouble();
-  for (final m in const [1.0, 2.0, 2.5, 5.0, 10.0]) {
-    if (m * power >= max) return m * power;
-  }
-  return 10 * power;
-}
+// The room kept between two labels side by side: a word's space.
+const double _labelGap = StudioSpacing.small;
 
 // A figure in the reader's digits: whole, or to one place.
 String _figure(DesignLocalizations words, double v) => v == v.roundToDouble()
@@ -151,14 +146,29 @@ abstract class _AxesPainter extends CustomPainter {
   /// chart gives them before the painter paints.
   late final DesignLocalizations words;
 
-  late final double top = _niceMax(
-    series.fold<double>(
+  /// ui_core's scale up the start, from 0 to a whole step over the most:
+  /// each step a round figure (1, 2 or 5 times a power of ten), so a
+  /// five-hour week reads 0, 1, 2, 3, 4, 5, never 1.3 or 3.8.
+  late final DesignLinearScale _scale = () {
+    final most = series.fold<double>(
       0,
       (m, s) => s.values.fold<double>(m, (a, v) => math.max(a, v)),
-    ),
-  );
+    );
+    return DesignLinearScale.nice(
+      // An empty or all-zero chart still climbs to 1.
+      min: 0,
+      max: most > 0 ? most : 1,
+      start: 0,
+      end: 1,
+      includeZero: true,
+    );
+  }();
 
-  static const int rows = 4;
+  /// The scale's top.
+  late final double top = _scale.max;
+
+  /// The scale's steps, their figures in the reader's digits.
+  late final List<DesignScaleTick> _ticks = _scale.ticks(words);
 
   TextPainter _words(String s, {Color? color}) => TextPainter(
     text: TextSpan(
@@ -176,8 +186,8 @@ abstract class _AxesPainter extends CustomPainter {
   Rect plot(Size size, {bool between = true}) {
     var gutter = 0.0;
     var labelHeight = 0.0;
-    for (var i = 0; i <= rows; i++) {
-      final p = _words(_figure(words, top * i / rows));
+    for (final tick in _ticks) {
+      final p = _words(tick.label);
       gutter = math.max(gutter, p.width);
       labelHeight = math.max(labelHeight, p.height);
       p.dispose();
@@ -212,33 +222,71 @@ abstract class _AxesPainter extends CustomPainter {
     final dash = Paint()
       ..color = c.onReadout.withValues(alpha: 0.06)
       ..strokeWidth = 1;
-    var previousTop = double.infinity;
-    for (var i = 0; i <= rows; i++) {
-      final y = r.bottom - r.height * i / rows;
-      canvas.drawLine(Offset(r.left, y), Offset(r.right, y), line);
-      final p = _words(_figure(words, top * i / rows), color: c.onReadoutMuted);
-      final labelTop = y - p.height / 2;
-      final left = r.left - StudioSpacing.small - p.width;
-      if (left >= 0 && labelTop >= 0 && labelTop + p.height <= previousTop) {
-        p.paint(canvas, Offset(left, labelTop));
-        previousTop = labelTop - StudioSpacing.hair;
+    // The scale's figures, every one that keeps clear of the next, or
+    // every other, every third...: evenly, from 0 up.
+    final figures = [
+      for (final tick in _ticks) _words(tick.label, color: c.onReadoutMuted),
+    ];
+    double yAt(int i) => r.bottom - r.height * _ticks[i].position;
+    for (var i = 0; i < _ticks.length; i++) {
+      canvas.drawLine(Offset(r.left, yAt(i)), Offset(r.right, yAt(i)), line);
+    }
+    final rows = studioLabelStride(figures.length, (every) {
+      var floor = double.infinity;
+      for (var i = 0; i < figures.length; i += every) {
+        final p = figures[i];
+        final above = yAt(i) - p.height / 2;
+        if (r.left - StudioSpacing.small - p.width < 0 ||
+            above < 0 ||
+            above + p.height > floor) {
+          return false;
+        }
+        floor = above - StudioSpacing.tight;
       }
+      return true;
+    });
+    if (rows != null) {
+      for (var i = 0; i < figures.length; i += rows) {
+        final p = figures[i];
+        p.paint(
+          canvas,
+          Offset(r.left - StudioSpacing.small - p.width, yAt(i) - p.height / 2),
+        );
+      }
+    }
+    for (final p in figures) {
       p.dispose();
     }
+    // The steps' labels: every one, or every other, every third...,
+    // evenly, so no two kept stand closer than a word's space.
     final n = labels.length;
-    var occupiedEnd = 0.0;
-    for (var step = 0; step < n; step++) {
-      final i = direction == TextDirection.rtl ? n - 1 - step : step;
+    final names = [for (final l in labels) _words(l, color: c.onReadoutMuted)];
+    double leftOf(int i) => (xOf(r, i, between: between) - names[i].width / 2)
+        .clamp(0.0, math.max(0.0, size.width - names[i].width))
+        .toDouble();
+    for (var i = 0; i < n; i++) {
       final x = xOf(r, i, between: between);
       canvas.drawLine(Offset(x, r.top), Offset(x, r.bottom), dash);
-      final p = _words(labels[i], color: c.onReadoutMuted);
-      final left = (x - p.width / 2)
-          .clamp(0.0, math.max(0.0, size.width - p.width))
-          .toDouble();
-      if (left >= occupiedEnd && p.width <= size.width) {
-        p.paint(canvas, Offset(left, r.bottom + p.height / 2 + 4));
-        occupiedEnd = left + p.width + StudioSpacing.tight;
+    }
+    final steps = studioLabelStride(n, (every) {
+      final kept = [for (var i = 0; i < n; i += every) i]
+        ..sort((a, b) => leftOf(a).compareTo(leftOf(b)));
+      var end = double.negativeInfinity;
+      for (final i in kept) {
+        if (names[i].width > size.width || leftOf(i) < end) return false;
+        end = leftOf(i) + names[i].width + _labelGap;
       }
+      return true;
+    });
+    if (steps != null) {
+      for (var i = 0; i < n; i += steps) {
+        names[i].paint(
+          canvas,
+          Offset(leftOf(i), r.bottom + names[i].height / 2 + 4),
+        );
+      }
+    }
+    for (final p in names) {
       p.dispose();
     }
   }

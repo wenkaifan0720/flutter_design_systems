@@ -51,7 +51,7 @@ Widget kitChoicesDemo(Brightness brightness) => kitScreen(
     ),
     KitSection(
       title: 'Checkboxes and radios',
-      note: 'Latching keys: checked, a square key stays in with its check lit; chosen, a round key stays in with its lamp lit.',
+      note: 'Latching keys: checked, a square key stays in with its check lit; chosen, a round key stays in with its lamp lit. A group of radios is one Tab stop; the arrows choose.',
       children: [
         kitState<bool>(
           true,
@@ -83,16 +83,13 @@ Widget kitChoicesDemo(Brightness brightness) => kitScreen(
         ),
         kitState<String>(
           'mp3',
-          (context, v, set) => KitRow(
-            children: [
-              for (final f in const ['mp3', 'aac', 'wav'])
-                StudioRadio<String>(
-                  value: f,
-                  groupValue: v,
-                  onChanged: set,
-                  semanticLabel: f,
-                ),
-            ],
+          (context, v, set) => StudioRadioGroup<String>(
+            options: const ['mp3', 'aac', 'wav'],
+            value: v,
+            labelOf: (f) => f.toUpperCase(),
+            direction: Axis.horizontal,
+            semanticLabel: 'Format',
+            onChanged: set,
           ),
         ),
       ],

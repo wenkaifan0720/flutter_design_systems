@@ -16,12 +16,9 @@ import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
-import 'actions.dart' show StudioToggleBank;
 import 'button.dart';
-import 'choices.dart' show StudioSegmentedButton;
 import 'feedback.dart' show StudioSpinner;
 import 'internal/stepper_glyph.dart';
-import 'pickers.dart' show StudioRangeFader, StudioTimePicker;
 import 'select.dart';
 import 'surface.dart';
 import 'text_field.dart';
@@ -955,30 +952,12 @@ class StudioFormField extends StatelessWidget {
   final bool enabled;
 
   /// Whether the control is one node that takes the label as its name
-  /// (true) or a group the label names (false). Left null, the field reads
-  /// its child: a row, column or wrap of controls, a segmented choice, a
-  /// stepper, a toggle bank, a range fader, a tag input or a time picker's
-  /// two drums is a group, so each control keeps its own node and answers
-  /// its own tap; anything else is one control.
+  /// (true) or a group the label names (false). Left null, ui_core's
+  /// DesignField reads what the child brings to the semantics tree: one
+  /// control is one node; several (a stepper's keys, a segmented choice,
+  /// radios, chips) keep each its own node and tap, the label naming them;
+  /// and a group that already names itself is not named again.
   final bool? mergeSemantics;
-
-  // Whether [child], through any padding, alignment or sizing round it, is
-  // a group of controls.
-  static bool _isGroup(Widget child) => switch (child) {
-    Flex() ||
-    Wrap() ||
-    StudioSegmentedButton() ||
-    StudioStepper() ||
-    StudioToggleBank() ||
-    StudioRangeFader() ||
-    StudioTagInput() ||
-    StudioTimePicker() => true,
-    Padding(child: final inner?) ||
-    Align(child: final inner?) ||
-    SizedBox(child: final inner?) ||
-    ConstrainedBox(child: final inner?) => _isGroup(inner),
-    _ => false,
-  };
 
   @override
   Widget build(BuildContext context) => DesignField(
@@ -987,7 +966,7 @@ class StudioFormField extends StatelessWidget {
     errorText: error,
     required: isRequired,
     enabled: enabled,
-    mergeSemantics: mergeSemantics ?? !_isGroup(child),
+    mergeSemantics: mergeSemantics,
     builder: (context, parts) {
       final theme = StudioTheme.of(context);
       final c = theme.colors;
@@ -1043,11 +1022,7 @@ class StudioFormField extends StatelessWidget {
       ..add(FlagProperty('isRequired', value: isRequired, ifTrue: 'required'))
       ..add(FlagProperty('enabled', value: enabled, ifFalse: 'disabled'))
       ..add(
-        FlagProperty(
-          'mergeSemantics',
-          value: mergeSemantics ?? !_isGroup(child),
-          ifFalse: 'group',
-        ),
+        FlagProperty('mergeSemantics', value: mergeSemantics, ifFalse: 'group'),
       );
   }
 }

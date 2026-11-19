@@ -1121,7 +1121,8 @@ class StudioWheelPicker<T> extends StatelessWidget {
 
 /// A time: two thumbwheels, the hours and the minutes, in one dark housing
 /// with a lit colon between them, on a 24-hour clock. [minuteInterval]
-/// steps the minutes.
+/// steps the minutes. The hours stand on the left in either direction, as a
+/// clock reads, and the arrows and Tab follow them.
 ///
 /// A null [onChanged] disables it.
 ///
@@ -1147,7 +1148,8 @@ class StudioTimePicker extends StatelessWidget {
   /// The minutes' step.
   final int minuteInterval;
 
-  /// What a screen reader calls it.
+  /// What a screen reader calls it; each drum adds its own word, "Hour" or
+  /// "Minute" in the reader's language.
   final String? semanticLabel;
 
   @override
@@ -1156,53 +1158,62 @@ class StudioTimePicker extends StatelessWidget {
     final c = theme.colors;
     final change = onChanged;
     final minutes = [for (var m = 0; m < 60; m += minuteInterval) m];
-    final name = semanticLabel ?? 'Time';
-    // Two figures in the reader's digits (Arabic-Indic in Arabic).
+    // Two figures in the reader's digits (Arabic-Indic in Arabic), and each
+    // drum named in the reader's words: "Hour", "Minute", after the
+    // picker's own name when it has one.
     final words = DesignLocalizations.of(context);
+    String named(String drum) => semanticLabel == null
+        ? drum
+        : '$semanticLabel${words.listSeparator}$drum';
     String two(int n) => n < 10
         ? '${words.formatDecimal(0)}${words.formatDecimal(n)}'
         : words.formatDecimal(n);
     return _housing(
       c,
-      _drums(
-        context,
-        semanticLabel: name,
-        columns: [
-          DesignWheelColumn(
-            itemCount: 24,
-            itemLabel: two,
-            semanticLabel: '$name, hours',
-          ),
-          DesignWheelColumn(
-            itemCount: minutes.length,
-            itemLabel: (i) => two(minutes[i]),
-            semanticLabel: '$name, minutes',
-          ),
-        ],
-        selection: [value.hour, math.max(0, minutes.indexOf(value.minute))],
-        width: 64,
-        onChanged: change == null
-            ? null
-            : (s) => change(StudioTime(hour: s[0], minute: minutes[s[1]])),
-        // The two drums with a lit colon between them.
-        layout: (context, drums) => Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            drums[0],
-            ExcludeSemantics(
-              child: Text(
-                ':',
-                style: theme.textTheme.readout.copyWith(
-                  fontSize: 20,
-                  color: change == null ? c.disabled : c.readoutLit,
-                  shadows: c.litReadout
-                      ? null
-                      : _glow(c.indicator, change != null),
+      // Hours then minutes, left to right, in a right-to-left language too,
+      // as Material's time picker keeps them.
+      Directionality(
+        textDirection: TextDirection.ltr,
+        child: _drums(
+          context,
+          semanticLabel: semanticLabel,
+          columns: [
+            DesignWheelColumn(
+              itemCount: 24,
+              itemLabel: two,
+              semanticLabel: named(words.timePickerHourLabel),
+            ),
+            DesignWheelColumn(
+              itemCount: minutes.length,
+              itemLabel: (i) => two(minutes[i]),
+              semanticLabel: named(words.timePickerMinuteLabel),
+            ),
+          ],
+          selection: [value.hour, math.max(0, minutes.indexOf(value.minute))],
+          width: 64,
+          onChanged: change == null
+              ? null
+              : (s) => change(StudioTime(hour: s[0], minute: minutes[s[1]])),
+          // The two drums with a lit colon between them.
+          layout: (context, drums) => Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              drums[0],
+              ExcludeSemantics(
+                child: Text(
+                  ':',
+                  style: theme.textTheme.readout.copyWith(
+                    fontSize: 20,
+                    color: change == null ? c.disabled : c.readoutLit,
+                    shadows: c.litReadout
+                        ? null
+                        : _glow(c.indicator, change != null),
+                  ),
                 ),
               ),
-            ),
-            drums[1],
-          ],
+              drums[1],
+            ],
+          ),
         ),
       ),
     );

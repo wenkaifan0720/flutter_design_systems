@@ -134,7 +134,6 @@ Widget kitFieldsDemo(Brightness brightness) => kitScreen(
             label: 'Episode type',
             helper: 'Trailers play before the first episode.',
             isRequired: true,
-            mergeSemantics: false,
             child: StudioSegmentedButton<int>(
               semanticLabel: 'Episode type',
               segments: const [

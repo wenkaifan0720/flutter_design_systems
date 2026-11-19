@@ -1,6 +1,7 @@
 /// Studio's choices: [StudioCheckbox] (a latching square key whose check
 /// lights), [StudioCheckRow] (a checkbox and its words as one target),
-/// [StudioRadio] (a round latching key with a lamp), [StudioSwitch]
+/// [StudioRadio] (a round latching key with a lamp), [StudioRadioGroup]
+/// (radios and their words, one choice, one Tab stop), [StudioSwitch]
 /// (a slide toggle whose slot lights behind its cap) and
 /// [StudioSegmentedButton] (a bank of latching keys in a recess).
 library;
@@ -74,6 +75,8 @@ class StudioCheckbox extends StatelessWidget {
     onPressed: onChanged == null ? null : () => onChanged!(!value),
     focusNode: focusNode,
     autofocus: autofocus,
+    // A checkbox, not a button, as Flutter's Checkbox reads.
+    button: false,
     checked: value,
     isError: isError,
     semanticLabel: semanticLabel,
@@ -223,6 +226,7 @@ class StudioCheckRow extends StatelessWidget {
       onPressed: off ? null : () => onChanged!(!value),
       focusNode: focusNode,
       autofocus: autofocus,
+      button: false,
       checked: value,
       isError: isError,
       semanticLabel: note == null ? label : '$label, $note',
@@ -415,51 +419,192 @@ class StudioRadio<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = StudioTheme.of(context);
-    final c = theme.colors;
     final chosen = value == groupValue;
     return DesignPressable(
       onPressed: onChanged == null ? null : () => onChanged!(value),
       focusNode: focusNode,
       autofocus: autofocus,
+      // A radio, not a button, as Flutter's Radio reads.
+      button: false,
       checked: chosen,
       inMutuallyExclusiveGroup: true,
       semanticLabel: semanticLabel,
-      builder: (context, states, _) {
-        final layered = DesignStyleOf(
-          [style, theme.radioStyle],
-          {...states, if (chosen) WidgetState.selected},
-        );
-        final disabled = states.contains(WidgetState.disabled);
-        final pressed = states.contains(WidgetState.pressed);
-        final face = layered.on(
-          c.keyFace
-              .copyWith(
-                radius: 12,
-                travel: chosen || pressed ? 1 : 0,
-                fill: disabled ? Color.lerp(c.key, c.panelLow, 0.5) : null,
-                focus: states.contains(WidgetState.focused)
-                    ? c.focusRing
-                    : c.focusRing.withValues(alpha: 0),
-              )
-              .backlitIf(c, chosen && !disabled),
-        );
-        return DesignTapTarget(
-          child: SizedBox.square(
-            dimension: StudioCheckbox.size,
-            child: AnimatedStudioSurface(
-              face: face,
-              child: Center(
-                child: StudioLamp(
-                  on: chosen && !disabled,
-                  color: layered.foreground,
+      builder: (context, states, _) => DesignTapTarget(
+        child: _RadioKey(chosen: chosen, style: style, states: states),
+      ),
+    );
+  }
+}
+
+// A radio's round key in [states]: [StudioRadio]'s, and each of
+// [StudioRadioGroup]'s rows'.
+class _RadioKey extends StatelessWidget {
+  const _RadioKey({
+    required this.chosen,
+    required this.style,
+    required this.states,
+  });
+
+  final bool chosen;
+  final StudioStyle? style;
+  final Set<WidgetState> states;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = StudioTheme.of(context);
+    final c = theme.colors;
+    final layered = DesignStyleOf(
+      [style, theme.radioStyle],
+      {...states, if (chosen) WidgetState.selected},
+    );
+    final disabled = states.contains(WidgetState.disabled);
+    final pressed = states.contains(WidgetState.pressed);
+    final face = layered.on(
+      c.keyFace
+          .copyWith(
+            radius: 12,
+            travel: chosen || pressed ? 1 : 0,
+            fill: disabled ? Color.lerp(c.key, c.panelLow, 0.5) : null,
+            focus: states.contains(WidgetState.focused)
+                ? c.focusRing
+                : c.focusRing.withValues(alpha: 0),
+          )
+          .backlitIf(c, chosen && !disabled),
+    );
+    return SizedBox.square(
+      dimension: StudioCheckbox.size,
+      child: AnimatedStudioSurface(
+        face: face,
+        child: Center(
+          child: StudioLamp(on: chosen && !disabled, color: layered.foreground),
+        ),
+      ),
+    );
+  }
+}
+
+/// Radios and their words, one choice of [options]: each row a round key
+/// that latches in when chosen, its lamp lit, beside its words, the whole
+/// row one target. Tab reaches the group once, at its choice; the arrows
+/// choose the next or the previous (mirrored right to left) and wrap, Home
+/// and End its ends, as Flutter's RadioGroup does; a screen reader hears a
+/// radio group of radios. A null [onChanged] disables it.
+///
+/// Built on ui_core's DesignToggleGroup. Reads [style] as [StudioRadio]
+/// does.
+///
+/// ```dart
+/// StudioRadioGroup<String>(options: const ['mp3', 'aac', 'wav'], value: format, labelOf: (f) => f.toUpperCase(), onChanged: (f) => setState(() => format = f))
+/// ```
+class StudioRadioGroup<T> extends StatelessWidget {
+  /// A group of [options], [value] chosen.
+  const StudioRadioGroup({
+    super.key,
+    required this.options,
+    required this.value,
+    required this.labelOf,
+    required this.onChanged,
+    this.isEnabled,
+    this.direction = Axis.vertical,
+    this.semanticLabel,
+    this.style,
+  });
+
+  /// The choices, in order.
+  final List<T> options;
+
+  /// The one chosen; none when null.
+  final T? value;
+
+  /// The words beside a choice's key, which a screen reader says too.
+  final String Function(T value) labelOf;
+
+  /// Called with the choice the reader makes; null disables the group.
+  final ValueChanged<T>? onChanged;
+
+  /// Whether a choice can be made; null: all can.
+  final bool Function(T value)? isEnabled;
+
+  /// Which way the rows run, and which arrows move along them: a column
+  /// by default.
+  final Axis direction;
+
+  /// What a screen reader calls the group.
+  final String? semanticLabel;
+
+  /// The keys' style, over [StudioThemeData.radioStyle].
+  final StudioStyle? style;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = StudioTheme.of(context);
+    final c = theme.colors;
+    final change = onChanged;
+    final v = value;
+    return DesignToggleGroup<T>(
+      options: options,
+      selected: {?v},
+      onSelectionChanged: change == null
+          ? null
+          : (next) {
+              if (next.isNotEmpty) change(next.first);
+            },
+      // The arrows choose as they move, as a radio group's do.
+      selectFollowsFocus: true,
+      isEnabled: isEnabled,
+      labelOf: labelOf,
+      semanticLabel: semanticLabel,
+      direction: direction,
+      minimumSize: Size.zero,
+      layoutBuilder: (context, rows) => direction == Axis.vertical
+          ? Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: rows,
+            )
+          : Wrap(spacing: StudioSpacing.large, children: rows),
+      itemBuilder: (context, option, states) {
+        final off = states.contains(WidgetState.disabled);
+        return ConstrainedBox(
+          constraints: BoxConstraints(minHeight: theme.controlHeight),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: StudioSpacing.small),
+            child: Row(
+              mainAxisSize: direction == Axis.vertical
+                  ? MainAxisSize.max
+                  : MainAxisSize.min,
+              children: [
+                _RadioKey(
+                  chosen: states.contains(WidgetState.selected),
+                  style: style,
+                  states: states,
                 ),
-              ),
+                const SizedBox(width: StudioSpacing.medium),
+                Flexible(
+                  child: Text(
+                    labelOf(option),
+                    style: theme.textTheme.label.copyWith(
+                      color: off ? c.disabled : c.legend,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         );
       },
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<T>('options', options))
+      ..add(DiagnosticsProperty<T>('value', value))
+      ..add(
+        FlagProperty('enabled', value: onChanged != null, ifFalse: 'disabled'),
+      );
   }
 }
 

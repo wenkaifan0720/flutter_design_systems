@@ -345,6 +345,15 @@ final Map<String, DocExample> _examples = {
       semanticLabel: 'MP3',
     );
   },
+  'StudioRadioGroup': (context) {
+    String? format = 'mp3';
+    return StudioRadioGroup<String>(
+      options: const ['mp3', 'aac', 'wav'],
+      value: format,
+      labelOf: (f) => f.toUpperCase(),
+      onChanged: (f) => setState(() => format = f),
+    );
+  },
   'StudioSwitch': (context) {
     var notify = true;
     return StudioSwitch(

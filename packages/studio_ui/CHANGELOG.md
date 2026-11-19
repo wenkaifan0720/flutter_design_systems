@@ -1,3 +1,14 @@
+## 0.1.3
+
+- A time drum reads hours then minutes, left to right, in a right-to-left language too, as a clock does and Material's time picker keeps it: in Arabic the hours stood on the right of the minutes before. Tab reaches the hours first and the arrows follow what is on screen.
+- A screen reader names a time drum's drums in the reader's language, from ui_core's words: "Stunde" and "Minute" in German, "ساعة" and "دقيقة" in Arabic, after the picker's own name when it has one. They said "hours" and "minutes" in English in every language before, and an unnamed picker called itself "Time".
+- `StudioRadioGroup`: radios and their words, one choice, the whole row a radio's target. Tab reaches the group once, at its choice, and the next Tab leaves it; the arrows choose the next or the previous and wrap (mirrored right to left in a row), Home and End its ends, as Flutter's `RadioGroup` does. A screen reader hears a radio group of radios, in a `StudioFormField` too, whose label names the group while each radio keeps its own node. The gallery's radios are one.
+- A radio, a checkbox and a check row read as Flutter's do: a checkable (in a mutually exclusive group, for a radio), not a button as well.
+- A `StudioListTile`'s `trailingText` takes its own width, up to under half the row, and the title the rest: before, the value's slot took half the row's room however short it was, so a title wrapped early beside a date. A long value still ends in an ellipsis.
+- A chart's scale steps by round figures, on ui_core's scale (1, 2 or 5 times a power of ten, the top rounded up): a five-hour week reads 0, 1, 2, 3, 4, 5, where it read 0, 1.3, 2.5, 3.8, 5 (always four steps to a rounded top).
+- A chart's labels thin evenly when they crowd: every other one, or every third..., by their own widths, no two closer than a word's space (a week at 200% keeps Mon, Wed, Fri, Sun, where it kept Mon, Wed, Fri and Sat with Fri and Sat touching). The scale's figures thin the same way, from 0 up. Where there is room for only two, they are the first and the last: Mon and Sun, and the scale's 0 and its top.
+- A `StudioFormField` left to choose (`mergeSemantics` null) reads its child by what it brings to the semantics tree, on ui_core 0.3.2's `DesignField`, where it went by the child's type: one control is one node named by the label, and any group keeps each control's own node and tap. A group that names itself, a segmented button named as its field, is read once, where it read the field's label twice.
+
 ## 0.1.2
 
 - A stepper's keys stand as tall as its readout at every text size (44 px keys beside a 48 px readout at 200% before), both growing with the figures, and the readout keeps the row's height in a taller box instead of stretching to fill it.
