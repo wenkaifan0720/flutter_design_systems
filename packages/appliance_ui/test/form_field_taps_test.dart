@@ -1,9 +1,9 @@
 // Controls in an ApplianceField take a tap, each its own: a selector's
-// positions, chips in a wrap, a stepper's keys, a switch and a checkbox, by
-// the pointer and through their semantics (a screen reader's double tap, a
-// browser's click with semantics on). A group's controls merged into the
-// field's one node gave every tap to the first of them (the user, 11-18:
-// Stint's Priority and Labels took no tap).
+// positions, chips in a wrap, a stepper's keys, a switch, a checkbox and a
+// time picker's keys, by the pointer and through their semantics (a screen
+// reader's double tap, a browser's click with semantics on). A group's
+// controls merged into the field's one node gave every tap to the first of
+// them (the user, 11-18: Stint's Priority and Labels took no tap).
 import 'package:appliance_ui/appliance_ui.dart';
 import 'package:material_ui/material_ui.dart' show MaterialApp;
 import 'package:flutter/semantics.dart';
@@ -25,6 +25,7 @@ class _FormState extends State<_Form> {
   var _estimate = 45;
   var _reminder = false;
   var _done = false;
+  var _time = const ApplianceTime(9, 30);
 
   void _say(String what) => widget.log.add(what);
 
@@ -111,12 +112,26 @@ class _FormState extends State<_Form> {
           ),
         ),
       ),
+      ApplianceField(
+        labelText: 'Remind at',
+        child: Align(
+          alignment: AlignmentDirectional.centerStart,
+          child: ApplianceTimePicker(
+            value: _time,
+            twentyFourHour: false,
+            onChanged: (t) {
+              _say('time ${t.hour}:${t.minute}');
+              setState(() => _time = t);
+            },
+          ),
+        ),
+      ),
     ],
   );
 }
 
 Future<List<String>> _pump(WidgetTester tester) async {
-  tester.view.physicalSize = const Size(520, 900);
+  tester.view.physicalSize = const Size(520, 1200);
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.reset);
   final log = <String>[];
@@ -140,6 +155,7 @@ const _taken = [
   'estimate 60',
   'reminder true',
   'done true',
+  'time 21:30',
 ];
 
 void main() {
@@ -158,6 +174,7 @@ void main() {
       increase(),
       find.byType(ApplianceSwitch),
       find.byType(ApplianceCheckbox),
+      find.text('PM'),
     ]) {
       await tester.tap(target);
       await tester.pumpAndSettle();
@@ -178,6 +195,7 @@ void main() {
       (increase(), 'Increase'),
       (find.byType(ApplianceSwitch), 'Reminder'),
       (find.byType(ApplianceCheckbox), 'Done'),
+      (find.text('PM'), 'PM'),
     ]) {
       final own = tester.getSemantics(control);
       expect(own.label, startsWith(name), reason: '$name has its own node');
@@ -193,6 +211,7 @@ void main() {
     // The field names its group: one node above the positions says
     // 'Priority', once.
     expect(find.bySemanticsLabel(RegExp('^Priority')), findsWidgets);
+    expect(find.bySemanticsLabel(RegExp('^Remind at')), findsWidgets);
     semantics.dispose();
   });
 }

@@ -1,3 +1,14 @@
+## 0.1.3
+
+- A time picker speaks the reader's language, from ui_core's words: a screen reader names its figures "Stunde" and "Minute" in German, "ساعة" and "دقيقة" in Arabic ("Hour" and "Minute" in English, where they were "Hours" and "Minutes"), and its keys for the halves of the day read "ص" and "م" in Arabic. They were English in every language before.
+- `ApplianceTimePicker.semanticLabel` is a `String?`, null by default: with none, the field round the picker names it with its label, where the picker called itself "Time" in English in every language. A `String` passed as before still names it.
+- A time picker's figures are in the reader's digits (Arabic-Indic in Arabic), as Material's time picker sets its hours: they are text in the display window, not a segment display.
+- An `ApplianceField` holding a time picker keeps each figure's and key's own node and tap, as it does a stepper's, and its label names the picker. Before, a screen reader's tap on the PM key went to the field's one node.
+- `ApplianceRadioGroup`: preset keys and their words, one choice, the whole row a key's target. Tab reaches the group once, at its choice, and the next Tab leaves it; the arrows choose the next or the previous and wrap (mirrored right to left in a row), Home and End its ends, Space chooses, as Flutter's `RadioGroup` does. A screen reader hears a radio group of radios, in an `ApplianceField` too, whose label names the group while each radio keeps its own node. The gallery's preset keys are one.
+- A radio and a checkbox read as Flutter's do: a checkable (in a mutually exclusive group, for a radio), not a button as well.
+- An `ApplianceListTile`'s `trailingText` takes its own width, up to under half the row, and the title the rest: before, the value's slot took half the row's room however short it was, so a title wrapped early beside a date (Stint's Up next wrapped "Proof the studio map" at 390 beside its date). A long value still ends in an ellipsis.
+- An `ApplianceField` left to choose (`mergeSemantics` null) reads its child by what it brings to the semantics tree, on ui_core 0.3.2's `DesignField`, where it went by the child's type: one control is one node named by the label, and any group keeps each control's own node and tap. A group that names itself, a selector named as its field, is read once, where it read the field's label twice.
+
 ## 0.1.2
 
 - A field holding a group of controls (a row, column or wrap of them, a selector, a stepper, a toggle group, a range slider, a tag input) keeps each control's own node and tap, and its label names the group. Before, with semantics on (a screen reader, or a browser that turned them on), a tap on any of them went to the first. `ApplianceField.mergeSemantics` is now null by default and decides by the child; true and false still force it.

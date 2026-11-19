@@ -13,12 +13,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
-import 'actions.dart';
-import 'choices.dart';
 import 'internal/glyphs.dart';
 import 'material.dart';
-import 'pickers.dart';
-import 'sliders.dart';
 import 'text_field.dart';
 import 'theme.dart';
 
@@ -746,8 +742,9 @@ class ApplianceOtpField extends StatelessWidget {
 /// [ApplianceTextField] stands: a switch, a select, a row of radios, a
 /// slider. A single control's node takes the label as its name and the
 /// error and help as its hint; a group of controls (a row or column of
-/// them, a selector, a stepper, chips) keeps each control's own node and
-/// tap, and the label names the group ([mergeSemantics]).
+/// them, a selector, a stepper, chips, a time picker's figures and keys)
+/// keeps each control's own node and tap, and the label names the group
+/// ([mergeSemantics]).
 ///
 /// ```dart
 /// ApplianceField(labelText: 'Delivery day', helperText: 'We deliver Monday to Saturday.', child: ApplianceSwitch(value: true, onChanged: (on) {}))
@@ -787,29 +784,13 @@ class ApplianceField extends StatelessWidget {
   /// The control's focus node, so a tap on the label focuses it.
   final FocusNode? focusNode;
 
-  /// Whether the label names the control (true) or a group (false). Left
-  /// null, the field reads its child: a row, column or wrap of controls, a
-  /// selector, a stepper, a toggle group, a range slider or a tag input is
-  /// a group, so each of its controls keeps its own node and answers its
-  /// own tap; anything else is one control.
+  /// Whether the control is one node that takes the label as its name
+  /// (true) or a group the label names (false). Left null, ui_core's
+  /// DesignField reads what the child brings to the semantics tree: one
+  /// control is one node; several (a stepper's keys, a segmented choice,
+  /// radios, chips) keep each its own node and tap, the label naming them;
+  /// and a group that already names itself is not named again.
   final bool? mergeSemantics;
-
-  // Whether [child], through any padding, alignment or sizing round it, is
-  // a group of controls.
-  static bool _isGroup(Widget child) => switch (child) {
-    Flex() ||
-    Wrap() ||
-    ApplianceSegmentedButton() ||
-    ApplianceStepper() ||
-    ApplianceToggleGroup() ||
-    ApplianceRangeSlider() ||
-    ApplianceTagInput() => true,
-    Padding(child: final inner?) ||
-    Align(child: final inner?) ||
-    SizedBox(child: final inner?) ||
-    ConstrainedBox(child: final inner?) => _isGroup(inner),
-    _ => false,
-  };
 
   @override
   Widget build(BuildContext context) => DesignField(
@@ -819,7 +800,7 @@ class ApplianceField extends StatelessWidget {
     required: required,
     enabled: enabled,
     focusNode: focusNode,
-    mergeSemantics: mergeSemantics ?? !_isGroup(child),
+    mergeSemantics: mergeSemantics,
     builder: (context, parts) {
       final theme = ApplianceTheme.of(context);
       final c = theme.colors;

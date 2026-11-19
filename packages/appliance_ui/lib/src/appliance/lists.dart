@@ -472,61 +472,68 @@ class ApplianceListTile extends StatelessWidget {
                     horizontal: ApplianceSpacing.medium,
                     vertical: ApplianceSpacing.small,
                   ),
-              child: Row(
-                children: [
-                  if (leading != null) ...[
-                    IconTheme.merge(
-                      data: IconThemeData(
-                        size: layered.iconSize ?? 20,
-                        color: disabled ? c.printDisabled : c.printMuted,
+              // A value at the end takes its own width (up to under half the
+              // row), the title the rest, so a short value leaves the title
+              // the row.
+              child: LayoutBuilder(
+                builder: (context, box) => Row(
+                  children: [
+                    if (leading != null) ...[
+                      IconTheme.merge(
+                        data: IconThemeData(
+                          size: layered.iconSize ?? 20,
+                          color: disabled ? c.printDisabled : c.printMuted,
+                        ),
+                        child: SizedBox.square(
+                          dimension: 24,
+                          child: Center(child: leading),
+                        ),
                       ),
-                      child: SizedBox.square(
-                        dimension: 24,
-                        child: Center(child: leading),
-                      ),
-                    ),
-                    const SizedBox(width: ApplianceSpacing.medium),
-                  ],
-                  Expanded(
-                    child: ExcludeSemantics(
-                      excluding: named,
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          DesignCapCenter(
-                            capHeightFactor: theme.capHeightFactor,
-                            child: Text(
-                              title,
-                              style: layered.text(
-                                theme.textTheme.body.copyWith(
-                                  color: ink,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ),
-                          ),
-                          if (subtitle != null)
-                            Padding(
-                              padding: const EdgeInsets.only(
-                                top: ApplianceSpacing.tight / 2,
-                              ),
+                      const SizedBox(width: ApplianceSpacing.medium),
+                    ],
+                    Expanded(
+                      child: ExcludeSemantics(
+                        excluding: named,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            DesignCapCenter(
+                              capHeightFactor: theme.capHeightFactor,
                               child: Text(
-                                subtitle!,
-                                style: theme.textTheme.secondary.copyWith(
-                                  color: muted,
+                                title,
+                                style: layered.text(
+                                  theme.textTheme.body.copyWith(
+                                    color: ink,
+                                    fontWeight: FontWeight.w500,
+                                  ),
                                 ),
                               ),
                             ),
-                        ],
+                            if (subtitle != null)
+                              Padding(
+                                padding: const EdgeInsets.only(
+                                  top: ApplianceSpacing.tight / 2,
+                                ),
+                                child: Text(
+                                  subtitle!,
+                                  style: theme.textTheme.secondary.copyWith(
+                                    color: muted,
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                  if (trailingText != null) ...[
-                    const SizedBox(width: ApplianceSpacing.medium),
-                    Flexible(
-                      child: Align(
-                        alignment: AlignmentDirectional.centerEnd,
+                    if (trailingText != null) ...[
+                      const SizedBox(width: ApplianceSpacing.medium),
+                      ConstrainedBox(
+                        constraints: BoxConstraints(
+                          maxWidth: box.maxWidth.isFinite
+                              ? box.maxWidth * 0.45
+                              : double.infinity,
+                        ),
                         child: ExcludeSemantics(
                           excluding: named,
                           child: Text(
@@ -538,27 +545,27 @@ class ApplianceListTile extends StatelessWidget {
                           ),
                         ),
                       ),
-                    ),
-                  ],
-                  if (trailing != null) ...[
-                    const SizedBox(width: ApplianceSpacing.medium),
-                    trailing!,
-                  ],
-                  if (chevron) ...[
-                    const SizedBox(width: ApplianceSpacing.small),
-                    Transform.flip(
-                      flipX: Directionality.of(context) == TextDirection.rtl,
-                      child: SizedBox.square(
-                        dimension: 16,
-                        child: CustomPaint(
-                          painter: ApplianceChevronPainter(
-                            disabled ? c.printDisabled : c.printMuted,
+                    ],
+                    if (trailing != null) ...[
+                      const SizedBox(width: ApplianceSpacing.medium),
+                      trailing!,
+                    ],
+                    if (chevron) ...[
+                      const SizedBox(width: ApplianceSpacing.small),
+                      Transform.flip(
+                        flipX: Directionality.of(context) == TextDirection.rtl,
+                        child: SizedBox.square(
+                          dimension: 16,
+                          child: CustomPaint(
+                            painter: ApplianceChevronPainter(
+                              disabled ? c.printDisabled : c.printMuted,
+                            ),
                           ),
                         ),
                       ),
-                    ),
+                    ],
                   ],
-                ],
+                ),
               ),
             ),
           ),

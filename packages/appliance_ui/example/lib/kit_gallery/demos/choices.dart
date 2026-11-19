@@ -75,23 +75,20 @@ class _ChoicesState extends State<_Choices> {
         const SizedBox(height: ApplianceSpacing.extraLarge),
         KitSection(
           title: 'Preset keys',
-          note: 'The chosen key stays down with its lamp lit.',
+          note: 'The chosen key stays down with its lamp lit. A bank is one Tab stop; the arrows choose.',
           gap: ApplianceSpacing.medium,
           children: [
-            for (final (v, w) in const [
-              ('standard', 'Standard delivery'),
-              ('next', 'Next day'),
-              ('collect', 'Collect from the shop'),
-            ])
-              line(
-                ApplianceRadio<String>(
-                  value: v,
-                  groupValue: _delivery,
-                  semanticLabel: w,
-                  onChanged: (x) => setState(() => _delivery = x),
-                ),
-                w,
-              ),
+            ApplianceRadioGroup<String>(
+              options: const ['standard', 'next', 'collect'],
+              value: _delivery,
+              labelOf: (v) => switch (v) {
+                'standard' => 'Standard delivery',
+                'next' => 'Next day',
+                _ => 'Collect from the shop',
+              },
+              semanticLabel: 'Delivery',
+              onChanged: (x) => setState(() => _delivery = x),
+            ),
           ],
         ),
         const SizedBox(height: ApplianceSpacing.extraLarge),

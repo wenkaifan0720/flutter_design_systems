@@ -1002,7 +1002,7 @@ class ApplianceTimePicker extends StatelessWidget {
     required this.onChanged,
     this.minuteStep = 5,
     this.twentyFourHour = true,
-    this.semanticLabel = 'Time',
+    this.semanticLabel,
     this.style,
   }) : assert(minuteStep > 0 && minuteStep <= 30);
 
@@ -1019,8 +1019,10 @@ class ApplianceTimePicker extends StatelessWidget {
   /// afternoon.
   final bool twentyFourHour;
 
-  /// The picker's name for a screen reader.
-  final String semanticLabel;
+  /// The picker's name for a screen reader; null leaves it to the field
+  /// round it ([ApplianceField]'s label). Its figures are named "Hour" and
+  /// "Minute" in the reader's language either way.
+  final String? semanticLabel;
 
   /// Its style, over [ApplianceThemeData.displayStyle]: fill (the window), foreground, textStyle (the figures).
   final ApplianceStyle? style;
@@ -1043,6 +1045,13 @@ class ApplianceTimePicker extends StatelessWidget {
     final change = onChanged;
     final hour12 = value.hour % 12 == 0 ? 12 : value.hour % 12;
     final pm = value.hour >= 12;
+    // Each figure named in the reader's words ("Hour", "Minute") and set in
+    // the reader's digits (Arabic-Indic in Arabic): the figures are text in
+    // the window, as Material's time picker sets its hours.
+    final words = DesignLocalizations.of(context);
+    String two(int n) => n < 10
+        ? '${words.formatDecimal(0)}${words.formatDecimal(n)}'
+        : words.formatDecimal(n);
     final window = ApplianceSurface(
       face: ApplianceFace.well(c, fill: look.fill ?? c.display),
       child: Padding(
@@ -1058,9 +1067,9 @@ class ApplianceTimePicker extends StatelessWidget {
               max: 23,
               step: 1,
               shown: twentyFourHour
-                  ? value.hour.toString().padLeft(2, '0')
-                  : '$hour12',
-              semanticLabel: 'Hours',
+                  ? two(value.hour)
+                  : words.formatDecimal(hour12),
+              semanticLabel: words.timePickerHourLabel,
               fill: look.fill ?? c.display,
               onChanged: change == null
                   ? null
@@ -1078,8 +1087,8 @@ class ApplianceTimePicker extends StatelessWidget {
               value: value.minute,
               max: 59,
               step: minuteStep,
-              shown: value.minute.toString().padLeft(2, '0'),
-              semanticLabel: 'Minutes',
+              shown: two(value.minute),
+              semanticLabel: words.timePickerMinuteLabel,
               fill: look.fill ?? c.display,
               onChanged: change == null
                   ? null
@@ -1183,12 +1192,14 @@ class _Meridiem extends StatelessWidget {
       );
     }
 
+    // The halves of the day as the reader writes them.
+    final words = DesignLocalizations.of(context);
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        key('AM', false),
+        key(words.anteMeridiemAbbreviation, false),
         const SizedBox(height: ApplianceSpacing.small),
-        key('PM', true),
+        key(words.postMeridiemAbbreviation, true),
       ],
     );
   }

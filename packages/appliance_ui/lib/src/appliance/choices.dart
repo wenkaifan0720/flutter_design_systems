@@ -1,6 +1,8 @@
 /// Appliance's choices, each one mechanical object: [ApplianceCheckbox] (a
 /// latching key that stays down with a tick), [ApplianceRadio] (a round
-/// preset key, down with its lamp lit), [ApplianceSwitch] (a slide switch),
+/// preset key, down with its lamp lit), [ApplianceRadioGroup] (preset keys
+/// and their words, one choice, one Tab stop), [ApplianceSwitch] (a slide
+/// switch),
 /// [ApplianceSegmentedButton] (a slide selector: a block sliding in a
 /// trough) and [ApplianceStepper] (two keys round a display window).
 library;
@@ -78,6 +80,8 @@ class ApplianceCheckbox extends StatelessWidget {
     return DesignPressable(
       onPressed: onChanged == null ? null : () => onChanged!(_next),
       focusNode: focusNode,
+      // A checkbox, not a button, as Flutter's Checkbox reads.
+      button: false,
       checked: value ?? false,
       mixed: value == null,
       semanticLabel: semanticLabel,
@@ -222,46 +226,191 @@ class ApplianceRadio<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = ApplianceTheme.of(context);
-    final c = theme.colors;
     final chosen = value == groupValue;
     return DesignPressable(
       onPressed: onChanged == null ? null : () => onChanged!(value),
       focusNode: focusNode,
+      // A radio, not a button, as Flutter's Radio reads.
+      button: false,
       checked: chosen,
       inMutuallyExclusiveGroup: true,
       semanticLabel: semanticLabel,
       excludeSemantics: true,
-      builder: (context, states, _) {
-        final layered = DesignStyleOf([style, theme.toggleStyle], states);
-        final disabled = states.contains(WidgetState.disabled);
-        final down = chosen || states.contains(WidgetState.pressed);
-        var face = down
-            ? ApplianceFace.keyDown(c, circle: true)
-            : ApplianceFace.key(c, circle: true);
-        if (disabled) face = face.copyWith(lift: face.lift * 0.4);
-        face = layered.on(
-          face.copyWith(
-            // The lens is moulded into the circular key; the rim and its
-            // depth change together while the lens stays on its axis.
-            travel: 0,
-            focus: states.contains(WidgetState.focused)
-                ? c.focus
-                : _none(c.focus),
+      builder: (context, states, _) => DesignTapTarget(
+        child: _PresetKey(chosen: chosen, style: style, states: states),
+      ),
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<T>('value', value))
+      ..add(DiagnosticsProperty<T>('groupValue', groupValue))
+      ..add(
+        FlagProperty('enabled', value: onChanged != null, ifFalse: 'disabled'),
+      );
+  }
+}
+
+// A radio's round preset key in [states], down with its lamp lit when
+// [chosen]: [ApplianceRadio]'s, and each of [ApplianceRadioGroup]'s rows'.
+class _PresetKey extends StatelessWidget {
+  const _PresetKey({
+    required this.chosen,
+    required this.style,
+    required this.states,
+  });
+
+  final bool chosen;
+  final ApplianceStyle? style;
+  final Set<WidgetState> states;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = ApplianceTheme.of(context);
+    final c = theme.colors;
+    final layered = DesignStyleOf([style, theme.toggleStyle], states);
+    final disabled = states.contains(WidgetState.disabled);
+    final down = chosen || states.contains(WidgetState.pressed);
+    var face = down
+        ? ApplianceFace.keyDown(c, circle: true)
+        : ApplianceFace.key(c, circle: true);
+    if (disabled) face = face.copyWith(lift: face.lift * 0.4);
+    face = layered.on(
+      face.copyWith(
+        // The lens is moulded into the circular key; the rim and its
+        // depth change together while the lens stays on its axis.
+        travel: 0,
+        focus: states.contains(WidgetState.focused) ? c.focus : _none(c.focus),
+      ),
+    );
+    return SizedBox.square(
+      dimension: ApplianceRadio.size,
+      child: AnimatedApplianceSurface(
+        face: face,
+        child: Center(
+          child: ApplianceLamp(
+            lit: chosen,
+            size: 9,
+            color: disabled ? c.printDisabled : null,
           ),
-        );
-        return DesignTapTarget(
-          child: SizedBox.square(
-            dimension: size,
-            child: AnimatedApplianceSurface(
-              face: face,
-              child: Center(
-                child: ApplianceLamp(
-                  lit: chosen,
-                  size: 9,
-                  color: disabled ? c.printDisabled : null,
+        ),
+      ),
+    );
+  }
+}
+
+/// Preset keys and their words, one choice of [options]: each row a round
+/// key, down with its lamp lit when chosen, beside its words, the whole row
+/// one target. Tab reaches the group once, at its choice; the arrows choose
+/// the next or the previous (mirrored right to left in a row) and wrap,
+/// Home and End its ends, Space chooses, as Flutter's RadioGroup does; a
+/// screen reader hears a radio group of radios. A null [onChanged]
+/// disables it.
+///
+/// Built on ui_core's DesignToggleGroup. Reads [style] as [ApplianceRadio]
+/// does.
+///
+/// ```dart
+/// ApplianceRadioGroup<String>(options: const ['standard', 'next'], value: delivery, labelOf: (d) => d == 'standard' ? 'Standard delivery' : 'Next day', onChanged: (d) => setState(() => delivery = d))
+/// ```
+class ApplianceRadioGroup<T> extends StatelessWidget {
+  /// A group of [options], [value] chosen.
+  const ApplianceRadioGroup({
+    super.key,
+    required this.options,
+    required this.value,
+    required this.labelOf,
+    required this.onChanged,
+    this.isEnabled,
+    this.direction = Axis.vertical,
+    this.semanticLabel,
+    this.style,
+  });
+
+  /// The choices, in order.
+  final List<T> options;
+
+  /// The one chosen; none when null.
+  final T? value;
+
+  /// The words beside a choice's key, which a screen reader says too.
+  final String Function(T value) labelOf;
+
+  /// Called with the choice the reader makes; null disables the group.
+  final ValueChanged<T>? onChanged;
+
+  /// Whether a choice can be made; null: all can.
+  final bool Function(T value)? isEnabled;
+
+  /// Which way the rows run, and which arrows move along them: a column
+  /// by default.
+  final Axis direction;
+
+  /// What a screen reader calls the group.
+  final String? semanticLabel;
+
+  /// The keys' style, over [ApplianceThemeData.toggleStyle].
+  final ApplianceStyle? style;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = ApplianceTheme.of(context);
+    final c = theme.colors;
+    final change = onChanged;
+    final v = value;
+    return DesignToggleGroup<T>(
+      options: options,
+      selected: {?v},
+      onSelectionChanged: change == null
+          ? null
+          : (next) {
+              if (next.isNotEmpty) change(next.first);
+            },
+      // The arrows choose as they move, as a radio group's do.
+      selectFollowsFocus: true,
+      isEnabled: isEnabled,
+      labelOf: labelOf,
+      semanticLabel: semanticLabel,
+      direction: direction,
+      minimumSize: Size.zero,
+      layoutBuilder: (context, rows) => direction == Axis.vertical
+          ? Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: rows,
+            )
+          : Wrap(spacing: ApplianceSpacing.large, children: rows),
+      itemBuilder: (context, option, states) {
+        final off = states.contains(WidgetState.disabled);
+        return ConstrainedBox(
+          constraints: BoxConstraints(minHeight: theme.controlHeight),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              vertical: ApplianceSpacing.small,
+            ),
+            child: Row(
+              mainAxisSize: direction == Axis.vertical
+                  ? MainAxisSize.max
+                  : MainAxisSize.min,
+              children: [
+                _PresetKey(
+                  chosen: states.contains(WidgetState.selected),
+                  style: style,
+                  states: states,
                 ),
-              ),
+                const SizedBox(width: ApplianceSpacing.medium),
+                Flexible(
+                  child: Text(
+                    labelOf(option),
+                    style: theme.textTheme.body.copyWith(
+                      color: off ? c.printDisabled : c.print,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         );
@@ -273,8 +422,8 @@ class ApplianceRadio<T> extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
+      ..add(IterableProperty<T>('options', options))
       ..add(DiagnosticsProperty<T>('value', value))
-      ..add(DiagnosticsProperty<T>('groupValue', groupValue))
       ..add(
         FlagProperty('enabled', value: onChanged != null, ifFalse: 'disabled'),
       );
