@@ -204,7 +204,9 @@ class _EndBottom extends CustomPainter {
 /// same, to the day under the pointer). A null callback greys every day.
 ///
 /// The arrows move by a day and a week, Page Up and Down by a month, Enter
-/// chooses.
+/// chooses. Its words and figures grow with the reader's text to twice
+/// their size, as Material's calendar's do, and keep that size beyond, so a
+/// two-digit day stays inside its cell.
 ///
 /// Reads [style]'s `edge` (every rule), `fill` (a chosen day or a span's
 /// end, selected among its states; its figures take black or white by
@@ -368,11 +370,11 @@ class _BrutalCalendarState extends State<BrutalCalendar> {
     final frame = DesignStyleOf(layers, const {});
     final rule = frame.side?.color ?? frame.edge ?? c.ink;
     final w = theme.borderWidth;
-    // A day's row grows with its figure (at large text), never under 44.
-    final dayHeight = math.max(
-      44.0,
-      MediaQuery.textScalerOf(context).scale(15) * 20 / 15 + 3 * w + 4,
-    );
+    // A day's row grows with its figure (at large text, to twice its
+    // size), never under 44.
+    final scaler = MediaQuery.textScalerOf(context)
+        .clamp(maxScaleFactor: _maxTextScale);
+    final dayHeight = math.max(44.0, scaler.scale(15) * 20 / 15 + 3 * w + 4);
     Widget turn(IconData icon, String label, VoidCallback? onPressed) =>
         DesignTapTarget(
           child: DesignPressable(
@@ -403,114 +405,126 @@ class _BrutalCalendarState extends State<BrutalCalendar> {
             },
           ),
         );
-    return _Table(
-      rule: rule,
-      child: DesignCalendar(
-        controller: _controller,
-        months: widget.months,
-        autofocus: widget.autofocus,
-        onChanged: _changed,
-        headerBuilder: (context, header) => Row(
-          children: [
-            turn(
-              LucideIcons.chevronLeft,
-              words.previousMonthTooltip,
-              header.previous,
-            ),
-            Expanded(
-              child: _Cell(
-                height: dayHeight + w,
-                rule: rule,
-                child: DesignCapCenter(
-                  capHeightFactor: BrutalTheme.of(context).capHeightFactor,
-                  child: Text(header.label, maxLines: 1, style: t.label),
-                ),
+    return MediaQuery.withClampedTextScaling(
+      maxScaleFactor: _maxTextScale,
+      child: _Table(
+        rule: rule,
+        child: DesignCalendar(
+          controller: _controller,
+          months: widget.months,
+          autofocus: widget.autofocus,
+          onChanged: _changed,
+          headerBuilder: (context, header) => Row(
+            children: [
+              turn(
+                LucideIcons.chevronLeft,
+                words.previousMonthTooltip,
+                header.previous,
               ),
-            ),
-            turn(LucideIcons.chevronRight, words.nextMonthTooltip, header.next),
-          ],
-        ),
-        weekdayBuilder: (context, weekday, label) => _Cell(
-          height: 32,
-          rule: rule,
-          child: Text(
-            label.toUpperCase(),
-            maxLines: 1,
-            style: t.caption.copyWith(color: c.inkMuted),
-          ),
-        ),
-        dayBuilder: (context, day, states) {
-          final pressed = states.contains(WidgetState.pressed);
-          final end =
-              day.selected ||
-              day.isRangeStart ||
-              day.isRangeEnd ||
-              day.isPreviewEnd;
-          final middle = !end && (day.inRange || day.inPreview);
-          final layered = DesignStyleOf(layers, {
-            ...states,
-            if (end) WidgetState.selected,
-          });
-          final Color? fill;
-          final Color figures;
-          if (!day.enabled) {
-            fill = end ? c.disabled : null;
-            figures = end ? c.surface : c.disabled;
-          } else if (pressed) {
-            fill = c.ink;
-            figures = c.paper;
-          } else if (end) {
-            fill = layered.fill ?? c.ink;
-            figures = c.onColor(fill);
-          } else if (middle) {
-            fill = c.lime;
-            figures = c.onBlock;
-          } else {
-            fill = null;
-            figures = day.inMonth ? layered.foreground ?? c.ink : c.inkMuted;
-          }
-          return _Cell(
-            height: dayHeight,
-            rule: rule,
-            fill: fill,
-            focus: states.contains(WidgetState.focused)
-                ? (fill == c.ink ? c.paper : c.ink)
-                : null,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // One line; at large text on a phone it shrinks to its cell
-                // rather than breaking the figure in two.
-                Flexible(
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Text(
-                      '${day.date.day}',
-                      maxLines: 1,
-                      softWrap: false,
-                      style: layered
-                          .text(t.label.copyWith(fontSize: 15, height: 20 / 15))
-                          .copyWith(
-                            color: figures,
-                            fontWeight: day.isToday
-                                ? FontWeight.w700
-                                : FontWeight.w500,
-                          ),
-                    ),
+              Expanded(
+                child: _Cell(
+                  height: dayHeight + w,
+                  rule: rule,
+                  child: DesignCapCenter(
+                    capHeightFactor: BrutalTheme.of(context).capHeightFactor,
+                    child: Text(header.label, maxLines: 1, style: t.label),
                   ),
                 ),
-                SizedBox(
-                  width: 12,
-                  height: w,
-                  child: day.isToday ? ColoredBox(color: figures) : null,
-                ),
-              ],
+              ),
+              turn(
+                LucideIcons.chevronRight,
+                words.nextMonthTooltip,
+                header.next,
+              ),
+            ],
+          ),
+          weekdayBuilder: (context, weekday, label) => _Cell(
+            height: 32,
+            rule: rule,
+            child: Text(
+              label.toUpperCase(),
+              maxLines: 1,
+              style: t.caption.copyWith(color: c.inkMuted),
             ),
-          );
-        },
+          ),
+          dayBuilder: (context, day, states) {
+            final pressed = states.contains(WidgetState.pressed);
+            final end =
+                day.selected ||
+                day.isRangeStart ||
+                day.isRangeEnd ||
+                day.isPreviewEnd;
+            final middle = !end && (day.inRange || day.inPreview);
+            final layered = DesignStyleOf(layers, {
+              ...states,
+              if (end) WidgetState.selected,
+            });
+            final Color? fill;
+            final Color figures;
+            if (!day.enabled) {
+              fill = end ? c.disabled : null;
+              figures = end ? c.surface : c.disabled;
+            } else if (pressed) {
+              fill = c.ink;
+              figures = c.paper;
+            } else if (end) {
+              fill = layered.fill ?? c.ink;
+              figures = c.onColor(fill);
+            } else if (middle) {
+              fill = c.lime;
+              figures = c.onBlock;
+            } else {
+              fill = null;
+              figures = day.inMonth ? layered.foreground ?? c.ink : c.inkMuted;
+            }
+            return _Cell(
+              height: dayHeight,
+              rule: rule,
+              fill: fill,
+              focus: states.contains(WidgetState.focused)
+                  ? (fill == c.ink ? c.paper : c.ink)
+                  : null,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // One line; at large text on a phone it shrinks to its cell
+                  // rather than breaking the figure in two.
+                  Flexible(
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        '${day.date.day}',
+                        maxLines: 1,
+                        softWrap: false,
+                        style: layered
+                            .text(
+                              t.label.copyWith(fontSize: 15, height: 20 / 15),
+                            )
+                            .copyWith(
+                              color: figures,
+                              fontWeight: day.isToday
+                                  ? FontWeight.w700
+                                  : FontWeight.w500,
+                            ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(
+                    width: 12,
+                    height: w,
+                    child: day.isToday ? ColoredBox(color: figures) : null,
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
       ),
     );
   }
+
+  // How far its words and figures grow with the reader's text.
+  static const double _maxTextScale = 2;
 }
 
 /// A field-shaped trigger: its words (or the hint) and a glyph in a cell of
@@ -975,6 +989,10 @@ const double _wheelRow = 40;
 /// next column) and a screen reader's adjustable value, named [names]. A
 /// column [widths] gives none of shares the room left.
 ///
+/// Their rows keep their size at any text size, as Cupertino's wheels do
+/// (a row's pitch is the wheel's, and a larger figure would cut its
+/// neighbours).
+///
 /// The wheels win a drag that starts on them, the page under them keeps
 /// still: the rule between two columns is shared, half of it in each
 /// column's reach (the later column draws it whole), and a mouse turns them
@@ -1005,82 +1023,84 @@ Widget _wheels(
   );
   // A mouse drag turns a wheel too (a scrollable takes none by default).
   final behavior = ScrollConfiguration.of(context);
-  return ScrollConfiguration(
-    behavior: behavior.copyWith(
-      dragDevices: {...behavior.dragDevices, PointerDeviceKind.mouse},
-    ),
-    child: DesignWheelPicker(
-      columns: (_) => [
-        for (final (i, column) in labels.indexed)
-          DesignWheelColumn(
-            itemCount: column.length,
-            itemLabel: (row) => column[row],
-            semanticLabel: names[i],
-          ),
-      ],
-      selection: selection,
-      onChanged: onChanged,
-      itemExtent: _wheelRow,
-      visibleItemCount: rows,
-      // Flat: no lean and no squeeze, as a list of rows on a page.
-      diameterRatio: 1000,
-      squeeze: 1,
-      semanticLabel: semanticLabel,
-      dampingRatio: BrutalMotion.dampingRatio,
-      stiffness: BrutalMotion.moveStiffness,
-      itemBuilder: (context, row) {
-        final layered = DesignStyleOf(layers, {
-          if (!enabled) WidgetState.disabled,
-        });
-        return Padding(
-          // Clear of the rules beside the column.
-          padding: ruled(row.column),
-          child: Center(
-            child: Text(
-              row.label,
-              maxLines: 1,
-              style: layered
-                  .text(theme.textTheme.label)
-                  .copyWith(
-                    fontSize: row.selected ? 20 : 16,
-                    fontWeight: row.selected
-                        ? FontWeight.w700
-                        : FontWeight.w500,
-                    color: !enabled
-                        ? c.disabled
-                        : row.selected
-                        ? layered.foreground ?? c.ink
-                        : c.inkMuted,
-                  ),
+  return MediaQuery.withNoTextScaling(
+    child: ScrollConfiguration(
+      behavior: behavior.copyWith(
+        dragDevices: {...behavior.dragDevices, PointerDeviceKind.mouse},
+      ),
+      child: DesignWheelPicker(
+        columns: (_) => [
+          for (final (i, column) in labels.indexed)
+            DesignWheelColumn(
+              itemCount: column.length,
+              itemLabel: (row) => column[row],
+              semanticLabel: names[i],
             ),
-          ),
-        );
-      },
-      columnBuilder: (context, column, wheel) {
-        final layered = DesignStyleOf(layers, column.states);
-        final band = enabled
-            ? layered.side?.color ?? layered.edge ?? c.ink
-            : c.disabled;
-        // A rule between two columns is half in each one's reach, so a drag
-        // on it turns a wheel; the later column draws it whole, over the
-        // half before its start. What a column paints stands clear of it.
-        final inset = ruled(column.column);
-        return Stack(
-          clipBehavior: Clip.none,
-          children: [
-            // The chosen row's band: two heavy rules.
-            Positioned.fill(
-              child: Padding(
-                padding: inset,
-                child: Center(
-                  child: SizedBox(
-                    height: column.itemExtent,
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        border: Border.symmetric(
-                          horizontal: BorderSide(
-                            color: band,
-                            width: theme.borderWidth,
+        ],
+        selection: selection,
+        onChanged: onChanged,
+        itemExtent: _wheelRow,
+        visibleItemCount: rows,
+        // Flat: no lean and no squeeze, as a list of rows on a page.
+        diameterRatio: 1000,
+        squeeze: 1,
+        semanticLabel: semanticLabel,
+        dampingRatio: BrutalMotion.dampingRatio,
+        stiffness: BrutalMotion.moveStiffness,
+        itemBuilder: (context, row) {
+          final layered = DesignStyleOf(layers, {
+            if (!enabled) WidgetState.disabled,
+          });
+          return Padding(
+            // Clear of the rules beside the column.
+            padding: ruled(row.column),
+            child: Center(
+              child: Text(
+                row.label,
+                maxLines: 1,
+                style: layered
+                    .text(theme.textTheme.label)
+                    .copyWith(
+                      fontSize: row.selected ? 20 : 16,
+                      fontWeight: row.selected
+                          ? FontWeight.w700
+                          : FontWeight.w500,
+                      color: !enabled
+                          ? c.disabled
+                          : row.selected
+                          ? layered.foreground ?? c.ink
+                          : c.inkMuted,
+                    ),
+              ),
+            ),
+          );
+        },
+        columnBuilder: (context, column, wheel) {
+          final layered = DesignStyleOf(layers, column.states);
+          final band = enabled
+              ? layered.side?.color ?? layered.edge ?? c.ink
+              : c.disabled;
+          // A rule between two columns is half in each one's reach, so a drag
+          // on it turns a wheel; the later column draws it whole, over the
+          // half before its start. What a column paints stands clear of it.
+          final inset = ruled(column.column);
+          return Stack(
+            clipBehavior: Clip.none,
+            children: [
+              // The chosen row's band: two heavy rules.
+              Positioned.fill(
+                child: Padding(
+                  padding: inset,
+                  child: Center(
+                    child: SizedBox(
+                      height: column.itemExtent,
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          border: Border.symmetric(
+                            horizontal: BorderSide(
+                              color: band,
+                              width: theme.borderWidth,
+                            ),
                           ),
                         ),
                       ),
@@ -1088,37 +1108,39 @@ Widget _wheels(
                   ),
                 ),
               ),
-            ),
-            wheel,
-            if (column.column > 0)
-              PositionedDirectional(
-                start: -half,
-                top: 0,
-                bottom: 0,
-                width: theme.borderWidth,
-                child: IgnorePointer(child: ColoredBox(color: rule)),
-              ),
-            if (column.states.contains(WidgetState.focused))
-              Positioned.fill(
-                child: IgnorePointer(
-                  child: Padding(
-                    padding: inset,
-                    child: CustomPaint(painter: BrutalInsetFocusPainter(c.ink)),
+              wheel,
+              if (column.column > 0)
+                PositionedDirectional(
+                  start: -half,
+                  top: 0,
+                  bottom: 0,
+                  width: theme.borderWidth,
+                  child: IgnorePointer(child: ColoredBox(color: rule)),
+                ),
+              if (column.states.contains(WidgetState.focused))
+                Positioned.fill(
+                  child: IgnorePointer(
+                    child: Padding(
+                      padding: inset,
+                      child: CustomPaint(
+                        painter: BrutalInsetFocusPainter(c.ink),
+                      ),
+                    ),
                   ),
                 ),
-              ),
+            ],
+          );
+        },
+        layoutBuilder: (context, columns) => Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            for (final (i, column) in columns.indexed)
+              if (widths[i] case final width?)
+                SizedBox(width: width + ruled(i).horizontal, child: column)
+              else
+                Expanded(child: column),
           ],
-        );
-      },
-      layoutBuilder: (context, columns) => Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          for (final (i, column) in columns.indexed)
-            if (widths[i] case final width?)
-              SizedBox(width: width + ruled(i).horizontal, child: column)
-            else
-              Expanded(child: column),
-        ],
+        ),
       ),
     ),
   );
@@ -1275,6 +1297,8 @@ class BrutalTimePicker extends StatelessWidget {
     final layers = [style, theme.wheelPickerStyle];
     final box = DesignStyleOf(layers, const {});
     final rule = enabled ? box.side?.color ?? box.edge ?? c.ink : c.disabled;
+    // The wheels' spoken names, in the reader's language.
+    final words = DesignLocalizations.of(context);
     final minutes = [for (var m = 0; m < 60; m += minuteInterval) m];
     String two(int n) => n.toString().padLeft(2, '0');
     final nearest = minutes.lastWhere(
@@ -1300,7 +1324,7 @@ class BrutalTimePicker extends StatelessWidget {
               [for (var h = 0; h < 24; h++) two(h)],
               [for (final m in minutes) two(m)],
             ],
-            names: const ['Hour', 'Minute'],
+            names: [words.timePickerHourLabel, words.timePickerMinuteLabel],
             widths: const [88, 88],
             selection: [value.hour, minutes.indexOf(nearest)],
             onChanged: enabled

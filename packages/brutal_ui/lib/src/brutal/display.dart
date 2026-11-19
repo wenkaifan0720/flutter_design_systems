@@ -4,6 +4,8 @@
 /// fallback, a skeleton and a meter.
 library;
 
+import 'dart:math' as math;
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
@@ -304,7 +306,11 @@ class BrutalTableColumn {
 }
 
 /// A plain table on a full grid of 2 px rules, its header row in ink.
-/// Narrower than [minColumnWidth] a column, it scrolls sideways.
+/// Narrower than [minColumnWidth] a column, it scrolls sideways. A column
+/// is never narrower than its widest figure (a numeric cell, whole) or
+/// word, at the reader's text size: a time or a price never breaks, and
+/// where they don't fit the table scrolls sideways, as Material's data
+/// table does.
 ///
 /// For sorting, selecting and pages, use [BrutalDataTable].
 ///
@@ -352,30 +358,68 @@ class BrutalTable extends StatelessWidget {
         );
     final rule = layered.side?.color ?? layered.edge ?? c.ink;
     final words = layered.foreground ?? c.ink;
+    // A numeric column's words are in even figures.
+    TextStyle styled(BrutalTableColumn column, TextStyle style) =>
+        column.numeric
+        ? style.copyWith(fontFeatures: const [FontFeature.tabularFigures()])
+        : style;
     Widget cell(String text, BrutalTableColumn column, TextStyle style) =>
         Padding(
           padding: pad,
           child: Text(
             text,
             textAlign: column.numeric ? TextAlign.end : TextAlign.start,
-            style: column.numeric
-                ? style.copyWith(
-                    fontFeatures: const [FontFeature.tabularFigures()],
-                  )
-                : style,
+            style: styled(column, style),
           ),
         );
     final side = BorderSide(color: rule, width: theme.borderWidth);
+    final header = t.caption.copyWith(color: c.paper);
+    final body = layered.text(t.body).copyWith(color: words);
+    // Each column's least width: its widest figure (a numeric cell, whole)
+    // or word, as laid out, and the cell's padding.
+    final painter = TextPainter(
+      textDirection: Directionality.of(context),
+      textScaler: MediaQuery.textScalerOf(context),
+      maxLines: 1,
+    );
+    double measure(String text, TextStyle style) {
+      painter.text = TextSpan(text: text, style: style);
+      painter.layout();
+      return painter.width.ceilToDouble();
+    }
+
+    final breaks = RegExp(r'\s+');
+    final least = [
+      for (final (i, col) in columns.indexed)
+        pad.horizontal +
+            [
+              for (final word in col.label.toUpperCase().split(breaks))
+                measure(word, styled(col, header)),
+              for (final row in rows)
+                if (i < row.length)
+                  for (final piece
+                      in col.numeric ? [row[i]] : row[i].split(breaks))
+                    measure(piece, styled(col, body)),
+            ].fold(0.0, math.max),
+    ];
+    painter.dispose();
+    final needed =
+        least.fold(0.0, (a, b) => a + b) +
+        (columns.length - 1) * theme.borderWidth;
     return LayoutBuilder(
       builder: (context, constraints) {
         final inner = constraints.maxWidth - 2 * theme.borderWidth;
+        final floor = math.max(columns.length * minColumnWidth, needed);
         final width = inner.isFinite
-            ? (columns.length * minColumnWidth).clamp(inner, double.infinity)
-            : columns.length * minColumnWidth;
+            ? floor.clamp(inner, double.infinity)
+            : floor;
         final table = Table(
           columnWidths: {
             for (final (i, col) in columns.indexed)
-              i: FlexColumnWidth(col.flex),
+              i: MaxColumnWidth(
+                FixedColumnWidth(least[i]),
+                FlexColumnWidth(col.flex),
+              ),
           },
           defaultVerticalAlignment: TableCellVerticalAlignment.middle,
           border: TableBorder(horizontalInside: side, verticalInside: side),
@@ -386,11 +430,7 @@ class BrutalTable extends StatelessWidget {
                 for (final col in columns)
                   Semantics(
                     header: true,
-                    child: cell(
-                      col.label.toUpperCase(),
-                      col,
-                      t.caption.copyWith(color: c.paper),
-                    ),
+                    child: cell(col.label.toUpperCase(), col, header),
                   ),
               ],
             ),
@@ -398,11 +438,7 @@ class BrutalTable extends StatelessWidget {
               TableRow(
                 children: [
                   for (final (i, col) in columns.indexed)
-                    cell(
-                      i < row.length ? row[i] : '',
-                      col,
-                      layered.text(t.body).copyWith(color: words),
-                    ),
+                    cell(i < row.length ? row[i] : '', col, body),
                 ],
               ),
           ],

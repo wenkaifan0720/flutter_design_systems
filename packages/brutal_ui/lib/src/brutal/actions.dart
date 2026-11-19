@@ -37,7 +37,9 @@ class BrutalButtonGroupItem {
 
 /// A toolbar: cells butted on shared rules in one raised strip with its
 /// hard shadow. A pressed cell goes ink with paper words; the keyboard's
-/// cell gets the inset focus rule.
+/// cell gets the inset focus rule. Its words grow with the reader's text to
+/// twice their size, as Material's time picker's figures do, and keep that
+/// size beyond, so they stay whole in the strip's height.
 ///
 /// ```dart
 /// BrutalButtonGroup(semanticLabel: 'Ticket', items: [BrutalButtonGroupItem(label: 'Print', icon: LucideIcons.printer, onPressed: printTicket), BrutalButtonGroupItem(label: 'Share', icon: LucideIcons.share2, onPressed: share)])
@@ -69,41 +71,44 @@ class BrutalButtonGroup extends StatelessWidget {
     final layers = [style, theme.buttonGroupStyle];
     final strip = DesignStyleOf(layers, const {});
     final height = strip.minimumSize?.height ?? theme.controlHeight;
-    return Semantics(
-      container: true,
-      label: semanticLabel,
-      child: Align(
-        alignment: AlignmentDirectional.centerStart,
-        widthFactor: 1,
-        heightFactor: 1,
-        child: SizedBox(
-          height: height,
-          child: BrutalSurface(
-            face: BrutalFace(
-              fill: strip.fill ?? c.surface,
-              border: strip.side?.color ?? strip.edge ?? c.ink,
-              foreground: c.ink,
-              shadow: c.ink,
-            ),
-            // Too wide for its room (at large text), the cells scroll inside
-            // the frame.
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  for (final (i, item) in items.indexed) ...[
-                    if (i > 0)
-                      SizedBox(
-                        width: theme.borderWidth,
-                        child: ColoredBox(
-                          color: strip.side?.color ?? strip.edge ?? c.ink,
+    return MediaQuery.withClampedTextScaling(
+      maxScaleFactor: _maxTextScale,
+      child: Semantics(
+        container: true,
+        label: semanticLabel,
+        child: Align(
+          alignment: AlignmentDirectional.centerStart,
+          widthFactor: 1,
+          heightFactor: 1,
+          child: SizedBox(
+            height: height,
+            child: BrutalSurface(
+              face: BrutalFace(
+                fill: strip.fill ?? c.surface,
+                border: strip.side?.color ?? strip.edge ?? c.ink,
+                foreground: c.ink,
+                shadow: c.ink,
+              ),
+              // Too wide for its room (at large text), the cells scroll inside
+              // the frame.
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    for (final (i, item) in items.indexed) ...[
+                      if (i > 0)
+                        SizedBox(
+                          width: theme.borderWidth,
+                          child: ColoredBox(
+                            color: strip.side?.color ?? strip.edge ?? c.ink,
+                          ),
                         ),
-                      ),
-                    _cell(theme, item, height, layers),
+                      _cell(theme, item, height, layers),
+                    ],
                   ],
-                ],
+                ),
               ),
             ),
           ),
@@ -111,6 +116,9 @@ class BrutalButtonGroup extends StatelessWidget {
       ),
     );
   }
+
+  // How far its words grow with the reader's text.
+  static const double _maxTextScale = 2;
 
   Widget _cell(
     BrutalThemeData theme,

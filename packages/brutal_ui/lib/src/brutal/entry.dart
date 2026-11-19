@@ -1750,14 +1750,18 @@ class _Tag extends StatelessWidget {
 /// A label, help and an error round any [child] that is not a field of the
 /// look's own (a segmented choice, a group of radios, a slider): the label
 /// 8 px over it, the help or the error 8 px under it. A screen reader hears
-/// the label as the control's name and the help or the error with it.
+/// the label as the control's name and the help or the error with it. A
+/// child of one control (a slider, a switch) is one node named by the label;
+/// a child of several (a stepper's buttons and number, segments, chips,
+/// radios) keeps each control's own node, so a tap through the semantics
+/// tree reaches the one under it, and the label names them as a group.
 ///
 /// A layout with no face of its own: its label reads
 /// [BrutalThemeData.fieldLabelStyle] and its message
 /// [BrutalThemeData.fieldMessageStyle].
 ///
 /// ```dart
-/// BrutalFormField(labelText: 'Seats', helperText: 'Standing has no seat number', mergeSemantics: false, child: BrutalSegmentedButton<String>(segments: const [BrutalSegment(value: 'stalls', label: 'Stalls'), BrutalSegment(value: 'standing', label: 'Standing')], value: area, onChanged: (value) => setState(() => area = value)))
+/// BrutalFormField(labelText: 'Seats', helperText: 'Standing has no seat number', child: BrutalSegmentedButton<String>(segments: const [BrutalSegment(value: 'stalls', label: 'Stalls'), BrutalSegment(value: 'standing', label: 'Standing')], value: area, onChanged: (value) => setState(() => area = value)))
 /// ```
 class BrutalFormField extends StatelessWidget {
   /// [child] with its label, help and error.
@@ -1769,7 +1773,7 @@ class BrutalFormField extends StatelessWidget {
     this.errorText,
     this.required = false,
     this.enabled = true,
-    this.mergeSemantics = true,
+    this.mergeSemantics,
   });
 
   /// The control.
@@ -1790,10 +1794,11 @@ class BrutalFormField extends StatelessWidget {
   /// Whether the control is on; off, the label is grey.
   final bool enabled;
 
-  /// Whether the control is one node that takes the label as its name; a
-  /// group (radios, a segmented choice) sets it false and the label names
-  /// the group.
-  final bool mergeSemantics;
+  /// Whether the label, help and error join the control's own node: true
+  /// always (one node for the whole child), false never (the label names
+  /// the child as a group), null (the default) as the child's controls say:
+  /// one control joins, several keep their own nodes.
+  final bool? mergeSemantics;
 
   @override
   Widget build(BuildContext context) => DesignField(
@@ -1833,10 +1838,10 @@ class BrutalFormField extends StatelessWidget {
       ..add(FlagProperty('required', value: required, ifTrue: 'required'))
       ..add(FlagProperty('enabled', value: enabled, ifTrue: 'enabled'))
       ..add(
-        FlagProperty(
+        DiagnosticsProperty<bool>(
           'mergeSemantics',
-          value: mergeSemantics,
-          ifTrue: 'mergeSemantics',
+          mergeSemantics,
+          defaultValue: null,
         ),
       );
   }

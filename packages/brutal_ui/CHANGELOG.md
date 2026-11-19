@@ -1,3 +1,12 @@
+## 0.2.2
+
+- `BrutalFormField.mergeSemantics` is now `bool?` and defaults to null: ui_core's field decides from the child. A child with one control, such as a switch, a checkbox or a slider, is one node named by the field's label. A child with several controls, such as segments, chips, radios or a stepper's buttons and number, keeps each control's own node, so a screen reader's double tap, or a click on the web with semantics on, reaches the control under it. The label names the group and is read once. Previously the default merged a group into one node, so a tap through the semantics tree reached only its first control and a stepper's tap did nothing. Pass `true` to keep the old merge or `false` to always name the child as a group. Needs ui_core 0.3.2.
+- Wheels (the time picker's and `BrutalWheelPicker`'s) keep their rows' size at any text size, as Cupertino's do, so a larger figure no longer cuts its neighbours.
+- Tables never break a figure or a word. Each column is at least as wide as its widest number or word at the current text size, so a time reads 19:30 and a price £18.00, and the table scrolls sideways when they don't fit, as Material's data table does.
+- Button groups and the calendar grow their words with the system text size up to twice their size, as Material's time picker and calendar do, so a toolbar's 100% and a two-digit day stay inside their cells at larger sizes.
+- Chips grow with their words at larger text sizes instead of cutting them, as Material's filter chips do.
+- The time picker's wheels are named in the reader's language, from ui_core's `DesignLocalizations` (`timePickerHourLabel` and `timePickerMinuteLabel`), so a screen reader says "Stunde" in German and "ساعة" in Arabic. Previously they were "Hour" and "Minute" in English in every locale.
+
 ## 0.2.1
 
 - Calendar popovers scroll when the available height is short. The last day of the month stays reachable at large text sizes.

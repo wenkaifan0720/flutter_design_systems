@@ -5,6 +5,8 @@
 /// [BrutalFileDrop] (a box that takes files).
 library;
 
+import 'dart:math' as math;
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
@@ -419,7 +421,8 @@ class BrutalRangeSlider extends StatelessWidget {
 
 /// A choice that stays on: words (and a glyph) in a ruled cell, flat; ink
 /// with paper words while [selected]. A press goes ink too. A null
-/// [onSelected] greys it.
+/// [onSelected] greys it. At a larger text size the cell grows with its
+/// words, keeping them clear of its rules, as Material's filter chip does.
 ///
 /// Reads [style]'s `fill` (while chosen or pressed), `foreground`, `edge`,
 /// `padding`, `minimumSize` (its height), `textStyle` and `iconSize` in its
@@ -454,7 +457,7 @@ class BrutalChip extends StatelessWidget {
   /// Its style, over [BrutalThemeData.chipStyle].
   final BrutalStyle? style;
 
-  /// Its height.
+  /// Its height at the reader's own text size; it grows with larger text.
   static const double height = 36;
 
   @override
@@ -482,8 +485,9 @@ class BrutalChip extends StatelessWidget {
                   : lit
                   ? c.onColor(layered.fill ?? c.ink)
                   : c.ink);
-          return SizedBox(
-            height: layered.minimumSize?.height ?? height,
+          final least = layered.minimumSize?.height ?? height;
+          return ConstrainedBox(
+            constraints: BoxConstraints(minHeight: least),
             child: AnimatedBrutalSurface(
               stiffness: BrutalMotion.colorStiffness,
               face: BrutalFace(
@@ -502,8 +506,14 @@ class BrutalChip extends StatelessWidget {
               child: Padding(
                 padding:
                     layered.padding(Directionality.of(context)) ??
-                    const EdgeInsets.symmetric(
+                    EdgeInsets.symmetric(
                       horizontal: BrutalSpacing.medium,
+                      // The words' line (20) centred between the rules: as
+                      // tall as [height] at 1x, taller as the words grow.
+                      vertical: math.max(
+                        0,
+                        (least - 20 - 2 * theme.borderWidth) / 2,
+                      ),
                     ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,

@@ -227,7 +227,6 @@ class _LabelledState extends State<_Labelled> {
     labelText: 'Where you stand',
     helperText: 'Standing has no seat number.',
     required: true,
-    mergeSemantics: false,
     child: BrutalSegmentedButton<String>(
       segments: const [
         BrutalSegment(value: 'standing', label: 'Standing'),
