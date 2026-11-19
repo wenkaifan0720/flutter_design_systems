@@ -1,3 +1,11 @@
+## 0.3.3
+
+- At large text sizes, three parts keep their words whole. A `ComicWheelPicker` row's words grow with the reader's
+  text until their line fills the row (twice their size at the default height), so at 300% the rows no longer
+  overlap and the band no longer cuts the chosen value. A `ComicShares` scale's words grow at most 1.3 times, as
+  Material's slider label, and wrap only between words. A calendar's weekday initials grow at most twice, as
+  Material's calendar, and never touch.
+
 ## 0.3.2
 
 - Keyboard focus is Comic's own pop instead of an outline ring: the focused part lifts up and toward the start off a
