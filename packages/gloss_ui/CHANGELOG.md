@@ -1,3 +1,12 @@
+## 0.1.3
+
+- A time picker speaks the reader's language, from ui_core's words: a screen reader names its drums "Stunde", "Minute" and "Tageshälfte" in German, "ساعة", "دقيقة" and "ص/م" in Arabic ("Hour", "Minute" and "AM/PM" in English; the last was "AM or PM"), its half-of-day drum and `GlossTime.format` write "ص" and "م" in Arabic, and they were English in every language before.
+- A time picker's figures and `GlossTime.format` are in the reader's digits (Arabic-Indic in Arabic: ٦:٣٠ م), as Material's time picker sets its hours.
+- `GlossRadioGroup`: radios and their words, one choice, the whole row a radio's target. Tab reaches the group once, at its choice, and the next Tab leaves it; the arrows choose the next or the previous and wrap (mirrored right to left in a row), Home and End its ends, Space chooses, as Flutter's `RadioGroup` does. A screen reader hears a radio group of radios, in a `GlossFormField` too, whose label names the group while each radio keeps its own node. The gallery's radios are one.
+- A radio, a checkbox and a data table's select-all box read as Flutter's do: a checkable (in a mutually exclusive group, for a radio), not a button as well.
+- A chart's labels thin evenly when they crowd: every other one, or every third..., by their own widths, no two closer than a word's space. Before, the stride assumed every label 44 px wide and then skipped any that still touched, so a long or enlarged label left the rest uneven. The scale's figures thin the same way, from 0 up, where the top one was drawn even when it touched the one below. Where there is room for only two, they are the first and the last: Mon and Sun, and the scale's 0 and its top.
+- A `GlossFormField` left to choose (`mergeSemantics` null) reads its child by what it brings to the semantics tree, on ui_core 0.3.2's `DesignField`, where it went by the child's type: one control is one node named by the label, and any group keeps each control's own node and tap. A group that names itself, a segmented button named as its field, is read once, where it read the field's label twice.
+
 ## 0.1.2
 
 - A stepper's pearl beads stand as tall as its readout (40 px beads beside a 48 px readout before), and both grow with the text, so its words stay whole in the window at 200% and 300%.

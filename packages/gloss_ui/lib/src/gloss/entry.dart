@@ -12,16 +12,12 @@ import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
-import 'actions.dart' show GlossToggleGroup;
 import 'button.dart';
-import 'choices.dart' show GlossSegmentedButton, GlossStepper;
 import 'feedback.dart' show GlossSpinner;
 import 'fonts.dart';
 import 'internal/chevron.dart';
 import 'internal/entry_parts.dart';
 import 'internal/menu_parts.dart';
-import 'pickers.dart' show GlossTimePicker;
-import 'selection.dart' show GlossRangeSlider;
 import 'surface.dart';
 import 'text_field.dart';
 import 'theme.dart';
@@ -1458,30 +1454,13 @@ class GlossFormField extends StatelessWidget {
   /// The control's focus, which a tap on the label asks for.
   final FocusNode? focusNode;
 
-  /// Whether the label names the control (true) or a group of controls
-  /// (false). Left null, the field reads its child: a row, column or wrap
-  /// of controls, a segmented choice, a stepper, a toggle group, a range
-  /// slider, a tag input or a time picker is a group, so each control keeps
-  /// its own node and answers its own tap; anything else is one control.
+  /// Whether the control is one node that takes the label as its name
+  /// (true) or a group the label names (false). Left null, ui_core's
+  /// DesignField reads what the child brings to the semantics tree: one
+  /// control is one node; several (a stepper's keys, a segmented choice,
+  /// radios, chips) keep each its own node and tap, the label naming them;
+  /// and a group that already names itself is not named again.
   final bool? mergeSemantics;
-
-  // Whether [child], through any padding, alignment or sizing round it, is
-  // a group of controls.
-  static bool _isGroup(Widget child) => switch (child) {
-    Flex() ||
-    Wrap() ||
-    GlossSegmentedButton() ||
-    GlossStepper() ||
-    GlossToggleGroup() ||
-    GlossRangeSlider() ||
-    GlossTagInput() ||
-    GlossTimePicker() => true,
-    Padding(child: final inner?) ||
-    Align(child: final inner?) ||
-    SizedBox(child: final inner?) ||
-    ConstrainedBox(child: final inner?) => _isGroup(inner),
-    _ => false,
-  };
 
   @override
   Widget build(BuildContext context) {
@@ -1494,7 +1473,7 @@ class GlossFormField extends StatelessWidget {
       required: isRequired,
       enabled: enabled,
       focusNode: focusNode,
-      mergeSemantics: mergeSemantics ?? !_isGroup(child),
+      mergeSemantics: mergeSemantics,
       builder: (context, parts) => Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,

@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
+import 'internal/label_stride.dart';
 import 'surface.dart';
 import 'theme.dart';
 
@@ -260,9 +261,9 @@ abstract class _AxesPainter extends CustomPainter {
       rtl ? size.width - gutter : size.width,
       math.max(upper, size.height - foot),
     );
-    var previousY = double.infinity;
-    for (final (i, tick) in ticks.indexed) {
-      final y = plot.bottom - plot.height * tick.position;
+    double yAt(int i) => plot.bottom - plot.height * ticks[i].position;
+    for (var i = 0; i < ticks.length; i++) {
+      final y = yAt(i);
       // An engraved line: a dark cut, light on its lower lip.
       canvas
         ..drawLine(
@@ -279,39 +280,57 @@ abstract class _AxesPainter extends CustomPainter {
             ..color = c.lip.withValues(alpha: c.lip.a * 0.6)
             ..strokeWidth = 1,
         );
-      final f = figures[i];
-      if (i == 0 ||
-          i == ticks.length - 1 ||
-          (previousY - y >= lineHeight + 2 && y - plot.top >= lineHeight + 2)) {
+    }
+    // The figures: every one that keeps clear of the next, or every other,
+    // every third...: evenly, from 0 up.
+    final rows = glossLabelStride(figures.length, (every) {
+      var floor = double.infinity;
+      for (var i = 0; i < figures.length; i += every) {
+        final above = yAt(i) - figures[i].height / 2;
+        if (above + figures[i].height > floor) return false;
+        floor = above - GlossSpacing.tight;
+      }
+      return true;
+    });
+    if (rows != null) {
+      for (var i = 0; i < figures.length; i += rows) {
+        final f = figures[i];
         f.paint(
           canvas,
           Offset(
             rtl ? plot.right + 8 : plot.left - 8 - f.width,
-            y - f.height / 2,
+            yAt(i) - f.height / 2,
           ),
         );
-        previousY = y;
       }
     }
     for (final f in figures) {
       f.dispose();
     }
+    // The labels under it: every one, or every other, every third...,
+    // evenly, so no two kept stand closer than a word's space.
     final n = labels.length;
     if (n > 0 && plot.width > 0) {
-      final every = math.max(1, (n * 44 / plot.width).ceil());
-      Rect? previous;
-      for (var i = 0; i < n; i += every) {
-        final x = xAt(plot, i, n);
-        final w = _words(labels[i]);
-        final left = (x - w.width / 2).clamp(
-          plot.left,
-          math.max(plot.left, plot.right - w.width),
-        );
-        final bounds = Offset(left.toDouble(), plot.bottom + 5) & w.size;
-        if (previous == null || !previous.overlaps(bounds)) {
-          w.paint(canvas, bounds.topLeft);
-          previous = bounds.inflate(GlossSpacing.tight);
+      final names = [for (final l in labels) _words(l)];
+      double leftOf(int i) => (xAt(plot, i, n) - names[i].width / 2)
+          .clamp(plot.left, math.max(plot.left, plot.right - names[i].width))
+          .toDouble();
+      final steps = glossLabelStride(n, (every) {
+        final kept = [for (var i = 0; i < n; i += every) i]
+          ..sort((a, b) => leftOf(a).compareTo(leftOf(b)));
+        var end = double.negativeInfinity;
+        for (final i in kept) {
+          if (leftOf(i) < end) return false;
+          end = leftOf(i) + names[i].width + GlossSpacing.small;
         }
+        return true;
+      });
+      if (steps != null) {
+        for (var i = 0; i < n; i += steps) {
+          names[i].paint(canvas, Offset(leftOf(i), plot.bottom + 5));
+        }
+      }
+      for (final w in names) {
         w.dispose();
       }
     }

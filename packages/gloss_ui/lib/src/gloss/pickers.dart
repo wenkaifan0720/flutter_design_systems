@@ -51,6 +51,11 @@ class GlossDateRange {
   String toString() => 'GlossDateRange($start – $end)';
 }
 
+// [n] (0 to 99) as two figures in the reader's digits: 05, or ٠٥ in Arabic.
+String _twoDigits(DesignLocalizations words, int n) => n < 10
+    ? '${words.formatDecimal(0)}${words.formatDecimal(n)}'
+    : words.formatDecimal(n);
+
 /// A time of day, on a 24-hour clock.
 @immutable
 class GlossTime {
@@ -65,13 +70,18 @@ class GlossTime {
   /// The minute, 0 to 59.
   final int minute;
 
-  /// The time as the reader's clock writes it: 18:30, or 6:30 PM.
+  /// The time as the reader's clock writes it: 18:30, or 6:30 PM, in the
+  /// reader's digits and words for the half of the day (٦:٣٠ م in Arabic).
   String format(BuildContext context) {
     final h24 = MediaQuery.maybeAlwaysUse24HourFormatOf(context) ?? false;
-    final mm = minute.toString().padLeft(2, '0');
-    if (h24) return '${hour.toString().padLeft(2, '0')}:$mm';
-    final h = hour % 12 == 0 ? 12 : hour % 12;
-    return '$h:$mm ${hour < 12 ? 'AM' : 'PM'}';
+    final words = DesignLocalizations.of(context);
+    final mm = _twoDigits(words, minute);
+    if (h24) return '${_twoDigits(words, hour)}:$mm';
+    final h = words.formatDecimal(hour % 12 == 0 ? 12 : hour % 12);
+    final half = hour < 12
+        ? words.anteMeridiemAbbreviation
+        : words.postMeridiemAbbreviation;
+    return '$h:$mm $half';
   }
 
   @override
@@ -1035,29 +1045,35 @@ class GlossTimePicker extends StatelessWidget {
       ':',
       style: theme.textTheme.title.copyWith(color: c.inkSecondary),
     );
+    // Each drum named in the reader's words ("Hour", "Minute", "AM/PM"),
+    // its figures in the reader's digits (Arabic-Indic in Arabic), as
+    // Material's time picker sets its hours.
+    final words = DesignLocalizations.of(context);
     final columns = [
       if (h24)
         DesignWheelColumn(
           itemCount: 24,
-          itemLabel: (h) => h.toString().padLeft(2, '0'),
-          semanticLabel: 'Hour',
+          itemLabel: (h) => _twoDigits(words, h),
+          semanticLabel: words.timePickerHourLabel,
         )
       else
         DesignWheelColumn(
           itemCount: 12,
-          itemLabel: (i) => '${i + 1}',
-          semanticLabel: 'Hour',
+          itemLabel: (i) => words.formatDecimal(i + 1),
+          semanticLabel: words.timePickerHourLabel,
         ),
       DesignWheelColumn(
         itemCount: minutes.length,
-        itemLabel: (i) => minutes[i].toString().padLeft(2, '0'),
-        semanticLabel: 'Minute',
+        itemLabel: (i) => _twoDigits(words, minutes[i]),
+        semanticLabel: words.timePickerMinuteLabel,
       ),
       if (!h24)
         DesignWheelColumn(
           itemCount: 2,
-          itemLabel: (i) => const ['AM', 'PM'][i],
-          semanticLabel: 'AM or PM',
+          itemLabel: (i) => i == 0
+              ? words.anteMeridiemAbbreviation
+              : words.postMeridiemAbbreviation,
+          semanticLabel: words.timeFieldDayPeriodLabel,
         ),
     ];
     final selection = [

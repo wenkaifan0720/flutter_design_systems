@@ -192,6 +192,8 @@ class GlossDataTable<R> extends StatelessWidget {
                       ? null
                       : controller.togglePage,
                   semanticLabel: words.selectedLabel,
+                  // A checkbox, not a button, as Flutter's Checkbox reads.
+                  button: false,
                   checked: page == DesignSelection.all,
                   builder: (context, states, _) => GlossFocusHalo(
                     focused: states.contains(WidgetState.focused),

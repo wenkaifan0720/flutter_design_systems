@@ -92,27 +92,14 @@ class _AllState extends State<_All> {
           ],
         ),
         const SizedBox(height: GlossSpacing.large),
-        KitRow(
-          children: [
-            for (final v in ['Day', 'Week', 'Month'])
-              labelled(
-                v,
-                GlossRadio<String>(
-                  value: v,
-                  groupValue: _radio,
-                  onChanged: (v) => setState(() => _radio = v),
-                ),
-              ),
-            labelled(
-              'Year',
-              const GlossRadio<String>(
-                value: 'Year',
-                groupValue: null,
-                onChanged: null,
-              ),
-              off: true,
-            ),
-          ],
+        GlossRadioGroup<String>(
+          options: const ['Day', 'Week', 'Month', 'Year'],
+          value: _radio,
+          labelOf: (v) => v,
+          isEnabled: (v) => v != 'Year',
+          direction: Axis.horizontal,
+          semanticLabel: 'Period',
+          onChanged: (v) => setState(() => _radio = v),
         ),
         const SizedBox(height: GlossSpacing.large),
         KitRow(

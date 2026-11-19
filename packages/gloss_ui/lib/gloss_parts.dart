@@ -18,5 +18,6 @@ export 'src/gloss/internal/chevron.dart';
 export 'src/gloss/internal/entry_parts.dart';
 export 'src/gloss/internal/inventory.dart';
 export 'src/gloss/internal/key_paint.dart';
+export 'src/gloss/internal/label_stride.dart';
 export 'src/gloss/internal/menu_parts.dart';
 export 'src/gloss/internal/platform_words.dart';
