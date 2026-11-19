@@ -143,7 +143,9 @@ NeumorphicListSection(
 );
 ```
 
-A phone's tab bar:
+A tappable row announces its title, subtitle and note together. Set `semanticLabel` when the row needs a different spoken name.
+
+On a phone, the navigation bar gives destinations a second row when their labels need more space. The selected destination stays visible.
 
 ```dart
 NeumorphicNavigationBar(
@@ -247,7 +249,7 @@ Style slots are `fill`, `foreground`, `edge`, `overlay`, `side`, `shape`, `paddi
 
 ## Interaction and localization
 
-Controls support keyboard activation, focus, disabled states and padded targets of 48 logical pixels on every platform. Editing follows each platform's gestures and Cmd/Ctrl shortcuts. The selection menu and selection handles are drawn by this system. States are said in the relief rather than in lines or fades: a focused field's well deepens, any other part lifts off the wall on keyboard focus with its lit side warmed by the pigment, and a part out of use lies flat, flush with the ground, its words in the quiet ink.
+Controls support keyboard activation, focus, disabled states and padded targets of 48 logical pixels on every platform. Editing follows each platform's gestures and Cmd/Ctrl shortcuts. The selection menu and selection handles are drawn by this system. States are shown through relief rather than lines or fades. On keyboard focus a part rises off the wall: its shadows go deeper and sharper in its own light and shade, with no line and no glow. A focused field rises around its deepened well. A part that is out of use lies flat, flush with the ground, with its words in the quiet ink.
 
 Hover changes nothing on a part's face: no wash, tint or shadow. The pointer says what a part does instead: a hand over what presses, the text beam over fields, grab over a slider, the arrow over what is disabled. A press sinks the part in its own outline, and keyboard focus lifts it. Hover stays only where it tells you something: the active row of an open menu, a tooltip, a chart's readout, a rating's preview, a day of a month (which has no face of its own until it is chosen) and a file drop target with a drag over it. Every part still receives `WidgetState.hovered`, but a wash or a tint on hover breaks the look's state rules (a press sinks, focus lifts, hover says nothing), so the look draws none. To make a part or a region say more or less, use the look's own two means: the pigment, for what is live (`NeumorphicButton.filled` for the one act that matters), and depth. A quieter side panel, for instance, is the same plaster cast shallower:
 
@@ -265,7 +267,7 @@ The parts' built-in words come from `DesignLocalizations`, the words every look 
 ## Accessibility and languages
 
 - **Right to left.** Every part mirrors under a right-to-left `Directionality`: chevrons and arrows turn, sliders, progress and steppers fill from the start, and fields swap their leading and trailing parts. Figures, times and codes stay left to right. Public geometry takes the directional types (`EdgeInsetsGeometry`, `AlignmentGeometry`). The example gallery has a Right to left switch.
-- **Large text.** Parts grow with the reader's text size up to 2.0: controls get taller rather than cutting their words, and dialogs and sheets scroll. Three kinds of words grow only to 1.3, as the platforms' own do: a month's day numbers (as Material's date picker's), a bar's tab words (as a platform tab bar's), and the numerals printed on a dial's scale, which stand between its ticks. Each is spoken whole at any size, and a dial's readout grows in full, under the face where it no longer fits in it. Every part and every gallery page is tested at 2.0.
+- **Large text.** Controls get taller as the reader increases the text size. Navigation destinations can span multiple rows, and dialogs and sheets scroll. On a thermostat, the setting stays in the centre if it fits and longer descriptions move below it. Calendar day numbers and the numbers printed between dial ticks scale up to 1.3×. Their complete labels are also available to screen readers.
 - **Screen readers and keyboard.** Each part reports its role, label, value and state (checked, selected, expanded, disabled), and decorative paint is excluded from semantics. Everything works from the keyboard, and focus follows reading order. Targets are at least 48 px. Text meets 4.5:1 contrast in every preset, by day and by night. With reduced motion, parts change state at once, and dialogs and sheets dissolve in place.
 - **Edges and states.** A part's edge is soft light and shadow, faint by night, and nothing depends on it alone.
   Every state (on, chosen, checked, focused, a slider's value) and every part without words reaches 3:1 through its colour, words or mark, by day and by night; high contrast adds a fine outline.

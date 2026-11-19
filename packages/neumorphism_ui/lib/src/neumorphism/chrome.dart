@@ -835,6 +835,7 @@ class NeumorphicNavigationRail extends StatelessWidget {
 
 /// The phone's tab bar: raised, its shoulders on the slab's radius. The current tab is pressed with the pigment in its glyph and heavier
 /// words, so it reads with no shadow. The app's act stands in the middle as a small pigment key.
+/// Destinations keep their text size and wrap into additional rows when they no longer fit.
 ///
 /// ```dart
 /// NeumorphicNavigationBar(items: const [NeumorphicNavItem(label: 'Home', icon: NeumorphicGlyphs.house)], onDestinationSelected: (index) {})
@@ -888,34 +889,91 @@ class NeumorphicNavigationBar extends StatelessWidget {
         inset,
         bottom > 26 ? bottom : 26,
       ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          for (var i = 0; i < items.length; i++) ...[
-            if (i > 0) const SizedBox(width: 6),
-            if (action != null && i == (items.length + 1) ~/ 2) ...[
-              Padding(
-                padding: const EdgeInsets.only(top: 4),
-                child: _ActKey(action: action!),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          const gap = 6.0;
+          final themeStyle = t.segmentedButtonTheme;
+          final padding = t.density.padding(
+            const EdgeInsets.fromLTRB(6, 8, 6, 6),
+          );
+          var cellWidth = 48.0;
+          for (var i = 0; i < items.length; i++) {
+            final item = items[i];
+            final selected = i == selectedIndex;
+            final look = neumorphicStyleOf(
+              [style, themeStyle],
+              {if (selected) WidgetState.selected},
+            );
+            final pen = TextPainter(
+              text: TextSpan(
+                text: item.short ?? item.label,
+                style: t.textTheme.micro
+                    .copyWith(
+                      fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
+                    )
+                    .merge(look.textStyle),
               ),
-              const SizedBox(width: 6),
-            ],
-            Expanded(
-              child: _Tab(
-                style: style,
-                radius: math.max(
-                  NeumorphicRadii.least,
-                  NeumorphicRadii.slab - inset,
+              textDirection: Directionality.of(context),
+              textScaler: MediaQuery.textScalerOf(context),
+            )..layout();
+            cellWidth = math.max(
+              cellWidth,
+              math.max(pen.width.ceilToDouble(), look.iconSize ?? 22) +
+                  padding.horizontal,
+            );
+            pen.dispose();
+          }
+          final withAction = action != null && items.isNotEmpty;
+          final actionWidth = withAction ? 48.0 + gap : 0.0;
+          final fits =
+              items.length * cellWidth +
+                  math.max(0, items.length - 1) * gap +
+                  actionWidth <=
+              constraints.maxWidth;
+          final slots = <Widget>[];
+          for (var i = 0; i < items.length; i++) {
+            if (withAction && i == (items.length + 1) ~/ 2) {
+              slots.add(
+                Padding(
+                  padding: const EdgeInsets.only(top: 4),
+                  child: _ActKey(action: action!),
                 ),
-                item: items[i],
-                on: i == selectedIndex,
-                onPressed: onDestinationSelected == null
-                    ? null
-                    : () => onDestinationSelected!(i),
+              );
+            }
+            final tab = _Tab(
+              style: style,
+              radius: math.max(
+                NeumorphicRadii.least,
+                NeumorphicRadii.slab - inset,
               ),
-            ),
-          ],
-        ],
+              item: items[i],
+              on: i == selectedIndex,
+              onPressed: onDestinationSelected == null
+                  ? null
+                  : () => onDestinationSelected!(i),
+            );
+            slots.add(fits ? Expanded(child: tab) : tab);
+          }
+          if (fits) {
+            return Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              spacing: gap,
+              children: slots,
+            );
+          }
+          final count = math.max(
+            1,
+            ((constraints.maxWidth + gap) / (cellWidth + gap)).floor(),
+          );
+          final width = (constraints.maxWidth - (count - 1) * gap) / count;
+          return Wrap(
+            spacing: gap,
+            runSpacing: gap,
+            children: [
+              for (final slot in slots) SizedBox(width: width, child: slot),
+            ],
+          );
+        },
       ),
     );
     return CustomPaint(
@@ -1081,28 +1139,17 @@ class _Tab extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 4),
-              // A tab's word grows with the text only so far, as a platform's tab bar's does: at twice the size it
-              // broke mid-word in its cell (Hom/e, Devi/ces). Its name is spoken whole at any size. Still wider than
-              // its cell (five tabs on a phone), the word scales down whole: faded at its end it read 'Account' cut.
-              MediaQuery.withClampedTextScaling(
-                maxScaleFactor: 1.3,
-                child: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: neumorphicLabel(
-                    Text(
-                      item.short ?? item.label,
-                      textAlign: TextAlign.center,
-                      maxLines: 1,
-                      softWrap: false,
-                      style: t.textTheme.micro
-                          .copyWith(
-                            fontWeight: on ? FontWeight.w700 : FontWeight.w600,
-                            color: on ? c.ink : c.inkTertiary,
-                          )
-                          .merge(look.textStyle)
-                          .copyWith(color: look.foreground),
-                    ),
-                  ),
+              neumorphicLabel(
+                Text(
+                  item.short ?? item.label,
+                  textAlign: TextAlign.center,
+                  style: t.textTheme.micro
+                      .copyWith(
+                        fontWeight: on ? FontWeight.w700 : FontWeight.w600,
+                        color: on ? c.ink : c.inkTertiary,
+                      )
+                      .merge(look.textStyle)
+                      .copyWith(color: look.foreground),
                 ),
               ),
             ],

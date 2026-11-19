@@ -18,16 +18,19 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
+import 'actions.dart' show NeumorphicButtonGroup, NeumorphicToggleGroup;
 import 'chrome_metrics.dart';
 import 'controls.dart';
 import 'component_themes.dart';
 import 'editing.dart';
+import 'entries.dart' show NeumorphicRadioGroup, NeumorphicSegmentedButton;
 import 'frames.dart';
 import 'glyphs.dart';
 import 'internal/cap_label.dart';
 import 'internal/cell_bank.dart' show neumorphicWideRoom;
 import 'internal/error_line.dart';
 import 'internal/geometry.dart' show cssLinear;
+import 'internal/field_list.dart' show NeumorphicFieldListOwner;
 import 'internal/panel.dart';
 import 'internal/reach.dart';
 import 'internal/text_entry.dart';
@@ -75,64 +78,6 @@ class _Under extends StatelessWidget {
           ? Text(helper!, style: t.textTheme.caption)
           : NeumorphicErrorLine(child: Text(error!)),
     );
-  }
-}
-
-/// [child] laid out [bleed] wider than its room on each side, over its parent's inset: its box, and so whatever is
-/// anchored to it, spans the face around it.
-class _Bleed extends SingleChildRenderObjectWidget {
-  const _Bleed(this.bleed, {required super.child});
-
-  final EdgeInsets bleed;
-
-  @override
-  _RenderBleed createRenderObject(BuildContext context) => _RenderBleed(bleed);
-
-  @override
-  void updateRenderObject(BuildContext context, _RenderBleed renderObject) {
-    renderObject.bleed = bleed;
-  }
-}
-
-class _RenderBleed extends RenderShiftedBox {
-  _RenderBleed(this._bleed) : super(null);
-
-  EdgeInsets _bleed;
-  set bleed(EdgeInsets value) {
-    if (value == _bleed) return;
-    _bleed = value;
-    markNeedsLayout();
-  }
-
-  @override
-  double computeMinIntrinsicWidth(double height) =>
-      math.max(0, super.computeMinIntrinsicWidth(height) - _bleed.horizontal);
-
-  @override
-  double computeMaxIntrinsicWidth(double height) =>
-      math.max(0, super.computeMaxIntrinsicWidth(height) - _bleed.horizontal);
-
-  @override
-  void performLayout() {
-    final c = constraints;
-    final child = this.child;
-    if (child == null) {
-      size = c.smallest;
-      return;
-    }
-    final room = c.hasBoundedWidth ? c.maxWidth : c.minWidth;
-    final wide = room + _bleed.horizontal;
-    child.layout(
-      BoxConstraints(
-        minWidth: wide,
-        maxWidth: wide,
-        minHeight: c.minHeight,
-        maxHeight: c.maxHeight,
-      ),
-      parentUsesSize: true,
-    );
-    size = c.constrain(Size(room, child.size.height));
-    (child.parentData! as BoxParentData).offset = Offset(-_bleed.left, 0);
   }
 }
 
@@ -773,74 +718,82 @@ class NeumorphicCombobox<T extends Object> extends StatelessWidget {
     final t = NeumorphicTheme.of(context);
     // Its open list starts its options' words where the field starts its value.
     final list = neumorphicFieldPanelInsets(context);
-    // The list hangs from the groove, so the label and the words under it stand outside what it is anchored to.
-    return neumorphicWideRoom(
-      AlignmentDirectional.centerStart,
-      Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          if (label != null) _Label(label!),
-          DesignCombobox<T>(
-            options: options,
-            search: search,
-            debounceDuration: debounceDuration,
-            loadingBuilder: _searching,
-            errorBuilder: (context, failure) =>
-                _SearchFailed(failure: failure, list: list),
-            value: value,
-            onSelected: onSelected,
-            displayStringForOption: words,
-            isOptionEnabled: isOptionEnabled,
-            // The pointer's row and the keys' place both stand up off the panel, so they are one place, as in a
-            // native menu: the pointer moves the keys' place, and two rows never read as two current options.
-            highlightFollowsPointer: true,
-            requireSelection: requireSelection,
-            semanticLabel: label,
-            fieldBuilder: (context, field) => NeumorphicTextField(
-              label: label,
-              nameOnly: true,
-              hint: hint,
-              // The groove shows the failure; its line is drawn under the field, below.
-              error: error,
-              failureLine: (_) => const SizedBox.shrink(),
-              enabled: enabled,
-              style: style,
-              controller: field.controller,
-              focusNode: field.focusNode,
-              // Enter keeps the focus here, so it comes in onEditingComplete with no onSubmitted: a submit that keeps the
-              // focus restarts the text input, and in a browser the restarted input takes no typing.
-              onEditingComplete: field.submit,
-              trailing: ExcludeSemantics(
-                child: Icon(
-                  NeumorphicGlyphs.chevronsUpDown,
-                  size: 18,
-                  color: t.colors.inkTertiary,
+    // The list hangs from the groove, so the label and the words under it stand outside what it is anchored to. It
+    // stands clear of the groove, and while it is up the groove rests.
+    return NeumorphicFieldListOwner(
+      builder: (context, open, surface) => neumorphicWideRoom(
+        AlignmentDirectional.centerStart,
+        Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (label != null) _Label(label!),
+            DesignCombobox<T>(
+              options: options,
+              search: search,
+              debounceDuration: debounceDuration,
+              loadingBuilder: _searching,
+              errorBuilder: (context, failure) =>
+                  _SearchFailed(failure: failure, list: list),
+              value: value,
+              onSelected: onSelected,
+              displayStringForOption: words,
+              isOptionEnabled: isOptionEnabled,
+              // The pointer's row and the keys' place both stand up off the panel, so they are one place, as in a
+              // native menu: the pointer moves the keys' place, and two rows never read as two current options.
+              highlightFollowsPointer: true,
+              requireSelection: requireSelection,
+              semanticLabel: label,
+              fieldBuilder: (context, field) => NeumorphicTextField(
+                label: label,
+                nameOnly: true,
+                hint: hint,
+                // The groove shows the failure; its line is drawn under the field, below.
+                error: error,
+                failureLine: (_) => const SizedBox.shrink(),
+                enabled: enabled,
+                style: style,
+                controller: field.controller,
+                focusNode: field.focusNode,
+                // Enter keeps the focus here, so it comes in onEditingComplete with no onSubmitted: a submit that keeps the
+                // focus restarts the text input, and in a browser the restarted input takes no typing.
+                onEditingComplete: field.submit,
+                trailing: ExcludeSemantics(
+                  child: Icon(
+                    NeumorphicGlyphs.chevronsUpDown,
+                    size: 18,
+                    color: t.colors.inkTertiary,
+                  ),
+                ),
+              ),
+              optionBuilder: (context, option, states) => NeumorphicPanelRow(
+                label: words(option),
+                states: states,
+                checked: states.contains(WidgetState.selected),
+                inset: list.row,
+                panelInset: list.panel,
+                checkAtEnd: true,
+              ),
+              surfaceBuilder: (context, rows) => surface(
+                NeumorphicPanel(
+                  padding: EdgeInsets.all(list.panel),
+                  child: rows,
+                ),
+              ),
+              emptyBuilder: (context) => Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 10,
+                ),
+                child: Text(
+                  NeumorphicLocalizations.of(context).noResults,
+                  style: t.textTheme.caption,
                 ),
               ),
             ),
-            optionBuilder: (context, option, states) => NeumorphicPanelRow(
-              label: words(option),
-              states: states,
-              checked: states.contains(WidgetState.selected),
-              inset: list.row,
-              panelInset: list.panel,
-              checkAtEnd: true,
-            ),
-            surfaceBuilder: (context, rows) => NeumorphicPanel(
-              padding: EdgeInsets.all(list.panel),
-              child: rows,
-            ),
-            emptyBuilder: (context) => Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              child: Text(
-                NeumorphicLocalizations.of(context).noResults,
-                style: t.textTheme.caption,
-              ),
-            ),
-          ),
-          _Under(error: error, helper: helper),
-        ],
+            _Under(error: error, helper: helper),
+          ],
+        ),
       ),
     );
   }
@@ -1019,8 +972,8 @@ class NeumorphicMultiSelect<T extends Object> extends StatefulWidget {
 
 class _NeumorphicMultiSelectState<T extends Object>
     extends State<NeumorphicMultiSelect<T>> {
-  // The field's well deepens while its editor has the keys; a chip with the keys lifts itself, so one thing at a time
-  // shows focus.
+  // The field's well deepens while its editor has the keys and its list is shut; a chip with the keys lifts itself, so
+  // one thing at a time shows focus.
   bool _editing = false;
 
   @override
@@ -1031,45 +984,37 @@ class _NeumorphicMultiSelectState<T extends Object>
     final local = NeumorphicLocalizations.of(context);
     final words = widget.displayString ?? (T value) => value.toString();
     final shape = t.shapes.corner(NeumorphicRadii.well);
-    // The groove's own inset (its shape's dimensions): the words line bleeds over it, so the list it opens starts on
-    // the groove's leading edge and is the groove's width.
-    final bleed = shape.dimensions.resolve(Directionality.of(context));
-    return neumorphicWideRoom(
-      AlignmentDirectional.centerStart,
-      Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          if (widget.label != null) _Label(widget.label!),
-          DesignTagInput<T>(
-            values: widget.values,
-            onChanged: widget.onChanged,
-            options: widget.options,
-            search: widget.search,
-            debounceDuration: widget.debounceDuration,
-            loadingBuilder: _searching,
-            errorBuilder: (context, failure) =>
-                _SearchFailed(failure: failure, list: list),
-            displayStringForOption: words,
-            isOptionEnabled: widget.isOptionEnabled,
-            // One place for the pointer and the keys, as the combobox's.
-            highlightFollowsPointer: true,
-            onCreate: widget.onCreate,
-            maxTags: widget.maxTags,
-            semanticLabel: widget.label,
-            deleteLabel: local.remove('').trim(),
-            fieldBuilder: (context, field) => Focus(
-              canRequestFocus: false,
-              skipTraversal: true,
-              includeSemantics: false,
-              onFocusChange: (on) => setState(() => _editing = on),
-              // The words line spans the groove (its list opens from the groove's leading edge, as wide as it); the
-              // words keep the groove's inset inside it.
-              child: Padding(
-                padding: EdgeInsets.only(
-                  left: 10 + bleed.left,
-                  right: 10 + bleed.right,
-                ),
+    // Its list stands clear of the well, and while it is up the well rests.
+    return NeumorphicFieldListOwner(
+      builder: (context, open, surface) => neumorphicWideRoom(
+        AlignmentDirectional.centerStart,
+        Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (widget.label != null) _Label(widget.label!),
+            DesignTagInput<T>(
+              values: widget.values,
+              onChanged: widget.onChanged,
+              options: widget.options,
+              search: widget.search,
+              debounceDuration: widget.debounceDuration,
+              loadingBuilder: _searching,
+              errorBuilder: (context, failure) =>
+                  _SearchFailed(failure: failure, list: list),
+              displayStringForOption: words,
+              isOptionEnabled: widget.isOptionEnabled,
+              // One place for the pointer and the keys, as the combobox's.
+              highlightFollowsPointer: true,
+              onCreate: widget.onCreate,
+              maxTags: widget.maxTags,
+              semanticLabel: widget.label,
+              deleteLabel: local.remove('').trim(),
+              fieldBuilder: (context, field) => Focus(
+                canRequestFocus: false,
+                skipTraversal: true,
+                includeSemantics: false,
+                onFocusChange: (on) => setState(() => _editing = on),
                 child: _BareEditor(
                   controller: field.controller,
                   focusNode: field.focusNode,
@@ -1082,67 +1027,54 @@ class _NeumorphicMultiSelectState<T extends Object>
                   semanticLabel: widget.label ?? widget.hint,
                 ),
               ),
-            ),
-            layoutBuilder: (context, tags, field) => NeumorphicFieldBox(
-              style: widget.style,
-              multiline: true,
-              shape: shape,
-              states: {
-                if (_editing) WidgetState.focused,
-                if (widget.error != null) WidgetState.error,
+              layoutBuilder: (context, tags, field) => NeumorphicFieldBox(
+                style: widget.style,
+                multiline: true,
+                shape: shape,
+                states: {
+                  if (_editing && !open) WidgetState.focused,
+                  if (widget.error != null) WidgetState.error,
+                },
+                // The chips start where the words of any field start, and the words line goes on after the last chip, on
+                // its line while there is room, as one flow. With chips the flow stands 3 further in above and below, so
+                // the first chip stands as far in from the well's top as from its side, square in its corner.
+                padding: EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: tags.isEmpty ? 0 : 3,
+                ),
+                child: _TagFlow(children: [...tags, field]),
+              ),
+              tagBuilder: (context, value, tag) {
+                final chip = NeumorphicChip(
+                  words(value),
+                  dense: true,
+                  onDeleted: tag.onDeleted,
+                  deleteLabel: local.remove(words(value)),
+                );
+                if (!tag.focused) return chip;
+                return CustomPaint(
+                  foregroundPainter: neumorphicFocusLift(t, t.shapes.capsule),
+                  child: chip,
+                );
               },
-              // The first chip stands as far in from the well's top as from its side, so it sits square in the well's
-              // corner: 6 over the chips stood it 3 lower than in.
-              padding: EdgeInsets.only(top: tags.isEmpty ? 6 : 3, bottom: 6),
-              // The chips start where the words of any field start, on their own lines over the words line.
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  if (tags.isNotEmpty) ...[
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 10),
-                      child: Wrap(
-                        spacing: 6,
-                        runSpacing: 6,
-                        crossAxisAlignment: WrapCrossAlignment.center,
-                        children: tags,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                  ],
-                  _Bleed(bleed, child: field),
-                ],
+              optionBuilder: (context, option, states) => NeumorphicPanelRow(
+                label: words(option),
+                states: states,
+                checked: widget.values.contains(option),
+                inset: list.row,
+                panelInset: list.panel,
+                checkAtEnd: true,
+              ),
+              surfaceBuilder: (context, rows) => surface(
+                NeumorphicPanel(
+                  padding: EdgeInsets.all(list.panel),
+                  child: rows,
+                ),
               ),
             ),
-            tagBuilder: (context, value, tag) {
-              final chip = NeumorphicChip(
-                words(value),
-                dense: true,
-                onDeleted: tag.onDeleted,
-                deleteLabel: local.remove(words(value)),
-              );
-              if (!tag.focused) return chip;
-              return CustomPaint(
-                foregroundPainter: neumorphicFocusLift(t, t.shapes.capsule),
-                child: chip,
-              );
-            },
-            optionBuilder: (context, option, states) => NeumorphicPanelRow(
-              label: words(option),
-              states: states,
-              checked: widget.values.contains(option),
-              inset: list.row,
-              panelInset: list.panel,
-              checkAtEnd: true,
-            ),
-            surfaceBuilder: (context, rows) => NeumorphicPanel(
-              padding: EdgeInsets.all(list.panel),
-              child: rows,
-            ),
-          ),
-          _Under(error: widget.error, helper: widget.helper),
-        ],
+            _Under(error: widget.error, helper: widget.helper),
+          ],
+        ),
       ),
     );
   }
@@ -1228,9 +1160,11 @@ class _SearchFailedState extends State<_SearchFailed> {
   }
 }
 
-/// A form row around any control: its label (with a required mark), the control, and its help or failure under it. The
-/// control speaks the label, help and failure itself; the drawn words are silent. In a `DesignForm`, a `DesignFormField`
-/// validates it and the form focuses the first wrong field on submit.
+/// A form row around any control: its label (with a required mark), the control, and its help or failure under it. A
+/// single control speaks the label, help and failure itself; a group of controls ([group]: a segmented button, radios,
+/// choices, chips in a wrap) is named by them, each control keeping its own node, so every one takes a tap from a screen
+/// reader or a browser with semantics on. The drawn words are silent. In a `DesignForm`, a `DesignFormField` validates it
+/// and the form focuses the first wrong field on submit.
 ///
 /// ```dart
 /// NeumorphicFormField(label: 'Email', help: 'The receipt goes here', required: true, child: NeumorphicTextField(controller: email))
@@ -1245,6 +1179,7 @@ class NeumorphicFormField extends StatelessWidget {
     this.error,
     this.required = false,
     this.enabled = true,
+    this.group,
   });
 
   /// The control.
@@ -1265,12 +1200,56 @@ class NeumorphicFormField extends StatelessWidget {
   /// Whether the control takes input.
   final bool enabled;
 
+  /// Whether [child] is a group of controls, which the label names as a group while each control keeps its own node;
+  /// false, one control, which takes the label as its own name. Null decides by [child]: the look's segmented button,
+  /// radio group, choices, toggle, button and latch groups, and several parts in a row, column or wrap (chips, say), are
+  /// a group, seen through an [Align], [Padding], [SizedBox] or [ConstrainedBox]. A group that names itself in the
+  /// label's words (a segmented button labelled as its field) is heard once: the field adds no name of its own.
+  final bool? group;
+
+  // Merged into one node, a group's controls gave a tap on any of them to its first (the user, 11-18: Stint's Priority
+  // and Labels took no tap).
+  static bool _isGroup(Widget w) => switch (w) {
+    NeumorphicSegmentedButton() ||
+    NeumorphicRadioGroup() ||
+    NeumorphicChoices() ||
+    NeumorphicToggleGroup() ||
+    NeumorphicButtonGroup() ||
+    NeumorphicLatchGroup() ||
+    Flex() ||
+    Wrap() => true,
+    Align(:final child?) ||
+    Padding(:final child?) ||
+    SizedBox(:final child?) ||
+    ConstrainedBox(:final child?) => _isGroup(child),
+    _ => false,
+  };
+
+  // The name a group gives its own node, seen through the same wrappers.
+  static String? _ownName(Widget w) => switch (w) {
+    NeumorphicSegmentedButton(:final label) ||
+    NeumorphicRadioGroup(:final label) ||
+    NeumorphicToggleGroup(:final label) ||
+    NeumorphicButtonGroup(:final label) => label,
+    Align(:final child?) ||
+    Padding(:final child?) ||
+    SizedBox(:final child?) ||
+    ConstrainedBox(:final child?) => _ownName(child),
+    _ => null,
+  };
+
   @override
   Widget build(BuildContext context) {
     final t = NeumorphicTheme.of(context);
     final c = t.colors;
+    final isGroup = group ?? _isGroup(child);
+    // A group that already says the label's words on its own node: the field draws the label but does not say it, so
+    // it is read once, not "Priority, Priority" (ui_core 0.3.2's rule, which applies when a field decides for itself).
+    final own = isGroup ? _ownName(child)?.trim().toLowerCase() : null;
+    final heard = own != null && own == label?.trim().toLowerCase();
     return DesignField(
-      labelText: label,
+      mergeSemantics: !isGroup,
+      labelText: heard ? null : label,
       helperText: help,
       errorText: error,
       required: required,
@@ -1280,7 +1259,7 @@ class NeumorphicFormField extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          if (parts.labelText != null)
+          if ((parts.labelText ?? (heard ? label : null)) case final shown?)
             Padding(
               padding: const EdgeInsets.only(bottom: 8),
               child: DefaultTextStyle.merge(
@@ -1290,7 +1269,10 @@ class NeumorphicFormField extends StatelessWidget {
                 ),
                 child: Row(
                   children: [
-                    Flexible(child: parts.label ?? Text(parts.labelText!)),
+                    Flexible(
+                      child:
+                          parts.label ?? ExcludeSemantics(child: Text(shown)),
+                    ),
                     if (parts.required)
                       ExcludeSemantics(
                         child: Text(
@@ -1338,7 +1320,8 @@ class NeumorphicFormField extends StatelessWidget {
       ..add(
         DiagnosticsProperty<bool>('required', required, defaultValue: false),
       )
-      ..add(DiagnosticsProperty<bool>('enabled', enabled, defaultValue: true));
+      ..add(DiagnosticsProperty<bool>('enabled', enabled, defaultValue: true))
+      ..add(DiagnosticsProperty<bool>('group', group, defaultValue: null));
   }
 }
 
@@ -1859,3 +1842,149 @@ InputDecoration _bareDecoration({
   visualDensity: VisualDensity.standard,
   constraints: const BoxConstraints(),
 );
+
+/// A tag field's chips in lines, [spacing] apart along a line and [runSpacing] between lines, each line's parts on its
+/// middle, and its words line (the last child) after the last chip, taking the rest of that line, or a line of its own
+/// when less than [fieldMin] is left. Laid out from the reader's start.
+class _TagFlow extends MultiChildRenderObjectWidget {
+  const _TagFlow({required super.children});
+
+  static const spacing = 6.0, runSpacing = 0.0, fieldMin = 96.0;
+
+  @override
+  _RenderTagFlow createRenderObject(BuildContext context) =>
+      _RenderTagFlow(Directionality.of(context));
+
+  @override
+  void updateRenderObject(BuildContext context, _RenderTagFlow renderObject) {
+    renderObject.direction = Directionality.of(context);
+  }
+}
+
+class _TagFlowData extends ContainerBoxParentData<RenderBox> {}
+
+class _RenderTagFlow extends RenderBox
+    with
+        ContainerRenderObjectMixin<RenderBox, _TagFlowData>,
+        RenderBoxContainerDefaultsMixin<RenderBox, _TagFlowData> {
+  _RenderTagFlow(this._direction);
+
+  TextDirection _direction;
+  set direction(TextDirection value) {
+    if (value == _direction) return;
+    _direction = value;
+    markNeedsLayout();
+  }
+
+  @override
+  void setupParentData(RenderBox child) {
+    if (child.parentData is! _TagFlowData) child.parentData = _TagFlowData();
+  }
+
+  // Lines the children into [width] and returns the flow's size; [place] is told each child's offset.
+  Size _flow(
+    double width,
+    Size Function(RenderBox child, BoxConstraints constraints) measure, [
+    void Function(RenderBox child, Offset offset)? place,
+  ]) {
+    final lines = <List<(RenderBox, Size)>>[];
+    var line = <(RenderBox, Size)>[];
+    var x = 0.0;
+    final field = lastChild;
+    for (
+      var child = firstChild;
+      child != null && child != field;
+      child = childAfter(child)
+    ) {
+      final size = measure(child, BoxConstraints(maxWidth: width));
+      if (line.isNotEmpty && x + _TagFlow.spacing + size.width > width) {
+        lines.add(line);
+        line = [];
+        x = 0;
+      }
+      x += (line.isEmpty ? 0 : _TagFlow.spacing) + size.width;
+      line.add((child, size));
+    }
+    if (field != null) {
+      var left = width - x - (line.isEmpty ? 0 : _TagFlow.spacing);
+      if (line.isNotEmpty && left < math.min(_TagFlow.fieldMin, width)) {
+        lines.add(line);
+        line = [];
+        left = width;
+      }
+      line.add((
+        field,
+        measure(field, BoxConstraints.tightFor(width: math.max(0, left))),
+      ));
+    }
+    if (line.isNotEmpty) lines.add(line);
+    var y = 0.0;
+    for (final (i, parts) in lines.indexed) {
+      if (i > 0) y += _TagFlow.runSpacing;
+      final height = parts.fold(0.0, (h, p) => math.max(h, p.$2.height));
+      var at = 0.0;
+      for (final (child, size) in parts) {
+        final dx = _direction == TextDirection.ltr
+            ? at
+            : width - at - size.width;
+        place?.call(child, Offset(dx, y + (height - size.height) / 2));
+        at += size.width + _TagFlow.spacing;
+      }
+      y += height;
+    }
+    return Size(width, y);
+  }
+
+  double _width(BoxConstraints constraints) => constraints.hasBoundedWidth
+      ? constraints.maxWidth
+      : _TagFlow.fieldMin * 3;
+
+  @override
+  Size computeDryLayout(BoxConstraints constraints) => constraints.constrain(
+    _flow(_width(constraints), (child, c) => child.getDryLayout(c)),
+  );
+
+  @override
+  void performLayout() {
+    size = constraints.constrain(
+      _flow(
+        _width(constraints),
+        (child, c) {
+          child.layout(c, parentUsesSize: true);
+          return child.size;
+        },
+        (child, offset) => (child.parentData! as _TagFlowData).offset = offset,
+      ),
+    );
+  }
+
+  @override
+  double computeMinIntrinsicWidth(double height) => _TagFlow.fieldMin;
+
+  @override
+  double computeMaxIntrinsicWidth(double height) {
+    var width = 0.0;
+    for (var child = firstChild; child != null; child = childAfter(child)) {
+      width +=
+          child.getMaxIntrinsicWidth(height) +
+          (child == firstChild ? 0 : _TagFlow.spacing);
+    }
+    return math.max(width, _TagFlow.fieldMin);
+  }
+
+  @override
+  double computeMinIntrinsicHeight(double width) =>
+      _flow(width, (child, c) => child.getDryLayout(c)).height;
+
+  @override
+  double computeMaxIntrinsicHeight(double width) =>
+      computeMinIntrinsicHeight(width);
+
+  @override
+  bool hitTestChildren(BoxHitTestResult result, {required Offset position}) =>
+      defaultHitTestChildren(result, position: position);
+
+  @override
+  void paint(PaintingContext context, Offset offset) =>
+      defaultPaint(context, offset);
+}

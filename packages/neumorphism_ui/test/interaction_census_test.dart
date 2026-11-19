@@ -7,6 +7,8 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:neumorphism_ui/neumorphism_ui.dart';
+import 'package:neumorphism_ui/src/neumorphism/internal/panel.dart'
+    show NeumorphicPanelRowRaise;
 
 import 'support.dart';
 
@@ -597,15 +599,30 @@ void main() {
         await tester.pump(const Duration(milliseconds: 300));
         expect(
           find.byWidgetPredicate(
-            (w) =>
+            (w) => switch (name) {
+              // The number field's groove, a field, rises round its hollow.
+              'NeumorphicNumberField' =>
+                w is NeumorphicSurface &&
+                    w.states.contains(WidgetState.focused),
+              // A menu's row the keys reach sinks a little deeper into the
+              // panel, the chosen one under its wash too.
+              'NeumorphicMenu' =>
                 w is CustomPaint &&
-                // The slider lifts its thumb, the part that moves; the parts on
-                // ui_core's behaviours lift their region (`neumorphicFocusLift`);
-                // the number field's bare figure, a field, sinks into a well.
-                (name == 'NeumorphicNumberField'
-                        ? {'_PressRelief'}
-                        : {'_FocusLift', '_ThumbLift', '_Lift'})
-                    .contains(w.foregroundPainter.runtimeType.toString()),
+                    [w.painter, w.foregroundPainter].any(
+                      (p) => p is NeumorphicPanelRowRaise && (p.focus || p.rim),
+                    ),
+              // The slider rises, groove and thumb, and the rating its row of
+              // stars; the parts on ui_core's behaviours lift their region
+              // (`neumorphicFocusLift`).
+              _ =>
+                w is CustomPaint &&
+                    {
+                      '_FocusLift',
+                      '_ThumbLift',
+                      '_RatingRisePainter',
+                      '_Lift',
+                    }.contains(w.foregroundPainter.runtimeType.toString()),
+            },
           ),
           findsOneWidget,
         );

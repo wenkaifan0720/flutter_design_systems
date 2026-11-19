@@ -1,3 +1,20 @@
+## 0.3.2
+
+- `NeumorphicFormField` now keeps each control of a group in its own semantics node, under the field's label. This covers a segmented button, radios, choices, a toggle or button group, and chips in a row or wrap. Previously the field merged the group into one node, so with semantics on (a screen reader, or a web app with semantics enabled) every tap went to the group's first control. The field now decides by its child. Set `group` to choose yourself. A group that names itself in the field's words, such as a segmented button labelled as its field, is announced once instead of twice.
+- A select, combobox or chips input now opens its list 8 apart from the field, above or below. While the list is open, the field stays at rest, and it rises again once the list closes and the field still has focus.
+- `showNeumorphicDatePicker` now fits its sheet to the month on wider windows, so the month, its arrows and the sheet's buttons span the same width. A day that ends up under a resting pointer as the sheet opens stays at rest until the pointer moves.
+- At night, a long focused part (a stepper's groove, a wide button) rises with a crisp light along its lit edge instead of a wide soft light, so it no longer reads as a glow beside its neighbours.
+- Keyboard focus now shows by raising the focused part, with deeper and sharper shadows in its own light and shade. The pigment glow and the extra line are gone. This applies to buttons, keys, toggles, chips, tabs, segments, rows, sliders and fields. A focused field now rises around its well. A focused slider now raises its groove and thumb together.
+- In every menu (split button, menu bar, context menu, select and combobox), a hovered row now sits as one soft, even hollow inside the panel, with corners that follow the panel's. The row the keys reach sits a little deeper, and no row glows. Menu panels have tighter padding: 6 around the rows and 10 to either side of a row's words.
+- The chips input now puts its cursor on the same line, after the last chip, and wraps to a new line only when that line is full. The field is no taller than its chips need, and the first chip stays the same distance from the field's top and side. Its suggestions now sit within the panel as flat rows.
+- `NeumorphicNumberField` now shows its number, with its unit after it, in a groove as tall as its keys, with a gap on either side. When focused, the groove rises.
+- `NeumorphicDialog`, opened with `showNeumorphicDialog`, now moves focus to its first action (the dismissive one), unless its content has already taken focus. This means Enter and Escape work straight away. That focus shows after a keyboard open but not after a touch.
+- Tappable list tiles announce their title, subtitle and note together. Set `NeumorphicListTile.semanticLabel` for a custom name.
+- Split menus open at the reading-order start of the button in both left-to-right and right-to-left layouts.
+- Phone navigation labels use the requested text size and wrap into additional rows. Thermostat settings stay on the face at larger text sizes, with longer descriptions below.
+- `showNeumorphicDatePicker` accepts a `today` date. The gallery uses the same Today marker in its inline calendar and sheet, and shows renewal dates in Arabic when reading right to left.
+- Hearth retains saved account details between screens, sends the order receipt to the saved address, and identifies missing delivery fields before placing an order.
+
 ## 0.3.1
 
 ### Fixed

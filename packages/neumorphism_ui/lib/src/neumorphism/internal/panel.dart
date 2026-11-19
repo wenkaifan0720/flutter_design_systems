@@ -33,15 +33,20 @@ OutlinedBorder _panelRowShape(BuildContext context, {double inset = 12}) {
   );
 }
 
+/// A menu's panel keeps this even inset round its flat rows (a split button's, a menu bar's, a context menu's, a
+/// menu's), so the one sunk row stands concentric in it, the same distance from every edge.
+const double neumorphicMenuInset = 6;
+
 /// A field's open list (a select's, a combobox's, a multi-select's) starts its options' words where the field starts
 /// its value, [words] in from the field's edge (design6 P, 11-11 night): the panel's inset, its shape's own [frame]
 /// (the content-safe inset a surface adds for a shape it is given) and its rows' make up [words], the rows keeping 4 to
-/// 8 of their own round their words, and the chosen row, pressed in, carries its check at its end.
+/// 10 of their own round their words, and the chosen row, pressed in, carries its check at its end.
 ({double panel, double row}) neumorphicFieldListInsets(
   double words, {
   double frame = 0,
 }) {
-  final row = (words - 8).clamp(4.0, 8.0);
+  // The rows take most of the words' inset, so a sunk row keeps room round its words, and the panel a tight one.
+  final row = (words - 5).clamp(4.0, 10.0);
   return (panel: math.max(0.0, words - row - frame), row: row);
 }
 
@@ -58,8 +63,8 @@ OutlinedBorder _panelRowShape(BuildContext context, {double inset = 12}) {
 double neumorphicFieldWords(NeumorphicThemeData t) =>
     t.density.padding(const EdgeInsets.symmetric(horizontal: 14)).left;
 
-/// Keyboard focus on a part shaped [border] that draws its own face: it lifts off the wall, its lit side warmed by the
-/// pigment ([neumorphicPaintFocusLift]). [reach] scales it to a small part among others.
+/// Keyboard focus on a part shaped [border] that draws its own face: it rises off the wall, its paired shadows deeper
+/// and crisper ([neumorphicPaintFocusLift]). [reach] scales it to a small part among others.
 CustomPainter neumorphicFocusLift(
   NeumorphicThemeData t,
   OutlinedBorder border, {
@@ -187,10 +192,11 @@ class NeumorphicPanel extends StatelessWidget {
   }
 }
 
-/// One row of a menu-like list in a [NeumorphicPanel], for a ui_core item's [states]. [checked], the chosen row is
-/// pressed in under the pigment's wash, its words bold and its check in the pigment; the keyboard's place lifts (the
-/// look's keyboard focus); the pointer's row, or one whose menu is open ([highlighted]), stands up a little; a row held
-/// under a finger presses in plain while it is held. Out of use, its words are in the quiet ink.
+/// One row of a menu-like list in a [NeumorphicPanel], for a ui_core item's [states]. The rows lie flat in their one
+/// raised panel. [checked], the chosen row is pressed in under the pigment's wash, its words bold and its check in the
+/// pigment; the pointer's row, or one whose menu is open ([highlighted]), sinks a little into the panel, in its
+/// concentric outline; the keyboard's place sinks the same way, a little deeper; a row held under a finger presses in
+/// deeper, under a breath of the pigment, while it is held. Out of use, its words are in the quiet ink.
 class NeumorphicPanelRow extends StatelessWidget {
   /// A row named [label].
   const NeumorphicPanelRow({
@@ -205,8 +211,8 @@ class NeumorphicPanelRow extends StatelessWidget {
     this.submenu = false,
     this.highlighted = false,
     this.style,
-    this.inset = 8,
-    this.panelInset = 12,
+    this.inset = 10,
+    this.panelInset = neumorphicMenuInset,
     this.checkAtEnd = false,
     this.reserveIconSpace = true,
   });
@@ -260,10 +266,10 @@ class NeumorphicPanelRow extends StatelessWidget {
     final c = t.colors;
     final look = neumorphicStyleOf([style, t.menuTheme], states);
     final enabled = !states.contains(WidgetState.disabled);
-    // Four states, four materials, so none reads as another: the chosen row is pressed in under the pigment's wash
-    // (a chosen cell's well); a row held under a finger presses in plain, only while it is held; the keyboard's place
-    // lifts with its lit side warmed (keyboard focus everywhere in the look); the pointer's row, or one whose menu is
-    // open, stands up a little off the panel. Only the chosen row is ever pressed in at rest.
+    // One quiet sink for the active row, so a raised key never stands in the raised panel: the pointer's row, or one
+    // whose menu is open, sinks a little in the row's concentric outline; the keyboard's place sinks the same, a little
+    // deeper; a row held under a finger presses in deeper under a breath of the pigment; the chosen row is
+    // pressed in under the pigment's wash. Only the chosen row is ever pressed in at rest.
     // In a menu's panel ([NeumorphicPanel.menu]) the last to move, the keys or the pointer, has the one lit row: the
     // keys' place lifts only while the keys moved last, the pointer's row stands up only while the pointer did.
     final place = context
@@ -303,11 +309,17 @@ class NeumorphicPanelRow extends StatelessWidget {
               look.fill ?? c.ground,
               border,
             )
-          : raised
-          ? NeumorphicPanelRowRaise(c, t.elevation, border)
+          : raised || (keys && !chosen)
+          ? NeumorphicPanelRowRaise(c, t.elevation, border, focus: keys)
           : null,
-      foregroundPainter: keys
-          ? neumorphicFocusLift(t, border, reach: .5)
+      foregroundPainter: keys && chosen
+          ? NeumorphicPanelRowRaise(
+              c,
+              t.elevation,
+              border,
+              focus: true,
+              rim: true,
+            )
           : null,
       child: Container(
         constraints: const BoxConstraints(minHeight: 48),
@@ -478,12 +490,20 @@ class _MenuPlaceScope extends InheritedWidget {
   bool updateShouldNotify(_MenuPlaceScope old) => old.keys != keys;
 }
 
-/// The pointer's row, or one whose menu is open: it stands up off its panel as a part does (the part's own cast, so it
-/// still reads at night, where the light throw is a breath), in its exact outline, its face the panel's own. Raised,
-/// never pressed in, so it never reads as the chosen row or a second choice.
+/// The pointer's row, or one whose menu is open, in a raised panel: it sinks a little into the panel, one quiet soft
+/// sink in its exact outline (concentric with the panel, the same inset all round), its face the panel's own and no
+/// pigment, so it never reads as the chosen row (pressed in under the wash) or as a raised key in the raised panel.
+/// [focus], the keyboard's place: the same sink a little deeper. [rim] paints that deeper sink's shading alone, over a
+/// row that draws its own face (the chosen row).
 class NeumorphicPanelRowRaise extends CustomPainter {
-  /// The raise of a row shaped [border].
-  const NeumorphicPanelRowRaise(this.colors, this.elevation, this.border);
+  /// The sink of a row shaped [border].
+  const NeumorphicPanelRowRaise(
+    this.colors,
+    this.elevation,
+    this.border, {
+    this.focus = false,
+    this.rim = false,
+  });
 
   /// The palette.
   final NeumorphicColors colors;
@@ -494,21 +514,44 @@ class NeumorphicPanelRowRaise extends CustomPainter {
   /// The row's outline.
   final OutlinedBorder border;
 
+  /// Whether the keyboard's place is here: the sink a little deeper.
+  final bool focus;
+
+  /// Whether only the deeper sink's shading is painted, over a face of the row's own.
+  final bool rim;
+
   @override
-  void paint(Canvas canvas, Size size) => neumorphicPaintRaised(
-    canvas,
-    border.getOuterPath(Offset.zero & size),
-    colors,
-    light: (const Offset(-4, -4), 10),
-    dark: (const Offset(5, 5), 12),
-    elevation: elevation,
-  );
+  void paint(Canvas canvas, Size size) {
+    final box = Offset.zero & size;
+    final shape = border.getOuterPath(box);
+    // The keys' place sinks the same, a little deeper and darker.
+    final deep = focus || rim;
+    const clear = Color(0x00000000);
+    neumorphicPaintPressed(
+      canvas,
+      shape,
+      colors,
+      light: deep ? (const Offset(-3, -3), 8) : (const Offset(-2, -2), 6),
+      dark: deep ? (const Offset(3, 3), 8) : (const Offset(2, 2), 6),
+      darkColor: deep
+          ? colors.shadowInset.withValues(
+              alpha: math.min(1, colors.shadowInset.a * 1.6),
+            )
+          : null,
+      face: rim
+          ? const LinearGradient(colors: [clear, clear]).createShader(box)
+          : null,
+      elevation: elevation,
+    );
+  }
 
   @override
   bool shouldRepaint(NeumorphicPanelRowRaise old) =>
       old.colors != colors ||
       old.elevation != elevation ||
-      old.border != border;
+      old.border != border ||
+      old.focus != focus ||
+      old.rim != rim;
 }
 
 /// A row pressed in a little, in its exact outline, its face [fill] (a breath of the pigment when none is given).

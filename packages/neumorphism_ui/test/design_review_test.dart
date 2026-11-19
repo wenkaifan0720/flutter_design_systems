@@ -6,6 +6,8 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:neumorphism_ui/neumorphism_ui.dart';
+import 'package:neumorphism_ui/src/neumorphism/internal/panel.dart'
+    show NeumorphicPanelRowRaise;
 import 'package:neumorphism_ui/src/neumorphism/theme.dart'
     show NeumorphicPigment;
 
@@ -95,7 +97,7 @@ void main() {
       }
     });
     testWidgets(
-      'menu presses its chosen row in under the wash, with a small keyboard-only lift, in ${mode.name}',
+      'menu presses its chosen row in under the wash, the keys\' row a little deeper, in ${mode.name}',
       (tester) async {
         final theme = NeumorphicThemeData.porcelain(mode);
         final stage = GlobalKey();
@@ -161,8 +163,21 @@ void main() {
         await tester.pumpAndSettle();
         final keyboard = tester.widget<NeumorphicTap>(tap('Second choice'));
         expect(keyboard.focusNode!.hasFocus, isTrue);
-        expect(keyboard.showFocus, isTrue);
-        expect(keyboard.focusReach, lessThan(1));
+        // The row the keys reach says so in the panel's own relief, a little deeper hollow than the pointer's, never
+        // a lift or a glow round it.
+        expect(keyboard.showFocus, isFalse);
+        expect(
+          find.descendant(
+            of: tap('Second choice'),
+            matching: find.byWidgetPredicate(
+              (w) =>
+                  w is CustomPaint &&
+                  w.painter is NeumorphicPanelRowRaise &&
+                  (w.painter! as NeumorphicPanelRowRaise).focus,
+            ),
+          ),
+          findsOneWidget,
+        );
         expect(tester.takeException(), isNull);
       },
       tags: ['goldens'],

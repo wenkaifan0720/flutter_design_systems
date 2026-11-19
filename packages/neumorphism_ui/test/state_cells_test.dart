@@ -405,11 +405,11 @@ void main() {
 
         final handle = tester.ensureSemantics();
         expect(
-          tester.getSemantics(find.bySemanticsLabel('Pendants')),
+          tester.getSemantics(find.bySemanticsLabel(RegExp('^Pendants'))),
           isSemantics(isSelected: true, isButton: true),
         );
         expect(
-          tester.getSemantics(find.bySemanticsLabel('Floor lamp')),
+          tester.getSemantics(find.bySemanticsLabel(RegExp('^Floor lamp'))),
           isNot(isSemantics(isSelected: true)),
         );
         handle.dispose();

@@ -6,6 +6,8 @@ import 'package:neumorphism_ui/neumorphism_ui.dart';
 
 import '../kit.dart';
 
+final kitPickerToday = DateTime(2026, 11, 12);
+
 Widget kitPickersDemo(Brightness brightness) => kitScreen(
   brightness: brightness,
   title: 'Dates and times',
@@ -27,6 +29,7 @@ Widget kitPickersDemo(Brightness brightness) => kitScreen(
                 onPressed: () => showNeumorphicDatePicker(
                   context,
                   value: DateTime(2026, 11, 6),
+                  today: kitPickerToday,
                 ),
               ),
               NeumorphicButton(
@@ -48,7 +51,7 @@ Widget kitSpecimenDatePicker() {
   return StatefulBuilder(
     builder: (context, setState) => NeumorphicDatePicker(
       value: value,
-      today: DateTime(2026, 11, 6),
+      today: kitPickerToday,
       first: DateTime(2026, 11, 1),
       last: DateTime(2027, 1, 31),
       onChanged: (v) => setState(() => value = v),
@@ -74,7 +77,7 @@ Widget kitSpecimenCalendar() => kitHeld<DesignCalendarController>(
     firstDate: DateTime(2026, 1),
     lastDate: DateTime(2026, 12, 31),
     selectedDate: DateTime(2026, 11, 14),
-    currentDate: DateTime(2026, 11, 12),
+    currentDate: kitPickerToday,
   ),
   (context, controller) => NeumorphicCalendar(controller: controller),
 );
@@ -88,7 +91,7 @@ Widget kitSpecimenDateRangePicker() => kitHeld<DesignCalendarController>(
       DateTime(2026, 11, 14),
       DateTime(2026, 11, 18),
     ),
-    currentDate: DateTime(2026, 11, 12),
+    currentDate: kitPickerToday,
   ),
   (context, controller) => NeumorphicDateRangePicker(controller: controller),
 );

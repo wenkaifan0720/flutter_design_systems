@@ -157,6 +157,84 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  for (final keys in [true, false]) {
+    testWidgets(
+      'a dialog opened ${keys ? 'from the keys' : 'by a press'} takes the focus on its first action, '
+      '${keys ? 'shown' : 'not shown'}, and Enter works at once',
+      (tester) async {
+        final opener = FocusNode();
+        addTearDown(opener.dispose);
+        late BuildContext host;
+        String? result;
+        await tester.pumpWidget(
+          _app(
+            Builder(
+              builder: (context) {
+                host = context;
+                return Center(
+                  child: NeumorphicTap(
+                    focusNode: opener,
+                    onPressed: () {
+                      showNeumorphicDialog<String>(
+                        host,
+                        builder: (context) => NeumorphicDialog(
+                          title: 'Keep this time?',
+                          actions: [
+                            NeumorphicButton(
+                              'Not now',
+                              onPressed: () =>
+                                  Navigator.of(context).pop('not now'),
+                            ),
+                            NeumorphicButton.filled(
+                              'Keep it',
+                              onPressed: () =>
+                                  Navigator.of(context).pop('kept'),
+                            ),
+                          ],
+                        ),
+                      ).then((value) => result = value);
+                    },
+                    child: const Text('Open'),
+                  ),
+                );
+              },
+            ),
+          ),
+        );
+        if (keys) {
+          opener.requestFocus();
+          await tester.pump();
+          await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+        } else {
+          await tester.tap(find.text('Open'));
+        }
+        await tester.pumpAndSettle();
+        final owner = FocusManager.instance.primaryFocus?.context;
+        expect(
+          owner?.findAncestorWidgetOfExactType<NeumorphicDialog>(),
+          isNotNull,
+          reason: 'the focus is inside the dialog',
+        );
+        // The safe action, the first, has it: it paints its focus after the keys, not after a press.
+        expect(
+          NeumorphicStatesScope.of(tester.element(find.text('Not now')))
+              .contains(WidgetState.focused),
+          keys,
+        );
+        expect(
+          NeumorphicStatesScope.of(tester.element(find.text('Keep it')))
+              .contains(WidgetState.focused),
+          isFalse,
+        );
+        await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+        await tester.pumpAndSettle();
+        expect(result, 'not now');
+        expect(find.byType(NeumorphicDialog), findsNothing);
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
+
   testWidgets(
     'a root route carries nested theme, direction, words and text scale',
     (tester) async {

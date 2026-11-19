@@ -26,6 +26,7 @@ import 'internal/whole_words.dart';
 import 'internal/text_entry.dart' show neumorphicLineHeight;
 import 'chrome_metrics.dart';
 import 'internal/panel.dart';
+import 'internal/field_list.dart' show neumorphicFieldListGap;
 import 'internal/cell_bank.dart'
     show NeumorphicChosenBand, neumorphicWideControlMax;
 import 'internal/moulded.dart';
@@ -346,7 +347,10 @@ class _NeumorphicDialogRoute<T> extends DesignDialogRoute<T>
 }
 
 /// A raised slab for a question or a decision. Content and actions scroll together
-/// when a small window or large text leaves too little height.
+/// when a small window or large text leaves too little height. Opened with [showNeumorphicDialog], it moves the focus
+/// to its safe action, the first of its [actions] in reading order (the dismissive one, as ui_core's dialog), unless
+/// its content took it, so the keys land inside it and Escape and Enter work at once; the focus shows as the input
+/// that opened it decides (after the keys, not after a pointer or a touch).
 ///
 /// ```dart
 /// NeumorphicDialog(title: 'Save changes?', message: 'Your changes will be kept.', actions: [NeumorphicButton.filled('Save', onPressed: save)])
@@ -442,7 +446,9 @@ class NeumorphicDialog extends StatelessWidget {
                       ],
                       if (actions.isNotEmpty) ...[
                         const SizedBox(height: 24),
-                        _Actions(children: actions),
+                        ModalRoute.of(context) is DesignDialogRoute
+                            ? _SafeFocus(child: _Actions(children: actions))
+                            : _Actions(children: actions),
                       ],
                     ],
                   ),
@@ -469,6 +475,53 @@ class NeumorphicDialog extends StatelessWidget {
       ..add(StringProperty('title', title))
       ..add(StringProperty('message', message, defaultValue: null));
   }
+}
+
+// As a dialog opens, the focus goes to its first action unless something inside it already took it.
+class _SafeFocus extends StatefulWidget {
+  const _SafeFocus({required this.child});
+  final Widget child;
+  @override
+  State<_SafeFocus> createState() => _SafeFocusState();
+}
+
+class _SafeFocusState extends State<_SafeFocus> {
+  final _bar = FocusNode(
+    debugLabel: 'dialog actions',
+    skipTraversal: true,
+    canRequestFocus: false,
+  );
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final scope = FocusScope.of(context);
+      final primary = FocusManager.instance.primaryFocus;
+      final inside =
+          primary != null &&
+          primary != scope &&
+          primary.ancestors.contains(scope);
+      if (inside) return;
+      for (final node in _bar.traversalDescendants) {
+        if (node.canRequestFocus) {
+          node.requestFocus();
+          return;
+        }
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _bar.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) =>
+      Focus(focusNode: _bar, includeSemantics: false, child: widget.child);
 }
 
 class _Actions extends StatelessWidget {
@@ -948,7 +1001,7 @@ class _NeumorphicMenuState<T> extends State<NeumorphicMenu<T>> {
   bool _keyboardFocus = false;
 
   /// The list's inset round its rows, from the last build: a row the keys reach comes into view with it.
-  double _inset = 12;
+  double _inset = neumorphicMenuInset;
   void _resizeNodes() {
     while (_nodes.length > widget.items.length) {
       _nodes.removeLast().dispose();
@@ -1069,7 +1122,7 @@ class _NeumorphicMenuState<T> extends State<NeumorphicMenu<T>> {
                     .left ??
                 0,
           );
-    final inset = field?.panel ?? 12;
+    final inset = field?.panel ?? neumorphicMenuInset;
     _inset = inset;
     final rowBorder = NeumorphicShapes.inset(
       outer,
@@ -1148,10 +1201,9 @@ class _NeumorphicMenuState<T> extends State<NeumorphicMenu<T>> {
                                   widget.items[i].value as T,
                                 ),
                           focusNode: _nodes[i],
-                          // An item lifts a little, and only when the keys moved
-                          // to it: autofocus alone is not keyboard input.
-                          focusReach: .5,
-                          showFocus: _keyboardFocus,
+                          // The row draws the keys' place itself, as the one quiet
+                          // sink the pointer's row has (below).
+                          showFocus: false,
                           autofocus: widget.autofocus && i == first,
                           onKeyEvent: (_, event) => _key(i, event),
                           child: Builder(
@@ -1162,10 +1214,11 @@ class _NeumorphicMenuState<T> extends State<NeumorphicMenu<T>> {
                                 t.menuTheme,
                               ], states);
                               // The chosen row alone is pressed in at rest, under the pigment's wash; a row
-                              // held under a finger presses in plain while it is held; the pointer's row stands up a
-                              // little; keyboard focus lifts the row (the tap draws it). None reads as another. The
-                              // pointer's row stands up only while the pointer moved last: once the keys move, theirs is
-                              // the one lit row, wherever the pointer rests.
+                              // held under a finger presses in deeper while it is held; the pointer's row sinks a
+                              // little into the panel, and the keys' place sinks the same a little deeper, only
+                              // once the keys moved to it (autofocus alone is not keyboard input). The pointer's row
+                              // sinks only while the pointer moved last: once the keys move, theirs is the one row,
+                              // wherever the pointer rests.
                               final chosen = widget.items[i].selected;
                               final held =
                                   !chosen &&
@@ -1175,6 +1228,10 @@ class _NeumorphicMenuState<T> extends State<NeumorphicMenu<T>> {
                                   !held &&
                                   !_keyboardFocus &&
                                   states.contains(WidgetState.hovered);
+                              final keys =
+                                  _keyboardFocus &&
+                                  !held &&
+                                  states.contains(WidgetState.focused);
                               final row = CustomPaint(
                                 painter: held || (chosen && look.fill != null)
                                     ? _MenuRowRelief(
@@ -1183,11 +1240,20 @@ class _NeumorphicMenuState<T> extends State<NeumorphicMenu<T>> {
                                         look.fill ?? t.colors.ground,
                                         rowBorder,
                                       )
-                                    : over
+                                    : over || (keys && !chosen)
                                     ? NeumorphicPanelRowRaise(
                                         t.colors,
                                         t.elevation,
                                         rowBorder,
+                                        focus: keys,
+                                      )
+                                    : null,
+                                foregroundPainter: keys && chosen
+                                    ? NeumorphicPanelRowRaise(
+                                        t.colors,
+                                        t.elevation,
+                                        rowBorder,
+                                        rim: true,
                                       )
                                     : null,
                                 // Keep the face 48px tall on pointer platforms too;
@@ -1197,7 +1263,7 @@ class _NeumorphicMenuState<T> extends State<NeumorphicMenu<T>> {
                                     minHeight: 48,
                                   ),
                                   padding: EdgeInsets.symmetric(
-                                    horizontal: field?.row ?? 8,
+                                    horizontal: field?.row ?? 10,
                                     vertical: 10,
                                   ),
                                   child: Row(
@@ -1382,6 +1448,7 @@ class _AnchorLayout extends SingleChildLayoutDelegate {
     this.width,
     this.tooltip = false,
     this.widens = false,
+    this.gap = 4,
   });
   final Rect anchor;
   final TextDirection direction;
@@ -1391,6 +1458,9 @@ class _AnchorLayout extends SingleChildLayoutDelegate {
 
   /// A field's list: [width] is its least, and it may widen to a control's most to fit its widest entry.
   final bool widens;
+
+  /// How far it stands from [anchor].
+  final double gap;
   @override
   BoxConstraints getConstraintsForChild(BoxConstraints constraints) {
     final available = math.max(
@@ -1412,8 +1482,8 @@ class _AnchorLayout extends SingleChildLayoutDelegate {
 
   @override
   Offset getPositionForChild(Size size, Size child) {
-    final below = size.height - padding.bottom - anchor.bottom - 8;
-    final above = anchor.top - padding.top - 8;
+    final below = size.height - padding.bottom - anchor.bottom - 4 - gap;
+    final above = anchor.top - padding.top - 4 - gap;
     final preferBelow = tooltip
         ? above < child.height
         : below >= child.height || below >= above;
@@ -1422,7 +1492,9 @@ class _AnchorLayout extends SingleChildLayoutDelegate {
         : direction == TextDirection.rtl
         ? anchor.right - child.width
         : anchor.left;
-    final y = preferBelow ? anchor.bottom + 4 : anchor.top - child.height - 4;
+    final y = preferBelow
+        ? anchor.bottom + gap
+        : anchor.top - child.height - gap;
     final left = padding.left + 8, top = padding.top + 8;
     return Offset(
       x.clamp(
@@ -1443,7 +1515,8 @@ class _AnchorLayout extends SingleChildLayoutDelegate {
       old.padding != padding ||
       old.width != width ||
       old.tooltip != tooltip ||
-      old.widens != widens;
+      old.widens != widens ||
+      old.gap != gap;
 }
 
 /// Opens a menu beside a screen-coordinate anchor and returns the selected value.
@@ -1484,6 +1557,8 @@ Future<T?> showNeumorphicMenu<T>(
             media.padding + EdgeInsets.only(bottom: media.viewInsets.bottom),
             width: matchWidth ? anchor.width : width,
             widens: matchWidth && fieldWords != null,
+            // A field's list stands clear of its field, as every field's list does.
+            gap: fieldWords != null ? neumorphicFieldListGap : 4,
           ),
           child: NeumorphicMenu<T>(
             style: style,

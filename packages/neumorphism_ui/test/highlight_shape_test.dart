@@ -427,16 +427,14 @@ void main() {
         await pump(tester, build());
         await tester.sendKeyEvent(LogicalKeyboardKey.tab);
         await tester.pumpAndSettle();
-        // A control lifts round its own outline (`_FocusLift`, `_Lift`), the slider round its thumb (`_ThumbLift`); a
-        // field, a code's cell and the wheel deepen their groove instead (`_CastPainter.focus`), and the number field's
-        // bare figure, a field with no groove at rest, sinks into a well (`_PressRelief`). Never a stroke.
-        final sunk = name == 'NeumorphicNumberField'
-            ? _painted('_PressRelief')
-            : const <(CustomPainter, Size, Element)>[];
+        // A control lifts round its own outline (`_FocusLift`, `_Lift`), the slider round its groove and thumb
+        // (`_ThumbLift`), the rating round its row of stars (`_RatingRisePainter`); a field, a code's cell, the wheel
+        // and the number field's groove rise round their groove instead (`_CastPainter.focus`). Never a stroke.
         final lifts = [
           ..._painted('_FocusLift'),
           ..._painted('_Lift'),
           ..._painted('_ThumbLift'),
+          ..._painted('_RatingRisePainter'),
         ];
         final deepened = find.byType(CustomPaint).evaluate().where((e) {
           final painter = (e.widget as CustomPaint).painter;
@@ -444,7 +442,7 @@ void main() {
               ((painter as dynamic).focus as double) > 0;
         });
         expect(
-          lifts.isNotEmpty || deepened.isNotEmpty || sunk.isNotEmpty,
+          lifts.isNotEmpty || deepened.isNotEmpty,
           isTrue,
           reason: '$name: focus shows nothing',
         );

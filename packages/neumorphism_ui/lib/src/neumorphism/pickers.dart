@@ -11,7 +11,8 @@ import 'component_themes.dart';
 import 'styled.dart';
 import 'entries.dart';
 import 'glyphs.dart';
-import 'internal/cell_bank.dart' show neumorphicWideRoom;
+import 'internal/cell_bank.dart'
+    show neumorphicControlWidth, neumorphicWideRoom;
 import 'localizations.dart';
 import 'raised.dart';
 import 'theme.dart';
@@ -93,9 +94,16 @@ class NeumorphicDatePicker extends StatefulWidget {
   }
 }
 
+/// The most a month stands wide in a wide column: seven 48 px days.
+const double _monthMost = 7 * 48;
+
 class _NeumorphicDatePickerState extends State<NeumorphicDatePicker> {
   final _nodes = List.generate(31, (_) => FocusNode());
   late DateTime _month, _focused;
+
+  // A day that arrives under a still pointer (the month opened in a sheet where the pointer rested) stays at rest until
+  // the pointer moves, as an open list's row does (the user, 11-18: a raised day with the pointer elsewhere).
+  var _pointerMoved = false;
   DateTime get _first => _day(widget.first ?? DateTime(1900));
   DateTime get _last => _day(widget.last ?? DateTime(2100, 12, 31));
   DateTime get _today => _day(widget.today ?? DateTime.now());
@@ -229,11 +237,16 @@ class _NeumorphicDatePickerState extends State<NeumorphicDatePicker> {
   // (2324252627) and its chosen day outgrew its cell.
   Widget build(BuildContext context) => neumorphicWideRoom(
     AlignmentDirectional.topStart,
-    MediaQuery.withClampedTextScaling(
-      maxScaleFactor: 1.3,
-      child: Builder(builder: _picker),
+    Listener(
+      onPointerHover: (_) {
+        if (!_pointerMoved) setState(() => _pointerMoved = true);
+      },
+      child: MediaQuery.withClampedTextScaling(
+        maxScaleFactor: 1.3,
+        child: Builder(builder: _picker),
+      ),
     ),
-    most: 7 * 48,
+    most: _monthMost,
   );
 
   Widget _picker(BuildContext context) {
@@ -404,6 +417,9 @@ class _NeumorphicDatePickerState extends State<NeumorphicDatePicker> {
                                           if (selected) WidgetState.selected,
                                           if (!enabled) WidgetState.disabled,
                                         };
+                                        if (!_pointerMoved) {
+                                          states.remove(WidgetState.hovered);
+                                        }
                                         final look = neumorphicStyleOf([
                                           widget.style,
                                           t.datePickerTheme,
@@ -717,6 +733,8 @@ class NeumorphicTimePicker extends StatelessWidget {
 }
 
 /// Raises a calendar in a sheet and returns its value only when confirmed.
+/// [today] sets the day marked as current and the initial selection when [value]
+/// is omitted. By default the sheet uses the device date when opened.
 ///
 /// ```dart
 /// final date = await showNeumorphicDatePicker(context, value: selected);
@@ -726,6 +744,7 @@ Future<DateTime?> showNeumorphicDatePicker(
   DateTime? value,
   DateTime? first,
   DateTime? last,
+  DateTime? today,
   String? title,
   String? confirmLabel,
   String? cancelLabel,
@@ -735,32 +754,50 @@ Future<DateTime?> showNeumorphicDatePicker(
   final start = _day(first ?? DateTime(1900)),
       end = _day(last ?? DateTime(2100, 12, 31));
   if (start.isAfter(end)) throw ArgumentError('first must not be after last');
-  var selected = _clampDay(_day(value ?? DateTime.now()), start, end);
+  final current = _day(today ?? DateTime.now());
+  var selected = _clampDay(_day(value ?? current), start, end);
   final words = NeumorphicLocalizations.of(context);
   return showNeumorphicBottomSheet<DateTime>(
     context,
     useRootNavigator: useRootNavigator,
-    builder: (context) => StatefulBuilder(
-      builder: (context, setState) => NeumorphicBottomSheet(
-        title: title ?? words.chooseDate,
-        actions: [
-          NeumorphicButton(
-            cancelLabel ?? words.cancel,
-            onPressed: () => Navigator.of(context).pop(),
+    // Where the sheet's column would hold the month at a control's width (from a medium window up), the sheet narrows
+    // round the month instead, so the month spans it: the month stopped two thirds across a desk's dialog, its arrows
+    // short of the close button (the user, 11-18).
+    builder: (context) => LayoutBuilder(
+      builder: (context, box) {
+        // The sheet's body keeps 20 each side.
+        const inset = 40.0;
+        final room = box.maxWidth - inset;
+        final month = box.hasBoundedWidth && room > _monthMost * 1.5
+            ? neumorphicControlWidth(context, room, _monthMost)
+            : room;
+        final sheet = StatefulBuilder(
+          builder: (context, setState) => NeumorphicBottomSheet(
+            title: title ?? words.chooseDate,
+            actions: [
+              NeumorphicButton(
+                cancelLabel ?? words.cancel,
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+              NeumorphicButton.filled(
+                confirmLabel ?? words.choose,
+                onPressed: () => Navigator.of(context).pop(selected),
+              ),
+            ],
+            child: NeumorphicDatePicker(
+              style: style,
+              value: selected,
+              first: start,
+              last: end,
+              today: current,
+              onChanged: (v) => setState(() => selected = v),
+            ),
           ),
-          NeumorphicButton.filled(
-            confirmLabel ?? words.choose,
-            onPressed: () => Navigator.of(context).pop(selected),
-          ),
-        ],
-        child: NeumorphicDatePicker(
-          style: style,
-          value: selected,
-          first: start,
-          last: end,
-          onChanged: (v) => setState(() => selected = v),
-        ),
-      ),
+        );
+        return month < room
+            ? SizedBox(width: month + inset, child: sheet)
+            : sheet;
+      },
     ),
   );
 }

@@ -1007,6 +1007,8 @@ class _NeumorphicSelectState<T> extends State<NeumorphicSelect<T>> {
     style: widget.style,
     themeStyle: t.textFieldTheme,
     expanded: _open,
+    // While its list is open the face rests: the list shows where the keys are.
+    showFocus: !_open,
     label: [if (widget.label != null) widget.label!, value].join(', '),
     onPressed: widget.onChanged == null ? null : _show,
     // The arrows open it too, as Enter and Space do: its list opens on the chosen option, or the first, and the
@@ -2168,36 +2170,44 @@ class NeumorphicRating extends StatelessWidget {
     final chosen = value.round();
     final target = math.max(size + 16, NeumorphicChromeMetrics.targetSize);
     final place = NeumorphicFacePlace.of(context);
-    // The star at the score (the first while there is none) wears the rating's focus and its press, as a slider's
-    // thumb would: the keys move the score from there.
+    // The star at the score (the first while there is none) wears a drag's press, as a slider's thumb would. The
+    // rating's focus raises the whole row of stars ([_RatingRise]): the rating is one stop, and the stars filled say
+    // the score the keys move.
     final wearer = math.max(chosen - 1, 0);
     return own(
       NeumorphicOutOfUse(
         off: !enabled,
         // Each star stands at its target, the targets edge to edge, so a press anywhere on the row is one star's; its
         // face stands at the target's start (NeumorphicFacePlace), so the first star's face is on the row's edge.
-        child: DesignRating(
-          value: chosen.toDouble(),
-          onChanged: enabled ? (score) => onChanged!(score.round()) : null,
-          itemCount: count,
-          semanticLabel: label,
-          semanticFormatterCallback: say,
-          itemBuilder: (context, item) => _StarTarget(
-            item: item,
-            wearer: wearer,
-            builder: (context, states) => NeumorphicTapFace(
-              states: states,
-              shape: t.shapes.circle(),
-              round: true,
-              // The focus disc stands 6 round the star wherever the star stands in its target.
-              focusInset: (target - size) / 2,
-              faceOutset: const EdgeInsets.all(6),
-              faceAlignment: place,
-              child: SizedBox.square(
-                dimension: target,
-                child: Align(
-                  alignment: place,
-                  child: star(item.fill >= 1 ? 1 : 0),
+        child: _RatingRise(
+          count: count,
+          target: target,
+          size: size,
+          place: place,
+          builder: (lit) => DesignRating(
+            value: chosen.toDouble(),
+            onChanged: enabled ? (score) => onChanged!(score.round()) : null,
+            itemCount: count,
+            semanticLabel: label,
+            semanticFormatterCallback: say,
+            itemBuilder: (context, item) => _StarTarget(
+              item: item,
+              wearer: wearer,
+              lit: lit,
+              builder: (context, states) => NeumorphicTapFace(
+                states: states,
+                shape: t.shapes.circle(),
+                round: true,
+                // A press sinks a disc 6 round the star wherever the star stands in its target.
+                focusInset: (target - size) / 2,
+                faceOutset: const EdgeInsets.all(6),
+                faceAlignment: place,
+                child: SizedBox.square(
+                  dimension: target,
+                  child: Align(
+                    alignment: place,
+                    child: star(item.fill >= 1 ? 1 : 0),
+                  ),
                 ),
               ),
             ),
@@ -2227,11 +2237,15 @@ class _StarTarget extends StatefulWidget {
   const _StarTarget({
     required this.item,
     required this.wearer,
+    required this.lit,
     required this.builder,
   });
 
   final DesignRatingItemDetails item;
   final int wearer;
+
+  /// Whether the rating shows its focus, for [_RatingRise] to raise the row.
+  final ValueNotifier<bool> lit;
   final Widget Function(BuildContext context, Set<WidgetState> states) builder;
 
   @override
@@ -2251,6 +2265,8 @@ class _StarTargetState extends State<_StarTarget> {
     final disabled = rating.contains(WidgetState.disabled);
     final wears = widget.item.index == widget.wearer;
     final dragged = rating.contains(WidgetState.pressed);
+    // Every star hears the rating's states; the row rises while it shows its focus.
+    widget.lit.value = rating.contains(WidgetState.focused);
     return Listener(
       // The whole target, not only the star's paint: a press anywhere on it is this star's.
       behavior: HitTestBehavior.opaque,
@@ -2258,12 +2274,112 @@ class _StarTargetState extends State<_StarTarget> {
       onPointerUp: (_) => _press(false),
       onPointerCancel: (_) => _press(false),
       child: widget.builder(context, {
-        if (wears && rating.contains(WidgetState.focused)) WidgetState.focused,
         if (dragged ? wears : _down && !disabled) WidgetState.pressed,
         if (disabled) WidgetState.disabled,
       }),
     );
   }
+}
+
+/// A rating's keyboard focus: its row of stars rises off the wall as one part ([neumorphicPaintFocusLift] round a
+/// capsule 6 past the stars' faces), as a field rises round its well. The stars stay as they are.
+class _RatingRise extends StatefulWidget {
+  const _RatingRise({
+    required this.count,
+    required this.target,
+    required this.size,
+    required this.place,
+    required this.builder,
+  });
+
+  final int count;
+  final double target, size;
+  final AlignmentGeometry place;
+  final Widget Function(ValueNotifier<bool> lit) builder;
+
+  @override
+  State<_RatingRise> createState() => _RatingRiseState();
+}
+
+class _RatingRiseState extends State<_RatingRise> {
+  final _lit = ValueNotifier(false);
+
+  @override
+  void dispose() {
+    _lit.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final t = NeumorphicTheme.of(context);
+    return CustomPaint(
+      foregroundPainter: _RatingRisePainter(
+        _lit,
+        t.colors,
+        t.elevation,
+        t.shapes.capsule,
+        widget.count,
+        widget.target,
+        widget.size,
+        widget.place.resolve(Directionality.of(context)),
+      ),
+      child: widget.builder(_lit),
+    );
+  }
+}
+
+class _RatingRisePainter extends CustomPainter {
+  _RatingRisePainter(
+    this.lit,
+    this.c,
+    this.elevation,
+    this.border,
+    this.count,
+    this.target,
+    this.size,
+    this.place,
+  ) : super(repaint: lit);
+  final ValueNotifier<bool> lit;
+  final NeumorphicColors c;
+  final NeumorphicElevation elevation;
+
+  /// The row's outline, the look's capsule.
+  final OutlinedBorder border;
+  final int count;
+  final double target, size;
+  final Alignment place;
+
+  @override
+  void paint(Canvas canvas, Size box) {
+    if (!lit.value || count < 1) return;
+    final first = Rect.fromLTWH(
+      (target - size) * (place.x + 1) / 2,
+      (box.height - size) * (place.y + 1) / 2,
+      size,
+      size,
+    );
+    final row = first
+        .expandToInclude(first.shift(Offset(target * (count - 1), 0)))
+        .inflate(6);
+    neumorphicPaintFocusLift(
+      canvas,
+      border.getOuterPath(row),
+      c,
+      elevation: elevation,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_RatingRisePainter o) =>
+      o.lit != lit ||
+      o.c != c ||
+      o.elevation != elevation ||
+      o.border != border ||
+      o.count != count ||
+      o.target != target ||
+      o.size != size ||
+      o.place != place;
 }
 
 /// A star in relief: given, it stands raised and lit in the pigment; not given, it is pressed into the wall. Flat (a

@@ -439,6 +439,7 @@ class NeumorphicSplitButton extends StatelessWidget {
     // The button keeps its own width in a stretching column: its menu takes the button's width as its least, and a
     // column-wide button opened a column-wide menu for two short acts.
     final button = DesignSplitButton(
+      placement: const DesignOverlayPlacement(align: DesignOverlayAlign.start),
       label: label,
       onPressed: onPressed,
       menuLabel: menuLabel ?? words.moreOptions,
@@ -560,8 +561,8 @@ class NeumorphicSplitButton extends StatelessWidget {
           ),
         );
       },
-      // One lit row (the keys' or the pointer's, whichever moved last), and the panel's inset inside the scroll, so
-      // a lit row's lift at the menu's edge casts into it rather than being cut by the scroll's edge.
+      // One lit row (the keys' or the pointer's, whichever moved last), sunk in the panel, which keeps a tight even
+      // inset round its flat rows, inside the scroll.
       surfaceBuilder: (context, info, items) => NeumorphicPanel(
         presence: info.animation,
         side: info.side,
@@ -569,7 +570,7 @@ class NeumorphicSplitButton extends StatelessWidget {
         padding: EdgeInsets.zero,
         menu: true,
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.all(neumorphicMenuInset),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,

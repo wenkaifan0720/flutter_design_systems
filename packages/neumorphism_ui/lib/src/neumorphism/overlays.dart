@@ -598,9 +598,8 @@ Widget _menuDivider(BuildContext context) => const Padding(
   child: NeumorphicEngraved(),
 );
 
-// The raised panel round a menu's rows. One lit row (the keys' or the pointer's, whichever moved last), and the panel's
-// inset inside the scroll, so a lit row's lift at the menu's edge casts into it rather than being cut by the scroll's
-// edge.
+// The raised panel round a menu's rows. One lit row (the keys' or the pointer's, whichever moved last), sunk in the
+// panel, which keeps a tight even inset round its flat rows, inside the scroll.
 Widget _menuPanel(
   BuildContext context,
   DesignOverlayInfo info,
@@ -613,7 +612,7 @@ Widget _menuPanel(
   padding: EdgeInsets.zero,
   menu: true,
   child: SingleChildScrollView(
-    padding: const EdgeInsets.all(12),
+    padding: const EdgeInsets.all(neumorphicMenuInset),
     child: Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,

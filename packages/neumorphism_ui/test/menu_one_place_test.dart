@@ -14,7 +14,8 @@ import 'package:neumorphism_ui/src/neumorphism/internal/panel.dart';
 
 import 'support.dart';
 
-/// The rows of [labels] lit in the open menu: the look's menu's raised or lifted row, a panel row's raise or lift.
+/// The rows of [labels] lit in the open menu: the look's menu's sunk or lifted row (the keys' place on the chosen row
+/// sinks over its wash), a panel row's sink or lift.
 List<String> _lit(WidgetTester tester, List<String> labels) {
   final lit = <String>[];
   for (final label in labels) {
@@ -27,7 +28,10 @@ List<String> _lit(WidgetTester tester, List<String> labels) {
           .descendant(
             of: find.byElementPredicate((x) => x == e),
             matching: find.byWidgetPredicate(
-              (w) => w is CustomPaint && w.painter is NeumorphicPanelRowRaise,
+              (w) =>
+                  w is CustomPaint &&
+                  (w.painter is NeumorphicPanelRowRaise ||
+                      w.foregroundPainter is NeumorphicPanelRowRaise),
             ),
           )
           .evaluate()
@@ -67,7 +71,7 @@ Finder _row(String label) => find
     )
     .last;
 
-/// The open menu's rows stand the menu's inset inside its scroll, every side.
+/// The open menu's rows stand the menu's inset ([neumorphicMenuInset]) inside its scroll, every side.
 void _roomRound(WidgetTester tester, List<String> labels) {
   final port = tester.getRect(
     find
@@ -76,10 +80,15 @@ void _roomRound(WidgetTester tester, List<String> labels) {
   );
   final first = tester.getRect(_row(labels.first));
   final last = tester.getRect(_row(labels.last));
-  expect(first.top - port.top, greaterThanOrEqualTo(12), reason: 'top');
-  expect(port.bottom - last.bottom, greaterThanOrEqualTo(12), reason: 'bottom');
-  expect(first.left - port.left, greaterThanOrEqualTo(12), reason: 'start');
-  expect(port.right - first.right, greaterThanOrEqualTo(12), reason: 'end');
+  const inset = neumorphicMenuInset - .5;
+  expect(first.top - port.top, greaterThanOrEqualTo(inset), reason: 'top');
+  expect(
+    port.bottom - last.bottom,
+    greaterThanOrEqualTo(inset),
+    reason: 'bottom',
+  );
+  expect(first.left - port.left, greaterThanOrEqualTo(inset), reason: 'start');
+  expect(port.right - first.right, greaterThanOrEqualTo(inset), reason: 'end');
 }
 
 Future<TestGesture> _mouse(WidgetTester tester) async {
@@ -244,7 +253,8 @@ void main() {
       }
       final row = tester.getRect(_row('Save a copy'));
       final label = tester.getRect(find.text('Save a copy'));
-      expect(label.left - row.left, closeTo(withIcon ? 38 : 8, .5));
+      // The row keeps 10 round its words, and an icon's column before them.
+      expect(label.left - row.left, closeTo(withIcon ? 40 : 10, .5));
       final main = tester.widget<NeumorphicTapFace>(halves.first);
       final toggle = tester.widget<NeumorphicTapFace>(halves.last);
       expect(main.states, isNot(contains(WidgetState.pressed)));
@@ -403,9 +413,10 @@ void main() {
     Rect port(String label) => tester.getRect(
       find.ancestor(of: _row(label), matching: find.byType(Scrollable)).first,
     );
-    // The list's own inset round its rows, at rest: a field's list keeps its words on the field's.
+    // The list's own inset round its rows, at rest: a field's list keeps its words on the field's, its rows taking most
+    // of that inset and the panel a tight one.
     final inset = tester.getRect(_row('Austria')).top - port('Austria').top;
-    expect(inset, greaterThanOrEqualTo(8));
+    expect(inset, greaterThanOrEqualTo(4));
     void room(String label) {
       final box = tester.getRect(_row(label));
       expect(box.top - port(label).top, greaterThanOrEqualTo(inset - .5));

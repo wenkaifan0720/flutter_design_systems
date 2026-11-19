@@ -30,6 +30,7 @@ import 'theme.dart';
 import 'internal/cap_label.dart';
 import 'tell.dart' show NeumorphicCircularProgressIndicator;
 import 'internal/out_of_use.dart';
+import 'internal/field_list.dart' show NeumorphicFieldListOpen;
 import 'internal/moulded.dart';
 import 'internal/group_rows.dart' show NeumorphicGroupRowScope;
 
@@ -736,7 +737,7 @@ class NeumorphicTapFace extends StatelessWidget {
   }
 }
 
-/// Keyboard focus on the face: it lifts off the wall, its lit side warmed by the pigment ([neumorphicPaintFocusLift]).
+/// Keyboard focus on the face: it rises off the wall, its shadows deeper and crisper ([neumorphicPaintFocusLift]).
 class _FocusLift extends CustomPainter {
   const _FocusLift(
     this.c,
@@ -3783,7 +3784,8 @@ class _NeumorphicTextFieldState extends State<NeumorphicTextField> {
   Widget _field(BuildContext context, DesignPasswordDetails? reveal) {
     final t = NeumorphicTheme.of(context);
     final states = <WidgetState>{
-      if (_focused) WidgetState.focused,
+      // While its own list is open the well rests: the list shows where the keys are.
+      if (_focused && !NeumorphicFieldListOpen.of(context)) WidgetState.focused,
       if (_hovered && widget.enabled) WidgetState.hovered,
       if (!widget.enabled) WidgetState.disabled,
       if (widget.error != null) WidgetState.error,
@@ -4714,8 +4716,8 @@ class NeumorphicChoices extends StatelessWidget {
   }
 }
 
-/// A number you type or step: two round keys and the figure between them, the figure in the title's tabular figures so
-/// it stands on the baseline of the labels and fields beside it.
+/// A number you type or step: two round keys and the figure between them in a groove as tall as their faces, the
+/// figure in the title's tabular figures and its unit after it.
 ///
 /// On ui_core's [DesignNumberField]. The figure is the one tab stop and takes typing, in the reader's digits and
 /// separators, taken on Enter or as the focus leaves; Up and Down step it, Page Up and Page Down ten steps. A key steps
@@ -4786,25 +4788,25 @@ class NeumorphicNumberField extends StatelessWidget {
     final figure = t.textTheme.title.tabular
         .merge(look.textStyle)
         .copyWith(color: look.foreground);
-    // As wide as its keys and its widest word: at a floor of 200 a one-figure count stood 160 px between keys that no
-    // longer read as one stepper.
+    final unitWord = unit == null
+        ? 0.0
+        : neumorphicWidestWord(unit!, t.textTheme.micro, textScaler: scaler);
+    // As wide as its keys, their gaps and its field round its widest word: at a floor of 200 a one-figure count stood
+    // 160 px between keys that no longer read as one stepper.
     final width = math.max(
-      144.0,
-      120 +
-          math.max(
-            neumorphicWidestWord(
-              value == null
-                  ? ''
-                  : DesignLocalizations.of(context).formatDecimal(value!),
-              figure,
-              textScaler: scaler,
-            ),
-            neumorphicWidestWord(
-              unit ?? '',
-              t.textTheme.micro,
-              textScaler: scaler,
-            ),
-          ),
+      176.0,
+      96 +
+          2 * _numberGap +
+          2 * _numberInset +
+          8 +
+          neumorphicWidestWord(
+            value == null
+                ? ''
+                : DesignLocalizations.of(context).formatDecimal(value!),
+            figure,
+            textScaler: scaler,
+          ) +
+          (unit == null ? 0 : 4 + unitWord),
     );
     return NeumorphicColumn(
       gap: 6,
@@ -4837,13 +4839,16 @@ class NeumorphicNumberField extends StatelessWidget {
               key.states,
               style: layers,
             ),
-            // The keys stand at their targets at the row's ends, their faces centred in them.
+            // The keys stand at their targets at the row's ends, their faces centred in them, the field between them a
+            // clear gap from each, as tall as their faces.
             layoutBuilder: (context, figure, less, more) => SizedBox(
               width: width.toDouble(),
               child: Row(
                 children: [
                   less,
+                  const SizedBox(width: _numberGap),
                   Expanded(child: figure),
+                  const SizedBox(width: _numberGap),
                   // The last key's face stands on the row's end, as the first's on its start.
                   NeumorphicFacePlace(
                     alignment: AlignmentDirectional.centerEnd,
@@ -4891,8 +4896,18 @@ class NeumorphicNumberField extends StatelessWidget {
   }
 }
 
-// The number field's figure: a bare editable in the title's figures, the unit under it. Focus sinks it into a well, as
-// a field's groove is pressed in (a place to put something; lifted, it read as a key), and the caret does the rest.
+/// The number field's keys' face, and so its groove's height.
+const _numberFace = 44.0;
+
+/// The room between a number field's key target and its field.
+const _numberGap = 6.0;
+
+/// The room inside a number field's groove at either end.
+const _numberInset = 12.0;
+
+// The number field's figure: an editable in the title's figures, its unit after it, in a groove as tall as the keys'
+// faces, so the stepper reads as one control of one height: a place to type the number between its two keys. Focus
+// deepens the groove and raises it, as every field's, and the caret does the rest.
 // Bare, not a Material TextField: a TextField says whether it is enabled, as ui_core's field does, so its text stood as
 // a node of its own and the field's steps on one with no value. It takes a text field's gestures (a tap places the
 // caret, a double tap and a drag select, the look's menu).
@@ -4947,58 +4962,70 @@ class _NumberFigureState extends State<_NumberFigure>
         cursor: _disabled ? MouseCursor.defer : SystemMouseCursors.text,
         child: _gestures.buildGestureDetector(
           behavior: HitTestBehavior.translucent,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              NeumorphicTapFace(
-                states: {
-                  if (field.states.contains(WidgetState.focused))
-                    WidgetState.pressed,
-                },
-                // The keys are the row's targets; the figure stays as tall as its words, the unit right under it, and
-                // its well is its line's box: grown past it, the well's foot cut into the unit's letters.
-                padToTarget: false,
-                // Its capitals on the row's middle, as every field's one line stands (ui_core's DesignCapCenter): an
-                // editable's strut sat it half a pixel off the plain figure it replaced.
-                child: neumorphicLabel(
-                  EditableText(
-                    key: editableTextKey,
-                    controller: field.controller,
-                    focusNode: field.focusNode,
-                    readOnly: _disabled,
-                    keyboardType: field.keyboardType,
-                    inputFormatters: field.inputFormatters,
-                    onEditingComplete: field.onEditingComplete,
-                    // Text that does not read yet ("-", "1.") stays in the ink: it goes back to the number when it is
-                    // taken, and the look keeps colour for pigment, never for a warning.
-                    style: widget.style,
-                    textAlign: TextAlign.center,
-                    maxLines: 1,
-                    cursorColor: t.colors.ink,
-                    backgroundCursorColor: t.colors.quiet,
-                    cursorWidth: 1.5,
-                    selectionColor: field.focusNode.hasFocus
-                        ? selection.selectionColor
-                        : null,
-                    selectionControls: NeumorphicTextSelectionControls.of(
-                      platform,
+          // At least the keys' height; taller only when large text needs it.
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: _numberFace),
+            child: NeumorphicSurface(
+              cast: NeumorphicSurfaceLevel.groove,
+              radius: _numberFace / 2,
+              states: {
+                if (field.states.contains(WidgetState.focused))
+                  WidgetState.focused,
+              },
+              padding: const EdgeInsets.symmetric(horizontal: _numberInset),
+              // The figure and its unit on one line in the groove's middle while they fit; a unit too long for it
+              // takes the next line, and the groove grows to hold it.
+              child: Wrap(
+                alignment: WrapAlignment.center,
+                runAlignment: WrapAlignment.center,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                spacing: 4,
+                children: [
+                  // As wide as its figure. Its capitals on the line's middle, as every field's one line stands
+                  // (ui_core's DesignCapCenter): an editable's strut sat it half a pixel off the plain figure it
+                  // replaced.
+                  IntrinsicWidth(
+                    child: neumorphicLabel(
+                      EditableText(
+                        key: editableTextKey,
+                        controller: field.controller,
+                        focusNode: field.focusNode,
+                        readOnly: _disabled,
+                        keyboardType: field.keyboardType,
+                        inputFormatters: field.inputFormatters,
+                        onEditingComplete: field.onEditingComplete,
+                        // Text that does not read yet ("-", "1.") stays in the ink: it goes back to the number when it is
+                        // taken, and the look keeps colour for pigment, never for a warning.
+                        style: widget.style,
+                        textAlign: TextAlign.center,
+                        maxLines: 1,
+                        cursorColor: t.colors.ink,
+                        backgroundCursorColor: t.colors.quiet,
+                        cursorWidth: 1.5,
+                        selectionColor: field.focusNode.hasFocus
+                            ? selection.selectionColor
+                            : null,
+                        selectionControls: NeumorphicTextSelectionControls.of(
+                          platform,
+                        ),
+                        contextMenuBuilder: NeumorphicTextContextMenu.editable,
+                        showSelectionHandles: touch,
+                        rendererIgnoresPointer: true,
+                      ),
                     ),
-                    contextMenuBuilder: NeumorphicTextContextMenu.editable,
-                    showSelectionHandles: touch,
-                    rendererIgnoresPointer: true,
                   ),
-                ),
+                  if (widget.unit != null)
+                    ExcludeSemantics(
+                      excluding: widget.unitSpoken,
+                      child: Text(
+                        widget.unit!,
+                        textAlign: TextAlign.center,
+                        style: t.textTheme.micro,
+                      ),
+                    ),
+                ],
               ),
-              if (widget.unit != null)
-                ExcludeSemantics(
-                  excluding: widget.unitSpoken,
-                  child: Text(
-                    widget.unit!,
-                    textAlign: TextAlign.center,
-                    style: t.textTheme.micro,
-                  ),
-                ),
-            ],
+            ),
           ),
         ),
       ),
@@ -5560,7 +5587,8 @@ class _SliderPainter extends CustomPainter {
       o.elevation != elevation;
 }
 
-/// The slider's keyboard focus: its thumb, the part that moves, lifts ([neumorphicPaintFocusLift]), not the whole row.
+/// The slider's keyboard focus: the slider rises ([neumorphicPaintFocusLift]), its groove lifted off the wall as a
+/// field's is and its thumb with it, not the whole row.
 class _ThumbLift extends CustomPainter {
   _ThumbLift(
     this.c,
@@ -5568,30 +5596,50 @@ class _ThumbLift extends CustomPainter {
     this.border,
     this.at,
     this.thumb,
-    this.rtl,
-  );
+    this.rtl, {
+    required this.track,
+    this.trackBorder,
+  });
   final NeumorphicColors c;
   final NeumorphicElevation elevation;
   final OutlinedBorder border;
-  final double at, thumb;
+  final OutlinedBorder? trackBorder;
+  final double at, thumb, track;
   final bool rtl;
 
   @override
-  void paint(Canvas canvas, Size size) => neumorphicPaintFocusLift(
-    canvas,
-    border.getOuterPath(_SliderPainter.knobRect(size, at, thumb, rtl)),
-    c,
-    reach: .6,
-    elevation: elevation,
-  );
+  void paint(Canvas canvas, Size size) {
+    final groove = Rect.fromLTWH(
+      0,
+      size.height / 2 - track / 2,
+      size.width,
+      track,
+    );
+    neumorphicPaintFocusLift(
+      canvas,
+      Path.combine(
+        PathOperation.union,
+        trackBorder?.getOuterPath(groove) ??
+            (Path()..addRRect(
+              RRect.fromRectAndRadius(groove, Radius.circular(track / 2)),
+            )),
+        border.getOuterPath(_SliderPainter.knobRect(size, at, thumb, rtl)),
+      ),
+      c,
+      reach: .6,
+      elevation: elevation,
+    );
+  }
 
   @override
   bool shouldRepaint(_ThumbLift o) =>
       o.c != c ||
       o.elevation != elevation ||
       o.border != border ||
+      o.trackBorder != trackBorder ||
       o.at != at ||
       o.thumb != thumb ||
+      o.track != track ||
       o.rtl != rtl;
 }
 
@@ -5876,6 +5924,8 @@ class _NeumorphicSliderState extends State<NeumorphicSlider> {
                                       at,
                                       26,
                                       rtl,
+                                      track: 12,
+                                      trackBorder: border,
                                     )
                                   : null,
                               child: SizedBox(

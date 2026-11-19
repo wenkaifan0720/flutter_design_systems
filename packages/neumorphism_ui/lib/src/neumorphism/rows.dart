@@ -470,6 +470,7 @@ class NeumorphicListTile extends StatelessWidget {
     required this.title,
     this.subtitle,
     this.note,
+    this.semanticLabel,
     this.leading,
     this.trailing,
     this.action,
@@ -488,6 +489,10 @@ class NeumorphicListTile extends StatelessWidget {
 
   /// Supporting text displayed with the primary content.
   final String? note;
+
+  /// The accessible name for a tappable row. By default it includes the title,
+  /// subtitle and note, in reading order.
+  final String? semanticLabel;
 
   /// A monogram, an icon well, a `NeumorphicMedia(width: 56)`: its own width stays.
   final Widget? leading;
@@ -656,8 +661,9 @@ class NeumorphicListTile extends StatelessWidget {
     );
     // In a grouped list the row is a band of the card, a breath inside its rim: the focus lift goes round that band, as a
     // bank's cell's does, and the press sinks the whole band; both follow the card's corners where they meet them. A chosen
-    // row outside a group takes a band of its own, a control's corners, 12 past it on each side; its lift stays the
-    // row's. The band's wrapper is always there, so choosing a row never remounts it (and never drops its focus).
+    // row outside a group takes a band of its own, a control's corners, 12 past it on each side, and its lift and press
+    // go round that band, so they never meet its words. The band's wrapper is always there, so choosing a row never
+    // remounts it (and never drops its focus).
     final cell = NeumorphicGroupRowScope.cellOf(context);
     if (onPressed != null) {
       // A row that presses is at least a target tall, so its face fills its tap: a shorter face would be centred in the
@@ -672,12 +678,18 @@ class NeumorphicListTile extends StatelessWidget {
         focusNode: focusNode,
         autofocus: autofocus,
         onPressed: onPressed,
-        label: title,
+        label:
+            semanticLabel ??
+            [
+              title,
+              ?subtitle,
+              ?note,
+            ].where((text) => text.isNotEmpty).join(', '),
         selected: selected,
         // The chosen band is already in; a press on another row shows it going in.
         pressRelief: !selected,
-        shape: cell?.border,
-        faceOutset: cell?.outset ?? EdgeInsets.zero,
+        shape: cell?.border ?? t.shapes.corner(NeumorphicRadii.control),
+        faceOutset: cell?.outset ?? const EdgeInsets.symmetric(horizontal: 12),
         focusReach: cell == null ? 1 : .5,
         child: row,
       );
@@ -700,6 +712,7 @@ class NeumorphicListTile extends StatelessWidget {
       ..add(StringProperty('title', title))
       ..add(StringProperty('subtitle', subtitle, defaultValue: null))
       ..add(StringProperty('note', note, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
       ..add(
         DiagnosticsProperty<bool>('selected', selected, defaultValue: false),

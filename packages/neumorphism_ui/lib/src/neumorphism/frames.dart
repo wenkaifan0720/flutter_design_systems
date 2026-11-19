@@ -365,10 +365,12 @@ void neumorphicPaintCast(
   }
 }
 
-/// Keyboard focus on a moulded part, said in the material: the part stands further off the wall (a longer, softer,
-/// darker shadow) and its lit side warms with the pigment, the look's sign of what is live. Painted round [shape] and
-/// never over it, so the face and its words stay as they are. Never a line, and never a press: pressed in means on.
-/// [amount] eases it in and out; [reach] scales it to a small part (a cell in its bank, a slider's thumb).
+/// Keyboard focus on a moulded part, said in the material: the part rises. Its two shadows go deeper and crisper, a
+/// wide pair (the part stands further off the wall) and a near pair close under its edge: the lit side brighter, the
+/// shaded side darker, in the plaster's own light and shade, never the pigment and never a line. The near pair carries
+/// the focus at 3:1, its shade on a light ground and its light at night. Painted round [shape] and never over it, so
+/// the face and its words stay as they are. Never a press: pressed in means on. [amount] eases it in and out; [reach]
+/// scales the wide pair to a small part (a cell in its bank, a slider's thumb), the near pair keeping its width.
 void neumorphicPaintFocusLift(
   Canvas canvas,
   Path shape,
@@ -379,35 +381,58 @@ void neumorphicPaintFocusLift(
 }) {
   if (amount <= 0) return;
   // Focus shows on a look with its relief turned low too: the lift keeps a floor of its own.
-  final d = math.max(elevation.depth, .75) * reach;
+  final depth = math.max(elevation.depth, .75);
+  final d = depth * reach;
   final box = shape.getBounds();
   canvas.save();
-  canvas.clipPath(_outside(shape, box, Offset.zero, 64 * d + 8));
+  canvas.clipPath(_outside(shape, box, Offset.zero, 40 * d + 16));
   final shade = c.shadowDeep;
+  final white = const Color(0xFFFFFFFF);
+  // The lit side: the day's white, and at night the plaster lit toward its ink, without the pigment's hue.
+  final lit = c.dark ? Color.lerp(c.ground, c.ink, .7)! : white;
+  // A small part (a checkbox's box) rises a little less, so its lit copy never reads as a second box beside it.
+  final near = (math.min(box.width, box.height) * .22)
+      .clamp(5.5, math.max(5.5, 9 * depth * math.sqrt(reach)))
+      .toDouble();
+  // At night the light round a long part (a stepper's groove, a wide button) is its edge's own, a thin crisp rim on
+  // the lit side with only a breath of the wide light: a wide soft light read as a glow beside its keys, and a wider
+  // rim as a second pill above it (the user's review, 11-18). A round or small part keeps its softer light, which its
+  // 3:1 needs, and so does a slim one (a chip).
+  final large =
+      c.dark &&
+      near * .9 > 6 &&
+      box.shortestSide >= 40 &&
+      box.longestSide >= 1.5 * box.shortestSide;
+  final rim = large ? 5.0 : near * .9;
+  // The wide pair.
   canvas.drawPath(
-    shape.shift(const Offset(12, 12) * d),
+    shape.shift(const Offset(9, 9) * d),
     _blurred(
-      shade.withValues(alpha: math.min(1, shade.a * 2) * amount),
-      26 * d,
+      shade.withValues(alpha: math.min(1, shade.a * 1.5) * amount),
+      18 * d,
     ),
   );
-  // Lifted off the wall, the part's foot shades the wall close under it. That near shade, not a line, carries the
-  // focus at 3:1 on a light ground, where the warmed light side can't.
   canvas.drawPath(
-    shape.shift(const Offset(3, 3) * d),
+    shape.shift(const Offset(-7, -7) * d),
     _blurred(
-      shade.withValues(alpha: math.min(1, shade.a * 2.2) * amount),
-      5 * d,
+      lit.withValues(alpha: (large ? .12 : (c.dark ? .28 : 1)) * amount),
+      16 * d,
     ),
   );
-  final warm = Color.lerp(
-    c.dark ? c.ink : const Color(0xFFFFFFFF),
-    c.pigment,
-    c.dark ? .7 : .42,
-  )!;
+  // The near pair, crisp under the edge.
   canvas.drawPath(
-    shape.shift(const Offset(-8, -8) * d),
-    _blurred(warm.withValues(alpha: (c.dark ? .9 : 1) * amount), 22 * d),
+    shape.shift(Offset(near, near)),
+    _blurred(
+      shade.withValues(alpha: math.min(1, shade.a * 2.1) * amount),
+      near * .55,
+    ),
+  );
+  canvas.drawPath(
+    shape.shift(Offset(-rim, -rim)),
+    _blurred(
+      lit.withValues(alpha: (c.dark ? .95 : 1) * amount),
+      large ? rim * .2 : near * .55,
+    ),
   );
   canvas.restore();
 }
@@ -498,6 +523,17 @@ class _CastPainter extends CustomPainter {
         flat: flat,
         elevation: elevation,
       );
+      // Focus raises the field round its hollow as it raises a part: the lift stands outside the rim, clear of the
+      // words and the caret.
+      if (!flat) {
+        neumorphicPaintFocusLift(
+          canvas,
+          shape,
+          c,
+          amount: f,
+          elevation: elevation,
+        );
+      }
     } else if (depression == 0 &&
         focus > 0 &&
         (draw == NeumorphicDraw.groove || draw == NeumorphicDraw.well)) {
@@ -518,6 +554,17 @@ class _CastPainter extends CustomPainter {
         flat: flat,
         elevation: elevation,
       );
+      // Focus raises the field round its hollow as it raises a part: the lift stands outside the rim, clear of the
+      // words and the caret.
+      if (!flat) {
+        neumorphicPaintFocusLift(
+          canvas,
+          shape,
+          c,
+          amount: f,
+          elevation: elevation,
+        );
+      }
     } else if (depression == 0) {
       neumorphicPaintCast(
         canvas,

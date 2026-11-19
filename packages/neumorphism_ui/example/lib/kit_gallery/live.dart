@@ -6,6 +6,7 @@ import 'package:flutter/widgets.dart';
 import 'package:neumorphism_ui/neumorphism_ui.dart';
 import 'package:neumorphism_ui/neumorphism_host.dart';
 
+import 'kit_words.dart';
 import 'demos/actions.dart';
 import 'demos/chrome.dart' show kitSpecimenNavigationRail;
 import 'demos/moves.dart' show kitSlide;
@@ -13,7 +14,7 @@ import 'demos/collections.dart';
 import 'demos/fields.dart';
 import 'demos/overlays.dart';
 import 'demos/pickers.dart'
-    show kitSpecimenCalendar, kitSpecimenDateRangePicker;
+    show kitPickerToday, kitSpecimenCalendar, kitSpecimenDateRangePicker;
 import 'demos/records.dart';
 // The demo art is the example's; a test or page that draws it reads it from there.
 // ignore: avoid_relative_lib_imports
@@ -219,6 +220,7 @@ class _LiveExampleState extends State<LiveExample> {
     final value = await showNeumorphicDatePicker(
       context,
       value: _date,
+      today: kitPickerToday,
       first: DateTime(2026),
       last: DateTime(2027),
     );
@@ -1008,7 +1010,7 @@ class _LiveExampleState extends State<LiveExample> {
       // The page's one today, as the calendars below hold it: on the clock's it marked the 13th over their 12th.
       NeumorphicDatePicker(
         value: _date,
-        today: DateTime(2026, 11, 12),
+        today: kitPickerToday,
         first: DateTime(2026),
         last: DateTime(2027),
         onChanged: (v) => setState(() => _date = v),
@@ -1631,13 +1633,16 @@ class _LiveExampleState extends State<LiveExample> {
     _part('Notices', [
       for (final tone in NeumorphicTone.values)
         NeumorphicBanner(
-          switch (tone) {
+          kitSay(context, switch (tone) {
             NeumorphicTone.info => 'Your plan renews on 1\u00a0December.',
             NeumorphicTone.success => 'Your details are saved.',
             NeumorphicTone.warning => 'The battery is at 15%.',
             NeumorphicTone.danger => 'The heating did not start.',
-          },
-          title: tone.name[0].toUpperCase() + tone.name.substring(1),
+          }),
+          title: kitSay(
+            context,
+            tone.name[0].toUpperCase() + tone.name.substring(1),
+          ),
           tone: tone,
           onDismiss: () => _say('${tone.name} dismissed'),
         ),

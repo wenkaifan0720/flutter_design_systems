@@ -99,6 +99,15 @@ class HearthRoom {
   double target;
 }
 
+enum _AddressField {
+  street('Street', '14 Harbour Street', 'Enter a street address.'),
+  town('Town', 'Bristol', 'Enter a town or city.'),
+  postcode('Postcode', 'BS1 4DJ', 'Enter a postcode.');
+
+  const _AddressField(this.label, this.initial, this.error);
+  final String label, initial, error;
+}
+
 /// The household: what every screen reads and changes, so a lamp turned off on Home is off on Devices.
 class HearthHome extends ChangeNotifier {
   final rooms = <HearthRoom>[
@@ -205,6 +214,28 @@ class HearthHome extends ChangeNotifier {
 
   /// The device open on Devices.
   String? open = 'floor-lamp';
+
+  // Saved profile and delivery details for this household.
+  String? firstName, lastName;
+  String receiptEmail = 'alex.morgan@hearth.example';
+  String phone = '07700 900 412';
+  String country = 'United Kingdom';
+  final _address = <_AddressField, String>{};
+  final _addressFocus = {
+    for (final field in _AddressField.values) field: FocusNode(),
+  };
+  bool _validateAddress = false;
+
+  String _addressValue(BuildContext context, _AddressField field) =>
+      _address[field] ?? kitSay(context, field.initial);
+
+  @override
+  void dispose() {
+    for (final node in _addressFocus.values) {
+      node.dispose();
+    }
+    super.dispose();
+  }
 
   // Shop.
   var bulbs = 2;
@@ -1056,6 +1087,27 @@ class _ShopScreen extends StatelessWidget {
   const _ShopScreen({required this.home});
   final HearthHome home;
 
+  Widget _addressField(BuildContext context, _AddressField field) {
+    final value = home._addressValue(context, field);
+    return NeumorphicTextField(
+      key: Key('hearth-${field.name}'),
+      label: kitSay(context, field.label),
+      initialValue: value,
+      focusNode: home._addressFocus[field],
+      error: home._validateAddress && value.trim().isEmpty
+          ? kitSay(context, field.error)
+          : null,
+      onChanged: (text) {
+        final wasEmpty = home._addressValue(context, field).trim().isEmpty;
+        if (home._validateAddress && wasEmpty != text.trim().isEmpty) {
+          home.change(() => home._address[field] = text);
+        } else {
+          home._address[field] = text;
+        }
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final order = _Order(home: home);
@@ -1063,22 +1115,12 @@ class _ShopScreen extends StatelessWidget {
       gap: 20,
       children: [
         NeumorphicSectionHeader(title: kitSay(context, 'Deliver to')),
-        NeumorphicTextField(
-          key: const Key('hearth-street'),
-          label: kitSay(context, 'Street'),
-          initialValue: kitSay(context, '14 Harbour Street'),
-        ),
+        _addressField(context, _AddressField.street),
         NeumorphicRow(
           spans: const [7, 5],
           children: [
-            NeumorphicTextField(
-              label: kitSay(context, 'Town'),
-              initialValue: kitSay(context, 'Bristol'),
-            ),
-            NeumorphicTextField(
-              label: kitSay(context, 'Postcode'),
-              initialValue: 'BS1 4DJ',
-            ),
+            _addressField(context, _AddressField.town),
+            _addressField(context, _AddressField.postcode),
           ],
         ),
         NeumorphicRadioGroup<bool>(
@@ -1210,31 +1252,40 @@ class _Order extends StatelessWidget {
   }
 }
 
-Future<void> _pay(BuildContext context, HearthHome home) =>
-    showNeumorphicDialog<void>(
-      context,
-      builder: (context) => NeumorphicDialog(
-        title: kitSay(context, 'Order placed'),
-        message: kitSayf(
-          context,
-          'Your desk lamp and {0} bulbs arrive {1}. We sent the receipt to alex.morgan@hearth.example.',
-          [
-            home.bulbs,
-            kitSay(
-              context,
-              home.express ? 'tomorrow by 18:00' : 'on Monday 16 November',
-            ),
-          ],
-        ),
-        actions: [
-          NeumorphicButton.filled(
-            kitSay(context, 'Done'),
-            key: const Key('hearth-paid'),
-            onPressed: () => Navigator.pop(context),
+Future<void> _pay(BuildContext context, HearthHome home) async {
+  for (final field in _AddressField.values) {
+    if (home._addressValue(context, field).trim().isEmpty) {
+      home.change(() => home._validateAddress = true);
+      home._addressFocus[field]!.requestFocus();
+      return;
+    }
+  }
+  await showNeumorphicDialog<void>(
+    context,
+    builder: (context) => NeumorphicDialog(
+      title: kitSay(context, 'Order placed'),
+      message: kitSayf(
+        context,
+        'Your desk lamp and {0} bulbs arrive {1}. We sent the receipt to {2}.',
+        [
+          home.bulbs,
+          kitSay(
+            context,
+            home.express ? 'tomorrow by 18:00' : 'on Monday 16 November',
           ),
+          home.receiptEmail,
         ],
       ),
-    );
+      actions: [
+        NeumorphicButton.filled(
+          kitSay(context, 'Done'),
+          key: const Key('hearth-paid'),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ],
+    ),
+  );
+}
 
 class _PayButton extends StatelessWidget {
   const _PayButton({required this.home, this.sum = true});
@@ -1295,13 +1346,17 @@ class _AccountScreen extends StatefulWidget {
 
 class _AccountScreenState extends State<_AccountScreen> {
   // The names in the reader's own script, as a person there would have typed them.
-  late final _first = TextEditingController(text: kitSay(context, 'Alex'));
-  late final _last = TextEditingController(text: kitSay(context, 'Morgan'));
-  late final _email = TextEditingController(
-    text: widget.start.email ?? 'alex.morgan@hearth.example',
+  late final _first = TextEditingController(
+    text: widget.home.firstName ?? kitSay(context, 'Alex'),
   );
-  final _phone = TextEditingController(text: '07700 900 412');
-  var _country = 'United Kingdom';
+  late final _last = TextEditingController(
+    text: widget.home.lastName ?? kitSay(context, 'Morgan'),
+  );
+  late final _email = TextEditingController(
+    text: widget.start.email ?? widget.home.receiptEmail,
+  );
+  late final _phone = TextEditingController(text: widget.home.phone);
+  late var _country = widget.home.country;
 
   /// Set when Save finds the email unusable; cleared as the person types.
   String? _emailError;
@@ -1328,6 +1383,14 @@ class _AccountScreenState extends State<_AccountScreen> {
       );
       return;
     }
+    widget.home.change(() {
+      widget.home
+        ..firstName = _first.text.trim()
+        ..lastName = _last.text.trim()
+        ..receiptEmail = email
+        ..phone = _phone.text.trim()
+        ..country = _country;
+    });
     showNeumorphicToast(
       context,
       message: kitSayf(context, 'Saved. Your receipts go to {0}.', [email]),

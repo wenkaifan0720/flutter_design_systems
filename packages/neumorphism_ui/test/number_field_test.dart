@@ -102,15 +102,48 @@ void main() {
   );
 
   testWidgets(
-    'focus sinks the figure into a well, as a field is: never lifted as a key',
+    'the figure stands in a groove as tall as the keys\' faces, a gap from each, and focus raises the groove',
     (tester) async {
       await tester.pumpWidget(_app(const _Counted(log: [])));
-      Set<WidgetState> figure() =>
-          NeumorphicStatesScope.of(tester.element(_editable));
-      expect(figure(), isEmpty, reason: 'at rest a bare figure on its holder');
+      final groove = find.ancestor(
+        of: _editable,
+        matching: find.byType(NeumorphicSurface),
+      );
+      NeumorphicSurface surface() => tester.widget(groove.first);
+      expect(surface().cast, NeumorphicSurfaceLevel.groove);
+      expect(surface().states, isEmpty, reason: 'at rest a quiet groove');
+      final well = tester.getRect(groove.first);
+      for (final key in [_less, _more]) {
+        final face = tester.widget<NeumorphicRoundButton>(
+          find.ancestor(of: key, matching: find.byType(NeumorphicRoundButton)),
+        );
+        expect(well.height, face.size, reason: 'one height with the keys');
+        expect(
+          well.center.dy,
+          moreOrLessEquals(tester.getCenter(key).dy, epsilon: .5),
+        );
+        // The key's 48 target, its face centred in it.
+        final target = tester.getRect(
+          find.ancestor(of: key, matching: find.byType(NeumorphicRoundButton)),
+        );
+        expect(
+          target.overlaps(well),
+          isFalse,
+          reason: 'key $target, groove $well',
+        );
+        final gap = target.left > well.right
+            ? target.left - well.right
+            : well.left - target.right;
+        expect(gap, greaterThanOrEqualTo(6));
+      }
       await tester.sendKeyEvent(LogicalKeyboardKey.tab);
       await tester.pumpAndSettle();
-      expect(figure(), {WidgetState.pressed});
+      expect(surface().states, {WidgetState.focused});
+      expect(
+        NeumorphicStatesScope.of(tester.element(_editable)),
+        isNot(contains(WidgetState.pressed)),
+        reason: 'never pressed in as a key',
+      );
     },
   );
 

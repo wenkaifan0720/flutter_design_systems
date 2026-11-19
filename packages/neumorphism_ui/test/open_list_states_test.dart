@@ -1,7 +1,7 @@
 // An open list (a select's, a combobox's, a multi-select's, a menu with a choice) shows its chosen option at a glance in
-// the look's material: pressed in under the pigment's wash, as a chosen cell is. The pointer's row stands up a little,
-// the keyboard's place lifts, and a row held under a finger presses in plain only while it is held: none of them
-// reads as a second choice or a rule between rows (the user's walk, 11-15).
+// the look's material: pressed in under the pigment's wash, as a chosen cell is. The pointer's row sinks a little into
+// the panel, the keyboard's place the same a little deeper, and a row held under a finger presses in plain only while
+// it is held: none of them reads as a second choice or a rule between rows (the user's walks, 11-15 and 11-18).
 import 'package:flutter/gestures.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
@@ -12,13 +12,16 @@ import 'package:neumorphism_ui/src/neumorphism/internal/panel.dart';
 
 import 'support.dart';
 
-/// Every painter drawn under [of], by its class.
+/// Every painter drawn under [of], by its class; a row's deeper sink, the keyboard's place, as [_keys].
 Set<String> _painters(WidgetTester tester, Finder of) => {
   for (final p in tester.widgetList<CustomPaint>(
     find.descendant(of: of, matching: find.byType(CustomPaint)),
   ))
     for (final q in [p.painter, p.foregroundPainter])
-      if (q != null) q.runtimeType.toString(),
+      if (q is NeumorphicPanelRowRaise && (q.focus || q.rim))
+        _keys
+      else if (q != null)
+        q.runtimeType.toString(),
 };
 
 Finder _row(String label) =>
@@ -26,6 +29,7 @@ Finder _row(String label) =>
 
 const _chosen = '_ChosenCell';
 const _raise = 'NeumorphicPanelRowRaise';
+const _keys = 'NeumorphicPanelRowRaise, deeper';
 
 Future<void> _menu(WidgetTester tester, {required bool dark}) async {
   tester.view.physicalSize = const Size(1440, 900);
@@ -106,16 +110,18 @@ void main() {
       expect(_painters(tester, _row('First choice')), contains(_chosen));
     });
 
-    testWidgets('a menu: the keyboard lifts its place, never presses it in, '
-        '$mode', (tester) async {
+    testWidgets('a menu: the keyboard sinks its place a little deeper than the '
+        "pointer's, never presses it in, $mode", (tester) async {
       await _menu(tester, dark: dark);
       await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
       await tester.pumpAndSettle();
       final keyed = tester.widget<NeumorphicTap>(_row('Second choice'));
       expect(keyed.focusNode!.hasFocus, isTrue);
-      expect(keyed.showFocus, isTrue);
+      // The row draws the keys' place itself, not the tap's focus lift.
+      expect(keyed.showFocus, isFalse);
       final drawn = _painters(tester, _row('Second choice'));
-      expect(drawn, contains('_FocusLift'));
+      expect(drawn, contains(_keys));
+      expect(drawn, isNot(contains('_FocusLift')));
       expect(drawn, isNot(contains(_chosen)));
       expect(drawn, isNot(contains('_MenuRowRelief')));
       expect(_painters(tester, _row('First choice')), contains(_chosen));
@@ -153,7 +159,7 @@ void main() {
         );
         List<String> lit() => [
           for (final label in ['New scene', 'Dim every room', 'Find a room'])
-            if (_painters(tester, row(label)).any({_raise, '_Lift'}.contains))
+            if (_painters(tester, row(label)).any({_raise, _keys}.contains))
               label,
         ];
         expect(lit(), ['New scene']);
@@ -229,7 +235,7 @@ void main() {
       'the keyboard\'s place': (
         false,
         const {WidgetState.focused},
-        const {'_Lift'},
+        const {_keys},
         const {_chosen, _raise, 'NeumorphicPanelRowRelief'},
       ),
       'held': (

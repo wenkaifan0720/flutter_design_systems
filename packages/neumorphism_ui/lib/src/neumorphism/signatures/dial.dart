@@ -28,8 +28,7 @@ typedef _Tick = ({double deg, int rank, bool on});
 const double _faceTextScale = 1.3;
 
 /// An instrument face: [build] runs with the text scale held at [_faceTextScale] for the scale's numerals, and is handed
-/// the reader's own scaler for the readout, which grows with the text in full, as every part's words do, and stands
-/// under the face where it no longer fits in it.
+/// the reader's own scaler for the readout and supporting text.
 Widget _instrument(
   BuildContext context,
   Widget Function(BuildContext context, TextScaler reader) build,
@@ -278,7 +277,7 @@ bool _dialWordsFit(
 
 Widget _dialReadout({
   required BuildContext context,
-  required String figure,
+  String? figure,
   required TextStyle figureStyle,
   String? label,
   IconData? icon,
@@ -316,7 +315,7 @@ Widget _dialReadout({
           ),
           const SizedBox(height: 2),
         ],
-        _hung(figure, figureStyle, hang),
+        if (figure != null) _hung(figure, figureStyle, hang),
         if (sub != null) ...[
           const SizedBox(height: 2),
           Text(sub, textAlign: TextAlign.center, style: subStyle),
@@ -329,6 +328,8 @@ Widget _dialReadout({
 /// The hero of a page you set something on: a fluted dial on the wall, 340 on a phone, 530 on a desktop, not in a card. The pigment arc runs
 /// to the [value] you've set, a long ink tick marks [now], the ticks between them are lit: what's still to come. Two round keys stand in the
 /// corners a circle leaves. [compact]: on a phone a small dial beside its words, about 130 tall, for a page where this isn't the job.
+/// At larger text sizes the setting has priority in the centre. Longer supporting
+/// text moves below the dial. A value wider than the face appears above it.
 ///
 /// ```dart
 /// NeumorphicDial(value: 21.5, min: 10, max: 30, now: 21, label: 'Rising to', labelIcon: NeumorphicGlyphs.flame, figure: '21.5°', sub: 'Now 21.0°', onDecrease: () {}, onIncrease: () {})
@@ -410,7 +411,7 @@ class NeumorphicDial extends StatelessWidget {
   @override
   // A picture with things placed on it (its keys at its foot): one item for ui_core's keyline check, at its box.
   // An instrument's face: its scale's numerals grow with the text only so far (at twice the size they ran into their
-  // ticks); its readout grows in full and stands under the face where it no longer fits in it.
+  // ticks). The setting takes priority in the centre when space is tight.
   Widget build(BuildContext context) =>
       DesignKeylineFace(child: _instrument(context, _build));
 
@@ -520,29 +521,48 @@ class NeumorphicDial extends StatelessWidget {
         .copyWith(fontWeight: FontWeight.w700, color: c.inkSecondary)
         .tabular;
 
-    final inline = _dialWordsFit(
+    final iconWidth = labelIcon == null ? 0.0 : (labelStyle.fontSize ?? 14) + 4;
+    bool fits(double width, double height, TextStyle digits) => _dialWordsFit(
       context,
-      size * .46,
-      size * .46,
-      [(label, labelStyle), (figure, big), (sub, subStyle)],
-      extraWidth: labelIcon == null ? 0 : (labelStyle.fontSize ?? 14) + 4,
+      width,
+      height,
+      [(label, labelStyle), (figure, digits), (sub, subStyle)],
+      extraWidth: iconWidth,
       scaler: reader,
     );
-    final readout = _atReader(
-      context,
-      reader,
-      _dialReadout(
-        context: context,
-        figure: figure,
-        figureStyle: big,
-        label: label,
-        icon: labelIcon,
-        labelStyle: labelStyle,
-        sub: sub,
-        subStyle: subStyle,
-        hang: inline ? (large ? 10 : 6) : 0,
-      ),
-    );
+    final roomy = fits(size * .46, size * .46, big);
+    final width = size * (roomy ? .46 : .58);
+    final height = size * (roomy ? .46 : .50);
+    final digits = roomy
+        ? big
+        : t.textTheme.text(
+            large ? 70 : 40,
+            large ? 70 : 40,
+            weight: FontWeight.w200,
+            tracking: -.04,
+          );
+    final allInside = roomy || fits(width, height, digits);
+    final figureInside =
+        allInside ||
+        _dialWordsFit(context, width, height, [
+          (figure, digits),
+        ], scaler: reader);
+    Widget readout({required bool showFigure, required bool showWords}) =>
+        _atReader(
+          context,
+          reader,
+          _dialReadout(
+            context: context,
+            figure: showFigure ? figure : null,
+            figureStyle: figureInside ? digits : big,
+            label: showWords ? label : null,
+            icon: labelIcon,
+            labelStyle: labelStyle,
+            sub: showWords ? sub : null,
+            subStyle: subStyle,
+            hang: roomy ? (large ? 10 : 6) : 0,
+          ),
+        );
 
     final labels = <Widget>[];
     final tickHeight = math.max(
@@ -618,11 +638,16 @@ class NeumorphicDial extends StatelessWidget {
               ),
             ),
             ...labels,
-            if (inline)
+            if (figureInside)
               Positioned.fill(
-                child: Padding(
-                  padding: EdgeInsets.all(size * .27),
-                  child: Center(child: readout),
+                child: Center(
+                  child: SizedBox(
+                    width: width,
+                    height: height,
+                    child: Center(
+                      child: readout(showFigure: true, showWords: allInside),
+                    ),
+                  ),
                 ),
               ),
           ],
@@ -691,8 +716,10 @@ class NeumorphicDial extends StatelessWidget {
     return NeumorphicColumn(
       gap: large ? 28 : 24,
       children: [
+        if (!figureInside) readout(showFigure: true, showWords: true),
         stage,
-        if (!inline) readout,
+        if (figureInside && !allInside && (label != null || sub != null))
+          readout(showFigure: false, showWords: true),
         if (caption != null) _Say(say: caption!, note: captionDetail),
       ],
     );
