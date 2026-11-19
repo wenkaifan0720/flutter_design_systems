@@ -427,9 +427,10 @@ void main() {
         await pump(tester, build());
         await tester.sendKeyEvent(LogicalKeyboardKey.tab);
         await tester.pumpAndSettle();
-        // A control lifts round its own outline (`_FocusLift`, `_Lift`), the slider round its groove and thumb
-        // (`_ThumbLift`), the rating round its row of stars (`_RatingRisePainter`); a field, a code's cell, the wheel
-        // and the number field's groove rise round their groove instead (`_CastPainter.focus`). Never a stroke.
+        // A raised control lifts round its own outline (`_FocusLift`, `_Lift`), the slider round its thumb
+        // (`_ThumbLift`), the rating round its row of stars (`_RatingRisePainter`); a field, a select, a code's cell,
+        // the wheel and the number field's groove stay hollows and deepen instead (`_CastPainter.focus`). Never a
+        // stroke.
         final lifts = [
           ..._painted('_FocusLift'),
           ..._painted('_Lift'),

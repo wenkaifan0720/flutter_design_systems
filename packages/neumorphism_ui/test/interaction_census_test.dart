@@ -600,10 +600,14 @@ void main() {
         expect(
           find.byWidgetPredicate(
             (w) => switch (name) {
-              // The number field's groove, a field, rises round its hollow.
-              'NeumorphicNumberField' =>
-                w is NeumorphicSurface &&
-                    w.states.contains(WidgetState.focused),
+              // A field stays a hollow: the number field's groove and a
+              // select's well deepen (`_CastPainter.focus`), never rise.
+              'NeumorphicNumberField' ||
+              'NeumorphicSelect' ||
+              'NeumorphicSelectField' =>
+                w is CustomPaint &&
+                    w.painter.runtimeType.toString() == '_CastPainter' &&
+                    ((w.painter as dynamic).focus as double) > 0,
               // A menu's row the keys reach sinks a little deeper into the
               // panel, the chosen one under its wash too.
               'NeumorphicMenu' =>
@@ -611,8 +615,9 @@ void main() {
                     [w.painter, w.foregroundPainter].any(
                       (p) => p is NeumorphicPanelRowRaise && (p.focus || p.rim),
                     ),
-              // The slider rises, groove and thumb, and the rating its row of
-              // stars; the parts on ui_core's behaviours lift their region
+              // The slider lifts its thumb, the raised part that moves (its
+              // groove stays a hollow), and the rating its row of stars; the
+              // parts on ui_core's behaviours lift their region
               // (`neumorphicFocusLift`).
               _ =>
                 w is CustomPaint &&

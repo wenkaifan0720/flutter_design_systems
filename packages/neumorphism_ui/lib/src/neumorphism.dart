@@ -11,6 +11,7 @@ export 'neumorphism/frames.dart'
     hide
         neumorphicPaintRaised,
         neumorphicPaintPressed,
+        neumorphicPaintHollowFocus,
         neumorphicPaintCast,
         NeumorphicThrow,
         neumorphicHolder,

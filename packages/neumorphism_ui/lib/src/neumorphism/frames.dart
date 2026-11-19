@@ -437,6 +437,45 @@ void neumorphicPaintFocusLift(
   canvas.restore();
 }
 
+/// Keyboard focus on a hollow (a field's well, a groove, a cell): it stays a hollow and goes deeper. Inside its rim, a
+/// crisp near pair, the shade under the top and start edges and the light along the bottom and end, in the plaster's
+/// own light and shade, never the pigment and never a line. The shade carries the focus at 3:1 by day and the light by
+/// night, each over about the area a 2 px outline would cover. Painted inside [shape] only, so nothing stands outside
+/// the rim: a focused field never reads as a slab. [amount] eases it in and out.
+void neumorphicPaintHollowFocus(
+  Canvas canvas,
+  Path shape,
+  NeumorphicColors c, {
+  double amount = 1,
+}) {
+  if (amount <= 0) return;
+  final box = shape.getBounds();
+  // As wide on a slim groove (a slider's) as on a field: the 3:1 needs the same width of edge on either.
+  final near = (box.shortestSide * .1).clamp(4.0, 4.5).toDouble();
+  // Only the side that stands off the ground carries the 3:1 (the shade by day, the light by night), so it runs a
+  // little wider than its partner.
+  final deep = c.dark ? near : near * 1.5;
+  final lift = c.dark ? near * 1.25 : near;
+  final shade = c.shadowDeep;
+  final lit = c.dark
+      ? Color.lerp(c.ground, c.ink, .7)!
+      : const Color(0xFFFFFFFF);
+  canvas.save();
+  canvas.clipPath(shape);
+  canvas.drawPath(
+    _outside(shape, box, Offset(deep, deep), deep * 3 + 2),
+    _blurred(
+      shade.withValues(alpha: math.min(1, shade.a * 2.1) * amount),
+      deep * .4,
+    ),
+  );
+  canvas.drawPath(
+    _outside(shape, box, Offset(-lift, -lift), lift * 3 + 2),
+    _blurred(lit.withValues(alpha: .9 * amount), lift * .5),
+  );
+  canvas.restore();
+}
+
 /// Eases a face's focus, depth and wash together.
 class _FaceTween extends Tween<(double, double, double)> {
   _FaceTween({super.end});
@@ -503,7 +542,8 @@ class _CastPainter extends CustomPainter {
     if (depression == 0 && boundary && draw == NeumorphicDraw.groove) {
       // A control found by its edge, with no line to find it by: a tighter, darker inset, so the well's rim reads
       // as an edge at a glance, day and night.
-      // Focus deepens it: a longer, softer, darker inset, and the caret does the rest.
+      // Focus deepens it: a longer, darker inset with a crisp near pair inside the rim (it stays a hollow, never
+      // raised: a raised field read as a slab), and the caret does the rest.
       final f = focus;
       neumorphicPaintPressed(
         canvas,
@@ -523,21 +563,12 @@ class _CastPainter extends CustomPainter {
         flat: flat,
         elevation: elevation,
       );
-      // Focus raises the field round its hollow as it raises a part: the lift stands outside the rim, clear of the
-      // words and the caret.
-      if (!flat) {
-        neumorphicPaintFocusLift(
-          canvas,
-          shape,
-          c,
-          amount: f,
-          elevation: elevation,
-        );
-      }
+      if (!flat) neumorphicPaintHollowFocus(canvas, shape, c, amount: f);
     } else if (depression == 0 &&
         focus > 0 &&
         (draw == NeumorphicDraw.groove || draw == NeumorphicDraw.well)) {
-      // A focused groove or well goes deeper, by [focus].
+      // A focused groove or well goes deeper, by [focus], with the crisp near pair inside its rim. It stays a hollow:
+      // focus never raises an inset part, which would turn the field into a slab.
       final (o, b) = draw == NeumorphicDraw.groove ? (3.0, 7.0) : (6.0, 14.0);
       final f = focus;
       neumorphicPaintPressed(
@@ -554,17 +585,7 @@ class _CastPainter extends CustomPainter {
         flat: flat,
         elevation: elevation,
       );
-      // Focus raises the field round its hollow as it raises a part: the lift stands outside the rim, clear of the
-      // words and the caret.
-      if (!flat) {
-        neumorphicPaintFocusLift(
-          canvas,
-          shape,
-          c,
-          amount: f,
-          elevation: elevation,
-        );
-      }
+      if (!flat) neumorphicPaintHollowFocus(canvas, shape, c, amount: f);
     } else if (depression == 0) {
       neumorphicPaintCast(
         canvas,

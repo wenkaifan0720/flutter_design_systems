@@ -1,3 +1,8 @@
+## 0.3.4
+
+- A focused text field, text area, search field, select, number field, date segment, code cell or other well now stays inset. It goes deeper, with a crisp shade inside its rim, and a field's label turns to the pigment's ink. In 0.3.2 and 0.3.3, focus raised the well off the wall, so a focused field read as a raised slab with a heavy shadow. Buttons, keys, chips, toggles, rows and other raised parts still rise when focused.
+- A focused slider raises its thumb, as in 0.3.1. Its groove now stays inset and goes deeper round the thumb, where 0.3.2 raised it with the thumb.
+
 ## 0.3.3
 
 - `NeumorphicLocalizations.delegate` now serves every locale. It served English alone, so an app in another language that installed it was warned at startup that its locale had no Neumorphism delegate. With it installed, dates and numbers are the app's locale's (English where `intl` lacks it), and the time picker names its hour, minute and day-period wheels, and says AM and PM, in ui_core's `DesignLocalizations` words for the reader (German's Stunde), as Done, Try again, a field's required mark and a table's sort hints do. An English app keeps Neumorphism's own words ("Morning or evening"), and an app's own `NeumorphicLocalizations` still wins.

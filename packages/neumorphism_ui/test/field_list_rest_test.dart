@@ -48,26 +48,13 @@ Finder _panel(String name) => name == 'a select'
     ? find.byType(NeumorphicMenu<String>)
     : find.byType(NeumorphicPanel);
 
-/// Whether the field shows the keys' focus.
-bool _risen(WidgetTester tester, String name) {
-  if (name == 'a select') {
-    final face = find
-        .byWidgetPredicate(
-          (w) => w is NeumorphicTap && (w.label ?? '').startsWith('Room,'),
-        )
-        .evaluate()
-        .single;
-    // The keys are on the face: the primary focus is the face's own node.
-    final at = FocusManager.instance.primaryFocus?.context;
-    var on = identical(at, face);
-    at?.visitAncestorElements((e) => !(on = on || identical(e, face)));
-    return (face.widget as NeumorphicTap).showFocus && on;
-  }
-  return tester
-      .widget<NeumorphicFieldBox>(find.byType(NeumorphicFieldBox).first)
-      .states
-      .contains(WidgetState.focused);
-}
+/// Whether the field shows the keys' focus: its well deepened (a select's too: a field never rises).
+bool _risen(WidgetTester tester, String name) =>
+    find.byType(CustomPaint).evaluate().where((e) {
+      final painter = (e.widget as CustomPaint).painter;
+      return painter.runtimeType.toString() == '_CastPainter' &&
+          ((painter as dynamic).focus as double) > 0;
+    }).isNotEmpty;
 
 void main() {
   setUpAll(loadNeumorphicFonts);

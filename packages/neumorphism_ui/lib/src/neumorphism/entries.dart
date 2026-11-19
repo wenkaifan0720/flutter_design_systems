@@ -874,6 +874,8 @@ class NeumorphicSelect<T> extends StatefulWidget {
 
 class _NeumorphicSelectState<T> extends State<NeumorphicSelect<T>> {
   bool _open = false;
+  // Whether the face has the keys' focus: its label is lit in the pigment's ink, as a text field's is.
+  bool _focused = false;
   // The face, which the open list hangs from and matches in width.
   final _faceKey = GlobalKey();
   Future<void> _show() async {
@@ -932,7 +934,11 @@ class _NeumorphicSelectState<T> extends State<NeumorphicSelect<T>> {
           ExcludeSemantics(
             child: Text(
               widget.label!,
-              style: t.textTheme.caption.copyWith(fontWeight: FontWeight.w700),
+              // A focused select names itself in the pigment's ink, as a focused text field does.
+              style: t.textTheme.caption.copyWith(
+                fontWeight: FontWeight.w700,
+                color: _focused ? t.colors.pigmentInk : null,
+              ),
             ),
           ),
           const SizedBox(height: 8),
@@ -1007,8 +1013,13 @@ class _NeumorphicSelectState<T> extends State<NeumorphicSelect<T>> {
     style: widget.style,
     themeStyle: t.textFieldTheme,
     expanded: _open,
-    // While its list is open the face rests: the list shows where the keys are.
-    showFocus: !_open,
+    // A select is a field: its focus deepens its well (below) and lights its label, as a text field's does, and never
+    // raises the face.
+    showFocus: false,
+    onStatesChanged: (states) {
+      final focused = states.contains(WidgetState.focused);
+      if (focused != _focused) setState(() => _focused = focused);
+    },
     label: [if (widget.label != null) widget.label!, value].join(', '),
     onPressed: widget.onChanged == null ? null : _show,
     // The arrows open it too, as Enter and Space do: its list opens on the chosen option, or the first, and the
@@ -1026,10 +1037,11 @@ class _NeumorphicSelectState<T> extends State<NeumorphicSelect<T>> {
           },
     child: Builder(
       builder: (context) {
+        // While its list is open the well rests: the list shows where the keys are.
         final states = {
           ...NeumorphicStatesScope.of(context),
           if (widget.error != null) WidgetState.error,
-        };
+        }..removeWhere((s) => _open && s == WidgetState.focused);
         final look = neumorphicStyleOf([
           widget.style,
           t.textFieldTheme,
@@ -1037,35 +1049,38 @@ class _NeumorphicSelectState<T> extends State<NeumorphicSelect<T>> {
         return NeumorphicOutOfUse(
           // Disabled reads as the other fields do.
           off: widget.onChanged == null,
-          child: NeumorphicFieldBox(
-            style: widget.style,
+          child: NeumorphicStatesScope(
             states: states,
-            // The density's air, so the face keeps the control height (a button's beside it) at every density.
-            child: Padding(
-              padding: t.density.padding(
-                const EdgeInsets.symmetric(vertical: 10),
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: neumorphicLabel(
-                      Text(
-                        value,
-                        style: t.textTheme.body
-                            .merge(look.textStyle)
-                            .copyWith(color: look.foreground),
+            child: NeumorphicFieldBox(
+              style: widget.style,
+              states: states,
+              // The density's air, so the face keeps the control height (a button's beside it) at every density.
+              child: Padding(
+                padding: t.density.padding(
+                  const EdgeInsets.symmetric(vertical: 10),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: neumorphicLabel(
+                        Text(
+                          value,
+                          style: t.textTheme.body
+                              .merge(look.textStyle)
+                              .copyWith(color: look.foreground),
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 12),
-                  Icon(
-                    _open
-                        ? NeumorphicGlyphs.chevronUp
-                        : NeumorphicGlyphs.chevronDown,
-                    size: look.iconSize ?? 18,
-                    color: look.foreground,
-                  ),
-                ],
+                    const SizedBox(width: 12),
+                    Icon(
+                      _open
+                          ? NeumorphicGlyphs.chevronUp
+                          : NeumorphicGlyphs.chevronDown,
+                      size: look.iconSize ?? 18,
+                      color: look.foreground,
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -2282,7 +2297,7 @@ class _StarTargetState extends State<_StarTarget> {
 }
 
 /// A rating's keyboard focus: its row of stars rises off the wall as one part ([neumorphicPaintFocusLift] round a
-/// capsule 6 past the stars' faces), as a field rises round its well. The stars stay as they are.
+/// capsule 6 past the stars' faces), as a raised part rises. The stars stay as they are.
 class _RatingRise extends StatefulWidget {
   const _RatingRise({
     required this.count,

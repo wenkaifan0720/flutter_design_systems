@@ -4277,6 +4277,8 @@ class NeumorphicSelectField extends StatelessWidget {
       autofocus: autofocus,
       style: style,
       themeStyle: t.textFieldTheme,
+      // A field: its focus deepens its well, as a text field's does, and never raises the face.
+      showFocus: false,
       onPressed: onPressed,
       label: value,
       child: Builder(
@@ -4907,7 +4909,7 @@ const _numberInset = 12.0;
 
 // The number field's figure: an editable in the title's figures, its unit after it, in a groove as tall as the keys'
 // faces, so the stepper reads as one control of one height: a place to type the number between its two keys. Focus
-// deepens the groove and raises it, as every field's, and the caret does the rest.
+// deepens the groove, as every field's well, and the caret does the rest.
 // Bare, not a Material TextField: a TextField says whether it is enabled, as ui_core's field does, so its text stood as
 // a node of its own and the field's steps on one with no value. It takes a text field's gestures (a tap places the
 // caret, a double tap and a drag select, the look's menu).
@@ -5587,8 +5589,8 @@ class _SliderPainter extends CustomPainter {
       o.elevation != elevation;
 }
 
-/// The slider's keyboard focus: the slider rises ([neumorphicPaintFocusLift]), its groove lifted off the wall as a
-/// field's is and its thumb with it, not the whole row.
+/// The slider's keyboard focus: its thumb, the raised part that moves, lifts ([neumorphicPaintFocusLift]), and its
+/// groove stays a hollow and deepens round it ([neumorphicPaintHollowFocus]), as a field's well does.
 class _ThumbLift extends CustomPainter {
   _ThumbLift(
     this.c,
@@ -5609,26 +5611,34 @@ class _ThumbLift extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
+    final knob = border.getOuterPath(
+      _SliderPainter.knobRect(size, at, thumb, rtl),
+    );
     final groove = Rect.fromLTWH(
       0,
       size.height / 2 - track / 2,
       size.width,
       track,
     );
-    neumorphicPaintFocusLift(
-      canvas,
-      Path.combine(
-        PathOperation.union,
-        trackBorder?.getOuterPath(groove) ??
-            (Path()..addRRect(
-              RRect.fromRectAndRadius(groove, Radius.circular(track / 2)),
-            )),
-        border.getOuterPath(_SliderPainter.knobRect(size, at, thumb, rtl)),
-      ),
-      c,
-      reach: .6,
-      elevation: elevation,
+    // The groove's deeper hollow lies under the thumb, never over it: an even-odd clip round the thumb, which the web
+    // draws as it is (a Path.combine hole is not).
+    canvas.save();
+    canvas.clipPath(
+      Path()
+        ..fillType = PathFillType.evenOdd
+        ..addRect((Offset.zero & size).inflate(8))
+        ..addPath(knob, Offset.zero),
     );
+    neumorphicPaintHollowFocus(
+      canvas,
+      trackBorder?.getOuterPath(groove) ??
+          (Path()..addRRect(
+            RRect.fromRectAndRadius(groove, Radius.circular(track / 2)),
+          )),
+      c,
+    );
+    canvas.restore();
+    neumorphicPaintFocusLift(canvas, knob, c, reach: .6, elevation: elevation);
   }
 
   @override

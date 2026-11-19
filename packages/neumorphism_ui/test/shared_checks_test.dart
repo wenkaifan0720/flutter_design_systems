@@ -46,6 +46,20 @@ const _widths = DesignWidthCheck(
   },
 );
 
+/// Single problems a row reader reports that the screen does not have, by screen and width, each matched whole; the
+/// rest of the screen's rows are still held, and swipe_actions_level_test.dart measures these faces themselves. Read
+/// again with each ui_core_test.
+const _misreadRowProblems = {
+  // ui_core_test 0.1.3's row reader takes the rim or the shadow of the night's ground-coloured Delete face for its
+  // edge. Painted, the open row's Delete and Archive stand level, top and bottom.
+  'collections 390': [
+    'standard dark · a button "Delete" beside a button "Archive": its bottom is level with theirs as laid out, '
+        '24 device px above as drawn',
+    'compact dark · a button "Delete" beside a button "Archive": its bottom is level with theirs as laid out, '
+        '24 device px above as drawn',
+  ],
+};
+
 void main() {
   setUpAll(() async {
     await loadNeumorphicFonts();
@@ -173,7 +187,12 @@ void main() {
           ]);
         }
       }
-      verdict('ROWS $screen ${width.toInt()}', found);
+      final misread =
+          _misreadRowProblems['$screen ${width.toInt()}'] ?? const <String>[];
+      verdict('ROWS $screen ${width.toInt()}', [
+        for (final p in found)
+          if (!misread.contains(p)) p,
+      ]);
     }, tags: ['goldens']);
   }
 
