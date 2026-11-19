@@ -7,11 +7,13 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
+import '../internal/words.dart';
 import '../internal/menu_marks.dart';
 import '../internal/type_ahead.dart';
 import '../primitives/menu.dart';
 import '../style.dart';
 import '../theme.dart';
+import '../localizations.dart';
 import 'dialog.dart';
 import 'key_hint.dart';
 import 'pane.dart';
@@ -37,6 +39,9 @@ class TermSideSheet extends StatelessWidget {
   final Widget child;
 
   /// The keys that work in it.
+  ///
+  /// Left as `'esc close'`, it is the reader's words for it
+  /// (`TermLocalizations.closeKeyHint`): Arabic or German in an app in either.
   final String? footer;
 
   /// Overrides, over the theme's [TermThemeData.sheetStyle]: `fill` (the
@@ -49,7 +54,17 @@ class TermSideSheet extends StatelessWidget {
     final lh = context.termGrid.lineHeight;
     return TermPane(
       title: title,
-      footer: termKeysShown(context) ? footer : null,
+      footer: termKeysShown(context)
+          ? switch (footer) {
+              final f? => termWords(
+                context,
+                f,
+                'esc close',
+                (w) => w.closeKeyHint,
+              ),
+              null => null,
+            }
+          : null,
       raised: true,
       focused: true,
       style: TermStyle.layered([style, theme.sheetStyle]),
@@ -208,6 +223,9 @@ class TermActionSheet<T> extends StatelessWidget {
   final String? message;
 
   /// The last row's words.
+  ///
+  /// Left as `'cancel'`, it is the reader's words for it
+  /// (`TermLocalizations.cancelLabel`): Arabic or German in an app in either.
   final String cancelLabel;
 
   /// Overrides for the sheet, over the theme's
@@ -238,7 +256,7 @@ class TermActionSheet<T> extends StatelessWidget {
         );
     return TermSheet(
       title: title,
-      footer: 'esc cancel',
+      footer: TermLocalizations.of(context).cancelKeyHint,
       style: style,
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -251,7 +269,10 @@ class TermActionSheet<T> extends StatelessWidget {
           for (final a in actions)
             row(a.label, () => choose(a.value), danger: a.isDestructiveAction),
           SizedBox(height: lh / 2),
-          row(cancelLabel, () => choose(null)),
+          row(
+            termWords(context, cancelLabel, 'cancel', (w) => w.cancelLabel),
+            () => choose(null),
+          ),
         ],
       ),
     );

@@ -1,3 +1,24 @@
+## 0.2.3
+
+- A pressed tab tints its whole cell and leaves its words whole, as a pressed
+  segment does, in place of a half fill rising from the foot across them.
+- Terminal speaks Arabic and German as well as English. The words its parts
+  say and write themselves now come from `TermLocalizations`, and follow
+  the app's locale with nothing to set up: the pager, the page dots, the
+  path, the steps, a tag's remove button, a table's page box, a file
+  field's `browse`, a confirmation's question, its typed word and its keys,
+  a sheet's `esc cancel`, the command palette's keys, a password field's
+  `show` and `hide`, a refresh's words, a sparkline's reading and the
+  colour picker's 16 names. The English defaults of words an app can pass
+  (a dialog's `no`, a sheet's `cancel`, a search's `no match`,
+  `searching`, `search failed` and `try again`, the command palette's
+  title, hint and empty words, a skeleton's `loading`, a one-time code's
+  name, a file field's `no file chosen`, a sheet's `esc close`) follow the
+  locale too, unless the app gives its own. `TermLocalizations.delegate`, `forLocale` and
+  `supportedLocales` are new. An app that implements `TermLocalizations`
+  directly, rather than extending `DefaultTermLocalizations` as its docs
+  say, implements the new words.
+
 ## 0.2.2
 
 - Dates, times and the number field write their figures in the reader's

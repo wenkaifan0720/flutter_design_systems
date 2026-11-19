@@ -22,6 +22,7 @@ import '../primitives/field_frame.dart';
 import '../primitives/menu.dart';
 import '../style.dart';
 import '../theme.dart';
+import '../localizations.dart';
 import 'button.dart';
 import 'pane.dart';
 import 'text_field.dart';
@@ -931,24 +932,6 @@ class TermColorPicker extends StatelessWidget {
       p.brightCyan,
       p.brightWhite,
     ];
-    const names = [
-      'black',
-      'red',
-      'green',
-      'yellow',
-      'blue',
-      'magenta',
-      'cyan',
-      'white',
-      'bright black',
-      'bright red',
-      'bright green',
-      'bright yellow',
-      'bright blue',
-      'bright magenta',
-      'bright cyan',
-      'bright white',
-    ];
     return DesignColorPicker(
       controller: controller,
       areaHeight: grid.lines(lines),
@@ -1023,7 +1006,8 @@ class TermColorPicker extends StatelessWidget {
                 TermTapTarget(
                   child: DesignPressable(
                     onPressed: () => controller.color = c,
-                    semanticLabel: names[i],
+                    semanticLabel: TermLocalizations.of(context)
+                        .paletteColorName(i),
                     mouseCursor: SystemMouseCursors.click,
                     builder: (context, states, _) => SizedBox(
                       width: grid.cols(3),

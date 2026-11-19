@@ -234,6 +234,19 @@ The navigation bar wraps its labeled destinations when space is tight.
 A selected date range uses extra lines when necessary so both dates stay
 visible at larger text sizes.
 
+## Languages
+
+Terminal's own words (a pager's "next page", a tag's "remove", a
+confirmation's `proceed? [y/N]` and its keys, a file field's `browse`, a
+refresh's `pull to refresh`, the palette's colour names) come from
+`TermLocalizations`, in English, Arabic and German. Nothing needs setting
+up: in an Arabic or German app they follow the app's locale, beside
+ui_core's `DesignLocalizations`, whose words cover 30 languages. Words an
+app passes, such as a dialog's `cancelLabel`, are its own; left at their
+English defaults, they follow the locale too. For another language, extend
+`DefaultTermLocalizations` and add a delegate for it to
+`localizationsDelegates`.
+
 ## Fonts
 
 JetBrains Mono (SIL Open Font License 1.1) for the words, and Liberation

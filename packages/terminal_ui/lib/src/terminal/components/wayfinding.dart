@@ -15,6 +15,7 @@ import '../primitives/control.dart';
 import '../primitives/menu.dart';
 import '../style.dart';
 import '../theme.dart';
+import '../localizations.dart';
 import 'button.dart';
 import 'key_hint.dart';
 import 'navigation.dart';
@@ -52,7 +53,7 @@ class TermBreadcrumb extends StatelessWidget {
     final rest = TermStyleOf([style, theme.breadcrumbStyle], const {});
     return Semantics(
       container: true,
-      label: 'path',
+      label: TermLocalizations.of(context).breadcrumbLabel,
       explicitChildNodes: true,
       child: Directionality(
         textDirection: TextDirection.ltr,
@@ -178,6 +179,7 @@ class TermPagination extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = TermTheme.of(context);
+    final words = TermLocalizations.of(context);
     final grid = context.termGrid;
     final go = onChanged;
     final prev = go != null && page > 1 ? () => go(page - 1) : null;
@@ -196,14 +198,14 @@ class TermPagination extends StatelessWidget {
         final narrow = c.maxWidth.isFinite && needed > c.maxWidth;
         return Semantics(
           container: true,
-          label: 'pages',
+          label: words.paginationLabel,
           explicitChildNodes: true,
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               TermIconButton(
                 glyph: '‹',
-                semanticLabel: 'previous page',
+                semanticLabel: words.previousPageLabel,
                 onPressed: prev,
               ),
               if (narrow)
@@ -213,7 +215,7 @@ class TermPagination extends StatelessWidget {
                   ),
                   child: Text(
                     '$page/$pageCount',
-                    semanticsLabel: 'page $page of $pageCount',
+                    semanticsLabel: words.pagePositionLabel(page, pageCount),
                   ),
                 )
               else
@@ -234,7 +236,7 @@ class TermPagination extends StatelessWidget {
                         onPressed: go == null || p == page ? null : () => go(p),
                         selected: p == page,
                         semanticSelected: p == page,
-                        semanticLabel: 'page $p',
+                        semanticLabel: words.pageLabel(p),
                         excludeSemantics: true,
                         // The page open now takes no press, so no click.
                         mouseCursor: go == null || p == page
@@ -263,7 +265,7 @@ class TermPagination extends StatelessWidget {
                     ),
               TermIconButton(
                 glyph: '›',
-                semanticLabel: 'next page',
+                semanticLabel: words.nextPageLabel,
                 onPressed: next,
               ),
             ],
@@ -314,6 +316,7 @@ class TermPageDots extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = TermTheme.of(context);
+    final words = TermLocalizations.of(context);
     final grid = context.termGrid;
     final own = TermStyleOf([style, theme.paginationStyle], const {});
     // A dot: pressed, its cell in inverse video; under the keyboard's
@@ -351,7 +354,7 @@ class TermPageDots extends StatelessWidget {
     }
 
     return Semantics(
-      label: 'page ${index + 1} of $count',
+      label: words.pagePositionLabel(index + 1, count),
       excludeSemantics: onChanged == null,
       container: true,
       child: Row(
@@ -365,7 +368,7 @@ class TermPageDots extends StatelessWidget {
                 child: DesignPressable(
                   onPressed: () => onChanged!(i),
                   selected: i == index,
-                  semanticLabel: 'page ${i + 1}',
+                  semanticLabel: words.pageLabel(i + 1),
                   excludeSemantics: true,
                   mouseCursor: SystemMouseCursors.click,
                   builder: (context, states, _) => dot(i, states),
@@ -437,14 +440,15 @@ class TermSteps extends StatelessWidget {
         TermStepState.done => ('✓', theme.success),
         TermStepState.failed => ('✗', theme.danger),
       };
+      final words = TermLocalizations.of(context);
       final said = switch (s.state) {
-        TermStepState.upcoming => 'to come',
-        TermStepState.current => 'current',
-        TermStepState.done => 'done',
-        TermStepState.failed => 'failed',
+        TermStepState.upcoming => words.stepUpcomingLabel,
+        TermStepState.current => words.stepCurrentLabel,
+        TermStepState.done => words.stepDoneLabel,
+        TermStepState.failed => words.stepFailedLabel,
       };
       return Semantics(
-        label: 'step ${i + 1} of ${steps.length}, ${s.label}, $said',
+        label: words.stepLabel(i + 1, steps.length, s.label, said),
         excludeSemantics: true,
         child: Row(
           mainAxisSize: MainAxisSize.min,

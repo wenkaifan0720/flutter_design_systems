@@ -44,12 +44,15 @@ class TermNavigationDestination {
 }
 
 /// One cell of inverse video that grows in as [amount] goes to 1: a chosen
-/// tab, a current window. The keyboard's focus ([cursor]) is the cursor
-/// over it; on the chosen one ([chosen]) hollow, its inverse cleared.
+/// tab, a current window. A press ([press]) tints the whole cell and
+/// leaves the words whole, as a pressed segment does. The keyboard's focus
+/// ([cursor]) is the cursor over it; on the chosen one ([chosen]) hollow,
+/// its inverse cleared.
 class _Inverse extends StatelessWidget {
   const _Inverse({
     required this.amount,
     required this.child,
+    this.press = 0,
     this.cursor = 0,
     this.chosen = false,
     this.fill,
@@ -57,6 +60,7 @@ class _Inverse extends StatelessWidget {
   });
 
   final double amount;
+  final double press;
   final double cursor;
   final bool chosen;
   final Widget child;
@@ -67,8 +71,14 @@ class _Inverse extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = TermTheme.of(context);
     final ground = fill ?? theme.foreground;
+    final words = ink ?? theme.foreground;
     return CustomPaint(
       painter: _FillFromFoot(
+        // The press: the words' ink at 30% over the whole cell, under the
+        // inverse a choice grows in.
+        tint: chosen || press <= 0
+            ? null
+            : words.withValues(alpha: words.a * 0.3 * press.clamp(0, 1)),
         color: chosen
             ? ground.withValues(alpha: ground.a * (1 - cursor.clamp(0, 1)))
             : ground,
@@ -81,7 +91,7 @@ class _Inverse extends StatelessWidget {
           style: TextStyle(
             color: termCursorInk(
               theme,
-              Color.lerp(ink ?? theme.foreground, theme.background, amount)!,
+              Color.lerp(words, theme.background, amount)!,
               cursor,
               hollow: chosen,
             ),
@@ -94,13 +104,17 @@ class _Inverse extends StatelessWidget {
 }
 
 class _FillFromFoot extends CustomPainter {
-  const _FillFromFoot({required this.color, required this.amount});
+  const _FillFromFoot({required this.color, required this.amount, this.tint});
 
   final Color color;
   final double amount;
+  final Color? tint;
 
   @override
   void paint(Canvas canvas, Size size) {
+    if (tint case final tint?) {
+      canvas.drawRect(Offset.zero & size, Paint()..color = tint);
+    }
     final a = amount.clamp(0.0, 1.0);
     if (a <= 0) return;
     final h = size.height * a;
@@ -112,7 +126,7 @@ class _FillFromFoot extends CustomPainter {
 
   @override
   bool shouldRepaint(_FillFromFoot old) =>
-      old.color != color || old.amount != amount;
+      old.color != color || old.amount != amount || old.tint != tint;
 }
 
 /// A tab bar: each tab its number and its label, `1 steps  2 log  3 env`,
@@ -249,7 +263,8 @@ class _TermTabBarState extends State<TermTabBar> with TickerProviderStateMixin {
                 // choose as they move, so it stands on the chosen tab,
                 // hollow: its inverse cleared, its end cells in the accent.
                 builder: (context, t, _) => _Inverse(
-                  amount: (t + press * 0.5).clamp(0, 1),
+                  amount: t,
+                  press: press,
                   cursor: focus,
                   chosen: i == _controller.index,
                   fill: own.fill,
@@ -582,7 +597,8 @@ class TermNavigationBar extends StatelessWidget {
               // The keyboard's focus: the cursor over the window, hollow
               // on the current one.
               child: _Inverse(
-                amount: (t + press * 0.5).clamp(0, 1),
+                amount: t,
+                press: press,
                 cursor: focus,
                 chosen: i == selectedIndex,
                 fill: TermStyleOf([

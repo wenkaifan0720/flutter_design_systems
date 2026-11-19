@@ -21,3 +21,4 @@ export 'src/terminal/internal/menu_marks.dart';
 export 'src/terminal/internal/shell_face.dart';
 export 'src/terminal/internal/snap.dart';
 export 'src/terminal/internal/type_ahead.dart';
+export 'src/terminal/internal/words.dart';

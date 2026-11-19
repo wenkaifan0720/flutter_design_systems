@@ -10,6 +10,7 @@ import '../primitives/box.dart';
 import '../primitives/control.dart';
 import '../style.dart';
 import '../theme.dart';
+import '../localizations.dart';
 import 'feedback.dart';
 
 /// A tag: [label] on a ground tinted by [tone], a cell either side, as a
@@ -93,7 +94,7 @@ class TermTag extends StatelessWidget {
       alignment: AlignmentDirectional.centerStart,
       child: DesignPressable(
         onPressed: onDeleted,
-        semanticLabel: 'remove $label',
+        semanticLabel: TermLocalizations.of(context).removeLabel(label),
         mouseCursor: SystemMouseCursors.click,
         builder: (context, states, _) => TermStateSprings(
           pressed: states.contains(WidgetState.pressed),

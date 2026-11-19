@@ -7,8 +7,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
+import '../internal/words.dart';
 import '../style.dart';
 import '../theme.dart';
+import '../localizations.dart';
 import 'button.dart';
 import 'containers.dart';
 import 'key_hint.dart';
@@ -196,6 +198,9 @@ class TermConfirmDialog extends StatefulWidget {
   final String confirmLabel;
 
   /// The no button's words.
+  ///
+  /// Left as `'no'`, it is the reader's words for it
+  /// (`TermLocalizations.noLabel`): Arabic or German in an app in either.
   final String cancelLabel;
 
   /// Whether the yes destroys something.
@@ -259,6 +264,7 @@ class _TermConfirmDialogState extends State<TermConfirmDialog> {
   @override
   Widget build(BuildContext context) {
     final theme = TermTheme.of(context);
+    final words = TermLocalizations.of(context);
     final grid = context.termGrid;
     final typed = widget.typedConfirmation;
     // Opening the keyboard in a phone sheet can scroll the warning away
@@ -268,8 +274,8 @@ class _TermConfirmDialogState extends State<TermConfirmDialog> {
     final footer = !termKeysShown(context)
         ? null
         : typed == null
-        ? 'y yes · n no · esc'
-        : 'esc cancel';
+        ? words.confirmKeysHint
+        : words.cancelKeyHint;
     // What to type, and the field it goes in, stand with the buttons, out
     // of the message's scroll: however long the message runs (twice the
     // text on a phone, a long name), only the message scrolls, and the
@@ -281,14 +287,14 @@ class _TermConfirmDialogState extends State<TermConfirmDialog> {
         // the words to type always show whole.
         : LayoutBuilder(
             builder: (context, c) {
-              final ask = 'type $typed to confirm';
+              final ask = words.typedConfirmationLabel(typed);
               final fits =
                   !c.maxWidth.isFinite ||
                   grid.widthOf(ask) <= c.maxWidth - grid.cols(4);
               final field = TermTextField(
                 controller: _typed,
                 autofocus: focusField,
-                labelText: fits ? ask : 'confirm',
+                labelText: fits ? ask : words.typedConfirmationFieldLabel,
                 prompt: '>',
                 autocorrect: false,
                 onSubmitted: (_) => yes?.call(),
@@ -298,13 +304,20 @@ class _TermConfirmDialogState extends State<TermConfirmDialog> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  // The words to type in bold, wherever the language
+                  // puts them.
                   Text.rich(
                     TextSpan(
-                      children: [
-                        const TextSpan(text: 'type '),
-                        TextSpan(text: typed, style: theme.boldStyle),
-                        const TextSpan(text: ' to confirm'),
-                      ],
+                      children: switch (typed.isEmpty
+                          ? -1
+                          : ask.indexOf(typed)) {
+                        < 0 => [TextSpan(text: ask)],
+                        final at => [
+                          TextSpan(text: ask.substring(0, at)),
+                          TextSpan(text: typed, style: theme.boldStyle),
+                          TextSpan(text: ask.substring(at + typed.length)),
+                        ],
+                      },
                     ),
                   ),
                   field,
@@ -323,19 +336,19 @@ class _TermConfirmDialogState extends State<TermConfirmDialog> {
               Text.rich(
                 TextSpan(
                   children: [
-                    const TextSpan(text: 'proceed? '),
+                    TextSpan(text: '${words.confirmPrompt} '),
                     TextSpan(text: '[y/', style: theme.dimStyle),
                     TextSpan(text: 'N', style: theme.boldStyle),
                     TextSpan(text: ']', style: theme.dimStyle),
                   ],
                 ),
-                semanticsLabel: 'proceed? yes or no, no by default',
+                semanticsLabel: words.confirmPromptLabel,
               ),
             ],
           );
     final actions = [
       TermButton(
-        label: widget.cancelLabel,
+        label: termWords(context, widget.cancelLabel, 'no', (w) => w.noLabel),
         shortcut: typed == null
             ? const SingleActivator(LogicalKeyboardKey.keyN)
             : null,
@@ -480,6 +493,9 @@ class TermSheet extends StatelessWidget {
   final List<Widget> actions;
 
   /// The keys that work in it, cut into the bottom line.
+  ///
+  /// Left as `'esc close'`, it is the reader's words for it
+  /// (`TermLocalizations.closeKeyHint`): Arabic or German in an app in either.
   final String? footer;
 
   /// The most cells across it takes on a wide screen.
@@ -489,7 +505,10 @@ class TermSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     return _ModalPane(
       title: title,
-      footer: footer,
+      footer: switch (footer) {
+        final f? => termWords(context, f, 'esc close', (w) => w.closeKeyHint),
+        null => null,
+      },
       cols: cols,
       content: child,
       actions: actions,

@@ -14,6 +14,7 @@ import '../primitives/box.dart';
 import '../primitives/control.dart';
 import '../style.dart';
 import '../theme.dart';
+import '../localizations.dart';
 
 String _num(double v) {
   if (v == v.roundToDouble()) return v.toInt().toString();
@@ -83,11 +84,15 @@ class TermSparkline extends StatelessWidget {
     final own = TermStyleOf([style, theme.chartStyle], const {});
     final n = cols ?? values.length;
     final r = _range(values, min: 0);
+    final words = TermLocalizations.of(context);
     final said = values.isEmpty
-        ? 'no values'
-        : 'from ${_num(values.first)} to ${_num(values.last)}, '
-              'least ${_num(values.reduce(math.min))}, '
-              'most ${_num(values.reduce(math.max))}';
+        ? words.noValuesLabel
+        : words.sparklineLabel(
+            _num(values.first),
+            _num(values.last),
+            _num(values.reduce(math.min)),
+            _num(values.reduce(math.max)),
+          );
     return Semantics(
       label: [?semanticLabel, said].join(', '),
       excludeSemantics: true,

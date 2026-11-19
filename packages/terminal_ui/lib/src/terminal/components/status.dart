@@ -6,8 +6,10 @@ library;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
+import '../internal/words.dart';
 import '../style.dart';
 import '../theme.dart';
+import '../localizations.dart';
 import 'button.dart';
 import 'chips.dart';
 import 'feedback.dart';
@@ -37,6 +39,9 @@ class TermSkeleton extends StatelessWidget {
   final int? cols;
 
   /// What a screen reader hears.
+  ///
+  /// Left as `'loading'`, it is the reader's words for it
+  /// (`TermLocalizations.loadingLabel`): Arabic or German in an app in either.
   final String semanticLabel;
 
   /// Overrides, over the theme's [TermThemeData.skeletonStyle]: `fill`
@@ -51,7 +56,12 @@ class TermSkeleton extends StatelessWidget {
         TermStyleOf([style, theme.skeletonStyle], const {}).fill ??
         Color.alphaBlend(theme.rule.withValues(alpha: 0.35), theme.background);
     return Semantics(
-      label: semanticLabel,
+      label: termWords(
+        context,
+        semanticLabel,
+        'loading',
+        (w) => w.loadingLabel,
+      ),
       excludeSemantics: true,
       child: LayoutBuilder(
         builder: (context, c) {
@@ -234,6 +244,9 @@ class TermFileField extends StatelessWidget {
   final String? labelText;
 
   /// What it says with no file.
+  ///
+  /// Left as `'no file chosen'`, it is the reader's words for it
+  /// (`TermLocalizations.noFileLabel`): Arabic or German in an app in either.
   final String hintText;
 
   /// Help, dim, under the box.
@@ -263,14 +276,25 @@ class TermFileField extends StatelessWidget {
               crossAxisAlignment: WrapCrossAlignment.center,
               children: [
                 if (files.isEmpty)
-                  Text(hintText, style: theme.dimStyle)
+                  Text(
+                    termWords(
+                      context,
+                      hintText,
+                      'no file chosen',
+                      (w) => w.noFileLabel,
+                    ),
+                    style: theme.dimStyle,
+                  )
                 else
                   for (final (i, f) in files.indexed)
                     TermTag(
                       label: f,
                       onDeleted: onRemoved == null ? null : () => onRemoved!(i),
                     ),
-                TermButton(label: 'browse', onPressed: onBrowse),
+                TermButton(
+                  label: TermLocalizations.of(context).browseLabel,
+                  onPressed: onBrowse,
+                ),
               ],
             ),
           ),

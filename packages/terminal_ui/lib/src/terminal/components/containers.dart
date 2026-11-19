@@ -471,7 +471,7 @@ class TermDataTable<R> extends StatelessWidget {
               child: DesignPressable(
                 onPressed: controller.togglePage,
                 checked: page == DesignSelection.all,
-                semanticLabel: 'select page',
+                semanticLabel: TermLocalizations.of(context).selectPageLabel,
                 excludeSemantics: true,
                 mouseCursor: SystemMouseCursors.click,
                 builder: (context, states, _) => Padding(
@@ -999,12 +999,13 @@ class TermPullToRefresh extends StatelessWidget {
       restExtent: grid.lines(2),
       child: child,
       indicatorBuilder: (context, details) {
+        final say = TermLocalizations.of(context);
         final words = switch (details.mode) {
           DesignRefreshMode.inactive => null,
-          DesignRefreshMode.drag => ('↓', 'pull to refresh', theme.dim),
-          DesignRefreshMode.armed => ('↑', 'let go to refresh', ink),
-          DesignRefreshMode.refresh => (null, 'refreshing', ink),
-          DesignRefreshMode.done => ('✓', 'up to date', theme.success),
+          DesignRefreshMode.drag => ('↓', say.pullToRefreshLabel, theme.dim),
+          DesignRefreshMode.armed => ('↑', say.releaseToRefreshLabel, ink),
+          DesignRefreshMode.refresh => (null, say.refreshingLabel, ink),
+          DesignRefreshMode.done => ('✓', say.refreshedLabel, theme.success),
         };
         if (words == null) return const SizedBox.shrink();
         return SizedBox(

@@ -10,6 +10,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
+import '../internal/words.dart';
 import '../grid.dart';
 import '../internal/list_open.dart';
 import '../primitives/box.dart';
@@ -18,6 +19,7 @@ import '../primitives/menu.dart';
 import '../primitives/spring.dart';
 import '../style.dart';
 import '../theme.dart';
+import '../localizations.dart';
 import 'button.dart';
 import 'chips.dart';
 import 'feedback.dart';
@@ -101,7 +103,9 @@ class TermPasswordField extends StatelessWidget {
         toggled: !password.obscured,
         excludeSemantics: true,
         child: TermButton(
-          label: password.obscured ? 'show' : 'hide',
+          label: password.obscured
+              ? TermLocalizations.of(context).showLabel
+              : TermLocalizations.of(context).hideLabel,
           onPressed: enabled ? password.toggle : null,
         ),
       ),
@@ -173,6 +177,9 @@ class TermOtpField extends StatelessWidget {
   final bool obscureText;
 
   /// What a screen reader calls it.
+  ///
+  /// Left as `'one-time code'`, it is the reader's words for it
+  /// (`TermLocalizations.oneTimeCodeLabel`): Arabic or German in an app in either.
   final String semanticLabel;
 
   // The code grows with the reader's text to twice its size, and never
@@ -209,7 +216,12 @@ class TermOtpField extends StatelessWidget {
         enabled: enabled,
         isError: isError,
         obscureText: obscureText,
-        semanticLabel: semanticLabel,
+        semanticLabel: termWords(
+          context,
+          semanticLabel,
+          'one-time code',
+          (w) => w.oneTimeCodeLabel,
+        ),
         slotBuilder: (context, slot) {
           final focus = slot.active && slot.focused ? 1.0 : 0.0;
           final own = TermStyleOf(
@@ -538,12 +550,21 @@ class TermCombobox<T extends Object> extends StatelessWidget {
   final Duration? debounceDuration;
 
   /// What the list says while [search] runs.
+  ///
+  /// Left as `'searching'`, it is the reader's words for it
+  /// (`TermLocalizations.searchingLabel`): Arabic or German in an app in either.
   final String loadingText;
 
   /// What the list says when [search] fails.
+  ///
+  /// Left as `'search failed'`, it is the reader's words for it
+  /// (`TermLocalizations.searchFailedLabel`): Arabic or German in an app in either.
   final String errorText;
 
   /// The row under [errorText] that runs [search] again.
+  ///
+  /// Left as `'try again'`, it is the reader's words for it
+  /// (`TermLocalizations.retryLabel`): Arabic or German in an app in either.
   final String retryText;
 
   /// The words for an option; null: its `toString`.
@@ -573,6 +594,9 @@ class TermCombobox<T extends Object> extends StatelessWidget {
   final String? prompt;
 
   /// What the list says when nothing matches.
+  ///
+  /// Left as `'no match'`, it is the reader's words for it
+  /// (`TermLocalizations.noMatchLabel`): Arabic or German in an app in either.
   final String emptyText;
 
   /// The words typed; one given is the caller's to dispose.
@@ -614,9 +638,29 @@ class TermCombobox<T extends Object> extends StatelessWidget {
     options: options,
     search: search,
     debounceDuration: debounceDuration,
-    loadingBuilder: (context) => _Searching(text: loadingText),
-    errorBuilder: (context, error) =>
-        _SearchFailed(error: error, text: errorText, retryText: retryText),
+    loadingBuilder: (context) => _Searching(
+      text: termWords(
+        context,
+        loadingText,
+        'searching',
+        (w) => w.searchingLabel,
+      ),
+    ),
+    errorBuilder: (context, error) => _SearchFailed(
+      error: error,
+      text: termWords(
+        context,
+        errorText,
+        'search failed',
+        (w) => w.searchFailedLabel,
+      ),
+      retryText: termWords(
+        context,
+        retryText,
+        'try again',
+        (w) => w.retryLabel,
+      ),
+    ),
     displayStringForOption: show,
     onSelected: onSelected,
     value: value,
@@ -664,7 +708,10 @@ class TermCombobox<T extends Object> extends StatelessWidget {
     ),
     emptyBuilder: (context) => Padding(
       padding: EdgeInsetsDirectional.symmetric(horizontal: grid.cellWidth),
-      child: Text(emptyText, style: theme.dimStyle),
+      child: Text(
+        termWords(context, emptyText, 'no match', (w) => w.noMatchLabel),
+        style: theme.dimStyle,
+      ),
     ),
   );
 
@@ -811,12 +858,21 @@ class TermTagInput<T extends Object> extends StatelessWidget {
   final Duration? debounceDuration;
 
   /// What the list says while [search] runs.
+  ///
+  /// Left as `'searching'`, it is the reader's words for it
+  /// (`TermLocalizations.searchingLabel`): Arabic or German in an app in either.
   final String loadingText;
 
   /// What the list says when [search] fails.
+  ///
+  /// Left as `'search failed'`, it is the reader's words for it
+  /// (`TermLocalizations.searchFailedLabel`): Arabic or German in an app in either.
   final String errorText;
 
   /// The row under [errorText] that runs [search] again.
+  ///
+  /// Left as `'try again'`, it is the reader's words for it
+  /// (`TermLocalizations.retryLabel`): Arabic or German in an app in either.
   final String retryText;
 
   /// Overrides for the field, over the theme's
@@ -878,9 +934,29 @@ class TermTagInput<T extends Object> extends StatelessWidget {
     options: options,
     search: search,
     debounceDuration: debounceDuration,
-    loadingBuilder: (context) => _Searching(text: loadingText),
-    errorBuilder: (context, error) =>
-        _SearchFailed(error: error, text: errorText, retryText: retryText),
+    loadingBuilder: (context) => _Searching(
+      text: termWords(
+        context,
+        loadingText,
+        'searching',
+        (w) => w.searchingLabel,
+      ),
+    ),
+    errorBuilder: (context, error) => _SearchFailed(
+      error: error,
+      text: termWords(
+        context,
+        errorText,
+        'search failed',
+        (w) => w.searchFailedLabel,
+      ),
+      retryText: termWords(
+        context,
+        retryText,
+        'try again',
+        (w) => w.retryLabel,
+      ),
+    ),
     displayStringForOption: show,
     isOptionEnabled: isOptionEnabled,
     // Two marks, apart: the pointer's row takes the accent, the keys' adds

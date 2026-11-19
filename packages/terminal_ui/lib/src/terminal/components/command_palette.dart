@@ -13,10 +13,12 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
+import '../internal/words.dart';
 import '../primitives/box.dart';
 import '../primitives/control.dart';
 import '../style.dart';
 import '../theme.dart';
+import '../localizations.dart';
 import 'key_hint.dart';
 import 'pane.dart';
 
@@ -94,12 +96,21 @@ class TermCommandPalette extends StatefulWidget {
   final ValueChanged<DesignCommand>? onSelected;
 
   /// The dim words while nothing is typed.
+  ///
+  /// Left as `'type a command'`, it is the reader's words for it
+  /// (`TermLocalizations.commandHint`): Arabic or German in an app in either.
   final String hintText;
 
   /// What it says when nothing matches.
+  ///
+  /// Left as `'no command matches'`, it is the reader's words for it
+  /// (`TermLocalizations.noCommandLabel`): Arabic or German in an app in either.
   final String emptyText;
 
   /// Cut into the frame's top line.
+  ///
+  /// Left as `'commands'`, it is the reader's words for it
+  /// (`TermLocalizations.commandsLabel`): Arabic or German in an app in either.
   final String title;
 
   /// The most lines of results before they scroll.
@@ -185,9 +196,16 @@ class _TermCommandPaletteState extends State<TermCommandPalette> {
     final row = grid.ceil(Size(0, floor.height)).height;
 
     return TermPane(
-      title: widget.title,
+      title: termWords(
+        context,
+        widget.title,
+        'commands',
+        (w) => w.commandsLabel,
+      ),
       trailing: '$_matching/${widget.commands.length}',
-      footer: termKeysShown(context) ? '↑↓ move · ⏎ run · esc close' : null,
+      footer: termKeysShown(context)
+          ? TermLocalizations.of(context).paletteKeysHint
+          : null,
       focused: true,
       raised: widget.raised,
       padding: TermInset.zero,
@@ -198,8 +216,15 @@ class _TermCommandPaletteState extends State<TermCommandPalette> {
         focusNode: widget.focusNode,
         autofocus: widget.autofocus,
         maxHeight: lh * widget.maxLines,
-        fieldBuilder: (context, field) =>
-            _Field(field: field, hintText: widget.hintText),
+        fieldBuilder: (context, field) => _Field(
+          field: field,
+          hintText: termWords(
+            context,
+            widget.hintText,
+            'type a command',
+            (w) => w.commandHint,
+          ),
+        ),
         groupBuilder: (context, group) => SizedBox(
           height: lh,
           child: Padding(
@@ -222,7 +247,7 @@ class _TermCommandPaletteState extends State<TermCommandPalette> {
             child: Align(
               alignment: AlignmentDirectional.centerStart,
               child: Text(
-                '${widget.emptyText}: "${_text.text.trim()}"',
+                '${termWords(context, widget.emptyText, 'no command matches', (w) => w.noCommandLabel)}: "${_text.text.trim()}"',
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: theme.dimStyle,
@@ -490,7 +515,12 @@ Future<void> showTermCommandPalette({
                   scopesRoute: true,
                   namesRoute: true,
                   explicitChildNodes: true,
-                  label: title,
+                  label: termWords(
+                    context,
+                    title,
+                    'commands',
+                    (w) => w.commandsLabel,
+                  ),
                   child: _RoutePalette(
                     commands: commands,
                     onSelected: (command) =>
