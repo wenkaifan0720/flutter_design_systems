@@ -3,7 +3,9 @@ import 'localizations.dart';
 /// Formats currency, dates and times for display.
 ///
 /// Date and number formats are fixed. For translated words, pass
-/// [MinimalLocalizations.of] to the formatter's `words` argument.
+/// [MinimalLocalizations.of] to the formatter's `words` argument; a date or
+/// a time then takes the reader's digits too (Arabic's ٢٠ نوفمبر ٢٠٢٦ and
+/// ٧:٣٠ م).
 /// [relative] accepts both timestamps so the caller controls the reference time.
 ///
 /// ```dart
@@ -35,14 +37,16 @@ abstract final class MinimalFormat {
   static String date(
     DateTime d, {
     MinimalLocalizations words = const MinimalLocalizationsEn(),
-  }) => '${d.day} ${words.monthsShort[d.month - 1]} ${d.year}';
+  }) =>
+      '${words.digits(d.day)} ${words.monthsShort[d.month - 1]} '
+      '${words.digits(d.year)}';
 
   /// The day without the year: "28 Aug", for anything inside the current
   /// season of use, where the year is noise.
   static String dayMonth(
     DateTime d, {
     MinimalLocalizations words = const MinimalLocalizationsEn(),
-  }) => '${d.day} ${words.monthsShort[d.month - 1]}';
+  }) => '${words.digits(d.day)} ${words.monthsShort[d.month - 1]}';
 
   /// "Fri", or "Friday" with `short: false`. Short is the name's first
   /// three letters in a Latin script, which abbreviates that way; a name in
@@ -59,21 +63,29 @@ abstract final class MinimalFormat {
 
   /// Formats a time on the 24-hour [clock], for example `07:12`.
   /// Use [time12] for a 12-hour clock.
-  static String time(DateTime d) => clock(d);
+  static String time(
+    DateTime d, {
+    MinimalLocalizations words = const MinimalLocalizationsEn(),
+  }) => clock(d, words: words);
 
   /// The 12-hour clock: "9:41 AM". No leading zero on the hour — a clock
-  /// face, not a timestamp. The marks are [words]' (Arabic's "9:41 ص").
+  /// face, not a timestamp. The marks and digits are [words]' (Arabic's
+  /// "٩:٤١ ص").
   static String time12(
     DateTime d, {
     MinimalLocalizations words = const MinimalLocalizationsEn(),
   }) {
     final hour = d.hour % 12 == 0 ? 12 : d.hour % 12;
     final mark = d.hour < 12 ? words.anteMeridiem : words.postMeridiem;
-    return '$hour:${d.minute.toString().padLeft(2, '0')} $mark';
+    return '${words.digits(hour)}:${words.digits(d.minute, width: 2)} $mark';
   }
 
-  /// The 24-hour clock Minimal prints in mono: "07:00", "21:30".
-  static String clock(DateTime d) => '${_two(d.hour)}:${_two(d.minute)}';
+  /// The 24-hour clock Minimal prints in mono: "07:00", "21:30", in
+  /// [words]' digits (Arabic's "٢١:٣٠").
+  static String clock(
+    DateTime d, {
+    MinimalLocalizations words = const MinimalLocalizationsEn(),
+  }) => '${words.digits(d.hour, width: 2)}:${words.digits(d.minute, width: 2)}';
 
   /// The sortable day an audit trail or a property prints: "2026-06-02".
   static String isoDate(DateTime d) =>
@@ -84,7 +96,9 @@ abstract final class MinimalFormat {
   static String stamp(
     DateTime d, {
     MinimalLocalizations words = const MinimalLocalizationsEn(),
-  }) => '${_two(d.day)} ${words.monthsShort[d.month - 1]} ${clock(d)}';
+  }) =>
+      '${words.digits(d.day, width: 2)} ${words.monthsShort[d.month - 1]} '
+      '${clock(d, words: words)}';
 
   /// The human answer to "when": "Today", "Yesterday", "Tomorrow", "3 days
   /// ago", "In 2 days", and past a week the plain [dayMonth].

@@ -521,7 +521,8 @@ class _MinimalDateRangePickerState extends State<MinimalDateRangePicker> {
 
   String _range(MinimalLocalizations words, DesignDateRange r) {
     String day(DateTime d, {required bool year}) =>
-        '${d.day} ${words.monthsShort[d.month - 1]}${year ? ' ${d.year}' : ''}';
+        '${words.digits(d.day)} ${words.monthsShort[d.month - 1]}'
+        '${year ? ' ${words.digits(d.year)}' : ''}';
     final end = r.end ?? r.start;
     final sameYear = r.start.year == end.year;
     return '${day(r.start, year: !sameYear)} – ${day(end, year: true)}';

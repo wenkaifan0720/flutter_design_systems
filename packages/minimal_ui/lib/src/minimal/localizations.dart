@@ -227,10 +227,17 @@ abstract class MinimalLocalizations {
   /// A 12-hour clock's mark from noon ("PM").
   String get postMeridiem => 'PM';
 
+  /// [value] (zero or more) in the reader's digits, at least [width] of
+  /// them, with no separators: an hour (7), a minute (07), a calendar's day.
+  /// ASCII digits here; [MinimalLocalizationsEn] writes the shared words'
+  /// (Arabic's ٧ and ٠٧).
+  String digits(int value, {int width = 1}) =>
+      value.toString().padLeft(width, '0');
+
   /// The months, January first.
   List<String> get months;
 
-  /// The months in three letters, January first.
+  /// The months short, January first ("Nov").
   List<String> get monthsShort;
 
   /// The weekdays, Monday first.
@@ -556,34 +563,24 @@ class MinimalLocalizationsEn extends MinimalLocalizations {
   @override
   String get postMeridiem => shared.postMeridiemAbbreviation;
   @override
-  List<String> get months => const [
-    'January',
-    'February',
-    'March',
-    'April',
-    'May',
-    'June',
-    'July',
-    'August',
-    'September',
-    'October',
-    'November',
-    'December',
+  String digits(int value, {int width = 1}) => [
+    // Figure by figure, so a year or a long count takes no separator.
+    for (final c in super.digits(value, width: width).codeUnits)
+      c >= 0x30 && c <= 0x39
+          ? shared.formatDecimal(c - 0x30)
+          : String.fromCharCode(c),
+  ].join();
+  // The months in the shared words' language, as the weekdays below:
+  // "November" and "Nov" in English, نوفمبر in Arabic.
+  @override
+  List<String> get months => [
+    for (var month = 1; month <= 12; month++)
+      shared.formatMonth(DateTime(2026, month)),
   ];
   @override
-  List<String> get monthsShort => const [
-    'Jan',
-    'Feb',
-    'Mar',
-    'Apr',
-    'May',
-    'Jun',
-    'Jul',
-    'Aug',
-    'Sep',
-    'Oct',
-    'Nov',
-    'Dec',
+  List<String> get monthsShort => [
+    for (var month = 1; month <= 12; month++)
+      shared.formatShortMonth(DateTime(2026, month)),
   ];
   @override
   List<String> get weekdays => const [

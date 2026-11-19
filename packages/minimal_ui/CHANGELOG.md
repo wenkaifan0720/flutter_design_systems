@@ -1,3 +1,8 @@
+## 0.3.4
+
+- A time's figures and a calendar's days are in the reader's digits: the time picker's hours and minutes, the compact row's time, and the days of the month (Arabic-Indic in Arabic, so the row prints ٧:٣٠ م), as Material's time picker writes its hours. Previously they were ASCII digits in every locale. `MinimalLocalizations` gains `digits` (ASCII by default, so a subclass keeps compiling; `MinimalLocalizationsEn` writes the shared words' digits), and `MinimalFormat.clock` and `MinimalFormat.time` take `words`, as `time12` does. English and German read as before.
+- A date picker's compact row prints its date in the reader's months and digits (Arabic: ٢٠ نوفمبر ٢٠٢٦), as Material's date picker does. Previously it read "20 Nov 2026" in every language. `MinimalLocalizationsEn`'s `months` and `monthsShort` come from the shared words (`formatMonth`, `formatShortMonth`), as its weekdays already did, so they are unchanged in English, and an app's own `MinimalLocalizations` months still win. `MinimalFormat.date`, `dayMonth` and `stamp` write the digits of the `words` they are given, and `MinimalCalendar`'s range reads the same way. With no `words`, they print as before.
+
 ## 0.3.3
 
 - The time picker's column names and a 12-hour clock's AM and PM come from ui_core's `DesignLocalizations` (`timePickerHourLabel`, `timePickerMinuteLabel`, `anteMeridiemAbbreviation`, `postMeridiemAbbreviation`), in all 30 of its locales: a screen reader says "Stunde" in German, and Arabic prints 7:30 م. Previously they were "Hour", "Minute", "AM" and "PM" in English in every locale. `MinimalLocalizations` gains `anteMeridiem` and `postMeridiem` (English by default, so a subclass keeps compiling), and `MinimalFormat.time12` takes `words`.

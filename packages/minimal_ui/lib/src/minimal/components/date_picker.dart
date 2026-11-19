@@ -233,7 +233,10 @@ class _MinimalDatePickerState extends State<MinimalDatePicker> {
       MinimalFormat.date(widget.value, words: MinimalLocalizations.of(context));
 
   String _timeText() => widget.use24HourFormat
-      ? MinimalFormat.clock(widget.value)
+      ? MinimalFormat.clock(
+          widget.value,
+          words: MinimalLocalizations.of(context),
+        )
       : MinimalFormat.time12(
           widget.value,
           words: MinimalLocalizations.of(context),
@@ -654,7 +657,7 @@ class _MinimalDatePickerState extends State<MinimalDatePicker> {
                     today: isToday,
                     ink: ink,
                     figure: Text(
-                      '$n',
+                      words.digits(n),
                       style: (selected ? t.monoValue.medium : t.monoValue).c(
                         ink,
                       ),
@@ -770,9 +773,11 @@ class _MinimalDatePickerState extends State<MinimalDatePicker> {
       value.minute,
     }.toList()..sort();
     final words = MinimalLocalizations.of(context);
+    // The figures in the reader's digits (Arabic-Indic in Arabic), as
+    // Material's time picker sets its hours.
     String hourText(int h) => widget.use24HourFormat
-        ? h.toString().padLeft(2, '0')
-        : '${h % 12 == 0 ? 12 : h % 12} '
+        ? words.digits(h, width: 2)
+        : '${words.digits(h % 12 == 0 ? 12 : h % 12)} '
               '${h < 12 ? words.anteMeridiem : words.postMeridiem}';
     DateTime at(int hour, int minute) => value.isUtc
         ? DateTime.utc(value.year, value.month, value.day, hour, minute)
@@ -799,7 +804,7 @@ class _MinimalDatePickerState extends State<MinimalDatePicker> {
             label: words.minute,
             values: minutes,
             selected: value.minute,
-            text: (m) => m.toString().padLeft(2, '0'),
+            text: (m) => words.digits(m, width: 2),
             onChanged: widget.onChanged == null
                 ? null
                 : (m) => _change(at(value.hour, m)),
