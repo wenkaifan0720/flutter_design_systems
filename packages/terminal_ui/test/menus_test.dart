@@ -1,8 +1,11 @@
 // An open menu (a menu, a split button's, a menubar's) has one current row:
 // the keys' row, which the pointer moves as it moves onto a row, so the
-// pointer's row and the keys' never read as two. Opened by the pointer it
-// lights no row until the pointer moves onto one or a key is pressed (the
-// first Down shows the first row); opened by the keys it lights the first.
+// pointer's row and the keys' never read as two. While the pointer moved it
+// last, the row has the pointer's mark (its words, or a chosen row's bar,
+// in the accent), lighter than the keys' cursor; the first key brings the
+// cursor. Opened by the pointer it lights no row until the pointer moves
+// onto one or a key is pressed (the first Down shows the first row); opened
+// by the keys it lights the first.
 import 'package:flutter/gestures.dart' show PointerDeviceKind;
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
@@ -39,6 +42,29 @@ List<String> _lit() => [
         .isNotEmpty)
       (e.widget as TermMenuRow).label,
 ];
+
+// The rows the pointer marks: no cursor, their words or their bar in the
+// accent.
+List<String> _pointed(WidgetTester tester) {
+  final accent = TermThemeData.dark().accent;
+  return [
+    for (final e in find.byType(TermMenuRow).evaluate())
+      if (!_lit().contains((e.widget as TermMenuRow).label) &&
+          tester
+              .widgetList(
+                find.descendant(
+                  of: find.byElementPredicate((x) => identical(x, e)),
+                  matching: find.byWidgetPredicate(
+                    (w) =>
+                        (w is Text && w.style?.color == accent) ||
+                        (w is ColoredBox && w.color == accent),
+                  ),
+                ),
+              )
+              .isNotEmpty)
+        (e.widget as TermMenuRow).label,
+  ];
+}
 
 Future<void> _settle(WidgetTester tester) async {
   await tester.pump();
@@ -142,13 +168,16 @@ void main() {
         await _click(tester, mouse, m.opener);
         await mouse.moveTo(tester.getCenter(_row(m.rows[1])));
         await _settle(tester);
-        expect(_lit(), [m.rows[1]]);
+        expect(_lit(), isEmpty);
+        expect(_pointed(tester), [m.rows[1]]);
         // The pointer stays on the second row: one row current, the keys'.
         await _key(tester, LogicalKeyboardKey.arrowDown);
         expect(_lit(), [m.rows[2]]);
+        expect(_pointed(tester), isEmpty);
         await mouse.moveTo(tester.getCenter(_row(m.rows[0])));
         await _settle(tester);
-        expect(_lit(), [m.rows[0]]);
+        expect(_lit(), isEmpty);
+        expect(_pointed(tester), [m.rows[0]]);
       }, variant: _desk);
 
       testWidgets('opened by a finger, a pointer moving onto a row shows it', (
@@ -161,7 +190,8 @@ void main() {
         final mouse = await _mouse(tester);
         await mouse.moveTo(tester.getCenter(_row(m.rows[2])));
         await _settle(tester);
-        expect(_lit(), [m.rows[2]]);
+        expect(_lit(), isEmpty);
+        expect(_pointed(tester), [m.rows[2]]);
       }, variant: _desk);
 
       testWidgets('opened by the pointer, the first Down shows the first; Up '

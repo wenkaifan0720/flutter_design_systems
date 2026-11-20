@@ -1,12 +1,15 @@
 // Terminal's keyboard focus is the cursor: on every part the keys reach,
 // an accent block over the part with its words and edge glyphs cut out of
-// it (a chosen or filled part goes hollow; a field doubles its own frame).
+// it (a chosen or filled part goes hollow; a field shows its caret and its
+// frame's line heavy in the accent).
 // For each part, on each theme by night and by day, at 100% and 200% text,
 // left to right and right to left:
 //
 // - the focus a Tab brings changes, at 3:1 or more against the part at
 //   rest, at least as many pixels as a 2 px line round the part would
 //   cover (WCAG 2.4.13's area), and the cursor's words stay legible on it;
+//   a field's, beside its caret, a 1 px line's, as Material's outline adds
+//   going from 1 to 2 px;
 // - a mouse click on the part leaves no focus showing: what is drawn after
 //   the click is what is drawn once the focus is taken away.
 //
@@ -113,6 +116,22 @@ List<_Part> _parts(List<VoidCallback> disposers) {
         groupValue: 'staging',
         label: 'production',
         onChanged: (_) {},
+      ),
+    ),
+    // Radios grouped at their owner: one Tab stop, on the chosen one.
+    part(
+      'radio-group',
+      () => DesignRadioGroup<String>(
+        options: const ['staging', 'production'],
+        value: 'production',
+        onChanged: (_) {},
+        itemBuilder: (context, v, node, select) => TermRadio<String>(
+          value: v,
+          groupValue: 'production',
+          label: v,
+          focusNode: node,
+          onChanged: select == null ? null : (_) => select(),
+        ),
       ),
     ),
     part(
@@ -472,7 +491,8 @@ void main() {
             final at = node?.rect ?? Rect.zero;
             final (keysImage, keys) = await _picture(t);
             final shown = _compare(rest, keys);
-            final need = (4 * (at.width + at.height)).round();
+            final need = ((part.field ? 2 : 4) * (at.width + at.height))
+                .round();
 
             // Away from the keys: a click on the stop the keys reached.
             node?.unfocus();
@@ -515,7 +535,7 @@ void main() {
             if (shown.strong < need) {
               faults.add(
                 '${part.name}: the keys change ${shown.strong} px at 3:1, '
-                'a 2 px line round it is $need',
+                '${part.field ? 'a 1' : 'a 2'} px line round it is $need',
               );
             }
             if (!part.field && left.changed != 0) {

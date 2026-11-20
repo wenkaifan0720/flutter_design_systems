@@ -18,6 +18,10 @@ import 'package:flutter/widgets.dart';
 /// row, Up the last, a letter the row it starts, and Return or Space choose
 /// nothing unseen. A menu the keys opened shows its first row at once.
 ///
+/// While the pointer moved the current row last, the row shows the
+/// pointer's mark (its words in the accent), lighter than the keys' cursor;
+/// the first key puts the cursor on it.
+///
 /// It sits between the menu's rows and whatever walks them by letters, so a
 /// letter shows the row it jumps to.
 ///
@@ -49,10 +53,22 @@ class TermMenuMarks extends StatefulWidget {
   static bool? shownOf(BuildContext context) =>
       context.dependOnInheritedWidgetOfExactType<_Marks>()?.shown;
 
-  /// Shows the keys' row in the menu round [context], as the pointer moves
-  /// onto a row.
+  /// Whether the pointer moved the current row of the menu round [context]
+  /// last (no key since); null outside a menu.
+  static bool? pointerLedOf(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<_Marks>()?.pointerLed;
+
+  /// Shows the keys' row in the menu round [context], cursor and all, as a
+  /// key does. A row the pointer moves onto calls [point] instead.
   static void show(BuildContext context) =>
       context.getInheritedWidgetOfExactType<_Marks>()?.state._show();
+
+  /// Shows the current row in the menu round [context] as the pointer's, as
+  /// the pointer moves onto a row.
+  static void point(BuildContext context) => context
+      .getInheritedWidgetOfExactType<_Marks>()
+      ?.state
+      ._show(pointer: true);
 
   @override
   State<TermMenuMarks> createState() => _TermMenuMarksState();
@@ -60,6 +76,7 @@ class TermMenuMarks extends StatefulWidget {
 
 class _TermMenuMarksState extends State<TermMenuMarks> {
   late bool _shown = !_LastInput.pointerLast;
+  bool _pointerLed = false;
 
   @override
   void initState() {
@@ -73,8 +90,12 @@ class _TermMenuMarksState extends State<TermMenuMarks> {
     super.dispose();
   }
 
-  void _show() {
-    if (!_shown && mounted) setState(() => _shown = true);
+  void _show({bool pointer = false}) {
+    if (!mounted || (_shown && _pointerLed == pointer)) return;
+    setState(() {
+      _shown = true;
+      _pointerLed = pointer;
+    });
   }
 
   // A key a row under it takes itself (a calendar's arrows), which never
@@ -101,22 +122,30 @@ class _TermMenuMarksState extends State<TermMenuMarks> {
     skipTraversal: true,
     includeSemantics: false,
     onKeyEvent: _key,
-    child: _Marks(shown: _shown, state: this, child: widget.child),
+    child: _Marks(
+      shown: _shown,
+      pointerLed: _pointerLed,
+      state: this,
+      child: widget.child,
+    ),
   );
 }
 
 class _Marks extends InheritedWidget {
   const _Marks({
     required this.shown,
+    required this.pointerLed,
     required this.state,
     required super.child,
   });
 
   final bool shown;
+  final bool pointerLed;
   final _TermMenuMarksState state;
 
   @override
-  bool updateShouldNotify(_Marks old) => shown != old.shown;
+  bool updateShouldNotify(_Marks old) =>
+      shown != old.shown || pointerLed != old.pointerLed;
 }
 
 /// Whether a pointer's press came after the last key: the pointer opened

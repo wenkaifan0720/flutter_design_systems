@@ -4,7 +4,6 @@
 // left.
 import 'dart:typed_data';
 
-import 'package:flutter/gestures.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -93,10 +92,9 @@ void main() {
         final (rest, width) = await _pixels(t);
         final ground = _at(rest, width, top);
 
-        final mouse = await t.createGesture(kind: PointerDeviceKind.mouse);
-        await mouse.addPointer(location: Offset.zero);
-        addTearDown(mouse.removePointer);
-        await mouse.down(t.getCenter(words));
+        // A finger's press, so the press alone shows: a pointer over the tab
+        // adds its own mark (the words in the accent).
+        final finger = await t.startGesture(t.getCenter(words));
         // A frame to take the press, one to start its spring, one for the
         // spring to come to rest.
         await t.pump();
@@ -117,7 +115,7 @@ void main() {
         final ink = DefaultTextStyle.of(t.element(words)).style.merge(style);
         expect(ink.color, theme.foreground);
 
-        await mouse.up();
+        await finger.up();
         await t.pumpAndSettle();
       });
     }

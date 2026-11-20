@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
+import '../internal/pointer.dart';
 import '../primitives/box.dart';
 import '../primitives/control.dart';
 import '../style.dart';
@@ -149,7 +150,8 @@ class TermTag extends StatelessWidget {
 /// A chip that filters: [label] in round brackets, `( failed )`, chosen in
 /// inverse video with a `✓` in the cells kept for it, so choosing moves
 /// nothing. The keyboard's focus is the cursor over it, its brackets cut
-/// out (on a chosen chip, hollow).
+/// out (on a chosen chip, hollow); under the pointer the brackets take the
+/// accent.
 ///
 /// ```dart
 /// TermChip(
@@ -218,7 +220,7 @@ class TermChip extends StatelessWidget {
                 grid: grid,
                 color: !enabled
                     ? theme.rule.withValues(alpha: 0.6)
-                    : own.edge ?? theme.rule,
+                    : own.edge ?? termHoverInk(theme, theme.rule, states),
                 stroke: termStroke(theme, grid),
                 shape: TermBracketShape.round,
                 fill: enabled ? own.fill ?? rest : theme.rule,

@@ -83,7 +83,7 @@ void main() {
       return tester.widget<EditableText>(find.byType(EditableText));
     }
 
-    // The caret is the field's own block either way (fresh_eyes_test has
+    // The caret is the field's own block either way (gallery_details_test has
     // its place and its blink); Flutter's own is never shown.
     for (final still in [false, true]) {
       expect((await field(still: still)).showCursor, isFalse);

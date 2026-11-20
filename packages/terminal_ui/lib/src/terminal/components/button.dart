@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
+import '../internal/pointer.dart';
 import '../primitives/box.dart';
 import '../primitives/control.dart';
 import '../style.dart';
@@ -20,8 +21,9 @@ import 'key_hint.dart';
 /// A press fills the cells between the brackets in inverse video; the
 /// keyboard's focus is the cursor, a block of the accent over every cell
 /// with the brackets cut out of it (on a filled button, hollow: the bracket
-/// cells in the accent, the fill cleared); under the pointer nothing
-/// changes but the mouse cursor. [onPressed] null disables it.
+/// cells in the accent, the fill cleared); under the pointer its brackets
+/// take the accent (a filled one's, the words' ink), the rest as it was.
+/// [onPressed] null disables it.
 ///
 /// [TermButton.filled] is a screen's one primary action, filled in the
 /// accent; [isDestructiveAction] draws either in the danger ink.
@@ -152,7 +154,12 @@ class TermButton extends StatelessWidget {
                   focus,
                   hollow: true,
                 );
-                brackets = base;
+                brackets = termHoverInk(
+                  theme,
+                  base,
+                  states,
+                  to: theme.foreground,
+                );
               } else {
                 // The cursor over the rest: a block of the accent, the
                 // brackets taken in and cut out of it.
@@ -167,7 +174,12 @@ class TermButton extends StatelessWidget {
                   )!,
                   focus,
                 );
-                brackets = theme.rule;
+                brackets = termHoverInk(
+                  theme,
+                  theme.rule,
+                  states,
+                  to: isDestructiveAction ? theme.danger : null,
+                );
               }
               final face = CustomPaint(
                 painter: TermBracketPainter(
@@ -245,7 +257,8 @@ class TermButton extends StatelessWidget {
 }
 
 /// A one-glyph button: [glyph] in brackets, `[?]`, three cells wide,
-/// read to a screen reader as [semanticLabel].
+/// read to a screen reader as [semanticLabel]. Under the pointer its
+/// brackets take the accent.
 ///
 /// ```dart
 /// TermIconButton(glyph: '?', semanticLabel: 'Help', onPressed: () {})
@@ -328,7 +341,7 @@ class TermIconButton extends StatelessWidget {
                       own.edge ??
                       (disabled
                           ? theme.rule.withValues(alpha: 0.6)
-                          : theme.rule),
+                          : termHoverInk(theme, theme.rule, states)),
                   stroke: stroke,
                   fill: own.fill ?? (disabled ? null : theme.foreground),
                   fillAmount: amount,

@@ -67,11 +67,13 @@ class TermMenuRow extends StatelessWidget {
     // Where the keys or the pointer are: the accent, never a bar of its own;
     // the keys add the cursor, so the pointer's row and the keys' never read
     // as one mark. Under the pointer, the chosen row's bar takes the accent.
-    // In a menu the pointer moves the keys' row, so the one current row is
-    // the keys', once shown.
+    // In a menu the pointer moves the keys' row, so there is one current
+    // row, once shown; while the pointer moved it last it has the pointer's
+    // mark, and a key puts the cursor on it.
     // The pointer's row has the focus too, though a finger's press (it
     // opened the menu) left the focus unshown.
     final marks = TermMenuMarks.shownOf(context);
+    final pointerLed = TermMenuMarks.pointerLedOf(context) ?? false;
     final focus = marks == null ? null : Focus.maybeOf(context);
     final keys =
         !disabled &&
@@ -92,7 +94,7 @@ class TermMenuRow extends StatelessWidget {
     // leave two rows lit as it moves, and a menu has one current row.
     final row = Builder(
       builder: (context) {
-        final cursor = keys && !pressed ? 1.0 : 0.0;
+        final cursor = keys && !pressed && !pointerLed ? 1.0 : 0.0;
         final hollow = chosen;
         Color onCursor(Color rest) =>
             termCursorInk(theme, rest, cursor, hollow: hollow);
@@ -103,7 +105,7 @@ class TermMenuRow extends StatelessWidget {
             : onCursor(here && !danger ? theme.accent : ink);
         final bar = !lit
             ? const Color(0x00000000)
-            : pointer && !danger && !keys
+            : pointer && !danger && (!keys || pointerLed)
             ? theme.accent
             : own.fill ?? ink;
         return ColoredBox(
@@ -124,7 +126,7 @@ class TermMenuRow extends StatelessWidget {
         if (node != null && node is! FocusScopeNode && !node.hasPrimaryFocus) {
           node.requestFocus();
         }
-        TermMenuMarks.show(context);
+        TermMenuMarks.point(context);
       },
       child: row,
     );

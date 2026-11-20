@@ -241,11 +241,12 @@ class TermOtpField extends StatelessWidget {
               ? (slot.obscured ? '*' : slot.character)
               : '';
           return CustomPaint(
+            // The cell the keys are in: its brackets heavy in the accent,
+            // its caret the block; one line round it, as round the rest.
             painter: TermBracketPainter(
               grid: grid,
               color: edge,
-              stroke: stroke,
-              doubled: focus,
+              stroke: stroke * (1 + focus),
             ),
             child: SizedBox(
               width: grid.cols(3),
@@ -998,7 +999,7 @@ class TermTagInput<T extends Object> extends StatelessWidget {
     ),
     // One frame round the tags and the words typed after them, the label
     // cut into its top line and the help into its bottom, as a field's;
-    // doubled while the words have the keyboard.
+    // heavy in the accent while the words have the keyboard.
     layoutBuilder: (context, tags, field) => _TagFrame(
       label: labelText,
       helper: helperText,
@@ -1033,7 +1034,7 @@ class TermTagInput<T extends Object> extends StatelessWidget {
 
 /// A tag input's frame: a field's three-line frame grown round its tags and
 /// its words, the label cut into the top line and the help into the bottom
-/// (under the frame when it does not fit there), the line doubling in the
+/// (under the frame when it does not fit there), the line heavy in the
 /// accent while anything in it has the keyboard.
 class _TagFrame extends StatefulWidget {
   const _TagFrame({
@@ -1101,7 +1102,6 @@ class _TagFrameState extends State<_TagFrame> {
           final frame = TermSpring(
             target: _focused ? 1 : 0,
             token: TermMotion.move,
-            spatial: true,
             focus: true,
             builder: (context, t, child) => CustomPaint(
               painter: TermFramePainter(
@@ -1109,8 +1109,7 @@ class _TagFrameState extends State<_TagFrame> {
                 color:
                     widget.edge ??
                     Color.lerp(theme.rule, theme.accent, t.clamp(0, 1))!,
-                stroke: termStroke(theme, grid),
-                doubled: t,
+                stroke: termStroke(theme, grid) * (1 + t.clamp(0.0, 1.0)),
                 fill: TermListOpen.of(context) ? theme.surface : null,
                 topGaps: [if (label != null) gap(label)],
                 bottomGaps: [if (inLine != null) gap(inLine)],

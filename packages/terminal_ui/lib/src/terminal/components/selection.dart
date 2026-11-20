@@ -8,6 +8,7 @@ import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
 import '../grid.dart';
+import '../internal/pointer.dart';
 import '../primitives/box.dart';
 import '../primitives/control.dart';
 import '../primitives/spring.dart';
@@ -16,6 +17,12 @@ import '../theme.dart';
 
 /// The face of a choice: three cells (bracket, mark, bracket) then, with a
 /// label, a space and the words. Shared by the checkbox and the radio.
+///
+/// An error is a `✗` in the danger ink a cell after the words (after the
+/// box, without them), and the brackets in the danger ink while the choice
+/// can still be changed. The `✗` stays when the choice is disabled, its
+/// brackets and words gone dim, so a locked box still says what is wrong
+/// with it. A screen reader hears the error from the control's state.
 class _ChoiceFace extends StatelessWidget {
   const _ChoiceFace({
     required this.shape,
@@ -49,7 +56,7 @@ class _ChoiceFace extends StatelessWidget {
             ? theme.rule.withValues(alpha: 0.6)
             : error
             ? theme.danger
-            : theme.rule;
+            : termHoverInk(theme, theme.rule, states);
         final cursor = disabled ? 0.0 : focus;
         final ink = disabled
             ? theme.rule
@@ -76,7 +83,24 @@ class _ChoiceFace extends StatelessWidget {
             child: Center(child: mark(theme, grid, ink)),
           ),
         );
-        if (label == null) return box;
+        // Ordinary cells after the rest, outside the cursor: the danger ink
+        // on the ground reads under any state.
+        final wrong = <Widget>[
+          if (error) ...[
+            SizedBox(width: grid.cellWidth),
+            ExcludeSemantics(
+              child: Text(
+                '✗',
+                style: theme.textStyle.copyWith(color: theme.danger),
+              ),
+            ),
+          ],
+        ];
+        if (label == null) {
+          return wrong.isEmpty
+              ? box
+              : Row(mainAxisSize: MainAxisSize.min, children: [box, ...wrong]);
+        }
         // The cursor takes the whole line, the label with the box, as a
         // terminal's selection does.
         return Row(
@@ -112,6 +136,7 @@ class _ChoiceFace extends StatelessWidget {
                 ),
               ),
             ),
+            ...wrong,
           ],
         );
       },
@@ -125,8 +150,8 @@ class _ChoiceFace extends StatelessWidget {
 /// [value] true draws `x` in the accent, false nothing, null (with
 /// [tristate]) `-`. The mark springs in and out; a press fills the box in
 /// inverse video; the keyboard's focus is the cursor over the line, the
-/// box's brackets and mark and the label cut out of it. [onChanged] null
-/// disables it.
+/// box's brackets and mark and the label cut out of it; under the pointer
+/// the brackets take the accent. [onChanged] null disables it.
 ///
 /// ```dart
 /// TermCheckbox(
@@ -169,7 +194,8 @@ class TermCheckbox extends StatelessWidget {
   /// Whether null is a value (mixed).
   final bool tristate;
 
-  /// Whether the brackets show the danger ink (a required box left empty).
+  /// Whether it shows an error (a required box left empty): a `✗` in the
+  /// danger ink after it, and its brackets in that ink while it is enabled.
   final bool isError;
 
   /// {@macro term.focusNode}
@@ -255,7 +281,8 @@ class TermCheckbox extends StatelessWidget {
 }
 
 /// A radio button, `(•)`, one of a group sharing [groupValue], with its
-/// [label] after it on the same line when given.
+/// [label] after it on the same line when given. Under the pointer its
+/// brackets take the accent; the keyboard's focus is the cursor.
 ///
 /// ```dart
 /// TermRadio<String>(
@@ -382,7 +409,7 @@ class _Dot extends CustomPainter {
 /// A switch, `[■ ]` off and `[ ■]` on: a block that slides between the two
 /// cells inside its brackets, dim at the start when off and in the accent at
 /// the end when on, so it reads without colour. With a [label], the words
-/// follow it on the line.
+/// follow it on the line. Under the pointer its brackets take the accent.
 ///
 /// ```dart
 /// TermSwitch(
@@ -474,7 +501,7 @@ class TermSwitch extends StatelessWidget {
                         own.edge ??
                         (disabled
                             ? theme.rule.withValues(alpha: 0.6)
-                            : theme.rule),
+                            : termHoverInk(theme, theme.rule, states)),
                     stroke: stroke,
                     cursor: cursor,
                     cursorColor: theme.accent,

@@ -17,8 +17,11 @@ import 'spring.dart';
 
 /// Frames a field's [child] (its one line) with [parts]' label and note.
 ///
-/// The line doubles in the accent while [active]; it draws in the danger
-/// ink while there is an error. While the list the field opens is up, the
+/// The line goes heavy in the accent while [active], twice its stroke (as
+/// Material's outline goes from 1 to 2 px), and stays one line: the input's
+/// own cursor says where the keys are, and a doubled line is a pane's, for
+/// the pane the keys are in. It draws in the danger ink while there is an
+/// error. While the list the field opens is up, the
 /// field stands on the list's raised ground, its whole cells, so the two
 /// read as one block. A note too long for the bottom line drops under the
 /// frame, wrapped.
@@ -112,14 +115,12 @@ class TermFieldFrame extends StatelessWidget {
         final frame = TermSpring(
           target: active ? 1 : 0,
           token: TermMotion.move,
-          spatial: true,
           focus: true,
           builder: (context, t, child) => CustomPaint(
             painter: TermFramePainter(
               grid: grid,
               color: _edgeColor(theme, parts, edge, t),
-              stroke: stroke,
-              doubled: t,
+              stroke: stroke * (1 + t.clamp(0.0, 1.0)),
               fill: raised ? theme.surface : null,
               topGaps: [if (label != null) gap(label)],
               bottomGaps: [if (noteFits) gap(note)],
@@ -214,7 +215,7 @@ Color _edgeColor(
 /// [labelCols] gives the label a width in cells, so that the brackets of
 /// the fields above and below line up; without it the label takes its own
 /// width. When the line has fewer than twelve cells left for the value, the
-/// label stands on a line of its own above it. The brackets double in the
+/// label stands on a line of its own above it. The brackets go heavy in the
 /// accent while [active], and stand on the list's raised ground while the
 /// list the field opens is up; the line is as tall as the tap target's
 /// floor. [control] puts the field's control round the brackets alone (a
@@ -313,14 +314,12 @@ class TermFieldLine extends StatelessWidget {
         Widget brackets(bool active, Color? edge) => TermSpring(
           target: active ? 1 : 0,
           token: TermMotion.move,
-          spatial: true,
           focus: true,
           builder: (context, t, child) => CustomPaint(
             painter: TermBracketPainter(
               grid: grid,
               color: _edgeColor(theme, parts, edge, t),
-              stroke: stroke,
-              doubled: t,
+              stroke: stroke * (1 + t.clamp(0.0, 1.0)),
             ),
             child: child,
           ),

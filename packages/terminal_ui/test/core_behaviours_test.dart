@@ -1,4 +1,4 @@
-// What Terminal's parts do on ui_core 0.3.0's behaviours: a dialog keeps
+// What Terminal's parts do on ui_core's behaviours: a dialog keeps
 // the focus and gives it back, a tab bar and a shell's places are one stop,
 // F6 crosses from the places to the page, a context menu opens where it is
 // asked for, a search says what it is doing, a rating takes digits and a

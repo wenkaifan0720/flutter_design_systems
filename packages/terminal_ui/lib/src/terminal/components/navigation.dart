@@ -9,6 +9,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
+import '../internal/pointer.dart';
 import '../internal/shell_face.dart';
 import '../primitives/control.dart';
 import '../primitives/spring.dart';
@@ -55,6 +56,7 @@ class _Inverse extends StatelessWidget {
     this.press = 0,
     this.cursor = 0,
     this.chosen = false,
+    this.hovered = false,
     this.fill,
     this.ink,
   });
@@ -67,11 +69,15 @@ class _Inverse extends StatelessWidget {
   final Color? fill;
   final Color? ink;
 
+  /// Whether a pointer is over it: the words of one not chosen take the
+  /// accent, its cells as they were.
+  final bool hovered;
+
   @override
   Widget build(BuildContext context) {
     final theme = TermTheme.of(context);
     final ground = fill ?? theme.foreground;
-    final words = ink ?? theme.foreground;
+    final words = ink ?? (hovered && !chosen ? theme.accent : theme.foreground);
     return CustomPaint(
       painter: _FillFromFoot(
         // The press: the words' ink at 30% over the whole cell, under the
@@ -131,7 +137,8 @@ class _FillFromFoot extends CustomPainter {
 
 /// A tab bar: each tab its number and its label, `1 steps  2 log  3 env`,
 /// the chosen one in inverse video. The number is the key that picks it
-/// (with Alt), and the app binds it.
+/// (with Alt), and the app binds it. Under the pointer a tab's words take
+/// the accent; the cursor is the keyboard's alone.
 ///
 /// The behaviour is ui_core's [DesignTabBar]: the bar is one tab stop, on
 /// the chosen tab, the arrows move along it (mirrored right to left), Home
@@ -267,6 +274,7 @@ class _TermTabBarState extends State<TermTabBar> with TickerProviderStateMixin {
                   press: press,
                   cursor: focus,
                   chosen: i == _controller.index,
+                  hovered: termHovered(states),
                   fill: own.fill,
                   ink: own.foreground,
                   child: SizedBox(

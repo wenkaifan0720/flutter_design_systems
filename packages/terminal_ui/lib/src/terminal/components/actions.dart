@@ -6,6 +6,7 @@ library;
 import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
@@ -61,8 +62,12 @@ class TermButtonGroup extends StatelessWidget {
 
 /// Toggles in one pair of brackets, `[ list │ tiles │ log ]`, each chosen
 /// one in inverse video: one choice ([multiSelectionEnabled] false, a
-/// segmented control) or each on its own (a toggle group). The arrows move
-/// along it; Space and Return press.
+/// segmented control) or each on its own (a toggle group).
+///
+/// One choice that is never empty is a group of radios: one Tab stop, on
+/// the chosen one; all four arrows move and choose, round the ends and past
+/// one turned off; Home and End choose the first and the last. Otherwise
+/// the arrows move along it, and Space and Return press.
 ///
 /// ```dart
 /// TermToggleGroup<String>(
@@ -111,7 +116,8 @@ class TermToggleGroup<T> extends StatelessWidget {
   /// Whether the last chosen one may be pressed off.
   final bool emptySelectionAllowed;
 
-  /// Whether the arrows choose as they move (a segmented control).
+  /// Whether the arrows choose as they move, in a group whose choice may
+  /// be emptied. One choice that may not always chooses as they move.
   final bool selectFollowsFocus;
 
   /// Whether an option can be pressed; null: every one.
@@ -125,6 +131,90 @@ class TermToggleGroup<T> extends StatelessWidget {
     final theme = TermTheme.of(context);
     final grid = context.termGrid;
     final floor = grid.ceil(DesignTapTargets.of(context).floorOn());
+    final minimumSize = Size(grid.cols(3), floor.height);
+    Widget face(BuildContext context, T value, Set<WidgetState> states) {
+      final own = TermStyleOf([style, theme.toggleGroupStyle], states);
+      return TermStateSprings(
+        pressed: states.contains(WidgetState.pressed),
+        focused: states.contains(WidgetState.focused),
+        builder: (context, press, focus) => TermCellFace(
+          label: labelOf(value),
+          on: states.contains(WidgetState.selected),
+          enabled: !states.contains(WidgetState.disabled),
+          press: press,
+          focus: focus,
+          fill: own.fill,
+          foreground: own.foreground,
+        ),
+      );
+    }
+
+    Widget layout(BuildContext context, List<Widget> items) => LayoutBuilder(
+      builder: (context, constraints) {
+        final edge = TermStyleOf([
+          style,
+          theme.toggleGroupStyle,
+        ], const {}).edge;
+        // The words measured as they are set, not counted in cells: a
+        // script the face lacks (Arabic, say) falls back to another face
+        // whose letters are not the grid's.
+        final scaler = MediaQuery.textScalerOf(context);
+        final direction = Directionality.of(context);
+        double measure(String text) {
+          final painter = TextPainter(
+            text: TextSpan(text: text, style: theme.textStyle),
+            textScaler: scaler,
+            textDirection: direction,
+            maxLines: 1,
+          )..layout();
+          final width = painter.width;
+          painter.dispose();
+          return width;
+        }
+
+        final labels = options.fold<double>(
+          0,
+          (sum, option) =>
+              sum +
+              math.max(grid.cols(3), measure(labelOf(option)) + grid.cols(2)),
+        );
+        final width =
+            labels +
+            grid.cols(2) +
+            measure('│') * math.max(0, items.length - 1);
+        if (width > constraints.maxWidth) {
+          return Wrap(
+            spacing: grid.cellWidth,
+            children: [
+              for (final item in items)
+                TermBracketBand(edge: edge, child: item),
+            ],
+          );
+        }
+        return TermBracketBand(
+          edge: edge,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              for (final (i, item) in items.indexed) ...[
+                if (i > 0)
+                  ExcludeSemantics(
+                    child: Text(
+                      '│',
+                      style: theme.textStyle.copyWith(color: theme.rule),
+                    ),
+                  ),
+                item,
+              ],
+            ],
+          ),
+        );
+      },
+    );
+
+    if (!multiSelectionEnabled && !emptySelectionAllowed) {
+      return _radios(context, minimumSize, face, layout);
+    }
     return DesignToggleGroup<T>(
       options: options,
       selected: selected,
@@ -135,82 +225,72 @@ class TermToggleGroup<T> extends StatelessWidget {
       isEnabled: isEnabled,
       labelOf: labelOf,
       semanticLabel: semanticLabel,
-      minimumSize: Size(grid.cols(3), floor.height),
-      itemBuilder: (context, value, states) {
-        final own = TermStyleOf([style, theme.toggleGroupStyle], states);
-        return TermStateSprings(
-          pressed: states.contains(WidgetState.pressed),
-          focused: states.contains(WidgetState.focused),
-          builder: (context, press, focus) => TermCellFace(
-            label: labelOf(value),
-            on: states.contains(WidgetState.selected),
-            enabled: !states.contains(WidgetState.disabled),
-            press: press,
-            focus: focus,
-            fill: own.fill,
-            foreground: own.foreground,
-          ),
-        );
-      },
-      layoutBuilder: (context, items) => LayoutBuilder(
-        builder: (context, constraints) {
-          final edge = TermStyleOf([
-            style,
-            theme.toggleGroupStyle,
-          ], const {}).edge;
-          // The words measured as they are set, not counted in cells: a
-          // script the face lacks (Arabic, say) falls back to another face
-          // whose letters are not the grid's.
-          final scaler = MediaQuery.textScalerOf(context);
-          final direction = Directionality.of(context);
-          double measure(String text) {
-            final painter = TextPainter(
-              text: TextSpan(text: text, style: theme.textStyle),
-              textScaler: scaler,
-              textDirection: direction,
-              maxLines: 1,
-            )..layout();
-            final width = painter.width;
-            painter.dispose();
-            return width;
-          }
+      minimumSize: minimumSize,
+      itemBuilder: face,
+      layoutBuilder: layout,
+    );
+  }
 
-          final labels = options.fold<double>(
-            0,
-            (sum, option) =>
-                sum +
-                math.max(grid.cols(3), measure(labelOf(option)) + grid.cols(2)),
-          );
-          final width =
-              labels +
-              grid.cols(2) +
-              measure('│') * math.max(0, items.length - 1);
-          if (width > constraints.maxWidth) {
-            return Wrap(
-              spacing: grid.cellWidth,
-              children: [
-                for (final item in items)
-                  TermBracketBand(edge: edge, child: item),
-              ],
-            );
-          }
-          return TermBracketBand(
-            edge: edge,
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                for (final (i, item) in items.indexed) ...[
-                  if (i > 0)
-                    ExcludeSemantics(
-                      child: Text(
-                        '│',
-                        style: theme.textStyle.copyWith(color: theme.rule),
-                      ),
-                    ),
-                  item,
-                ],
-              ],
-            ),
+  bool _enabled(T value) =>
+      onSelectionChanged != null && (isEnabled?.call(value) ?? true);
+
+  // One choice that is never empty: radios over Flutter's RadioGroup, each
+  // cell the pressable DesignToggleGroup would give it.
+  Widget _radios(
+    BuildContext context,
+    Size minimumSize,
+    Widget Function(BuildContext, T, Set<WidgetState>) face,
+    Widget Function(BuildContext, List<Widget>) layout,
+  ) {
+    final chosen = selected.isEmpty ? null : selected.first;
+    final nodes = <T, FocusNode>{};
+    void choose(T value) {
+      if (value != chosen) onSelectionChanged?.call({value});
+    }
+
+    // Home and End choose the first and the last that can be chosen.
+    KeyEventResult ends(KeyEvent event) {
+      if (event is! KeyDownEvent && event is! KeyRepeatEvent) {
+        return KeyEventResult.ignored;
+      }
+      final key = event.logicalKey;
+      if (key != LogicalKeyboardKey.home && key != LogicalKeyboardKey.end) {
+        return KeyEventResult.ignored;
+      }
+      final order = key == LogicalKeyboardKey.home ? options : options.reversed;
+      for (final value in order) {
+        if (!_enabled(value)) continue;
+        choose(value);
+        nodes[value]?.requestFocus();
+        break;
+      }
+      return KeyEventResult.handled;
+    }
+
+    return Semantics(
+      container: true,
+      explicitChildNodes: true,
+      label: semanticLabel,
+      child: DesignRadioGroup<T>(
+        options: options,
+        value: chosen,
+        onChanged: onSelectionChanged == null ? null : choose,
+        isEnabled: isEnabled,
+        layoutBuilder: layout,
+        itemBuilder: (context, value, node, select) {
+          nodes[value] = node;
+          return DesignPressable(
+            focusNode: node,
+            onPressed: select,
+            onKeyEvent: (node, event) => ends(event),
+            selected: value == chosen,
+            minimumSize: minimumSize,
+            semanticLabel: labelOf(value),
+            excludeSemantics: true,
+            button: false,
+            checked: value == chosen,
+            inMutuallyExclusiveGroup: true,
+            builder: (context, states, _) => face(context, value, states),
           );
         },
       ),

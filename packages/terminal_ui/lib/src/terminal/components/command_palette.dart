@@ -4,8 +4,8 @@
 library;
 
 import 'package:flutter/foundation.dart';
-// One line, so an app's copy of this file (look:check's copy-out, which
-// reads its imports a line at a time) keeps it whole.
+// One line, so a tool that copies this file into an app and reads its
+// imports a line at a time keeps it whole.
 // dart format off
 import 'package:material_ui/material_ui.dart' show InputDecoration, Material, MaterialType, TextField;
 // dart format on

@@ -18,6 +18,7 @@ export 'src/terminal/internal/digits.dart';
 export 'src/terminal/internal/field_cursor.dart';
 export 'src/terminal/internal/list_open.dart';
 export 'src/terminal/internal/menu_marks.dart';
+export 'src/terminal/internal/pointer.dart';
 export 'src/terminal/internal/shell_face.dart';
 export 'src/terminal/internal/snap.dart';
 export 'src/terminal/internal/type_ahead.dart';

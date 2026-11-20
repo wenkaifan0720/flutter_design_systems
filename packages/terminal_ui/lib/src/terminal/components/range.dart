@@ -9,6 +9,7 @@ import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
 import '../grid.dart';
+import '../internal/pointer.dart';
 import '../primitives/box.dart';
 import '../primitives/control.dart';
 import '../style.dart';
@@ -21,7 +22,8 @@ import 'feedback.dart';
 /// Down by a tenth, Home and End to the ends; a drag or a tap on the rule
 /// puts it there. The keyboard's focus is the cursor: a block of the accent
 /// a line tall across the rail, the rule and the value cut out of it; in
-/// hand, the value fills its cell. A screen reader hears a slider.
+/// hand, the value fills its cell. Under the pointer the value's block takes
+/// the accent. A screen reader hears a slider.
 ///
 /// ```dart
 /// TermSlider(
@@ -202,9 +204,11 @@ class _TermSliderState extends State<TermSlider> {
                       fill: change == null
                           ? theme.rule
                           : own.fill ?? theme.accent,
+                      // Under the pointer the block takes the accent.
                       thumb: change == null
                           ? theme.rule
-                          : own.foreground ?? theme.foreground,
+                          : own.foreground ??
+                                termHoverInk(theme, theme.foreground, states),
                       cursor: theme.accent,
                       knockout: theme.onAccent,
                       stroke: termStroke(theme, grid),
@@ -224,7 +228,8 @@ class _TermSliderState extends State<TermSlider> {
 
 /// A range slider: two blocks on one rule, the part between them heavy in
 /// the accent: `──█━━━━━━━█─────`. They cannot cross; the arrows move the
-/// one with the keyboard, a drag the nearer one.
+/// one with the keyboard, a drag the nearer one. Under the pointer a block
+/// takes the accent.
 ///
 /// ```dart
 /// TermRangeSlider(
@@ -336,7 +341,7 @@ class TermRangeSlider extends StatelessWidget {
                           style,
                           theme.sliderStyle,
                         ], states).foreground ??
-                        theme.foreground,
+                        termHoverInk(theme, theme.foreground, states),
               cursor: states.contains(WidgetState.disabled) ? 0 : focus,
               cursorColor: theme.accent,
               knockout: theme.onAccent,

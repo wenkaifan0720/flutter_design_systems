@@ -63,18 +63,25 @@ class _LiveState extends State<_Live> {
         onChanged: null,
       ),
       const TermSectionHeader(title: 'radios'),
-      for (final s in const ['rolling', 'blue-green', 'canary'])
-        TermRadio<String>(
+      // One choice, one Tab stop: the arrows move and choose, past the one
+      // turned off.
+      DesignRadioGroup<String>(
+        options: const ['rolling', 'blue-green', 'canary', 'recreate'],
+        value: _strategy,
+        isEnabled: (s) => s != 'recreate',
+        onChanged: (v) => setState(() => _strategy = v),
+        semanticLabel: 'strategy',
+        layoutBuilder: (context, radios) => Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: radios,
+        ),
+        itemBuilder: (context, s, node, select) => TermRadio<String>(
           value: s,
           groupValue: _strategy,
-          label: s,
-          onChanged: (v) => setState(() => _strategy = v!),
+          focusNode: node,
+          label: s == 'recreate' ? 'recreate (not here)' : s,
+          onChanged: select == null ? null : (_) => select(),
         ),
-      const TermRadio<String>(
-        value: 'recreate',
-        groupValue: 'rolling',
-        label: 'recreate (not here)',
-        onChanged: null,
       ),
       const TermSectionHeader(title: 'switches'),
       TermSwitch(

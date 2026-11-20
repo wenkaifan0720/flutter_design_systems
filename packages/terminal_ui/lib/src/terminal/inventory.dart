@@ -353,15 +353,27 @@ Widget _checkbox(BuildContext context) => _Live<bool?>(
       TermCheckbox(value: v, onChanged: set, label: 'run the tests first'),
 );
 
+// One Tab stop, the arrows choosing: the radios grouped at the owner of
+// their choice.
 Widget _radioGroup(BuildContext context) => _Live<String?>(
   'rolling',
-  (context, v, set) => Column(
-    mainAxisSize: MainAxisSize.min,
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      for (final s in const ['rolling', 'blue-green', 'all at once'])
-        TermRadio<String>(value: s, groupValue: v, onChanged: set, label: s),
-    ],
+  (context, v, set) => DesignRadioGroup<String>(
+    options: const ['rolling', 'blue-green', 'all at once'],
+    value: v,
+    onChanged: set,
+    semanticLabel: 'strategy',
+    layoutBuilder: (context, radios) => Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: radios,
+    ),
+    itemBuilder: (context, s, node, select) => TermRadio<String>(
+      value: s,
+      groupValue: v,
+      focusNode: node,
+      onChanged: select == null ? null : (_) => select(),
+      label: s,
+    ),
   ),
 );
 

@@ -1,8 +1,10 @@
-// A terminal has no hover. The pointer over a part changes nothing it
-// paints; it shows the hand on what presses and the arrow on what doesn't.
-// Only what hover is information for may change: a tooltip and a hover card
-// open, and an open menu or list marks the row under the pointer (an
-// action sheet's and the command palette's, open in their specimens).
+// The pointer's mark is an ink change and nothing more: under it a
+// control's brackets, a slider's block or a tab's words take the accent, the
+// cells' ground as it was, so it stays lighter than the keyboard's cursor (a
+// block of the accent). It shows the hand on what presses and the arrow on
+// what doesn't. What hover is information for may do more: a tooltip and a
+// hover card open, and an open menu or list marks the row under the pointer
+// (an action sheet's and the command palette's, open in their specimens).
 import 'dart:ui' as ui;
 
 import 'package:flutter/foundation.dart';
@@ -15,9 +17,22 @@ import 'package:terminal_ui/terminal_ui.dart';
 import 'faces.dart';
 
 /// Rows whose part opens on hover (that is what it is for), and an open
-/// menu or list, whose row under the pointer is marked (relay F): an action
-/// sheet's, the command palette's.
+/// menu or list, whose row under the pointer is marked: an action sheet's,
+/// the command palette's.
 const _opensOnHover = {'Tooltip', 'HoverCard', 'ActionSheet', 'Command'};
+
+/// Rows whose controls mark the pointer: each must change some ink under it.
+const _marksThePointer = {
+  'Button',
+  'IconButton',
+  'Chip',
+  'Checkbox',
+  'RadioGroup',
+  'Switch',
+  'Slider',
+  'RangeSlider',
+  'TabBar',
+};
 
 final _shot = GlobalKey();
 
@@ -48,6 +63,32 @@ List<(DesignPressable, Offset)> _pressables(WidgetTester tester) => [
   for (final e in find.byType(DesignPressable).hitTestable().evaluate())
     (e.widget as DesignPressable, tester.getCenter(find.byWidget(e.widget))),
 ];
+
+/// Where the pointer goes in the part on screen: its pressables' and its
+/// value handles' (a slider's) centres.
+List<(String, Offset)> _targets(WidgetTester tester) => [
+  for (final (p, centre) in _pressables(tester))
+    (p.semanticLabel ?? '$centre', centre),
+  for (final e in find.byType(DesignValueHandle).hitTestable().evaluate())
+    (
+      (e.widget as DesignValueHandle).semanticLabel ?? 'handle',
+      tester.getCenter(find.byWidget(e.widget)),
+    ),
+];
+
+/// The colour most of [pixels] are: the ground the part stands on.
+int _ground(List<int> pixels) {
+  final counts = <int, int>{};
+  for (var i = 0; i < pixels.length; i += 4) {
+    final c =
+        pixels[i] << 24 |
+        pixels[i + 1] << 16 |
+        pixels[i + 2] << 8 |
+        pixels[i + 3];
+    counts[c] = (counts[c] ?? 0) + 1;
+  }
+  return counts.entries.reduce((a, b) => a.value >= b.value ? a : b).key;
+}
 
 bool _presses(DesignPressable p) =>
     (p.enabled ?? true) && (p.onPressed != null || p.onLongPress != null);
@@ -121,7 +162,7 @@ void main() {
   }, variant: _desk);
 
   testWidgets(
-    'the pointer over a part paints nothing new',
+    "the pointer changes a control's ink, never the ground",
     (tester) async {
       _size(tester);
       final mouse = await tester.createGesture(
@@ -130,7 +171,8 @@ void main() {
       );
       const away = Offset(1279, 2399);
       await mouse.addPointer(location: away);
-      final changed = <String>[];
+      final grounds = <String>[];
+      final unmarked = <String>{..._marksThePointer};
       var seen = 0;
       for (final entry in termInventory.entries) {
         final build = entry.builder;
@@ -141,18 +183,36 @@ void main() {
         final idle = await _pixels(tester);
         await _settle(tester);
         if (!listEquals(idle, await _pixels(tester))) continue; // it moves
-        for (final (pressable, centre) in _pressables(tester).take(8)) {
+        final ground = _ground(idle);
+        for (final (name, centre) in _targets(tester).take(8)) {
           await mouse.moveTo(centre);
           await _settle(tester);
-          if (!listEquals(idle, await _pixels(tester))) {
-            changed.add('${entry.row}: ${pressable.semanticLabel ?? centre}');
+          final over = await _pixels(tester);
+          for (var i = 0; i < idle.length; i += 4) {
+            if (idle[i] == over[i] &&
+                idle[i + 1] == over[i + 1] &&
+                idle[i + 2] == over[i + 2] &&
+                idle[i + 3] == over[i + 3]) {
+              continue;
+            }
+            unmarked.remove(entry.row);
+            final was =
+                idle[i] << 24 |
+                idle[i + 1] << 16 |
+                idle[i + 2] << 8 |
+                idle[i + 3];
+            if (was == ground) {
+              grounds.add('${entry.row}: $name');
+              break;
+            }
           }
           seen++;
           await mouse.moveTo(away);
           await _settle(tester);
         }
       }
-      expect(changed, isEmpty);
+      expect(grounds, isEmpty, reason: 'the pointer filled the ground');
+      expect(unmarked, isEmpty, reason: 'no mark under the pointer');
       expect(seen, greaterThan(50));
       await mouse.removePointer();
       await tester.pumpWidget(const SizedBox.shrink());

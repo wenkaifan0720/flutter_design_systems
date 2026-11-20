@@ -1,4 +1,4 @@
-// What a fresh pair of eyes found on the 0.2.0 gallery, pinned: a
+// Details of the gallery's pages, pinned: a
 // combobox's list goes over a field at the foot of the screen; the caret is
 // a block on its own cell on every platform, and right to left the words
 // typed start where the hint does; the keys' block shows on a chosen tab;

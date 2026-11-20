@@ -1,3 +1,32 @@
+## 0.2.5
+
+- A text field's focus is its caret and its frame's one line, heavy in the
+  accent (twice its stroke, as Material's outline goes from 1 to 2 px): the
+  line no longer doubles round it. The same for a select, a tag input and a
+  one-time code's cells. A doubled line is a pane's, for the pane the keys
+  are in.
+- A checkbox with an error prints a `✗` in the danger ink after its words,
+  and keeps it when disabled (its brackets and words dim), so a locked box
+  still says what is wrong with it.
+- The pointer has a mark of its own, lighter than the keyboard's cursor and
+  in ink alone: under it a button's, a glyph button's, a chip's, a
+  checkbox's, a radio's and a switch's brackets take the accent (a filled
+  button's, the words' ink), a slider's block takes the accent, and so do a
+  tab's words. In a menu, the row the pointer moves to shows its words in
+  the accent, and the first key puts the cursor on it.
+- Radios of one choice are one Tab stop: Tab lands on the chosen radio (the
+  first that can be chosen when none is), the arrows move and choose, round
+  the ends and past one turned off, and a second Tab leaves. Group sibling
+  `TermRadio`s with ui_core's `DesignRadioGroup` at the owner of their
+  choice; each radio keeps the `focusNode` you give it.
+- A one-choice `TermToggleGroup` that can't be emptied (a segmented control)
+  is a group of radios too: the arrow keys always choose the segment they
+  move to, all four of them, and Home and End choose the first and the last.
+  `selectFollowsFocus: false` no longer keeps the arrows from choosing
+  there. A toggle group whose choice can be emptied, or that takes several,
+  works as before.
+- Stands on ui_core 0.3.4.
+
 ## 0.2.4
 
 - Charts write their figures in the reader's digits and separators, as the

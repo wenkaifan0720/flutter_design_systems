@@ -1497,13 +1497,23 @@ class _DeployPageState extends State<DeployPage> {
           ),
           gap(),
           const TermSectionHeader(title: 'strategy'),
-          for (final s in const ['rolling', 'blue-green', 'canary'])
-            TermRadio<String>(
+          DesignRadioGroup<String>(
+            options: const ['rolling', 'blue-green', 'canary'],
+            value: _strategy,
+            onChanged: (v) => setState(() => _strategy = v),
+            semanticLabel: 'strategy',
+            layoutBuilder: (context, radios) => Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: radios,
+            ),
+            itemBuilder: (context, s, node, select) => TermRadio<String>(
               value: s,
               groupValue: _strategy,
+              focusNode: node,
               label: s,
-              onChanged: (v) => setState(() => _strategy = v!),
+              onChanged: select == null ? null : (_) => select(),
             ),
+          ),
           gap(),
           const TermSectionHeader(title: 'options'),
           // A form's options are boxes, ticked now and taken on deploy;
@@ -1848,17 +1858,22 @@ class _SettingsPageState extends State<SettingsPage> {
                   explicitChildNodes: true,
                   child: LayoutBuilder(
                     builder: (context, c) {
-                      final radios = Wrap(
-                        spacing: grid.cols(2),
-                        children: [
-                          for (final c in const ['email', 'webhook'])
+                      final radios = DesignRadioGroup<String>(
+                        options: const ['email', 'webhook'],
+                        value: _channel,
+                        onChanged: (v) => _set(() => _channel = v),
+                        layoutBuilder: (context, items) =>
+                            Wrap(spacing: grid.cols(2), children: items),
+                        itemBuilder: (context, c, node, select) =>
                             TermRadio<String>(
                               value: c,
                               groupValue: _channel,
+                              focusNode: node,
                               label: c,
-                              onChanged: (v) => _set(() => _channel = v!),
+                              onChanged: select == null
+                                  ? null
+                                  : (_) => select(),
                             ),
-                        ],
                       );
                       const key = ExcludeSemantics(child: Text('via'));
                       // The key above its choices where they have no room.

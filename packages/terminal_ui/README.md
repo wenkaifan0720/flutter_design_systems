@@ -218,13 +218,18 @@ proves it.
 The keyboard's focus is the cursor: an accent block over the part, its
 words and brackets cut out of it, hollow on a part already chosen or
 filled, so chosen, pressed and focused read apart by shape in the
-monochrome theme too. Text fields double their frame and show the caret.
-Focus shows for the keyboard only, never after a click, and differs from
-the part at rest at 3:1 or more over at least a 2 px outline's area on
-every theme.
+monochrome theme too. A text field shows the caret, its frame's one line
+heavy in the accent, as Material's outline goes from 1 to 2 px; a doubled
+line is a pane's, for the pane the keys are in. Focus shows for the
+keyboard only, never after a click, and differs from the part at rest at
+3:1 or more over at least a 2 px outline's area on every theme (a text
+field's, a 1 px outline's beside its caret).
 
 Tab visits a tab bar or navigation group once. Use the arrow keys to move
 between destinations and F6 to switch between navigation and the page.
+Tab visits a set of radios once too, on the chosen one, and so a
+segmented control: the arrows move and choose (group sibling `TermRadio`s
+with `DesignRadioGroup`).
 Dialogs and sheets keep focus inside and return it to the opener on close.
 On line and area charts, the arrows inspect data points. Ratings accept
 arrow and number keys. Screen readers announce shortcuts such as `^K` as
