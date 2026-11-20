@@ -238,7 +238,7 @@ final larderBasket = <LarderLine>[
 /// Delivery's price in pence: free over £40.
 int larderDelivery(int subtotal) => subtotal >= 4000 ? 0 : 450;
 
-/// The shop's sample catalog prices include 20% tax. Round a unit to pence.
+/// The shop's sample prices include 20% tax. Round a unit to pence.
 int larderNetPence(int gross) => (gross * 5 / 6).round();
 
 /// Delivery details and the last four digits used for an order.

@@ -1,3 +1,12 @@
+## 0.1.5
+
+- Hover and keyboard focus brighten the fitted pilot lamps, legends and bezels. The orange action key lights its legend. Menu commands depress only while held.
+- A part whose lamp is already lit (a chosen selector position or radio) shows keyboard focus by lighting its inner bezel, since a brighter lamp would barely show. A switch and a chip light their bezel on focus too, on or off, and their lamp shows only whether they are on or selected.
+- Stands on ui_core 0.3.4 and uses ui_core_test 0.1.4 for qualification. `ApplianceRadioGroup` is built on ui_core's `DesignRadioGroup`, over Flutter's `RadioGroup`. Tab enters at the checked option, or at the first option that can be chosen when the checked one is turned off or nothing is chosen. A turned-off option that is chosen still reads as checked. The arrows, Home, End and Space choose as before.
+- `ApplianceSegmentedButton` reads as a group of radios, the chosen position checked. Tab reaches the selector once, at its choice, where each position was a Tab stop before. The arrows choose the next or the previous position and wrap at the ends, and the focus moves with the choice; Home and End still choose the first and the last.
+- The component inventory's radio group specimen is an `ApplianceRadioGroup`, read as two radios. It was two list rows, each read as a button holding a radio.
+- A selectable `ApplianceDataTable` row reads as a checkbox, checked when selected, from ui_core 0.3.4's `DesignDataTable`. It read as a button as well.
+
 ## 0.1.4
 
 - Date pickers show the month, digits and date order from the reader’s ui_core localization. For example, 20 November 2026 reads «٢٠ نوفمبر ٢٠٢٦» in Arabic. Date ranges use the same words and show both years when they cross New Year.

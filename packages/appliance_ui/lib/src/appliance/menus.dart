@@ -7,13 +7,15 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
+import 'internal/control_light.dart';
 import 'material.dart';
 import 'select.dart';
 import 'theme.dart';
 
 /// One row of an open menu, painted for its [states]: under the pointer or
-/// the keys it is lit, a key pressed into the plate; [chosen] lights its
-/// lamp at the row's end. A row that does nothing stands greyed.
+/// the keys its legend lights, and a held command sinks into the plate.
+/// [chosen] lights its lamp at the row's end. A row that does nothing stands
+/// greyed.
 ///
 /// It paints; the menu that holds it presses, focuses and closes.
 ///
@@ -64,11 +66,8 @@ class ApplianceMenuRow extends StatelessWidget {
     final theme = ApplianceTheme.of(context);
     final c = theme.colors;
     final on = enabled && !states.contains(WidgetState.disabled);
-    final lit =
-        on &&
-        (states.contains(WidgetState.hovered) ||
-            states.contains(WidgetState.focused) ||
-            states.contains(WidgetState.pressed));
+    final pressed = on && states.contains(WidgetState.pressed);
+    final lamp = on ? applianceControlLight(states) : 0.0;
     final row = DesignStyleOf([style, theme.menuStyle], states);
     final words =
         row.foreground ??
@@ -78,10 +77,10 @@ class ApplianceMenuRow extends StatelessWidget {
             ? c.danger
             : c.print);
     final face = ApplianceFace(
-      top: lit ? c.keyDownTop : c.keyDownTop.withValues(alpha: 0),
-      bottom: lit ? c.keyDownBottom : c.keyDownBottom.withValues(alpha: 0),
-      lift: lit ? -0.6 : 0,
-      travel: lit ? 0.6 : 0,
+      top: pressed ? c.keyDownTop : c.keyDownTop.withValues(alpha: 0),
+      bottom: pressed ? c.keyDownBottom : c.keyDownBottom.withValues(alpha: 0),
+      lift: pressed ? -0.6 : 0,
+      travel: pressed ? 0.6 : 0,
       radius: BorderRadius.circular(ApplianceMenuPlate.rowRadius),
       foreground: words,
     );
@@ -113,6 +112,9 @@ class ApplianceMenuRow extends StatelessWidget {
                     style: row.text(
                       theme.textTheme.body.copyWith(
                         color: words,
+                        decoration: lamp > 0 ? TextDecoration.underline : null,
+                        decorationColor: c.signal.withValues(alpha: lamp),
+                        decorationThickness: 1.5,
                         fontWeight: chosen ?? false
                             ? FontWeight.w600
                             : FontWeight.w400,
@@ -132,7 +134,7 @@ class ApplianceMenuRow extends StatelessWidget {
               ],
               if (chosen != null) ...[
                 const SizedBox(width: ApplianceSpacing.medium),
-                ApplianceLamp(lit: chosen!),
+                ApplianceControlLamp(lit: chosen!, states: states),
               ],
             ],
           ),

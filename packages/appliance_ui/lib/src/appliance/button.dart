@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
+import 'internal/control_light.dart';
 import 'material.dart';
 import 'theme.dart';
 
@@ -133,11 +134,16 @@ class ApplianceButton extends StatelessWidget {
         final minimum =
             layered.minimumSize ??
             Size(text ? 0 : theme.controlHeight, theme.controlHeight);
+        final lamp = applianceControlLight(states);
+        final litLegend = _kind == _ButtonKind.filled && lamp > 0;
         final legend = DefaultTextStyle.merge(
           style: layered.text(
             theme.textTheme.label.copyWith(
               color: face.foreground,
               fontWeight: _kind == _ButtonKind.filled ? FontWeight.w600 : null,
+              decoration: litLegend ? TextDecoration.underline : null,
+              decorationColor: const Color(0xFFFFE8BD).withValues(alpha: lamp),
+              decorationThickness: 1.5,
             ),
           ),
           maxLines: 1,
@@ -217,9 +223,7 @@ ApplianceFace _keyFace(
   final c = theme.colors;
   final disabled = states.contains(WidgetState.disabled);
   final pressed = states.contains(WidgetState.pressed);
-  final focus = states.contains(WidgetState.focused)
-      ? c.focus
-      : c.focus.withValues(alpha: 0);
+  final focus = c.focus.withValues(alpha: applianceControlLight(states));
   final disabledInk = Color.lerp(c.printDisabled, c.print, 0.5)!;
   final legend = disabled
       ? disabledInk
@@ -267,7 +271,6 @@ ApplianceFace _keyFace(
         travel: pressed ? 1 : 0,
         radius: BorderRadius.circular(ApplianceMetrics.keyRadius),
         foreground: words,
-        focus: focus,
       );
   }
 }

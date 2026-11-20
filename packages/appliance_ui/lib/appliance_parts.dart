@@ -15,6 +15,7 @@ export 'package:ui_core/inventory.dart';
 export 'appliance_ui.dart';
 export 'appliance_host.dart';
 export 'src/appliance/internal/bare_field.dart';
+export 'src/appliance/internal/control_light.dart';
 export 'src/appliance/internal/glyphs.dart';
 export 'src/appliance/internal/keep_in_view.dart';
 export 'src/appliance/internal/menu_paint.dart';

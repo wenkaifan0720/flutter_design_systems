@@ -310,7 +310,8 @@ void main() {
         });
       }
     }
-    testWidgets('selected list and lit menu row at $width', (t) async {
+    // Focus and hover light a menu row's legend; only a held press sinks it.
+    testWidgets('selected list and held menu row at $width', (t) async {
       final pressed = keys.copyWith(
         face: _outer,
         keyDownTop: _inner,
@@ -334,7 +335,7 @@ void main() {
         const ApplianceMenuPlate(
           child: Column(
             children: [
-              ApplianceMenuRow(label: 'Tea', states: {WidgetState.focused}),
+              ApplianceMenuRow(label: 'Tea', states: {WidgetState.pressed}),
               ApplianceMenuRow(label: 'Coffee', states: {}),
             ],
           ),

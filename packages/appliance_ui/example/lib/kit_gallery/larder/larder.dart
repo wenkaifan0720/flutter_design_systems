@@ -110,7 +110,7 @@ class LarderPrefs extends ChangeNotifier {
     p.messages.clear();
   });
 
-  /// Catalog prices include tax by default, also for a standalone product card.
+  /// Product prices include tax by default, also for a standalone product card.
   static bool pricesWithTax(BuildContext context) =>
       context
           .dependOnInheritedWidgetOfExactType<_LarderScope>()

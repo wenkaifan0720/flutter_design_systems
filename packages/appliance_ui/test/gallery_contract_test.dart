@@ -1,6 +1,4 @@
-// polish3 §4: every widget the package exports is live in the example, built
-// by one of its pages (the gallery's or Larder's), or built by a part that
-// is: nothing it ships is out of sight.
+// Gallery controls use the exported widgets and respond to interaction.
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';

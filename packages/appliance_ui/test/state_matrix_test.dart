@@ -1,10 +1,9 @@
-// The state matrix, on what is painted: for every pressable part, by day
-// and by night, the pointer over it changes nothing (polish3 §1: hover is
-// not one of Appliance's states) but the cursor, which says it presses;
-// pressing, keyboard focus and disabling each change the face; and none of
-// them moves the part by a pixel. A field's error marks its well. And the
-// matrix as pictures: each part at rest, held, focused and disabled, by day
-// and by night, at twice the size, each a golden.
+// The state matrix, on what is painted: for every pressable part, by day and
+// by night, a pointer over a part with a lamp, a legend or a bezel lights it
+// faintly and shows the click cursor; pressing, keyboard focus and disabling
+// each change the face; and none of them moves the part by a pixel. A
+// field's error marks its well. Each part at rest, held, focused and
+// disabled is also a golden, at twice the size.
 import 'dart:io';
 import 'dart:ui' as ui;
 
@@ -161,9 +160,7 @@ Future<void> _settle(WidgetTester tester) async {
   }
 }
 
-/// The goldens are kept beside the catalog and laid here by the package
-/// build; a published or vendored copy goes without them, and compares
-/// nothing.
+/// Compare saved images when they are available, or record them when requested.
 final bool _recorded =
     autoUpdateGoldenFiles || Directory('test/goldens').existsSync();
 
@@ -192,7 +189,7 @@ Size _size(WidgetTester tester) => tester.getSize(_part());
 void main() {
   for (final brightness in Brightness.values) {
     for (final spec in _specs) {
-      testWidgets('${spec.name} (${brightness.name}): hover changes nothing; '
+      testWidgets('${spec.name} (${brightness.name}): hover stays fitted; '
           'press, focus and disabled do; nothing moves', (tester) async {
         tester.view.physicalSize = const Size(480, 400);
         tester.view.devicePixelRatio = 1;
@@ -219,8 +216,7 @@ void main() {
             .first;
         final centre = tester.getCenter(target);
 
-        // Hover: the face is the same to the pixel; the cursor says it
-        // presses.
+        // The indicator and cursor respond without moving the control.
         final mouse = await tester.createGesture(
           kind: PointerDeviceKind.mouse,
           pointer: 1,
@@ -228,10 +224,22 @@ void main() {
         await mouse.addPointer(location: const Offset(1, 1));
         await mouse.moveTo(centre);
         await _settle(tester);
+        const lights = {
+          'button',
+          'icon button',
+          'filled button',
+          'text button',
+          'checkbox',
+          'radio',
+          'switch',
+          'chip',
+          'list row',
+          'segmented',
+        };
         expect(
           await _pixels(tester),
-          idle,
-          reason: 'the pointer over it changed its face',
+          lights.contains(spec.name) ? isNot(idle) : idle,
+          reason: spec.name,
         );
         expect(
           RendererBinding.instance.mouseTracker.debugDeviceActiveCursor(1),
@@ -258,15 +266,15 @@ void main() {
         await _settle(tester);
         expect(await _pixels(tester), idle);
 
-        // Keyboard focus: a ring, the same size.
+        // Keyboard focus keeps the control in place.
         await tester.sendKeyEvent(LogicalKeyboardKey.tab);
         await _settle(tester);
         expect(
           await _pixels(tester),
           isNot(idle),
-          reason: 'keyboard focus showed no ring',
+          reason: 'Keyboard focus showed no light',
         );
-        expect(_size(tester), size, reason: 'the focus ring moved it');
+        expect(_size(tester), size, reason: 'Keyboard focus moved it');
 
         // Disabled: it looks it, at the same size, and says so to the
         // pointer.
@@ -283,58 +291,60 @@ void main() {
       });
     }
 
-    testWidgets('a field (${brightness.name}): hover changes nothing; focus '
-        'and an error mark the well; disabled shows', (tester) async {
-      tester.view.physicalSize = const Size(480, 400);
-      tester.view.devicePixelRatio = 1;
-      addTearDown(tester.view.reset);
-      Widget field({String? error, bool enabled = true}) => SizedBox(
-        width: 320,
-        child: ApplianceTextField(
-          label: 'Postcode',
-          helper: error == null ? 'As on your letters' : null,
-          error: error,
-          enabled: enabled,
-        ),
-      );
-      await tester.pumpWidget(_app(brightness, field()));
-      await _settle(tester);
-      final idle = await _pixels(tester);
-      final size = _size(tester);
-      final mouse = await tester.createGesture(
-        kind: PointerDeviceKind.mouse,
-        pointer: 1,
-      );
-      await mouse.addPointer(location: const Offset(1, 1));
-      await mouse.moveTo(tester.getCenter(find.byType(EditableText)));
-      await _settle(tester);
-      expect(await _pixels(tester), idle);
-      expect(
-        RendererBinding.instance.mouseTracker.debugDeviceActiveCursor(1),
-        SystemMouseCursors.text,
-      );
-      await mouse.removePointer();
+    testWidgets(
+      'a field paints hover and focus inside the well in ${brightness.name}',
+      (tester) async {
+        tester.view.physicalSize = const Size(480, 400);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.reset);
+        Widget field({String? error, bool enabled = true}) => SizedBox(
+          width: 320,
+          child: ApplianceTextField(
+            label: 'Postcode',
+            helper: error == null ? 'As on your letters' : null,
+            error: error,
+            enabled: enabled,
+          ),
+        );
+        await tester.pumpWidget(_app(brightness, field()));
+        await _settle(tester);
+        final idle = await _pixels(tester);
+        final size = _size(tester);
+        final mouse = await tester.createGesture(
+          kind: PointerDeviceKind.mouse,
+          pointer: 1,
+        );
+        await mouse.addPointer(location: const Offset(1, 1));
+        await mouse.moveTo(tester.getCenter(find.byType(EditableText)));
+        await _settle(tester);
+        expect(await _pixels(tester), isNot(idle));
+        expect(
+          RendererBinding.instance.mouseTracker.debugDeviceActiveCursor(1),
+          SystemMouseCursors.text,
+        );
+        await mouse.removePointer();
 
-      await tester.showKeyboard(find.byType(EditableText));
-      await _settle(tester);
-      expect(await _pixels(tester), isNot(idle));
-      expect(_size(tester), size);
+        await tester.showKeyboard(find.byType(EditableText));
+        await _settle(tester);
+        expect(await _pixels(tester), isNot(idle));
+        expect(_size(tester), size);
 
-      await tester.pumpWidget(const SizedBox());
-      await tester.pumpWidget(
-        _app(brightness, field(error: 'Enter a postcode')),
-      );
-      await _settle(tester);
-      expect(await _pixels(tester), isNot(idle));
-      expect(_size(tester), size, reason: 'the error message moved the page');
+        await tester.pumpWidget(const SizedBox());
+        await tester.pumpWidget(
+          _app(brightness, field(error: 'Enter a postcode')),
+        );
+        await _settle(tester);
+        expect(await _pixels(tester), isNot(idle));
+        expect(_size(tester), size, reason: 'the error message moved the page');
 
-      await tester.pumpWidget(const SizedBox());
-      await tester.pumpWidget(_app(brightness, field(enabled: false)));
-      await _settle(tester);
-      expect(await _pixels(tester), isNot(idle));
-      expect(_size(tester), size);
-      await tester.pumpWidget(const SizedBox());
-    });
+        await tester.pumpWidget(const SizedBox());
+        await tester.pumpWidget(_app(brightness, field(enabled: false)));
+        await _settle(tester);
+        expect(await _pixels(tester), isNot(idle));
+        expect(_size(tester), size);
+        await tester.pumpWidget(const SizedBox());
+      },
+    );
   }
 
   for (final brightness in Brightness.values) {

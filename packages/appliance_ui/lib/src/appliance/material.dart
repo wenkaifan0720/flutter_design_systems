@@ -120,8 +120,7 @@ class ApplianceFace with Diagnosticable {
   final Color foreground;
 
   /// The light a focused part's rim is lit with from inside; clear when
-  /// unfocused. On a face too close to it in tone (the signal key) the rim
-  /// takes the face's own legend ink instead, so it still reads at 3:1.
+  /// unfocused. The bezel carries the color of its emitter.
   final Color focus;
 
   /// How far beyond the face its focus light stands: zero for a part with a
@@ -426,11 +425,7 @@ void paintApplianceFace(
     );
   }
 
-  // The focus backlight: the part's own rim lit from inside, as a key's
-  // translucent edge glows over a lamp, and the light fading in from it.
-  // Nothing is drawn round the part, and its legend stays clear. A part with
-  // no face of its own lights a plate [ApplianceFace.focusReach] beyond its
-  // words instead.
+  // The fitted bezel catches one warm line of light along its inside edge.
   if (face.focus.a > 0) {
     final light = applianceFocusLight(
       face.focus,
@@ -440,66 +435,33 @@ void paintApplianceFace(
     );
     const w = ApplianceMetrics.focusWidth;
     final plate = face.focusReach > 0 ? r.inflate(face.focusReach) : r;
-    canvas
-      ..save()
-      ..clipRRect(plate)
-      ..drawRRect(
-        plate,
-        Paint()
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = w * 2 + 4
-          ..color = light.withValues(alpha: light.a * 0.3)
-          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2),
-      )
-      ..drawRRect(
-        plate.deflate(w / 2),
-        Paint()
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = w
-          ..color = light,
-      )
-      ..restore();
+    canvas.drawRRect(
+      plate.deflate(w / 2),
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = w
+        ..color = light,
+    );
   }
 }
 
-/// The light a focused part's rim takes on a face running from [fill] to
-/// [bottom]: [focus], deepened a little on a pale face or brightened on a
-/// dark one until it reads at 4.5:1, so the whole rim clears 3:1 where the
-/// face's own shading falls. On a face too close to it in tone (a signal
-/// key, a lit slot) it goes the way [focus] goes from the face: by day,
-/// where focus is deeper than the face, the face's legend [ink], so the
-/// part keeps its edge on the pale housing; by night white, a glow on the
-/// dark one. For a part that paints its own focus the way
-/// [ApplianceSurface] does.
+/// The emitted light over a face running from [fill] to [bottom].
+/// When the face or its legend [ink] is already bright, the emitter catches
+/// a little more white light. The opacity of [focus] controls its intensity.
 Color applianceFocusLight(
   Color focus,
   Color fill, {
   Color? bottom,
   Color? ink,
 }) {
-  if (fill.a < 1) return focus;
-  double reads(Color light) => math.min(
-    applianceContrast(light, fill),
-    applianceContrast(light, bottom ?? fill),
-  );
-  final solid = focus.withValues(alpha: 1);
-  final toward = fill.computeLuminance() > 0.18
-      ? const Color(0xFF000000)
-      : const Color(0xFFFFFFFF);
-  for (var step = 0; step <= 8; step++) {
-    final light = Color.lerp(solid, toward, step * 0.05)!;
-    if (reads(light) >= 4.5) return light.withValues(alpha: focus.a);
-  }
-  if (reads(solid) >= 3) return focus;
-  var best = solid;
-  const white = Color(0xFFFFFFFF);
-  final deeper = solid.computeLuminance() < fill.computeLuminance();
-  for (final other in deeper ? [?ink, white] : [white, ?ink]) {
-    if (other.a < 1) continue;
-    if (reads(other) >= 3) return other.withValues(alpha: focus.a);
-    if (reads(other) > reads(best)) best = other;
-  }
-  return best.withValues(alpha: focus.a);
+  final face = Color.lerp(fill, bottom ?? fill, 0.5)!;
+  final bright = ink != null && ink.computeLuminance() > 0.8;
+  final warmth = face.computeLuminance() > 0.45 || bright ? 0.4 : 0.22;
+  return Color.lerp(
+    focus,
+    const Color(0xFFFFE8BD),
+    warmth,
+  )!.withValues(alpha: focus.a);
 }
 
 Color _scaled(Color c, double by) =>

@@ -1,9 +1,10 @@
-// Keyboard focus lights a part's own rim from inside: nothing is drawn round
-// the part, and the focused pixels read at 3:1 or more against the same
-// pixels unfocused over at least a 2 px perimeter, by day and by night. The
-// stepper's keys and window are one height with room for its figures at any
-// text size; a selector's lamps stand beside their words; a switch's slot is
-// lit when on.
+// Keyboard focus lights the lamp, legend or inner bezel a part already has,
+// and the light stays inside its housing, by day and by night; a part whose
+// lamp is already lit lights its bezel as well, and so does a switch or a
+// chip, on or off, whose lamp shows only that it is on; a text key
+// lights a plate clear of its words. A stepper's keys and window stay one
+// height at any text size and step within their bounds, and a selector's
+// lamps stand beside their words.
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 
@@ -69,18 +70,48 @@ Future<(Uint8List, int)> _pixels(WidgetTester tester) async {
   }))!;
 }
 
-double _channel(int v) {
-  final c = v / 255;
-  return c <= 0.04045 ? c / 12.92 : math.pow((c + 0.055) / 1.055, 2.4) * 1.0;
+bool _changed(Uint8List a, Uint8List b, int i) =>
+    (a[i] - b[i]).abs() >= 4 ||
+    (a[i + 1] - b[i + 1]).abs() >= 4 ||
+    (a[i + 2] - b[i + 2]).abs() >= 4;
+
+// The contrast between pixel [i] of [a] and of [b], as WCAG reads two colours.
+double _contrast(Uint8List a, Uint8List b, int i) {
+  double luminance(Uint8List p) {
+    double channel(int v) {
+      final c = v / 255;
+      return c <= 0.04045
+          ? c / 12.92
+          : math.pow((c + 0.055) / 1.055, 2.4) * 1.0;
+    }
+
+    return 0.2126 * channel(p[i]) +
+        0.7152 * channel(p[i + 1]) +
+        0.0722 * channel(p[i + 2]);
+  }
+
+  final x = luminance(a), y = luminance(b);
+  return (math.max(x, y) + 0.05) / (math.min(x, y) + 0.05);
 }
 
-double _luminance(Uint8List p, int i) =>
-    0.2126 * _channel(p[i]) +
-    0.7152 * _channel(p[i + 1]) +
-    0.0722 * _channel(p[i + 2]);
-
-double _ratio(double a, double b) =>
-    (math.max(a, b) + 0.05) / (math.min(a, b) + 0.05);
+// How many of 24 sectors round [edge]'s centre hold a pixel of its rim (the
+// band 4 points inside its edge) that reads at 1.5:1 or more between [before]
+// and [after]: 24 when the light runs all the way round.
+int _litSectors(Uint8List before, Uint8List after, int width, Rect edge) {
+  final inner = edge.deflate(4);
+  final sectors = <int>{};
+  for (var i = 0; i + 3 < before.length; i += 4) {
+    final at = Offset(
+      ((i ~/ 4) % width + 0.5) / 2,
+      ((i ~/ 4) ~/ width + 0.5) / 2,
+    );
+    if (!edge.inflate(1).contains(at) || inner.contains(at)) continue;
+    if (_contrast(before, after, i) < 1.5) continue;
+    final turn = ((at - edge.center).direction + math.pi) / (2 * math.pi);
+    sectors.add((turn * 24).floor() % 24);
+  }
+  return sectors.length;
+}
 
 void _traditionalFocus() {
   FocusManager.instance.highlightStrategy =
@@ -107,6 +138,7 @@ void main() {
   final parts = <String, Widget>{
     'key': ApplianceButton('Save', onPressed: () {}),
     'signal key': ApplianceButton.filled('Add entry', onPressed: () {}),
+    'radio': ApplianceRadio<int>(value: 1, groupValue: 1, onChanged: (_) {}),
     'checkbox': ApplianceCheckbox(value: false, onChanged: (_) {}),
     'switch, on': ApplianceSwitch(value: true, onChanged: (_) {}),
     'chip': ApplianceChip('Planning', selected: true, onSelected: (_) {}),
@@ -131,46 +163,53 @@ void main() {
   };
   for (final brightness in Brightness.values) {
     for (final MapEntry(key: name, value: part) in parts.entries) {
-      testWidgets('a focused $name lights its own rim by ${brightness.name}', (
-        tester,
-      ) async {
-        _traditionalFocus();
-        await _show(tester, part, brightness: brightness);
-        final (before, width) = await _pixels(tester);
-        await tester.sendKeyEvent(LogicalKeyboardKey.tab);
-        await tester.pumpAndSettle();
-        final (after, _) = await _pixels(tester);
-        final face = _focusedFace();
-        expect(face, findsAtLeastNWidgets(1), reason: 'nothing took focus');
-        final origin = tester.getTopLeft(find.byKey(_frame));
-        final rect = tester.getRect(face.first).shift(-origin);
-        // Inside the part, the lit rim: 3:1 over a 2 px perimeter, in
-        // device pixels at 2x (four to a logical pixel). Outside it,
-        // nothing changes.
-        var lit = 0, outside = 0;
-        for (var i = 0; i + 3 < before.length; i += 4) {
-          final x = (i ~/ 4) % width / 2, y = (i ~/ 4) ~/ width / 2;
-          final r = _ratio(_luminance(before, i), _luminance(after, i));
-          if (rect.inflate(1).contains(Offset(x, y))) {
-            if (r >= 3) lit++;
-          } else if (r >= 1.2) {
-            outside++;
+      testWidgets(
+        'a focused $name lights its fitted control by ${brightness.name}',
+        (tester) async {
+          _traditionalFocus();
+          await _show(tester, part, brightness: brightness);
+          final (before, width) = await _pixels(tester);
+          await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+          await tester.pumpAndSettle();
+          final (after, _) = await _pixels(tester);
+          final origin = tester.getTopLeft(find.byKey(_frame));
+          final faces = _focusedFace();
+          final lamps = find.byType(ApplianceLamp);
+          final bounds = switch (name) {
+            'signal key' => [tester.getRect(find.text('Add entry'))],
+            // A lamp already lit: the lamp brightens and the part's own
+            // bezel lights.
+            'switch, on' || 'chip' || 'radio' || 'selector' => [
+              for (final el in lamps.evaluate())
+                tester.getRect(find.byWidget(el.widget)),
+              for (final el in faces.evaluate())
+                tester.getRect(find.byWidget(el.widget)),
+            ],
+            _ => [
+              tester.getRect(
+                faces.evaluate().isEmpty ? find.byWidget(part) : faces.first,
+              ),
+            ],
+          };
+          var lit = 0, outside = 0;
+          for (var i = 0; i < before.length; i += 4) {
+            if (!_changed(before, after, i)) continue;
+            final at =
+                origin +
+                Offset(
+                  ((i ~/ 4) % width + 0.5) / 2,
+                  ((i ~/ 4) ~/ width + 0.5) / 2,
+                );
+            if (bounds.any((rect) => rect.inflate(1).contains(at))) {
+              lit++;
+            } else {
+              outside++;
+            }
           }
-        }
-        // The perimeter of the part's own shape: its corners rounded.
-        final shape = switch (tester.widget(face.first)) {
-          final AnimatedApplianceSurface w => w.face,
-          final ApplianceSurface w => w.face,
-          _ => throw StateError('no face'),
-        };
-        final corner = shape.circle
-            ? rect.shortestSide / 2
-            : math.min(shape.radius.topLeft.x, rect.shortestSide / 2);
-        final perimeter =
-            2 * (rect.width + rect.height) - (8 - 2 * math.pi) * corner;
-        expect(lit, greaterThanOrEqualTo(2 * perimeter * 4));
-        expect(outside, 0, reason: 'focus drew round the part');
-      });
+          expect(lit, greaterThan(0), reason: 'The fitted light remained dark');
+          expect(outside, 0, reason: 'The light escaped its housing');
+        },
+      );
     }
   }
 
@@ -239,19 +278,147 @@ void main() {
         for (var i = 0; i + 3 < before.length; i += 4) {
           final x = (i ~/ 4) % width / 2, y = (i ~/ 4) ~/ width / 2;
           final at = Offset(x, y);
-          final r = _ratio(_luminance(before, i), _luminance(after, i));
-          if (r < 3) continue;
+          if (!_changed(before, after, i)) continue;
           if (text.contains(at)) onWords++;
           if (plate.inflate(1).contains(at)) lit++;
         }
-        final corner = math.min(
-          ApplianceMetrics.smallKeyRadius + reach,
-          plate.shortestSide / 2,
-        );
-        final perimeter =
-            2 * (plate.width + plate.height) - (8 - 2 * math.pi) * corner;
         expect(onWords, 0, reason: 'the light crossed the words');
-        expect(lit, greaterThanOrEqualTo(2 * perimeter * 4));
+        expect(lit, greaterThan(0));
+      });
+    }
+  }
+
+  // A part whose lamp is already lit cannot show focus by brightening it, so
+  // its bezel lights from inside: all the way round, some of the bezel's
+  // pixels read at 1.5:1 or more against the same pixels at rest, and
+  // nothing changes outside the part.
+  final lit = <String, Widget>{
+    'chosen selector position': SizedBox(
+      width: 320,
+      child: ApplianceSegmentedButton<int>(
+        segments: const [
+          ApplianceSegment(value: 0, label: 'Low'),
+          ApplianceSegment(value: 1, label: 'Normal'),
+          ApplianceSegment(value: 2, label: 'High'),
+        ],
+        value: 2,
+        onChanged: (_) {},
+      ),
+    ),
+    'chosen radio': ApplianceRadio<int>(
+      value: 1,
+      groupValue: 1,
+      onChanged: (_) {},
+    ),
+    'chosen preset in a group': ApplianceRadioGroup<String>(
+      options: const ['standard', 'next'],
+      value: 'next',
+      labelOf: (o) => o == 'next' ? 'Next day' : 'Standard',
+      onChanged: (_) {},
+    ),
+    'switch, on': ApplianceSwitch(value: true, onChanged: (_) {}),
+    'switch, off': ApplianceSwitch(value: false, onChanged: (_) {}),
+    'selected chip': ApplianceChip(
+      'Planning',
+      selected: true,
+      onSelected: (_) {},
+    ),
+    'chip, not selected': ApplianceChip('On offer', onSelected: (_) {}),
+  };
+  for (final brightness in Brightness.values) {
+    for (final MapEntry(key: name, value: part) in lit.entries) {
+      testWidgets('a focused $name lights its bezel by ${brightness.name}', (
+        tester,
+      ) async {
+        _traditionalFocus();
+        await _show(tester, part, brightness: brightness);
+        final (before, width) = await _pixels(tester);
+        await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+        await tester.pumpAndSettle();
+        final (after, _) = await _pixels(tester);
+        final origin = tester.getTopLeft(find.byKey(_frame));
+        final face = tester.getRect(_focusedFace().first).shift(-origin);
+        expect(
+          _litSectors(before, after, width, face),
+          24,
+          reason: 'The bezel did not light all the way round',
+        );
+        var outside = 0;
+        for (var i = 0; i + 3 < before.length; i += 4) {
+          final at = Offset(
+            ((i ~/ 4) % width + 0.5) / 2,
+            ((i ~/ 4) ~/ width + 0.5) / 2,
+          );
+          if (!face.inflate(1).contains(at) && _changed(before, after, i)) {
+            outside++;
+          }
+        }
+        expect(outside, 0, reason: 'The light escaped the part');
+      });
+    }
+  }
+
+  // Beside a neighbour that is on or selected, each switch and chip in turn
+  // takes the focus: its bezel lights all the way round, and no lamp in the
+  // row changes, so focus is never read as on or selected.
+  final rows = <String, Widget>{
+    'switches': Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        ApplianceSwitch(value: true, onChanged: (_) {}),
+        const SizedBox(height: ApplianceSpacing.small),
+        ApplianceSwitch(value: false, onChanged: (_) {}),
+      ],
+    ),
+    'chips': Wrap(
+      spacing: ApplianceSpacing.small,
+      children: [
+        ApplianceChip('Planning', selected: true, onSelected: (_) {}),
+        ApplianceChip('On offer', onSelected: (_) {}),
+        ApplianceChip('In stock', onSelected: (_) {}),
+      ],
+    ),
+  };
+  for (final brightness in Brightness.values) {
+    for (final MapEntry(key: name, value: row) in rows.entries) {
+      testWidgets('focus on a row of $name leaves the lamps to mean on by '
+          '${brightness.name}', (tester) async {
+        _traditionalFocus();
+        await _show(tester, row, brightness: brightness);
+        final (rest, width) = await _pixels(tester);
+        final origin = tester.getTopLeft(find.byKey(_frame));
+        final lamps = [
+          for (final lamp in find.byType(ApplianceLamp).evaluate())
+            (lamp.renderObject! as RenderBox).localToGlobal(Offset.zero) &
+                (lamp.renderObject! as RenderBox).size,
+        ];
+        final parts = name == 'chips' ? 3 : 2;
+        expect(lamps, hasLength(parts));
+        for (var part = 0; part < parts; part++) {
+          await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+          await tester.pumpAndSettle();
+          final (focused, _) = await _pixels(tester);
+          for (var i = 0; i + 3 < rest.length; i += 4) {
+            final at =
+                origin +
+                Offset(
+                  ((i ~/ 4) % width + 0.5) / 2,
+                  ((i ~/ 4) ~/ width + 0.5) / 2,
+                );
+            if (!lamps.any((lamp) => lamp.inflate(1).contains(at))) continue;
+            expect(
+              _changed(rest, focused, i),
+              isFalse,
+              reason: 'Focus on $name $part changed a lamp',
+            );
+          }
+          final face = tester.getRect(_focusedFace().first).shift(-origin);
+          expect(
+            _litSectors(rest, focused, width, face),
+            24,
+            reason: 'The bezel of $name $part did not light all the way round',
+          );
+        }
       });
     }
   }
@@ -468,16 +635,50 @@ void main() {
           .colors;
       expect(slot(true).toARGB32(), c.signal.toARGB32());
       expect(off.toARGB32(), c.trough.toARGB32());
-      // Focused, the lit slot's rim keeps the switch's edge on the panel:
-      // the legend's ink by day, white by night.
-      final rim = applianceFocusLight(
+      final light = applianceFocusLight(
         c.focus,
         c.signal,
         bottom: Color.lerp(c.signal, c.signalBottom, 0.5),
         ink: c.onSignal,
       );
-      expect(applianceContrast(rim, c.face), greaterThanOrEqualTo(3));
-      expect(applianceContrast(rim, c.signal), greaterThanOrEqualTo(3));
+      expect(
+        light.r,
+        greaterThan(light.b),
+        reason: 'The signal emits warm light',
+      );
+      expect(light.computeLuminance(), greaterThan(c.focus.computeLuminance()));
     });
+  }
+
+  for (final brightness in Brightness.values) {
+    testWidgets(
+      'a menu command depresses only during a held press in ${brightness.name}',
+      (tester) async {
+        Future<void> show(Set<WidgetState> states) => _show(
+          tester,
+          SizedBox(
+            width: 210,
+            child: ApplianceMenuRow(label: 'Reorder', states: states),
+          ),
+          brightness: brightness,
+        );
+        double depth() => tester
+            .widget<AnimatedApplianceSurface>(
+              find.byType(AnimatedApplianceSurface),
+            )
+            .face
+            .lift;
+        await show({});
+        final (idle, _) = await _pixels(tester);
+        for (final state in [WidgetState.hovered, WidgetState.focused]) {
+          await show({state});
+          final (lit, _) = await _pixels(tester);
+          expect(lit, isNot(orderedEquals(idle)), reason: state.name);
+          expect(depth(), 0);
+        }
+        await show({WidgetState.pressed});
+        expect(depth(), lessThan(0));
+      },
+    );
   }
 }

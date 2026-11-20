@@ -100,12 +100,14 @@ class _Cap extends StatelessWidget {
     required this.enabled,
     required this.focused,
     required this.held,
+    this.hovered = false,
     this.style,
   });
 
   final bool enabled;
   final bool focused;
   final bool held;
+  final bool hovered;
   final ApplianceStyle? style;
 
   @override
@@ -117,14 +119,24 @@ class _Cap extends StatelessWidget {
       {
         if (!enabled) WidgetState.disabled,
         if (focused) WidgetState.focused,
+        if (hovered) WidgetState.hovered,
         if (held) WidgetState.pressed,
       },
     );
     final face = layered.on(
       ApplianceFace.key(c, radius: ApplianceSpacing.tight).copyWith(
         lift: !enabled ? 0.35 : (held ? 0.6 : 1),
-        foreground: enabled ? c.print : c.printDisabled,
-        focus: focused ? c.focus : c.focus.withValues(alpha: 0),
+        foreground: enabled
+            ? Color.lerp(
+                c.print,
+                c.signal,
+                focused
+                    ? 0.85
+                    : hovered
+                    ? 0.14
+                    : 0,
+              )
+            : c.printDisabled,
       ),
     );
     return SizedBox.fromSize(
@@ -228,6 +240,7 @@ class ApplianceSlider extends StatefulWidget {
 
 class _ApplianceSliderState extends State<ApplianceSlider> {
   bool _dragging = false;
+  bool _hovered = false;
 
   double _snap(double v) {
     final d = widget.divisions;
@@ -258,6 +271,8 @@ class _ApplianceSliderState extends State<ApplianceSlider> {
         final width = box.maxWidth.isFinite ? box.maxWidth : 240.0;
         void drag(double dx) => widget.onChanged?.call(_at(dx, width, rtl));
         return MouseRegion(
+          onEnter: (_) => setState(() => _hovered = true),
+          onExit: (_) => setState(() => _hovered = false),
           cursor: enabled ? SystemMouseCursors.click : MouseCursor.defer,
           child: GestureDetector(
             behavior: HitTestBehavior.opaque,
@@ -342,6 +357,7 @@ class _ApplianceSliderState extends State<ApplianceSlider> {
                             child: _Cap(
                               enabled: !states.contains(WidgetState.disabled),
                               focused: states.contains(WidgetState.focused),
+                              hovered: _hovered,
                               held:
                                   _dragging ||
                                   states.contains(WidgetState.pressed),

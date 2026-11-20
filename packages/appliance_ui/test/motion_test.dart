@@ -1,9 +1,4 @@
-// Appliance mid-move (design6 O): every part that moves, drags, opens or
-// previews is stopped half-way and what is on screen is held. A swiped
-// slide stays inside its window's rounded frame; a range's preview ends on
-// the hovered day, drawn as a finished end; sheets, dialogs, disclosures,
-// switches, sliders, swiped and lifted rows and the refresh pull lay out
-// mid-move without an overflow or a throw.
+// Controls retain their geometry during drags, presses and overlay transitions.
 import 'dart:async';
 
 import 'package:appliance_ui/appliance_ui.dart';

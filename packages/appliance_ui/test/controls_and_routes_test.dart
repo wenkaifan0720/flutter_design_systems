@@ -1,7 +1,4 @@
-// The parts Appliance runs on ui_core, held to how they behave in an app (the
-// module's own package, as the design-systems gate composes it). The full
-// suite (every part's states, motion, goldens and Larder's screens) runs on
-// the exported package, appliance_ui.
+// Keyboard, pointer and overlay behavior of the public controls.
 import 'dart:async';
 
 import 'package:flutter/services.dart';

@@ -1,9 +1,4 @@
-// Controls in an ApplianceField take a tap, each its own: a selector's
-// positions, chips in a wrap, a stepper's keys, a switch, a checkbox and a
-// time picker's keys, by the pointer and through their semantics (a screen
-// reader's double tap, a browser's click with semantics on). A group's
-// controls merged into the field's one node gave every tap to the first of
-// them (the user, 11-18: Stint's Priority and Labels took no tap).
+// Controls sharing a field keep separate pointer and screen-reader actions.
 import 'package:appliance_ui/appliance_ui.dart';
 import 'package:material_ui/material_ui.dart' show MaterialApp;
 import 'package:flutter/semantics.dart';

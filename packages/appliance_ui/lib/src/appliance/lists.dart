@@ -8,6 +8,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
+import 'internal/control_light.dart';
 import 'material.dart';
 import 'theme.dart';
 
@@ -75,9 +76,7 @@ class AppliancePanel extends StatelessWidget {
           bottom: pressed ? Color.lerp(c.face, c.keyDownBottom, 0.5) : null,
           lift: pressed ? -0.3 : 0,
           travel: pressed ? 0.5 : 0,
-          focus: states.contains(WidgetState.focused)
-              ? c.focus
-              : _none(c.focus),
+          focus: c.signal.withValues(alpha: applianceControlLight(states)),
         ),
       );
       Widget inner = Padding(
@@ -434,7 +433,11 @@ class ApplianceListTile extends StatelessWidget {
               ? c.printDisabled
               : destructive
               ? c.danger
-              : c.print);
+              : Color.lerp(
+                  c.print,
+                  c.signalInk,
+                  applianceControlLight(states),
+                )!);
       final muted = disabled ? c.printDisabled : c.printMuted;
       final chevron = showChevron ?? (onTap != null && trailing == null);
       final face = layered.on(
@@ -447,9 +450,6 @@ class ApplianceListTile extends StatelessWidget {
             ApplianceMetrics.panelRadius - keyInset,
           ),
           foreground: ink,
-          focus: states.contains(WidgetState.focused)
-              ? c.focus
-              : _none(c.focus),
         ),
       );
       final hasRoom = subtitle != null;

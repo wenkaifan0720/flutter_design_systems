@@ -87,7 +87,7 @@ abstract final class ApplianceMetrics {
   static const double focusGap = 2;
 
   /// The width of a focused part's lit rim, inside its edge.
-  static const double focusWidth = 2.5;
+  static const double focusWidth = 1.5;
 
   /// A lamp's diameter.
   static const double lampSize = 8;

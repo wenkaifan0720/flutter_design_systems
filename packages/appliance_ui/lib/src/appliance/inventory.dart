@@ -354,28 +354,12 @@ final DesignInventory applianceInventory = DesignInventory(
       'RadioGroup',
       (_) => _Held<String>(
         'standard',
-        (context, v, set) => Semantics(
-          container: true,
-          label: 'Delivery',
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              for (final (value, label) in const [
-                ('standard', 'Standard'),
-                ('next', 'Next day'),
-              ])
-                ApplianceListTile(
-                  title: label,
-                  leading: ApplianceRadio<String>(
-                    value: value,
-                    groupValue: v,
-                    onChanged: set,
-                    semanticLabel: label,
-                  ),
-                  onTap: () => set(value),
-                ),
-            ],
-          ),
+        (context, v, set) => ApplianceRadioGroup<String>(
+          options: const ['standard', 'next'],
+          value: v,
+          labelOf: (value) => value == 'next' ? 'Next day' : 'Standard',
+          semanticLabel: 'Delivery',
+          onChanged: set,
         ),
       ),
     ),

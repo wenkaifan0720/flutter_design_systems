@@ -14,6 +14,7 @@ import 'package:ui_core/ui_core.dart';
 import 'feedback.dart';
 import 'internal/bare_field.dart';
 import 'internal/glyphs.dart';
+import 'internal/control_light.dart';
 import 'material.dart';
 import 'menus.dart';
 import 'select.dart';
@@ -732,9 +733,10 @@ class ApplianceChip extends StatelessWidget {
             .copyWith(
               lift: disabled && !down ? 0.35 : null,
               foreground: disabled ? c.printDisabled : c.print,
-              focus: states.contains(WidgetState.focused)
-                  ? c.focus
-                  : c.focus.withValues(alpha: 0),
+              // Focus lights a latching chip's bezel, selected or not: the
+              // lamp means selected, and a half-lit lamp would read as half
+              // selected.
+              focus: applianceLitFocus(c, states, lit: latches && !disabled),
             ),
       );
       final content = Padding(
@@ -748,8 +750,9 @@ class ApplianceChip extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             if (latches) ...[
-              ApplianceLamp(
+              ApplianceControlLamp(
                 lit: selected && !disabled,
+                states: states.difference(const {WidgetState.focused}),
                 size: ApplianceMetrics.lampSize - 2,
               ),
               const SizedBox(width: ApplianceSpacing.small),

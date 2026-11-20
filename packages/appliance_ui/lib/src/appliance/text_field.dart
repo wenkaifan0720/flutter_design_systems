@@ -11,6 +11,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
+import 'internal/control_light.dart';
 import 'material.dart';
 import 'theme.dart';
 
@@ -262,6 +263,7 @@ class ApplianceTextField extends StatefulWidget {
 class _ApplianceTextFieldState extends State<ApplianceTextField> {
   TextEditingController? _ownController;
   FocusNode? _ownFocus;
+  bool _hovered = false;
 
   TextEditingController get _controller =>
       widget.controller ?? (_ownController ??= TextEditingController());
@@ -303,6 +305,7 @@ class _ApplianceTextFieldState extends State<ApplianceTextField> {
     final states = <WidgetState>{
       if (!widget.enabled) WidgetState.disabled,
       if (focused) WidgetState.focused,
+      if (_hovered) WidgetState.hovered,
       if (widget.error != null) WidgetState.error,
     };
     final layered = DesignStyleOf([widget.style, theme.textFieldStyle], states);
@@ -319,9 +322,9 @@ class _ApplianceTextFieldState extends State<ApplianceTextField> {
         lift: widget.enabled ? -1 : -0.5,
         foreground: words.color,
         edge: widget.error != null ? c.danger : null,
-        focus: focused
-            ? (widget.error != null ? c.danger : c.focus)
-            : c.focus.withValues(alpha: 0),
+        focus: (widget.error != null ? c.danger : c.signal).withValues(
+          alpha: applianceControlLight(states),
+        ),
       ),
     );
     final height = layered.minimumSize?.height ?? theme.controlHeight;
@@ -372,6 +375,8 @@ class _ApplianceTextFieldState extends State<ApplianceTextField> {
       ),
     );
     final Widget well = MouseRegion(
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit: (_) => setState(() => _hovered = false),
       cursor: widget.enabled
           ? SystemMouseCursors.text
           : SystemMouseCursors.basic,

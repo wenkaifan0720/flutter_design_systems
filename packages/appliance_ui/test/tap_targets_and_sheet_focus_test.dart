@@ -1,8 +1,4 @@
-// The parts Appliance moved onto ui_core 0.3.0 (the shell's rail, a sheet and
-// its grip, the rating) held to ui_core_test's tap-target check: a tap reaches
-// each where a finger or a pointer is told it is; and a sheet dragged and let
-// go keeps the keys (ui_core's route gives the focus back after the drag),
-// raised by a call or as a router's page.
+// Verify tap targets and keyboard focus after dismissing a dragged sheet.
 import 'dart:async';
 
 import 'package:appliance_ui/appliance_ui.dart';
