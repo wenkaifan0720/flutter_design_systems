@@ -7,7 +7,7 @@ const double frostedMeasureFrom = 600;
 /// [frostedMeasureFrom] up.
 const double frostedControlMeasure = 320;
 
-/// A control's measure (design6 P, width on a wide layout): on a phone it
+/// A control's measure (its width on a wide layout): on a phone it
 /// takes its column's width; from [frostedMeasureFrom] up it stands at the
 /// column's start, at most [frostedControlMeasure] wide, so a select never
 /// runs the width of a page for one word.

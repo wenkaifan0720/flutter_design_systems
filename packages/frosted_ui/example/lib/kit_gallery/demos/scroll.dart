@@ -52,7 +52,7 @@ Widget kitScrollDemo(Brightness brightness) => kitScreen(
           label: 'Highlights',
           children: [
             // Warm and cool by turns: two warm slides side by side (sunset,
-            // lemon) still read as one pane mid-swipe (self-review round 5).
+            // lemon) still read as one pane mid-swipe.
             _Pane('Morning', round: false, hue: (h) => h.sunset.a),
             _Pane('Noon', round: false, hue: (h) => h.sky.a),
             _Pane('Evening', round: false, hue: (h) => h.coral.a),
@@ -111,7 +111,7 @@ class _Pane extends StatelessWidget {
 
   /// A slide's own tint over the wash, so one slide is told from the next
   /// as it moves (alike, two whole slides side by side read as one still
-  /// pane with its word sliding over it, self-review round 4).
+  /// pane with its word sliding over it).
   final Color Function(FrostedHues hues)? hue;
 
   @override

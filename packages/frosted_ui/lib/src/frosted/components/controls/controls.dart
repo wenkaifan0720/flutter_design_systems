@@ -43,7 +43,7 @@ const double _segmentFillWord = 14;
 // count).
 const int _quickAmountColumns = 3;
 
-// metric: from 600 up (design6 P) a quick amount stands at least 112 wide,
+// metric: from 600 up a quick amount stands at least 112 wide,
 // about what a phone's three take of a 358 column; the cells stay equal, as
 // wide as the widest amount and its line.
 const double _quickAmountWide = 112;
@@ -60,7 +60,7 @@ const double _quickActionWide = 84;
 // a row equal, as wide as the widest word and line.
 const double _moveActWide = 240;
 
-/// From 600 up (design6 P) a group of choices or actions keeps to its
+/// From 600 up a group of choices or actions keeps to its
 /// content: its cells as wide as the widest of them, the group at the
 /// line's start rather than drawn across the column. Below 600 it is
 /// [child] as it is, its cells sharing the width.
@@ -420,7 +420,7 @@ class FrostedSegmentedButton<T> extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.frostedTheme;
     // Below 600 a filled strip shares its field's width among its segments;
-    // from 600 up (design6 P) every strip keeps to its segments, a filled
+    // from 600 up every strip keeps to its segments, a filled
     // one still at the field's height.
     final share = fill && MediaQuery.sizeOf(context).width < frostedMeasureFrom;
     final base = fill
@@ -832,29 +832,17 @@ class FrostedSwitch extends StatelessWidget {
     final (edge, edges) = side == null
         ? (s.edge, const EdgeInsets.all(FrostedStrokes.regular))
         : s.edgeOf(null, FrostedStrokes.regular);
-    // A token theme by night draws a dark knob, to stand on the light ink
-    // of the track when on; off, on the dark quiet track, it would vanish,
-    // so it takes the ink there. A light knob stands on both.
+    // A token theme by night draws a dark knob (made for a light track); on
+    // the dark glass track it would vanish, so it takes the ink there. A
+    // light knob stands as it is.
     final knob =
         s.foreground ??
-        (value || t.colorScheme.toggleKnob.computeLuminance() > .5
+        (t.colorScheme.toggleKnob.computeLuminance() > .5
             ? t.colorScheme.toggleKnob
             : t.colorScheme.textPrimary);
-    // By night the on track is the light ink, and a knob of glass over it
-    // came out a mid grey that read as off or disabled (self-review round
-    // 3): on, it is paint in the ink's words' colour, as the act's words
-    // stand on the act.
-    final nightOn = value && t.isDark && s.foreground == null;
-    // .tgl { width: 44px; height: 26px; border-radius: 999px;
-    //   background: rgba(21,21,45,.13);
-    //   box-shadow: inset 0 0 0 1px rgba(21,21,45,.03) }
-    // .tgl::before { top: 2px; left: 2px; width: 22px; height: 22px;
-    //   background: #fff; box-shadow: 0 1px 3px rgba(21,21,45,.22),
-    //   0 0 0 .5px rgba(21,21,45,.06) }
-    // .tgl:checked { background: var(--ink-fill) }  .tgl:checked::before
-    //   { left: 20px }
-    // Off, the track is recessed glass; on, it is tinted with the ink. The
-    // knob is a disc of glass over either.
+    // The track is recessed glass, on or off. On, the knob stands at the end,
+    // a check is printed in the room it left and the glass takes a little
+    // more frost; the knob is a disc of glass with the glass's own light rim.
     final slide = Padding(
       padding: const EdgeInsets.all(FrostedChromeMetrics.toggleInset),
       child: AnimatedAlign(
@@ -866,7 +854,7 @@ class FrostedSwitch extends StatelessWidget {
         child: SizedBox.square(
           dimension: FrostedChromeMetrics.toggleKnob,
           child: FrostedFace(
-            material: nightOn ? FrostedMaterial.paint : FrostedMaterial.pane,
+            material: FrostedMaterial.pane,
             radius: BorderRadius.circular(FrostedChromeMetrics.toggleKnob / 2),
             shape: cut == null
                 ? null
@@ -874,65 +862,63 @@ class FrostedSwitch extends StatelessWidget {
                     cut,
                     -FrostedChromeMetrics.toggleInset,
                   ),
-            color: nightOn
-                ? t.colorScheme.onAccent
-                : knob.withValues(alpha: knob.a * .62),
-            ring: value || s.foreground != null ? null : t.controlEdge,
+            color: knob.withValues(alpha: knob.a * .62),
+            ring: t.glass.rim,
             shadows: t.shadows.toggleKnob,
           ),
         ),
       ),
     );
+    const room =
+        FrostedChromeMetrics.toggleWidth -
+        FrostedChromeMetrics.toggleKnob -
+        2 * FrostedChromeMetrics.toggleInset;
+    final inside = Stack(
+      fit: StackFit.expand,
+      children: [
+        PositionedDirectional(
+          start: FrostedChromeMetrics.toggleInset,
+          top: 0,
+          bottom: 0,
+          width: room,
+          child: AnimatedOpacity(
+            opacity: value ? 1 : 0,
+            duration: duration,
+            curve: motion.curve,
+            child: Icon(
+              FrostedGlyphs.check,
+              size: 12,
+              color: s.foreground ?? t.colorScheme.textPrimary,
+            ),
+          ),
+        ),
+        slide,
+      ],
+    );
     final Widget track;
     if (fill != null || edge != null) {
       // A style's own fill or edge: drawn as it sets them.
       track = FrostedFace(
-        material: fill != null || value
-            ? FrostedMaterial.paint
-            : FrostedMaterial.well,
+        material: fill != null ? FrostedMaterial.paint : FrostedMaterial.well,
         radius: BorderRadius.circular(radius),
         shape: cut,
-        color:
-            fill ??
-            (value
-                ? t.colorScheme.textPrimary.withValues(
-                    alpha: t.isDark ? .78 : .86,
-                  )
-                : null),
-        wash: s.overlay,
+        color: fill,
+        wash: s.overlay ?? (value ? t.glass.wash : null),
         edge: edge,
         edges: edges,
-        child: slide,
+        child: inside,
       );
     } else {
-      // The recess's rim (and the knob's, off) says where the switch is and
-      // where its knob stands, at 3:1 on any glass; the ink comes in under
-      // the knob as it slides, rather than all at once.
+      // The track is a recess in a field's language: a well a step deeper
+      // than the glass it stands on, its rim the lit hairline by day and the
+      // night glass's rim by night, never a dark line.
       track = FrostedFace(
         material: FrostedMaterial.well,
         radius: BorderRadius.circular(radius),
         shape: cut,
-        wash: s.overlay,
-        ring: t.controlEdge,
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            AnimatedOpacity(
-              opacity: value ? 1 : 0,
-              duration: duration,
-              curve: motion.curve,
-              child: FrostedFace(
-                material: FrostedMaterial.paint,
-                radius: BorderRadius.circular(radius),
-                shape: cut,
-                color: t.colorScheme.textPrimary.withValues(
-                  alpha: t.isDark ? .78 : .86,
-                ),
-              ),
-            ),
-            slide,
-          ],
-        ),
+        wash: s.overlay ?? (value ? t.glass.wash : null),
+        ring: frostedLitEdge(t, t.controlEdge),
+        child: inside,
       );
     }
     Widget control = SizedBox(
@@ -1064,7 +1050,7 @@ class FrostedMonthSwitch extends StatelessWidget {
   Widget build(BuildContext context) {
     final label = this.label ?? FrostedLocalizations.of(context).month;
     final t = context.frostedTheme;
-    // From 600 up (design6 P) the switch keeps to its arrows and month, at
+    // From 600 up the switch keeps to its arrows and month, at
     // the line's start, as the desktop's does; below 600 it runs the line.
     final wide = MediaQuery.sizeOf(context).width >= frostedMeasureFrom;
     const arrow = FrostedChromeMetrics.monthArrow;
@@ -1651,8 +1637,9 @@ class FrostedQuickAmount {
 
 /// A goal's quick amounts (`.qamts`): wells three across, 8 apart, each the
 /// whole-dollar figure in the display face over a quiet 12 word, 10 by 6
-/// inside on the white well with its hairline ring; the chosen one on the
-/// ink act in white, its word at .72. The page owns [value] (the chosen
+/// inside on the white well with its hairline ring; the chosen one stays
+/// glass, a little clearer, with a dot printed in its top corner and its
+/// word in the secondary ink. The page owns [value] (the chosen
 /// amount, or none); a null [onChanged] leaves them inert. A screen reader
 /// hears a group named [label] of buttons, the chosen one selected.
 ///
@@ -1695,53 +1682,52 @@ class FrostedQuickAmounts extends StatelessWidget {
     Widget well(FrostedQuickAmount item) {
       final on = item.amount == value;
       final figure = FrostedFormat.money(item.amount, cents: false);
+      // Chosen, the well stays glass: a little clearer, a dot printed in
+      // its top corner, in the room over its figure, never a fill of ink.
+      final face = FrostedFace(
+        material: FrostedMaterial.paint,
+        radius: BorderRadius.circular(FrostedChromeMetrics.quickAmountRadius),
+        color: t.glass.well,
+        wash: on ? t.glass.wash : null,
+        ring: frostedLitEdge(t, t.glass.wellEdge),
+        padding: FrostedChromeMetrics.quickAmountInset,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          spacing: FrostedChromeMetrics.quickAmountGap,
+          children: [
+            // A figure is never broken: at large text one wider than its
+            // well shrinks to it whole ("$1,160", never "$1,16" over "0").
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: FrostedNumberText(
+                figure,
+                style: t.textTheme.titleMedium.c(t.colorScheme.textPrimary),
+              ),
+            ),
+            Text(
+              item.label,
+              maxLines: 1,
+              softWrap: false,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+              style: t.textTheme.labelMedium
+                  .line(14.4)
+                  .c(
+                    on
+                        ? t.colorScheme.textSecondary
+                        : t.colorScheme.textTertiary,
+                  ),
+            ),
+          ],
+        ),
+      );
       return FrostedPressable(
         key: item.key,
         onPressed: onChanged == null ? null : () => onChanged!(item.amount),
         label: '$figure, ${item.label}',
         selected: on,
         radius: FrostedChromeMetrics.quickAmountRadius,
-        child: FrostedFace(
-          material: FrostedMaterial.paint,
-          radius: BorderRadius.circular(FrostedChromeMetrics.quickAmountRadius),
-          color: on ? null : t.glass.well,
-          gradients: on ? [t.colorScheme.buttonFill] : const <Gradient>[],
-          sheen: on ? t.colorScheme.buttonSheen : null,
-          ring: on ? null : frostedLitEdge(t, t.glass.wellEdge),
-          shadows: on ? t.shadows.button : const <BoxShadow>[],
-          padding: FrostedChromeMetrics.quickAmountInset,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            spacing: FrostedChromeMetrics.quickAmountGap,
-            children: [
-              // A figure is never broken: at large text one wider than its
-              // well shrinks to it whole ("$1,160", never "$1,16" over "0").
-              FittedBox(
-                fit: BoxFit.scaleDown,
-                child: FrostedNumberText(
-                  figure,
-                  style: t.textTheme.titleMedium.c(
-                    on ? t.colorScheme.onButton : t.colorScheme.textPrimary,
-                  ),
-                ),
-              ),
-              Text(
-                item.label,
-                maxLines: 1,
-                softWrap: false,
-                overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.center,
-                style: t.textTheme.labelMedium
-                    .line(14.4)
-                    .c(
-                      on
-                          ? t.colorScheme.onButton.withValues(alpha: 0.72)
-                          : t.colorScheme.textTertiary,
-                    ),
-              ),
-            ],
-          ),
-        ),
+        child: _chosenDot(t, on, face),
       );
     }
 
@@ -1772,6 +1758,34 @@ class FrostedQuickAmounts extends StatelessWidget {
   }
 }
 
+/// [face] with, when [on], the chosen dot printed in its top corner: a 7
+/// disc in the ink, 5 in from the top and the end, inside the glass. The
+/// face keeps the constraints it was given, so a well still fills its cell.
+Widget _chosenDot(FrostedThemeData t, bool on, Widget face) => Stack(
+  fit: StackFit.passthrough,
+  children: [
+    face,
+    PositionedDirectional(
+      top: 5,
+      end: 5,
+      child: ExcludeSemantics(
+        child: FrostedFade(
+          opacity: on ? 1 : 0,
+          child: SizedBox.square(
+            dimension: 7,
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: t.colorScheme.textPrimary,
+              ),
+            ),
+          ),
+        ),
+      ),
+    ),
+  ],
+);
+
 // ---------------------------------------------------------------------------
 // Icon picker
 // ---------------------------------------------------------------------------
@@ -1796,7 +1810,8 @@ class FrostedIconChoice {
 
 /// A goal's icon picker (`.icons`): wells six across, 8 apart, each 44 tall
 /// and 12 round on the white well with its hairline ring, an 18 glyph in
-/// the secondary ink; the chosen one on the ink act in white; [labelled]
+/// the secondary ink; the chosen one stays glass, a little clearer, its
+/// glyph in the ink and a dot printed in its top corner; [labelled]
 /// writes [label] over the wells as the field's label. The page owns
 /// [value], a choice's word; a null [onChanged] leaves them inert. A screen
 /// reader hears a group named [label] of buttons, the chosen one selected.
@@ -1849,21 +1864,27 @@ class FrostedIconPicker extends StatelessWidget {
         radius: FrostedChromeMetrics.iconWellRadius,
         child: SizedBox(
           height: FrostedChromeMetrics.iconWell,
-          child: FrostedFace(
-            material: FrostedMaterial.paint,
-            radius: BorderRadius.circular(FrostedChromeMetrics.iconWellRadius),
-            color: on ? null : t.glass.well,
-            gradients: on ? [t.colorScheme.buttonFill] : const <Gradient>[],
-            sheen: on ? t.colorScheme.buttonSheen : null,
-            ring: on ? null : frostedLitEdge(t, t.glass.wellEdge),
-            shadows: on ? t.shadows.button : const <BoxShadow>[],
-            child: Center(
-              child: Icon(
-                choice.icon,
-                size: FrostedChromeMetrics.iconWellGlyph,
-                color: on
-                    ? t.colorScheme.onButton
-                    : t.colorScheme.textSecondary,
+          // Chosen, the well stays glass: a little clearer, its glyph in the
+          // ink and a dot printed in its top corner, never a fill of ink.
+          child: _chosenDot(
+            t,
+            on,
+            FrostedFace(
+              material: FrostedMaterial.paint,
+              radius: BorderRadius.circular(
+                FrostedChromeMetrics.iconWellRadius,
+              ),
+              color: t.glass.well,
+              wash: on ? t.glass.wash : null,
+              ring: frostedLitEdge(t, t.glass.wellEdge),
+              child: Center(
+                child: Icon(
+                  choice.icon,
+                  size: FrostedChromeMetrics.iconWellGlyph,
+                  color: on
+                      ? t.colorScheme.textPrimary
+                      : t.colorScheme.textSecondary,
+                ),
               ),
             ),
           ),

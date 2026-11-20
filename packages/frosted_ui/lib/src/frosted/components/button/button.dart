@@ -232,7 +232,7 @@ class FrostedButton extends StatelessWidget {
 
     // Out of use, the ink act is faint glass, its word in the quiet ink at
     // full strength: dimmed, the ink pill read as a grey smudge and took its
-    // white word under 3:1 (the user, 11-18).
+    // white word under 3:1.
     final faint = _face == _Face.ink && !enabled;
     // The destructive act's tint, over the page, and the danger ink that
     // holds 4.5:1 on it.
@@ -559,7 +559,7 @@ class _RenderSpill extends RenderShiftedBox {
   /// own width fits beside it, less (to the [_floor]) as it does not; and
   /// the whole inset again once the word must narrow anyway, as CSS's
   /// ellipsis keeps its padding (spilled to the floor, a cut word stood on
-  /// the pill's rim, "Remind me Thurs…" at 200%, self-review round 6).
+  /// the pill's rim, "Remind me Thurs…" at 200%).
   double _side(double width) {
     final c = child;
     final floor = _floor;

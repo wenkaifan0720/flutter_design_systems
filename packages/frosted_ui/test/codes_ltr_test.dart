@@ -1,4 +1,4 @@
-// Codes read left to right in any language (self-review round 3): under a right-to-left page an input group's parts
+// Codes read left to right in any language: under a right-to-left page an input group's parts
 // keep the order of the value they make (https:// before .com), a profile's address and phone keep theirs, and the
 // inventory stands at the scaffold's gutter alone.
 import 'package:material_ui/material_ui.dart';

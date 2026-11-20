@@ -503,7 +503,7 @@ class _FrostedPainter extends CustomPainter {
     final peach = spectrum[3];
     final mint = spectrum[4];
     // The beam: the ink from nothing at the left to a fifth at the prism,
-    // ending on its face (it ran on into the glass: self-review round 3).
+    // ending on its face rather than running on into the glass.
     canvas.drawLine(
       const Offset(0, 66),
       const Offset(88, 62.3),
@@ -516,8 +516,7 @@ class _FrostedPainter extends CustomPainter {
     );
     // A fade that eases out, (1 - s)², with no slope where it ends: a
     // straight ramp to 0 leaves a line where it stops, and the rays and the
-    // wash under them stopping on one line read as a cut (self-review
-    // rounds 2, 4 and 5).
+    // wash under them stopping on one line read as a cut.
     List<Color> eased(Color c, double a) => [
       for (final m in const [1.0, .5625, .25, .0625, 0.0])
         c.withValues(alpha: a * m),
@@ -549,13 +548,12 @@ class _FrostedPainter extends CustomPainter {
         ..close(),
       Paint()
         // Feathered on every side: its start at full strength stood as a
-        // pale box with a hard top corner off the prism's face
-        // (self-review round 3).
+        // pale box with a hard top corner off the prism's face.
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6)
         ..shader = LinearGradient(
           // Gone before the art's edge, and past the rays' end: by night
           // the wash (the surface, lighter than the night glass) ran out on
-          // the edge, then on the rays' own line (self-review rounds 4, 5).
+          // the edge, then on the rays' own line.
           colors: eased(fan, 0.9 * 0.6),
           stops: const [0, 0.22, 0.44, 0.66, 0.88],
         ).createShader(const Rect.fromLTWH(128, 0, 92, 1)),

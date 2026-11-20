@@ -40,6 +40,14 @@ const List<double> _paneSpecularStops = [0.34, 0.5, 0.66];
 const double _paneSpecularAngle = 122;
 // metric: the pearl's base runs at 135deg, its rim and glow at 120deg.
 const double _pearlAngle = 135;
+
+// The reflection a lit card's face catches, at full light, and where it
+// crosses the face.
+const Color _litReflection = Color(0x8CFFFFFF);
+// How much of the pearl's milk a full clearing (focus) takes away, so more
+// of what is behind the card shows through; a resting pointer takes less.
+const double _pearlClears = .3;
+const List<double> _litStops = [0.14, 0.38, 0.62];
 const double _rimAngle = 120;
 // metric: the blush inside the rings, 90% x 120% at the top end corner,
 // gone at 60% (`.kcard` radial).
@@ -96,10 +104,9 @@ const double _numberFactsTop = 16;
 const List<int> _numberFactFlex = [10, 10, 16];
 // metric: the width a card lays itself across when its parent sets none.
 const double _looseWidth = 320;
-// metric: from 600 up (design6 P) a card is at most as wide as on the
-// source's desktop Home (`.kc` 464 at 1440 less its 28 each side), rather
-// than drawn across a page. 400 stood Facet's Home card 8 short of `.kcard
-// { width: 100% }`.
+// metric: from 600 up a card is at most as wide as on the source's desktop
+// Home (`.kc` 464 at 1440 less its 28 each side), rather than drawn across
+// a page.
 const double _cardWide = 408;
 
 // The narrowest the credit card's face lays its words out in: a phone's
@@ -240,7 +247,9 @@ class FrostedCreditCard extends StatelessWidget {
             '$balanceLabel ${FrostedFormat.money(balance)} of '
             '${FrostedFormat.money(limit, cents: limit % 1 != 0)} limit'
             '${note == null ? '' : ', $note'}';
-    // The card at [level] of clearing and [lit] of rim light.
+    // The card at [level] of clearing and [lit] of rim light: focus and a
+    // resting pointer light its own face, tilted with it on the desktop,
+    // never a frame round its box.
     Widget bodyAt(double level, double lit) {
       Widget card = LayoutBuilder(
         builder: (context, constraints) {
@@ -249,7 +258,7 @@ class FrostedCreditCard extends StatelessWidget {
               : _looseWidth;
           final width = measured ? math.min(room, _cardWide) : room;
           // Focus and a resting pointer clear the frost behind the card's
-          // own face and light its rim, tilted with it on the desktop.
+          // own face, a reflection crosses it, and focus lights its rim.
           final face = FrostedCleared(
             level: level,
             lit: lit,
@@ -267,6 +276,7 @@ class FrostedCreditCard extends StatelessWidget {
               mask: mask,
               note: note,
               noteIcon: noteIcon,
+              reflect: level,
             ),
           );
           if (stage && width < _stageFaceWidth) {
@@ -421,6 +431,7 @@ class _CardFace extends StatelessWidget {
     required this.mask,
     required this.note,
     required this.noteIcon,
+    required this.reflect,
   });
 
   final double radius;
@@ -434,6 +445,10 @@ class _CardFace extends StatelessWidget {
   final String? note;
   final IconData noteIcon;
 
+  // How far focus (1) or a resting pointer clears the face: its milk thins
+  // and a reflection crosses it.
+  final double reflect;
+
   @override
   Widget build(BuildContext context) {
     final page = context.frostedTheme;
@@ -444,14 +459,28 @@ class _CardFace extends StatelessWidget {
         textSecondary: page.pearl.textSecondary,
       ),
     );
+    final motion = FrostedMotion.of(context);
+    // The keyboard's light falls on the card's own rim, not a ring inside it.
+    final lit = FrostedClearing.litOf(context);
     return FrostedTheme(
       data: t,
       darkData: FrostedTheme.darkOf(context),
-      child: _face(context, t),
+      child: TweenAnimationBuilder<Offset>(
+        tween: Tween(end: Offset(reflect, lit)),
+        duration: motion.fast,
+        curve: motion.curve,
+        builder: (context, at, _) =>
+            FrostedClearing(level: 0, child: _face(context, t, at.dx, at.dy)),
+      ),
     );
   }
 
-  Widget _face(BuildContext context, FrostedThemeData t) {
+  Widget _face(
+    BuildContext context,
+    FrostedThemeData t,
+    double reflect,
+    double lit,
+  ) {
     final wide = FrostedBreakpoints.isWide(context);
     final inset = wide
         ? FrostedChromeMetrics.cardInsetWide
@@ -583,8 +612,12 @@ class _CardFace extends StatelessWidget {
     final face = DecoratedBox(
       decoration: BoxDecoration(
         borderRadius: outer,
+        // Lit by the keyboard, the rim brightens toward white.
         gradient: LinearGradient(
-          colors: t.pearl.rim,
+          colors: [
+            for (final c in t.pearl.rim)
+              lit == 0 ? c : frostedRimLight(t, c, lit),
+          ],
           stops: const [0, 0.35, 0.6, 0.82, 1],
           transform: const FrostedCssAngle(_rimAngle),
         ),
@@ -605,8 +638,12 @@ class _CardFace extends StatelessWidget {
           material: FrostedMaterial.paint,
           radius: inner,
           gradients: [
+            // Cleared, the pearl's milk thins.
             LinearGradient(
-              colors: [t.pearl.from, t.pearl.to],
+              colors: [
+                for (final c in [t.pearl.from, t.pearl.to])
+                  c.withValues(alpha: c.a * (1 - _pearlClears * reflect)),
+              ],
               transform: const FrostedCssAngle(_pearlAngle),
             ),
             _radial(
@@ -618,6 +655,16 @@ class _CardFace extends StatelessWidget {
               end: _blushEnd,
             ),
             _band(t.sheens.specular, _specularStops, _specularAngle),
+            // Focused or under a pointer, a broad reflection crosses the
+            // face along its light.
+            if (reflect > 0)
+              _band(
+                _litReflection.withValues(
+                  alpha: _litReflection.a * reflect * (t.isDark ? .55 : 1),
+                ),
+                _litStops,
+                _specularAngle,
+              ),
           ],
           sheen: t.sheens.cardSheen,
           clipChild: true,

@@ -1,5 +1,5 @@
 // The keys of the lists Frosted opens on ui_core's combobox, tag input and
-// menu bar (ui_core 0.2.0 final, 10e2d9d2d2; coordinator msg_1d9a877fea10),
+// menu bar (ui_core 0.2.0),
 // through Frosted's own wrappers: the arrows go round the ends; on a closed
 // list they open it without moving; a combobox opens on its value (else the
 // first option that can be taken) and lists every option until the words

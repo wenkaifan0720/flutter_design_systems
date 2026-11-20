@@ -1,4 +1,4 @@
-// Keylines (design6 P, "Keylines and padding"): the edges a screen's things stand on, read off the screen as drawn.
+// Keylines: the edges a screen's things stand on, read off the screen as drawn.
 // In each container (a card, a list section, a settings group, the sidebar) every run of words and every glyph is
 // measured by its ink (the pixels of its own colour inside its text box), and every control and face (an avatar, a
 // transaction's mark) by its box; words and glyphs inside a control or a face are the control's. Things that share a

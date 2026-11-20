@@ -232,7 +232,7 @@ class _FrostedScaffoldState extends State<FrostedScaffold> {
                     // tabs) takes a tap there.
                     FrostedBleedRoom(
                       // The page's content holds its cards to the page's
-                      // margins (design6 P); the shared check reads it.
+                      // margins; the shared keyline check reads it.
                       child: DesignKeylineRegion(
                         label: 'screen',
                         child: Padding(

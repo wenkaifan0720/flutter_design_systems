@@ -1,7 +1,7 @@
-// Frosted's meters and cards, one test each at Keel's own values: the prism
+// Frosted's meters and cards, one test each at the example's values: the prism
 // track and its parts, the legend, bars, meters, the over bar, compare and
 // merchant bars, in against out, the split, the statement, the visit strip,
-// the due line, balance changes, the route, the done mark; the Keel Card
+// the due line, balance changes, the route, the done mark; the credit card
 // (plain, frozen, on its desktop stage), the debit card, the card number,
 // a goal's card and row, the new-goal card, the mosaic and a pane; then
 // every one of them at 320 wide and text scale 1.3 in every preset, light
@@ -298,7 +298,7 @@ Widget _card({bool frozen = false, bool stage = false, VoidCallback? onTap}) =>
       balance: 1326.44,
       limit: 4000,
       mask: '4821',
-      brand: 'keel',
+      brand: 'tide',
       note: 'Autopay · due Nov 12',
       frozen: frozen,
       stage: stage,
@@ -1256,7 +1256,7 @@ void main() {
       final face = t.getSize(find.byType(AspectRatio));
       expect(face.width, _w);
       expect(face.height, moreOrLessEquals(_w / 1.586, epsilon: 0.01));
-      expect(find.text('keel'), findsOneWidget);
+      expect(find.text('tide'), findsOneWidget);
       expect(find.text('Credit'), findsOneWidget);
       expect(find.text('Balance'), findsOneWidget);
       expect(find.text('•• 4821'), findsOneWidget);
@@ -1302,7 +1302,7 @@ void main() {
       expect(find.byType(Transform), findsWidgets);
       expect(t.getSize(find.byType(AspectRatio)).width, 300 - 16);
       // The stage's 284 is narrower than the face lays its words out in
-      // (the self-review's shots: the balance ran into the brand, the
+      // (drawn there, the balance ran into the brand, the
       // limit into the last four), so the face is drawn at a phone card's
       // 358 and its picture scaled down to the stage. Its rows stand as
       // `.kcard`'s flex column lays them (space-between): where they are
@@ -1325,7 +1325,7 @@ void main() {
             balance: 26.44,
             limit: 4000,
             mask: '4821',
-            brand: 'keel',
+            brand: 'tide',
             note: 'Autopay · due Nov 12',
             balanceLabel: label,
             stage: true,

@@ -18,7 +18,7 @@ Widget kitCardDemo(Brightness brightness) => kitScreen(
   sections: [
     kitSection(
       // The stage turns the card from 600 wide; on a phone the third is the
-      // plain card again, so the caption says so (round 11).
+      // plain card again, so the caption says so.
       'The credit card: plain, frozen, and on its stage (from 600 wide)',
       children: [
         kitSpecimenCreditCard(),

@@ -1,5 +1,4 @@
-// The system back on Android (the form-factors check, coordinator
-// msg_5e8ccd896566): it closes what is raised over a page first, then pops
+// The system back on Android: it closes what is raised over a page first, then pops
 // the page under Frosted's own page motion. A sheet, a dialog, a menu and a
 // select's list are routes, which the navigator pops; a popover and a
 // combobox's list are ui_core's, which closes them itself (fec8131445): the

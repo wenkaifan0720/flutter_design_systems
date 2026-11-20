@@ -127,8 +127,10 @@ class FrostedSlider extends StatelessWidget {
     final thumb = s.shape;
     final cut = thumb is CircleBorder ? null : s.cut(FrostedCorners.full);
     const knob = FrostedChromeMetrics.sliderThumb;
+    // The knob is bounded by its shadow and a white reflection on its rim,
+    // never a dark traced edge.
     final (thumbEdge, thumbEdges) = s.edgeOf(
-      t.colorScheme.textSecondary,
+      t.glass.rim,
       FrostedStrokes.regular,
     );
     final step = (max - min) / (divisions ?? 20);

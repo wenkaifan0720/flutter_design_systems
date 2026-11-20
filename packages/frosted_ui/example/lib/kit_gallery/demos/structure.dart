@@ -72,8 +72,8 @@ Widget kitStructureDemo(Brightness brightness) => kitScreen(
           builder: (context) => FrostedSuggestion(
             icon: LucideIcons.sparkles,
             title: r'Suggested $450',
-            // Groceries' own (orchid), beside dining out's $275 (round 11:
-            // two figures under one reason).
+            // Groceries' own (orchid), beside dining out's $275 (one figure per
+            // reason).
             subtitle: 'Groceries, your September and October average',
             hue: context.frostedTheme.hues.orchid,
             trailing: FrostedButton.glass(
@@ -431,8 +431,7 @@ Widget kitSpecimenDayHeads() => Builder(
     final t = context.frostedTheme;
     return FrostedListSection(
       rows: [
-        // Each day's net is its rows' sum (round 11: Today said -$9.65 over
-        // its one -$6.75 row).
+        // Each day's net is its rows' sum.
         const FrostedDayHead('Today', net: -6.75, first: true),
         FrostedTransactionRow(
           mark: FrostedTransactionMark.purchase(

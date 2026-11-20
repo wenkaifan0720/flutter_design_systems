@@ -98,7 +98,7 @@ class _FrostedColorPickerState extends State<FrostedColorPicker> {
           radius: BorderRadius.circular(11),
           // The slider's pearl: a dark knob by night (made for a switch's
           // light ink) takes the light ink, as FrostedSlider's does; dark,
-          // the thumbs read as holes in the tracks (self-review round 3).
+          // the thumbs read as holes in the tracks.
           color:
               fill ??
               (t.colorScheme.toggleKnob.computeLuminance() > .5
@@ -146,7 +146,7 @@ class _FrostedColorPickerState extends State<FrostedColorPicker> {
       trackBuilder: (context, channel, colour) {
         // The tracks run from the line's start as their thumbs do: drawn
         // left to right under a right-to-left thumb, each thumb stood on
-        // another colour (self-review round 2).
+        // another colour.
         final gradient = switch (channel) {
           DesignColorChannel.hue => LinearGradient(
             begin: AlignmentDirectional.centerStart,

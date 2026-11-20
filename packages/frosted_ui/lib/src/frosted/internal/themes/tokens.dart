@@ -62,8 +62,8 @@ final class FrostedTokenShadow {
   );
 }
 
-/// The colours of one appearance of a baked catalog theme: Cody's role names,
-/// which is what ThemeTokens v2 records.
+/// The colours of one appearance of a baked theme, under the role names a
+/// ThemeTokens v2 record uses.
 @immutable
 final class FrostedTokenColors {
   /// One appearance's colours.

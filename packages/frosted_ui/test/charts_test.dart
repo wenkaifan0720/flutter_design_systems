@@ -76,7 +76,7 @@ Future<void> _bothWidths(WidgetTester t, Widget chart, String label) async {
   }
 }
 
-// --- Keel's figures (keel.json) ---------------------------------------------
+// --- The example's figures --------------------------------------------------
 
 const List<num> _netWorth = [
   61400, 62900, 64100, 63200, 65600, 67000, //
@@ -167,7 +167,7 @@ const List<num> _bikeByMonth = [0, 0, 0, 0, 0, 0, 140, 100, 100, 100, 100, 100];
 const List<FrostedStep> _bills = [
   FrostedStep(1, 1150, 'Rent'),
   FrostedStep(3, 35, 'Kite Mobile'),
-  FrostedStep(12, 1326.44, 'Keel Card'),
+  FrostedStep(12, 1326.44, 'Tide Card'),
   FrostedStep(15, 15.98, 'Newsline'),
   FrostedStep(19, 2.99, 'Cloudbox'),
   FrostedStep(27, 10.99, 'Streamline Music'),
@@ -244,7 +244,7 @@ Widget _fan({List<VoidCallback?> taps = const [null, null, null, null]}) =>
             FrostedFanEnd(
               amount: 1326.44,
               hue: hues.slate,
-              title: 'Keel Card autopay',
+              title: 'Tide Card autopay',
               subtitle: 'Autopay · Thu, Nov 12',
               onPressed: taps[3],
             ),
@@ -669,14 +669,14 @@ void main() {
       expect(find.text(word), findsOneWidget, reason: word);
     }
     expect(find.text('Rent \$1,150', findRichText: true), findsOneWidget);
-    expect(find.text('Keel Card \$1,326', findRichText: true), findsOneWidget);
+    expect(find.text('Tide Card \$1,326', findRichText: true), findsOneWidget);
     expect(find.textContaining('Kite Mobile'), findsNothing);
     await _pump(t, chart);
     expect(t.getSize(find.byWidget(chart)).height, 150 + 8 + 16);
     // The card's name stands 8 past its step at the centre of the 12th
     // day, centred on the riser.
     final box = t.getRect(find.byWidget(chart));
-    final card = t.getRect(find.text('Keel Card \$1,326', findRichText: true));
+    final card = t.getRect(find.text('Tide Card \$1,326', findRichText: true));
     expect(card.left, moreOrLessEquals(box.left + 11.5 / 30 * 314 + 8));
     expect(
       card.top,
@@ -779,7 +779,7 @@ void main() {
       'Emergency fund',
       'Lisbon in May',
       'New bike',
-      'Keel Card autopay',
+      'Tide Card autopay',
       'Autopay · Thu, Nov 12',
     ]) {
       expect(find.text(word), findsOneWidget, reason: word);
@@ -799,7 +799,7 @@ void main() {
         'Emergency fund',
         'Lisbon in May',
         'New bike',
-        'Keel Card autopay',
+        'Tide Card autopay',
       ])
         t.getRect(find.text(w)).center.dy,
     ];
@@ -812,7 +812,7 @@ void main() {
       findsOneWidget,
     );
     await t.tap(find.text('Emergency fund'));
-    await t.tap(find.text('Keel Card autopay'));
+    await t.tap(find.text('Tide Card autopay'));
     expect(opened, ['emergency', 'card']);
     expect(find.bySemanticsLabel(RegExp(r'^Lisbon in May,')), findsNothing);
   });

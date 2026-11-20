@@ -376,7 +376,7 @@ class FrostedSettingsGroup extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => FrostedCard(
-    // As much under the last row's content as over the head (design6 P).
+    // As much under the last row's content as over the head.
     child: FrostedFlushEnd(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -642,8 +642,8 @@ class FrostedFormSection extends StatelessWidget {
   }
 }
 
-/// A row's chevron with its ink on the group's trailing keyline (design6 P:
-/// a trailing glyph's ink ends on the keyline, its box may hang past it).
+/// A row's chevron with its ink on the group's trailing keyline (a
+/// trailing glyph's ink ends on the keyline, its box may hang past it).
 /// Lucide draws the chevron in the middle third of its box, so the box lays
 /// out two thirds wide and the glyph overhangs its end by the last third,
 /// mirrored in a right-to-left language.

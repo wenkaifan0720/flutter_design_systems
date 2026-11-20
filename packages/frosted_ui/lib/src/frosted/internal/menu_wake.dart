@@ -50,8 +50,8 @@ abstract final class FrostedLastInput {
 /// A menu ui_core raises, which gives its first row the focus however it
 /// opened: its rows stay unlit until a key is pressed or the pointer moves
 /// over the menu, unless a key opened it. So a menu a pointer opened lights
-/// no row until the pointer or the keys move (the menus check, coordinator
-/// msg_4b9e9c92778f), and one a key opened lights the first. After a
+/// no row until the pointer or the keys move, and one a key opened lights
+/// the first. After a
 /// pointer opened it, the first Down lights the row the menu holds (its
 /// first) rather than passing it. Plumbing of the components.
 class FrostedMenuWake extends StatefulWidget {

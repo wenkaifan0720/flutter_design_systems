@@ -343,7 +343,7 @@ class _XYChart extends StatelessWidget {
     ];
     // A series in its hue's ink by day; by night in its pastel mark, as the
     // ink is lifted toward white for words there and every series read the
-    // same near-white (self-review round 1).
+    // same near-white.
     Color seriesInk(FrostedHue hue) => t.isDark ? hue.a : hue.ink;
     final inks = <Color?>[
       for (final (i, s) in series.indexed)
@@ -878,7 +878,7 @@ class _PiePainter extends CustomPainter {
     // The slices in a layer of their own, so the gaps between them can be
     // cut through to whatever lies under (law 5: a gap is never painted in
     // the ground's colour; by night the painted surface read as black
-    // strokes, self-review round 3).
+    // strokes).
     canvas.saveLayer(Rect.fromCircle(center: c, radius: r + 1), Paint());
     var start = -math.pi / 2;
     final starts = <double>[];

@@ -56,8 +56,7 @@ List<Widget> _recent(BuildContext context) {
       accountIcon: LucideIcons.wallet,
       onPressed: () {},
     ),
-    // The day's net is its rows' sum (round 11: +$3,409.60 over the one
-    // $3,412.50 row).
+    // The day's net is its rows' sum.
     const FrostedDayHead('Fri, Oct 23', net: 3412.50),
     FrostedTransactionRow(
       mark: FrostedTransactionMark.income('Northwind Studio'),

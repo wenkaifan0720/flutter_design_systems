@@ -170,7 +170,7 @@ class FrostedSnackBar extends StatelessWidget {
         };
     // By night every tone wears success's recipe, its ink over its own
     // tint: a pale opaque warning or danger disc beside success's dark tint
-    // read as two kinds of mark (self-review round 5). By day the tones'
+    // read as two kinds of mark. By day the tones'
     // inks are too dark to stand on the slab as a glyph, so their discs
     // stay opaque.
     final success = tone == FrostedTone.success;

@@ -415,9 +415,11 @@ class FrostedMaterials {
         raised: dark
             ? black.withValues(alpha: .22)
             : ink.withValues(alpha: .04),
+        // By day a well's rim is the lit hairline, a field's: glass has no
+        // dark edge.
         rimColour: dark
             ? white.withValues(alpha: .08)
-            : ink.withValues(alpha: .10),
+            : white.withValues(alpha: .85),
         sheenColour: dark
             ? white.withValues(alpha: .04)
             : white.withValues(alpha: .0),

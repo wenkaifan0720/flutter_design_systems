@@ -1756,7 +1756,7 @@ class FrostedNumberField extends StatelessWidget {
       ),
       // Each round is a disc as tall as the well its row lays it beside
       // (_StepperRow), at any text size: 48 rounds beside a 64 well stood at
-      // two heights in one row (the user, 11-18).
+      // two heights in one row.
       buttonBuilder: (context, button) => LayoutBuilder(
         builder: (context, box) => frostedIconButtonFace(
           context,
@@ -2218,8 +2218,8 @@ class _FrostedSelectState<T> extends State<FrostedSelect<T>> {
         ),
       ),
     );
-    // From 600 up the select stands at most 320 wide at its column's start
-    // (design6 P): one word never runs the width of a page.
+    // From 600 up the select stands at most 320 wide at its column's start:
+    // one word never runs the width of a page.
     return FrostedControlMeasure(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,

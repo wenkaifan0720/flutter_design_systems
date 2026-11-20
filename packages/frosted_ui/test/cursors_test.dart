@@ -1,6 +1,5 @@
-// Under a mouse, a part that takes a press or a drag shows its cursor (the user, 11-13, on the published gallery: "the
-// slider doesnt change cursor style"). A live slider shows the click cursor over its whole track and over its knob,
-// its MouseRegion's cursor is click; an inert one defers to what is under it. The 0.1.1 sweep's other finds: the
+// Under a mouse, a part that takes a press or a drag shows its cursor. A live slider shows the click cursor over its whole track and over its knob,
+// its MouseRegion's cursor is click; an inert one defers to what is under it. Also: the
 // navigation bar's tabs and act, the range slider's track and the colour sliders' tracks show click (their thumbs
 // keep ui_core's resize cursor); the reorder grip, a swipe row and a phone sheet's grabber show the open hand.
 import 'package:flutter/gestures.dart';

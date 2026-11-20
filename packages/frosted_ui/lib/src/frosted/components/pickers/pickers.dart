@@ -691,8 +691,13 @@ class _FrostedDatePickerState extends State<FrostedDatePicker> {
         final side = s.side;
         Widget face = SizedBox.square(
           dimension: 38,
+          // Today, not chosen, is by day a small bead of glass in a field's
+          // language (a well, its rim the lit hairline), its number in the
+          // ink: never a dark ring. By night its light ring.
           child: FrostedFace(
-            material: FrostedMaterial.paint,
+            material: isToday && !chosen && fill == null && !t.isDark
+                ? FrostedMaterial.well
+                : FrostedMaterial.paint,
             radius: BorderRadius.circular(dayCorner),
             shape: dayCut,
             color: fill,
@@ -705,7 +710,7 @@ class _FrostedDatePickerState extends State<FrostedDatePicker> {
             sheen: chosen ? t.colorScheme.buttonSheen : null,
             shadows: chosen ? t.shadows.button : const [],
             ring: isToday && !chosen && side == null
-                ? s.edge ?? t.colorScheme.borderStrong
+                ? s.edge ?? frostedLitEdge(t, t.colorScheme.borderStrong)
                 : null,
             child: Center(
               child: Text(

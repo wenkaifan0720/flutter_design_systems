@@ -164,8 +164,14 @@ class FrostedMark extends StatelessWidget {
           child: Center(
             child: ShaderMask(
               blendMode: BlendMode.srcIn,
-              shaderCallback: (bounds) =>
-                  t.pearl.rimGradient.createShader(bounds),
+              // The look's five spectrum hues, corner to corner (the
+              // pearl card's rim is neutral; the mark keeps its colour).
+              shaderCallback: (bounds) => LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: t.glass.spectrumStops,
+                stops: const [0, 0.35, 0.6, 0.82, 1],
+              ).createShader(bounds),
               child: Icon(
                 glyph,
                 size: FrostedChromeMetrics.inkMarkGlyph * k,

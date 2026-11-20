@@ -1,7 +1,7 @@
-// Contrast (law 8) where the self-review found words or glyphs too faint: a count's words on the unread dot, a
+// Contrast (law 8) where words or glyphs can run faint: a count's words on the unread dot, a
 // tone's glyph on its snack-bar disc by night, "Working…" on a busy action bar, and a person not chosen in a pick.
 // Also the snack bar's desktop measure (380, at the line's start), and a button's words at 200% kept inside its
-// pill's round ends, found in the same round.
+// pill's round ends.
 
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
@@ -85,7 +85,7 @@ void main() {
           ),
         );
         // The disc as it shows: opaque by day, its tone's tint over the
-        // slab by night (self-review round 5), read on each slab stop.
+        // slab by night, read on each slab stop.
         final disc = t.widget<DecoratedBox>(
           find.descendant(
             of: find.byType(FrostedSnackBar),

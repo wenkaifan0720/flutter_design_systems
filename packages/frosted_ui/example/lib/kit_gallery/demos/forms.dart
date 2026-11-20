@@ -172,7 +172,7 @@ Widget kitSpecimenFormRowValue() => FrostedSettingsGroup(
     FrostedFormRow(
       label: kitSay('Member since'),
       leading: LucideIcons.calendar,
-      // The profile's own year (controls.dart): one person, one date (round 11).
+      // The profile's own year (controls.dart): one person, one date.
       value: kitSay('October 2023'),
     ),
   ],

@@ -1,5 +1,4 @@
-// The menus check (coordinator msg_4b9e9c92778f, from the user's walk of
-// Expressive's menus), in every menu Frosted opens: a select's (its own
+// The menus check, in every menu Frosted opens: a select's (its own
 // FrostedMenu), a menu bar's and a split button's (ui_core's, painted by
 // Frosted). (1) One lit row: Frosted clears the frost under the keys' row and
 // the pointer's row alike, so a pointer moving over a row moves the one lit

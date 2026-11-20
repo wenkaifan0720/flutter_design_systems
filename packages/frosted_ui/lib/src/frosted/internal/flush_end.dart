@@ -39,8 +39,8 @@ class _RenderRowContent extends RenderProxyBox {
 /// A card's rows with the room under the last row's content given back:
 /// a row keeps its minimum height (its target) with its words at the
 /// centre, so the last one leaves a share of it under its words, and the
-/// card's padding under them would outgrow its padding over its head
-/// (design6 P). Lays out [child] whole, then stands as tall as the last
+/// card's padding under them would outgrow its padding over its head.
+/// Lays out [child] whole, then stands as tall as the last
 /// row's content reaches; the share given back still paints and still
 /// answers a tap. Plumbing of the components.
 class FrostedFlushEnd extends SingleChildRenderObjectWidget {

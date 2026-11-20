@@ -399,14 +399,21 @@ class _FrostedMonths extends StatelessWidget {
             : t.colorScheme.textSecondary;
         Widget face = SizedBox.square(
           dimension: cell,
+          // Today, not chosen, is by day a small bead of glass in a field's
+          // language (a well, its rim the lit hairline), its number in the
+          // ink: never a dark ring. By night its light ring.
           child: FrostedFace(
-            material: FrostedMaterial.paint,
+            material: day.isToday && !ends && !t.isDark
+                ? FrostedMaterial.well
+                : FrostedMaterial.paint,
             radius: BorderRadius.circular(cell / 2),
             color: ends ? null : (lit ? t.glass.wash : null),
             gradients: ends ? [t.colorScheme.buttonFill] : const <Gradient>[],
             sheen: ends ? t.colorScheme.buttonSheen : null,
             shadows: ends ? t.shadows.button : const <BoxShadow>[],
-            ring: day.isToday && !ends ? t.colorScheme.borderStrong : null,
+            ring: day.isToday && !ends
+                ? frostedLitEdge(t, t.colorScheme.borderStrong)
+                : null,
             child: Center(
               // In the reader's digits (Arabic's ١٨), as its name is read.
               child: Text(
@@ -447,7 +454,7 @@ class _FrostedMonths extends StatelessWidget {
             : null;
         // Where a week's row (or the month) begins or ends the band ends
         // there too, round at the day's edge: run to the cell's edge it
-        // stood square past the grid's last day (self-review round 1).
+        // stood square past the grid's last day.
         final column =
             (day.date.weekday -
                 DesignLocalizations.of(context).firstDayOfWeek) %

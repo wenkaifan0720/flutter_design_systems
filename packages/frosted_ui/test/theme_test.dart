@@ -104,7 +104,7 @@ void main() {
               reason: '$id ${brightness.name} ${tone.name} ink on its tint',
             );
           }
-          // The card's words on its pearl (the Keel Card, the avatars'
+          // The card's words on its pearl (the credit card, the avatars'
           // cards), over the canvas, at both ends of the pearl.
           for (final pearl in [t.pearl.from, t.pearl.to]) {
             final ground = Color.alphaBlend(pearl, t.colorScheme.background);
@@ -288,7 +288,7 @@ void main() {
       expect(opsz(t.textTheme.labelMedium), 12);
     });
 
-    test("quartz is Cody's platinum, baked, through the same roles", () {
+    test('quartz is the platinum theme, baked, through the same roles', () {
       final preset = FrostedThemeData.preset('quartz', Brightness.light);
       expect(preset.colorScheme.background, platinumTokens.light.background);
       // Its corners are the look's (one family since the settings cut), not
@@ -362,7 +362,7 @@ void main() {
   group('FrostedFormat', () {
     final now = DateTime(2026, 10, 28, 19, 42);
 
-    test('money reads as the pilot writes it', () {
+    test('money reads as the source writes it', () {
       final parts = FrostedFormat.moneyParts(-1326.44);
       expect(parts.sign, '−');
       expect(parts.whole, '1,326');
@@ -383,7 +383,7 @@ void main() {
       expect(FrostedFormat.wholeDollars(-84.25), 84);
     });
 
-    test('days and times read as the pilot writes them', () {
+    test('days and times read as the source writes them', () {
       expect(FrostedFormat.day(DateTime(2026, 10, 28, 8), now: now), 'Today');
       expect(FrostedFormat.day(DateTime(2026, 10, 27), now: now), 'Yesterday');
       expect(

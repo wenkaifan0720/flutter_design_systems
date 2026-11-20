@@ -59,8 +59,7 @@ const _countries = [
   'Uruguay',
 ];
 
-// Reviewers are people (a "Design" tag stood in for one, self-review round
-// 5).
+// Reviewers are people, not tags.
 const _people = ['Jonah Reyes', 'Priya Anand', 'Ines Park', 'Theo Lund'];
 
 Widget kitComboboxDemo(Brightness brightness) => kitScreen(

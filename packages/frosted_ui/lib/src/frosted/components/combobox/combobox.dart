@@ -602,7 +602,7 @@ class _FrostedMultiSelectState<T extends Object>
                 ).resolve(Directionality.of(context)),
                 // Large text grows the tag by its words' extra line: held
                 // to its 28 remover, at 200% the words stood out of the
-                // glass above and below (self-review round 5).
+                // glass above and below.
                 child: SizedBox(
                   height: frostedGrownHeight(context, 28, type),
                   child: Row(

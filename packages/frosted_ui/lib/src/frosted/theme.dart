@@ -47,9 +47,8 @@ export 'knobs.dart';
 /// its source stylesheet sets it (its custom properties and
 /// literal colours, written in `_Source` at the end of this file under their
 /// own names, with the role mapping and the judgment calls in its header;
-/// its dark appearance is DESIGNED, in `_Night`), and six of Cody's catalog
-/// themes (`cody/themes/<id>/tokens.json`, ThemeTokens v2 records whose light
-/// and dark are both designed, baked by `scripts/baked-themes.ts` into
+/// its dark appearance is DESIGNED, in `_Night`), and six baked themes
+/// (ThemeTokens v2 records whose light and dark are both designed, in
 /// `internal/themes/`) dressed in the same roles through
 /// `FrostedThemeData._fromTokens`: `quartz` (platinum), `garnet` (atrium),
 /// `glacier`
@@ -1814,8 +1813,8 @@ BoxShadow _css(double y, double blur, double spread, Color color) => BoxShadow(
 /// components read values, they never derive them. A plain value:
 /// [FrostedTheme] carries it down the tree.
 ///
-/// The role and slot NAMES are Cody's where a role exists, so a page written
-/// against one system transfers to another; the roles after
+/// The role and slot NAMES are the token record's where a role exists, so
+/// a page written against one system transfers to another; the roles after
 /// [FrostedColorScheme.accentText] and
 /// the slots [FrostedTextTheme.displaySmall], [FrostedTextTheme.headlineLarge],
 /// [FrostedTextTheme.stat], [FrostedTextTheme.amount],
@@ -2126,7 +2125,7 @@ class FrostedThemeData with Diagnosticable {
     opaqueMaterials: opaqueMaterials,
   );
 
-  /// Builds a theme from a baked ThemeTokens v2 record: every Cody role by
+  /// Builds a theme from a baked ThemeTokens v2 record: every token role by
   /// name, and Frosted's own roles by the rules below (the same rules for
   /// every catalog theme, so any of them can dress the system). The record's
   /// light and dark are both designed, so both appearances are its own; the
@@ -2215,6 +2214,19 @@ class FrostedThemeData with Diagnosticable {
   /// The faces a record names stand in as the bundled Bricolage Grotesque
   /// (the display slots) and DM Sans (the text slots); a record's mono is
   /// Bricolage with tabular figures.
+  // Opal's strengths for its lines by day (`_Source`), as alphas of the ink,
+  // the darkest a token preset's day line may be:
+  // the strong hairline and the grabber, a divider, a sheet's, a menu's and
+  // a track's edge.
+  static const double _dayStrong = 0x24 / 0xFF;
+  static const double _dayLine = 0x12 / 0xFF;
+  static const double _daySheetEdge = 0x0D / 0xFF;
+  static const double _dayMenuEdge = 0x0F / 0xFF;
+  static const double _dayTrackEdge = 0x0A / 0xFF;
+  // A knob's shade by day: one soft shade under it, falling below, as faint
+  // as a field's inner shade.
+  static const double _dayKnob = 0.07;
+
   factory FrostedThemeData._fromTokens(
     String id,
     FrostedTokens tokens,
@@ -2225,6 +2237,20 @@ class FrostedThemeData with Diagnosticable {
     const white = Color(0xFFFFFFFF);
     final grounds = [c.background, c.surface];
     Color a(Color color, double alpha) => color.withValues(alpha: alpha);
+    // The palette's own line, unless the ink at Opal's strength for that
+    // line is lighter over white drawn once and drawn twice (a rule two
+    // borders share): a line only ever gets lighter.
+    Color thin(Color own, double strength) {
+      final opal = a(c.textPrimary, strength);
+      double once(Color line) =>
+          Color.alphaBlend(line, white).computeLuminance();
+      double twice(Color line) => Color.alphaBlend(
+        line,
+        Color.alphaBlend(line, white),
+      ).computeLuminance();
+      return once(opal) > once(own) && twice(opal) > twice(own) ? opal : own;
+    }
+
     TextStyle type(
       FrostedTokenType t,
       Color color, {
@@ -2468,7 +2494,11 @@ class FrostedThemeData with Diagnosticable {
       surface: c.surface,
       surfaceAlt: c.surfaceAlt,
       surfaceInverse: c.surfaceInverse,
-      borderStrong: c.borderStrong,
+      // By day no line on glass is darker than Opal's own (the ink at Opal's
+      // strengths): a palette's opaque greys would stand as dark edges on
+      // light glass, so each takes the lighter of the two. By night its own
+      // lines, which are light.
+      borderStrong: dark ? c.borderStrong : thin(c.borderStrong, _dayStrong),
       textPrimary: c.textPrimary,
       textSecondary: secondary,
       textTertiary: tertiary,
@@ -2487,7 +2517,7 @@ class FrostedThemeData with Diagnosticable {
       dangerSubtle: c.dangerSubtle,
       overlay: c.overlay,
       accentText: accentText,
-      hairline: a(c.border, 0.6),
+      hairline: dark ? a(c.border, 0.6) : thin(a(c.border, 0.6), _dayLine),
       wash: a(c.textPrimary, 0.045),
       glass: glass,
       glassHi: glassHi,
@@ -2539,7 +2569,7 @@ class FrostedThemeData with Diagnosticable {
       pearlFrom: pearlFrom,
       pearlTo: pearlTo,
       pearlBlush: pearlBlush,
-      pearlRim: pale,
+      pearlRim: dark ? _Night.pearlRim : _Source.pearlRim,
       pearlGlow: dark
           ? [glow(c.accent, 0.45), glow(c.danger, 0.4), glow(c.warning, 0.4)]
           : [
@@ -2582,10 +2612,10 @@ class FrostedThemeData with Diagnosticable {
       navCurrent: dark ? a(c.textPrimary, 0.12) : a(c.surface, 0.8),
       sheetTop: c.surface,
       sheetBottom: sheetBottom,
-      sheetEdge: c.border,
-      grabber: c.borderStrong,
+      sheetEdge: dark ? c.border : thin(c.border, _daySheetEdge),
+      grabber: dark ? c.borderStrong : thin(c.borderStrong, _dayStrong),
       menuFill: c.surface,
-      menuEdge: c.border,
+      menuEdge: dark ? c.border : thin(c.border, _dayMenuEdge),
       toastTop: toastTop,
       toastBottom: toastBottom,
       onToast: onToast,
@@ -2595,7 +2625,9 @@ class FrostedThemeData with Diagnosticable {
       toastAction: a(onToast, dark ? 0.1 : 0.12),
       unreadDot: c.danger,
       trackFill: dark ? a(white, 0.08) : a(c.surface, 0.92),
-      trackEdge: a(c.border, 0.5),
+      trackEdge: dark
+          ? a(c.border, 0.5)
+          : thin(a(c.border, 0.5), _dayTrackEdge),
       meterTrack: dark ? a(white, 0.12) : a(c.surface, 0.7),
       paceTick: a(c.textPrimary, dark ? 0.8 : 0.78),
       paceRing: dark ? a(c.background, 0.9) : a(c.surface, 0.92),
@@ -2613,13 +2645,14 @@ class FrostedThemeData with Diagnosticable {
       raisedShadow: [_css(2, 6, -2, a(shade, dark ? 0.4 : 0.18))],
       pearlShadow: [_css(18, 36, -22, a(shade, dark ? 0.6 : 0.4))],
       ticketShadow: [_css(6, 16, -12, a(shade, dark ? 0.5 : 0.45))],
-      knobShadow: [
-        _css(1, 3, 0, a(dark ? black : c.textPrimary, 0.22)),
-        BoxShadow(
-          color: a(dark ? black : c.textPrimary, 0.06),
-          spreadRadius: 0.5,
-        ),
-      ],
+      // By day a knob stands off its track on a broad faint shade, no line
+      // round it: its foot never reads as a dark edge on the glass.
+      knobShadow: dark
+          ? [
+              _css(1, 3, 0, a(black, 0.22)),
+              BoxShadow(color: a(black, 0.06), spreadRadius: 0.5),
+            ]
+          : [_css(2, 6, -1, a(c.textPrimary, _dayKnob))],
       giant: type(
         display,
         c.textPrimary,
@@ -3202,7 +3235,7 @@ class FrostedThemeData with Diagnosticable {
       pearlFrom: dark ? _Night.pearlFrom : _Source.pearlFrom,
       pearlTo: dark ? _Night.pearlTo : _Source.pearlTo,
       pearlBlush: dark ? _Night.pearlBlush : _Source.pearlBlush,
-      pearlRim: _Source.pearlRim,
+      pearlRim: dark ? _Night.pearlRim : _Source.pearlRim,
       pearlGlow: dark ? _Night.pearlGlow : _Source.pearlGlow,
       pearlInk: ink,
       pearlInkQuiet: pearlQuiet,
@@ -3263,13 +3296,12 @@ class FrostedThemeData with Diagnosticable {
       ticketShadow: [
         _css(6, 16, -12, dark ? _Night.ticketShade : _Source.ticketShade),
       ],
-      knobShadow: [
-        _css(1, 3, 0, a(dark ? _Night.knobShade : _Source.inkDeep, 0.22)),
-        BoxShadow(
-          color: a(dark ? _Night.knobShade : _Source.inkDeep, 0.06),
-          spreadRadius: 0.5,
-        ),
-      ],
+      knobShadow: dark
+          ? [
+              _css(1, 3, 0, a(_Night.knobShade, 0.22)),
+              BoxShadow(color: a(_Night.knobShade, 0.06), spreadRadius: 0.5),
+            ]
+          : [_css(2, 6, -1, a(_Source.inkDeep, _dayKnob))],
       giant: type(
         size: 96,
         line: 83,
@@ -4985,7 +5017,8 @@ class FrostedPearlColors with Diagnosticable {
   });
 
   /// The pearl credit card: its cool base from [from] to [to],
-  /// the blush inside its rings, its spectrum rim and the glow it floats on;
+  /// the blush inside its rings, its rim (a neutral reflection, brightest
+  /// where the light falls; five stops) and the glow it floats on;
   /// the ink and the quiet ink of the words on it (the card is a pale object
   /// in both appearances).
   final Color from;
@@ -5028,7 +5061,7 @@ class FrostedPearlColors with Diagnosticable {
     colors: [from, to],
   );
 
-  /// The pearl's spectrum rim, top left to bottom right.
+  /// The pearl's rim, top left to bottom right.
   LinearGradient get rimGradient => LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
@@ -5859,11 +5892,11 @@ abstract final class _Source {
   static const Color pearlTo = Color(0xDBF6F3FC);
   static const Color pearlBlush = Color(0x8CF4C4DE);
   static const List<Color> pearlRim = [
-    Color(0xFFA9AEF0),
-    Color(0xFFE2A6CF),
-    Color(0xFFF2B79D),
-    Color(0xFF9FD8B4),
-    Color(0xFF8FC4F0),
+    Color(0xFFFFFFFF),
+    Color(0xFFF2F2F2),
+    Color(0xFFE8E8E8),
+    Color(0xFFF2F2F2),
+    Color(0xFFFFFFFF),
   ];
   static const List<Color> pearlGlow = [
     Color(0xFFC7C1F6),
@@ -6164,6 +6197,13 @@ abstract final class _Night {
   static const Color pearlFrom = Color(0xEB2E2A4A);
   static const Color pearlTo = Color(0xE01F1D33);
   static const Color pearlBlush = Color(0x47D66EAA);
+  static const List<Color> pearlRim = [
+    Color(0xFF9A9A9A),
+    Color(0xFF6E6E6E),
+    Color(0xFF555555),
+    Color(0xFF6E6E6E),
+    Color(0xFF8C8C8C),
+  ];
   static const List<Color> pearlGlow = [
     Color(0xFF4D42A8),
     Color(0xFF8E3C6A),

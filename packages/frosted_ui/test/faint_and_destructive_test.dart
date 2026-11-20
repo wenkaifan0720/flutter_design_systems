@@ -1,5 +1,5 @@
 // Two of the ink act's faces: out of use it is faint glass, its word in the quiet ink at full strength, never the ink
-// pill dimmed (its white word fell under 3:1 on the dawn, the user, 11-18); and a destructive act is glass tinted with
+// pill dimmed (its white word would fall under 3:1 on the dawn); and a destructive act is glass tinted with
 // the danger hue, its word holding 4.5:1 on the tint. Every preset, day and night.
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';

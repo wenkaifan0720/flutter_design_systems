@@ -372,8 +372,8 @@ class _Link extends StatelessWidget {
         height: h,
         // The page shown stands on thicker, brighter glass raised off the
         // bar's; the others are the bar's own glass. Both keep the same room,
-        // so a link's glyph and word stand still when it is chosen (design6
-        // P: one leading keyline).
+        // so a link's glyph and word stand still when it is chosen (one
+        // leading keyline).
         child: selected
             ? FrostedChosenPlate(
                 radius: BorderRadius.circular(h / 2),

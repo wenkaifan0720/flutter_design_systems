@@ -70,13 +70,15 @@ class FrostedChosenPlate extends StatelessWidget {
   /// What holds the plate off the glass under it: its own faint glass edge,
   /// the raised step's shadow and a soft lift, thicker glass standing a
   /// little further off.
+  /// By day the lift is broad and faint, so the plate's foot never reads as
+  /// a dark line on the glass it stands in.
   static List<BoxShadow> shadowsOf(FrostedThemeData t) => [
     frostedShadow(color: t.glass.edge, spread: FrostedStrokes.regular),
-    ...t.shadows.raised,
+    if (t.isDark) ...t.shadows.raised,
     BoxShadow(
-      color: t.isDark ? const Color(0x47000000) : const Color(0x1F2A2464),
+      color: t.isDark ? const Color(0x47000000) : const Color(0x0E2A2464),
       offset: const Offset(0, 4),
-      blurRadius: 12,
+      blurRadius: t.isDark ? 12 : 16,
       spreadRadius: -4,
     ),
   ];

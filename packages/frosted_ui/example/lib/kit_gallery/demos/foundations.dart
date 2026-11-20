@@ -292,7 +292,7 @@ class _Rim extends StatelessWidget {
         ),
         // The rim is a light, not a reading line: it runs left to right in
         // any language, and its stops stand under it in the same order
-        // (mirrored, they ran against the strip, self-review round 5).
+        // (mirrored, they would run against the strip).
         Row(
           textDirection: TextDirection.ltr,
           spacing: FrostedSpacing.s6,

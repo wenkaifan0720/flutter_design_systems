@@ -1,5 +1,5 @@
-// A scrolling tab strip leaves its chosen plate whole (round 10: the strip's viewport clipped at its own line, so the
-// first tab's plate lost its start cap's edge and its lift under it, cut flat). With the first tab chosen at the
+// A scrolling tab strip leaves its chosen plate whole (a viewport clipped at the strip's own line would cut the first
+// tab's plate flat, its start cap's edge and its lift under it lost). With the first tab chosen at the
 // strip's start, the plate's glass edge shows a pixel before the strip, and its lift a few pixels under it, by day
 // and by night; the strip stands as tall as its tabs' touch target (48 under a finger, never under its 40) with its
 // first tab at its start.

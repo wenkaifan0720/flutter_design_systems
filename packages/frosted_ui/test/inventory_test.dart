@@ -529,8 +529,8 @@ void main() {
   });
 
   // The inventory's tiles show each part live: a specimen built without its
-  // callback stood drawn off (self-review rounds 8 and 9: the file upload,
-  // the time and wheel pickers, the pagination).
+  // callback would stand drawn off (the file upload, the time and wheel
+  // pickers, the pagination).
   testWidgets('no specimen in the inventory stands drawn off', (t) async {
     final off = <String>[];
     for (final entry in frostedInventory.entries) {

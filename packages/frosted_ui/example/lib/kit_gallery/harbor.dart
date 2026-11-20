@@ -833,7 +833,7 @@ class _HarborSettingsState extends State<HarborSettings> {
         actions: _barActs(context),
       ),
       // The form stands on the title's keyline at its own most width: one
-      // leading edge down the page (design6 P).
+      // leading edge down the page.
       body: Align(
         alignment: AlignmentDirectional.topStart,
         child: ConstrainedBox(

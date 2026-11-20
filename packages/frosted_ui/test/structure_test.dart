@@ -222,7 +222,7 @@ Widget _everything(BuildContext context) {
           FrostedListTile(
             leading: FrostedDateBlock(DateTime(2026, 11, 3)),
             title: 'Kite Mobile',
-            meta: 'Keel Card ·· 7730 · In 6 days',
+            meta: 'Tide Card ·· 7730 · In 6 days',
             trailing: const FrostedAmount(35, signed: false),
             onPressed: _open,
           ),
@@ -238,7 +238,7 @@ Widget _everything(BuildContext context) {
           size: FrostedMarkSize.large,
         ),
         title: 'Mesa Taqueria',
-        subtitle: 'Dining out · Keel Card',
+        subtitle: 'Dining out · Tide Card',
         amount: -38.40,
         hue: t.hues.coral,
         chips: [
@@ -280,7 +280,7 @@ Widget _everything(BuildContext context) {
       ),
       const FrostedBanner(
         icon: LucideIcons.snowflake,
-        title: 'Your Keel Card is frozen',
+        title: 'Your Tide Card is frozen',
         body: 'New purchases and cash withdrawals are declined.',
       ),
       FrostedBrowseCard(
@@ -500,22 +500,22 @@ void main() {
             subtitle: 'Dining out · 8:12 AM',
             amount: -6.75,
             pending: true,
-            account: 'Keel Card',
+            account: 'Tide Card',
             accountIcon: LucideIcons.creditCard,
             onPressed: _open,
           ),
         );
         await _pump(t, row());
         expect(find.text('Pending'), findsOneWidget);
-        expect(find.text('Keel Card'), findsNothing);
+        expect(find.text('Tide Card'), findsNothing);
         await _pump(t, row(), size: _desktop);
-        expect(find.text('Keel Card'), findsOneWidget);
+        expect(find.text('Tide Card'), findsOneWidget);
         expect(
           t
               .getSize(
                 find
                     .ancestor(
-                      of: find.text('Keel Card'),
+                      of: find.text('Tide Card'),
                       matching: find.byType(SizedBox),
                     )
                     .first,
@@ -537,7 +537,7 @@ void main() {
               matching: find.byType(FrostedListTile),
             ),
           ).getSemanticsData().label,
-          contains('Keel Card'),
+          contains('Tide Card'),
         );
       },
     );
@@ -799,7 +799,7 @@ void main() {
               size: FrostedMarkSize.large,
             ),
             title: 'Mesa Taqueria',
-            subtitle: 'Dining out · Keel Card',
+            subtitle: 'Dining out · Tide Card',
             amount: -38.40,
             hue: context.frostedTheme.hues.coral,
             chips: const [FrostedTag('Posted', icon: LucideIcons.check)],
@@ -1025,16 +1025,16 @@ void main() {
     _test('a banner is cold and wraps its body', (t) async {
       const banner = FrostedBanner(
         icon: LucideIcons.snowflake,
-        title: 'Your Keel Card is frozen',
+        title: 'Your Tide Card is frozen',
         body: 'New purchases and cash withdrawals are declined. Autopay, refunds and payments still go through.',
       );
       await _pump(t, banner, size: _narrow, textScale: 1.3);
       expect(
-        t.widget<Text>(find.text('Your Keel Card is frozen')).style!.color,
+        t.widget<Text>(find.text('Your Tide Card is frozen')).style!.color,
         _light.colorScheme.cold,
       );
       expect(
-        t.widget<Text>(find.text('Your Keel Card is frozen')).style!.fontWeight,
+        t.widget<Text>(find.text('Your Tide Card is frozen')).style!.fontWeight,
         FontWeight.w600,
       );
       expect(t.getSize(find.byType(FrostedBanner)).height, greaterThan(80));

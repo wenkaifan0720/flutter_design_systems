@@ -10,8 +10,8 @@ import '../../internal/chart_parts.dart';
 import '../../theme.dart';
 import 'bars.dart' show FrostedAxisMark;
 
-/// The width a chart draws at when nothing bounds it: the pilot's phone
-/// tile interior.
+/// The width a chart draws at when nothing bounds it: a phone tile's
+/// interior.
 const double _unboundedWidth = 326;
 
 enum _TrailFace { months, days, steps }
@@ -127,7 +127,7 @@ class FrostedTrailChart extends StatelessWidget {
   final int? current;
 
   /// A sparkline: the line, its light and the end dot alone, no grid and
-  /// no words (DERIVED: the pilot's trails all carry their grid).
+  /// no words (where a trail without one is needed, as in a tile).
   final bool bare;
 
   /// The days in the month of a day face.
@@ -844,7 +844,7 @@ class FrostedGoalChart extends StatelessWidget {
     final n = saved.length + projection.length;
     // Saved money stands on $0, as bars do: with the floor a fifth of a
     // span under the lowest line, the plot ran on below $0 and its dates
-    // hung under an empty band (self-review rounds 4 and 5).
+    // hung under an empty band.
     final range = frostedValueRange(
       [...saved, ...projection, target],
       lines: lines,

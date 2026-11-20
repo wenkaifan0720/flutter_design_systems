@@ -1,7 +1,7 @@
 // Every part keeps its own height: given a box with room to spare (a tile
-// with a ceiling, a dialog's body), no inventory specimen fills it. The
-// self-review's first round found the number field's well stretched to the
-// inventory tile's 480 ceiling, an Align with no height factor.
+// with a ceiling, a dialog's body), no inventory specimen fills it (an
+// Align with no height factor once stretched the number field's well to the
+// inventory tile's 480 ceiling).
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frosted_ui/frosted_host.dart';

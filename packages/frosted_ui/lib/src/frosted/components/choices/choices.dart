@@ -19,7 +19,6 @@ import '../marks/marks.dart' show FrostedCheckbox;
 import '../pressable/pressable.dart';
 import '../progress/progress.dart';
 import '../../internal/dim.dart';
-import '../../internal/rest_ring.dart';
 import '../../internal/cap.dart';
 
 /// One choice of a [FrostedRadioGroup]: its [value], its [label], a quiet
@@ -70,87 +69,57 @@ class FrostedRadio<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final group = _RadioScope.of<T>(context);
+    final slot = _RadioSlot.of<T>(context);
     final t = context.frostedTheme;
     final motion = FrostedMotion.of(context);
-    final on = group.value == value;
-    final live = enabled && group.onChanged != null;
+    final on = slot.chosen;
     const d = 22.0;
     final layers = FrostedStyleLayers(style, t.components.radio);
     Widget draw(Set<WidgetState> states) {
       final s = layers.at(states);
-      final shape = s.shape ?? const CircleBorder();
+      final shape = s.shape;
       final fill = s.fill;
-      // The keyboard's focus lights the mark's rim ([FrostedClearing.litOf]):
-      // its ring brightens to white, or a white hairline comes in round a
-      // chosen mark, which has none.
-      final mark = Builder(
-        builder: (context) {
-          final lit = FrostedClearing.litOf(context);
-          final ring = on
+      final side = s.side;
+      // The opening is a small bead of glass in a field's language: a well a
+      // step deeper than the glass it stands on, shaded along its top inside
+      // edge, its rim the lit hairline by day and the night glass's rim by
+      // night, never a dark line. Chosen, the bead takes a little more frost
+      // and a dot is printed at its centre in the words' ink. The keyboard's
+      // focus lights its rim, and by day it rises.
+      final mark = SizedBox.square(
+        dimension: d,
+        child: FrostedFace(
+          material: fill == null ? FrostedMaterial.well : FrostedMaterial.paint,
+          radius: BorderRadius.circular(
+            FrostedStyleLayers.radiusOf(shape, d, d / 2),
+          ),
+          shape: shape,
+          color: fill,
+          wash: on ? t.glass.wash : null,
+          edge: side?.color,
+          edges: side == null
+              ? const EdgeInsets.all(FrostedChromeMetrics.outline)
+              : EdgeInsets.all(side.width),
+          ring: side != null
               ? null
-              : s.side ??
-                    BorderSide(color: s.edge ?? frostedRestRing(t), width: 1.5);
-          // A dark ring (an empty mark by day) stays, and the light comes
-          // in just inside it.
-          final BorderSide rim;
-          var glint = 0.0;
-          if (ring == null) {
-            rim = lit <= 0
-                ? BorderSide.none
-                : BorderSide(
-                    color: frostedRimLight(t, null, lit),
-                    width: FrostedChromeMetrics.outline,
-                  );
-          } else if (lit > 0 && frostedRimIsBoundary(ring.color)) {
-            (rim, glint) = (ring, lit);
-          } else {
-            rim = lit <= 0
-                ? ring
-                : ring.copyWith(color: frostedRimLight(t, ring.color, lit));
-          }
-          final inside = BorderSide(
-            color: frostedRimLight(t, null, glint),
-            width: FrostedChromeMetrics.outline,
-          );
-          return AnimatedContainer(
-            duration: motion.fast,
-            curve: motion.curve,
-            width: d,
-            height: d,
-            decoration: ShapeDecoration(
-              shape: shape.copyWith(side: rim),
-              gradient: on && fill == null ? t.colorScheme.buttonFill : null,
-              color: fill ?? (on ? null : t.glass.fill),
-            ),
-            child: Padding(
-              padding: EdgeInsets.all(rim.width),
-              child: AnimatedContainer(
-                duration: motion.fast,
-                curve: motion.curve,
-                decoration: ShapeDecoration(
-                  shape: shape.copyWith(side: inside),
-                ),
-                child: Center(
-                  child: AnimatedScale(
-                    scale: on ? 1 : 0,
-                    duration: motion.fast,
-                    curve: motion.curve,
-                    child: SizedBox.square(
-                      dimension: 8,
-                      child: DecoratedBox(
-                        decoration: ShapeDecoration(
-                          shape: const CircleBorder(),
-                          color: s.foreground ?? t.colorScheme.onButton,
-                        ),
-                      ),
-                    ),
+              : s.edge ?? frostedLitEdge(t, t.controlEdge),
+          child: Center(
+            child: AnimatedScale(
+              scale: on ? 1 : 0,
+              duration: motion.fast,
+              curve: motion.curve,
+              child: SizedBox.square(
+                dimension: 10,
+                child: DecoratedBox(
+                  decoration: ShapeDecoration(
+                    shape: const CircleBorder(),
+                    color: s.foreground ?? t.colorScheme.textPrimary,
                   ),
                 ),
               ),
             ),
-          );
-        },
+          ),
+        ),
       );
       Widget row = ConstrainedBox(
         constraints: BoxConstraints(
@@ -189,7 +158,8 @@ class FrostedRadio<T> extends StatelessWidget {
     }
 
     return FrostedPressable(
-      onPressed: live ? () => group.onChanged!(value) : null,
+      focusNode: slot.node,
+      onPressed: slot.select,
       label: label,
       value: note,
       role: FrostedPressRole.control,
@@ -214,33 +184,40 @@ class FrostedRadio<T> extends StatelessWidget {
   }
 }
 
-class _RadioScope<T> extends InheritedWidget {
-  const _RadioScope({
-    required this.value,
-    required this.onChanged,
+// What ui_core's DesignRadioGroup hands one FrostedRadio: the focus node the
+// group registers for it, the press that chooses it (null while it cannot be
+// chosen) and whether it is the chosen one.
+class _RadioSlot<T> extends InheritedWidget {
+  const _RadioSlot({
+    required this.node,
+    required this.select,
+    required this.chosen,
     required super.child,
   });
 
-  final T? value;
-  final ValueChanged<T>? onChanged;
+  final FocusNode node;
+  final VoidCallback? select;
+  final bool chosen;
 
-  static _RadioScope<T> of<T>(BuildContext context) {
-    final scope = context.dependOnInheritedWidgetOfExactType<_RadioScope<T>>();
-    assert(scope != null, 'A FrostedRadio stands in a FrostedRadioGroup.');
-    return scope!;
+  static _RadioSlot<T> of<T>(BuildContext context) {
+    final slot = context.dependOnInheritedWidgetOfExactType<_RadioSlot<T>>();
+    assert(slot != null, 'A FrostedRadio stands in a FrostedRadioGroup.');
+    return slot!;
   }
 
   @override
-  bool updateShouldNotify(_RadioScope<T> old) =>
-      old.value != value || old.onChanged != onChanged;
+  bool updateShouldNotify(_RadioSlot<T> old) =>
+      old.node != node || old.select != select || old.chosen != chosen;
 }
 
 /// One choice of several, all in view: [options] down the column, each a
-/// round mark before its words (the chosen one's mark the ink act with a
-/// white dot), the whole row its target. The page owns [value]; a null
-/// [onChanged] leaves them inert. A screen reader hears [label] over a
-/// group of radio buttons, each checked or not; Tab enters the group and
-/// the arrow keys move along it.
+/// round bead of glass before its words (the chosen one's a little clearer,
+/// a dot printed at its centre), the whole row its target. The page owns
+/// [value]; a null [onChanged] leaves them inert. A screen reader hears
+/// [label] over a group of radio buttons, each checked or not. ui_core's
+/// [DesignRadioGroup] is the behaviour: one Tab stop, on the chosen option
+/// (else the first that can be chosen), and the four arrows choose as they
+/// move, in reading order, wrapping and passing over a disabled option.
 ///
 /// ```dart
 /// FrostedRadioGroup<String>(label: 'Delivery', value: speed, onChanged: (v) => setState(() => speed = v), options: const [FrostedRadio('standard', 'Standard', note: '3 to 5 days'), FrostedRadio('express', 'Express', note: 'Tomorrow')])
@@ -274,36 +251,43 @@ class FrostedRadioGroup<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.frostedTheme;
+    final byValue = {for (final option in options) option.value: option};
     return Semantics(
       container: true,
       label: label,
       explicitChildNodes: true,
-      child: FocusTraversalGroup(
-        child: _RadioScope<T>(
-          value: value,
-          onChanged: onChanged,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ExcludeSemantics(
+      child: DesignRadioGroup<T>(
+        options: [for (final option in options) option.value],
+        value: value,
+        onChanged: onChanged,
+        isEnabled: (v) => byValue[v]!.enabled,
+        itemBuilder: (context, v, node, select) => _RadioSlot<T>(
+          node: node,
+          select: select,
+          chosen: v == value,
+          child: byValue[v]!,
+        ),
+        layoutBuilder: (context, items) => Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ExcludeSemantics(
+              child: Text(
+                label,
+                style: t.textTheme.labelMedium.c(t.colorScheme.textSecondary),
+              ),
+            ),
+            const SizedBox(height: FrostedSpacing.s4),
+            ...items,
+            if (error case final error?)
+              Semantics(
+                liveRegion: true,
                 child: Text(
-                  label,
-                  style: t.textTheme.labelMedium.c(t.colorScheme.textSecondary),
+                  error,
+                  style: t.textTheme.bodySmall.c(t.colorScheme.over),
                 ),
               ),
-              const SizedBox(height: FrostedSpacing.s4),
-              ...options,
-              if (error case final error?)
-                Semantics(
-                  liveRegion: true,
-                  child: Text(
-                    error,
-                    style: t.textTheme.bodySmall.c(t.colorScheme.over),
-                  ),
-                ),
-            ],
-          ),
+          ],
         ),
       ),
     );
@@ -409,7 +393,7 @@ class FrostedChip extends StatelessWidget {
     final words = FrostedLocalizations.of(context);
     final layers = FrostedStyleLayers(style, t.components.chip);
     // Large text grows the pill by its words' extra line, as a button's: at
-    // 200% the words filled a 32 pill to its rim (self-review round 5).
+    // 200% the words would fill a 32 pill to its rim.
     final h = frostedGrownHeight(
       context,
       t.density.height(FrostedChromeMetrics.filterChip),
@@ -418,9 +402,10 @@ class FrostedChip extends StatelessWidget {
     Widget draw(Set<WidgetState> states) {
       final s = layers.at(states);
       final cut = s.cut(FrostedCorners.full);
-      final ink =
-          s.foreground ??
-          (on ? t.colorScheme.onButton : t.colorScheme.textPrimary);
+      final ink = s.foreground ?? t.colorScheme.textPrimary;
+      // Chosen, the glass stays glass: a check printed where its glyph
+      // stands and a little more frost, never a fill of ink.
+      final lead = on ? FrostedGlyphs.check : icon;
       final fill = s.fill;
       final side = s.side;
       final (edge, edges) = side == null
@@ -428,7 +413,7 @@ class FrostedChip extends StatelessWidget {
           : s.edgeOf(null, FrostedStrokes.regular);
       final inset = t.density.padding(
         EdgeInsetsDirectional.only(
-          start: FrostedChromeMetrics.filterChipInset + (icon == null ? 2 : 0),
+          start: FrostedChromeMetrics.filterChipInset + (lead == null ? 2 : 0),
           end: close == null ? FrostedChromeMetrics.filterChipInset + 2 : 4,
         ).resolve(Directionality.of(context)),
       );
@@ -438,30 +423,23 @@ class FrostedChip extends StatelessWidget {
           key: ValueKey(on),
           height: h,
           child: FrostedFace(
-            material: on ? FrostedMaterial.paint : FrostedMaterial.pane,
+            material: FrostedMaterial.pane,
             radius: BorderRadius.circular(
               FrostedStyleLayers.radiusOf(cut, h, h / 2),
             ),
             shape: cut,
             color: fill,
-            gradients: on && fill == null
-                ? [t.colorScheme.buttonFill]
-                : const <Gradient>[],
-            wash: s.overlay,
+            wash: s.overlay ?? (on ? t.glass.wash : null),
             edge: edge,
             edges: edges,
-            sheen: on ? t.colorScheme.buttonSheen : null,
-            ring: on || edge != null
-                ? null
-                : frostedLitEdge(t, t.colorScheme.border),
-            shadows: on ? t.shadows.button : const <BoxShadow>[],
+            ring: edge != null ? null : frostedLitEdge(t, t.colorScheme.border),
             padding: s.padding?.resolve(Directionality.of(context)) ?? inset,
             child: Row(
               mainAxisSize: MainAxisSize.min,
               spacing: FrostedSpacing.s4,
               children: [
-                if (icon case final icon?)
-                  Icon(icon, size: s.iconSize ?? 14, color: ink),
+                if (lead case final lead?)
+                  Icon(lead, size: s.iconSize ?? 14, color: ink),
                 frostedCapCentred(
                   Text(
                     label,
@@ -496,6 +474,17 @@ class FrostedChip extends StatelessWidget {
           ),
         ),
       );
+      // The check takes room as it comes in: the pill eases to its width.
+      // Under Reduce Motion the width cuts (an AnimatedSize of no duration
+      // would ask for a second layout from inside its own).
+      if (motion.fast > Duration.zero) {
+        face = AnimatedSize(
+          duration: motion.fast,
+          curve: motion.curve,
+          alignment: AlignmentDirectional.centerStart,
+          child: face,
+        );
+      }
       face = s.least(face);
       face = FrostedDim(off: !isEnabled, child: face);
       return face;
@@ -641,7 +630,11 @@ class FrostedRating extends StatelessWidget {
         painter: _StarPainter(
           fill: item.fill,
           band: t.hues.iris.band,
-          ring: frostedRestRing(t),
+          // An empty star is glass in a field's language: its body a well's
+          // step deeper (its raised tone), its rim the
+          // lit hairline by day and the night glass's rim by night.
+          body: t.materials.well.raised,
+          ring: frostedLitEdge(t, t.controlEdge),
           rtl: rtl,
         ),
       ),
@@ -762,6 +755,7 @@ class _StarPainter extends CustomPainter {
   const _StarPainter({
     required this.fill,
     required this.band,
+    required this.body,
     required this.ring,
     required this.rtl,
   });
@@ -769,6 +763,9 @@ class _StarPainter extends CustomPainter {
   /// How much of the star is reached, 0 to 1.
   final double fill;
   final Gradient band;
+
+  /// The empty star's body and its rim.
+  final Color body;
   final Color ring;
   final bool rtl;
 
@@ -791,6 +788,7 @@ class _StarPainter extends CustomPainter {
     final path = _star(size);
     final rect = Offset.zero & size;
     if (fill < 1) {
+      canvas.drawPath(path, Paint()..color = body);
       canvas.drawPath(
         path,
         Paint()
@@ -816,6 +814,7 @@ class _StarPainter extends CustomPainter {
   bool shouldRepaint(_StarPainter old) =>
       old.fill != fill ||
       old.band != band ||
+      old.body != body ||
       old.ring != ring ||
       old.rtl != rtl;
 }

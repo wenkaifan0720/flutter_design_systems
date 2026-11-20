@@ -1,5 +1,4 @@
-// Filter chips are separate things, so a choice changes in place (the user, 11-13, on the published gallery: "why does
-// the filter also has the selection indicator sliding?"). Through a change of choice nothing in the row travels: every
+// Filter chips are separate things, so a choice changes in place: no selection indicator slides between them. Through a change of choice nothing in the row travels: every
 // box it lays out stands where a box stood at rest, before or after (a plate sliding between the chips would cross the
 // gaps). The chip left and the chip chosen each fade their own glass, mid-way at once; the chip between them does not
 // change. The segmented control, whose segments share one capsule, still slides its plate.

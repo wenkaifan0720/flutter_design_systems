@@ -2196,7 +2196,7 @@ class FrostedInOut extends StatelessWidget {
                 ],
               ),
               // From 1.2 the net stands under the words: across from them
-              // its figure lost its tail ("Net +$4,3", self-review round 3).
+              // its figure lost its tail ("Net +$4,3").
               if (MediaQuery.textScalerOf(context).scale(1) >=
                   FrostedChromeMetrics.actionBarStackScale)
                 Column(
@@ -2436,7 +2436,7 @@ class FrostedStatementTimeline extends StatelessWidget {
       CrossAxisAlignment.end,
     );
     // Large text stands the three one under another: side by side at 200%
-    // they ran into each other (self-review round 2).
+    // they run into each other.
     final stack =
         MediaQuery.textScalerOf(context).scale(1) >=
         FrostedChromeMetrics.actionBarStackScale;

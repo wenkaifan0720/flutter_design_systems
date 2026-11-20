@@ -261,18 +261,26 @@ costs no blur at all. The canvas's washes are painted once and cached.
 - **Screen readers.** Every control says its role, its label, its value and its state (checked, selected, expanded,
   disabled); paint that only decorates is left out.
 - **Keyboard.** Every control takes focus (each single control takes a `focusNode` and `autofocus`), Enter and Space act, Tab
-  moves on, the arrow keys move a slider and a rating (toward the end of the line, right to left too), and while the
+  moves on, the arrow keys move a slider and a rating (toward the end of the line, right to left too), a radio group
+  and a one-at-a-time toggle strip are one Tab stop whose arrows choose as they move (ui_core's `DesignRadioGroup`), and while the
   keyboard holds focus the part's frost clears and its rim lights: more of the colour behind it comes through and its
-  own thin rim brightens to white (a hairline just inside its outline where it has none), with no colour of its own and
-  nothing outside the part. A pointer over a part only clears it a little. A row in a list or a menu clears within its
-  edge, and the row the keys hold lights its rim. Focus follows the reading order, right to left
-  too.
+  own thin rim brightens to white (a hairline just inside its outline where it has none), with no colour of its own. By
+  day the part also lifts: its soft shadow deepens a little, as a pane rising off the glass. A pointer over a part only
+  clears it a little. Chosen parts stay glass, marked by a printed check or dot and a little more clearing. A row in a
+  list or a menu clears within its edge, and the row the keys hold lights its rim. Focus follows the reading order,
+  right to left too.
 - **Targets.** 44 px under a pointer and 48 px under a finger (Android, iOS and Fuchsia), as Material pads its targets.
 - **Contrast.** Words hold 4.5:1 on their glass (3:1 when large), by day and by night, over any backdrop, focused or
   not: the clearing never takes the glass below the ground its words are held on. Focus is a quiet cue: on Frosted's
   own backdrop the cleared glass differs from the resting one by about 1.0:1 to 1.3:1. The lit rim stands out where
   white falls on something darker (glass by night, the ink button by day: 5:1 to 18:1 along the rim) and barely shows
-  where it falls on pale glass (about 1.1:1 by day), so focus does not hold 3:1 on every part.
+  where it falls on pale glass (about 1.1:1 by day), so focus does not hold 3:1 on every part. By day the lift darkens
+  the ground in the 16 px round a focused part by about 1.1:1 to 1.4:1, most round a field, a list row or a menu row.
+  A chosen part's printed check, dot or tick stands 9.7:1 or more against the part unchosen, by day and by night.
+  Glass has no dark edge: an unchosen part at rest (an empty check, an unchosen radio, an empty star, an off switch, a
+  segmented strip) is a bead of glass whose darkest pixel stands no darker on the glass than a field's edge, about
+  1.2:1 by day. It shows by its lit rim and inner shade, so its boundary does not hold WCAG 1.4.11's 3:1; its label
+  and its state, once chosen, do.
 - **Motion.** Every change of state eases from where it is; Reduce Motion makes each one a cut. The dialog and the
   sheets ride ui_core's critically damped springs: nothing overshoots, and a sheet let go mid-drag carries the finger's
   speed. A page pushed over

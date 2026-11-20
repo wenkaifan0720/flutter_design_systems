@@ -7,8 +7,8 @@ import '../../internal/chart_parts.dart';
 import '../../theme.dart';
 import 'bars.dart' show FrostedAxisMark;
 
-/// The width a chart draws at when nothing bounds it: the pilot's phone
-/// tile interior.
+/// The width a chart draws at when nothing bounds it: a phone tile's
+/// interior.
 const double _unboundedWidth = 326;
 
 /// One step of a [FrostedStepsChart]: the [day] it falls due, its [amount]

@@ -136,8 +136,8 @@ Widget kitChartsDemo(Brightness brightness) => kitScreen(
       'Investing, its value through October',
       children: [kitSpecimenTrailInvesting()],
     ),
-    // At a row's size: filling the column it read as a chart that had lost
-    // its axes (self-review round 3).
+    // At a row's size: filling the column it reads as a chart that has lost
+    // its axes.
     kitSection(
       'A bare trail, for a row',
       children: [
@@ -365,7 +365,7 @@ Widget kitSpecimenTrailInvesting() => const FrostedTrailChart.days(
 /// A year's trail alone, a sparkline for a row: the line, its light and
 /// its end, no grid and no words.
 // A row's height: the plot's own height (a box round it does not set it;
-// boxed at 40 the 140 plot ran into the next heading, self-review round 4).
+// boxed at 40 the 140 plot runs into the next heading).
 Widget kitSpecimenTrailBare() => const FrostedTrailChart(
   values: _netWorth,
   bare: true,

@@ -80,7 +80,7 @@ class FrostedListSection extends StatelessWidget {
       final asideText = aside == null
           ? null
           : Text(aside, style: t.textTheme.labelMedium, maxLines: 1);
-      // As much under the last row's content as over the head (design6 P):
+      // As much under the last row's content as over the head:
       // the room the last row leaves under its words is given back.
       return FrostedFacedCard(
         face: FrostedCardFace.list,

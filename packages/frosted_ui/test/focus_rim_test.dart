@@ -2,7 +2,8 @@
 // only clears it, a little, with no rim light. Every focusable part places a
 // FrostedCleared round itself: lit while the keyboard holds it, never under
 // a pointer. A filled button, which has no rim of its own, takes a white
-// hairline just inside its outline.
+// hairline just inside its outline. By day a focused part also lifts: its
+// shadow under it deepens; by night it does not.
 import 'dart:ui' as ui;
 
 import 'package:flutter/gestures.dart';
@@ -92,6 +93,26 @@ Future<void> _pump(WidgetTester t, Widget part, Brightness mode) async {
 Iterable<FrostedCleared> _cleared(WidgetTester t) =>
     t.widgetList<FrostedCleared>(find.byType(FrostedCleared));
 
+/// The stage's pixel at [at], in logical pixels (the stage is drawn at 1x).
+Future<ui.Color> _pixel(WidgetTester t, Offset at) async {
+  final boundary =
+      _stage.currentContext!.findRenderObject()! as RenderRepaintBoundary;
+  final origin = boundary.localToGlobal(Offset.zero);
+  final image = (await t.runAsync(() => boundary.toImage()))!;
+  final data = (await t.runAsync(
+    () => image.toByteData(format: ui.ImageByteFormat.rawRgba),
+  ))!;
+  final x = (at.dx - origin.dx).round(), y = (at.dy - origin.dy).round();
+  final i = (y * image.width + x) * 4;
+  image.dispose();
+  return ui.Color.fromARGB(
+    255,
+    data.getUint8(i),
+    data.getUint8(i + 1),
+    data.getUint8(i + 2),
+  );
+}
+
 void main() {
   for (final MapEntry(key: name, value: part) in _parts.entries) {
     testWidgets('$name: focus lights the rim, a pointer only clears', (
@@ -132,24 +153,10 @@ void main() {
       const Center(child: FrostedButton('Save', onPressed: _none)),
       Brightness.light,
     );
-    Future<ui.Color> edgePixel() async {
+    Future<ui.Color> edgePixel() {
       final face = t.getRect(find.byType(FrostedFace).first);
-      final boundary =
-          _stage.currentContext!.findRenderObject()! as RenderRepaintBoundary;
-      final image = (await t.runAsync(() => boundary.toImage()))!;
-      final data = (await t.runAsync(
-        () => image.toByteData(format: ui.ImageByteFormat.rawRgba),
-      ))!;
       // The middle of the face's top edge, half a pixel in.
-      final x = face.center.dx.round(), y = face.top.ceil();
-      final i = (y * image.width + x) * 4;
-      image.dispose();
-      return ui.Color.fromARGB(
-        255,
-        data.getUint8(i),
-        data.getUint8(i + 1),
-        data.getUint8(i + 2),
-      );
+      return _pixel(t, Offset(face.center.dx, face.top.ceilToDouble()));
     }
 
     final rest = await edgePixel();
@@ -164,4 +171,44 @@ void main() {
     expect(lit.r, closeTo(lit.g, .02), reason: 'no colour of its own');
     expect(lit.g, closeTo(lit.b, .02), reason: 'no colour of its own');
   });
+
+  for (final mode in Brightness.values) {
+    final day = mode == Brightness.light;
+    testWidgets(
+      day
+          ? 'by day focus lifts the part: its shadow deepens'
+          : 'by night focus does not lift the part',
+      (t) async {
+        // On a ground of its own: the stage is otherwise transparent.
+        await _pump(
+          t,
+          ColoredBox(
+            color: day ? const Color(0xFFF1ECF6) : const Color(0xFF27232E),
+            child: const Center(
+              child: FrostedButton.glass('Share', onPressed: _none),
+            ),
+          ),
+          mode,
+        );
+        // Under the middle of the part's foot, a few pixels out.
+        Future<double> under() {
+          final face = t.getRect(find.byType(FrostedFace).first);
+          return _pixel(
+            t,
+            Offset(face.center.dx, face.bottom + 4),
+          ).then((c) => c.computeLuminance());
+        }
+
+        final rest = await under();
+        await t.sendKeyEvent(LogicalKeyboardKey.tab);
+        await t.pumpAndSettle();
+        final focused = await under();
+        if (day) {
+          expect(focused, lessThan(rest - .01), reason: 'rest $rest');
+        } else {
+          expect(focused, closeTo(rest, .002), reason: 'rest $rest');
+        }
+      },
+    );
+  }
 }

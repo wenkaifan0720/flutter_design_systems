@@ -1,7 +1,7 @@
 // Controls in a FrostedFormField take a tap, each its own: a segmented button's segments, chips in a wrap, a switch
 // and a checkbox, by the pointer and through the node the platform has for each (a screen reader's double tap, a
-// browser's click with semantics on). A group merged into the field's one node gave every tap to its first control
-// (the user, 11-18, on Neumorphism's form field: Stint's Priority and Labels took no tap; Frosted's field merged too).
+// browser's click with semantics on). A group merged into the field's one node would give every tap to its first
+// control.
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter_test/flutter_test.dart';

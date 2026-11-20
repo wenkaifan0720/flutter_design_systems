@@ -1,4 +1,4 @@
-// Frosted's figures and marks, one test each, at the Keel pilot's own
+// Frosted's figures and marks, one test each, at the example's own
 // values: the money (the display figure, an amount in a column, figures in
 // a line, a percentage, a stat and its arrangements, the rolling counter)
 // and the marks (monogram, token, date block, a transaction's mark, chip,

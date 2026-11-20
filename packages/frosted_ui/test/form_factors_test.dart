@@ -1,5 +1,4 @@
-// A tablet is not a stretched phone (the form-factors check, coordinator
-// msg_5e8ccd896566): from FrostedBreakpoints.medium (600) a sheet stands as
+// A tablet is not a stretched phone: from FrostedBreakpoints.medium (600) a sheet stands as
 // the centred card it is on the desktop, and the tab bar hugs its tabs in the
 // middle of the foot; on a phone both span the window, as before.
 import 'dart:async';

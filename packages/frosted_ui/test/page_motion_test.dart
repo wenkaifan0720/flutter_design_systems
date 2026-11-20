@@ -1,5 +1,4 @@
-// Frosted's page motion (coordinator msg_9718a2a2a077: page changes must not
-// fly in): a drill-in settles in a small way over the page under it, which
+// Frosted's page motion (page changes never fly in): a drill-in settles in a small way over the page under it, which
 // stands still, a pop is the reverse, on every platform the theme hands a
 // page route to. The shell's top-level switch, in place: chrome_test.
 import 'package:material_ui/material_ui.dart';

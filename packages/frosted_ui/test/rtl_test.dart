@@ -219,8 +219,8 @@ void main() {
   });
 
   // Figures, codes and the things printed on a card keep their order on a
-  // right-to-left page (the self-review's shots read "K + ⌘", "500.00 $",
-  // "+99", the card's groups backwards and "AM 30 : 9").
+  // right-to-left page (not "K + ⌘", "500.00 $", "+99", the card's groups
+  // backwards or "AM 30 : 9").
   testWidgets('keycaps keep their order right to left', (t) async {
     await _probe(
       t,

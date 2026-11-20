@@ -375,7 +375,7 @@ class _FrostedInputGroupState extends State<FrostedInputGroup>
             // The well reads left to right in any language, as the amount
             // well does: its add-ons are a value's parts (https:// and .com,
             // a currency, a unit). Under a right-to-left page the website
-            // read "com. | example | //:https" (self-review round 3).
+            // would read "com. | example | //:https".
             child: Directionality(
               textDirection: TextDirection.ltr,
               // The line answers taps from the well's top to its bottom.
@@ -561,52 +561,37 @@ class FrostedInputOtp extends StatelessWidget {
                 minHeight: 56,
               ),
               // Each box is a well, as every field is (FrostedWell): recessed
-              // glass a step darker than what holds it, its fill by day the
-              // field's own while it is next or wrong. As opaque paint it
-              // stood whiter than its card, not cut into it (round 10).
-              child: FrostedFace(
-                material: FrostedMaterial.well,
-                radius: BorderRadius.circular(FrostedCorners.r12),
-                color: t.isDark
-                    ? null
-                    : slot.isError
-                    ? t.colorScheme.overTint
-                    : lit
-                    ? t.glass.plane.withValues(alpha: .6)
-                    : null,
-                // The next box's edge in the accent at the heavy stroke
-                // (the over ink when wrong); the rest keep the well's ring.
-                ring: lit || slot.isError
-                    ? null
-                    : frostedLitEdge(t, t.controlEdge),
-                edge: slot.isError
-                    ? frostedErrorEdge(t)
-                    : lit
-                    ? (t.isDark
-                          ? t.colorScheme.accent
-                          : const Color(0xFFFFFFFF))
-                    : null,
-                shadows: lit && !t.isDark
-                    ? const [
-                        BoxShadow(color: Color(0xF2FFFFFF), blurRadius: 10),
-                      ]
-                    : const <BoxShadow>[],
-                edges: const EdgeInsets.all(FrostedStrokes.heavy),
-                child: Center(
-                  child: slot.character.isEmpty
-                      ? (lit
-                            ? Container(
-                                width: FrostedStrokes.heavy,
-                                height: 24,
-                                color: t.colorScheme.accent,
-                              )
-                            : null)
-                      : Text(
-                          slot.obscured ? '•' : slot.character,
-                          style: t.textTheme.amount.c(
-                            t.colorScheme.textPrimary,
+              // glass a step darker than what holds it, its rim the well's
+              // light one. The next box clears as a focused field does; a
+              // wrong one says so in the message under the boxes.
+              child: FrostedCleared(
+                level: lit ? 1 : 0,
+                outline: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(
+                    Radius.circular(FrostedCorners.r12),
+                  ),
+                ),
+                child: FrostedFace(
+                  material: FrostedMaterial.well,
+                  radius: BorderRadius.circular(FrostedCorners.r12),
+                  ring: frostedLitEdge(t, t.controlEdge),
+                  edges: const EdgeInsets.all(FrostedStrokes.heavy),
+                  child: Center(
+                    child: slot.character.isEmpty
+                        ? (lit
+                              ? Container(
+                                  width: FrostedStrokes.heavy,
+                                  height: 24,
+                                  color: t.colorScheme.accent,
+                                )
+                              : null)
+                        : Text(
+                            slot.obscured ? '•' : slot.character,
+                            style: t.textTheme.amount.c(
+                              t.colorScheme.textPrimary,
+                            ),
                           ),
-                        ),
+                  ),
                 ),
               ),
             );

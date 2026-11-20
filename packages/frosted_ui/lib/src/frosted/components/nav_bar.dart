@@ -313,9 +313,9 @@ class FrostedNavigationBar extends StatelessWidget {
     }
     // The fade runs 104 up from the screen's foot, past the slab's top and
     // across the window, so what passes under the glass dissolves into the
-    // canvas: no card's edge or rounded foot frames the slab (the user,
-    // 11-17: a day's card on the same gutter ran 1 outside the slab's sides
-    // and rounded off 9 under it while the bar drew no fade).
+    // canvas: no card's edge or rounded foot frames the slab (without it, a
+    // card on the same gutter ran 1 outside the slab's sides and rounded
+    // off 9 under it).
     return Stack(
       clipBehavior: Clip.none,
       children: [

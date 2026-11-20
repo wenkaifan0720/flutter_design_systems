@@ -268,7 +268,7 @@ abstract final class FrostedChromeMetrics {
   /// glyph 18) 10 before its word, standing on the links' keyline: where a
   /// link's glyph's ink starts, 17 in ([navLinkInset], the pill's 1 edge
   /// and the glyph's own 2 side bearing; the source's 4 gave the sidebar a
-  /// second leading edge, design6 P).
+  /// second leading edge).
   static const double brandHeight = 40;
 
   /// See [brandHeight].
@@ -734,7 +734,7 @@ abstract final class FrostedChromeMetrics {
 
   /// The segmented control (`.seg-ctl`): 2 inside, its segments 2 apart,
   /// each 28 tall, at least 36 wide and 10 in; filling a field's line, 38
-  /// tall with a 14 word. (The source's 3 round 26, on the 2-pt grid: the
+  /// tall with a 14 word. (The source's 3 and 26, on the 2-pt grid; the
   /// strip keeps its 32, as iOS's does.)
   static const double segmentsInset = 2;
 
@@ -1465,7 +1465,7 @@ abstract final class FrostedChromeMetrics {
   // --- home pieces ----------------------------------------------------------------
 
   /// The quick actions (`.qa`): four across, 4 apart, 14 over and under
-  /// and 8 in; each its round 44 (its glyph 18) 8 over its word.
+  /// and 8 in; each its 44 disc (its glyph 18) 8 over its word.
   static const double actionGap = 4;
 
   /// See [actionGap].
@@ -1484,7 +1484,7 @@ abstract final class FrostedChromeMetrics {
   static const double actionWordGap = 8;
 
   /// A way to move money (`.mv-act`): corners 14, 10 inside (16 on the
-  /// desktop), its round 32 (40) with a 16 (18) glyph, 10 (14) from its
+  /// desktop), its 32 (40) disc with a 16 (18) glyph, 10 (14) from its
   /// words, its lines 2 (4) apart; two across 8 apart (16).
   static const double moveActRadius = 14;
 

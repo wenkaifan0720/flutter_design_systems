@@ -1,4 +1,4 @@
-// Counts speak in their language's plural forms (coordinator spec looks-patch-0.2.1.md, item 2): an insight's row of
+// Counts speak in their language's plural forms: an insight's row of
 // visit dots says "1 visit" and "2 visits" in English (it said "1 visits"), through FrostedLocalizations.visits, and
 // each of Arabic's six forms in the gallery's Arabic words.
 import 'package:material_ui/material_ui.dart';

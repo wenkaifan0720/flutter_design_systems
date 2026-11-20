@@ -21,7 +21,6 @@ import '../pressable/pressable.dart';
 import '../money/money.dart';
 import '../../localizations.dart';
 import '../../internal/dim.dart';
-import '../../internal/rest_ring.dart';
 import '../../internal/cap.dart';
 
 /// How large a mark stands: a row's (36, `.mono`, `.tok`), a ticket's or a
@@ -749,13 +748,13 @@ class FrostedPeople extends StatelessWidget {
   }
 }
 
-/// A completion check: the 24 round an option wears (`.opt-c`), a ring of
-/// the strong hairline at rest and the ink act with a white tick once it is
-/// done (a white dash when [value] is null, the mixed state of a check over
-/// several). With [onChanged] a press, Enter or Space flips it; without, it
-/// is a mark that only reports. [label] is what a screen reader calls it;
-/// [error] draws the ring in the over ink and says so. The ring at rest is
-/// drawn from the tokens: the source draws nothing there.
+/// A completion check: a 24 round opening in the glass, ringed by a neutral
+/// hairline that holds 3:1, with a tick printed in the words' ink once it
+/// is done (a dash when [value] is null, the mixed state of a check over
+/// several) and a little more frost in the opening. With [onChanged] a
+/// press, Enter or Space flips it; without, it is a mark that only reports.
+/// [label] is what a screen reader calls it; [error] prints the mark in the
+/// over ink (a "!" in an empty check) and says so, the ring kept neutral.
 ///
 /// ```dart
 /// FrostedCheckbox(value: kept, label: 'Walk 5,000 steps', onChanged: (v) => setState(() => kept = v!))
@@ -793,7 +792,8 @@ class FrostedCheckbox extends StatelessWidget {
   /// What the thing is, for a screen reader.
   final String label;
 
-  /// Whether what it stands for is wrong as it is (a term not agreed to).
+  /// Whether what it stands for is wrong as it is (a term not agreed to):
+  /// its mark is printed in the over ink, and a screen reader hears it.
   final bool error;
 
   /// Whether a press may leave it mixed, as `Checkbox(tristate:)` does.
@@ -826,6 +826,19 @@ class FrostedCheckbox extends StatelessWidget {
     null => tristate ? false : true,
   };
 
+  /// The opening's frost: a little more when checked, none under a finger
+  /// on a checked one, the strong hairline's ink under a finger on an empty
+  /// one.
+  static Color? _frost(
+    FrostedThemeData t, {
+    required bool on,
+    required bool down,
+  }) => switch ((on, down)) {
+    (false, true) => t.colorScheme.borderStrong,
+    (true, false) => t.glass.wash,
+    _ => null,
+  };
+
   @override
   Widget build(BuildContext context) {
     final t = context.frostedTheme;
@@ -841,88 +854,64 @@ class FrostedCheckbox extends StatelessWidget {
     });
     final cut = s.cut(FrostedCorners.full);
     final fill = s.fill;
-    // At rest the ring reads 3:1 on its ground, so an empty check is seen.
-    final ring = on && !error
-        ? null
-        : s.side ??
-              BorderSide(
-                color: error
-                    ? t.colorScheme.over
-                    : s.edge ?? frostedRestRing(t),
-                width: FrostedChromeMetrics.checkRing,
-              );
-    final gradient = on && fill == null ? t.colorScheme.buttonFill : null;
-    // Under a finger an empty check fills with the strong hairline's ink, as
-    // a done one fades: the press shows on both. The keyboard's focus lights
-    // its rim ([FrostedClearing.litOf]): the ring brightens to white, or a
-    // white hairline comes in round a done check, which has none. A dark
-    // ring (an empty check by day) stays, and the light comes in just
-    // inside it.
-    Widget disc(bool down, double lit) {
-      final BorderSide? rim;
-      var glint = 0.0;
-      if (lit <= 0) {
-        rim = ring;
-      } else if (ring == null) {
-        rim = BorderSide(
-          color: frostedRimLight(t, null, lit),
-          width: FrostedChromeMetrics.outline,
-        );
-      } else if (frostedRimIsBoundary(ring.color)) {
-        (rim, glint) = (ring, lit);
-      } else {
-        rim = ring.copyWith(color: frostedRimLight(t, ring.color, lit));
-      }
-      final inside = BorderSide(
-        color: frostedRimLight(t, null, glint),
-        width: FrostedChromeMetrics.outline,
-      );
-      return AnimatedContainer(
-        duration: duration,
-        curve: motion.curve,
-        width: FrostedChromeMetrics.check,
-        height: FrostedChromeMetrics.check,
-        decoration: cut == null
-            ? BoxDecoration(
-                shape: BoxShape.circle,
-                color:
-                    fill ?? (down && !on ? t.colorScheme.borderStrong : null),
-                gradient: gradient,
-                border: rim == null ? null : Border.fromBorderSide(rim),
-              )
-            : ShapeDecoration(
-                shape: cut.copyWith(side: rim ?? BorderSide.none),
-                color:
-                    fill ?? (down && !on ? t.colorScheme.borderStrong : null),
-                gradient: gradient,
-              ),
-        child: Padding(
-          padding: EdgeInsets.all(rim?.width ?? 0),
-          child: AnimatedContainer(
-            duration: duration,
-            curve: motion.curve,
-            decoration: cut == null
-                ? BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.fromBorderSide(inside),
-                  )
-                : ShapeDecoration(shape: cut.copyWith(side: inside)),
-            child: Center(
-              child: AnimatedScale(
+    final side = s.side;
+    // The opening is a small bead of glass in a field's language: a well a
+    // step deeper than the glass it stands on, shaded along its top inside
+    // edge, its rim the lit hairline by day and the night glass's rim by
+    // night, never a dark line; wrong or not, the rim stays neutral.
+    // Checked, the bead takes a little more frost and the check is printed
+    // in the words' ink; a wrong one prints its mark in the over ink, an
+    // empty one a "!". The keyboard's focus lights the bead's rim, and by
+    // day it rises (FrostedFace, under the check's FrostedCleared).
+    final mark = s.foreground ?? (error ? t.colorScheme.over : null);
+    // Under a finger an empty check takes the strong hairline's ink, and a
+    // checked one loses its frost: the press shows on both.
+    Widget disc(bool down) => SizedBox.square(
+      dimension: FrostedChromeMetrics.check,
+      child: FrostedFace(
+        material: fill == null ? FrostedMaterial.well : FrostedMaterial.paint,
+        radius: BorderRadius.circular(
+          FrostedStyleLayers.radiusOf(
+            cut,
+            FrostedChromeMetrics.check,
+            FrostedChromeMetrics.check / 2,
+          ),
+        ),
+        shape: cut,
+        color: fill,
+        wash: _frost(t, on: on, down: down),
+        edge: side?.color,
+        edges: side == null
+            ? const EdgeInsets.all(FrostedChromeMetrics.outline)
+            : EdgeInsets.all(side.width),
+        ring: side != null ? null : s.edge ?? frostedLitEdge(t, t.controlEdge),
+        child: Center(
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              AnimatedScale(
                 scale: on ? 1 : 0,
                 duration: duration,
                 curve: motion.curve,
                 child: Icon(
                   value == null ? FrostedGlyphs.remove : FrostedGlyphs.check,
                   size: s.iconSize ?? FrostedChromeMetrics.checkGlyph,
-                  color: s.foreground ?? t.colorScheme.onButton,
+                  color: mark ?? t.colorScheme.textPrimary,
                 ),
               ),
-            ),
+              if (error && !on)
+                Text(
+                  '!',
+                  textScaler: TextScaler.noScaling,
+                  style: t.textTheme.labelLarge.semibold.c(
+                    mark ?? t.colorScheme.over,
+                  ),
+                ),
+            ],
           ),
         ),
-      );
-    }
+      ),
+    );
 
     // The disc stands in the target, laid out round it (as Material pads a
     // checkbox): the node, the press and the pointer span the target; the
@@ -972,10 +961,7 @@ class FrostedCheckbox extends StatelessWidget {
                     child: Builder(
                       builder: (context) => FrostedDim(
                         off: !live,
-                        child: disc(
-                          FrostedPressArea.isDown(context),
-                          FrostedClearing.litOf(context),
-                        ),
+                        child: disc(FrostedPressArea.isDown(context)),
                       ),
                     ),
                   ),

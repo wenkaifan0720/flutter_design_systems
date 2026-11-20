@@ -2,7 +2,7 @@
 // a phone a transaction row pressed halfway and its sheet halfway up; at
 // desktop width a filter chip hovered and the search reached by the Tab key;
 // by day and by night. At each moment nothing throws or overflows. With
-// MOTION_OUT set, each moment is written there as a PNG for the self-review.
+// MOTION_OUT set, each moment is written there as a PNG to look at.
 import 'dart:convert';
 import 'dart:io';
 import 'dart:ui' as ui;

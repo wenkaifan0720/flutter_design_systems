@@ -1,14 +1,12 @@
-// In motion (design6 O): each gesture driven, and what is on screen read
+// In motion: each gesture driven, and what is on screen read
 // mid-move, where the state matrix (a part at rest) cannot see it.
 // - A carousel's slide keeps the card's corners 30% and 70% through a swipe,
 //   and a peeking slide meets the frame's round edge: the frame holds the
-//   shape, not only the slide (the user, 11-11: "the card's border radius
-//   goes back to zero during the swipe").
+//   shape, not only the slide (its corners never go square mid-swipe).
 // - A date range's preview ends at the day the pointer or the keyboard rests
 //   on, with the round end a finished range has, in the same week, in a
-//   later week and right to left; none before the start (the user, 11-11:
-//   "the range end region extends beyond the end date and has zero border
-//   radius during hovering").
+//   later week and right to left; none before the start (it never runs past
+//   the end date or goes square while hovering).
 import 'package:flutter/gestures.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
@@ -112,7 +110,7 @@ void main() {
 
     // With a peek each slide keeps its own corners and the frame cuts
     // straight: the frame's round corners squeezed the peek into a capsule
-    // that grew and shrank as it moved (self-review round 1).
+    // that grew and shrank as it moved.
     testWidgets('a peeking slide keeps its own corners, the frame cuts it '
         'straight', (tester) async {
       await tester.pumpWidget(_stage(carousel(fraction: .8)));

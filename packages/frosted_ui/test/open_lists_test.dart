@@ -1,14 +1,12 @@
-// Frosted's open lists (coordinator msg_a2f37738e9c9, item F, from the user's
-// walk of Ledger): in every open list the chosen option stands on the chosen
+// Frosted's open lists: in every open list the chosen option stands on the chosen
 // plate, the brighter glass every chosen part stands on (law 6), not only a
 // small check; a hover and the keyboard's highlight clear the frost under a
 // row that is not chosen, so neither reads as a second choice; and
-// the keyboard walks a select's list as it does every list ui_core opens
-// (msg_92f0c3f95b72): opened by a key the chosen option takes the focus (the
+// the keyboard walks a select's list as it does every list ui_core opens:
+// opened by a key the chosen option takes the focus (the
 // first when none is), the arrows go round at once (after a pointer opened
 // it too), Home and End go to the ends, a letter jumps, Enter or Space
 // chooses and closes, Escape closes and gives the field the focus back.
-// Shown at 390 and 1440, day and night: review/lists (open-list shots).
 import 'package:flutter/gestures.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';

@@ -1,4 +1,4 @@
-// The test tiers (coordinator spec looks-patch-0.2.1.md, fast tests). The
+// The test tiers. The
 // everyday tier, `flutter test --exclude-tags goldens,sweep`, keeps one
 // representative case of each exhaustive matrix (a page per size, a theme each
 // way, right to left once, 200% text once); `flutter test --tags sweep` runs

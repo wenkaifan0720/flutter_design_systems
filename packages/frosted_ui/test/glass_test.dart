@@ -6,8 +6,9 @@
 //   saturated colours, every pixel inside it read against every ink;
 // - with transparency off (the theme's opaqueMaterials), each glass is its opaque colour, the page behind unseen;
 // - a control's state reads off the glass, not only its words: the control edge reads 3:1 on every glass over any
-//   backdrop and on the page, in every preset by day and by night, and an off switch, the chosen segment, chip, tab
-//   and sidebar link, a field, an empty check and an unchosen radio each draw their state in it.
+//   backdrop and on the page, in every preset by day and by night, and by night an off switch, the chosen segment,
+//   chip, tab and sidebar link, a field, an empty check and an unchosen radio each draw their state in it; by day
+//   each wears the lit rim instead (glass has no dark edge; rest_and_off_test.dart holds them to a field's).
 import 'dart:math' as math;
 
 import 'package:material_ui/material_ui.dart';
@@ -149,6 +150,9 @@ Iterable<(int, int)> _inside() sync* {
 
 /// The controls of glass that wear the lit rim by day.
 const _litByDay = {
+  'an off switch',
+  'an empty check',
+  'an unchosen radio',
   'a chosen segment',
   'a chosen chip',
   'a chosen tab',
@@ -308,9 +312,10 @@ void main() {
         );
         await tester.pump(const Duration(milliseconds: 400));
         // By day a control of glass wears the lit rim (no dark line on light
-        // glass, the identity ruling; its contrast is reported, not hidden);
+        // glass, the identity ruling; its contrast is reported, not hidden),
         // the marks that stand alone (a switch's track, a check, a radio)
-        // keep the control edge, their state's 3:1 boundary.
+        // too: each is a bead of glass in a field's language. By night every
+        // control keeps the control edge.
         final edge = brightness == Brightness.light && _litByDay.contains(name)
             ? FrostedChromeMetrics.litEdge
             : t.controlEdge;
@@ -383,7 +388,7 @@ void main() {
   // A sheet over a page: the kit's darkest control by day (the ink button),
   // its brightest by night, under the slab where a row would read. Glass
   // shows the colour behind it; the shape of a button behind does not smear
-  // across the rows (the coordinator's Category sheet, 11-11).
+  // across the rows.
   for (final brightness in Brightness.values) {
     testWidgets('a slab over the ink button by ${brightness.name} moves its '
         'ground by a few percent at most', (tester) async {

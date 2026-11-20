@@ -17,14 +17,14 @@ import '../../theme.dart';
 import '../host.dart';
 import '../pressable/pressable.dart';
 import '../../internal/dim.dart';
-import '../../internal/rest_ring.dart';
 import '../../internal/cap.dart';
 
 /// One choice in a sheet, as the source sets its options (`.opt`): an
 /// optional [hue] swatch (a category's light) or [lead] mark, the [label]
 /// in the body type, a quiet [trailing] note (an amount), and at the end the
-/// round check, 24 across: a ring while unchosen, the ink with its white
-/// tick when [checked], the chosen one's label semibold. At least 52 tall,
+/// round check, 24 across: a ring while unchosen, and when [selected] the
+/// same ring round a little clearer glass with its tick printed in the ink,
+/// the chosen one's label semibold. At least 52 tall,
 /// 6 over and under, its parts 12 apart, a hairline between two. A null
 /// [onPressed] leaves it inert.
 ///
@@ -149,29 +149,29 @@ class FrostedOption extends StatelessWidget {
                 ),
               SizedBox.square(
                 dimension: check,
-                child: selected
-                    ? FrostedFace(
-                        material: FrostedMaterial.paint,
-                        radius: BorderRadius.circular(check / 2),
-                        color: fill,
-                        gradients: fill == null
-                            ? [t.colorScheme.buttonFill]
-                            : const <Gradient>[],
-                        sheen: t.colorScheme.buttonSheen,
-                        child: Center(
+                // The check is a small bead of glass in a field's language:
+                // a well a step deeper than the menu's glass, its rim the lit
+                // hairline by day and the night glass's rim by night, never a
+                // dark line. Chosen, it takes a little more frost and its tick
+                // is printed in the ink, never a fill of ink.
+                child: FrostedFace(
+                  material: fill == null
+                      ? FrostedMaterial.well
+                      : FrostedMaterial.paint,
+                  radius: BorderRadius.circular(check / 2),
+                  color: fill,
+                  wash: selected ? t.glass.wash : null,
+                  ring: s.edge ?? frostedLitEdge(t, t.controlEdge),
+                  child: selected
+                      ? Center(
                           child: Icon(
                             FrostedGlyphs.check,
                             size: FrostedChromeMetrics.optionCheckGlyph,
-                            color: s.foreground ?? t.colorScheme.onButton,
+                            color: s.foreground ?? t.colorScheme.textPrimary,
                           ),
-                        ),
-                      )
-                    : FrostedFace(
-                        material: FrostedMaterial.paint,
-                        radius: BorderRadius.circular(check / 2),
-                        color: fill,
-                        ring: s.edge ?? frostedRestRing(t),
-                      ),
+                        )
+                      : null,
+                ),
               ),
             ],
           ),
@@ -411,7 +411,7 @@ class FrostedMenu<T> extends StatelessWidget {
 
   /// [base] grown with the text, as far as the window's gutters: a menu's
   /// names keep their room at 200% rather than cutting off beside amounts
-  /// that stay whole (the user's audit, 11-18).
+  /// that stay whole.
   static double _grown(BuildContext context, double base) {
     final grow = MediaQuery.textScalerOf(context).scale(16) / 16;
     if (grow <= 1) return base;
@@ -572,8 +572,7 @@ class _MenuRow extends StatelessWidget {
         Expanded(
           child: frostedCapCentred(
             // A long name wraps rather than losing its end beside an
-            // amount that stays whole ("Augu…" at 200%, the user's audit,
-            // 11-18).
+            // amount that stays whole ("Augu…" at 200%).
             Text(
               label,
               maxLines: 2,
@@ -637,7 +636,7 @@ class _MenuRow extends StatelessWidget {
               ),
               // Chosen is the brighter glass (law 6), the plate every chosen
               // chip, segment and link stands on, not a quieter wash under it
-              // (self-review round 3: the darker plate read as the opposite).
+              // (a darker plate reads as the opposite).
               // The keyboard's row catches the light along its rim; the
               // pointer's only clears.
               child: FrostedCleared(

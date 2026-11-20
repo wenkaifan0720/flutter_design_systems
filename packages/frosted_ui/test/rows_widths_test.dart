@@ -1,12 +1,11 @@
-// ui_core's row and width checks over every gallery page (the user, 11-11 16:34: "the button doesnt have the same
-// height here?" and "the width for dropdown seems to be a common problem across different design systems"):
+// ui_core's row and width checks over every gallery page:
 // - rows: every pair of controls sharing a row shows one top and one bottom by its drawn outline, and its capitals on
 //   the row's centre line, under each density Frosted ships, by day and by night (DesignRowCheck);
 // - widths: from 600 wide every select's closed face, button, stepper and segmented control keeps to its content and
 //   padding, at most 320, at 600, 1024, 1440 and 1920 (DesignWidthCheck);
 // - lists: every select's, combobox's and multi-select's list, open at 390 and 1440, at least the field's width, on
 //   its leading edge, its words on the field's (DesignWidthCheck.checkList);
-// - own widths (the coordinator's walk at 1440, msg_d21d6d09f6c8): from 600 up every segmented strip, filled or not,
+// - own widths: from 600 up every segmented strip, filled or not,
 //   the month switch, every group of choice cards or tiles (quick amounts, icon picker, quick actions, ways to move
 //   money) and the credit card keeps to its content: as wide at 1024 as at 1440, at its line's start, a strip's screen reader box
 //   the strip's, an icon well about square;
@@ -72,9 +71,10 @@ const _misreadRows = {
 const _misreadRowProblems = {
   // ui_core_test 0.1.1 (outlined and bevelled faces read against their
   // ground) reads the remove key inside the unchosen "Ines Park" chip, by
-  // night only, 1 px short of the chosen "Design" chip beside it (0.1.3:
-  // 3 device px, as drawn). Laid out, both faces (and the key's target) end
-  // at the same y, day and night, as 0.1.3 says.
+  // night only, 1 px short of the chosen "Design" chip beside it. 0.1.3 and
+  // 0.1.4 word it "its bottom is level with theirs as laid out, 3 device px
+  // above as drawn", which this entry matches from its start. Laid out, both
+  // faces (and the key's target) end at the same y, day and night.
   'choices': [
     'compact night · a button "Remove Ines Park" beside a button "Design": '
         'its bottom is level with theirs as laid out',
@@ -86,7 +86,11 @@ const _misreadWidths = {
   'tabs': 'ui_core misread, 0.2.0 design-sweep reads: widths from 600',
 };
 const _misreadLists = {
-  'inventory 390': 'ui_core misread, 0.2.0 design-sweep reads: list widths',
+  // Laid out, each list opened at 390 is the field's 326 px, on its leading
+  // edge. Since frosted_ui 0.3.3, whose open list stands on glass with no
+  // dark edge, ui_core_test 0.1.3 and 0.1.4 read the list to the first edge
+  // drawn inside it (the select's 306 px, 10 px in; Tags' 316 px).
+  'inventory 390': 'ui_core_test misread: a glass list read to an edge inside',
   'inventory 1440': 'ui_core misread, 0.2.0 design-sweep reads: list widths',
   'pickers 1440': 'ui_core misread, 0.2.0 design-sweep reads: list widths',
 };

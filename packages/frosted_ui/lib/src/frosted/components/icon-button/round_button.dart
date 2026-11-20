@@ -40,8 +40,8 @@ enum FrostedIconButtonSize {
 /// close, the bell. A screen reader hears it as a button named [label]; a
 /// null [onPressed] draws it at the disabled share and inert. A toggle
 /// (bold, a favourite) says whether it is on through [selected]: on, the
-/// disc takes the ink act's light and the glyph its ink; null is a plain
-/// act. It lays out at its disc and takes taps over the platform's touch
+/// disc stays glass, a little clearer, with a dot printed under its glyph;
+/// null is a plain act. It lays out at its disc and takes taps over the platform's touch
 /// target round it.
 ///
 /// ```dart
@@ -194,34 +194,51 @@ Widget frostedIconButtonFace(
       : s.edgeOf(null, FrostedStrokes.regular);
   Widget disc = SizedBox.square(
     dimension: d,
-    // A disc of glass; lit, it is the ink's paint.
+    // A disc of glass; on, it stays glass, a little clearer, with a dot
+    // printed under its glyph, never a fill of ink.
     child: FrostedFace(
-      material: on ? FrostedMaterial.paint : FrostedMaterial.pane,
+      material: FrostedMaterial.pane,
       radius: BorderRadius.circular(d / 2),
       shape: cut,
       color: fill,
-      gradients: on && fill == null ? [t.colorScheme.buttonFill] : const [],
-      wash: s.overlay,
+      wash: s.overlay ?? (on ? t.glass.wash : null),
       edge: edge,
       edges: edges,
-      sheen: on ? t.colorScheme.buttonSheen : t.glass.rim,
+      sheen: t.glass.rim,
       // The disc is its box: its edge a ring inside it, never one
       // outside that stands it a pixel wider than the buttons beside it.
       ring: side == null ? (s.edge ?? t.glass.edge) : null,
-      child: Center(
-        child: _cutForDot(
-          badge,
-          Directionality.of(context) == TextDirection.rtl,
-          d,
-          s.iconSize ?? size.glyph,
-          Icon(
-            icon,
-            size: s.iconSize ?? size.glyph,
-            color:
-                s.foreground ??
-                (on ? t.colorScheme.onButton : t.colorScheme.textPrimary),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          _cutForDot(
+            badge,
+            Directionality.of(context) == TextDirection.rtl,
+            d,
+            s.iconSize ?? size.glyph,
+            Icon(
+              icon,
+              size: s.iconSize ?? size.glyph,
+              color: s.foreground ?? t.colorScheme.textPrimary,
+            ),
           ),
-        ),
+          // On: a 5 dot in the glyph's ink, centred in the room under it.
+          Positioned(
+            bottom: ((d - (s.iconSize ?? size.glyph)) / 2 - 5) / 2,
+            child: FrostedFade(
+              opacity: on ? 1 : 0,
+              child: SizedBox.square(
+                dimension: 5,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: s.foreground ?? t.colorScheme.textPrimary,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     ),
   );

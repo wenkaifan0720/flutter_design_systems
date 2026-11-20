@@ -464,7 +464,7 @@ class FrostedFacedCard extends StatelessWidget {
           false,
         ),
       };
-      // The card's content shares its keylines (design6 P): the shared check
+      // The card's content shares its keylines: the shared keyline check
       // reads this region against the card's face.
       Widget inside = Padding(
         padding: padding ?? s.padding ?? lookInset,
@@ -2929,7 +2929,10 @@ class FrostedBanner extends StatelessWidget {
           colors: [t.colorScheme.coldTint, t.colorScheme.coldTint],
         ),
       ],
-      ring: t.colorScheme.coldEdge,
+      // Its tone is its tint, its mark and its head's ink; its edge is the
+      // lit hairline by day (never a dark line on glass) and the cold edge by
+      // night.
+      ring: frostedLitEdge(t, t.colorScheme.coldEdge),
       shadows: t.shadows.tile,
       padding:
           padding?.resolve(Directionality.of(context)) ??

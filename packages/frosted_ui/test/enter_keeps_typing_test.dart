@@ -1,5 +1,4 @@
-// After Enter, typing still reaches a field that keeps the focus (the
-// coordinator's web-enter-keeps-typing spec, 11-16, found by Comic). In a
+// After Enter, typing still reaches a field that keeps the focus. In a
 // browser, Flutter restarts the text input of a field told of a submit that
 // still holds the focus (EditableText's onSubmitted path, Flutter 3.47.0), and
 // the web engine's new input never takes the browser's focus: the field looks

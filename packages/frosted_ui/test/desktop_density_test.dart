@@ -8,8 +8,7 @@
 // Frosted's own density is pinned to standard here (its platform default,
 // compact on a desktop, is the look's choice, not a leak). Frosted pins
 // standard density under its theme, and every text entry's
-// decoration sets every field that sizes it (each entry's _bareDecoration,
-// design6 I3). As Android, iOS and macOS, with and without a host
+// decoration sets every field that sizes it (each entry's _bareDecoration). As Android, iOS and macOS, with and without a host
 // InputDecorationTheme of padding 20, isDense and a 56 minimum height
 // around the part, each part stands the size it does as Android under no
 // host theme, its hint and typed words stand where they do there, and on a

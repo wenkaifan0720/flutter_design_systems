@@ -413,7 +413,7 @@ class FrostedCarouselView extends StatelessWidget {
       duration: FrostedMotion.of(context).base,
       // A peeking slide keeps its own corners. A whole slide is held by the
       // frame alone: with its own corners too, the sliver of a slide coming
-      // in was cut at both ends into an almond (self-review round 2).
+      // in was cut at both ends into an almond.
       itemBuilder: (context, i) => viewportFraction < 1
           ? Padding(
               padding: const EdgeInsets.symmetric(
@@ -438,7 +438,7 @@ class FrostedCarouselView extends StatelessWidget {
         // the viewport's edge. With a peek (a fraction under 1) each slide
         // keeps its own corners and the frame cuts straight: its round
         // corners squeezed a peeking slide into a capsule that grew and
-        // shrank as it moved (self-review round 1).
+        // shrank as it moved.
         Widget slides = SizedBox(height: height, child: viewport);
         if (viewportFraction >= 1) {
           slides = ClipRRect(

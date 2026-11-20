@@ -1,7 +1,5 @@
-// A filter chip's and a segment's 12 px words paint with their left edge on the device-pixel grid (coordinator,
-// 11-12: on Linux the text contrast guideline read Activity's "Pending" chip at 1.62 and Settings' night "Light"
-// segment at 4.31 and 4.35; their inks stand 7.6:1 and 11:1, but thin glyphs laid at a fractional x cover no pixel
-// whole, so the words read as their edges' shade). Rows started at a fractional x, at 1x and 2x.
+// A filter chip's and a segment's 12 px words paint with their left edge on the device-pixel grid (thin glyphs laid at a
+// fractional x cover no pixel whole, so the text contrast guideline reads inks of 7.6:1 and 11:1 at 1.62 and 4.31). Rows started at a fractional x, at 1x and 2x.
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';

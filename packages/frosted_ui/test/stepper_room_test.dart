@@ -1,6 +1,6 @@
 // A stepper's rounds stand as tall as its well, and give way only as far as its figure needs: at 200% on a phone,
-// rounds as tall as the well (80) squeezed the well until its figure scrolled out of sight ("250" cut at its 0, the
-// user's review, 11-18). In Frosted's own fonts, as the gallery shows it.
+// rounds as tall as the well (80) would squeeze the well until its figure scrolled out of sight ("250" cut at its 0).
+// In Frosted's own fonts, as the gallery shows it.
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frosted_ui/frosted_ui.dart';

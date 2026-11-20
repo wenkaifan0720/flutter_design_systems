@@ -1,10 +1,9 @@
-// A state cell shows its state (coverage4.md, 11-10 05:30): for every part of
-// the review's state matrix that an app can press, disable or mark wrong, the
+// A state cell shows its state: for every part of
+// the state matrix that an app can press, disable or mark wrong, the
 // pressed, disabled and error faces keep idle's size (an error may add its
 // message below: the same width, no shorter) and differ from idle pixel for
-// pixel. Under a resting pointer a part only clears a little (the user,
-// 11-19: hover a lighter clearing than the keyboard's focus, a press distinct
-// from both); outside the parts it clears the picture is idle's own.
+// pixel. Under a resting pointer a part only clears a little (a lighter
+// clearing than the keyboard's focus, a press distinct from both); outside the parts it clears the picture is idle's own.
 //
 // A part's disabled face is the switch an app turns: `enabled: false` where
 // the part has it, else a null handler. Parts with no such state say why in
@@ -16,6 +15,7 @@ import 'package:flutter/gestures.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:ui_core_test/ui_core_test.dart';
 import 'package:frosted_ui/frosted_ui.dart';
 import 'package:frosted_ui/frosted_host.dart';
 import 'package:frosted_ui/src/frosted/internal/face.dart';
@@ -69,8 +69,7 @@ StatePart _p(
   why: why,
 );
 
-/// Fields and selects show no press of their own: a press focuses them
-/// (coverage4 leaves those cells blank).
+/// Fields and selects show no press of their own: a press focuses them.
 const _noPress = 'a press focuses the field; it has no pressed face';
 
 /// A page's place is never greyed: a destination the app can't go to is one
@@ -578,7 +577,90 @@ Future<(Size, Uint8List)> _cell(
   return (size, pixels!);
 }
 
+/// The delivery group and the alignment strip as an app holds them: options
+/// A to D, the choice kept by a [StatefulBuilder], a focusable before and
+/// after. The radio group can turn B off; a toggle's segment cannot be off
+/// alone, so the strip's B is only ever chosen.
+Widget _radios(String kind, String? initial, FocusNode before) {
+  String? chosen = initial;
+  return StatefulBuilder(
+    builder: (context, setState) {
+      void choose(String next) => setState(() => chosen = next);
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Focus(focusNode: before, child: const Text('Before')),
+          SizedBox(
+            key: const ValueKey('radios'),
+            width: 320,
+            child: kind == 'delivery'
+                ? FrostedRadioGroup<String>(
+                    label: 'Delivery',
+                    value: chosen,
+                    onChanged: choose,
+                    options: const [
+                      FrostedRadio('A', 'A'),
+                      FrostedRadio('B', 'B', enabled: false),
+                      FrostedRadio('C', 'C'),
+                      FrostedRadio('D', 'D'),
+                    ],
+                  )
+                : FrostedToggleGroup<String>(
+                    label: 'Alignment',
+                    segments: const [
+                      FrostedButtonSegment('A', 'A'),
+                      FrostedButtonSegment('B', 'B'),
+                      FrostedButtonSegment('C', 'C'),
+                      FrostedButtonSegment('D', 'D'),
+                    ],
+                    selected: {?chosen},
+                    onChanged: (next) => choose(next.single),
+                  ),
+          ),
+          const Focus(child: Text('After')),
+        ],
+      );
+    },
+  );
+}
+
 void main() {
+  // ui_core 0.3.4's radio keyboard: one Tab stop on the chosen option (else
+  // the first that can be chosen), a second Tab out, and the four arrows
+  // choosing as they move, wrapping and passing over a disabled option,
+  // Left forward right to left; each option a checked or unchecked radio.
+  for (final kind in ['delivery', 'alignment']) {
+    for (final direction in TextDirection.values) {
+      for (final initial in <String?>['C', null, 'B']) {
+        testWidgets('the $kind radios answer the keyboard as a radio group '
+            '(${direction.name}, ${initial ?? 'none'} chosen)', (tester) async {
+          final semantics = tester.ensureSemantics();
+          final before = FocusNode();
+          addTearDown(before.dispose);
+          await tester.pumpWidget(
+            MaterialApp(
+              debugShowCheckedModeBanner: false,
+              builder: (BuildContext context, Widget? page) =>
+                  FrostedHost(brightness: Brightness.light, child: page!),
+              home: Directionality(
+                textDirection: direction,
+                child: Center(child: _radios(kind, initial, before)),
+              ),
+            ),
+          );
+          await tester.pumpAndSettle();
+          (await const DesignRadioGroupCheck(look: 'Frosted').check(
+            tester.element(find.byKey(const ValueKey('radios'))),
+            before: before,
+            sendKeyEvent: tester.sendKeyEvent,
+            pump: tester.pump,
+          )).verify();
+          semantics.dispose();
+        });
+      }
+    }
+  }
+
   for (final brightness in Brightness.values) {
     testWidgets(
       "every pressed, disabled and error face keeps idle's size and shows "

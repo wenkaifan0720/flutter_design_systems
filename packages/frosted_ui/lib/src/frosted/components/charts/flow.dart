@@ -9,8 +9,8 @@ import '../../internal/css_gradient.dart';
 import '../../theme.dart';
 import '../pressable/pressable.dart';
 
-/// The width a chart draws at when nothing bounds it: the pilot's phone
-/// tile interior.
+/// The width a chart draws at when nothing bounds it: a phone tile's
+/// interior.
 const double _unboundedWidth = 326;
 
 /// Where one flow of a [FrostedFan] goes: its [amount], the [hue] of where
@@ -117,8 +117,7 @@ class FrostedFan extends StatelessWidget {
                   child: ExcludeSemantics(
                     // The ribbons run from the start, as the rows beside
                     // their bars do: drawn left to right under right-to-left
-                    // rows, a bar stood ~900 from its words (self-review
-                    // round 6).
+                    // rows, a bar stood ~900 from its words.
                     child: Transform.flip(
                       flipX: Directionality.of(context) == TextDirection.rtl,
                       child: CustomPaint(

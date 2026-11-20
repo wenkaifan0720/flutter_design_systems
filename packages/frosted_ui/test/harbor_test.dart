@@ -354,8 +354,7 @@ void main() {
       }, tags: const ['goldens']);
 
       if (look != 'night sky') {
-        // ui_core's row check (the user, 16:34: "the button doesnt have the
-        // same height here?"): every pair of controls sharing a row, read by
+        // ui_core's row check: every pair of controls sharing a row, read by
         // its drawn outline, under each density Frosted ships: both screens
         // and Close account's dialog.
         testWidgets(
@@ -416,8 +415,7 @@ void main() {
         );
       }
       if (look == 'day' && wide) {
-        // ui_core's width check (the user, 16:34: "the width for dropdown
-        // seems to be a common problem"): from 600 wide each select, button,
+        // ui_core's width check: from 600 wide each select, button,
         // stepper and segmented control keeps to its content, at most 320.
         testWidgets('controls keep to their content at 600, 1024, 1440 and '
             '1920', (tester) async {
@@ -459,7 +457,7 @@ void main() {
 
       if (look == 'night') continue;
       if (look == 'day') {
-        // ui_core's shared check (design6 P) over the same screens, beside
+        // ui_core's shared keyline check over the same screens, beside
         // our own measure below.
         testWidgets('the shared keyline check on a $device', (tester) async {
           await pump(tester);
@@ -573,9 +571,9 @@ void main() {
   // The phone's tab bar stands on a fade into the canvas (the source's
   // .tabbar, 104 up from the foot), so the day's card running on under it at
   // rest frames it with no edge: neither its rim, 1 outside the slab's sides on
-  // the same gutter, nor its rounded foot under the slab (the user, 11-17:
-  // while the bar drew no fade the card framed it, 1 at the sides and 9 under,
-  // and the plate inside looked off-centre). Read on the painted pixels at 2x,
+  // the same gutter, nor its rounded foot under the slab (with no fade the card
+  // frames it, 1 at the sides and 9 under, and the plate inside looks
+  // off-centre). Read on the painted pixels at 2x,
   // as the pub page's pictures are: no two neighbouring pixels beside the
   // slab's lower half (where the fade is most of the canvas) or under the slab
   // stand more than 1.05:1 apart (the card's rim read 1.15 to 1.24:1 there

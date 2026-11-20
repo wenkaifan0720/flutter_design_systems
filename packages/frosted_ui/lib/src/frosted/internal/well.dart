@@ -55,10 +55,10 @@ class FrostedFieldHint extends StatelessWidget {
   }
 }
 
-/// A well as `.inp`, `.amount-in` and `.pick-r` stand on it: the white at
-/// .82 with its hairline ring inside. The source draws no focus style; the
-/// ring takes the accent (Opal's ink) while the field holds focus; the
-/// strong border (ink at 14%) barely showed on the well (DERIVED).
+/// The recessed glass a field stands in (`.inp`, `.amount-in`, `.pick-r`):
+/// a step darker than what holds it, with a thin neutral rim. Focus clears
+/// its frost ([FrostedFocusRing]); a wrong field keeps the same rim and says
+/// what is wrong in its message ([FrostedFieldHint]) in the over ink.
 class FrostedWell extends StatelessWidget {
   /// A well round [child].
   const FrostedWell({
@@ -78,10 +78,11 @@ class FrostedWell extends StatelessWidget {
   /// The field's style layers; null for the text field theme's.
   final FrostedStyleLayers? layers;
 
-  /// Whether the field holds focus: the ring takes the accent.
+  /// Whether the field holds focus: its frost clears.
   final bool focused;
 
-  /// Whether the field is wrong: the ring takes the over ink.
+  /// Whether the field is wrong. Its style's error layer applies; the well
+  /// itself keeps its neutral rim, as the message carries the warning.
   final bool error;
 
   /// Whether the field takes input; a disabled well fades to half.
@@ -111,10 +112,9 @@ class FrostedWell extends StatelessWidget {
     //   box-shadow: inset 0 0 0 1px rgba(21,21,45,.08) }
     // A field is recessed glass: a step darker than what holds it, shaded
     // along its top inside edge.
-    // By day the well wears one even lit rim all round, and when wrong the
-    // rim warms toward the over hue over the over tint; never a dark line.
-    // By night its edge is the night glass's rim (the over ink when wrong).
-    // Holding focus, its frost clears as every part's does
+    // By day the well wears one even lit rim all round, never a dark line;
+    // by night its edge is the night glass's rim. Wrong or not, the rim stays
+    // neutral. Holding focus, its frost clears as every part's does
     // (FrostedFocusRing: more of the colour behind, its rim a little
     // brighter).
     final day = !t.isDark;
@@ -124,7 +124,7 @@ class FrostedWell extends StatelessWidget {
         FrostedStyleLayers.radiusOf(cut, 0, corner),
       ),
       shape: cut,
-      color: s.fill ?? (day && error ? t.colorScheme.overTint : null),
+      color: s.fill,
       wash: s.overlay,
       edge: side?.color,
       edges: side == null
@@ -132,14 +132,12 @@ class FrostedWell extends StatelessWidget {
           : EdgeInsets.all(side.width),
       ring: side != null
           ? null
-          : error
-          ? frostedErrorEdge(t)
           : s.edge ?? (day ? FrostedChromeMetrics.litEdge : t.controlEdge),
       padding: s.padding?.resolve(Directionality.of(context)) ?? padding,
       child: child,
     );
-    // Holding focus, the frost clears: no colour and no line (the user,
-    // 11-19); under a resting pointer, a little.
+    // Holding focus, the frost clears: no colour and no line; under a
+    // resting pointer, a little.
     final lit = _WellRing(
       focused: focused,
       enabled: enabled,
@@ -189,11 +187,12 @@ class _WellRingState extends State<_WellRing> {
   );
 }
 
-/// A wrong field's edge, a well's or a code box's: the over hue itself, not
-/// the words' ink. Words hold 4.5:1 and by night that pushed the over ink
-/// to a pale pink that read as focus, not as wrong (self-review round 3);
-/// an edge needs 3:1, which the hue keeps on the dark well. By day it is
-/// the hue warmed a fifth of the way into the light, never a dark line.
+/// The over hue as an edge: the hue itself by night (3:1 on the dark well),
+/// by day the lit rim warmed a fifth of the way toward the over ink.
+@Deprecated(
+  'Wells and code boxes keep a neutral rim when wrong; the message carries '
+  'the warning. Will be removed in 0.4.0.',
+)
 Color frostedErrorEdge(FrostedThemeData t) {
   final hue = t.colorScheme.overTint.withValues(alpha: 1);
   return t.isDark

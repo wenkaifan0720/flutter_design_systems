@@ -239,7 +239,7 @@ void main() {
             ),
             const FrostedFilterChipGroup(
               options: [
-                FrostedFilterOption('card', 'Keel Card'),
+                FrostedFilterOption('card', 'Tide Card'),
                 FrostedFilterOption('every', 'Everyday'),
               ],
               value: 'every',
@@ -265,7 +265,7 @@ void main() {
         _node(t, 'Everyday'),
         isSemantics(isSelected: true, isEnabled: false),
       );
-      await t.tap(find.text('Keel Card'));
+      await t.tap(find.text('Tide Card'));
       await t.pump();
       expect(seen, ['in']);
       expect(find.bySemanticsLabel('Filters'), findsOneWidget);
@@ -589,7 +589,7 @@ void main() {
         true,
         (value, set) => FrostedSwitchRow(
           label: 'Face ID',
-          note: 'To open Keel and approve payments',
+          note: 'To open Tide and approve payments',
           value: value,
           onChanged: set,
         ),
@@ -601,7 +601,7 @@ void main() {
       _node(t, 'Face ID'),
       isSemantics(
         isToggled: true,
-        hint: 'To open Keel and approve payments',
+        hint: 'To open Tide and approve payments',
         hasTapAction: true,
       ),
     );
@@ -666,7 +666,7 @@ void main() {
         children: [
           FrostedSwitchRow(
             label: 'Face ID',
-            note: 'To open Keel and approve payments',
+            note: 'To open Tide and approve payments',
             value: true,
             onChanged: (_) {},
           ),
@@ -703,7 +703,7 @@ void main() {
   });
 
   // A grid that measures its tiles and then stands each at what it measured
-  // (Facet's board) gave the rows back the height without the room under
+  // gave the rows back the height without the room under
   // the last one, and the column overflowed by that room.
   testWidgets('a settings group and a titled list section stood at the '
       'height they measured hold their rows', (t) async {
@@ -964,7 +964,8 @@ void main() {
     final th = t.element(find.byType(FrostedIconPicker)).frostedTheme;
     expect(glyph('Plane').size, 18);
     expect(t.getRect(find.byIcon(LucideIcons.plane)).center, wells[0].center);
-    expect(glyph('Bike').color, isSameColorAs(th.colorScheme.onButton));
+    // The picked glyph is in the ink on glass, not white on an ink fill.
+    expect(glyph('Bike').color, isSameColorAs(th.colorScheme.textPrimary));
     expect(glyph('Plane').color, isSameColorAs(th.colorScheme.textSecondary));
     expect(find.bySemanticsLabel('Icon'), findsOneWidget);
     expect(

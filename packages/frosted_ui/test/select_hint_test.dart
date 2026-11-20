@@ -1,5 +1,5 @@
-// An open select's list covers the line under its well (coordinator, 11-12: at 1440 the Room select's helper peeked
-// past the open list's rounded top-left corner, 2-3 dark pixels of its first letter just outside the curve). With the
+// An open select's list covers the line under its well (no helper peeks past the open list's rounded top-left corner).
+// With the
 // list open, the region round the list's top-left corner reads the same, pixel for pixel, as the same select without
 // a helper, by day and by night; the line comes back once the list goes.
 import 'dart:math' as math;

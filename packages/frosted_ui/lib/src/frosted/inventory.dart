@@ -715,8 +715,8 @@ class FrostedInventoryGallery extends StatelessWidget {
   final ScrollController? controller;
 
   /// Space round the list; none at the sides by default, where the
-  /// scaffold's gutter stands (with its own 16 as well, the list stood at
-  /// twice the gutter of every other page, self-review round 3).
+  /// scaffold's gutter stands (with its own 16 as well, the list would stand
+  /// at twice the gutter of every other page).
   final EdgeInsetsGeometry padding;
 
   @override

@@ -1,3 +1,7 @@
+// A slider's value reads by its active track, which holds 3:1 on the ground
+// by day and by night, and the knob stands at that track's end. The knob is
+// bounded by light, not a traced line: its rim reads at least as light as the
+// ground it stands on.
 import 'dart:ui' as ui;
 
 import 'package:flutter/rendering.dart';
@@ -7,7 +11,7 @@ import 'package:material_ui/material_ui.dart';
 
 void main() {
   for (final mode in Brightness.values) {
-    testWidgets('slider track and thumb rim remain distinct on $mode glass', (
+    testWidgets('a slider reads by its track and lights its knob on $mode', (
       t,
     ) async {
       const ratio = 4.0;
@@ -92,15 +96,24 @@ void main() {
           FrostedThemeData.contrast(pixel(active.center), ground),
           greaterThanOrEqualTo(3),
         );
-        for (final knob in shapes.where(
-          (r) =>
-              r.width == FrostedChromeMetrics.sliderThumb &&
-              r.height == r.width,
-        )) {
-          final sample = pixel(Offset(knob.center.dx, knob.top + .45));
+        final knobs = shapes
+            .where(
+              (r) =>
+                  r.width == FrostedChromeMetrics.sliderThumb &&
+                  r.height == r.width,
+            )
+            .toList();
+        expect(knobs, isNotEmpty);
+        for (final knob in knobs) {
+          final end = [active.left, active.right]
+              .map((x) => (knob.center.dx - x).abs())
+              .reduce((a, b) => a < b ? a : b);
+          expect(end, lessThanOrEqualTo(knob.width / 2), reason: 'at the end');
+          final rim = pixel(Offset(knob.center.dx, knob.top + .45));
           expect(
-            FrostedThemeData.contrast(sample, ground),
-            greaterThanOrEqualTo(3),
+            rim.computeLuminance(),
+            greaterThanOrEqualTo(ground.computeLuminance()),
+            reason: 'rim $rim on $ground: light, not a dark line',
           );
         }
       }

@@ -1,16 +1,13 @@
-// The phone tab bar floats on the page's gutter, and its chosen plate is set in evenly (the user, 11-14, on Harbor's
-// Activity at 390 by night: the bar started ~12 in while the page's margin is 16; the plate stood 4-5 from the bar's
-// top and bottom but 8-9 from its sides; its corners were not concentric with the bar's). Read from the laid-out
+// The phone tab bar floats on the page's gutter, and its chosen plate is set in evenly (not a bar starting ~12 in on a
+// page whose margin is 16, nor a plate 4-5 from the bar's top and bottom but 8-9 from its sides, its corners not
+// concentric with the bar's). Read from the laid-out
 // boxes: the slab starts and ends on the gutter; the plate stands one inset from the slab on all four sides at either
 // end of the bar; its corner is the slab's less that inset. By day and by night, two tabs and five (the act in the
 // middle), left to right and right to left.
 //
-// Then the same read on the painted pixels at 3x (the user, 11-17, on the pub page's picture of Harbor's Activity by
-// night: the plate did not sit concentric in the bar). The layout above was right all along, and so was the paint: the
-// dark gap from the slab's edge to the plate's rim the same on every side and round the corners. What the user saw
-// was the frame round the bar: the day's card on the same gutter ran its rim 1 outside the slab's sides and rounded
-// off 9 under it, while the bar drew no fade (harbor_test reads that it no longer does); this file read only the
-// bar, so it had nothing to catch. Here the slab's paint starts where the bar leaves the bare fade it stands on, and
+// Then the same read on the painted pixels at 3x, where a plate can look off-centre though its layout is right: the
+// dark gap from the slab's edge to the plate's rim is the same on every side and round the corners. (A card on the
+// same gutter framing the bar makes it look off too; harbor_test reads that the bar's fade hides it.) Here the slab's paint starts where the bar leaves the bare fade it stands on, and
 // the plate's at its rim, where the bar with it chosen stands furthest from the bar with the other end chosen; the
 // gap is the same at the side, the top and the bottom, and along the corner's diagonal it is the gap a concentric
 // corner leaves. At 390 and 1440, by day and by night, two tabs and five, either end, left to right and right to left.

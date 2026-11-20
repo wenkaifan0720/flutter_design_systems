@@ -1,5 +1,4 @@
-// The outline a person sees is the box (coordinator, 11-11; the user, 16:34: "the button doesnt have the same height
-// here?"): every pair of acts sharing a row, read off the pixels, shows one top and one bottom by its visible
+// The outline a person sees is the box: every pair of acts sharing a row, read off the pixels, shows one top and one bottom by its visible
 // outline, by day and by night: a glass button beside an ink one asking for a larger size, on a sheet and on the
 // page, and a dialog's Cancel beside its danger act under compact. A variant differs in its fill, never in the size
 // it shows. In a row of known sides, the row's two ends stand equally far in.

@@ -25,9 +25,7 @@ Color frostedLitEdge(FrostedThemeData t, Color night) =>
 /// ([FrostedColorScheme.ringOuter], the accent at 70%) by night, where it is
 /// light, and by day where it has a hue; where by day it is the words' ink
 /// (opal's, near black) the theme's cool blue ([FrostedColorScheme.cold]) at
-/// the same strength. Glass shows focus as light, never as a dark line (the
-/// user, 11-17: "a black focus border on a glass field: is this something a
-/// glass would have?").
+/// the same strength. Glass shows focus as light, never as a dark line.
 @Deprecated(
   'Focus clears the frost now (FrostedFocusRing); nothing draws in this. '
   'This will be removed in 0.4.0.',
@@ -269,6 +267,20 @@ class _ClearedState extends State<_Cleared> {
       fit: StackFit.passthrough,
       clipBehavior: Clip.none,
       children: [
+        // By day the keyboard's part rises: a soft shadow under it, outside
+        // its outline.
+        placed(
+          TweenAnimationBuilder<double>(
+            tween: Tween(end: t.isDark ? 0.0 : widget.lit),
+            duration: motion.fast,
+            curve: motion.curve,
+            builder: (context, lift, _) => _Rise(
+              outline: widget.outline,
+              shadows: frostedLift(t, lift),
+              textDirection: Directionality.maybeOf(context),
+            ),
+          ),
+        ),
         // Under the face, so it never touches the face's words.
         placed(
           TweenAnimationBuilder<double>(
@@ -402,6 +414,130 @@ class _RenderRimLight extends RenderBox {
         ),
       Paint()..color = _color,
     );
+  }
+}
+
+/// The shadow a part rises on by day while the keyboard holds it, at [lit]
+/// (0 to 1): the theme's raised shade, deeper and further below, the way a
+/// floating pane stands off the glass. None by night, where the rim's light
+/// shows focus, and none at rest. It is drawn for a part 36 high: a focused
+/// part casts it scaled to its size, from 0.55 to 1.25 times.
+List<BoxShadow> frostedLift(FrostedThemeData t, double lit) {
+  if (t.isDark || lit <= 0) return const <BoxShadow>[];
+  final raised = t.shadows.raised;
+  final shade = raised.isEmpty
+      ? const Color(0x2E2A2464)
+      : raised.first.color.withValues(alpha: 1);
+  final strength = raised.isEmpty ? .18 : raised.first.color.a;
+  // One broad, low shadow: its edge never reads as a line along the part.
+  return [
+    BoxShadow(
+      color: shade.withValues(alpha: math.min(1, strength * 2) * lit),
+      offset: Offset(0, 10 * lit),
+      blurRadius: 26 * lit,
+      spreadRadius: -6,
+    ),
+  ];
+}
+
+// [shadows] cast by [outline], drawn only outside it: glass never shows its
+// own shadow through itself.
+class _Rise extends LeafRenderObjectWidget {
+  const _Rise({
+    required this.outline,
+    required this.shadows,
+    required this.textDirection,
+  });
+
+  final ShapeBorder outline;
+  final List<BoxShadow> shadows;
+  final TextDirection? textDirection;
+
+  @override
+  _RenderRise createRenderObject(BuildContext context) => _RenderRise(
+    outline: outline,
+    shadows: shadows,
+    textDirection: textDirection,
+  );
+
+  @override
+  void updateRenderObject(BuildContext context, _RenderRise box) => box
+    ..outline = outline
+    ..shadows = shadows
+    ..textDirection = textDirection;
+}
+
+class _RenderRise extends RenderBox {
+  _RenderRise({
+    required this._outline,
+    required this._shadows,
+    required this._textDirection,
+  });
+
+  ShapeBorder _outline;
+  set outline(ShapeBorder v) {
+    if (v == _outline) return;
+    _outline = v;
+    markNeedsPaint();
+  }
+
+  List<BoxShadow> _shadows;
+  set shadows(List<BoxShadow> v) {
+    if (listEquals(v, _shadows)) return;
+    _shadows = v;
+    markNeedsPaint();
+  }
+
+  TextDirection? _textDirection;
+  set textDirection(TextDirection? v) {
+    if (v == _textDirection) return;
+    _textDirection = v;
+    markNeedsPaint();
+  }
+
+  @override
+  bool get sizedByParent => true;
+
+  @override
+  Size computeDryLayout(BoxConstraints constraints) => constraints.biggest;
+
+  @override
+  void paint(PaintingContext context, Offset offset) {
+    if (_shadows.isEmpty) return;
+    final box = offset & size;
+    final canvas = context.canvas;
+    // [frostedLift] is drawn for a part 36 high; a smaller one (a check, a
+    // knob) casts it smaller, a larger one (a row, a card) a little larger.
+    final k = (size.shortestSide / 36).clamp(.55, 1.25);
+    final shadows = [for (final s in _shadows) s.scale(k)];
+    var reach = 0.0;
+    for (final s in shadows) {
+      reach = math.max(
+        reach,
+        s.offset.distance + s.spreadRadius.abs() + s.blurRadius * 2,
+      );
+    }
+    canvas.save();
+    canvas.clipPath(
+      Path()
+        ..fillType = PathFillType.evenOdd
+        ..addRect(box.inflate(reach))
+        ..addPath(
+          _outline.getOuterPath(box, textDirection: _textDirection),
+          Offset.zero,
+        ),
+    );
+    for (final s in shadows.reversed) {
+      if (s.color.a == 0) continue;
+      canvas.drawPath(
+        _outline.getOuterPath(
+          box.shift(s.offset).inflate(s.spreadRadius),
+          textDirection: _textDirection,
+        ),
+        s.toPaint(),
+      );
+    }
+    canvas.restore();
   }
 }
 

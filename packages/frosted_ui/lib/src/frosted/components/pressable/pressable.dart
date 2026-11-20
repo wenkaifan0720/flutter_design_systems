@@ -186,7 +186,7 @@ class FrostedPressable extends StatelessWidget {
       // and going eases (from where it is, when it turns mid-way) and the
       // face's own state is kept. A press sinks the glass a little, its
       // words at full strength: a face fading to 0.7 read as a disabled
-      // one and took its words under 4.5:1 (self-review round 1).
+      // one and took its words under 4.5:1.
       final pressed = states.contains(WidgetState.pressed);
       final motion = FrostedMotion.of(context);
       face = AnimatedScale(

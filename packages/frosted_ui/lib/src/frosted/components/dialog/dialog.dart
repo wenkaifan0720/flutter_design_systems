@@ -329,8 +329,8 @@ class _DangerAct extends StatelessWidget implements FrostedSizedAct {
     final style = wide
         ? t.textTheme.labelLarge.at(FrostedChromeMetrics.buttonWideWord)
         : t.textTheme.labelLarge;
-    // Grown with large text as a button is (at 200% Delete stood shorter
-    // than Keep beside it, self-review round 3).
+    // Grown with large text as a button is (else at 200% Delete stands
+    // shorter than Keep beside it).
     final height = frostedGrownHeight(
       context,
       t.density.height(

@@ -71,7 +71,7 @@ Widget kitScreen({
 
 /// The column a form-like page ([kitScreen]'s `measured`) keeps on the
 /// desktop: its rows and fields stand as a desktop app's settings do, not
-/// across the window (the form-factors check, coordinator msg_5e8ccd896566).
+/// across the window.
 const double kitMeasure = 720;
 
 /// A demo that is its own whole surface (a route stack): the themed app
@@ -238,7 +238,7 @@ const List<FrostedNavItem> sampleTabs = [
   FrostedNavItem(LucideIcons.creditCard, 'Cards'),
 ];
 
-/// The owner, as the pilot's chrome draws her. Her profile and notifications
+/// The owner, as the example app's chrome draws her. Her profile and notifications
 /// are pages the gallery doesn't have, so they open nothing; they're still
 /// given, as an app gives them, so the avatar and the bell draw live.
 const kitMaren = FrostedAccount(

@@ -523,8 +523,8 @@ const nestedAlone = {
   'Step progress · middle': 'display only: segments side by side',
   'Step progress · last': 'display only: segments side by side',
   'Badge on an avatar': 'the badge overlaps the avatar; it follows no outline',
-  // Keyboard focus clears the frost under the part and lights its own rim
-  // (the user, 11-19): no ring follows these parts' outlines any more.
+  // Keyboard focus clears the frost under the part and lights its own rim:
+  // no ring follows these parts' outlines.
   'Search field': _cleared,
   'Select': _cleared,
   'Button · ink': _cleared,

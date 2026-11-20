@@ -767,8 +767,8 @@ class FrostedStats extends StatelessWidget {
         // hairline over every line. `.stat { flex-direction: row-reverse;
         // justify-content: space-between; padding: 10px 0 }`: the figure,
         // first in the markup, is drawn at the far end and its caption at
-        // the start (the pilot's phone: "Left to spend · 3 days to go" ...
-        // "$213.88"), 10 over and under.
+        // the start ("Left to spend · 3 days to go" ... "$213.88"), 10 over
+        // and under.
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [

@@ -1,5 +1,5 @@
 // A month's days are painted in the reader's digits, as they are read: in Arabic the 18th shows ١٨, its name already
-// saying "١٨ نوفمبر" (the user's review, 11-18: Stint's due-date calendar showed 18 under a name of ١٨). In English
+// saying "١٨ نوفمبر" (not 18 under a name of ١٨). In English
 // the same days show 18.
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';

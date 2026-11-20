@@ -1,5 +1,5 @@
 // A number field shows a plain number: no currency sign unless it is money, its unit after the figure and read with
-// it, and each key out of use at its bound (the user, 11-18: Harbor's People stepper read "$2").
+// it, and each key out of use at its bound (a count of people reads "2", never "$2").
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter_test/flutter_test.dart';

@@ -325,7 +325,7 @@ class FrostedProfileHero extends StatelessWidget {
           const SizedBox(height: FrostedChromeMetrics.profileGap),
           // Addresses and numbers read left to right in any language: under
           // a right-to-left page "+1 (415) 555-0142" showed as
-          // "555-0142 (415) 1+" (self-review round 3).
+          // "555-0142 (415) 1+".
           Text(
             contact.join('\n'),
             textAlign: TextAlign.center,

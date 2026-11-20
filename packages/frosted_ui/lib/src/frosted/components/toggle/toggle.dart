@@ -24,8 +24,11 @@ import '../../internal/cap.dart';
 /// plates with the ink and semibold, as [FrostedSegmentedButton] draws its
 /// choice. With [multiple] each toggles on its own; without, it is one
 /// choice and a press on the chosen one keeps it unless [allowEmpty]. One
-/// Tab stop for the strip, the arrows between its toggles, Space or Return
-/// to press. ui_core's [DesignToggleGroup] is the behaviour.
+/// Tab stop for the strip, Space or Return to press. Several at once,
+/// ui_core's [DesignToggleGroup] is the behaviour: the arrows move between
+/// the toggles. One at a time it is a group of radio buttons, ui_core's
+/// [DesignRadioGroup]: Tab lands on the chosen toggle and the four arrows
+/// choose as they move, wrapping.
 ///
 /// ```dart
 /// FrostedToggleGroup<String>(label: 'Text style', multiple: true, segments: const [FrostedButtonSegment('b', 'Bold'), FrostedButtonSegment('i', 'Italic')], selected: styles, onChanged: (v) => setState(() => styles = v))
@@ -113,21 +116,13 @@ class FrostedToggleGroup<T> extends StatelessWidget {
     double reach,
     double target,
     Map<T, String> labels,
-  ) => DesignToggleGroup<T>(
-    options: [for (final s in segments) s.value],
-    selected: selected,
-    onSelectionChanged: onChanged,
-    multiSelectionEnabled: multiple,
-    emptySelectionAllowed: allowEmpty,
-    labelOf: (value) => labels[value] ?? '$value',
-    semanticLabel: label,
-    minimumSize: Size(FrostedChromeMetrics.segmentMinWidth, height),
-    layoutBuilder: (context, items) => Row(
+  ) {
+    Widget row(BuildContext context, List<Widget> items) => Row(
       mainAxisSize: MainAxisSize.min,
       spacing: FrostedChromeMetrics.segmentsGap,
       children: items,
-    ),
-    itemBuilder: (context, value, states) {
+    );
+    Widget toggle(T value, Set<WidgetState> states) {
       final on = states.contains(WidgetState.selected);
       final lit = states.contains(WidgetState.pressed);
       var words = t.textTheme.labelSmall;
@@ -181,8 +176,60 @@ class FrostedToggleGroup<T> extends StatelessWidget {
           ),
         ),
       );
-    },
-  );
+    }
+
+    final values = [for (final s in segments) s.value];
+    final minimum = Size(FrostedChromeMetrics.segmentMinWidth, height);
+    if (multiple) {
+      return DesignToggleGroup<T>(
+        options: values,
+        selected: selected,
+        onSelectionChanged: onChanged,
+        multiSelectionEnabled: true,
+        emptySelectionAllowed: allowEmpty,
+        labelOf: (value) => labels[value] ?? '$value',
+        semanticLabel: label,
+        minimumSize: minimum,
+        layoutBuilder: row,
+        itemBuilder: (context, value, states) => toggle(value, states),
+      );
+    }
+    // One at a time: a group of radio buttons, each toggle the same pressable
+    // and plate as before, its node the one the group registers.
+    final change = onChanged;
+    final chosen = selected.isEmpty ? null : selected.first;
+    return Semantics(
+      container: true,
+      explicitChildNodes: true,
+      label: label,
+      child: DesignRadioGroup<T>(
+        options: values,
+        value: chosen,
+        onChanged: change == null ? null : (value) => change({value}),
+        direction: Axis.horizontal,
+        layoutBuilder: row,
+        itemBuilder: (context, value, node, select) {
+          final on = selected.contains(value);
+          return DesignPressable(
+            focusNode: node,
+            // A press on the chosen toggle keeps it, or with [allowEmpty]
+            // clears it.
+            onPressed: on && allowEmpty && select != null
+                ? () => change!(<T>{})
+                : select,
+            selected: on,
+            minimumSize: minimum,
+            semanticLabel: labels[value] ?? '$value',
+            excludeSemantics: true,
+            button: false,
+            checked: on,
+            inMutuallyExclusiveGroup: true,
+            builder: (context, states, _) => toggle(value, states),
+          );
+        },
+      ),
+    );
+  }
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {

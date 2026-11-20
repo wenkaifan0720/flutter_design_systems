@@ -489,7 +489,6 @@ const _arabic = <String, String>{
   'Options': 'الخيارات',
   'Spent by month': 'الإنفاق حسب الشهر',
   'Months': 'الأشهر',
-  // Left in English until self-review round 3.
   r'Large purchases over $200': r'المشتريات الكبيرة فوق $200',
   r'$1,259.82 spent in October': r'أُنفق $1,259.82 في أكتوبر',
   "That code didn't match": 'الرمز غير مطابق',

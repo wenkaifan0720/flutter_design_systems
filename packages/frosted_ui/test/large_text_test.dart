@@ -1,4 +1,4 @@
-// Large text (self-review round 2, the 200% pass): a pill, a toggle's plates and a meter's scale row grow with their
+// Large text (200%): a pill, a toggle's plates and a meter's scale row grow with their
 // words instead of cutting them; the statement's three stops stand one under another; and right to left, the colour
 // tracks run with their thumbs and the time picker stands at the page's start.
 import 'package:material_ui/material_ui.dart';
@@ -333,7 +333,7 @@ void main() {
     expect(drawn.right, closeTo(picker.right, 0.5));
   });
 
-  // Self-review round 7: a figure is never broken across lines.
+  // A figure is never broken across lines.
   int linesOf(WidgetTester t, String text) {
     final p = t.renderObject<RenderParagraph>(find.text(text));
     final boxes = p.getBoxesForSelection(

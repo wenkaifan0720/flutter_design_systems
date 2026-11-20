@@ -156,7 +156,9 @@ class FrostedRangeSlider extends StatelessWidget {
                 color: t.colorScheme.toggleKnob.computeLuminance() > .5
                     ? t.colorScheme.toggleKnob
                     : t.colorScheme.textPrimary,
-                edge: t.colorScheme.textSecondary,
+                // Bounded by its shadow and a white reflection on its rim,
+                // never a dark traced edge, as FrostedSlider's knob.
+                edge: t.glass.rim,
                 edges: const EdgeInsets.all(FrostedStrokes.regular),
                 shadows: t.shadows.toggleKnob,
               ),
