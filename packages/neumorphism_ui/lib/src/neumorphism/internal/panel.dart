@@ -1,4 +1,4 @@
-// The raised panel every overlay of round 4 opens (a split button's menu, a menu bar's menus, a popover, a hover card, a
+// The raised panel every pop-up overlay opens (a split button's menu, a menu bar's menus, a popover, a hover card, a
 // combobox's and a multi-select's list, the command palette), and the row a menu-like list draws: the same slab and the
 // same pressed-in row as NeumorphicMenu, so a ui_core behaviour's surface is the look's menu exactly. Hidden from the
 // barrel.
@@ -38,7 +38,7 @@ OutlinedBorder _panelRowShape(BuildContext context, {double inset = 12}) {
 const double neumorphicMenuInset = 6;
 
 /// A field's open list (a select's, a combobox's, a multi-select's) starts its options' words where the field starts
-/// its value, [words] in from the field's edge (design6 P, 11-11 night): the panel's inset, its shape's own [frame]
+/// its value, [words] in from the field's edge: the panel's inset, its shape's own [frame]
 /// (the content-safe inset a surface adds for a shape it is given) and its rows' make up [words], the rows keeping 4 to
 /// 10 of their own round their words, and the chosen row, pressed in, carries its check at its end.
 ({double panel, double row}) neumorphicFieldListInsets(

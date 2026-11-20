@@ -1986,8 +1986,8 @@ class _LiveExampleState extends State<LiveExample> {
             ),
         ], gap: 24),
       ]),
-      // Named for the parts, not the card: 'With every shadow gone' over a card still casting its own read as the
-      // demo contradicting its caption (fresh-eyes rounds).
+      // Named for the parts, not the card: 'With every shadow gone' over a card still casting its own would read as
+      // the demo contradicting its caption.
       _part('Parts with their shadows gone', [
         const Text(
           'On the card, the parts as a washed-out screen shows them, faces and marks alone: every state still reads.',

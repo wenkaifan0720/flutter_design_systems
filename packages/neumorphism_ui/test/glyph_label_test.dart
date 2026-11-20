@@ -1,5 +1,4 @@
-// A glyph beside a title or a label (design6 P, added 11-11 noon, from the user's review of another look's window
-// title): the glyph's middle on the label's capitals' middle, both on the row's centre line, within half a device
+// A glyph beside a title or a label: the glyph's middle on the label's capitals' middle, both on the row's centre line, within half a device
 // pixel. Read from the drawn pixels at a desk's device pixel ratio, on the Overview, every Hearth screen and every
 // gallery page, at a phone's and a desk's width, at each density the gallery offers.
 //

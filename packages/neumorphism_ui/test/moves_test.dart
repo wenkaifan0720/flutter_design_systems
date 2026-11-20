@@ -94,7 +94,7 @@ void main() {
       }
     },
   );
-  test('only the catalog shell adapter imports the router', () {
+  test('only the shell adapter imports the router', () {
     final library = Directory('lib/src/neumorphism');
     final files = library.listSync(recursive: true).whereType<File>();
     // Extraction rewrites this root to lib/src and leaves the router adapter out.

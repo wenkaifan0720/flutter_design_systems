@@ -1781,8 +1781,8 @@ class _Balanced extends StatelessWidget {
 }
 
 /// A raised face shown in place (a menu, a tooltip, a toast in a page's column) keeps the width it takes raised, from
-/// [least] to [most], at the start of its column: never the column's whole width (design6 P: the same face looks the
-/// same inline and raised). Raised, its route already gives it no more than [most], so this changes nothing there.
+/// [least] to [most], at the start of its column: never the column's whole width, so the same face looks the same
+/// inline and raised. Raised, its route already gives it no more than [most], so this changes nothing there.
 Widget _keepsRaisedWidth(
   Widget face, {
   double least = 0,

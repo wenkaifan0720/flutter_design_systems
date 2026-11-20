@@ -1,8 +1,7 @@
-// Two of the classes from the user's review of the gate builds (design6 P, added 11-11 noon), read from the drawn
-// pixels at each density the look ships:
-// - Width on a wide layout ("some dropdown spans the entire width"): from 600 up, no select, button, stepper or bank of
+// Two layout rules, read from the drawn pixels at each density the look ships:
+// - Width on a wide layout: from 600 up, no select, button, stepper or bank of
 //   segments stretches to a wide column; each takes its own width, at most 320. On a phone they span their column.
-// - A chosen or pressed fill covers its whole cell ("the highlight doesnt fill the entire tab"): the state reaches the
+// - A chosen or pressed fill covers its whole cell: the state reaches the
 //   cell's edges, top and bottom, and the seams it shares with a neighbour.
 import 'dart:typed_data';
 import 'dart:ui' as ui;

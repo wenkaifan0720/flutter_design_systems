@@ -1,3 +1,6 @@
+// Flows through the showcase app, Hearth: a saved email reaches the receipt, checkout keeps an empty field focused
+// until it is corrected, the thermostat's value stays in its dial, the phone's destinations keep full text size, the
+// date sheet and the inline calendar share one today, and an RTL notice keeps its date and punctuation together.
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';

@@ -1,4 +1,4 @@
-/// Catalog illustration for the relief demo; excluded from the UI package.
+/// The illustration for the relief demo; kept out of the package's lib.
 library;
 
 import 'dart:math' as math;
@@ -15,7 +15,7 @@ import 'package:neumorphism_ui/neumorphism_parts.dart';
 /// const NeumorphicGableArt()
 /// ```
 class NeumorphicGableArt extends StatelessWidget {
-  /// Creates the catalog-only gable illustration.
+  /// Creates the gable illustration.
   const NeumorphicGableArt({super.key});
 
   @override

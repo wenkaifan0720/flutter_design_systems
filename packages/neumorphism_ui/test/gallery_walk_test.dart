@@ -195,7 +195,7 @@ void main() {
     });
   }
 
-  // polish3 §4: a widget the package exports and no live page builds is a widget the user can't find.
+  // A widget the package exports and no live page builds is a widget a developer can't find.
   testWidgets(
     'every exported widget is live on some page',
     (tester) async {
@@ -275,7 +275,7 @@ void main() {
       await tapLive(tester, find.text('Filters'));
       seen.addAll(builtWidgets(tester));
       await tapLive(tester, find.text('Show 12 rooms'));
-      // Not a part of an app's screen: the catalog's preview frame.
+      // Not a part of an app's screen: the gallery's preview frame.
       final notOnAPage = {'$NeumorphicPreview'};
       expect(
         exportedWidgets().difference(seen).difference(notOnAPage),

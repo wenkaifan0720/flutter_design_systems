@@ -18,6 +18,7 @@ import 'component_themes.dart';
 import 'knobs.dart';
 import 'styled.dart';
 import 'internal/moulded.dart';
+import 'internal/risen_focus.dart';
 
 /// The levels of the material, named for what they are.
 enum NeumorphicSurfaceLevel {
@@ -61,8 +62,8 @@ enum NeumorphicDraw {
   floor,
 }
 
-/// Paints no cast shadow, catch-light or inset under it, leaving only faces and marks: what a washed-out screen leaves,
-/// and what a part out of use is. For checks: a state must still read here.
+/// Paints no cast shadow, catch-light or inset under it, leaving only faces and marks: what a washed-out screen leaves.
+/// For checks: a state must still read here.
 ///
 /// ```dart
 /// NeumorphicFlatScope(child: NeumorphicButton('Save', onPressed: () {}))
@@ -80,8 +81,8 @@ class NeumorphicFlatScope extends InheritedWidget {
   /// while it turns flat and back without being rebuilt from scratch.
   final bool flat;
 
-  /// How much of their relief the parts under it keep while they are on their way to flat or back, 1 to 0: a part
-  /// going out of use sinks to flush instead of losing its light and shadow at once.
+  /// How much of their relief the parts under it keep, 1 to 0: a part on its way to flat and back eases its light and
+  /// shadow instead of losing them at once.
   final double relief;
 
   /// Whether shadows and catch-lights are disabled by the nearest enclosing scope.
@@ -396,7 +397,7 @@ void neumorphicPaintFocusLift(
       .toDouble();
   // At night the light round a long part (a stepper's groove, a wide button) is its edge's own, a thin crisp rim on
   // the lit side with only a breath of the wide light: a wide soft light read as a glow beside its keys, and a wider
-  // rim as a second pill above it (the user's review, 11-18). A round or small part keeps its softer light, which its
+  // rim as a second pill above it. A round or small part keeps its softer light, which its
   // 3:1 needs, and so does a slim one (a chip).
   final large =
       c.dark &&
@@ -671,9 +672,8 @@ class _CastPainter extends CustomPainter {
         );
       }
     } else if (flat && boundary) {
-      // A control found by its edge, lying flat out of use, has no relief left to be found by: its outline is printed
-      // in the quiet ink, as a flat switch's track and a flat dial's collar are, so a disabled radio or box is still
-      // there beside its words.
+      // A control found by its edge, lying flat, has no relief left to be found by: its outline is printed in the quiet
+      // ink, as a flat switch's track and a flat dial's collar are, so a radio or box is still there beside its words.
       canvas.drawPath(shape, neumorphicStrokePaint(c.quiet, 1));
     }
   }
@@ -922,14 +922,16 @@ class NeumorphicSurface extends StatelessWidget {
           );
         }
         // A groove or a well with focus (a field being typed in, a code's cell, the wheel) deepens; the caret, or the
-        // lens, does the rest. Eased, and always in the tree.
+        // lens, does the rest. Eased, and always in the tree. Inside a part that rises for focus (a row's icon well, a
+        // card's picture window) it keeps its depth: the rise says where focus is.
         final focused =
             (draw == NeumorphicDraw.groove || draw == NeumorphicDraw.well) &&
             (states.contains(WidgetState.focused) ||
                 NeumorphicStatesScope.of(context)
-                    .contains(WidgetState.focused));
+                    .contains(WidgetState.focused)) &&
+            !NeumorphicRisenFocus.of(context);
         final motion = NeumorphicMotion.of(context);
-        // A part going out of use sinks to flush rather than losing its light and shadow at once.
+        // A flat scope's relief share eases the light and shadow rather than dropping them at once.
         final relief = NeumorphicFlatScope.reliefOf(context);
         final elevation = relief >= 1
             ? theme.elevation

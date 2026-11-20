@@ -64,8 +64,8 @@ Widget kitSpecimenDataTable() => kitHeld<DesignTableController<_Room>>(
         sortKey: (r) => r.heat,
       ),
     ],
-    // Sorted by room from the first frame, so a header carries its sort mark: unsorted, a table titled for sorting showed
-    // no sign it sorts (fresh-eyes round 12).
+    // Sorted by room from the first frame, so a header carries its sort mark: unsorted, a table titled for sorting would
+    // show no sign it sorts.
   )..sortBy('room'),
   (context, rooms) => NeumorphicDataTable<_Room>(
     label: 'Rooms',

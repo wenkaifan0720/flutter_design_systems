@@ -102,7 +102,7 @@ class _NeumorphicDatePickerState extends State<NeumorphicDatePicker> {
   late DateTime _month, _focused;
 
   // A day that arrives under a still pointer (the month opened in a sheet where the pointer rested) stays at rest until
-  // the pointer moves, as an open list's row does (the user, 11-18: a raised day with the pointer elsewhere).
+  // the pointer moves, as an open list's row does: otherwise a day would show hover with the pointer elsewhere.
   var _pointerMoved = false;
   DateTime get _first => _day(widget.first ?? DateTime(1900));
   DateTime get _last => _day(widget.last ?? DateTime(2100, 12, 31));
@@ -761,8 +761,8 @@ Future<DateTime?> showNeumorphicDatePicker(
     context,
     useRootNavigator: useRootNavigator,
     // Where the sheet's column would hold the month at a control's width (from a medium window up), the sheet narrows
-    // round the month instead, so the month spans it: the month stopped two thirds across a desk's dialog, its arrows
-    // short of the close button (the user, 11-18).
+    // round the month instead, so the month spans it, rather than stopping two thirds across a desk's dialog with its
+    // arrows short of the close button.
     builder: (context) => LayoutBuilder(
       builder: (context, box) {
         // The sheet's body keeps 20 each side.

@@ -22,7 +22,7 @@ Widget kitRaisedDemo(Brightness brightness) => kitScreen(
 /// A small phone screen with a raised layer on it, as an app shows one: the page (dimmed under a dialog or a sheet),
 /// and the layer in the screen's own overlay. The screen's corners are the ones a sheet has, so a sheet standing on the
 /// screen's foot meets them exactly and its cast ends where the screen does. A layer that floats keeps a slab's cast
-/// room ([kitCastRoom]) from every edge, so nothing of it is cut by the screen's box. On a catalog stage the screen
+/// room ([kitCastRoom]) from every edge, so nothing of it is cut by the screen's box. On a specimen stage the screen
 /// spans the band's room: it casts nothing itself.
 class _RaisedScreen extends StatelessWidget {
   const _RaisedScreen({

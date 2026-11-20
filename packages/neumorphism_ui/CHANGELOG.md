@@ -1,3 +1,13 @@
+## 0.3.5
+
+- A focused checkbox, radio or switch now stays in the wall. The checkbox's box and the radio's socket go deeper, with a crisp shade inside the rim, and the switch's thumb rises inside its slot while the slot goes deeper. In 0.3.2 to 0.3.4, a raised plate grew round them on focus. A check row or switch row outside a grouped list shows focus the same way, in its box or its switch. A grouped row still rises as a band.
+- Inside a focused card, list row or key, the hollows (an icon's well, a picture's window) keep their depth. Only the part with focus rises, so focus no longer appears twice.
+- A disabled part keeps its moulding. Its colours move halfway toward the wall, so its relief is half as strong and its words are quiet. Previously a disabled button, field, radio or switch lay flat, some with a hairline edge. A carousel's step key at either end is now a disabled key, rather than a flat ring.
+- A radio group takes its keyboard from ui_core's shared radio group, as every look's does. Tab enters on the chosen option, or on the first one you can choose, and a second Tab leaves the group. The arrow keys move and choose, wrap at the ends and skip options that are out of use; in right-to-left text, Left moves forward. Home and End no longer jump to the first or last option in a radio group. Use the arrows instead.
+- A selectable row in a table, such as a room you can pick, reads to a screen reader as a checkable row rather than a button.
+- Stands on ui_core 0.3.4.
+- Comments and test names describe the code rather than how it was reviewed.
+
 ## 0.3.4
 
 - A focused text field, text area, search field, select, number field, date segment, code cell or other well now stays inset. It goes deeper, with a crisp shade inside its rim, and a field's label turns to the pigment's ink. In 0.3.2 and 0.3.3, focus raised the well off the wall, so a focused field read as a raised slab with a heavy shadow. Buttons, keys, chips, toggles, rows and other raised parts still rise when focused.

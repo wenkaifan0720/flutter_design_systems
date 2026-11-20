@@ -1,4 +1,4 @@
-// Every open menu keeps one current row (the coordinator's menus check, 11-15, after a user found two on Expressive):
+// Every open menu keeps one current row:
 // the look's own menu (an overflow menu, a select's list), a menu bar's menu and a split button's menu. The pointer's
 // row stands up and the keys' place lifts, so whichever moved last has the one lit row, never both at once; a menu
 // opened by the pointer lights nothing until the pointer or the keys move, one opened by the keys lights its first

@@ -1,4 +1,4 @@
-// The rows of a grouped list are cells of its card (polish round 3, §2): a row's face is the band of the card it stands
+// The rows of a grouped list are cells of its card: a row's face is the band of the card it stands
 // on, a breath inside the card's rim, from its rule down to the next row's. Its focus lift and its press are that band,
 // so they go round the whole row and not its words. The corners a row shares with the card's corners are the card's
 // corners moved in, around the same centres; the corners it shares with a neighbour are a control's.

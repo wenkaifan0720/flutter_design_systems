@@ -1,4 +1,4 @@
-// design6 I3: every text entry is one structure, the look's box around a bare editable. As iOS and as macOS (where an
+// Every text entry is one structure, the look's box around a bare editable. As iOS and as macOS (where an
 // app's Material theme is compact and its targets shrink-wrapped), under an app's own theme that sets an input
 // decoration theme (padding, isDense, constraints, a fill and an outline) and at text scale 1.5, each entry keeps the
 // size and the line place it has on Android at the same look density, and its one line, typed or hint, is centred in its box

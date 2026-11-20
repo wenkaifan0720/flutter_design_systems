@@ -71,7 +71,7 @@ String describe(SemanticsData d) {
   ].join(' · ');
 }
 
-/// The goldens are kept beside the catalog and laid here by the package build; a published or vendored copy goes
+/// The goldens are kept with the look's source and laid here by the package build; a published or vendored copy goes
 /// without them, and compares nothing.
 final bool _recorded =
     autoUpdateGoldenFiles || Directory('test/goldens').existsSync();

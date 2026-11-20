@@ -1,7 +1,7 @@
 // An open list (a select's, a combobox's, a multi-select's, a menu with a choice) shows its chosen option at a glance in
 // the look's material: pressed in under the pigment's wash, as a chosen cell is. The pointer's row sinks a little into
 // the panel, the keyboard's place the same a little deeper, and a row held under a finger presses in plain only while
-// it is held: none of them reads as a second choice or a rule between rows (the user's walks, 11-15 and 11-18).
+// it is held: none of them reads as a second choice or a rule between rows.
 import 'package:flutter/gestures.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';

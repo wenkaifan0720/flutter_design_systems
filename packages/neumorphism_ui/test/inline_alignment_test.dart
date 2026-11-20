@@ -1,4 +1,4 @@
-// ui_core's alignment contract (design6 step 1): the controls that share a line, at each size and each density the
+// ui_core's alignment contract: the controls that share a line, at each size and each density the
 // look offers, drawn in its real fonts as Android, iOS and macOS. In a row: one height, one centre, one label baseline;
 // in a control: its label's and icon's ink in its middle; across platforms: no control changes size or place. And
 // every text entry through ui_core's text entry check, at text scale 1.5 and under a host input theme with uneven

@@ -1,4 +1,4 @@
-// Nested and lifted outlines are concentric, measured on what is painted (polish round 3, §2). Each part is focused by
+// Nested and lifted outlines are concentric, measured on what is painted. Each part is focused by
 // the keyboard (or chosen), every painter under it is replayed into a recorder that keeps its transforms, and every
 // pair of box-like outlines where one sits inside the other is measured: where two adjacent sides keep the same gap d
 // (a ring, a rim, a pressed-in cell inside its bank, a thumb inside its track), the corner between them must be the
@@ -128,8 +128,13 @@ bool _focusShows(Finder root, {bool sinks = false}) =>
         .descendant(of: root, matching: find.byType(CustomPaint))
         .evaluate()
         .any((e) {
+          // A hollow deepened (a field's well, a checkbox's box, a radio's socket), or a switch's thumb lifted inside its
+          // deepened slot.
           final p = (e.widget as CustomPaint).painter;
-          return p.runtimeType.toString() == '_CastPainter' &&
+          return {
+                '_CastPainter',
+                '_SwitchPainter',
+              }.contains(p.runtimeType.toString()) &&
               ((p as dynamic).focus as double) > 0;
         });
 
@@ -264,7 +269,7 @@ List<NeumorphicButtonSegment<int>> _segments() => const [
   NeumorphicButtonSegment(2, 'Month'),
 ];
 
-/// The parts polish round 3 names, each with how many Tab presses reach the mark measured (0: none, it is chosen).
+/// The parts measured, each with how many Tab presses reach the mark (0: none, it is chosen).
 final _parts = <String, (Widget Function(), int)>{
   'text field': (() => const NeumorphicTextField(label: 'Name'), 1),
   'search field': (() => const NeumorphicSearchField(hint: 'Search'), 1),
@@ -725,7 +730,7 @@ final _plates = <String, Widget Function()>{
 void main() {
   setUpAll(loadNeumorphicFonts);
 
-  // polish round 3, back (§1–4): a focus lift and a press are the part's own outline moved by one d, round the whole
+  // A focus lift and a press are the part's own outline moved by one d, round the whole
   // row or cell, never a box round its words. A grouped list's row is a band of its card; a bank's cell is its bank's.
   for (final MapEntry(key: name, value: whole) in _wholes.entries) {
     for (final family in _families) {
@@ -930,7 +935,7 @@ void main() {
                 !_bands.contains(name)) {
               faults.add('$stroke: no nested outline measured');
             }
-            // Focus shows in the material: a lift round the part, or a field's well deepened. Never a line.
+            // Focus shows in the material: a lift round a raised part, or a hollow deepened. Never a line.
             if (tabs > 0 &&
                 !ringsRow &&
                 !_focusShows(

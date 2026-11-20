@@ -1165,6 +1165,8 @@ class NeumorphicCheckbox extends StatelessWidget {
           button: false,
           round: false,
           focusInset: 10,
+          // The box is a socket: keyboard focus deepens it, as it does a field's well, and nothing rises round it.
+          showFocus: false,
           faceAlignment: place,
           onPressed: onChanged == null ? null : () => onChanged!(_next),
           child: SizedBox.square(
@@ -1345,7 +1347,8 @@ class NeumorphicCheckRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = NeumorphicTheme.of(context);
     // In a grouped list the row is a band of its card, a breath inside its rim, as a list tile is: its focus lift goes
-    // round that band and not round its words and its control.
+    // round that band and not round its words and its control. Elsewhere the row has no face to rise: its box's socket
+    // deepens, as a lone checkbox's does.
     final cell = NeumorphicGroupRowScope.cellOf(context);
     return NeumorphicTap(
       autofocus: autofocus,
@@ -1359,6 +1362,7 @@ class NeumorphicCheckRow extends StatelessWidget {
       shape: cell?.border,
       faceOutset: cell?.outset ?? EdgeInsets.zero,
       focusReach: cell == null ? 1 : .5,
+      showFocus: cell != null,
 
       button: false,
       label: [label, ?note].join(', '),
@@ -1536,18 +1540,20 @@ class NeumorphicRadioGroup<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = NeumorphicTheme.of(context);
+    final byValue = {for (final option in options) option.value: option};
     return Semantics(
       container: true,
       label: label,
       explicitChildNodes: true,
-      child: _ChoiceSet(
-        selectedIndex: options.indexWhere((o) => o.value == value),
-        enabled: [for (final o in options) o.enabled && onChanged != null],
-        onChanged: (i) => onChanged?.call(options[i].value),
-        layout: (children) =>
-            Column(mainAxisSize: MainAxisSize.min, children: children),
-        item: (i, node, key) {
-          final o = options[i];
+      // ui_core's group gives the keyboard: one Tab stop, on the chosen option or else the first enabled one, and
+      // arrows that choose as they move, wrapping and skipping options out of use.
+      child: DesignRadioGroup<T>(
+        options: byValue.keys.toList(),
+        value: value,
+        onChanged: onChanged,
+        isEnabled: (value) => byValue[value]!.enabled,
+        itemBuilder: (context, option, node, select) {
+          final o = byValue[option]!;
           final selected = o.value == value;
           return NeumorphicTap(
             style: style,
@@ -1556,18 +1562,17 @@ class NeumorphicRadioGroup<T> extends StatelessWidget {
             inMutuallyExclusiveGroup: true,
             // A row that holds a control passes its press to the control: the row stays flat and the control moves.
             pressRelief: false,
+            // The row has no face to rise: keyboard focus deepens the option's socket, as it does a field's well.
+            showFocus: false,
 
             button: false,
             focusNode: node,
-            onKeyEvent: (_, e) => key(e),
             label: [
               o.label,
               if (o.trailingText != null) o.trailingText!,
               if (o.note != null) o.note!,
             ].join(', '),
-            onPressed: !o.enabled || onChanged == null
-                ? null
-                : () => onChanged!(o.value),
+            onPressed: select,
             child: Builder(
               builder: (context) {
                 final states = {
@@ -1736,7 +1741,7 @@ double _ratio(Color a, Color b) {
 
 /// Whether a chosen segment's tint can't tell it from the wall: the pigment is a grey (no hue between its channels), or
 /// its lit ink is the ink's own colour. The choice would rest on the well's depth alone, which by night on a grey wall
-/// stands under 3:1 (design_review_test, custom grey dark).
+/// stands under 3:1.
 bool _greyChoice(NeumorphicColors c) {
   final p = c.pigment;
   final hue =

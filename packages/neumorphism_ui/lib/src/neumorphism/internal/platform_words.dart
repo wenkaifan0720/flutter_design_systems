@@ -1,9 +1,6 @@
 // The words of the platform machinery under the look, for an app that gives none: Material's (the editable, a route)
 // and, on iOS, Cupertino's (a field's menu, its magnifier). The look shows neither, but a part under it throws without
 // them. They follow the app's language where material_ui and cupertino_ui translate it, and are English elsewhere.
-//
-// The package's twin of the catalog's file of the same name, which is English in any locale: the catalog's apps have no
-// material_ui or cupertino_ui to translate from.
 import 'package:cupertino_ui/cupertino_ui.dart'
     show
         CupertinoLocalizations,

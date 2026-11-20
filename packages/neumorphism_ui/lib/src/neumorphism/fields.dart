@@ -1207,8 +1207,8 @@ class NeumorphicFormField extends StatelessWidget {
   /// label's words (a segmented button labelled as its field) is heard once: the field adds no name of its own.
   final bool? group;
 
-  // Merged into one node, a group's controls gave a tap on any of them to its first (the user, 11-18: Stint's Priority
-  // and Labels took no tap).
+  // Merged into one node, a group's controls would give a tap on any of them to the first, so the controls after it
+  // could not be reached by a tap.
   static bool _isGroup(Widget w) => switch (w) {
     NeumorphicSegmentedButton() ||
     NeumorphicRadioGroup() ||

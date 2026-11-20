@@ -1,12 +1,11 @@
-// The faults a walk of the gallery in a browser at 1440 and 600 found (design6 P, 11-12) that no shared check caught,
-// each held here at a desk's width in a page's column (720):
+// Layout on a wide window, held at a desk's width in a page's column (720):
 // - one row, one height: a removable chip's face is as tall as any chip's (it stood 60 px among 34 px chips);
 // - stretch from 600 up: choice tiles keep to their words, from the column's edge (two 350 px tiles held "Basic" and
 //   "Home"); a menu, a tooltip, a toast and an action sheet shown in place keep the width they have raised;
 // - nothing cut: a month shows its seven days whole (a 320 px room cut its Saturday);
 // - examples on the column's edge: the time picker's readout starts where its hour row does (it stood centred); an
-//   example's drawn face, not its target, stands on the edge (11-12);
-// - a tab bar and a month keep to their cells from 600 up; a sheet floating in a wide window drops its handle (11-12).
+//   example's drawn face, not its target, stands on the edge;
+// - a tab bar and a month keep to their cells from 600 up; a sheet floating in a wide window drops its handle.
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -204,7 +203,7 @@ void main() {
     expect(start, moreOrLessEquals(48, epsilon: 1));
   });
 
-  // design6 P, 11-12: an example starts on the column's edge with its drawn face, never its target. Since 0.2.0 the
+  // An example starts on the column's edge with its drawn face, never its target. Since 0.2.0 the
   // target is laid out (ui_core's DesignTapTarget at centerStart): the face on the edge, the target growing toward the
   // end, so the box, the press and the spoken node are one. (Before, the target's margins past the box were hit-tested
   // only, and a neighbour or the parent's edge took presses a screen reader said were the control's.)

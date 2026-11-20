@@ -31,6 +31,7 @@ export 'src/neumorphism/internal/page_motion.dart';
 export 'src/neumorphism/internal/panel.dart';
 export 'src/neumorphism/internal/platform_words.dart';
 export 'src/neumorphism/internal/reach.dart';
+export 'src/neumorphism/internal/risen_focus.dart';
 export 'src/neumorphism/internal/text_entry.dart';
 export 'src/neumorphism/internal/veil.dart';
 export 'src/neumorphism/internal/whole_words.dart';

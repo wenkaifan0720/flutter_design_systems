@@ -1,4 +1,4 @@
-// ui_core's shared checks (design6 P, 11-11 afternoon) over every screen the look shows:
+// ui_core's shared checks over every screen the look shows:
 // - DesignRowCheck: controls sharing a row show one top and one bottom as drawn, under each density the gallery
 //   offers (standard and compact), by day and by night. Hearth's screens and the Overview at a phone's and a desk's
 //   width; the gallery's pages at the gallery's phone width, as tall as their sections.
@@ -45,20 +45,6 @@ const _widths = DesignWidthCheck(
     ),
   },
 );
-
-/// Single problems a row reader reports that the screen does not have, by screen and width, each matched whole; the
-/// rest of the screen's rows are still held, and swipe_actions_level_test.dart measures these faces themselves. Read
-/// again with each ui_core_test.
-const _misreadRowProblems = {
-  // ui_core_test 0.1.3's row reader takes the rim or the shadow of the night's ground-coloured Delete face for its
-  // edge. Painted, the open row's Delete and Archive stand level, top and bottom.
-  'collections 390': [
-    'standard dark · a button "Delete" beside a button "Archive": its bottom is level with theirs as laid out, '
-        '24 device px above as drawn',
-    'compact dark · a button "Delete" beside a button "Archive": its bottom is level with theirs as laid out, '
-        '24 device px above as drawn',
-  ],
-};
 
 void main() {
   setUpAll(() async {
@@ -187,12 +173,7 @@ void main() {
           ]);
         }
       }
-      final misread =
-          _misreadRowProblems['$screen ${width.toInt()}'] ?? const <String>[];
-      verdict('ROWS $screen ${width.toInt()}', [
-        for (final p in found)
-          if (!misread.contains(p)) p,
-      ]);
+      verdict('ROWS $screen ${width.toInt()}', found);
     }, tags: ['goldens']);
   }
 
@@ -294,7 +275,7 @@ void main() {
   }
 }
 
-/// The list opened since [shut] (design6 P, 11-11 night): every option's words start on one x, and its whole frame
+/// The list opened since [shut]: every option's words start on one x, and its whole frame
 /// paints, clipped by nothing it stands in (a card, a panel, a scroll), within the window.
 List<String> _openList(WidgetTester tester, Finder lists, Set<Element> shut) {
   final opened = lists.evaluate().where((e) => !shut.contains(e)).toList();
@@ -380,7 +361,7 @@ String? _named(String problem) {
   // keys at most 200 from its start, NeumorphicNumberField) and the fluted dial between its keys (its stage the plate
   // and a key each side, centred: the hero object, whose scale reads "10"). The face the check finds round the keys is
   // the card's or the row's, the column's width, and what it takes for their content is whatever lies between them
-  // (the dial's readout, the field's figure); wide_walk_test holds each to its own width.
+  // (the dial's readout, the field's figure); wide_layout_test holds each to its own width.
   if (RegExp(
     r'^\d+ · a stepper "(Less|10)": \d+ px wide as laid out, [\d.]+ as drawn'
     r'(; its content and padding take [\d.]+)? \(at most 320',
@@ -388,10 +369,10 @@ String? _named(String problem) {
     return "two keys round a figure, no face: the card or row they stand in read";
   }
   // Two fields side by side in a form's grid (Town and Postcode, first and last name), each its label over its groove:
-  // they lay out alike (grooves 314 to 362, words centred at 337.8 on both; shapes/log/probe-field.out), yet the
+  // they lay out alike (grooves 314 to 362, words centred at 337.8 on both), yet the
   // reading flips from 5.9 px above by night to 1.1 px below by day (2.9 and 5 under ui_core 0.2's checks, before
   // ui_core_test read capitals from the ground under the words), its "as laid out" taken from the grooves' inset
-  // shading. wide_walk_test holds the pair's grooves and words level as laid out.
+  // shading. wide_layout_test holds the pair's grooves and words level as laid out.
   if (RegExp(
     r'^(standard|compact) (dark|light) · a text field beside a text field: '
     r'(the capitals of "(Bristol|BS1 4DJ|Alex|Morgan)" are (5\.9 px above|1\.1 px below) the row|its bottom is 1\.3 px above theirs)',
@@ -407,7 +388,7 @@ String? _named(String problem) {
   }
   // A bank by night (segmented buttons, latches, toggle groups, a button group, the hour and minute banks, a tab
   // strip): its unchosen cells' faces are the wall's own colour, so by night its trailing end shows by its rim and its
-  // cast alone (design_review_test holds that edge at 1.2 or more by night), and the check reads the bank to its last
+  // cast alone (contrast_test holds that edge at 1.2 or more by night), and the check reads the bank to its last
   // seam: right side in by one trailing cell (86.5 to 175 at 390), left side on the row's. By day the same banks read
   // true. A tab's name carries its place on a second line ("Overview\nTab 1 of 3"), so the row's names may break.
   if (RegExp(
@@ -483,15 +464,6 @@ String? _named(String problem) {
     'laid out',
   ).hasMatch(problem)) {
     return "a month's days read against one day's mark";
-  }
-  // A row's actions slid out by night: Delete, a key of the wall's colour, beside Archive, the pigment's. Drawn their
-  // faces stand level (goldens collections/slide_a_row_for_its_actions, unchanged since 0.2.1); by night only,
-  // ui_core_test 0.1.0 reads Delete's foot 8 px above Archive's.
-  if (RegExp(
-    r'^(standard|compact) dark · a button "Delete" beside a button "Archive": its bottom is 4 px above theirs as laid '
-    r'out, 24 device px above as drawn$',
-  ).hasMatch(problem)) {
-    return "a dark key's foot read high by night";
   }
   return null;
 }

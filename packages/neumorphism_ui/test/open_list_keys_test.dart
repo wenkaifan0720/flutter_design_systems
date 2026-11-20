@@ -1,8 +1,8 @@
-// An open list by the keys (the coordinator's check, 11-15): opened from a key (Enter, Space, Down) its focus is on the
+// An open list by the keys: opened from a key (Enter, Space, Down) its focus is on the
 // chosen option, or the first with none chosen; the arrows move at once and wrap, Home and End go to the ends, a typed
 // letter jumps, Enter chooses and closes, Escape closes and gives focus back to the field. The arrows work as well right
-// after a pointer opened it. The combobox's, the tag input's and the menu bar's keys are ui_core's (10e2d9d2d2), held
-// here in the look's own wrappers.
+// after a pointer opened it. The combobox's, the tag input's and the menu bar's keys are ui_core's, held here in the
+// look's own wrappers.
 import 'package:flutter/gestures.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';

@@ -1,4 +1,4 @@
-// Hover changes nothing (polish round 3, §1). Under the pointer every pressable paints exactly what it paints idle, in
+// Hover changes nothing. Under the pointer every pressable paints exactly what it paints idle, in
 // each corner family; the pointer itself says what a part does: a hand on what presses, the text beam on what takes
 // words, grab on what drags, the arrow on what is disabled. A press sinks the part in its own outline, never a
 // rectangle, and keyboard focus follows the face it belongs to: outside it, or (a pressed-in
@@ -142,7 +142,7 @@ const _cursors = <String, MouseCursor>{
   'NeumorphicSlider': SystemMouseCursors.grab,
 };
 
-/// Where hover is information (polish round 3, §1): a rating previews the stars it would set.
+/// Where hover is information: a rating previews the stars it would set.
 // A rating previews its score; a day of a month rises under the pointer, its only face until it is chosen.
 const _hoverShows = {
   'NeumorphicRating',
@@ -429,8 +429,9 @@ void main() {
         await tester.pumpAndSettle();
         // A raised control lifts round its own outline (`_FocusLift`, `_Lift`), the slider round its thumb
         // (`_ThumbLift`), the rating round its row of stars (`_RatingRisePainter`); a field, a select, a code's cell,
-        // the wheel and the number field's groove stay hollows and deepen instead (`_CastPainter.focus`). Never a
-        // stroke.
+        // the wheel, the number field's groove, a checkbox's box and a radio's socket stay hollows and deepen instead
+        // (`_CastPainter.focus`), and a switch lifts its thumb inside its deepened slot (`_SwitchPainter.focus`). Never
+        // a stroke.
         final lifts = [
           ..._painted('_FocusLift'),
           ..._painted('_Lift'),
@@ -439,7 +440,10 @@ void main() {
         ];
         final deepened = find.byType(CustomPaint).evaluate().where((e) {
           final painter = (e.widget as CustomPaint).painter;
-          return painter.runtimeType.toString() == '_CastPainter' &&
+          return {
+                '_CastPainter',
+                '_SwitchPainter',
+              }.contains(painter.runtimeType.toString()) &&
               ((painter as dynamic).focus as double) > 0;
         });
         expect(

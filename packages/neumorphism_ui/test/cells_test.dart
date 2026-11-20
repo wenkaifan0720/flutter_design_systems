@@ -1,4 +1,4 @@
-// The segmented control, the latches and the tab bar are banks of cells (polish round 3, §3; DECISIONS.md, "Cells"):
+// The segmented control, the latches and the tab bar are banks of cells:
 // one raised bank split by carved seams, every cell the same width, the bank as tall as a field beside it. The chosen
 // cell is its whole cell, pressed in edge to edge: its outer corners are the bank's (concentric_test measures them),
 // the corners it shares with a neighbour are square, and its label does not move when it is chosen. First, middle and

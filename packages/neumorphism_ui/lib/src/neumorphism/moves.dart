@@ -199,7 +199,7 @@ class _NeumorphicTabBarState extends State<NeumorphicTabBar>
       },
     );
     return NeumorphicCellBank(
-      // Out of use the whole bar lies flat: its groove and the chosen tab with the words.
+      // Out of use the whole bar goes quiet: its groove and the chosen tab with the words.
       group: (bank) => NeumorphicOutOfUse(off: off, child: bank),
       selected: widget.selectedIndex,
       minCellWidth: least,
@@ -1113,7 +1113,7 @@ class _SlideFrame extends CustomClipper<Path> {
       old.shape != shape || old.reach != reach;
 }
 
-/// A carousel's step key. Out of use at either end it keeps its footprint, a faint flat disc, so the pair still reads
+/// A carousel's step key. Out of use at either end it keeps its moulding, shallow and quiet, so the pair still reads
 /// as a pair.
 class _StepKey extends StatelessWidget {
   const _StepKey(this.icon, {required this.label, this.onPressed});
@@ -1122,33 +1122,8 @@ class _StepKey extends StatelessWidget {
   final VoidCallback? onPressed;
 
   @override
-  Widget build(BuildContext context) {
-    final c = NeumorphicTheme.of(context).colors;
-    final key = NeumorphicIconButton(icon, label: label, onPressed: onPressed);
-    if (onPressed != null) return key;
-    return CustomPaint(painter: _Footprint(c), child: key);
-  }
-}
-
-class _Footprint extends CustomPainter {
-  const _Footprint(this.c);
-  final NeumorphicColors c;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final r = math.min(size.width, size.height) / 2 - 4;
-    canvas.drawCircle(
-      size.center(Offset.zero),
-      r,
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 1
-        ..color = c.quiet,
-    );
-  }
-
-  @override
-  bool shouldRepaint(_Footprint o) => o.c != c;
+  Widget build(BuildContext context) =>
+      NeumorphicIconButton(icon, label: label, onPressed: onPressed);
 }
 
 /// A paged strip of cards or pictures, one in view at a time with its whole cast, with page dots under it and, at

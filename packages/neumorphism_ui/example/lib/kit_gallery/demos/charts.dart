@@ -155,7 +155,7 @@ Widget kitSpecimenAreaChart() => const NeumorphicAreaChart(
   ],
 );
 
-/// The week's rain as an area: the specimen the catalog's chart card has shown since before the area chart.
+/// The week's rain as an area: the chart card's specimen.
 Widget kitSpecimenChartArea() => const NeumorphicAreaChart(
   label: 'Rain this week',
   labels: ['M', 'T', 'W', 'T', 'F', 'S', 'S'],

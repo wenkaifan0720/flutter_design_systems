@@ -505,7 +505,7 @@ void main() {
     }
   }
 
-  // A radio option's price (design6, the checkout's delivery): on the label's baseline, at the row's end; a long label
+  // A radio option's price (a delivery choice at checkout): on the label's baseline, at the row's end; a long label
   // wraps before it moves the price off the edge.
   for (final scale in [1.0, 1.5]) {
     testWidgets('a radio option\'s price shares its label\'s baseline @390 '

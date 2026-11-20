@@ -145,7 +145,7 @@ abstract class NeumorphicLocalizations {
   int get firstDayOfWeek =>
       DateFormat.E(localeName).dateSymbols.FIRSTDAYOFWEEK + 1;
 
-  // The words of the parts round 4 added (coverage, 11-10). Concrete, so a delegate written before them still builds.
+  // The words of the action and overlay parts. Concrete, so a delegate written before them still builds.
 
   /// A bar chart's key for its highlighted bar.
   String get now => 'Now';

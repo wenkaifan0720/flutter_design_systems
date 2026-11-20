@@ -1,5 +1,4 @@
-// The package's own Material and Cupertino words (lib/src/neumorphism/internal/platform_words.dart, the package's twin
-// of the catalog's English file). An app on Flutter's own MaterialApp and flutter_localizations gives the widgets'
+// The package's own Material and Cupertino words (lib/src/neumorphism/internal/platform_words.dart). An app on Flutter's own MaterialApp and flutter_localizations gives the widgets'
 // words in its language but none of material_ui's or cupertino_ui's: the theme gives those, in the app's language
 // where material_ui and cupertino_ui translate it and in English where they don't, so a field's copy and paste menu
 // opens without a throw and reads in the app's language.

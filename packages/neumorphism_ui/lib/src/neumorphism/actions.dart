@@ -1,5 +1,4 @@
-// The action rows round 4 added (coverage, 11-10): the floating act, a bank of related buttons, a keycap, a bank of
-// toggles and a split button. The banks are the segmented control's bank of cells; the toggle group and the split
+// The action parts: the floating act, a bank of related buttons, a keycap, a bank of toggles and a split button. The banks are the segmented control's bank of cells; the toggle group and the split
 // button stand on ui_core's behaviours (DesignToggleGroup, DesignSplitButton) and paint them in the look's relief.
 
 import 'dart:math' as math;
@@ -306,7 +305,7 @@ class NeumorphicToggleGroup<T> extends StatelessWidget {
       labelOf: (v) => item(v).semanticLabel ?? item(v).label,
       semanticLabel: label,
       minimumSize: Size.zero,
-      // Out of use the whole bank lies flat: its groove and the cells that are in with the words.
+      // Out of use the whole bank goes quiet: its groove and the cells that are in with the words.
       layoutBuilder: (context, cells) => NeumorphicOutOfUse(
         off: onChanged == null,
         child: NeumorphicCellBank(

@@ -1,5 +1,4 @@
-// A bank of cells: the look's one model for a segmented control, a latch bank and a tab bar (polish round 3, the
-// cells model). The bank is one raised part, split by full-height engraved seams into equal cells. The chosen cell is
+// A bank of cells: the look's one model for a segmented control, a latch bank and a tab bar. The bank is one raised part, split by full-height engraved seams into equal cells. The chosen cell is
 // its whole cell pressed in, flush to the bank's rim and to the seams, under one even tint: its outer corners are the
 // bank's corners moved in by the rim, around the same centres, and its inner corners are square. Every seam stays.
 import 'dart:math' as math;
@@ -46,7 +45,7 @@ class NeumorphicCellScope extends InheritedWidget {
 const double neumorphicWideControlMax = 320;
 
 /// The width a choice control takes in [available] when its own is [own]. From a medium window (600) up it is a control,
-/// not a band (design6 P, the user on another look's form: "some dropdown spans the entire width"): in a column wider
+/// not a band, since a select stretched across a wide form reads as a bar rather than a choice: in a column wider
 /// than [neumorphicWideControlMax] it takes its own width, at most the column; a column no wider (a rail, a cell of a
 /// form's grid) it fills. On a phone it spans its column, as every field there does.
 double neumorphicControlWidth(
@@ -150,8 +149,8 @@ class NeumorphicCellBank extends StatelessWidget {
       builder: (context, box) {
         final least = count * minCellWidth;
         // A tab bar is the page's band on a phone; from a medium window up it keeps to its tabs, from its column's
-        // start, scrolling only when they need more than the column (design6 P, 11-12: three tabs spread over a 1440
-        // column read as a band). Every other bank takes its own width when wide: its natural width up to the most a
+        // start, scrolling only when they need more than the column (three tabs spread over a 1440 column would read
+        // as a band). Every other bank takes its own width when wide: its natural width up to the most a
         // control takes, never under what its labels need on one row.
         final available = !box.hasBoundedWidth
             ? naturalWidth ?? least

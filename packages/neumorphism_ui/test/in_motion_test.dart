@@ -193,7 +193,7 @@ void main() {
       await tester.pump();
       final faces = find.descendant(
         of: find.byType(NeumorphicSwipeActions),
-        // Each action's face is moulded, painted by its own painter (since round 1), which holds the face's shape.
+        // Each action's face is moulded, painted by its own painter, which holds the face's shape.
         matching: find.byWidgetPredicate(
           (w) =>
               w is CustomPaint &&
@@ -260,7 +260,7 @@ void main() {
       return tester.layers.whereType<ShaderMaskLayer>().length;
     }
 
-    // Cut sheer at its frame's edge, an open row read as a broken scrap of text (fresh-eyes rounds 1-11).
+    // Cut sheer at its frame's edge, an open row would read as a broken scrap of text.
     for (final dir in TextDirection.values) {
       expect(
         await masks(open: true, dir: dir),

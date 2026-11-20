@@ -1,7 +1,7 @@
-// Two classes the user met in other looks' builds (11-11 16:34, design6 P):
-// - "the width for dropdown seems to be a common problem": from 600 up a dropdown's closed face takes its content's
+// Two row contracts:
+// - From 600 up a dropdown's closed face takes its content's
 //   width, at most 320, and the list it opens is at least as wide as the face and starts on its leading edge.
-// - "the button doesnt have the same height here?": controls sharing a row show one top and one bottom, whatever
+// - Controls sharing a row show one top and one bottom, whatever
 //   their variant, at each density, by day and by night. A face here is what the look marks as drawn
 //   (DesignKeylineFace: the box its relief is cast around); a quiet button shows no face at rest.
 import 'package:material_ui/material_ui.dart';

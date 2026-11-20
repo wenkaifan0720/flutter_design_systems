@@ -23,6 +23,7 @@ import 'internal/cell_bank.dart';
 import 'internal/error_line.dart';
 import 'internal/geometry.dart';
 import 'internal/reach.dart';
+import 'internal/risen_focus.dart';
 import 'internal/text_entry.dart';
 import 'layout.dart';
 import 'ornaments.dart';
@@ -584,13 +585,16 @@ class NeumorphicTapFace extends StatelessWidget {
         final held = faceOutset != EdgeInsets.zero;
         // Keyboard focus lifts the face: never a line, and never sunk, since pressed in means on. The wrapper stays
         // in the tree: inserting it only on focus remounts stateful faces and resets their value animations.
+        final risen = showFocus && states.contains(WidgetState.focused);
+        // The hollows inside a risen face keep their depth; the wrapper stays in the tree for the same reason.
+        final content = child == null
+            ? null
+            : NeumorphicRisenFocus(risen: risen, child: child!);
         Widget face = TweenAnimationBuilder<double>(
-          tween: Tween(
-            end: showFocus && states.contains(WidgetState.focused) ? 1 : 0,
-          ),
+          tween: Tween(end: risen ? 1 : 0),
           duration: motion.state,
           curve: motion.enter,
-          child: held ? sunk(child) : child,
+          child: held ? sunk(content) : content,
           builder: (context, lift, child) => CustomPaint(
             foregroundPainter: lift == 0
                 ? null
@@ -1154,7 +1158,7 @@ enum NeumorphicButtonSize {
 }
 
 // One control height per density (a field's, a select's, a bank's, a split button's): a button beside them shows
-// the same top and bottom (design6 P, "the button doesnt have the same height here?").
+// the same top and bottom.
 double _buttonHeight(NeumorphicButtonSize size) => switch (size) {
   NeumorphicButtonSize.small => 36,
   NeumorphicButtonSize.medium => 48,
@@ -1604,7 +1608,7 @@ class _LineButton extends StatelessWidget {
         final facePadding = neumorphicClearOfCut(t.density.padding(inset), cut);
         final button = ConstrainedBox(
           constraints: BoxConstraints(maxWidth: limit, minHeight: height),
-          // Out of use the whole face lies flat, flush with the ground, its words quiet.
+          // Out of use the whole face goes quiet: a shallow relief, its words in the quiet ink.
           child: NeumorphicOutOfUse(
             off: onPressed == null && !busy,
             child: _Moulded(
@@ -2122,7 +2126,7 @@ class NeumorphicLink extends StatelessWidget {
       t.buttonTheme,
     ]);
     // Bare words have no face to sink: the press shows in the underline, keyboard focus lifts the words' small
-    // corner off the wall, and a dead link lies flat as a dead button does. A style that gives the link a face gets a
+    // corner off the wall, and a dead link goes quiet as a dead button does. A style that gives the link a face gets a
     // button's press and lift back.
     final idle = neumorphicStyleOf([style, themeStyle], <WidgetState>{});
     final faced =
@@ -2466,7 +2470,7 @@ class NeumorphicRoundButton extends StatelessWidget {
             color: look.foreground ?? (selected ? c.pigmentInkLit : c.ink),
           ),
         );
-        // Out of use it reads as the buttons do: flat, flush with the ground, its ink quiet.
+        // Out of use it reads as the buttons do: a shallow relief, its ink quiet.
         final body = NeumorphicOutOfUse(
           off: _off,
           child: SizedBox.square(
@@ -3366,7 +3370,7 @@ class NeumorphicLatchGroup extends StatelessWidget {
         return tallest + padding.vertical;
       },
       group: (bank) => NeumorphicOutOfUse(
-        // Out of use (no onChanged) it reads as every control does: the bank flat, flush with the ground, its ink quiet.
+        // Out of use (no onChanged) it reads as every control does: the bank shallow, its ink quiet.
         off: onChanged == null,
         child: bank,
       ),
@@ -3818,7 +3822,7 @@ class _NeumorphicTextFieldState extends State<NeumorphicTextField> {
           TextInputType.emailAddress,
           TextInputType.url,
         ].any((kind) => kind.index == widget.keyboardType?.index);
-    // The editable is bare (design6 I3): the box is the look's, the tap reach and the spoken node are the seat's.
+    // The editable is bare: the box is the look's, the tap reach and the spoken node are the seat's.
     final editable = Material(
       type: MaterialType.transparency,
       child: TextField(
@@ -4431,7 +4435,7 @@ class NeumorphicChoiceBox extends StatelessWidget {
       button: !many,
       semanticHint: hint,
       // The box takes the room it is given (a grid's cell), so the chosen LED stands in its own corner, not the cell's.
-      // Out of use it reads as the buttons do: flat, flush with the ground, its ink quiet.
+      // Out of use it reads as the buttons do: a shallow relief, its ink quiet.
       child: NeumorphicOutOfUse(
         off: onPressed == null,
         child: Stack(
@@ -5049,8 +5053,12 @@ class _SwitchPainter extends CustomPainter {
     this.side,
     this.elevation = const NeumorphicElevation(),
     this.rule = 1,
+    this.focus = 0,
   });
   final double position, rule;
+
+  /// How far keyboard focus has come in, 0 to 1: the slot deepens and the thumb rises in it.
+  final double focus;
   final bool on, flat;
   final NeumorphicColors c;
   final Size size;
@@ -5086,6 +5094,10 @@ class _SwitchPainter extends CustomPainter {
       flat: flat,
       elevation: elevation,
     );
+    // Keyboard focus deepens the slot, as it does a field's well: a crisp shade and light inside its rim.
+    if (!flat && focus > 0) {
+      neumorphicPaintHollowFocus(canvas, shape, c, amount: focus);
+    }
     // No rim of its own is BorderSide.none, not null: read as null, so a flat off track still prints its outline (taking
     // none for a rim left the knob alone on the wall, a ring that read as a radio).
     if (side != null && side!.style != BorderStyle.none) {
@@ -5121,6 +5133,21 @@ class _SwitchPainter extends CustomPainter {
       flat: flat,
       elevation: elevation,
     );
+    if (!flat && focus > 0) {
+      // The thumb, the part that moves, rises in its slot: its light and shade stay inside the slot's rim, so the slot
+      // keeps its own edge.
+      canvas.save();
+      canvas.clipPath(shape);
+      neumorphicPaintFocusLift(
+        canvas,
+        knobShape,
+        c,
+        amount: focus,
+        reach: .6,
+        elevation: elevation,
+      );
+      canvas.restore();
+    }
     if (flat && !on) {
       (knobBorder ?? const NeumorphicCircleBorder())
           .copyWith(
@@ -5160,12 +5187,27 @@ class _SwitchPainter extends CustomPainter {
       o.foreground != foreground ||
       o.side != side ||
       o.elevation != elevation ||
-      o.rule != rule;
+      o.rule != rule ||
+      o.focus != focus;
+}
+
+/// The keyboard focus of a switch row with no face of its own, handed to the switch in it.
+class _SwitchRowFocus extends InheritedWidget {
+  const _SwitchRowFocus({required this.focused, required super.child});
+  final bool focused;
+
+  static bool of(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<_SwitchRowFocus>()?.focused ??
+      false;
+
+  @override
+  bool updateShouldNotify(_SwitchRowFocus oldWidget) =>
+      oldWidget.focused != focused;
 }
 
 /// The slotted switch: a 56 by 32 face inside a padded activation target.
 /// The pigment slot, the sliding thumb and the thumb's printed mark (a bar on, a ring off) indicate its value; with no
-/// [onChanged] it is disabled and lies flat.
+/// [onChanged] it is disabled: its slot and thumb stay moulded, shallow, and its ink goes quiet.
 ///
 /// ```dart
 /// NeumorphicSwitch(value: true, onChanged: (v) {})
@@ -5232,12 +5274,17 @@ class NeumorphicSwitch extends StatelessWidget {
         onPressed: onChanged == null ? null : () => onChanged!(!value),
         radius: 16,
         focusSize: size,
+        // Keyboard focus is drawn in the switch: its thumb rises and its slot deepens. The slot never rises.
+        showFocus: false,
         child: Builder(
           builder: (context) {
             final states = {
               ...NeumorphicStatesScope.of(context),
               if (value) WidgetState.selected,
             };
+            final focused =
+                states.contains(WidgetState.focused) ||
+                _SwitchRowFocus.of(context);
             final look = neumorphicStyleOf([style, t.switchTheme], states);
             // The track is the switch's face, whichever end its thumb stands at: marked for ui_core's checks, which
             // would read an off switch's ground-coloured track by its thumb alone.
@@ -5246,43 +5293,52 @@ class NeumorphicSwitch extends StatelessWidget {
                 child: AnimatedNeumorphicShape(
                   shape: look.shape ?? t.shapes.capsule,
                   builder: (context, border) => TweenAnimationBuilder<double>(
-                    tween: Tween(end: value ? 1 : 0),
+                    tween: Tween(end: focused ? 1 : 0),
                     duration: motion.state,
-                    curve: motion.standard,
-                    builder: (context, position, _) => CustomPaint(
-                      painter: _SwitchPainter(
-                        value,
-                        t.colors,
-                        NeumorphicFlatScope.of(context),
-                        size,
-                        position,
-                        border: border,
-                        // The thumb is the track moved in by its inset: round in a capsule, square in a square track,
-                        // concentric either way.
-                        knobBorder: NeumorphicShapes.inset(
-                          border ??
-                              NeumorphicRoundedBorder(radius: size.height / 2),
-                          size.height * .125,
+                    curve: motion.enter,
+                    builder: (context, focus, _) =>
+                        TweenAnimationBuilder<double>(
+                          tween: Tween(end: value ? 1 : 0),
+                          duration: motion.state,
+                          curve: motion.standard,
+                          builder: (context, position, _) => CustomPaint(
+                            painter: _SwitchPainter(
+                              value,
+                              t.colors,
+                              NeumorphicFlatScope.of(context),
+                              size,
+                              position,
+                              focus: focus.clamp(0.0, 1.0),
+                              border: border,
+                              // The thumb is the track moved in by its inset: round in a capsule, square in a square track,
+                              // concentric either way.
+                              knobBorder: NeumorphicShapes.inset(
+                                border ??
+                                    NeumorphicRoundedBorder(
+                                      radius: size.height / 2,
+                                    ),
+                                size.height * .125,
+                              ),
+                              fill: look.fill,
+                              foreground: look.foreground,
+                              side:
+                                  look.side ??
+                                  (look.edge != null || t.highContrast
+                                      ? BorderSide(
+                                          color: look.edge ?? t.colors.edge,
+                                          width: neumorphicEdgeWidth,
+                                        )
+                                      : BorderSide.none),
+                              elevation: t.elevation,
+                              rule: neumorphicRuleWidth,
+                            ),
+                          ),
                         ),
-                        fill: look.fill,
-                        foreground: look.foreground,
-                        side:
-                            look.side ??
-                            (look.edge != null || t.highContrast
-                                ? BorderSide(
-                                    color: look.edge ?? t.colors.edge,
-                                    width: neumorphicEdgeWidth,
-                                  )
-                                : BorderSide.none),
-                        elevation: t.elevation,
-                        rule: neumorphicRuleWidth,
-                      ),
-                    ),
                   ),
                 ),
               ),
             );
-            // Disabled reads as the other controls do: flat, flush with the ground, its ink quiet.
+            // Disabled reads as the other controls do: a shallow relief, its ink quiet.
             return NeumorphicOutOfUse(
               off: onChanged == null,
               child: mirror ? Transform.flip(flipX: true, child: paint) : paint,
@@ -5367,7 +5423,8 @@ class NeumorphicSwitchRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = NeumorphicTheme.of(context);
     // In a grouped list the row is a band of its card, a breath inside its rim, as a list tile is: its focus lift goes
-    // round that band and not round its words and its control.
+    // round that band and not round its words and its control. Elsewhere the row has no face to rise: its switch shows
+    // the focus, its thumb rising in its slot.
     final cell = NeumorphicGroupRowScope.cellOf(context);
     return NeumorphicTap(
       autofocus: autofocus,
@@ -5382,6 +5439,7 @@ class NeumorphicSwitchRow extends StatelessWidget {
       shape: cell?.border,
       faceOutset: cell?.outset ?? EdgeInsets.zero,
       focusReach: cell == null ? 1 : .5,
+      showFocus: cell != null,
       focusNode: focusNode,
       onPressed: onChanged == null ? null : () => onChanged!(!value),
       child: Builder(
@@ -5393,6 +5451,9 @@ class NeumorphicSwitchRow extends StatelessWidget {
               if (value) WidgetState.selected,
             },
           );
+          final rowFocus =
+              cell == null &&
+              NeumorphicStatesScope.of(context).contains(WidgetState.focused);
           return NeumorphicFitRow(
             fill: leading == null ? 0 : 1,
             gap: 14,
@@ -5424,10 +5485,13 @@ class NeumorphicSwitchRow extends StatelessWidget {
               ExcludeFocus(
                 child: ExcludeSemantics(
                   child: IgnorePointer(
-                    child: NeumorphicSwitch(
-                      value: value,
-                      style: style,
-                      onChanged: onChanged == null ? null : (_) {},
+                    child: _SwitchRowFocus(
+                      focused: rowFocus,
+                      child: NeumorphicSwitch(
+                        value: value,
+                        style: style,
+                        onChanged: onChanged == null ? null : (_) {},
+                      ),
                     ),
                   ),
                 ),
@@ -5905,7 +5969,7 @@ class _NeumorphicSliderState extends State<NeumorphicSlider> {
                           widget.style,
                           t.sliderTheme,
                         ], states);
-                        // Disabled reads as the other controls do: flat, flush with the ground, its ink quiet.
+                        // Disabled reads as the other controls do: a shallow relief, its ink quiet.
                         return NeumorphicOutOfUse(
                           off: !enabled,
                           child: AnimatedNeumorphicShape(

@@ -1,6 +1,6 @@
 // A field's own open list (a select's, a combobox's, a multi-select's): it stands clear of its field, and while it is
-// up the field rests, the list showing where the keys are (the user's review, 11-18: a risen field's shadow landed on
-// the panel it opened, a smudge where the two met).
+// up the field rests, the list showing where the keys are (a risen field's shadow would land on the panel it opened,
+// a smudge where the two met).
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/widgets.dart';
 

@@ -1,4 +1,4 @@
-// ui_core's label sweep (design6 P): every labelled control on the Overview, every Hearth screen and every gallery
+// ui_core's label sweep: every labelled control on the Overview, every Hearth screen and every gallery
 // page, its label and its icon on the middle of its face as laid out and as drawn, under each density the gallery
 // offers (standard and compact; a control can be centred under one and not the other). Hearth's screens at a phone's
 // and a desk's width; the gallery's pages at the gallery's phone width, as tall as their sections.
@@ -143,8 +143,8 @@ String? _named(String problem) {
     return "an act's gradient face read as solid ink";
   }
   // The Appearance control's chosen cell under compact (Hearth's desk rail): its washed well, 40 tall in its 48
-  // target, read as a face reaching into the bank's cast above it; drawn, "Day" stands on the cell's middle
-  // (shapes/log/probe-day-compact-crop.png), and laid out it is on it.
+  // target, read as a face reaching into the bank's cast above it; drawn, "Day" stands on the cell's middle, and laid
+  // out it is on it.
   if (RegExp(
     r'^compact · a button "Day": the capitals of "Day" are drawn 11\.\d device px below the middle of its face$',
   ).hasMatch(problem)) {

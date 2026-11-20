@@ -283,7 +283,7 @@ class _RenderOwnRoot extends RenderShiftedBox {
 }
 
 /// Where a control laid out at its target stands its face (DesignTapTarget's alignment): on the start keyline unless
-/// set, since an example starts on the column's edge with its drawn face, never its target (design6 P); a slot at a
+/// set, since a control starts on the column's edge with its drawn face, never its target; a slot at a
 /// row's end ([AlignmentDirectional.centerEnd]: a page head's trailing key, a stepper's last key) or inside a box
 /// ([AlignmentDirectional.center]: a field's own keys) sets its own. The target grows away from the face.
 class NeumorphicFacePlace extends InheritedWidget {

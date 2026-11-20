@@ -604,9 +604,21 @@ void main() {
               // select's well deepen (`_CastPainter.focus`), never rise.
               'NeumorphicNumberField' ||
               'NeumorphicSelect' ||
-              'NeumorphicSelectField' =>
+              'NeumorphicSelectField' ||
+              // A checkbox's box and a radio's socket are hollows too.
+              'NeumorphicCheckbox' ||
+              'NeumorphicCheckRow' ||
+              'NeumorphicRadioGroup' =>
                 w is CustomPaint &&
                     w.painter.runtimeType.toString() == '_CastPainter' &&
+                    ((w.painter as dynamic).focus as double) > 0,
+              // A switch lifts its thumb inside its slot, and the slot
+              // deepens; nothing rises round it.
+              'NeumorphicSwitch' ||
+              'NeumorphicSwitchRow' ||
+              'NeumorphicLevelRow' =>
+                w is CustomPaint &&
+                    w.painter.runtimeType.toString() == '_SwitchPainter' &&
                     ((w.painter as dynamic).focus as double) > 0,
               // A menu's row the keys reach sinks a little deeper into the
               // panel, the chosen one under its wash too.

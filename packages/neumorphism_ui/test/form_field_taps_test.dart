@@ -1,7 +1,6 @@
 // Controls in a NeumorphicFormField take a tap, each its own: a segmented button's segments, chips in a wrap, a switch
 // and a checkbox, by the pointer and through their semantics (a screen reader's double tap, a browser's click with
-// semantics on). A group's controls merged into the field's one node gave every tap to the first of them (the user,
-// 11-18: Stint's Priority and Labels took no tap).
+// semantics on). Merged into the field's one node, a group's controls would give every tap to the first of them.
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter_test/flutter_test.dart';

@@ -444,7 +444,7 @@ class NeumorphicCalendar extends StatelessWidget {
           );
         }
         // From a medium window up a month keeps to its seven days, from its column's start: a week spread over a 1440
-        // column reads as a band (design6 P, 11-12). On a phone it spans its column.
+        // column would read as a band. On a phone it spans its column.
         final width = neumorphicControlWidth(context, box.maxWidth, most);
         if (width >= box.maxWidth) return calendar;
         return Align(

@@ -1,4 +1,4 @@
-// Keylines and padding (design6 P), measured on every Hearth screen and the Overview at a phone's and a desk's width.
+// Keylines and padding, measured on every Hearth screen and the Overview at a phone's and a desk's width.
 // In each card, slab, list section and form group:
 // - every line starts on the container's keyline, or on the one column of words that follows a glyph or a face
 //   standing on that keyline (a list row's words; what stands under them, a stepper, a slider, is in that column too);
@@ -324,8 +324,8 @@ List<String> _faults(WidgetTester tester) {
   return faults;
 }
 
-/// For the review page: with REVIEW_OUT set, what the probe measured on a screen (containers, their lines and items)
-/// and what it found, as `keylines-probe-<screen>-<width>.json`.
+/// With REVIEW_OUT set, writes what the check measured on a screen (containers, their lines and items) and what it
+/// found, as `keylines-probe-<screen>-<width>.json`.
 void _record(
   String screen,
   double width,
@@ -371,7 +371,7 @@ void main() {
 
   // ui_core's check over the regions the look marks (every slab and the page): edges by what is drawn, rows of
   // controls by their faces, a face of the ground's colour where the look marks it (DesignKeylineFace).
-  // The gallery's pages too, at a desk's width (design6 P, 11-12): every example's first drawn pixel on the column's
+  // The gallery's pages too, at a desk's width: every example's first drawn pixel on the column's
   // edge, its face's and never its target's.
   group('ui_core\'s keyline check', () {
     final app = ['overview', for (final s in hearthScreens) s.id];

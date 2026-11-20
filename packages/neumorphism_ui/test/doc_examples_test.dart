@@ -28,7 +28,7 @@ import 'support.dart';
 // ignore: avoid_relative_lib_imports
 import '../example/lib/demo_art.dart';
 
-/// The lib the examples are read from: the look's folder in the catalog's app, the package's lib once exported.
+/// The lib the examples are read from: the look's source folder, or the package's lib once exported.
 final _lib = Directory('lib/src/neumorphism').existsSync()
     ? 'lib/src/neumorphism'
     : 'lib';

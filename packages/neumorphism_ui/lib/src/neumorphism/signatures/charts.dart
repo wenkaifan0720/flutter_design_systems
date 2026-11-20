@@ -549,7 +549,7 @@ class _ColumnPainter extends CustomPainter {
         }
         if (h > 0) {
           // In the bars' own paint, as the two-way bars and the share bars are: in a flat ink the columns stood over
-          // moulded bars on the same page, two kinds of bar one above the other (fresh-eyes round 11).
+          // moulded bars on the same page, two kinds of bar one above the other.
           final r = Rect.fromLTWH(x, base - h, w, h);
           canvas.drawRRect(
             RRect.fromRectAndRadius(r, Radius.circular(round ? w / 2 : 0)),

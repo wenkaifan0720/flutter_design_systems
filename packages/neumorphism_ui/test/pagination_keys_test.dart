@@ -1,4 +1,4 @@
-// A pagination is one row of keys (the user's walk, 11-15): the steps are keys of the pages' own face, size and gap, at
+// A pagination is one row of keys: the steps are keys of the pages' own face, size and gap, at
 // every width and either way the words read; a page held under a finger goes down toward the wall, never flush nor
 // into a well, and comes back when it is let go, so it never reads as a second current page; keyboard focus lifts a
 // key and never sinks it.

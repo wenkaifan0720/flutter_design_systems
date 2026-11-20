@@ -790,7 +790,7 @@ class NeumorphicSwipeActions extends StatelessWidget {
         },
         // Inset as a reorderable row is: open, what stands at the row's end keeps clear of the band it slides up to.
         // Slid aside, its words sink under the edge it passes, as a scroll's do: cut sheer there, the open row read as
-        // a broken scrap of text ("p, on until eleven") rather than a row half out of view (fresh-eyes rounds 1-11).
+        // a broken scrap of text ("p, on until eleven") rather than a row half out of view.
         child: _SinkingEdge(
           child: ColoredBox(
             color: c.ground,
@@ -844,7 +844,7 @@ const double _sinkFade = 32;
 
 /// The box a swipe row slides in, clipped at its sides only: the edges the row's words sink under. Above and below,
 /// nothing slides past it, and an action's light and shadow (and its focus lift) reach past the strip there: clipped
-/// to the box, they were cut flat 4 pt out (0.2.0's clipped-shadow check).
+/// to the box, they would be cut flat 4 pt out.
 class _SwipeFrame extends SingleChildRenderObjectWidget {
   const _SwipeFrame({super.child});
 

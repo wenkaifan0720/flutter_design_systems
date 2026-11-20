@@ -26,7 +26,7 @@ Future<void> main() async {
   final query = {...Uri.base.queryParameters, ...link.queryParameters};
   final linkedPage = link.pathSegments.where((s) => s.isNotEmpty).firstOrNull;
   final text = double.tryParse(query['text'] ?? '') ?? 1;
-  // A reviewer's slow motion: ?slow=8 plays every move eight times slower, so a frame between two states can be looked
+  // Slow motion: ?slow=8 plays every move eight times slower, so a frame between two states can be looked
   // at with a real pointer.
   timeDilation = (double.tryParse(query['slow'] ?? '') ?? 1).clamp(1, 20);
   runApp(

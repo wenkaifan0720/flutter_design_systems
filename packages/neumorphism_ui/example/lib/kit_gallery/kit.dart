@@ -1,4 +1,4 @@
-/// Shared host for the Neumorphism gallery's demo screens and catalog specimens.
+/// Shared host for the Neumorphism gallery's demo screens and part specimens.
 ///
 /// Every demo renders inside the environment a Neumorphism page gets live: a
 /// MaterialApp under [NeumorphicHost], themed by the preset the lab applied
@@ -115,7 +115,7 @@ class _KitHeldState<T extends ChangeNotifier> extends State<_KitHeld<T>> {
   Widget build(BuildContext context) => widget.builder(context, controller);
 }
 
-/// The preset chosen in the package gallery, initially the catalog default.
+/// The preset chosen in the package gallery, initially the look's default.
 String kitShownPreset = kitPreset;
 
 /// Optional themes supplied by the Customize panel or its tests.
@@ -148,8 +148,8 @@ Widget _kitApp({required Brightness brightness, required Widget home}) =>
 Widget kitSection(String label, {required List<Widget> children}) =>
     RepaintBoundary(
       key: ValueKey('kit-section/$label'),
-      // Titled as the gallery's own pages title a part: as a micro sub-head, the catalog's pages (tables, popovers,
-      // button groups) read their section names as captions beside pages whose names were titles.
+      // Titled as the gallery's own pages title a part: as a micro sub-head, so no page's section names read as
+      // captions beside pages whose names are titles.
       child: NeumorphicColumn(
         gap: 14,
         children: [
@@ -159,7 +159,7 @@ Widget kitSection(String label, {required List<Widget> children}) =>
       ),
     );
 
-/// Where a catalog specimen sits on its stage (the specimen's `frame` in
+/// Where a specimen sits on its stage (the specimen's `frame` in
 /// metadata.yaml names the same band): the bottom or top edge, a band across
 /// the middle, or the whole phone.
 class KitFrame {
@@ -175,9 +175,9 @@ class KitFrame {
 
 enum _KitPlace { bottom, top, band, screen }
 
-/// The room a catalog picture keeps round its specimen. A slab's light and shadow reach 34 px past its face (the
+/// The room a specimen picture keeps round its specimen. A slab's light and shadow reach 34 px past its face (the
 /// shadow's 12 px throw and its blur's visible tail), so a band's specimen stands 36 px off every edge of the picture
-/// and no cast is cut flat by the picture's box, nor turns square behind a round corner (the user's 0.2.0 fault).
+/// and no cast is cut flat by the picture's box, nor turns square behind a round corner.
 const double kitCastRoom = 36;
 
 /// The room a held part keeps: a dial or a house of rooms is lifted off the wall in the hand, and its shadow reaches
@@ -185,7 +185,7 @@ const double kitCastRoom = 36;
 /// [kitCastRoom], added by the specimen).
 const double kitHeldCastRoom = 44;
 
-/// [child], a held part, with a held cast's room at a catalog picture's sides ([kitHeldCastRoom]); on a gallery page it
+/// [child], a held part, with a held cast's room at a specimen picture's sides ([kitHeldCastRoom]); on a gallery page it
 /// stands on the page's keyline as every part does.
 Widget kitHeldPart(Widget child) => Builder(
   builder: (context) => Padding(
@@ -196,7 +196,7 @@ Widget kitHeldPart(Widget child) => Builder(
   ),
 );
 
-/// The room the catalog stage round [context] keeps on each side of its band: [kitCastRoom] on a stage, none on a
+/// The room the specimen stage round [context] keeps on each side of its band: [kitCastRoom] on a stage, none on a
 /// gallery page. A specimen that is a screen of its own spans it, since a screen casts nothing.
 double kitStageRoom(BuildContext context) =>
     context.dependOnInheritedWidgetOfExactType<_KitRoom>()?.room ?? 0;
@@ -208,7 +208,7 @@ class _KitRoom extends InheritedWidget {
   bool updateShouldNotify(_KitRoom old) => old.room != room;
 }
 
-/// The stage a catalog specimen renders on: the host themed by [style] (a
+/// The stage a specimen renders on: the host themed by [style] (a
 /// preset resolved at runtime, so one compile draws every preset) in
 /// [brightness], on the page's ground, with [child] placed by [frame]. A
 /// specimen builder never names a style: the stage decides it.

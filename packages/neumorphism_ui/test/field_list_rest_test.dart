@@ -1,6 +1,6 @@
 // A field's own open list (a select's, a combobox's, a multi-select's) stands clear of the field, and while it is up the
 // field rests: the risen field's shadow never lands on the panel, the open list showing where the keys are. Once the
-// list shuts, a field that keeps the keys rises again (the user's review, 11-18).
+// list shuts, a field that keeps the keys rises again.
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';

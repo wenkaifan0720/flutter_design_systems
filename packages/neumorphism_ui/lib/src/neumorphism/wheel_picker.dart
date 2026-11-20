@@ -40,7 +40,7 @@ class NeumorphicWheelPicker<T> extends StatelessWidget {
   /// The chosen one.
   final T value;
 
-  /// Called with the value the wheel comes to rest on; null: out of use (flat, still).
+  /// Called with the value the wheel comes to rest on; null: out of use (quiet, still).
   final ValueChanged<T>? onChanged;
 
   /// What a screen reader calls it.

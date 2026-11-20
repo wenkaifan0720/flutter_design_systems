@@ -1,4 +1,4 @@
-// The showcase app, Hearth, at a phone, a tablet and a desk, by day and by night (wide5, design6's proof): nothing
+// The showcase app, Hearth, at a phone, a tablet and a desk, by day and by night: nothing
 // overflows and nothing scrolls sideways; at 1440 the content spans the body; no text is under 11 px; no raised group
 // stands inside another; at 390 the act spans the content or stands in the bottom bar; every target meets Flutter's
 // tap-target guidelines. Every act leads somewhere, and one quiet way leads back to the gallery.

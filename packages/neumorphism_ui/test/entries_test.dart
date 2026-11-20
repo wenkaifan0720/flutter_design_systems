@@ -259,21 +259,35 @@ void main() {
               direction: direction,
             ),
           );
+          final rtl = direction == TextDirection.rtl;
+          final forward = rtl
+              ? LogicalKeyboardKey.arrowLeft
+              : LogicalKeyboardKey.arrowRight;
+          final back = rtl
+              ? LogicalKeyboardKey.arrowRight
+              : LogicalKeyboardKey.arrowLeft;
           await tester.sendKeyEvent(LogicalKeyboardKey.tab);
           await tester.pump();
-          await tester.sendKeyEvent(
-            direction == TextDirection.rtl
-                ? LogicalKeyboardKey.arrowLeft
-                : LogicalKeyboardKey.arrowRight,
-          );
+          await tester.sendKeyEvent(forward);
           await tester.pump();
           expect(value, 'c');
-          await tester.sendKeyEvent(LogicalKeyboardKey.home);
-          await tester.pump();
-          expect(value, 'a');
-          await tester.sendKeyEvent(LogicalKeyboardKey.end);
-          await tester.pump();
-          expect(value, 'c');
+          if (segmented) {
+            await tester.sendKeyEvent(LogicalKeyboardKey.home);
+            await tester.pump();
+            expect(value, 'a');
+            await tester.sendKeyEvent(LogicalKeyboardKey.end);
+            await tester.pump();
+            expect(value, 'c');
+          } else {
+            // A radio group's arrows wrap at its ends: forward from the last
+            // option to the first, and back again.
+            await tester.sendKeyEvent(forward);
+            await tester.pump();
+            expect(value, 'a');
+            await tester.sendKeyEvent(back);
+            await tester.pump();
+            expect(value, 'c');
+          }
           await tester.sendKeyEvent(LogicalKeyboardKey.tab);
           await tester.pump();
           await tester.sendKeyEvent(LogicalKeyboardKey.enter);

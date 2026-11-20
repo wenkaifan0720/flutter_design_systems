@@ -1,4 +1,4 @@
-// The look on each platform (the user's check, 11-15). On iOS a page keeps the edge swipe back round the look's own
+// The look on each platform. On iOS a page keeps the edge swipe back round the look's own
 // page change (ui_core's swipe back): the page follows the finger with the one under it showing, whether the app pushes
 // it under the theme's transitions or the router pushes a NeumorphicPage. Android's system back closes what stands
 // over a page (a menu, a side sheet, a bottom sheet, a dialog, a select's open list, a popover) before it pops the

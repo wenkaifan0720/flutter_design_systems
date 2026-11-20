@@ -1,7 +1,6 @@
 // The date sheet (showNeumorphicDatePicker) fits its month: on a desk the sheet narrows round the month, so the month,
 // its arrows and the sheet's close and buttons span one width; on a phone the sheet spans the screen and the month the
-// sheet. A day that arrives under a still pointer, as the sheet opens, stays at rest until the pointer moves (the user,
-// 11-18: the month stopped two thirds across its dialog, and a day stood raised with the pointer elsewhere).
+// sheet. A day that arrives under a still pointer, as the sheet opens, stays at rest until the pointer moves.
 import 'package:flutter/gestures.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';

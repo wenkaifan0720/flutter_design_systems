@@ -27,7 +27,7 @@ List<String> _description(Widget part) {
 
 void main() {
   test('every public widget describes every public field it is built with', () {
-    // The look's folder in the catalog's app (whose lib holds other modules' parts too), the package's lib once exported.
+    // The look's source folder (whose lib holds other modules' parts too), or the package's lib once exported.
     final look = Directory('lib/src/neumorphism');
     final lib = look.existsSync() ? look : Directory('lib');
     final missing = <String>[];
