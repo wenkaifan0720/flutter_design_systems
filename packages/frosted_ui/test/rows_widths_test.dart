@@ -72,11 +72,12 @@ const _misreadRows = {
 const _misreadRowProblems = {
   // ui_core_test 0.1.1 (outlined and bevelled faces read against their
   // ground) reads the remove key inside the unchosen "Ines Park" chip, by
-  // night only, 1 px short of the chosen "Design" chip beside it. Laid out,
-  // both faces (and the key's target) end at the same y, day and night.
+  // night only, 1 px short of the chosen "Design" chip beside it (0.1.3:
+  // 3 device px, as drawn). Laid out, both faces (and the key's target) end
+  // at the same y, day and night, as 0.1.3 says.
   'choices': [
     'compact night · a button "Remove Ines Park" beside a button "Design": '
-        'its bottom is 1 px above theirs',
+        'its bottom is level with theirs as laid out',
   ],
 };
 

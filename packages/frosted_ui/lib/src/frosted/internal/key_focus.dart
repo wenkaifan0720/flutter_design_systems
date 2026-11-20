@@ -1,13 +1,12 @@
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
-import '../chrome_metrics.dart';
-import 'dim.dart';
 import '../components/pressable/pressable.dart';
 
 /// Keyboard reach for an adjustable control (the switch, the sliders, the
-/// stepper, the segmented strip): it takes focus, answers [keys], and shows
-/// the [FrostedFocusRing] while the keyboard, not a pointer, holds focus.
+/// stepper, the segmented strip): it takes focus, answers [keys], and clears
+/// its frost ([FrostedFocusRing]) while the keyboard, not a pointer, holds
+/// focus.
 /// Plumbing of the controls; pages never place one.
 class FrostedKeyFocus extends StatefulWidget {
   /// Creates a [FrostedKeyFocus].
@@ -29,15 +28,14 @@ class FrostedKeyFocus extends StatefulWidget {
   /// What each key does.
   final Map<LogicalKeyboardKey, VoidCallback> keys;
 
-  /// The ringed object's corner radius; the ring runs
-  /// [FrostedChromeMetrics.focusRingGap] outside it.
+  /// The cleared object's corner radius.
   final double radius;
 
-  /// How far inside [child]'s box the ringed object stands.
+  /// How far inside [child]'s box the cleared object stands.
   final EdgeInsets ringInsets;
 
-  /// Whether the focus light glows inward from the object's edge, kept
-  /// within it.
+  /// Whether only what is behind the object clears, not the faces it holds
+  /// (a nav bar's tab).
   final bool ringInside;
 
   /// The caller's focus node; null keeps one of the widget's own.
@@ -55,6 +53,7 @@ class FrostedKeyFocus extends StatefulWidget {
 
 class _FrostedKeyFocusState extends State<FrostedKeyFocus> {
   bool _focused = false;
+  bool _hovered = false;
   bool _keyboard = _isKeyboard(FocusManager.instance.highlightMode);
 
   static bool _isKeyboard(FocusHighlightMode mode) =>
@@ -97,29 +96,19 @@ class _FrostedKeyFocusState extends State<FrostedKeyFocus> {
         action();
         return KeyEventResult.handled;
       },
-      child: Stack(
-        fit: StackFit.passthrough,
-        clipBehavior: Clip.none,
-        children: [
-          widget.child,
-          // The light fades in and out, always standing over the child.
-          Positioned.fill(
-            child: IgnorePointer(
-              child: FrostedFade(
-                opacity: _focused && _keyboard ? 1 : 0,
-                child: Stack(
-                  clipBehavior: Clip.none,
-                  children: FrostedFocusRing.layers(
-                    context,
-                    radius: widget.radius,
-                    insets: at,
-                    inside: widget.ringInside,
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
+      // The frost clears while the keyboard holds it, a little under a
+      // resting pointer, easing in and out.
+      child: MouseRegion(
+        onEnter: (_) => setState(() => _hovered = true),
+        onExit: (_) => setState(() => _hovered = false),
+        child: FrostedFocusRing(
+          shown: _focused && _keyboard,
+          hovered: _hovered && widget.enabled,
+          radius: widget.radius,
+          insets: at,
+          inside: widget.ringInside,
+          child: widget.child,
+        ),
       ),
     );
   }

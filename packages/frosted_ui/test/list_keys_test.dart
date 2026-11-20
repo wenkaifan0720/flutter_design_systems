@@ -4,10 +4,10 @@
 // list they open it without moving; a combobox opens on its value (else the
 // first option that can be taken) and lists every option until the words
 // are edited; a disabled option stands dimmed, passed over and never taken;
-// a menu bar's menu jumps to a typed letter. The held row lies under the
-// wash, the chosen one on the plate. A pointer's row and the keys' row are
-// one place (ui_core's highlightFollowsPointer, fec8131445), since Frosted
-// paints both with the same wash. Choices are made as a phone's keyboard
+// a menu bar's menu jumps to a typed letter. The frost under the held row
+// clears, the chosen one stands on the plate. A pointer's row and the keys'
+// row are one place (ui_core's highlightFollowsPointer, fec8131445), since
+// Frosted lights both alike. Choices are made as a phone's keyboard
 // makes them, by its done action.
 import 'package:flutter/gestures.dart';
 import 'package:material_ui/material_ui.dart';
@@ -115,13 +115,14 @@ Finder _row(String label) =>
 Finder _plate(String label) =>
     find.descendant(of: _row(label), matching: find.byType(FrostedChosenPlate));
 
-Color? _wash(WidgetTester tester, String label) => tester
-    .widget<FrostedFace>(
+/// How far the frost under [label]'s row has cleared: 1 held, 0 not.
+double _clear(WidgetTester tester, String label) => tester
+    .widget<FrostedCleared>(
       find
-          .descendant(of: _row(label), matching: find.byType(FrostedFace))
+          .descendant(of: _row(label), matching: find.byType(FrostedCleared))
           .first,
     )
-    .color;
+    .level;
 
 bool _dimmed(WidgetTester tester, String label) => tester
     .widget<FrostedDim>(
@@ -129,10 +130,10 @@ bool _dimmed(WidgetTester tester, String label) => tester
     )
     .off;
 
-/// The rows under the wash (the chosen row stands on its plate instead).
+/// The lit rows not chosen (the chosen row stands on its plate).
 List<String> _washed(WidgetTester tester) => [
   for (final r in _rows(tester))
-    if (_plate(r.label).evaluate().isEmpty && _wash(tester, r.label) != null)
+    if (_plate(r.label).evaluate().isEmpty && _clear(tester, r.label) > 0)
       r.label,
 ];
 
@@ -180,11 +181,11 @@ void main() {
 
       await _key(tester, LogicalKeyboardKey.arrowDown);
       expect(_held(tester), 'Madrid');
-      expect(_wash(tester, 'Madrid'), t.glass.wash);
+      expect(_clear(tester, 'Madrid'), 1);
       expect(_plate('Lisbon'), findsOneWidget, reason: 'still chosen');
       await _key(tester, LogicalKeyboardKey.arrowDown);
       expect(_held(tester), 'Amsterdam', reason: 'round the end');
-      expect(_wash(tester, 'Madrid'), isNull);
+      expect(_clear(tester, 'Madrid'), 0);
       await _key(tester, LogicalKeyboardKey.arrowUp);
       expect(_held(tester), 'Madrid', reason: 'round the start');
       await _done(tester);
@@ -250,13 +251,11 @@ void main() {
       await tester.pumpAndSettle();
       expect(_listed(tester), _cities);
       expect(_held(tester), 'Amsterdam');
-      expect(_wash(tester, 'Amsterdam'), t.glass.wash);
+      expect(_clear(tester, 'Amsterdam'), 1);
     });
 
     testWidgets("$night: a pointer over a combobox's row holds it, the keys "
-        'go on from there, and only one row is ever under the wash', (
-      tester,
-    ) async {
+        'go on from there, and only one row is ever lit', (tester) async {
       await tester.pumpWidget(_host(t, const _City()));
       await tester.tap(find.byType(EditableText));
       await tester.pumpAndSettle();
@@ -277,7 +276,7 @@ void main() {
     });
 
     testWidgets("$night: a pointer over a multi-select's row holds it, one "
-        'row under the wash', (tester) async {
+        'row lit', (tester) async {
       await tester.pumpWidget(_host(t, const _Tags()));
       await tester.tap(find.byType(EditableText));
       await tester.pumpAndSettle();
@@ -325,7 +324,7 @@ void main() {
         'Travel',
       ], reason: 'Design stands as a tag');
       expect(_held(tester), 'Review');
-      expect(_wash(tester, 'Review'), t.glass.wash);
+      expect(_clear(tester, 'Review'), 1);
       await _key(tester, LogicalKeyboardKey.arrowUp);
       expect(_held(tester), 'Travel', reason: 'round the start');
       await _key(tester, LogicalKeyboardKey.arrowDown);
@@ -395,8 +394,8 @@ void main() {
 
       await _key(tester, LogicalKeyboardKey.keyQ);
       expect(_held(tester), 'Quit');
-      expect(_wash(tester, 'Quit'), t.glass.wash);
-      expect(_wash(tester, 'New'), isNull);
+      expect(_clear(tester, 'Quit'), 1);
+      expect(_clear(tester, 'New'), 0);
       await pause();
       await _key(tester, LogicalKeyboardKey.keyN);
       expect(_held(tester), 'New', reason: 'round past the end');

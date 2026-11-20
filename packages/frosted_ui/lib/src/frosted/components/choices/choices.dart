@@ -81,40 +81,76 @@ class FrostedRadio<T> extends StatelessWidget {
       final s = layers.at(states);
       final shape = s.shape ?? const CircleBorder();
       final fill = s.fill;
-      final mark = AnimatedContainer(
-        duration: motion.fast,
-        curve: motion.curve,
-        width: d,
-        height: d,
-        decoration: ShapeDecoration(
-          shape: shape.copyWith(
-            side: on
+      // The keyboard's focus lights the mark's rim ([FrostedClearing.litOf]):
+      // its ring brightens to white, or a white hairline comes in round a
+      // chosen mark, which has none.
+      final mark = Builder(
+        builder: (context) {
+          final lit = FrostedClearing.litOf(context);
+          final ring = on
+              ? null
+              : s.side ??
+                    BorderSide(color: s.edge ?? frostedRestRing(t), width: 1.5);
+          // A dark ring (an empty mark by day) stays, and the light comes
+          // in just inside it.
+          final BorderSide rim;
+          var glint = 0.0;
+          if (ring == null) {
+            rim = lit <= 0
                 ? BorderSide.none
-                : s.side ??
-                      BorderSide(
-                        color: s.edge ?? frostedRestRing(t),
-                        width: 1.5,
-                      ),
-          ),
-          gradient: on && fill == null ? t.colorScheme.buttonFill : null,
-          color: fill ?? (on ? null : t.glass.fill),
-        ),
-        child: Center(
-          child: AnimatedScale(
-            scale: on ? 1 : 0,
+                : BorderSide(
+                    color: frostedRimLight(t, null, lit),
+                    width: FrostedChromeMetrics.outline,
+                  );
+          } else if (lit > 0 && frostedRimIsBoundary(ring.color)) {
+            (rim, glint) = (ring, lit);
+          } else {
+            rim = lit <= 0
+                ? ring
+                : ring.copyWith(color: frostedRimLight(t, ring.color, lit));
+          }
+          final inside = BorderSide(
+            color: frostedRimLight(t, null, glint),
+            width: FrostedChromeMetrics.outline,
+          );
+          return AnimatedContainer(
             duration: motion.fast,
             curve: motion.curve,
-            child: SizedBox.square(
-              dimension: 8,
-              child: DecoratedBox(
+            width: d,
+            height: d,
+            decoration: ShapeDecoration(
+              shape: shape.copyWith(side: rim),
+              gradient: on && fill == null ? t.colorScheme.buttonFill : null,
+              color: fill ?? (on ? null : t.glass.fill),
+            ),
+            child: Padding(
+              padding: EdgeInsets.all(rim.width),
+              child: AnimatedContainer(
+                duration: motion.fast,
+                curve: motion.curve,
                 decoration: ShapeDecoration(
-                  shape: const CircleBorder(),
-                  color: s.foreground ?? t.colorScheme.onButton,
+                  shape: shape.copyWith(side: inside),
+                ),
+                child: Center(
+                  child: AnimatedScale(
+                    scale: on ? 1 : 0,
+                    duration: motion.fast,
+                    curve: motion.curve,
+                    child: SizedBox.square(
+                      dimension: 8,
+                      child: DecoratedBox(
+                        decoration: ShapeDecoration(
+                          shape: const CircleBorder(),
+                          color: s.foreground ?? t.colorScheme.onButton,
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ),
-          ),
-        ),
+          );
+        },
       );
       Widget row = ConstrainedBox(
         constraints: BoxConstraints(

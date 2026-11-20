@@ -10,6 +10,7 @@ import '../../glyphs.dart';
 
 import '../../chrome_metrics.dart';
 import '../../internal/face.dart';
+import '../../internal/menu_wake.dart';
 import '../../internal/styled.dart';
 import '../../internal/chosen_plate.dart';
 import '../../theme.dart';
@@ -594,57 +595,76 @@ class _MenuRow extends StatelessWidget {
           ),
       ],
     );
-    // The focus light glows inward from the row's edge, so it stays within
-    // the row: the menu's inset clear all round it, its corner concentric
-    // with the menu's.
-    Widget pressable() => FrostedPressable(
-      onPressed: onTap,
-      focusNode: focusNode,
-      label: label,
-      selected: checked,
-      radius: FrostedChromeMetrics.menuItemRadius,
-      ringInside: true,
-      builder: (context, states, _) {
-        final at = place;
-        // In a menu [FrostedMenu.show] raises, the one place the keys or
-        // the pointer last went; a menu standing in a page, the pointer's
-        // row or the keyboard's.
-        final lit =
-            states.contains(WidgetState.pressed) ||
-            (at == null
-                ? states.contains(WidgetState.hovered) ||
-                      states.contains(WidgetState.focused)
-                : at.current.value == index);
-        return FrostedDim(
-          off: onTap == null,
-          // At least a finger's target tall, as a panel row is, and taller
-          // as a long name wraps.
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              minHeight: math.max(
-                FrostedChromeMetrics.menuItem,
-                FrostedBreakpoints.touchHitTarget,
+    // The row clears the frost under it, within its edge: the menu's inset
+    // clear all round it, its corner concentric with the menu's. It draws
+    // its own clearing (lit by its place as well as by focus), so the
+    // pressable's stands down.
+    Widget pressable() => FrostedClearingHeld(
+      child: FrostedPressable(
+        onPressed: onTap,
+        focusNode: focusNode,
+        label: label,
+        selected: checked,
+        radius: FrostedChromeMetrics.menuItemRadius,
+        ringInside: true,
+        builder: (context, states, _) {
+          final at = place;
+          // In a menu [FrostedMenu.show] raises, the one place the keys or
+          // the pointer last went; a menu standing in a page, the pointer's
+          // row or the keyboard's.
+          final pressed = states.contains(WidgetState.pressed);
+          final level = at == null
+              ? states.contains(WidgetState.focused)
+                    ? 1.0
+                    : states.contains(WidgetState.hovered)
+                    ? FrostedClearing.hover
+                    : 0.0
+              : at.current.value == index
+              ? 1.0
+              : 0.0;
+          // Its words take the strong ink while lit; pressed, its plate lights.
+          final lit = pressed || level > 0;
+          return FrostedDim(
+            off: onTap == null,
+            // At least a finger's target tall, as a panel row is, and taller
+            // as a long name wraps.
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minHeight: math.max(
+                  FrostedChromeMetrics.menuItem,
+                  FrostedBreakpoints.touchHitTarget,
+                ),
+              ),
+              // Chosen is the brighter glass (law 6), the plate every chosen
+              // chip, segment and link stands on, not a quieter wash under it
+              // (self-review round 3: the darker plate read as the opposite).
+              // The keyboard's row catches the light along its rim; the
+              // pointer's only clears.
+              child: FrostedCleared(
+                level: level,
+                lit: level == 1 && (at == null || FrostedLastInput.keyed)
+                    ? 1
+                    : 0,
+                outline: RoundedRectangleBorder(borderRadius: corner),
+                inside: true,
+                child: checked
+                    ? FrostedChosenPlate(
+                        radius: corner,
+                        padding: inset,
+                        child: row(lit),
+                      )
+                    : FrostedFace(
+                        material: FrostedMaterial.paint,
+                        radius: corner,
+                        color: pressed ? t.glass.wash : null,
+                        padding: inset,
+                        child: row(lit),
+                      ),
               ),
             ),
-            // Chosen is the brighter glass (law 6), the plate every chosen
-            // chip, segment and link stands on, not a quieter wash under it
-            // (self-review round 3: the darker plate read as the opposite).
-            child: checked
-                ? FrostedChosenPlate(
-                    radius: corner,
-                    padding: inset,
-                    child: row(lit),
-                  )
-                : FrostedFace(
-                    material: FrostedMaterial.paint,
-                    radius: corner,
-                    color: lit ? t.glass.wash : null,
-                    padding: inset,
-                    child: row(lit),
-                  ),
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
     final at = place;
     if (at == null) return pressable();

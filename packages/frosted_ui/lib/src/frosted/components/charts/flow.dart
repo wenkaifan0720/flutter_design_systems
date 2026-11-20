@@ -121,7 +121,17 @@ class FrostedFan extends StatelessWidget {
                     // round 6).
                     child: Transform.flip(
                       flipX: Directionality.of(context) == TextDirection.rtl,
-                      child: CustomPaint(painter: _FanPainter(g, source)),
+                      child: CustomPaint(
+                        painter: _FanPainter(g, source, (
+                          w,
+                          h,
+                          dstX,
+                          srcW,
+                          dstW,
+                          target,
+                          flows,
+                        )),
+                      ),
                     ),
                   ),
                 ),
@@ -366,7 +376,7 @@ class _Fan {
 }
 
 class _FanPainter extends CustomPainter {
-  const _FanPainter(this.g, this.source);
+  const _FanPainter(this.g, this.source, this.inputs);
 
   final _Fan g;
   final FrostedHue source;
@@ -419,6 +429,10 @@ class _FanPainter extends CustomPainter {
     }
   }
 
+  /// What [g] was laid out from: the same inputs lay out the same fan.
+  final Object inputs;
+
   @override
-  bool shouldRepaint(_FanPainter old) => true;
+  bool shouldRepaint(_FanPainter old) =>
+      old.inputs != inputs || old.source != source;
 }

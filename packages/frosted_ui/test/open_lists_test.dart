@@ -1,8 +1,8 @@
 // Frosted's open lists (coordinator msg_a2f37738e9c9, item F, from the user's
 // walk of Ledger): in every open list the chosen option stands on the chosen
 // plate, the brighter glass every chosen part stands on (law 6), not only a
-// small check; a hover and the keyboard's highlight lay the quieter wash
-// under a row that is not chosen, so neither reads as a second choice; and
+// small check; a hover and the keyboard's highlight clear the frost under a
+// row that is not chosen, so neither reads as a second choice; and
 // the keyboard walks a select's list as it does every list ui_core opens
 // (msg_92f0c3f95b72): opened by a key the chosen option takes the focus (the
 // first when none is), the arrows go round at once (after a pointer opened
@@ -85,6 +85,19 @@ FrostedFace _face(WidgetTester tester, String label) => tester.widget(
   find.ancestor(of: find.text(label), matching: find.byType(FrostedFace)).first,
 );
 
+/// Whether [label]'s row is lit: the frost under it cleared (held by the
+/// keys or the pointer), or its plate washed (pressed).
+bool _lit(WidgetTester tester, String label) =>
+    _face(tester, label).color != null ||
+    tester
+        .widgetList<FrostedCleared>(
+          find.ancestor(
+            of: find.text(label),
+            matching: find.byType(FrostedCleared),
+          ),
+        )
+        .any((c) => c.level > 0);
+
 /// Whether [element] is [row] or stands inside it.
 bool _inside(Element element, Element row) {
   var inside = element == row;
@@ -138,7 +151,7 @@ void main() {
     final night = t.isDark ? 'night' : 'day';
 
     testWidgets("$night: a select's chosen option stands on the chosen plate; "
-        'a hover lays the wash under another row, never the plate', (
+        'a hover clears the frost under another row, never the plate', (
       tester,
     ) async {
       await tester.pumpWidget(_host(t, const _Room()));
@@ -147,14 +160,14 @@ void main() {
       expect(find.text('Kitchen'), findsOneWidget);
       expect(_plate('Study'), findsOneWidget);
       expect(_plate('Kitchen'), findsNothing);
-      expect(_face(tester, 'Kitchen').color, isNull);
+      expect(_lit(tester, 'Kitchen'), isFalse);
 
       final mouse = await tester.createGesture(kind: PointerDeviceKind.mouse);
       addTearDown(mouse.removePointer);
       await mouse.addPointer(location: Offset.zero);
       await mouse.moveTo(tester.getCenter(find.text('Kitchen')));
       await tester.pumpAndSettle();
-      expect(_face(tester, 'Kitchen').color, t.glass.wash);
+      expect(_lit(tester, 'Kitchen'), isTrue);
       expect(_plate('Kitchen'), findsNothing);
       expect(_plate('Study'), findsOneWidget);
 
@@ -163,7 +176,7 @@ void main() {
       await mouse.moveTo(tester.getCenter(find.text('Study').last));
       await tester.pumpAndSettle();
       expect(_plate('Study'), findsOneWidget);
-      expect(_face(tester, 'Kitchen').color, isNull);
+      expect(_lit(tester, 'Kitchen'), isFalse);
     });
 
     testWidgets('$night: opened by a pointer, the arrows go round from the '
@@ -191,13 +204,13 @@ void main() {
 
       await _key(tester, LogicalKeyboardKey.arrowDown);
       expect(_focusedRow(tester), 'Garden', reason: 'the one after Study');
-      expect(_face(tester, 'Garden').color, t.glass.wash);
-      expect(_face(tester, 'Kitchen').color, isNull);
+      expect(_lit(tester, 'Garden'), isTrue);
+      expect(_lit(tester, 'Kitchen'), isFalse);
       expect(_plate('Study'), findsOneWidget);
       await _key(tester, LogicalKeyboardKey.arrowDown);
       expect(_focusedRow(tester), 'Kitchen', reason: 'round the end');
-      expect(_face(tester, 'Kitchen').color, t.glass.wash);
-      expect(_face(tester, 'Garden').color, isNull);
+      expect(_lit(tester, 'Kitchen'), isTrue);
+      expect(_lit(tester, 'Garden'), isFalse);
       await _key(tester, LogicalKeyboardKey.arrowUp);
       expect(_focusedRow(tester), 'Garden', reason: 'round the start');
       await _key(tester, LogicalKeyboardKey.home);
@@ -263,26 +276,25 @@ void main() {
       await _key(tester, LogicalKeyboardKey.enter);
       expect(_focusedRow(tester), 'Kitchen');
       expect(_plate('Kitchen'), findsNothing);
-      expect(_face(tester, 'Kitchen').color, t.glass.wash);
+      expect(_lit(tester, 'Kitchen'), isTrue);
     });
 
     testWidgets('$night: a list row ui_core opens: chosen on the plate; held '
-        '(by the keys, or a pointer that moves the hold) or pressed, the '
-        'wash; both, the plate (menus_test: a resting pointer lights none)', (
-      tester,
-    ) async {
+        '(by the keys, or a pointer that moves the hold), cleared, or '
+        'pressed, the wash; both, the plate (menus_test: a resting pointer '
+        'lights none)', (tester) async {
       Future<void> row(Set<WidgetState> states) => tester.pumpWidget(
         _host(t, FrostedPanelRow(label: 'Lisbon', states: states)),
       );
       await row({});
       expect(_plate('Lisbon'), findsNothing);
-      expect(_face(tester, 'Lisbon').color, isNull);
+      expect(_lit(tester, 'Lisbon'), isFalse);
       await row({WidgetState.selected});
       expect(_plate('Lisbon'), findsOneWidget);
       for (final lit in [WidgetState.focused, WidgetState.pressed]) {
         await row({lit});
         expect(_plate('Lisbon'), findsNothing, reason: '$lit');
-        expect(_face(tester, 'Lisbon').color, t.glass.wash, reason: '$lit');
+        expect(_lit(tester, 'Lisbon'), isTrue, reason: '$lit');
         await row({lit, WidgetState.selected});
         expect(_plate('Lisbon'), findsOneWidget, reason: '$lit');
       }

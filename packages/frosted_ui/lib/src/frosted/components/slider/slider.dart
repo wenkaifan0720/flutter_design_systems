@@ -190,14 +190,19 @@ class FrostedSlider extends StatelessWidget {
               alignment: Alignment.center,
               clipBehavior: Clip.none,
               children: [
+                // The tracks are paint, which no clearing reaches, and the
+                // keyboard's light falls on the knob alone.
                 Positioned.fill(
                   top: trackTop,
                   bottom: trackTop,
-                  child: FrostedFace(
-                    material: FrostedMaterial.paint,
-                    radius: const BorderRadius.all(end),
-                    color: t.glass.track,
-                    ring: t.glass.trackEdge,
+                  child: FrostedClearing(
+                    level: 0,
+                    child: FrostedFace(
+                      material: FrostedMaterial.paint,
+                      radius: const BorderRadius.all(end),
+                      color: t.glass.track,
+                      ring: t.glass.trackEdge,
+                    ),
                   ),
                 ),
                 PositionedDirectional(
@@ -205,10 +210,13 @@ class FrostedSlider extends StatelessWidget {
                   width: reach,
                   top: trackTop,
                   height: FrostedChromeMetrics.sliderTrack,
-                  child: FrostedFace(
-                    material: FrostedMaterial.paint,
-                    radius: const BorderRadius.all(end),
-                    color: active,
+                  child: FrostedClearing(
+                    level: 0,
+                    child: FrostedFace(
+                      material: FrostedMaterial.paint,
+                      radius: const BorderRadius.all(end),
+                      color: active,
+                    ),
                   ),
                 ),
                 if (divisions case final steps?)

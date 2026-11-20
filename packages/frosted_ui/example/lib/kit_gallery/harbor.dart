@@ -105,7 +105,14 @@ class _HarborShellState extends State<_HarborShell> {
 
   late int _tab = widget.opening == HarborOpening.settings ? 1 : 0;
 
-  void _select(int i) => setState(() => _tab = i);
+  // Settings is built when first shown, not with Activity: opening Harbor
+  // mounts only the screen it shows.
+  late bool _settingsBuilt = _tab == 1;
+
+  void _select(int i) => setState(() {
+    _tab = i;
+    if (i == 1) _settingsBuilt = true;
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -114,7 +121,7 @@ class _HarborShellState extends State<_HarborShell> {
       index: _tab,
       children: [
         HarborActivity(opensFirst: widget.opening == HarborOpening.transaction),
-        const HarborSettings(),
+        if (_settingsBuilt) const HarborSettings() else const SizedBox.shrink(),
       ],
     );
     final Widget shell;

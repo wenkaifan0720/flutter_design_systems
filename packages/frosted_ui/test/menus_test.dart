@@ -1,11 +1,11 @@
 // The menus check (coordinator msg_4b9e9c92778f, from the user's walk of
 // Expressive's menus), in every menu Frosted opens: a select's (its own
 // FrostedMenu), a menu bar's and a split button's (ui_core's, painted by
-// Frosted). (1) One lit row: Frosted paints the keys' row and the pointer's
-// row with the same wash, so a pointer moving over a row moves the one lit
+// Frosted). (1) One lit row: Frosted clears the frost under the keys' row and
+// the pointer's row alike, so a pointer moving over a row moves the one lit
 // row there and the keys go on from it; a pointer resting on a row the keys
-// left lights nothing. (2) The keyboard's ring stands inside its row, the
-// menu's inset clear all round it, its corner concentric with the menu's.
+// left lights nothing. (2) The clearing stands inside its row, the menu's
+// inset clear all round it, its corner concentric with the menu's.
 // (3) Opened by a pointer no row is lit until the pointer or the keys move;
 // opened by a key the first row is (a select's chosen one, as a select's
 // list opens on its value).
@@ -64,13 +64,16 @@ class _RoomState extends State<_Room> {
   );
 }
 
-/// The rows of [labels] lit by the wash (a chosen row stands on its plate).
-List<String> _lit(WidgetTester tester, List<String> labels, Color wash) => [
+/// The rows of [labels] lit: the frost under them cleared.
+List<String> _lit(WidgetTester tester, List<String> labels) => [
   for (final label in labels)
     if (find
-        .ancestor(of: find.text(label).last, matching: find.byType(FrostedFace))
+        .ancestor(
+          of: find.text(label).last,
+          matching: find.byType(FrostedCleared),
+        )
         .evaluate()
-        .any((e) => (e.widget as FrostedFace).color == wash))
+        .any((e) => (e.widget as FrostedCleared).level > 0))
       label,
 ];
 
@@ -171,7 +174,6 @@ void main() {
     FrostedThemeData.opal(Brightness.dark),
   ]) {
     final night = t.isDark ? 'night' : 'day';
-    final wash = t.glass.wash;
 
     testWidgets("$night: a select's menu: a pointer open lights nothing; the "
         'pointer and the keys move one lit row; Return takes the pointer\'s', (
@@ -182,32 +184,34 @@ void main() {
       final mouse = await _mouse(tester);
       await _click(tester, mouse, find.text('Garden'));
       expect(find.text('Kitchen'), findsOneWidget, reason: 'open');
-      expect(_lit(tester, rows, wash), isEmpty, reason: 'nothing lit');
+      expect(_lit(tester, rows), isEmpty, reason: 'nothing lit');
 
       await _over(tester, mouse, 'Kitchen');
-      expect(_lit(tester, rows, wash), ['Kitchen']);
+      expect(_lit(tester, rows), ['Kitchen']);
       await _key(tester, LogicalKeyboardKey.arrowDown);
-      expect(_lit(tester, rows, wash), [
+      expect(_lit(tester, rows), [
         'Study',
       ], reason: 'on from the pointer; the resting pointer lights nothing');
-      // The keyboard's light inside its row: it lights from the row's own
-      // edge inward, the menu's inset clear all round, corners concentric.
-      final rings = tester.widgetList<FrostedFocusRing>(
+      // The keys' row clears within its own edge, the menu's inset clear
+      // all round, corners concentric.
+      final cleared = tester.widgetList<FrostedCleared>(
         find.ancestor(
           of: find.text('Study').last,
-          matching: find.byType(FrostedFocusRing),
+          matching: find.byType(FrostedCleared),
         ),
       );
-      expect(rings.first.inside, isTrue);
-      expect(rings.first.insets, EdgeInsets.zero);
+      expect(cleared.first.inside, isTrue);
+      expect(cleared.first.insets, EdgeInsets.zero);
       expect(
-        rings.first.radius,
-        FrostedChromeMetrics.menuRadius - FrostedChromeMetrics.menuInset,
+        (cleared.first.outline as RoundedRectangleBorder).borderRadius,
+        BorderRadius.circular(
+          FrostedChromeMetrics.menuRadius - FrostedChromeMetrics.menuInset,
+        ),
         reason: 'concentric with the menu',
       );
 
       await _over(tester, mouse, 'Kitchen');
-      expect(_lit(tester, rows, wash), ['Kitchen'], reason: 'the pointer');
+      expect(_lit(tester, rows), ['Kitchen'], reason: 'the pointer');
       await _key(tester, LogicalKeyboardKey.enter);
       expect(_room, 'k', reason: "Return takes the pointer's row");
     });
@@ -235,15 +239,15 @@ void main() {
       final mouse = await _mouse(tester);
       await _click(tester, mouse, find.text('File'));
       expect(find.text('Print'), findsOneWidget, reason: 'open');
-      expect(_lit(tester, rows, wash), isEmpty, reason: 'nothing lit');
+      expect(_lit(tester, rows), isEmpty, reason: 'nothing lit');
       await _key(tester, LogicalKeyboardKey.arrowDown);
-      expect(_lit(tester, rows, wash), ['New'], reason: 'Down: the first');
+      expect(_lit(tester, rows), ['New'], reason: 'Down: the first');
       await _over(tester, mouse, 'Open');
-      expect(_lit(tester, rows, wash), ['Open']);
+      expect(_lit(tester, rows), ['Open']);
       await _key(tester, LogicalKeyboardKey.arrowDown);
-      expect(_lit(tester, rows, wash), ['Open recent'], reason: 'one row');
+      expect(_lit(tester, rows), ['Open recent'], reason: 'one row');
       await _over(tester, mouse, 'Print');
-      expect(_lit(tester, rows, wash), ['Print']);
+      expect(_lit(tester, rows), ['Print']);
       await _key(tester, LogicalKeyboardKey.escape);
       expect(find.text('Print'), findsNothing);
 
@@ -266,7 +270,7 @@ void main() {
       );
       await _key(tester, LogicalKeyboardKey.tab);
       await _key(tester, LogicalKeyboardKey.arrowDown);
-      expect(_lit(tester, rows, wash), ['New'], reason: 'a key: the first');
+      expect(_lit(tester, rows), ['New'], reason: 'a key: the first');
     });
 
     testWidgets("$night: a split button's menu: a pointer open lights "
@@ -288,11 +292,11 @@ void main() {
       final mouse = await _mouse(tester);
       await _click(tester, mouse, find.byIcon(FrostedGlyphs.chevronDown));
       expect(find.text('Export'), findsOneWidget, reason: 'open');
-      expect(_lit(tester, rows, wash), isEmpty, reason: 'nothing lit');
+      expect(_lit(tester, rows), isEmpty, reason: 'nothing lit');
       await _over(tester, mouse, 'Save a copy');
-      expect(_lit(tester, rows, wash), ['Save a copy']);
+      expect(_lit(tester, rows), ['Save a copy']);
       await _key(tester, LogicalKeyboardKey.arrowDown);
-      expect(_lit(tester, rows, wash), ['Export'], reason: 'one row');
+      expect(_lit(tester, rows), ['Export'], reason: 'one row');
     });
 
     testWidgets("$night: a split button's menu as the web gives it: opened "
@@ -328,11 +332,11 @@ void main() {
       tester.semantics.tap(find.semantics.byLabel('More'));
       await tester.pumpAndSettle();
       expect(find.text('Export'), findsOneWidget, reason: 'open');
-      expect(_lit(tester, rows, wash), isEmpty, reason: 'nothing lit');
+      expect(_lit(tester, rows), isEmpty, reason: 'nothing lit');
       await _over(tester, mouse, 'Save a copy');
-      expect(_lit(tester, rows, wash), ['Save a copy']);
+      expect(_lit(tester, rows), ['Save a copy']);
       await _over(tester, mouse, 'Save as…');
-      expect(_lit(tester, rows, wash), ['Save as…']);
+      expect(_lit(tester, rows), ['Save as…']);
       semantics.dispose();
     });
 
@@ -393,15 +397,15 @@ void main() {
       expect(find.text('Copy'), findsNothing);
     });
 
-    testWidgets('$night: a panel row: held, the wash; a resting pointer '
+    testWidgets('$night: a panel row: held, cleared; a resting pointer '
         'alone, nothing', (tester) async {
       Future<void> row(Set<WidgetState> states) => tester.pumpWidget(
         _host(t, FrostedPanelRow(label: 'Lisbon', states: states)),
       );
       await row({WidgetState.focused});
-      expect(_lit(tester, ['Lisbon'], wash), ['Lisbon']);
+      expect(_lit(tester, ['Lisbon']), ['Lisbon']);
       await row({WidgetState.hovered});
-      expect(_lit(tester, ['Lisbon'], wash), isEmpty);
+      expect(_lit(tester, ['Lisbon']), isEmpty);
     });
   }
 }

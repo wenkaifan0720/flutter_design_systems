@@ -67,6 +67,18 @@ const double _orbitLineFrom = 40;
 const double _orbitLineTo = 320;
 // metric: the glow stands at .7 (`.kc-glow`).
 const double _glowOpacity = 0.7;
+
+/// The card glow's blur on a phone and from the wide layout up, made once.
+final ui.ImageFilter _glowBlur = _glowBlurOf(FrostedChromeMetrics.cardGlowBlur);
+final ui.ImageFilter _glowBlurWide = _glowBlurOf(
+  FrostedChromeMetrics.cardGlowBlurWide,
+);
+
+ui.ImageFilter _glowBlurOf(double blur) => ui.ImageFilter.blur(
+  sigmaX: frostedSigma(blur),
+  sigmaY: frostedSigma(blur),
+  tileMode: TileMode.decal,
+);
 // metric: a pane's haze at its top start corner, 120% x 70%, gone at 70%
 // (`.cell` radial); its share at .72 and its meta at .8.
 const double _paneHazeEnd = 0.7;
@@ -228,100 +240,128 @@ class FrostedCreditCard extends StatelessWidget {
             '$balanceLabel ${FrostedFormat.money(balance)} of '
             '${FrostedFormat.money(limit, cents: limit % 1 != 0)} limit'
             '${note == null ? '' : ', $note'}';
-    Widget card = LayoutBuilder(
-      builder: (context, constraints) {
-        final room = constraints.hasBoundedWidth
-            ? constraints.maxWidth
-            : _looseWidth;
-        final width = measured ? math.min(room, _cardWide) : room;
-        final face = _CardFace(
-          radius: radius,
-          frozen: frozen,
-          brand: brand,
-          kind: kind,
-          balanceLabel: balanceLabel,
-          balance: balance,
-          limit: limit,
-          mask: mask,
-          note: note,
-          noteIcon: noteIcon,
-        );
-        if (stage && width < _stageFaceWidth) {
-          // The stage is narrower than the face can lay its words out in
-          // (the balance ran into the brand, the limit into the last four):
-          // the card drawn at a phone card's size, its picture scaled down.
+    // The card at [level] of clearing and [lit] of rim light.
+    Widget bodyAt(double level, double lit) {
+      Widget card = LayoutBuilder(
+        builder: (context, constraints) {
+          final room = constraints.hasBoundedWidth
+              ? constraints.maxWidth
+              : _looseWidth;
+          final width = measured ? math.min(room, _cardWide) : room;
+          // Focus and a resting pointer clear the frost behind the card's
+          // own face and light its rim, tilted with it on the desktop.
+          final face = FrostedCleared(
+            level: level,
+            lit: lit,
+            outline: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(radius),
+            ),
+            child: _CardFace(
+              radius: radius,
+              frozen: frozen,
+              brand: brand,
+              kind: kind,
+              balanceLabel: balanceLabel,
+              balance: balance,
+              limit: limit,
+              mask: mask,
+              note: note,
+              noteIcon: noteIcon,
+            ),
+          );
+          if (stage && width < _stageFaceWidth) {
+            // The stage is narrower than the face can lay its words out in
+            // (the balance ran into the brand, the limit into the last four):
+            // the card drawn at a phone card's size, its picture scaled down.
+            return SizedBox(
+              width: width,
+              child: AspectRatio(
+                aspectRatio: FrostedChromeMetrics.cardAspect,
+                child: FittedBox(
+                  child: SizedBox(
+                    width: _stageFaceWidth,
+                    height: _stageFaceWidth / FrostedChromeMetrics.cardAspect,
+                    child: face,
+                  ),
+                ),
+              ),
+            );
+          }
           return SizedBox(
             width: width,
             child: AspectRatio(
               aspectRatio: FrostedChromeMetrics.cardAspect,
-              child: FittedBox(
-                child: SizedBox(
-                  width: _stageFaceWidth,
-                  height: _stageFaceWidth / FrostedChromeMetrics.cardAspect,
-                  child: face,
-                ),
-              ),
+              child: face,
+            ),
+          );
+        },
+      );
+      if (wide) {
+        card = Transform.rotate(
+          angle: FrostedChromeMetrics.cardTurnWide * math.pi / 180,
+          child: card,
+        );
+      }
+      Widget body = Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Positioned.fill(
+            child: Padding(
+              padding: wide
+                  ? FrostedChromeMetrics.cardGlowWide
+                  : FrostedChromeMetrics.cardGlow,
+              child: const FrostedCardGlow(),
+            ),
+          ),
+          card,
+        ],
+      );
+      if (wide) {
+        body = Padding(
+          padding: stage
+              ? FrostedChromeMetrics.cardStageCards
+              : FrostedChromeMetrics.cardStageWide,
+          // Across Home, `.kc { display: grid; place-items: center }`: the
+          // card in the middle of what its row gives it, not at its top.
+          child: stage ? body : Center(child: body),
+        );
+        if (stage) {
+          body = Center(
+            child: SizedBox(
+              width: FrostedChromeMetrics.cardStageWidth,
+              child: body,
             ),
           );
         }
-        return SizedBox(
-          width: width,
-          child: AspectRatio(
-            aspectRatio: FrostedChromeMetrics.cardAspect,
-            child: face,
-          ),
-        );
-      },
-    );
-    if (wide) {
-      card = Transform.rotate(
-        angle: FrostedChromeMetrics.cardTurnWide * math.pi / 180,
-        child: card,
-      );
-    }
-    Widget body = Stack(
-      clipBehavior: Clip.none,
-      children: [
-        Positioned.fill(
-          child: Padding(
-            padding: wide
-                ? FrostedChromeMetrics.cardGlowWide
-                : FrostedChromeMetrics.cardGlow,
-            child: const FrostedCardGlow(),
-          ),
-        ),
-        card,
-      ],
-    );
-    if (wide) {
-      body = Padding(
-        padding: stage
-            ? FrostedChromeMetrics.cardStageCards
-            : FrostedChromeMetrics.cardStageWide,
-        // Across Home, `.kc { display: grid; place-items: center }`: the
-        // card in the middle of what its row gives it, not at its top.
-        child: stage ? body : Center(child: body),
-      );
-      if (stage) {
-        body = Center(
-          child: SizedBox(
-            width: FrostedChromeMetrics.cardStageWidth,
-            child: body,
-          ),
-        );
       }
+      body = MediaQuery.withNoTextScaling(child: body);
+      return body;
     }
-    body = MediaQuery.withNoTextScaling(child: body);
+
     final Widget shown = onPressed == null
-        ? Semantics(label: words, excludeSemantics: true, child: body)
-        : FrostedPressable(
-            focusNode: focusNode,
-            autofocus: autofocus,
-            onPressed: onPressed,
-            label: words,
-            role: FrostedPressRole.link,
-            radius: radius,
-            child: body,
+        ? Semantics(label: words, excludeSemantics: true, child: bodyAt(0, 0))
+        // The card clears on its own face: a clearing round its box would
+        // stand level while the card is tilted, and wider than it.
+        : FrostedClearingHeld(
+            child: FrostedPressable(
+              focusNode: focusNode,
+              autofocus: autofocus,
+              onPressed: onPressed,
+              label: words,
+              role: FrostedPressRole.link,
+              radius: radius,
+              builder: (context, states, _) {
+                final focused = states.contains(WidgetState.focused);
+                return bodyAt(
+                  focused
+                      ? 1
+                      : states.contains(WidgetState.hovered)
+                      ? FrostedClearing.hover
+                      : 0,
+                  focused ? 1 : 0,
+                );
+              },
+            ),
           );
     // From 600 up, below the desktop, the card, its glow and its press
     // stand at the line's start, a card's size.
@@ -673,16 +713,11 @@ class FrostedCardGlow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.frostedTheme;
-    final blur = FrostedBreakpoints.isWide(context)
-        ? FrostedChromeMetrics.cardGlowBlurWide
-        : FrostedChromeMetrics.cardGlowBlur;
     return ExcludeSemantics(
       child: ImageFiltered(
-        imageFilter: ui.ImageFilter.blur(
-          sigmaX: frostedSigma(blur),
-          sigmaY: frostedSigma(blur),
-          tileMode: TileMode.decal,
-        ),
+        imageFilter: FrostedBreakpoints.isWide(context)
+            ? _glowBlurWide
+            : _glowBlur,
         child: Opacity(
           opacity: _glowOpacity,
           child: DecoratedBox(

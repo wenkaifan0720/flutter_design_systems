@@ -2,7 +2,9 @@
 // the review's state matrix that an app can press, disable or mark wrong, the
 // pressed, disabled and error faces keep idle's size (an error may add its
 // message below: the same width, no shorter) and differ from idle pixel for
-// pixel, and the face under a resting pointer is idle's own (polish3 §1).
+// pixel. Under a resting pointer a part only clears a little (the user,
+// 11-19: hover a lighter clearing than the keyboard's focus, a press distinct
+// from both); outside the parts it clears the picture is idle's own.
 //
 // A part's disabled face is the switch an app turns: `enabled: false` where
 // the part has it, else a null handler. Parts with no such state say why in
@@ -16,6 +18,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frosted_ui/frosted_ui.dart';
 import 'package:frosted_ui/frosted_host.dart';
+import 'package:frosted_ui/src/frosted/internal/face.dart';
 
 void _noop() {}
 
@@ -471,6 +474,32 @@ Future<void> _frames(WidgetTester tester, int ms) async {
   }
 }
 
+/// What the last [_cell] cleared: each cleared part's box in the picture, a
+/// pixel round it for its rim's light, and how far it cleared.
+List<(Rect, double)> _cleared = const [];
+
+/// The last [_cell]'s picture's width in pixels.
+int _width = 0;
+
+/// Whether [a] and [b] are the same picture outside every part the last
+/// [_cell] cleared, but for 2 levels in a channel: glass next to a cleared
+/// part blurs a little of the clearing into its own frost.
+bool _sameButCleared(Uint8List a, Uint8List b) {
+  if (a.length != b.length) return false;
+  for (var i = 0; i < a.length; i += 4) {
+    final p = i ~/ 4;
+    final at = Offset(p % _width + .5, p ~/ _width + .5);
+    if (_cleared.any((c) => c.$1.contains(at))) continue;
+    for (var k = 0; k < 4; k++) {
+      if ((a[i + k] - b[i + k]).abs() > 2) return false;
+    }
+  }
+  return true;
+}
+
+/// How many parts the last [_cell] cleared as far as the keyboard's focus.
+int get _fullyCleared => _cleared.where((c) => c.$2 >= 1).length;
+
 /// The part's own size and its picture's pixels, built fresh, pressed or
 /// under a resting pointer at its first pressable's centre.
 Future<(Size, Uint8List)> _cell(
@@ -508,8 +537,34 @@ Future<(Size, Uint8List)> _cell(
     find.byKey(_capture),
   );
   final size = boundary.size;
+  _cleared = [
+    for (final e
+        in find
+            .descendant(
+              of: find.byKey(_capture),
+              matching: find.byType(FrostedCleared),
+            )
+            .evaluate())
+      if (e.widget case FrostedCleared(:final level, :final insets)
+          when level > 0)
+        (
+          MatrixUtils.transformRect(
+            (e.renderObject! as RenderBox).getTransformTo(boundary),
+            // A row's clearing reaches past its box (negative insets).
+            (Offset.zero & (e.renderObject! as RenderBox).size).expandToInclude(
+              insets
+                  .resolve(TextDirection.ltr)
+                  .deflateRect(
+                    Offset.zero & (e.renderObject! as RenderBox).size,
+                  ),
+            ),
+          ).inflate(1),
+          level,
+        ),
+  ];
   final pixels = await tester.runAsync(() async {
     final image = await boundary.toImage();
+    _width = image.width;
     try {
       return (await image.toByteData())!.buffer.asUint8List();
     } finally {
@@ -527,7 +582,8 @@ void main() {
   for (final brightness in Brightness.values) {
     testWidgets(
       "every pressed, disabled and error face keeps idle's size and shows "
-      'the state; a resting pointer changes nothing (${brightness.name})',
+      'the state; a resting pointer only clears the part a little '
+      '(${brightness.name})',
       (tester) async {
         tester.view.devicePixelRatio = 1;
         tester.view.physicalSize = const Size(600, 500);
@@ -541,6 +597,8 @@ void main() {
             brightness,
             part.build(true, false),
           );
+          final idleFull = _fullyCleared;
+          Uint8List? hovered;
           Future<void> face(
             String state,
             Widget widget, {
@@ -562,6 +620,9 @@ void main() {
             if (listEquals(pixels, idle)) {
               faults.add('$name $state looks idle');
             }
+            if (hovered != null && listEquals(pixels, hovered)) {
+              faults.add('$name $state looks as under a resting pointer');
+            }
           }
 
           if (part.hover) {
@@ -572,9 +633,13 @@ void main() {
               part.build(true, false),
               hover: true,
             );
-            if (!listEquals(pixels, idle)) {
+            if (!_sameButCleared(pixels, idle)) {
               faults.add('$name changes under a resting pointer');
             }
+            if (_fullyCleared > idleFull) {
+              faults.add('$name clears fully under a resting pointer');
+            }
+            hovered = pixels;
           }
           if (part.press) {
             await face('pressed', part.build(true, false), press: true);
@@ -600,7 +665,8 @@ void main() {
   // On a desktop a scroll view raises its scrollbar under a resting pointer
   // (the wheel picker did, at 1440): the rule holds there too.
   testWidgets(
-    'under a desktop platform a resting pointer changes nothing',
+    'under a desktop platform a resting pointer only clears the part a '
+    'little',
     (tester) async {
       tester.view.devicePixelRatio = 1;
       tester.view.physicalSize = const Size(600, 500);
@@ -620,7 +686,7 @@ void main() {
           part.build(true, false),
           hover: true,
         );
-        if (!listEquals(hovered, idle)) {
+        if (!_sameButCleared(hovered, idle)) {
           faults.add('${part.name} changes under a resting pointer');
         }
       }

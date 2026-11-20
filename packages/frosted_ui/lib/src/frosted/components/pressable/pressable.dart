@@ -33,8 +33,8 @@ const double _pressedScale = 0.97;
 /// kit's `DesignPressable`: it takes the press and the long press, the
 /// pointer's click cursor, keyboard focus with Enter and Space, a quiet
 /// pressed read (the face easing to 97% of its size and back, its words at
-/// full strength; no hover wash, no ink), the focus ring fading in while the
-/// keyboard holds focus,
+/// full strength; no ink), the frost clearing ([FrostedFocusRing]) a little
+/// under a pointer and in full while the keyboard holds focus,
 /// and the semantics of the
 /// control it makes (a button or a link, enabled or not, selected or
 /// toggled). Plumbing of the components; a page places one only to make a
@@ -198,6 +198,7 @@ class FrostedPressable extends StatelessWidget {
       face = FrostedFade(opacity: pressed ? pressedOpacity : 1, child: face);
       face = FrostedFocusRing(
         shown: states.contains(WidgetState.focused),
+        hovered: states.contains(WidgetState.hovered),
         radius: radius,
         shape: shape,
         insets: ringInsets,
@@ -267,26 +268,30 @@ class FrostedPressable extends StatelessWidget {
   }
 }
 
-/// The keyboard's focus, said in glass: the glass lights up. Its rim goes
-/// bright (white by day, the pale ink by night) and a soft glow of light
-/// stands round it, in the focus light (the focus ink made luminous: by day a
-/// clear tone of its hue, by night a pale one), strongest at the face's edge
-/// and fading out. Never a dark or opaque line (the user, 11-17 and 11-18).
-/// The glow runs round a face whose corner is [radius] (or [shape], which
-/// wins); with [inside], for a row in a list or a cell in a bank, it glows
-/// inward from the face's edge instead, so it stays within the row and never
-/// crosses its neighbours or its panel's edge. Drawn while the keyboard holds
-/// focus: with [shown] it fades in, and out when focus leaves (a cut under
-/// Reduce Motion). It never covers the face's words.
+/// The keyboard's focus, said in glass: the frost clears and the rim
+/// catches the light. The part's frost wipes partway clear, so more of the
+/// colour behind comes through (less blur and less milk on its own glass
+/// face), and its own thin rim brightens to white: the rim it already has,
+/// no wider, or a hairline just inside its outline where it has none. No
+/// colour of its own and nothing outside the part. A pointer over the part
+/// ([hovered]) only clears it, less, with no rim light.
+///
+/// The frost under the part's [radius] (or [shape], which wins), standing
+/// [insets] inside [child]'s box, clears there; the outermost face of
+/// [child] clears too ([FrostedClearing]). With [inside], for a row in a
+/// list or a cell in a bank, only what is behind the row clears, never the
+/// faces it holds. It eases in and out (a cut under Reduce Motion), and the
+/// words on a cleared part read as they do at rest.
 ///
 /// ```dart
 /// FrostedFocusRing(shown: focused, radius: 12, child: face)
 /// ```
 class FrostedFocusRing extends StatelessWidget {
-  /// Lights [child]'s focus.
+  /// Clears [child]'s frost while [shown].
   const FrostedFocusRing({
     required this.child,
     this.shown = true,
+    this.hovered = false,
     this.radius = 0,
     this.shape,
     this.insets = EdgeInsets.zero,
@@ -297,68 +302,42 @@ class FrostedFocusRing extends StatelessWidget {
   /// The face.
   final Widget child;
 
-  /// Whether the light is on; it eases between on and off.
+  /// Whether the keyboard holds the part: the frost clears in full and the
+  /// rim lights.
   final bool shown;
+
+  /// Whether a pointer is over the part: the frost clears a little.
+  final bool hovered;
 
   /// The face's corner radius.
   final double radius;
 
-  /// The face's outline; the glow follows it.
+  /// The face's outline; the clearing follows it.
   final OutlinedBorder? shape;
 
-  /// How far inside [child]'s box the lit face stands.
+  /// How far inside [child]'s box the cleared face stands.
   final EdgeInsetsGeometry insets;
 
-  /// Whether the glow runs inward from the face's edge (a row, a cell) rather
-  /// than out round it.
+  /// Whether only what is behind the part clears (a row, a cell), not the
+  /// faces it holds.
   final bool inside;
 
   @override
   Widget build(BuildContext context) {
-    final at = insets.resolve(Directionality.maybeOf(context));
-    return Stack(
-      fit: StackFit.passthrough,
-      clipBehavior: Clip.none,
-      children: [
-        // The frost brightens: a wash of light under the face, which glass
-        // blurs into its frost (an opaque face hides it). Under, so it never
-        // dims the face's words.
-        Positioned(
-          left: at.left,
-          top: at.top,
-          right: at.right,
-          bottom: at.bottom,
-          child: IgnorePointer(
-            child: FrostedFade(
-              opacity: shown ? 1 : 0,
-              child: DecoratedBox(
-                decoration: ShapeDecoration(
-                  color: frostedFocusWash(context.frostedTheme),
-                  shape: _outline(radius, shape),
-                ),
-              ),
-            ),
-          ),
-        ),
-        child,
-        Positioned.fill(
-          child: IgnorePointer(
-            child: FrostedFade(
-              opacity: shown ? 1 : 0,
-              child: Stack(
-                clipBehavior: Clip.none,
-                children: layers(
-                  context,
-                  radius: radius,
-                  shape: shape,
-                  insets: insets,
-                  inside: inside,
-                ),
-              ),
-            ),
-          ),
-        ),
-      ],
+    // A row that draws its own clearing holds it.
+    if (FrostedClearingHeld.of(context)) return child;
+    final level = shown
+        ? 1.0
+        : hovered
+        ? FrostedClearing.hover
+        : 0.0;
+    return FrostedCleared(
+      level: level,
+      lit: shown ? 1 : 0,
+      outline: _outline(radius, shape),
+      insets: insets,
+      inside: inside,
+      child: child,
     );
   }
 
@@ -369,45 +348,26 @@ class FrostedFocusRing extends StatelessWidget {
         borderRadius: BorderRadius.circular(math.max(0, radius)),
       );
 
-  /// The focus light's layers, for a [Stack] over a face whose corner is
-  /// [radius] (or [shape], which wins) standing [insets] inside the stack: the
-  /// glow round the face (or, [inside], within it) and the bright rim on its
-  /// edge.
+  /// Nothing: focus no longer draws over a face. Wrap the face in a
+  /// [FrostedFocusRing] instead, which clears the frost under it.
+  @Deprecated(
+    'Focus no longer draws over a face; wrap the face in a FrostedFocusRing. '
+    'This will be removed in 0.4.0.',
+  )
   static List<Widget> layers(
     BuildContext context, {
     double radius = 0,
     OutlinedBorder? shape,
     EdgeInsetsGeometry insets = EdgeInsets.zero,
     bool inside = false,
-  }) {
-    final inset = insets.resolve(Directionality.maybeOf(context));
-    final t = context.frostedTheme;
-    final outline = _outline(radius, shape);
-    return [
-      Positioned(
-        left: inset.left,
-        top: inset.top,
-        right: inset.right,
-        bottom: inset.bottom,
-        child: CustomPaint(
-          painter: FrostedFocusLight(
-            outline,
-            light: frostedFocusLight(t),
-            rim: t.isDark
-                ? t.colorScheme.textPrimary.withValues(alpha: .9)
-                : const Color(0xF2FFFFFF),
-            inside: inside,
-          ),
-        ),
-      ),
-    ];
-  }
+  }) => const <Widget>[];
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
       ..add(FlagProperty('shown', value: shown, ifFalse: 'shown: false'))
+      ..add(FlagProperty('hovered', value: hovered, ifTrue: 'hovered'))
       ..add(DoubleProperty('radius', radius, defaultValue: 0))
       ..add(
         DiagnosticsProperty<OutlinedBorder>('shape', shape, defaultValue: null),

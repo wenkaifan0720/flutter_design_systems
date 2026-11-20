@@ -197,7 +197,9 @@ class FrostedPanelRow extends StatelessWidget {
     final held = awake == null
         ? states.contains(WidgetState.focused)
         : awake && (Focus.maybeOf(context)?.hasPrimaryFocus ?? false);
-    final lit = states.contains(WidgetState.pressed) || held;
+    // Held, the frost under the row clears; pressed, the row's plate lights.
+    final pressed = states.contains(WidgetState.pressed);
+    final lit = pressed || held;
     final off = states.contains(WidgetState.disabled);
     final corner = BorderRadius.circular(FrostedChromeMetrics.menuItemRadius);
     const inset = EdgeInsets.symmetric(
@@ -240,15 +242,23 @@ class FrostedPanelRow extends StatelessWidget {
     );
     final row = SizedBox(
       height: math.max(height, FrostedBreakpoints.touchHitTarget),
-      child: chosen
-          ? FrostedChosenPlate(radius: corner, padding: inset, child: content)
-          : FrostedFace(
-              material: FrostedMaterial.paint,
-              radius: corner,
-              color: lit ? t.glass.wash : null,
-              padding: inset,
-              child: content,
-            ),
+      // The keyboard's row catches the light along its rim; one the pointer
+      // holds only clears.
+      child: FrostedCleared(
+        level: held ? 1 : 0,
+        lit: held && FrostedLastInput.keyed ? 1 : 0,
+        outline: RoundedRectangleBorder(borderRadius: corner),
+        inside: true,
+        child: chosen
+            ? FrostedChosenPlate(radius: corner, padding: inset, child: content)
+            : FrostedFace(
+                material: FrostedMaterial.paint,
+                radius: corner,
+                color: pressed ? t.glass.wash : null,
+                padding: inset,
+                child: content,
+              ),
+      ),
     );
     final dimmed = FrostedDim(off: off, child: row);
     if (!followsPointer || off) return dimmed;
@@ -264,8 +274,9 @@ class FrostedPanelRow extends StatelessWidget {
   }
 }
 
-/// [child] ringed while [states] say the keyboard holds it: ui_core puts
-/// `focused` in the set only when focus came by the keyboard.
+/// [child]'s frost cleared ([FrostedFocusRing]) while [states] say the
+/// keyboard holds it (ui_core puts `focused` in the set only when focus came
+/// by the keyboard), and a little under a pointer.
 Widget frostedRingFor(
   Set<WidgetState> states,
   Widget child, {
@@ -273,6 +284,7 @@ Widget frostedRingFor(
   OutlinedBorder? shape,
 }) => FrostedFocusRing(
   shown: states.contains(WidgetState.focused),
+  hovered: states.contains(WidgetState.hovered),
   radius: radius,
   shape: shape,
   child: child,

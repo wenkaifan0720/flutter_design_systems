@@ -76,8 +76,18 @@ void main() {
     ]);
     final live = find.byType(FrostedSlider).first;
     final off = find.byType(FrostedSlider).last;
+    // The slider's own region, inside its focus ring: the region round the
+    // ring only watches for a resting pointer and defers its cursor.
     MouseRegion region(Finder slider) => t.widget<MouseRegion>(
-      find.descendant(of: slider, matching: find.byType(MouseRegion)).first,
+      find
+          .descendant(
+            of: find.descendant(
+              of: slider,
+              matching: find.byType(FrostedFocusRing),
+            ),
+            matching: find.byType(MouseRegion),
+          )
+          .first,
     );
     expect(region(live).cursor, SystemMouseCursors.click);
     expect(region(off).cursor, MouseCursor.defer);

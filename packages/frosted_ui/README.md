@@ -216,8 +216,8 @@ A value comes from the widget's `style:`, then its component theme (`FrostedThem
 own. `style:` takes a `FrostedStyle` with the slots of Material's `ButtonStyle` (`fill`, `foreground`, `edge`,
 `overlay`, `side`, `shape`, `padding`, `minimumSize`, `textStyle`, `iconSize`), each a `WidgetStateProperty` resolved
 per state (pressed, hovered, focused, selected, disabled, error). A `shape` takes any `OutlinedBorder`: a rounded border
-is drawn at its radius; a superellipse, a bevel or any other is cut to its outline, fill, edge, glass and focus light
-alike. The ink act (`FrostedButton`) keeps its pill: a shape of its own that squares its ends fails a debug assert, and
+is drawn at its radius; a superellipse, a bevel or any other is cut to its outline, fill, edge, glass and focus
+clearing alike. The ink act (`FrostedButton`) keeps its pill: a shape of its own that squares its ends fails a debug assert, and
 the theme's button shape, which shapes the glass buttons, passes it by.
 
 ```dart
@@ -261,15 +261,18 @@ costs no blur at all. The canvas's washes are painted once and cached.
 - **Screen readers.** Every control says its role, its label, its value and its state (checked, selected, expanded,
   disabled); paint that only decorates is left out.
 - **Keyboard.** Every control takes focus (each single control takes a `focusNode` and `autofocus`), Enter and Space act, Tab
-  moves on, the arrow keys move a slider and a rating (toward the end of the line, right to left too), and the focus
-  light shows while the keyboard, not a pointer, holds focus: the glass lights up, its rim bright, its frost brighter
-  and a soft glow of light round it, never a dark line. A row in a list or a menu lights from inside its edge, so its
-  light never crosses its neighbours or its panel. Focus follows the reading order, right to left too.
+  moves on, the arrow keys move a slider and a rating (toward the end of the line, right to left too), and while the
+  keyboard holds focus the part's frost clears and its rim lights: more of the colour behind it comes through and its
+  own thin rim brightens to white (a hairline just inside its outline where it has none), with no colour of its own and
+  nothing outside the part. A pointer over a part only clears it a little. A row in a list or a menu clears within its
+  edge, and the row the keys hold lights its rim. Focus follows the reading order, right to left
+  too.
 - **Targets.** 44 px under a pointer and 48 px under a finger (Android, iOS and Fuchsia), as Material pads its targets.
-- **Contrast.** Words hold 4.5:1 on their glass (3:1 when large), by day and by night, over any backdrop. The focus
-  light stands 3:1 off the unfocused part over at least a 2 px perimeter's area, on every preset, day and night, at 1x
-  and 2x text: by day it glows in a clear tone of the theme's focus hue (light on pale glass would not reach 3:1), by
-  night in a pale one.
+- **Contrast.** Words hold 4.5:1 on their glass (3:1 when large), by day and by night, over any backdrop, focused or
+  not: the clearing never takes the glass below the ground its words are held on. Focus is a quiet cue: on Frosted's
+  own backdrop the cleared glass differs from the resting one by about 1.0:1 to 1.3:1. The lit rim stands out where
+  white falls on something darker (glass by night, the ink button by day: 5:1 to 18:1 along the rim) and barely shows
+  where it falls on pale glass (about 1.1:1 by day), so focus does not hold 3:1 on every part.
 - **Motion.** Every change of state eases from where it is; Reduce Motion makes each one a cut. The dialog and the
   sheets ride ui_core's critically damped springs: nothing overshoots, and a sheet let go mid-drag carries the finger's
   speed. A page pushed over

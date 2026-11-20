@@ -853,37 +853,77 @@ class FrostedCheckbox extends StatelessWidget {
               );
     final gradient = on && fill == null ? t.colorScheme.buttonFill : null;
     // Under a finger an empty check fills with the strong hairline's ink, as
-    // a done one fades: the press shows on both.
-    Widget disc(bool down) => AnimatedContainer(
-      duration: duration,
-      curve: motion.curve,
-      width: FrostedChromeMetrics.check,
-      height: FrostedChromeMetrics.check,
-      decoration: cut == null
-          ? BoxDecoration(
-              shape: BoxShape.circle,
-              color: fill ?? (down && !on ? t.colorScheme.borderStrong : null),
-              gradient: gradient,
-              border: ring == null ? null : Border.fromBorderSide(ring),
-            )
-          : ShapeDecoration(
-              shape: cut.copyWith(side: ring ?? BorderSide.none),
-              color: fill ?? (down && !on ? t.colorScheme.borderStrong : null),
-              gradient: gradient,
+    // a done one fades: the press shows on both. The keyboard's focus lights
+    // its rim ([FrostedClearing.litOf]): the ring brightens to white, or a
+    // white hairline comes in round a done check, which has none. A dark
+    // ring (an empty check by day) stays, and the light comes in just
+    // inside it.
+    Widget disc(bool down, double lit) {
+      final BorderSide? rim;
+      var glint = 0.0;
+      if (lit <= 0) {
+        rim = ring;
+      } else if (ring == null) {
+        rim = BorderSide(
+          color: frostedRimLight(t, null, lit),
+          width: FrostedChromeMetrics.outline,
+        );
+      } else if (frostedRimIsBoundary(ring.color)) {
+        (rim, glint) = (ring, lit);
+      } else {
+        rim = ring.copyWith(color: frostedRimLight(t, ring.color, lit));
+      }
+      final inside = BorderSide(
+        color: frostedRimLight(t, null, glint),
+        width: FrostedChromeMetrics.outline,
+      );
+      return AnimatedContainer(
+        duration: duration,
+        curve: motion.curve,
+        width: FrostedChromeMetrics.check,
+        height: FrostedChromeMetrics.check,
+        decoration: cut == null
+            ? BoxDecoration(
+                shape: BoxShape.circle,
+                color:
+                    fill ?? (down && !on ? t.colorScheme.borderStrong : null),
+                gradient: gradient,
+                border: rim == null ? null : Border.fromBorderSide(rim),
+              )
+            : ShapeDecoration(
+                shape: cut.copyWith(side: rim ?? BorderSide.none),
+                color:
+                    fill ?? (down && !on ? t.colorScheme.borderStrong : null),
+                gradient: gradient,
+              ),
+        child: Padding(
+          padding: EdgeInsets.all(rim?.width ?? 0),
+          child: AnimatedContainer(
+            duration: duration,
+            curve: motion.curve,
+            decoration: cut == null
+                ? BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.fromBorderSide(inside),
+                  )
+                : ShapeDecoration(shape: cut.copyWith(side: inside)),
+            child: Center(
+              child: AnimatedScale(
+                scale: on ? 1 : 0,
+                duration: duration,
+                curve: motion.curve,
+                child: Icon(
+                  value == null ? FrostedGlyphs.remove : FrostedGlyphs.check,
+                  size: s.iconSize ?? FrostedChromeMetrics.checkGlyph,
+                  color: s.foreground ?? t.colorScheme.onButton,
+                ),
+              ),
             ),
-      child: Center(
-        child: AnimatedScale(
-          scale: on ? 1 : 0,
-          duration: duration,
-          curve: motion.curve,
-          child: Icon(
-            value == null ? FrostedGlyphs.remove : FrostedGlyphs.check,
-            size: s.iconSize ?? FrostedChromeMetrics.checkGlyph,
-            color: s.foreground ?? t.colorScheme.onButton,
           ),
         ),
-      ),
-    );
+      );
+    }
+
     // The disc stands in the target, laid out round it (as Material pads a
     // checkbox): the node, the press and the pointer span the target; the
     // focus ring hugs the disc. A mark that takes no press stands in the
@@ -932,7 +972,10 @@ class FrostedCheckbox extends StatelessWidget {
                     child: Builder(
                       builder: (context) => FrostedDim(
                         off: !live,
-                        child: disc(FrostedPressArea.isDown(context)),
+                        child: disc(
+                          FrostedPressArea.isDown(context),
+                          FrostedClearing.litOf(context),
+                        ),
                       ),
                     ),
                   ),

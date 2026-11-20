@@ -503,6 +503,10 @@ double? _edge(Path path, Offset from, Offset dir, double reach) {
   return (faults, pairs);
 }
 
+const _cleared =
+    'keyboard focus clears the frost under the part and lights its own rim; '
+    'no ring';
+
 /// The parts that draw one outline, nothing following it, and why: any pair
 /// they do draw is still measured, but none is required.
 const nestedAlone = {
@@ -519,6 +523,21 @@ const nestedAlone = {
   'Step progress · middle': 'display only: segments side by side',
   'Step progress · last': 'display only: segments side by side',
   'Badge on an avatar': 'the badge overlaps the avatar; it follows no outline',
+  // Keyboard focus clears the frost under the part and lights its own rim
+  // (the user, 11-19): no ring follows these parts' outlines any more.
+  'Search field': _cleared,
+  'Select': _cleared,
+  'Button · ink': _cleared,
+  'Button · glass': _cleared,
+  'Icon button': _cleared,
+  'Chip': _cleared,
+  'Checkbox': _cleared,
+  'Switch': _cleared,
+  'Date cell': _cleared,
+  // The chosen page's own edge brightens; nothing stands inside it.
+  'Pagination · first': _cleared,
+  'Pagination · middle': _cleared,
+  'Pagination · last': _cleared,
   'Time cell':
       'wheels, not cells: the chosen row stands in one band across every '
       'wheel, and the keyboard ring rings a whole wheel, not the row',

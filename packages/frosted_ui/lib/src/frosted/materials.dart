@@ -119,6 +119,18 @@ class FrostedMaterialRecipe {
     inner: ui.ImageFilter.blur(sigmaX: blur, sigmaY: blur),
   );
 
+  /// [filter] with its frost cleared to [level] (0 to 1,
+  /// [FrostedClearing]): the blur falls to 30% of its sigma, the colour
+  /// matrix and the range that keep the words stay.
+  ui.ImageFilter clearedFilter(double level) {
+    if (level <= 0) return filter;
+    final sigma = blur * (1 - .7 * level.clamp(0.0, 1.0));
+    return ui.ImageFilter.compose(
+      outer: ui.ColorFilter.matrix(_matrix),
+      inner: ui.ImageFilter.blur(sigmaX: sigma, sigmaY: sigma),
+    );
+  }
+
   // The luma weights CSS's saturate() keeps.
   static const List<double> _luma = [0.213, 0.715, 0.072];
 

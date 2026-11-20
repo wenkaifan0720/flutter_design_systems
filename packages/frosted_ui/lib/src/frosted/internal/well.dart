@@ -111,12 +111,12 @@ class FrostedWell extends StatelessWidget {
     //   box-shadow: inset 0 0 0 1px rgba(21,21,45,.08) }
     // A field is recessed glass: a step darker than what holds it, shaded
     // along its top inside edge.
-    // By day the well wears one even lit rim all round: holding focus the
-    // glass lights up as every part's does (FrostedFocusRing: its rim bright,
-    // a glow of the focus light round it, the frost brighter), and when wrong
-    // the rim warms toward the over hue over the over tint; never a dark
-    // line. By night its edge is the night glass's rim (the over ink when
-    // wrong), and holding focus it lights up the same way.
+    // By day the well wears one even lit rim all round, and when wrong the
+    // rim warms toward the over hue over the over tint; never a dark line.
+    // By night its edge is the night glass's rim (the over ink when wrong).
+    // Holding focus, its frost clears as every part's does
+    // (FrostedFocusRing: more of the colour behind, its rim a little
+    // brighter).
     final day = !t.isDark;
     final well = FrostedFace(
       material: s.fill == null ? FrostedMaterial.well : FrostedMaterial.paint,
@@ -124,13 +124,7 @@ class FrostedWell extends StatelessWidget {
         FrostedStyleLayers.radiusOf(cut, 0, corner),
       ),
       shape: cut,
-      color:
-          s.fill ??
-          (day && error
-              ? t.colorScheme.overTint
-              : day && focused
-              ? t.glass.plane.withValues(alpha: .6)
-              : null),
+      color: s.fill ?? (day && error ? t.colorScheme.overTint : null),
       wash: s.overlay,
       edge: side?.color,
       edges: side == null
@@ -144,16 +138,55 @@ class FrostedWell extends StatelessWidget {
       padding: s.padding?.resolve(Directionality.of(context)) ?? padding,
       child: child,
     );
-    // Holding focus, the glass lights up: never a dark line (the user,
-    // 11-17 and 11-18).
-    final lit = FrostedFocusRing(
-      shown: focused,
+    // Holding focus, the frost clears: no colour and no line (the user,
+    // 11-19); under a resting pointer, a little.
+    final lit = _WellRing(
+      focused: focused,
+      enabled: enabled,
       radius: FrostedStyleLayers.radiusOf(cut, 0, corner),
       shape: cut,
       child: well,
     );
     return FrostedFade(opacity: enabled ? 1 : .5, child: s.least(lit));
   }
+}
+
+/// A well's clearing: full while it holds focus, a little under a resting
+/// pointer while it takes input.
+class _WellRing extends StatefulWidget {
+  const _WellRing({
+    required this.focused,
+    required this.enabled,
+    required this.radius,
+    required this.shape,
+    required this.child,
+  });
+
+  final bool focused;
+  final bool enabled;
+  final double radius;
+  final OutlinedBorder? shape;
+  final Widget child;
+
+  @override
+  State<_WellRing> createState() => _WellRingState();
+}
+
+class _WellRingState extends State<_WellRing> {
+  bool _hovered = false;
+
+  @override
+  Widget build(BuildContext context) => MouseRegion(
+    onEnter: (_) => setState(() => _hovered = true),
+    onExit: (_) => setState(() => _hovered = false),
+    child: FrostedFocusRing(
+      shown: widget.focused,
+      hovered: _hovered && widget.enabled,
+      radius: widget.radius,
+      shape: widget.shape,
+      child: widget.child,
+    ),
+  );
 }
 
 /// A wrong field's edge, a well's or a code box's: the over hue itself, not

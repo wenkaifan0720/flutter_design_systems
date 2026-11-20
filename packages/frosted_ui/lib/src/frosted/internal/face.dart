@@ -28,6 +28,10 @@ Color frostedLitEdge(FrostedThemeData t, Color night) =>
 /// the same strength. Glass shows focus as light, never as a dark line (the
 /// user, 11-17: "a black focus border on a glass field: is this something a
 /// glass would have?").
+@Deprecated(
+  'Focus clears the frost now (FrostedFocusRing); nothing draws in this. '
+  'This will be removed in 0.4.0.',
+)
 Color frostedFocusInk(FrostedThemeData t) {
   final ring = t.colorScheme.ringOuter;
   // Its hue's strength: the spread of its channels (opal's ink 0.03, every
@@ -44,7 +48,12 @@ Color frostedFocusInk(FrostedThemeData t) {
 /// be and still stand 3:1 off the darkest of the theme's dawn (its ground and
 /// its washes; on opal's a vivid blue, never slate: opal's near-black ink
 /// falls back to the cool blue); by night a pale tone of it.
+@Deprecated(
+  'Focus clears the frost now (FrostedFocusRing); nothing draws in this. '
+  'This will be removed in 0.4.0.',
+)
 Color frostedFocusLight(FrostedThemeData t) {
+  // ignore: deprecated_member_use_from_same_package
   final ink = HSLColor.fromColor(frostedFocusInk(t).withValues(alpha: 1));
   final hue = ink.withSaturation(
     t.isDark ? math.min(ink.saturation, .9) : math.max(ink.saturation, .8),
@@ -94,8 +103,405 @@ Color frostedDangerInk(FrostedThemeData t, Color tint) {
   return words;
 }
 
+/// How far a part's frost has cleared, for the faces under it: 0 at rest,
+/// [hover] under a pointer, 1 while the keyboard holds it. The keyboard's
+/// focus, said in glass: the frost wipes partway clear (less blur, less
+/// milk, more of the colour behind) and the part's own thin rim catches
+/// white light ([lit]). No colour of its own, no line of its own, nothing
+/// outside the part. A pointer only clears it, a little.
+///
+/// [FrostedFocusRing] sets it round a part. The outermost [FrostedFace]
+/// under it clears and lights its rim, easing to them, and hands 0 to the
+/// faces it holds, so a chip on a cleared card stays as it was.
+class FrostedClearing extends InheritedWidget {
+  /// Clears the faces under [child] to [level], their rims lit to [lit].
+  const FrostedClearing({
+    required this.level,
+    required super.child,
+    this.lit = 0,
+    super.key,
+  }) : _claim = null;
+
+  const FrostedClearing._claimed(
+    this._claim, {
+    required this.level,
+    required this.lit,
+    required super.child,
+  });
+
+  /// How far the frost clears: 0 to 1.
+  final double level;
+
+  /// How far the part's rim catches the light: 0 to 1, 1 for the keyboard's
+  /// focus and 0 under a pointer.
+  final double lit;
+
+  // Set by the face that lights its own rim, so the part draws no second.
+  final _RimClaim? _claim;
+
+  /// A pointer's clearing: lighter than the keyboard's.
+  static const double hover = .45;
+
+  /// The level the faces under [context] clear to.
+  static double of(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<FrostedClearing>()?.level ?? 0;
+
+  /// How far the rim of the part under [context] is lit, for a part that
+  /// draws its own rim; the part then draws it, and nothing else does.
+  static double litOf(BuildContext context) {
+    final clearing = context
+        .dependOnInheritedWidgetOfExactType<FrostedClearing>();
+    clearing?._claim?.taken = true;
+    return clearing?.lit ?? 0;
+  }
+
+  @override
+  bool updateShouldNotify(FrostedClearing old) =>
+      old.level != level || old.lit != lit || old._claim != _claim;
+}
+
+// Whether a part under a FrostedCleared lights its own rim.
+class _RimClaim {
+  bool taken = false;
+}
+
+/// Marks a part that draws its own clearing (a menu's or a list's row, lit
+/// by its place in the menu as well as by focus): a [FrostedFocusRing] under
+/// it draws nothing, so the row never clears twice.
+class FrostedClearingHeld extends InheritedWidget {
+  /// Holds the clearing for [child].
+  const FrostedClearingHeld({required super.child, super.key});
+
+  /// Whether a part above [context] draws its clearing.
+  static bool of(BuildContext context) =>
+      context.getInheritedWidgetOfExactType<FrostedClearingHeld>() != null;
+
+  @override
+  bool updateShouldNotify(FrostedClearingHeld old) => false;
+}
+
+/// [child] with its frost cleared to [level] (eased to it, a cut under
+/// Reduce Motion): what is behind its [outline], standing [insets] inside
+/// its box, clears ([FrostedClearPatch]), and unless [inside] its outermost
+/// face clears too ([FrostedClearing]). While [lit], the part's own rim
+/// catches white light: the face's rim when it has one, otherwise a hairline
+/// just inside [outline] ([frostedRimLight]). [FrostedFocusRing] places one;
+/// a row lit by its place in a menu places its own.
+class FrostedCleared extends StatelessWidget {
+  /// Clears [child] to [level], its rim lit to [lit].
+  const FrostedCleared({
+    required this.level,
+    required this.outline,
+    required this.child,
+    this.lit = 0,
+    this.insets = EdgeInsets.zero,
+    this.inside = false,
+    super.key,
+  });
+
+  /// How far: 0 to 1.
+  final double level;
+
+  /// How far the rim catches the light: 0 to 1, 1 for the keyboard's focus.
+  final double lit;
+
+  /// The part's shape.
+  final ShapeBorder outline;
+
+  /// How far inside [child]'s box the part stands.
+  final EdgeInsetsGeometry insets;
+
+  /// Whether only what is behind the part clears, not the faces it holds.
+  final bool inside;
+
+  /// The part.
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => _Cleared(
+    level: level,
+    lit: lit,
+    outline: outline,
+    insets: insets.resolve(Directionality.maybeOf(context)),
+    inside: inside,
+    child: child,
+  );
+}
+
+class _Cleared extends StatefulWidget {
+  const _Cleared({
+    required this.level,
+    required this.lit,
+    required this.outline,
+    required this.insets,
+    required this.inside,
+    required this.child,
+  });
+
+  final double level;
+  final double lit;
+  final ShapeBorder outline;
+  final EdgeInsets insets;
+  final bool inside;
+  final Widget child;
+
+  @override
+  State<_Cleared> createState() => _ClearedState();
+}
+
+class _ClearedState extends State<_Cleared> {
+  // Whether a face under it lights its own rim; kept while it stands.
+  final _claim = _RimClaim();
+
+  @override
+  Widget build(BuildContext context) {
+    final at = widget.insets;
+    final motion = FrostedMotion.of(context);
+    final t = context.frostedTheme;
+    Widget placed(Widget child) => Positioned(
+      left: at.left,
+      top: at.top,
+      right: at.right,
+      bottom: at.bottom,
+      child: IgnorePointer(child: child),
+    );
+    return Stack(
+      fit: StackFit.passthrough,
+      clipBehavior: Clip.none,
+      children: [
+        // Under the face, so it never touches the face's words.
+        placed(
+          TweenAnimationBuilder<double>(
+            tween: Tween(end: widget.level),
+            duration: motion.fast,
+            curve: motion.curve,
+            builder: (context, cleared, _) =>
+                FrostedClearPatch(level: cleared, outline: widget.outline),
+          ),
+        ),
+        if (widget.inside)
+          FrostedClearing(level: 0, child: widget.child)
+        else
+          FrostedClearing._claimed(
+            _claim,
+            level: widget.level,
+            lit: widget.lit,
+            child: widget.child,
+          ),
+        // A part with no face of its own to light (a row, a check drawn as
+        // a disc): its rim, a hairline just inside its outline.
+        placed(
+          TweenAnimationBuilder<double>(
+            tween: Tween(end: widget.lit),
+            duration: motion.fast,
+            curve: motion.curve,
+            builder: (context, lit, _) => _RimLight(
+              outline: widget.outline,
+              claim: widget.inside ? null : _claim,
+              color: frostedRimLight(t, null, lit),
+              textDirection: Directionality.maybeOf(context),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// A hairline of [color] just inside [outline], unless a face claimed it.
+// Its own render box, not a custom paint: it is light on a part, not a
+// face, and paints nothing at rest.
+class _RimLight extends LeafRenderObjectWidget {
+  const _RimLight({
+    required this.outline,
+    required this.claim,
+    required this.color,
+    required this.textDirection,
+  });
+
+  final ShapeBorder outline;
+  final _RimClaim? claim;
+  final Color color;
+  final TextDirection? textDirection;
+
+  @override
+  _RenderRimLight createRenderObject(BuildContext context) => _RenderRimLight(
+    outline: outline,
+    claim: claim,
+    color: color,
+    textDirection: textDirection,
+  );
+
+  @override
+  void updateRenderObject(BuildContext context, _RenderRimLight box) => box
+    ..outline = outline
+    ..claim = claim
+    ..color = color
+    ..textDirection = textDirection;
+}
+
+class _RenderRimLight extends RenderBox {
+  _RenderRimLight({
+    required this._outline,
+    required this._claim,
+    required this._color,
+    required this._textDirection,
+  });
+
+  ShapeBorder _outline;
+  set outline(ShapeBorder v) {
+    if (v == _outline) return;
+    _outline = v;
+    markNeedsPaint();
+  }
+
+  _RimClaim? _claim;
+  set claim(_RimClaim? v) {
+    if (identical(v, _claim)) return;
+    _claim = v;
+    markNeedsPaint();
+  }
+
+  Color _color;
+  set color(Color v) {
+    if (v == _color) return;
+    _color = v;
+    markNeedsPaint();
+  }
+
+  TextDirection? _textDirection;
+  set textDirection(TextDirection? v) {
+    if (v == _textDirection) return;
+    _textDirection = v;
+    markNeedsPaint();
+  }
+
+  @override
+  bool get sizedByParent => true;
+
+  @override
+  Size computeDryLayout(BoxConstraints constraints) => constraints.biggest;
+
+  @override
+  void paint(PaintingContext context, Offset offset) {
+    if (_color.a == 0 || (_claim?.taken ?? false)) return;
+    final box = offset & size;
+    context.canvas.drawPath(
+      Path()
+        ..fillType = PathFillType.evenOdd
+        ..addPath(
+          _outline.getOuterPath(box, textDirection: _textDirection),
+          Offset.zero,
+        )
+        ..addPath(
+          _outline.getOuterPath(
+            box.deflate(FrostedChromeMetrics.outline),
+            textDirection: _textDirection,
+          ),
+          Offset.zero,
+        ),
+      Paint()..color = _color,
+    );
+  }
+}
+
+/// Whether [rim] is a part's dark boundary (it holds 3:1 on light glass, as
+/// an empty check's ring does): white light over it would take the outline
+/// away, so a lit part keeps it and catches the light just inside it.
+bool frostedRimIsBoundary(Color rim) =>
+    rim.a >= .5 && rim.withValues(alpha: 1).computeLuminance() < .3;
+
+/// The light a focused part's rim catches, at [lit] (0 to 1): its own [rim]
+/// brightened toward white, or white fading in where it has none. White by
+/// day; by night a white a little softer, as the night glass's rims are.
+Color frostedRimLight(FrostedThemeData t, Color? rim, double lit) {
+  final light = t.isDark ? const Color(0xE6FFFFFF) : const Color(0xFFFFFFFF);
+  return Color.lerp(rim ?? light.withValues(alpha: 0), light, lit)!;
+}
+
+/// The frost under a part cleared to [level], over its shape [outline]: what
+/// is behind loses some of its milk and shows more of its colour. By day
+/// every colour is drawn toward the darkest ground any of the theme's glass
+/// can show (over black, where its floor holds the words at their contrast)
+/// and no further, so words on a cleared part read as they do at rest
+/// whatever is behind; by night it dims toward black, which only parts
+/// light words further from their ground. One colour matrix, the lift its
+/// offset, clipped to the part: a lift drawn after the filter would miss
+/// the part's anti-aliased edge and leave a dark seam there.
+class FrostedClearPatch extends StatelessWidget {
+  /// Clears what is behind [outline] to [level].
+  const FrostedClearPatch({
+    required this.level,
+    required this.outline,
+    super.key,
+  });
+
+  /// How far: 0 draws nothing.
+  final double level;
+
+  /// The part's shape.
+  final ShapeBorder outline;
+
+  /// How much of the milk a full clearing takes away, by day and by night.
+  static const double day = .65, night = .45;
+
+  /// How much more of the colour behind a full clearing shows.
+  static const double colour = 1;
+
+  /// The grey a day clearing draws toward: the brightest of the theme's
+  /// glass grounds over black, the least ground its words are held on.
+  static double fixedPoint(FrostedThemeData t) {
+    final m = t.materials;
+    var most = 0.0;
+    for (final g in [m.sheer, m.pane, m.well, m.slab, m.bar]) {
+      final c = g.groundOver(const Color(0xFF000000));
+      most = math.max(most, math.max(c.r, math.max(c.g, c.b)));
+    }
+    return most;
+  }
+
+  /// The matrix of a clearing to [level], and the lift added after it.
+  static (List<double>, double) of(FrostedThemeData t, double level) {
+    final m = frostedSaturate(1 + colour * level);
+    final k = 1 - (t.isDark ? night : day) * level;
+    for (var i = 0; i < 15; i++) {
+      if (i % 5 < 4) m[i] *= k;
+    }
+    return (m, t.isDark ? 0.0 : fixedPoint(t) * (1 - k));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (level <= 0) return const SizedBox.shrink();
+    final (matrix, lift) = of(context.frostedTheme, level);
+    return ClipPath(
+      clipper: ShapeBorderClipper(
+        shape: outline,
+        textDirection: Directionality.maybeOf(context),
+      ),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          BackdropFilter(
+            filter: ui.ColorFilter.matrix([
+              for (var i = 0; i < 20; i++)
+                // The offset column is in 0 to 255.
+                i == 4 || i == 9 || i == 14 ? lift * 255 : matrix[i],
+            ]),
+            child: const SizedBox.expand(),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 /// The frost's brightening under a focused glass face: white by day, the
 /// pale ink faintly by night.
+@Deprecated(
+  'Focus clears the frost now (FrostedFocusRing); nothing draws in this. '
+  'This will be removed in 0.4.0.',
+)
 Color frostedFocusWash(FrostedThemeData t) => t.isDark
     ? t.colorScheme.textPrimary.withValues(alpha: .10)
     : const Color(0x59FFFFFF);
@@ -104,6 +510,10 @@ Color frostedFocusWash(FrostedThemeData t) => t.isDark
 /// paint's box: a bright core of [light] hugging the face's edge, a soft glow
 /// of it fading out beyond (or, [inside], inward from the edge, kept within
 /// the face), and a [rim] of light along the edge itself.
+@Deprecated(
+  'Focus clears the frost now (FrostedFocusRing); nothing draws in this. '
+  'This will be removed in 0.4.0.',
+)
 class FrostedFocusLight extends CustomPainter {
   /// Lights [outline]'s edge.
   const FrostedFocusLight(
@@ -176,6 +586,10 @@ class FrostedFocusLight extends CustomPainter {
 /// A field holding focus by day: the light its rim gives off, a soft
 /// white glow round the well. White, not the focus ink: a tinted glow read
 /// as a grey shadow on the dawn backdrop.
+@Deprecated(
+  'Focus clears the frost now (FrostedFocusRing); nothing draws in this. '
+  'This will be removed in 0.4.0.',
+)
 const List<BoxShadow> frostedFocusGlow = [
   BoxShadow(color: Color(0xF2FFFFFF), blurRadius: 12, spreadRadius: 1),
 ];
@@ -344,16 +758,50 @@ class FrostedFace extends StatelessWidget {
     if (inside != null && recipe != null) {
       inside = FrostedOnGlass(child: inside);
     }
+    // A part's focus clears its own face and lights its own rim, not the
+    // faces it holds.
+    final clearing = FrostedClearing.of(context);
+    final lit = FrostedClearing.litOf(context);
+    if (inside != null) inside = FrostedClearing(level: 0, child: inside);
     if (inside != null && clipChild) inside = clip(inside);
     // Glass's own layers under the face's: the tint (raised on glass, opaque
     // without transparency), then the face's fill over it.
+    // Cleared, glass on glass thins its milk (a well's shade, which lowers
+    // it, stays); glass over the page clears its blur below.
     final base = recipe == null
         ? null
         : opaque
         ? recipe.opaque
+        : onGlass && recipe.raised.computeLuminance() > .5
+        ? recipe.raised.withValues(alpha: recipe.raised.a * (1 - .5 * clearing))
         : onGlass
         ? recipe.raised
         : recipe.tint;
+    final rim = ring ?? recipe?.rim;
+    final t = context.frostedTheme;
+    // Lit, its rim catches the light: the ring when it has one, else its
+    // edge, else a white ring fades in where the ring would stand. A rim
+    // that is the part's dark boundary stays, and the light comes in just
+    // inside it, so the part never loses its outline.
+    var (ringLit, edgeLit, glint) = (rim, edge, null as Color?);
+    if (lit > 0) {
+      final light = frostedRimLight(t, null, lit);
+      if (rim != null) {
+        if (frostedRimIsBoundary(rim)) {
+          glint = light;
+        } else {
+          ringLit = frostedRimLight(t, rim, lit);
+        }
+      } else if (edge case final edge?) {
+        if (frostedRimIsBoundary(edge)) {
+          ringLit = light;
+        } else {
+          edgeLit = frostedRimLight(t, edge, lit);
+        }
+      } else {
+        ringLit = light;
+      }
+    }
     final motion = FrostedMotion.of(context);
     Widget face = _FacePaint(
       style: _FaceStyle(
@@ -361,10 +809,11 @@ class FrostedFace extends StatelessWidget {
         color: color,
         gradients: gradients,
         wash: wash,
-        edge: edge,
+        edge: edgeLit,
         sheen: sheen ?? recipe?.sheen,
         shade: recipe?.shade,
-        ring: ring ?? recipe?.rim,
+        ring: ringLit,
+        glint: glint,
         shadows: shadows.isEmpty && recipe != null && !onGlass
             ? recipe.shadows
             : shadows,
@@ -390,15 +839,20 @@ class FrostedFace extends StatelessWidget {
         if (recipe != null && !opaque && !onGlass) ...[
           Positioned.fill(
             child: clip(
-              shares
-                  ? BackdropFilter.grouped(
-                      filter: recipe.filter,
-                      child: const SizedBox.expand(),
-                    )
-                  : BackdropFilter(
-                      filter: recipe.filter,
-                      child: const SizedBox.expand(),
-                    ),
+              TweenAnimationBuilder<double>(
+                tween: Tween(end: clearing),
+                duration: motion.fast,
+                curve: motion.curve,
+                builder: (context, cleared, _) => shares
+                    ? BackdropFilter.grouped(
+                        filter: recipe.clearedFilter(cleared),
+                        child: const SizedBox.expand(),
+                      )
+                    : BackdropFilter(
+                        filter: recipe.clearedFilter(cleared),
+                        child: const SizedBox.expand(),
+                      ),
+              ),
             ),
           ),
           // Light glass's floor, added over the filtered backdrop.
@@ -452,6 +906,7 @@ class _FaceStyle {
     required this.sheen,
     required this.shade,
     required this.ring,
+    required this.glint,
     required this.shadows,
   });
 
@@ -463,6 +918,7 @@ class _FaceStyle {
   final Color? sheen;
   final Color? shade;
   final Color? ring;
+  final Color? glint;
   final List<BoxShadow> shadows;
 
   /// [a] at 0 to [b] at 1: a layer one side lacks fades in or out.
@@ -483,6 +939,7 @@ class _FaceStyle {
     sheen: Color.lerp(a.sheen, b.sheen, t),
     shade: Color.lerp(a.shade, b.shade, t),
     ring: Color.lerp(a.ring, b.ring, t),
+    glint: Color.lerp(a.glint, b.glint, t),
     shadows: BoxShadow.lerpList(a.shadows, b.shadows, t) ?? const [],
   );
 
@@ -497,6 +954,7 @@ class _FaceStyle {
       other.sheen == sheen &&
       other.shade == shade &&
       other.ring == ring &&
+      other.glint == glint &&
       _FacePainter._same(other.shadows, shadows);
 
   @override
@@ -509,6 +967,7 @@ class _FaceStyle {
     sheen,
     shade,
     ring,
+    glint,
     Object.hashAll(shadows),
   );
 }
@@ -577,6 +1036,7 @@ class _FacePaintState extends AnimatedWidgetBaseState<_FacePaint> {
         sheen: s.sheen,
         shade: s.shade,
         ring: s.ring,
+        glint: s.glint,
         shadows: s.shadows,
         textDirection: widget.textDirection,
       ),
@@ -599,6 +1059,7 @@ class _FacePainter extends CustomPainter {
     required this.sheen,
     required this.shade,
     required this.ring,
+    required this.glint,
     required this.shadows,
     required this.textDirection,
   });
@@ -618,6 +1079,9 @@ class _FacePainter extends CustomPainter {
   final Color? sheen;
   final Color? shade;
   final Color? ring;
+
+  // The light just inside the ring while a dark ring is lit.
+  final Color? glint;
   final List<BoxShadow> shadows;
   final TextDirection? textDirection;
 
@@ -694,6 +1158,16 @@ class _FacePainter extends CustomPainter {
           ..addRRect(inner)
           ..addRRect(inner.deflate(FrostedChromeMetrics.outline)),
         Paint()..color = inRing,
+      );
+    }
+    final lit = glint;
+    if (lit != null) {
+      canvas.drawPath(
+        Path()
+          ..fillType = PathFillType.evenOdd
+          ..addRRect(inner.deflate(FrostedChromeMetrics.outline))
+          ..addRRect(inner.deflate(2 * FrostedChromeMetrics.outline)),
+        Paint()..color = lit,
       );
     }
     final line = edge;
@@ -796,6 +1270,22 @@ class _FacePainter extends CustomPainter {
         Paint()..color = inRing,
       );
     }
+    final lit = glint;
+    if (lit != null) {
+      canvas.drawPath(
+        Path()
+          ..fillType = PathFillType.evenOdd
+          ..addPath(
+            pathIn(rect, width + FrostedChromeMetrics.outline),
+            Offset.zero,
+          )
+          ..addPath(
+            pathIn(rect, width + 2 * FrostedChromeMetrics.outline),
+            Offset.zero,
+          ),
+        Paint()..color = lit,
+      );
+    }
     final line = edge;
     if (line != null && width > 0) {
       canvas.drawPath(
@@ -847,6 +1337,7 @@ class _FacePainter extends CustomPainter {
       old.sheen != sheen ||
       old.shade != shade ||
       old.ring != ring ||
+      old.glint != glint ||
       !_same(old.shadows, shadows) ||
       old.textDirection != textDirection;
 
