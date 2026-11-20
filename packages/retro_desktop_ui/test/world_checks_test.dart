@@ -180,7 +180,7 @@ void main() {
   // The guidelines, with one named exception: text contrast is read from each word's own ink (`inkedContrastFailures`)
   // instead of Flutter's `textContrastGuideline`. That guideline captures at one pixel per logical pixel, where
   // Atkinson's 11-13 px strokes are only ever anti-aliased grey, and reads a small word inside a 48 px target against
-  // the page around it: both fail words whose real ink passes (msg_b67b7685bbab). The tap-target and label guidelines
+  // the page around it: both fail words whose real ink passes. The tap-target and label guidelines
   // are Flutter's own, as expectMeetsGuidelines runs them.
   group('the guidelines', () {
     for (final page in galleryPages) {

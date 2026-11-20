@@ -1,6 +1,6 @@
 // Folder tabs too wide for their room scroll sideways and show it: a pair of arrows at the row's end steps the tabs
-// into view (self-review round 3: at twice the text size on a phone the third tab stood cut at the panel's edge, with
-// nothing to say there was more). Tabs that fit show no arrows.
+// into view (at twice the text size on a phone the third tab stood cut at the panel's edge, with nothing to say
+// there was more). Tabs that fit show no arrows.
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:retro_desktop_ui/retro_desktop_ui.dart';

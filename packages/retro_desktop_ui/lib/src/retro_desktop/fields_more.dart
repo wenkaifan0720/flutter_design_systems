@@ -1151,7 +1151,7 @@ class RetroDesktopFormField extends StatelessWidget {
 // The field's own node, shaped by the controls under it, as ui_core 0.3.2's field shapes it: one control is merged
 // with the name, hint and validity; several keep their own nodes under a node that names them; the name is left out
 // when a control already says it. Merged into one node, a group's controls gave a tap through the semantics tree on
-// any of them to the first (the user, 11-18: Stint's Priority and Labels), a password's Show button stood under its
+// any of them to the first (a form's priority segments and its label chips), a password's Show button stood under its
 // entry, and a field named as its number field read its name twice.
 class _FieldNode extends SingleChildRenderObjectWidget {
   const _FieldNode({

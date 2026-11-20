@@ -716,8 +716,8 @@ class _ExtraButton extends StatelessWidget {
             child: face,
           );
     // It keeps to its words in a column that stretches it, at every width: on
-    // a phone, spanning the column floated its words in the middle of nothing
-    // (self-review 3). A press anywhere in its row still reaches it.
+    // a phone, spanning the column floated its words in the middle of
+    // nothing. A press anywhere in its row still reaches it.
     return retroDesktopButtonFill(child: placed, always: !wide);
   }
 }

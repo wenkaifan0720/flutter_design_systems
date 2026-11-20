@@ -1,8 +1,7 @@
 // What ui_core's shared checks (DesignRowCheck, DesignWidthCheck, checkList, DesignLabelCheck) misread on this look's
 // screens, by kind, each with its reason: the screen is right and the check reads it wrongly. A test takes a check's
 // findings through [withoutMisreads] and expects what is left empty, so a real fault still fails it, and every excused
-// finding is printed (MISREAD) with its kind. Each kind went to ui_core's owner (11-12) where the check itself should
-// learn it.
+// finding is printed (MISREAD) with its kind. Each kind is one the check itself should learn.
 
 /// One kind of misread: its [kind], why the screen is right ([reason]), and the findings it covers ([pattern], matched
 /// against `<screen>: <finding>`).
@@ -102,8 +101,8 @@ final _tabs = Misread(
 );
 
 // A held toggle sinks its words a pixel down and right inside its turned-in bevel, as the period's pressed toggles did
-// (the segment keeps its size; law 4); the check reads them a pixel under the row's line. Both appearances since
-// self-review round 2 (Platinum's held segment had only darkened).
+// (the segment keeps its size); the check reads them a pixel under the row's line. Both appearances sink them;
+// a held segment that only darkened would read as unpressed.
 final _heldSinks = Misread(
   'held toggle',
   'a held toggle sinks its words a pixel down and right, as the period\'s '
@@ -193,7 +192,7 @@ final _ruledRow = Misread(
 // The gallery's desk at 1024: the documents window stands in front of the document window and reaches past its foot,
 // so the document's "Order copies…" (531 to 579 down) is covered and no tap reaches it; the documents window's own
 // Open (475 to 523) is the one in sight. The row check reads every box, covered or not, and pairs the two (ui_core_test
-// 0.1.0 too: walk_test 2026-11-17).
+// 0.1.0 too).
 final _coveredWindow = Misread(
   'covered window',
   'a window behind another: the row check reads the button the front window '

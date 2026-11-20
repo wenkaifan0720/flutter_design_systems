@@ -181,7 +181,8 @@ void main() {
     await tester.sendKeyEvent(LogicalKeyboardKey.arrowLeft);
     await tester.pump();
     expect(value, 3);
-    await tester.sendKeyEvent(LogicalKeyboardKey.home);
+    // Past the last option the arrow wraps to the first.
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowLeft);
     await tester.pump();
     expect(value, 1);
   });

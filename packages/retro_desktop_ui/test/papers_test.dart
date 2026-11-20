@@ -1,4 +1,4 @@
-// Papers, the look's own application, as the example opens it: its keylines (design6 P) and what a person does in it.
+// Papers, the look's own application, as the example opens it: its keylines and what a person does in it.
 //
 // Keylines: in every window, every block that spans the content (a field, a popup, a list or table well, a group box, a
 // radio group, a disclosure, a document) starts on one leading keyline and ends on one trailing keyline; a row of
@@ -394,7 +394,7 @@ void main() {
     }
   });
 
-  // What the coordinator's read of the gate showed (11-11): the strip's and the foot's words off the content's
+  // Faults these hold off: the strip's and the foot's words off the content's
   // keylines, a field's words and a popup's at two insets, Cancel a bare word, a group's name 2 px off its rows, the
   // Advanced triangle's ink 3 px in.
   for (final appearance in RetroDesktopAppearance.values) {

@@ -1,9 +1,9 @@
-// Enter in a browser (the coordinator's web-enter-keeps-typing spec, 11-16). Flutter restarts the text input of a field
+// Enter in a browser. Flutter restarts the text input of a field
 // told of a submit (onSubmitted) that still has the focus after it, and in a browser the restarted input never takes the
 // browser's focus: the field looks focused, the arrows work, and letters go nowhere. So a field that keeps the focus on
 // Enter (the look's combobox: Enter takes the lit option and the field goes on) takes Enter in onEditingComplete with no
 // onSubmitted, and a field that gives the focus up (a text field told of a submit) keeps onSubmitted alone. Each is
-// checked as the spec asks: after the done action the focus is where it should be, no TextInput.clearClient or
+// checked the same way: after the done action the focus is where it should be, no TextInput.clearClient or
 // TextInput.setClient is sent after it (a restart), and typing edits the field again.
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';

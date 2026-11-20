@@ -1,5 +1,5 @@
-// The coordinator's walk of the example in a browser at 1440 and 600 (msg_401ee832e8e5, 11-12) found faults no shared
-// check reads. Each is held here, with the check that should have caught it:
+// The example's own chrome, which no gallery page carries, so no shared check reads it on a page. Each fault seen in a
+// browser at 1440 and 600 is held here, with the check that should catch it:
 // - One row, one height, in the gallery's own bar: Day and night stood 44 high beside Customize's 37. DesignRowCheck
 //   reads the rows of the pages it is shown; the example's own app bar is chrome no page carries, so no check was ever
 //   shown it. Held by DesignRowCheck over the example app itself, and over a segmented control beside a button.

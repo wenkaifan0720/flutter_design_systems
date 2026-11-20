@@ -1,5 +1,5 @@
-// Buttons in a row (design6, 11-11 16:34: "the outline a person sees is the
-// box"): every control that shares a row with a button shows one top and one
+// Buttons in a row (the outline a person sees is the
+// box): every control that shares a row with a button shows one top and one
 // bottom by its visible outline, read from the pixels drawn, beside a plain
 // line button; a variant may differ in fill, never in the size it shows. In
 // both appearances, by day and by night, under each density, at a phone's

@@ -1,6 +1,5 @@
-// Every example starts on its column's edge: the first pixel it draws is the column's first (the coordinator's walk of
-// the example in a browser at 1440, 11-12: a 32 px face in a 44 px target stood 6 px in, a quiet glyph 17 px in, a chip
-// row's first gap read 14 for 8). Read from the drawn frame, on a desk (macOS, where a target pads only what is pressed),
+// Every example starts on its column's edge: the first pixel it draws is the column's first (in a browser at
+// 1440 a 32 px face in a 44 px target stood 6 px in, a quiet glyph 17 px in, and a chip row's first gap read 14 for 8). Read from the drawn frame, on a desk (macOS, where a target pads only what is pressed),
 // for every page of the gallery the side navigation lists, at 1440 and 600.
 //
 // What it can judge, and only that: the start. A glyph's or a letter's side bearing may stand up to [_bearing] px in (a

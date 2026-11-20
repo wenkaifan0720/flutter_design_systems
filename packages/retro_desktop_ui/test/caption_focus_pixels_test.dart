@@ -238,6 +238,113 @@ void main() {
             },
           );
         }
+        for (final appearance in RetroDesktopAppearance.values) {
+          testWidgets(
+            'radio focus marks the words in Chisel and the disc in Platinum at $width $appearance $brightness $direction',
+            (tester) async {
+              final key = await _pump(
+                tester,
+                Padding(
+                  padding: const EdgeInsets.all(10),
+                  child: SizedBox(
+                    width: 220,
+                    child: RetroDesktopRadioGroup<int>(
+                      label: 'Sort by',
+                      showLabel: false,
+                      value: 1,
+                      onChanged: (_) {},
+                      options: const [
+                        RetroDesktopRadio(1, 'Name'),
+                        RetroDesktopRadio(2, 'Date changed'),
+                      ],
+                    ),
+                  ),
+                ),
+                width: width,
+                dpr: 2,
+                theme: platinum.copyWith(appearance: appearance),
+                direction: direction,
+              );
+              final rest = await _read(tester, key);
+              final words = find.text('Name');
+              Focus.of(tester.element(words)).requestFocus();
+              await tester.pumpAndSettle();
+              final focused = await _read(tester, key);
+              final option = rest.device(
+                tester.getRect(
+                  find
+                      .ancestor(
+                        of: words,
+                        matching: find.byType(RetroDesktopPressable),
+                      )
+                      .first,
+                ),
+              );
+              final disc = rest.device(
+                tester.getRect(
+                  find
+                      .descendant(
+                        of: find.byType(RetroDesktopRadioGroup<int>),
+                        matching: find.byWidgetPredicate(
+                          (w) => w is SizedBox && w.width == 18,
+                        ),
+                      )
+                      .first,
+                ),
+              );
+              final text = rest.device(tester.getRect(words));
+              final everything = Rect.fromLTWH(
+                0,
+                0,
+                rest.width.toDouble(),
+                rest.height.toDouble(),
+              );
+              final mark = rest.changes(everything, focused);
+              expect(mark, isNotNull, reason: 'Focus shows.');
+              if (appearance == RetroDesktopAppearance.platinum) {
+                expect(
+                  mark!.overlaps(text),
+                  isFalse,
+                  reason: 'Platinum rings the disc: $mark, words $text.',
+                );
+                expect(mark.overlaps(disc), isTrue);
+                return;
+              }
+              expect(
+                rest.changes(disc.inflate(2), focused),
+                isNull,
+                reason: 'The disc keeps its bevel and its dot.',
+              );
+              expect(
+                rest.changes(text.inflate(1), focused),
+                isNull,
+                reason: 'The dots stand a pixel clear of the words.',
+              );
+              expect(
+                mark!.contains(text.topLeft) &&
+                    mark.contains(text.bottomRight - const Offset(1, 1)),
+                isTrue,
+                reason: 'The rectangle $mark goes round the words $text.',
+              );
+              expect(
+                option.inflate(.5).contains(mark.topLeft) &&
+                    option
+                        .inflate(.5)
+                        .contains(mark.bottomRight - const Offset(1, 1)),
+                isTrue,
+                reason: 'The rectangle $mark stays inside the option $option.',
+              );
+              // One on, one off: along its top edge about half of the
+              // rectangle's pixels change, never a solid line.
+              var on = 0;
+              final y = mark.top.toInt();
+              for (var x = mark.left.toInt(); x < mark.right; x++) {
+                if (focused.difference(rest, x, y) > 0) on++;
+              }
+              expect(on / mark.width, inInclusiveRange(.3, .7));
+            },
+          );
+        }
         for (final kind in ['buttons', 'toggles', 'split', 'segmented']) {
           testWidgets(
             '$kind focus follows both Platinum ends at $width $brightness $direction',

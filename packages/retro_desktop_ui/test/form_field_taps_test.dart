@@ -1,7 +1,7 @@
 // Controls in a RetroDesktopFormField take a tap, each its own: a segmented button's segments, chips in a wrap, radios,
 // a row of boxes, a switch and a box, by the pointer and through their semantics (a screen reader's double tap, a
 // browser's click with semantics on). A group's controls merged into the field's one node gave every tap to the first
-// of them (the user, 11-18: Stint's Priority and Labels took no tap).
+// of them (a form's priority segments and its label chips took no tap).
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter_test/flutter_test.dart';

@@ -1,8 +1,8 @@
-// Dropdowns (design6, 11-11 16:34): from 600 up a select and a combobox
+// Dropdowns: from 600 up a select and a combobox
 // stand at their column's start, at most 320 wide, closed; a
 // select's open list is at least as wide as its field and starts on its
 // leading edge. At 600, 1024, 1440 and 1920, in both appearances.
-// And (design6, 11-11 night) at 390 and 1440: a select's, a combobox's and a
+// And at 390 and 1440: a select's, a combobox's and a
 // menu's open list, opened from a card, floats over it in
 // the window's overlay, whole on the screen; a field's options start their
 // words on one x, the field's value's.

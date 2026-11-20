@@ -1,3 +1,9 @@
+## 0.3.3
+
+- In Chisel, a focused radio's dotted rectangle stands round its label, a pixel clear of the words, as the PC drew it. The radio's sunken disc keeps its bevel and its dot. Platinum's focus ring is unchanged.
+- A radio group takes its keyboard from ui_core's shared radio group, as every look's does. Tab enters on the chosen option, or on the first one you can choose, and a second Tab leaves the group. The arrow keys move and choose, wrap at the ends and skip options that are out of use; in right-to-left text, Left moves forward. Home and End no longer jump to the first or last option in a radio group. Use the arrows instead.
+- Stands on ui_core 0.3.4.
+
 ## 0.3.2
 
 - A chart's axes are measured again when a face arrives after the first frame, in the reader's locale. An Arabic reader's values (on the web their digits come from a fallback face fetched after the first frame) read whole instead of ending in "…٤", and the day letters under the chart are no longer clipped.

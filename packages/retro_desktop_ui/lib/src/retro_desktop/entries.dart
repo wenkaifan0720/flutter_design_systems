@@ -1342,28 +1342,40 @@ class RetroDesktopRadioGroup<T> extends StatelessWidget {
   /// {@macro retro_desktop.style}
   final RetroDesktopStyle? style;
   @override
-  Widget build(BuildContext context) => _labelled(
-    context,
-    Semantics(
-      label: showLabel ? null : label,
-      container: true,
-      explicitChildNodes: true,
-      child: _ChoiceGroup<T>(
-        rowSegmentWidth: rowSegmentWidth,
-        options: [
-          for (final o in options)
-            _Choice(o.value, o.label, note: o.note, enabled: o.enabled),
-        ],
-        value: value,
-        onChanged: onChanged,
-        radio: true,
-        error: error != null,
-        style: style,
+  Widget build(BuildContext context) {
+    final byValue = {for (final option in options) option.value: option};
+    return _labelled(
+      context,
+      Semantics(
+        label: showLabel ? null : label,
+        container: true,
+        explicitChildNodes: true,
+        // ui_core's group gives the keyboard: one Tab stop, on the chosen
+        // option or else the first enabled one, and arrows that choose as they
+        // move, wrapping and skipping options out of use.
+        child: DesignRadioGroup<T>(
+          options: byValue.keys.toList(),
+          value: value,
+          onChanged: onChanged,
+          isEnabled: (value) => byValue[value]!.enabled,
+          layoutBuilder: (context, items) => _hugged(
+            context,
+            Column(mainAxisSize: MainAxisSize.min, children: items),
+          ),
+          itemBuilder: (context, option, node, select) => _RadioOption<T>(
+            option: byValue[option]!,
+            chosen: option == value,
+            focusNode: node,
+            onPressed: select,
+            error: error != null,
+            style: style,
+          ),
+        ),
       ),
-    ),
-    label: showLabel ? label : null,
-    error: error,
-  );
+      label: showLabel ? label : null,
+      error: error,
+    );
+  }
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -1492,18 +1504,207 @@ class RetroDesktopSegmentedButton<T> extends StatelessWidget {
   }
 }
 
+/// Chisel's focus mark on a radio, where the PC drew it: the dotted rectangle round the option's words, a pixel clear of
+/// them and inside the option's reach, so the disc keeps its bevel and its dot. The words take the press's feedback, so
+/// neither the disc nor the press draws a second mark. The rectangle is painted over the words' surroundings, so the
+/// words keep their place whether or not the option has focus.
+class _WordsFocus extends StatelessWidget {
+  const _WordsFocus({required this.states, required this.child});
+
+  /// The option's press states, as its builder hands them on.
+  final Set<WidgetState> states;
+
+  /// The option's words.
+  final Text child;
+
+  @override
+  Widget build(BuildContext context) {
+    final claim = RetroDesktopHighlightClaim.maybeOf(context);
+    final owns = claim?.claim(context, states) ?? false;
+    final ring = RetroDesktopTheme.of(context).focus;
+    // The ring stands its gap inside the box it is given, its dots on the line
+    // a half stroke further in: a box this much larger leaves one pixel clear.
+    final out = ring.gap + ring.width + 1;
+    // Room for the dots and their clear pixel at the column's end, held whether
+    // or not the option has focus, so a label as wide as the column keeps its
+    // rectangle inside the option and its wrapping never moves with focus.
+    return Padding(
+      padding: EdgeInsetsDirectional.only(end: out - ring.gap),
+      child: Align(
+        // The words' own width, not the column's: the rectangle hugs them.
+        alignment: AlignmentDirectional.centerStart,
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            child,
+            if (owns)
+              Positioned(
+                left: -out,
+                top: -out,
+                right: -out,
+                bottom: -out,
+                child: IgnorePointer(
+                  child: RetroDesktopHighlight(
+                    // The look's own square outline (Chisel is square everywhere).
+                    shape: RetroDesktopTheme.of(context).shapes.small,
+                    focused: states.contains(WidgetState.focused),
+                    inside: true,
+                    // The words' own colour, as a face's dots take its label's.
+                    insideColor:
+                        child.style?.color ??
+                        DefaultTextStyle.of(context).style.color,
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// From 600 up a choice group keeps to its widest choice (radios) or its
+/// segments at the widest one's width, at its column's start; below that it
+/// takes its column's width.
+Widget _hugged(BuildContext context, Widget group) => retroDesktopHugs(context)
+    ? Align(
+        alignment: AlignmentDirectional.centerStart,
+        widthFactor: 1,
+        heightFactor: 1,
+        child: IntrinsicWidth(child: group),
+      )
+    : group;
+
+/// One option of a [RetroDesktopRadioGroup]: the appearance's disc and the
+/// option's words, pressed as one part on the focus node the group gives it.
+class _RadioOption<T> extends StatelessWidget {
+  const _RadioOption({
+    required this.option,
+    required this.chosen,
+    required this.focusNode,
+    required this.onPressed,
+    required this.error,
+    this.style,
+  });
+
+  /// The option this part draws.
+  final RetroDesktopRadio<T> option;
+
+  /// Whether this option is the group's value.
+  final bool chosen;
+
+  /// The node the group registered for this option.
+  final FocusNode focusNode;
+
+  /// Chooses this option; null while the option or the group is out of use.
+  final VoidCallback? onPressed;
+
+  /// Whether the group shows a validation error.
+  final bool error;
+
+  /// The caller's overrides for the disc.
+  final RetroDesktopStyle? style;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = RetroDesktopTheme.of(context);
+    return RetroDesktopPressable(
+      focusShape: t.shapes.small,
+      label: option.label,
+      hint: option.note,
+      button: false,
+      checked: chosen,
+      inGroup: true,
+      error: error,
+      focusNode: focusNode,
+      onPressed: onPressed,
+      builder: (context, states) => Padding(
+        padding: const EdgeInsets.symmetric(vertical: RetroDesktopSpacing.s8),
+        child: Row(
+          // The dot on the label's first line, however many lines
+          // the label or its note take.
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            RetroDesktopOnCaps(
+              style: t.type.body,
+              child: SizedBox.square(
+                dimension: 18,
+                // Chisel: a sunken white disc, greyed while the
+                // pointer holds it. Platinum: a raised, bevelled grey
+                // disc. A black dot in either. Platinum's focus ring
+                // follows the disc; Chisel's goes round the words, so
+                // the disc is drawn without it.
+                child: retroDesktopFace(
+                  states: t.chisel
+                      ? states.difference({WidgetState.focused})
+                      : states,
+                  sunken: t.chisel,
+                  component: t.radioTheme.over(
+                    RetroDesktopStyle(
+                      shape: WidgetStatePropertyAll(t.shapes.radio),
+                      fill: WidgetStatePropertyAll(
+                        !t.chisel
+                            ? t.colors.platinumLight
+                            : states.contains(WidgetState.pressed)
+                            ? retroDesktopChiselHeldBox(t.colors)
+                            : t.colors.controlFace,
+                      ),
+                      foreground: WidgetStatePropertyAll(t.colors.text),
+                    ),
+                  ),
+                  style: style,
+                  padding: const EdgeInsets.all(
+                    RetroDesktopSpacing.s2 + RetroDesktopSpacing.px,
+                  ),
+                  child: Builder(
+                    builder: (context) => DecoratedBox(
+                      decoration: ShapeDecoration(
+                        shape: t.shapes.radio,
+                        color: chosen
+                            ? DefaultTextStyle.of(context).style.color
+                            : const Color(0x00000000),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: RetroDesktopSpacing.s10),
+            Expanded(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  if (t.chisel)
+                    _WordsFocus(
+                      states: states,
+                      child: Text(option.label, style: t.type.body),
+                    )
+                  else
+                    Text(option.label, style: t.type.body),
+                  if (option.note != null)
+                    Text(option.note!, style: t.type.meta),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _Choice<T> {
   const _Choice(
     this.value,
     this.label, {
-    this.note,
     this.name,
     this.icon,
     required this.enabled,
   });
   final T value;
   final String label;
-  final String? note, name;
+  final String? name;
   final IconData? icon;
   final bool enabled;
 }
@@ -1513,15 +1714,12 @@ class _ChoiceGroup<T> extends StatefulWidget {
     required this.options,
     this.value,
     this.onChanged,
-    this.radio = false,
     this.rowSegmentWidth = 120,
-    this.error = false,
     this.style,
   });
   final List<_Choice<T>> options;
   final T? value;
   final ValueChanged<T>? onChanged;
-  final bool radio, error;
   final double rowSegmentWidth;
   final RetroDesktopStyle? style;
   @override
@@ -1577,9 +1775,7 @@ class _ChoiceState<T> extends State<_ChoiceGroup<T>> {
   }
 
   @override
-  Widget build(BuildContext context) => widget.radio
-      ? _build(context, const BoxConstraints())
-      : LayoutBuilder(builder: _build);
+  Widget build(BuildContext context) => LayoutBuilder(builder: _build);
 
   Widget _build(BuildContext context, BoxConstraints constraints) {
     while (_nodes.length < widget.options.length) {
@@ -1619,7 +1815,6 @@ class _ChoiceState<T> extends State<_ChoiceGroup<T>> {
     final share =
         (constraints.maxWidth - (count + 1) * rim) / math.max(1, count);
     final vertical =
-        !widget.radio &&
         constraints.hasBoundedWidth &&
         widget.options.any((option) {
           final words = TextPainter(
@@ -1649,15 +1844,13 @@ class _ChoiceState<T> extends State<_ChoiceGroup<T>> {
       final live = widget.onChanged != null && option.enabled;
       final chosen = option.value == widget.value;
       _nodes[i].skipTraversal = i != entry;
-      final cell = widget.radio
-          ? null
-          : _cellShape(
-              inner,
-              first: i == 0,
-              last: i == count - 1,
-              rtl: rtl,
-              vertical: vertical,
-            );
+      final cell = _cellShape(
+        inner,
+        first: i == 0,
+        last: i == count - 1,
+        rtl: rtl,
+        vertical: vertical,
+      );
       parts.add(
         Focus(
           canRequestFocus: false,
@@ -1665,89 +1858,17 @@ class _ChoiceState<T> extends State<_ChoiceGroup<T>> {
           includeSemantics: false,
           onKeyEvent: (_, event) => _keys(i, event),
           child: RetroDesktopPressable(
-            focusShape: cell ?? t.shapes.small,
+            focusShape: cell,
             label: option.name ?? option.label,
-            hint: option.note,
-            button: !widget.radio,
-            checked: widget.radio ? chosen : null,
-            selected: widget.radio ? null : chosen,
+            selected: chosen,
             inGroup: true,
-            error: widget.error,
             focusNode: _nodes[i],
             onPressed: live
                 ? () {
                     if (!chosen) widget.onChanged!(option.value);
                   }
                 : null,
-            builder: (context, states) => widget.radio
-                ? Padding(
-                    padding: const EdgeInsets.symmetric(
-                      vertical: RetroDesktopSpacing.s8,
-                    ),
-                    child: Row(
-                      // The dot on the label's first line, however many lines
-                      // the label or its note take.
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        RetroDesktopOnCaps(
-                          style: t.type.body,
-                          child: SizedBox.square(
-                            dimension: 18,
-                            // Chisel: a sunken white disc, greyed while the
-                            // pointer holds it. Platinum: a raised, bevelled grey
-                            // disc. A black dot in either.
-                            child: retroDesktopFace(
-                              states: states,
-                              sunken: t.chisel,
-                              component: t.radioTheme.over(
-                                RetroDesktopStyle(
-                                  shape: WidgetStatePropertyAll(t.shapes.radio),
-                                  fill: WidgetStatePropertyAll(
-                                    !t.chisel
-                                        ? t.colors.platinumLight
-                                        : states.contains(WidgetState.pressed)
-                                        ? retroDesktopChiselHeldBox(t.colors)
-                                        : t.colors.controlFace,
-                                  ),
-                                  foreground: WidgetStatePropertyAll(
-                                    t.colors.text,
-                                  ),
-                                ),
-                              ),
-                              style: widget.style,
-                              padding: const EdgeInsets.all(
-                                RetroDesktopSpacing.s2 + RetroDesktopSpacing.px,
-                              ),
-                              child: Builder(
-                                builder: (context) => DecoratedBox(
-                                  decoration: ShapeDecoration(
-                                    shape: t.shapes.radio,
-                                    color: chosen
-                                        ? DefaultTextStyle.of(context)
-                                              .style
-                                              .color
-                                        : const Color(0x00000000),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: RetroDesktopSpacing.s10),
-                        Expanded(
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              Text(option.label, style: t.type.body),
-                              if (option.note != null)
-                                Text(option.note!, style: t.type.meta),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  )
+            builder: (context, states) =>
                 // Every cell's face is the button face's height inside the
                 // frame (the press centres it in its reach): one top and one
                 // bottom across the row, the chosen one's sunken face
@@ -1755,88 +1876,66 @@ class _ChoiceState<T> extends State<_ChoiceGroup<T>> {
                 // frame's rim above and below it included: what the eye
                 // reads as its top and bottom beside a button, whether a
                 // chosen cell's own top row is ink or shade.
-                : DesignKeylineFace(
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(
-                        vertical: vertical ? 0 : rim,
-                      ),
-                      child: ConstrainedBox(
-                        constraints: vertical
-                            ? BoxConstraints(minHeight: reachHeight)
-                            : BoxConstraints.tightFor(height: cellHeight),
-                        child: retroDesktopFace(
-                          // The chosen cell stays pressed in; its label never moves.
-                          states: chosen
-                              ? {...states, WidgetState.selected}
-                              : states,
-                          sunken: chosen,
-                          // Flush in the row: an outside ring would cross its
-                          // neighbours.
-                          ringInside: true,
-                          gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: states.contains(WidgetState.pressed)
-                                ? [t.colors.platinum, t.colors.platinumDark]
-                                : [t.colors.platinumLight, t.colors.platinum],
+                DesignKeylineFace(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(vertical: vertical ? 0 : rim),
+                    child: ConstrainedBox(
+                      constraints: vertical
+                          ? BoxConstraints(minHeight: reachHeight)
+                          : BoxConstraints.tightFor(height: cellHeight),
+                      child: retroDesktopFace(
+                        // The chosen cell stays pressed in; its label never moves.
+                        states: chosen
+                            ? {...states, WidgetState.selected}
+                            : states,
+                        sunken: chosen,
+                        // Flush in the row: an outside ring would cross its
+                        // neighbours.
+                        ringInside: true,
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: states.contains(WidgetState.pressed)
+                              ? [t.colors.platinum, t.colors.platinumDark]
+                              : [t.colors.platinumLight, t.colors.platinum],
+                        ),
+                        component: t.segmentedButtonTheme.over(
+                          RetroDesktopStyle(
+                            fill: chosen
+                                ? WidgetStatePropertyAll(t.colors.highlight)
+                                : null,
                           ),
-                          component: t.segmentedButtonTheme.over(
-                            RetroDesktopStyle(
-                              fill: chosen
-                                  ? WidgetStatePropertyAll(t.colors.highlight)
-                                  : null,
-                            ),
+                        ),
+                        style: (widget.style ?? const RetroDesktopStyle()).over(
+                          RetroDesktopStyle(
+                            shape: WidgetStatePropertyAll(cell),
+                            side: rim == 0
+                                ? null
+                                : const WidgetStatePropertyAll(BorderSide.none),
                           ),
-                          style: (widget.style ?? const RetroDesktopStyle())
-                              .over(
-                                RetroDesktopStyle(
-                                  shape: WidgetStatePropertyAll(cell!),
-                                  side: rim == 0
-                                      ? null
-                                      : const WidgetStatePropertyAll(
-                                          BorderSide.none,
-                                        ),
-                                ),
-                              ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              if (option.icon != null) ...[
-                                Icon(option.icon),
-                                const SizedBox(width: RetroDesktopSpacing.s6),
-                              ],
-                              Flexible(
-                                child: RetroDesktopCaps(
-                                  Text(
-                                    option.label,
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ),
-                              ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            if (option.icon != null) ...[
+                              Icon(option.icon),
+                              const SizedBox(width: RetroDesktopSpacing.s6),
                             ],
-                          ),
+                            Flexible(
+                              child: RetroDesktopCaps(
+                                Text(option.label, textAlign: TextAlign.center),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
                   ),
+                ),
           ),
         ),
       );
-    }
-    // From 600 up a choice group keeps to its widest choice (radios) or its
-    // segments at the widest one's width, at its column's start.
-    final hug = retroDesktopHugs(context);
-    Widget hugged(Widget group) => hug
-        ? Align(
-            alignment: AlignmentDirectional.centerStart,
-            widthFactor: 1,
-            heightFactor: 1,
-            child: IntrinsicWidth(child: group),
-          )
-        : group;
-    if (widget.radio) {
-      return hugged(Column(mainAxisSize: MainAxisSize.min, children: parts));
     }
     final divider = vertical
         ? SizedBox(
@@ -1905,7 +2004,7 @@ class _ChoiceState<T> extends State<_ChoiceGroup<T>> {
     if (!constraints.hasBoundedWidth) {
       return SizedBox(width: widget.rowSegmentWidth * count, child: cells);
     }
-    return vertical ? cells : hugged(cells);
+    return vertical ? cells : _hugged(context, cells);
   }
 }
 

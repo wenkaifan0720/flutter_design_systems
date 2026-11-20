@@ -16,7 +16,7 @@ final _widgetSupers = RegExp(
   r'InheritedNotifier|ProxyWidget)\b',
 );
 
-// The look's lib: drip's app lays it under design_system/platinum/, the package under src/retro_desktop/.
+// The look's lib: an app that vendors it lays it under design_system/platinum/, the package under src/retro_desktop/.
 Directory get _lib => [
   Directory('lib/src/retro_desktop'),
   Directory('lib/src/retro_desktop'),
