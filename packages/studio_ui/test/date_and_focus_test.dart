@@ -1,9 +1,7 @@
-// A date field's popover lines up with its field in one frame (up to a
-// month's comfortable width, from the field's leading edge), its chosen
-// day reads in its lit slot, and the checkbox, the date field and a calendar
-// day show keyboard focus as amber light on their own edge: no ring apart
-// from the part, and focused pixels at 3:1 or more against the same pixels
-// unfocused over at least a 2 px perimeter, by day and by night.
+// A date field's popover lines up with its field in one frame, up to a
+// month's comfortable width from the field's leading edge, and its chosen day
+// reads in its lit slot. The checkbox, the date field and a calendar day show
+// keyboard focus as light on their own edge, kept inside the part.
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 
@@ -84,15 +82,35 @@ double _contrast(Color a, Color b) => _ratio(
   Color.alphaBlend(b, const Color(0xFFFFFFFF)).computeLuminance(),
 );
 
-// Device pixels whose colour changed by 3:1 or more.
-int _litPixels(Uint8List before, Uint8List after) {
-  var lit = 0;
+void _expectFittedLight(
+  WidgetTester tester,
+  Finder face,
+  Uint8List before,
+  Uint8List after,
+) {
+  final frame = find.byKey(_frame);
+  final bounds = tester
+      .getRect(face)
+      .shift(-tester.getTopLeft(frame))
+      .inflate(1);
+  final width = (tester.getSize(frame).width * 2).round();
+  var lit = 0, outside = 0;
   for (var i = 0; i + 3 < before.length; i += 4) {
     final a = _luminance(before[i], before[i + 1], before[i + 2]);
     final b = _luminance(after[i], after[i + 1], after[i + 2]);
-    if (_ratio(a, b) >= 3) lit++;
+    if (_ratio(a, b) < 1.025) continue;
+    final point = Offset(
+      ((i ~/ 4) % width + 0.5) / 2,
+      ((i ~/ 4) ~/ width + 0.5) / 2,
+    );
+    if (bounds.contains(point)) {
+      lit++;
+    } else {
+      outside++;
+    }
   }
-  return lit;
+  expect(lit, greaterThan(0));
+  expect(outside, 0, reason: 'Keyboard light escaped the fitted face');
 }
 
 void _traditionalFocus() {
@@ -311,13 +329,7 @@ void main() {
             .first;
         // No ring drawn apart from the part.
         expect(tester.widget<AnimatedStudioSurface>(face).face.focus.a, 0);
-        final size = tester.getSize(face);
-        final perimeter = 2 * (size.width + size.height);
-        // Device pixels at 2x: four to a logical pixel.
-        expect(
-          _litPixels(before, after),
-          greaterThanOrEqualTo(2 * perimeter * 4),
-        );
+        _expectFittedLight(tester, face, before, after);
       });
     }
     testWidgets('a focused calendar day lights its own edge by '
@@ -346,11 +358,7 @@ void main() {
           )
           .first;
       expect(tester.widget<AnimatedStudioSurface>(slot).face.focus.a, 0);
-      final size = tester.getSize(slot);
-      expect(
-        _litPixels(before, after),
-        greaterThanOrEqualTo(2 * 2 * (size.width + size.height) * 4),
-      );
+      _expectFittedLight(tester, slot, before, after);
     });
   }
 }

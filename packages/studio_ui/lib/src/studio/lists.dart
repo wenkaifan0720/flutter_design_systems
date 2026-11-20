@@ -7,6 +7,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
+import 'internal/control_light.dart';
+
 import 'choices.dart';
 import 'panel.dart';
 import 'surface.dart';
@@ -272,13 +274,14 @@ class StudioListTile extends StatelessWidget {
       );
       final disabled = !enabled || (toggle && onChanged == null);
       final pressed = states.contains(WidgetState.pressed);
+      final cue = studioControlLight(states);
       final ink =
           layered.foreground ??
           (disabled
               ? c.disabled
               : isDestructiveAction
               ? c.dangerLegend
-              : c.onDisplay);
+              : Color.lerp(c.onDisplay, c.litLegend, cue)!);
       final muted = disabled ? c.disabled : c.onDisplayMuted;
       final chevron =
           showChevron ?? (!toggle && onTap != null && trailing == null);
@@ -288,11 +291,7 @@ class StudioListTile extends StatelessWidget {
         depth: StudioDepth.sunk,
         radius: StudioRadii.display - StudioMetrics.recessInset,
         foreground: ink,
-        // The pointer over a row changes nothing it paints (polish3 §1).
         presence: pressed || selected ? 1 : 0,
-        focus: states.contains(WidgetState.focused)
-            ? c.focusRing
-            : c.focusRing.withValues(alpha: 0),
       );
       return AnimatedStudioSurface(
         face: slot,
@@ -399,7 +398,7 @@ class StudioListTile extends StatelessWidget {
                   // The chosen row's lamp, at the end as a key's is.
                   if (selected) ...[
                     const SizedBox(width: StudioSpacing.medium),
-                    const StudioLamp(on: true, size: StudioMetrics.lampSize),
+                    StudioControlLamp(on: true, states: states),
                   ],
                   if (chevron) ...[
                     const SizedBox(width: StudioSpacing.small),

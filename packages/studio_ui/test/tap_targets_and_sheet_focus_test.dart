@@ -1,7 +1,4 @@
-// The parts Studio moved onto ui_core 0.3.0 (the shell's bank, rail and side
-// navigation, a sheet and its finger slot, the rating, the wheel) held to
-// ui_core_test's tap-target check: a tap reaches each where a finger or a
-// pointer is told it is; and a sheet dragged and let go keeps the keys.
+// Verify tap targets and keyboard focus after dismissing a dragged sheet.
 import 'dart:async';
 
 import 'package:flutter/gestures.dart';

@@ -1,15 +1,14 @@
 // Every part a person acts on, in each state it has: idle, hovered, pressed,
 // focused from the keyboard, selected, disabled and in error, by day and by
-// night, at twice the size (polish3's state matrix, in Studio's metal, glass
-// and light). Each state keeps the part's size (but for an error, whose
-// message takes a line under the part); hovered paints as idle does;
-// every other state paints differently from idle, so a press, the focus
-// ring, a latch, a disabled face and an error can each be seen.
+// night, at twice the size. Each state keeps the part's size (but for an
+// error, whose message takes a line under the part). Hover gives a part with
+// a lamp, a legend or an index its faintest light and leaves the rest as
+// idle; every other state paints differently from idle, so a press, the
+// focus light, a latch, a disabled face and an error can each be seen.
 //
 // Each cell is also a golden (test/goldens/states/<part>/<state>_<brightness>
-// .png), recorded on macOS and tagged `goldens`. With STATE_MATRIX_OUT set to
-// a directory, each cell is also written there as
-// <part>/<state>_<brightness>.png, for the review sheet.
+// .png), tagged `goldens`. With STATE_MATRIX_OUT set to a directory, each
+// cell is also written there as <part>/<state>_<brightness>.png.
 import 'dart:convert';
 import 'dart:io';
 import 'dart:ui' as ui;
@@ -315,9 +314,7 @@ String _slug(String s) => s
 
 const _stage = ValueKey('stage');
 
-/// The goldens are kept beside the catalog and laid here by the package
-/// build; a published or vendored copy goes without them, and compares
-/// nothing.
+/// Compare saved images when they are available, or record them when requested.
 final bool _recorded =
     autoUpdateGoldenFiles || Directory('test/goldens').existsSync();
 
@@ -438,6 +435,14 @@ Future<void> _matrix(
     TestGesture? mouse;
     switch (state) {
       case 'hovered':
+        // A pointer that hovers is a mouse, which a desktop shows hover
+        // for; the test's default platform would start in touch mode.
+        FocusManager.instance.highlightStrategy =
+            FocusHighlightStrategy.alwaysTraditional;
+        addTearDown(
+          () => FocusManager.instance.highlightStrategy =
+              FocusHighlightStrategy.automatic,
+        );
         mouse = await tester.createGesture(kind: PointerDeviceKind.mouse);
         await mouse.addPointer(location: Offset.zero);
         await mouse.moveTo(at);
@@ -481,7 +486,22 @@ Future<void> _matrix(
       }
       final same = listEquals(pixels, idle);
       if (state == 'hovered') {
-        expect(same, isTrue, reason: 'hovered paints other than idle');
+        const lights = {
+          'Key',
+          'Key, lit',
+          'Key, capless',
+          'Key, destructive',
+          'Checkbox',
+          'Radio',
+          'Switch',
+          'Chip',
+          'Tabs',
+          'Fader',
+          'List row',
+          // Its Choose a file key.
+          'File drop',
+        };
+        expect(same, !lights.contains(part.name), reason: part.name);
       } else {
         expect(same, isFalse, reason: '$state paints as idle does');
       }
@@ -492,7 +512,11 @@ Future<void> _matrix(
       await held.moveTo(const Offset(470, 510));
       await held.up();
     }
-    if (mouse != null) await mouse.removePointer();
+    if (mouse != null) {
+      await mouse.removePointer();
+      FocusManager.instance.highlightStrategy =
+          FocusHighlightStrategy.automatic;
+    }
     await tester.pumpAndSettle();
   }
   // Leave nothing running: a tooltip's timer.

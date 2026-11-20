@@ -78,8 +78,7 @@ class _Framed extends StatelessWidget {
   );
 }
 
-// Catalog specimens: one still per part, drawn the same in every preset;
-// the stage chooses the preset.
+// Each example inherits its appearance from the surrounding preview.
 
 Widget kitSpecimenScreen() => Builder(
   builder: (context) {

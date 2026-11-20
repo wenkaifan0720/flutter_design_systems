@@ -144,8 +144,7 @@ void main() {
     await tester.sendKeyEvent(LogicalKeyboardKey.tab);
     await tester.pumpAndSettle();
     final (after, _) = await _pixels(tester);
-    // The key's edge lights at 3:1 over a 2 px perimeter, and the words
-    // stay as they were.
+    // Only the fitted checkbox changes. The words share the hit target.
     final origin = tester.getTopLeft(find.byKey(_frame));
     final key = tester
         .getRect(
@@ -161,17 +160,22 @@ void main() {
         )
         .shift(-origin);
     final words = tester.getRect(find.text('Send the invoice')).shift(-origin);
-    final edge = key.inflate(StudioMetrics.focusWidth + 0.5);
-    var lit = 0, inWords = 0;
+    final edge = key.inflate(0.5);
+    var lit = 0, inWords = 0, outside = 0;
     for (var i = 0; i + 3 < before.length; i += 4) {
       final at = Offset((i ~/ 4) % width / 2, (i ~/ 4) ~/ width / 2);
       final a = _luminance(before, i), b = _luminance(after, i);
       final ratio = (math.max(a, b) + 0.05) / (math.min(a, b) + 0.05);
-      if (ratio < 3) continue;
-      if (edge.contains(at)) lit++;
+      if (ratio < 1.025) continue;
+      if (edge.contains(at)) {
+        lit++;
+      } else {
+        outside++;
+      }
       if (words.contains(at)) inWords++;
     }
-    expect(lit, greaterThanOrEqualTo(2 * 4 * StudioCheckbox.size * 4 * 0.8));
+    expect(lit, greaterThan(0));
+    expect(outside, 0);
     expect(inWords, 0);
     await tester.sendKeyEvent(LogicalKeyboardKey.space);
     await tester.pumpAndSettle();

@@ -244,12 +244,18 @@ void main() {
       },
     );
     testWidgets(
-      'menu rows follow the list bezel and tab lamps sit above the groove at ${width.toInt()}',
+      'a held menu row sinks a slot that follows the list bezel, and tab '
+      'lamps sit above the groove at ${width.toInt()}',
       (tester) async {
-        Widget menu(bool selected) => SizedBox(
+        // Focus and hover light the row's legend; only a held press sinks
+        // its slot into the glass.
+        Widget menu(bool held) => SizedBox(
           width: 240,
           child: StudioListBezel(
-            child: StudioMenuRow(label: 'Settings', highlighted: selected),
+            child: StudioMenuRow(
+              label: 'Settings',
+              states: {if (held) WidgetState.pressed},
+            ),
           ),
         );
         final idle = await _paint(tester, width, menu(false));

@@ -72,15 +72,6 @@ void main() {
       semanticLabel: 'Episode',
       child: const Text('Episode'),
     ),
-    'a key bank': (hit) => StudioSegmentedButton<int>(
-      semanticLabel: 'Speed',
-      segments: const [
-        StudioSegment(value: 1, label: '1×'),
-        StudioSegment(value: 2, label: '2×'),
-      ],
-      value: 1,
-      onChanged: (_) => hit(),
-    ),
     'the key bank bar': (hit) => StudioNavigationBar(
       destinations: const [
         StudioDestination(icon: Icon(LucideIcons.house), label: 'Home'),
@@ -147,6 +138,38 @@ void main() {
     await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
     await tester.pumpAndSettle();
     expect(chosen, [1]);
+  });
+
+  // A key bank is a radio group: one stop, on the latched key, where Enter
+  // and Space change nothing, and the arrows latch as they move.
+  testWidgets('the arrows latch a key in a bank on the web', (tester) async {
+    final chosen = <int>[];
+    await tester.pumpWidget(
+      _app(
+        StudioSegmentedButton<int>(
+          semanticLabel: 'Speed',
+          segments: const [
+            StudioSegment(value: 1, label: '1×'),
+            StudioSegment(value: 2, label: '2×'),
+          ],
+          value: 1,
+          onChanged: chosen.add,
+        ),
+      ),
+    );
+    await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+    await tester.pump();
+    for (final key in const [
+      LogicalKeyboardKey.enter,
+      LogicalKeyboardKey.space,
+    ]) {
+      await tester.sendKeyEvent(key);
+      await tester.pumpAndSettle();
+    }
+    expect(chosen, isEmpty);
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
+    await tester.pumpAndSettle();
+    expect(chosen, [2]);
   });
 
   testWidgets(

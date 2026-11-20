@@ -74,9 +74,8 @@ class StudioFace with Diagnosticable {
   /// A sunk face's inner rim, lit: a focused field's glass.
   final Color rim;
 
-  /// The keyboard focus light: the face's edge lit in it, hugging its
-  /// outline with no gap, and a soft amber glow round it; transparent when
-  /// not focused.
+  /// The keyboard backlight along the inside of the face. A transparent
+  /// color leaves the light off.
   final Color focus;
 
   /// Whether the metal shows its brush ([StudioThemeData.textureStrength]).
@@ -372,20 +371,17 @@ void _paintFace(
     }
     _paintBody(canvas, rect, body, rest, face, light, ratio, sink);
     if (layered) canvas.restore();
+  } else {
+    // A capless key's lit rim, with no cap round it.
+    _paintRim(canvas, body, face.rim);
   }
   if (face.focus.a > 0) {
     paintStudioFocusLight(canvas, body, face.focus, light, inside: inBank);
   }
 }
 
-/// Paints Studio's keyboard focus round [outline] on [canvas]: the edge lit
-/// in [focus], [StudioMetrics.focusWidth] of it hugging the outline with no
-/// gap, and a soft glow of the indicator's amber beyond it, as lit studio
-/// gear shows it. Nothing lights inside the outline, so the face and its
-/// words are untouched. A key [inside] a bank stands in its socket with no
-/// room round it: its edge lights just inside its own outline, the glow
-/// inward, so nothing spills on its neighbours. [focus]'s alpha fades the
-/// whole light.
+/// Lights the edge within [outline]. A key [inside] a bank uses the inner lip
+/// of its socket. The light stays on the face and follows [focus]'s opacity.
 void paintStudioFocusLight(
   Canvas canvas,
   RRect outline,
@@ -394,32 +390,19 @@ void paintStudioFocusLight(
   bool inside = false,
 }) {
   if (focus.a == 0) return;
-  final night = light.colors.brightness == Brightness.dark;
-  const w = StudioMetrics.focusWidth;
-  final glow = Paint()
-    ..color = light.colors.indicator.withValues(
-      alpha: focus.a * (night ? 0.55 : 0.7),
-    )
-    ..maskFilter = MaskFilter.blur(
-      inside ? BlurStyle.inner : BlurStyle.outer,
-      inside ? 4 : 6,
-    );
-  final edge = Paint()
-    ..style = PaintingStyle.stroke
-    ..strokeWidth = w
-    ..color = focus;
-  if (inside) {
-    canvas
-      ..save()
-      ..clipRRect(outline)
-      ..drawRRect(outline, glow)
-      ..drawRRect(outline.deflate(w / 2), edge)
-      ..restore();
-  } else {
-    canvas
-      ..drawRRect(outline, glow)
-      ..drawRRect(outline.inflate(w / 2), edge);
-  }
+  const width = StudioMetrics.focusWidth;
+  final inset = inside ? width : width / 2;
+  canvas.drawRRect(
+    outline.deflate(inset),
+    Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = width
+      ..color = Color.lerp(
+        light.colors.indicator,
+        focus,
+        0.2,
+      )!.withValues(alpha: focus.a * 0.7),
+  );
 }
 
 void _paintBody(
@@ -554,15 +537,18 @@ void _paintBody(
         ..color = light.colors.legend,
     );
   }
-  if (face.rim.a > 0) {
-    canvas.drawRRect(
-      body.deflate(1.5),
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.5
-        ..color = face.rim,
-    );
-  }
+  _paintRim(canvas, body, face.rim);
+}
+
+void _paintRim(Canvas canvas, RRect body, Color rim) {
+  if (rim.a <= 0) return;
+  canvas.drawRRect(
+    body.deflate(1.5),
+    Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.5
+      ..color = rim,
+  );
 }
 
 void _fill(Canvas canvas, RRect body, Color top, Color low) {
@@ -717,12 +703,16 @@ extension StudioBacklight on StudioFace {
   /// beyond it, with its legend and lamp lit, so a latched key reads lit
   /// rather than filled or switched off beside its bright neighbours. Its
   /// legend keeps 4.5:1. By night the cap stays dark and its legend glows.
-  StudioFace backlitIf(StudioColors c, bool latched) {
+  ///
+  /// The lit rim is where a key's focus light falls, so a [focused] latched
+  /// key's edge light glows at full strength in [StudioColors.focusRing]
+  /// instead: the same rim, brighter, with nothing added round it.
+  StudioFace backlitIf(StudioColors c, bool latched, {bool focused = false}) {
     if (!latched || c.brightness == Brightness.dark) return this;
     return copyWith(
       fill: Color.lerp(c.key, c.indicator, 0.05),
       fillLow: Color.lerp(c.key, c.indicator, 0.14),
-      rim: c.indicator.withValues(alpha: 0.75),
+      rim: focused ? c.focusRing : c.indicator.withValues(alpha: 0.75),
       glow: c.indicator.withValues(alpha: 0.4),
     );
   }

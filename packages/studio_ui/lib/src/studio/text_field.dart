@@ -297,9 +297,6 @@ class _StudioTextFieldState extends State<StudioTextField> {
       c.displayFace.copyWith(
         radius: StudioRadii.key,
         rim: rim,
-        // Focus lights the window's edge, as it does a key's: however it
-        // came, it is where the typing goes.
-        focus: focused ? c.focusRing : c.focusRing.withValues(alpha: 0),
         foreground: words.color,
         // A disabled window is unlit glass, near the metal's tone.
         fill: widget.enabled ? null : Color.lerp(c.display, c.panelLow, 0.6),

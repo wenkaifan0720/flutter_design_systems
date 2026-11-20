@@ -1,10 +1,8 @@
-// Gear does not light under a finger: a pointer over a key, a switch, a fader
-// or a row changes nothing it paints, every pressable in every inventory
-// specimen, by day and by night, the same pixels hovered as idle. What the
-// pointer does show is the cursor: a click over what presses, text over a
-// field, the plain arrow over a disabled part. The rows a pointer changes on
-// purpose are listed with why, and not compared: a desk's dense navigators sink
-// the slot under the pointer, so the row it would take reads before a click.
+// A pointer over any pressable in the component inventory, by day and by
+// night, keeps the part's size and place, leaves a disabled part as it was,
+// and shows the cursor its kind calls for: a click over what presses, text
+// over a field, the plain arrow over a disabled part. Composite samples whose
+// rows follow the pointer on purpose are listed with the reason.
 // ignore_for_file: avoid_relative_lib_imports
 import 'dart:typed_data';
 import 'dart:ui' as ui;
@@ -18,7 +16,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import '../example/lib/kit_gallery/kit.dart';
 
-/// Rows a pointer may change on purpose, each with why.
+/// Composite samples that may change under the pointer independently of a disabled target.
 const pointerFollowing = <String, String>{
   'MenuBar': "a menu bar's title sinks its slot under the pointer",
   'DataTable': "a table's row sinks its slot under the pointer",
@@ -43,7 +41,7 @@ Future<Uint8List> _pixels(WidgetTester tester, GlobalKey key) async {
 void main() {
   for (final brightness in Brightness.values) {
     testWidgets(
-      '${brightness.name}: hovering paints nothing, the cursor tells',
+      '${brightness.name}: hover preserves target geometry and the disabled state',
       (tester) async {
         tester.view.physicalSize = const Size(390, 1200);
         tester.view.devicePixelRatio = 1;
@@ -57,7 +55,7 @@ void main() {
             SystemMouseCursors.basic;
         final changed = <String>[];
         final cursors = <String>[];
-        var compared = 0;
+        var targets = 0;
         for (final entry in StudioInventory.registry.entries) {
           final builder = entry.builder;
           if (builder == null) continue;
@@ -104,7 +102,9 @@ void main() {
             final why = '${entry.row} press $i';
             await mouse.moveTo(const Offset(-10, -10));
             await tester.pump(const Duration(milliseconds: 50));
-            final idle = compare ? await _pixels(tester, key) : null;
+            final idle = compare && !enabled
+                ? await _pixels(tester, key)
+                : null;
             await mouse.moveTo(box.center);
             await tester.pump(const Duration(milliseconds: 50));
             final over = cursor();
@@ -118,6 +118,8 @@ void main() {
                       .getRect(find.byElementPredicate((x) => x == e))
                       .contains(box.center),
                 );
+            expect(tester.getRect(press), box, reason: why);
+            targets++;
             if (!inner) {
               final want = !enabled
                   ? [SystemMouseCursors.basic]
@@ -126,8 +128,7 @@ void main() {
                   : [SystemMouseCursors.click, SystemMouseCursors.text];
               if (!want.contains(over)) cursors.add('$why: $over');
             }
-            if (idle != null) {
-              compared++;
+            if (idle != null && !inner) {
               final hovered = await _pixels(tester, key);
               if (!listEquals(idle, hovered)) changed.add(why);
             }
@@ -151,14 +152,11 @@ void main() {
         // Leave nothing running: a toast's or a tooltip's timer.
         await tester.pumpWidget(const SizedBox.shrink());
         await tester.pump(const Duration(seconds: 5));
-        debugPrint(
-          'HOVER ${brightness.name}: $compared parts compared idle and hovered',
-        );
-        expect(compared, greaterThan(60));
+        expect(targets, greaterThan(60));
         expect(
           changed,
           isEmpty,
-          reason: 'Hover changed the paint: ${changed.join(', ')}',
+          reason: 'Hover changed a disabled control: ${changed.join(', ')}',
         );
         expect(cursors, isEmpty, reason: 'Wrong cursor: ${cursors.join('; ')}');
       },

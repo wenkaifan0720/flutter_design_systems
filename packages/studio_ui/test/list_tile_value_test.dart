@@ -1,8 +1,4 @@
-// A list tile's value at the end takes its own width, up to under half the
-// row, and the title the rest: a short date beside a title leaves the title
-// the row (Stint's Up next wrapped "Proof the studio map" at half the row,
-// the date's slot as wide as the title's, in Appliance, whose tile Studio's
-// shares), and a long value ends in an ellipsis short of the title.
+// A trailing value uses its measured width and leaves the rest of the row for the title.
 import 'package:material_ui/material_ui.dart' show MaterialApp;
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';

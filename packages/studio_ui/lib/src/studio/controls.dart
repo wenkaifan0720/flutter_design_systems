@@ -171,6 +171,7 @@ class StudioFader extends StatefulWidget {
 
 class _StudioFaderState extends State<StudioFader> {
   bool _focused = false;
+  bool _hovered = false;
   bool _held = false;
 
   double get _t =>
@@ -219,6 +220,7 @@ class _StudioFaderState extends State<StudioFader> {
       {
         if (!enabled) WidgetState.disabled,
         if (_focused) WidgetState.focused,
+        if (_hovered) WidgetState.hovered,
         if (_held) WidgetState.pressed,
       },
     );
@@ -240,7 +242,17 @@ class _StudioFaderState extends State<StudioFader> {
         enabled: enabled,
         held: _held,
         ticks: ticks,
-        focus: _focused ? c.focusRing : null,
+        indexColor: !enabled
+            ? c.disabled
+            : Color.lerp(
+                c.legend,
+                layered.fill ?? c.indicator,
+                _focused
+                    ? 0.85
+                    : _hovered
+                    ? 0.14
+                    : 0,
+              )!,
         ratio: MediaQuery.maybeDevicePixelRatioOf(context) ?? 1,
       ),
       child: along
@@ -319,6 +331,7 @@ class _StudioFaderState extends State<StudioFader> {
         mouseCursor: enabled
             ? SystemMouseCursors.click
             : SystemMouseCursors.basic,
+        onShowHoverHighlight: (v) => setState(() => _hovered = v),
         onShowFocusHighlight: (v) => setState(() => _focused = v),
         shortcuts: _stepKeys(rtl, widget.axis),
         actions: {
@@ -349,7 +362,7 @@ class _FaderPainter extends CustomPainter {
     required this.enabled,
     required this.held,
     required this.ticks,
-    required this.focus,
+    required this.indexColor,
     required this.ratio,
   });
 
@@ -361,7 +374,7 @@ class _FaderPainter extends CustomPainter {
   final bool enabled;
   final bool held;
   final int ticks;
-  final Color? focus;
+  final Color indexColor;
   final double ratio;
 
   @override
@@ -454,7 +467,6 @@ class _FaderPainter extends CustomPainter {
         radius: StudioRadii.cap,
         travel: held ? 0.5 : 0,
         brushed: true,
-        focus: focus ?? const Color(0x00000000),
       ),
       light,
       ratio: ratio,
@@ -466,7 +478,7 @@ class _FaderPainter extends CustomPainter {
       Offset(x, capRect.bottom - 5 + sink),
       Paint()
         ..strokeWidth = 2
-        ..color = enabled ? c.legend : c.disabled,
+        ..color = indexColor,
     );
     canvas.restore();
   }
@@ -481,7 +493,7 @@ class _FaderPainter extends CustomPainter {
       old.enabled != enabled ||
       old.held != held ||
       old.ticks != ticks ||
-      old.focus != focus ||
+      old.indexColor != indexColor ||
       old.ratio != ratio;
 }
 

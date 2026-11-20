@@ -48,7 +48,7 @@ abstract final class StudioMetrics {
   static const double focusGap = 2;
 
   /// The width of a focused face's lit edge, hugging its outline.
-  static const double focusWidth = 3;
+  static const double focusWidth = 1.5;
 
   /// How far a pressed key sinks.
   static const double pressTravel = 1.5;

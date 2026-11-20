@@ -44,7 +44,11 @@ StudioFace _keyFace(
             : c.onKey,
         focus: _ring(c, states),
       )
-      .backlitIf(c, latched && !disabled);
+      .backlitIf(
+        c,
+        latched && !disabled,
+        focused: states.contains(WidgetState.focused),
+      );
 }
 
 // The graphite main key's face in [states].
@@ -788,8 +792,6 @@ class StudioLink extends StatelessWidget {
               color: ink,
               fontWeight: FontWeight.w500,
               decoration: TextDecoration.underline,
-              // The pointer over it changes nothing it paints (polish3
-              // §1); the cursor says it can be followed.
               decorationColor: disabled ? c.disabled : c.legendMuted,
             )
             .merge(layered.textStyle);

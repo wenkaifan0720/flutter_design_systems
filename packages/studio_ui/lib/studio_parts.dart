@@ -15,6 +15,7 @@ export 'package:ui_core/inventory.dart';
 export 'studio_ui.dart';
 export 'studio_host.dart';
 export 'src/studio/internal/brush.dart';
+export 'src/studio/internal/control_light.dart';
 export 'src/studio/internal/curved.dart';
 export 'src/studio/internal/focus_light.dart';
 export 'src/studio/internal/inventory.dart';

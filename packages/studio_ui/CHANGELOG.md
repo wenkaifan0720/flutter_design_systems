@@ -1,3 +1,11 @@
+## 0.1.5
+
+- Keyboard focus and hover brighten existing lamps, fader marks and tab indicators. Text fields and displays light their inner lip. A menu command lights its legend on focus and depresses while held.
+- A focused part whose lamp is already lit shows focus on its edge, since a brighter lamp would barely show: by day a latched key, checked checkbox, chosen radio or selected navigation item brightens its amber rim to full strength, and by day and night a chosen radio, an on switch's cap, a lit key, a playing or recording transport key and a destructive key (its red legend already lit) light their rim the same way. A focused chip lights its rim too, selected or not, and leaves its lamp to show only whether it is selected.
+- Stands on ui_core 0.3.4 and uses ui_core_test 0.1.4 for qualification. `StudioRadioGroup` is built on ui_core's `DesignRadioGroup`, over Flutter's `RadioGroup`. Tab enters at the checked option, or at the first option that can be chosen when the checked one is turned off or nothing is chosen. A turned-off option that is chosen still reads as checked. The arrows, Home and End choose as before.
+- `StudioSegmentedButton` reads as a group of radios, the latched key checked. Tab reaches the bank once, at its latched key, where each key was a Tab stop before. The arrows latch the next or the previous key and wrap at the ends; Home and End still latch the first and the last.
+- A selectable `StudioDataTable` row reads as a checkbox, checked when selected, from ui_core 0.3.4's `DesignDataTable`. It read as a button as well.
+
 ## 0.1.4
 
 - Bar, line and area charts draw Arabic day names and axis digits with the bundled Noto Sans Arabic face. The charts measure labels in the reader’s locale and repaint when additional script fonts arrive.

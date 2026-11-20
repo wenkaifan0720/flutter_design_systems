@@ -1,11 +1,5 @@
-// The parts Studio moved onto ui_core 0.3.0, opened and closed at a phone's
-// width and a desk's, by day and by night, left to right and right to left:
-// each opens, stands, and closes again, and its focus comes back.
-//
-// With ADOPTED_OUT set to a directory, each step is also written there
-// (<part>_<width>_<brightness>_<direction>_<step>.png: the first frame, a
-// tenth of a second in, at rest, a tenth of a second into closing, closed),
-// for a look at how they move.
+// Track opening, closing and focus restoration across window widths, themes and text directions.
+// Set STUDIO_TRANSITION_FRAMES to save the frames from each transition.
 import 'dart:convert';
 import 'dart:io';
 import 'dart:ui' as ui;
@@ -36,7 +30,7 @@ Future<void> _loadFonts() async {
   }
 }
 
-final String? _out = Platform.environment['ADOPTED_OUT'];
+final String? _out = Platform.environment['STUDIO_TRANSITION_FRAMES'];
 
 Future<void> _shot(WidgetTester tester, String name) async {
   final out = _out;

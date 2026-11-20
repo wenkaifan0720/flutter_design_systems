@@ -6,6 +6,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
+import 'internal/control_light.dart';
+
 import 'surface.dart';
 import 'theme.dart';
 
@@ -172,8 +174,9 @@ class StudioButton extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       if (lit) ...[
-                        StudioLamp(
+                        StudioControlLamp(
                           on: !disabled,
+                          states: states,
                           size: 6,
                           color: isDestructiveAction
                               ? theme.colors.danger
@@ -220,42 +223,49 @@ class StudioButton extends StatelessWidget {
         ? c.legendMuted
         : c.disabled;
     final pressed = states.contains(WidgetState.pressed);
-    final focus = states.contains(WidgetState.focused)
-        ? c.focusRing
-        : c.focusRing.withValues(alpha: 0);
+    final cue = studioControlLight(states);
+    Color legend(Color ink) => Color.lerp(ink, c.litLegend, cue)!;
+    // A destructive legend is already lit red and a lit key's lamp is already
+    // on: a brighter legend or lamp would barely show, so focus lights the
+    // key's rim.
+    final edge = studioLitFocus(
+      c,
+      states,
+      lit: isDestructiveAction || _kind == _KeyKind.lit,
+    );
     switch (_kind) {
       case _KeyKind.text:
         return c.recessFace.copyWith(
           radius: StudioRadii.key,
           presence: pressed ? 1 : 0,
+          rim: edge,
           foreground: disabled
               ? disabledInk
               : isDestructiveAction
-              ? c.dangerLegend
-              : c.legend,
-          focus: focus,
+              ? Color.lerp(c.dangerLegend, c.litLegend, cue * 0.35)!
+              : legend(c.legend),
         );
       case _KeyKind.plain:
         return c.keyFace.copyWith(
           travel: pressed ? 1 : 0,
+          rim: edge,
           foreground: disabled
               ? disabledInk
               : isDestructiveAction
-              ? c.dangerLegend
-              : c.onKey,
+              ? Color.lerp(c.dangerLegend, c.litLegend, cue * 0.35)!
+              : legend(c.onKey),
           fill: disabled ? Color.lerp(c.key, c.panelLow, 0.5) : null,
-          focus: focus,
         );
       case _KeyKind.lit:
         // The graphite key; with no power its legend and lamp are out.
         return c.litKeyFace.copyWith(
           travel: pressed ? 1 : 0,
+          rim: edge,
           foreground: disabled
               ? c.onLitKeyOff
               : isDestructiveAction
               ? c.onLitKeyDanger
               : c.onLitKey,
-          focus: focus,
         );
     }
   }
@@ -357,7 +367,11 @@ class StudioIconButton extends StatelessWidget {
                     ? c.focusRing
                     : c.focusRing.withValues(alpha: 0),
               )
-              .backlitIf(c, latched && !disabled),
+              .backlitIf(
+                c,
+                latched && !disabled,
+                focused: states.contains(WidgetState.focused),
+              ),
         );
         final side = layered.minimumSize?.height ?? theme.controlHeight;
         return DesignTapTarget(
@@ -471,6 +485,9 @@ class StudioTransportKey extends StatelessWidget {
           focus: states.contains(WidgetState.focused)
               ? c.focusRing
               : c.focusRing.withValues(alpha: 0),
+          // Its lamp is already lit while it plays or records, so focus
+          // lights its rim as well.
+          rim: studioLitFocus(c, states, lit: lit),
         );
         return DesignTapTarget(
           child: SizedBox.square(

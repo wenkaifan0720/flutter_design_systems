@@ -13,6 +13,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import 'button.dart';
 import 'internal/strip.dart';
+import 'internal/control_light.dart';
 import 'surface.dart';
 import 'theme.dart';
 
@@ -296,7 +297,11 @@ class _BankFace extends StatelessWidget {
                 ? c.focusRing
                 : c.focusRing.withValues(alpha: 0),
           )
-          .backlitIf(c, selected),
+          .backlitIf(
+            c,
+            selected,
+            focused: states.contains(WidgetState.focused),
+          ),
     );
     return AnimatedStudioSurface.inBank(
       face: face,
@@ -838,7 +843,11 @@ class _SideFace extends StatelessWidget {
                 ? c.focusRing
                 : c.focusRing.withValues(alpha: 0),
           )
-          .backlitIf(c, selected),
+          .backlitIf(
+            c,
+            selected,
+            focused: states.contains(WidgetState.focused),
+          ),
     );
     return SizedBox(
       height: height,
@@ -1000,9 +1009,21 @@ class _StudioTabBarState extends State<StudioTabBar>
               bottom: 0,
               child: StudioGroove(),
             ),
+            // The lit bar, under the chosen legend, on the tabs' spring.
+            Positioned.fill(
+              child: IgnorePointer(
+                child: CustomPaint(
+                  painter: _TabLightPainter(
+                    at: _controller.animation,
+                    tabs: _keys.take(widget.tabs.length).toList(),
+                    row: _row,
+                    color: bar,
+                  ),
+                ),
+              ),
+            ),
             // The tabs stand in the content column: the first legend's words
-            // start on its edge (its focus ring drawn round them, into the
-            // margin), and a tap meets what a screen reader outlines.
+            // start on its edge, with room for the indicator beneath them.
             DesignTabBar(
               key: _row,
               controller: _controller,
@@ -1036,11 +1057,14 @@ class _StudioTabBarState extends State<StudioTabBar>
                         widthFactor: 1,
                         child: CustomPaint(
                           key: _keys[i],
-                          foregroundPainter: _RingPainter(
-                            states.contains(WidgetState.focused)
-                                ? c.focusRing
-                                : null,
-                            StudioLight.of(context),
+                          foregroundPainter: _TabLegendLight(
+                            color: Color.lerp(
+                              bar,
+                              const Color(0xFFFFFFFF),
+                              0.5,
+                            )!,
+                            amount: studioControlLight(states),
+                            height: height,
                           ),
                           child: TweenAnimationBuilder<Color?>(
                             tween: ColorTween(end: ink),
@@ -1067,19 +1091,6 @@ class _StudioTabBarState extends State<StudioTabBar>
                 );
               },
             ),
-            // The lit bar, under the chosen legend, on the tabs' spring.
-            Positioned.fill(
-              child: IgnorePointer(
-                child: CustomPaint(
-                  painter: _TabLightPainter(
-                    at: _controller.animation,
-                    tabs: _keys.take(widget.tabs.length).toList(),
-                    row: _row,
-                    color: bar,
-                  ),
-                ),
-              ),
-            ),
           ],
         ),
       ),
@@ -1087,43 +1098,33 @@ class _StudioTabBarState extends State<StudioTabBar>
   }
 }
 
-/// Studio's focus light round a legend's words, outside their box, so the
-/// words stand where the layout puts them: the lit edge and its amber glow
-/// as a key's, round the legend's plate.
-class _RingPainter extends CustomPainter {
-  _RingPainter(this.color, this.light);
-
-  /// How far the lit edge stands out from the words, its outer side.
-  static const reach = Offset(StudioSpacing.tight, StudioSpacing.hair);
-
-  final Color? color;
-  final StudioLight light;
+// The brighter centre of the indicator lies in the groove beneath the legend.
+class _TabLegendLight extends CustomPainter {
+  const _TabLegendLight({
+    required this.color,
+    required this.amount,
+    required this.height,
+  });
+  final Color color;
+  final double amount;
+  final double height;
 
   @override
   void paint(Canvas canvas, Size size) {
-    final ring = color;
-    if (ring == null) return;
-    const w = StudioMetrics.focusWidth;
-    final plate = Rect.fromLTRB(
-      -reach.dx + w,
-      -reach.dy + w,
-      size.width + reach.dx - w,
-      size.height + reach.dy - w,
-    );
-    paintStudioFocusLight(
-      canvas,
-      RRect.fromRectAndRadius(
-        plate,
-        const Radius.circular(StudioRadii.small - w),
-      ),
-      ring,
-      light,
+    if (amount == 0) return;
+    final y = (height + size.height) / 2 - 0.5;
+    canvas.drawLine(
+      Offset(-StudioSpacing.tight + 1, y),
+      Offset(size.width + StudioSpacing.tight - 1, y),
+      Paint()
+        ..strokeWidth = 1.5
+        ..color = color.withValues(alpha: amount),
     );
   }
 
   @override
-  bool shouldRepaint(_RingPainter old) =>
-      old.color != color || old.light != light;
+  bool shouldRepaint(_TabLegendLight old) =>
+      old.color != color || old.amount != amount || old.height != height;
 }
 
 class _TabLightPainter extends CustomPainter {
@@ -1166,8 +1167,8 @@ class _TabLightPainter extends CustomPainter {
     final i = at.floor().clamp(0, rects.length - 1);
     final j = (i + 1).clamp(0, rects.length - 1);
     final t = (at - i).clamp(0.0, 1.0);
-    final a = rects[i].inflate(_RingPainter.reach.dx);
-    final b = rects[j].inflate(_RingPainter.reach.dx);
+    final a = rects[i].inflate(StudioSpacing.tight);
+    final b = rects[j].inflate(StudioSpacing.tight);
     final left = a.left + (b.left - a.left) * t;
     final right = a.right + (b.right - a.right) * t;
     final r = RRect.fromLTRBR(

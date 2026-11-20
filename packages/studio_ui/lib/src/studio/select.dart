@@ -11,6 +11,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
+import 'internal/control_light.dart';
+
 import 'internal/list_keys.dart';
 import 'internal/stepper_glyph.dart';
 import 'surface.dart';
@@ -338,7 +340,7 @@ class StudioMenuEntry<T> {
 /// The list an open select or menu shows: rows on glass in a raised bezel,
 /// each row inset 4 px from the bezel so its corners are concentric with it.
 /// The chosen row's lamp is lit; the keyboard's row, and the pointer's once
-/// it moves, sits in a recessed slot. Opened, the keyboard goes to the chosen
+/// it moves, lights its legend. Opened, the keyboard goes to the chosen
 /// row (else the first), scrolled into view; a pointer that opened it lights
 /// no row until it moves.
 ///
@@ -528,11 +530,9 @@ class StudioListBezel extends StatelessWidget {
   }
 }
 
-/// One row of an open list, drawn for its [states]: [highlighted] (the
-/// keyboard's row, or the pointer's) sits in a slot pressed into the glass,
-/// its corners concentric with the bezel's; [chosen] lights its lamp at the
-/// row's end and sets its words heavier; a disabled row's words are grey, a
-/// destructive row's red. Its words stand where a field's words stand.
+/// A row in an open list. Keyboard focus and hover illuminate its legend.
+/// Holding the row depresses its slot. A [chosen] row has a lit lamp and
+/// heavier text. Disabled and destructive rows use their own legend colours.
 ///
 /// A list's own behaviour (keys, focus, a press) is the caller's; this is
 /// the paint every Studio list shares.
@@ -562,8 +562,7 @@ class StudioMenuRow extends StatelessWidget {
   /// disabled.
   final Set<WidgetState> states;
 
-  /// Whether it sits in the lit slot; by default when [states] has focused
-  /// or hovered.
+  /// Whether the command legend is lit. By default focus or hover lights it.
   final bool? highlighted;
 
   /// Whether it is the list's value; by default when [states] has selected.
@@ -589,24 +588,25 @@ class StudioMenuRow extends StatelessWidget {
     final theme = StudioTheme.of(context);
     final c = theme.colors;
     final disabled = states.contains(WidgetState.disabled);
-    final here =
-        highlighted ??
-        (states.contains(WidgetState.focused) ||
-            states.contains(WidgetState.hovered));
+    final cue = highlighted == false || disabled
+        ? 0.0
+        : highlighted == true && !states.contains(WidgetState.hovered)
+        ? 0.72
+        : studioControlLight(states);
     final pressed = states.contains(WidgetState.pressed);
     final isChosen = chosen ?? states.contains(WidgetState.selected);
     final words = disabled
         ? c.disabled
         : isDestructiveAction
         ? c.dangerLegend
-        : c.onDisplay;
+        : Color.lerp(c.onDisplay, c.litLegend, cue)!;
     final slot = StudioFace(
       fill: Color.lerp(c.displayLow, c.shadow, 0.06)!,
       fillLow: Color.lerp(c.display, c.shadow, 0.03)!,
       depth: StudioDepth.sunk,
       radius: StudioRadii.bank - StudioMetrics.recessInset,
       foreground: words,
-      presence: (here && !disabled) || pressed ? 1 : 0,
+      presence: pressed && !disabled ? 1 : 0,
     );
     return SizedBox(
       height: height ?? theme.controlHeight,
@@ -660,7 +660,7 @@ class StudioMenuRow extends StatelessWidget {
               ],
               if (showLamp) ...[
                 const SizedBox(width: StudioSpacing.medium),
-                StudioLamp(on: isChosen && !disabled),
+                StudioControlLamp(on: isChosen && !disabled, states: states),
               ],
             ],
           ),

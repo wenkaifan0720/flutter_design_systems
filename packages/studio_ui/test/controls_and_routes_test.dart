@@ -1,7 +1,4 @@
-// The parts Studio runs on ui_core, held to how they behave in an app (the
-// module's own package, as the design-systems gate composes it). The full
-// suite (every part's states, motion, goldens and Roomtone's screens) runs
-// on the exported package, studio_ui.
+// Keyboard, pointer and overlay behavior of the public controls.
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';

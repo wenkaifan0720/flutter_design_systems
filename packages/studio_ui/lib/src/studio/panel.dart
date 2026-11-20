@@ -113,19 +113,17 @@ class StudioDisplay extends StatelessWidget {
           : c.displayFace;
       final pressed = states.contains(WidgetState.pressed);
       final hovered = states.contains(WidgetState.hovered);
+      final focused = states.contains(WidgetState.focused);
       return layered
           .on(base)
           .copyWith(
             rim: c.indicator.withValues(
-              alpha: pressed
+              alpha: pressed || focused
                   ? 0.85
                   : hovered
                   ? 0.35
                   : 0,
             ),
-            focus: states.contains(WidgetState.focused)
-                ? c.focusRing
-                : c.focusRing.withValues(alpha: 0),
           );
     }
 

@@ -16,6 +16,8 @@ import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+import 'internal/control_light.dart';
+
 import 'button.dart';
 import 'controls.dart';
 import 'internal/focus_light.dart';
@@ -1808,9 +1810,15 @@ class StudioChip extends StatelessWidget {
         c.keyFace.copyWith(
           radius: StudioRadii.small,
           travel: selected || states.contains(WidgetState.pressed) ? 1 : 0,
-          fill: disabled ? Color.lerp(c.key, c.panelLow, 0.5) : null,
+          fill: disabled
+              ? Color.lerp(c.key, c.panelLow, 0.5)
+              : states.contains(WidgetState.pressed)
+              ? Color.lerp(c.key, c.keyLow, 0.24)
+              : null,
           foreground: ink,
-          focus: _ring(c, states),
+          // Focus lights the rim, selected or not: the lamp means selected,
+          // and a half-lit lamp would read as half selected.
+          rim: studioLitFocus(c, states, lit: true),
         ),
       );
       return SizedBox(
@@ -1826,7 +1834,11 @@ class StudioChip extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 if (latching) ...[
-                  StudioLamp(on: selected && !disabled, size: 6),
+                  StudioControlLamp(
+                    on: selected && !disabled,
+                    states: states.difference(const {WidgetState.focused}),
+                    size: 6,
+                  ),
                   const SizedBox(width: StudioSpacing.small),
                 ],
                 if (icon != null) ...[

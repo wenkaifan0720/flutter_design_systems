@@ -1,21 +1,14 @@
-/// Studio's keyboard focus as lit gear shows it: the part's own edge lights
-/// amber and the indicator's light spills round it, with no ring drawn
-/// apart from the part.
 library;
 
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
+import '../surface.dart';
 import '../theme.dart';
 
-/// [child], a face with [radius] corners, lit from behind while [edge]
-/// shows: the light comes out of the gap round the face, 3 px of [edge]
-/// hugging its outline with no gap (3:1 and more against what is round the
-/// part, over more than a 2 px perimeter, by day and by night), and a soft
-/// amber glow beyond it. The face itself and its words are untouched.
-/// [sink] moves the light with a key pressed into its socket. A transparent
-/// [edge] puts the light out; it comes and goes on the lamp's spring, cut
-/// under Reduce Motion.
+/// Lights the inner edge of [child] for keyboard focus. The edge follows
+/// the rounded face and moves with its [sink] when the key is held.
+/// A transparent [edge] turns off the light.
 class StudioFocusLight extends StatefulWidget {
   /// [child] lit in [edge].
   const StudioFocusLight({
@@ -77,84 +70,49 @@ class _StudioFocusLightState extends State<StudioFocusLight>
 
   @override
   Widget build(BuildContext context) {
-    final c = StudioTheme.of(context).colors;
+    final light = StudioLight.of(context);
     return AnimatedBuilder(
       animation: _t,
-      builder: (context, child) {
-        final edge = _now;
-        return CustomPaint(
-          painter: _Glow(
-            color: c.indicator.withValues(
-              alpha: edge.a * (c.brightness == Brightness.dark ? 0.55 : 0.7),
-            ),
-            radius: widget.radius,
-            sink: widget.sink,
-          ),
-          foregroundPainter: _Edge(
-            color: edge,
-            radius: widget.radius,
-            sink: widget.sink,
-          ),
-          child: child,
-        );
-      },
+      builder: (context, child) => CustomPaint(
+        foregroundPainter: _Edge(
+          color: _now,
+          light: light,
+          radius: widget.radius,
+          sink: widget.sink,
+        ),
+        child: child,
+      ),
       child: widget.child,
     );
   }
 }
 
-// The lit band's width, all of it outside the face.
-const double _band = StudioMetrics.focusWidth;
-
-RRect _face(Size size, double radius, double sink) => RRect.fromRectAndRadius(
-  (Offset.zero & size).shift(Offset(0, sink)),
-  Radius.circular(radius),
-);
-
-class _Glow extends CustomPainter {
-  _Glow({required this.color, required this.radius, required this.sink});
-
-  final Color color;
-  final double radius;
-  final double sink;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    if (color.a == 0) return;
-    // Only outside the face: nothing lights behind its words.
-    canvas.drawRRect(
-      _face(size, radius, sink),
-      Paint()
-        ..color = color
-        ..maskFilter = const MaskFilter.blur(BlurStyle.outer, 6),
-    );
-  }
-
-  @override
-  bool shouldRepaint(_Glow old) =>
-      old.color != color || old.radius != radius || old.sink != sink;
-}
-
 class _Edge extends CustomPainter {
-  _Edge({required this.color, required this.radius, required this.sink});
+  const _Edge({
+    required this.color,
+    required this.light,
+    required this.radius,
+    required this.sink,
+  });
 
   final Color color;
+  final StudioLight light;
   final double radius;
   final double sink;
 
   @override
   void paint(Canvas canvas, Size size) {
-    if (color.a == 0) return;
-    canvas.drawRRect(
-      _face(size, radius, sink).inflate(_band / 2),
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = _band
-        ..color = color,
+    final outline = RRect.fromRectAndRadius(
+      (Offset.zero & size).shift(Offset(0, sink)),
+      Radius.circular(radius),
     );
+    paintStudioFocusLight(canvas, outline, color, light);
   }
 
   @override
   bool shouldRepaint(_Edge old) =>
-      old.color != color || old.radius != radius || old.sink != sink;
+      old.color != color ||
+      old.light.colors != light.colors ||
+      old.radius != radius ||
+      old.sink != sink;
 }
