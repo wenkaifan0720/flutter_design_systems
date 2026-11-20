@@ -1,8 +1,5 @@
-/// Pickers: Compose's `DatePicker`, `DateRangePicker`, the docked picker,
-/// `DatePickerDialog`, `TimePicker`, `TimeInput`, `TimeScroll` and
-/// `ScrollField` — geometry and colours from the tokens, selection and
-/// validation, the dialogs' draft-and-confirm, and the Cody v2 calendar
-/// tests ported (decision F14).
+/// Calendar, range and time pickers, including validation, drafts, dialog
+/// confirmation and keyboard input.
 library;
 
 import 'package:flutter/foundation.dart' show SynchronousFuture;
@@ -236,7 +233,7 @@ void main() {
     },
   );
 
-  group('Cody v2 ports (F14)', () {
+  group('Calendar selection', () {
     testWidgets('calendar bounds prevent selecting unavailable days', (
       tester,
     ) async {

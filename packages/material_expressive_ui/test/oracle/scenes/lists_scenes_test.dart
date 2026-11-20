@@ -1,9 +1,5 @@
-/// The `lists` oracle group (Compose twin: `ListsScenes.kt`): the list item
-/// in one, two and three lines with leading and trailing slots, a
-/// segmented group of three with its middle item selected, selected,
-/// checked and disabled items, a pressed item's corner morph, and dividers
-/// full and inset (CONTRACT §7 "lists standard/segmented × 1–3 lines ×
-/// slots × selected").
+/// Reference scenes for standard and segmented list items, their interaction
+/// states and dividers.
 library;
 
 import 'package:flutter/widgets.dart';

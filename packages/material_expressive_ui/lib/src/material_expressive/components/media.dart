@@ -332,7 +332,7 @@ class _ShapeArtPainter extends CustomPainter {
       old.glyph != glyph;
 }
 
-/// A picture in a declared media slot (the design kit's resolver), filling
+/// A picture in a declared media slot (the shared resolver), filling
 /// its box by [fit], at [aspectRatio] when given, masked by [corner] on the
 /// theme's corner scale — or, with [ExpressiveMedia.shaped], by a library
 /// shape (a hero moment).

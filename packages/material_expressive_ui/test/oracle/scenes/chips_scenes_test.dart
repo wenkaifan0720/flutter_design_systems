@@ -1,7 +1,5 @@
-/// The `chips` oracle group (Compose twin: `ChipsScenes.kt`): assist,
-/// filter, input and suggestion chips, flat and elevated, selected and
-/// disabled, and the Expressive filter chip's morphing shape at rest,
-/// selected and pressed (CONTRACT §7 "chips").
+/// Reference scenes for assist, filter, input and suggestion chips across
+/// elevations and interaction states.
 library;
 
 import 'package:flutter/widgets.dart';

@@ -1,7 +1,5 @@
-/// The `selection` oracle group (Compose twin: `SelectionScenes.kt`): the
-/// checkbox, the radio button and the switch in every state, the switch's
-/// pressed thumb, and the switch's toggle as per-frame geometry (CONTRACT §7
-/// "selection controls every state", motion "switch").
+/// Reference scenes for checkboxes, radios and switches, including the switch
+/// thumb during a press and toggle.
 library;
 
 import 'package:flutter/rendering.dart';

@@ -233,8 +233,6 @@ class _Indicators extends StatelessWidget {
   );
 }
 
-// Catalog specimens (docs/architecture/component-catalog.md).
-
 /// The multi-browse carousel at rest: a large item, a medium and a small.
 Widget kitSpecimenCarouselMultiBrowse() => ExpressiveCarouselView.multiBrowse(
   itemCount: _places.length,

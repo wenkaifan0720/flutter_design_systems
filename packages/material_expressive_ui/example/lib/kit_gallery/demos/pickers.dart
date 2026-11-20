@@ -532,8 +532,7 @@ class _ScrollState extends State<_Scroll> {
   );
 }
 
-// Catalog specimens (docs/architecture/component-catalog.md): fixed dates,
-// so every capture draws the same month.
+// Fixed dates keep the example calendars on the same month.
 
 /// The calendar with a day chosen, on its dialog container.
 Widget kitSpecimenDatePickerDay() => Builder(

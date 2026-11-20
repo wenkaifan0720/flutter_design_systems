@@ -5,6 +5,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart' show LogicalKeyboardKey;
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
@@ -571,12 +572,12 @@ class ExpressiveToggleButton extends StatelessWidget {
     required this.icon,
     required this.shapes,
     required this._role,
+    this.focusNode,
   }) : shape = ExpressiveButtonShape.round,
        child = null,
        colors = null,
        expand = false,
        semanticLabel = null,
-       focusNode = null,
        _inSegments = true;
 
   /// Whether the button is on.
@@ -1105,6 +1106,7 @@ class ExpressiveSegmentedButton<T> extends StatelessWidget {
               if (segment != value) onChanged(segment);
             },
       role: ExpressivePressRole.radio,
+      radioValue: value,
       kind: kind,
       style: style,
       size: size,
@@ -1265,6 +1267,7 @@ class _ConnectedSegments<T> extends StatelessWidget {
     required this.isSelected,
     required this.onToggle,
     required this.role,
+    this.radioValue,
     required this.kind,
     required this.style,
     required this.size,
@@ -1275,6 +1278,7 @@ class _ConnectedSegments<T> extends StatelessWidget {
   final bool Function(T value) isSelected;
   final ValueChanged<T>? onToggle;
   final ExpressivePressRole role;
+  final T? radioValue;
   final ExpressiveToggleButtonKind kind;
 
   /// Stateful visual overrides before the component theme.
@@ -1288,29 +1292,59 @@ class _ConnectedSegments<T> extends StatelessWidget {
     final connected = _ConnectedMetrics.of(size);
     final count = segments.length;
     final onToggle = this.onToggle;
-    return ExpressiveButtonGroup._connected(
-      size: size,
-      expand: expand,
-      spacing: connected.between,
-      children: <Widget>[
-        // Each segment marks its own drawn face (markFace): an unchosen
-        // tonal one is faint on the page.
-        for (var i = 0; i < count; i++)
-          ExpressiveToggleButton._segment(
-            value: isSelected(segments[i].value),
-            onChanged: onToggle == null || !segments[i].enabled
-                ? null
-                : (_) => onToggle(segments[i].value),
-            label: segments[i].label,
-            icon: segments[i].icon,
-            kind: kind,
-            style: style,
-            size: size,
-            shapes: connected.shapes(first: i == 0, last: i == count - 1),
-            role: role,
-          ),
-      ],
-    );
+    Widget layout(BuildContext context, List<Widget> items) =>
+        ExpressiveButtonGroup._connected(
+          size: size,
+          expand: expand,
+          spacing: connected.between,
+          children: items,
+        );
+
+    Widget segment(int index, FocusNode? node, VoidCallback? activate) {
+      final option = segments[index];
+      final selected = isSelected(option.value);
+      final radio = role == ExpressivePressRole.radio;
+      final button = ExpressiveToggleButton._segment(
+        value: selected,
+        onChanged: activate == null ? null : (_) => activate(),
+        label: option.label,
+        icon: option.icon,
+        kind: kind,
+        style: style,
+        size: size,
+        shapes: connected.shapes(first: index == 0, last: index == count - 1),
+        role: radio ? ExpressivePressRole.radio : ExpressivePressRole.none,
+        focusNode: node,
+      );
+      return radio
+          ? button
+          : MergeSemantics(
+              child: Semantics(toggled: selected, child: button),
+            );
+    }
+
+    if (role == ExpressivePressRole.radio) {
+      final index = {for (var i = 0; i < count; i++) segments[i].value: i};
+      return DesignRadioGroup<T>(
+        options: [for (final option in segments) option.value],
+        value: radioValue,
+        onChanged: onToggle,
+        isEnabled: (value) => segments[index[value]!].enabled,
+        layoutBuilder: layout,
+        itemBuilder: (context, value, node, select) =>
+            segment(index[value]!, node, select),
+      );
+    }
+    return layout(context, [
+      for (var index = 0; index < count; index++)
+        segment(
+          index,
+          null,
+          onToggle == null || !segments[index].enabled
+              ? null
+              : () => onToggle(segments[index].value),
+        ),
+    ]);
   }
 }
 
@@ -2724,10 +2758,10 @@ class _RenderGroup extends RenderBox
 /// apart, the outer corners full and the inner ones small, a pressed
 /// segment's inner corners tighter and a selected one rounded out fully on
 /// the toggle's spring, in the toggle button's colours. Keyboard and
-/// semantics are ui_core's `DesignToggleGroup`: Tab reaches the group once,
-/// at its chosen segment, the arrow keys move along it (mirrored right to
-/// left), Home and End go to its ends, Space and Enter press; one choice is
-/// a radio group to a screen reader. Each segment draws the state layer in
+/// semantics follow the selection mode. A single-choice group is one Tab
+/// stop, and the arrow keys move and choose in reading order. Home and End
+/// focus the first and last enabled options. Multiple-choice groups retain
+/// independent toggles. Each segment draws the state layer in
 /// its own shape and, under keyboard focus, the focus ring round it.
 ///
 /// [ExpressiveToggleGroup] picks one ([value]); [ExpressiveToggleGroup.multiple]
@@ -2783,7 +2817,8 @@ class ExpressiveToggleGroup<T> extends StatelessWidget {
   /// Whether segments show their labels; icons alone when false.
   final bool showLabels;
 
-  /// Whether the arrow keys choose as they move (one choice only).
+  /// Whether Home and End also choose the segment they focus.
+  /// Arrow keys always choose in a single-choice group.
   final bool selectFollowsFocus;
 
   final T? _value;
@@ -2802,88 +2837,126 @@ class ExpressiveToggleGroup<T> extends StatelessWidget {
     final metrics = _ButtonMetrics.of(size);
     final connected = _ConnectedMetrics.of(size);
     final values = <T>[for (final segment in segments) segment.value];
-    final single = _onChanged;
-    final many = _onChangedMany;
-    final ValueChanged<Set<T>>? onChanged = _multiple
-        ? many
-        : single == null
-        ? null
-        : (next) {
-            if (next.isNotEmpty) single(next.first);
-          };
-    return DesignToggleGroup<T>(
-      options: values,
-      selected: _multiple
-          ? _values!
-          : <T>{if (_value != null && values.contains(_value)) _value as T},
-      multiSelectionEnabled: _multiple,
-      emptySelectionAllowed: _multiple,
-      selectFollowsFocus: selectFollowsFocus,
-      isEnabled: (value) => _segment(value).enabled,
-      labelOf: (value) => _segment(value).label,
-      semanticLabel: label,
-      minimumSize: const Size.square(
-        HostBehavior.minimumInteractiveComponentSize,
-      ),
-      onSelectionChanged: onChanged,
-      layoutBuilder: (context, items) => Row(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          for (var i = 0; i < items.length; i++) ...<Widget>[
-            if (i > 0) SizedBox(width: connected.between),
-            items[i],
-          ],
+    Widget layout(BuildContext context, List<Widget> items) => Row(
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        for (var i = 0; i < items.length; i++) ...<Widget>[
+          if (i > 0) SizedBox(width: connected.between),
+          items[i],
         ],
+      ],
+    );
+
+    Widget face(BuildContext context, T value, Set<WidgetState> states) {
+      final index = values.indexOf(value);
+      final segment = segments[index];
+      final shapes = connected.shapes(
+        first: index == 0,
+        last: index == values.length - 1,
+      );
+      final selected = states.contains(WidgetState.selected);
+      final enabled = !states.contains(WidgetState.disabled);
+      final paint = _togglePaint(
+        t.colors,
+        kind,
+        enabled: enabled,
+        checked: selected,
+      );
+      final shape = states.contains(WidgetState.pressed)
+          ? shapes.pressed ?? shapes.shape
+          : selected
+          ? shapes.selected ?? shapes.shape
+          : shapes.shape;
+      final icon = segment.icon;
+      return ExpressiveStateFace(
+        states: states,
+        shape: shape,
+        color: paint.container,
+        contentColor: paint.content,
+        side: paint.side,
+        motion: ToggleButtonBehavior.shapeMotion,
+        // The segments stand 2dp apart, and the next one paints over a
+        // ring outside this one: the ring stands inside, as on rows
+        // stacked flush.
+        focusInward: true,
+        child: _ButtonContent(
+          metrics: metrics,
+          minWidth: 0,
+          expand: false,
+          textStyle: t.type
+              .of(metrics.textStyle)
+              .copyWith(color: paint.content),
+          label: segment.label,
+          content: showLabels || icon == null
+              ? null
+              : ExpressiveIcon(icon, selected: selected),
+          leading: !showLabels || icon == null
+              ? null
+              : ExpressiveIcon(icon, selected: selected),
+        ),
+      );
+    }
+
+    const target = Size.square(HostBehavior.minimumInteractiveComponentSize);
+    if (_multiple) {
+      return DesignToggleGroup<T>(
+        options: values,
+        selected: _values!,
+        multiSelectionEnabled: true,
+        emptySelectionAllowed: true,
+        isEnabled: (value) => _segment(value).enabled,
+        labelOf: (value) => _segment(value).label,
+        semanticLabel: label,
+        minimumSize: target,
+        onSelectionChanged: _onChangedMany,
+        layoutBuilder: layout,
+        itemBuilder: face,
+      );
+    }
+
+    final nodes = <T, FocusNode>{};
+    final enabled = segments.where((segment) => segment.enabled);
+    void moveTo(T value) {
+      nodes[value]?.requestFocus();
+      if (selectFollowsFocus && _value != value) _onChanged?.call(value);
+    }
+
+    return Semantics(
+      container: true,
+      explicitChildNodes: true,
+      label: label,
+      child: CallbackShortcuts(
+        bindings: {
+          if (_onChanged != null && enabled.isNotEmpty) ...{
+            const SingleActivator(LogicalKeyboardKey.home): () =>
+                moveTo(enabled.first.value),
+            const SingleActivator(LogicalKeyboardKey.end): () =>
+                moveTo(enabled.last.value),
+          },
+        },
+        child: DesignRadioGroup<T>(
+          options: values,
+          value: _value,
+          onChanged: _onChanged,
+          isEnabled: (value) => _segment(value).enabled,
+          layoutBuilder: layout,
+          itemBuilder: (context, value, node, select) {
+            nodes[value] = node;
+            final chosen = value == _value;
+            return DesignPressable(
+              focusNode: node,
+              onPressed: select,
+              selected: chosen,
+              checked: chosen,
+              inMutuallyExclusiveGroup: true,
+              semanticLabel: _segment(value).label,
+              excludeSemantics: true,
+              minimumSize: target,
+              builder: (context, states, _) => face(context, value, states),
+            );
+          },
+        ),
       ),
-      itemBuilder: (context, value, states) {
-        final index = values.indexOf(value);
-        final segment = segments[index];
-        final shapes = connected.shapes(
-          first: index == 0,
-          last: index == values.length - 1,
-        );
-        final selected = states.contains(WidgetState.selected);
-        final enabled = !states.contains(WidgetState.disabled);
-        final paint = _togglePaint(
-          t.colors,
-          kind,
-          enabled: enabled,
-          checked: selected,
-        );
-        final shape = states.contains(WidgetState.pressed)
-            ? shapes.pressed ?? shapes.shape
-            : selected
-            ? shapes.selected ?? shapes.shape
-            : shapes.shape;
-        final icon = segment.icon;
-        return ExpressiveStateFace(
-          states: states,
-          shape: shape,
-          color: paint.container,
-          contentColor: paint.content,
-          side: paint.side,
-          motion: ToggleButtonBehavior.shapeMotion,
-          // The segments stand 2dp apart, and the next one paints over a
-          // ring outside this one: the ring stands inside, as on rows
-          // stacked flush.
-          focusInward: true,
-          child: _ButtonContent(
-            metrics: metrics,
-            minWidth: 0,
-            expand: false,
-            textStyle: t.type
-                .of(metrics.textStyle)
-                .copyWith(color: paint.content),
-            label: segment.label,
-            content: showLabels || icon == null
-                ? null
-                : ExpressiveIcon(icon, selected: selected),
-            leading: !showLabels || icon == null
-                ? null
-                : ExpressiveIcon(icon, selected: selected),
-          ),
-        );
-      },
     );
   }
 

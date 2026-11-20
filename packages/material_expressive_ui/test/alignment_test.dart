@@ -1,12 +1,5 @@
-// Alignment, measured (shapes.md §7): on every example page and in every
-// overlay, under each corner family,
-// - a button's or chip's icon sits on its label's centre line;
-// - a row of up to two lines centres its icons and controls on its text;
-// - a field's icons sit on its input line;
-// - the parts of a button group or action row are one height on one line;
-// - a tab bar's and nav bar's labels share one baseline, their icons one
-//   centre line, and each label is centred on its icon;
-// - an app bar's icons, and a title on their row, share one centre line.
+// Checks icon, label, input, navigation and action-row alignment across
+// example pages, overlays and corner families.
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -474,15 +467,8 @@ void main() {
     );
   }
 
-  // The column's edges (shapes.md §7; the coordinator's 11-08 review): on
-  // the trip planner's screens, at a phone's width and a desktop's,
-  // - the app bar's title starts on the content column's start edge (a
-  //   screen whose bar leads with a close or back button excepted);
-  // - a flush checkbox row's box starts on its lane's start edge, as the
-  //   fields do (the box sits 2dp inside its own box, Compose's
-  //   CheckboxDefaultPadding);
-  // - a list section's container runs from its lane's start edge to its
-  //   end edge.
+  // On the trip planner’s phone and desktop layouts, measure app-bar titles
+  // and control ink against the content column’s edges.
   const markInset = 2.0;
   for (final width in [390.0, 1440.0]) {
     testWidgets('${width.round()}: rows, sections and the title keep '

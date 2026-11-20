@@ -1,10 +1,5 @@
-/// The preview group's demo: [ExpressivePreview] on both registers — each
-/// register's device with its system bars (Android's gesture and
-/// three-button navigation; iOS's home indicator, light and dark) — and
-/// the three presentations a page is previewed alone in (root, pushed,
-/// sheet). Every demo in this gallery is itself one preview, in the ambient
-/// register; the phones here are previews nested in it, in the same
-/// register (the lab's platform toggle shows the other).
+/// Gallery previews of Android and iOS system bars and the root, pushed
+/// and sheet presentations. Nested previews follow the current platform.
 library;
 
 import 'package:flutter/widgets.dart';
@@ -19,9 +14,6 @@ Widget kitPreviewDemo(Brightness brightness) => kitScreen(
   title: 'Preview',
   sections: <Widget>[
     const _Register(),
-    // Only the ambient register: the smoke matrix holds every preview
-    // frame a demo draws to the platform under test, and the lab's
-    // platform toggle shows the other.
     kitSection(
       'System bars',
       children: <Widget>[

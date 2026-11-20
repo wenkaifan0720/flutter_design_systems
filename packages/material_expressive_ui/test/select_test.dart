@@ -1,9 +1,5 @@
-/// Select and combobox: Compose's `ExposedDropdownMenuBox` read-only and
-/// editable — the field shows the choice, the trailing arrow turns, the
-/// menu matches the field's width below it, the keyboard opens and walks
-/// it, the combobox filters as you type and keeps focus in its field, the
-/// system back closes its menu first — and the Cody v2 picker test ported
-/// (decision F14).
+/// Select and combobox geometry, filtering, focus, keyboard selection and
+/// back navigation.
 library;
 
 import 'dart:math' as math;
@@ -105,10 +101,6 @@ const List<String> cities = <String>[
 ];
 
 void main() {
-  // --- Cody v2 port (F14) --------------------------------------------------
-
-  // Cody: 'picker sheet returns a selection; disabled options do not'. An
-  // Expressive picker is the exposed dropdown: its menu, not a sheet.
   testWidgets('select returns a selection; disabled options do not', (
     tester,
   ) async {

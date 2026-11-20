@@ -1,6 +1,4 @@
-/// The hero group's demo: one hero moment — the scope every opt-in hero
-/// widget asserts above it (CONTRACT §3) — and the budget it spends: the
-/// theme's expression and the page's count.
+/// Hero widgets share a scope that tracks the expression budget for the page.
 library;
 
 import 'package:flutter/widgets.dart';

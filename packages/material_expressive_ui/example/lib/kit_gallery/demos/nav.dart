@@ -505,8 +505,6 @@ class _LiveTabsState extends State<_LiveTabs> {
   );
 }
 
-// Catalog specimens (docs/architecture/component-catalog.md).
-
 /// Four labelled destinations, two carrying badges.
 Widget kitSpecimenNavBarFour() => ExpressiveNavigationBar(
   destinations: _fourBadged,

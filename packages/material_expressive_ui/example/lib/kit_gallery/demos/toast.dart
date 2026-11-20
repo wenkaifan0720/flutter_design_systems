@@ -151,8 +151,6 @@ class _Live extends StatelessWidget {
   );
 }
 
-// Catalog specimens (docs/architecture/component-catalog.md).
-
 /// A confirmation with its undo, as the toast shows it.
 Widget kitSpecimenToastUndo() => const ExpressiveSnackBar(
   'Photo moved to the archive',

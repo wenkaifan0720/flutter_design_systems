@@ -1,8 +1,5 @@
-/// The choice tiles' demo: a single-choice group that reports each tap (a
-/// first-run step would advance on it), a multi-choice group of rooms, and
-/// a lone tile at rest, selected and disabled — every one live, so the
-/// press squeeze, the corner morph and the title's weight show on the real
-/// thing. Also the catalog specimens of the tile and the group.
+/// Single-choice and multiple-choice tiles, including selected and disabled
+/// examples.
 library;
 
 import 'package:flutter/widgets.dart';
@@ -142,9 +139,6 @@ class _TilesState extends State<_Tiles> {
     ],
   );
 }
-
-// ---------------------------------------------------------------------------
-// Catalog specimens (metadata.yaml)
 
 /// Enter by hand, chosen.
 Widget kitSpecimenChoiceTileSelected() => ExpressiveChoiceTile(

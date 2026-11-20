@@ -1,13 +1,5 @@
-// design6 P (added 11-11 noon), class (b): a pressed fill covers its whole
-// cell. Wherever a part's reach is larger than what it draws (a segment, a
-// toggle group's item, a split button's halves, a tab, an accordion's
-// head), holding a press on it changes the pixels out to every edge of the
-// cell the user sees: the drawn face where there is one, the part's own box
-// where there is none. Read from the drawn pixels at each density the look
-// ships.
-//
-// Drawn pixels are the rasterizer's, as a golden's: tagged `goldens`, so
-// macOS runs it and Linux CI leaves it out.
+// Checks that a held press covers the visible face of each segment, tab and
+// disclosure header without filling unused touch-target space.
 @Tags(['goldens'])
 library;
 

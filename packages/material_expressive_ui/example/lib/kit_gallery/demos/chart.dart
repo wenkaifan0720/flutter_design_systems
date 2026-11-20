@@ -189,8 +189,6 @@ class _Sparkline extends StatelessWidget {
   );
 }
 
-// Catalog specimens (docs/architecture/component-catalog.md).
-
 /// Minutes read each day of a week, today highlighted.
 Widget kitSpecimenChartWeek() => const ExpressiveChart.bar(
   points: <ExpressiveChartPoint>[

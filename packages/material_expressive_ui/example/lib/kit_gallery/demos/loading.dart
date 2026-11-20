@@ -203,8 +203,6 @@ class _State extends StatelessWidget {
   );
 }
 
-// Catalog specimens (docs/architecture/component-catalog.md).
-
 /// The loading indicator, plain and contained.
 Widget kitSpecimenLoadingIndicatorPair() => const Row(
   mainAxisAlignment: MainAxisAlignment.spaceEvenly,

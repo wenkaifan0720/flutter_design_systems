@@ -1,8 +1,6 @@
-/// How an Expressive type style's first and last lines take their height,
-/// as Compose lays them out. Internal (w1-type's slot; w1-parity measured
-/// it against the oracle's `type/*` scenes). The `text` role and anything
-/// else that sets a type-scale style in a `Text` lays it out through
-/// [expressiveTextLayout] (the style and `textHeightBehavior` to pass).
+/// Controls the first and last line heights of Expressive text. Pass the
+/// style and textHeightBehavior from [expressiveTextLayout] to the text
+/// widget.
 ///
 /// Compose sets every Material style with `LineHeightStyle(Alignment.Center,
 /// Trim.None)`. Where the style's line height is at least the font's own

@@ -241,7 +241,7 @@ class ExpressivePressable extends StatefulWidget {
   /// it.
   final ValueChanged<bool>? onPressedChanged;
 
-  /// Waiting on its own action (the design kit's busy press): it keeps its
+  /// Waiting on its own action (the shared busy press): it keeps its
   /// focus, its face and its node for a screen reader, draws no ripple, and
   /// a press does nothing, so a control at work changes neither its node
   /// nor its actions.
@@ -532,11 +532,8 @@ class _ExpressivePressableState extends State<ExpressivePressable> {
   WidgetStatesController? _ownController;
   bool _pressed = false;
 
-  /// Whether focus is a keyboard's: read when built, never kept. On a phone
-  /// whose highlight mode is still the platform's default, a mouse
-  /// connecting turns it traditional without telling any listener, so a
-  /// copy kept from before would never ring a part Tab later reaches (the
-  /// bottom sheet's drag handle, 11-09).
+  /// Read the current focus highlight mode while building. Connecting a mouse
+  /// can change the default mode without notifying highlight listeners.
   bool get _keyboard =>
       FocusManager.instance.highlightMode == FocusHighlightMode.traditional;
 
@@ -798,11 +795,8 @@ class _ExpressivePressableState extends State<ExpressivePressable> {
     );
   }
 
-  /// How far an unbounded ink reaches past the pressable: the halo's
-  /// radius. Flutter clips ink to the material it paints on, so a material
-  /// only the part's size would cut a 40dp circle about a 24dp checkbox or
-  /// radio to a 24dp square: a square over the target, the fault the
-  /// state-matrix sheets showed (11-09).
+  /// Extend the material by the halo radius so Flutter can paint the entire
+  /// circular ink response around a smaller control.
   double get _inkOverhang => widget.bounded ? 0 : widget.rippleRadius ?? 0;
 
   /// An unbounded halo's shape when it is not Compose's circle: the
@@ -927,13 +921,11 @@ class _ExpressivePressableState extends State<ExpressivePressable> {
   }
 }
 
-/// The M3 focus indicator a pressable draws under keyboard focus: a ring of
-/// [thickness] in `secondary`, [offset] out from the component's edge,
-/// following its shape (Material's token DB, `md.comp.button.focus.
-/// indicator.thickness` and `.outline.offset`, the same for every
-/// component that has them).
+/// Dimensions of the keyboard focus ring, Material 3's focus indicator. The
+/// ring follows the component's shape and uses the theme's secondary color.
 abstract final class ExpressiveFocusRing {
-  /// `md.comp.*.focus.indicator.thickness`: 3dp.
+  /// `md.comp.*.focus.indicator.thickness`: 3dp, the width of the focus
+  /// outline.
   static const double thickness = 3;
 
   /// `md.comp.*.focus.indicator.outline.offset`: 2dp between the

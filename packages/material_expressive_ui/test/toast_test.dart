@@ -516,9 +516,8 @@ void main() {
       expect(find.byType(ExpressiveSnackBar), findsNothing);
     });
 
-    // Cody v2's generated-app walkthrough drains toasts with two bounded
-    // 2.5 s pumps (test/generated_app_test.dart); an action toast must be
-    // gone within them, or teardown fails with "A Timer is still pending".
+    // Allow two bounded pumps for an action toast to finish its timer and
+    // exit animation.
     testWidgets('an action toast is gone within the walkthrough drain', (
       tester,
     ) async {

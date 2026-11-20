@@ -370,8 +370,6 @@ class _EdgeRowState extends State<_EdgeRow> {
   );
 }
 
-// Catalog specimens (docs/architecture/component-catalog.md).
-
 /// A filter chip, selected: its check leads the label.
 Widget kitSpecimenChipFilterSelected() => Center(
   child: ExpressiveChip.filter('Open now', selected: true, onPressed: () {}),

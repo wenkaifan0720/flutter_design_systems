@@ -44,8 +44,8 @@ Widget _kit(
   ),
 );
 
-/// [days] of readings two a day (7 AM and 8 PM), starting [from] days into
-/// a range [span] days wide; systolic around 128, diastolic around 82.
+/// Blood pressure readings over [span] days, with systolic values near 128
+/// and diastolic values near 82.
 (ExpressiveChartSeries, ExpressiveChartSeries) _readings(
   int days, {
   int from = 0,

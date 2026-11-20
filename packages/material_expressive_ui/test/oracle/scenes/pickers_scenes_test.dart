@@ -1,11 +1,5 @@
-/// The `pickers` oracle group (Compose twin: `PickersScenes.kt`): the date
-/// picker with its header (calendar and typed), without it (the docked
-/// calendar), the range picker, and the time picker's dial on the 12- and
-/// 24-hour clocks, the vibrant dial and the time input (CONTRACT §7 "every
-/// picker"). Dates are in March 2031, far from the device's today, so no
-/// day is outlined on either side; the headline reads the kit's
-/// "12 Mar 2031" (the Compose twin passes a formatter that writes it so).
-/// Each picker is tagged whole.
+/// Reference scenes for calendar, range and time pickers, including dial and
+/// keyboard entry. Fixed dates make the calendar captures repeatable.
 library;
 
 import 'package:material_ui/material_ui.dart' show DefaultMaterialLocalizations;

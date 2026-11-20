@@ -9,8 +9,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_expressive_ui/material_expressive_ui.dart';
 
-// The look's own source: under design_system/ in drip, under src/ in the
-// published package.
+// Resolve the component sources in either package layout.
 Directory _look() => [
   Directory('lib/src/material_expressive'),
   Directory('lib/src/material_expressive'),
@@ -36,9 +35,7 @@ void main() {
     final missing = <String>[];
     var widgets = 0;
     for (final file in _look().listSync(recursive: true).whereType<File>()) {
-      // Not internal/, and not the kit parts (kit_parts/), which the catalog
-      // lays beside the look in its compositions only and kit-parts/test
-      // covers.
+      // Inspect the public component sources.
       if (!file.path.endsWith('.dart') ||
           file.path.contains('/internal/') ||
           file.path.contains('/kit_parts/')) {

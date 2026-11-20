@@ -1,9 +1,5 @@
-/// The `feedback` oracle group (Compose twin: `FeedbackScenes.kt`): the
-/// progress indicators (CONTRACT §7 "progress") — linear at 0, 30, 70 and
-/// 100 %, circular at 30 and 70 %, both indeterminate over 60 frames, the
-/// wavy ones determinate (one frame: their wave travels forever) and
-/// indeterminate. Every indicator keeps its default size. The banner,
-/// skeleton, step indicator and screen states have no Compose counterpart.
+/// Reference scenes for determinate and indeterminate linear, circular and
+/// wavy progress indicators.
 library;
 
 import 'package:flutter/widgets.dart';

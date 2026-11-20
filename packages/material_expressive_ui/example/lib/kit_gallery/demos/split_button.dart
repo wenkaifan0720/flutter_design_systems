@@ -227,8 +227,6 @@ class _Disabled extends StatelessWidget {
   );
 }
 
-// Catalog specimens (docs/architecture/component-catalog.md).
-
 /// Send, with its options behind the chevron.
 Widget kitSpecimenSplitButtonSend() => Center(
   child: ExpressiveSplitButton(

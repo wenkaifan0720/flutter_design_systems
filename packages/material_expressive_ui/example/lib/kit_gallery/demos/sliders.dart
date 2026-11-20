@@ -457,8 +457,6 @@ class _CartState extends State<_Cart> {
   }
 }
 
-// Catalog specimens (docs/architecture/component-catalog.md).
-
 /// A continuous volume with its glyph on the track.
 Widget kitSpecimenSliderVolume() => ExpressiveSlider(
   value: 0.6,

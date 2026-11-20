@@ -443,8 +443,6 @@ class _ShellAction extends StatelessWidget {
   );
 }
 
-// Catalog specimens (docs/architecture/component-catalog.md).
-
 /// The standard FAB on primary container.
 Widget kitSpecimenFabStandard() => const Center(
   child: ExpressiveFloatingActionButton(

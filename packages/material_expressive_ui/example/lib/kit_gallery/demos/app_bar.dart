@@ -522,9 +522,7 @@ class _InlineField extends StatelessWidget {
   );
 }
 
-// Catalog specimens (docs/architecture/component-catalog.md): one
-// configuration each, the same in every style; kitSpecimenStage styles and
-// places them.
+// Each example uses the same configuration across themes.
 
 /// A root's small bar: the drawer, the title and two actions.
 Widget kitSpecimenTopBarSmall() => ExpressiveAppBar(

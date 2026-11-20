@@ -1,8 +1,5 @@
-/// The FAB family (components/fab.dart): the FAB's three sizes and six
-/// colour styles, the extended FAB's expand/collapse, the FAB menu's toggle
-/// morph, stagger and CONTRACT §3 asserts, the shell's action drawing each
-/// kind of spec, the scroll-driven expansion, and the system back closing
-/// an open menu.
+/// Floating action button sizes, colors, menu motion, shell actions and back
+/// navigation.
 library;
 
 import 'dart:async';

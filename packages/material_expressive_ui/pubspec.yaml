@@ -1,8 +1,9 @@
 name: material_expressive_ui
 description: >-
   Unofficial Material 3 Expressive for Flutter, ported from Compose: shapes that morph on springs, a 35-shape library, tonal colour and motion that overshoots.
-version: 0.3.3
+version: 0.3.4
 homepage: https://wenkaifan0720.github.io/flutter_design_systems/material_expressive/
+documentation: https://wenkaifan0720.github.io/flutter_design_systems/docs/looks/material_expressive/
 repository: https://github.com/wenkaifan0720/flutter_design_systems/tree/main/packages/material_expressive_ui
 issue_tracker: https://github.com/wenkaifan0720/flutter_design_systems/issues
 topics:
@@ -32,7 +33,7 @@ resolution: workspace
 dependencies:
   flutter:
     sdk: flutter
-  ui_core: ^0.3.2
+  ui_core: ^0.3.4
   material_ui: ^1.9.0
   cupertino_ui: ^1.0.0
 
@@ -42,7 +43,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   leak_tracker_flutter_testing: any
-  ui_core_test: ^0.1.2
+  ui_core_test: ^0.1.4
 
 flutter:
   fonts:

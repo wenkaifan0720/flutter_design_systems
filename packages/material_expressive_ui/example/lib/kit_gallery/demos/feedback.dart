@@ -275,8 +275,6 @@ class _Balanced extends StatelessWidget {
 
 void _noop() {}
 
-// Catalog specimens (docs/architecture/component-catalog.md).
-
 /// An offline banner with its two actions.
 Widget kitSpecimenBannerOffline() => ExpressiveBanner(
   icon: ExpressiveSymbols.wifi,

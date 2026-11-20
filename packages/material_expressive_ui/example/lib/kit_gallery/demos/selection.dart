@@ -409,8 +409,6 @@ class _SettingsState extends State<_Settings> {
   );
 }
 
-// Catalog specimens (docs/architecture/component-catalog.md).
-
 /// A checked box beside an unchecked one.
 Widget kitSpecimenCheckboxPair() => Row(
   mainAxisAlignment: MainAxisAlignment.center,

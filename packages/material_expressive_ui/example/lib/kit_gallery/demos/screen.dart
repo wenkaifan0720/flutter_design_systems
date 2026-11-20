@@ -242,8 +242,6 @@ class _EntryRow extends StatelessWidget {
   }
 }
 
-// Catalog specimens (docs/architecture/component-catalog.md).
-
 /// A root page: the large bar over a scrolling list of entries.
 Widget kitSpecimenScreenJournal() => ExpressiveScaffold(
   topBar: const ExpressiveAppBar(title: 'Journal', large: true),

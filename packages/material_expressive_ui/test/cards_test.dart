@@ -1,6 +1,5 @@
-/// Cards: the three variants' tokens (colours, shape, stroke, elevation by
-/// interaction), clickability and its disabled state, semantics, and the
-/// CONTRACT §3 containment asserts.
+/// Card variants, colors, elevation, interaction semantics and supported
+/// nesting.
 library;
 
 import 'package:flutter/widgets.dart';
@@ -269,9 +268,7 @@ void main() {
       handle.dispose();
     });
 
-    testWidgets('a card may hold a card, never three deep (CONTRACT §3)', (
-      tester,
-    ) async {
+    testWidgets('a card may hold a card, never three deep', (tester) async {
       await tester.pumpWidget(
         _app(
           const ExpressiveCard(child: ExpressiveCard.outlined(child: _body)),
@@ -295,9 +292,7 @@ void main() {
       );
     });
 
-    testWidgets('a card around one field is a defect (CONTRACT §3)', (
-      tester,
-    ) async {
+    testWidgets('a card around one field is a defect', (tester) async {
       await tester.pumpWidget(
         _app(
           const SizedBox(

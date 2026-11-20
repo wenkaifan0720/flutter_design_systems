@@ -999,16 +999,10 @@ class ExpressiveSheetDragHandle extends StatelessWidget {
   }
 }
 
-/// `DragHandleWithTooltip` around the sheet's handle: tappable (hide when
-/// expanded, expand when partial) and carrying the sheet's accessibility
-/// actions.
-///
-/// It draws no state layer and no ripple. Compose's `clickable` paints its
-/// ripple over the handle's whole 32×48dp box; here that box is invisible,
-/// so a layer filling it is a grey square round a 32×4dp bar, with edges
-/// nothing on screen explains (the user's 11-09 capture). A deliberate
-/// departure: the pointer turns to the grab hand instead, and keyboard focus
-/// draws the focus ring round the bar itself.
+/// A sheet handle with a tooltip and accessibility actions. Tapping a
+/// partially expanded sheet opens it fully. Tapping an expanded sheet hides
+/// it. The pointer uses a grab cursor, and keyboard focus outlines the
+/// visible bar.
 class _DragHandle extends StatelessWidget {
   const _DragHandle({
     required this.child,

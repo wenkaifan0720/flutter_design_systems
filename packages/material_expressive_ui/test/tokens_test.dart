@@ -1,5 +1,4 @@
-/// The generated tokens: w1-tokens' test, with `internal/tokens/` (from
-/// tools/expressive_tokens) and the chrome metrics that read it.
+/// Generated Material tokens and the chrome dimensions that use them.
 library;
 
 import 'package:flutter_test/flutter_test.dart';

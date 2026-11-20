@@ -1,7 +1,5 @@
-/// A choice's field (a select, a combobox, a multi-select) and an expanded
-/// control (a button, a toggle, a button group or segmented button), as wide
-/// as a control is from 600 (design6 P (a); ui_core's DesignWidthCheck).
-/// Internal: each applies it once, in its own build.
+/// Constrains choice fields and expanded controls on windows at least 600
+/// logical pixels wide.
 library;
 
 import 'dart:math' as math;

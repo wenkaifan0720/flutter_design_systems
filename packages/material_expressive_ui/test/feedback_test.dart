@@ -1,7 +1,5 @@
-/// The feedback family: the screen states (Cody v2's loading, error and
-/// empty state tests from foundation_test.dart, ported), the banner's
-/// tones and actions, and the skeleton's shapes, its absence from
-/// semantics and its stillness under Reduce Motion.
+/// Loading, empty and error states, banner actions, and skeleton semantics
+/// and motion.
 library;
 
 import 'dart:math' as math;
@@ -37,11 +35,7 @@ Future<void> _frames(WidgetTester tester, int count) async {
 }
 
 void main() {
-  group('screen states (Cody v2 foundation_test.dart)', () {
-    // Cody: 'foundation enforces its closed resource and accessibility
-    // floor' mounts InitialGenLoadingState, InitialGenEmptyState and
-    // InitialGenErrorState in a screen under the host and expects no
-    // exception; its states.dart announces loading and error.
+  group('Screen states', () {
     testWidgets('the loading, empty and error states render under the host, '
         'loading and error announced', (tester) async {
       final handle = tester.ensureSemantics();

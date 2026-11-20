@@ -1,7 +1,4 @@
-// ExpressivePreview (components/preview.dart): the device, the register's
-// system bars, the presentation and the ported Cody v2 preview tests
-// (CONTRACT §8.2; RUN 2 F14). The design kit's GenChrome contract runs the
-// preview's frame, register and brightness separately.
+// Preview frames, system bars, navigation isolation and theme inheritance.
 import 'package:flutter/foundation.dart' show SynchronousFuture;
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart'
@@ -401,9 +398,7 @@ void main() {
     });
   });
 
-  group('ported from Cody v2', () {
-    // Cody: foundation_test 'a page preview keeps its page and focused
-    // field across a keystroke's restate'.
+  group('Preview navigation and inherited themes', () {
     testWidgets('a preview keeps its page and focused field when rebuilt '
         'with a new page', (tester) async {
       await _phone(tester, PreviewPlatform.android);
@@ -424,9 +419,6 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    // Cody: foundation_test 'a page previewed alone wears the register its
-    // live route would: the back circle on a pushed page, Cancel on a sheet
-    // page, nothing on the walk's own root'.
     for (final register in RoutePresentation.values) {
       testWidgets('a page previewed alone as ${register.name} reads the '
           'register its live route would', (tester) async {
@@ -448,11 +440,6 @@ void main() {
       });
     }
 
-    // Cody: foundation_test 'an isolated page preview refuses its own pop:
-    // the derived exit, the page's own pop, and the system back leave the
-    // page standing, while a dialog raised over it still closes' and 'a
-    // page the route host previews alone refuses a pop nobody declared: its
-    // frame keeps the page rather than landing on the blank beneath'.
     for (final register in <RoutePresentation>[
       RoutePresentation.pushed,
       RoutePresentation.sheet,
@@ -503,14 +490,8 @@ void main() {
       });
     }
 
-    // Cody: foundation_controls_test 'popovers keep the app theme when the
-    // app is not the root'.
-    // App Preview's host nests every preview inside its own MaterialApp, so
-    // the root navigator sits OUTSIDE the preview's host: a route raised on
-    // the preview's own navigator keeps the theme, and one raised on the
-    // outer root keeps it when it captures the preview's inherited themes
-    // (ExpressiveTheme is an InheritedTheme), as Expressive's popovers
-    // do.
+    // Routes on a preview navigator inherit its theme. Root overlays capture
+    // the preview’s inherited themes, including ExpressiveTheme.
     testWidgets('a preview nested in another app keeps its theme in routes '
         'raised over the page', (tester) async {
       await _phone(tester, PreviewPlatform.android);
@@ -574,10 +555,8 @@ void main() {
   testWidgets('Tab goes on from a preview to the page it stands in', (
     tester,
   ) async {
-    // On the web an app's own navigator lets focus leave the window at its
-    // last control, so a preview standing its page on one kept the keyboard
-    // from the page around it (11-14). Its navigator is its own and hands
-    // focus on to the page.
+    // A preview’s navigator passes keyboard focus to the surrounding page
+    // after its last control.
     final after = FocusNode(debugLabel: 'after');
     addTearDown(after.dispose);
     await tester.pumpWidget(

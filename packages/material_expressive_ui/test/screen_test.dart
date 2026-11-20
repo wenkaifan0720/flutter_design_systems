@@ -143,9 +143,7 @@ void main() {
     expect(find.text('Filter'), findsNothing);
   });
 
-  testWidgets('an authored bar wins; none removes it (Cody: none sentinel)', (
-    tester,
-  ) async {
+  testWidgets('an authored bar wins; none removes it', (tester) async {
     await tester.pumpWidget(
       _app(
         const ExpressiveScaffold(
@@ -171,8 +169,8 @@ void main() {
     expect(find.text('Body'), findsOneWidget);
   });
 
-  // CONTRACT §5 keyboard: a drag dismisses the keyboard on iOS (UIKit's
-  // scrolling screens); on Android the keyboard stays up.
+  // A scroll drag dismisses the keyboard on iOS. Android retains the
+  // keyboard.
   for (final platform in <TargetPlatform>[
     TargetPlatform.android,
     TargetPlatform.iOS,

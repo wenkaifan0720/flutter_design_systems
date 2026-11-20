@@ -1,8 +1,5 @@
-/// The colour part of a baked theme and how it resolves into the public
-/// [ExpressiveColorScheme]. Internal; the generated themes name
-/// [ExpressiveBakedColors] through `baked_theme.dart`.
-///
-/// Owner: w1-color (with `color.dart` and the generator's `emit/color.ts`).
+/// Resolves the generated light and dark color roles into an
+/// [ExpressiveColorScheme].
 library;
 
 import 'package:flutter/widgets.dart';

@@ -1,8 +1,5 @@
-/// The `loading` oracle group (Compose twin: `LoadingScenes.kt`): the
-/// indeterminate loading indicator's first 60 frames, plain and contained
-/// (the loading cycle's motion row), and the determinate indicator at 0,
-/// 30, 60 and 100 % beside the contained one at 50 % (CONTRACT §7 "loading
-/// indicators", motion "loading cycle").
+/// Reference scenes for determinate and indeterminate loading indicators,
+/// with and without a container.
 library;
 
 import 'package:flutter/widgets.dart';

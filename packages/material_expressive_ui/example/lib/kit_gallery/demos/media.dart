@@ -274,8 +274,6 @@ class _People extends StatelessWidget {
   }
 }
 
-// Catalog specimens (docs/architecture/component-catalog.md).
-
 /// A wide picture on the extra-large corner.
 Widget kitSpecimenImageHarbour() => const ExpressiveMedia(
   slotId: 'harbour-dusk',

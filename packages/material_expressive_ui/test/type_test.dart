@@ -1,7 +1,5 @@
-/// The type scale's values: w1-type's test, with `type.dart`, its
-/// `internal/type/` part and the generator's `emit/type.ts`. Every one of
-/// the 30 styles is the generated tokens' size, line height, tracking and
-/// weight in Roboto Flex, with opsz = size and wght = weight.
+/// Checks size, line height, tracking, weight and variable font axes for all
+/// 30 Roboto Flex text styles.
 library;
 
 import 'package:flutter/services.dart';

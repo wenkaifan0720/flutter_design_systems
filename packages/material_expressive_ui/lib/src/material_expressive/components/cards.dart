@@ -456,7 +456,7 @@ class ExpressiveCard extends StatelessWidget {
 class _CardDepth extends InheritedWidget {
   const _CardDepth({required this.depth, required super.child});
 
-  /// The deepest nesting CONTRACT §3 allows.
+  /// Maximum supported card nesting depth.
   static const int maxDepth = 2;
 
   /// The components a card must never wrap alone, by class name (the

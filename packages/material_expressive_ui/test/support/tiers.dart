@@ -1,12 +1,9 @@
-/// The suite's two tiers. An exhaustive matrix (every gallery page, width,
-/// preset, mode, setting or language) keeps a few of its cases in the
-/// everyday run, `flutter test --exclude-tags goldens,sweep`, chosen so each
-/// row and each column of the matrix is met at least once: a kind of fault
-/// is still caught every run. Its other cases carry [sweep], and run at READY
-/// and at a release, where `flutter test` runs every tag.
+/// The everyday suite samples pages, widths, presets, settings and languages.
+/// Run it with `flutter test --exclude-tags goldens,sweep`. The remaining
+/// combinations run with `flutter test --tags sweep`.
 library;
 
-/// The tag of a matrix case the everyday tier leaves to READY and release.
+/// The tag for cases covered by the exhaustive suite.
 const String sweep = 'sweep';
 
 /// A matrix case's tags: none for an [everyday] representative, else

@@ -278,8 +278,8 @@ class _Areas extends StatelessWidget {
     'Text area',
     children: <Widget>[
       _WithText(
-        'Arriving on the late ferry, around 22:40. Could the key be left '
-        'with the café next door?',
+        'Arriving on the late ferry, around '
+        '22:40. Could the key be left with the café next door?',
         (controller) => ExpressiveTextArea(
           controller: controller,
           label: 'Note for the host',
@@ -334,8 +334,6 @@ class _Codes extends StatelessWidget {
     );
   }
 }
-
-// Catalog specimens (docs/architecture/component-catalog.md).
 
 /// A filled field with its glyph and supporting line.
 Widget kitSpecimenTextFieldFilled() => const ExpressiveTextField(

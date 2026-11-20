@@ -510,9 +510,11 @@ void main() {
         moreOrLessEquals(chip.height),
       );
       expect(box.center.dy, moreOrLessEquals(chip.center.dy));
-      // The ring, 2dp out and 3dp wide, clear of the outline.
+      // The focus outline stays inside the field.
       final field = tester.getRect(find.byType(ExpressiveFieldFrame));
-      final drawn = chip.inflate(5);
+      final drawn = chip.inflate(
+        ExpressiveFocusRing.offset + ExpressiveFocusRing.thickness,
+      );
       expect(drawn.top, greaterThan(field.top));
       expect(drawn.bottom, lessThan(field.bottom));
       expect(drawn.left, greaterThan(field.left));

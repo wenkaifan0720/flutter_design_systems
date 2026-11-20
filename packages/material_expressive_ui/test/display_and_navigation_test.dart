@@ -1,8 +1,5 @@
-/// The shared stems round 4 adds (coverage4.md): the keyboard key, the
-/// timeline and the description list (display.dart), the status view over
-/// the three page states, the five chart classes over ExpressiveChart's
-/// kinds, the navigation drawer standing and raised, and the wheel picker of
-/// words on the time scroll's wheel.
+/// Keyboard shortcuts, timelines, descriptions, status views, charts, drawers
+/// and wheel pickers.
 library;
 
 import 'package:material_ui/material_ui.dart' show MaterialApp;
@@ -200,15 +197,15 @@ void main() {
     });
   });
 
-  group('the chart stems', () {
+  group('chart variants', () {
     const points = <ExpressiveChartPoint>[
       ExpressiveChartPoint('M', 64),
       ExpressiveChartPoint('T', 72),
       ExpressiveChartPoint('W', 68),
     ];
 
-    Future<ExpressiveChart> chartOf(WidgetTester tester, Widget stem) async {
-      await tester.pumpWidget(_kit(stem));
+    Future<ExpressiveChart> chartOf(WidgetTester tester, Widget variant) async {
+      await tester.pumpWidget(_kit(variant));
       return tester.widget<ExpressiveChart>(find.byType(ExpressiveChart));
     }
 

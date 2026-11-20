@@ -1,11 +1,5 @@
-// The text fields family (components/text_fields.dart): Compose's
-// TextField / OutlinedTextField geometry and label motion, the secure
-// field, the text area, the code input and the field error, and the ported
-// Cody v2 controls tests for fields (CONTRACT §8.2; RUN 2 F14):
-//   'input supports keyboard submission, read-only, and live error'
-//     → 'input supports keyboard submission, read-only, and live error'
-//   'grouped controls fit narrow phones at large text sizes' (its input row)
-//     → 'fields fit narrow phones at large text sizes'
+// Text field geometry, label motion, secure input, text areas, code entry,
+// errors and keyboard submission.
 library;
 
 // Reads the field's private layout, which no public type describes.

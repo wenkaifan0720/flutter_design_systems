@@ -61,7 +61,7 @@ class ExpressiveNavItem {
     this.style,
   });
 
-  /// The design kit's tab as a navigation item: its glyph, label, selected
+  /// The shared tab as a navigation item: its glyph, label, selected
   /// glyph and key.
   ExpressiveNavItem.fromTab(
     NavTab tab, {
@@ -589,9 +589,8 @@ class ExpressiveNavigationRail extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => FocusTraversalGroup(
-    // Its destinations are one stop in the keyboard's reading order: on a
-    // wide window Tab walks the rail, then the page, not row by row across
-    // both (11-14).
+    // Group the destinations so Tab traverses the rail before entering the
+    // page.
     child: MediaQuery.withClampedTextScaling(
       // As the bar's: at 300% text a destination with a count dropped its
       // label.

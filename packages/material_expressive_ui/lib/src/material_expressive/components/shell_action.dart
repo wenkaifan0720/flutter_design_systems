@@ -13,7 +13,7 @@ import 'hero.dart';
 import 'nav.dart' show ExpressiveNavigationRail;
 import 'splash.dart' show ExpressiveSplashScreenAnchor;
 
-/// The shell's action: the design kit's [ShellAction]
+/// The shell's action: the shared [ShellAction]
 /// (icon, onPressed, label, accent, key) plus [menu]. As a spec it goes to
 /// `ExpressiveShell(action:)`; as a widget — `ExpressiveShellAction(action:
 /// spec)`, what the shell draws — it draws any spec by its type:

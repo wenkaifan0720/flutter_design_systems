@@ -28,11 +28,8 @@ enum ExpressiveNavigationMode {
   threeButton,
 }
 
-/// One page previewed alone, in the [platform]'s register (Android, the
-/// lab's default, or iOS) and the [brightness] asked for.
-///
-/// Everything it builds, its own app included, stands in the design kit's
-/// preview frame, so the page behaves in the frame's register and reads its
+/// A page previewed on [platform] in the chosen [brightness]. The page
+/// and its app inherit the preview frame's platform and
 /// brightness. The register's system bars are drawn over the page and
 /// published as its safe-area insets (turn them off with [systemBars]).
 /// The page stands in [presentation]'s register: a root, a page pushed over

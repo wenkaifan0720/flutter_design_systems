@@ -1,5 +1,4 @@
-/// The spacing scale: w1-tokens' test, with `spacing.dart`, its generated
-/// `internal/spacing/` part and the generator's `emit/spacing.ts`.
+/// Spacing tokens and their public values.
 library;
 
 import 'package:flutter_test/flutter_test.dart';

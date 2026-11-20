@@ -354,8 +354,8 @@ class _CardsState extends State<_Cards> {
           : w.placeChosen(places[selected].$1),
       child: LayoutBuilder(
         builder: (context, constraints) {
-          // Columns by the room the text has: at large text a phone's two
-          // columns broke city names mid-word ("Copenha gen", 11-13).
+          // Base the column count on the available text width so city names
+          // can wrap at larger text sizes.
           final room =
               constraints.maxWidth / MediaQuery.textScalerOf(context).scale(1);
           final columns = room >= 800

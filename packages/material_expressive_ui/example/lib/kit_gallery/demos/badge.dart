@@ -157,8 +157,6 @@ class _BadgedTabsState extends State<_BadgedTabs> {
   );
 }
 
-// Catalog specimens (docs/architecture/component-catalog.md).
-
 /// Counts and a dot on the glyphs they belong to.
 Widget kitSpecimenBadgeOnIcons() => Row(
   mainAxisAlignment: MainAxisAlignment.spaceEvenly,

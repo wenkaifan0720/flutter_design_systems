@@ -1,9 +1,5 @@
-/// The cards group's demo: the elevated, filled and outlined card with
-/// media and text, clickable (state layers, the ripple, elevation by
-/// interaction), and a card holding cards — the deepest
-/// containment CONTRACT §3 allows. Pictures resolve from media slots; the
-/// gallery bundles none, so each shows the placeholder a pending picture
-/// paints.
+/// Elevated, filled and outlined cards with media, text, interaction states
+/// and nested content.
 library;
 
 import 'package:flutter/widgets.dart';
@@ -248,8 +244,6 @@ const List<(String, String)> _days = <(String, String)>[
   ('Saturday', 'Harbour walk, oysters, the late ferry'),
   ('Sunday', 'Lighthouse, dunes, back by six'),
 ];
-
-// Catalog specimens (docs/architecture/component-catalog.md).
 
 /// A filled card about one booking, tappable.
 Widget kitSpecimenCardFilled() => Builder(

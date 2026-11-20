@@ -385,8 +385,6 @@ class _Thread extends StatelessWidget {
   );
 }
 
-// Catalog specimens (docs/architecture/component-catalog.md).
-
 /// A total in the display type, landed on its value.
 Widget kitSpecimenCounterTotal() => Builder(
   builder: (context) {

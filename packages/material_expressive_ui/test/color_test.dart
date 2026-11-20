@@ -1,7 +1,4 @@
-/// The colour roles: w1-color's test, with `color.dart`, its
-/// `internal/color/` part and the generator's `emit/color.ts` and
-/// `src/bake/` (whose own tests hold the baker to the Java
-/// material-color-utilities ARGB for ARGB).
+/// Color roles and contrast levels across the generated theme presets.
 library;
 
 import 'dart:math' as math;
@@ -143,8 +140,7 @@ void main() {
     test('is Compose\'s default scheme in both brightnesses', () {
       final light = ExpressiveThemeData.preset('baseline', Brightness.light);
       final dark = ExpressiveThemeData.preset('baseline', Brightness.dark);
-      // MaterialExpressiveTheme's default: expressiveLightColorScheme()
-      // light, darkColorScheme() dark (CONTRACT §6).
+      // The default light and dark palettes follow Material’s color schemes.
       expect(light.colors.primary, const Color(0xFF6750A4));
       expect(light.colors.onPrimaryContainer, const Color(0xFF4F378B));
       expect(light.colors.onSecondaryContainer, const Color(0xFF4A4458));
@@ -277,8 +273,7 @@ void main() {
     }
   });
 
-  // The oracle captures a baked theme at contrast 0 and 1 (CONTRACT §7):
-  // every seeded theme is baked at each level; baseline has only its own.
+  // Seeded themes include both regular and high-contrast palettes.
   group('contrast levels', () {
     test('seeded themes resolve at 0, 0.5 and 1; baseline only at 0', () {
       for (final id in <String>['slate', 'bloom', 'grove', 'ember']) {

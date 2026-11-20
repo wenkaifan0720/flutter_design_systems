@@ -406,8 +406,6 @@ class _ComboboxNoMatchState extends State<_ComboboxNoMatch> {
   );
 }
 
-// Catalog specimens (docs/architecture/component-catalog.md).
-
 /// The closed field showing the chosen city.
 Widget kitSpecimenSelectCity() => ExpressiveSelect<String>(
   options: const <ExpressiveSelectOption<String>>[

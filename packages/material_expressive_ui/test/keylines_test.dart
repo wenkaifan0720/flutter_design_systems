@@ -1,23 +1,6 @@
-// design6 P, keylines: every screen of the trip planner at a phone's and a
-// desktop's width, at touch density (Android) and a pointer's (macOS, the
-// compact the web build gets on a desktop), read from its drawn pixels.
-//
-// Per container (a list section, a card, a page-level surface, a pane of a
-// two-pane screen, and the screen's column as the page), two kinds of edge:
-// surfaces (a section, a card, a field's or a filled button's container)
-// and content (words, glyphs, an avatar, a switch's or a checkbox's ink).
-// Each kind's lines start on one keyline, and each end-aligned line ends on
-// that keyline mirrored: a glyph's ink, not its box. A line that starts or
-// ends more than 32dp off its keyline is a decision (an indent, a value set
-// at the end of a short row), not a miss, and is left alone; the misses P
-// names are 4 to 24dp. The checkout bar's words stand on the page's margin,
-// and controls with a container that share a line share a height and a
-// centre. ui_core is getting a shared check; until then this is the look's.
-// With EXPRESSIVE_DESIGN_REVIEW_OUT set, the review page's "Keylines" sheet:
-// each screen with its keylines drawn over it.
-//
-// The check reads the drawn pixels, the rasterizer's as a golden's are:
-// tagged `goldens`, so macOS runs it and Linux CI leaves it out.
+// Measures the visible edges of text, icons and controls within cards, list
+// sections and page columns at touch and pointer densities. Set
+// EXPRESSIVE_LAYOUT_REPORT_OUT to save annotated screenshots.
 @Tags(['goldens'])
 library;
 
@@ -489,7 +472,7 @@ Future<void> _sheet(WidgetTester tester, List<_Box> boxes, String path) async {
 
 void main() {
   setUpAll(loadExpressiveFonts);
-  final output = Platform.environment['EXPRESSIVE_DESIGN_REVIEW_OUT'];
+  final output = Platform.environment['EXPRESSIVE_LAYOUT_REPORT_OUT'];
   final densities = const TargetPlatformVariant({
     TargetPlatform.android,
     TargetPlatform.macOS,

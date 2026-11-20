@@ -270,9 +270,7 @@ class ExpressiveSnackBar extends StatelessWidget {
 /// round shape, no press morph), `TextButtonContentPadding` (12dp at the
 /// sides, 8dp above and below), `ButtonDefaults.MinWidth` × `MinHeight`
 /// (58 × 40dp) inside the 48dp touch target, the label in `labelLarge`.
-/// The buttons family's text button pads at its size's 16dp, which would
-/// take up to 8dp from the message, so the snackbar draws its own (F3's
-/// smallest extension, on the shared pressable).
+/// The snackbar uses 12dp horizontal padding to leave room for its message.
 class _SnackbarAction extends StatelessWidget {
   const _SnackbarAction({
     required this.label,

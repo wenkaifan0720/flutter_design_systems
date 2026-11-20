@@ -235,7 +235,7 @@ final OracleGroup buttonScenes = OracleGroup(
     );
   },
   scenes: [
-    // Wave 0's filled scenes: every size, round, enabled.
+    // Enabled round filled buttons at every size.
     for (final (id, size, crop) in buttonSizes)
       OracleScene(
         key: 'button/filled/$id',

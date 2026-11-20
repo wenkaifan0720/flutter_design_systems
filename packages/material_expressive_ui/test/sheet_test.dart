@@ -1,51 +1,5 @@
-/// Sheets: the modal bottom sheet (Compose `ModalBottomSheet` over
-/// `BottomSheet`), its anchors, drag, nested scroll, scrim and back; the
-/// action sheet; and the full-screen dialog — each held to the values the
-/// pinned Compose states (material3 1.5.0-alpha29: `SheetBottomTokens`,
-/// `ScrimTokens`, `SheetDefaults.kt`, `BottomSheet.kt`), restated here so
-/// the test holds the code to the source rather than to itself. The pages
-/// stand on a plain navigator (`support/page_stack.dart`), so these travel
-/// with the package; the host app's go_router path is
-/// `sheet_routing_test.dart`'s.
-///
-/// Cody test ledger (F14), from Cody's `foundation_sheet_test.dart`:
-/// - "show(floating: false) is the drawer register: top-only rounding,
-///   where the default keeps the floating card" → "the modal sheet rounds
-///   only its top corners; the full-screen dialog covers the screen
-///   square";
-/// - "pageRoute mounts one inset card for both registers, sized to the
-///   task, standing clear of the bottom edge" → "a short sheet is sized to
-///   its content and stands on the bottom edge, at most 640dp wide";
-/// - "the floating card wears the measured geometry: the sheet margin, one
-///   radius on four corners, the platform grabber" → "the sheet wears
-///   SheetBottomTokens: the container and the 32×4 drag handle";
-/// - "detents open the card at the medium height and a drag up snaps it to
-///   the cap, edge to edge" → "a tall sheet rises on its spring to half the
-///   screen, a drag settles it between its anchors, a fling down dismisses
-///   it";
-/// - "without detents the card is still governed by its content" → "a
-///   short sheet's height is its handle, its content and the bottom
-///   inset";
-/// - "the header band stands the platform capsules beside the title, at
-///   the measured height" → not ported: a sheet's header is the screen's
-///   (ExpressiveScaffold, w2-appbar); its nearest Expressive claim, the
-///   action sheet's rows, is "an action sheet lists its actions in the
-///   one-line list geometry and closes with the chosen value";
-/// - "a header action with no callback dismisses the sheet" → "an action
-///   with no callback still closes the sheet; a disabled one does not";
-/// - "the floating card is the sheet material — blur under the measured
-///   translucent fill — over a LIGHT dim of the page" → "the scrim is the
-///   scrim role at 32 %, fading in on its spring, and a tap on it
-///   dismisses the sheet";
-/// - "a declared sheet page rests at the large detent, under the platform
-///   header" → "a sheet page stands on the root navigator in the sheet
-///   register, at its first anchor, and follows its page";
-/// - "the shell action disc carries the walkthrough key and performs its
-///   declared step" → not ported here: the shell action is w2-shell's and
-///   w2-fab's.
-///
-/// A menu held open in a sheet or the full-screen dialog (a split button's)
-/// takes the system back before the route does.
+/// Modal and persistent bottom sheets, including drag anchors, settling,
+/// focus, navigation, insets and accessible actions.
 library;
 
 import 'dart:async';
@@ -714,8 +668,8 @@ void main() {
   testWidgets('the drag handle draws no state layer: hover and a press '
       'leave it as it was, the pointer is the grab hand, and keyboard '
       'focus rings the bar alone', (tester) async {
-    // The user's 11-09 capture: a hover painted a grey square over the
-    // handle's whole 48dp target round its 32×4 bar.
+    // Hovering the drag handle uses the grab cursor without filling its
+    // larger hit target.
     final router = await _mount(tester);
     router.go('/tall');
     await tester.pumpAndSettle();

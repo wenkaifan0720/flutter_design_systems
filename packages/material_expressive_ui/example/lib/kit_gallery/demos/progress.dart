@@ -296,8 +296,7 @@ class _StepsState extends State<_Steps> {
   );
 }
 
-// Catalog specimens (docs/architecture/component-catalog.md): determinate
-// values, so a still shows what a reader sees.
+// Determinate values show the indicator shapes at a fixed point in time.
 
 /// Two thirds done, flat over wavy (a hero widget, so in its hero).
 Widget kitSpecimenLinearProgressWavy() => const Column(

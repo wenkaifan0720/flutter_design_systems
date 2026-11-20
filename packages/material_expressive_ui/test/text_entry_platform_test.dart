@@ -1,12 +1,5 @@
-// Text entry on a desktop platform (design6 I3; the user, 11-10, on a served
-// demo: "the hint text is not aligned correctly vertically"). Material's
-// InputDecorator adds ThemeData.visualDensity to a field, and Flutter's
-// default for it is compact on macOS, Windows and Linux. Tests run as
-// Android, so nothing saw it. Here every text-entry part is pumped as Android
-// and as macOS at each of the look's densities: its hint stands where its
-// typed text does, within half a pixel, that line on the box's middle (by its
-// capitals, which row_alignment_test reads), and the part is the same size,
-// its text in the same place, on both platforms.
+// Checks vertical alignment of input values and hints on Android and macOS at
+// both look densities and larger text sizes.
 import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart' show MaterialApp;
 import 'package:flutter/widgets.dart';

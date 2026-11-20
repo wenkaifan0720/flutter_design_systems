@@ -556,9 +556,7 @@ class _Links extends StatelessWidget {
   }
 }
 
-// Catalog specimens (docs/architecture/component-catalog.md): one
-// configuration each, the same in every style; kitSpecimenStage styles and
-// places them.
+// Each example uses the same configuration across themes.
 
 /// The primary button with its glyph.
 Widget kitSpecimenButtonPrimary() => const Center(
@@ -719,14 +717,28 @@ class _ToggleGroupsState extends State<_ToggleGroups> {
   );
 }
 
-/// Three alignments, Centre on.
-Widget kitSpecimenToggleGroupAlign() => ExpressiveToggleGroup<String>(
-  label: 'Alignment',
-  value: 'center',
-  onChanged: (_) {},
-  segments: const <ExpressiveButtonSegment<String>>[
-    ExpressiveButtonSegment('start', 'Start'),
-    ExpressiveButtonSegment('center', 'Centre'),
-    ExpressiveButtonSegment('end', 'End'),
-  ],
-);
+/// Three selectable alignments, with Centre selected initially.
+Widget kitSpecimenToggleGroupAlign() => const _AlignmentSample();
+
+class _AlignmentSample extends StatefulWidget {
+  const _AlignmentSample();
+
+  @override
+  State<_AlignmentSample> createState() => _AlignmentSampleState();
+}
+
+class _AlignmentSampleState extends State<_AlignmentSample> {
+  String _value = 'center';
+
+  @override
+  Widget build(BuildContext context) => ExpressiveToggleGroup<String>(
+    label: 'Alignment',
+    value: _value,
+    onChanged: (value) => setState(() => _value = value),
+    segments: const [
+      ExpressiveButtonSegment('start', 'Start'),
+      ExpressiveButtonSegment('center', 'Centre'),
+      ExpressiveButtonSegment('end', 'End'),
+    ],
+  );
+}

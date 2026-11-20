@@ -145,9 +145,8 @@ class ExpressiveScrollArea extends StatelessWidget {
                 child: ExpressiveSpringValue(
                   value: dragged || hovered ? _barThicknessHot : _barThickness,
                   motion: ExpressiveMotionKey.fastSpatial,
-                  // The thumb fills its run: under the Align's loose
-                  // constraints a childless box sized to nothing, so the
-                  // thumb was never drawn (11-13).
+                  // An expanded thumb fills the loose constraints supplied by
+                  // Align.
                   builder: (context, extent, _) => SizedBox(
                     width: vertical ? extent : double.infinity,
                     height: vertical ? double.infinity : extent,

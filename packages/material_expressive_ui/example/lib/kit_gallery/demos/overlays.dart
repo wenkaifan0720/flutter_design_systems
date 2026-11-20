@@ -80,8 +80,7 @@ class _Dialogs extends StatelessWidget {
   Widget build(BuildContext context) => kitSection(
     'Dialogs',
     children: const <Widget>[
-      // Side by side where they fit, 24dp apart: a column of them 8dp
-      // apart read as one lumpy pile (11-13).
+      // Keep separate overlay examples 24dp apart when they fit side by side.
       Wrap(
         spacing: ExpressiveSpacing.s24,
         runSpacing: ExpressiveSpacing.s24,
@@ -322,8 +321,6 @@ class _StepActions extends StatelessWidget {
     ],
   );
 }
-
-// Catalog specimens (docs/architecture/component-catalog.md).
 
 /// A confirmation with its icon, title, text and two actions, in place.
 Widget kitSpecimenAlertDialogDiscard() => const Center(

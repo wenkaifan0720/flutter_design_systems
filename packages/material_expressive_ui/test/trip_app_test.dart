@@ -490,10 +490,8 @@ void main() {
     }
   }
 
-  // The coordinator's read of 11-11 (3be1f47691): each destination centred
-  // its own measure, so going through the rail moved the title and the
-  // content's edge by up to 227 px at 1440. One frame for every
-  // destination: its bar title and its column start on one x.
+  // The app-bar title and content column share a leading edge across trip
+  // planner destinations.
   for (final width in [768.0, 1440.0]) {
     testWidgets('one page frame at ${width.round()}: every destination '
         "starts its title and its column on one edge", (tester) async {
@@ -536,10 +534,8 @@ void main() {
     });
   }
 
-  // The coordinator's read of e8b2ebfea8: Kit's Delivery words stood 8px
-  // right of the Basket's and Payment's (a 40dp radio slot beside 32dp
-  // tiles). Every row's words in the column start on one x, read from the
-  // words, at a phone's width and a desktop's, at both densities.
+  // Delivery, Basket and Payment row labels share a leading edge across
+  // viewport widths and densities.
   for (final width in [390.0, 1440.0]) {
     testWidgets(
       "Kit at ${width.round()}: every row's words start on one x",

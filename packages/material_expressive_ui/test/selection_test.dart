@@ -1,8 +1,5 @@
-/// The selection controls: the checkbox (tri-state, error, disabled), the
-/// radio button and group, the switch (thumb sizes and positions, press,
-/// drag, RTL) and the labelled rows — geometry from the generated tokens,
-/// what a tap or drag reports, and semantics. Ports Cody v2's toggle tests
-/// (foundation_controls_test.dart, foundation_test.dart) to Expressive.
+/// Checkbox, radio and switch geometry, gestures, enabled states and
+/// accessible labels.
 library;
 
 // Reads the checkbox's private painter, which no public type describes.
@@ -197,7 +194,6 @@ void main() {
   );
 
   group('checkbox', () {
-    // Cody: 'the check reports the flipped value and springs on the way on'.
     testWidgets('reports the flipped value; ExpressiveCheckbox.mark is the '
         'box alone, not a control', (tester) async {
       bool? reported;
@@ -349,7 +345,6 @@ void main() {
       semantics.dispose();
     });
 
-    // Cody: 'choice row retains selected semantics and disables activation'.
     testWidgets('radio rows keep checked semantics; a disabled row never '
         'activates', (tester) async {
       final semantics = tester.ensureSemantics();
@@ -391,7 +386,6 @@ void main() {
       semantics.dispose();
     });
 
-    // Cody: 'selection group keeps content inset at $direction/$scale'.
     for (final direction in TextDirection.values) {
       for (final scale in <double>[1, 2]) {
         testWidgets('radio group keeps its rows inset at $direction/$scale', (
@@ -450,9 +444,7 @@ void main() {
     }
   });
 
-  // Flutter clips ink to the material it paints on: a material only the
-  // control's 24dp cut the 40dp halo to a 24dp square (the 11-09 state
-  // sheets). Read on the pixels the hover paints.
+  // The ink surface must paint the entire 40dp halo around the 24dp control.
   testWidgets('hover paints the whole 40dp halo about a checkbox and a '
       'radio: a circle, a square only for the checkbox on a square scale', (
     tester,
@@ -707,7 +699,6 @@ void main() {
       await tester.pumpAndSettle();
     });
 
-    // Cody: 'toggle supports dragging and semantic toggled state'.
     testWidgets('supports dragging and semantic toggled state', (tester) async {
       final semantics = tester.ensureSemantics();
       var value = false;
@@ -760,7 +751,6 @@ void main() {
       expect(_thumb(tester).left - track.left, 4);
     });
 
-    // Cody: 'disabled segmented picker and switch never mutate'.
     testWidgets('a disabled switch never mutates', (tester) async {
       var changes = 0;
       await tester.pumpWidget(

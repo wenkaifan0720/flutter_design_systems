@@ -1,3 +1,8 @@
+## 0.3.4
+
+- Stands on ui_core 0.3.4.
+- Radio rows and single-choice segments select with all four arrow keys. Tab enters on the checked enabled option, or on the first enabled option if the checked option is disabled. Each group occupies one Tab stop in either text direction.
+
 ## 0.3.3
 
 - A radio group is one Tab stop, as Flutter's `RadioGroup`: Tab lands on the chosen option, or the first enabled one while none is chosen, and the next Tab leaves the group. The arrow keys choose the next or previous option, skip disabled ones and wrap at the ends. Left and Right swap in right-to-left layouts.

@@ -1,10 +1,5 @@
-/// Expressive's shape (w1-shape's test, with `shape.dart`, its
-/// `internal/shape/` part and the generator's `emit/shape.ts`): the corner
-/// scale exactly as the tokens state it, the 35 library shapes and the
-/// morphs equal to Compose's own cubics (`shape_golden.json`, exported from
-/// androidx graphics-shapes on the JVM by
-/// `tools/expressive_tokens/src/shapes/golden.ts`) to 1e-4, the morph's
-/// endpoints exact and its path reused frame to frame.
+/// Checks the token corner scale and the 35 Material shapes against Compose’s
+/// cubic geometry to 1e-4, including morph endpoints and path reuse.
 library;
 
 import 'dart:convert';

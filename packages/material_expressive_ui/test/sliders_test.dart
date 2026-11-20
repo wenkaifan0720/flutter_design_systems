@@ -1,10 +1,5 @@
-/// The sliders family: the slider's geometry per size (track, handle, touch
-/// target) from the generated tokens, Compose's input model (a tap moves
-/// on release, a drag follows the finger, steps snap, keys step, RTL and
-/// bottom-to-top reverse), the handle narrowing while held, the range
-/// slider's nearer-handle rule, semantics, the value indicator; and the
-/// quantity stepper. Ports Cody v2's slider and stepper tests
-/// (foundation_controls_test.dart) to Expressive.
+/// Slider and stepper geometry, selection, held repeat, bounds and
+/// accessibility.
 library;
 
 import 'dart:ui' show SemanticsAction;
@@ -45,8 +40,8 @@ Widget _app(
   ),
 );
 
-/// Cody's host: a padded, scrolling column (foundation_controls_test.dart).
-Widget _codyHost(Widget child) => ExpressiveHost(
+/// Places the control in a padded, scrollable column.
+Widget _scrollingHost(Widget child) => ExpressiveHost(
   light: _theme,
   brightness: Brightness.light,
   child: Directionality(
@@ -258,14 +253,13 @@ void main() {
   });
 
   group('slider input', () {
-    // Cody: 'stepped slider clamps and commits the final value'.
     testWidgets('stepped slider clamps and commits the final value', (
       tester,
     ) async {
       var value = 0.25;
       double? committed;
       await tester.pumpWidget(
-        _codyHost(
+        _scrollingHost(
           StatefulBuilder(
             builder: (context, update) => ExpressiveSlider(
               semanticLabel: 'Volume',
@@ -612,13 +606,12 @@ void main() {
   });
 
   group('quantity stepper', () {
-    // Cody: 'stepper repeats while held and stops at its bounds'.
     testWidgets('stepper repeats while held and stops at its bounds', (
       tester,
     ) async {
       var value = 2;
       await tester.pumpWidget(
-        _codyHost(
+        _scrollingHost(
           StatefulBuilder(
             builder: (context, update) => ExpressiveNumberField(
               value: value,

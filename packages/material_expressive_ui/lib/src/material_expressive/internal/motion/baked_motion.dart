@@ -1,13 +1,5 @@
-/// The motion part of a baked theme, how it resolves into the public
-/// [ExpressiveMotion], and where each scheme's springs come from: w1-motion's
-/// slot, with `motion.dart` and the generator's `emit/motion.ts`. Internal;
-/// the generated themes name [ExpressiveBakedMotion] through `baked_theme.dart`.
-///
-/// The springs themselves are generated token Dart (w1-tokens' emitter):
-/// `ExpressiveMotionTokens` and `StandardMotionTokens` from the pinned jar,
-/// the Standard spatial springs being Compose's over the token DB's
-/// (`overrides.yaml` `standard-spatial-springs`). This file only picks the
-/// scheme's table and says which keys are spatial.
+/// Resolves a baked theme’s motion scheme into [ExpressiveMotion] using the
+/// Material Expressive and Standard spring tokens.
 library;
 
 import 'package:flutter/widgets.dart';

@@ -15,13 +15,8 @@ Widget kitShapeDemo(Brightness brightness) => kitScreen(
   sections: const <Widget>[_Scale(), _Inner(), _Library(), _Morph()],
 );
 
-/// One swatch: [child] over [label], [width] wide (as wide as [child], or
-/// it squeezes a wider tile: the corner scale's 112dp tiles stood 72dp
-/// wide, so extraExtraLarge rounded as full, 11-13).
-///
-/// A token's name breaks only between its words (`extraLarge` over
-/// `Increased`): set as one word it broke wherever the width ran out
-/// ("extraSma ll", 11-09).
+/// A swatch shows [child] above [label] at the requested [width]. Token names
+/// can wrap between words.
 Widget _swatch(
   BuildContext context,
   String label,
@@ -40,11 +35,8 @@ Widget _swatch(
         Semantics(
           label: label,
           excludeSemantics: true,
-          // Its words in a Wrap, set left to right in either direction (right
-          // to left its halves swapped: "Smallextra", 11-13). A Wrap's least
-          // width is its widest word, so the cell keeps its width until a
-          // word needs more; one paragraph with zero-width spaces measured
-          // as one word, and every long name widened its cell (11-14).
+          // Keep token words in source order in both text directions. A Wrap
+          // gives each cell the width of its longest word.
           child: Wrap(
             alignment: WrapAlignment.center,
             textDirection: TextDirection.ltr,

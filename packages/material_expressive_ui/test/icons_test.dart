@@ -1,7 +1,4 @@
-/// The icon set: w1-type's test, with `icons.dart`, its generated
-/// `internal/icons/` part and `tools/expressive_tokens/fonts/`. Every glyph
-/// names the bundled Material Symbols Rounded subset, and a symbol's FILL
-/// follows its selected state on the fast effects spring.
+/// Material Symbols Rounded glyphs, font selection and icon sizes.
 library;
 
 import 'package:flutter/services.dart';

@@ -1,14 +1,11 @@
-/// A radio group from the keyboard, as Flutter's `RadioGroup` is: one Tab
-/// stop (the choice, or the first enabled option while there is none) that
-/// the next Tab leaves, and arrows that choose the next or the previous
-/// option, skipping disabled ones and wrapping at the ends, Left and Right
-/// swapped in a right-to-left layout. Expressive's group kept Tab inside and
-/// moved focus without choosing (the 11-18 API audit's radio probe).
+/// Radio group Tab entry, arrow selection, wrapping, disabled options and
+/// right-to-left reading order.
 library;
 
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:ui_core_test/ui_core_test.dart' show DesignRadioGroupCheck;
 import 'package:material_expressive_ui/material_expressive_ui.dart';
 import 'package:material_expressive_ui/material_expressive_host.dart';
 
@@ -111,7 +108,301 @@ class _Harness {
   }
 }
 
+enum _Choices { rows, segments, toggles }
+
+Widget _choices(_Choices kind, String? value, ValueChanged<String> changed) {
+  const options = [
+    ExpressiveButtonSegment('A', 'A'),
+    ExpressiveButtonSegment('B', 'B', enabled: false),
+    ExpressiveButtonSegment('C', 'C'),
+    ExpressiveButtonSegment('D', 'D'),
+  ];
+  return switch (kind) {
+    _Choices.rows => ExpressiveRadioGroup<String>(
+      options: [
+        for (final option in options)
+          ExpressiveRadioOption(
+            value: option.value,
+            label: option.label,
+            enabled: option.enabled,
+          ),
+      ],
+      value: value,
+      onChanged: changed,
+    ),
+    _Choices.segments => ExpressiveSegmentedButton<String>(
+      segments: options,
+      value: value,
+      onChanged: changed,
+      expand: false,
+    ),
+    _Choices.toggles => ExpressiveToggleGroup<String>(
+      segments: options,
+      value: value,
+      onChanged: changed,
+    ),
+  };
+}
+
 void main() {
+  for (final kind in _Choices.values) {
+    for (final direction in TextDirection.values) {
+      for (final initial in <String?>['C', null, 'B']) {
+        testWidgets(
+          '${kind.name} keyboard in ${direction.name}, checked $initial',
+          (tester) async {
+            final before = FocusNode();
+            final after = FocusNode();
+            addTearDown(before.dispose);
+            addTearDown(after.dispose);
+            var value = initial;
+            await tester.pumpWidget(
+              MaterialApp(
+                home: ExpressiveHost(
+                  light: _theme,
+                  brightness: Brightness.light,
+                  child: Directionality(
+                    textDirection: direction,
+                    child: Material(
+                      child: StatefulBuilder(
+                        builder: (context, setState) => Column(
+                          children: [
+                            TextButton(
+                              focusNode: before,
+                              onPressed: () {},
+                              child: const Text('Before'),
+                            ),
+                            KeyedSubtree(
+                              key: _group,
+                              child: _choices(
+                                kind,
+                                value,
+                                (next) => setState(() => value = next),
+                              ),
+                            ),
+                            TextButton(
+                              focusNode: after,
+                              onPressed: () {},
+                              child: const Text('After'),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            );
+            await tester.pumpAndSettle();
+            void expectRadio(String option) {
+              final node = tester.getSemantics(find.bySemanticsLabel(option));
+              expect(
+                node,
+                isSemantics(
+                  label: option,
+                  hasCheckedState: true,
+                  isChecked: option == value,
+                  isInMutuallyExclusiveGroup: true,
+                  isButton: false,
+                  isEnabled: option != 'B',
+                ),
+              );
+            }
+
+            const options = ['A', 'B', 'C', 'D'];
+            for (final option in options) {
+              expectRadio(option);
+            }
+            final result =
+                await const DesignRadioGroupCheck(look: 'Material Expressive')
+                    .check(
+                      tester.element(find.byKey(_group)),
+                      before: before,
+                      sendKeyEvent: tester.sendKeyEvent,
+                      pump: tester.pump,
+                    );
+            result.verify();
+            expect(value, isNotNull);
+            for (final option in options) {
+              expectRadio(option);
+            }
+          },
+        );
+      }
+    }
+  }
+
+  testWidgets(
+    'switch rows and independent checkable segments expose their state',
+    (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: ExpressiveHost(
+            light: _theme,
+            brightness: Brightness.light,
+            child: Material(
+              child: Column(
+                children: [
+                  ExpressiveSwitchRow(
+                    label: 'Background sync',
+                    value: true,
+                    onChanged: (_) {},
+                  ),
+                  ExpressiveMultiChoiceSegmentedButton<String>(
+                    segments: const [
+                      ExpressiveButtonSegment('B', 'Bold'),
+                      ExpressiveButtonSegment('I', 'Italic'),
+                    ],
+                    value: const {'B'},
+                    onChanged: (_) {},
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      for (final name in ['Background sync', 'Bold', 'Italic']) {
+        final node = tester.getSemantics(find.bySemanticsLabel(name));
+        expect(
+          node,
+          isSemantics(
+            label: name,
+            hasToggledState: true,
+            isToggled: name != 'Italic',
+            isButton: false,
+            hasTapAction: true,
+          ),
+        );
+      }
+    },
+  );
+  for (final row in [false, true]) {
+    final name = row ? 'ExpressiveRadioRow' : 'ExpressiveRadio';
+    testWidgets('$name keeps the focus node supplied by its caller', (
+      tester,
+    ) async {
+      final original = FocusNode();
+      final replacement = FocusNode();
+      final before = FocusNode();
+      final after = FocusNode();
+      for (final node in [original, replacement, before, after]) {
+        addTearDown(node.dispose);
+      }
+      var originalChanges = 0;
+      var replacementChanges = 0;
+      original.addListener(() => originalChanges++);
+      replacement.addListener(() => replacementChanges++);
+      var selected = 'B';
+
+      Future<void> mount(FocusNode node, {bool includeB = true}) async {
+        await tester.pumpWidget(
+          MaterialApp(
+            home: ExpressiveHost(
+              light: _theme,
+              brightness: Brightness.light,
+              child: Material(
+                child: StatefulBuilder(
+                  builder: (context, update) => Column(
+                    children: [
+                      TextButton(
+                        focusNode: before,
+                        onPressed: () {},
+                        child: const Text('Before'),
+                      ),
+                      DesignRadioGroup<String>(
+                        options: ['A', if (includeB) 'B'],
+                        value: includeB ? selected : 'A',
+                        onChanged: (v) => update(() => selected = v),
+                        focusNodeFor: (v) => v == 'B' ? node : null,
+                        itemBuilder: (context, value, focus, select) => row
+                            ? ExpressiveRadioRow(
+                                label: value,
+                                selected: selected == value,
+                                focusNode: focus,
+                                onPressed: select,
+                              )
+                            : ExpressiveRadio(
+                                semanticLabel: value,
+                                selected: selected == value,
+                                focusNode: focus,
+                                onPressed: select,
+                              ),
+                      ),
+                      TextButton(
+                        focusNode: after,
+                        onPressed: () {},
+                        child: const Text('After'),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+      }
+
+      Future<void> enter(FocusNode node) async {
+        before.requestFocus();
+        await tester.pump();
+        await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+        await tester.pump();
+        expect(FocusManager.instance.primaryFocus, same(node));
+        await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+        await tester.pump();
+        expect(FocusManager.instance.primaryFocus, same(after));
+      }
+
+      await mount(original);
+      await enter(original);
+      await mount(original);
+      original.requestFocus();
+      await tester.pump();
+      expect(FocusManager.instance.primaryFocus, same(original));
+      await tester.sendKeyEvent(LogicalKeyboardKey.arrowUp);
+      await tester.pump();
+      expect(selected, 'A');
+      await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
+      await tester.pump();
+      expect(selected, 'B');
+      expect(FocusManager.instance.primaryFocus, same(original));
+      await mount(replacement);
+      await enter(replacement);
+      replacement.requestFocus();
+      await tester.pump();
+      expect(FocusManager.instance.primaryFocus, same(replacement));
+      await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
+      await tester.pump();
+      expect(selected, 'A');
+      await mount(replacement, includeB: false);
+      expect(replacement.parent, isNull);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Column(
+            children: [
+              Focus(focusNode: original, child: const SizedBox()),
+              Focus(focusNode: replacement, child: const SizedBox()),
+            ],
+          ),
+        ),
+      );
+      final previousOriginalChanges = originalChanges;
+      final previousReplacementChanges = replacementChanges;
+      for (final node in [original, replacement]) {
+        node.requestFocus();
+        await tester.pump();
+        expect(FocusManager.instance.primaryFocus, same(node));
+      }
+      expect(originalChanges, greaterThan(previousOriginalChanges));
+      expect(replacementChanges, greaterThan(previousReplacementChanges));
+      await tester.pumpWidget(const SizedBox.shrink());
+    });
+  }
+
   testWidgets('one Tab stop on the choice, and Down chooses the next', (
     tester,
   ) async {
@@ -185,6 +476,43 @@ void main() {
     expect(h.place(), 'A');
     await h.key(LogicalKeyboardKey.space);
     expect(h.chosen, 'A');
+  });
+
+  testWidgets('Enter, Space and a tap on the checked option report it', (
+    tester,
+  ) async {
+    final reported = <String>[];
+    await tester.pumpWidget(
+      MaterialApp(
+        builder: (context, app) => ExpressiveHost(
+          light: _theme,
+          brightness: Brightness.light,
+          child: app!,
+        ),
+        home: Material(
+          child: ExpressiveRadioGroup<String>(
+            value: 'B',
+            onChanged: reported.add,
+            options: const [
+              ExpressiveRadioOption(value: 'A', label: 'A'),
+              ExpressiveRadioOption(value: 'B', label: 'B'),
+            ],
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    for (final key in [
+      LogicalKeyboardKey.tab,
+      LogicalKeyboardKey.enter,
+      LogicalKeyboardKey.space,
+    ]) {
+      await tester.sendKeyEvent(key);
+      await tester.pumpAndSettle();
+    }
+    await tester.tap(find.text('B'));
+    await tester.pumpAndSettle();
+    expect(reported, ['B', 'B', 'B']);
   });
 
   testWidgets('a disabled group is no Tab stop', (tester) async {

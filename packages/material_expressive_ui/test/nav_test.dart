@@ -1096,10 +1096,8 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    // The coordinator's walk at 1440: three tabs split a 928dp column into
-    // thirds. From 600 they keep to their labels from the start edge, as
-    // Material's TabAlignment.start lays them out; on a phone (the tests
-    // above) they share the width.
+    // Wide tab bars align tabs at the start. Narrow tab bars share the
+    // available width.
     testWidgets('from 600: fixed tabs keep to their labels from the start '
         'edge, the row and its divider the column wide', (tester) async {
       tester.view.devicePixelRatio = 1;

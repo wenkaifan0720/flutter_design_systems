@@ -1,34 +1,6 @@
-/// Shared helpers for the Expressive gallery's demo screens.
-///
-/// A demo is `Widget kit<Group>Demo(Brightness brightness)`: it is handed a
-/// brightness and nothing else. Every demo renders inside the environment a
-/// page gets — Expressive's host, themed by the preset in theme.dart (which
-/// the lab rewrites when a preset is picked) — inside the design kit's
-/// preview frame, in the register of the ambient platform ([kitPlatform]).
-/// The smoke matrix's platform axis reaches a demo only that way (each
-/// platform pass overrides `defaultTargetPlatform`), and it fails any frame
-/// drawn in another register; the lab's platform toggle reaches demos the
-/// same way.
-///
-/// Demos import only the Expressive barrel, Flutter's widgets or material
-/// library, this file and, for a demo under a router, go_router and
-/// kit_router.dart, so the gallery doubles as proof that the public surface
-/// suffices to author with. This file takes no router: the package's
-/// gallery carries it and leaves the router's demos with the host app.
-///
-/// WAVE 0 stand-ins, placed so that no two wave 1 items edit one file:
-/// - `KitText` (kit_text.dart, imported here alone, never exported) is the
-///   type this file's page chrome sets titles and labels in. w1-type
-///   rewrites that file in place over the type scale, keeping its names, so
-///   this file and the demos never change.
-/// - `KitGlyphs` (kit_glyphs.dart, exported) stands in for Material Symbols.
-///   The wave 1 item that bundles them rewrites that file in place, keeping
-///   its names, so this file and the demos that use them never change.
-/// - [kitGap] is the spacing scale's 8dp step (`ExpressiveSpacing.s8`),
-///   w1-tokens' one edit to this file.
-/// - [KitPage] frames every sectioned demo instead of `ExpressiveScaffold`:
-///   it lays its sections out eagerly (see its doc) so the smoke matrix
-///   checks every section, and it is gallery framing, not an app screen.
+/// Shared page layout, typography and theme selection for the Expressive
+/// gallery. Each demo takes a brightness and uses the current platform’s
+/// preview frame.
 library;
 
 import 'package:flutter/foundation.dart' show defaultTargetPlatform;
@@ -52,11 +24,8 @@ final ThemeData kitAppTheme = ThemeData(
   ),
 );
 
-/// The register of the ambient platform — the smoke matrix's platform under
-/// test, or the device the gallery runs on — for a demo's preview frame. A
-/// platform with no register of its own (a desktop, the web on one)
-/// previews in the Android register, the lab's default. Read each time a
-/// demo is built, never cached.
+/// The preview frame for the current platform. Desktop platforms use the
+/// Android frame.
 PreviewPlatform get kitPlatform => PreviewPlatform.values.firstWhere(
   (register) => register.targetPlatform == defaultTargetPlatform,
   orElse: () => PreviewPlatform.android,
@@ -144,11 +113,9 @@ class KitLiveViewport extends InheritedWidget {
   bool updateShouldNotify(KitLiveViewport oldWidget) => false;
 }
 
-/// A titled specimen sheet without app chrome. By default a
-/// [SingleChildScrollView] lays out every section eagerly, so the smoke matrix
-/// checks the complete sheet. Under [KitLiveViewport], sections build lazily
-/// and keep their state after scrolling out of view, and the heading gives
-/// way to the example's app bar and tabs, which already name the page.
+/// A titled specimen sheet that builds all its sections in a [SingleChildScrollView].
+/// Under [KitLiveViewport], sections build lazily, retain their state when
+/// scrolled out of view, and use the example app bar for the page title.
 class KitPage extends StatelessWidget {
   const KitPage({required this.title, required this.children, super.key});
 
@@ -500,23 +467,7 @@ Widget kitPhoneWidth({required Widget child, required String title}) => Builder(
 
 const double _kitPhoneWidth = 390;
 
-/// What a wave-0 demo stands in for: the wave that builds its family or
-/// foundation and the role-vocabulary ids it will cover (none for chrome
-/// and the foundations).
-Widget kitPlan({required int wave, List<String> roles = const <String>[]}) =>
-    kitSection(
-      'Built in wave $wave',
-      children: <Widget>[
-        Text(
-          roles.isEmpty
-              ? 'Fills no vocabulary role.'
-              : 'Roles: ${roles.join(', ')}.',
-        ),
-      ],
-    );
-
-/// A tappable line in a demo page: [label] on the quiet container, running
-/// [onTap]. Wave 0's stand-in until wave 3 builds the list row.
+/// A tappable line that displays [label] and invokes [onTap].
 class KitAction extends StatelessWidget {
   const KitAction(this.label, {required this.onTap, super.key});
 
@@ -536,10 +487,7 @@ class KitAction extends StatelessWidget {
   );
 }
 
-/// Where a catalog specimen sits on its stage — so also the part of the
-/// phone the lab keeps of it (the specimen's `frame` in the module's
-/// metadata.yaml names the same band): the bottom or top edge, a band
-/// across the middle, or the whole phone.
+/// Placement of a gallery example within a phone-sized frame.
 class KitFrame {
   const KitFrame.bottom(double this.height) : _place = _KitPlace.bottom;
   const KitFrame.top(double this.height) : _place = _KitPlace.top;
@@ -553,14 +501,8 @@ class KitFrame {
 
 enum _KitPlace { bottom, top, band, screen }
 
-/// The stage a catalog specimen renders on
-/// (docs/architecture/component-catalog.md): the host themed by [style] —
-/// a preset resolved at runtime, so one compile draws every preset — in
-/// [brightness], in the Android register, on the page ground, with [child]
-/// placed by [frame]. Edge chrome docks on its edge, so a bar lays out over
-/// the real safe area.
-///
-/// A specimen builder never names a style: the stage decides it.
+/// Renders [child] in the [style] preset at [brightness], positioned by
+/// [frame]. Edge components use the frame’s safe area.
 Widget kitSpecimenStage({
   required String style,
   required Brightness brightness,

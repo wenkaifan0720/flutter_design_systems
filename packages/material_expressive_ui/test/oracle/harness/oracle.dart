@@ -1,19 +1,6 @@
-/// The Flutter side of the Expressive oracle (CONTRACT §7; the capture
-/// contract in `tools/expressive_oracle/README.md`): renders each oracle
-/// scene key the way the Compose oracle renders it — same theme label,
-/// brightness, crop, DPR 2.625, platform Android, real fonts — and writes
-/// the same files (`<key>.png`, `<key>.json`, and for motion
-/// `<key>.frames.json` + `<key>.frames/NNN.png`) for `compare`.
-///
-/// A scene group is one file, `test/oracle/scenes/<id>_scenes_test.dart`,
-/// whose `main` hands its [OracleGroup] to [runOracleGroup]; `flutter test`
-/// discovers the files, and no shared list names a group (wave decision E4).
-/// See `test/oracle/README.md`.
-///
-/// Run by `bun run flutter` in `tools/expressive_oracle` with
-/// `--dart-define`s ([OracleRun]); without `ORACLE_OUT` (as in the design
-/// system's own `flutter test`) every scene is still built and measured in
-/// `baseline` light, and nothing is written.
+/// Renders the Flutter companion to each Compose reference scene with the
+/// same theme, crop, Android platform, real fonts and 2.625 device pixel
+/// ratio. Captures include pixels and geometry for still or moving controls.
 library;
 
 import 'dart:convert';
@@ -35,8 +22,8 @@ const double oracleDensity = 2.625;
 /// The oracle AVD's window in physical pixels (a screen scene's crop).
 const Size oracleWindowPx = Size(1080, 2400);
 
-/// What a crop is held to (CONTRACT §7 "Pixels"): 1.5 % for a component,
-/// 3 % for a screen.
+/// Pixel difference thresholds are 1.5 percent for a component and 3 percent
+/// for a screen.
 enum OracleSceneKind { component, screen }
 
 /// A motion recording, as the oracle scene of the same key records it:
@@ -54,7 +41,7 @@ class OracleMotion {
   final int frames;
   final bool images;
 
-  /// Frames are stepped exactly this far apart (CONTRACT §7).
+  /// Time between captured animation frames.
   static const Duration frame = Duration(milliseconds: 16);
 }
 

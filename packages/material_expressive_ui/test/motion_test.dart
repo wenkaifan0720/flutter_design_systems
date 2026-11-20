@@ -1,8 +1,5 @@
-/// The motion part: w1-motion's test, with `motion.dart`, its
-/// `internal/motion/` part and the generator's `emit/motion.ts`. Every
-/// spring is proved from the generated tokens and against CONTRACT §2's
-/// table; then the Standard override (the jar over the token DB), the
-/// Standard pin, Reduce Motion, and how the springs settle.
+/// Expressive and Standard spring parameters, reduced motion and settling
+/// behavior.
 library;
 
 import 'dart:math' as math;
@@ -13,7 +10,7 @@ import 'package:material_expressive_ui/material_expressive_ui.dart';
 import 'package:material_expressive_ui/src/material_expressive/internal/tokens/expressive_motion_tokens.g.dart';
 import 'package:material_expressive_ui/src/material_expressive/internal/tokens/standard_motion_tokens.g.dart';
 
-/// CONTRACT §2 "Motion": (ζ, k) per scheme and key.
+/// Damping ratio and stiffness for each motion scheme and key.
 const Map<ExpressiveMotionScheme, Map<ExpressiveMotionKey, (double, double)>>
 contract = {
   ExpressiveMotionScheme.expressive: {

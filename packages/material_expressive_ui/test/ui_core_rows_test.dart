@@ -1,7 +1,5 @@
-/// The 15 rows round 4 paints on ui_core's behaviours (coverage4.md): each
-/// one builds in the look, answers a press, a drag or a key as its
-/// behaviour does, and reports back through its own words (`value` and
-/// `onChanged`, `onPressed`).
+/// Builds the composite controls and exercises their pointer, keyboard and
+/// value callbacks.
 library;
 
 import 'dart:ui' show Tristate;
@@ -883,8 +881,8 @@ class _RingProbe extends CustomPainter {
       borderRadius: BorderRadius.all(Radius.circular(12)),
     ),
     color: ink,
-    thickness: 3,
-    offset: 2,
+    thickness: ExpressiveFocusRing.thickness,
+    offset: ExpressiveFocusRing.offset,
     textDirection: TextDirection.ltr,
     inward: inward,
     gap: surface,

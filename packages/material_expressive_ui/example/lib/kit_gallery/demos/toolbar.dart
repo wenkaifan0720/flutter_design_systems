@@ -459,8 +459,6 @@ class _Notes extends StatelessWidget {
   }
 }
 
-// Catalog specimens (docs/architecture/component-catalog.md).
-
 /// The floating toolbar of a note editor with its FAB.
 Widget kitSpecimenFloatingToolbarEditor() => Center(
   child: ExpressiveFloatingToolbar(

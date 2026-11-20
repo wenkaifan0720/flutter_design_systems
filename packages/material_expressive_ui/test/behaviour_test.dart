@@ -97,14 +97,15 @@ final _parts = <String, _Part>{
       label: 'Mute',
     ),
   ),
-  // The first segment is not the chosen one, so its press is a change.
+  // With no segment chosen, Tab enters on the first, so its press is a
+  // change. Choosing the chosen segment again reports nothing.
   'ExpressiveSegmentedButton': _Part(
     (hit) => ExpressiveSegmentedButton<String>(
       segments: const [
         ExpressiveButtonSegment('day', 'Day'),
         ExpressiveButtonSegment('week', 'Week'),
       ],
-      value: 'week',
+      value: null,
       onChanged: _on(hit),
     ),
   ),
@@ -603,10 +604,8 @@ final _parts = <String, _Part>{
     pressable: false,
     disables: false,
   ),
-  // Round 4's parts. Those on ui_core's behaviours paint ui_core's states on
-  // their own faces (not Expressive's pressable), so they are fields: Tab
-  // reaches them and they lay out everywhere; their keys and disabling are
-  // ui_core's, tested in ui_core and in ui_core_rows_test.
+  // Composite controls draw the states supplied by ui_core. Check that the
+  // fields can be reached by Tab and lay out across sizes.
   'ExpressiveBareField': _Part(
     (hit) => _OwnedBareField(onChanged: _on(hit)),
     keys: false,
@@ -1102,8 +1101,8 @@ void main() {
         );
       }
 
-      // Reduce Motion critically damps Expressive's springs (contract §2) rather than cutting them, so a press
-      // still moves for a moment; what the law forbids is motion that never ends.
+      // Reduced motion critically damps the springs, so a press can still
+      // move briefly before it settles.
       testWidgets(
         'under Reduce Motion a press settles and nothing loops',
         tags: sweepUnless(everydayTurn(row, 0, 3)),

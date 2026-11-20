@@ -1,8 +1,5 @@
-/// Menus and popovers: Compose's expressive `DropdownMenuPopup`, its groups
-/// and items, geometry and colours from the tokens, the popup's placement
-/// and spring motion, the themes it carries onto the root overlay, a
-/// popover leaving the system back to a menu held open in it, and the Cody
-/// v2 context-menu and popover tests ported (decision F14).
+/// Menu placement, grouped items, interaction colors, spring motion,
+/// inherited themes and nested back navigation.
 library;
 
 import 'package:flutter/gestures.dart';
@@ -107,8 +104,6 @@ void main() {
     expect(selected, isTrue);
     expect(tester.takeException(), isNull);
   });
-
-  // --- Cody v2 ports (F14) -------------------------------------------------
 
   testWidgets(
     'menu dismisses before invoking an action and disables null actions',
@@ -321,9 +316,8 @@ void main() {
     testWidgets(
       'popover ${reduce ? 'never overshoots under Reduce Motion' : 'overshoots on the expressive spring'}',
       (tester) async {
-        // Cody skipped the popover's motion under reduced motion; the kit's
-        // policy (DesignMotionPolicy) keeps Expressive's spatial springs and damps
-        // them critically instead, so the port asserts no overshoot.
+        // The reduced-motion policy critically damps the popover’s spatial
+        // spring.
         await tester.pumpWidget(
           host(
             media: MediaQueryData(disableAnimations: reduce),

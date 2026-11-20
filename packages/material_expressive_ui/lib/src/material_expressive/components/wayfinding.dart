@@ -382,9 +382,7 @@ class ExpressivePagination extends StatelessWidget {
             );
     }
 
-    // 8dp between the parts (a button group's space at medium size): flush,
-    // a focused page's ring (2dp out, 3dp thick) ran under the next page,
-    // and the current page's tonal pill covered its edge.
+    // Leave room for the focus outline between adjacent page buttons.
     const gap = ExpressiveSpacing.s8;
     final full = Row(
       mainAxisSize: MainAxisSize.min,

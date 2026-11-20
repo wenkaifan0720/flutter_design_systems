@@ -1,8 +1,5 @@
-/// The 11-05 table calls (`scratch/looks/api_table.md`): the parts the
-/// table names take its words, the press ink is Expressive's whatever the
-/// host's splash, keyboard focus draws the M3 ring at 3:1, an action row
-/// whose press would do nothing is out of use, and the date range headline
-/// stops growing at Material's 1.3.
+/// Control defaults, callback behavior, keyboard focus contrast and
+/// date-range headline scaling.
 library;
 
 import 'package:flutter/foundation.dart'
@@ -55,7 +52,7 @@ void _expectEnabled(WidgetTester tester, Finder pressable, bool enabled) {
 }
 
 void main() {
-  group('ExpressiveChip, as the table has it', () {
+  group('ExpressiveChip', () {
     testWidgets('tells its kind by what it is given', (tester) async {
       await tester.pumpWidget(
         _app(
@@ -303,7 +300,7 @@ void main() {
           FocusHighlightStrategy.alwaysTraditional;
       await tester.pumpAndSettle();
       expect(ring, findsOneWidget);
-      // A stroke centred 3.5dp out: the 3dp ring, 2dp off the edge.
+      // The stroke center lies one half-width beyond the 2dp gap.
       final box = Offset.zero & tester.getSize(ring);
       expect(
         ring,

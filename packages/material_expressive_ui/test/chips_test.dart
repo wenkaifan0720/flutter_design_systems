@@ -1,8 +1,5 @@
-/// Chips: the four kinds' geometry (32dp on the token shape inside the 48dp
-/// target, Compose's paddings and 8dp arrangement), selection and the
-/// filter chip's springing check, the input chip's remove target, the
-/// morphing shapes, semantics, disabled chips, and chip rows that stay
-/// overflow-safe (Cody v2's chip-row test, ported).
+/// Chip geometry, selected and disabled states, removal, accessible labels
+/// and wrapping in narrow rows.
 library;
 
 import 'dart:ui' show CheckedState;
@@ -393,7 +390,6 @@ void main() {
     expect(surfaces[1].shadowElevation, ExpressiveElevationLevel.level1);
   });
 
-  // Cody: 'meta row and chip row stay overflow-safe at narrow widths'.
   testWidgets('chip rows stay overflow-safe at narrow widths', (tester) async {
     tester.view.devicePixelRatio = 1;
     tester.view.physicalSize = const Size(320, 640);

@@ -12,7 +12,7 @@ import '../chrome_metrics.dart';
 /// The bottom allowance the shell asks each branch root to reserve
 ///: the bar (64dp) + the system's
 /// bottom inset + the floating action button's clearance + the docked
-/// accessory. The shell publishes it through the design kit's
+/// accessory. The shell publishes it through the shared
 /// `ShellInsets`; a screen reads it with [of].
 abstract final class ExpressiveShellInsets {
   /// The allowance [context]'s page reserves: the shell's on a branch root,

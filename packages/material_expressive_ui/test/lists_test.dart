@@ -1,10 +1,5 @@
-/// The lists family: the list item's heights, slots and alignment from
-/// `ListTokens` (Compose's `InteractiveListItemMeasurePolicy`), the
-/// segmented section's corners and gap, colours and semantics by kind,
-/// dividers and section headers, the reorderable list, swipe to dismiss and
-/// swipe actions (Compose's anchored drag), the accordion and the grid.
-/// Ports Cody v2's row-group and swipe-action tests (foundation_test.dart,
-/// foundation_controls_test.dart) to Expressive.
+/// List row geometry, segmented sections, dividers, reordering, swipe
+/// actions, accordions and semantic states.
 library;
 
 import 'package:material_ui/material_ui.dart' show InkResponse, NoSplash, Theme;
@@ -456,7 +451,6 @@ void main() {
       );
     });
 
-    // Cody: 'selection group keeps content inset at $direction/$scale'.
     for (final direction in TextDirection.values) {
       for (final scale in <double>[1.0, 2.0]) {
         testWidgets(
@@ -526,7 +520,6 @@ void main() {
       }
     }
 
-    // Cody: 'row group owns its gutter and its dividers run full width'.
     testWidgets('row group owns its gutter and its dividers run full width', (
       tester,
     ) async {
@@ -639,7 +632,6 @@ void main() {
   });
 
   group('swipe', () {
-    // Cody: 'swipe reveals multiple actions and full swipe is opt-in'.
     testWidgets('swipe reveals multiple actions and full swipe is opt-in', (
       tester,
     ) async {
@@ -675,7 +667,6 @@ void main() {
       expect(find.bySemanticsLabel('Archive'), findsNothing);
     });
 
-    // Cody: 'full swipe invokes once and respects RTL leading edge'.
     testWidgets('full swipe invokes once and respects RTL leading edge', (
       tester,
     ) async {
@@ -705,7 +696,6 @@ void main() {
       expect(calls, 1);
     });
 
-    // Cody: 'the dismissible deletes on a trailing-edge fling only'.
     testWidgets('the dismissible deletes on a trailing-edge fling only', (
       tester,
     ) async {

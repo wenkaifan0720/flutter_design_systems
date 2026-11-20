@@ -6,8 +6,7 @@
 
 import '../tokens/token_types.g.dart';
 
-/// The 8dp spacing scale: each step's md token and its length, under
-/// Cody's member names (`s8` = `space100`).
+/// Material spacing tokens in logical pixels. For example, `s8` is `space100`.
 abstract final class SpacingTokens {
   /// md.sys.measurement.space0
   static const Dp s0 = Dp(0.0);

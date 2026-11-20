@@ -194,8 +194,7 @@ class _Embedded extends StatelessWidget {
     final t = context.expressiveTheme;
     const margin = ExpressiveChromeMetrics.margin;
     final shape = t.shapes.large;
-    // The stage is the page (its surface) inside a frame: on a grey stage
-    // the sheet's lower container read as a notch, not raised (11-13).
+    // Show the sheet against the page surface so its elevation is visible.
     return SizedBox(
       height: ExpressiveSpacing.s64 * 5,
       child: ExpressiveSurface(
@@ -518,8 +517,6 @@ class _NewObservation extends StatelessWidget {
     );
   }
 }
-
-// Catalog specimens (docs/architecture/component-catalog.md).
 
 /// A sheet resting half open over the page, a tide table on it.
 Widget kitSpecimenBottomSheetTides() => Builder(

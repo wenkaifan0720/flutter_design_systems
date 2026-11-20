@@ -561,8 +561,6 @@ class _Dividers extends StatelessWidget {
   }
 }
 
-// Catalog specimens (docs/architecture/component-catalog.md).
-
 /// A two-line item: a glyph, the headline over its supporting line, and a
 /// chevron.
 Widget kitSpecimenListItemTwoLine() => ExpressiveListTile(

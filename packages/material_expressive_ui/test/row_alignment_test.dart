@@ -1,11 +1,6 @@
-// ui_core's alignment contract over Material Expressive (design6 I2, I3):
-// the controls that share a line, one row per size, each as Android, iOS and
-// macOS at every density the look offers, read from the drawn pixels with
-// the look's own fonts; and every one-line text entry through
-// DesignTextEntryCheck, at each density, at text scale 1.5 and under a host
-// whose InputDecorationTheme leaves uneven padding and a minimum height.
-// With EXPRESSIVE_DESIGN_REVIEW_OUT set, the review page's "Rows" sheet is
-// drawn there too.
+// Measures controls sharing a row at each density and platform. Text-entry
+// checks also exercise larger text and host decoration overrides. Set
+// EXPRESSIVE_LAYOUT_REPORT_OUT to save annotated rows.
 import 'dart:io';
 import 'dart:ui' as ui;
 
@@ -204,13 +199,9 @@ final Map<String, DesignTextEntryBuilder> _entries = {
   ),
 };
 
-/// What the row check reads off the row's baseline that is not a fault, with
-/// why; null for anything else (the coordinator's interim rule,
-/// msg_80aedc5a5309). A face's label is drawn by its capitals on the face's
-/// middle (DesignCapCenter, the label check's rule); a field's line is
-/// centred by its box (the entry check's rule), its capitals 0.7 px above
-/// the middle by the engine's whole-pixel baseline. The two rules part by
-/// that much, and only the label's side is moved.
+/// A cap-centered label and a centered input line can differ by a fraction of
+/// a pixel after the engine rounds the baseline. Return an explanation for
+/// that recognized difference.
 String? _rowMisread(String problem) {
   final m = RegExp(
     r"· (Button|List tile): its label's baseline is ([\d.]+) px below the "
@@ -282,8 +273,8 @@ void main() {
     report.verify();
   });
 
-  final output = Platform.environment['EXPRESSIVE_DESIGN_REVIEW_OUT'];
-  testWidgets('the review page\'s "Rows" sheet', (tester) async {
+  final output = Platform.environment['EXPRESSIVE_LAYOUT_REPORT_OUT'];
+  testWidgets('exports annotated control rows', (tester) async {
     for (final name in _densities.keys) {
       // Twice size, wide enough for the whole 56dp row.
       tester.view.devicePixelRatio = 1;

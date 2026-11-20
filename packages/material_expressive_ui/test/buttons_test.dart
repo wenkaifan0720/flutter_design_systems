@@ -1,8 +1,5 @@
-/// The buttons family: the common buttons' size ladder, colours, press
-/// morph, v2 alias layer and hero assertion; toggle buttons; the standard
-/// group's squish; the segmented control (the connected group); the link.
-/// Cody's controls tests for the segmented control are ported here (see
-/// the `Cody:` names).
+/// Button sizes, interaction shapes, toggle state, connected groups, segments
+/// and links.
 library;
 
 import 'package:material_ui/material_ui.dart' show MaterialApp;
@@ -419,8 +416,6 @@ void main() {
       expect(label.left - icon.right, closeTo(8, 0.01));
     });
 
-    // Cody: "grouped controls fit narrow phones at large text sizes" and
-    // the button's two-line label.
     testWidgets('long labels wrap on narrow phones at large text', (
       tester,
     ) async {
@@ -789,9 +784,7 @@ void main() {
       );
     }
 
-    // Cody: "segmented choice commits on tap and drag, including RTL" (tap;
-    // Material's connected group has no drag-to-select).
-    testWidgets('Cody: segmented choice commits on tap, including RTL', (
+    testWidgets('segmented choice commits on tap, including RTL', (
       tester,
     ) async {
       for (final direction in TextDirection.values) {
@@ -818,10 +811,7 @@ void main() {
       }
     });
 
-    // Cody: "disabled segmented picker and switch never mutate".
-    testWidgets('Cody: disabled segmented picker never mutates', (
-      tester,
-    ) async {
+    testWidgets('disabled segmented picker never mutates', (tester) async {
       await tester.pumpWidget(control(selected: <int>{0}));
       await tester.tap(find.text('Past'), warnIfMissed: false);
       await _settle(tester);
@@ -838,8 +828,7 @@ void main() {
       handle.dispose();
     });
 
-    // Cody: "segmented control accepts taps outside the painted 32pt slab".
-    testWidgets('Cody: accepts taps outside the painted slab', (tester) async {
+    testWidgets('accepts taps outside the painted slab', (tester) async {
       var value = <int>{0};
       await tester.pumpWidget(
         control(selected: value, onChanged: (v) => value = v),

@@ -5,7 +5,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/widgets.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
+import 'package:flutter/services.dart' show LogicalKeyboardKey;
 import 'package:ui_core/ui_core.dart';
 
 import '../component_themes.dart';
@@ -855,12 +855,48 @@ class ExpressiveRadioGroup<T> extends StatelessWidget {
   final String? semanticLabel;
 
   @override
-  Widget build(BuildContext context) => Semantics(
-    container: true,
-    explicitChildNodes: true,
-    label: semanticLabel,
-    child: _RadioKeys<T>(group: this),
-  );
+  Widget build(BuildContext context) {
+    final byValue = {for (final option in options) option.value: option};
+    return Semantics(
+      container: true,
+      explicitChildNodes: true,
+      label: semanticLabel,
+      child: DesignRadioGroup<T>(
+        options: [for (final option in options) option.value],
+        value: value,
+        onChanged: onChanged,
+        isEnabled: (value) => byValue[value]!.enabled,
+        layoutBuilder: (context, items) => Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: items,
+        ),
+        itemBuilder: (context, value, node, select) {
+          final option = byValue[value]!;
+          // A press on the checked row still reports its value to the
+          // caller, whether it comes from a tap, Enter or Space.
+          final again = select == null || value != this.value
+              ? null
+              : () => onChanged!(value);
+          return CallbackShortcuts(
+            // Flutter's RadioGroup takes Space and reports only a new
+            // choice, so the checked row binds Space itself.
+            bindings: {const SingleActivator(LogicalKeyboardKey.space): ?again},
+            child: ExpressiveRadioRow(
+              focusNode: node,
+              style: style,
+              contentPadding: contentPadding,
+              label: option.label,
+              supportingText: option.supportingText,
+              selected: value == this.value,
+              enabled: select != null,
+              onPressed: again ?? select,
+            ),
+          );
+        },
+      ),
+    );
+  }
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -884,144 +920,6 @@ class ExpressiveRadioGroup<T> extends StatelessWidget {
       ..add(DiagnosticsProperty<T?>('value', value, defaultValue: null))
       ..add(ObjectFlagProperty<ValueChanged<T>?>.has('onChanged', onChanged))
       ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
-  }
-}
-
-/// An [ExpressiveRadioGroup]'s rows and its keys: a focus node a row, one
-/// Tab stop for the group, and the arrows choosing (Flutter's `RadioGroup`).
-class _RadioKeys<T> extends StatefulWidget {
-  const _RadioKeys({required this.group});
-
-  final ExpressiveRadioGroup<T> group;
-
-  @override
-  State<_RadioKeys<T>> createState() => _RadioKeysState<T>();
-}
-
-class _RadioKeysState<T> extends State<_RadioKeys<T>> {
-  final List<FocusNode> _nodes = [];
-
-  List<ExpressiveRadioOption<T>> get _options => widget.group.options;
-
-  bool _open(ExpressiveRadioOption<T> option) =>
-      widget.group.enabled && option.enabled;
-
-  void _fit() {
-    while (_nodes.length < _options.length) {
-      _nodes.add(
-        FocusNode(debugLabel: 'ExpressiveRadioGroup ${_nodes.length}'),
-      );
-    }
-    while (_nodes.length > _options.length) {
-      _nodes.removeLast().dispose();
-    }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _fit();
-  }
-
-  @override
-  void didUpdateWidget(_RadioKeys<T> oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    _fit();
-  }
-
-  @override
-  void dispose() {
-    for (final node in _nodes) {
-      node.dispose();
-    }
-    super.dispose();
-  }
-
-  /// The row Tab lands on: the chosen one, else the first enabled one.
-  FocusNode? get _stop {
-    final chosen = _options.indexWhere(
-      (o) => _open(o) && o.value == widget.group.value,
-    );
-    if (chosen >= 0) return _nodes[chosen];
-    final first = _options.indexWhere(_open);
-    return first < 0 ? null : _nodes[first];
-  }
-
-  /// Chooses and focuses the enabled row after the focused one ([forward])
-  /// or before it, wrapping from the last to the first.
-  void _step(bool forward) {
-    final change = widget.group.onChanged;
-    final at = _nodes.indexWhere((n) => n.hasFocus);
-    if (change == null || at < 0) return;
-    final open = [
-      for (var i = 0; i < _options.length; i++)
-        if (_open(_options[i])) i,
-    ];
-    final here = open.indexOf(at);
-    if (open.length < 2 || here < 0) return;
-    final next = open[(here + (forward ? 1 : -1) + open.length) % open.length];
-    change(_options[next].value);
-    _nodes[next].requestFocus();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final group = widget.group;
-    final change = group.onChanged;
-    final rtl = Directionality.of(context) == TextDirection.rtl;
-    return CallbackShortcuts(
-      bindings: <ShortcutActivator, VoidCallback>{
-        const SingleActivator(LogicalKeyboardKey.arrowDown): () => _step(true),
-        const SingleActivator(LogicalKeyboardKey.arrowUp): () => _step(false),
-        const SingleActivator(LogicalKeyboardKey.arrowRight): () => _step(!rtl),
-        const SingleActivator(LogicalKeyboardKey.arrowLeft): () => _step(rtl),
-      },
-      child: FocusTraversalGroup(
-        policy: _OneRadioStop(_nodes, _stop),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: <Widget>[
-            for (final (i, option) in _options.indexed)
-              ExpressiveRadioRow(
-                focusNode: _nodes[i],
-                style: group.style,
-                contentPadding: group.contentPadding,
-                label: option.label,
-                supportingText: option.supportingText,
-                selected: option.value == group.value,
-                enabled: _open(option),
-                onPressed: change == null ? null : () => change(option.value),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// Reading order with one of a radio group's rows in it: its [stop], and the
-/// focused row (which traversal moves on from), as Flutter's `RadioGroup`
-/// skips its unselected radios.
-class _OneRadioStop extends ReadingOrderTraversalPolicy {
-  _OneRadioStop(this.rows, this.stop);
-
-  final List<FocusNode> rows;
-  final FocusNode? stop;
-
-  @override
-  Iterable<FocusNode> sortDescendants(
-    Iterable<FocusNode> descendants,
-    FocusNode currentNode,
-  ) {
-    final skip = {
-      for (final node in rows)
-        if (node != stop && node != currentNode) node,
-    };
-    return super.sortDescendants(
-      descendants.where((node) => !skip.contains(node)),
-      currentNode,
-    );
   }
 }
 
@@ -2111,23 +2009,28 @@ class ExpressiveSwitchRow extends StatelessWidget {
   final bool autofocus;
 
   @override
-  Widget build(BuildContext context) => _ControlRow(
-    focusNode: focusNode,
-    autofocus: autofocus,
-    style: style,
-    label: label,
-    supportingText: supportingText,
-    role: ExpressivePressRole.toggle,
-    selected: value,
-    enabled: enabled && onChanged != null,
-    controlLeads: false,
-    contentPadding: contentPadding,
-    onPressed: onChanged == null ? null : () => onChanged!(!value),
-    control: ExpressiveSwitch.mark(
-      value: value,
-      enabled: enabled && onChanged != null,
-      checkedIcon: checkedIcon,
-      uncheckedIcon: uncheckedIcon,
+  Widget build(BuildContext context) => MergeSemantics(
+    child: Semantics(
+      toggled: value,
+      child: _ControlRow(
+        focusNode: focusNode,
+        autofocus: autofocus,
+        style: style,
+        label: label,
+        supportingText: supportingText,
+        role: ExpressivePressRole.none,
+        selected: value,
+        enabled: enabled && onChanged != null,
+        controlLeads: false,
+        contentPadding: contentPadding,
+        onPressed: onChanged == null ? null : () => onChanged!(!value),
+        control: ExpressiveSwitch.mark(
+          value: value,
+          enabled: enabled && onChanged != null,
+          checkedIcon: checkedIcon,
+          uncheckedIcon: uncheckedIcon,
+        ),
+      ),
     ),
   );
 

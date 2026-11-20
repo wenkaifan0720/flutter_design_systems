@@ -1,11 +1,5 @@
-/// The helpers `MaterialShapes.kt` builds its shapes with — `customPolygon`
-/// and its `doRepeat`, `PointNRound`, and the `Matrix` rotations and scales
-/// its `.transformed(...)` calls apply — which the generated
-/// `library_shapes.g.dart` names, and the per-shape caches `shape.dart`
-/// reads: each library shape normalized once (Compose's `MaterialShapes`
-/// getters cache the same way) and its unit path.
-///
-/// Owner: w1-shape. Internal.
+/// Constructs the polygons used by MaterialShapes and caches each normalized
+/// shape and unit path.
 library;
 
 import 'dart:math' as math;

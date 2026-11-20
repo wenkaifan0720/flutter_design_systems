@@ -1,7 +1,5 @@
-/// The motion group's demo (w1-motion): the theme's scheme, the step
-/// response of each of its six springs — spatial and effects, fast, default
-/// and slow — then the spatial springs pinned to Standard and under Reduce
-/// Motion, and one live spring to try.
+/// The six motion springs, their step responses and their behavior under
+/// reduced motion.
 library;
 
 import 'dart:math' as math;

@@ -106,6 +106,45 @@ void main() {
     kitShownPreset = 'baseline';
   });
 
+  testWidgets(
+    'the overview alignment example chooses and wraps with the arrow keys',
+    (tester) async {
+      await _pump(tester, galleryOverview);
+      final group = find.byWidgetPredicate(
+        (w) => w is ExpressiveToggleGroup<String> && w.label == 'Alignment',
+      );
+      await tester.ensureVisible(group);
+      await settle(tester);
+      Finder option(String value) =>
+          find.descendant(of: group, matching: find.bySemanticsLabel(value));
+      void selected(String label) {
+        for (final name in ['Start', 'Centre', 'End']) {
+          expect(
+            tester.getSemantics(option(name)),
+            isSemantics(
+              label: name,
+              hasCheckedState: true,
+              isChecked: name == label,
+              isButton: false,
+              isInMutuallyExclusiveGroup: true,
+            ),
+          );
+        }
+      }
+
+      selected('Centre');
+      final center = find.descendant(of: group, matching: find.text('Centre'));
+      Focus.of(tester.element(center)).requestFocus();
+      await settle(tester);
+      await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
+      await settle(tester);
+      selected('End');
+      await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
+      await settle(tester);
+      selected('Start');
+    },
+  );
+
   testWidgets('pending demo media does not request absent photos', (
     tester,
   ) async {
@@ -572,8 +611,7 @@ void main() {
         _button('Open navigation'),
         width >= galleryRailWidth ? findsNothing : findsOneWidget,
       );
-      // Each card's icon and words stand inside it, 16dp in (a card draws
-      // no padding of its own; the 11-09 review found them on its outline).
+      // Each card supplies 16dp of padding around its icon and label.
       for (final card in find.byType(ExpressiveCard).evaluate()) {
         final box = tester.getRect(
           find.byElementPredicate((e) => identical(e, card)),
@@ -613,8 +651,8 @@ void main() {
 
   testWidgets('at a wide window the app bar title, the first tab and the '
       "page's content start on one edge", (tester) async {
-    // The 11-09 review: the title, the tabs and a centred column made three
-    // start edges beside the rail.
+    // The title, tabs and content column share a leading edge beside the
+    // rail.
     tester.view.devicePixelRatio = 1;
     tester.view.physicalSize = const Size(1440, 900);
     addTearDown(tester.view.reset);
@@ -690,8 +728,7 @@ void main() {
 
   testWidgets('at a wide window Tab from the rail into a page scrolled past '
       'its top brings the control it reaches into view', (tester) async {
-    // The 11-15 focus pass: Flutter's Tab only scrolls forward, so the
-    // overview's first controls took the focus above the window.
+    // The overview keeps the focused control in the visible part of the page.
     tester.view.devicePixelRatio = 1;
     tester.view.physicalSize = const Size(1440, 900);
     addTearDown(tester.view.reset);
@@ -738,9 +775,8 @@ void main() {
   testWidgets('Tab reaches the controls a reference page has not built yet', (
     tester,
   ) async {
-    // The 11-15 focus pass: the feedback page builds its sections as they
-    // scroll into view, and Tab went from the last one built to the rail;
-    // its error states' Try again, below the window, were never reached.
+    // Tab traversal reaches actions in sections that are built as they scroll
+    // into view.
     tester.view.devicePixelRatio = 1;
     tester.view.physicalSize = const Size(1440, 900);
     addTearDown(tester.view.reset);
@@ -766,8 +802,8 @@ void main() {
 
   testWidgets('right to left, a reference page reads its parts\' own words '
       'in Arabic', (tester) async {
-    // The 11-15 shots: the feedback page's words were Arabic, its error
-    // state's Try again English (its preview's own app's words).
+    // Embedded error previews inherit the gallery locale for their retry
+    // action.
     tester.view.devicePixelRatio = 1;
     tester.view.physicalSize = const Size(390, 844);
     addTearDown(tester.view.reset);
@@ -1035,8 +1071,7 @@ void main() {
 
   testWidgets('the live Sheet page opens on its notes; the trail log rises '
       'only when asked', (tester) async {
-    // The web build opened the tab under the raised trail log, its scrim
-    // over the page the tab named (11-09 22:40).
+    // Switching tabs should show the page named by the selected tab.
     tester.view.devicePixelRatio = 1;
     tester.view.physicalSize = const Size(1440, 1000);
     addTearDown(tester.view.reset);
@@ -1053,7 +1088,6 @@ void main() {
   testWidgets('the Shape page breaks a token name only between its words', (
     tester,
   ) async {
-    // The web build at 390 broke "extraSma ll" and "semiCircl e" (11-09).
     tester.view.devicePixelRatio = 1;
     // Tall, so every swatch is built: only the width breaks a name.
     tester.view.physicalSize = const Size(390, 4000);

@@ -1,9 +1,4 @@
-/// The theme's wiring: the presets, the record, one part per foundation
-/// composed from its resolver, the scope and the host. Nothing here pins
-/// what a foundation holds, so wave 1's parallel foundation items never
-/// meet in this file: each foundation's values are pinned in its own test
-/// (color_test.dart, type_test.dart, shape_test.dart, motion_test.dart),
-/// owned by the item that fills it.
+/// Theme presets, foundation resolution, inherited scope and host behavior.
 library;
 
 import 'package:material_ui/material_ui.dart';

@@ -58,34 +58,40 @@ Color _iconColour(WidgetTester tester, Finder icon) =>
 
 void main() {
   group('ExpressiveFloatingToolbar', () {
-    testWidgets('a 64dp pill: 8dp padding round 48dp targets, full corners', (
-      tester,
-    ) async {
-      await tester.pumpWidget(
-        _app(ExpressiveFloatingToolbar(key: _toolbar, children: _acts('a', 3))),
-      );
-      expect(tester.getSize(find.byKey(_toolbar)), const Size(3 * 48 + 16, 64));
-      final surface = tester.widget<ExpressiveSurface>(
-        find
-            .descendant(
-              of: find.byKey(_toolbar),
-              matching: find.byType(ExpressiveSurface),
-            )
-            .first,
-      );
-      expect(surface.color, _c.surfaceContainer);
-      expect(surface.contentColor, _c.onSurface);
-      expect(surface.shadowElevation, ExpressiveElevationLevel.level0);
-      final radii = (surface.shape as ExpressiveCornerBorder).radiiOn(
-        Offset.zero & const Size(160, 64),
-      );
-      expect(radii.topLeft.x, 32);
-      // A standard icon button takes the toolbar's content colour.
-      expect(
-        _iconColour(tester, find.byIcon(ExpressiveSymbols.edit).first),
-        _c.onSurface,
-      );
-    });
+    testWidgets(
+      'a 64dp pill: 8dp between the edge and each 48dp target, full corners',
+      (tester) async {
+        await tester.pumpWidget(
+          _app(
+            ExpressiveFloatingToolbar(key: _toolbar, children: _acts('a', 3)),
+          ),
+        );
+        expect(
+          tester.getSize(find.byKey(_toolbar)),
+          const Size(3 * 48 + 16, 64),
+        );
+        final surface = tester.widget<ExpressiveSurface>(
+          find
+              .descendant(
+                of: find.byKey(_toolbar),
+                matching: find.byType(ExpressiveSurface),
+              )
+              .first,
+        );
+        expect(surface.color, _c.surfaceContainer);
+        expect(surface.contentColor, _c.onSurface);
+        expect(surface.shadowElevation, ExpressiveElevationLevel.level0);
+        final radii = (surface.shape as ExpressiveCornerBorder).radiiOn(
+          Offset.zero & const Size(160, 64),
+        );
+        expect(radii.topLeft.x, 32);
+        // A standard icon button takes the toolbar's content colour.
+        expect(
+          _iconColour(tester, find.byIcon(ExpressiveSymbols.edit).first),
+          _c.onSurface,
+        );
+      },
+    );
 
     testWidgets('vibrant: primaryContainer with onPrimaryContainer', (
       tester,

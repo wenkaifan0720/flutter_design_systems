@@ -1,7 +1,4 @@
-/// Content: the text role over the 30 styles (emphasized display and
-/// headline asserting a hero), the icon's fill and sizes, the counter (Cody
-/// v2's counter tests, ported onto ExpressiveCounter) and the stat, the
-/// rating, the chart and the message bubble.
+/// Text roles, icons, counters, ratings, charts and message bubbles.
 library;
 
 import 'package:material_ui/material_ui.dart' show MaterialApp;
@@ -73,7 +70,7 @@ class _DialCounterProbe extends StatelessWidget {
 }
 
 void main() {
-  group('Cody v2 counter tests, on ExpressiveCounter', () {
+  group('ExpressiveCounter', () {
     testWidgets('the counter runs to the new value and settles on it exactly', (
       tester,
     ) async {

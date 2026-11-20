@@ -460,8 +460,6 @@ class _Disabled extends StatelessWidget {
   );
 }
 
-// Catalog specimens (docs/architecture/component-catalog.md).
-
 /// A tonal icon button.
 Widget kitSpecimenIconButtonTonal() => const Center(
   child: ExpressiveIconButton.filledTonal(

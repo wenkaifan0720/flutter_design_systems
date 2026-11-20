@@ -1,16 +1,11 @@
-/// Expressive's formatting: the design kit's formatters — money, counts,
-/// dates, clock times, the relative day — under the system's name, so page
-/// code reads `ExpressiveFormat.money(…)` (wave decision D4).
-///
-/// The behaviour is the kit's alone (`package:initial_gen_app/design_kit/
-/// format.dart`): the daylight-saving-correct day arithmetic, and a clock
-/// that follows the platform's 24-hour setting. A system never forks it.
+/// Expressive formatters for money, counts, dates, times and relative days.
+/// Relative dates account for daylight saving changes, and times follow
+/// the platform's 24-hour preference.
 library;
 
 import 'package:ui_core/host.dart';
 
 export 'package:ui_core/host.dart' show DisplayFormat;
 
-/// Expressive's formatters: the design kit's [DisplayFormat], named for the
-/// system.
+/// The [DisplayFormat] methods exposed by Material Expressive.
 typedef ExpressiveFormat = DisplayFormat;

@@ -1,9 +1,5 @@
-/// The `sliders` oracle group (Compose twin: `SlidersScenes.kt`): the five
-/// track sizes, stops and ticks, the centred track, the range slider,
-/// vertical sliders both ways, disabled states, and the handle narrowed by
-/// a press and by keyboard focus (CONTRACT §7 "sliders 5 sizes, range,
-/// vertical"). Every slider is 272 dp wide (vertical: 200 dp tall) and
-/// tagged whole, its 48 dp touch target included.
+/// Reference scenes for the five slider sizes, vertical and centered tracks,
+/// ranges, stops, ticks and interaction states.
 library;
 
 import 'package:flutter/widgets.dart';

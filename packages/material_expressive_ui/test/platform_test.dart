@@ -1,9 +1,5 @@
-/// Platform policy (CONTRACT §5, decision F8): Material look on both
-/// platforms, behaviour by `Theme.of(context).platform`, never pinned by
-/// the host. Under each platform, inside [ExpressiveHost]: a screen's
-/// scroll overscrolls the platform's way (Android's stretch, iOS's
-/// rubber band), a text field's long press raises the platform's selection
-/// handles and edit menu, and the back glyph is Material's arrow on both.
+/// Platform-specific scrolling, text selection and back navigation in the
+/// Material Expressive host.
 library;
 
 import 'package:cupertino_ui/cupertino_ui.dart'

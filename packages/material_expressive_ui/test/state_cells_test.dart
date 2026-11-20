@@ -1,15 +1,6 @@
-/// A state cell shows its state (coverage4.md, 11-10 05:30): for every part
-/// of the review's state matrix that an app can press, disable or mark
-/// wrong, the pressed, disabled and error faces keep idle's size (an error
-/// may add its message below: the same width, no shorter) and differ from
-/// idle pixel for pixel. Disabling a part never moves the layout and never
-/// leaves it looking enabled.
-///
-/// A part's disabled face is the switch an app turns: `enabled: false` where
-/// the part has it, else a null handler. A checkbox, radio or switch is
-/// disabled by a null handler, as Flutter's are (coordinator, 11-10), so
-/// theirs drop it here; the bare mark a row puts inside itself is `.mark`.
-/// Parts with no such state say why in [_Part.why].
+/// Compares controls at rest, while pressed, when disabled and in error. Each
+/// state keeps the visible control’s size. An error message may extend below
+/// it.
 library;
 
 import 'dart:typed_data';
@@ -320,7 +311,6 @@ final _parts = <_Part>[
         'a rating without onChanged is the read-only display, not a '
         'disabled input',
   ),
-  // Round 4's components.
   _p(
     'Toggle group',
     (enabled, error) => ExpressiveToggleGroup<String>(

@@ -1,6 +1,5 @@
-// design6 O: parts looked at mid-move, not only at rest. Each test drives the
-// gesture (a drag held part-way, a pointer resting on a day, an animation
-// pumped to half its duration) and reads what is on screen then.
+// Advances interactive and animated controls frame by frame and checks the
+// geometry during transitions.
 import 'dart:async';
 import 'dart:typed_data';
 import 'dart:ui' as ui;

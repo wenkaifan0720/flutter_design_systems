@@ -1,8 +1,4 @@
-/// The demos' stock glyphs, exported by kit.dart, which is all a demo
-/// imports: Material Symbols Rounded (`ExpressiveSymbols`, w1-type), the
-/// only icons Expressive wears, under the names the wave 0 stand-ins had,
-/// so kit.dart and the demos that use them never change. A demo names
-/// `ExpressiveSymbols` directly when its family is built.
+/// The Material Symbols Rounded icons used by the gallery.
 library;
 
 import 'package:flutter/widgets.dart';

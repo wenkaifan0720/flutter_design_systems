@@ -1,16 +1,5 @@
-/// The shape a baked theme takes in generated code. `tools/expressive_tokens`
-/// writes one `<id>.g.dart` per `themes/<id>/theme.json` — a [ExpressiveBakedTheme]
-/// const — and `registry.g.dart`, which lists them in module.yaml's preset
-/// order (`bun run --filter expressive-tokens generate`; `check` fails on
-/// drift). This type is hand-written; the consts never are.
-///
-/// A baked theme is its record plus one part per themed foundation, each
-/// part's type owned by that foundation (`internal/<foundation>/baked_*.dart`,
-/// exported from here for the generated files) and written by its emitter
-/// (`emit/<foundation>.ts`). Wave 1 fills the parts, never this file.
-///
-/// Internal: `ExpressiveThemeData.preset` reads it, and nothing outside the
-/// system names it.
+/// A generated theme preset with color, type, shape and motion definitions.
+/// The registry lists these presets in display order.
 library;
 
 import 'package:flutter/foundation.dart' show immutable;
@@ -63,15 +52,15 @@ class ExpressiveBakedTheme {
   /// `compose-baseline`, Compose's own default scheme — or null.
   final String? source;
 
-  /// Every colour role, light and dark (w1-color).
+  /// Light and dark color roles.
   final ExpressiveBakedColors colors;
 
-  /// The type scale's part (w1-type).
+  /// The type scale.
   final ExpressiveBakedTextTheme type;
 
-  /// The shape scale's part (w1-shape).
+  /// The corner scale.
   final ExpressiveBakedShapes shapes;
 
-  /// The motion part: the scheme (w1-motion).
+  /// The motion scheme.
   final ExpressiveBakedMotion motion;
 }

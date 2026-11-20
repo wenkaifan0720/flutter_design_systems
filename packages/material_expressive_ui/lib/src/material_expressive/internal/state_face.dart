@@ -11,6 +11,7 @@ import 'package:flutter/widgets.dart';
 import '../elevation.dart';
 import '../motion.dart';
 import '../spacing.dart';
+import '../states.dart' show ExpressiveFocusRing;
 import '../theme.dart';
 import 'cap_label.dart';
 import 'focus_ring.dart';
@@ -18,12 +19,6 @@ import 'reach.dart';
 import 'tokens/behavior.g.dart';
 import 'tokens/outlined_text_field_tokens.g.dart';
 import 'word_scope.dart';
-
-/// `md.comp.*.focus.indicator.outline.offset`: the ring's gap.
-const double _ringOffset = 2;
-
-/// `md.comp.*.focus.indicator.thickness`: the ring's stroke.
-const double _ringThickness = 3;
 
 /// [child] on [shape] filled with [color] and [states]' state layer of
 /// [contentColor], ringed under keyboard focus.
@@ -113,7 +108,7 @@ class ExpressiveStateFace extends StatelessWidget {
           foregroundPainter: _Ring(
             shape: outlined,
             color: t.colors.secondary,
-            thickness: _ringThickness,
+            thickness: ExpressiveFocusRing.thickness,
             inward: focusInward,
             gap: focusInward && color.a > 0 ? t.colors.surface : null,
             textDirection: Directionality.maybeOf(context),
@@ -159,7 +154,7 @@ class _Ring extends CustomPainter {
     shape,
     color: color,
     thickness: thickness,
-    offset: _ringOffset,
+    offset: ExpressiveFocusRing.offset,
     textDirection: textDirection,
     inward: inward,
     gap: gap,
@@ -319,11 +314,9 @@ class ExpressiveBareField extends StatelessWidget {
     final style = t.type.bodyLarge.copyWith(
       color: enabled ? c.onSurface : c.onSurface.withValues(alpha: 0.38),
     );
-    // I3: the editable is bare (no decoration, so no InputDecorator whose
-    // height density, Material defaults or a counter could change); the
-    // placeholder is a sibling on the same line; the line is centred in a
-    // box at least 48dp tall, so larger text grows it, and a tap anywhere in
-    // the box places the caret, as on a decorated TextField.
+    // The placeholder and editable share a centered line. The minimum height
+    // keeps the whole field tappable while allowing larger text to increase
+    // its height.
     final input = Material(
       type: MaterialType.transparency,
       child: TextField(
@@ -430,7 +423,7 @@ class ExpressiveFocusRingBox extends StatelessWidget {
         foregroundPainter: _Ring(
           shape: shape,
           color: color,
-          thickness: _ringThickness,
+          thickness: ExpressiveFocusRing.thickness,
           inward: false,
           textDirection: Directionality.maybeOf(context),
           faceHeight: faceHeight,

@@ -1,16 +1,6 @@
-// ui_core's keyline check (design6 P) over the trip planner's screens at a
-// phone's and a desktop's width, at touch density (Android) and a pointer's
-// (macOS, the compact the web build gets). The look puts one
-// DesignKeylineRegion in each card, each list section and each scaffold's
-// content, so a screen's cards and sections are held to its margins and each
-// card's and section's rows to its own keylines. keylines_test.dart stays
-// for what this does not read: words inside a tappable row (one control
-// here), surfaces against content, and the bar's words on the page margin.
-// With EXPRESSIVE_DESIGN_REVIEW_OUT set, each screen is drawn through
-// DesignKeylineSheet for the review page.
-//
-// The check reads the drawn pixels, the rasterizer's as a golden's are:
-// tagged `goldens`, so macOS runs it and Linux CI leaves it out.
+// Checks screen, card and section margins in the trip planner at phone and
+// desktop widths. Set EXPRESSIVE_LAYOUT_REPORT_OUT to save annotated keylines
+// from the rendered pages.
 @Tags(['goldens'])
 library;
 
@@ -32,9 +22,8 @@ const _capture = ValueKey('keyline-check');
 
 const _check = DesignKeylineCheck(look: 'Material Expressive');
 
-/// What the check (ui_core fdd4fc74cc) still misreads on these screens,
-/// each by the start of its problem and how it misreads: logged, not failed
-/// (the coordinator's interim rule, msg_80aedc5a5309). Anything else fails.
+/// Recognizes intentional screen layouts that the generic keyline check
+/// cannot distinguish. Other mismatches fail the test.
 const _misreads = <(String, String)>[
   (
     'Delivery: "Delivery" starts',
@@ -71,7 +60,7 @@ void main() {
     await loadExpressiveFonts();
     await loadBundledFonts();
   });
-  final output = Platform.environment['EXPRESSIVE_DESIGN_REVIEW_OUT'];
+  final output = Platform.environment['EXPRESSIVE_LAYOUT_REPORT_OUT'];
   final densities = const TargetPlatformVariant({
     TargetPlatform.android,
     TargetPlatform.macOS,

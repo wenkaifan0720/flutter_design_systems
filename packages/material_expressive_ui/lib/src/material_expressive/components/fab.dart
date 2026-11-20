@@ -1346,9 +1346,8 @@ class _ExpressiveFabMenuState extends State<ExpressiveFabMenu>
         throw FlutterError.fromParts(<DiagnosticsNode>[
           ErrorSummary('An ExpressiveFabMenu holds 2–5 items, not $n.'),
           ErrorDescription(
-            'CONTRACT §3 bans a FAB menu of one item (use a plain FAB) or '
-            'of more than five (Material allows six; Expressive caps it at '
-            'five).',
+            'A floating action button menu takes two to five items. '
+            'Use a single floating action button for one action.',
           ),
         ]);
       }

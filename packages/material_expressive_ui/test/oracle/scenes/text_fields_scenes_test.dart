@@ -1,7 +1,5 @@
-/// The `text-fields` oracle group (Compose twin: `TextFieldsScenes.kt`):
-/// filled and outlined fields empty, focused, filled, in error and
-/// disabled (CONTRACT §7 "Input"), and Expressive's rounded + tonal form of
-/// each, filled.
+/// Reference scenes for filled, outlined, rounded and tonal text fields
+/// across their interaction and validation states.
 library;
 
 import 'package:material_ui/material_ui.dart' show DefaultMaterialLocalizations;

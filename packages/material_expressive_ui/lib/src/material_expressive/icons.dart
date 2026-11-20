@@ -10,7 +10,7 @@ export 'internal/icons/symbols.g.dart' show ExpressiveSymbols;
 
 /// The bundled Material Symbols Rounded font and its FILL axis.
 abstract final class ExpressiveSymbolsFont {
-  /// The subset's family (the module's pubspec); every [ExpressiveSymbols]
+  /// The subset's family (declared in pubspec.yaml); every [ExpressiveSymbols]
   /// glyph names it.
   static const String family = 'MaterialSymbolsRounded';
 

@@ -1,16 +1,5 @@
-// ui_core's shared checks for the two faults the user met on 11-11 (a
-// dialog's buttons of two drawn heights; a dropdown spanning a wide page):
-// every row of controls by its drawn outlines (DesignRowCheck), by day and
-// by night under each density the look ships; every select, button, stepper
-// and segmented control at a control's width from 600 (DesignWidthCheck) at
-// 600, 1024, 1440 and 1920, each select's chosen value whole; and every list
-// opened from a field at the field's width, on its leading edge, its words on
-// the field's (checkList; every option's words where the field's value
-// starts) at 390, 600 and 1440. Over every gallery page and every
-// trip planner screen.
-//
-// Both checks read the drawn pixels, the rasterizer's as a golden's are:
-// tagged `goldens`, so macOS runs it and Linux CI leaves it out.
+// Compares drawn control heights across themes and densities. Measures field
+// and button widths at 600, 1024, 1440 and 1920 logical pixels.
 @Tags(['goldens'])
 library;
 
@@ -70,9 +59,8 @@ const _spanningRows = <String>{
 /// side on purpose.
 const _ladders = <String>{'buttons', 'icon-buttons', 'fab', 'split-button'};
 
-/// What a check reads that is not a fault, with why; null for anything else
-/// (the coordinator's rulings, msg_39c6dabff58b; ui_core is asked to classify
-/// each itself).
+/// Returns the reason a recognized row or size ladder uses different
+/// dimensions.
 String? _misread(String where, String problem) {
   final page = where.split(' ').first;
   final width = RegExp(r'^a (button|select) "([^"]*)": [\d.]+ px wide')
@@ -99,7 +87,7 @@ String? _misread(String where, String problem) {
     return 'an extra-small outlined pill under compact density: its label\'s '
         'box, read with 2dp around it, covers the whole 24dp face, so its '
         '1dp outline is read only in its rounded ends; drawn level with '
-        'Play, 24dp each (probe p26, rendered at 4x)';
+        'Play, 24dp each';
   }
   if (page == 'toolbar' &&
       RegExp(
@@ -117,7 +105,7 @@ String? _misread(String where, String problem) {
       ).hasMatch(problem)) {
     return "the floating toolbar's FAB beside it, drawn on the row's centre "
         "line: its + and the toolbar's glyphs centred at 1915.9 and 1915.3 "
-        'on a 1916 line, compact and standard (probe 11-18, drawn at 4x)';
+        'on a 1916 line, compact and standard';
   }
   if (page == 'icon-buttons' &&
       _density == 'compact' &&
@@ -128,7 +116,7 @@ String? _misread(String where, String problem) {
       ).hasMatch(problem)) {
     return "the toggles' 32dp faces, drawn level: Save's ring, Notify me's "
         "checked fill and Pin's fill each span 8 to 40 of their 48dp box, "
-        'light and dark (probe 11-18, drawn at 4x)';
+        'light and dark';
   }
   if ((page == 'cards' || page == 'everyday-cards') &&
       problem.contains('the capitals of')) {
@@ -169,7 +157,7 @@ String? _misread(String where, String problem) {
         "opened, which overlaps it: the section starts at the field's foot, "
         'where the list does, and of the two at the same distance the check '
         "keeps the first it found, the page's; the list's words stand at "
-        "68.1, the field's value at 68.3 (probes 11-18, ui_core_test 0.1.1)";
+        "68.1, the field's value at 68.3";
   }
   if (RegExp(
     r"^a tab bar: [\d.]+ px wide as laid out, [\d.]+ as drawn; its \d+ "

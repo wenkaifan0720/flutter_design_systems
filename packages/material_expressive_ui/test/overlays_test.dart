@@ -520,8 +520,7 @@ void main() {
     expect(bubble, findsNothing);
   });
 
-  // A caret placed by hand from the start edge stands at the right in
-  // right-to-left, where the anchor's start is (11-13: it stayed at the left).
+  // The caret follows the anchor’s start edge in both text directions.
   for (final direction in TextDirection.values) {
     testWidgets('a start caret counts from the start edge ($direction)', (
       tester,

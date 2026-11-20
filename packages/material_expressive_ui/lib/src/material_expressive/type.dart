@@ -94,7 +94,7 @@ class ExpressiveTextTheme with Diagnosticable {
   String? _packageOf(String face) =>
       _bundled.contains(face) ? expressiveFontPackage : fontPackage;
 
-  /// The bundled variable Roboto Flex's family (the module's pubspec), in
+  /// The bundled variable Roboto Flex's family (declared in pubspec.yaml), in
   /// [expressiveFontPackage] when a package bundles it.
   static const String family = 'RobotoFlex';
 

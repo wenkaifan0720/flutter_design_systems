@@ -17,7 +17,7 @@ import 'gallery_support.dart';
 import 'support/tiers.dart';
 
 void main() {
-  final output = Platform.environment['EXPRESSIVE_DESIGN_REVIEW_OUT'];
+  final output = Platform.environment['EXPRESSIVE_LAYOUT_REPORT_OUT'];
   final recorded =
       autoUpdateGoldenFiles || Directory('test/goldens').existsSync();
   final figures = <Map<String, Object>>[];

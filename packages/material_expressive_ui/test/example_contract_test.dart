@@ -23,8 +23,6 @@ String _name(Widget widget) => widget.runtimeType.toString().split('<').first;
 void main() {
   setUpAll(loadExpressiveFonts);
 
-  // A property of the whole example (every exported widget live on some
-  // page): READY and a release read it (support/tiers).
   testWidgets('every exported widget is live in the example', tags: sweep, (
     tester,
   ) async {

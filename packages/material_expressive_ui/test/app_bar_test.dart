@@ -1,10 +1,5 @@
-/// The app bars family: the small, medium and large flexible bars
-/// (Compose's heights, `TopAppBarLayout`'s placement, the collapse by
-/// height offset, the colour fill on scroll), the overflow menu, the
-/// derived exit, the search app bar, the search bar and its view (open,
-/// type, results, collapse, predictive back geometry, a menu held open in
-/// it taking the back first) and the search field — with Cody's search
-/// clear/cancel tests ported (F14).
+/// Geometry, scrolling, search, keyboard input and back navigation in the
+/// Expressive app bars.
 library;
 
 import 'package:material_ui/material_ui.dart' show InkResponse, MaterialApp;
@@ -139,10 +134,9 @@ void main() {
       expect(tester.getCenter(find.text('Photos')).dx, closeTo(206, 0.01));
     });
 
-    testWidgets('a long title stays on one line inside its slot (Cody: '
-        'compact top bar title reads whole at phone width)', (tester) async {
-      // Material ellipsizes where Cody scales down: the port holds the
-      // title to one line inside the space between the ends.
+    testWidgets('a long title stays on one line inside its slot', (
+      tester,
+    ) async {
       const title = 'Recorded just now · Morning window · Fasting glucose';
       await tester.pumpWidget(
         _app(
@@ -165,8 +159,7 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('a textual leading action gets one line (Cody: compact top '
-        'bar gives a textual leading action one line)', (tester) async {
+    testWidgets('a textual leading action gets one line', (tester) async {
       await tester.pumpWidget(
         _app(
           ExpressiveAppBar(
@@ -697,7 +690,7 @@ void main() {
     });
   });
 
-  group('ExpressiveSearchField (Cody: search field)', () {
+  group('ExpressiveSearchField', () {
     testWidgets('search clear and cancel notify and release focus', (
       tester,
     ) async {

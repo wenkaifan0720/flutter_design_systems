@@ -1,11 +1,5 @@
-// ui_core's label sweep (design6 P, class (c), and the user's split button
-// fault of 11-11, at compact only): every page of the example and every
-// trip planner screen, under each density the look ships (standard on
-// Android, compact on macOS and the web build), names each labelled control
-// whose label or icon is off its face's middle, as laid out and as drawn.
-//
-// The check reads the drawn pixels, the rasterizer's as a golden's are:
-// tagged `goldens`, so macOS runs it and Linux CI leaves it out.
+// Checks each example and trip planner screen for labels or icons off the
+// center of their visible controls at standard and compact densities.
 @Tags(['goldens'])
 library;
 
@@ -29,9 +23,8 @@ const _check = DesignLabelCheck(
 String get _density =>
     defaultTargetPlatform == TargetPlatform.macOS ? 'compact' : 'standard';
 
-/// What the sweep (ui_core fdd4fc74cc) reads off the middle that is not a
-/// fault, with why; null for anything else. Logged, not failed (the
-/// coordinator's interim rule, msg_80aedc5a5309).
+/// Returns an explanation for a recognized difference between optical and
+/// geometric centering.
 String? _misread(String what, String problem) {
   if (RegExp(
     r'^\w+ · a button "[^"]*, Loading": the capitals of "[^"]*" are drawn',

@@ -8,7 +8,7 @@ import 'graphics/graphics.dart';
 import 'library.dart';
 
 /// The library shapes of Compose's `MaterialShapes`, in its declaration
-/// order. They mask imagery, never text containers (CONTRACT §3).
+/// order. Use them to mask imagery.
 enum ExpressiveMaterialShape {
   /// `MaterialShapes.Circle`, built by `circle()`.
   circle,

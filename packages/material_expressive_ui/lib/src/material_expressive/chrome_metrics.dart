@@ -1,7 +1,5 @@
-/// The geometry Expressive's chrome stands on — the navigation bar, the
-/// floating action button, the modal sheet and the screen's margin — named
-/// once, so the shell, the sheet and (from wave 2) the screen and the toast
-/// agree on it.
+/// Shared dimensions for navigation bars, floating action buttons, sheets and
+/// screen margins.
 library;
 
 import 'internal/tokens/tokens.g.dart';

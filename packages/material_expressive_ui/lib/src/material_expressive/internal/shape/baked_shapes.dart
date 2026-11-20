@@ -1,14 +1,6 @@
-/// The shape part of a baked theme and how it resolves into the public
-/// [ExpressiveShapes]: w1-shape's slot, with `shape.dart` and the
-/// generator's `emit/shape.ts`, which also writes the generated shape
-/// library here (`library_shapes.g.dart`). Internal; the generated themes
-/// name [ExpressiveBakedShapes] and [ShapeTokens] through `baked_theme.dart`.
-///
-/// A theme bakes Compose's themeable corner scale — the eight steps of its
-/// `Shapes` class, each defaulting to the `ShapeTokens` corner
-/// `ShapeDefaults` names — as symbolic token references (wave decision
-/// E2). None and full are not themeable in Compose (`RectangleShape`,
-/// `CircleShape`); they resolve from `ShapeTokens` directly.
+/// Resolves the generated corner scale into [ExpressiveShapes]. The scale
+/// stores symbolic shape tokens so each theme can supply its own corner
+/// sizes.
 library;
 
 import 'package:flutter/widgets.dart';

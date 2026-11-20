@@ -389,8 +389,6 @@ class _PopoverBody extends StatelessWidget {
   }
 }
 
-// Catalog specimens (docs/architecture/component-catalog.md).
-
 /// An open menu: edit actions with their shortcuts, one disabled.
 Widget kitSpecimenMenuEdit() => Builder(
   builder: (context) => Center(

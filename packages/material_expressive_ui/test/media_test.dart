@@ -1,8 +1,5 @@
-/// Media: the image over the design kit's media slot (Cody v2's media
-/// tests, ported onto ExpressiveMedia: a bundled photo while the manifest is
-/// pending, a late image, a pending placeholder, 202 retries, a terminal
-/// miss), its corner and library-shape masks (a hero moment), and the
-/// avatar's kinds, sizes, tones and semantics.
+/// Media placeholders, bundled and delayed images, retry handling, shape
+/// masks and avatar semantics.
 library;
 
 import 'dart:async';
@@ -201,7 +198,7 @@ void main() {
     );
   });
 
-  group('Cody v2 media tests, on ExpressiveMedia', () {
+  group('ExpressiveMedia', () {
     _mediaTest('bundled photos render while the optional manifest is pending', (
       tester,
     ) async {

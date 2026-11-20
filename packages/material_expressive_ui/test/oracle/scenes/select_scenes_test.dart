@@ -1,12 +1,6 @@
-/// The `select` oracle group (Compose twin: `SelectScenes.kt`): the exposed
-/// dropdown's anchor, filled and outlined, empty, with a choice, in error
-/// and disabled (CONTRACT §7 "Input": dropdown). The open menu is Compose's
-/// popup window, which the capture cannot see; the menus group captures
-/// the menu itself.
-///
-/// Compose's `TrailingIcon` is an `ImageVector`; Expressive draws
-/// `arrow_drop_down` from the Material Symbols font: its glyph is an
-/// expected pixel difference.
+/// Reference scenes for filled and outlined dropdown anchors in empty,
+/// selected, disabled and error states. The menus scenes capture the popup
+/// separately.
 library;
 
 import 'package:material_ui/material_ui.dart' show DefaultMaterialLocalizations;
