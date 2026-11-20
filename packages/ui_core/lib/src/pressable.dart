@@ -183,7 +183,8 @@ class DesignPressable extends StatefulWidget {
   /// What pressing it does, when the name does not say.
   final String? semanticHint;
 
-  /// Its role: a button (the default), a [link] or a [tab].
+  /// Gives an ordinary pressable the button role. A [link], [tab],
+  /// checkbox, switch or radio keeps its own role.
   final bool button;
 
   /// Read as a link rather than a button: it goes somewhere.
@@ -645,7 +646,16 @@ class DesignPressableState extends State<DesignPressable> {
       label: widget.semanticLabel,
       value: widget.semanticValue,
       hint: widget.semanticHint,
-      button: widget.button && !widget.link && !widget.tab ? true : null,
+      button:
+          widget.button &&
+              !widget.link &&
+              !widget.tab &&
+              widget.checked == null &&
+              !widget.mixed &&
+              widget.toggled == null &&
+              !widget.inMutuallyExclusiveGroup
+          ? true
+          : null,
       link: widget.link ? true : null,
       role: widget.tab ? SemanticsRole.tab : null,
       // A tab says whether it is the chosen one.

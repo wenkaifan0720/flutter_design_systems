@@ -151,6 +151,22 @@ Matcher _inert({String? label, String? value, bool link = false}) =>
       hasTapAction: false,
     );
 
+/// A switch keeps its enabled and toggled state, and its own role.
+Matcher _switch({
+  required String label,
+  required bool on,
+  bool enabled = true,
+}) => isSemantics(
+  label: label,
+  isButton: false,
+  isLink: false,
+  hasEnabledState: true,
+  isEnabled: enabled,
+  hasTapAction: enabled,
+  hasToggledState: true,
+  isToggled: on,
+);
+
 Widget _atStart(Widget child) =>
     Align(alignment: AlignmentDirectional.centerStart, child: child);
 
@@ -531,27 +547,15 @@ void main() {
           ],
         ),
         (wide, theme) {
-          expect(
-            _node(t, 'Bills'),
-            allOf(
-              _live(label: 'Bills'),
-              isSemantics(hasToggledState: true, isToggled: true),
-            ),
-          );
+          expect(_node(t, 'Bills'), _switch(label: 'Bills', on: true));
           expect(
             _node(t, 'Weekly summary'),
-            allOf(
-              _live(label: 'Weekly summary'),
-              isSemantics(hasToggledState: true, isToggled: false),
-            ),
+            _switch(label: 'Weekly summary', on: false),
           );
           // Held while the card is frozen: still on, dimmed to .45.
           expect(
             _node(t, 'Contactless'),
-            allOf(
-              _inert(label: 'Contactless'),
-              isSemantics(hasToggledState: true, isToggled: true),
-            ),
+            _switch(label: 'Contactless', on: true, enabled: false),
           );
           final dimmed = find.descendant(
             of: find.byType(LedgerSwitch).last,
@@ -598,10 +602,7 @@ void main() {
           for (final (_, label, sub, on) in _alerts) {
             expect(
               _node(t, label),
-              allOf(
-                _live(label: label),
-                isSemantics(hasToggledState: true, isToggled: on),
-              ),
+              _switch(label: label, on: on),
               reason: label,
             );
             // The row speaks for its switch; the sub is in its words.
@@ -633,10 +634,7 @@ void main() {
         (wide, theme) {
           expect(
             _node(t, label),
-            allOf(
-              _inert(label: label),
-              isSemantics(hasToggledState: true, isToggled: true),
-            ),
+            _switch(label: label, on: true, enabled: false),
           );
           expect(
             t.widget<Text>(find.text(label)).style?.color,

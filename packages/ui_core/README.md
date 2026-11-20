@@ -112,6 +112,7 @@ through its accessibility nodes and change appearance with Arabic text at twice 
 | Tag input | `DesignTagInput` | `InputChip` |
 | Toasts | `DesignToaster` | `ScaffoldMessenger` |
 | Toggle group | `DesignToggleGroup` | `SegmentedButton` |
+| Radio group | `DesignRadioGroup` | `RadioGroup` |
 | Tree | `DesignTree`, `DesignTreeController` | `TreeSliver` |
 | Haptics | `DesignHaptics`, `DesignHapticsScope` | `HapticFeedback` |
 | Overlay padding (a look's chrome a surface keeps clear of) | `DesignOverlayPadding` | `MediaQuery.padding` |

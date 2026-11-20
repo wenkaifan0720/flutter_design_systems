@@ -1,3 +1,8 @@
+## 0.1.4
+
+- `DesignRowCheck` reads the edge of a raised face that matches its background from its cast light and shadow.
+- The package metadata links to the design systems documentation.
+
 ## 0.1.3
 
 - `DesignRowCheck` gives an edge's offset "as laid out" from the faces' boxes, not their painted ink, and beside a

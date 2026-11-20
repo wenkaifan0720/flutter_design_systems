@@ -7,7 +7,7 @@ A design system's tests take it as a dev dependency, as an app takes `flutter_te
 
 ```yaml
 dev_dependencies:
-  ui_core_test: ^0.1.3
+  ui_core_test: ^0.1.4
 ```
 
 ```dart
@@ -153,6 +153,6 @@ a look declares in its theme.
 
 ## Versions
 
-Version 0.1.3 supports ui_core ^0.3.3 and requires Flutter 3.47 or later (Dart 3.13).
+Version 0.1.4 supports ui_core ^0.3.4 and requires Flutter 3.47 or later (Dart 3.13).
 
 See the CHANGELOG for changes to measurements and migration instructions.

@@ -32,6 +32,7 @@ export 'src/otp.dart';
 export 'src/page_transitions.dart';
 export 'src/pressable.dart';
 export 'src/pull_to_refresh.dart';
+export 'src/radio_group.dart';
 export 'src/range_slider.dart';
 export 'src/rating.dart';
 export 'src/reorderable_list.dart';

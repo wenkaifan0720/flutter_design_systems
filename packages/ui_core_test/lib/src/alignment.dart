@@ -6272,6 +6272,18 @@ class _RowReader extends _DrawnReader {
         faces.add((control: c, laid: box, drawn: box, box: box, bevel: true));
         continue;
       }
+      if (face.read &&
+          ground != null &&
+          pixels!.hasRaisedOutline(
+            _toBoundary(box),
+            over: ground,
+            floor: check.contrastFloor,
+          )) {
+        // The ground-coloured fill meets the cast at the paint box's edge.
+        // Its neighbour still has its own measured outline.
+        faces.add((control: c, laid: box, drawn: box, box: box, bevel: false));
+        continue;
+      }
       final drawn = marked.contains(face.box)
           ? null
           : _outline(box, c, face.read ? null : face.box, ground);

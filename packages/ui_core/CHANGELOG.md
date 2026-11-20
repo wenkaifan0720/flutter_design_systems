@@ -1,3 +1,10 @@
+## 0.3.4
+
+- A checkbox, switch or radio built with `DesignPressable` exposes its checkable role by default. An ordinary button keeps its button role.
+- A selectable `DesignDataTable` row exposes its checked state, including when the look adds a checkbox. Enter still opens a row with an activation callback.
+- `DesignRadioGroup` gives custom radio faces a single Tab stop, arrow-key selection in reading order, wrapping, disabled-option skipping and right-to-left navigation. Pass each radio's existing focus node with `focusNodeFor` to preserve programmatic focus and its listeners.
+- The package metadata links to the design systems documentation.
+
 ## 0.3.3
 
 - A date or time field's segments wrap between parts when its frame is narrower than them, each segment kept with the separator after it, so no line starts with one. Right to left, a run of digits wraps left to right within itself. Segments that fit stay on one line, laid out as before.

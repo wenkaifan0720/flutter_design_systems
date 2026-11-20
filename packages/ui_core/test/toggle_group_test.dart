@@ -187,7 +187,7 @@ void main() {
     expect(_host.selected, {'day'});
     expect(
       tester.getSemantics(find.text('day')),
-      isSemantics(hasToggledState: true, isToggled: true, isButton: true),
+      isSemantics(hasToggledState: true, isToggled: true, isButton: false),
     );
     expect(
       tester.getSemantics(find.text('month')),

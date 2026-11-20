@@ -409,6 +409,22 @@ final Map<String, DocExample> _examples = {
     toastBuilder: (context, details) => Text(details.toast.message),
     child: const SizedBox(),
   ),
+  'DesignRadioGroup': (context) {
+    var chosen = 'Day';
+    void choose(String value) => chosen = value;
+    return DesignRadioGroup<String>(
+      options: const ['Day', 'Week'],
+      value: chosen,
+      onChanged: choose,
+      itemBuilder: (context, option, node, select) => DesignPressable(
+        focusNode: node,
+        onPressed: select,
+        checked: option == chosen,
+        inMutuallyExclusiveGroup: true,
+        builder: (context, states, _) => Text(option),
+      ),
+    );
+  },
   'DesignToggleGroup': (context) => DesignToggleGroup<String>(
     options: const ['day', 'week'],
     selected: const {'day'},

@@ -1,5 +1,7 @@
 import 'dart:ui' show Tristate;
 
+import 'package:material_ui/material_ui.dart'
+    show Checkbox, Material, MaterialApp;
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -107,7 +109,9 @@ void main() {
     ),
     node: () => _rowOf('Ada'),
     semantics: isSemantics(
-      isButton: true,
+      isButton: false,
+      hasCheckedState: true,
+      isChecked: false,
       isFocusable: true,
       hasTapAction: true,
       hasSelectedState: true,
@@ -278,9 +282,77 @@ void main() {
     expect(c.isSelected(_people[1]), isTrue);
     expect(
       tester.getSemantics(find.text('Bo')),
-      isSemantics(isSelected: true, isButton: true),
+      isSemantics(isSelected: true, isChecked: true, isButton: false),
     );
     semantics.dispose();
+  });
+
+  testWidgets('a selectable row and its checkbox share the checked state, '
+      'and Enter still opens the row', (tester) async {
+    final c = DesignTableController<String>(
+      rows: const ['Budget'],
+      columns: const [DesignTableColumn(id: 'name', label: 'Name')],
+    );
+    addTearDown(c.dispose);
+    final opened = <String>[];
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Material(
+          child: DesignDataTable<String>(
+            controller: c,
+            onActivate: opened.add,
+            headerBuilder: (context, column, sort, states) =>
+                Text(column.label),
+            cellBuilder: (context, row, column) => Text(row),
+            rowBuilder: (context, row, cells) => Row(
+              children: [
+                Checkbox(
+                  value: row.selected,
+                  semanticLabel: 'Select row',
+                  onChanged: (_) => row.toggle(),
+                ),
+                ...cells,
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+    final row = find.byType(DesignPressable);
+    void expectChecked(bool checked) {
+      final node = tester.getSemantics(row);
+      expect(
+        node,
+        isSemantics(
+          isButton: false,
+          hasCheckedState: true,
+          isChecked: checked,
+          hasTapAction: true,
+        ),
+      );
+      expect(node.getSemanticsData().label, contains('Budget'));
+      expect(node.getSemanticsData().label, contains('Select row'));
+      expect(tester.getSemantics(find.byType(Checkbox)).id, node.id);
+      expect(c.isSelected('Budget'), checked);
+    }
+
+    expectChecked(false);
+    await tester.tap(find.byType(Checkbox));
+    await tester.pumpAndSettle();
+    expectChecked(true);
+    tester.widget<DesignPressable>(row).focusNode!.requestFocus();
+    await tester.pump();
+    await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+    await tester.pump();
+    expect(opened, ['Budget']);
+    expectChecked(true);
+    await tester.sendKeyEvent(LogicalKeyboardKey.space);
+    await tester.pump();
+    expectChecked(false);
+    await tester.tap(find.text('Budget'));
+    await tester.pumpAndSettle();
+    expectChecked(true);
+    expect(opened, ['Budget']);
   });
 
   testWidgets('a table that does not select opens a row on a press', (
@@ -291,6 +363,10 @@ void main() {
     final opened = <String>[];
     await tester.pumpWidget(
       _table(c, selectable: false, onActivate: (p) => opened.add(p.name)),
+    );
+    expect(
+      tester.getSemantics(_rowOf('Di')),
+      isSemantics(isButton: true, hasCheckedState: false, hasTapAction: true),
     );
     await tester.tap(find.text('Di'));
     expect(opened, ['Di']);

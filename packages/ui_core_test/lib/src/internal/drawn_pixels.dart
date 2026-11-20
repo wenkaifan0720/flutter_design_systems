@@ -575,6 +575,48 @@ class DrawnPixels {
       0.7152 * _linear[(c >> 16) & 0xFF] +
       0.0722 * _linear[(c >> 8) & 0xFF];
 
+  /// Whether [face] is painted in its ground's colour, with a light cast
+  /// immediately outside two edges and a dark cast outside their opposites.
+  /// The transition into the fill identifies the face's edge on all four
+  /// sides, even when the fill itself has no contrast against [over].
+  bool hasRaisedOutline(Rect face, {required int over, required double floor}) {
+    final image = Offset.zero & Size(width / ratio, height / ratio);
+    if (face.shortestSide < 12 ||
+        !image.contains(face.inflate(1).topLeft) ||
+        !image.contains(face.inflate(1).bottomRight)) {
+      return false;
+    }
+    final ground = _luminance(over);
+    bool opposite(int a, int b) {
+      if (alike(a, over, by: 2) || alike(b, over, by: 2)) return false;
+      final first = _luminance(a), second = _luminance(b);
+      final dark = math.min(first, second), light = math.max(first, second);
+      return dark < ground &&
+          light > ground &&
+          (light + 0.05) / (dark + 0.05) >= floor;
+    }
+
+    for (final fraction in [0.25, 0.5, 0.75]) {
+      final x = face.left + face.width * fraction;
+      final y = face.top + face.height * fraction;
+      if (!alike(pixelAt(x, face.top + 0.5), over, by: 2) ||
+          !alike(pixelAt(x, face.bottom - 0.5), over, by: 2) ||
+          !alike(pixelAt(face.left + 0.5, y), over, by: 2) ||
+          !alike(pixelAt(face.right - 0.5, y), over, by: 2) ||
+          !opposite(
+            pixelAt(x, face.top - 0.5),
+            pixelAt(x, face.bottom + 0.5),
+          ) ||
+          !opposite(
+            pixelAt(face.left - 0.5, y),
+            pixelAt(face.right + 0.5, y),
+          )) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   /// Whether the rectangular face has a light top and left rim and a dark
   /// bottom and right rim. The two colours contrast across the bevel even
   /// when the dark rim is close to the surrounding [over] colour.

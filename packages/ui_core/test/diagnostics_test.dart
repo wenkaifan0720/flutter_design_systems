@@ -105,6 +105,12 @@ final Map<String, List<Object>> _expected = {
     'has displayStringForOption',
   ],
   'DesignToaster': ['has toastBuilder'],
+  'DesignRadioGroup': [
+    'options: Day, Week',
+    'has onChanged',
+    'has itemBuilder',
+    'has focusNodeFor',
+  ],
   'DesignToggleGroup': [
     'options: Day, Week',
     'selected: Day',
@@ -539,6 +545,13 @@ Map<String, Widget> _parts() {
       tagBuilder: _b3,
     ),
     'DesignToaster': const DesignToaster(toastBuilder: _b2, child: _box),
+    'DesignRadioGroup': DesignRadioGroup<String>(
+      options: const ['Day', 'Week'],
+      value: null,
+      onChanged: (_) {},
+      itemBuilder: _b4,
+      focusNodeFor: (_) => null,
+    ),
     'DesignToggleGroup': const DesignToggleGroup<String>(
       options: ['Day', 'Week'],
       selected: {'Day'},

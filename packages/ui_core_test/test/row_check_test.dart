@@ -943,6 +943,40 @@ void main() {
       );
     });
 
+    testWidgets(
+      'a ground-coloured raised Delete face beside Archive is read at its cast',
+      (tester) async {
+        const ground = Color(0xff1e2431);
+        Future<List<String>> row({double short = 0}) => _check(
+          tester,
+          surface: ground,
+          cancel: _button(
+            'Delete',
+            const CustomPaint(painter: _CastFace(ground), size: Size(80, 59)),
+          ),
+          ok: _button(
+            'Archive',
+            CustomPaint(
+              painter: _CastFace(const Color(0xff7593fe), short: short),
+              size: const Size(80, 59),
+            ),
+          ),
+        );
+        expect(await row(), isEmpty);
+        // A neighbouring face genuinely short of its paint box is still read
+        // to its own edge, even beside the ground-coloured face.
+        final short = await row(short: 4);
+        expect(
+          short.any(
+            (issue) =>
+                issue.contains('its bottom') && issue.contains('as drawn'),
+          ),
+          isTrue,
+          reason: short.join('\n'),
+        );
+      },
+    );
+
     testWidgets('its ring with contrast', (tester) async {
       final outlined = _face(fill: _dark, ring: const Color(0xFF6A7282));
       expect(
@@ -2592,6 +2626,39 @@ class _Flat extends CustomPainter {
 
   @override
   bool shouldRepaint(_Flat oldDelegate) => oldDelegate.short != short;
+}
+
+// The two casts on Neumorphism's Porcelain night action keys. Both fills
+// end at the same edge; Delete's is exactly the surrounding surface colour.
+class _CastFace extends CustomPainter {
+  const _CastFace(this.fill, {this.short = 0});
+  final Color fill;
+  final double short;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final face = RRect.fromRectAndRadius(
+      Rect.fromLTWH(0, 0, size.width, size.height - short),
+      const Radius.circular(12),
+    );
+    canvas.drawRRect(
+      face.shift(const Offset(2, 2)),
+      Paint()
+        ..color = const Color(0xff0e1320)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2),
+    );
+    canvas.drawRRect(
+      face.shift(const Offset(-1, -1)),
+      Paint()
+        ..color = const Color(0xff394259)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 1),
+    );
+    canvas.drawRRect(face, Paint()..color = fill);
+  }
+
+  @override
+  bool shouldRepaint(_CastFace oldDelegate) =>
+      fill != oldDelegate.fill || short != oldDelegate.short;
 }
 
 class _Raised extends CustomPainter {

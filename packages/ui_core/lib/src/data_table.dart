@@ -403,7 +403,8 @@ class DesignDataTable<R> extends StatefulWidget {
   final Widget Function(BuildContext context, List<Widget> cells)?
   headerRowBuilder;
 
-  /// Whether a press and Space select rows.
+  /// Whether a press and Space select rows. A selectable row exposes its
+  /// checked state, including when its look supplies a checkbox in a cell.
   final bool selectable;
 
   /// A row's Enter, or its press when the table does not select.
@@ -604,7 +605,8 @@ class _DesignDataTableState<R> extends State<DesignDataTable<R>> {
       onPressed: () => _press(row, i),
       selected: selected,
       semanticSelected: widget.selectable ? selected : null,
-      button: activate != null || widget.selectable,
+      checked: widget.selectable ? selected : null,
+      button: !widget.selectable && activate != null,
       shortcuts: activate != null && widget.selectable
           ? const {SingleActivator(LogicalKeyboardKey.enter): _OpenRowIntent()}
           : null,

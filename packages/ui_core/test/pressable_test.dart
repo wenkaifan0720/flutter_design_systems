@@ -1,4 +1,4 @@
-import 'dart:ui' show Tristate;
+import 'dart:ui' show CheckedState, Tristate;
 
 import 'package:flutter/gestures.dart';
 import 'package:material_ui/material_ui.dart' show MaterialApp;
@@ -211,11 +211,56 @@ void main() {
         .getSemantics(find.byType(DesignPressable))
         .getSemanticsData();
     expect(data.label, 'Save');
-    expect(data.flagsCollection.isButton, isTrue);
+    expect(data.flagsCollection.isButton, isFalse);
     expect(data.flagsCollection.isToggled, Tristate.isTrue);
     expect(data.hasAction(SemanticsAction.tap), isTrue);
     expect(find.bySemanticsLabel('Ignored when named'), findsNothing);
     h.dispose();
+  });
+
+  testWidgets('checked, mixed, toggled and radio states keep their roles', (
+    tester,
+  ) async {
+    for (final checked in [false, true]) {
+      for (final control in [
+        DesignPressable(checked: checked, builder: face),
+        DesignPressable(checked: false, mixed: true, builder: face),
+        DesignPressable(toggled: checked, builder: face),
+        DesignPressable(inMutuallyExclusiveGroup: true, builder: face),
+        DesignPressable(
+          checked: checked,
+          inMutuallyExclusiveGroup: true,
+          onPressed: () {},
+          builder: face,
+        ),
+      ]) {
+        await tester.pumpWidget(_app(control));
+        final data = tester
+            .getSemantics(find.byType(DesignPressable))
+            .getSemanticsData();
+        expect(data.flagsCollection.isButton, isFalse);
+        expect(
+          data.flagsCollection.isChecked,
+          control.mixed
+              ? CheckedState.mixed
+              : switch (control.checked) {
+                  true => CheckedState.isTrue,
+                  false => CheckedState.isFalse,
+                  null => CheckedState.none,
+                },
+        );
+        expect(data.flagsCollection.isToggled, switch (control.toggled) {
+          true => Tristate.isTrue,
+          false => Tristate.isFalse,
+          null => Tristate.none,
+        });
+        expect(
+          data.flagsCollection.isInMutuallyExclusiveGroup,
+          control.inMutuallyExclusiveGroup,
+        );
+        expect(data.hasAction(SemanticsAction.tap), control.onPressed != null);
+      }
+    }
   });
 
   testWidgets('explicit names and values are read once while a changed '
