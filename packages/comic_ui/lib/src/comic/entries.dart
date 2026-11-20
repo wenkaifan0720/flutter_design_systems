@@ -684,168 +684,110 @@ class ComicRadioGroup<T> extends StatefulWidget {
 }
 
 class _ComicRadioGroupState<T> extends State<ComicRadioGroup<T>> {
-  final _nodes = <FocusNode>[];
-  @override
-  void dispose() {
-    for (final node in _nodes) {
-      node.dispose();
-    }
-    super.dispose();
-  }
-
   @override
   Widget build(BuildContext context) {
-    while (_nodes.length < widget.options.length) {
-      _nodes.add(FocusNode());
-    }
-    while (_nodes.length > widget.options.length) {
-      _nodes.removeLast().dispose();
-    }
-    final selected = widget.options.indexWhere(
-      (option) => option.enabled && option.value == widget.value,
-    );
-    final entry = selected >= 0
-        ? selected
-        : widget.options.indexWhere((option) => option.enabled);
-    for (var i = 0; i < _nodes.length; i++) {
-      _nodes[i].skipTraversal = i != entry;
-    }
     final t = ComicTheme.of(context);
-    return Semantics(
-      label: widget.label,
-      child: Column(
+    final byValue = {for (final option in widget.options) option.value: option};
+    return DesignRadioGroup<T>(
+      options: byValue.keys.toList(),
+      value: widget.value,
+      onChanged: widget.onChanged,
+      semanticLabel: widget.label,
+      isEnabled: (value) => byValue[value]!.enabled,
+      layoutBuilder: (context, rows) => Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           ExcludeSemantics(child: Text(widget.label, style: t.type.title)),
-          for (var i = 0; i < widget.options.length; i++)
-            // The row's side room stands outward, its wash and its pop on the column's edge.
-            ComicOutward(
-              margin: const EdgeInsets.symmetric(horizontal: ComicSpace.tight),
-              child: ComicPressable(
-                focusNode: _nodes[i],
-                label: widget.options[i].label,
-                button: false,
-                inGroup: true,
-                checked: widget.options[i].value == widget.value,
-                onPressed:
-                    widget.onChanged == null || !widget.options[i].enabled
-                    ? null
-                    : () {
-                        _nodes[i].requestFocus();
-                        if (widget.options[i].value != widget.value) {
-                          widget.onChanged!(widget.options[i].value);
-                        }
-                      },
-                keys: (_, event) {
-                  if (event is! KeyDownEvent || widget.onChanged == null) {
-                    return KeyEventResult.ignored;
-                  }
-                  final rtl = Directionality.of(context) == TextDirection.rtl;
-                  final key = event.logicalKey;
-                  final back =
-                      key == LogicalKeyboardKey.arrowUp ||
-                      key ==
-                          (rtl
-                              ? LogicalKeyboardKey.arrowRight
-                              : LogicalKeyboardKey.arrowLeft);
-                  final forward =
-                      key == LogicalKeyboardKey.arrowDown ||
-                      key ==
-                          (rtl
-                              ? LogicalKeyboardKey.arrowLeft
-                              : LogicalKeyboardKey.arrowRight);
-                  if (!back && !forward) return KeyEventResult.ignored;
-                  final enabled = [
-                    for (var j = 0; j < widget.options.length; j++)
-                      if (widget.options[j].enabled) j,
-                  ];
-                  if (enabled.isNotEmpty) {
-                    final next =
-                        enabled[(enabled.indexOf(i) + (back ? -1 : 1)) %
-                            enabled.length];
-                    _nodes[next].requestFocus();
-                    widget.onChanged!(widget.options[next].value);
-                  }
-                  return KeyEventResult.handled;
-                },
-                overlay: comicStyleOf([
-                  widget.style,
-                  t.radioTheme,
-                ], const {}).overlay,
-                builder: (context, states) {
-                  final look = comicStyleOf([
-                    widget.style,
-                    t.radioTheme,
-                  ], states);
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(
-                      vertical: 10,
-                      horizontal: 4,
-                    ),
-                    child: Row(
-                      children: [
-                        // An empty ring on the ground; chosen, the same ring holds a dot in the ring's own ink, so
-                        // the chosen one is the one with something in it, by day and by night.
-                        AnimatedComicShape(
-                          shape: look.shape ?? const CircleBorder(),
-                          builder: (context, shape) {
-                            final rim = comicRim(t, look, t.colors.nightLine);
-                            final outline =
-                                shape ?? const RoundedRectangleBorder();
-                            return Container(
-                              width: 24,
-                              height: 24,
-                              decoration: ShapeDecoration(
-                                color: look.fill ?? const Color(0x00000000),
-                                shape: outline.copyWith(side: rim),
-                              ),
-                              child: widget.options[i].value == widget.value
-                                  ? Padding(
-                                      // The dot is the ring moved in: concentric, 3 px of ground between them.
-                                      padding: EdgeInsets.all(rim.width + 3),
-                                      child: ComicStateDecoration(
-                                        decoration: ShapeDecoration(
-                                          color: look.foreground ?? rim.color,
-                                          shape: comicInsetShape(
-                                            outline,
-                                            rim.width + 3,
-                                          ),
-                                        ),
-                                      ),
-                                    )
-                                  : null,
-                            );
-                          },
-                        ),
-                        const SizedBox(width: ComicSpace.close),
-                        Expanded(
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                widget.options[i].label,
-                                style: t.type.body
-                                    .merge(look.textStyle)
-                                    .copyWith(color: look.foreground),
-                              ),
-                              if (widget.options[i].note != null)
-                                Text(
-                                  widget.options[i].note!,
-                                  style: t.type.small,
-                                ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              ),
-            ),
+          ...rows,
         ],
       ),
+      itemBuilder: (context, option, node, select) {
+        final o = byValue[option]!;
+        // The row's side room stands outward, its wash and its pop on the column's edge.
+        return ComicOutward(
+          margin: const EdgeInsets.symmetric(horizontal: ComicSpace.tight),
+          child: ComicPressable(
+            focusNode: node,
+            label: o.label,
+            button: false,
+            inGroup: true,
+            checked: o.value == widget.value,
+            onPressed: select == null
+                ? null
+                : () {
+                    node.requestFocus();
+                    select();
+                  },
+            overlay: comicStyleOf([
+              widget.style,
+              t.radioTheme,
+            ], const {}).overlay,
+            builder: (context, states) {
+              final look = comicStyleOf([widget.style, t.radioTheme], states);
+              return Padding(
+                padding: const EdgeInsets.symmetric(
+                  vertical: 10,
+                  horizontal: 4,
+                ),
+                child: Row(
+                  children: [
+                    // An empty ring on the ground; chosen, the same ring holds a dot in the ring's own ink, so
+                    // the chosen one is the one with something in it, by day and by night.
+                    AnimatedComicShape(
+                      shape: look.shape ?? const CircleBorder(),
+                      builder: (context, shape) {
+                        final rim = comicRim(t, look, t.colors.nightLine);
+                        final outline = shape ?? const RoundedRectangleBorder();
+                        return Container(
+                          width: 24,
+                          height: 24,
+                          decoration: ShapeDecoration(
+                            color: look.fill ?? const Color(0x00000000),
+                            shape: outline.copyWith(side: rim),
+                          ),
+                          child: o.value == widget.value
+                              ? Padding(
+                                  // The dot is the ring moved in: concentric, 3 px of ground between them.
+                                  padding: EdgeInsets.all(rim.width + 3),
+                                  child: ComicStateDecoration(
+                                    decoration: ShapeDecoration(
+                                      color: look.foreground ?? rim.color,
+                                      shape: comicInsetShape(
+                                        outline,
+                                        rim.width + 3,
+                                      ),
+                                    ),
+                                  ),
+                                )
+                              : null,
+                        );
+                      },
+                    ),
+                    const SizedBox(width: ComicSpace.close),
+                    Expanded(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            o.label,
+                            style: t.type.body
+                                .merge(look.textStyle)
+                                .copyWith(color: look.foreground),
+                          ),
+                          if (o.note != null)
+                            Text(o.note!, style: t.type.small),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        );
+      },
     );
   }
 }

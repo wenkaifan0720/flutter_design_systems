@@ -475,7 +475,7 @@ class ComicMark extends StatelessWidget {
   /// Its height. A drawing wider than it's tall, a step's scene, takes the width that goes with it.
   final double size;
 
-  /// It stands on a night ground (`ComicArtBand` ground 4): its loose lines take paper.
+  /// It stands on a night ground (`ComicArtBand`'s fourth): its loose lines take paper.
   final bool onNight;
   @override
   Widget build(BuildContext context) => comicOwnSize(

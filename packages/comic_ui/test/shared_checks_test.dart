@@ -1,6 +1,5 @@
-// The shared checks of ui_core (088701304f, then 0e25289dfd), for the two things the user caught on 11-11 (16:34, on
-// Ledger): buttons in one row that do not stand one height, and dropdowns as wide as their column. Over every page of
-// the live example (the gate's ordinary screens among them):
+// ui_core_test's shared checks, for two faults a look can make: buttons in one row that do not stand one height, and
+// dropdowns as wide as their column. Over every page of the live example (its ordinary screens among them):
 // - DesignRowCheck: controls sharing a row, by their drawn outlines and their capitals, under each density Comic ships,
 //   by day and by night (every density at 390, the standard one at 1440 too);
 // - DesignWidthCheck: buttons, selects, steppers, segmented controls, groups of choices and tab bars keep to their
@@ -80,8 +79,8 @@ Future<void> _pumpLive(
   await _decodeImages(tester);
 }
 
-/// Lets the screen's images decode and draws the frame they land in, as ui_core's checks ask (11-11, g13: the
-/// navigation page's widths were read while something on it repainted). A media slot first reads its manifest (a
+/// Lets the screen's images decode and draws the frame they land in, as ui_core's checks ask, so no width is read
+/// while something on the page still repaints. A media slot first reads its manifest (a
 /// FutureBuilder) and only then starts its picture, which the package's tests do not bundle (it fails, and the slot
 /// keeps its stand-in): so each round decodes what is on screen, lets real time pass for what is still loading,
 /// and draws the frame, until a round finds nothing new.
@@ -129,8 +128,8 @@ List<RenderRepaintBoundary> _unpainted(RenderObject root) {
 
 /// What the shared checks read that is not the fault they hunt, by kind: each names a kind of part or a way of reading
 /// the screen, matched by the problem's shape and never by a demo's label, so a fault on any other part still fails
-/// (11-12: a misread keyed by one chip's label hid its real fault). Each is printed as a misread; everything else
-/// fails. Reported to the coordinator.
+/// (a misread keyed by one chip's label would hide its real fault). Each is printed as a misread; everything else
+/// fails.
 final _misreads = <(RegExp, String)>[
   (
     RegExp(
@@ -159,7 +158,7 @@ final _misreads = <(RegExp, String)>[
     ),
     "a calendar's chosen day by day, read in its section's own picture: its transparent ground reads as black, so "
         "its ink rim reads as ground and only its fill counts (2.5 px in); drawn, its rim stands on the cell's box as "
-        "its neighbours' rims do (11-11, g14 pictures)",
+        "its neighbours' rims do",
   ),
 ];
 
@@ -182,7 +181,7 @@ Map<String, String> _misreadTogether(List<String> problems) {
     if (m != null && inset[m[1]!]?.length == 2) {
       why[problem] =
           "a printed face beside an unprinted one by day (a busy button beside a disabled one): level as laid out "
-          'and as drawn (11-15 pictures), the printed face is read 2.5 px in at both ends, its ink rim taken for '
+          'and as drawn, the printed face is read 2.5 px in at both ends, its ink rim taken for '
           'ground beside its print';
     }
   }
@@ -201,7 +200,7 @@ Map<String, String> _misreadTogether(List<String> problems) {
       why[problem] =
           "buttons with no face of their own, each at the foot of its own card in a grid (the overview's Open): "
           'their capitals are level with one another, all the same distance from a centre line that is the '
-          "cards' middle, the card each stands on read as its face (11-15 pictures)";
+          "cards' middle, the card each stands on read as its face";
     }
   }
   return why;
@@ -238,7 +237,7 @@ void main() {
   });
 
   // Every test here reads drawn pixels (ui_core's as-drawn checks, a surface's drawn rim), which hang on the
-  // rasterizer as a golden does: each is tagged goldens, so Linux CI leaves it to the macOS goldens job (11-13).
+  // rasterizer as a golden does: each is tagged goldens, so Linux CI leaves it to the macOS goldens job.
 
   // Rows by their drawn outlines. A tall page is read at 2 device px a point, a very tall one at 1, to keep its
   // picture in memory; the tolerance is half a device px either way.
@@ -283,7 +282,7 @@ void main() {
   }
 
   // Widths, from 600 up. A page holding a control laid out but never painted (the command palette's rows below its
-  // 240 cap, in its list's cache extent: their repaint boundaries stay unpainted, 11-11 g15) stops ui_core's check,
+  // 240 cap, in its list's cache extent: their repaint boundaries stay unpainted) stops ui_core's check,
   // which reads every control's boundary; such a page is read section by section, the section holding it left out
   // and named.
   for (final page in livePages) {
@@ -324,8 +323,8 @@ void main() {
     }
   }
 
-  // Labels on the middle of their faces, and a chosen control's fill to its cell (ui_core 0e25289dfd: a toggle
-  // group's chosen fill was a marker behind its word, 11-12), over every page at 390 and 1440, by day and by night.
+  // Labels on the middle of their faces, and a chosen control's fill to its cell (a toggle group's chosen fill is
+  // not a marker behind its word), over every page at 390 and 1440, by day and by night.
   // keylines_test holds the drawn capitals on the gate's screens; here the labels are held as laid out.
   for (final page in livePages) {
     for (final width in [390.0, 1440.0]) {
@@ -354,10 +353,10 @@ void main() {
     }
   }
 
-  // What opens from a page and floats over it (11-11, design6 P): every select, combobox, multi-select, menu and
+  // What opens from a page and floats over it: every select, combobox, multi-select, menu and
   // popover in the gallery, at 390, 600 and 1440, by day and by night. Each opened surface stands outside every clip
   // but the window's, whole on screen, its plate too; its rim is drawn all round it, the bottom stroke too, and its
-  // plate (11-12, the floating action button's print) under its bottom and trailing edges, so it reads on top
+  // plate (as the floating action button's print) under its bottom and trailing edges, so it reads on top
   // wherever its edge falls; a list's words start on one x, and a list from a field starts them on the field's words
   // (DesignWidthCheck.checkList) and marks the field's value with the check. No date popup: the gallery's date
   // pickers stand in their panels.
@@ -444,7 +443,7 @@ void main() {
             ..._clipped(tester, surface),
             ...await _drawnWhole(tester, surface),
             if (opener.list) ..._oneWordsX(surface),
-            // A list from a pressed field marks the field's value: the fill it opens on, and the check (11-12).
+            // A list from a pressed field marks the field's value: the fill it opens on, and the check.
             if (opener.field != null && opener.type == null)
               if (find
                       .descendant(
@@ -682,7 +681,7 @@ List<String> _typedList(RenderObject editor, RenderBox surface) {
   ];
 }
 
-/// Every row of [surface]'s list starts its words on one x (design6 P).
+/// Every row of [surface]'s list starts its words on one x.
 List<String> _oneWordsX(RenderBox surface) {
   final rows = _rowWords(surface);
   if (rows.isEmpty) return ['no words in its list'];

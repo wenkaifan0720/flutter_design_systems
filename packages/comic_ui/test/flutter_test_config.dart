@@ -21,8 +21,8 @@ Future<void> testExecutable(FutureOr<void> Function() testMain) async {
   }
   // A picture a test leaves in Flutter's image cache is the cache's, not a
   // leak: the cache is emptied after each test, which disposes each one.
-  // Drip's design-systems gate runs the kit-parts contract under these rules,
-  // and without this its pictures were reported as never disposed. A plain
+  // An app that vendors Comic runs the kit-parts contract under these rules,
+  // and without this its pictures would be reported as never disposed. A plain
   // test starts no binding, so it has no image cache to empty.
   tearDown(() {
     if (BindingBase.debugBindingType() != null) imageCache.clear();

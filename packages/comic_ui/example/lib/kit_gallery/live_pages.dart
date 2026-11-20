@@ -111,7 +111,7 @@ final List<LivePage> livePages = [
       kitSection('Quiet', children: [kitSpecimenQuiet()]),
       kitSection('Danger', children: [kitSpecimenDanger()]),
       kitSection('A link', children: [kitSpecimenLink()]),
-      // The plain button is "Any other action" (r3: two demos promised a difference that isn't there).
+      // The plain button is "Any other action": two demos would promise a difference that isn't there.
       kitSection('An icon alone', children: [kitSpecimenIconButton()]),
       kitSection('Send', children: [kitSpecimenSendButton()]),
       kitSection('Sizes', children: [_sizes()]),
@@ -505,7 +505,7 @@ List<Widget> _overview() => [
                   ComicCard(
                     title: kitSay(context, page.title),
                     // The summary takes the row's slack, so each card's Open stands on its foot, on one line across
-                    // the row (ui_core 0e25289dfd read them 27 px apart where a summary wrapped).
+                    // the row, even where a summary wraps.
                     children: [
                       ComicGrow(child: Text(kitSay(context, page.summary))),
                       Align(
@@ -543,8 +543,8 @@ class _Across extends StatelessWidget {
 }
 
 // One under another: three sizes side by side would be a row of three heights (ui_core's DesignRowCheck).
-// One under another: large is a step taller than small and medium, and side by side their tops and bottoms missed
-// each other (the shared row check, r4).
+// One under another: large is a step taller than small and medium, so side by side their tops and bottoms would miss
+// each other (the shared row check).
 Widget _sizes() => Builder(
   builder: (context) => Column(
     spacing: 12,
@@ -746,7 +746,7 @@ Widget _easing() => kitState<bool>(
 );
 
 /// The eased page in small. Its frame is drawn in the line of the page it stands on (black by day, cream at night), so
-/// it closes on either ground; the sample's own line vanished into a night gutter (r4).
+/// it closes on either ground; the sample's own line would vanish into a night gutter.
 Widget _eased(bool night, Color pageLine) => Builder(
   builder: (context) => AnimatedComicTheme(
     data: kitTheme(night ? Brightness.dark : Brightness.light),

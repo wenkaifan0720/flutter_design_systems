@@ -698,8 +698,8 @@ Widget kitSpecimenTree() => _Held<DesignTreeController<String>>(
 
 // ------------------------------------------------------------------- raised
 
-// On a stage of its own, the page dimmed under it like a route below a barrier: a sheet beside a hole read as a
-// card floating in the column (r3).
+// On a stage of its own, the page dimmed under it like a route below a barrier: a sheet beside a hole would read as
+// a card floating in the column.
 Widget kitSpecimenSideSheet() => Builder(
   builder: (context) => SizedBox(
     height: 340,

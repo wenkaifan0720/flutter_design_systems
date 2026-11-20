@@ -397,14 +397,14 @@ class ComicPreview extends StatelessWidget {
             ),
             ComicPresentation.pushed => PreviewStage(
               route: (context, page) => ComicPage<void>(
-                key: const ValueKey<String>('kapow-preview'),
+                key: const ValueKey<String>('comic-preview'),
                 child: page,
               ).createRoute(context),
               child: scoped(child),
             ),
             ComicPresentation.sheet => PreviewStage(
               route: (context, page) => ComicSheetPage<void>(
-                key: const ValueKey<String>('kapow-preview'),
+                key: const ValueKey<String>('comic-preview'),
                 drawer: drawer,
                 child: page,
               ).createRoute(context),

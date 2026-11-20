@@ -1,7 +1,7 @@
-// The live example (polish3 §4): every page opens through the look's own navigation, the side nav at a desktop's width
+// The live example: every page opens through the look's own navigation, the side nav at a desktop's width
 // and the drawer from the app bar's menu button on a phone; it builds without an error and the app bar names it. Between
 // them the pages build every component the package exports: an export no live page shows fails here, as the census in
-// shape_system_test fails for the catalog's gallery.
+// shape_system_test fails for the specimen gallery.
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:comic_ui/comic_ui.dart';
@@ -43,7 +43,7 @@ void main() {
     await loadBundledFonts();
   });
 
-  test('the pages carry plain names in the order polish3 sets', () {
+  test('the pages carry plain names in the gallery\'s order', () {
     expect(livePages.map((p) => p.title).take(16), [
       'Overview',
       'Buttons',
@@ -163,7 +163,7 @@ void main() {
       ];
       expect(cards, isNotEmpty);
       expect(cards.first.top, greaterThan(intro.bottom));
-      // The paragraph starts under the title, set from the start (11-10: it was a centred balanced box).
+      // The paragraph starts under the title, set from the start, not centred in a balanced box.
       final words = tester.getRect(
         find.textContaining('A comic page for Flutter'),
       );

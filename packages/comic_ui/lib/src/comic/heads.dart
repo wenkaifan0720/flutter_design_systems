@@ -272,7 +272,7 @@ class ComicStars extends StatelessWidget {
         children: [
           for (var i = 0; i < of; i++)
             comicOwnSize(
-              // A sixth of a star between neighbours: at 1 px the arm tips met and the row read as one strip (r4).
+              // A sixth of a star between neighbours: at 1 px the arm tips meet and the row reads as one strip.
               width: size + math.max(1, size / 6),
               height: size,
               child: CustomPaint(

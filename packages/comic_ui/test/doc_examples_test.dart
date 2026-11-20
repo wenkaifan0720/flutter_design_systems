@@ -1470,12 +1470,14 @@ void main() {
   testDocExamples(
     self: 'test/doc_examples_test.dart',
     examples: _examples,
-    // In drip, Comic's lib is design_system/, beside ui_core's and the app's.
+    // In an app that vendors Comic, its lib is design_system/, beside ui_core's
+    // and the app's.
     lib: Directory('lib/design_system').existsSync()
         ? 'lib/design_system'
         : 'lib',
-    // art.dart and shell.dart stay in drip (the package leaves them out), so
-    // their examples can't be written out in the package's copy of this file.
+    // art.dart and shell.dart stay with the vendored copy (the package leaves
+    // them out), so their examples can't be written out in the package's copy
+    // of this file.
     skip: const {'comic_parts.dart', 'art.dart', 'shell.dart'},
     wrap: (child) => TickerMode(
       enabled: false,

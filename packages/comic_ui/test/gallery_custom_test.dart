@@ -34,7 +34,8 @@ final Map<String, GalleryCustom> settings = {
 /// The settings every section has a golden in.
 const goldenSettings = ['bold strokes', 'compact'];
 
-/// The goldens are kept beside the catalog and laid here by the package build; a published copy compares nothing.
+/// The goldens are kept in the source repository and laid here by the package build; a published copy compares
+/// nothing.
 final bool _recorded =
     autoUpdateGoldenFiles || Directory('test/goldens').existsSync();
 

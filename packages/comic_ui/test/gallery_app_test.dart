@@ -51,7 +51,7 @@ void main() {
         await tester.tap(settings);
         await settle(tester);
         expect(find.byKey(const ValueKey('live/settings')), findsOneWidget);
-        // A row of the page's own (gateSettings, the live page since 11-11).
+        // A row of the page's own (gateSettings, the live settings page).
         expect(find.bySemanticsLabel('Weekly summary'), findsOneWidget);
         expect(tester.takeException(), isNull);
       } finally {

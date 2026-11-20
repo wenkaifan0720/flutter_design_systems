@@ -1,4 +1,4 @@
-// Nested and ringed shapes are concentric, measured on what is painted (polish3 §2). Each part below is pumped in the
+// Nested and ringed shapes are concentric, measured on what is painted. Each part below is pumped in the
 // state that draws its second outline (keyboard focus, a choice, a thumb, an active row), its paint calls are recorded,
 // and every outline that follows another is measured: the gap from the inner outline's edge midpoints to the outer
 // outline, and from its corner's diagonal point, must agree within half a pixel wherever both edges of that corner

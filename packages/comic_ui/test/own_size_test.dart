@@ -516,7 +516,7 @@ void main() {
   });
 
   // A removable chip's face takes a stretching column's width, as the plain chip's does, and its cross and the cross's
-  // press go with the face's end, never to the column's end with the face hugging its words at the start (11-12).
+  // press go with the face's end, never to the column's end with the face hugging its words at the start.
   for (final width in const [320.0, 1440.0]) {
     for (final direction in TextDirection.values) {
       testWidgets(

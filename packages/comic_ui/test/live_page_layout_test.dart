@@ -1,12 +1,11 @@
-// What the coordinator saw in the release web build in a browser (11-12, on 562f34f5f7), each held on the live
-// example's own page, by day and by night:
-// 1. a toggle group's chosen fill covers its whole cell, as the segmented control's does;
-// 2. from 600 up a stepper and one-line choices keep to their content, never their column;
-// 3. chips in one row stand one height, a chip with its remove cross among them;
-// 4. a link starts on its column's edge;
-// 5. (the select field's list carries the check: shared_checks_test's openers)
-// 6. a dialog's actions stand at its trailing end, the confirming act last, inline and raised;
-// 7. a floating action button's print is in its rim's ink, as the raised plate is (light by night).
+// The live example's own pages, laid out as a person sees them, by day and by night:
+// - a toggle group's chosen fill covers its whole cell, as the segmented control's does;
+// - from 600 up a stepper and one-line choices keep to their content, never their column;
+// - chips in one row stand one height, a chip with its remove cross among them;
+// - a link starts on its column's edge;
+// - a dialog's actions stand at its trailing end, the confirming act last, inline and raised;
+// - a floating action button's print is in its rim's ink, as the raised plate is (light by night).
+// A select field's list carrying the check is held by shared_checks_test's openers.
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 
@@ -136,7 +135,7 @@ List<String> _actionsAtEnd(WidgetTester tester, Finder dialog, String what) {
 /// whose example starts more than [tolerance] in (a glyph's side bearing) is named with where it starts, and so is
 /// each press laid out at the column's start (a loose tick, a radio's row, a rating's first star, a pager's first dot,
 /// quiet words, a trail's first step) whose face starts in from it: a least target pads outward, never moving the
-/// face (11-12 item 1).
+/// face.
 // Examples that start in from their column by design, each with the reason; everything else starts on it.
 const _insetByDesign = {
   'An error': 'a state stands centred in its room',
@@ -378,7 +377,7 @@ void main() {
         expect(problems, isEmpty);
       });
 
-      // The coordinator, 11-12 (design6 P): an example starts on its column's edge with its drawn face; a least target
+      // An example starts on its column's edge with its drawn face; a least target
       // pads outward, hit-tested only, and never moves the face.
       if (width == 1440 || brightness == Brightness.light) {
         for (final page in livePages) {

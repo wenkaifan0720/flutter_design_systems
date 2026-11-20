@@ -54,7 +54,7 @@ class ComicLink extends StatelessWidget {
     final layers = [style, t.textButtonTheme];
     final base = comicStyleOf(layers, const {});
     // A link is words: given a whole column, they start on its edge, as every other line in it does, never centred in
-    // their least target (11-12).
+    // their least target.
     return Align(
       alignment: AlignmentDirectional.centerStart,
       widthFactor: 1,

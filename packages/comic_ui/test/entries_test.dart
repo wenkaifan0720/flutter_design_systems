@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:ui_core_test/ui_core_test.dart';
 import 'package:comic_ui/comic_ui.dart';
 
 import 'support.dart';
@@ -79,7 +80,7 @@ void main() {
     expect(data.label, 'Your name');
     expect(data.hint, 'As it should be on the list');
     expect(data.flagsCollection.isTextField, isTrue);
-    // The form's label in the text field's own style, as written (design6 P: one label style in a form).
+    // The form's label in the text field's own style, as written: one label style in a form.
     expect(find.text('Your name'), findsOneWidget);
   });
 
@@ -386,17 +387,20 @@ void main() {
     tester,
   ) async {
     final changes = <String>[];
+    var chosen = 'a';
     await tester.pumpWidget(
       comicApp(
-        ComicRadioGroup<String>(
-          label: 'Format',
-          value: 'a',
-          options: const [
-            ComicRadio('a', 'First'),
-            ComicRadio('b', 'Closed', enabled: false),
-            ComicRadio('c', 'Last'),
-          ],
-          onChanged: changes.add,
+        StatefulBuilder(
+          builder: (context, setState) => ComicRadioGroup<String>(
+            label: 'Format',
+            value: chosen,
+            options: const [
+              ComicRadio('a', 'First'),
+              ComicRadio('b', 'Closed', enabled: false),
+              ComicRadio('c', 'Last'),
+            ],
+            onChanged: (next) => setState(() => changes.add(chosen = next)),
+          ),
         ),
         direction: TextDirection.rtl,
       ),
@@ -409,6 +413,74 @@ void main() {
     await tester.pump();
     expect(changes, ['c', 'a']);
   });
+
+  // A, B, C and D with B turned off, chosen C, nothing or B, in each direction: one Tab stop at the choice (the first
+  // that can be chosen when none can), the next Tab out, the arrows choosing as they move and passing B.
+  for (final direction in TextDirection.values) {
+    for (final initial in <String?>['c', null, 'b']) {
+      testWidgets('a radio group is one Tab stop whose arrows choose, '
+          '${direction.name}, chosen ${initial ?? 'none'}', (tester) async {
+        final semantics = tester.ensureSemantics();
+        final before = FocusNode();
+        addTearDown(before.dispose);
+        var chosen = initial;
+        await tester.pumpWidget(
+          comicApp(
+            StatefulBuilder(
+              builder: (context, setState) => Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Focus(focusNode: before, child: const Text('Before')),
+                  ComicRadioGroup<String>(
+                    key: const ValueKey('radios'),
+                    label: 'Format',
+                    value: chosen,
+                    options: const [
+                      ComicRadio('a', 'A'),
+                      ComicRadio('b', 'B', enabled: false),
+                      ComicRadio('c', 'C'),
+                      ComicRadio('d', 'D'),
+                    ],
+                    onChanged: (next) => setState(() => chosen = next),
+                  ),
+                  const Focus(child: Text('After')),
+                ],
+              ),
+            ),
+            direction: direction,
+          ),
+        );
+        await tester.pumpAndSettle();
+        (await const DesignRadioGroupCheck(look: 'Comic').check(
+          tester.element(find.byKey(const ValueKey('radios'))),
+          before: before,
+          sendKeyEvent: tester.sendKeyEvent,
+          pump: tester.pump,
+        )).verify();
+        // After a move, one radio is checked, and each is a radio, not a button.
+        before.requestFocus();
+        await tester.pump();
+        await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+        await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
+        await tester.pump();
+        expect(chosen, isNotNull);
+        for (final name in const ['A', 'B', 'C', 'D']) {
+          expect(
+            tester.getSemantics(find.bySemanticsLabel(name)),
+            isSemantics(
+              label: name,
+              hasCheckedState: true,
+              isChecked: name.toLowerCase() == chosen,
+              isInMutuallyExclusiveGroup: true,
+              isButton: false,
+            ),
+            reason: name,
+          );
+        }
+        semantics.dispose();
+      });
+    }
+  }
 
   testWidgets('check row has one checkbox action', (tester) async {
     final changes = <bool>[];

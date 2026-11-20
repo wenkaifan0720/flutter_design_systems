@@ -1,6 +1,6 @@
 // What the behaviour tests share (behaviour_test, behaviour_styled_test, behaviour_pages_test): the table of
 // interactive parts, the host, the checks and the groups.
-// The behaviour law (looks/COMPLETE.md §2a). Every part that takes a callback is enumerated from the source, so a new
+// The behaviour rule. Every part that takes a callback is enumerated from the source, so a new
 // one fails here until it is named in the table. Each one: Tab reaches it, it pops under the focus, Enter and Space press
 // it, with no callback it takes no focus and its face is told it is disabled, a hover reaches its face's states, and with
 // animations disabled nothing it does leaves a running animation. Each part, and every example page, lays out with no
@@ -197,7 +197,7 @@ final _parts = <String, _Part>{
   'ComicTabBar': _Part(
     (hit) => ComicTabBar(tabs: const ['All', 'Saved'], onChanged: _on(hit)),
     // One tab stop, the chosen tab: the arrows choose (ui_core's DesignTabBar), and Enter on the chosen tab changes
-    // nothing, so it calls nothing (routes_values_adopt_test).
+    // nothing, so it calls nothing (routes_values_test).
     keys: false,
   ),
   'ComicPageDots': _Part(

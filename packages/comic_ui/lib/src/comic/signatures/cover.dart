@@ -154,8 +154,8 @@ class ComicCover extends StatelessWidget {
 
   Widget _top(ComicThemeData t, {bool fillDate = false, bool stack = false}) {
     // Under large text on a phone the three boxes can't share a line: the date takes one of its own, below, and the
-    // last box above runs to the end. Left at their own widths, they framed a corner of bare art over the date's line,
-    // which read as a panel gone missing (the fresh-eyes read, 11-15).
+    // last box above runs to the end. Left at their own widths, they would frame a corner of bare art over the date's
+    // line, which reads as a panel gone missing.
     if (stack && date != null && (issue != null || price != null)) {
       final above = [
         if (issue != null) _Corner(issue!),

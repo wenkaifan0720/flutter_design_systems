@@ -10,7 +10,7 @@ import 'kit.dart';
 // ignore: avoid_relative_lib_imports
 import '../demo_art.dart';
 
-/// From this width up a control keeps its own width or a cell of the form's grid (design6 P, width on a wide layout).
+/// From this width up a control keeps its own width or a cell of the form's grid, never the whole of a wide column.
 const double _controlCap = 320;
 
 /// A select, stepper or lone control: across the column on a phone, at most [_controlCap] from 600 up.
@@ -154,7 +154,7 @@ Widget _firstCell(BuildContext context, Widget child) {
   );
 }
 
-/// A panel beside a taller one keeps its own height (design6 P, a card in a row hugs its content): a tier shares
+/// A panel beside a taller one keeps its own height (a card in a row hugs its content): a tier shares
 /// its height with the column, and the panel stands at the column's top with the page's ground below it.
 Widget _hug(Widget panel) => ComicPanelStack(grow: false, children: [panel]);
 
@@ -335,7 +335,7 @@ Widget gateLibrary() => kitState(0, (context, tab, change) {
     for (final (title, number, state, mark) in shown)
       ComicPictureCard(
         slotId: 'library-$number',
-        // Ground 4 is the navy issue by day too: its mark is inked for a dark ground, so the cup's steam reads (r4).
+        // The fourth ground is the navy issue by day too: its mark is inked for a dark ground, so the cup's steam reads.
         image: ComicArtBand(
           ground: number,
           leading: ComicMark(mark, onNight: number == 4),
@@ -362,8 +362,8 @@ Widget gateLibrary() => kitState(0, (context, tab, change) {
     children: [
       Row(
         children: [
-          // The band's head, lettered, with its line under it: a lone line of body floated halfway down the burst's
-          // height (r3).
+          // The band's head, lettered, with its line under it: a lone line of body would float halfway down the
+          // burst's height.
           Expanded(
             child: ComicColumn(
               gap: 4,

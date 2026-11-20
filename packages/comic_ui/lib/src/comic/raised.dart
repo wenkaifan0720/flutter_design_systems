@@ -325,8 +325,8 @@ class ComicDialog extends StatelessWidget {
         Text(message!, style: ComicTheme.of(context).type.body),
       ...content,
       if (actions.isNotEmpty)
-        // The actions stand at the trailing end in reading order, the confirming one last (11-12), as every system a
-        // product team knows sets a dialog's.
+        // The actions stand at the trailing end in reading order, the confirming one last, as Material's and
+        // Cupertino's dialogs set theirs.
         OverflowBar(
           spacing: ComicSpace.close,
           overflowSpacing: 8,
@@ -803,8 +803,10 @@ class ComicMenuItem<T> {
 
 /// A menu that marks the selected item with a yellow fill and check.
 ///
-/// Arrow keys, Home, End and typing move the active row. Hovering a row
-/// gives it the same tint. Enter selects the active item. [showComicMenu]
+/// Arrow keys, Home, End, Tab and typing move the active row. Hovering a row
+/// gives it the same tint. The row the keyboard stands on also pops inside
+/// its outline: a hard print along its bottom and end edges, its words on
+/// the row's plain fill. Enter selects the active item. [showComicMenu]
 /// initially focuses the selected or first item when opened from the keyboard.
 ///
 /// ```dart
@@ -886,6 +888,11 @@ class _ComicMenuState<T> extends State<ComicMenu<T>> {
   /// A menu the pointer opened lights no item (its focus waits on the first, unshown) until the pointer reaches one
   /// or a key is pressed, so a row never reads as current before anything chose it.
   late bool _quiet = widget._quiet;
+
+  /// Whether the pointer, not a key, moved the active item last. The pointer's row wears the shade alone; the keys'
+  /// row also shows the keyboard's print.
+  bool _pointer = false;
+
   void _sync() {
     while (_nodes.length < widget.items.length) {
       final i = _nodes.length;
@@ -910,7 +917,12 @@ class _ComicMenuState<T> extends State<ComicMenu<T>> {
   void _reach(int i) {
     if (!widget.items[i].enabled || widget.onSelected == null) return;
     _quiet = false;
-    if (_active != i) setState(() => _active = i);
+    if (_active != i || !_pointer) {
+      setState(() {
+        _active = i;
+        _pointer = true;
+      });
+    }
     if (!_nodes[i].hasFocus) _nodes[i].requestFocus();
   }
 
@@ -950,13 +962,20 @@ class _ComicMenuState<T> extends State<ComicMenu<T>> {
         if (widget.items[i].enabled) i,
     ];
     if (enabled.isEmpty) return KeyEventResult.ignored;
+    // From here the keys move the active item, so it shows the keyboard's print.
+    if (_pointer) setState(() => _pointer = false);
     // A quiet menu's first key lights the item the keys stand on (the chosen one, or the first), or the last going
-    // up, and takes nothing: Enter and Space light it too, so nothing unseen is ever taken.
+    // up (Up, End, Shift+Tab), and takes nothing: Enter, Space and Tab light it too, so nothing unseen is ever taken
+    // and Tab never passes over a row it never showed. After that, Tab moves the focus as Flutter's traversal does.
     final wasQuiet = _quiet;
     if (_quiet) {
+      final tab = key == LogicalKeyboardKey.tab;
       final up =
-          key == LogicalKeyboardKey.arrowUp || key == LogicalKeyboardKey.end;
+          key == LogicalKeyboardKey.arrowUp ||
+          key == LogicalKeyboardKey.end ||
+          (tab && HardwareKeyboard.instance.isShiftPressed);
       if (up ||
+          tab ||
           key == LogicalKeyboardKey.arrowDown ||
           key == LogicalKeyboardKey.home ||
           key == LogicalKeyboardKey.enter ||
@@ -1069,7 +1088,7 @@ class _ComicMenuState<T> extends State<ComicMenu<T>> {
     final start = widget.wordsAt == null
         ? 12.0
         : math.max(6.0, widget.wordsAt! - inset);
-    // A raised menu stands on its plate over the page, and a long one scrolls inside its rim (11-11).
+    // A raised menu stands on its plate over the page, and a long one scrolls inside its rim.
     return _RaisedFrame(
       style: widget.style,
       theme: t.menuTheme,
@@ -1096,12 +1115,14 @@ class _ComicMenuState<T> extends State<ComicMenu<T>> {
                     : () => widget.onSelected!(widget.items[i].value),
                 keys: (_, event) => _key(i, event),
                 outline: WidgetStatePropertyAll(row),
-                // The active row's shade is the menu's own, below: it follows the keys as well as the pointer, so the
-                // keys' row needs no pop of its own (a row lifted over the next would cover it).
+                // The active row's shade and the keyboard's print are the menu's own, below: the shade follows the
+                // keys as well as the pointer, and the print marks the keys' row inside its outline, since a row
+                // lifted over the next would cover it.
                 wash: false,
                 ring: false,
                 builder: (context, states) {
                   final lit = _active == i && states.enabled;
+                  final keys = states.focused && states.enabled && !_pointer;
                   final chosen = widget.items[i].selected;
                   final ink = chosen
                       ? t.colors.onCaption
@@ -1110,7 +1131,7 @@ class _ComicMenuState<T> extends State<ComicMenu<T>> {
                       : t.colors.textSecondary;
                   // A row is at least the touch target tall, so the target never centres a shorter row off the
                   // menu's inset (the row's corner stays concentric with the rim).
-                  return ComicHighlight(
+                  final face = ComicHighlight(
                     states: {
                       if (lit) WidgetState.hovered,
                       if (lit && states.pressed) WidgetState.pressed,
@@ -1164,6 +1185,24 @@ class _ComicMenuState<T> extends State<ComicMenu<T>> {
                       ),
                     ),
                   );
+                  // Rows stand edge to edge, so the keys' row pops inside itself: a hard print along its bottom and
+                  // end, as a tree's row does. On the chosen row's yellow a band of the card's colour keeps it apart.
+                  return Stack(
+                    children: [
+                      face,
+                      Positioned.fill(
+                        child: PopInside(
+                          child: ComicHighlight(
+                            states: keys ? _keysRow : const <WidgetState>{},
+                            shape: row,
+                            wash: false,
+                            ringGap: t.colors.card,
+                            child: const SizedBox.expand(),
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
                 },
               ),
             ),
@@ -1172,6 +1211,9 @@ class _ComicMenuState<T> extends State<ComicMenu<T>> {
     );
   }
 }
+
+/// The states of the menu row the keyboard stands on, for its print.
+const Set<WidgetState> _keysRow = {WidgetState.focused};
 
 class _AnchorLayout extends SingleChildLayoutDelegate {
   const _AnchorLayout(
@@ -1262,7 +1304,7 @@ Future<T?> showComicMenu<T>(
         Directionality.of(context),
         matchAnchorWidth: matchAnchorWidth,
       ),
-      // The menu scrolls inside its own rim when the window is short (11-11): its frame stays whole.
+      // The menu scrolls inside its own rim when the window is short: its frame stays whole.
       child: ComicMenu<T>._raised(
         style: style,
         autofocus: true,
@@ -1772,7 +1814,7 @@ class ComicSnackBar extends StatelessWidget {
         ),
     ];
     // On a desktop an announcement with no heading is one strip: its actions stand at the end of the message's line,
-    // not on a second line under it (r3, a tall bar at desktop width).
+    // not on a second line under it, which would make a tall bar at desktop width.
     final inline = t.desk && title == null && actions.isNotEmpty;
     return Semantics(
       liveRegion: _live,
@@ -1814,8 +1856,8 @@ class ComicSnackBar extends StatelessWidget {
                     Wrap(
                       alignment: WrapAlignment.end,
                       // Centred across the run: the dismiss keeps a full finger's target around a face that density
-                      // makes shorter, and on the run's top its face stood 2 px under the action's (ui_core's
-                      // DesignRowCheck, comfortable and compact, 11-11).
+                      // makes shorter; on the run's top its face would stand 2 px under the action's at the comfortable
+                      // and compact densities, as ui_core's DesignRowCheck measures.
                       crossAxisAlignment: WrapCrossAlignment.center,
                       spacing: ComicSpace.close,
                       runSpacing: ComicSpace.close,

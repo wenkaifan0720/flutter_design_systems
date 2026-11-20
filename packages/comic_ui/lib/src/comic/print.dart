@@ -841,7 +841,7 @@ class RenderComicLettering extends RenderBox
   @override
   void paint(PaintingContext context, Offset offset) {
     // The run is placed whole, its hard print layers included: shifting each layer by the room its words alone leave
-    // pushed the print past the box's end in RTL (r5, print_test).
+    // pushes the print past the box's end in right-to-left text.
     var lead = 0.0, reach = 0.0;
     for (final (p, at) in _layers) {
       if (at.dx < lead) lead = at.dx;

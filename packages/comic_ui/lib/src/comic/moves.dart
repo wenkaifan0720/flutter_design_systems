@@ -331,8 +331,8 @@ class _ComicTabBarState extends State<ComicTabBar>
     return LayoutBuilder(
       builder: (context, box) {
         // Tabs that need more than the row (large text on a phone): the trough's rim holds still at the row's ends and
-        // the tabs scroll inside it, each at its own width, so the one past the end shows cut by the rim (the
-        // fresh-eyes read, 11-15). From 600 up the trough hugs its tabs at the start.
+        // the tabs scroll inside it, each at its own width, so the one past the end shows cut by the rim. From 600 up
+        // the trough hugs its tabs at the start.
         final scrolls =
             wide ||
             (box.hasBoundedWidth &&

@@ -209,7 +209,7 @@ final _cases = <String, _Case>{
     (s) => ComicNumberField(value: 3, onChanged: (_) {}, style: s),
     () => _in(ComicNumberField, DecoratedBox),
     (t, s) => t.copyWith(stepperTheme: s),
-    // The trough's fill above the count: from 600 up the stepper keeps to its count (11-12), so a fifth of its width
+    // The trough's fill above the count: from 600 up the stepper keeps to its count, so a fifth of its width
     // falls on the minus glyph.
     const Offset(0.5, 0.12),
   ),
@@ -476,7 +476,7 @@ void main() {
       await cut.up();
     },
   );
-  // A button stands a field's height at every density (the user, 11-11 16:34: a button beside a field as tall as it), and
+  // A button stands a field's height at every density, so a button beside a field is as tall as it, and
   // a field never stands under the least target. So compact lowers the drawn face where a pointer reaches it, and where
   // a touch does the face keeps the touch target.
   testWidgets(

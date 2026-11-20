@@ -6,7 +6,7 @@ import 'package:comic_ui/comic_ui.dart';
 
 import 'kit.dart';
 
-/// Screens available in the example and captured by the design review test.
+/// Screens available in the example and captured by ordinary_screens_test.
 const reviewPages =
     <({String id, String title, Widget Function(Brightness) build})>[
       (id: 'review-form', title: 'Try a form', build: reviewForm),

@@ -227,7 +227,7 @@ Widget kitPressTile() => Builder(
           outline: WidgetStatePropertyAll(t.shapes.medium),
           child: DecoratedBox(
             decoration: ShapeDecoration(
-              // On paper, as every panel is: an unfilled contour showed the gutter through it (r4).
+              // On paper, as every panel is: an unfilled contour would show the gutter through it.
               color: t.colors.card,
               shape: t.shapes.medium.copyWith(
                 side: BorderSide(color: t.colors.nightLine, width: 2.5),

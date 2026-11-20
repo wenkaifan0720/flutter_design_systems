@@ -1,8 +1,8 @@
-// Faults the round-4 review sheets showed, each held here:
-// - a tree's keyboard row was lit with the picked row's fill, so the two could not be told apart;
-// - a chart is a tab stop (the arrows read its points) but showed no ring when it had the focus;
-// - a form field's error reddened the line under the control but not the control's rim;
-// - a date range's heading carried both years and broke onto two lines.
+// Four parts that read their state plainly:
+// - a tree's keyboard row is told apart from its picked row, which keeps the picked fill;
+// - a chart is a tab stop (the arrows read its points) and shows the keyboard's focus when it has it;
+// - a form field's error reddens the control's rim, not only the line under it;
+// - a date range's heading drops the years it shares with today, so it stays on one line.
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';

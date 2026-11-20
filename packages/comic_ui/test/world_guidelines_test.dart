@@ -14,8 +14,8 @@ import 'gallery_support.dart';
 import 'support.dart';
 import 'world_checks.dart';
 
-/// Labels Flutter's contrast capture misreads, by page, each with why (the coordinator's note on world_checks,
-/// 11-12). The capture reads the screen at one pixel per logical pixel and takes the two commonest colours in a
+/// Labels Flutter's contrast capture misreads, by page, each with why (see world_checks). The capture reads the screen
+/// at one pixel per logical pixel and takes the two commonest colours in a
 /// label's box, so a label whose strokes are thin in a box of its face's colour and another, or one turned so its box
 /// takes in what is round it, reads as two grounds and not its ink. Each one's own ink is checked against the face it
 /// stands on instead; the guideline still reads everything else on the page.

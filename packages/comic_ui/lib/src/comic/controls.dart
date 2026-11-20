@@ -960,8 +960,8 @@ class ComicTextField extends StatelessWidget {
         error: wrong,
       ),
     );
-    // By night a reply is printed as every field is, on the night card in cream: on day paper it stood as a lit box
-    // whose cream rim vanished into its fill (the fresh-eyes read, 11-15).
+    // By night a reply is printed as every field is, on the night card in cream: on day paper it would stand as a lit
+    // box whose cream rim vanishes into its fill.
     final inputInk = c.dark ? c.text : c.onPaper;
     final inputHint = c.dark ? c.textSecondary : c.hint;
     // A talking field's rim is the night line too: by night the ink line vanished on the ground and the field read
@@ -1862,7 +1862,7 @@ class ComicChip extends StatelessWidget {
     final direction = Directionality.of(context);
     final disabled = onDeleted == null && _press == null;
     // The chip's face is the plain chip's (its room, its words, its least height), so a chip with its remove stands
-    // the plain one's height in one row with it (11-12): the cross stands inside the face, the room at its end held
+    // the plain one's height in one row with it: the cross stands inside the face, the room at its end held
     // for it, as a password field's eye stands inside the field.
     Widget face(Set<WidgetState> states) {
       final look = comicStyleOf(layers, states);

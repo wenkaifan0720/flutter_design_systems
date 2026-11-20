@@ -245,7 +245,7 @@ class _ComicCircularProgressState extends State<ComicCircularProgressIndicator>
                 widget.color ?? c.primaryText,
                 c.track,
                 // The line's colour, cream at night: the hero burst keeps black because its fill is lit, but this star's
-                // unlit track is navy, and a black contour sank it into the night ground (r5).
+                // unlit track is navy, and a black contour would sink it into the night ground.
                 c.nightLine,
                 t.rim(1.5),
               ),
@@ -297,8 +297,8 @@ class _BurstProgress extends CustomPainter {
       }
     }
     outline.close();
-    // The star in its track's ink, then the lit rays as one shape over it: twelve rays filled one by one left a pale
-    // seam between neighbours (r4, a fan of slices).
+    // The star in its track's ink, then the lit rays as one shape over it: twelve rays filled one by one leave a pale
+    // antialiased seam between neighbours.
     canvas.drawPath(outline, Paint()..color = track);
     final lit = Path();
     for (var i = 0; i < 12; i++) {

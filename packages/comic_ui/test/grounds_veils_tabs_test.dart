@@ -1,8 +1,8 @@
-// Faults the 0.2.0 fresh-eyes read of the ten screens showed (shots of 0cac91b12a), each held here:
-// - by night a reply field stood on day paper, its cream rim lost in its fill;
-// - by night a modal's screen of black dots on the black ground screened nothing and cut the cream words into pieces;
-// - at 200% on a phone a tab bar's rim scrolled off with its last tab, and nothing showed there was one;
-// Disabled faces keep their words legible on a single flat ink tint.
+// Grounds, veils and tab bars that read by day and by night:
+// - a reply field stands on the night card by night, its cream rim clear of its fill, and on paper by day;
+// - a dialog dims the page with a flat veil, not a screen of dots that would cut its words into pieces;
+// - at 200% on a phone a crowded tab bar holds its rim and shows the tab past it;
+// - disabled faces keep their words legible on a single flat ink tint.
 import 'dart:ui' as ui;
 
 import 'package:material_ui/material_ui.dart';

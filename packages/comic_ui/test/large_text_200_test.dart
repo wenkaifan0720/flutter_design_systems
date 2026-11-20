@@ -1,9 +1,9 @@
-// Faults the 0.1.0 self-review (round 2) showed at twice the text size on a phone, each held here:
-// - parts measured their words at 1x and drew them at 2x: a thought's words spilled over its cloud, choice tiles broke
-//   "In stoc / k" and "Standar / d", balanced paragraphs set in a box too narrow;
-// - a key-value row broke "Member since" mid-word; a tier of picture cards kept its pairs and broke their titles;
-// - a toggle group's longest label was lettered smaller than the rest; the time picker broke "Minut / e";
-// - a field couldn't hold its own direction, so a member number's groups swapped in a right-to-left app.
+// At twice the text size on a phone, parts keep their words whole and in order:
+// - parts measure their words at the size they draw them: a thought's words stay in its cloud, choice tiles keep
+//   "In stock" and "Standard" whole, and balanced paragraphs get a box wide enough;
+// - a key-value row keeps "Member since" whole; a tier of picture cards stacks rather than break their titles;
+// - a toggle group letters every label at one size; the time picker keeps "Minute" whole;
+// - a field can hold its own direction, so a member number's groups keep their order in a right-to-left app.
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';

@@ -111,7 +111,7 @@ Widget kitSpecimenMark() => const Wrap(
   ],
 );
 
-// The portrait keeps its own size at the column's start, as the marks beside it do (design6 P).
+// The portrait keeps its own size at the column's start, as the marks beside it do.
 Widget kitSpecimenPortrait() => const Align(
   alignment: AlignmentDirectional.centerStart,
   child: SizedBox(width: 120, height: 140, child: ComicPortrait(ComicBust.bob)),

@@ -227,7 +227,7 @@ Future<List<String>> inkedContrastFailures(
         }
       }
       // If every pixel is close to the ink, the text still has to fail;
-      // an unreadable ink/background pair must not disappear from the audit.
+      // an unreadable ink/background pair must not disappear from the check.
       ground ??= ranked.isEmpty ? null : Color(0xFF000000 | ranked.first.key);
       if (ground == null) continue;
       final ratio = contrastRatio(Color.alphaBlend(ink, ground), ground);

@@ -17,7 +17,7 @@ void main() {
   setUpAll(loadComicFonts);
 
   // Contrast is read from the drawn pixels, which hang on the rasterizer as a golden does: each test is tagged
-  // goldens, so Linux CI leaves it to the macOS goldens job (11-13).
+  // goldens, so Linux CI leaves it to the macOS goldens job.
   testWidgets('contrast reads enabled text and skips disabled semantics', (
     tester,
   ) async {

@@ -1,3 +1,15 @@
+## 0.3.6
+
+- A `ComicMenu` row shows the keyboard's focus as Comic's other parts do: a hard print inside its outline, along
+  its bottom and end. The pointer's row keeps the plain tint.
+- In a `ComicMenu` the pointer opened, the first Tab lights the row the keys stand on, as an arrow does. It used to
+  move the focus to the next row with nothing shown.
+- `ComicRadioGroup` takes its keys from ui_core's `DesignRadioGroup`, over Flutter's `RadioGroup`, and answers them
+  as before: one Tab stop, at the choice or else the first option that can be chosen; arrows that choose as they
+  move, wrap and pass an option that is off, Left going on right to left. Holding an arrow now repeats it, and an
+  arrow onto the option already chosen no longer reports it again.
+- Stands on ui_core 0.3.4.
+
 ## 0.3.5
 
 - At 300% text a time picker's labels stay whole. Its words grow at most twice with the reader's text, as Material's

@@ -10,9 +10,10 @@ import 'package:comic_ui/comic_ui.dart';
 
 void main() {
   test('every public widget describes every public field it is built with', () {
-    // Comic's lib and, in drip, ui_core's beside it (design_system/ and
-    // design_kit/); the package's lib is Comic's alone. Drip's gate lays the
-    // app and the kit parts it installs in lib too, which are neither's.
+    // Comic's lib and, in an app that vendors it, ui_core's beside it
+    // (design_system/ and design_kit/); the package's lib is Comic's alone.
+    // Such an app lays its own code and kit parts in lib too, which are
+    // neither's.
     final roots = [
       for (final dir in const ['lib/design_system', 'lib/design_kit'])
         if (Directory(dir).existsSync()) Directory(dir),

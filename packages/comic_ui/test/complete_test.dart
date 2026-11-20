@@ -445,7 +445,7 @@ void main() {
       ),
     );
     await tester.pump();
-    // The chip's cross is its own press inside the chip's face (11-12), not an icon button beside it.
+    // The chip's cross is its own press inside the chip's face, not an icon button beside it.
     await tester.tap(
       find.byWidgetPredicate(
         (w) => w is ComicPressable && w.label == 'Delete History',
@@ -527,8 +527,8 @@ void main() {
     }
   }
 
-  // Round 4, from the round-3 review: guides on round steps, a bar under its
-  // own head, and a series too light for the page inked.
+  // A chart's guides stand on round steps, a bar's label stands under its own
+  // head, and a series too light for the page is inked.
   group('round guides, labelled bars, inked light series', () {
     List<String> guides(WidgetTester tester) {
       final ink = tester

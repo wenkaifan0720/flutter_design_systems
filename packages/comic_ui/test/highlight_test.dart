@@ -8,6 +8,7 @@
 // ignore_for_file: avoid_dynamic_calls
 import 'package:flutter/gestures.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:comic_ui/comic_parts.dart';
 
@@ -198,6 +199,9 @@ void main() {
             if (widget.ring) {
               Focus.maybeOf(highlight, createDependency: false)?.requestFocus();
               await tester.pump();
+              // A key, as when the keyboard brings the focus: a menu row the pointer last reached wears its shade
+              // alone, and shows the print once a key is pressed.
+              await tester.sendKeyEvent(LogicalKeyboardKey.shiftLeft);
               // The pop runs on the state motion; where the focus lands a frame late, the next frame starts it.
               await tester.pump(const Duration(milliseconds: 400));
               await tester.pump(const Duration(milliseconds: 400));
@@ -230,8 +234,8 @@ void main() {
               await mouse.moveTo(centre);
               await tester.pump();
               await tester.pump(const Duration(milliseconds: 400));
-              // The pointer lays a uniform tint on the part's own outline (0.2.0: states in Comic's ink); an
-              // open menu's active row follows the pointer (polish3 §1).
+              // The pointer lays a uniform tint on the part's own outline, in Comic's ink; an
+              // open menu's active row follows the pointer.
               if (highlight.mounted) {
                 final dynamic hovered = _mark(highlight);
                 if (hovered != null && hovered.drawn != drawn) {

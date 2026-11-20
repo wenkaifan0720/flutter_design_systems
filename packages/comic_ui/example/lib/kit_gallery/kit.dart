@@ -1,4 +1,4 @@
-/// Shared host for the Comic gallery's demo screens and catalog specimens.
+/// Shared host for the Comic gallery's demo screens and component specimens.
 ///
 /// Every demo renders inside the environment a Comic page gets live: a
 /// shared MaterialApp with each page under [ComicHost], themed by the preset the lab applied
@@ -75,7 +75,7 @@ ComicThemeData kitTheme(Brightness brightness) =>
     ComicThemeData.preset(kitShownPreset, brightness);
 
 /// Marks pages that share the example viewport's application and navigator.
-/// The example's page picker replaces the catalog's fixed app destinations.
+/// The example's page picker replaces a specimen app's fixed destinations.
 class KitGalleryScope extends InheritedWidget {
   /// Marks the embedded gallery [child].
   const KitGalleryScope({super.key, required super.child});
@@ -136,8 +136,7 @@ Widget kitSection(String label, {required List<Widget> children}) =>
       ),
     );
 
-/// Where a catalog specimen sits on its stage (the specimen's `frame` in
-/// metadata.yaml names the same band): the bottom or top edge, a band across
+/// Where a specimen sits on its stage: the bottom or top edge, a band across
 /// the middle, or the whole phone.
 class KitFrame {
   const KitFrame.bottom(double this.height) : _place = _KitPlace.bottom;
@@ -152,7 +151,7 @@ class KitFrame {
 
 enum _KitPlace { bottom, top, band, screen }
 
-/// The stage a catalog specimen renders on: the host themed by [style] (a
+/// The stage a specimen renders on: the host themed by [style] (a
 /// preset resolved at runtime, so one compile draws every preset) in
 /// [brightness], on the page's ground, with [child] placed by [frame]. A
 /// specimen builder never names a style: the stage decides it.

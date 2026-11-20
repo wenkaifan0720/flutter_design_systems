@@ -209,7 +209,7 @@ class ComicToggleGroup<T> extends StatelessWidget {
       labelOf: labelOf,
       semanticLabel: label,
       // The trough sizes each cell (a field's height, its words' width) and the face fills it: the kit's own least
-      // size would centre the face loose in the cell, its chosen fill a marker behind the word (11-12).
+      // size would centre the face loose in the cell, its chosen fill a marker behind the word.
       minimumSize: Size.zero,
       layoutBuilder: (context, items) => Align(
         alignment: AlignmentDirectional.centerStart,
@@ -536,7 +536,7 @@ class ComicKbd extends StatelessWidget {
         child: DecoratedBox(
           decoration: ShapeDecoration(
             color: c.card,
-            // The contour every part is drawn with (r4: a 1.5 cap read thinner than its neighbours).
+            // The contour every part is drawn with: a 1.5 cap would read thinner than its neighbours.
             shape: t.shapes.small.copyWith(
               side: BorderSide(color: c.nightLine, width: t.rim(2)),
             ),

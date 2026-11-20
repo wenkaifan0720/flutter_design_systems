@@ -1,5 +1,5 @@
-// A pointer over a part lays its tint on it and changes nothing else (0.2.0, the second signature move; 0.1.0
-// showed nothing, polish3 §1). For every pressable, field and slider on every live page, in every corner family: a
+// A pointer over a part lays its tint on it and changes nothing else. For every pressable, field and slider on every
+// live page, in every corner family: a
 // press that takes presses changes its own face under the pointer and not one pixel more than a hairline beyond its
 // box (a grouped row's rules stand aside at its edge); a disabled or busy press, a field and a slider change nothing;
 // and the pointer shows the right cursor: the hand on what presses, the I-beam on a field, the open hand on a slider,
@@ -117,7 +117,7 @@ void main() {
     await loadBundledFonts();
   });
 
-  // Focus is the caret and the look's focus edge, never a tint behind the words (polish3, 12:30): every field's
+  // Focus is the caret and the look's focus edge, never a tint behind the words: every field's
   // fills are the same focused as not, by day and by night.
   for (final mode in Brightness.values) {
     testWidgets('a focused field keeps its own fill, ${mode.name}', (

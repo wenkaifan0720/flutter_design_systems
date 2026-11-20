@@ -1,4 +1,4 @@
-// Keylines (design6 P): the example's ordinary screens, opened the way a person opens them, at a phone's and a desk's
+// Keylines: the example's ordinary screens, opened the way a person opens them, at a phone's and a desk's
 // width; every panel, card, section and the page body is a DesignKeylineRegion, and ui_core's check holds each one to
 // one leading and one trailing keyline and each row of controls to one height and centre line.
 import 'dart:io';
@@ -25,14 +25,13 @@ import 'support.dart';
 Finder _named(String type) =>
     find.byWidgetPredicate((w) => w.runtimeType.toString() == type);
 
-/// The ordinary screens the user judges a look on: Account, Settings, Library and Shop.
+/// The ordinary screens a look is judged on: Account, Settings, Library and Shop.
 const _screens = ['form', 'settings', 'list', 'checkout'];
 
 /// What the keyline check reads that is not the fault it hunts, by kind, as shared_checks_test's misreads: from 600 up
-/// a row of choices keeps to its words (ui_core 0e25289dfd's DesignWidthKind.choiceGroup), so its end is ragged as a
+/// a row of choices keeps to its words (ui_core's DesignWidthKind.choiceGroup), so its end is ragged as a
 /// wrapped line's is, while the check holds a run across two thirds of its region to both keylines. Matched by the
 /// problem's shape and the part it names, the last choice on its line in a ComicChoices, never by a demo's label.
-/// Reported to the coordinator.
 bool _raggedChoice(WidgetTester tester, String problem, double width) {
   final m = RegExp(
     r'^[^:]+: a button "([^"]+)" ends [\d.]+ px in; the trailing keyline is ',
@@ -130,7 +129,7 @@ void main() {
   }
 
   // At a desk the page's title stands on the content's leading edge, as every look's does: the sidebar holds the
-  // brand, the bar stands over the content (coordinator, g5: 'SETTINGS' stood over the sidebar, the panels at 247).
+  // brand, the bar stands over the content, not over the sidebar.
   for (final id in _screens) {
     testWidgets('$id puts its title on the content\'s leading edge at 1440', (
       tester,
@@ -170,7 +169,7 @@ void main() {
   }
 
   // Boxed controls stacked in a panel (a text field, a select, a choice) put their words on one inner keyline, a
-  // text field's (coordinator, g5 at 390: choice words at 53, field words at 48, boxes on one edge at 29).
+  // text field's, while the boxes share one outer edge.
   Future<void> pumpScreen(
     WidgetTester tester,
     double width,
@@ -255,9 +254,9 @@ void main() {
     );
   });
 
-  // Every select and dropdown at 600, 1024, 1440 and 1920 (the user, 16:34: 'the width for dropdown seems to be a
-  // common problem'): closed, its face at most about 320 at its column's start; open, its list at least as wide as
-  // the face (a typed field's as drawn, lifted by its focus) and on its leading edge.
+  // Every select and dropdown at 600, 1024, 1440 and 1920: closed, its face at most about 320 at its column's start;
+  // open, its list at least as wide as the face (a typed field's as drawn, lifted by its focus) and on its leading
+  // edge.
   for (final width in [600.0, 1024.0, 1440.0, 1920.0]) {
     testWidgets('dropdowns keep their width at ${width.toInt()}', (
       tester,
@@ -415,7 +414,7 @@ void main() {
     });
   }
 
-  // Buttons in a row (the user, 16:34, on Ledger: 'the button doesnt have the same height here?'): each of Comic's
+  // Buttons in a row stand one height: each of Comic's
   // boxed variants beside each other shows one top and one bottom by its drawn outline, on a page, in a panel, a
   // dialog and a sheet, by day and by night. The quiet button draws no box, only its words, and is left out.
   // COMIC_PICTURES=<dir> also writes each surface's picture there, at 2x.
@@ -638,7 +637,7 @@ void main() {
   }
 
   // A tier's picture cards are one height, and each card's tag stands at its foot: one line of tags across a row,
-  // whatever the titles wrap to (msg_43d238b26dad: 'READY TO READ' at 404 in one card and 424 in the next).
+  // whatever the titles wrap to, so one card's tag never stands lower than its neighbour's.
   for (final width in [390.0, 1440.0]) {
     testWidgets(
       'a row of cards keeps its tags on one line at ${width.toInt()}',
@@ -696,7 +695,7 @@ void main() {
     );
   }
 
-  // The label sweep (ui_core fdd4fc74cc): every labelled control's label on the middle of its face, as laid out and as
+  // The label sweep: every labelled control's label on the middle of its face, as laid out and as
   // drawn, under each density Comic ships.
   final densities = <String, DesignAlignmentTheme>{
     for (final (name, density) in [
