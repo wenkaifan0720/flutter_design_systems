@@ -129,9 +129,6 @@ Widget kitFeedbackDemo(Brightness brightness) => kitScreen(
   ],
 );
 
-// Catalog specimens (metadata.yaml): one still per part, drawn the same in
-// every preset; the stage chooses the preset.
-
 Widget kitSpecimenNotice() => Builder(
   builder: (context) => Column(
     crossAxisAlignment: CrossAxisAlignment.stretch,

@@ -331,9 +331,6 @@ class _WayfindingState extends State<_Wayfinding> {
   );
 }
 
-// Catalog specimens (metadata.yaml): one still per part, drawn the same in
-// every preset; the stage chooses the preset.
-
 Widget kitSpecimenAppBar() => Builder(
   builder: (context) => BrutalAppBar(
     title: 'Low Tide',

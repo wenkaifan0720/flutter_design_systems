@@ -55,10 +55,10 @@ abstract final class BrutalMetrics {
   /// The longest shadow a theme may cast: longer pulls a face off its row.
   static const double maxShadowOffset = 8;
 
-  /// The room between a face and its focus rule.
+  /// The inset of a focus bar in a cell with shared dividers.
   static const double focusGap = 2;
 
-  /// The width of the focus rule.
+  /// The thickness of a focus bar.
   static const double focusWidth = 2;
 
   /// A control's height at [DesignDensity.standard], before density.

@@ -8,6 +8,7 @@ import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
 import 'internal/ruled_column.dart';
+import 'internal/focus_ink.dart';
 import 'surface.dart';
 import 'theme.dart';
 
@@ -210,7 +211,7 @@ class BrutalRule extends StatelessWidget {
 /// control or, when it opens something, a chevron.
 ///
 /// With [onTap] it can be pressed: the cell turns over to ink, its words to
-/// paper, and its keyboard focus is a square line inside the cell (a row
+/// paper, and its keyboard focus is a bar inside the lower edge (a row
 /// shares its rules, so a ring outside it would sit on its neighbours).
 /// [selected] turns it over to ink to stay.
 ///
@@ -323,7 +324,9 @@ class BrutalListTile extends StatelessWidget {
         ),
         child: CustomPaint(
           foregroundPainter: states.contains(WidgetState.focused)
-              ? BrutalInsetFocusPainter(lit ? c.paper : c.ink)
+              ? BrutalInsetFocusPainter(
+                  brutalFocusInk(c, layered.fill ?? (lit ? c.ink : c.surface)),
+                )
               : null,
           child: ConstrainedBox(
             constraints: BoxConstraints(

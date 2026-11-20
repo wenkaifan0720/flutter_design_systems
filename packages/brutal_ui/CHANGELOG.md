@@ -1,3 +1,12 @@
+## 0.2.3
+
+- Stands on ui_core 0.3.4.
+- Keyboard focus marks one edge of a control with a solid accent block.
+- A disabled checkbox with a validation error keeps a warning square beside it.
+- The slider thumb sinks on pointer down and rises after release or cancellation.
+- `BrutalSegmentedButton` is one radio group, as Flutter's `RadioGroup` is: Tab stops once, on the chosen cell, and the arrow keys move the choice, wrapping at the ends and moving on with Left in right-to-left text. Home and End still choose the first and last cell. A screen reader hears each cell as a checked or unchecked radio.
+- `BrutalRadio`'s documentation shows how to group a set with ui_core's `DesignRadioGroup`, passing the group's node to `focusNode`. The example app's radios are grouped that way.
+
 ## 0.2.2
 
 - `BrutalFormField.mergeSemantics` is now `bool?` and defaults to null: ui_core's field decides from the child. A child with one control, such as a switch, a checkbox or a slider, is one node named by the field's label. A child with several controls, such as segments, chips, radios or a stepper's buttons and number, keeps each control's own node, so a screen reader's double tap, or a click on the web with semantics on, reaches the control under it. The label names the group and is read once. Previously the default merged a group into one node, so a tap through the semantics tree reached only its first control and a stepper's tap did nothing. Pass `true` to keep the old merge or `false` to always name the child as a group. Needs ui_core 0.3.2.

@@ -8,6 +8,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:ui_core/ui_core.dart';
 
+import 'internal/focus_ink.dart';
 import 'surface.dart';
 import 'theme.dart';
 
@@ -180,8 +181,8 @@ class BrutalFieldMessage extends StatelessWidget {
 
 /// A one-line (or, with [maxLines], several-line) text field: a square box
 /// in the look's rule, its [label] above, its [helper] or [error] below. A
-/// focused field gets the look's focus rule, a second square line 2 px
-/// outside its box; an error turns the rule red.
+/// focused field shows an accent bar inside its lower edge. An error turns
+/// the rule red.
 ///
 /// The box is drawn by the look and the editable inside is bare (no
 /// decoration), so a line stands at the box's middle whatever the platform's
@@ -416,7 +417,9 @@ class _BrutalTextFieldState extends State<BrutalTextField> {
               : c.ink),
       foreground: words.color!,
       focus: _focus.hasFocus
-          ? (widget.error != null ? c.danger : c.ink)
+          ? (widget.error != null
+                ? c.danger
+                : brutalFocusInk(c, layered.fill ?? c.surface))
           : c.ink.withValues(alpha: 0),
     );
     final rule = theme.borderWidth;

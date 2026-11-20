@@ -1,8 +1,5 @@
-// What Brutal paints must look the same in a browser. Flutter 3.47's web
-// renderer does not cut a Path.combine difference: it fills the whole first
-// path, so a focus ring drawn that way painted every focused field, switch and
-// button solid ink in a browser, and the tests' renderer showed nothing wrong.
-// A ring is two nested outlines filled even-odd instead.
+// CanvasKit on Flutter 3.47 can fill a path difference unexpectedly.
+// Keep the drawing primitives portable across Flutter renderers.
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';

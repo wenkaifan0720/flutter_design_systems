@@ -105,9 +105,6 @@ class _Charts extends StatelessWidget {
   );
 }
 
-// Catalog specimens (metadata.yaml): one still per part, drawn the same in
-// every preset; the stage chooses the preset.
-
 Widget kitSpecimenLineChart() => const BrutalLineChart(
   semanticLabel: 'Tickets sold this week',
   labels: _days,

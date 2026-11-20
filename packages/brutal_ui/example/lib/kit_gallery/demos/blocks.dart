@@ -249,9 +249,6 @@ class _Media extends StatelessWidget {
   }
 }
 
-// Catalog specimens (metadata.yaml): one still per part, drawn the same in
-// every preset; the stage chooses the preset.
-
 Widget kitSpecimenBlock() => Builder(
   builder: (context) {
     final theme = context.brutalTheme;

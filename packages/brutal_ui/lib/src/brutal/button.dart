@@ -9,6 +9,7 @@ import 'package:ui_core/ui_core.dart';
 
 import 'feedback.dart' show BrutalSpinner;
 import 'menu.dart';
+import 'internal/focus_ink.dart';
 import 'surface.dart';
 import 'theme.dart';
 
@@ -288,7 +289,7 @@ BrutalFace _buttonFace(
   final disabled = states.contains(WidgetState.disabled);
   final pressed = states.contains(WidgetState.pressed);
   final focus = states.contains(WidgetState.focused)
-      ? c.ink
+      ? brutalFocusInk(c, kind == _ButtonKind.text ? c.surface : c.ink)
       : c.ink.withValues(alpha: 0);
   const clear = Color(0x00000000);
   if (kind == _ButtonKind.text) {
@@ -492,11 +493,14 @@ class BrutalIconButton extends StatelessWidget {
         final disabled = states.contains(WidgetState.disabled);
         final pressed = states.contains(WidgetState.pressed);
         final on = states.contains(WidgetState.selected);
-        final focus = states.contains(WidgetState.focused)
-            ? c.ink
-            : c.ink.withValues(alpha: 0);
         final plain = _kind == _IconButtonKind.plain;
         final inverted = on || (plain && pressed);
+        final focus = states.contains(WidgetState.focused)
+            ? brutalFocusInk(
+                c,
+                plain && !inverted ? (layered.fill ?? c.surface) : c.ink,
+              )
+            : c.ink.withValues(alpha: 0);
         final face = BrutalFace(
           fill:
               layered.fill ??

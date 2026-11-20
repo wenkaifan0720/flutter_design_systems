@@ -14,9 +14,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import '../example/lib/everyday_screens.dart';
 
-/// The goldens are kept beside the catalog and laid here by the package
-/// build; a published or vendored copy goes without them, and compares
-/// nothing.
+/// Compare reference images when they are available in the test bundle.
 final bool _recorded =
     autoUpdateGoldenFiles || Directory('test/goldens').existsSync();
 

@@ -1,6 +1,4 @@
-/// The Brutal preset the gallery renders in. The lab rewrites this file when a
-/// preset is picked on the module's Preview page; the committed value is the
-/// module's default preset.
+/// Default theme preset for the gallery.
 library;
 
 const kitPreset = 'raw';

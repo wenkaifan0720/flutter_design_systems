@@ -12,6 +12,7 @@ import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+import 'internal/focus_ink.dart';
 import 'surface.dart';
 import 'theme.dart';
 
@@ -105,7 +106,7 @@ Widget _thumbFace(
           shadow: disabled ? c.ink.withValues(alpha: 0) : c.ink,
           travel: pressed && !disabled ? 1 : 0,
           focus: states.contains(WidgetState.focused)
-              ? c.ink
+              ? brutalFocusInk(c, c.ink)
               : c.ink.withValues(alpha: 0),
         ),
       ),
@@ -186,11 +187,24 @@ class BrutalSlider extends StatefulWidget {
 }
 
 class _BrutalSliderState extends State<BrutalSlider> {
-  bool _dragging = false;
+  bool _pressed = false;
 
   /// The value the drag last set: a drag can end before the parent has
   /// built with it.
   double? _last;
+
+  void _setPressed(bool pressed) {
+    if (_pressed != pressed) setState(() => _pressed = pressed);
+  }
+
+  @override
+  void didUpdateWidget(BrutalSlider oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.onChanged == null) {
+      _pressed = false;
+      _last = null;
+    }
+  }
 
   double get _fraction => widget.max == widget.min
       ? 0
@@ -233,18 +247,17 @@ class _BrutalSliderState extends State<BrutalSlider> {
                   _last = null;
                 }
               : null,
+          onHorizontalDragDown: enabled ? (_) => _setPressed(true) : null,
+          onHorizontalDragCancel: enabled ? () => _setPressed(false) : null,
           onHorizontalDragStart: enabled
-              ? (d) {
-                  setState(() => _dragging = true);
-                  set(d.localPosition.dx);
-                }
+              ? (d) => set(d.localPosition.dx)
               : null,
           onHorizontalDragUpdate: enabled
               ? (d) => set(d.localPosition.dx)
               : null,
           onHorizontalDragEnd: enabled
               ? (_) {
-                  setState(() => _dragging = false);
+                  _setPressed(false);
                   widget.onChangeEnd?.call(_last ?? widget.value);
                   _last = null;
                 }
@@ -256,7 +269,7 @@ class _BrutalSliderState extends State<BrutalSlider> {
             min: widget.min,
             max: widget.max,
             divisions: widget.divisions,
-            dragging: _dragging,
+            dragging: _pressed,
             minimumSize: Size(width, _reach),
             mouseCursor: enabled ? SystemMouseCursors.click : null,
             semanticLabel: widget.semanticLabel,
@@ -288,7 +301,7 @@ class _BrutalSliderState extends State<BrutalSlider> {
                     top: 0,
                     width: _reach,
                     height: _reach,
-                    child: _thumbFace(c, states, _dragging, layers),
+                    child: _thumbFace(c, states, _pressed, layers),
                   ),
                 ],
               ),
@@ -500,7 +513,10 @@ class BrutalChip extends StatelessWidget {
                     (disabled ? c.disabled : c.ink),
                 foreground: words,
                 focus: states.contains(WidgetState.focused)
-                    ? c.ink
+                    ? brutalFocusInk(
+                        c,
+                        lit ? (layered.fill ?? c.ink) : c.surface,
+                      )
                     : c.ink.withValues(alpha: 0),
               ),
               child: Padding(
@@ -663,8 +679,7 @@ class BrutalRating extends StatelessWidget {
             ),
           );
         },
-        // The keyboard's focus on the strip: the second square rule outside
-        // its frame, as on every Brutal control.
+        // The rating takes keyboard focus as one control.
         layoutBuilder: (context, items) => BrutalSurface(
           face: BrutalFace(
             fill: strip.fill ?? c.surface,

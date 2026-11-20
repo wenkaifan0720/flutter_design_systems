@@ -51,7 +51,7 @@ class BrutalFace with Diagnosticable {
   /// (the shadow gone under it).
   final double travel;
 
-  /// The focus rule's colour; transparent when not focused.
+  /// The colour of the block along the lower edge while focused.
   final Color focus;
 
   /// The rule's width: null for the theme's
@@ -126,14 +126,13 @@ class BrutalFace with Diagnosticable {
 
 /// Paints [face] round [child]: the hard shadow
 /// ([BrutalThemeData.shadowOffset] down and toward the end side), the face
-/// slid [BrutalFace.travel] of the way into it, the square rule
-/// ([BrutalThemeData.borderWidth] unless the face says), and the focus rule
-/// outside them both.
+/// slid [BrutalFace.travel] of the way into it, and a square rule of
+/// [BrutalThemeData.borderWidth] unless the face supplies its own width.
+/// Keyboard focus colours the lower edge of the shadow on a raised face
+/// and the lower inside edge on a flat face.
 ///
-/// The surface's size is its face's: the shadow and the focus rule are drawn
-/// outside it, so a raised face lines up with a flat one beside it. Leave
-/// the shadow's reach of room after it (and the focus rule's 4 all round)
-/// where a clip could cut it.
+/// The surface occupies the size of its face. Leave room for its hard
+/// shadow where an ancestor clips its children.
 ///
 /// It is the primitive every Brutal part is drawn with, public so an app's
 /// own part can wear the look.
@@ -199,6 +198,9 @@ class _SurfacePainter extends CustomPainter {
     final hasShadow = face.shadow.a > 0;
     if (hasShadow && face.travel < 1) {
       canvas.drawRect(shadowRect, Paint()..color = face.shadow);
+      if (face.focus.a > 0) {
+        _paintFocusBar(canvas, shadowRect, face.focus);
+      }
     }
     if (face.fill.a > 0) canvas.drawRect(faceRect, Paint()..color = face.fill);
     if (face.border.a > 0 && width > 0) {
@@ -210,52 +212,9 @@ class _SurfacePainter extends CustomPainter {
           ..color = face.border,
       );
     }
-    if (face.focus.a > 0) {
-      // The ring is the outline [by] round the face and its shadow, less the
-      // one nearer in: two nested outlines filled even-odd. (Flutter 3.47's
-      // web renderer does not cut a Path.combine difference, and fills the
-      // whole outline.)
-      List<Offset> around(double by) {
-        final a = faceRect.inflate(by);
-        return hasShadow
-            ? _steppedUnion(a, shadowRect.center - faceRect.center)
-            : [a.topLeft, a.topRight, a.bottomRight, a.bottomLeft];
-      }
-
-      canvas.drawPath(
-        Path()
-          ..fillType = PathFillType.evenOdd
-          ..addPolygon(
-            around(BrutalMetrics.focusGap + BrutalMetrics.focusWidth),
-            true,
-          )
-          ..addPolygon(around(BrutalMetrics.focusGap), true),
-        Paint()..color = face.focus,
-      );
+    if (face.focus.a > 0 && (!hasShadow || face.travel == 1)) {
+      _paintFocusBar(canvas, faceRect.deflate(width), face.focus);
     }
-  }
-
-  // The outline of [a] together with [a] moved by [s] (less than its size
-  // either way): a rectangle with a square step at the two corners the move
-  // opens.
-  static List<Offset> _steppedUnion(Rect a, Offset s) {
-    // Drawn for a move down and to the right, then mirrored back.
-    final sx = s.dx < 0 ? -1.0 : 1.0;
-    final sy = s.dy < 0 ? -1.0 : 1.0;
-    Offset m(double x, double y) => Offset(x * sx, y * sy);
-    final r = Rect.fromPoints(m(a.left, a.top), m(a.right, a.bottom));
-    final dx = s.dx.abs();
-    final dy = s.dy.abs();
-    return [
-      m(r.left, r.top),
-      m(r.right, r.top),
-      m(r.right, r.top + dy),
-      m(r.right + dx, r.top + dy),
-      m(r.right + dx, r.bottom + dy),
-      m(r.left + dx, r.bottom + dy),
-      m(r.left + dx, r.bottom),
-      m(r.left, r.bottom),
-    ];
   }
 
   @override
@@ -333,26 +292,34 @@ class _AnimatedBrutalSurfaceState extends State<AnimatedBrutalSurface>
   );
 }
 
-/// The keyboard focus inside a cell that shares its rules (a list row, a
-/// segment, a navigation cell): a 2 px square line 3 px inside the cell, so
-/// it never sits on a neighbour.
+void _paintFocusBar(Canvas canvas, Rect bounds, Color color) {
+  if (bounds.isEmpty) return;
+  final thickness = BrutalMetrics.focusWidth.clamp(0.0, bounds.height);
+  canvas.drawRect(
+    Rect.fromLTRB(
+      bounds.left,
+      bounds.bottom - thickness,
+      bounds.right,
+      bounds.bottom,
+    ),
+    Paint()..color = color,
+  );
+}
+
+/// Marks keyboard focus along the inside lower edge of a shared cell.
 class BrutalInsetFocusPainter extends CustomPainter {
-  /// A focus line in [color].
+  /// Creates a solid focus bar in [color].
   BrutalInsetFocusPainter(this.color);
 
-  /// The line's colour: ink on paper, paper on ink.
+  /// The colour of the bar.
   final Color color;
 
   @override
   void paint(Canvas canvas, Size size) {
-    canvas.drawRect(
-      (Offset.zero & size).deflate(
-        BrutalMetrics.focusGap + 1 + BrutalMetrics.focusWidth / 2,
-      ),
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = BrutalMetrics.focusWidth
-        ..color = color,
+    _paintFocusBar(
+      canvas,
+      (Offset.zero & size).deflate(BrutalMetrics.focusGap),
+      color,
     );
   }
 

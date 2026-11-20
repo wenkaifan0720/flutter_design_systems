@@ -1,8 +1,5 @@
-// In motion (design6 O): every part that moves, drags, opens or previews,
-// looked at mid-move on a phone by day and a desk by night. Mid-move nothing
-// throws (no overflow), nothing is painted outside the part (its rule, its
-// hard shadow and its focus line aside), a range's preview ends on the day the
-// pointer rests on, and what opens does not jump when it settles.
+// Check bounds during movement, range previews under the pointer, and
+// the final positions of opened overlays.
 // ignore_for_file: avoid_relative_lib_imports
 import 'dart:math' as math;
 import 'dart:typed_data';

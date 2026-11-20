@@ -6,6 +6,7 @@ library;
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/inventory.dart';
+import 'package:ui_core/ui_core.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../actions.dart';
@@ -32,6 +33,26 @@ import '../wayfinding.dart';
 void _none() {}
 
 void _ignore(Object? _) {}
+
+/// A specimen that keeps the value its control last chose, so the arrow
+/// keys move a radio group's choice along with its focus.
+class _Held<T> extends StatefulWidget {
+  const _Held(this.initial, this.builder);
+
+  final T initial;
+  final Widget Function(T value, ValueChanged<T> change) builder;
+
+  @override
+  State<_Held<T>> createState() => _HeldState<T>();
+}
+
+class _HeldState<T> extends State<_Held<T>> {
+  late T _value = widget.initial;
+
+  @override
+  Widget build(BuildContext context) =>
+      widget.builder(_value, (next) => setState(() => _value = next));
+}
 
 const _places = [
   BrutalDestination(icon: LucideIcons.house, label: 'Home'),
@@ -164,23 +185,28 @@ DesignInventory _registry() => DesignInventory(
     ),
     _row(
       'RadioGroup',
-      (_) => const Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          BrutalRadio<int>(
-            value: 1,
-            groupValue: 1,
-            onChanged: _ignore,
-            semanticLabel: 'One',
+      (_) => _Held<int>(
+        1,
+        (chosen, change) => DesignRadioGroup<int>(
+          options: const [1, 2],
+          value: chosen,
+          onChanged: change,
+          itemBuilder: (context, value, node, select) => BrutalRadio<int>(
+            value: value,
+            groupValue: chosen,
+            focusNode: node,
+            onChanged: select == null ? null : (_) => select(),
+            semanticLabel: value == 1 ? 'One' : 'Two',
           ),
-          SizedBox(width: BrutalSpacing.regular),
-          BrutalRadio<int>(
-            value: 2,
-            groupValue: 1,
-            onChanged: _ignore,
-            semanticLabel: 'Two',
+          layoutBuilder: (context, items) => Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              items[0],
+              const SizedBox(width: BrutalSpacing.regular),
+              items[1],
+            ],
           ),
-        ],
+        ),
       ),
     ),
     _row(
@@ -208,13 +234,16 @@ DesignInventory _registry() => DesignInventory(
     ),
     _row(
       'SegmentedButton',
-      (_) => BrutalSegmentedButton<int>(
-        value: 0,
-        onChanged: _ignore,
-        segments: const [
-          BrutalSegment(value: 0, label: 'Week'),
-          BrutalSegment(value: 1, label: 'Month'),
-        ],
+      (_) => _Held<int>(
+        0,
+        (chosen, change) => BrutalSegmentedButton<int>(
+          value: chosen,
+          onChanged: change,
+          segments: const [
+            BrutalSegment(value: 0, label: 'Week'),
+            BrutalSegment(value: 1, label: 'Month'),
+          ],
+        ),
       ),
     ),
     _row(

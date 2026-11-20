@@ -150,10 +150,6 @@ class _PickersState extends State<_Pickers> {
   );
 }
 
-// Catalog specimens (metadata.yaml): one still per part, drawn the same in
-// every preset (on fixed dates, so every still is the same); the stage
-// chooses the preset.
-
 Widget kitSpecimenCalendar() => kitState(
   DateTime(2026, 11, 14),
   (context, day, change) => BrutalCalendar(

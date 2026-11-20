@@ -1,10 +1,5 @@
-// Controls in a BrutalFormField take a tap, each its own: a segmented
-// button's cells, chips in a wrap, a stepper's minus and plus, a switch and a
-// checkbox, by the pointer and through their semantics (a screen reader's
-// double tap, a browser's click with semantics on). A group's controls merged
-// into the field's one node gave every tap to the first of them, and a
-// stepper in a merged field took a tap that did nothing (11-18, Stint's
-// Priority, Labels and Estimate).
+// Screen-reader activation and pointer taps must reach each control in a
+// field with several independent actions.
 import 'dart:convert';
 
 import 'package:brutal_ui/brutal_ui.dart';

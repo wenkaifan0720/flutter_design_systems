@@ -41,7 +41,7 @@ class BrutalSelectItem<T> {
 /// square cell at the box's end, on a rule of its own; the open list hangs
 /// from the box, its top rule the box's bottom one, as wide as the box: the
 /// chosen item ink, bold, with a square mark; where the pointer or the
-/// keyboard is, a square line inside the row.
+/// keyboard is, a bar inside the lower edge of the row.
 /// Held down, the chevron's cell turns over (ink for paper).
 ///
 /// Below 600 px it spans its column; wider, it stands at most

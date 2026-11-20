@@ -11,6 +11,12 @@ Widget kitChoicesDemo(Brightness brightness) => kitScreen(
   sections: const [_Choices(), _More()],
 );
 
+const _payments = {
+  'card': 'Card',
+  'wallet': 'Phone wallet',
+  'invoice': 'Invoice (companies)',
+};
+
 class _Choices extends StatefulWidget {
   const _Choices();
 
@@ -89,23 +95,36 @@ class _ChoicesState extends State<_Choices> {
           note: 'The one round control: round means one of a set.',
           gap: BrutalSpacing.small,
           children: [
-            for (final (v, label) in const [
-              ('card', 'Card'),
-              ('wallet', 'Phone wallet'),
-              ('invoice', 'Invoice (companies)'),
-            ])
-              line(
-                BrutalRadio<String>(
-                  value: v,
-                  groupValue: _pay,
-                  onChanged: v == 'invoice'
-                      ? null
-                      : (x) => setState(() => _pay = x!),
-                  semanticLabel: label,
-                ),
-                label,
-                v == 'invoice' ? null : () => setState(() => _pay = v),
+            // One radio group: one Tab stop, and the arrows move the choice.
+            DesignRadioGroup<String>(
+              options: _payments.keys.toList(),
+              value: _pay,
+              onChanged: (v) => setState(() => _pay = v),
+              isEnabled: (v) => v != 'invoice',
+              itemBuilder: (context, v, node, select) => BrutalRadio<String>(
+                value: v,
+                groupValue: _pay,
+                focusNode: node,
+                onChanged: select == null ? null : (_) => select(),
+                semanticLabel: _payments[v],
               ),
+              layoutBuilder: (context, items) => Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  for (final (i, (v, label))
+                      in _payments.entries
+                          .map((e) => (e.key, e.value))
+                          .indexed) ...[
+                    if (i > 0) const SizedBox(height: BrutalSpacing.small),
+                    line(
+                      items[i],
+                      label,
+                      v == 'invoice' ? null : () => setState(() => _pay = v),
+                    ),
+                  ],
+                ],
+              ),
+            ),
           ],
         ),
         const SizedBox(height: BrutalSpacing.extraLarge),
@@ -318,9 +337,6 @@ class _MoreState extends State<_More> {
   );
 }
 
-// Catalog specimens (metadata.yaml): one still per part, drawn the same in
-// every preset; the stage chooses the preset.
-
 Widget kitSpecimenCheckbox() => kitState(
   true,
   (context, on, change) => Row(
@@ -336,32 +352,41 @@ Widget kitSpecimenCheckbox() => kitState(
   ),
 );
 
+const _places = {
+  'standing': 'Standing',
+  'seated': 'Seated',
+  'box': 'A box for four',
+};
+
 Widget kitSpecimenRadio() => kitState(
   'standing',
-  (context, chosen, change) => Column(
-    crossAxisAlignment: CrossAxisAlignment.stretch,
-    children: [
-      for (final (value, label) in const [
-        ('standing', 'Standing'),
-        ('seated', 'Seated'),
-        ('box', 'A box for four'),
-      ])
-        Padding(
-          padding: const EdgeInsets.only(bottom: BrutalSpacing.small),
-          child: Row(
-            children: [
-              BrutalRadio<String>(
-                value: value,
-                groupValue: chosen,
-                onChanged: (v) => change(v ?? chosen),
-                semanticLabel: label,
-              ),
-              const SizedBox(width: BrutalSpacing.medium),
-              Expanded(child: Text(label)),
-            ],
+  (context, chosen, change) => DesignRadioGroup<String>(
+    options: _places.keys.toList(),
+    value: chosen,
+    onChanged: change,
+    itemBuilder: (context, value, node, select) => BrutalRadio<String>(
+      value: value,
+      groupValue: chosen,
+      focusNode: node,
+      onChanged: select == null ? null : (_) => select(),
+      semanticLabel: _places[value],
+    ),
+    layoutBuilder: (context, items) => Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        for (final (i, label) in _places.values.indexed)
+          Padding(
+            padding: const EdgeInsets.only(bottom: BrutalSpacing.small),
+            child: Row(
+              children: [
+                items[i],
+                const SizedBox(width: BrutalSpacing.medium),
+                Expanded(child: Text(label)),
+              ],
+            ),
           ),
-        ),
-    ],
+      ],
+    ),
   ),
 );
 

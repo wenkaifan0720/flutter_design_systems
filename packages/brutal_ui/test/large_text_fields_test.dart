@@ -1,8 +1,5 @@
-// The stepper and the date field at 100% and 200% text, by day and night,
-// left to right and right to left (11-18, a form's Due date and Estimate):
-// the stepper's number cell holds its widest value with its figures clear of
-// the rules, its cells as tall as the number; the date field shows the
-// whole date, taking a second line rather than cutting it.
+// Verify that date labels wrap and stepper values fit between the rules
+// at both text scales and in both reading directions.
 import 'dart:convert';
 
 import 'package:brutal_ui/brutal_ui.dart';

@@ -282,9 +282,6 @@ class _TogglesState extends State<_Toggles> {
   );
 }
 
-// Catalog specimens (metadata.yaml): one still per part, drawn the same in
-// every preset; the stage chooses the preset.
-
 Widget kitSpecimenButton() => Builder(
   builder: (context) => KitRow(
     children: [

@@ -13,6 +13,7 @@ import 'package:ui_core/host.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import 'lists.dart';
+import 'internal/focus_ink.dart';
 import 'surface.dart';
 import 'theme.dart';
 
@@ -24,7 +25,7 @@ TextScaler _labelScaler(BuildContext context) =>
     MediaQuery.textScalerOf(context).clamp(maxScaleFactor: 1.3);
 
 /// A cell that turns over to ink while pressed or chosen, and shows its
-/// keyboard focus as a square line inside itself. Every navigation cell is
+/// keyboard focus as a bar along its lower edge. Every navigation cell is
 /// one.
 class _Cell extends StatelessWidget {
   const _Cell({
@@ -65,7 +66,7 @@ class _Cell extends StatelessWidget {
 }
 
 /// A navigation cell's paint for its [states]: ink while pressed or
-/// [chosen], a square line inside it while it has the keyboard's focus. A
+/// [chosen], a bar inside its lower edge while it has keyboard focus. A
 /// [_Cell]'s, and a [BrutalScaffold]'s destinations' in ui_core's shell.
 class _CellFace extends StatelessWidget {
   const _CellFace({
@@ -112,7 +113,9 @@ class _CellFace extends StatelessWidget {
       ),
       child: CustomPaint(
         foregroundPainter: states.contains(WidgetState.focused)
-            ? BrutalInsetFocusPainter(lit ? c.paper : c.ink)
+            ? BrutalInsetFocusPainter(
+                brutalFocusInk(c, lit ? (layered.fill ?? c.ink) : c.surface),
+              )
             : null,
         child: builder(context, words, lit, layered),
       ),
@@ -1252,7 +1255,9 @@ class _BrutalTabBarState extends State<BrutalTabBar>
         ),
         child: CustomPaint(
           foregroundPainter: states.contains(WidgetState.focused)
-              ? BrutalInsetFocusPainter(pressed ? c.paper : c.ink)
+              ? BrutalInsetFocusPainter(
+                  brutalFocusInk(c, details.selection > 0 ? c.ink : c.surface),
+                )
               : null,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,

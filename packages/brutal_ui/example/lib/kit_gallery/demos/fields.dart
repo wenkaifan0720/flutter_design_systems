@@ -238,9 +238,6 @@ class _LabelledState extends State<_Labelled> {
   );
 }
 
-// Catalog specimens (metadata.yaml): one still per part, drawn the same in
-// every preset; the stage chooses the preset.
-
 Widget kitSpecimenTextField() => const Column(
   crossAxisAlignment: CrossAxisAlignment.stretch,
   children: [

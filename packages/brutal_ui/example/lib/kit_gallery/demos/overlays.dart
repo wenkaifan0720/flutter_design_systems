@@ -82,13 +82,16 @@ class _Overlays extends StatelessWidget {
                       children: [
                         Text('When', style: t.label),
                         const SizedBox(height: BrutalSpacing.small),
-                        BrutalSegmentedButton<int>(
-                          segments: const [
-                            BrutalSegment(value: 0, label: 'Tonight'),
-                            BrutalSegment(value: 1, label: 'Weekend'),
-                          ],
-                          value: 0,
-                          onChanged: (_) {},
+                        kitState(
+                          0,
+                          (context, when, change) => BrutalSegmentedButton<int>(
+                            segments: const [
+                              BrutalSegment(value: 0, label: 'Tonight'),
+                              BrutalSegment(value: 1, label: 'Weekend'),
+                            ],
+                            value: when,
+                            onChanged: change,
+                          ),
                         ),
                         const SizedBox(height: BrutalSpacing.large),
                         BrutalButton.filled(
@@ -296,10 +299,6 @@ class _Anchored extends StatelessWidget {
     );
   }
 }
-
-// Catalog specimens (metadata.yaml): one still per part, drawn the same in
-// every preset; the stage chooses the preset. A dialog, a sheet and a menu
-// are pictured by their faces, as they stand once open.
 
 Widget kitSpecimenDialog() => Builder(
   builder: (context) => Center(

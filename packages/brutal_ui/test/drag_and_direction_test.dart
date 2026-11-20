@@ -90,6 +90,58 @@ double _mirrored((int, int, Uint8List) a, (int, int, Uint8List) b) {
 }
 
 void main() {
+  testWidgets('the slider thumb sinks on down and rises on cancel or release', (
+    tester,
+  ) async {
+    final changes = <double>[];
+    final ends = <double>[];
+    var value = 0.5;
+    await tester.pumpWidget(
+      _app(
+        Center(
+          child: SizedBox(
+            width: 200,
+            child: StatefulBuilder(
+              builder: (context, setState) => BrutalSlider(
+                value: value,
+                onChanged: (v) {
+                  changes.add(v);
+                  setState(() => value = v);
+                },
+                onChangeEnd: ends.add,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    final thumb = find.descendant(
+      of: find.byType(BrutalSlider),
+      matching: find.byType(AnimatedBrutalSurface),
+    );
+    double travel() => tester.widget<AnimatedBrutalSurface>(thumb).face.travel;
+    final point = tester.getCenter(thumb);
+    final cancelled = await tester.startGesture(point);
+    await tester.pump();
+    expect(travel(), 1);
+    expect(changes, isEmpty);
+    await cancelled.cancel();
+    await tester.pump();
+    expect(travel(), 0);
+    expect(ends, isEmpty);
+
+    final drag = await tester.startGesture(point);
+    await drag.moveBy(const Offset(40, 0));
+    await drag.moveBy(const Offset(10, 0));
+    await tester.pump();
+    expect(travel(), 1);
+    expect(value, greaterThan(0.5));
+    await drag.up();
+    await tester.pumpAndSettle();
+    expect(travel(), 0);
+    expect(ends, [value]);
+  });
+
   group('a drag on the wheels turns them; the page keeps still', () {
     for (final kind in [PointerDeviceKind.touch, PointerDeviceKind.mouse]) {
       for (final (where, dx) in [

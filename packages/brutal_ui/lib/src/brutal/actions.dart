@@ -410,7 +410,7 @@ class BrutalToggleGroup<T> extends StatelessWidget {
 
 /// Words that go somewhere: ink, underlined on a 2 px rule. A press
 /// inverts them (paper words on an ink bar); the keyboard's link gets the
-/// focus rule round it. A null [onPressed] greys it.
+/// focus bar under it. A null [onPressed] greys it.
 ///
 /// Reads [style]'s `foreground` (the words and their rule, in its states)
 /// and `textStyle`, then [BrutalThemeData.linkStyle]'s.

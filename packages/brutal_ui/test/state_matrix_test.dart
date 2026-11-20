@@ -1,27 +1,21 @@
-// Every part a person acts on, in each state it has: idle, hovered, pressed,
-// focused from the keyboard, selected, disabled and in error, by day and by
-// night, at twice the size. Each is a golden (the state matrix the design
-// review reads); hovered must paint as idle does, but where a pointer
-// shows something on purpose (a rating's preview).
+// Compare enabled, selected, disabled and error states in both themes,
+// including frames reached with actual pointer and keyboard input.
 // ignore_for_file: avoid_relative_lib_imports
-@Tags(['goldens'])
-library;
-
 import 'dart:convert';
 import 'dart:io';
+import 'dart:ui' show CheckedState;
 
 import 'package:brutal_ui/brutal_ui.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:ui_core_test/ui_core_test.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../example/lib/kit_gallery/kit.dart';
 
-/// The goldens are kept beside the catalog and laid here by the package
-/// build; a published or vendored copy goes without them, and compares
-/// nothing.
+/// Compare reference images when they are available in the test bundle.
 final bool _recorded =
     autoUpdateGoldenFiles || Directory('test/goldens').existsSync();
 
@@ -146,7 +140,6 @@ final _parts = <_Part>[
     ),
     states: _all.difference({'error'}),
     target: () => find.text('Talks'),
-    tabs: 2,
   ),
   _Part(
     'Tab bar',
@@ -312,8 +305,350 @@ String _slug(String s) => s
 
 const _stage = ValueKey('stage');
 
+const _choiceGroup = ValueKey('choice group');
+
+Widget _siblingRadios({
+  required List<String> options,
+  required String? value,
+  required ValueChanged<String> change,
+  Set<String> disabled = const {},
+  Map<String, FocusNode> callerNodes = const {},
+}) => DesignRadioGroup<String>(
+  options: options,
+  value: value,
+  onChanged: change,
+  isEnabled: (option) => !disabled.contains(option),
+  focusNodeFor: (option) => callerNodes[option],
+  itemBuilder: (context, option, node, select) => BrutalRadio<String>(
+    key: ValueKey(option),
+    value: option,
+    groupValue: value,
+    focusNode: node,
+    semanticLabel: option,
+    onChanged: select == null ? null : (_) => select(),
+  ),
+);
+
+Future<void> _pumpChoices(
+  WidgetTester tester, {
+  required FocusNode before,
+  required Widget child,
+  FocusNode? after,
+  TextDirection direction = TextDirection.ltr,
+}) async {
+  await tester.pumpWidget(
+    kitApp(
+      brightness: Brightness.light,
+      home: Directionality(
+        textDirection: direction,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Focus(focusNode: before, child: const Text('Before')),
+            SizedBox(width: 360, key: _choiceGroup, child: child),
+            Focus(focusNode: after, child: const Text('After')),
+          ],
+        ),
+      ),
+    ),
+  );
+  await tester.pumpAndSettle();
+}
+
+Future<void> _checkChoices(WidgetTester tester, FocusNode before) async {
+  final report = await const DesignRadioGroupCheck(look: 'Brutal').check(
+    tester.element(find.byKey(_choiceGroup)),
+    before: before,
+    sendKeyEvent: tester.sendKeyEvent,
+    pump: tester.pump,
+  );
+  report.verify();
+}
+
+void _testRadioGroups() {
+  for (final direction in TextDirection.values) {
+    for (final initial in <String?>['C', null, 'B']) {
+      testWidgets(
+        'radio siblings in ${direction.name} with initial choice $initial',
+        (tester) async {
+          final before = FocusNode();
+          addTearDown(before.dispose);
+          var chosen = initial;
+          await _pumpChoices(
+            tester,
+            direction: direction,
+            before: before,
+            child: StatefulBuilder(
+              builder: (context, setState) => _siblingRadios(
+                options: const ['A', 'B', 'C', 'D'],
+                disabled: const {'B'},
+                value: chosen,
+                change: (next) => setState(() => chosen = next),
+              ),
+            ),
+          );
+          await _checkChoices(tester, before);
+        },
+      );
+    }
+
+    for (final (labels, initial) in [
+      (['Standing', 'Balcony'], 'Standing'),
+      (['Today', 'This week', 'Month'], 'This week'),
+    ]) {
+      testWidgets(
+        '${labels.first} segments expose each checked state in ${direction.name}',
+        (tester) async {
+          final before = FocusNode();
+          addTearDown(before.dispose);
+          var chosen = initial;
+          await _pumpChoices(
+            tester,
+            direction: direction,
+            before: before,
+            child: StatefulBuilder(
+              builder: (context, setState) => BrutalSegmentedButton<String>(
+                segments: [
+                  for (final label in labels)
+                    BrutalSegment(value: label, label: label),
+                ],
+                value: chosen,
+                onChanged: (next) => setState(() => chosen = next),
+              ),
+            ),
+          );
+          for (final label in labels) {
+            final flags = tester
+                .getSemantics(find.bySemanticsLabel(label))
+                .getSemanticsData()
+                .flagsCollection;
+            expect(
+              flags.isChecked,
+              label == initial ? CheckedState.isTrue : CheckedState.isFalse,
+            );
+            expect(flags.isInMutuallyExclusiveGroup, isTrue);
+            expect(flags.isButton, isFalse);
+          }
+          await _checkChoices(tester, before);
+        },
+      );
+    }
+  }
+
+  testWidgets('Home and End choose the first and last segments', (
+    tester,
+  ) async {
+    final before = FocusNode();
+    addTearDown(before.dispose);
+    var chosen = 'This week';
+    await _pumpChoices(
+      tester,
+      before: before,
+      child: StatefulBuilder(
+        builder: (context, setState) => BrutalSegmentedButton<String>(
+          segments: const [
+            BrutalSegment(value: 'Today', label: 'Today'),
+            BrutalSegment(value: 'This week', label: 'This week'),
+            BrutalSegment(value: 'Month', label: 'Month'),
+          ],
+          value: chosen,
+          onChanged: (next) => setState(() => chosen = next),
+        ),
+      ),
+    );
+    FocusNode nodeOf(String label) =>
+        Focus.of(tester.element(find.text(label)));
+    Future<void> press(LogicalKeyboardKey key) async {
+      await tester.sendKeyEvent(key);
+      await tester.pumpAndSettle();
+    }
+
+    before.requestFocus();
+    await tester.pumpAndSettle();
+    await press(LogicalKeyboardKey.tab);
+    expect(FocusManager.instance.primaryFocus, same(nodeOf('This week')));
+    await press(LogicalKeyboardKey.end);
+    expect(chosen, 'Month');
+    expect(FocusManager.instance.primaryFocus, same(nodeOf('Month')));
+    await press(LogicalKeyboardKey.home);
+    expect(chosen, 'Today');
+    expect(FocusManager.instance.primaryFocus, same(nodeOf('Today')));
+  });
+
+  testWidgets('Enter and Space press the chosen segment and radio', (
+    tester,
+  ) async {
+    final before = FocusNode();
+    final radio = FocusNode();
+    addTearDown(before.dispose);
+    addTearDown(radio.dispose);
+    final presses = <String>[];
+    await _pumpChoices(
+      tester,
+      before: before,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          BrutalSegmentedButton<String>(
+            segments: const [
+              BrutalSegment(value: 'Today', label: 'Today'),
+              BrutalSegment(value: 'Month', label: 'Month'),
+            ],
+            value: 'Today',
+            onChanged: (next) => presses.add('segment $next'),
+          ),
+          DesignRadioGroup<String>(
+            options: const ['Card', 'Cash'],
+            value: 'Card',
+            onChanged: (_) {},
+            focusNodeFor: (option) => option == 'Card' ? radio : null,
+            itemBuilder: (context, option, node, select) => BrutalRadio<String>(
+              value: option,
+              groupValue: 'Card',
+              focusNode: node,
+              semanticLabel: option,
+              onChanged: (next) => presses.add('radio $next'),
+            ),
+          ),
+        ],
+      ),
+    );
+    Future<void> press(LogicalKeyboardKey key) async {
+      await tester.sendKeyEvent(key);
+      await tester.pumpAndSettle();
+    }
+
+    before.requestFocus();
+    await tester.pumpAndSettle();
+    await press(LogicalKeyboardKey.tab);
+    await press(LogicalKeyboardKey.enter);
+    await press(LogicalKeyboardKey.space);
+    await press(LogicalKeyboardKey.tab);
+    expect(FocusManager.instance.primaryFocus, same(radio));
+    await press(LogicalKeyboardKey.enter);
+    await press(LogicalKeyboardKey.space);
+    expect(presses, [
+      'segment Today',
+      'segment Today',
+      'radio Card',
+      'radio Card',
+    ]);
+  });
+
+  testWidgets('a null segment value can be the selected All option', (
+    tester,
+  ) async {
+    final before = FocusNode();
+    addTearDown(before.dispose);
+    String? chosen;
+    await _pumpChoices(
+      tester,
+      before: before,
+      child: StatefulBuilder(
+        builder: (context, setState) => BrutalSegmentedButton<String?>(
+          segments: const [
+            BrutalSegment(value: null, label: 'All'),
+            BrutalSegment(value: 'talks', label: 'Talks'),
+          ],
+          value: chosen,
+          onChanged: (next) => setState(() => chosen = next),
+        ),
+      ),
+    );
+    expect(
+      tester
+          .getSemantics(find.bySemanticsLabel('All'))
+          .flagsCollection
+          .isChecked,
+      CheckedState.isTrue,
+    );
+    await _checkChoices(tester, before);
+  });
+
+  testWidgets(
+    'radio siblings retain caller focus nodes across rebuilds and removal',
+    (tester) async {
+      final before = FocusNode();
+      final after = FocusNode();
+      final first = FocusNode();
+      final replacement = FocusNode();
+      for (final node in [before, after, first, replacement]) {
+        addTearDown(node.dispose);
+      }
+      var notifications = 0;
+      first.addListener(() => notifications++);
+      replacement.addListener(() => notifications++);
+      var active = first;
+      var order = ['A', 'B'];
+      var chosen = 'B';
+      late StateSetter rebuild;
+      await _pumpChoices(
+        tester,
+        before: before,
+        after: after,
+        child: StatefulBuilder(
+          builder: (context, setState) {
+            rebuild = setState;
+            return _siblingRadios(
+              options: order,
+              value: chosen,
+              callerNodes: {'B': active},
+              change: (next) => setState(() => chosen = next),
+            );
+          },
+        ),
+      );
+      Future<void> focus(FocusNode node) async {
+        final previous = notifications;
+        node.requestFocus();
+        await tester.pumpAndSettle();
+        expect(FocusManager.instance.primaryFocus, same(node));
+        expect(notifications, greaterThan(previous));
+      }
+
+      Future<void> press(LogicalKeyboardKey key) async {
+        await tester.sendKeyEvent(key);
+        await tester.pumpAndSettle();
+      }
+
+      await focus(first);
+      rebuild(() => order = ['B', 'A']);
+      await tester.pumpAndSettle();
+      expect(FocusManager.instance.primaryFocus, same(first));
+      rebuild(() => active = replacement);
+      await tester.pumpAndSettle();
+      before.requestFocus();
+      await tester.pumpAndSettle();
+      await focus(replacement);
+      await press(LogicalKeyboardKey.arrowDown);
+      expect(chosen, 'A');
+      await press(LogicalKeyboardKey.arrowUp);
+      expect(chosen, 'B');
+      expect(FocusManager.instance.primaryFocus, same(replacement));
+      await press(LogicalKeyboardKey.tab);
+      expect(FocusManager.instance.primaryFocus, same(after));
+      rebuild(() => order = ['A']);
+      await tester.pumpAndSettle();
+      expect(replacement.parent, isNull);
+      await _pumpChoices(
+        tester,
+        before: before,
+        child: Column(
+          children: [
+            Focus(focusNode: first, child: const Text('First')),
+            Focus(focusNode: replacement, child: const Text('Replacement')),
+          ],
+        ),
+      );
+      await focus(first);
+      await focus(replacement);
+    },
+  );
+}
+
 void main() {
   setUpAll(_loadFonts);
+  _testRadioGroups();
   for (final part in _parts) {
     for (final brightness in Brightness.values) {
       testWidgets(

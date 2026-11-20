@@ -389,9 +389,6 @@ class _CollectionsState extends State<_Collections> {
   }
 }
 
-// Catalog specimens (metadata.yaml): one still per part, drawn the same in
-// every preset; the stage chooses the preset.
-
 Widget kitSpecimenSectionHeader() => Builder(
   builder: (context) => BrutalSectionHeader(
     'This week',

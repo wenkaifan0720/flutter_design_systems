@@ -73,7 +73,7 @@ Date pickers scroll within the space available around their field. Step progress
 
 ## Controls
 
-Buttons take `onPressed`, rows take `onTap`, and controlled inputs take `value` and `onChanged`. A null callback disables the control. The selected state uses the theme’s ink fill. Focus uses an additional square outline. Radio buttons are circular so they remain distinct from checkboxes.
+Buttons take `onPressed`, rows take `onTap`, and controlled inputs take `value` and `onChanged`. A null callback disables the control. The selected state uses the theme’s ink fill. Keyboard focus marks the lower edge of a control with a solid accent block. Radio buttons are circular so they remain distinct from checkboxes.
 
 ## Make it yours
 
@@ -116,7 +116,7 @@ BrutalStyle(
 ```
 
 In an open list the pointer and the keyboard are one place. A menu (`BrutalMenu`, a menu bar's, a split button's), a
-select's list and the combobox's and tag input's options light one row with a square line inside it: the pointer's
+select's list and the combobox's and tag input's options light one row with a narrow bar along its lower edge: the pointer's
 move takes the keyboard to its row, and the keys move on from there. A menu opened by a click lights no row until the
 pointer moves onto one or a key is pressed (the first Down lights the first row); one opened by Enter, Space or Down
 lights its first row. A list opened by a touch lights a row once a mouse or trackpad moves onto one, though the

@@ -1,6 +1,6 @@
 /// Brutal's menus: [BrutalMenu], a list of [BrutalMenuItem]s that drops
 /// from whatever opens it, drawn on [BrutalMenuPanel] (a raised ruled box)
-/// in [BrutalMenuRow]s (ink when chosen or pressed, a square line inside the
+/// in [BrutalMenuRow]s (ink when chosen or pressed, a solid bar inside the
 /// row where the pointer or the keyboard is). The split button, the menu
 /// bar, the palette, the combobox and the tag input draw their lists with
 /// them. In a menu the pointer and the keyboard are one: the pointer's move
@@ -16,6 +16,7 @@ import 'package:ui_core/ui_core.dart';
 
 import 'internal/keep_in_view.dart';
 import 'internal/type_ahead.dart';
+import 'internal/focus_ink.dart';
 import 'surface.dart';
 import 'theme.dart';
 
@@ -170,14 +171,12 @@ class _OnPanel extends InheritedWidget {
   bool updateShouldNotify(_OnPanel oldWidget) => false;
 }
 
-/// One row of a menu as it stands in [states]: its words (and [icon], and
-/// [trailing]) on the panel; paper on ink while it is the chosen one
-/// ([WidgetState.selected]) or pressed, a destructive row's ink the danger
-/// colour; and a square line inside it while the pointer rests on it or the
-/// keyboard is on it ([WidgetState.hovered], [WidgetState.focused]), paper on
-/// the ink row, so where you are never reads as a second choice or as a rule
-/// between rows. A disabled row is grey. On a [BrutalMenuPanel] the pointer's
-/// move takes the keyboard to the row, and only the keyboard's row is lit.
+/// A menu row with a label, an optional [icon] and a [trailing] widget.
+///
+/// A selected or pressed row fills with ink. A destructive row uses the
+/// danger colour and a disabled row uses muted ink. A narrow accent bar
+/// marks the focused row. Moving the pointer inside a [BrutalMenuPanel]
+/// transfers keyboard focus to that row.
 ///
 /// Reads [style]'s `fill` and `foreground` in its states, `padding`,
 /// `minimumSize` (its height), `textStyle` and `iconSize`, then
@@ -224,7 +223,7 @@ class BrutalMenuRow extends StatelessWidget {
     final layered = DesignStyleOf([style, theme.menuStyle], states);
     final disabled = states.contains(WidgetState.disabled);
     // Ink is the chosen row, or the one pressed on the way to choosing it;
-    // where the pointer or the keyboard is, a line inside the row.
+    // where the pointer or the keyboard is, a bar along its lower edge.
     final lit =
         !disabled &&
         (states.contains(WidgetState.selected) ||
@@ -254,7 +253,9 @@ class BrutalMenuRow extends StatelessWidget {
           theme.controlHeight - theme.borderWidth,
       child: CustomPaint(
         foregroundPainter: here
-            ? BrutalInsetFocusPainter(lit || layered.fill != null ? words : bar)
+            ? BrutalInsetFocusPainter(
+                brutalFocusInk(c, layered.fill ?? (lit ? bar : c.surface)),
+              )
             : null,
         child: AnimatedBrutalSurface(
           stiffness: BrutalMotion.colorStiffness,

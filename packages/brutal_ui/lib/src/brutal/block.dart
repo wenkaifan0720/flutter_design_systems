@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
+import 'internal/focus_ink.dart';
 import 'surface.dart';
 import 'theme.dart';
 
@@ -87,7 +88,7 @@ class BrutalBlock extends StatelessWidget {
         shadow: raised ? c.ink : c.ink.withValues(alpha: 0),
         travel: states.contains(WidgetState.pressed) ? 1 : 0,
         focus: states.contains(WidgetState.focused)
-            ? c.ink
+            ? brutalFocusInk(c, c.ink)
             : c.ink.withValues(alpha: 0),
       );
     }

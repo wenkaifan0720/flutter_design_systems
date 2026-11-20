@@ -187,9 +187,8 @@ class KitRow extends StatelessWidget {
   );
 }
 
-/// Where a catalog specimen sits on its stage (the specimen's `frame` in
-/// metadata.yaml names the same band): the bottom or top edge, a band
-/// across the middle, or the whole phone.
+/// Places a gallery example at the top, middle or bottom of the screen,
+/// or lets it fill the screen.
 class KitFrame {
   /// A band [height] tall on the phone's bottom edge.
   const KitFrame.bottom(double this.height) : _place = _KitPlace.bottom;
@@ -210,10 +209,8 @@ class KitFrame {
 
 enum _KitPlace { bottom, top, band, screen }
 
-/// The stage a catalog specimen renders on: [style]'s preset (resolved at
-/// runtime, so one compile draws every preset) in [brightness], toasts over
-/// it, on the paper, with [child] placed by [frame]. A specimen builder
-/// never names a style: the stage decides it.
+/// Applies the requested preset and brightness to a gallery example and
+/// positions [child] in its [frame].
 Widget kitSpecimenStage({
   required String style,
   required Brightness brightness,

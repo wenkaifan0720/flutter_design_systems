@@ -13,6 +13,7 @@ import 'package:flutter/widgets.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:ui_core/ui_core.dart';
 
+import 'internal/focus_ink.dart';
 import 'surface.dart';
 import 'theme.dart';
 
@@ -98,8 +99,8 @@ class BrutalCheckbox extends StatelessWidget {
   /// What a screen reader calls it, when no label beside it says.
   final String? semanticLabel;
 
-  /// Whether its value is wrong (a required box left empty): the rule goes
-  /// red.
+  /// Whether to show a validation error. An enabled box has a red rule.
+  /// A disabled box keeps its muted rule and a small warning square beside it.
   final bool isError;
 
   /// Its style, over [BrutalThemeData.checkboxStyle].
@@ -152,27 +153,43 @@ class BrutalCheckbox extends StatelessWidget {
                 : inked
                 ? c.paper
                 : rule);
-        return DesignTapTarget(
-          child: SizedBox.square(
-            dimension: layered.minimumSize?.height ?? 24,
-            child: AnimatedBrutalSurface(
-              stiffness: BrutalMotion.colorStiffness,
-              face: BrutalFace(
-                fill: layered.fill ?? (inked ? rule : c.surface),
-                border: rule,
-                foreground: mark,
-                focus: states.contains(WidgetState.focused)
-                    ? c.ink
-                    : c.ink.withValues(alpha: 0),
-              ),
-              child: _Spring(
-                value: value ? 1 : 0,
-                stiffness: BrutalMotion.moveStiffness,
-                builder: (context, t) =>
-                    CustomPaint(painter: _CheckPainter(t, mark)),
-              ),
+        final box = SizedBox.square(
+          dimension: layered.minimumSize?.height ?? 24,
+          child: AnimatedBrutalSurface(
+            stiffness: BrutalMotion.colorStiffness,
+            face: BrutalFace(
+              fill: layered.fill ?? (inked ? rule : c.surface),
+              border: rule,
+              foreground: mark,
+              focus: states.contains(WidgetState.focused)
+                  ? brutalFocusInk(
+                      c,
+                      layered.fill ?? (inked ? rule : c.surface),
+                    )
+                  : c.ink.withValues(alpha: 0),
+            ),
+            child: _Spring(
+              value: value ? 1 : 0,
+              stiffness: BrutalMotion.moveStiffness,
+              builder: (context, t) =>
+                  CustomPaint(painter: _CheckPainter(t, mark)),
             ),
           ),
+        );
+        return DesignTapTarget(
+          child: disabled && isError
+              ? Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    box,
+                    const SizedBox(width: 4),
+                    SizedBox.square(
+                      dimension: 4,
+                      child: ColoredBox(color: c.danger),
+                    ),
+                  ],
+                )
+              : box,
         );
       },
     );
@@ -238,6 +255,10 @@ class _CheckPainter extends CustomPainter {
 /// while chosen) and `minimumSize` (its diameter), then
 /// [BrutalThemeData.radioStyle]'s.
 ///
+/// Build a set's radios in a [DesignRadioGroup] and pass its node to
+/// [focusNode]: the set is then one Tab stop, and the arrow keys move the
+/// choice.
+///
 /// ```dart
 /// BrutalRadio<String>(value: 'card', groupValue: method, onChanged: (value) => setState(() => method = value!))
 /// ```
@@ -287,6 +308,11 @@ class BrutalRadio<T> extends StatelessWidget {
       checked: chosen,
       inMutuallyExclusiveGroup: true,
       semanticLabel: semanticLabel,
+      // Space presses it as Enter does, chosen or not: in a radio group the
+      // group's own Space only chooses a radio not yet chosen.
+      shortcuts: const {
+        SingleActivator(LogicalKeyboardKey.space): ActivateIntent(),
+      },
       builder: (context, states, _) {
         final layered = DesignStyleOf(
           [style, theme.radioStyle],
@@ -314,7 +340,7 @@ class BrutalRadio<T> extends StatelessWidget {
                   face: pressed ? rule : face,
                   dot: pressed ? face : rule,
                   width: theme.borderWidth,
-                  focus: focused ? c.ink : null,
+                  focus: focused ? brutalFocusInk(c, c.paper) : null,
                 ),
               ),
             ),
@@ -357,6 +383,13 @@ class _RadioPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final centre = size.center(Offset.zero);
     final r = size.shortestSide / 2;
+    if (focus != null) {
+      canvas.drawCircle(
+        centre + const Offset(0, BrutalMetrics.focusWidth),
+        r,
+        Paint()..color = focus!,
+      );
+    }
     canvas.drawCircle(centre, r, Paint()..color = face);
     canvas.drawCircle(
       centre,
@@ -367,16 +400,6 @@ class _RadioPainter extends CustomPainter {
         ..color = rule,
     );
     if (t > 0) canvas.drawCircle(centre, r / 2 * t, Paint()..color = dot);
-    if (focus != null) {
-      canvas.drawCircle(
-        centre,
-        r + BrutalMetrics.focusGap + BrutalMetrics.focusWidth / 2,
-        Paint()
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = BrutalMetrics.focusWidth
-          ..color = focus!,
-      );
-    }
   }
 
   @override
@@ -473,7 +496,10 @@ class BrutalSwitch extends StatelessWidget {
                 border: rule,
                 foreground: rule,
                 focus: states.contains(WidgetState.focused)
-                    ? c.ink
+                    ? brutalFocusInk(
+                        c,
+                        layered.fill ?? (inked ? rule : c.surface),
+                      )
                     : c.ink.withValues(alpha: 0),
               ),
               child: _Spring(
@@ -553,7 +579,10 @@ class BrutalSegment<T> {
 /// 600 px it spans its column; wider, each cell takes the widest label's
 /// width.
 ///
-/// A null [onChanged] disables it. Left and Right move the choice.
+/// The cells are one radio group, so the control is one Tab stop: Tab
+/// enters on the chosen cell, the arrow keys move the choice (wrapping at
+/// the ends; Left moves on in right-to-left text), and Home and End choose
+/// the first and the last. A null [onChanged] disables it.
 ///
 /// Reads [style]'s `fill` and `edge` for the frame; `foreground`, `padding`,
 /// `textStyle` and `iconSize` for each cell in its states; and
@@ -628,37 +657,38 @@ class BrutalSegmentedButton<T> extends StatelessWidget {
         final wide =
             (expand ?? MediaQuery.sizeOf(context).width < 600) ||
             hugged > constraints.maxWidth;
-        final index = segments.indexWhere((s) => s.value == value);
-
-        void move(int by) {
-          if (onChanged == null || segments.isEmpty) return;
-          final next = (index + by).clamp(0, segments.length - 1);
-          if (next != index) onChanged!(segments[next].value);
-        }
-
-        final rtl = Directionality.of(context) == TextDirection.rtl;
-        final row = Row(
-          mainAxisSize: wide ? MainAxisSize.max : MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            for (final (i, s) in segments.indexed) ...[
-              if (i > 0)
-                SizedBox(
-                  width: theme.borderWidth,
-                  child: ColoredBox(color: rule),
-                ),
-              _cell(
-                context,
-                theme,
-                s,
-                style,
-                wide ? null : cell,
-                move,
-                rtl,
-                layers,
-              ),
+        final row = _SegmentGroup<T>(
+          values: [for (final s in segments) s.value],
+          value: value,
+          onChanged: onChanged,
+          cell: (context, i, node, select, jump) => _cell(
+            context,
+            theme,
+            segments[i],
+            style,
+            wide ? null : cell,
+            node,
+            select,
+            jump,
+            layers,
+          ),
+          layout: (context, items) => Row(
+            mainAxisSize: wide ? MainAxisSize.max : MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              for (final (i, item) in items.indexed) ...[
+                if (i > 0)
+                  SizedBox(
+                    width: theme.borderWidth,
+                    child: ColoredBox(color: rule),
+                  ),
+                if (wide)
+                  Expanded(child: item)
+                else
+                  SizedBox(width: cell, child: item),
+              ],
             ],
-          ],
+          ),
         );
         // The frame's rule is drawn over the cells, so each cell (and the
         // target a finger or a screen reader finds) stands the control's
@@ -700,38 +730,34 @@ class BrutalSegmentedButton<T> extends StatelessWidget {
     BrutalSegment<T> s,
     TextStyle style,
     double? width,
-    void Function(int by) move,
-    bool rtl,
+    FocusNode node,
+    VoidCallback? select,
+    ValueChanged<bool> jump,
     List<BrutalStyle?> layers,
   ) {
     final c = theme.colors;
     final chosen = s.value == value;
-    final child = DesignPressable(
-      onPressed: onChanged == null ? null : () => onChanged!(s.value),
+    return DesignPressable(
+      focusNode: node,
+      // The group says whether the cell can be chosen; a press reports its
+      // value even when it is already chosen.
+      onPressed: select == null ? null : () => onChanged?.call(s.value),
       selected: chosen,
-      semanticSelected: chosen,
+      checked: chosen,
       inMutuallyExclusiveGroup: true,
       semanticLabel: s.semanticLabel ?? s.label,
       excludeSemantics: true,
-      shortcuts: {
-        const SingleActivator(LogicalKeyboardKey.arrowLeft): _MoveIntent(
-          rtl ? 1 : -1,
-        ),
-        const SingleActivator(LogicalKeyboardKey.arrowRight): _MoveIntent(
-          rtl ? -1 : 1,
-        ),
-        // Home and End: to the ends (the move stops there).
-        const SingleActivator(LogicalKeyboardKey.home): _MoveIntent(
-          -segments.length,
-        ),
-        const SingleActivator(LogicalKeyboardKey.end): _MoveIntent(
-          segments.length,
-        ),
+      shortcuts: const {
+        // Space presses the cell as Enter does, the chosen one too: the
+        // group's own Space only chooses a cell not yet chosen.
+        SingleActivator(LogicalKeyboardKey.space): ActivateIntent(),
+        SingleActivator(LogicalKeyboardKey.home): _EndIntent(last: false),
+        SingleActivator(LogicalKeyboardKey.end): _EndIntent(last: true),
       },
       actions: {
-        _MoveIntent: CallbackAction<_MoveIntent>(
+        _EndIntent: CallbackAction<_EndIntent>(
           onInvoke: (intent) {
-            move(intent.by);
+            jump(intent.last);
             return null;
           },
         ),
@@ -762,7 +788,9 @@ class BrutalSegmentedButton<T> extends StatelessWidget {
             ),
             child: CustomPaint(
               foregroundPainter: states.contains(WidgetState.focused)
-                  ? BrutalInsetFocusPainter(lit ? c.paper : c.ink)
+                  ? BrutalInsetFocusPainter(
+                      brutalFocusInk(c, lit ? c.ink : c.surface),
+                    )
                   : null,
               child: Padding(
                 padding:
@@ -801,9 +829,6 @@ class BrutalSegmentedButton<T> extends StatelessWidget {
         );
       },
     );
-    return width == null
-        ? Expanded(child: child)
-        : SizedBox(width: width, child: child);
   }
 
   @override
@@ -818,10 +843,91 @@ class BrutalSegmentedButton<T> extends StatelessWidget {
   }
 }
 
-class _MoveIntent extends Intent {
-  const _MoveIntent(this.by);
+/// Home or End: choose the first segment, or the last.
+class _EndIntent extends Intent {
+  const _EndIntent({required this.last});
 
-  final int by;
+  final bool last;
+}
+
+/// The segments' radio group. It owns a node for each segment so that Home
+/// and End can move focus to the cell they choose.
+class _SegmentGroup<T> extends StatefulWidget {
+  const _SegmentGroup({
+    required this.values,
+    required this.value,
+    required this.onChanged,
+    required this.cell,
+    required this.layout,
+  });
+
+  final List<T> values;
+  final T value;
+  final ValueChanged<T>? onChanged;
+  final Widget Function(
+    BuildContext context,
+    int index,
+    FocusNode node,
+    VoidCallback? select,
+    ValueChanged<bool> jump,
+  )
+  cell;
+  final Widget Function(BuildContext context, List<Widget> items) layout;
+
+  @override
+  State<_SegmentGroup<T>> createState() => _SegmentGroupState<T>();
+}
+
+class _SegmentGroupState<T> extends State<_SegmentGroup<T>> {
+  final _nodes = <T, FocusNode>{};
+
+  @override
+  void didUpdateWidget(_SegmentGroup<T> oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final gone = _nodes.keys.toSet().difference(widget.values.toSet());
+    if (gone.isEmpty) return;
+    final nodes = [for (final value in gone) _nodes.remove(value)!];
+    // Their cells leave the tree in this frame; dispose the nodes after it.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      for (final node in nodes) {
+        node.dispose();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    for (final node in _nodes.values) {
+      node.dispose();
+    }
+    super.dispose();
+  }
+
+  FocusNode _node(T value) => _nodes.putIfAbsent(
+    value,
+    () => FocusNode(debugLabel: 'BrutalSegment $value'),
+  );
+
+  void _jump(bool last) {
+    if (widget.onChanged == null) return;
+    final to = last ? widget.values.last : widget.values.first;
+    if (to != widget.value) widget.onChanged?.call(to);
+    _nodes[to]?.requestFocus();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final index = {for (final (i, v) in widget.values.indexed) v: i};
+    return DesignRadioGroup<T>(
+      options: widget.values,
+      value: widget.value,
+      onChanged: widget.onChanged,
+      focusNodeFor: _node,
+      itemBuilder: (context, value, node, select) =>
+          widget.cell(context, index[value]!, node, select, _jump),
+      layoutBuilder: widget.layout,
+    );
+  }
 }
 
 /// A whole number stepped down and up: a minus cell, the number, a plus

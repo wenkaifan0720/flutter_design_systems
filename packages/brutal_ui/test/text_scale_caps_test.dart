@@ -1,10 +1,5 @@
-// Brutal's parts at 100%, 200% and 300% text, on a phone, against what
-// Material and Cupertino do at the same size (11-18, the text-scale audit):
-// the wheels keep their rows' size, as Cupertino's do; a button group's
-// words and the calendar's figures grow to twice their size, as Material's
-// time picker's and calendar's do; a table's figures never break, as
-// Material's data table's don't; a chip grows with its words, as Material's
-// filter chip does. Every figure and word whole, nothing over its neighbour.
+// Check wheel rows, table figures, chips and calendar cells as the reader
+// increases the text scale on a narrow screen.
 import 'dart:convert';
 
 import 'package:brutal_ui/brutal_ui.dart';
