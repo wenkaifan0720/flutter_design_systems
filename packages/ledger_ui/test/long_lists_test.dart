@@ -1,4 +1,4 @@
-// A long list (relay_final_fec8131445, step 5): a select's, a combobox's and a tag field's list opens with its value
+// A long list: a select's, a combobox's and a tag field's list opens with its value
 // in view though it stands near the end, and wherever the keyboard goes (an arrow round the ends, Home, End, a
 // letter) its option is scrolled into view.
 import 'package:material_ui/material_ui.dart';

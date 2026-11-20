@@ -1,7 +1,7 @@
 /// What a list and a record carry: the avatar stack ([LedgerAvatarStack]),
 /// the week strip ([LedgerWeekStrip]) and the counter ([LedgerCounter]), its
 /// figure re-inked as it changes. The first section is live: add a day. The
-/// words are a stationery studio's books, not the pilot's.
+/// words are a stationery studio's books, not the sample bank's.
 library;
 
 import 'package:material_ui/material_ui.dart';

@@ -194,7 +194,7 @@ pressable, the rules, the leader, the engraving and the other helpers). The rest
 
 ## Accessibility and localization
 
-- Use Tab to move between controls, Enter or Space to activate them, and Escape to close overlays. Selects support arrow keys, Home, End and type-ahead. Sliders respond to arrow keys. Keyboard focus is shown with a double underline.
+- Use Tab to move between controls, Enter or Space to activate them, and Escape to close overlays. A set of radios, a segmented control or a one-choice toggle group is one Tab stop, on the chosen option, and the arrow keys move and choose. Selects support arrow keys, Home, End and type-ahead. Sliders respond to arrow keys. Keyboard focus is shown with a double underline.
 - Control hit targets stay at least 44 logical pixels across densities. Labels and form rows wrap at large text sizes. Calendar days and weekday names scale within the seven-column grid. Chart legends and rulers scale separately from labels inside the plot.
 - The layout follows `Directionality`. Money, masked account numbers and step counts preserve their numeric order in right-to-left layouts. Charts retain their left-to-right time axis.
 - Add `DesignLocalizations.delegate` to `localizationsDelegates` and `DesignLocalizations.supportedLocales` to `supportedLocales` to localize shared control labels. Supply translated application labels, chart names and prompts yourself. The bundled fonts cover Latin scripts. Other scripts use platform fallback fonts.

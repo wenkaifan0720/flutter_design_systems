@@ -1,6 +1,5 @@
-// The gaps the Keel app found in Ledger's structure, register, chrome, states
-// and charts, each pinned to the source's value: its stylesheet, its pages or
-// the capture.
+// Ledger's structure, register, chrome, states and charts, each pinned to the
+// source's value: its stylesheet, its pages or the capture.
 import 'dart:convert';
 
 import 'package:material_ui/material_ui.dart';
@@ -32,7 +31,7 @@ Widget _host(Widget child, Brightness brightness) => MaterialApp(
 );
 
 /// A whole page (a screen, a sidebar) in the light appearance.
-Widget _page(Widget child, {String title = 'Keel'}) => MaterialApp(
+Widget _page(Widget child, {String title = 'Wren'}) => MaterialApp(
   title: title,
   debugShowCheckedModeBanner: false,
   builder: (context, page) =>
@@ -167,7 +166,7 @@ void main() {
               items: _five,
               selectedIndex: selected,
               onDestinationSelected: (_) {},
-              brand: 'Keel',
+              brand: 'Wren',
             ),
           ),
         ),
@@ -182,7 +181,7 @@ void main() {
       expect(rings.first.spreadRadius, 3);
       expect(rings.last.color, theme.sideBarFill);
       expect(rings.last.spreadRadius, 2);
-      // Not current: the green drop alone.
+      // Not current: the theme's primary drop, none in Ledger's themes.
       await t.pumpWidget(bar(0));
       expect(act(t).boxShadow, theme.primaryShadow);
     });

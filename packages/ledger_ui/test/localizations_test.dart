@@ -31,8 +31,8 @@ Widget _app(Locale locale, TextDirection direction, Widget page) => WidgetsApp(
   ),
 );
 
-/// The menu's Copy in the words the field reads: Cupertino's on iOS, Material's elsewhere (English in the catalog's
-/// app, the app's language in the package, which loads material_ui's and cupertino_ui's translations).
+/// The menu's Copy in the words the field reads: Cupertino's on iOS, Material's elsewhere (English in an
+/// app on flutter/material, the app's language in the package, which loads material_ui's and cupertino_ui's translations).
 String _copy(BuildContext field, TargetPlatform platform) =>
     platform == TargetPlatform.iOS
     ? CupertinoLocalizations.of(field).copyButtonLabel

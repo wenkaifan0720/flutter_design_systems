@@ -1,7 +1,8 @@
 // ui_core's shared world checks (world_checks.dart, beside this file, as every look runs them): each everyday part
 // mirrored in right to left; every gallery page at twice the text size with nothing overflowing, on a phone and on the
 // desktop; the main gallery pages against Flutter's tap-target, label and text-contrast guidelines by day and by night,
-// at Ledger's 44 targets (iOS's, on every platform, by design). Reduced motion is on, so every page settles.
+// at Ledger's 44 targets (iOS's, on every platform, by design); every single choice answering the keys as Flutter's
+// RadioGroup does, and the checklist's marks reading as checkboxes. Reduced motion is on, so every page settles.
 // ignore_for_file: avoid_relative_lib_imports
 import 'dart:convert';
 import 'dart:math' as math;
@@ -12,8 +13,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:ledger_ui/ledger_ui.dart';
 import 'package:ledger_ui/ledger_host.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:ui_core_test/ui_core_test.dart' show DesignRadioGroupCheck;
 
 import '../example/lib/gallery_pages.dart';
+import '../example/lib/kit_gallery/wren.dart' show KitTx;
 import 'world_checks.dart';
 import 'tiers.dart';
 
@@ -370,6 +373,250 @@ void main() {
         );
       }
     }
+  });
+
+  group('one choice answers the keys as a radio group does', () {
+    // Sibling LedgerRadios grouped at the owner of their choice, Month turned
+    // off, each on the node its caller gives it.
+    const periods = ['Week', 'Month', 'Quarter', 'Year'];
+    for (final direction in TextDirection.values) {
+      for (final initial in <String?>['Quarter', null, 'Month']) {
+        testWidgets(
+          'LedgerRadio siblings, ${direction.name}, chosen $initial',
+          (t) async {
+            _size(t, _phone);
+            final before = FocusNode();
+            final nodes = {for (final p in periods) p: FocusNode()};
+            addTearDown(before.dispose);
+            for (final node in nodes.values) {
+              addTearDown(node.dispose);
+            }
+            var chosen = initial;
+            await t.pumpWidget(
+              _app(
+                direction,
+                StatefulBuilder(
+                  builder: (context, setState) => Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Focus(focusNode: before, child: const Text('Before')),
+                      DesignRadioGroup<String>(
+                        key: const ValueKey('radios'),
+                        options: periods,
+                        value: chosen,
+                        isEnabled: (p) => p != 'Month',
+                        focusNodeFor: (p) => nodes[p],
+                        onChanged: (p) => setState(() => chosen = p),
+                        itemBuilder: (context, p, node, select) =>
+                            LedgerRadio<String>(
+                              key: ValueKey(p),
+                              value: p,
+                              groupValue: chosen,
+                              label: p,
+                              focusNode: node,
+                              onChanged: select == null
+                                  ? null
+                                  : (_) => select(),
+                            ),
+                      ),
+                      const Focus(child: Text('After')),
+                    ],
+                  ),
+                ),
+              ),
+            );
+            await t.pumpAndSettle();
+            for (final p in periods) {
+              expect(
+                t
+                    .widget<LedgerRadio<String>>(find.byKey(ValueKey(p)))
+                    .focusNode,
+                same(nodes[p]),
+              );
+            }
+            nodes['Week']!.requestFocus();
+            await t.pump();
+            expect(FocusManager.instance.primaryFocus, same(nodes['Week']));
+            (await const DesignRadioGroupCheck(look: 'Ledger').check(
+              t.element(find.byKey(const ValueKey('radios'))),
+              before: before,
+              sendKeyEvent: t.sendKeyEvent,
+              pump: t.pump,
+            )).verify();
+          },
+        );
+      }
+
+      testWidgets('a segmented control, ${direction.name}', (t) async {
+        _size(t, _phone);
+        final before = FocusNode();
+        addTearDown(before.dispose);
+        var chosen = 'Quarter';
+        await t.pumpWidget(
+          _app(
+            direction,
+            StatefulBuilder(
+              builder: (context, setState) => Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Focus(focusNode: before, child: const Text('Before')),
+                  LedgerSegmentedControl<String>(
+                    key: const ValueKey('radios'),
+                    options: periods,
+                    value: chosen,
+                    onChanged: (p) => setState(() => chosen = p),
+                  ),
+                  const Focus(child: Text('After')),
+                ],
+              ),
+            ),
+          ),
+        );
+        await t.pumpAndSettle();
+        (await const DesignRadioGroupCheck(look: 'Ledger').check(
+          t.element(find.byKey(const ValueKey('radios'))),
+          before: before,
+          sendKeyEvent: t.sendKeyEvent,
+          pump: t.pump,
+        )).verify();
+      });
+    }
+
+    // Every single choice the gallery draws, its radios and its segments,
+    // from the focusable a Tab leaves to land in it.
+    testWidgets('every single choice in the gallery', (t) async {
+      final problems = <String>[];
+      final seen = <String>[];
+      bool single(Widget w) =>
+          w is DesignRadioGroup ||
+          (w is DesignToggleGroup && !w.multiSelectionEnabled);
+      for (final page in galleryPages) {
+        Future<void> open() async {
+          _size(t, const Size(1440, _tallest));
+          await t.pumpWidget(const SizedBox());
+          await t.pumpWidget(page.build(Brightness.light));
+          await t.pumpAndSettle();
+        }
+
+        await open();
+        final count = find.byWidgetPredicate(single).evaluate().length;
+        for (var i = 0; i < count; i++) {
+          await open();
+          final group = find.byWidgetPredicate(single).at(i);
+          final name = '${page.id} #$i (${t.widget(group).runtimeType})';
+          FocusNode? before;
+          for (var tab = 0; tab < 400; tab++) {
+            final from = FocusManager.instance.primaryFocus;
+            await t.sendKeyEvent(LogicalKeyboardKey.tab);
+            await t.pump();
+            final at = FocusManager.instance.primaryFocus?.context;
+            if (at != null &&
+                find
+                    .descendant(
+                      of: group,
+                      matching: find.byElementPredicate((e) => e == at),
+                    )
+                    .evaluate()
+                    .isNotEmpty) {
+              before = from;
+              break;
+            }
+          }
+          if (before == null) {
+            problems.add('$name: no Tab reaches it');
+            continue;
+          }
+          seen.add(name);
+          final report = await const DesignRadioGroupCheck(look: 'Ledger')
+              .check(
+                t.element(group),
+                before: before,
+                sendKeyEvent: t.sendKeyEvent,
+                pump: t.pumpAndSettle,
+              );
+          problems.addAll([for (final p in report.problems) '$name: $p']);
+        }
+      }
+      await t.pumpWidget(const SizedBox());
+      expect(problems, isEmpty, reason: 'checked: ${seen.join(', ')}');
+    });
+
+    // A checklist's mark is a checkbox to a screen reader, never a button.
+    testWidgets("the selection page's checklist reads as checkboxes", (
+      t,
+    ) async {
+      _size(t, const Size(1440, _tallest));
+      final semantics = t.ensureSemantics();
+      await t.pumpWidget(
+        galleryPages
+            .firstWhere((p) => p.id == 'selection')
+            .build(Brightness.light),
+      );
+      await t.pumpAndSettle();
+      final marks = t.widgetList<LedgerCheck>(find.byType(LedgerCheck));
+      expect(
+        [for (final m in marks) m.label],
+        containsAll(const [
+          'Order the cotton paper',
+          'Mix the walnut ink',
+          'Reconcile October',
+          'Post the invoices',
+        ]),
+      );
+      var read = 0;
+      for (final element in find.byType(LedgerCheck).evaluate()) {
+        final mark = element.widget as LedgerCheck;
+        if (mark.onChanged == null) continue;
+        expect(
+          t.getSemantics(find.byElementPredicate((e) => e == element)),
+          isSemantics(
+            label: mark.label,
+            hasCheckedState: true,
+            isChecked: mark.value,
+            isButton: false,
+            hasTapAction: true,
+          ),
+          reason: mark.label,
+        );
+        read++;
+      }
+      expect(read, greaterThanOrEqualTo(5));
+      semantics.dispose();
+    });
+
+    testWidgets("the collections table's rows read as checkboxes", (t) async {
+      _size(t, const Size(1440, _tallest));
+      final semantics = t.ensureSemantics();
+      await t.pumpWidget(
+        galleryPages
+            .firstWhere((p) => p.id == 'collections')
+            .build(Brightness.light),
+      );
+      await t.pumpAndSettle();
+      final table = find.byType(LedgerDataTable<KitTx>);
+      expect(table, findsOneWidget);
+      final rows = t.widget<LedgerDataTable<KitTx>>(table).controller.rows;
+      expect(rows, hasLength(8));
+      // Each selectable row is one node: a checkbox (no button) that a press
+      // or Space ticks.
+      for (final tx in rows) {
+        expect(
+          t.getSemantics(
+            find.descendant(of: table, matching: find.text(tx.title)).first,
+          ),
+          isSemantics(
+            hasCheckedState: true,
+            isChecked: false,
+            isButton: false,
+            hasTapAction: true,
+          ),
+          reason: tx.title,
+        );
+      }
+      semantics.dispose();
+    });
   });
 
   group('the main gallery pages meet the guidelines at 44', () {

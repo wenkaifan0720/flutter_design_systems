@@ -1,4 +1,4 @@
-// The form-factor check (msg_dc865c2386d3) on Quill's own screens: a phone's inner page has its bar with the way
+// The form-factor check on Quill's own screens: a phone's inner page has its bar with the way
 // back, a desktop's its crumb over the title, and a tablet's, beside the rail where no phone bar stands, the crumb too;
 // a sheet spans a phone and stands centred at its measure on a tablet, never stretched across the screen.
 import 'package:material_ui/material_ui.dart';

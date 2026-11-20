@@ -2,7 +2,7 @@
 /// its glyph, its title on the leader to when, its words under it; an
 /// unread one on the green wash, tagged New) and one line of what an act
 /// does ([LedgerEffect]: what freezing the card stops, ringed in the ink,
-/// and what still goes through). Every word is the pilot's (keel.dart).
+/// and what still goes through). Every word is the sample bank's (wren.dart).
 library;
 
 import 'package:material_ui/material_ui.dart';
@@ -67,7 +67,7 @@ Widget kitSpecimenNoteRows() => LedgerRows(
   ],
 );
 
-/// What freezing the Keel Card stops, and what still goes through: the
+/// What freezing the Wren Card stops, and what still goes through: the
 /// card's autopay on its due day.
 Widget kitSpecimenEffects() {
   final autopay = kitBills.firstWhere((b) => b.autopay);

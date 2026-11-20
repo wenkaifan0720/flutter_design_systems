@@ -15,7 +15,7 @@ import '../structure/structure.dart';
 /// profile's head.
 ///
 /// ```dart
-/// LedgerMemberCard(kind: 'Keel · Account holder', since: 'Since Mar 2023', name: 'Maren Holt', initials: 'MH', subtitle: 'Member since March 2023', seal: const LedgerSeal(kicker: 'Keel', value: 'Member', foot: 'Since 2023'), details: const [LedgerKeyValue('Email', 'maren.holt@example.com')])
+/// LedgerMemberCard(kind: 'Wren · Account holder', since: 'Since Mar 2023', name: 'Maren Holt', initials: 'MH', subtitle: 'Member since March 2023', seal: const LedgerSeal(kicker: 'Wren', value: 'Member', foot: 'Since 2023'), details: const [LedgerKeyValue('Email', 'maren.holt@example.com')])
 /// ```
 class LedgerMemberCard extends StatelessWidget {
   /// The certificate of [name], holding [details].
@@ -30,7 +30,7 @@ class LedgerMemberCard extends StatelessWidget {
     super.key,
   });
 
-  /// The slip's kind, at its head's start ("Keel · Account holder").
+  /// The slip's kind, at its head's start ("Wren · Account holder").
   final String kind;
 
   /// The head's end ("Since Mar 2023").

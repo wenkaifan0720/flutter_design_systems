@@ -1,7 +1,7 @@
 /// What a person picks and settles: the filter chips ([LedgerChip] in its
 /// [LedgerChipRow]), the check ([LedgerCheck]), the slider ([LedgerSlider]) and
 /// the tabs ([LedgerTabs]). The first section is live: every control keeps
-/// its value. The words are a stationery studio's books, not the pilot's.
+/// its value. The words are a stationery studio's books, not the sample bank's.
 library;
 
 import 'package:material_ui/material_ui.dart';

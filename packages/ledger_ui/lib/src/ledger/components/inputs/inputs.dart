@@ -28,8 +28,10 @@ import '../text-field/text_field.dart';
 /// A segmented set of words (`.chips`): the range of a chart (1M 3M 1Y
 /// All), Today or Later. The chosen one is set in the ink, the rest in
 /// the mono's second ink, all in one ring of the light paper; [onChanged]
-/// null shows the set without letting it change. Each says whether it is
-/// chosen. The ring is as wide as its chips, at the start of a wider slot.
+/// null shows the set without letting it change. The chips are radios of
+/// one group: one Tab stop, on the chosen one; the arrows move and choose,
+/// round the ends. The ring is as wide as its chips, at the start of a
+/// wider slot.
 /// Keyboard focus rules the double rule under the focused chip, as wide
 /// as the chip and touching it. The options are any values: [labelOf]
 /// words each (its `toString()` when null), so a range can be an enum.
@@ -113,90 +115,85 @@ class LedgerSegmentedControl<T> extends StatelessWidget {
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: _pad),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          spacing: _gap,
-          children: [
-            for (final o in options)
-              Flexible(
-                child: LedgerPressable(
-                  // The chosen chip stays live (a screen reader must not call it
-                  // dimmed); choosing it again changes nothing.
-                  onTap: onChanged == null
-                      ? null
-                      : o == value
-                      ? _keep
-                      : () => onChanged!(o),
-                  label: _say(o),
-                  selected: o == value,
-                  // The focus rule runs the chip's whole width and stands
-                  // on its foot: its face is 2 inside the target above, and
-                  // the rule's own drop under a face is taken back.
-                  radius: 0,
-                  ringInsets: const EdgeInsets.only(
-                    top: _pad,
-                    bottom: _pad + 2 * LedgerChromeMetrics.focusGap,
-                  ),
-                  // The ink fill leaves the old choice and inks in under the new
-                  // one in Ledger's one motion.
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: _pad),
-                    child: Builder(
-                      builder: (context) {
-                        final so = LedgerStyleOf(
-                          [style, t.components.segmentedControl],
-                          {
-                            ...LedgerPressStates.of(context),
-                            if (o == value) WidgetState.selected,
-                            if (onChanged == null) WidgetState.disabled,
-                          },
-                        );
-                        return LedgerFace(
-                          style: so.dress(
-                            LedgerFaceStyle(
-                              ink: o == value ? t.surface : t.textSecondary,
-                              ground: BoxDecoration(
-                                color: o == value ? t.textPrimary : null,
-                                borderRadius: BorderRadius.circular(
-                                  innerRadius,
-                                ),
-                              ),
-                            ),
-                          ),
-                          builder: (context, s, _) => Container(
-                            height: chip,
-                            constraints: BoxConstraints(minWidth: floor.width),
-                            padding:
-                                so.padding(Directionality.of(context)) ??
-                                const EdgeInsets.symmetric(
-                                  horizontal: _chipPad,
-                                ),
-                            decoration: s.ground,
-                            // Its own width under a loose one: a Container's alignment
-                            // would stretch it. A word longer than the strip's share
-                            // is set smaller, never cut.
-                            child: Center(
-                              widthFactor: 1,
-                              child: FittedBox(
-                                fit: BoxFit.scaleDown,
-                                child: ledgerCapCenter(
-                                  words,
-                                  Text(
-                                    _say(o),
-                                    softWrap: false,
-                                    style: so.words(words, s.ink),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        );
-                      },
+        child: DesignRadioGroup<T>(
+          options: options,
+          value: value,
+          onChanged: onChanged,
+          layoutBuilder: (context, chips) => Row(
+            mainAxisSize: MainAxisSize.min,
+            spacing: _gap,
+            children: [for (final chip in chips) Flexible(child: chip)],
+          ),
+          itemBuilder: (context, o, node, select) => LedgerPressable(
+            focusNode: node,
+            // The chosen chip stays live (a screen reader must not call it
+            // dimmed); choosing it again changes nothing.
+            onTap: select,
+            label: _say(o),
+            checked: o == value,
+            inMutuallyExclusiveGroup: true,
+            // The focus rule runs the chip's whole width and stands
+            // on its foot: its face is 2 inside the target above, and
+            // the rule's own drop under a face is taken back.
+            radius: 0,
+            ringInsets: const EdgeInsets.only(
+              top: _pad,
+              bottom: _pad + 2 * LedgerChromeMetrics.focusGap,
+            ),
+            // The ink fill leaves the old choice and inks in under the new
+            // one in Ledger's one motion.
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: _pad),
+              child: Builder(
+                builder: (context) {
+                  final so = LedgerStyleOf(
+                    [style, t.components.segmentedControl],
+                    {
+                      ...LedgerPressStates.of(context),
+                      if (o == value) WidgetState.selected,
+                      if (onChanged == null) WidgetState.disabled,
+                    },
+                  );
+                  return LedgerFace(
+                    style: so.dress(
+                      LedgerFaceStyle(
+                        ink: o == value ? t.surface : t.textSecondary,
+                        ground: BoxDecoration(
+                          color: o == value ? t.textPrimary : null,
+                          borderRadius: BorderRadius.circular(innerRadius),
+                        ),
+                      ),
                     ),
-                  ),
-                ),
+                    builder: (context, s, _) => Container(
+                      height: chip,
+                      constraints: BoxConstraints(minWidth: floor.width),
+                      padding:
+                          so.padding(Directionality.of(context)) ??
+                          const EdgeInsets.symmetric(horizontal: _chipPad),
+                      decoration: s.ground,
+                      // Its own width under a loose one: a Container's alignment
+                      // would stretch it. A word longer than the strip's share
+                      // is set smaller, never cut.
+                      child: Center(
+                        widthFactor: 1,
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: ledgerCapCenter(
+                            words,
+                            Text(
+                              _say(o),
+                              softWrap: false,
+                              style: so.words(words, s.ink),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                },
               ),
-          ],
+            ),
+          ),
         ),
       ),
     );
@@ -207,8 +204,6 @@ class LedgerSegmentedControl<T> extends StatelessWidget {
       child: strip,
     );
   }
-
-  static void _keep() {}
 
   // `.chips`: 2 inside its ring (3 in the source), 2 between; `.chip` 26 tall, 0 12.
   static const double _pad = 2;

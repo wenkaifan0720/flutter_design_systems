@@ -1,4 +1,4 @@
-// What Ledger gains on ui_core 0.3.0's behaviours (its 0.3.0 adoption round): the raised dialog opens on its safe act
+// What Ledger gains on ui_core 0.3.0's behaviours: the raised dialog opens on its safe act
 // and Escape closes it; the tabs and the navigation frame are one tab stop with the arrows, the frame's tabs a tab bar
 // to a screen reader with its act a button beside it; the combobox runs a search, its failure and a retry; a wheel
 // steps with the keys; the tooltip shows on the keyboard's focus (32 tall on a phone) and Escape hides it.

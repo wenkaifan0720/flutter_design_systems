@@ -411,10 +411,14 @@ class _LedgerTextFieldState extends State<LedgerTextField> {
       ),
       // The whole written line is the field's: a tap on its sign or beside
       // its words focuses it as a tap on them does (its trailing act, a
-      // press of its own, keeps its taps).
+      // press of its own, keeps its taps). The tap is for a pointer only,
+      // as Flutter's text field's own gesture detector is: a screen reader
+      // reaches the entry and the trailing act by their own nodes, and a
+      // tap node round both would split the entry from the field's name.
       child: TextFieldTapRegion(
         child: GestureDetector(
           behavior: HitTestBehavior.opaque,
+          excludeFromSemantics: true,
           onTap: enabled ? _focus.requestFocus : null,
           child: MouseRegion(
             cursor: enabled ? SystemMouseCursors.text : MouseCursor.defer,

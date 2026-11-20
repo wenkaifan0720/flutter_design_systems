@@ -37,17 +37,18 @@ enum _Face { ringed, filled, ink, text }
 ///
 /// - `LedgerButton(label)` is the ordinary act, ringed in the ink (at
 ///   [LedgerButtonSize.small], ringed in the rule on the raised paper).
-/// - `LedgerButton.filled` is the page's one act: the accent green, its
-///   words in the raised paper, a soft green drop under it.
+/// - `LedgerButton.filled` is the page's one act: the accent green printed
+///   on the page, its words in the raised paper.
 /// - `LedgerButton.ink` is a firm act on a raised surface (a sheet's or a
 ///   dialog's confirm): filled with the ink.
 /// - `LedgerButton.text` has no frame: its words alone.
 ///
 /// [isDestructiveAction] draws any of them in the danger red. A null
 /// [onPressed] disables it: written in pencil, not ink (no fill, the light
-/// rule round it, its words in the third ink). Pressed, the face sinks into
-/// the paper and its drop goes; a frameless one's words take the ink
-/// underline while held. The touch target is 44
+/// rule round it, its words in the third ink). Held, the face stays where
+/// it is and its ink deepens a shade, as a stamp pressed harder leaves
+/// more ([LedgerImpression]); a ringed one's paper takes a wash of the ink,
+/// and a frameless one's words take the ink underline. The touch target is 44
 /// at every size and density; what shrinks is the drawn face.
 /// [semanticLabel] names it for a screen reader when its words say less
 /// than the act ("Change category" for a Change).
@@ -287,6 +288,8 @@ class LedgerButton extends StatelessWidget {
         : small
         ? pad
         : LedgerButtonEnds.of(context) ?? pad;
+    // Ledger's themes give the primary act no drop (ink casts none); an
+    // app that gives it one sees it go while the act is held.
     final shadow = _face == _Face.filled && live && !danger
         ? t.primaryShadow
         : null;
@@ -294,9 +297,10 @@ class LedgerButton extends StatelessWidget {
     // At a large text size a label too long for its line wraps whole and
     // the face grows taller (its height the least it stands), never cut.
     final larger = MediaQuery.textScalerOf(context).scale(1) > 1;
-    // Pressed, the face sinks into the paper and its drop goes, and a
-    // frameless act's words take the ink underline; every change of fill,
-    // rim, drop and ink moves in Ledger's one motion ([LedgerFace]).
+    // Held, [LedgerPressable] deepens the face's ink in place and washes
+    // its bare paper; a frameless act's words keep the ink underline. Every
+    // change of fill, rim and ink moves in Ledger's one motion
+    // ([LedgerFace]).
     final face = Builder(
       builder: (context) {
         final states = LedgerPressStates.of(context);
@@ -309,22 +313,20 @@ class LedgerButton extends StatelessWidget {
         final least = so.minimumSize;
         final tall = math.max(height, least?.height ?? 0);
         final room = so.padding(Directionality.of(context));
-        // Held, the face takes a stamp's impression: its fill a shade
-        // further into the ink, a ring's paper a wash of it; by lamplight,
-        // where no drop falls, it is all the press writes.
-        final Color? pressedFill = fill != null
-            ? Color.lerp(fill, t.textPrimary, _impression)
-            : ring != null
-            ? t.textPrimary.withValues(alpha: _impression / 2)
-            : null;
         // Under a pointer the act answers before it is pressed: a fill
         // lifts a tenth toward its own words (a press sinks it toward the
-        // ink), a ring's paper takes half a press's wash.
+        // ink), a ring's paper takes a quarter of a press's wash.
         final Color? hoveredFill = fill != null
             ? Color.lerp(fill, ink, _hoverLift)
             : ring != null
             ? t.textPrimary.withValues(alpha: _impression / 4)
             : null;
+        // Held, a filled face's fill deepens with the rest of its ink
+        // ([LedgerImpression]), from its own green rather than the hover's
+        // lift, so a press reads deeper than a hover by day and by night; a
+        // ringed face keeps the hover's wash and the press's own wash of
+        // the paper lies under it, a step deeper.
+        final Color? pressedFill = fill ?? hoveredFill;
         return LedgerFace(
           style: so.dress(
             LedgerFaceStyle(
@@ -446,8 +448,8 @@ class LedgerButton extends StatelessWidget {
   // No face shorter than this at any density.
   static const double _floor = 28;
 
-  // How far a held face's fill goes into the ink.
-  static const double _impression = .12;
+  // How far a held face goes into the ink ([LedgerImpression.pressed]).
+  static const double _impression = LedgerImpression.pressed;
 
   // How far a hovered fill lifts toward its words: a tenth, as a pointer's
   // highlight reads on a filled act without passing for a press.

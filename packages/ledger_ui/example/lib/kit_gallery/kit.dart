@@ -1,5 +1,5 @@
-/// Shared host for the Ledger gallery's demo screens and catalog specimens,
-/// and the Keel pilot's sample owner, tabs and figures they show.
+/// Shared host for the Ledger gallery's demo screens and specimens,
+/// and the sample bank's owner, tabs and figures they show.
 ///
 /// Every demo renders inside the environment a Ledger page gets live: a
 /// MaterialApp under [LedgerHost], themed by the preset the lab applied
@@ -21,12 +21,12 @@ import 'package:ledger_ui/ledger_host.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import 'gallery_words.dart';
-import 'keel.dart';
+import 'wren.dart';
 import 'theme.dart';
 
-export 'keel.dart';
+export 'wren.dart';
 
-/// The pilot's moment: `now` in the sample data.
+/// The sample bank's moment: `now` in the sample data.
 final DateTime kitNow = DateTime(2026, 10, 28, 19, 40);
 
 /// A demo screen: a scrolling nav root titled [title], with labelled
@@ -108,7 +108,7 @@ Widget _kitApp({required Brightness brightness, required Widget home}) =>
               container: true,
               child: MaterialApp(
                 debugShowCheckedModeBanner: false,
-                title: 'Keel',
+                title: 'Wren',
                 theme: kitAppTheme,
                 // ui_core's words in the 30 languages it speaks.
                 localizationsDelegates: galleryDelegates,
@@ -145,7 +145,7 @@ Widget kitSection(String label, {required List<Widget> children}) => Builder(
           ),
         ),
         const LedgerGap(LedgerSpacing.s16),
-        // Keyed by its label, so a review can find the section's parts.
+        // Keyed by its label, so a test can find the section's parts.
         KeyedSubtree(
           key: ValueKey<String>('kit-section:$label'),
           child: Column(
@@ -175,7 +175,7 @@ Widget kitRouterApp({
   required RouterConfig<Object> router,
 }) => MaterialApp.router(
   debugShowCheckedModeBanner: false,
-  title: 'Keel',
+  title: 'Wren',
   routerConfig: router,
   builder: (context, child) => LedgerHost(
     light: kitTheme(Brightness.light),
@@ -193,10 +193,10 @@ Widget kitRouterApp({
 Widget kitInRegister(RoutePresentation register, Widget child) =>
     RoutePresentationScope(presentation: register, child: child);
 
-/// Keel's five root tabs (the source's NAV), Move in the middle drawn as
+/// Wren's five root tabs (the source's NAV), Move in the middle drawn as
 /// the green disc; the sidebar's green act says its act, Move money, as the
 /// source's does.
-const List<LedgerNavItem> keelTabs = [
+const List<LedgerNavItem> wrenTabs = [
   LedgerNavItem(LucideIcons.house, 'Home'),
   LedgerNavItem(LucideIcons.chartPie, 'Spending'),
   LedgerNavItem.act(LucideIcons.arrowRightLeft, 'Move', actLabel: 'Move money'),
@@ -204,7 +204,7 @@ const List<LedgerNavItem> keelTabs = [
   LedgerNavItem(LucideIcons.creditCard, 'Cards'),
 ];
 
-/// The owner, as the pilot's chrome draws her (the sample data's person; one
+/// The owner, as the sample bank's chrome draws her (the sample data's person; one
 /// notification unread). Her profile, notifications and search are pages
 /// the gallery doesn't have, so they open nothing; they're still given, as
 /// an app gives them, so the avatar, the bell and the search pill draw live.
@@ -250,7 +250,7 @@ Widget kitSpan(KitSpan span, Widget child) => Builder(
       : child,
 );
 
-/// A fact of the pilot's as the ledger states it: a sum in its dollars and
+/// A fact of the sample bank's as the ledger states it: a sum in its dollars and
 /// cents, or its words.
 LedgerFact kitFact(KitFact f) {
   final tone = f.green
@@ -307,7 +307,28 @@ class _KitTypedState extends State<KitTyped> {
   Widget build(BuildContext context) => widget.builder(_controller);
 }
 
-/// Where a catalog specimen sits on its stage (the specimen's `frame` in
+/// A specimen whose one choice ([initial] at first) keeps what a press or
+/// the arrows choose, as a page's state would: [builder] gets the choice
+/// and the way to change it.
+class KitChosen<T> extends StatefulWidget {
+  const KitChosen(this.initial, this.builder, {super.key});
+
+  final T initial;
+  final Widget Function(T value, ValueChanged<T> choose) builder;
+
+  @override
+  State<KitChosen<T>> createState() => _KitChosenState<T>();
+}
+
+class _KitChosenState<T> extends State<KitChosen<T>> {
+  late T _value = widget.initial;
+
+  @override
+  Widget build(BuildContext context) =>
+      widget.builder(_value, (v) => setState(() => _value = v));
+}
+
+/// Where a specimen sits on its stage (the specimen's `frame` in
 /// metadata.yaml names the same band): the bottom or top edge, a band across
 /// the middle, or the whole phone.
 class KitFrame {
@@ -323,7 +344,7 @@ class KitFrame {
 
 enum _KitPlace { bottom, top, band, screen }
 
-/// The stage a catalog specimen renders on: the host themed by [style] (a
+/// The stage a specimen renders on: the host themed by [style] (a
 /// preset resolved at runtime, so one compile draws every preset) in
 /// [brightness], on the page ground, the owner's account above it, with
 /// [child] placed by [frame]. A specimen builder never names a style: the
@@ -339,7 +360,7 @@ Widget kitSpecimenStage({
   container: true,
   child: MaterialApp(
     debugShowCheckedModeBanner: false,
-    title: 'Keel',
+    title: 'Wren',
     theme: kitAppTheme,
     // ui_core's words in the 30 languages it speaks.
     localizationsDelegates: galleryDelegates,

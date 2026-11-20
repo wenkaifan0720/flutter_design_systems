@@ -1,4 +1,4 @@
-/// Foundations: the theme's roles (the catalog's and Ledger's own: the
+/// Foundations: the theme's roles (the shared ones and Ledger's own: the
 /// rules, the money inks, the seal, the hatches and the chrome's papers),
 /// its type slots, shapes and spacing in the preset on show, the format
 /// helpers, and the chrome's metrics. Everything below reads

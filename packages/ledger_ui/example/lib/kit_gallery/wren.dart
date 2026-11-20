@@ -1,4 +1,4 @@
-// Generated from the sample data (Keel, a fictional bank) and the reference
+// Generated from the sample data (Wren, a fictional bank) and the reference
 // pages' own arithmetic: every figure, label and chart bound here is
 // computed as those pages compute it. Do not edit by hand.
 // ignore_for_file: public_member_api_docs
@@ -230,7 +230,7 @@ const List<String> kitNetWorthMonths = [
   'O',
 ];
 const String kitNetWorthNote =
-    'Sum of five accounts. The Keel Card balance of −\u2060\$\u20601\u2060,\u20603\u20602\u20606\u2060.\u20604\u20604 is netted out.';
+    'Sum of five accounts. The Wren Card balance of −\u2060\$\u20601\u2060,\u20603\u20602\u20606\u2060.\u20604\u20604 is netted out.';
 
 /// Home's accounts, as their rows read.
 const List<KitRow> kitAccounts = [
@@ -263,7 +263,7 @@ const List<KitRow> kitAccounts = [
   ),
   KitRow(
     icon: LucideIcons.creditCard,
-    name: 'Keel Card',
+    name: 'Wren Card',
     amount: -1326.44,
     subStart: 'Credit ··7730',
     subEnd: 'Due Nov 12 · autopay',
@@ -294,14 +294,14 @@ final List<KitBill> kitUpcoming = [
   KitBill(
     DateTime(2026, 11, 3),
     'Kite Mobile',
-    'Keel Card ··7730',
+    'Wren Card ··7730',
     35,
     'In 6 days',
     autopay: false,
   ),
   KitBill(
     DateTime(2026, 11, 12),
-    'Keel Card payment',
+    'Wren Card payment',
     'Everyday ··4821',
     1326.44,
     'Autopay on',
@@ -384,7 +384,7 @@ final List<KitTx> kitRecent = [
     subtitle: 'Dining out',
     time: '8:12 AM',
     day: 'Today',
-    account: 'Keel Card',
+    account: 'Wren Card',
     amount: -6.75,
     at: DateTime(2026, 10, 28, 8, 12),
     income: false,
@@ -414,7 +414,7 @@ final List<KitTx> kitRecent = [
     subtitle: 'Groceries',
     time: '6:22 PM',
     day: 'Yesterday',
-    account: 'Keel Card',
+    account: 'Wren Card',
     amount: -64.18,
     at: DateTime(2026, 10, 27, 18, 22),
     income: false,
@@ -429,7 +429,7 @@ final List<KitTx> kitRecent = [
     subtitle: 'Subscriptions',
     time: '6:00 AM',
     day: 'Yesterday',
-    account: 'Keel Card',
+    account: 'Wren Card',
     amount: -10.99,
     at: DateTime(2026, 10, 27, 6, 0),
     income: false,
@@ -444,7 +444,7 @@ final List<KitTx> kitRecent = [
     subtitle: 'Fun',
     time: '7:10 PM',
     day: 'Mon, Oct 26',
-    account: 'Keel Card',
+    account: 'Wren Card',
     amount: -28,
     at: DateTime(2026, 10, 26, 19, 10),
     income: false,
@@ -459,7 +459,7 @@ final List<KitTx> kitRecent = [
     subtitle: 'Health',
     time: '12:35 PM',
     day: 'Mon, Oct 26',
-    account: 'Keel Card',
+    account: 'Wren Card',
     amount: -18.4,
     at: DateTime(2026, 10, 26, 12, 35),
     income: false,
@@ -724,7 +724,7 @@ final List<KitDay> kitDays = [
       subtitle: 'Dining out',
       time: '8:12 AM',
       day: 'Today',
-      account: 'Keel Card',
+      account: 'Wren Card',
       amount: -6.75,
       at: DateTime(2026, 10, 28, 8, 12),
       income: false,
@@ -756,7 +756,7 @@ final List<KitDay> kitDays = [
       subtitle: 'Groceries',
       time: '6:22 PM',
       day: 'Yesterday',
-      account: 'Keel Card',
+      account: 'Wren Card',
       amount: -64.18,
       at: DateTime(2026, 10, 27, 18, 22),
       income: false,
@@ -771,7 +771,7 @@ final List<KitDay> kitDays = [
       subtitle: 'Subscriptions',
       time: '6:00 AM',
       day: 'Yesterday',
-      account: 'Keel Card',
+      account: 'Wren Card',
       amount: -10.99,
       at: DateTime(2026, 10, 27, 6, 0),
       income: false,
@@ -788,7 +788,7 @@ final List<KitDay> kitDays = [
       subtitle: 'Fun',
       time: '7:10 PM',
       day: 'Mon, Oct 26',
-      account: 'Keel Card',
+      account: 'Wren Card',
       amount: -28,
       at: DateTime(2026, 10, 26, 19, 10),
       income: false,
@@ -803,7 +803,7 @@ final List<KitDay> kitDays = [
       subtitle: 'Health',
       time: '12:35 PM',
       day: 'Mon, Oct 26',
-      account: 'Keel Card',
+      account: 'Wren Card',
       amount: -18.4,
       at: DateTime(2026, 10, 26, 12, 35),
       income: false,
@@ -820,7 +820,7 @@ final List<KitDay> kitDays = [
       subtitle: 'Shopping',
       time: '2:20 PM',
       day: 'Sun, Oct 25',
-      account: 'Keel Card',
+      account: 'Wren Card',
       amount: -128,
       at: DateTime(2026, 10, 25, 14, 20),
       income: false,
@@ -835,7 +835,7 @@ final List<KitDay> kitDays = [
       subtitle: 'Groceries',
       time: '11:05 AM',
       day: 'Sun, Oct 25',
-      account: 'Keel Card',
+      account: 'Wren Card',
       amount: -17.55,
       at: DateTime(2026, 10, 25, 11, 5),
       income: false,
@@ -874,7 +874,7 @@ final KitTx kitBlueFern = KitTx(
   subtitle: 'Dining out',
   time: '8:12 AM',
   day: 'Today',
-  account: 'Keel Card',
+  account: 'Wren Card',
   amount: -6.75,
   at: DateTime(2026, 10, 28, 8, 12),
   income: false,
@@ -883,7 +883,7 @@ final KitTx kitBlueFern = KitTx(
 );
 const String kitBlueFernLong = 'Wednesday, October 28, 2026';
 const String kitBlueFernCategory = 'Dining out';
-const String kitBlueFernAccount = 'Keel Card ··7730';
+const String kitBlueFernAccount = 'Wren Card ··7730';
 final KitTx kitPaycheck = KitTx(
   id: 'x230630ever',
   title: 'Northwind Studio',
@@ -1179,7 +1179,7 @@ const String kitBillsMonth = 'Nov';
 /// The named steps: index, name, the rest, the phone's lift and the desktop's.
 const List<(int, String, String, double, double)> kitBillNotes = [
   (0, 'Rent', '\$1,150.00 · Nov 1', 40, 46),
-  (2, 'Keel Card payment', '\$1,326.44 · Nov 12', 74, 76),
+  (2, 'Wren Card payment', '\$1,326.44 · Nov 12', 74, 76),
 ];
 final List<KitBill> kitBills = [
   KitBill(
@@ -1193,14 +1193,14 @@ final List<KitBill> kitBills = [
   KitBill(
     DateTime(2026, 11, 3),
     'Kite Mobile',
-    'Keel Card ··7730',
+    'Wren Card ··7730',
     35,
     'In 6 days',
     autopay: false,
   ),
   KitBill(
     DateTime(2026, 11, 12),
-    'Keel Card payment',
+    'Wren Card payment',
     'Everyday ··4821',
     1326.44,
     'Autopay on',
@@ -1209,7 +1209,7 @@ final List<KitBill> kitBills = [
   KitBill(
     DateTime(2026, 11, 15),
     'Newsline',
-    'Keel Card ··7730',
+    'Wren Card ··7730',
     15.98,
     'In 18 days',
     autopay: false,
@@ -1217,7 +1217,7 @@ final List<KitBill> kitBills = [
   KitBill(
     DateTime(2026, 11, 19),
     'Cloudbox',
-    'Keel Card ··7730',
+    'Wren Card ··7730',
     2.99,
     'In 22 days',
     autopay: false,
@@ -1225,7 +1225,7 @@ final List<KitBill> kitBills = [
   KitBill(
     DateTime(2026, 11, 27),
     'Streamline Music',
-    'Keel Card ··7730',
+    'Wren Card ··7730',
     10.99,
     'In 30 days',
     autopay: false,
@@ -1334,8 +1334,8 @@ const int kitLisbonNow = 11;
 const List<String> kitCardNumber = ['4242', '4242', '4242', '7730'];
 const String kitCardHolder = 'MAREN HOLT';
 const String kitCardKind = 'Credit';
-const String kitCardAccount = 'Keel Card';
-const String kitCardName = 'Keel Card';
+const String kitCardAccount = 'Wren Card';
+const String kitCardName = 'Wren Card';
 const List<String> kitDebitNumber = ['4242', '4242', '4242', '3907'];
 const String kitDebitHolder = 'MAREN HOLT';
 const String kitDebitKind = 'Debit';
@@ -1374,7 +1374,7 @@ const List<KitNote> kitNotes = [
   ),
   KitNote(
     LucideIcons.creditCard,
-    'Keel Card autopay sent',
+    'Wren Card autopay sent',
     '\$1,180.22 from Everyday.',
     'Oct 12',
     false,
@@ -1382,7 +1382,7 @@ const List<KitNote> kitNotes = [
   KitNote(
     LucideIcons.receipt,
     'Kite Mobile paid',
-    '\$35.00 on your Keel Card.',
+    '\$35.00 on your Wren Card.',
     'Oct 3',
     false,
   ),
@@ -1406,7 +1406,7 @@ const List<KitToggle> kitAlerts = [
   ),
 ];
 
-/// The Keel Card's controls.
+/// The Wren Card's controls.
 const List<KitToggle> kitCardControls = [
   KitToggle(
     LucideIcons.globe,

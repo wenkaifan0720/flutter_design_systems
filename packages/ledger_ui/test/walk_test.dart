@@ -1,7 +1,7 @@
-// What a walk of the web build found (11-12: every gallery page in a browser at 1440 and 600) and what holds it. The
+// What a walk of the web build finds (every gallery page in a browser at 1440 and 600) and what holds it. The
 // other tests pumped a gallery page alone; the web build opens it from Quill's index, inside Quill's frame (beside the
 // rail from 600, the side bar from 1024), and so does every test here.
-// - every example of a section starts on its column's edge (design6 P: an example centred in its column, or set at
+// - every example of a section starts on its column's edge (an example centred in its column, or set at
 //   its end, while every other starts on the edge, is off);
 // - a word is never broken across two lines (a phone preview that took the side bar's reach for its own broke
 //   "Spending"; tiles squeezed into a measure broke "Groceries");

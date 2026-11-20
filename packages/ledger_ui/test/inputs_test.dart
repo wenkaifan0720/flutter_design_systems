@@ -1,5 +1,5 @@
-// The Stage C inputs: each control built from its doc comment's example or
-// the Keel pilot's words (the gallery's generated keel.dart), pumped on a
+// Ledger's inputs: each control built from its doc comment's example or
+// the sample bank's words (the gallery's wren.dart), pumped on a
 // phone and at desktop width in both appearances, read back through its
 // semantics, then driven: a tap calls back with the new value, and a null
 // callback leaves the control inert and says so.
@@ -139,6 +139,23 @@ Matcher _live({String? label, String? value, bool link = false}) => isSemantics(
   hasTapAction: true,
 );
 
+/// A radio of one group, chosen or not, no button; held when not [enabled].
+Matcher _radio({
+  required String label,
+  required bool checked,
+  bool enabled = true,
+}) => isSemantics(
+  label: label,
+  isButton: false,
+  isLink: false,
+  isInMutuallyExclusiveGroup: true,
+  hasCheckedState: true,
+  isChecked: checked,
+  hasEnabledState: true,
+  isEnabled: enabled,
+  hasTapAction: enabled,
+);
+
 /// A button (or a link) held: it says it is not enabled and takes no tap.
 Matcher _inert({String? label, String? value, bool link = false}) =>
     isSemantics(
@@ -191,7 +208,7 @@ Future<void> _loadFonts() async {
   }
 }
 
-// --- The pilot's words (copied from the gallery's keel.dart) -----------------
+// --- The sample bank's words (copied from the gallery's wren.dart) -----------------
 
 const List<String> _ranges = ['1M', '3M', '1Y', 'All'];
 const String _range = '1Y';
@@ -236,7 +253,7 @@ void main() {
   tearDownAll(_movingMotion);
 
   group('LedgerSegmentedControl', () {
-    testWidgets('each chip says whether it is chosen; a tap chooses', (
+    testWidgets('each chip is a radio, chosen or not; a tap chooses', (
       t,
     ) async {
       final picked = <String>[];
@@ -253,10 +270,7 @@ void main() {
           for (final o in _ranges) {
             expect(
               _node(t, o),
-              allOf(
-                _live(label: o),
-                isSemantics(hasSelectedState: true, isSelected: o == _range),
-              ),
+              _radio(label: o, checked: o == _range),
               reason: o,
             );
           }
@@ -283,12 +297,12 @@ void main() {
         _atStart(const LedgerSegmentedControl(options: _ranges, value: _range)),
         (wide, theme) {
           for (final o in _ranges) {
-            expect(_node(t, o), _inert(label: o), reason: o);
+            expect(
+              _node(t, o),
+              _radio(label: o, checked: o == _range, enabled: false),
+              reason: o,
+            );
           }
-          expect(
-            _node(t, _range),
-            isSemantics(hasSelectedState: true, isSelected: true),
-          );
         },
       );
       await t.tap(find.text('3M'));
@@ -341,10 +355,10 @@ void main() {
       }
     });
 
-    // The user (11-18, a form's Priority): in a column that stretches its
-    // children the ring ran the column's width, its chips bunched at its
-    // start; and the focused chip's double rule stood short of the chip and
-    // under the ring, 4 clear of the chip.
+    // A form's Priority, in a column that stretches its children: the ring
+    // keeps to its chips rather than running the column's width with the
+    // chips bunched at its start, and the focused chip's double rule rules
+    // the whole chip, touching it, not short of it under the ring.
     testWidgets('a wide slot keeps the ring to its chips, and focus rules '
         'the whole chip, touching it', (t) async {
       for (final size in const [_phone, _desktop]) {
@@ -437,7 +451,7 @@ void main() {
             ),
             LedgerFilters<String>(
               label: 'Account',
-              options: const ['Keel Card', 'Everyday'],
+              options: const ['Wren Card', 'Everyday'],
               value: null,
               onChanged: account.add,
             ),
@@ -450,7 +464,7 @@ void main() {
             'Money in',
             'Money out',
             'Account',
-            'Keel Card',
+            'Wren Card',
             'Everyday',
           ]);
           expect(_childLabels(_node(t, 'Direction')), [
@@ -458,7 +472,7 @@ void main() {
             'Money in',
             'Money out',
           ]);
-          for (final o in ['All', 'Money in', 'Money out', 'Keel Card']) {
+          for (final o in ['All', 'Money in', 'Money out', 'Wren Card']) {
             expect(
               _node(t, o),
               allOf(
@@ -843,7 +857,14 @@ void main() {
         (wide, theme) {
           final field = _node(t, 'When');
           expect(field, isSemantics(isTextField: false));
-          expect(_childLabels(field), ['Today', 'Later']);
+          // The field holds the chips' radio group, the group its chips.
+          final groups = <SemanticsNode>[];
+          field.visitChildren((child) {
+            groups.add(child);
+            return true;
+          });
+          expect(groups, hasLength(1));
+          expect(_childLabels(groups.single), ['Today', 'Later']);
           expect(find.byType(EditableText), findsNothing);
           expect(find.text('WHEN'), findsOneWidget);
           // The chips stand at the field's start, as wide as they are.
@@ -860,10 +881,7 @@ void main() {
       await t.tap(find.text('Later'));
       await t.pump();
       expect(picks, ['Later']);
-      expect(
-        _node(t, 'Later'),
-        isSemantics(hasSelectedState: true, isSelected: true),
-      );
+      expect(_node(t, 'Later'), _radio(label: 'Later', checked: true));
     });
   });
 
@@ -1131,8 +1149,8 @@ void main() {
     });
   });
 
-  // A form's number (11-18: Stint's estimate, 5 to 480 minutes, was a bare
-  // figure between two rings that took no typing).
+  // A form's number (an estimate, 5 to 480 minutes) takes typing, not only
+  // the two rings.
   group('LedgerStepper as a field', () {
     Widget estimate(
       List<num> moves, {
@@ -1332,6 +1350,49 @@ void main() {
         });
       }
     }
+  });
+
+  group('a text field with a trailing act', () {
+    testWidgets("its entry says the field's name, the act its own", (t) async {
+      await _everywhere(
+        t,
+        Column(
+          children: [
+            const LedgerPasswordField(
+              label: 'Password',
+              helper: 'At least 12 characters',
+              isRequired: true,
+            ),
+            LedgerTextField(
+              label: 'Account number',
+              trailing: LedgerIconButton(
+                LucideIcons.copy,
+                semanticLabel: 'Copy the account number',
+                onPressed: () {},
+              ),
+            ),
+          ],
+        ),
+        (wide, theme) {
+          // The entry is the field's node, as Material's text field with a
+          // suffix button is: a screen reader names the box it types in.
+          expect(
+            _node(t, 'Password, required'),
+            isSemantics(
+              isTextField: true,
+              isObscured: true,
+              hint: 'At least 12 characters',
+            ),
+          );
+          expect(_node(t, 'Show password'), isSemantics(isButton: true));
+          expect(_node(t, 'Account number'), isSemantics(isTextField: true));
+          expect(
+            _node(t, 'Copy the account number'),
+            isSemantics(isButton: true),
+          );
+        },
+      );
+    });
   });
 }
 

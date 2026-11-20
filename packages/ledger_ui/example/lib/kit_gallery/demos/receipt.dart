@@ -3,7 +3,7 @@
 /// number, the merchant, the engraved figure with its seal, the tear line
 /// ([LedgerStub]) and its key and value lines), and a transfer drawn as a
 /// cheque ([LedgerCheque]) as it is filled in, read back under review, and
-/// sent with its stamp. Every word and figure is the pilot's (keel.dart).
+/// sent with its stamp. Every word and figure is the sample bank's (wren.dart).
 library;
 
 import 'package:material_ui/material_ui.dart';
@@ -91,10 +91,10 @@ List<Widget> _readBack() => [
 // One builder per specimen in metadata.yaml. The stage (kitSpecimenStage)
 // styles them; a builder never names a style.
 
-/// This morning's coffee, still pending on the Keel Card: the ink's seal,
+/// This morning's coffee, still pending on the Wren Card: the ink's seal,
 /// and its category with the Change beside it.
 Widget kitSpecimenReceipt() => LedgerReceipt(
-  kind: 'Keel · Transaction',
+  kind: 'Wren · Transaction',
   number: 'No. ${kitBlueFern.id.toUpperCase()}',
   leading: LedgerMonogram(kitBlueFern.title, size: LedgerMonogramSize.record),
   name: kitBlueFern.title,
@@ -125,7 +125,7 @@ Widget kitSpecimenReceipt() => LedgerReceipt(
 
 /// The paycheck landed in Everyday: the green seal, the plus on the figure.
 Widget kitSpecimenReceiptIncome() => LedgerReceipt(
-  kind: 'Keel · Money in',
+  kind: 'Wren · Money in',
   number: 'No. ${kitPaycheck.id.toUpperCase()}',
   leading: LedgerMonogram(
     kitPaycheck.title,
@@ -160,7 +160,7 @@ Widget kitSpecimenCheque() => KitTyped(
   (amount) => KitTyped(
     kitTransferNote,
     (note) => LedgerCheque(
-      kind: 'Keel · Transfer',
+      kind: 'Wren · Transfer',
       date: kitTransferDate,
       micr: kitMicr,
       lines: [
@@ -175,10 +175,13 @@ Widget kitSpecimenCheque() => KitTyped(
         LedgerField(label: 'Note', controller: note),
         LedgerField(
           label: 'When',
-          child: LedgerSegmentedControl(
-            options: const ['Today', 'Later'],
-            value: 'Today',
-            onChanged: (_) {},
+          child: KitChosen<String>(
+            'Today',
+            (when, choose) => LedgerSegmentedControl(
+              options: const ['Today', 'Later'],
+              value: when,
+              onChanged: choose,
+            ),
           ),
         ),
       ],
@@ -188,7 +191,7 @@ Widget kitSpecimenCheque() => KitTyped(
 
 /// The same cheque under review: read back in the ink, the balances kept.
 Widget kitSpecimenChequeReview() => LedgerCheque(
-  kind: 'Keel · Transfer',
+  kind: 'Wren · Transfer',
   date: kitTransferDate,
   micr: kitMicr,
   lines: [_from(), _to(), ..._readBack()],
@@ -197,12 +200,12 @@ Widget kitSpecimenChequeReview() => LedgerCheque(
 /// The cheque sent: the balances gone (the money has moved) and the stamp
 /// pressed across it.
 Widget kitSpecimenChequeSent() => LedgerCheque(
-  kind: 'Keel · Transfer',
+  kind: 'Wren · Transfer',
   date: kitTransferDate,
   micr: kitMicr,
   lines: [_from(balance: false), _to(balance: false), ..._readBack()],
   stamp: LedgerSeal(
-    kicker: 'Keel · Transfer',
+    kicker: 'Wren · Transfer',
     value: 'Sent',
     foot: _stamp(kitNow),
   ),
@@ -238,7 +241,7 @@ Widget kitSpecimenSlip() => LedgerSlip(
 
 /// The new goal's form slip as the page prints it: the guilloche band,
 /// then its kind and class over its first field.
-// Keel · New goal, Savings, the Name field.
+// Wren · New goal, Savings, the Name field.
 Widget kitSpecimenSlipHead() => LedgerSlip(
   child: Column(
     mainAxisSize: MainAxisSize.min,
@@ -251,7 +254,7 @@ Widget kitSpecimenSlipHead() => LedgerSlip(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const LedgerSlipHead('Keel · New goal', 'Savings'),
+            const LedgerSlipHead('Wren · New goal', 'Savings'),
             KitTyped(
               '',
               (name) => LedgerField(

@@ -1,5 +1,5 @@
 /// Ledger's display formatting: the money, days, clock times and counts a
-/// finance screen prints, in the shapes the Keel pilot writes them
+/// finance screen prints, in the shapes a bank statement writes them
 /// ("−$1,326.44", "Mon, Oct 26", "8:12 AM", "In 4 days").
 ///
 /// PURE AND DETERMINISTIC, no intl. A generated app renders inside
@@ -63,7 +63,7 @@ abstract final class LedgerFormat {
 
   /// An amount as a line of words prints it: "$6,248.30", "−$1,326.44",
   /// "+$3,412.50" with `showSign: true`; `showCents: false` rounds to whole
-  /// dollars (half to even, as the pilot's figures do): "$2,700".
+  /// dollars (half to even): "$2,700".
   static String money(
     num amount, {
     bool showCents = true,
@@ -81,7 +81,7 @@ abstract final class LedgerFormat {
   /// "−$1,326.44" never breaks after its sign. Readers pass the joiners over.
   ///
   /// ```dart
-  /// Text('The Keel Card balance of ${LedgerFormat.unbroken(LedgerFormat.money(-1326.44))} is netted out.')
+  /// Text('The Wren Card balance of ${LedgerFormat.unbroken(LedgerFormat.money(-1326.44))} is netted out.')
   /// ```
   static String unbroken(String words) => words
       .replaceAll(' ', '\u00A0')

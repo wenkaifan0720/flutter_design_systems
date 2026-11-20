@@ -29,17 +29,19 @@ export 'tokens.dart';
 /// widget reads via `context.ledgerTheme`. Pages never write raw numbers, hex
 /// colours or TextStyles; everything routes through this file's names.
 ///
-/// The theme instances come from [LedgerThemeData.preset]: `quire`, the look
-/// as the Keel / Ledger pilot's stylesheet sets it (its custom properties
-/// and literal colours, written in `_Source` at the end of this file under
-/// their own names, with the role mapping and the judgment calls in its
-/// header; its dark appearance is DESIGNED, in `_Night`), and four of
-/// Cody's catalog themes (`cody/themes/<id>/tokens.json`, ThemeTokens v2
-/// records whose light and dark are both designed, baked by
-/// `scripts/baked-themes.ts` into `internal/themes/`) dressed in the same
-/// roles through [LedgerThemeData.fromTokens]: `terracotta` (paper), `indigo`
-/// (signal), `verdigris` (frost) and `carbon` (gallery). Nothing else
-/// constructs a [LedgerThemeData].
+/// The theme instances come from [LedgerThemeData.preset]: `quire`, Ledger's
+/// own paper and ink (its colours written in `_Source` at the end of this
+/// file under the stylesheet names they came from, with the role mapping and
+/// the choices behind it in its header; its dark appearance, the same book
+/// by lamplight, in `_Night`), and four token themes (ThemeTokens v2 records
+/// whose light and dark are both designed, held in `internal/themes/`)
+/// dressed in the same roles through [LedgerThemeData.fromTokens]:
+/// `terracotta` (paper), `indigo` (signal), `verdigris` (frost) and `carbon`
+/// (gallery). Nothing else constructs a [LedgerThemeData].
+///
+/// The comments here and in the parts call Ledger's source stylesheet "the
+/// source". A value it holds no instance of is marked DERIVED, and a role it
+/// fills only by a choice (one ink standing for two roles) JUDGMENT.
 
 /// The spacing scale: the steps the source pads and gaps by. The page
 /// gutter is 24 on a phone and 56 on the desktop; a section stands 48 under
@@ -471,7 +473,7 @@ final class LedgerThemeData with Diagnosticable {
   /// Whether this is the day book or the night book.
   final Brightness brightness;
 
-  // ---- the catalog's roles ------------------------------------------------
+  // ---- the shared roles ---------------------------------------------------
 
   /// The canvas: the page's paper.
   final Color background;
@@ -667,10 +669,16 @@ final class LedgerThemeData with Diagnosticable {
   /// A toast's shadow.
   final List<BoxShadow> toastShadow;
 
-  /// The primary act's green drop.
+  /// A drop under the primary act (`LedgerButton.filled` and a filled
+  /// `LedgerSplitButton`). Empty in every Ledger theme: a filled act is ink
+  /// printed on the page, and ink casts no shadow. Give one only for an app
+  /// whose acts stand above the page.
   final List<BoxShadow> primaryShadow;
 
-  /// The tab bar's Move disc's green drop.
+  /// A drop under the tab bar's Move disc. Empty in every Ledger theme: the
+  /// disc is the green printed on the page, as a filled act is, and ink
+  /// casts no shadow (the source drops it 10 px in green; JUDGMENT). Give
+  /// one only for an app whose disc stands above the page.
   final List<BoxShadow> discShadow;
 
   // ---- type ---------------------------------------------------------------
@@ -808,8 +816,8 @@ final class LedgerThemeData with Diagnosticable {
     'carbon',
   ];
 
-  /// The preset [id] in [brightness]: `quire` (the source, light as drawn
-  /// and dark DESIGNED in `_Night`), or one of Cody's themes baked:
+  /// The preset [id] in [brightness]: `quire` (Ledger's own paper and ink,
+  /// by day and by lamplight), or one of the four token themes:
   /// `terracotta` (paper), `indigo` (signal), `verdigris` (frost) or
   /// `carbon` (gallery). Throws an
   /// [ArgumentError] for any other id. The same preset is the same value.
@@ -1503,7 +1511,7 @@ final class LedgerThemeData with Diagnosticable {
   };
 
   /// The source's type scale: each slot's face, size, line, weight and
-  /// tracking (in em), and the catalog slot a token set sizes it by.
+  /// tracking (in em), and the token slot a token set sizes it by.
   static const _scale = (
     figure: _Slot(_Face.serif, 88, 88 * .84, 400, -.012, _Anchor.giant),
     figureMedium: _Slot(_Face.serif, 44, 44 * .84, 400, -.012, _Anchor.display),
@@ -1533,7 +1541,7 @@ final class LedgerThemeData with Diagnosticable {
     search: _Slot(_Face.sans, 15, 15, 400, 0, _Anchor.body),
   );
 
-  /// The size the source gives each catalog slot's place in its scale: what
+  /// The size the source gives each token slot's place in its scale: what
   /// a token set's slot is measured against when it sizes a Ledger slot.
   static double _sourceSize(_Anchor anchor) => switch (anchor) {
     _Anchor.giant => _scale.figure.size,
@@ -1574,8 +1582,8 @@ final class LedgerThemeData with Diagnosticable {
     );
   }
 
-  /// The book by day: warm paper, the ink and the green seal, as the Keel /
-  /// Ledger pilot's stylesheet sets them. [density] defaults to the
+  /// The book by day: warm paper, the ink and the green seal. [density]
+  /// defaults to the
   /// platform's.
   ///
   /// ```dart
@@ -1658,8 +1666,6 @@ final class LedgerThemeData with Diagnosticable {
       toastRing: dark
           ? ink.withValues(alpha: base.toastRing.a)
           : hi.withValues(alpha: base.toastRing.a),
-      actShadow: base.actShadow,
-      discShadow: base.discShadow,
     );
     return _build(
       'custom',
@@ -1694,8 +1700,6 @@ final class LedgerThemeData with Diagnosticable {
     toastInk: _Source.paperHi,
     toastAction: _Source.toastAction,
     toastRing: _Source.toastRing,
-    actShadow: _Source.primaryShadow,
-    discShadow: _Source.discShadow,
   );
 
   /// The designed night inks, from `_Night`.
@@ -1723,8 +1727,6 @@ final class LedgerThemeData with Diagnosticable {
     toastInk: _Night.ink,
     toastAction: _Night.green,
     toastRing: _Night.slipRing,
-    actShadow: _Night.actShadow,
-    discShadow: _Night.discShadow,
   );
 
   static LedgerThemeData _quire(Brightness brightness) => _build(
@@ -1843,8 +1845,8 @@ final class LedgerThemeData with Diagnosticable {
       dialogShadow: shadows(_Source.dialogShadow),
       menuShadow: shadows(_Source.menuShadow),
       toastShadow: shadows(_Source.toastShadow),
-      primaryShadow: i.actShadow,
-      discShadow: i.discShadow,
+      primaryShadow: const [],
+      discShadow: const [],
       figure: _type(_scale.figure, ink),
       figureMedium: _type(_scale.figureMedium, ink),
       figureSmall: _type(_scale.figureSmall, ink),
@@ -1878,7 +1880,7 @@ final class LedgerThemeData with Diagnosticable {
     );
   }
 
-  /// A catalog theme dressed in Ledger's roles: the token set's colours,
+  /// A token theme dressed in Ledger's roles: the token set's colours,
   /// shadows, sizes and shape, Ledger's faces, weights, leading and
   /// tracking (the bundled faces carry only the source's weights). Ledger's
   /// own roles follow from the token roles by the rules below; a quiet ink
@@ -2012,8 +2014,8 @@ final class LedgerThemeData with Diagnosticable {
       dialogShadow: shadows(c.shadowLg),
       menuShadow: shadows(c.shadowMd),
       toastShadow: shadows(c.shadowMd),
-      primaryShadow: shadows(c.shadowSm),
-      discShadow: shadows(c.shadowMd),
+      primaryShadow: const [],
+      discShadow: const [],
       figure: type(_scale.figure, c.textPrimary),
       figureMedium: type(_scale.figureMedium, c.textPrimary),
       figureSmall: type(_scale.figureSmall, c.textPrimary),
@@ -2078,7 +2080,7 @@ final class LedgerThemeData with Diagnosticable {
 
 enum _Face { sans, serif, italic, mono }
 
-/// The catalog type slot a token set sizes a Ledger slot by.
+/// The token type slot a token set sizes a Ledger slot by.
 enum _Anchor { giant, display, h1, h2, body, bodySmall, label, mono }
 
 /// One set of inks a Ledger theme is built from: the papers, the inks, the
@@ -2105,8 +2107,6 @@ typedef _Inks = ({
   Color toastInk,
   Color toastAction,
   Color toastRing,
-  List<BoxShadow> actShadow,
-  List<BoxShadow> discShadow,
 });
 
 /// One step of the source's type scale.
@@ -2446,7 +2446,7 @@ extension LedgerTextStyle on TextStyle {
 ///   both stay translucent as the source sets them. `headRule` and
 ///   `borderStrong` = `--ink`: JUDGMENT, the source's strong rule is the
 ///   ink itself (a section's head, a sheet's head, the double rule, the
-///   secondary button's ring), so the catalog's strong border is the ink.
+///   secondary button's ring), so the shared strong border is the ink.
 /// - The green: `accent` = `success` = `accentText` = `moneyIn` = `pace` =
 ///   `seal` = `--green`. JUDGMENT: one green for the accent and for money
 ///   in, as the source spends it on both and draws no other. `onAccent` =
@@ -2473,14 +2473,16 @@ extension LedgerTextStyle on TextStyle {
 ///   the avatar `--ink` with `--paper` initials, a menu's chosen item
 ///   `--paper`.
 /// - Shadows: the rules' box-shadows (`--shadow-sheet`, the phone sheet's,
-///   the dialog's, the menu's, the toast's, the primary act's and the Move
-///   disc's drop), as Flutter draws CSS's blur ([_css]).
+///   the dialog's, the menu's and the toast's), as Flutter draws CSS's blur
+///   ([_css]). JUDGMENT: the source's drops under the primary act and the
+///   Move disc are left out; both are green printed on the page, and ink
+///   casts no shadow.
 ///
 /// Type: the slots are the source's sizes, lines, weights and tracking
 /// (`_scale`). The source sets no `tnum`: the serif figures keep their own
 /// numerals, and the mono amounts are of one width by their face.
 ///
-/// Dark is DESIGNED, in `_Night`: the source has no dark appearance, and
+/// Dark is designed in `_Night`: the source has no dark appearance, and
 /// its night is the same book kept by lamplight rather than the ink and the
 /// paper swapped. The tests hold every appearance to the contrast bars.
 abstract final class _Source {
@@ -2561,17 +2563,6 @@ abstract final class _Source {
     _css(18, 36, -14, const Color.fromRGBO(20, 26, 31, .55)),
   ];
 
-  /// `.btn-primary`: 0 10px 20px -12px rgba(30, 90, 68, .7).
-  static final List<BoxShadow> primaryShadow = [
-    _css(10, 20, -12, const Color.fromRGBO(30, 90, 68, .7)),
-  ];
-
-  /// `.tab-move .move`'s drop: 0 10px 22px -8px rgba(30, 90, 68, .55) (its
-  /// 5 px ring is `discRing`, drawn by the disc).
-  static final List<BoxShadow> discShadow = [
-    _css(10, 22, -8, const Color.fromRGBO(30, 90, 68, .55)),
-  ];
-
   /// A CSS box-shadow `0 [y] [blur] [spread] [color]` as Flutter draws it:
   /// CSS blurs to a standard deviation of half the blur radius, Flutter's
   /// radius maps to `0.57735 r + 0.5`.
@@ -2584,7 +2575,7 @@ abstract final class _Source {
       );
 }
 
-/// The DESIGNED dark appearance of `quire`: the same book of records kept by
+/// The designed dark appearance of `quire`: the same book of records kept by
 /// lamplight. Written from the source's principles rather than inverted:
 ///
 /// - the papers stay paper: a warm umber night (#1A1815), the raised slip a
@@ -2634,12 +2625,4 @@ abstract final class _Night {
   /// The toast's raised slip and its ring.
   static const Color slip = Color(0xFF2E2B26);
   static const Color slipRing = Color.fromRGBO(238, 232, 220, .16);
-
-  /// The act's and the Move disc's drops, in black at the source's geometry.
-  static final List<BoxShadow> actShadow = [
-    _Source._css(10, 20, -12, const Color.fromRGBO(0, 0, 0, .6)),
-  ];
-  static final List<BoxShadow> discShadow = [
-    _Source._css(10, 22, -8, const Color.fromRGBO(0, 0, 0, .55)),
-  ];
 }

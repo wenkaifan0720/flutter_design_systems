@@ -300,7 +300,7 @@ void main() {
     final table = DesignTableController<(String, String, String)>(
       rows: const [
         ('Harbour Books', 'Everyday checking', '−\$64.18'),
-        ('Blue Bottle', 'Keel card', '−\$6.75'),
+        ('Blue Bottle', 'Wren card', '−\$6.75'),
       ],
       columns: [
         DesignTableColumn(id: 'name', label: 'Entry', sortKey: (row) => row.$1),

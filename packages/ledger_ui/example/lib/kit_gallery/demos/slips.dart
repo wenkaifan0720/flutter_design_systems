@@ -5,7 +5,7 @@
 /// transfer's done head ([LedgerDoneHead]), the split ticket
 /// ([LedgerSplitTicket]), what a goal holds after the money lands
 /// ([LedgerSavedAfter]) and the row summing the contributions before
-/// ([LedgerBeforeRow]). Every word and figure is the pilot's (keel.dart,
+/// ([LedgerBeforeRow]). Every word and figure is the sample bank's (wren.dart,
 /// else the source page named beside it).
 library;
 
@@ -54,7 +54,7 @@ Widget kitSlipsDemo(Brightness brightness) => kitScreen(
   ],
 );
 
-/// The Keel Card's payment: due Nov 12, paid by autopay from Everyday.
+/// The Wren Card's payment: due Nov 12, paid by autopay from Everyday.
 KitBill get _cardBill => kitBills.firstWhere((b) => b.autopay);
 
 /// The goal behind: Lisbon in May.
@@ -64,7 +64,7 @@ KitGoal get _lisbon => kitGoals.firstWhere((g) => g.behind);
 // One builder per specimen in metadata.yaml. The stage (kitSpecimenStage)
 // styles them; a builder never names a style.
 
-/// The Keel Card's October statement: $1,326.44 due Nov 12, autopay from
+/// The Wren Card's October statement: $1,326.44 due Nov 12, autopay from
 /// Everyday, and its last payment.
 Widget kitSpecimenStatementSlip() => LedgerStatementSlip(
   kind: '$kitCardName · Statement',
@@ -135,7 +135,7 @@ Widget kitSpecimenMemoSlip() => LedgerMemoSlip(
   ],
 );
 
-/// The Keel Card frozen this evening: nothing cancelled, what it stops and
+/// The Wren Card frozen this evening: nothing cancelled, what it stops and
 /// what still goes through, and Unfreeze card.
 Widget kitSpecimenFrozenBanner() => LedgerFrozenBanner(
   // "Frozen today at" the page's time (capture: 7:40 PM).

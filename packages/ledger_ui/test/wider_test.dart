@@ -539,9 +539,9 @@ void main() {
       expect(picked, DateTime(2026, 11, 12, 9, 30));
     });
 
-    // The user (11-18, a Due date at a tablet's width): the sheet stood 640
-    // wide round a month held to 416, a dead column at its end beside the
-    // title's rule and Done.
+    // A Due date at a tablet's width: the sheet keeps to its month rather
+    // than standing 640 wide round a month held to 416, a dead column at its
+    // end beside the title's rule and Done.
     for (final width in const [800.0, 1440.0]) {
       testWidgets('the day sheet and its month share one measure at '
           '${width.round()}', (t) async {
@@ -594,8 +594,8 @@ void main() {
       expect(_node(t, 'Next month'), isSemantics(hasTapAction: false));
     });
 
-    // Self-review round 1: at 1440 the month spread its days 150 apart
-    // across the column. From 600 it stands at its sheet's width.
+    // At 1440 a month spread across the column would set its days 150
+    // apart; from 600 it stands at its sheet's width.
     testWidgets('the month and the wheels keep their measure from 600', (
       t,
     ) async {

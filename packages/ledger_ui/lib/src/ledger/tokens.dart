@@ -1,4 +1,4 @@
-/// The ThemeTokens v2 record a baked catalog theme is held in: its colours
+/// The ThemeTokens v2 record a baked theme is held in: its colours
 /// for each appearance, its text slots and its corners.
 library;
 
@@ -7,7 +7,7 @@ import 'package:flutter/painting.dart';
 
 import 'theme.dart' show LedgerThemeData;
 
-/// One text slot of a baked catalog theme: the face it names, its size,
+/// One text slot of a baked theme: the face it names, its size,
 /// weight (100..900), line height as a multiple and tracking in points.
 @immutable
 final class LedgerTokenType {
@@ -36,7 +36,7 @@ final class LedgerTokenType {
   final double letterSpacing;
 }
 
-/// One elevation layer of a baked catalog theme.
+/// One elevation layer of a baked theme.
 @immutable
 final class LedgerTokenShadow {
   /// An elevation layer as the record names it.
@@ -68,8 +68,8 @@ final class LedgerTokenShadow {
   );
 }
 
-/// The colours of one appearance of a baked catalog theme: Cody's role
-/// names, which is what ThemeTokens v2 records.
+/// The colours of one appearance of a baked theme, by the role
+/// names ThemeTokens v2 records.
 @immutable
 final class LedgerTokenColors {
   /// One appearance's colours as the record names them.
@@ -189,7 +189,7 @@ final class LedgerTokenColors {
   final List<LedgerTokenShadow> shadowLg;
 }
 
-/// The corner language of a baked catalog theme.
+/// The corner language of a baked theme.
 @immutable
 final class LedgerTokenShape {
   /// A corner language as the record names it.
@@ -214,8 +214,8 @@ final class LedgerTokenShape {
 }
 
 /// A ThemeTokens v2 record, baked into constants
-/// (`internal/themes/<id>.g.dart`, drift-gated against the JSON by the
-/// catalog's tests): both appearances, the twelve type slots and the shape.
+/// (`internal/themes/<id>.g.dart`, generated from the theme's JSON and
+/// checked against it): both appearances, the twelve type slots and the shape.
 /// [LedgerThemeData.fromTokens] dresses the system in one.
 @immutable
 final class LedgerTokens {

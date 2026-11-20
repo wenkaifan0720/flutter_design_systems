@@ -1442,7 +1442,7 @@ class _AllocSwatch extends CustomPainter {
 /// heads. Stand them in [LedgerHoldings].
 ///
 /// ```dart
-/// LedgerHoldingRow(name: 'Keel Total Market', symbol: 'KTMX', kind: 'Stocks', shares: '182.4 shares', value: 26410.20, today: 262.10)
+/// LedgerHoldingRow(name: 'Wren Total Market', symbol: 'WTMX', kind: 'Stocks', shares: '182.4 shares', value: 26410.20, today: 262.10)
 /// ```
 class LedgerHoldingRow extends StatelessWidget {
   /// A fund named [name] ([symbol]) worth [value].

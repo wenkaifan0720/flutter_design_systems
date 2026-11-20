@@ -4,7 +4,7 @@
 /// the ledger amount of a row ([LedgerAmount]: the mono, its cents
 /// receding) in each tone, the dot leader that joins a row's words to its
 /// amount ([LedgerLeaderLine]), and the statement's double-ruled total
-/// ([LedgerStatementTotal]). Every amount is the pilot's (the sample data).
+/// ([LedgerStatementTotal]). Every amount is the sample bank's.
 library;
 
 import 'package:material_ui/material_ui.dart';
@@ -78,7 +78,7 @@ const _accounts = <(String, num)>[
   ('Everyday', 6248.30),
   ('Savings', 21500.00),
   ('Lisbon fund', 2840.00),
-  ('Keel Card', -1326.44),
+  ('Wren Card', -1326.44),
   ('Investing', 48920.70),
 ];
 

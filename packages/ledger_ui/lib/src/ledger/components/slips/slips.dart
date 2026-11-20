@@ -28,7 +28,7 @@ TextStyle _serif(LedgerThemeData t, double px, double line, double em) =>
 /// [last] payment's row under a rule.
 ///
 /// ```dart
-/// LedgerStatementSlip(kind: 'Keel Card · Statement', number: '··7730', balance: 1326.44, due: 'Nov 12', dueNote: 'In 15 days', details: const [LedgerKeyValue('Autopay', 'Full balance')])
+/// LedgerStatementSlip(kind: 'Wren Card · Statement', number: '··7730', balance: 1326.44, due: 'Nov 12', dueNote: 'In 15 days', details: const [LedgerKeyValue('Autopay', 'Full balance')])
 /// ```
 class LedgerStatementSlip extends StatelessWidget {
   /// A statement for [number] owing [balance] by [due].
@@ -45,7 +45,7 @@ class LedgerStatementSlip extends StatelessWidget {
     super.key,
   });
 
-  /// The slip's kind (Keel Card · Statement) and the card's last four.
+  /// The slip's kind (Wren Card · Statement) and the card's last four.
   final String kind;
 
   /// The card's last four.

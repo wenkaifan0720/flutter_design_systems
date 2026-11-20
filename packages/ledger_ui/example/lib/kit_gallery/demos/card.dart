@@ -1,7 +1,7 @@
 /// The payment cards' faces, printed like banknotes ([LedgerCardFace]): the
-/// Keel Card on its ink stock, the Everyday debit card small on its paper,
-/// and the Keel Card frozen under its frost with the ink's seal pressed
-/// across its corner. Every word and number is the pilot's (keel.dart).
+/// Wren Card on its ink stock, the Everyday debit card small on its paper,
+/// and the Wren Card frozen under its frost with the ink's seal pressed
+/// across its corner. Every word and number is the sample bank's (wren.dart).
 library;
 
 import 'package:material_ui/material_ui.dart';
@@ -36,9 +36,9 @@ Widget kitCardDemo(Brightness brightness) => kitScreen(
 // One builder per specimen in metadata.yaml. The stage (kitSpecimenStage)
 // styles them; a builder never names a style.
 
-/// The Keel Card, ending 7730, on the ink stock.
+/// The Wren Card, ending 7730, on the ink stock.
 Widget kitSpecimenCardCredit() => const LedgerCardFace(
-  brand: 'Keel',
+  brand: 'Wren',
   kind: kitCardKind,
   number: kitCardNumber,
   holder: kitCardHolder,
@@ -48,7 +48,7 @@ Widget kitSpecimenCardCredit() => const LedgerCardFace(
 /// Everyday's debit card, ending 3907: the paper stock, small, as the
 /// Cards page stands it in its margin.
 Widget kitSpecimenCardDebit() => const LedgerCardFace(
-  brand: 'Keel',
+  brand: 'Wren',
   kind: kitDebitKind,
   number: kitDebitNumber,
   holder: kitDebitHolder,
@@ -57,10 +57,10 @@ Widget kitSpecimenCardDebit() => const LedgerCardFace(
   size: LedgerCardSize.small,
 );
 
-/// The Keel Card frozen today: the frost over its face, its account
+/// The Wren Card frozen today: the frost over its face, its account
 /// dropped, the ink's seal across its corner.
 Widget kitSpecimenCardFrozen() => const LedgerCardFace(
-  brand: 'Keel',
+  brand: 'Wren',
   kind: kitCardKind,
   number: kitCardNumber,
   holder: kitCardHolder,
@@ -74,7 +74,7 @@ Widget kitSpecimenCardFrozen() => const LedgerCardFace(
   ),
 );
 
-/// The Keel Card's details as its sheet shows them: the whole number, its
+/// The Wren Card's details as its sheet shows them: the whole number, its
 /// expiry and CVC, and the name on it.
 // expires 09/29, CVC
 // 317, the owner's name as written.

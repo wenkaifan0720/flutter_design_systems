@@ -22,15 +22,19 @@ enum LedgerPressRole {
 /// [DesignPressable]: the tap, the pointer's click cursor, keyboard focus
 /// with Enter and Space, and the semantics of the control it makes (a
 /// button or a link, enabled or not, selected, checked or toggled). Ledger
-/// says each state in its rules and its ink, never in a wash: a press sinks
-/// the face [LedgerChromeMetrics.pressSink] into the paper, like a stamp;
-/// keyboard focus rules the accountant's double rule in the ink under the
-/// face ([LedgerFocusRing]), only while the keyboard moved focus; a hover
-/// or a press inks a row's dot leader in ([LedgerPressStates] carries them
-/// to the face). Each change moves in Ledger's one motion ([LedgerEase],
-/// [LedgerFace]): the face sinks and rises, the rule is drawn in as a pen
-/// draws it, and a change mid-way turns from where it is. Plumbing of the components; a page places one only to make
-/// a row or card it composed by hand one tap target.
+/// says each state in its rules and its ink, never in light or depth: a
+/// press leaves the face where it is and deepens its marks a shade toward
+/// the ink, like a stamp pressed harder, and the bare paper of its box (its
+/// corners [radius] round) takes the same ink under them, so a face drawn
+/// in the ink itself still shows it ([LedgerImpression]); keyboard
+/// focus rules the accountant's double rule in the ink under the face
+/// ([LedgerFocusRing]), only while the keyboard moved focus; a hover or a
+/// press inks a row's dot leader in ([LedgerPressStates] carries them to
+/// the face). Each change moves in Ledger's one motion ([LedgerEase],
+/// [LedgerFace]): the impression fades in and out, the rule is drawn in as
+/// a pen draws it, and a change mid-way turns from where it is. Plumbing of
+/// the components; a page places one only to make a row or card it
+/// composed by hand one tap target.
 ///
 /// A null [onTap] makes it inert: the child is drawn as it is, the node is
 /// announced as disabled, and nothing answers a tap or a key. [label] is the
@@ -107,7 +111,7 @@ class LedgerPressable extends StatelessWidget {
   final bool isError;
 
   /// The face's corner radius: the focus rule keeps to the straight run of
-  /// its foot.
+  /// its foot, and a press's wash of the paper rounds its corners by it.
   final double radius;
 
   /// How far inside the child's box the face stands.
@@ -123,8 +127,8 @@ class LedgerPressable extends StatelessWidget {
   /// Whether the child's own semantics are replaced by [label].
   final bool excludeChild;
 
-  /// The face's opacity while a finger is down; 1, the default, sinks it
-  /// into the paper instead.
+  /// The face's opacity while a finger is down; 1, the default, deepens its
+  /// ink instead ([LedgerImpression]).
   final double pressedOpacity;
 
   /// The caller's focus node, which the caller disposes; null keeps one of
@@ -228,9 +232,13 @@ class LedgerPressable extends StatelessWidget {
                   child: face,
                 )
               : LedgerEase(
-                  value: pressed ? LedgerChromeMetrics.pressSink : 0,
-                  builder: (context, y, face) =>
-                      Transform.translate(offset: Offset(0, y), child: face),
+                  value: pressed ? LedgerImpression.pressed : 0,
+                  builder: (context, depth, face) => LedgerImpression(
+                    ink: t.textPrimary,
+                    depth: depth,
+                    wash: radius,
+                    child: face,
+                  ),
                   child: face,
                 ),
         );
@@ -241,7 +249,7 @@ class LedgerPressable extends StatelessWidget {
 
 /// The states of the nearest [LedgerPressable] above (hovered, pressed,
 /// focused, selected), for a face that answers them in its own ink: a
-/// row's dot leader inks in, a filled button's shadow goes while pressed.
+/// row's dot leader inks in, a frameless button's words take the underline.
 /// Plumbing of the controls; pages never place one.
 class LedgerPressStates extends InheritedWidget {
   /// [states] for the faces under [child].

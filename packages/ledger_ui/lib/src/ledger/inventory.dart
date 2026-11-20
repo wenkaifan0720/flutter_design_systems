@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:ui_core/inventory.dart';
+import 'package:ui_core/ui_core.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import 'components/action-sheet/action_sheet.dart';
@@ -517,7 +518,7 @@ final DesignInventory ledgerInventory = DesignInventory(
         child: LedgerSideSheet(
           title: 'Filters',
           onClose: () {},
-          child: const Text('Everyday, Savings and the Keel Card.'),
+          child: const Text('Everyday, Savings and the Wren Card.'),
         ),
       ),
     ),
@@ -581,7 +582,7 @@ final DesignInventory ledgerInventory = DesignInventory(
     DesignInventoryEntry.present(
       'ReorderableListView',
       (_) => LedgerReorderableList<String>(
-        items: const ['Everyday', 'Savings', 'Keel Card'],
+        items: const ['Everyday', 'Savings', 'Wren Card'],
         labelOf: (n) => n,
         onReorder: (_, _) {},
         itemBuilder: (context, n) => Text(n),
@@ -640,7 +641,7 @@ final DesignInventory ledgerInventory = DesignInventory(
           items: const [
             LedgerSelectItem(value: 'Everyday', label: 'Everyday'),
             LedgerSelectItem(value: 'Savings', label: 'Savings'),
-            LedgerSelectItem(value: 'Keel Card', label: 'Keel Card'),
+            LedgerSelectItem(value: 'Wren Card', label: 'Wren Card'),
           ],
         ),
       ),
@@ -658,23 +659,27 @@ final DesignInventory ledgerInventory = DesignInventory(
     ),
     DesignInventoryEntry.present(
       'RadioGroup',
+      // One Tab stop, the arrows choosing: the radios grouped at the owner
+      // of their choice.
       (_) => _Held<String?>(
         'monthly',
-        (context, v, set) => Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            for (final (value, label) in const [
-              ('weekly', 'Every week'),
-              ('monthly', 'Every month'),
-            ])
-              LedgerRadio<String>(
-                value: value,
-                groupValue: v,
-                label: label,
-                onChanged: set,
-              ),
-          ],
+        (context, v, set) => DesignRadioGroup<String>(
+          options: const ['weekly', 'monthly'],
+          value: v,
+          onChanged: set,
+          semanticLabel: 'How often',
+          layoutBuilder: (context, radios) => Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: radios,
+          ),
+          itemBuilder: (context, value, node, select) => LedgerRadio<String>(
+            value: value,
+            groupValue: v,
+            label: value == 'weekly' ? 'Every week' : 'Every month',
+            focusNode: node,
+            onChanged: select == null ? null : (_) => select(),
+          ),
         ),
       ),
     ),
@@ -944,7 +949,7 @@ final DesignInventory ledgerInventory = DesignInventory(
                 title: 'Blue Fern Café',
                 category: 'Dining out',
                 when: '08:12',
-                account: 'Keel Card',
+                account: 'Wren Card',
                 amount: -9.65,
                 initials: 'BF',
                 pending: true,

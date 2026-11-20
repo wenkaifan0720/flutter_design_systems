@@ -1,5 +1,5 @@
-// The keys of the lists Ledger's combobox and tag field open, ui_core's own since its final 0.2.0 (10e2d9d2d2,
-// msg_2ec6da32e619), held in Ledger's wrappers: a press opens every option, the combobox's on its value; Up and Down
+// The keys of the lists Ledger's combobox and tag field open, ui_core's own since 0.2.0,
+// held in Ledger's wrappers: a press opens every option, the combobox's on its value; Up and Down
 // go round the ends; on a closed list they only open it, where it stood; Home and End are the words'; edited words
 // filter; an empty field's Down opens every option at the first; Enter takes the lit one and closes the list (chosen
 // here as the platform's text input does, with its done action). Neither wrapper offers a disabled option, so

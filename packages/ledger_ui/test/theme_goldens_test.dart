@@ -41,13 +41,13 @@ const List<String> _rows = [
   'ListTile',
 ];
 
-/// Why the comparisons skip themselves, or null when they run. The pictures stay in the catalog this package is
+/// Why the comparisons skip themselves, or null when they run. The pictures stay in the repository this package is
 /// generated from and its build lays them in test/goldens; a published copy goes without them and compares nothing,
 /// though `--update-goldens` still records them.
 final String? _noPictures =
     autoUpdateGoldenFiles || Directory('test/goldens/theme').existsSync()
     ? null
-    : 'no golden pictures in test/goldens/theme: they stay in the catalog Ledger is generated from';
+    : 'no golden pictures in test/goldens/theme: they stay in the repository Ledger is generated from';
 
 void main() {
   group('theme', _presets, skip: _noPictures);

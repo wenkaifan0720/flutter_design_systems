@@ -1,4 +1,4 @@
-/// Every chart the ledger engraves, each fed the pilot's data and sized by
+/// Every chart the ledger engraves, each fed the sample bank's data and sized by
 /// the width it is given (from 1024 wide, the source's desktop plot): the
 /// net worth by month ([LedgerNetWorthChart]), the month's spending against
 /// the budget's pace ([LedgerCumulativeChart]), the days as hatched bars

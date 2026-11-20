@@ -6,7 +6,7 @@
 /// recent activity, each row carrying its day; and the month's bills
 /// ([LedgerBillList] of [LedgerBillRow]: the date tab, the payee on its
 /// leader, the account and the status, the amount). Every row is the
-/// pilot's (keel.dart).
+/// sample bank's (wren.dart).
 library;
 
 import 'package:material_ui/material_ui.dart';

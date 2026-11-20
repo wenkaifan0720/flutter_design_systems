@@ -1,5 +1,5 @@
-/// The measures Ledger's chrome and figures are drawn at, each the value the
-/// Keel / Ledger pilot's stylesheet sets (its rule named beside it). A
+/// The measures Ledger's chrome and figures are drawn at, each the value
+/// Ledger's source stylesheet sets (its CSS rule named beside it). A
 /// measure the source holds no instance of says DERIVED.
 ///
 /// Components read these; pages never do (a page's spacing is
@@ -438,7 +438,7 @@ abstract final class LedgerChromeMetrics {
   static const double headAfter = 8;
 
   /// `.head-link`: its chevron 14, 2 from its words, its ink ending on the
-  /// column's end (the pilot hung its box 3 past it).
+  /// column's end (the source hangs its box 3 past it).
   static const double linkGlyph = 14;
 
   /// A head link's chevron distance from its words.
@@ -602,7 +602,13 @@ abstract final class LedgerChromeMetrics {
   /// twice this under its control.
   static const double focusGap = 2;
 
-  /// How far a pressed face sinks into the paper, like a stamp.
+  /// How far a pressed face sank into the paper. No Ledger control moves
+  /// when pressed: a held face keeps its place and deepens its ink
+  /// (`LedgerImpression`).
+  @Deprecated(
+    'Ledger controls no longer move when pressed; use LedgerImpression to '
+    'deepen a held face in place. Unused by the package.',
+  )
   static const double pressSink = 1;
 
   /// The loading leader's length: its dots draw in across it, one by one.

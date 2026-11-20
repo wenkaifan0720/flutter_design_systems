@@ -6,7 +6,7 @@
 /// allocation's kinds and a portfolio's funds ([LedgerAllocationRow],
 /// [LedgerHoldings]), two acts side by side ([LedgerButtonRow]) and the
 /// account holder's certificate ([LedgerMemberCard]). Every word is the
-/// pilot's (keel.dart, else the source line named beside it).
+/// sample bank's (wren.dart, else the source line named beside it).
 library;
 
 import 'package:material_ui/material_ui.dart';
@@ -63,7 +63,7 @@ Widget kitChoicesDemo(Brightness brightness) => kitScreen(
   ],
 );
 
-// Values the gallery's keel.dart does not bind, taken from the source.
+// Values the gallery's wren.dart does not bind, taken from the source.
 
 /// with the sample data
 const String _suggestWhy =
@@ -86,9 +86,9 @@ const List<LedgerIconChoice> _goalIcons = [
 // Each holding: name, symbol, kind, shares ("N shares", else "Settled
 // cash"), value, today.
 const List<(String, String, String, String, double, double)> _holdings = [
-  ('Keel Total Market', 'KTMX', 'Stocks', '182.4 shares', 26410.2, 262.1),
-  ('Keel International', 'KINX', 'Stocks', '301 shares', 9782.4, 71.48),
-  ('Keel Bond Index', 'KBND', 'Bonds', '146.2 shares', 7336.1, 18.34),
+  ('Wren Total Market', 'WTMX', 'Stocks', '182.4 shares', 26410.2, 262.1),
+  ('Wren International', 'WINX', 'Stocks', '301 shares', 9782.4, 71.48),
+  ('Wren Bond Index', 'WBND', 'Bonds', '146.2 shares', 7336.1, 18.34),
   ('Clean Energy Leaders', 'KCLN', 'Stocks', '90 shares', 3240, 39.45),
   ('Cash', 'CASH', 'Cash', 'Settled cash', 2152, 0),
 ];
@@ -272,12 +272,12 @@ Widget kitSpecimenButtonRow() => LedgerButtonRow(
 
 /// The profile's certificate: Maren Holt, a member since March 2023.
 Widget kitSpecimenMemberCard() => const LedgerMemberCard(
-  kind: 'Keel · Account holder',
+  kind: 'Wren · Account holder',
   since: 'Since Mar 2023',
   name: _holder,
   initials: _holderInitials,
   subtitle: 'Member since March 2023',
-  seal: LedgerSeal(kicker: 'Keel', value: 'Member', foot: 'Since 2023'),
+  seal: LedgerSeal(kicker: 'Wren', value: 'Member', foot: 'Since 2023'),
   details: [
     LedgerKeyValue('Email', _holderEmail),
     LedgerKeyValue('Phone', _holderPhone),

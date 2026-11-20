@@ -9,7 +9,7 @@
 /// flag of a budget gone over ([LedgerFlag]); Move money's four ways
 /// ([LedgerQuickActions]); a figure's change ([LedgerDelta]); and a link
 /// standing on its own under what it closes ([LedgerMoreLink]). Every
-/// word and figure is the pilot's (keel.dart). From 1024 wide each part
+/// word and figure is the sample bank's (wren.dart). From 1024 wide each part
 /// stands at the width the source's board gives it.
 library;
 
@@ -109,13 +109,16 @@ Widget kitSpecimenHeads() => Column(
 );
 
 /// Home's hero head: Net worth, its footnote, and the range chips.
-Widget kitSpecimenHeroHead() => LedgerHead.hero(
-  'Net worth',
-  footnote: '1',
-  trailing: LedgerSegmentedControl(
-    options: kitRanges,
-    value: kitRange,
-    onChanged: (_) {},
+Widget kitSpecimenHeroHead() => KitChosen<String>(
+  kitRange,
+  (range, choose) => LedgerHead.hero(
+    'Net worth',
+    footnote: '1',
+    trailing: LedgerSegmentedControl(
+      options: kitRanges,
+      value: range,
+      onChanged: choose,
+    ),
   ),
 );
 

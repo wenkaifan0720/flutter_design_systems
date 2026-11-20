@@ -1,6 +1,5 @@
 // Every example in the package's docs, compiled here (an example that stops compiling fails analysis) and run where
-// it is a widget (testDocExamples, ui_core's template in doc_examples.dart). Written from lib's examples by the
-// catalog's gen_doc_examples step; the names the examples assume are in doc_example_stubs.dart.
+// it is a widget (testDocExamples, ui_core's template in doc_examples.dart). Generated from lib's examples; the names the examples assume are in doc_example_stubs.dart.
 // ignore_for_file: prefer_const_constructors, unnecessary_lambdas, avoid_redundant_argument_values, unused_local_variable, unused_element
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
@@ -31,7 +30,7 @@ void main() {
       ),
       'Text': (context) => Text(LedgerFormat.money(-1326.44), style: t.amount),
       'Text 2': (context) => Text(
-        'The Keel Card balance of ${LedgerFormat.unbroken(LedgerFormat.money(-1326.44))} is netted out.',
+        'The Wren Card balance of ${LedgerFormat.unbroken(LedgerFormat.money(-1326.44))} is netted out.',
       ),
       'Text 3': (context) =>
           Text('${LedgerFormat.isolated('+3.86%')} since September'),
@@ -123,7 +122,7 @@ void main() {
         items: tabs,
         selectedIndex: 0,
         onDestinationSelected: select,
-        brand: 'Keel',
+        brand: 'Wren',
       ),
       'LedgerSideBar 2': (context) => LedgerSideBar(
         items: tabs,
@@ -179,7 +178,7 @@ void main() {
         meta: 'Wednesday, October 28 · 7:40 PM',
       ),
       'LedgerStatementSlip': (context) => LedgerStatementSlip(
-        kind: 'Keel Card · Statement',
+        kind: 'Wren Card · Statement',
         number: '··7730',
         balance: 1326.44,
         due: 'Nov 12',
@@ -307,11 +306,11 @@ void main() {
         itemBuilder: (context, n) => Text(n),
       ),
       'LedgerCardFace': (context) => LedgerCardFace(
-        brand: 'Keel',
+        brand: 'Wren',
         kind: 'Credit',
         number: const ['4242', '4242', '4242', '7730'],
         holder: 'MAREN HOLT',
-        account: 'Keel Card',
+        account: 'Wren Card',
       ),
       'LedgerCardDetails': (context) => LedgerCardDetails(
         number: const ['4242', '4242', '4242', '7730'],
@@ -492,8 +491,8 @@ void main() {
         share: '80.6%',
       ),
       'LedgerHoldingRow': (context) => LedgerHoldingRow(
-        name: 'Keel Total Market',
-        symbol: 'KTMX',
+        name: 'Wren Total Market',
+        symbol: 'WTMX',
         kind: 'Stocks',
         shares: '182.4 shares',
         value: 26410.20,
@@ -528,13 +527,13 @@ void main() {
         ],
       ),
       'LedgerMemberCard': (context) => LedgerMemberCard(
-        kind: 'Keel · Account holder',
+        kind: 'Wren · Account holder',
         since: 'Since Mar 2023',
         name: 'Maren Holt',
         initials: 'MH',
         subtitle: 'Member since March 2023',
         seal: const LedgerSeal(
-          kicker: 'Keel',
+          kicker: 'Wren',
           value: 'Member',
           foot: 'Since 2023',
         ),
@@ -547,9 +546,9 @@ void main() {
         onSubmitted: () => send(reply.text),
       ),
       'LedgerBrandMark': (context) => LedgerBrandMark(),
-      'LedgerWordmark': (context) => LedgerWordmark('Keel'),
+      'LedgerWordmark': (context) => LedgerWordmark('Wren'),
       'LedgerWordmark 2': (context) =>
-          LedgerWordmark('Keel', size: LedgerWordmarkSize.large),
+          LedgerWordmark('Wren', size: LedgerWordmarkSize.large),
       'LedgerChip': (context) => LedgerChip(
         'Groceries',
         count: 12,
@@ -785,7 +784,7 @@ void main() {
         title: 'Blue Fern Café',
         category: 'Dining out',
         when: '8:12 AM',
-        account: 'Keel Card',
+        account: 'Wren Card',
         amount: -6.75,
         pending: true,
         onTap: () {},
@@ -819,7 +818,7 @@ void main() {
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Column(
                 children: [
-                  const LedgerSlipHead('Keel · New goal', 'Savings'),
+                  const LedgerSlipHead('Wren · New goal', 'Savings'),
                   ...fields,
                 ],
               ),
@@ -829,19 +828,19 @@ void main() {
       ),
       'LedgerStub': (context) => LedgerStub(),
       'LedgerSlipHead': (context) =>
-          LedgerSlipHead('Keel · New goal', 'Savings'),
+          LedgerSlipHead('Wren · New goal', 'Savings'),
       'LedgerReceipt': (context) => LedgerReceipt(
-        kind: 'Keel · Transaction',
+        kind: 'Wren · Transaction',
         number: 'No. T280812BLUE',
         leading: const LedgerMonogram(
           'Blue Fern Café',
           size: LedgerMonogramSize.record,
         ),
         name: 'Blue Fern Café',
-        subtitle: 'Dining out · Keel Card ··7730',
+        subtitle: 'Dining out · Wren Card ··7730',
         figure: const LedgerFigure(-6.75),
         seal: const LedgerSeal(
-          kicker: 'Keel Card',
+          kicker: 'Wren Card',
           value: 'Pending',
           foot: 'Oct 28',
           tone: LedgerSealTone.plain,
@@ -849,7 +848,7 @@ void main() {
         details: const [LedgerKeyValue('Status', 'Pending')],
       ),
       'LedgerCheque': (context) => LedgerCheque(
-        kind: 'Keel · Transfer',
+        kind: 'Wren · Transfer',
         date: 'Wed, Oct 28, 2026',
         micr: '··0119 ··4821 ··9015',
         lines: [
@@ -868,12 +867,12 @@ void main() {
         ],
       ),
       'LedgerCheque 2': (context) => LedgerCheque(
-        kind: 'Keel · Transfer',
+        kind: 'Wren · Transfer',
         date: 'Wed, Oct 28, 2026',
         micr: '··0119 ··4821 ··9015',
         lines: lines,
         stamp: const LedgerSeal(
-          kicker: 'Keel · Transfer',
+          kicker: 'Wren · Transfer',
           value: 'Sent',
           foot: 'Oct 28',
         ),

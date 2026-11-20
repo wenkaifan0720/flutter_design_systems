@@ -155,7 +155,7 @@ const _accounts = <(String, num)>[
   ('Everyday', 6248.30),
   ('Savings', 21500.00),
   ('Lisbon fund', 2840.00),
-  ('Keel Card', -1326.44),
+  ('Wren Card', -1326.44),
   ('Investing', 48920.70),
 ];
 
@@ -221,7 +221,7 @@ Widget kitSpecimenScreenHome() => Stack(
       right: 0,
       bottom: 0,
       child: LedgerNavBar(
-        items: keelTabs,
+        items: wrenTabs,
         selectedIndex: 0,
         onDestinationSelected: (_) {},
       ),

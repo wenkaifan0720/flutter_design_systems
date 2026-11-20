@@ -1,6 +1,6 @@
-// Quill's screens hold what design6 asks of an app on the look: nothing overflows at 390, 768 and 1440, by day and by
+// Quill's screens hold what an app on the look must: nothing overflows at 390, 768 and 1440, by day and by
 // night; no words under 11 px; at 390 the entry's act spans the content; and every section keeps its keylines and one
-// height per row of controls (P).
+// height per row of controls.
 //
 // Keylines are read twice. ui_core's DesignKeylineCheck reads Ledger's regions (the page, the bars, each LedgerSection,
 // each LedgerSlip), less what it misreads ([_misread], each with its reason); and this file's own ruler:
@@ -61,8 +61,8 @@ final List<_Screen> _screens = [
   ),
 ];
 
-/// What ui_core's keyline check (second pass, fdd4fc74cc) still misreads on Quill, by the words of its report, each
-/// with why it is not a fault. Told to the coordinator; not a to-do.
+/// What ui_core's keyline check still misreads on Quill, by the words of its report, each with why it is
+/// not a fault.
 const Map<String, String> _misread = {
   // Entry and receipt from 1440: the crumb (the source's `.crumb`) hangs 4 into the gutter so its 15 px chevron's ink,
   // 5 inside its box, meets the keyline (57 against 56); the check reads a leading icon by its box (52).
@@ -522,7 +522,7 @@ void main() {
     }
   }
 
-  // design6 P (11-11 noon, the user on :8506: "some dropdown spans the entire width"): from 600 a select stands at its
+  // From 600 a select stands at its
   // measure, at most LedgerLayout.fieldMeasure, never its column or the page; on a phone it spans its column. Its open
   // list hugs its options, never narrower than the select.
   testWidgets(
@@ -590,6 +590,44 @@ void main() {
     expect(list.width, greaterThanOrEqualTo(face.width - .5));
     expect(list.width, lessThanOrEqualTo(LedgerLayout.fieldMeasure + .5));
   });
+
+  testWidgets(
+    "Settings' Appearance radios are one Tab stop, the arrows choosing",
+    (t) async {
+      await _open(
+        t,
+        _screens.firstWhere((s) => s.name == 'settings'),
+        _desktop,
+      );
+      final group = find.byType(DesignRadioGroup<QuillAppearance>);
+      expect(group, findsOneWidget);
+      // The focusable just before the group: the one a Tab leaves to land in it.
+      FocusNode? before;
+      for (var tab = 0; tab < 200 && before == null; tab++) {
+        final from = FocusManager.instance.primaryFocus;
+        await t.sendKeyEvent(LogicalKeyboardKey.tab);
+        await t.pump();
+        final at = FocusManager.instance.primaryFocus?.context;
+        if (at != null &&
+            find
+                .descendant(
+                  of: group,
+                  matching: find.byElementPredicate((e) => e == at),
+                )
+                .evaluate()
+                .isNotEmpty) {
+          before = from;
+        }
+      }
+      expect(before, isNotNull, reason: 'a Tab reaches the group');
+      (await const DesignRadioGroupCheck(look: 'Ledger').check(
+        t.element(group),
+        before: before!,
+        sendKeyEvent: t.sendKeyEvent,
+        pump: t.pumpAndSettle,
+      )).verify();
+    },
+  );
 
   testWidgets("at 390 the entry's act spans the content", (t) async {
     await _open(t, _screens.firstWhere((s) => s.name == 'entry'), _phone);

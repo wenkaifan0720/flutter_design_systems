@@ -432,7 +432,8 @@ class _Tab extends StatelessWidget {
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: t.accent,
-            // The paper ring over the drop, as CSS draws its first shadow
+            // The paper ring round the disc, over any drop a theme gives it
+            // (Ledger's own give none), as CSS draws its first shadow
             // topmost (a BoxDecoration paints its last).
             boxShadow: [
               ...t.discShadow,
@@ -517,13 +518,15 @@ class _Tab extends StatelessWidget {
         ],
       ),
     );
+    // Held, a tab's glyph and name deepen and its paper takes the ink; the
+    // disc's green deepens as the primary act's does, its name under it
+    // left on the bar's paper.
     final shell = states;
     if (shell != null) {
-      // The tab's own feel: no sink under a press, as before the shell.
       return LedgerStateFace(
         states: shell,
         radius: t.smallRadius,
-        sinks: false,
+        washes: !disc,
         child: face,
       );
     }
@@ -535,7 +538,7 @@ class _Tab extends StatelessWidget {
       builder: (context, states, child) => LedgerStateFace(
         states: states,
         radius: t.smallRadius,
-        sinks: false,
+        washes: !disc,
         child: child!,
       ),
       child: face,

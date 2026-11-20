@@ -479,7 +479,7 @@ class LedgerDayGroup extends StatelessWidget {
 /// link to its record; read as one line.
 ///
 /// ```dart
-/// LedgerTransactionRow(title: 'Blue Fern Café', category: 'Dining out', when: '8:12 AM', account: 'Keel Card', amount: -6.75, pending: true, onTap: () {})
+/// LedgerTransactionRow(title: 'Blue Fern Café', category: 'Dining out', when: '8:12 AM', account: 'Wren Card', amount: -6.75, pending: true, onTap: () {})
 /// ```
 class LedgerTransactionRow extends StatelessWidget {
   /// A transaction: [title], [category], [when], [account] and [amount].

@@ -2,7 +2,7 @@
 /// kinds, the action bar ([LedgerActionBar]) docked, alone and floating, and
 /// the composer ([LedgerComposer]) for messages and for an assistant. The
 /// first section is live: each opens the real dialog. The words are a
-/// stationery studio's books, not the pilot's.
+/// stationery studio's books, not the sample bank's.
 library;
 
 import 'package:material_ui/material_ui.dart';

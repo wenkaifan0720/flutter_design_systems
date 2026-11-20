@@ -206,7 +206,7 @@ void main() {
       expect(t.figure.leadingDistribution, TextLeadingDistribution.even);
     });
 
-    test("terracotta is Cody's paper, baked, through the same roles", () {
+    test("terracotta is the baked paper theme, through the same roles", () {
       final fromTokens = LedgerThemeData.fromTokens(
         'terracotta',
         paperTokens,
@@ -333,7 +333,7 @@ void main() {
   group('LedgerFormat', () {
     final now = DateTime(2026, 10, 28, 19, 40);
 
-    test('money reads as the pilot writes it', () {
+    test('money reads as the sample bank writes it', () {
       final parts = LedgerFormat.moneyParts(-1326.44);
       expect(parts.sign, '−');
       expect(parts.whole, '1,326');
@@ -355,7 +355,7 @@ void main() {
       expect(LedgerFormat.wholeDollars(-84.25), 84);
     });
 
-    test('days and times read as the pilot writes them', () {
+    test('days and times read as the sample bank writes them', () {
       expect(LedgerFormat.day(DateTime(2026, 10, 28, 8), now: now), 'Today');
       expect(LedgerFormat.day(DateTime(2026, 10, 27), now: now), 'Yesterday');
       expect(LedgerFormat.day(DateTime(2026, 10, 26), now: now), 'Mon, Oct 26');
@@ -486,7 +486,7 @@ void main() {
     await t.pumpWidget(
       app(const ValueKey('none'), const [DefaultWidgetsLocalizations.delegate]),
     );
-    // English: Flutter's own in the catalog's app, material_ui's English in the package.
+    // English: Flutter's own in an app on flutter/material, material_ui's English in the package.
     expect(seen?.copyButtonLabel, 'Copy');
     expect(seen, isNot(isA<_OwnWords>()));
   });

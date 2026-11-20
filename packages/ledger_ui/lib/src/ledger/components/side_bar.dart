@@ -35,7 +35,7 @@ import 'top_bar.dart';
 /// (named for a screen reader), the owner's avatar at the foot.
 ///
 /// ```dart
-/// LedgerSideBar(items: tabs, selectedIndex: 0, onDestinationSelected: select, brand: 'Keel')
+/// LedgerSideBar(items: tabs, selectedIndex: 0, onDestinationSelected: select, brand: 'Wren')
 /// ```
 ///
 /// ```dart

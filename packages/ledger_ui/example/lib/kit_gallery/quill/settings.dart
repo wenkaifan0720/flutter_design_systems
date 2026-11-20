@@ -212,21 +212,27 @@ class _QuillSettingsState extends State<QuillSettings> {
         context.say('Appearance'),
         note: context.say('Paper and ink'),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          for (final (value, label) in const [
-            (QuillAppearance.light, 'Light'),
-            (QuillAppearance.dark, 'Dark'),
-            (QuillAppearance.system, 'As the system is'),
-          ])
+      // One choice, one Tab stop: the arrows move and choose.
+      child: DesignRadioGroup<QuillAppearance>(
+        options: QuillAppearance.values,
+        value: prefs.appearance,
+        onChanged: (v) => prefs.update((p) => p.appearance = v),
+        layoutBuilder: (context, radios) => Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: radios,
+        ),
+        itemBuilder: (context, value, node, select) =>
             LedgerRadio<QuillAppearance>(
               value: value,
               groupValue: prefs.appearance,
-              label: context.say(label),
-              onChanged: (v) => prefs.update((p) => p.appearance = v!),
+              label: switch (value) {
+                QuillAppearance.light => context.say('Light'),
+                QuillAppearance.dark => context.say('Dark'),
+                QuillAppearance.system => context.say('As the system is'),
+              },
+              focusNode: node,
+              onChanged: select == null ? null : (_) => select(),
             ),
-        ],
       ),
     );
 

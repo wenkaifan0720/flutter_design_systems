@@ -1,5 +1,5 @@
-// The Stage C charts: every engraving fed the Keel pilot's figures (copied
-// from the gallery's generated keel.dart), sized by the column it is given
+// Ledger's charts: every engraving fed the sample bank's figures (copied
+// from the gallery's generated wren.dart), sized by the column it is given
 // on a phone and at desktop width, light and dark, and read as one node:
 // its label and, where it has one, its value.
 import 'dart:convert';
@@ -148,7 +148,7 @@ List<LedgerGridLine> _grid(List<(double, String)> lines) => [
   for (final (value, label) in lines) LedgerGridLine(value, label),
 ];
 
-// --- The pilot's figures (copied from the gallery's keel.dart) ---------------
+// --- The sample bank's figures (copied from the gallery's wren.dart) ---------------
 
 const List<double> _netWorthK = [
   61.4,
@@ -408,7 +408,7 @@ const List<(int, double)> _billSteps = [
 const List<(double, String)> _billsGrid = [(2000, '\$2k'), (1000, '\$1k')];
 const List<(int, String, String, double, double)> _billNotes = [
   (0, 'Rent', '\$1,150.00 · Nov 1', 40, 46),
-  (2, 'Keel Card payment', '\$1,326.44 · Nov 12', 74, 76),
+  (2, 'Wren Card payment', '\$1,326.44 · Nov 12', 74, 76),
 ];
 
 const List<double> _savedByMonth = [

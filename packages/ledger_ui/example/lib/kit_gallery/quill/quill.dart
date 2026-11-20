@@ -322,7 +322,7 @@ class _QuillAppState extends State<QuillApp> {
 /// The app's frame: the current destination under the look's navigation,
 /// the new-entry act beside the destinations. From the rail's width (600) a
 /// pushed page (an entry, a receipt) opens in the frame, beside the rail or
-/// the side bar, as the pilot's desktop detail does; on a phone it covers
+/// the side bar, as the sample bank's desktop detail does; on a phone it covers
 /// the tab bar.
 class QuillFrame extends StatefulWidget {
   const QuillFrame({

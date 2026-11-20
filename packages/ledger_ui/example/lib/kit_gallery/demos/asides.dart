@@ -35,7 +35,7 @@ class _RaisedState extends State<_Raised> {
         spacing: LedgerSpacing.s16,
         children: [
           LedgerSegmentedControl(options: ['All', 'In', 'Out'], value: 'All'),
-          Text('Everyday, Savings and the Keel Card.'),
+          Text('Everyday, Savings and the Wren Card.'),
         ],
       ),
       foot: (context) => [

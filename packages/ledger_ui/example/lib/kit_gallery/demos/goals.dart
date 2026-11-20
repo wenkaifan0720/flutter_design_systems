@@ -5,7 +5,7 @@
 /// note in the margin's column from 1024 wide), and a category's month
 /// ([LedgerCategoryLine]: the name on the leader to what it spent, the
 /// gauge with its budget and the month's pace, vermilion over budget).
-/// Every figure is the pilot's (keel.dart).
+/// Every figure is the sample bank's (wren.dart).
 library;
 
 import 'package:material_ui/material_ui.dart';

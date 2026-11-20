@@ -40,7 +40,7 @@ enum LedgerCardSize {
 /// across its corner. Read as its kind and last four.
 ///
 /// ```dart
-/// LedgerCardFace(brand: 'Keel', kind: 'Credit', number: const ['4242', '4242', '4242', '7730'], holder: 'MAREN HOLT', account: 'Keel Card')
+/// LedgerCardFace(brand: 'Wren', kind: 'Credit', number: const ['4242', '4242', '4242', '7730'], holder: 'MAREN HOLT', account: 'Wren Card')
 /// ```
 class LedgerCardFace extends StatelessWidget {
   /// The face of a card from [brand], numbered [number], held by [holder].

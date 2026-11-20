@@ -169,7 +169,7 @@ class _Phone extends StatelessWidget {
                         brightness: brightness,
                         presentation: presentation,
                         tabs: presentation == LedgerPresentation.root
-                            ? keelTabs
+                            ? wrenTabs
                             : const [],
                         activeIndex: 1,
                         child: LedgerAccountScope(

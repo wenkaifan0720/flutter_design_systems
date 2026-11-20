@@ -97,11 +97,11 @@ enum LedgerWordmarkSize {
 /// at 30, inset 8). Says "[name], home"; [onTap] goes home.
 ///
 /// ```dart
-/// LedgerWordmark('Keel')
+/// LedgerWordmark('Wren')
 /// ```
 ///
 /// ```dart
-/// LedgerWordmark('Keel', size: LedgerWordmarkSize.large)
+/// LedgerWordmark('Wren', size: LedgerWordmarkSize.large)
 /// ```
 class LedgerWordmark extends StatelessWidget {
   /// The wordmark of [name].

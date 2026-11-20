@@ -1,4 +1,4 @@
-// An open list's marks (the user's walk of Ledger's select by night, msg_f65b773d5bf8 (F)). The chosen option is seen
+// An open list's marks, by day and by night. The chosen option is seen
 // at a glance in Ledger's own material: its row on the menu's paper, its words semibold, the green tick at its end. A
 // pointer marks an option by underlining its words in the ink, as a frameless act's words are; the keyboard by the
 // accountant's double rule under them. Both run under the words alone, inside their own row: no wash a second choice

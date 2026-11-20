@@ -1,11 +1,10 @@
-// The slip-and-sheet gaps the Keel app found:
-// the shadows under the desktop dialog and the card face set against the
-// captures, the small card's own width, the slip's band and head made
-// public, and the slip family's new parts (the statement, the memo and the
-// memo slip, the frozen notice, the dialog lead, the card's details, the
-// hairline between effects, the done head, the split ticket, the saved
-// after line and the saved before row). Every word and figure is the
-// pilot's (ledger/src pages and the captures).
+// The slips and sheets: the shadows under the desktop dialog and the card face
+// set against the captures, the small card's own width, the slip's band and
+// head, and the slip family's parts (the statement, the memo and the memo
+// slip, the frozen notice, the dialog lead, the card's details, the hairline
+// between effects, the done head, the split ticket, the saved after line and
+// the saved before row). Every word and figure is the source's (its pages and
+// the captures).
 import 'dart:convert';
 import 'dart:ui' as ui;
 
@@ -224,7 +223,7 @@ Future<void> _realShadows(Future<void> Function() body) async {
   }
 }
 
-// --- The pilot's words ------------------------------------------------------
+// --- The sample bank's words ------------------------------------------------------
 
 const _cardNumber = ['4242', '4242', '4242', '7730'];
 const _debitNumber = ['4242', '4242', '4242', '3907'];
@@ -267,11 +266,11 @@ void main() {
                   child: Align(
                     alignment: Alignment.topLeft,
                     child: LedgerCardFace(
-                      brand: 'Keel',
+                      brand: 'Wren',
                       kind: 'Credit',
                       number: _cardNumber,
                       holder: 'MAREN HOLT',
-                      account: 'Keel Card',
+                      account: 'Wren Card',
                     ),
                   ),
                 ),
@@ -358,7 +357,7 @@ void main() {
       await _everywhere(
         t,
         const LedgerCardFace(
-          brand: 'Keel',
+          brand: 'Wren',
           kind: 'Debit',
           number: _debitNumber,
           holder: 'MAREN HOLT',
@@ -380,11 +379,11 @@ void main() {
       await _pump(
         t,
         const LedgerCardFace(
-          brand: 'Keel',
+          brand: 'Wren',
           kind: 'Credit',
           number: _cardNumber,
           holder: 'MAREN HOLT',
-          account: 'Keel Card',
+          account: 'Wren Card',
         ),
       );
       expect(
@@ -407,14 +406,14 @@ void main() {
               LedgerSlipBand(),
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 20),
-                child: LedgerSlipHead('Keel · New goal', 'Savings'),
+                child: LedgerSlipHead('Wren · New goal', 'Savings'),
               ),
             ],
           ),
         ),
         (wide, theme) {
           expect(t.getSize(find.byType(LedgerSlipBand)).height, 14);
-          expect(find.text('KEEL · NEW GOAL'), findsOneWidget);
+          expect(find.text('WREN · NEW GOAL'), findsOneWidget);
           expect(find.text('SAVINGS'), findsOneWidget);
           // The source's 10, raised to 11: no words under 11 px.
           expect(_style(t, 'SAVINGS').fontSize, 11);
@@ -423,7 +422,7 @@ void main() {
             t.getSize(find.byType(LedgerSlipHead)).height,
             (wide ? 16 + 26 : 12 + 18) + 16,
           );
-          expect(_spoken(t), ['KEEL · NEW GOAL', 'SAVINGS']);
+          expect(_spoken(t), ['WREN · NEW GOAL', 'SAVINGS']);
         },
       );
     });
@@ -436,7 +435,7 @@ void main() {
       await _everywhere(
         t,
         LedgerStatementSlip(
-          kind: 'Keel Card · Statement',
+          kind: 'Wren Card · Statement',
           number: '··7730',
           balance: 1326.44,
           due: 'Nov 12',
@@ -458,7 +457,7 @@ void main() {
           ),
         ),
         (wide, theme) {
-          expect(find.text('KEEL CARD · STATEMENT'), findsOneWidget);
+          expect(find.text('WREN CARD · STATEMENT'), findsOneWidget);
           expect(find.text('STATEMENT BALANCE'), findsOneWidget);
           expect(find.text('DUE'), findsOneWidget);
           expect(find.text('IN 15 DAYS'), findsOneWidget);

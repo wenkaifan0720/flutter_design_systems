@@ -1,5 +1,5 @@
-// The lists Ledger's fields open, held by ui_core's DesignWidthCheck.checkList
-// (msg_7c3d62d3ff6b, msg_f34cb1737578): the field's width on its leading edge,
+// The lists Ledger's fields open, held by ui_core's DesignWidthCheck.checkList:
+// the field's width on its leading edge,
 // wider only to fit the widest option, its words 16 in from the field's (a
 // field written on a rule has no inset; the list's rows keep their 16), 46
 // where the options carry glyphs (16, the glyph's 18 and its 12). On a phone

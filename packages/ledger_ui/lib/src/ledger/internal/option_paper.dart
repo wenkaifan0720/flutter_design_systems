@@ -112,8 +112,9 @@ class LedgerOptionRow extends StatelessWidget {
 /// a tag field's), marked for its [states] on its own row: semibold when
 /// it is the chosen one (its row on the menu's paper, the green tick at
 /// its end); under a pointer or a finger they take the ink underline, as a
-/// frameless act's words do; while the keyboard is on the option they
-/// stand on the accountant's double rule, Ledger's focus. Both marks run
+/// frameless act's words do, drawn twice as heavy while the pointer is
+/// held down; while the keyboard is on the option they stand on the
+/// accountant's double rule, Ledger's focus. The marks run
 /// under the words alone, inside their row, so neither reads as a rule
 /// between options or as a second choice, and each comes and goes in
 /// Ledger's one motion. Plumbing of the lists.
@@ -154,6 +155,7 @@ class LedgerOptionWords extends StatelessWidget {
     final t = context.ledgerTheme;
     final ink = style.color ?? t.textPrimary;
     final focused = states.contains(WidgetState.focused);
+    final held = states.contains(WidgetState.pressed);
     final marked =
         focused ||
         states.contains(WidgetState.hovered) ||
@@ -163,21 +165,28 @@ class LedgerOptionWords extends StatelessWidget {
         : style;
     return LedgerFace(
       style: LedgerFaceStyle(ink: ink, rule: marked ? ink : null),
-      builder: (context, s, _) => Text(
-        label,
-        maxLines: maxLines,
-        overflow: maxLines == null ? null : TextOverflow.ellipsis,
-        style: words.copyWith(
-          color: s.ink,
-          decoration: s.rule == null ? null : TextDecoration.underline,
-          decorationColor: s.rule,
-          decorationStyle: focused
-              ? TextDecorationStyle.double
-              : TextDecorationStyle.solid,
+      builder: (context, s, _) => LedgerEase(
+        value: held && !focused ? _heldRule : 1,
+        builder: (context, weight, _) => Text(
+          label,
+          maxLines: maxLines,
+          overflow: maxLines == null ? null : TextOverflow.ellipsis,
+          style: words.copyWith(
+            color: s.ink,
+            decoration: s.rule == null ? null : TextDecoration.underline,
+            decorationColor: s.rule,
+            decorationStyle: focused
+                ? TextDecorationStyle.double
+                : TextDecorationStyle.solid,
+            decorationThickness: weight,
+          ),
         ),
       ),
     );
   }
+
+  // The held pointer's underline, as a multiple of the font's own.
+  static const double _heldRule = 2;
 }
 
 /// The paper's line when nothing matches: the words in the third ink.

@@ -370,7 +370,7 @@ class LedgerSection extends StatelessWidget {
   /// What the section holds.
   final Widget child;
 
-  // Its rows start on its edge and end on its other (design6 P), so the
+  // Its rows start on its edge and end on its other, so the
   // keyline check reads it as one region, named by its head.
   @override
   Widget build(BuildContext context) => DesignKeylineRegion(

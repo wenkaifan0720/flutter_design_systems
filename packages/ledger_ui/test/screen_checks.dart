@@ -1,17 +1,17 @@
-// design6's checks, shared by its test files: design6_test.dart runs each matrix's everyday cases (design6Main) but
-// the rows check's, which design6_rows_once_<part>_test.dart read in two halves; the sweep files run the rest
-// (design6_rows_<width>_<day|night>_test.dart, design6_sweep_test.dart), each in its own process, so the pages are
-// read side by side and no one process holds them all.
+// The screen checks, shared by their test files: screen_checks_test.dart runs each matrix's everyday cases
+// (screenChecksMain) but the rows check's, which screen_rows_part_<n>_test.dart read in two halves; the sweep files run
+// the rest (screen_rows_<width>_<day|night>_test.dart, screen_sweep_test.dart), each in its own process, so the pages
+// are read side by side and no one process holds them all.
 //
-// What design6 P asks of a screen that a person reads off its pixels, held on every Quill screen and every gallery
-// page at 390 and 1440 under each density Ledger ships (11-11 noon):
+// What a person reads off a screen's pixels, held on every Quill screen and every gallery page at 390 and 1440 under
+// each density Ledger ships:
 // - a chosen fill covers the cell its unchosen neighbours show (a pill's ground, a menu's current row);
 // - a glyph beside a one-line title or label stands its ink's middle on the capitals' middle, within half a device
 //   pixel;
-// and the afternoon's (11-11): the outline a person sees is the control's box (two controls of one size in a row show
-// one top, one bottom and equal side insets, on a page, a sheet and a dialog, by day and by night); a field's list
-// starts on the field's leading edge, at least as wide, its words one stated gutter in; no choice is left alone on
-// its line; an overlay covers the window; one page frame across destinations; a card in a row hugs its content.
+// - the outline a person sees is the control's box (two controls of one size in a row show one top, one bottom and
+//   equal side insets, on a page, a sheet and a dialog, by day and by night); a field's list starts on the field's
+//   leading edge, at least as wide, its words one stated gutter in; no choice is left alone on its line; an overlay
+//   covers the window; one page frame across destinations; a card in a row hugs its content.
 // Ledger puts no act in a card that stands in a row (its tiles are links whole), so "cards in a row share their action
 // line" has nothing to hold here.
 // ignore_for_file: avoid_relative_lib_imports
@@ -39,7 +39,7 @@ import '../example/lib/kit_gallery/quill/register.dart';
 
 /// Leak tracking without a creation stack per object, as walk_test's. To leave out what the test helpers make, leak
 /// tracking keeps the stack every tracked object was made on, and over tests that each read every page those outlive
-/// their test: design6_sweep_test, run alone, reached 3.9 GB by its last test, and 1.2 GB tracking them, in three
+/// their test: screen_sweep_test, run alone, reached 3.9 GB by its last test, and 1.2 GB tracking them, in three
 /// fifths of the time. These tests make nothing of their own through the helpers, so they track theirs too.
 final LeakTesting _tracked = LeakTesting.settings.withTracked(
   createdByTestHelpers: true,
@@ -381,7 +381,7 @@ Future<List<String>> _overlays(
   Future<List<String>> Function(WidgetTester t, Finder card) read,
 ) async {
   final found = <String>[];
-  // The user's (11-11, on :8506 by night): Settings' Sign out of Quill? dialog.
+  // Settings' Sign out of Quill? dialog, by night.
   await _quill(
     t,
     _screens.firstWhere((s) => s.name == 'settings'),
@@ -429,16 +429,16 @@ Future<List<String>> _overlays(
 
 /// ui_core's checks of what a person sees, on the screen the test pumped (under [_shotKey]).
 // At its own 3x: at 2x a ringed circle's apex and a box's side fall a whole device pixel off as drawn where at 3x
-// they read true (probe, 11-11: a ringed bell beside a ringed box, day and night).
+// they read true (a ringed bell beside a ringed box, day and night).
 /// How long one of the every-page tests may take: each reads every screen and gallery page, three densities, as
-/// drawn at 3x (1440 by night: 7.7 minutes alone, the fields page 45 s a density; 11-14). Four at once on a loaded
+/// drawn at 3x (1440 by night: 7.7 minutes alone, the fields page 45 s a density). Four at once on a loaded
 /// Mac ran past 20.
 const Duration _reading = Duration(minutes: 40);
 
 const DesignRowCheck _rowCheck = DesignRowCheck(look: 'Ledger');
 const DesignWidthCheck _widthCheck = DesignWidthCheck(look: 'Ledger');
 
-/// A select's list as Ledger draws it (msg_f34cb1737578): the field's width on the field's leading edge, its words 16
+/// A select's list as Ledger draws it: the field's width on the field's leading edge, its words 16
 /// in from the field's. A field written on a rule has no inset; the list's rows keep their 16.
 const DesignWidthCheck _listCheck = DesignWidthCheck(
   look: 'Ledger',
@@ -541,7 +541,7 @@ final RegExp _edgeFinding = RegExp(
 /// Why a finding of a circle's apex is set aside: DesignRowCheck counts a pixel only when all four of its corners lie
 /// inside the face's shape, and at a circle's top and bottom on the pixel grid no device pixel does once the radius is
 /// under about 55 device px (the middle pixel's far corner is 0.99 px out, the circle's sag within it √(2·r·0.01)), so
-/// its apex row, inked in full, is never read. Probe (11-11, at 3x): Attach, the month arrows and the bell draw their
+/// its apex row, inked in full, is never read. At 3x, Attach, the month arrows and the bell draw their
 /// ring's full contrast in the box's first and last device rows, on whole pixels, as the chip, the field and the button
 /// beside them do.
 const String _apexReason =
@@ -556,7 +556,7 @@ bool _apexOnly(String p, Set<String> circles) {
   return circles.contains(m[1]) ? inward : circles.contains(m[2]) && !inward;
 }
 
-/// Why a finding of the tab bar's act is set aside: since 0e25289dfd ui_core reads a tab bar's raised act among its
+/// Why a finding of the tab bar's act is set aside: ui_core reads a tab bar's raised act among its
 /// destinations, a row of them, and holds the act's glyph on their line. Ledger's act is a disc raised above the bar
 /// by design (`LedgerNavBar`'s act, the one thing a person does most), its glyph on the disc's middle, not on the
 /// destinations' line.
@@ -579,7 +579,7 @@ String? _actOf(LedgerNavBar bar) {
 /// raised fill, as the source's `.filter` paints its border over its background, so by day it stands d9d7d3 on the
 /// page's f2ede3, 1.23 off it, under ui_core's 1.25 floor, while the fill inside it stands 1.33 off the ring. ui_core
 /// then takes the ring for the ground and the fill for the outline: a pill reads a ring's width (3 device px) or so
-/// short. Probe (11-12, at 3x): every pill, chosen or not, draws its first device row on its box's top, ringed or
+/// short. At 3x, every pill, chosen or not, draws its first device row on its box's top, ringed or
 /// filled. Set aside by kind: by day only (by night the ring stands well off the page and the same pills are held),
 /// both controls pills, laid out level (within half a px) and drawn at most 6 device px off.
 const String _ringReason =
@@ -698,7 +698,7 @@ Future<List<String>> _rowsAsDrawn(WidgetTester t) async {
   return kept;
 }
 
-/// Since 0e25289dfd ("a stepper's value may be a count and its unit") ui_core's DesignWidthCheck reads Ledger's
+/// ui_core's DesignWidthCheck (where a stepper's value may be a count and its unit) reads Ledger's
 /// composer, two discs round a line of words (Attach, the message, Send), as a stepper, and holds it to its content's
 /// width. It is the message entry, as wide as its column by design. Set aside by kind: a stepper named by the
 /// composer's Attach, with a composer on screen. Likewise a masthead's month bar (Earlier months, the month, the next
@@ -734,8 +734,8 @@ Future<List<String>> _widthsAsDrawn(WidgetTester t) async {
 Rect _global(RenderBox b, Rect r) =>
     MatrixUtils.transformRect(b.getTransformTo(null), r);
 
-/// Where an open list's frame is cut (design6 P, 11-11 night: an open list floats over everything, never clipped by
-/// the card or panel it opens from): the window's edge, or a clip between it and the window (a card, a panel, a
+/// Where an open list's frame is cut (an open list floats over everything, never clipped by the card
+/// or panel it opens from): the window's edge, or a clip between it and the window (a card, a panel, a
 /// scrolling page) that does not hold its whole frame. Null when the whole frame paints.
 String? _cut(WidgetTester t, Finder list) {
   final box = t.renderObject<RenderBox>(list);
@@ -1362,7 +1362,7 @@ void _outlineTest({required bool everyday}) {
 /// The widths ui_core's width check holds a control at.
 const List<double> _widthsChecked = [600, 1024, 1440, 1920];
 
-/// ui_core's DesignWidthCheck (088701304f): from 600 wide, a button, a select, a stepper or a segmented control keeps
+/// ui_core's DesignWidthCheck: from 600 wide, a button, a select, a stepper or a segmented control keeps
 /// to its content's width (at most 320 past it), on every screen, page, dialog and sheet, at every density. Every
 /// screen and page at each of [widths] under each of [densities], or with [once] each once, the width and density
 /// turning; the dialogs and sheets at [overlaysAt], none when null.
@@ -1418,8 +1418,8 @@ void _widthTest(
   );
 }
 
-/// The set-up every design6 file runs: Ledger's fonts, every change landing at once, the density set back.
-void design6SetUp() {
+/// The set-up every screen check file runs: Ledger's fonts, every change landing at once, the density set back.
+void screenChecksSetUp() {
   setUpAll(_loadFonts);
   // Geometry read at rest: every change lands at once (the motion is judged by eye in the web build).
   setUpAll(_stillMotion);
@@ -1437,8 +1437,8 @@ Future<List<String>> _rowsRead(WidgetTester t) async => [
 /// The rows check at [width] by [brightness]: every screen and gallery page under each density, ui_core's row check
 /// reading every screen at 3x. The sweep, one file per width and appearance, a test per density: a test's tracked
 /// objects are let go at its end, so no one test holds more than a pass of the pages.
-void design6RowsSweep(double width, Brightness brightness) {
-  design6SetUp();
+void screenRowsSweep(double width, Brightness brightness) {
+  screenChecksSetUp();
   for (final density in LedgerDensity.values) {
     final when =
         '${width.round()} ${brightness == Brightness.dark ? 'night' : 'day'} ${density.name}';
@@ -1456,7 +1456,7 @@ void design6RowsSweep(double width, Brightness brightness) {
           brightnesses: [brightness],
         );
         // ignore: avoid_print
-        print('design6 rows set aside, $when: $_asideRows');
+        print('rows set aside, $when: $_asideRows');
         expect(found, isEmpty, reason: found.join('\n'));
       },
       timeout: const Timeout(_reading),
@@ -1467,8 +1467,8 @@ void design6RowsSweep(double width, Brightness brightness) {
 
 /// The rows check's everyday case: every screen and gallery page once, at 390 or 1440, by day or by night, under one
 /// density each, the three turning over the pages. Read in [parts] files side by side, this one the [part]th.
-void design6RowsOnce(int part, int parts) {
-  design6SetUp();
+void screenRowsOnce(int part, int parts) {
+  screenChecksSetUp();
   testWidgets(
     experimentalLeakTesting: _tracked,
     'every screen and gallery page once (part ${part + 1} of $parts), the width, appearance and density turning: '
@@ -1483,7 +1483,7 @@ void design6RowsOnce(int part, int parts) {
         only: (i) => i % parts == part,
       );
       // ignore: avoid_print
-      print('design6 rows set aside, once, part ${part + 1}: $_asideRows');
+      print('rows set aside, once, part ${part + 1}: $_asideRows');
       expect(found, isEmpty, reason: found.join('\n'));
     },
     timeout: const Timeout(_reading),
@@ -1491,10 +1491,10 @@ void design6RowsOnce(int part, int parts) {
   );
 }
 
-/// The sweep's rest of design6: the outline at every size, density and appearance, and the width check on every
+/// The rest of the screen checks' sweep: the outline at every size, density and appearance, and the width check on every
 /// screen, page, dialog and sheet at every width.
-void design6Sweep() {
-  design6SetUp();
+void screenSweep() {
+  screenChecksSetUp();
   _outlineTest(everyday: false);
   for (final width in _widthsChecked) {
     for (final density in LedgerDensity.values) {
@@ -1508,15 +1508,15 @@ void design6Sweep() {
   }
 }
 
-/// design6's checks, each matrix by its everyday cases (the sweep files run the rest; the rows check's everyday case
-/// is `design6_rows_once_<part>_test.dart`'s).
-void design6Main() {
-  design6SetUp();
+/// The screen checks, each matrix by its everyday cases (the sweep files run the rest; the rows check's everyday
+/// case is `screen_rows_part_<n>_test.dart`'s).
+void screenChecksMain() {
+  screenChecksSetUp();
 
-  // design6 P (11-11 noon): a glyph beside a title on the capitals' middle. g16 read 0.5 to 2.3 device px off on
-  // Lucide glyphs whose ink is not centred in their 24 grid (house, bus, pill, the category marks), and the bell
-  // beside the avatar's monogram, which is a mark, not a label. M2's next fix; skipped until it lands, so its
-  // findings are not read as passing.
+  // A glyph beside a title on the capitals' middle. The check reads 0.5 to 2.3 device px off on Lucide glyphs whose
+  // ink is not centred in their 24 grid (house, bus, pill, the category marks), and the bell beside the avatar's
+  // monogram, which is a mark, not a label; skipped until the check allows for them, so its findings are not read as
+  // passing.
   testWidgets(
     experimentalLeakTesting: _tracked,
     "every screen and gallery page, every density: a glyph beside a title stands on the capitals' middle",
@@ -1723,7 +1723,7 @@ void design6Main() {
                 );
               }
             }
-            // design6 P (11-11 night): every option's words start on one x, and the open list is never cut.
+            // Every option's words start on one x, and the open list is never cut.
             if (xs.length > 1) {
               found.add("$at: the options' words start at ${xs.join(', ')}");
             }
@@ -2064,8 +2064,8 @@ Future<void> _list(WidgetTester t, String at, List<String> found) async {
     find.descendant(of: list, matching: find.byType(DecoratedBox)).first,
   );
   final field = t.getRect(face);
-  // Ledger's own way, as the pilot's `.menu-item` sets it: the words one gutter (16) in, past the glyphs' column
-  // (18 and 12) when any option has a glyph; the paper on the field's leading edge (msg_f34cb1737578).
+  // Ledger's own way, as the source's `.menu-item` sets it: the words one gutter (16) in, past the glyphs' column
+  // (18 and 12) when any option has a glyph; the paper on the field's leading edge.
   if ((xs['Rent']! - paper.left - (16 + 18 + 12)).abs() > .5) {
     found.add('$at: the words stand ${xs['Rent']! - paper.left} in, not 46');
   }

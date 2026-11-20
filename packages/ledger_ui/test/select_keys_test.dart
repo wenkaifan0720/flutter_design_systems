@@ -1,4 +1,4 @@
-// A select's list from the keyboard (msg_d75a43dcae59, item F, from Minimal's lists): Enter, Space or Down opens it
+// A select's list from the keyboard: Enter, Space or Down opens it
 // with the keyboard on the chosen option, or the first while none is chosen; the arrows move at once, round from the
 // last to the first, Home and End go to its ends, a typed letter to the next option it starts; Enter chooses and
 // closes, Escape closes, and either way the keyboard is back on the field. The arrows work as soon as a pointer has

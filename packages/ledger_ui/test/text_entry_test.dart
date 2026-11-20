@@ -1,7 +1,7 @@
 // Every Ledger part a person types into keeps its line where it is drawn: the
 // typed words and the hint in the middle of the box, the hint on the words'
-// baseline, and the same size and line as Android, iOS and macOS (design6 I3
-// and its desktop rule: a field 8 px shorter on a Mac is the fault this finds).
+// baseline, and the same size and line as Android, iOS and macOS (on the
+// desktop too: a field 8 px shorter on a Mac is the fault this finds).
 // Read through the foundation's check, under the look at each density, at a 1.5
 // text scale, and under a host InputDecorationTheme that would move a field
 // which left its padding or its minimum to the theme.

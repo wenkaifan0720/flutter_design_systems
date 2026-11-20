@@ -86,7 +86,7 @@ class _QuillEntryPageState extends State<QuillEntryPage> {
 
   static const _accounts = [
     LedgerSelectItem(value: 'Everyday', label: 'Everyday ··4821'),
-    LedgerSelectItem(value: 'Keel Card', label: 'Keel Card ··7730'),
+    LedgerSelectItem(value: 'Wren Card', label: 'Wren Card ··7730'),
     LedgerSelectItem(value: 'Savings', label: 'Savings ··9015'),
   ];
 

@@ -1,4 +1,4 @@
-// Every open menu has one current row (the user's find on Expressive's menus, 11-15, checked in every look): the
+// Every open menu has one current row: the
 // pointer's row and the keys' row never read as two (the pointer moves the lit row, the keys go on from it); the lit
 // row's mark never touches the menu's paper (Ledger marks the words alone, inside the row's 16); a menu the pointer
 // opened lights no row until the pointer or the keys move, one the keys opened its first. In the split button's menu

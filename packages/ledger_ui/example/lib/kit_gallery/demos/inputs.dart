@@ -5,7 +5,7 @@
 /// ([LedgerField]), the transfer's cheque lines ([LedgerPickLine]) and amount
 /// ([LedgerChequeAmount]), and the budget's stepper ([LedgerStepper]). The
 /// first section is live: every control keeps its value. Every word and figure
-/// is the pilot's (keel.dart).
+/// is the sample bank's (wren.dart).
 library;
 
 import 'package:material_ui/material_ui.dart';
@@ -187,7 +187,7 @@ class _LiveState extends State<_Live> {
           ),
           LedgerFilters(
             label: 'Account',
-            options: const ['Keel Card', 'Everyday'],
+            options: const ['Wren Card', 'Everyday'],
             value: _account,
             onChanged: (a) => setState(() => _account = a),
           ),
@@ -248,10 +248,13 @@ class _LiveState extends State<_Live> {
 /// The net worth's range, a year shown.
 Widget kitSpecimenChips() => Align(
   alignment: AlignmentDirectional.centerStart,
-  child: LedgerSegmentedControl(
-    options: kitRanges,
-    value: kitRange,
-    onChanged: (_) {},
+  child: KitChosen<String>(
+    kitRange,
+    (range, choose) => LedgerSegmentedControl(
+      options: kitRanges,
+      value: range,
+      onChanged: choose,
+    ),
   ),
 );
 
@@ -268,7 +271,7 @@ Widget kitSpecimenFilters() => Wrap(
     ),
     LedgerFilters(
       label: 'Account',
-      options: const ['Keel Card', 'Everyday'],
+      options: const ['Wren Card', 'Everyday'],
       value: null,
       onChanged: (_) {},
     ),
@@ -304,7 +307,7 @@ Widget kitSpecimenToggles() => LedgerRows(
   ],
 );
 
-/// The Keel Card's monthly spending limit, on its leader to its value.
+/// The Wren Card's monthly spending limit, on its leader to its value.
 Widget kitSpecimenSettingRow() => LedgerRows(
   children: [
     LedgerSettingRow(

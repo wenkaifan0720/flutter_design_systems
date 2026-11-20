@@ -5,7 +5,7 @@
 /// tab ([LedgerDateTab]), a figure's change or a record's state on its wash
 /// ([LedgerPill]), the word ringed after a title ([LedgerTag]) and the
 /// dashes round what is not yet there ([LedgerDashedFrame]). Every word is
-/// the pilot's (keel.dart, else the source line named beside it).
+/// the sample bank's (wren.dart, else the source line named beside it).
 library;
 
 import 'package:material_ui/material_ui.dart';

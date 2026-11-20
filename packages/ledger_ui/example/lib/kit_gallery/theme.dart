@@ -1,6 +1,5 @@
-/// The Ledger preset the gallery renders in. The lab rewrites this file
-/// when a preset is picked on the module's Preview page; the committed value
-/// is the module's default preset.
+/// The Ledger preset the gallery renders in: `quire`, Ledger's own paper and
+/// ink. Set another of `LedgerThemeData.presets` to see the gallery in it.
 library;
 
 const kitPreset = 'quire';

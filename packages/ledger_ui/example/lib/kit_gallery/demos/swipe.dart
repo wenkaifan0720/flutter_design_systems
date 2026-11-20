@@ -1,7 +1,7 @@
 /// A list row's acts under it, opened by a drag ([LedgerSwipeActions]), held
 /// open on its trailing and its leading acts. The first section is live:
 /// swipe the row. The words are a stationery studio's books, not the
-/// pilot's.
+/// sample bank's.
 library;
 
 import 'package:material_ui/material_ui.dart';

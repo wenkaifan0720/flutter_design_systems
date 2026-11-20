@@ -1,7 +1,7 @@
-// The Stage C display components: structure, marks, money (beyond what
+// Ledger's display components: structure, marks, money (beyond what
 // chrome_test.dart covers), notice, receipt, card face, seal, goals, gauge,
 // engravings and register. Each is built from its doc comment's example or
-// the Keel pilot's figures (the gallery's generated keel.dart), pumped on a
+// the sample bank's figures (the gallery's wren.dart), pumped on a
 // phone and at desktop width in both appearances, and read back through its
 // semantics.
 import 'dart:convert';
@@ -191,7 +191,7 @@ Future<void> _loadFonts() async {
   }
 }
 
-// --- The pilot's figures (copied from the gallery's keel.dart) ---------------
+// --- The sample bank's figures (copied from the gallery's wren.dart) ---------------
 
 const _accounts = [
   (LucideIcons.wallet, 'Everyday', 6248.3, 'Checking ··4821', ''),
@@ -205,7 +205,7 @@ const _accounts = [
   (LucideIcons.plane, 'Lisbon fund', 2840.0, 'Goal pot', '71% of \$4,000'),
   (
     LucideIcons.creditCard,
-    'Keel Card',
+    'Wren Card',
     -1326.44,
     'Credit ··7730',
     'Due Nov 12 · autopay',
@@ -229,7 +229,7 @@ const List<(IconData, String)> _acts = [
 
 const List<String> _ranges = ['1M', '3M', '1Y', 'All'];
 const String _netWorthNote =
-    'Sum of five accounts. The Keel Card balance of −\$1,326.44 is netted out.';
+    'Sum of five accounts. The Wren Card balance of −\$1,326.44 is netted out.';
 
 const List<(String, String)> _everydayDetails = [
   ('Account', '··4821'),
@@ -243,14 +243,14 @@ final List<(DateTime, String, String, double, String, bool)> _bills = [
   (
     DateTime(2026, 11, 3),
     'Kite Mobile',
-    'Keel Card ··7730',
+    'Wren Card ··7730',
     35,
     'In 6 days',
     false,
   ),
   (
     DateTime(2026, 11, 12),
-    'Keel Card payment',
+    'Wren Card payment',
     'Everyday ··4821',
     1326.44,
     'Autopay on',
@@ -259,7 +259,7 @@ final List<(DateTime, String, String, double, String, bool)> _bills = [
   (
     DateTime(2026, 11, 15),
     'Newsline',
-    'Keel Card ··7730',
+    'Wren Card ··7730',
     15.98,
     'In 18 days',
     false,
@@ -267,7 +267,7 @@ final List<(DateTime, String, String, double, String, bool)> _bills = [
   (
     DateTime(2026, 11, 19),
     'Cloudbox',
-    'Keel Card ··7730',
+    'Wren Card ··7730',
     2.99,
     'In 22 days',
     false,
@@ -275,7 +275,7 @@ final List<(DateTime, String, String, double, String, bool)> _bills = [
   (
     DateTime(2026, 11, 27),
     'Streamline Music',
-    'Keel Card ··7730',
+    'Wren Card ··7730',
     10.99,
     'In 30 days',
     false,
@@ -361,7 +361,7 @@ const List<(IconData, String, String, String, bool)> _notes = [
   ),
   (
     LucideIcons.creditCard,
-    'Keel Card autopay sent',
+    'Wren Card autopay sent',
     '\$1,180.22 from Everyday.',
     'Oct 12',
     false,
@@ -369,7 +369,7 @@ const List<(IconData, String, String, String, bool)> _notes = [
   (
     LucideIcons.receipt,
     'Kite Mobile paid',
-    '\$35.00 on your Keel Card.',
+    '\$35.00 on your Wren Card.',
     'Oct 3',
     false,
   ),
@@ -391,7 +391,7 @@ const List<(String, String?, double, List<_Tx>)> _days = [
         'Dining out',
         '8:12 AM',
         'Today',
-        'Keel Card',
+        'Wren Card',
         -6.75,
         true,
       ),
@@ -418,7 +418,7 @@ const List<(String, String?, double, List<_Tx>)> _days = [
         'Groceries',
         '6:22 PM',
         'Yesterday',
-        'Keel Card',
+        'Wren Card',
         -64.18,
         false,
       ),
@@ -428,7 +428,7 @@ const List<(String, String?, double, List<_Tx>)> _days = [
         'Subscriptions',
         '6:00 AM',
         'Yesterday',
-        'Keel Card',
+        'Wren Card',
         -10.99,
         false,
       ),
@@ -445,7 +445,7 @@ const List<(String, String?, double, List<_Tx>)> _days = [
         'Fun',
         '7:10 PM',
         'Mon, Oct 26',
-        'Keel Card',
+        'Wren Card',
         -28,
         false,
       ),
@@ -455,7 +455,7 @@ const List<(String, String?, double, List<_Tx>)> _days = [
         'Health',
         '12:35 PM',
         'Mon, Oct 26',
-        'Keel Card',
+        'Wren Card',
         -18.4,
         false,
       ),
@@ -1482,17 +1482,17 @@ void main() {
       await _everywhere(
         t,
         const LedgerReceipt(
-          kind: 'Keel · Transaction',
+          kind: 'Wren · Transaction',
           number: 'No. T280812BLUE',
           leading: LedgerMonogram(
             'Blue Fern Café',
             size: LedgerMonogramSize.record,
           ),
           name: 'Blue Fern Café',
-          subtitle: 'Dining out · Keel Card ··7730',
+          subtitle: 'Dining out · Wren Card ··7730',
           figure: LedgerFigure(-6.75),
           seal: LedgerSeal(
-            kicker: 'Keel Card',
+            kicker: 'Wren Card',
             value: 'Pending',
             foot: 'Oct 28',
             tone: LedgerSealTone.plain,
@@ -1501,7 +1501,7 @@ void main() {
             LedgerKeyValue('Status', 'Pending'),
             LedgerKeyValue('Date', 'Wednesday, October 28, 2026'),
             LedgerKeyValue('Time', '8:12 AM'),
-            LedgerKeyValue('Card', 'Keel Card ··7730'),
+            LedgerKeyValue('Card', 'Wren Card ··7730'),
             LedgerKeyValue('Category', 'Dining out'),
           ],
         ),
@@ -1510,11 +1510,11 @@ void main() {
             t.getSemantics(find.text('Blue Fern Café')),
             isSemantics(isHeader: true),
           );
-          expect(find.text('KEEL · TRANSACTION'), findsOneWidget);
+          expect(find.text('WREN · TRANSACTION'), findsOneWidget);
           expect(find.text('NO. T280812BLUE'), findsOneWidget);
           expect(find.bySemanticsLabel('−\$6.75'), findsOneWidget);
           expect(
-            find.bySemanticsLabel('Keel Card, Pending, Oct 28'),
+            find.bySemanticsLabel('Wren Card, Pending, Oct 28'),
             findsOneWidget,
           );
           expect(_node(t, 'Status\nPending'), isNotNull);
@@ -1540,7 +1540,7 @@ void main() {
       await _everywhere(
         t,
         LedgerReceipt(
-          kind: 'Keel · Money in',
+          kind: 'Wren · Money in',
           number: 'No. X230630EVER',
           leading: LedgerMonogram(
             _paycheck.$1,
@@ -1596,7 +1596,7 @@ void main() {
       await _everywhere(
         t,
         const LedgerCheque(
-          kind: 'Keel · Transfer',
+          kind: 'Wren · Transfer',
           date: 'Wed, Oct 28, 2026',
           micr: '··0119 ··4821 ··9015',
           lines: [
@@ -1621,7 +1621,7 @@ void main() {
           ],
         ),
         (wide, theme) {
-          expect(find.text('KEEL · TRANSFER'), findsOneWidget);
+          expect(find.text('WREN · TRANSFER'), findsOneWidget);
           expect(find.text('WED, OCT 28, 2026'), findsOneWidget);
           expect(find.text('··0119 ··4821 ··9015'), findsOneWidget);
           final spoken = _spoken(t);
@@ -1644,18 +1644,18 @@ void main() {
         t,
         _atStart(
           const LedgerCardFace(
-            brand: 'Keel',
+            brand: 'Wren',
             kind: 'Credit',
             number: _cardNumber,
             holder: 'MAREN HOLT',
-            account: 'Keel Card',
+            account: 'Wren Card',
           ),
         ),
         (wide, theme) {
           expect(_spoken(t), ['Credit card ending 7730']);
           expect(find.text('••••'), findsNWidgets(3));
           expect(find.text('7730'), findsOneWidget);
-          expect(find.text('KEEL CARD'), findsOneWidget);
+          expect(find.text('WREN CARD'), findsOneWidget);
           expect(
             t.getSize(find.byType(LedgerCardFace)),
             wide ? const Size(400, 252) : const Size(390 - 48, 216),
@@ -1669,7 +1669,7 @@ void main() {
         t,
         _atStart(
           const LedgerCardFace(
-            brand: 'Keel',
+            brand: 'Wren',
             kind: 'Debit',
             number: _debitNumber,
             holder: 'MAREN HOLT',
@@ -1695,14 +1695,14 @@ void main() {
         t,
         _atStart(
           const LedgerCardFace(
-            brand: 'Keel',
+            brand: 'Wren',
             kind: 'Credit',
             number: _cardNumber,
             holder: 'MAREN HOLT',
-            account: 'Keel Card',
+            account: 'Wren Card',
             frozen: true,
             seal: LedgerSeal(
-              kicker: 'Keel Card',
+              kicker: 'Wren Card',
               value: 'Frozen',
               foot: 'Oct 28',
               tone: LedgerSealTone.plain,
@@ -1712,15 +1712,15 @@ void main() {
         (wide, theme) {
           expect(_spoken(t), [
             'Credit card ending 7730, frozen',
-            'Keel Card, Frozen, Oct 28',
+            'Wren Card, Frozen, Oct 28',
           ]);
           // The account is dropped from the face's foot: its words stand
           // only on the seal, as its kicker.
-          expect(find.text('KEEL CARD'), findsOneWidget);
+          expect(find.text('WREN CARD'), findsOneWidget);
           expect(
             find.descendant(
               of: find.byType(LedgerSeal),
-              matching: find.text('KEEL CARD'),
+              matching: find.text('WREN CARD'),
             ),
             findsOneWidget,
           );
@@ -2239,7 +2239,7 @@ void main() {
               t.getRect(find.text('CATEGORY')).left,
             );
             expect(
-              t.getRect(find.text('Keel Card').first).left,
+              t.getRect(find.text('Wren Card').first).left,
               t.getRect(find.text('ACCOUNT')).left,
             );
           }
@@ -2473,7 +2473,7 @@ void main() {
         ),
         (wide, theme) {
           final label = wide
-              ? 'Blue Fern Café, Pending, Dining out, 8:12 AM, Keel Card, −\$6.75'
+              ? 'Blue Fern Café, Pending, Dining out, 8:12 AM, Wren Card, −\$6.75'
               : 'Blue Fern Café, Pending, Dining out, 8:12 AM, −\$6.75';
           expect(_node(t, label), _live(label: label));
           expect(find.text('PENDING'), findsNWidgets(2));
@@ -2563,7 +2563,7 @@ void main() {
             _node(t, 'Rent, \$1,150.00, Nov 1'),
             _live(label: 'Rent, \$1,150.00, Nov 1'),
           );
-          expect(_node(t, 'Keel Card payment, \$1,326.44, Nov 12'), _live());
+          expect(_node(t, 'Wren Card payment, \$1,326.44, Nov 12'), _live());
           expect(
             t.widget<Text>(find.text('Autopay on')).style?.color,
             theme.moneyIn,

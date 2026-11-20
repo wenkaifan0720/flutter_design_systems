@@ -21,7 +21,7 @@ import '../example/lib/kit_gallery/quill/quill.dart';
 import '../example/lib/kit_gallery/quill/register.dart';
 import 'tiers.dart';
 
-/// Leak tracking without a creation stack per object, as walk_test's and design6_support.dart's: leaving out what the
+/// Leak tracking without a creation stack per object, as walk_test's and screen_checks.dart's: leaving out what the
 /// test helpers make keeps the stack every tracked object was made on, and over a test per page those outlive their
 /// test. These tests make nothing of their own through the helpers, so they track theirs too.
 final LeakTesting _tracked = LeakTesting.settings.withTracked(
@@ -82,13 +82,13 @@ Future<void> _fit(WidgetTester t, double width) async {
   await _rest(t);
 }
 
-/// What ui_core's label check (7ce4ce47e6) still misreads on Ledger, by the words of its report, with why; told to
-/// the coordinator. A read-only LedgerField's value stands on its ruled line where a typed value does (4 above it, 9
+/// What ui_core's label check still misreads on Ledger, by the words of its report, with why.
+/// A read-only LedgerField's value stands on its ruled line where a typed value does (4 above it, 9
 /// to the rule; DesignTextEntryCheck holds that line), not on the middle of the box over the rule.
 const Map<String, String> _misread = {
   'a text field "Note": the capitals of "November top-up" are drawn ':
       "a ruled field's value stands on its line, as a typed one does",
-  // UNEXPLAINED, put to the coordinator: the error page's filled "Try again" at 390, compact only, reads its
+  // Not yet explained: the error page's filled "Try again" at 390, compact only, reads its
   // capitals 24.1 device px high against the factor's 21.8 (the allowance is 2.0); not an offset.
   'a button "Try again": the capitals of "Try again" are drawn 24.1 device px high':
       "one cap-height reading 0.3 over the hinting allowance (unexplained)",

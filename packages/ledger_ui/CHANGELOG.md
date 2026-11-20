@@ -1,3 +1,18 @@
+## 0.3.3
+
+- A pressed control stays where it is drawn; its ink deepens instead of moving, and the bare paper of its face takes the same ink. A press now shows over a hover on every control, by day and by night, including those it barely changed or left as they were: the tab bar's tabs and Move disc, tabs, the check, ringed, icon and text buttons, the back button, menu commands, disclosures, page dots and page numbers, the select, the side bar, breadcrumbs, a heading's link, the file picker and a multi-select's remove cross.
+- Adds `LedgerImpression`, which deepens a held control's ink in place and, given a `wash`, the paper under it.
+- Filled buttons no longer cast a shadow: `LedgerThemeData.primaryShadow` is empty in every Ledger theme.
+- The tab bar's Move disc no longer casts a shadow: `LedgerThemeData.discShadow` is empty in every Ledger theme.
+- A held menu command's underline thickens.
+- In a text field with a trailing button (the password field's Show password, a copy button), the text box now carries the field's label and help for a screen reader, and the button keeps its own name.
+- Deprecates `LedgerChromeMetrics.pressSink`, which the package no longer uses.
+- The example bank is named Wren, and the test files are named for what they check.
+- Radios of one choice are one Tab stop: Tab lands on the chosen radio (the first that can be chosen when none is), the arrow keys move and choose, wrapping at the ends and skipping disabled options, and a second Tab leaves. Group sibling `LedgerRadio`s with ui_core's `DesignRadioGroup` where you keep their choice; each radio keeps the `focusNode` you give it.
+- `LedgerSegmentedControl`'s segments, and a one-choice `LedgerToggleGroup`'s pills (unless `allowEmpty`), are radios of one group: screen readers announce each as a checked or unchecked radio, and all four arrow keys move and choose. Home and End choose the first and the last pill.
+- A checklist's `LedgerCheck` is announced as a checkbox, no longer as a button too.
+- Stands on ui_core 0.3.4.
+
 ## 0.3.2
 
 - `LedgerStepper` and `LedgerPieChart` no longer assume money. Without a `format`, both show the plain number in the reader's digits, so a count of copies reads 2 instead of $2 and an estimate in minutes reads 45. To show money, pass a format: `format: (value) => LedgerFormat.money(value, showCents: false)` for a budget in whole dollars, or `format: LedgerFormat.money` for a pie chart of amounts. The gallery, the inventory and Quill pass these where their numbers are money. If your app relied on the dollar default, add the format.

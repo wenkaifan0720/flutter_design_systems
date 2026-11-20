@@ -581,7 +581,7 @@ class LedgerTopBar extends StatelessWidget {
         ),
         child: NavigationToolbar(
           // The toolbar holds its leading to the bar's whole height; the
-          // way back keeps its own round 36 in the middle of it.
+          // way back keeps its own 36 circle in the middle of it.
           leading: Center(widthFactor: 1, child: exit),
           middle: title == null
               ? null

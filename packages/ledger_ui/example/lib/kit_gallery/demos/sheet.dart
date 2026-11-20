@@ -36,7 +36,7 @@ class _RaiseState extends State<_Raise> {
               icon: LucideIcons.snowflake,
               onPressed: () => LedgerSheet.show<void>(
                 context,
-                title: 'Freeze your Keel Card?',
+                title: 'Freeze your Wren Card?',
                 confirm: true,
                 builder: (sheet) => const [_FreezeBody()],
                 foot: (sheet) => _freezeActs(() => Navigator.of(sheet).pop()),
@@ -195,7 +195,7 @@ Widget kitSpecimenSheetAdd() => LedgerSheetShell(
 );
 
 Widget kitSpecimenSheetFreeze() => LedgerSheetShell(
-  title: 'Freeze your Keel Card?',
+  title: 'Freeze your Wren Card?',
   foot: _freezeActs(() {}),
   children: const [_FreezeBody()],
 );

@@ -1,9 +1,9 @@
-// Gaps the Keel app found: the dashed frame, the menu, the suggestion, the
-// category tile, option and mini, the icon picker, Move's ways, allocation and
-// holding rows, two acts in a row, the member card and the inked monogram. Each
-// is pumped on a phone and at desktop width in both appearances, measured
-// against the source's stylesheet, and read back through its semantics. Helpers
-// copied from display_test.dart.
+// The dashed frame, the menu, the suggestion, the category tile, option and
+// mini, the icon picker, Move's ways, allocation and holding rows, two acts in
+// a row, the member card and the inked monogram. Each is pumped on a phone and
+// at desktop width in both appearances, measured against the source's
+// stylesheet, and read back through its semantics. Helpers copied from
+// display_test.dart.
 import 'dart:convert';
 
 import 'package:material_ui/material_ui.dart';
@@ -139,7 +139,7 @@ Widget _atStart(Widget child) =>
 BoxDecoration _decorationOf(WidgetTester t, Finder f) =>
     t.widget<Container>(f).decoration! as BoxDecoration;
 
-// --- The pilot's figures -------------------------------------------------------
+// --- The sample bank's figures -------------------------------------------------------
 
 /// the sample data spending.by_month, newest first.
 const _months = [
@@ -584,8 +584,8 @@ void main() {
         const LedgerHoldings(
           rows: [
             LedgerHoldingRow(
-              name: 'Keel Total Market',
-              symbol: 'KTMX',
+              name: 'Wren Total Market',
+              symbol: 'WTMX',
               kind: 'Stocks',
               shares: '182.4 shares',
               value: 26410.2,
@@ -667,12 +667,12 @@ void main() {
       await _everywhere(
         t,
         const LedgerMemberCard(
-          kind: 'Keel · Account holder',
+          kind: 'Wren · Account holder',
           since: 'Since Mar 2023',
           name: 'Maren Holt',
           initials: 'MH',
           subtitle: 'Member since March 2023',
-          seal: LedgerSeal(kicker: 'Keel', value: 'Member', foot: 'Since 2023'),
+          seal: LedgerSeal(kicker: 'Wren', value: 'Member', foot: 'Since 2023'),
           details: [
             LedgerKeyValue('Email', 'maren.holt@example.com'),
             LedgerKeyValue('Phone', '(•••) •••-4410'),
@@ -680,7 +680,7 @@ void main() {
         ),
         (wide, theme) {
           expect(find.byType(LedgerSlipBand), findsOneWidget);
-          expect(find.text('KEEL · ACCOUNT HOLDER'), findsOneWidget);
+          expect(find.text('WREN · ACCOUNT HOLDER'), findsOneWidget);
           expect(
             t.getSize(find.byType(LedgerMonogram)),
             Size.square(wide ? 84 : 72),

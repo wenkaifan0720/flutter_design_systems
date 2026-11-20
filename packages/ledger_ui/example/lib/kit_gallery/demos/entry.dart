@@ -1,7 +1,7 @@
 /// The ways in: the search entry ([LedgerSearchEntry]) with and without its
 /// filter, and the date picker ([LedgerDatePicker]) compact, inline and as
 /// wheels. The first section is live: the picker keeps its value. The words are a
-/// stationery studio's books, not the pilot's.
+/// stationery studio's books, not the sample bank's.
 library;
 
 import 'package:material_ui/material_ui.dart';
@@ -56,7 +56,7 @@ class _LiveState extends State<_Live> {
 }
 
 /// The day the date specimens hold: the first of the month after the
-/// pilot's moment, at nine in the morning.
+/// sample bank's moment, at nine in the morning.
 final DateTime _day = DateTime(2026, 11, 4, 9, 30);
 
 // --- Specimens --------------------------------------------------------------

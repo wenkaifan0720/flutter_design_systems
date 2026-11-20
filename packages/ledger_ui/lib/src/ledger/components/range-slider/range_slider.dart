@@ -208,7 +208,8 @@ class LedgerRangeSlider extends StatelessWidget {
 }
 
 /// A knob: the paper in a ring of the ink, 22 across; darker paper under a
-/// pointer, a pixel down while held, the double rule under it with focus.
+/// pointer, its ink a shade deeper while held ([LedgerImpression]), the
+/// double rule under it with focus.
 class _Knob extends StatelessWidget {
   const _Knob({required this.states});
 
@@ -224,9 +225,9 @@ class _Knob extends StatelessWidget {
     final focused = states.contains(WidgetState.focused);
     return Center(
       child: LedgerEase(
-        value: pressed ? LedgerChromeMetrics.pressSink : 0,
-        builder: (context, sink, child) =>
-            Transform.translate(offset: Offset(0, sink), child: child),
+        value: pressed ? LedgerImpression.pressed : 0,
+        builder: (context, depth, child) =>
+            LedgerImpression(ink: t.textPrimary, depth: depth, child: child),
         child: LedgerFace(
           style: LedgerFaceStyle(
             ink: t.textPrimary,

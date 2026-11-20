@@ -86,7 +86,7 @@ double _side(bool wide) => wide ? 36 : 20;
 /// printed. It says nothing.
 ///
 /// ```dart
-/// LedgerSlip(child: Column(children: [const LedgerSlipBand(), Padding(padding: const EdgeInsets.symmetric(horizontal: 20), child: Column(children: [const LedgerSlipHead('Keel · New goal', 'Savings'), ...fields]))]))
+/// LedgerSlip(child: Column(children: [const LedgerSlipBand(), Padding(padding: const EdgeInsets.symmetric(horizontal: 20), child: Column(children: [const LedgerSlipHead('Wren · New goal', 'Savings'), ...fields]))]))
 /// ```
 class LedgerSlipBand extends StatelessWidget {
   /// The band across a slip's head.
@@ -197,13 +197,13 @@ class _NotchPainter extends CustomPainter {
 /// what follows (26). Inside the slip's side room.
 ///
 /// ```dart
-/// LedgerSlipHead('Keel · New goal', 'Savings')
+/// LedgerSlipHead('Wren · New goal', 'Savings')
 /// ```
 class LedgerSlipHead extends StatelessWidget {
   /// A slip's head: [start] and [end].
   const LedgerSlipHead(this.start, this.end, {super.key});
 
-  /// The slip's kind (Keel · Transaction), at its start.
+  /// The slip's kind (Wren · Transaction), at its start.
   final String start;
 
   /// Its number, date or class (No. T280812BLUE, Savings), at its end.
@@ -262,7 +262,7 @@ class LedgerSlipHead extends StatelessWidget {
 /// [details] (key and value lines).
 ///
 /// ```dart
-/// LedgerReceipt(kind: 'Keel · Transaction', number: 'No. T280812BLUE', leading: const LedgerMonogram('Blue Fern Café', size: LedgerMonogramSize.record), name: 'Blue Fern Café', subtitle: 'Dining out · Keel Card ··7730', figure: const LedgerFigure(-6.75), seal: const LedgerSeal(kicker: 'Keel Card', value: 'Pending', foot: 'Oct 28', tone: LedgerSealTone.plain), details: const [LedgerKeyValue('Status', 'Pending')])
+/// LedgerReceipt(kind: 'Wren · Transaction', number: 'No. T280812BLUE', leading: const LedgerMonogram('Blue Fern Café', size: LedgerMonogramSize.record), name: 'Blue Fern Café', subtitle: 'Dining out · Wren Card ··7730', figure: const LedgerFigure(-6.75), seal: const LedgerSeal(kicker: 'Wren Card', value: 'Pending', foot: 'Oct 28', tone: LedgerSealTone.plain), details: const [LedgerKeyValue('Status', 'Pending')])
 /// ```
 class LedgerReceipt extends StatelessWidget {
   /// A receipt for [name]: [figure], [seal] and [details].
@@ -278,7 +278,7 @@ class LedgerReceipt extends StatelessWidget {
     super.key,
   });
 
-  /// What the slip is (Keel · Transaction).
+  /// What the slip is (Wren · Transaction).
   final String kind;
 
   /// The receipt's number (No. T280812BLUE).
@@ -479,11 +479,11 @@ class _Bleed extends StatelessWidget {
 /// under its lines at their end.
 ///
 /// ```dart
-/// LedgerCheque(kind: 'Keel · Transfer', date: 'Wed, Oct 28, 2026', micr: '··0119 ··4821 ··9015', lines: [LedgerPickLine(label: 'From', icon: LucideIcons.wallet, name: 'Checking', mask: '··4821'), LedgerChequeAmount(label: 'Amount', words: 'Two hundred and 00/100', unit: 'dollars', amount: 200)])
+/// LedgerCheque(kind: 'Wren · Transfer', date: 'Wed, Oct 28, 2026', micr: '··0119 ··4821 ··9015', lines: [LedgerPickLine(label: 'From', icon: LucideIcons.wallet, name: 'Checking', mask: '··4821'), LedgerChequeAmount(label: 'Amount', words: 'Two hundred and 00/100', unit: 'dollars', amount: 200)])
 /// ```
 ///
 /// ```dart
-/// LedgerCheque(kind: 'Keel · Transfer', date: 'Wed, Oct 28, 2026', micr: '··0119 ··4821 ··9015', lines: lines, stamp: const LedgerSeal(kicker: 'Keel · Transfer', value: 'Sent', foot: 'Oct 28'))
+/// LedgerCheque(kind: 'Wren · Transfer', date: 'Wed, Oct 28, 2026', micr: '··0119 ··4821 ··9015', lines: lines, stamp: const LedgerSeal(kicker: 'Wren · Transfer', value: 'Sent', foot: 'Oct 28'))
 /// ```
 class LedgerCheque extends StatelessWidget {
   /// A cheque dated [date] carrying its [lines].
@@ -496,7 +496,7 @@ class LedgerCheque extends StatelessWidget {
     super.key,
   });
 
-  /// What the slip is (Keel · Transfer).
+  /// What the slip is (Wren · Transfer).
   final String kind;
 
   /// The cheque's date, at its head's end.

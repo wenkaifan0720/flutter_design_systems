@@ -4,7 +4,7 @@
 /// ([LedgerStackBar] of [LedgerStackPart]), the budget's rule
 /// ([LedgerBudgetRule]: what was spent against the budget and the
 /// suggestion) and a chart's key ([LedgerChartKey] of [LedgerKeyEntry]).
-/// Every figure is the pilot's (keel.dart).
+/// Every figure is the sample bank's (wren.dart).
 library;
 
 import 'package:material_ui/material_ui.dart';

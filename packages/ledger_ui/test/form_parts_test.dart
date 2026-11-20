@@ -1,7 +1,7 @@
-// The design-system gaps the Keel app found in the inputs, the button, the
-// goals, the gauge and the money, and the row heights measured on the live
-// source: each pumped as the pilot uses it, measured or read back through its
-// semantics against the source's figures.
+// The inputs, the button, the goals, the gauge and the money, and the row
+// heights measured on the live source: each pumped as the sample bank uses
+// it, measured or read back through its semantics against the source's
+// figures.
 import 'dart:convert';
 
 import 'package:material_ui/material_ui.dart';
@@ -146,7 +146,7 @@ Color? _ruleUnder(WidgetTester t, Finder of) {
   return ((box.decoration! as BoxDecoration).border! as Border).bottom.color;
 }
 
-// --- The pilot's words (the gallery's keel.dart) -----------------------------
+// --- The sample bank's words (the gallery's wren.dart) -----------------------------
 
 const String _transferWords = 'Five hundred and 00/100';
 const double _transferAmount = 500;

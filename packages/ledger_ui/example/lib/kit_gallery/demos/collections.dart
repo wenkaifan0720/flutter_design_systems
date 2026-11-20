@@ -75,7 +75,7 @@ class _Order extends StatefulWidget {
 }
 
 class _OrderState extends State<_Order> {
-  final _names = ['Everyday', 'Savings', 'Keel Card', 'Brokerage'];
+  final _names = ['Everyday', 'Savings', 'Wren Card', 'Brokerage'];
 
   @override
   Widget build(BuildContext context) {

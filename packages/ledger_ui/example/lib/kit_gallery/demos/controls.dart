@@ -213,8 +213,8 @@ Widget kitSpecimenBrand() => const Row(
   spacing: LedgerSpacing.s24,
   children: [
     LedgerBrandMark(),
-    LedgerWordmark('Keel'),
-    LedgerWordmark('Keel', size: LedgerWordmarkSize.large),
+    LedgerWordmark('Wren'),
+    LedgerWordmark('Wren', size: LedgerWordmarkSize.large),
   ],
 );
 
@@ -263,7 +263,7 @@ Widget kitSpecimenSealSizes() => Wrap(
       size: LedgerSealSize.memo,
     ),
     LedgerSeal(
-      kicker: 'Keel',
+      kicker: 'Wren',
       value: 'Member',
       foot: 'Since ${kitMaren.meta!.split(' ').last}',
       size: LedgerSealSize.member,
@@ -276,7 +276,7 @@ Widget kitSpecimenSealSizes() => Wrap(
       size: LedgerSealSize.receipt,
     ),
     LedgerSeal(
-      kicker: 'Keel · Transfer',
+      kicker: 'Wren · Transfer',
       value: 'Sent',
       foot: LedgerFormat.date(kitNow),
       size: LedgerSealSize.stamp,
