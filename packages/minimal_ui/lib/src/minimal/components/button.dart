@@ -166,7 +166,7 @@ class MinimalButton extends StatelessWidget {
           );
     // Filling its column on a phone; from the compact width up an expanded
     // button stops at a control's measure, and any other keeps the width of
-    // its words whatever stretches it (design6 P (a)).
+    // its words whatever stretches it.
     return expand
         ? MinimalLayout.capControl(context, button)
         : MinimalLayout.holdWidth(context, button);

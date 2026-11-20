@@ -453,7 +453,7 @@ OutlinedBorder minimalKitRowShape(MinimalThemeData t, [MinimalStyle? style]) {
 /// active row (the keyboard's, or the pointer's: an open list follows the
 /// pointer) takes the muted fill, a place and not a choice, so it never
 /// reads as a second chosen row; a destructive action the destructive
-/// ink.
+/// ink. In a menu ([ring]) the keyboard's row adds the accent focus ring.
 class MinimalKitRow extends StatelessWidget {
   /// A row of a list a ui_core behaviour drives.
   const MinimalKitRow({
@@ -468,11 +468,19 @@ class MinimalKitRow extends StatelessWidget {
     this.destructive = false,
     this.start = MinimalSpacing.s8,
     this.style,
+    this.ring = false,
   });
 
   /// The row's states from its behaviour: focused (the active row), selected,
   /// disabled.
   final Set<WidgetState> states;
+
+  /// Whether the row the keyboard is on wears Minimal's accent focus ring,
+  /// drawn inside its edge so it fits between the rows above and below: a
+  /// menu's commands. The pointer's row keeps the muted fill alone. A list
+  /// whose keys stay in a text field (a combobox's, a multi-select's) leaves
+  /// the ring on the field.
+  final bool ring;
 
   /// What the row says.
   final String label;
@@ -536,6 +544,13 @@ class MinimalKitRow extends StatelessWidget {
         fill: MinimalKitStates(states).down
             ? t.foreground.withValues(alpha: 0.08)
             : null,
+        side: ring && MinimalKitStates(states).ring
+            ? BorderSide(
+                color: t.ring,
+                width: t.focusWidth,
+                strokeAlign: BorderSide.strokeAlignInside,
+              )
+            : BorderSide.none,
       ),
       child: Row(
         children: [

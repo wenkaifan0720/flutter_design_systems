@@ -25,7 +25,8 @@ import '../theme.dart';
 /// [tapAlignment] places the painted control inside it. A larger control
 /// can provide a shared target for its parts with [tapTarget] false.
 ///
-/// [toggled] and [checked] announce the value on the control's own node.
+/// [toggled] and [checked] announce the value on the control's own node,
+/// which then reads as a switch, a checkbox or a radio, not as a button.
 /// Use [focusable] false for a part of a composite focus stop, such as a
 /// tab. [focusInside] places the outline within clipped surfaces. Supply
 /// [focusNode] to move focus programmatically.
@@ -99,8 +100,8 @@ class MinimalPressable extends StatefulWidget {
   final String? semanticLabel;
 
   /// Whether this control is the current one of a set (a tab, a segment),
-  /// announced on the control's own node; null for a control that is not
-  /// one of a set.
+  /// or an on/off button that is on, announced on the control's own node;
+  /// null for a control that is neither. It stays a button.
   final bool? selected;
 
   /// The on/off state of a switch, announced on the control's own node;
@@ -305,7 +306,15 @@ class _MinimalPressableState extends State<MinimalPressable> {
     // below spans it).
     final control = Semantics(
       container: true,
-      button: !widget.link,
+      // A switch, a checkbox or a radio is that control alone, as Flutter's
+      // are; the rest are buttons, or links.
+      button:
+          !widget.link &&
+              widget.checked == null &&
+              widget.toggled == null &&
+              !widget.inMutuallyExclusiveGroup
+          ? true
+          : null,
       link: widget.link,
       enabled: enabled,
       selected: widget.selected,

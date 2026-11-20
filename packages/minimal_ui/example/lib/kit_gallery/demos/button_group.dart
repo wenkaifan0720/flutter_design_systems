@@ -51,7 +51,7 @@ Widget kitButtonGroupDemo(Brightness brightness) => kitScreen(
   ],
 );
 
-// --- catalog specimens -------------------------------------------------------
+// --- specimens ---------------------------------------------------------------
 
 /// A calendar's week, stepped: back, today and forward, joined. Acts that
 /// run once; a choice of Day, Week or Month that stays is a toggle group's.

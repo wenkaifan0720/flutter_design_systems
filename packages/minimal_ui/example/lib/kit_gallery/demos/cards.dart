@@ -409,11 +409,10 @@ class _SectionSpecimensState extends State<_SectionSpecimens> {
   }
 }
 
-// --- catalog specimens -------------------------------------------------------
+// --- specimens ---------------------------------------------------------------
 //
-// One configuration each, for the lab's Components pages (metadata.yaml
-// `specimens`). The stage (kitSpecimenStage) styles and places them; a
-// builder never names a style.
+// One configuration each. The stage (kitSpecimenStage) styles and places them;
+// a builder never names a style.
 
 /// The plain card: a habit's summary and its two small actions.
 Widget kitSpecimenCardPanel() =>

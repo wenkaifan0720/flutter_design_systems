@@ -22,8 +22,8 @@ const String _unpaintedWheels =
     'the time wheels keep their off-screen rows (100 by 32, each under a '
     'RepaintBoundary of a SliverFixedExtentList) laid out in the scroll '
     "view's cache area and never painted, and DrawnPixels.read refuses a "
-    'screen holding an unpainted boundary (probe 11-11: 72 of them); the '
-    'selects on this page are held by p_classes_test (d); 0.2.0: ui_core '
+    'screen holding an unpainted boundary (72 of them); the '
+    'selects on this page are held by control_layout_test (d); 0.2.0: ui_core '
     "reads a screen past an unpainted boundary (the 0.2.0 list's wheels)";
 
 /// Where a check cannot read Minimal, by `check: screen at width`, with
@@ -34,8 +34,7 @@ final Map<String, String> _misreadings = {
 };
 
 /// Problems a check names that Minimal means, each held by its words with
-/// the reason, and taken to ui_core's owner as a misreading (11-11). Every
-/// other problem fails.
+/// the reason: ui_core's check misreads them. Every other problem fails.
 final Map<RegExp, String> _held = {
   RegExp(
     r'a button "(Today|Habits|Settings|Trends|Orders|Products|My issues|'
@@ -78,13 +77,13 @@ final Map<RegExp, String> _held = {
     r'^a list opened from a button "[^"]+": its words are \d+ px in from '
     r"the field's words",
   ): "a select is a hairline row whose words stand on the page's gutter; "
-      'its list starts on that edge (the measure ruled 11-11) and its words '
+      'its list starts on that edge and its words '
       "stand in by the card's own inset",
   RegExp(r'^a row of a button "Monday" and a button "Sunday": its sides'):
       "a segmented control's segments sit inside its track and the track is "
       'its outline; only the chosen segment draws a hairline, so read by its '
       "drawn faces the row ends at the chosen one's rim and the other's "
-      'words (the habits settings, 11-12)',
+      'words (the habits settings)',
   RegExp(r'^a segmented control "OPEN": \d+ px wide'):
       'a KPI strip (its '
       'cells filter what shows under it) spans the card it heads',
@@ -109,8 +108,7 @@ final Map<RegExp, String> _held = {
     r'0\.5 device px',
   ): "level as laid out; as drawn a filled face's anti-aliased edge reads "
       "half a device pixel inside the outlined face's hairline beside it, "
-      'and the two read level in the pictures (dialogs, day and night, '
-      '11-11)',
+      'and the two read level in the pictures (dialogs, day and night)',
   RegExp(
     r'^a button "\w+day,? \d+ [^"]+" beside a button '
     r'"\w+day,? \d+ [^"]+": '
@@ -119,7 +117,7 @@ final Map<RegExp, String> _held = {
   ): "laid out, every day's figure is within 0.2 px of the week's centre "
       'line; most days draw no face for the check to take the middle from, '
       "and Geist Mono's figures stand on its capitals' height (0 to 710 of "
-      '1000, measured 11-11)',
+      '1000)',
 };
 
 DesignAlignmentReport _unheld(DesignAlignmentReport report) =>

@@ -153,8 +153,8 @@ class _MinimalSwitchState extends State<MinimalSwitch> {
 
       style: MinimalStyleOf(layers, const {}).press,
       semanticLabel: widget.label,
-      // On the pressable's own node: one control that is a button AND
-      // announces its on/off state.
+      // On the pressable's own node: one control, a switch, that announces
+      // its on/off state.
       toggled: widget.value,
       builder: (context, states) => _labelled(
         t,

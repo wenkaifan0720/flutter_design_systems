@@ -43,7 +43,7 @@ class _LiveTimeState extends State<_LiveTime> {
   }
 }
 
-// --- catalog specimens -------------------------------------------------------
+// --- specimens ---------------------------------------------------------------
 
 /// The compact row: a reminder at 21:30.
 Widget kitSpecimenTimePickerRow() => MinimalTimePicker(

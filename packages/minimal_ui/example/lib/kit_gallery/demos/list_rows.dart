@@ -408,11 +408,10 @@ class _MetaRows extends StatelessWidget {
   }
 }
 
-// --- catalog specimens -------------------------------------------------------
+// --- specimens ---------------------------------------------------------------
 //
-// One configuration each, for the lab's Components pages (metadata.yaml
-// `specimens`). The stage (kitSpecimenStage) styles and places them; a
-// builder never names a style. Rows run edge to edge, as on a full-bleed
+// One configuration each. The stage (kitSpecimenStage) styles and places them;
+// a builder never names a style. Rows run edge to edge, as on a full-bleed
 // page.
 
 /// Glyph-led rows with a caption and a mono figure at the end.

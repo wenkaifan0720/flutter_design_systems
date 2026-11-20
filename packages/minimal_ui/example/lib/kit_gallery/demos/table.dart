@@ -367,11 +367,10 @@ class _OrdersState extends State<_Orders> {
   }
 }
 
-// --- catalog specimens -------------------------------------------------------
+// --- specimens ---------------------------------------------------------------
 //
-// One configuration each, for the lab's Components pages (metadata.yaml
-// `specimens`). The stage (kitSpecimenStage) styles and places them; a
-// builder never names a style. The table runs edge to edge, as on its
+// One configuration each. The stage (kitSpecimenStage) styles and places them;
+// a builder never names a style. The table runs edge to edge, as on its
 // `padding: EdgeInsets.zero` page.
 
 /// The morning's orders, sorted by number: mono figures, dot badges, one

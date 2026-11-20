@@ -301,11 +301,10 @@ class _DetailTabsState extends State<_DetailTabs> {
   ];
 }
 
-// --- catalog specimens -------------------------------------------------------
+// --- specimens ---------------------------------------------------------------
 //
-// One configuration each, for the lab's Components pages (metadata.yaml
-// `specimens`). The stage (kitSpecimenStage) styles and places them; a
-// builder never names a style.
+// One configuration each. The stage (kitSpecimenStage) styles and places them;
+// a builder never names a style.
 
 /// Three views of the same content, sharing the whole width.
 Widget kitSpecimenSegmentedFull() => MinimalSegmentedButton(

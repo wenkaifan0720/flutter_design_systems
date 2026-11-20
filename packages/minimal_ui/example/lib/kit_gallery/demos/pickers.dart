@@ -454,12 +454,11 @@ class _MenusState extends State<_Menus> {
   }
 }
 
-// --- catalog specimens -------------------------------------------------------
+// --- specimens ---------------------------------------------------------------
 //
-// One configuration each, for the lab's Components pages (metadata.yaml
-// `specimens`). The stage (kitSpecimenStage) styles and places them; a
-// builder never names a style. The menu's open card has no public face,
-// so MinimalMenu is seen live only (metadata.yaml).
+// One configuration each. The stage (kitSpecimenStage) styles and places them;
+// a builder never names a style. The menu's open card has no public face, so
+// MinimalMenu is seen live only.
 
 /// The current choice over its up-down chevron: it opens the anchored menu.
 Widget kitSpecimenPickerRowMenu() => _Body(

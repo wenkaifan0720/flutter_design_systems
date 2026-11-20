@@ -175,7 +175,7 @@ class _LauncherState extends State<_Launcher> {
   ]);
 }
 
-// --- catalog specimens -------------------------------------------------------
+// --- specimens ---------------------------------------------------------------
 //
 // MinimalCommand.show raises the palette in a card a third of the way down
 // a dimmed page; each specimen stands it there. The stage

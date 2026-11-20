@@ -1,4 +1,4 @@
-/// Round 4's control fixes: search grows with its words, two months stand
+/// Controls: search grows with its words, two months stand
 /// their names on their grids' edges, a wheel stands on its slot's start,
 /// and the upload zone marks the words that open the picker.
 library;

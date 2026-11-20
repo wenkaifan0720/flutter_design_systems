@@ -62,7 +62,7 @@ class _LiveUploadState extends State<_LiveUpload> {
   );
 }
 
-// --- catalog specimens -------------------------------------------------------
+// --- specimens ---------------------------------------------------------------
 
 /// A notes box with a line of help.
 Widget kitSpecimenTextAreaNotes() => const MinimalTextArea(

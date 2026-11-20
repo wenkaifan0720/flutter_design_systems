@@ -190,11 +190,10 @@ class _SignInCardState extends State<_SignInCard> {
   }
 }
 
-// --- catalog specimens -------------------------------------------------------
+// --- specimens ---------------------------------------------------------------
 //
-// One configuration each, for the lab's Components pages (metadata.yaml
-// `specimens`). The stage (kitSpecimenStage) styles and places them; a
-// builder never names a style.
+// One configuration each. The stage (kitSpecimenStage) styles and places them;
+// a builder never names a style.
 
 /// One provider on the neutral surface, its mark in its own colours.
 Widget kitSpecimenSignInButtonNeutral() =>

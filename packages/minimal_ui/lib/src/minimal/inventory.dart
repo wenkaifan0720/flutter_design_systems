@@ -1161,9 +1161,12 @@ class MinimalInventoryGallery extends StatelessWidget {
             children: [
               part,
               const MinimalGap(MinimalChromeMetrics.rowIconGap),
-              // The check announces them already.
-              ExcludeSemantics(
-                child: Text(words, style: t.body.c(t.foreground)),
+              // The words wrap within a phone's column. The check announces
+              // them already.
+              Flexible(
+                child: ExcludeSemantics(
+                  child: Text(words, style: t.body.c(t.foreground)),
+                ),
               ),
             ],
           );

@@ -11,8 +11,7 @@
 // Minimal's walks of whole gallery pages and app screens take the long
 // walk's (below): tracked, a file of them grew test by test to 3.4 GB in
 // one process and ran two and a half times as long. Each part's own tests,
-// and the apps' happy path, keep tracking; the inventory walks run in
-// drip's app too, under drip's own config, and keep it.
+// and the apps' happy path, keep tracking.
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';

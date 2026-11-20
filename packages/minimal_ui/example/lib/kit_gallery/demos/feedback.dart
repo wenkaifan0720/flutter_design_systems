@@ -54,7 +54,7 @@ Widget kitFeedbackDemo(Brightness brightness) => kitScreen(
   ],
 );
 
-// --- catalog specimens -------------------------------------------------------
+// --- specimens ---------------------------------------------------------------
 
 /// A list row loading: a face and two lines.
 Widget kitSpecimenSkeletonRow() => const Row(

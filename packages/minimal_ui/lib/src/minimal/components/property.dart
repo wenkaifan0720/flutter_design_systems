@@ -153,7 +153,7 @@ class MinimalProperty extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.minimalTheme;
     // The menu opens from the value, the part that changes: on its leading
-    // edge and at least as wide (design6 P, a list that opens from a field).
+    // edge and at least as wide, as a list that opens from a field does.
     BuildContext? valueContext;
     final onPressed =
         this.onPressed ??

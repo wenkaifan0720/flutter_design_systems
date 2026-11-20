@@ -3,7 +3,7 @@
 // look's own: material_ui's and cupertino_ui's translations for the app's
 // locale, English for a locale they lack. An app on Flutter's MaterialApp with
 // flutter_localizations gives Flutter's types, never these, so the look loads
-// them itself. (The package's twin of drip's English-only file.)
+// them itself.
 import 'package:cupertino_ui/cupertino_ui.dart'
     show
         CupertinoLocalizations,

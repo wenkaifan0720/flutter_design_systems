@@ -166,7 +166,7 @@ class _LabelsState extends State<_Labels> {
   );
 }
 
-// --- catalog specimens -------------------------------------------------------
+// --- specimens ---------------------------------------------------------------
 
 /// A suggesting field, filled.
 Widget kitSpecimenCombobox() => Padding(

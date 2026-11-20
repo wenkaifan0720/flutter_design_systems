@@ -21,8 +21,8 @@ const String _unpaintedWheels =
     'the time wheels keep their off-screen rows (100 by 32, each under a '
     'RepaintBoundary of a SliverFixedExtentList) laid out in the scroll '
     "view's cache area and never painted, and DrawnPixels.read refuses a "
-    'screen holding an unpainted boundary (probe 11-11: 72 of them); the '
-    'selects on this page are held by p_classes_test (d); 0.2.0: ui_core '
+    'screen holding an unpainted boundary (72 of them); the '
+    'selects on this page are held by control_layout_test (d); 0.2.0: ui_core '
     "reads a screen past an unpainted boundary (the 0.2.0 list's wheels)";
 
 /// Screens the check cannot read, by page or `screen at width`, with the
@@ -30,7 +30,7 @@ const String _unpaintedWheels =
 const Map<String, String> _misreadings = {'Pickers': _unpaintedWheels};
 
 /// Problems the check names that Minimal means, each held by its words with
-/// the reason, and taken to ui_core's owner as a misreading (11-11).
+/// the reason: ui_core's check misreads them.
 final Map<RegExp, String> _held = {
   RegExp(r'a control "Note": the capitals of "Note"'):
       'a label beside a two-line entry stands on its first line, not the '

@@ -168,11 +168,10 @@ Widget kitActivityDemo(Brightness brightness) => kitScreen(
   ],
 );
 
-// --- catalog specimens -------------------------------------------------------
+// --- specimens ---------------------------------------------------------------
 //
-// One configuration each, for the lab's Components pages (metadata.yaml
-// `specimens`). The stage (kitSpecimenStage) styles and places them; a
-// builder never names a style.
+// One configuration each. The stage (kitSpecimenStage) styles and places them;
+// a builder never names a style.
 
 /// A habit's history, newest first, the times in a mono column.
 Widget kitSpecimenActivityLogHistory() => _Body(

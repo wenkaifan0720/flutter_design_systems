@@ -318,7 +318,7 @@ class _RenamePage extends StatelessWidget {
   }
 }
 
-// --- catalog specimens -------------------------------------------------------
+// --- specimens ---------------------------------------------------------------
 //
 // showMinimalBottomSheet presents MinimalBottomSheet; each specimen stands the
 // card where the presenter raises it, over the dimmed page.

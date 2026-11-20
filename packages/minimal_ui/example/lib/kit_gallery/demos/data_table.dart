@@ -136,7 +136,7 @@ class _OrdersState extends State<_Orders> {
   );
 }
 
-// --- catalog specimens -------------------------------------------------------
+// --- specimens ---------------------------------------------------------------
 
 /// Five orders of eight, sorted by nothing, a pager under them.
 Widget kitSpecimenDataTable() => Padding(

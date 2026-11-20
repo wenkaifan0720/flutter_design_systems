@@ -1,4 +1,4 @@
-// Reading order and marks, part by part (review 11-12): a figure, a chord
+// Reading order and marks, part by part: a figure, a chord
 // and a line of code keep their order right to left; a colour strip keeps
 // its colours under its thumb; a face stack, a sparkline and a heatmap run
 // from the start edge as the page's charts do, and a stat's arrow leans the

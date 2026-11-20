@@ -175,7 +175,7 @@ class _StaticState<T> extends State<_Static<T>> {
       widget.builder(_value, (v) => setState(() => _value = v));
 }
 
-// --- catalog specimens -------------------------------------------------------
+// --- specimens ---------------------------------------------------------------
 
 /// A view switch, one on.
 Widget kitSpecimenToggleGroup() => Center(

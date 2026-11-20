@@ -1,4 +1,4 @@
-// Round 10's fixes: the heatmap's middle step by night; a neutral dot in
+// The heatmap's middle step by night; a neutral dot in
 // the quiet ink; a section of time rows held to a control's measure; a
 // selection list's own inset; a disabled search on the sunken fill; a
 // compact clearable field that keeps its height; a multi-select one tag in

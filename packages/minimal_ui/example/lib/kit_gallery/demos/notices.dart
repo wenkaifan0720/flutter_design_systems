@@ -117,7 +117,7 @@ class _LiveBannerState extends State<_LiveBanner> {
         );
 }
 
-// --- catalog specimens -------------------------------------------------------
+// --- specimens ---------------------------------------------------------------
 
 /// A toolbar's glyphs, each named by a tooltip.
 Widget kitSpecimenTooltipIcons() => kitRow([

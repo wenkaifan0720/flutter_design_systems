@@ -113,7 +113,7 @@ Widget kitCarouselDemo(Brightness brightness) => kitScreen(
   ],
 );
 
-// --- catalog specimens -------------------------------------------------------
+// --- specimens ---------------------------------------------------------------
 
 /// The first slide, its arrows and dots under it.
 Widget kitSpecimenCarousel() => Padding(

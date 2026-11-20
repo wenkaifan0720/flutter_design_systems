@@ -310,7 +310,7 @@ class _LiveStepsState extends State<_LiveSteps> {
   );
 }
 
-// --- catalog specimens -------------------------------------------------------
+// --- specimens ---------------------------------------------------------------
 
 /// The rail with Issues current.
 Widget kitSpecimenNavigationRail() => SizedBox(

@@ -352,11 +352,10 @@ class _SettingsRootState extends State<_SettingsRoot> {
   }
 }
 
-// --- catalog specimens -------------------------------------------------------
+// --- specimens ---------------------------------------------------------------
 //
-// The bar alone, one configuration each, for the lab's Components pages
-// (metadata.yaml `specimens`). The stage (kitSpecimenStage) styles and
-// places them; a builder never names a style.
+// The bar alone, one configuration each. The stage (kitSpecimenStage) styles
+// and places them; a builder never names a style.
 
 /// Three tabs and the ink create square: the plain tone, for an app whose
 /// create act is not its standing invitation (the shell above wears the

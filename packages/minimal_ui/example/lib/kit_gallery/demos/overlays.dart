@@ -338,7 +338,7 @@ class _PanelOverPage extends StatelessWidget {
   }
 }
 
-// --- catalog specimens -------------------------------------------------------
+// --- specimens ---------------------------------------------------------------
 
 /// The side sheet's panel at its edge, a record's details in it.
 Widget kitSpecimenSideSheet() => Builder(

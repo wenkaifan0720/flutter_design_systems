@@ -177,7 +177,7 @@ class _Files extends StatelessWidget {
   );
 }
 
-// --- catalog specimens -------------------------------------------------------
+// --- specimens ---------------------------------------------------------------
 
 /// Four steps, each with its grip.
 Widget kitSpecimenReorderableList() => Padding(

@@ -1,5 +1,4 @@
-// The parts the coverage round added (INVENTORY rows painted on 11-09):
-// what each does when used, what it announces, its keys, right-to-left and
+// Parts in use: what each does when used, what it announces, its keys, right-to-left and
 // Reduce Motion, and that each holds at 200% text on a phone. Their outlines
 // and highlights are shape_contract_test's.
 import 'dart:ui' as ui;

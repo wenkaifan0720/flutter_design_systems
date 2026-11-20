@@ -1,3 +1,5 @@
+import 'dart:ui' show Tristate;
+
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
@@ -176,7 +178,7 @@ void main() {
   });
 
   group('MinimalPressable semantics', () {
-    testWidgets('toggled and focusable land on the control node', (
+    testWidgets('selected and focusable land on the control node', (
       tester,
     ) async {
       final handle = tester.ensureSemantics();
@@ -207,8 +209,8 @@ void main() {
           isButton: true,
           hasEnabledState: true,
           isEnabled: true,
-          hasToggledState: true,
-          isToggled: true,
+          hasSelectedState: true,
+          isSelected: true,
           isFocusable: true,
           hasTapAction: true,
           hasFocusAction: true,
@@ -226,6 +228,59 @@ void main() {
       );
       handle.dispose();
     });
+  });
+
+  // An on/off icon button says what Flutter's IconButton(isSelected:) says:
+  // a button, selected or not, with no on/off switch state.
+  testWidgets('an on/off icon button reads as IconButton(isSelected:)', (
+    tester,
+  ) async {
+    final handle = tester.ensureSemantics();
+    await tester.pumpWidget(
+      _app(
+        Row(
+          children: [
+            for (final on in const [true, false]) ...[
+              MinimalIconButton(
+                LucideIcons.star,
+                label: 'Minimal $on',
+                selected: on,
+                onPressed: () {},
+              ),
+              IconButton(
+                key: ValueKey('Flutter $on'),
+                icon: const Icon(Icons.star),
+                isSelected: on,
+                onPressed: () {},
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+    for (final on in const [true, false]) {
+      final minimal = tester
+          .getSemantics(find.bySemanticsLabel('Minimal $on'))
+          .getSemanticsData()
+          .flagsCollection;
+      final flutter = tester
+          .getSemantics(find.byKey(ValueKey('Flutter $on')))
+          .getSemanticsData()
+          .flagsCollection;
+      expect(flutter.isButton, isTrue);
+      expect(flutter.isSelected, on ? Tristate.isTrue : Tristate.isFalse);
+      expect(flutter.isToggled, Tristate.none);
+      for (final (name, mine, theirs) in [
+        ('button', minimal.isButton, flutter.isButton),
+        ('selected', minimal.isSelected, flutter.isSelected),
+        ('toggled', minimal.isToggled, flutter.isToggled),
+        ('checked', minimal.isChecked, flutter.isChecked),
+        ('enabled', minimal.isEnabled, flutter.isEnabled),
+      ]) {
+        expect(mine, theirs, reason: '$name, on: $on');
+      }
+    }
+    handle.dispose();
   });
 
   group('MinimalSwitch labelled', () {

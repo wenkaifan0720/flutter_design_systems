@@ -1,5 +1,5 @@
 // ignore_for_file: avoid_relative_lib_imports
-// The example is the package's live gallery (polish round 3, §4): every page builds without an error at a phone's
+// The example is the package's live gallery: every page builds without an error at a phone's
 // width and at a desktop's, and every widget the package exports is built by at least one page. A widget no page
 // builds fails the last test by name, so the next one added can't slip through unseen.
 import 'dart:io';
@@ -108,6 +108,68 @@ void main() {
       );
     }
   }
+
+  // A page builds its rows as they scroll into view, so the build above
+  // meets only the first screen of a long one. The inventory, scrolled to its
+  // end at a phone's width, builds every row without an error: an overflow
+  // fails it at the offset it shows at.
+  testWidgets('Inventory scrolled to its end builds every row at 390', (
+    tester,
+  ) async {
+    tester.view
+      ..physicalSize = const Size(390, 844)
+      ..devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    kitEmbedded = true;
+    await tester.pumpWidget(
+      MaterialApp(
+        builder: (context, child) => MinimalHost(
+          light: kitTheme(Brightness.light),
+          dark: kitTheme(Brightness.dark),
+          brightness: Brightness.light,
+          child: child!,
+        ),
+        home: ExamplePageView(
+          page: inventoryPage,
+          brightness: Brightness.light,
+          onOpen: (_) {},
+          bar: MinimalAppBar(title: inventoryPage.name),
+        ),
+      ),
+    );
+    for (var i = 0; i < 4; i++) {
+      await tester.pump(const Duration(milliseconds: 100));
+    }
+    // The page's own list: the vertical scrollable that runs longest.
+    final position = tester
+        .stateList<ScrollableState>(find.byType(Scrollable))
+        .map((s) => s.position)
+        .where((p) => p.axis == Axis.vertical)
+        .reduce((a, b) => a.maxScrollExtent >= b.maxScrollExtent ? a : b);
+    expect(position.maxScrollExtent, greaterThan(position.viewportDimension));
+    var steps = 0;
+    while (position.pixels < position.maxScrollExtent) {
+      position.jumpTo(
+        (position.pixels + position.viewportDimension * 0.75).clamp(
+          0,
+          position.maxScrollExtent,
+        ),
+      );
+      await tester.pump(const Duration(milliseconds: 100));
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(
+        tester.takeException(),
+        isNull,
+        reason: 'at ${position.pixels.round()} px down the inventory',
+      );
+      for (final element in tester.allElements) {
+        built.add('${element.widget.runtimeType}'.split('<').first);
+      }
+      steps += 1;
+    }
+    expect(steps, greaterThan(1));
+    await tester.pumpWidget(const SizedBox());
+  }, experimentalLeakTesting: longWalkLeakTesting);
 
   // The apps build what no page does (the shell's parts, the tables, the
   // records): pumped at both widths, they count toward the last test. Their

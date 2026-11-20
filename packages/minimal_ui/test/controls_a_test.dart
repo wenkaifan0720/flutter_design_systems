@@ -125,7 +125,7 @@ void main() {
         tester.getSemantics(find.bySemanticsLabel('Reminders')),
         matchesSemantics(
           label: 'Reminders',
-          isButton: true,
+          isButton: false,
           hasToggledState: true,
           isToggled: false,
           hasEnabledState: true,
@@ -142,7 +142,7 @@ void main() {
         tester.getSemantics(find.bySemanticsLabel('Reminders')),
         matchesSemantics(
           label: 'Reminders',
-          isButton: true,
+          isButton: false,
           hasToggledState: true,
           isToggled: true,
           hasEnabledState: true,
@@ -198,7 +198,7 @@ void main() {
         tester.getSemantics(find.bySemanticsLabel('Sync')),
         matchesSemantics(
           label: 'Sync',
-          isButton: true,
+          isButton: false,
           hasToggledState: true,
           isToggled: true,
           hasEnabledState: true,
@@ -284,7 +284,7 @@ void main() {
         tester.getSemantics(find.bySemanticsLabel('Meditate')),
         matchesSemantics(
           label: 'Meditate',
-          isButton: true,
+          isButton: false,
           hasCheckedState: true,
           isChecked: true,
           hasEnabledState: true,
@@ -1208,7 +1208,7 @@ void main() {
     });
   });
 
-  // Round 4, found by the user on a Mac: the composer's hint stood 4 px low.
+  // On a Mac the composer's hint once stood 4 px low.
   // Material's density is compact on a desktop (a web build opened on one
   // too) and tests run as Android, so nothing had seen it. Every part you
   // type into, under a desktop platform: the size it has on a phone, its

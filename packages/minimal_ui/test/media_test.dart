@@ -193,7 +193,7 @@ Widget _picture(ImageProvider provider) => Image(
 /// relays still following it (counted after every test: none), and a plain
 /// `Image` of an `AssetImage` here does the same. Whether the leak tracker
 /// sees it is a matter of when the garbage collector runs: once in the
-/// everyday tier on Flutter 3.50 under heavy load (11-17), never alone. Every
+/// everyday tier on Flutter 3.50 under heavy load, never alone. Every
 /// other object the tests make stays tracked.
 void _mediaTest(String description, Future<void> Function(WidgetTester) body) {
   testWidgets(

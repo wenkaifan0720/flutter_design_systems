@@ -49,7 +49,7 @@ Widget kitDisclosureDemo(Brightness brightness) => kitScreen(
   ],
 );
 
-// --- catalog specimens -------------------------------------------------------
+// --- specimens ---------------------------------------------------------------
 
 /// Three questions, the first open.
 Widget kitSpecimenDisclosureFaq() => Builder(
@@ -82,7 +82,7 @@ Widget kitSpecimenDisclosureFaq() => Builder(
 
 /// Settings that open: each row led by its glyph, a line under its title.
 /// A list whose rows all carry a glyph keeps one keyline. The gallery's own
-/// section, not a catalog specimen.
+/// section, not a specimen.
 Widget _disclosureSettings() => Builder(
   builder: (context) {
     final t = context.minimalTheme;

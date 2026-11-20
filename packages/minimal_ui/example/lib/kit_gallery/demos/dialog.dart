@@ -260,12 +260,11 @@ class _OverPage extends StatelessWidget {
   }
 }
 
-// --- catalog specimens -------------------------------------------------------
+// --- specimens ---------------------------------------------------------------
 //
-// One configuration each, for the lab's Components pages (metadata.yaml
-// `specimens`): the raised card over the dimmed page, as showMinimalDialog
-// stands it. The stage (kitSpecimenStage) styles it; a builder never names
-// a style.
+// One configuration each: the raised card over the dimmed page, as
+// showMinimalDialog stands it. The stage (kitSpecimenStage) styles it; a
+// builder never names a style.
 
 /// The destructive question: the confirm in the danger fill.
 Widget kitSpecimenDialogDestructive() => _Raised(

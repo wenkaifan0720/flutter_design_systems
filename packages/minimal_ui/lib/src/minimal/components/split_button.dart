@@ -31,7 +31,7 @@ import 'menu.dart';
 /// share of the outline (round on its outer side, square at the seam).
 /// The menu is Minimal's
 /// card of 32 px items under the chevron's end, the active item in the
-/// selection fill.
+/// muted fill, and the keyboard's also in the accent focus ring.
 ///
 /// Both halves are tab stops. Down on either opens the menu at its first
 /// item; Escape closes it and focus goes back to the half that opened it.
@@ -242,6 +242,7 @@ class MinimalSplitButton extends StatelessWidget {
           icon: item.icon,
           destructive: item.destructive,
           trailing: keys == null ? null : MinimalKbd.shortcut(keys),
+          ring: true,
         );
       },
       surfaceBuilder: (context, info, items) => minimalKitPresence(

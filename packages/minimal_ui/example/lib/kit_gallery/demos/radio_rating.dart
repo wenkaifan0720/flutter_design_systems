@@ -99,7 +99,7 @@ class _LiveRatingState extends State<_LiveRating> {
   );
 }
 
-// --- catalog specimens -------------------------------------------------------
+// --- specimens ---------------------------------------------------------------
 
 /// Three plans, Pro chosen.
 Widget kitSpecimenRadioGroupPlans() => MinimalRadioGroup<String>(

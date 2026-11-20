@@ -1,4 +1,4 @@
-// Round 11's fixes: a toggle that is off mutes its glyph in every register;
+// A toggle that is off mutes its glyph in every register;
 // a selectable table's sides match; the gap after an id or figure column
 // never closes; a swipe square keeps 12 px each side of its word; the
 // inventory's rail and drawer stand as tall as their rows.

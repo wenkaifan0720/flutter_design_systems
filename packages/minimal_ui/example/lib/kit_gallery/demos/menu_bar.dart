@@ -119,7 +119,7 @@ class _BarState extends State<_Bar> {
   );
 }
 
-// --- catalog specimens -------------------------------------------------------
+// --- specimens ---------------------------------------------------------------
 
 /// The bar, its menus closed.
 Widget kitSpecimenMenuBar() => Center(

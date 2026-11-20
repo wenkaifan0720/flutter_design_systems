@@ -1,7 +1,5 @@
 /// Minimal's chrome geometry and motion, in one place: the bars, the
-/// rows, the controls, the sheet card and the transitions, as the build spec
-/// (docs/architecture/design-systems-bench-tactile.md §6) and its reference
-/// mockups state them.
+/// rows, the controls, the sheet card and the transitions.
 ///
 /// This is the system's GRAMMAR — positions, sizes, bands and timings.
 /// Colour, type faces and the corner language of ordinary surfaces are the

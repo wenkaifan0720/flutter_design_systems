@@ -186,7 +186,7 @@ class _FormState extends State<_Form> {
   );
 }
 
-// --- catalog specimens -------------------------------------------------------
+// --- specimens ---------------------------------------------------------------
 
 /// A field with text add-ons on both sides.
 Widget kitSpecimenInputGroup() => const Padding(

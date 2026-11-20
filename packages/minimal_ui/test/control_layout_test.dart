@@ -1,4 +1,4 @@
-// design6 P, added 11-11 noon, each from what is drawn:
+// Controls laid out, each read from what is drawn:
 // (a) from 600 up no select, button, stepper or segmented control stretches
 //     to its column: at most 320 px (free text entries and tables may span);
 // (b) a chosen or pressed fill covers the whole cell the user sees;

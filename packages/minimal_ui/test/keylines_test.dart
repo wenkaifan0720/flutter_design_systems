@@ -1,4 +1,4 @@
-// Keylines and padding (design6 P) on the example's ordinary screens, at a
+// Keylines and padding on the example's ordinary screens, at a
 // phone's 390 and a laptop's 1440, read from the painted ink rather than
 // from the boxes: in each page, card, bar and sheet the rows start on one
 // leading keyline and what ends a row on a glyph or a control ends on one

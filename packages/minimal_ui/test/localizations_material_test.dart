@@ -2,8 +2,8 @@
 // look's Material or Cupertino words: an app on flutter_localizations gives
 // Flutter's own types, not those of the Material the look is built on. The
 // machinery under a part (an editable, its text menu, a route) still needs
-// words, Cupertino's for the text menu on iOS; the look gives them (English
-// in drip's apps, the app's language in the package), and nothing throws.
+// words, Cupertino's for the text menu on iOS; the look gives them in the
+// app's language, and nothing throws.
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';

@@ -69,8 +69,8 @@ enum MinimalTaskStatus {
 /// (a highlighted one, a table header) shows through them.
 ///
 /// With [onPressed] the glyph is the row's quick status control (tap to mark
-/// done): a checkbox-like button that announces its label and whether it
-/// is [checked], and pads its hit area to 44 px.
+/// done): a checkbox that announces its label and whether it is
+/// [checked], and pads its hit area to 44 px.
 ///
 /// ```dart
 /// MinimalStatusIcon(MinimalTaskStatus.done, onPressed: () => toggle(habit))

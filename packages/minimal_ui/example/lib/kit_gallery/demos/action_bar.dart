@@ -141,12 +141,11 @@ class _Summary extends StatelessWidget {
   }
 }
 
-// --- catalog specimens -------------------------------------------------------
+// --- specimens ---------------------------------------------------------------
 //
-// One configuration each, for the lab's Components pages (metadata.yaml
-// `specimens`). The stage (kitSpecimenStage) styles and places them; a
-// builder never names a style. A docked bar is drawn as its screen's
-// footer, so the ground, the hairline and the safe area are the screen's.
+// One configuration each. The stage (kitSpecimenStage) styles and places them;
+// a builder never names a style. A docked bar is drawn as its screen's footer,
+// so the ground, the hairline and the safe area are the screen's.
 
 /// The day's total beside the action, docked as a screen's footer.
 Widget kitSpecimenActionBarDocked() => MinimalScaffold(

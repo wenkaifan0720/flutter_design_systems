@@ -93,7 +93,8 @@ enum MinimalMenuTrigger {
 /// walk the enabled items round, Home and End go to the ends, a letter to
 /// the next item it starts, and Enter or Space takes the item. The item the
 /// pointer or the keyboard is on takes the muted fill: a place, never a
-/// second choice.
+/// second choice. The keyboard's item also wears the accent focus ring,
+/// inside its edge so it fits between its neighbours.
 ///
 /// `trigger: longPress` adds a context menu to content while its ordinary
 /// tap stays the content's own: a long press of a finger or a right click
@@ -485,6 +486,7 @@ class _MinimalContextMenuState extends State<_MinimalContextMenu> {
             destructive: item.destructive,
             style: widget.style,
             trailing: keys == null ? null : MinimalKbd.shortcut(keys),
+            ring: true,
           ),
         );
       },
@@ -716,7 +718,8 @@ class _PopoverLayout extends SingleChildLayoutDelegate {
 
 /// The menu's items in the card, and its keys: a menu button's (see
 /// [MinimalMenu]). One item at most is the place, the one with the keys,
-/// which the pointer moves too; it takes the muted fill.
+/// which the pointer moves too; it takes the muted fill, and when a key
+/// moved it last the accent ring.
 class _MenuSurface extends StatefulWidget {
   const _MenuSurface({required this.items, required this.fromKeys, this.style});
 
@@ -742,6 +745,10 @@ class _MenuSurfaceState extends State<_MenuSurface> {
 
   // The item with the keys, or null.
   int? _place;
+
+  // Whether the pointer moved the place last: its item keeps the muted fill
+  // alone. A key's item adds the accent ring.
+  bool _pointer = false;
 
   @override
   void initState() {
@@ -836,6 +843,7 @@ class _MenuSurfaceState extends State<_MenuSurface> {
   // route's.
   KeyEventResult _key(FocusNode node, KeyEvent event) {
     if (event is KeyUpEvent) return KeyEventResult.ignored;
+    if (_pointer) setState(() => _pointer = false);
     const end = ScrollPositionAlignmentPolicy.keepVisibleAtEnd;
     const start = ScrollPositionAlignmentPolicy.keepVisibleAtStart;
     final place = _place;
@@ -899,7 +907,9 @@ class _MenuSurfaceState extends State<_MenuSurface> {
                 // it last; off the items, none.
                 MouseRegion(
                   onEnter: (_) {
-                    if (mounted && _enabled(i)) _items[i].requestFocus();
+                    if (!mounted || !_enabled(i)) return;
+                    if (!_pointer) setState(() => _pointer = true);
+                    _items[i].requestFocus();
                   },
                   onExit: (_) {
                     if (mounted && _items[i].hasPrimaryFocus) {
@@ -912,6 +922,7 @@ class _MenuSurfaceState extends State<_MenuSurface> {
                     choosing: choosing,
                     focusNode: _items[i],
                     place: _place == i,
+                    ring: _place == i && !_pointer,
                     onPressed: () => Navigator.of(context).pop(i),
                   ),
                 ),
@@ -926,7 +937,8 @@ class _MenuSurfaceState extends State<_MenuSurface> {
 
 /// One 32 px item. Its box clips the pressable's padded hit area, so two
 /// abutting items never take each other's taps. The [place] (the item the
-/// keys or the pointer are on) takes the muted fill in place of a ring.
+/// keys or the pointer are on) takes the muted fill; the keys' place also
+/// the accent [ring], inside its edge so it fits between its neighbours.
 class _MenuAction extends StatelessWidget {
   const _MenuAction({
     required this.item,
@@ -934,6 +946,7 @@ class _MenuAction extends StatelessWidget {
     required this.choosing,
     required this.focusNode,
     required this.place,
+    required this.ring,
     required this.onPressed,
   });
 
@@ -942,6 +955,7 @@ class _MenuAction extends StatelessWidget {
   final bool choosing;
   final FocusNode focusNode;
   final bool place;
+  final bool ring;
   final VoidCallback onPressed;
 
   @override
@@ -975,6 +989,16 @@ class _MenuAction extends StatelessWidget {
           child: Container(
             constraints: BoxConstraints(minHeight: rowHeight),
             decoration: minimalFrame(shape, fill: place ? t.muted : null),
+            foregroundDecoration: minimalFrame(
+              shape,
+              side: ring
+                  ? BorderSide(
+                      color: t.ring,
+                      width: t.focusWidth,
+                      strokeAlign: BorderSide.strokeAlignInside,
+                    )
+                  : BorderSide.none,
+            ),
             child: Padding(
               padding: const EdgeInsets.symmetric(
                 horizontal: MinimalSpacing.s8,

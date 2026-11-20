@@ -38,8 +38,9 @@ enum MinimalIconButtonVariant {
 /// [selected] makes it an on/off control (a favourite star, a pin): on is
 /// said in ink, as every Minimal choice is (the glyph goes from the muted
 /// ink to the full one in every register, and a square's hairline turns to
-/// the ink), and a screen reader hears it as a switch that is on; null is a
-/// plain action, its glyph in the ink.
+/// the ink), and a screen reader hears a button, selected when on, as
+/// Flutter's `IconButton(isSelected:)` says it; null is a plain action, its
+/// glyph in the ink.
 ///
 /// [style] dresses one, `components.iconButton` every one: fill,
 /// foreground, edge or side, overlay, shape (else `shapes.small`),
@@ -146,7 +147,7 @@ class MinimalIconButton extends StatelessWidget {
       // A control with no action is disabled.
       enabled: onPressed != null,
       semanticLabel: label,
-      toggled: selected,
+      selected: selected,
       style: rest.press,
       shape: t.shapes.small,
       face: rest.fill ?? bg,

@@ -152,7 +152,7 @@ class MinimalSelect<T> extends StatefulWidget {
 
 class _MinimalSelectState<T> extends State<MinimalSelect<T>> {
   // The menu opens from the whole field: as wide as it, on its leading
-  // edge (design6 P, a list that opens from a field).
+  // edge, as a list that opens from a field does.
   final GlobalKey _fieldKey = GlobalKey();
 
   bool get _enabled => widget.onChanged != null && widget.options.isNotEmpty;
@@ -201,7 +201,7 @@ class _MinimalSelectState<T> extends State<MinimalSelect<T>> {
         .firstOrNull;
     final chosenIcon = chosen?.icon;
     // Spanning a phone's column; from the compact width up it stops at a
-    // control's measure, as every control does (design6 P (a)).
+    // control's measure, as every control does.
     return MinimalLayout.capControl(context, _row(t, icon, chosen, chosenIcon));
   }
 

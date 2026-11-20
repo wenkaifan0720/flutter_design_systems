@@ -1,4 +1,4 @@
-// Round 4's list and table fixes: one keyline for rows that lead with
+// Lists and tables: one keyline for rows that lead with
 // different marks (list rows and meta rows); a stack of segment bars that
 // starts and ends on one line; a captionless code block's copy action on its
 // first line; a sideways table's band and rules reaching the frame's edge

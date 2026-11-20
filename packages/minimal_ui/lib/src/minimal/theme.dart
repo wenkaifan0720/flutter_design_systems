@@ -1986,13 +1986,12 @@ typedef _Palette = ({
 });
 
 // Shared status colours, per appearance. The light danger is a shade
-// deeper than the spec's #D93F3F so its white label clears AA (4.75:1).
-// The light amber is a shade deeper than the spec's #D98A00 (2.8:1 on
-// white) so, as a mark — a badge dot, a progress bar, a snooze tile — it
-// stands 3.4:1 off the ground like every other status fill. The light
-// fills are still too bright to print words in (the amber 3.4:1, the green
-// 3.4:1), so each carries a deeper ink that clears 4.5:1 on the ground and
-// on its own subtle fill.
+// deeper than #D93F3F so its white label clears AA (4.75:1). The light
+// amber is a shade deeper than #D98A00 (2.8:1 on white) so, as a mark — a
+// badge dot, a progress bar, a snooze tile — it stands 3.4:1 off the ground
+// like every other status fill. The light fills are still too bright to
+// print words in (the amber 3.4:1, the green 3.4:1), so each carries a
+// deeper ink that clears 4.5:1 on the ground and on its own subtle fill.
 const Color _successLight = Color(0xFF2F9E66);
 const Color _successSubtleLight = Color(0xFFE8F6EF);
 const Color _successInkLight = Color(0xFF1E7A4C);

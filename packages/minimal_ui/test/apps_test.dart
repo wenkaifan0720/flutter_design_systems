@@ -1,5 +1,5 @@
 // ignore_for_file: avoid_relative_lib_imports
-// The example's three apps, each filling the window (design6 A2, wide5).
+// The example's three apps, each filling the window.
 import 'package:flutter/foundation.dart'
     show debugDefaultTargetPlatformOverride;
 import 'package:material_ui/material_ui.dart';
@@ -12,8 +12,8 @@ import '../example/lib/main.dart';
 import 'flutter_test_config.dart' show longWalkLeakTesting;
 
 void main() {
-  // The apps fill the window and lay themselves out for it (design6 A2,
-  // wide5): the bar on a phone, the rail on a tablet, the sidebar on a
+  // The apps fill the window and lay themselves out for it: the bar on a
+  // phone, the rail on a tablet, the sidebar on a
   // laptop; the content spans the body; nothing overflows; nothing a person
   // reads is under 11 px; no card stands in a card.
   group('the apps', () {
@@ -230,8 +230,8 @@ void main() {
 
     // The apps are apps on Flutter's own Material, whose page routes read
     // the app's theme: the example gives it Minimal's motion, so a drill-in
-    // never takes the platform's slide or zoom (the coordinator's walk saw a
-    // look's pages fly in on the web).
+    // never takes the platform's slide or zoom (on the web a look's pages
+    // once flew in).
     // Every platform at both widths: the everyday tier Android on a phone
     // and macOS on a laptop, the sweep tier the rest.
     for (final platform in TargetPlatform.values) {

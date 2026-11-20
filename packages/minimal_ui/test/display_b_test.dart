@@ -320,7 +320,7 @@ void main() {
       );
     });
 
-    testWidgets('a status glyph with an action is a labelled button', (
+    testWidgets('a status glyph with an action is a labelled checkbox', (
       tester,
     ) async {
       final handle = tester.ensureSemantics();
@@ -348,10 +348,10 @@ void main() {
           ),
         ),
       );
-      final button = tester.getSemantics(find.bySemanticsLabel('Todo'));
-      expect(button.getSemanticsData().flagsCollection.isButton, isTrue);
+      final control = tester.getSemantics(find.bySemanticsLabel('Todo'));
+      expect(control.getSemanticsData().flagsCollection.isButton, isFalse);
       expect(
-        button.getSemanticsData().flagsCollection.isChecked,
+        control.getSemanticsData().flagsCollection.isChecked,
         CheckedState.isFalse,
       );
       await tester.tap(find.byType(MinimalStatusIcon).first);
@@ -389,7 +389,7 @@ void main() {
         ),
       );
       final done = tester.getSemantics(find.bySemanticsLabel('Meditate'));
-      expect(done.getSemanticsData().flagsCollection.isButton, isTrue);
+      expect(done.getSemanticsData().flagsCollection.isButton, isFalse);
       expect(
         done.getSemanticsData().flagsCollection.isChecked,
         CheckedState.isTrue,

@@ -7,7 +7,8 @@
 // ends, a letter to the next item it starts, Enter takes the item and
 // closes, Escape closes, and either hands the keys back to the control. The
 // item with the keys is the one a screen reader hears focused, and the one
-// on the muted fill: the pointer moves it too, so there is only ever one.
+// on the muted fill: the pointer moves it too, so there is only ever one. The
+// keyboard's item also wears the accent ring, inside its edge.
 import 'dart:ui' show Tristate;
 
 import 'package:flutter/gestures.dart' show PointerDeviceKind;
@@ -344,7 +345,7 @@ void main() {
   }
 
   testWidgets('a menu of actions with none chosen starts on its first '
-      'enabled item, and the keyboard draws no ring', (tester) async {
+      'enabled item, its ring inside its edge', (tester) async {
     final handle = tester.ensureSemantics();
     final ran = <String>[];
     await tester.pumpWidget(
@@ -380,17 +381,29 @@ void main() {
       isNot(Tristate.isTrue),
       reason: 'a place is not a choice',
     );
-    // The row's fill is the keyboard's place: no ring round it.
-    bool noRing(Symbol method, List<dynamic> args) => !args.any(
-      // A paint's colour comes back in single precision: compare it as
-      // 8-bit ARGB.
-      (a) => a is Paint && a.color.toARGB32() == t.ring.toARGB32(),
-    );
+    // The row's fill is the keyboard's place, and the accent ring stands
+    // inside its edge, so it fits between the items above and below.
     final item = find.ancestor(
       of: find.text('Duplicate'),
       matching: find.byType(MinimalPressable),
     );
-    expect(tester.renderObject(item.first), paints..everything(noRing));
+    // A paint's colour comes back in single precision: compare it as 8-bit
+    // ARGB.
+    bool noRing(Symbol method, List<dynamic> args) =>
+        !args.any((a) => a is Paint && a.color.toARGB32() == t.ring.toARGB32());
+    final bounds = Offset.zero & tester.getSize(item.first);
+    var rings = 0;
+    bool inside(Symbol method, List<dynamic> args) {
+      if (noRing(method, args)) return true;
+      rings++;
+      final outer = args.first;
+      return method == #drawDRRect &&
+          outer is RRect &&
+          outer.outerRect == bounds;
+    }
+
+    expect(tester.renderObject(item.first), paints..everything(inside));
+    expect(rings, 1, reason: 'one ring round the keyboard\'s place');
     await _key(tester, LogicalKeyboardKey.arrowDown);
     expect(_focused(), ['Delete']);
     await _key(tester, LogicalKeyboardKey.enter);

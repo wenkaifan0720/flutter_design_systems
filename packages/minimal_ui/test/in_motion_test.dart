@@ -1,4 +1,4 @@
-// Minimal's parts between states (design6 O, "In motion"): what is on screen
+// Minimal's parts between states: what is on screen
 // mid-move, read from the pixels a frame paints, not from the widget tree.
 import 'dart:typed_data';
 import 'dart:ui' as ui;

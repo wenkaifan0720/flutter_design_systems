@@ -98,7 +98,7 @@ class _ColourState extends State<_Colour> {
   );
 }
 
-// --- catalog specimens -------------------------------------------------------
+// --- specimens ---------------------------------------------------------------
 
 /// A price range between two thumbs.
 Widget kitSpecimenRangeSlider() => Padding(

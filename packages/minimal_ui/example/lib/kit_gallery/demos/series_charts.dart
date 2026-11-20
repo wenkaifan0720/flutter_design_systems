@@ -70,7 +70,7 @@ class _EmptyDonut extends StatelessWidget {
   );
 }
 
-// --- catalog specimens -------------------------------------------------------
+// --- specimens ---------------------------------------------------------------
 
 /// Two plans' signups over a week.
 Widget kitSpecimenLineChartTwo() => const MinimalLineChart(

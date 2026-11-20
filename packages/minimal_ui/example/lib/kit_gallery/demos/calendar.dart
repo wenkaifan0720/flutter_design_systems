@@ -99,7 +99,7 @@ class _RangeState extends State<_Range> {
   );
 }
 
-// --- catalog specimens -------------------------------------------------------
+// --- specimens ---------------------------------------------------------------
 
 /// A month, today underlined and a day chosen.
 Widget kitSpecimenCalendar() => Center(

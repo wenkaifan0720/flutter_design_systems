@@ -485,11 +485,10 @@ class _Sparklines extends StatelessWidget {
   }
 }
 
-// --- catalog specimens -------------------------------------------------------
+// --- specimens ---------------------------------------------------------------
 //
-// One configuration each, for the lab's Components pages (metadata.yaml
-// `specimens`). The stage (kitSpecimenStage) styles and places them; a
-// builder never names a style.
+// One configuration each. The stage (kitSpecimenStage) styles and places them;
+// a builder never names a style.
 
 /// One figure on its tile: the label, the mono value, a rising delta.
 Widget kitSpecimenStatTileDelta() => const MinimalStat(

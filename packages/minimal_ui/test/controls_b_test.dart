@@ -1185,7 +1185,7 @@ void main() {
         tester.getSemantics(find.bySemanticsLabel('Every day')),
         matchesSemantics(
           label: 'Every day',
-          isButton: true,
+          isButton: false,
           hasEnabledState: true,
           isEnabled: true,
           isFocusable: true,

@@ -482,11 +482,14 @@ void main() {
           (t) async {
             const surface = Color(0xffed3229), row = Color(0xff26d838);
             final base = MinimalThemeData.preset('standard', brightness);
+            // The keys' row wears the focus ring inside its edge; painted in
+            // the row's colour, the two read as the row's whole outline.
             final theme = base.copyWith(
               colors: base.colors.copyWith(
                 card: surface,
                 border: surface,
                 muted: row,
+                ring: row,
               ),
             );
             await _stage(
@@ -720,7 +723,7 @@ void main() {
             addTearDown(focus.dispose);
             final scale = direction == TextDirection.rtl ? 2.0 : 1.0;
             // Every boxed field, as the gallery shows them: plain, with
-            // add-ons (the user's Price, and one in error), a mono figure
+            // add-ons (a Price, and one in error), a mono figure
             // with a unit, search, chips, a combobox, a password, a text
             // area and the composer.
             final fields = <String, Widget>{

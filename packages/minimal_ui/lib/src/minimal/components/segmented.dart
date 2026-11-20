@@ -339,7 +339,7 @@ class _MinimalSegmentedButtonState<T> extends State<MinimalSegmentedButton<T>> {
     );
     if (!widget.expand) track = IntrinsicWidth(child: track);
     // Filling its column on a phone; from the compact width up it stops at
-    // a control's measure (design6 P (a)).
+    // a control's measure.
     if (widget.expand) track = MinimalLayout.capControl(context, track);
     if (!enabled) track = Opacity(opacity: 0.45, child: track);
 

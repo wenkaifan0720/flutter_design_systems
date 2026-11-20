@@ -130,12 +130,11 @@ class _Frame extends StatelessWidget {
   }
 }
 
-// --- catalog specimens -------------------------------------------------------
+// --- specimens ---------------------------------------------------------------
 //
-// One configuration each, for the lab's Components pages (metadata.yaml
-// `specimens`). The stage (kitSpecimenStage) styles and places them; a
-// builder never names a style. showMinimalSnackBar presents MinimalSnackBar, so
-// its specimens build the card.
+// One configuration each. The stage (kitSpecimenStage) styles and places them;
+// a builder never names a style. showMinimalSnackBar presents MinimalSnackBar,
+// so its specimens build the card.
 
 /// The still loading state of a page that waits.
 Widget kitSpecimenLoadingState() =>

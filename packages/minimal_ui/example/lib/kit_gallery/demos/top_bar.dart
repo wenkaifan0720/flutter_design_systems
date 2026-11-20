@@ -171,11 +171,10 @@ Widget kitTopBarDemo(Brightness brightness) => kitScreen(
   ],
 );
 
-// --- catalog specimens -------------------------------------------------------
+// --- specimens ---------------------------------------------------------------
 //
-// One configuration each, for the lab's Components pages (metadata.yaml
-// `specimens`). The stage (kitSpecimenStage) styles and places them; a
-// builder never names a style. A bar is drawn inside its whole screen on a
+// One configuration each. The stage (kitSpecimenStage) styles and places them;
+// a builder never names a style. A bar is drawn inside its whole screen on a
 // real route, so the register it shows is the one the route derives.
 
 /// A root's leading title and meta, with the bar's two actions.

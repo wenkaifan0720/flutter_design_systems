@@ -91,9 +91,9 @@ class MinimalChoiceRow extends StatelessWidget {
         enabled: onPressed != null,
         radius: 0,
         outset: MinimalFieldMetrics.rowReach,
+        checked: selected,
+        inMutuallyExclusiveGroup: true,
         child: Semantics(
-          checked: selected,
-          inMutuallyExclusiveGroup: true,
           label: content == null ? null : title,
           child: Container(
             constraints: BoxConstraints(minHeight: t.rowHeight),

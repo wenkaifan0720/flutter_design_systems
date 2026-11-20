@@ -1,4 +1,4 @@
-// The shape contract (shapes.md §1, §2 and §4; polish round 3, §1 and §2), read back from what the parts paint:
+// The shape contract, read back from what the parts paint:
 //
 // - under every corner family the gallery's Customize offers, each framed part draws its role's step of the scale,
 //   and its press wash and focus ring take that exact outline;
@@ -317,7 +317,7 @@ final Map<String, _Framed> _framed = {
     _medium,
   ),
   'MinimalCodeBlock': _f(() => const MinimalCodeBlock('print(1);'), _small),
-  // The B rows, painted on ui_core's behaviours (11-10).
+  // The parts painted on ui_core's behaviours.
   'MinimalToggleGroup': _f(
     () => MinimalToggleGroup<String>(
       label: 'View',
@@ -986,7 +986,7 @@ void main() {
     }
   });
 
-  // coverage4 (11-10 05:30): a disabled part reads as disabled, a pressed one
+  // A disabled part reads as disabled, a pressed one
   // as pressed and a wrong one as wrong, and none moves the layout.
   group('a state cell shows its state, at idle\'s size', () {
     Widget sized(Widget child) => SizedBox(width: 156, child: child);
@@ -1157,11 +1157,11 @@ void main() {
           ],
         ),
       ),
-      // Pressed while chosen (round 4). Every part above is pressed while it
-      // is off, so a chosen fill that swallowed the press went through: the
-      // review's "ToggleGroup on" row showed a pressed bold item equal to
-      // idle (its press had landed on the seam between two items). Each of
-      // these presses the chosen item itself.
+      // Pressed while chosen. Every part above is pressed while it is off,
+      // so a chosen fill that swallowed the press would go through: a chosen
+      // toggle group item once looked the same pressed as idle (its press
+      // had landed on the seam between two items). Each of these presses the
+      // chosen item itself.
       'MinimalToggleGroup on': _stated(
         ({enabled = true, error}) => MinimalToggleGroup<String>(
           label: 'Text style',

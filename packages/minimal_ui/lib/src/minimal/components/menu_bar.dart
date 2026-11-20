@@ -98,14 +98,15 @@ class MinimalMenuEntry {
 /// the control weight; an open menu's name stands on the quiet fill, and
 /// its menu is Minimal's card of 32 px items (a glyph, the words, the key
 /// caps or a chevron to a submenu, a check), the active item in the
-/// selection fill.
+/// muted fill.
 ///
 /// The bar is one tab stop: Left and Right move along it, Down, Enter and
 /// Space open a menu; in a menu Up and Down move, Right opens a submenu or
 /// moves to the next menu, Escape closes it with focus back on the bar;
 /// while a menu is open a pointer over another name opens that one. One
 /// row is lit, the one with the keys, which the pointer moves too (over a
-/// row it is the place; off the rows, none), on the muted fill. A menu the
+/// row it is the place; off the rows, none), on the muted fill; the keys'
+/// row also wears the accent focus ring, inside its edge. A menu the
 /// pointer opened starts on none (Down lands on the first row, Up on the
 /// last), one a key opened on its first row. The behaviour is ui_core's
 /// ([DesignMenuBar], its highlight following the pointer); Minimal paints
@@ -164,7 +165,8 @@ class MinimalMenuBar extends StatelessWidget {
     );
 
     // ui_core lights one row, the current one (hovered when the pointer
-    // moved last, focused when a key did): the muted fill.
+    // moved last, focused when a key did): the muted fill, and the keys'
+    // row the accent ring inside its edge.
     Widget row(DesignMenuEntry entry, Set<WidgetState> states) {
       final source = entry.data;
       final keys = source is MinimalMenuEntry ? source.shortcut : null;
@@ -173,6 +175,7 @@ class MinimalMenuBar extends StatelessWidget {
         label: entry.label,
         icon: source is MinimalMenuEntry ? source.icon : null,
         checked: entry.checked ?? false,
+        ring: true,
         trailing: entry.isSubmenu
             ? MinimalIcon(
                 Directionality.of(context) == TextDirection.rtl

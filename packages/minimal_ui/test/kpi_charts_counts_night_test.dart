@@ -1,4 +1,4 @@
-// Round 4's display fixes: the KPI strip's straight foot; the series
+// Displays: the KPI strip's straight foot; the series
 // charts' box (its origin's corner, its top figure, its rules, its thinned
 // labels, its loading and empty states); every count's numerals on their
 // fill; the night's skeleton and spinner track.

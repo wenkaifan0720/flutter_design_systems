@@ -1,5 +1,5 @@
 // Minimal's controls that share a line, held to ui_core's alignment check
-// (packs/ui_core/API.md, "The alignment check"; design6 step 1): per row, as
+// (DesignAlignmentMatrix): per row, as
 // Android, iOS and macOS, one height, one centre, every label's capitals on
 // the row's centre line (no exception held), each label's and glyph's ink
 // centred; no control moving between platforms. And

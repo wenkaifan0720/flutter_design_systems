@@ -1,7 +1,6 @@
 // The package's own Material and Cupertino words: under an app that gives
 // none of them, a field's text menu speaks the app's language where
 // material_ui and cupertino_ui have it, and English where they don't.
-// (Package only: drip's twin of platform_words.dart is English throughout.)
 import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';

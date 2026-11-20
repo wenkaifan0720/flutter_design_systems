@@ -1,4 +1,4 @@
-// Round 9's fixes: a toned icon tile draws no rim; a dialog's actions end
+// A toned icon tile draws no rim; a dialog's actions end
 // on its question's inset; an expanded button group stops at a control's
 // measure on a laptop; a disabled row dims its words and keeps its rule; a
 // table that scrolls cuts no name; the inventory shows a dialog and a side

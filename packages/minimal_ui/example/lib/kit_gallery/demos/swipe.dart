@@ -359,12 +359,11 @@ class _HabitRow extends StatelessWidget {
   }
 }
 
-// --- catalog specimens -------------------------------------------------------
+// --- specimens ---------------------------------------------------------------
 //
-// One configuration each, for the lab's Components pages (metadata.yaml
-// `specimens`). The stage (kitSpecimenStage) styles and places them; a
-// builder never names a style. MinimalDismissible has no resting open
-// state, so it is seen live only (metadata.yaml).
+// One configuration each. The stage (kitSpecimenStage) styles and places them;
+// a builder never names a style. MinimalDismissible has no resting open state,
+// so it is seen live only.
 
 /// A row held open on its trailing tray: Delete and Snooze.
 Widget kitSpecimenSwipeActionsTrailing() => _Body(

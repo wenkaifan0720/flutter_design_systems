@@ -1,10 +1,9 @@
 /// Shared host for the Minimal gallery's demo screens.
 ///
 /// Every demo renders inside the same environment a Minimal page gets — a
-/// MaterialApp under [MinimalHost], themed by the preset in theme.dart (which
-/// the lab rewrites when a preset is picked) — with the appearance pinned
-/// explicitly, because the preview host ignores the shell's simulated
-/// platform brightness.
+/// MaterialApp under [MinimalHost], themed by the preset in theme.dart —
+/// with the appearance pinned explicitly, so a page shows the appearance
+/// the gallery asks for whatever the platform's brightness.
 ///
 /// Demos import ONLY the Minimal barrel (plus this file and the icons), so
 /// the gallery doubles as proof that the public API surface is sufficient
@@ -557,10 +556,9 @@ Widget kitNote(String text) => Builder(
   },
 );
 
-/// Where a catalog specimen sits on its stage — so also the part of the
-/// phone the lab keeps of it (the specimen's `frame` in the module's
-/// metadata.yaml names the same band): the bottom or top edge, a band
-/// across the middle, or the whole phone.
+/// Where a specimen sits on its stage, and so the part of the phone a
+/// picture of it keeps: the bottom or top edge, a band across the middle,
+/// or the whole phone.
 class KitFrame {
   const KitFrame.bottom(double this.height) : _place = _KitPlace.bottom;
   const KitFrame.top(double this.height) : _place = _KitPlace.top;
@@ -574,8 +572,7 @@ class KitFrame {
 
 enum _KitPlace { bottom, top, band, screen }
 
-/// The stage a catalog specimen renders on
-/// (docs/architecture/component-catalog.md): the host themed by [style] —
+/// The stage a specimen renders on: the host themed by [style] —
 /// a preset resolved at runtime, so one compile draws every preset — in
 /// [brightness], on the page ground, with [child] placed by [frame]. Edge
 /// chrome docks on its edge, so a bar lays out over the real safe area.

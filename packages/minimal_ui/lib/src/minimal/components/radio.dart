@@ -6,6 +6,7 @@ import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
 
 import '../component_themes.dart';
 import '../internal/controls.dart';
@@ -47,7 +48,8 @@ class MinimalRadioOption<T> {
 ///
 /// Stand radios in a [MinimalRadioGroup], which lays out their labels and
 /// walks them with the arrow keys; this alone is for a row that draws its
-/// own words. [style] dresses one radio, `components.radio` every one,
+/// own words. Such rows make one group in ui_core's `DesignRadioGroup`:
+/// give each radio the focus node the group hands its row. [style] dresses one radio, `components.radio` every one,
 /// resolved with [WidgetState.selected] when chosen: fill, foreground (the
 /// dot), edge or side, overlay and shape.
 ///
@@ -227,136 +229,23 @@ class MinimalRadioGroup<T> extends StatelessWidget {
   final MinimalStyle? style;
 
   @override
-  Widget build(BuildContext context) => Semantics(
-    container: true,
-    label: label,
-    child: _RadioKeys<T>(group: this),
-  );
-
-  @override
-  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
-    super.debugFillProperties(properties);
-    properties
-      ..add(IterableProperty<MinimalRadioOption<T>>('options', options))
-      ..add(DiagnosticsProperty<T>('value', value, defaultValue: null))
-      ..add(ObjectFlagProperty<ValueChanged<T>>.has('onChanged', onChanged))
-      ..add(
-        EnumProperty<Axis>('direction', direction, defaultValue: Axis.vertical),
-      )
-      ..add(StringProperty('label', label, defaultValue: null))
-      ..add(
-        DiagnosticsProperty<MinimalStyle>('style', style, defaultValue: null),
-      );
-  }
-}
-
-/// A [MinimalRadioGroup]'s options and its keys: one focus node an option,
-/// one Tab stop for the group, and the arrows choosing.
-class _RadioKeys<T> extends StatefulWidget {
-  const _RadioKeys({required this.group});
-
-  final MinimalRadioGroup<T> group;
-
-  @override
-  State<_RadioKeys<T>> createState() => _RadioKeysState<T>();
-}
-
-class _RadioKeysState<T> extends State<_RadioKeys<T>> {
-  final List<FocusNode> _nodes = [];
-
-  List<MinimalRadioOption<T>> get _options => widget.group.options;
-
-  void _fit() {
-    while (_nodes.length < _options.length) {
-      _nodes.add(FocusNode(debugLabel: 'radio ${_nodes.length}'));
-    }
-    while (_nodes.length > _options.length) {
-      _nodes.removeLast().dispose();
-    }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _fit();
-  }
-
-  @override
-  void didUpdateWidget(_RadioKeys<T> oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    _fit();
-  }
-
-  @override
-  void dispose() {
-    for (final node in _nodes) {
-      node.dispose();
-    }
-    super.dispose();
-  }
-
-  /// The option Tab lands on: the choice, else the first that takes focus.
-  FocusNode? get _stop {
-    final options = _options;
-    final chosen = options.indexWhere(
-      (o) => o.enabled && o.value == widget.group.value,
-    );
-    if (chosen >= 0) return _nodes[chosen];
-    final first = options.indexWhere((o) => o.enabled);
-    return first < 0 ? null : _nodes[first];
-  }
-
-  /// Chooses and focuses the next enabled option after the focused one
-  /// ([forward]) or the one before it, round from the last to the first.
-  void _step(bool forward) {
-    final change = widget.group.onChanged;
-    final at = _nodes.indexWhere((n) => n.hasFocus);
-    if (change == null || at < 0) return;
-    final open = [
-      for (var i = 0; i < _options.length; i++)
-        if (_options[i].enabled) i,
-    ];
-    final here = open.indexOf(at);
-    if (open.length < 2 || here < 0) return;
-    final next = open[(here + (forward ? 1 : -1) + open.length) % open.length];
-    change(_options[next].value);
-    _nodes[next].requestFocus();
-  }
-
-  @override
   Widget build(BuildContext context) {
     final t = context.minimalTheme;
-    final group = widget.group;
-    final vertical = group.direction == Axis.vertical;
-    final rtl = Directionality.of(context) == TextDirection.rtl;
+    final byValue = {for (final option in options) option.value: option};
     // Options that carry a description run taller than an option's least
     // height; space between them keeps each description with its own
     // label rather than halfway to the next.
-    final described = _options.any((o) => o.description != null);
-    final change = group.onChanged;
-    final rows = <Widget>[
-      for (final (i, option) in _options.indexed)
-        _Option<T>(
-          option: option,
-          selected: option.value == group.value,
-          onPressed: change == null || !option.enabled
-              ? null
-              : () => change(option.value),
-          disabled: !option.enabled,
-          style: group.style,
-          focusNode: _nodes[i],
-        ),
-    ];
-    return CallbackShortcuts(
-      bindings: {
-        const SingleActivator(LogicalKeyboardKey.arrowDown): () => _step(true),
-        const SingleActivator(LogicalKeyboardKey.arrowUp): () => _step(false),
-        const SingleActivator(LogicalKeyboardKey.arrowRight): () => _step(!rtl),
-        const SingleActivator(LogicalKeyboardKey.arrowLeft): () => _step(rtl),
-      },
-      child: FocusTraversalGroup(
-        policy: _OneStop(_nodes, _stop),
-        child: vertical
+    final described = options.any((o) => o.description != null);
+    return Semantics(
+      container: true,
+      label: label,
+      child: DesignRadioGroup<T>(
+        options: byValue.keys.toList(),
+        value: value,
+        onChanged: onChanged,
+        isEnabled: (option) => byValue[option]!.enabled,
+        direction: direction,
+        layoutBuilder: (context, rows) => direction == Axis.vertical
             ? Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -374,32 +263,32 @@ class _RadioKeysState<T> extends State<_RadioKeys<T>> {
                   children: rows,
                 ),
               ),
+        itemBuilder: (context, option, node, select) => _Option<T>(
+          option: byValue[option]!,
+          selected: option == value,
+          onPressed: select,
+          disabled: !byValue[option]!.enabled,
+          style: style,
+          focusNode: node,
+        ),
       ),
     );
   }
-}
-
-/// Reading order with one of a group's [options] in it: its [stop], and the
-/// focused one (which traversal moves on from).
-class _OneStop extends ReadingOrderTraversalPolicy {
-  _OneStop(this.options, this.stop);
-
-  final List<FocusNode> options;
-  final FocusNode? stop;
 
   @override
-  Iterable<FocusNode> sortDescendants(
-    Iterable<FocusNode> descendants,
-    FocusNode currentNode,
-  ) {
-    final skip = {
-      for (final node in options)
-        if (node != stop && node != currentNode) node,
-    };
-    return super.sortDescendants(
-      descendants.where((node) => !skip.contains(node)),
-      currentNode,
-    );
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<MinimalRadioOption<T>>('options', options))
+      ..add(DiagnosticsProperty<T>('value', value, defaultValue: null))
+      ..add(ObjectFlagProperty<ValueChanged<T>>.has('onChanged', onChanged))
+      ..add(
+        EnumProperty<Axis>('direction', direction, defaultValue: Axis.vertical),
+      )
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<MinimalStyle>('style', style, defaultValue: null),
+      );
   }
 }
 

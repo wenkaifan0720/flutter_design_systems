@@ -1,4 +1,4 @@
-// Round 8's fixes: a column of names keeps a run of its words at larger
+// A column of names keeps a run of its words at larger
 // text, as the words grow; a paged data table's count starts on the table's
 // leading edge, its check boxes'; a banner's glyph centres on its title's
 // line at any text size; a 12-hour wheel reads 7 AM under a RTL page.
