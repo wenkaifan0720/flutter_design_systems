@@ -11,9 +11,7 @@ import 'package:gloss_ui/gloss_ui.dart';
 
 import '../example/lib/everyday_screens.dart';
 
-/// The goldens are kept beside the catalog and laid here by the package
-/// build; a published or vendored copy goes without them, and compares
-/// nothing.
+/// Compare against local baselines when they are available.
 final bool _recorded =
     autoUpdateGoldenFiles || Directory('test/goldens').existsSync();
 

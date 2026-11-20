@@ -479,11 +479,8 @@ Future<T?> showGlossSheet<T>({
   );
 }
 
-/// Gloss's scrim under a dialog or a sheet, as [DesignBarrierBuilder]: it
-/// darkens on its route's own clock as it arrives (eased over [ms], as it did
-/// before ui_core ran the routes, [_Arrival]), follows the panel when it is
-/// dragged (ease-in on its presence), and lifts on the fall's clock as it
-/// goes ([_fallClock]).
+/// The scrim fades in over [ms], follows the panel while it is dragged,
+/// and fades out with the closing transition.
 DesignBarrierBuilder _scrim(Color color, int ms) =>
     (context, animation) => _Arrival(
       animation: animation,
@@ -501,10 +498,8 @@ DesignBarrierBuilder _scrim(Color color, int ms) =>
       },
     );
 
-/// The clock Gloss's routes ran on before ui_core: linear over the route's
-/// time ([ms]) from the push. While the route arrives [builder] gets the
-/// share of that time gone; once it is in, dragged or sent back, null (the
-/// route's presence rules).
+/// Supplies elapsed opening time to [builder]. While dragging or closing,
+/// the panel's position drives the scrim instead.
 class _Arrival extends StatefulWidget {
   const _Arrival({
     required this.animation,
@@ -980,9 +975,7 @@ Future<T?> showGlossSideSheet<T>({
       barrierBuilder: _scrim(theme.colors.scrim, 340),
       barrierLabel: words.modalBarrierDismissLabel,
       semanticLabel: title,
-      // The panel's own spring (M3 eased it in over 340 ms, a curve no
-      // spring from rest follows); its scrim on that clock, its fall over
-      // 340 ms.
+      // The scrim follows the closing panel over 340 ms.
       dampingRatio: GlossMotion.panelDamping,
       stiffness: GlossMotion.panelStiffness,
       closeDampingRatio: _fallDamping,

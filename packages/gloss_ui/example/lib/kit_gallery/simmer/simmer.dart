@@ -681,7 +681,7 @@ String simmerMinutes(int minutes) => minutes < 60
     ? '${minutes ~/ 60} h'
     : '${minutes ~/ 60} h ${minutes % 60} min';
 
-/// The duration and cuisine of a recipe in Simmer's English-language catalog.
+/// The duration and cuisine of a recipe in Simmer's recipe collection.
 String simmerRecipeSummary(BuildContext context, SimmerRecipe recipe) {
   final duration = simmerMinutes(recipe.minutes);
   if (Directionality.of(context) == TextDirection.rtl) {

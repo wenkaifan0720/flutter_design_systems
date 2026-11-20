@@ -103,12 +103,17 @@ class GlossMenuRow extends StatelessWidget {
       pressed: states.contains(WidgetState.pressed),
     );
     if (layered.fill != null) plate = plate.glazed(layered.fill!);
-    return SizedBox(
-      height: layered.minimumSize?.height ?? theme.controlHeight - 4,
+    return ConstrainedBox(
+      constraints: BoxConstraints(
+        minHeight: layered.minimumSize?.height ?? theme.controlHeight - 4,
+      ),
       child: AnimatedGlossSurface(
         face: plate.copyWith(foreground: ink, focus: glossGlazeOf(c, states)),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: GlossSpacing.medium),
+          padding: const EdgeInsets.symmetric(
+            horizontal: GlossSpacing.medium,
+            vertical: GlossSpacing.tight,
+          ),
           child: Row(
             children: [
               if (icon != null) ...[

@@ -1,6 +1,4 @@
-/// The Gloss preset the gallery renders in. The lab rewrites this file when a
-/// preset is picked on the module's Preview page; the committed value is the
-/// module's default preset.
+/// The default Gloss preset for the example gallery.
 library;
 
 const kitPreset = 'jade';

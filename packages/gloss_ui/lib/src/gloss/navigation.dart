@@ -236,7 +236,7 @@ class GlossDestination {
     this.key,
   });
 
-  /// The key on its cell (a walkthrough presses it by this).
+  /// The key for this destination's navigation cell.
   final Key? key;
 
   /// Its glyph.

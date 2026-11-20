@@ -101,8 +101,8 @@ class GlossFieldMessage extends StatelessWidget {
 }
 
 /// A Gloss text field: a well pressed into the page, rounded 12, the words
-/// on its floor. Focus catches the light on its inner bevel. An [error]
-/// rims it in ruby and says itself under it.
+/// on its floor. Focus catches the light on its inner bevel. The [error]
+/// message appears in ruby below the well.
 ///
 /// The caller owns a [controller] or [focusNode] it passes; without one the
 /// field makes its own and disposes it.
@@ -284,11 +284,9 @@ class _GlossTextFieldState extends State<GlossTextField> {
     if (layered.fill != null) face = face.glazed(layered.fill!);
     face = face.copyWith(
       foreground: words.color,
-      edge: widget.error != null ? c.danger : layered.edge,
+      edge: layered.edge,
       lift: widget.enabled ? -1 : -0.45,
-      focus: focused
-          ? (widget.error != null ? c.danger : c.focus)
-          : c.focus.withValues(alpha: 0),
+      focus: focused ? c.focus : c.focus.withValues(alpha: 0),
     );
     final entry = DesignTextEntryBox(
       minHeight: theme.controlHeight,

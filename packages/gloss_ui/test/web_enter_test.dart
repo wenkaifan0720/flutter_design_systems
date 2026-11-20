@@ -82,14 +82,6 @@ void main() {
         GlossChip(label: 'Vegan', selected: false, onSelected: (_) => hit()),
     'a row': (hit) => GlossListTile(title: 'Household', onTap: hit),
     'a card': (hit) => GlossCard(onTap: hit, child: const Text('Tonight')),
-    'a segment': (hit) => GlossSegmentedButton<int>(
-      segments: const [
-        GlossSegment(value: 0, label: 'Daily'),
-        GlossSegment(value: 1, label: 'Weekly'),
-      ],
-      selected: 1,
-      onChanged: (_) => hit(),
-    ),
     'a place in the bar below': (hit) => GlossNavigationBar(
       destinations: const [
         GlossDestination(icon: _glyph, label: 'Today'),
@@ -123,6 +115,29 @@ void main() {
     await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
     await tester.pumpAndSettle();
     expect(chosen, [1]);
+  });
+
+  // A segmented button is a radio group: one stop, on the chosen segment,
+  // where Enter changes nothing, and the arrows choose as they move.
+  testWidgets('a segmented button is one stop; the arrows choose', (
+    tester,
+  ) async {
+    final chosen = <int>[];
+    await _enter(
+      tester,
+      GlossSegmentedButton<int>(
+        segments: const [
+          GlossSegment(value: 0, label: 'Daily'),
+          GlossSegment(value: 1, label: 'Weekly'),
+        ],
+        selected: 1,
+        onChanged: chosen.add,
+      ),
+    );
+    expect(chosen, isEmpty);
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowLeft);
+    await tester.pumpAndSettle();
+    expect(chosen, [0]);
   });
 
   testWidgets('Enter opens a select, and Enter chooses in its list', (

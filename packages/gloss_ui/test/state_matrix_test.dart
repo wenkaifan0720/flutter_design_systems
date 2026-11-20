@@ -1,8 +1,4 @@
-// Every part a person acts on, in each state it has: idle, hovered, pressed,
-// focused from the keyboard, selected, disabled and in error, by day and by
-// night, at twice the size. Each is a golden (the state matrix the design
-// review reads). Hover catches a little light before the stronger keyboard
-// reflection, and a held press moves the highlight.
+// Captures each control's interaction states in both appearances.
 // ignore_for_file: avoid_relative_lib_imports
 import 'dart:convert';
 import 'dart:io';
@@ -16,9 +12,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../example/lib/kit_gallery/kit.dart';
 
-/// The goldens are kept beside the catalog and laid here by the package
-/// build; a published or vendored copy goes without them, and compares
-/// nothing.
+/// Compare against local baselines when they are available.
 final bool _recorded =
     autoUpdateGoldenFiles || Directory('test/goldens').existsSync();
 

@@ -1,9 +1,4 @@
-// A stepper's beads stand as tall as its readout: one row, one height (the
-// user, more than once; ui_core_test 0.1.2's DesignFieldPartsCheck holds it
-// within 1 px). At 1x, 2x and 3x text, both directions, on and off; the
-// readout grows with its words and the beads with it, and the words stay
-// whole in the window (its words and its count at 1x and 2x, its count at
-// 3x on a phone).
+// The readout and both step buttons grow together at larger text sizes.
 import 'dart:convert';
 
 import 'package:material_ui/material_ui.dart' show MaterialApp;

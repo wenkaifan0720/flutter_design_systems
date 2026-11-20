@@ -99,7 +99,7 @@ class GlossCheckbox extends StatelessWidget {
   /// Whether a press steps through mixed as well.
   final bool tristate;
 
-  /// Whether its value is wrong: a ruby rim round the socket.
+  /// Whether to show a warning beside the socket.
   final bool isError;
 
   /// What a screen reader calls it, when no words beside it say.
@@ -142,32 +142,43 @@ class GlossCheckbox extends StatelessWidget {
         final pressed = states.contains(WidgetState.pressed);
         final size = layered.minimumSize?.width ?? 24;
         final on = value != false;
-        return DesignTapTarget(
-          child: SizedBox.square(
-            dimension: size,
-            child: _Sprung(
-              target: on ? 1 : 0,
-              damping: GlossMotion.pressDamping,
-              stiffness: GlossMotion.snapStiffness,
-              builder: (context, t) => animatedGlazePaint(
-                context,
-                glossGlazeOf(c, states),
-                (light) => _SocketPainter(
-                  colors: c,
-                  t: t,
-                  round: false,
-                  mixed: value == null,
-                  pressed: pressed,
-                  disabled: disabled,
-                  error: isError,
-                  fill: layered.fill,
-                  focus: light,
-                  highContrast:
-                      MediaQuery.maybeHighContrastOf(context) ?? false,
-                ),
+        final socket = SizedBox.square(
+          dimension: size,
+          child: _Sprung(
+            target: on ? 1 : 0,
+            damping: GlossMotion.pressDamping,
+            stiffness: GlossMotion.snapStiffness,
+            builder: (context, t) => animatedGlazePaint(
+              context,
+              glossGlazeOf(c, states),
+              (light) => _SocketPainter(
+                colors: c,
+                t: t,
+                round: false,
+                mixed: value == null,
+                pressed: pressed,
+                disabled: disabled,
+                fill: layered.fill,
+                focus: light,
+                highContrast: MediaQuery.maybeHighContrastOf(context) ?? false,
               ),
             ),
           ),
+        );
+        return DesignTapTarget(
+          child: isError
+              ? FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      socket,
+                      const SizedBox(width: GlossSpacing.tight),
+                      Icon(LucideIcons.circleAlert, size: 14, color: c.danger),
+                    ],
+                  ),
+                )
+              : socket,
         );
       },
     );
@@ -287,7 +298,6 @@ class _RadioSocket extends StatelessWidget {
             mixed: false,
             pressed: states.contains(WidgetState.pressed),
             disabled: states.contains(WidgetState.disabled),
-            error: false,
             fill: layered.fill,
             focus: light,
             highContrast: MediaQuery.maybeHighContrastOf(context) ?? false,
@@ -306,8 +316,8 @@ class _RadioSocket extends StatelessWidget {
 /// screen reader hears a radio group of radios. A null [onChanged]
 /// disables it.
 ///
-/// Built on ui_core's DesignToggleGroup. Reads [style] as [GlossRadio]
-/// does.
+/// Built on ui_core's DesignRadioGroup, over Flutter's RadioGroup. Reads
+/// [style] as [GlossRadio] does.
 ///
 /// ```dart
 /// GlossRadioGroup<String>(options: const ['metric', 'imperial'], value: units, labelOf: (u) => u == 'metric' ? 'Metric' : 'Imperial', onChanged: (u) {})
@@ -352,65 +362,7 @@ class GlossRadioGroup<T> extends StatelessWidget {
   final GlossStyle? style;
 
   @override
-  Widget build(BuildContext context) {
-    final theme = GlossTheme.of(context);
-    final c = theme.colors;
-    final change = onChanged;
-    final v = value;
-    return DesignToggleGroup<T>(
-      options: options,
-      selected: {?v},
-      onSelectionChanged: change == null
-          ? null
-          : (next) {
-              if (next.isNotEmpty) change(next.first);
-            },
-      // The arrows choose as they move, as a radio group's do.
-      selectFollowsFocus: true,
-      isEnabled: isEnabled,
-      labelOf: labelOf,
-      semanticLabel: semanticLabel,
-      direction: direction,
-      minimumSize: Size.zero,
-      layoutBuilder: (context, rows) => direction == Axis.vertical
-          ? Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: rows,
-            )
-          : Wrap(spacing: GlossSpacing.regular, children: rows),
-      itemBuilder: (context, option, states) {
-        final off = states.contains(WidgetState.disabled);
-        return ConstrainedBox(
-          constraints: BoxConstraints(minHeight: theme.controlHeight),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: GlossSpacing.small),
-            child: Row(
-              mainAxisSize: direction == Axis.vertical
-                  ? MainAxisSize.max
-                  : MainAxisSize.min,
-              children: [
-                _RadioSocket(
-                  chosen: states.contains(WidgetState.selected),
-                  style: style,
-                  states: states,
-                ),
-                const SizedBox(width: GlossSpacing.medium),
-                Flexible(
-                  child: Text(
-                    labelOf(option),
-                    style: theme.textTheme.body.copyWith(
-                      color: off ? c.inkDisabled : c.ink,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
+  Widget build(BuildContext context) => _GlossRadioGroupBody<T>(group: this);
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -424,6 +376,141 @@ class GlossRadioGroup<T> extends StatelessWidget {
   }
 }
 
+// GlossRadioGroup's radios, with a focus node of its own for each option so
+// that Home and End can choose and focus the first or the last choice that
+// can be made. Flutter's RadioGroup moves only with the arrows.
+class _GlossRadioGroupBody<T> extends StatefulWidget {
+  const _GlossRadioGroupBody({required this.group});
+
+  final GlossRadioGroup<T> group;
+
+  @override
+  State<_GlossRadioGroupBody<T>> createState() =>
+      _GlossRadioGroupBodyState<T>();
+}
+
+class _GlossRadioGroupBodyState<T> extends State<_GlossRadioGroupBody<T>> {
+  final _nodes = <T, FocusNode>{};
+
+  FocusNode _nodeFor(T option) => _nodes.putIfAbsent(
+    option,
+    () => FocusNode(debugLabel: 'GlossRadioGroup $option'),
+  );
+
+  void _toEnd({required bool last}) {
+    final group = widget.group;
+    final change = group.onChanged;
+    if (change == null) return;
+    final open = [
+      for (final option in group.options)
+        if (group.isEnabled?.call(option) ?? true) option,
+    ];
+    if (open.isEmpty) return;
+    final option = last ? open.last : open.first;
+    if (option != group.value) change(option);
+    _nodeFor(option).requestFocus();
+  }
+
+  @override
+  void dispose() {
+    for (final node in _nodes.values) {
+      node.dispose();
+    }
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final group = widget.group;
+    final options = group.options;
+    final value = group.value;
+    final labelOf = group.labelOf;
+    final direction = group.direction;
+    final style = group.style;
+    final theme = GlossTheme.of(context);
+    final c = theme.colors;
+    final current = options.toSet();
+    final gone = [
+      for (final option in _nodes.keys)
+        if (!current.contains(option)) option,
+    ];
+    if (gone.isNotEmpty) {
+      final nodes = [for (final option in gone) _nodes.remove(option)!];
+      // The radios that held them unmount in this frame; let them go first.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        for (final node in nodes) {
+          node.dispose();
+        }
+      });
+    }
+    final radios = DesignRadioGroup<T>(
+      options: options,
+      value: value,
+      onChanged: group.onChanged,
+      isEnabled: group.isEnabled,
+      focusNodeFor: _nodeFor,
+      semanticLabel: group.semanticLabel,
+      direction: direction,
+      layoutBuilder: (context, rows) => direction == Axis.vertical
+          ? Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: rows,
+            )
+          : Wrap(spacing: GlossSpacing.regular, children: rows),
+      // Each row is one radio, named by its words: the socket and the words
+      // take the press together.
+      itemBuilder: (context, option, node, select) => DesignPressable(
+        focusNode: node,
+        onPressed: select,
+        semanticLabel: labelOf(option),
+        excludeSemantics: true,
+        checked: option == value,
+        selected: option == value,
+        inMutuallyExclusiveGroup: true,
+        builder: (context, states, _) {
+          final off = states.contains(WidgetState.disabled);
+          return ConstrainedBox(
+            constraints: BoxConstraints(minHeight: theme.controlHeight),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: GlossSpacing.small),
+              child: Row(
+                mainAxisSize: direction == Axis.vertical
+                    ? MainAxisSize.max
+                    : MainAxisSize.min,
+                children: [
+                  _RadioSocket(
+                    chosen: states.contains(WidgetState.selected),
+                    style: style,
+                    states: states,
+                  ),
+                  const SizedBox(width: GlossSpacing.medium),
+                  Flexible(
+                    child: Text(
+                      labelOf(option),
+                      style: theme.textTheme.body.copyWith(
+                        color: off ? c.inkDisabled : c.ink,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+    return CallbackShortcuts(
+      bindings: {
+        const SingleActivator(LogicalKeyboardKey.home): () =>
+            _toEnd(last: false),
+        const SingleActivator(LogicalKeyboardKey.end): () => _toEnd(last: true),
+      },
+      child: radios,
+    );
+  }
+}
+
 class _SocketPainter extends CustomPainter {
   _SocketPainter({
     required this.colors,
@@ -432,7 +519,6 @@ class _SocketPainter extends CustomPainter {
     required this.mixed,
     required this.pressed,
     required this.disabled,
-    required this.error,
     required this.fill,
     required this.focus,
     required this.highContrast,
@@ -444,7 +530,6 @@ class _SocketPainter extends CustomPainter {
   final bool mixed;
   final bool pressed;
   final bool disabled;
-  final bool error;
   final Color? fill;
   final Color focus;
   final bool highContrast;
@@ -458,9 +543,7 @@ class _SocketPainter extends CustomPainter {
       lift: disabled ? -0.5 : (pressed ? -1 : -0.85),
       // A fine rim round the socket's mouth, so an empty one (a box not
       // ticked, a dot not chosen) reads on a well's floor, day and night.
-      edge: error
-          ? colors.danger
-          : disabled
+      edge: disabled
           ? (light ? const Color(0x1A000000) : const Color(0x1AFFFFFF))
           : light
           ? const Color(0x33000000)
@@ -546,7 +629,6 @@ class _SocketPainter extends CustomPainter {
       old.mixed != mixed ||
       old.pressed != pressed ||
       old.disabled != disabled ||
-      old.error != error ||
       old.fill != fill ||
       old.focus != focus ||
       old.highContrast != highContrast;
@@ -857,6 +939,10 @@ class GlossSegment<T> {
 /// one equal slot per choice, and one jade gel thumb that slides to the
 /// chosen slot. Labels never move; the chosen one turns white on the gel.
 ///
+/// A screen reader hears a group of radios, the chosen one checked. Tab
+/// reaches the control once, at its choice; the arrows choose the next or
+/// the previous slot and wrap, as Flutter's RadioGroup does.
+///
 /// Below 600 px of window it fills its row; wider, it hugs its words unless
 /// [expanded] says otherwise.
 ///
@@ -966,22 +1052,26 @@ class GlossSegmentedButton<T> extends StatelessWidget {
                 Positioned.fill(
                   left: inset,
                   right: inset,
-                  child: Row(
-                    children: [
-                      for (final (i, s) in segments.indexed)
-                        Expanded(
-                          child: _Segment<T>(
-                            segment: s,
-                            chosen: i == index,
-                            onPressed: onChanged == null
-                                ? null
-                                : () => onChanged!(s.value),
-                            style: label,
-                            height: height - inset * 2,
-                            layered: style,
-                          ),
-                        ),
-                    ],
+                  child: DesignRadioGroup<int>(
+                    options: [for (var i = 0; i < segments.length; i++) i],
+                    value: index,
+                    onChanged: onChanged == null
+                        ? null
+                        : (i) => onChanged!(segments[i].value),
+                    layoutBuilder: (context, slots) => Row(
+                      children: [
+                        for (final slot in slots) Expanded(child: slot),
+                      ],
+                    ),
+                    itemBuilder: (context, i, node, select) => _Segment<T>(
+                      segment: segments[i],
+                      chosen: i == index,
+                      focusNode: node,
+                      onPressed: select,
+                      style: label,
+                      height: height - inset * 2,
+                      layered: style,
+                    ),
                   ),
                 ),
               ],
@@ -1009,6 +1099,7 @@ class _Segment<T> extends StatelessWidget {
   const _Segment({
     required this.segment,
     required this.chosen,
+    required this.focusNode,
     required this.onPressed,
     required this.style,
     required this.height,
@@ -1017,6 +1108,7 @@ class _Segment<T> extends StatelessWidget {
 
   final GlossSegment<T> segment;
   final bool chosen;
+  final FocusNode focusNode;
   final VoidCallback? onPressed;
   final TextStyle style;
   final double height;
@@ -1027,11 +1119,14 @@ class _Segment<T> extends StatelessWidget {
     final theme = GlossTheme.of(context);
     final c = theme.colors;
     return DesignPressable(
+      focusNode: focusNode,
+      // The chosen slot keeps its focus but takes no press: it is already
+      // the choice.
       onPressed: chosen ? null : onPressed,
       enabled: onPressed != null,
-      semanticSelected: chosen,
+      // A radio of the control's group: checked when chosen, not a button.
+      checked: chosen,
       inMutuallyExclusiveGroup: true,
-      button: true,
       mouseCursor: chosen || onPressed == null
           ? SystemMouseCursors.basic
           : SystemMouseCursors.click,

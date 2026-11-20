@@ -177,6 +177,65 @@ void _none() {}
 void main() {
   setUpAll(_loadFonts);
 
+  for (final brightness in Brightness.values) {
+    testWidgets(
+      'validation keeps the field lip and marks the checkbox in $brightness',
+      (tester) async {
+        final focus = FocusNode();
+        addTearDown(focus.dispose);
+        Future<void> show({required bool invalid}) => _show(
+          tester,
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              GlossTextField(
+                label: 'Cooking time',
+                focusNode: focus,
+                error: invalid ? 'Use minutes' : null,
+              ),
+              SizedBox.square(
+                dimension: 24,
+                child: GlossCheckbox(
+                  value: false,
+                  isError: invalid,
+                  onChanged: (_) {},
+                ),
+              ),
+            ],
+          ),
+          brightness,
+          390,
+          TextDirection.ltr,
+        );
+        GlossFace face() => tester
+            .widget<AnimatedGlossSurface>(
+              find
+                  .descendant(
+                    of: find.byType(GlossTextField),
+                    matching: find.byType(AnimatedGlossSurface),
+                  )
+                  .first,
+            )
+            .face;
+        await show(invalid: false);
+        final rest = face();
+        focus.requestFocus();
+        await tester.pumpAndSettle();
+        final focused = face();
+        await show(invalid: true);
+        expect(find.text('Use minutes'), findsOneWidget);
+        expect(face().edge, focused.edge);
+        expect(face().focus, focused.focus);
+        focus.unfocus();
+        await tester.pumpAndSettle();
+        expect(face().edge, rest.edge);
+        expect(face().lift, lessThan(0));
+        expect(find.byIcon(LucideIcons.circleAlert), findsOneWidget);
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
+
   for (final reduced in [false, true]) {
     testWidgets('glaze focus enters and leaves with reduce motion $reduced', (
       tester,
@@ -292,7 +351,8 @@ void main() {
         onChanged: (_) {},
       ),
       GlossSegmentedButton<String>,
-      words: 'Day',
+      // Tab reaches the segments at the choice.
+      words: 'Week',
     ),
     _Part(
       'chosen segment',

@@ -1,10 +1,5 @@
-// Controls in a GlossFormField take a tap, each its own: a segmented
-// choice's keys, chips in a wrap, a stepper's keys, a switch and a checkbox, by
-// the pointer and through their semantics (a screen reader's double tap, a
-// browser's click with semantics on). A group's controls merged into the
-// field's one node gave every tap to the first of them (the user, 11-18:
-// Stint's Priority and Labels took no tap, in Neumorphism's look,
-// Appliance's and Studio's).
+// Each control inside a form field keeps its own pointer and semantics
+// actions, including individual chips, segments and stepper buttons.
 import 'dart:convert';
 
 import 'package:material_ui/material_ui.dart' show MaterialApp;

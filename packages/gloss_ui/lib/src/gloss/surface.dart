@@ -1056,6 +1056,10 @@ class GlossBar extends StatelessWidget {
         edge: edge,
         direction: Directionality.maybeOf(context) ?? TextDirection.ltr,
         grain: !highContrast,
+        pixelRatio:
+            MediaQuery.maybeDevicePixelRatioOf(context) ??
+            View.maybeOf(context)?.devicePixelRatio ??
+            1,
       ),
       child: child,
     );
@@ -1074,12 +1078,14 @@ class _BarPainter extends CustomPainter {
     required this.edge,
     required this.direction,
     required this.grain,
+    required this.pixelRatio,
   });
 
   final GlossColors colors;
   final AxisDirection edge;
   final TextDirection direction;
   final bool grain;
+  final double pixelRatio;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -1101,35 +1107,42 @@ class _BarPainter extends CustomPainter {
         ),
     );
     if (grain) {
-      canvas
-        ..save()
-        ..clipRect(rect);
       final day = colors.brightness == Brightness.light;
-      final specks = Paint()..strokeWidth = 1;
-      // Felt more than seen: a moulded skin, not a cloth.
-      final lightSpeck = day
-          ? const Color(0x1FFFFFFF)
-          : const Color(0x08FFFFFF);
-      final darkSpeck = day ? const Color(0x081E3246) : const Color(0x12000000);
-      for (var y = 0.0; y < size.height; y += _grainSize) {
-        for (var x = 0.0; x < size.width; x += _grainSize) {
-          canvas
-            ..save()
-            ..translate(x, y)
-            ..drawRawPoints(
-              ui.PointMode.points,
-              _grain.light,
-              specks..color = lightSpeck,
-            )
-            ..drawRawPoints(
-              ui.PointMode.points,
-              _grain.dark,
-              specks..color = darkSpeck,
-            )
-            ..restore();
+      final light = day ? const Color(0x1FFFFFFF) : const Color(0x08FFFFFF);
+      final dark = day ? const Color(0x081E3246) : const Color(0x12000000);
+      // A translated or scaled bar can place a speck between device pixels.
+      // Its canvas must determine coverage there, just as it does for the rim.
+      final origin = MatrixUtils.getAsTranslation(
+        Matrix4.fromFloat64List(canvas.getTransform()),
+      );
+      bool aligned(double value) => value == value.roundToDouble();
+      final onGrid =
+          origin != null &&
+          aligned(rect.width * pixelRatio) &&
+          aligned(rect.height * pixelRatio) &&
+          aligned(origin.dx * pixelRatio) &&
+          aligned(origin.dy * pixelRatio);
+      final shaders = onGrid ? _grainShadersFor(pixelRatio, light, dark) : null;
+      if (shaders != null) {
+        final ink = Paint();
+        for (final shader in shaders) {
+          canvas.drawRect(rect, ink..shader = shader);
         }
+      } else {
+        canvas
+          ..save()
+          ..clipRect(rect);
+        for (var y = 0.0; y < size.height; y += _grainSize) {
+          for (var x = 0.0; x < size.width; x += _grainSize) {
+            canvas
+              ..save()
+              ..translate(x, y);
+            _paintGrainTile(canvas, _grain, light, dark);
+            canvas.restore();
+          }
+        }
+        canvas.restore();
       }
-      canvas.restore();
     }
     final light = colors.brightness == Brightness.light;
     // The light along the top.
@@ -1157,14 +1170,105 @@ class _BarPainter extends CustomPainter {
       old.colors != colors ||
       old.edge != edge ||
       old.direction != direction ||
-      old.grain != grain;
+      old.grain != grain ||
+      old.pixelRatio != pixelRatio;
 }
 
 const double _grainSize = 96;
 
-/// The bars' grain: one 96 px tile of fine light and dark specks, worked out
-/// once (the same seed, so the same grain every run) and laid across every
-/// bar. Plain numbers, so nothing native is held for the app's life.
+typedef _GrainTile = ({Float32List light, Float32List dark});
+
+final _grainShaders = <(double, Color, Color), List<ui.ImageShader>?>{};
+
+List<ui.ImageShader>? _grainShadersFor(double ratio, Color light, Color dark) {
+  final size = _grainSize * ratio;
+  // At fractional densities adjacent specks can blend into the same pixel.
+  if (ratio != ratio.roundToDouble() || size < 1 || size > 768) return null;
+  final key = (ratio, light, dark);
+  if (_grainShaders.containsKey(key)) return _grainShaders[key];
+  if (_grainShaders.length == 8) {
+    final oldest = _grainShaders.remove(_grainShaders.keys.first);
+    for (final shader in oldest ?? const <ui.ImageShader>[]) {
+      shader.dispose();
+    }
+  }
+  final shaders = <ui.ImageShader>[];
+  try {
+    final matrix = Float64List(16)
+      ..[0] = 1 / ratio
+      ..[5] = 1 / ratio
+      ..[10] = 1
+      ..[15] = 1;
+    for (final dots in _grainLayers) {
+      final recorder = ui.PictureRecorder();
+      _paintGrainTile(Canvas(recorder)..scale(ratio), dots, light, dark);
+      final picture = recorder.endRecording();
+      try {
+        final image = picture.toImageSync(size.toInt(), size.toInt());
+        try {
+          shaders.add(
+            ui.ImageShader(
+              image,
+              TileMode.repeated,
+              TileMode.repeated,
+              matrix,
+              filterQuality: FilterQuality.none,
+            ),
+          );
+        } finally {
+          image.dispose();
+        }
+      } finally {
+        picture.dispose();
+      }
+    }
+    return _grainShaders[key] = shaders;
+  } on UnsupportedError {
+    // Some renderers cannot synchronously rasterize a picture.
+  }
+  for (final shader in shaders) {
+    shader.dispose();
+  }
+  return _grainShaders[key] = null;
+}
+
+void _paintGrainTile(Canvas canvas, _GrainTile dots, Color light, Color dark) {
+  final paint = Paint()..strokeWidth = 1;
+  canvas
+    ..drawRawPoints(ui.PointMode.points, dots.light, paint..color = light)
+    ..drawRawPoints(ui.PointMode.points, dots.dark, paint..color = dark);
+}
+
+// A speck that lands on another must blend with the painted bar in a
+// separate pass. Compositing both into a transparent tile first rounds
+// their colors differently over the glaze.
+final List<_GrainTile> _grainLayers = () {
+  final occupied = <int, int>{};
+  final layers = <({List<double> light, List<double> dark})>[];
+  void place(Float32List points, {required bool light}) {
+    for (var i = 0; i < points.length; i += 2) {
+      final x = points[i];
+      final y = points[i + 1];
+      final cell = y.floor() * _grainSize.toInt() + x.floor();
+      final layer = occupied[cell] ?? 0;
+      occupied[cell] = layer + 1;
+      if (layer == layers.length) layers.add((light: [], dark: []));
+      (light ? layers[layer].light : layers[layer].dark).addAll([x, y]);
+    }
+  }
+
+  place(_grain.light, light: true);
+  place(_grain.dark, light: false);
+  return [
+    for (final layer in layers)
+      (
+        light: Float32List.fromList(layer.light),
+        dark: Float32List.fromList(layer.dark),
+      ),
+  ];
+}();
+
+// The same light and dark specks cover each 96-pixel bar tile.
 final ({Float32List light, Float32List dark}) _grain = () {
   final random = math.Random(1115);
   final light = <double>[];

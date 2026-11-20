@@ -788,8 +788,8 @@ class _OptionRow extends StatelessWidget {
         ? c.jadeInk
         : c.ink;
     final focused = !disabled && states.contains(WidgetState.focused);
-    return SizedBox(
-      height: theme.controlHeight - 4,
+    return ConstrainedBox(
+      constraints: BoxConstraints(minHeight: theme.controlHeight - 4),
       child: AnimatedGlossSurface(
         face: glossRowPlate(
           c,
@@ -797,7 +797,10 @@ class _OptionRow extends StatelessWidget {
           pressed: states.contains(WidgetState.pressed),
         ).copyWith(foreground: ink, focus: glossGlazeOf(c, states)),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: GlossSpacing.medium),
+          padding: const EdgeInsets.symmetric(
+            horizontal: GlossSpacing.medium,
+            vertical: GlossSpacing.tight,
+          ),
           child: Row(
             children: [
               Expanded(

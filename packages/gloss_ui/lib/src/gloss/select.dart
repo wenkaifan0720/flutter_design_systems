@@ -380,8 +380,8 @@ class _SelectListState<T> extends State<_SelectList<T>> {
               : isChosen
               ? c.jadeInk
               : c.ink;
-          return SizedBox(
-            height: widget.rowHeight,
+          return ConstrainedBox(
+            constraints: BoxConstraints(minHeight: widget.rowHeight),
             child: AnimatedGlossSurface(
               face: plate.copyWith(
                 foreground: words,
@@ -390,6 +390,7 @@ class _SelectListState<T> extends State<_SelectList<T>> {
               child: Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: GlossSpacing.medium,
+                  vertical: GlossSpacing.tight,
                 ),
                 child: Row(
                   children: [

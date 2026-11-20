@@ -1,3 +1,12 @@
+## 0.1.5
+
+- Invalid text fields keep their recessed glaze and display the error below. Invalid checkboxes show a warning symbol beside the socket.
+- Menu, select and combobox rows grow to fit large text, including letters with descenders.
+- Chrome bars reuse their speckled texture across repaints.
+- Stands on ui_core 0.3.4 and uses ui_core_test 0.1.4 for qualification. `GlossRadioGroup` is built on ui_core's `DesignRadioGroup`, over Flutter's `RadioGroup`. Tab enters at the checked option, or at the first option that can be chosen when the checked one is turned off or nothing is chosen. A turned-off option that is chosen still reads as checked. The arrows, Home, End and Space choose as before.
+- `GlossSegmentedButton` reads as a group of radios, the chosen segment checked, where each segment read as a button before. Tab reaches it once, at the chosen segment, where each segment was a Tab stop before. The arrows choose the next or the previous segment and wrap.
+- A selectable `GlossDataTable` row reads as a checkbox, checked when selected, from ui_core 0.3.4's `DesignDataTable`. It read as a button as well.
+
 ## 0.1.4
 
 - Keyboard focus sharpens the reflection on glazed controls. Pale surfaces keep their body color in daylight and colored glazes deepen slightly. Recessed fields catch the light on their lower inner edge. Pointer hover gives a softer reflection and pressing a control shifts it. Reduce Motion makes these changes immediate.

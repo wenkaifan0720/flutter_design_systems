@@ -1,8 +1,5 @@
-// In motion (design6 O): every part that moves, drags, opens or previews,
-// looked at mid-move on a phone by day and a desk by night. Mid-move nothing
-// throws (no overflow), nothing is painted outside the part (its soft shadow
-// aside), a range's preview ends on the day the pointer
-// rests on, and what opens does not jump when it settles.
+// Samples controls during motion and checks their paint bounds and settling
+// positions. The range preview follows the day under the pointer.
 // ignore_for_file: avoid_relative_lib_imports
 import 'dart:math' as math;
 import 'dart:typed_data';

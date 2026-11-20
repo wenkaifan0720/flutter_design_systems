@@ -1,7 +1,4 @@
-// The parts Gloss runs on ui_core, held to how they behave in an app (the
-// module's own package, as the design-systems gate composes it). The full
-// suite (every part's states, motion, goldens and Simmer's screens) runs on
-// the exported package, gloss_ui.
+// Interaction, layout and motion of Gloss controls and routes.
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -185,12 +182,11 @@ void main() {
     );
   }
 
-  // Gloss's close is its M3 fall, on ui_core's close token: M3's dialog and
-  // side sheet, recorded frame by frame (scripts/timeline in the pack), at 64,
-  // 128 and 192 ms into the close: how far the panel stands from gone (its
-  // presence), the scrim's share, and the dialog's opacity.
+  // Sample the closing panel and scrim at three points in the transition.
   for (final kind in ['dialog', 'side sheet']) {
-    testWidgets('a $kind leaves as Gloss fell before ui_core', (tester) async {
+    testWidgets('a $kind closes with the expected travel and opacity', (
+      tester,
+    ) async {
       tester.view.devicePixelRatio = 1;
       tester.view.physicalSize = const Size(390, 844);
       addTearDown(tester.view.reset);
@@ -247,8 +243,8 @@ void main() {
 
       await tester.sendKeyEvent(LogicalKeyboardKey.escape);
       await tester.pump();
-      // M3's recorded close: [ms, presence, scrim, opacity].
-      final m3 = kind == 'dialog'
+      // Closing time in milliseconds, panel presence, scrim and opacity.
+      final samples = kind == 'dialog'
           ? const [
               [64, 0.54, 0.98, 0.69],
               [128, 0.23, 0.88, 0.43],
@@ -260,7 +256,7 @@ void main() {
               [192, 0.11, 0.73, 1.0],
             ];
       var at = 0;
-      for (final [ms, panel, shade, opacity] in m3) {
+      for (final [ms, panel, shade, opacity] in samples) {
         await tester.pump(Duration(milliseconds: ms.toInt() - at));
         at = ms.toInt();
         expect(presence(), closeTo(panel, 0.07), reason: '$kind at $ms ms');
@@ -272,13 +268,11 @@ void main() {
     });
   }
 
-  // Gloss's opening is M3's, on ui_core's spring: M3's routes, recorded frame
-  // by frame (scripts/timeline in the pack), at 64, 128 and 192 ms into the
-  // opening: how far the panel stands from gone (its presence), the scrim's
-  // share, and how much of the panel shows. The side sheet's panel eased in
-  // M3 and rides Gloss's spring now; its scrim keeps M3's pace.
+  // Opening routes have separate timing for panel travel and scrim opacity.
   for (final kind in ['dialog', 'sheet', 'action sheet', 'side sheet']) {
-    testWidgets('a $kind arrives as Gloss rose before ui_core', (tester) async {
+    testWidgets('a $kind opens with the expected travel and opacity', (
+      tester,
+    ) async {
       tester.view.devicePixelRatio = 1;
       tester.view.physicalSize = const Size(390, 844);
       addTearDown(tester.view.reset);
@@ -340,8 +334,8 @@ void main() {
       await tester.tap(find.text('Open'));
       await tester.pump();
       final gone = tester.getRect(mark);
-      // M3's recorded opening: [ms, presence, scrim, shown].
-      final m3 = switch (kind) {
+      // Opening time in milliseconds, panel presence, scrim and opacity.
+      final samples = switch (kind) {
         'dialog' => const [
           [64, 0.59, 0.30, 0.57],
           [128, 0.93, 0.68, 0.94],
@@ -365,7 +359,7 @@ void main() {
       };
       final rects = <Rect>[];
       var at = 0;
-      for (final [ms!, _, shade!, shown!] in m3) {
+      for (final [ms!, _, shade!, shown!] in samples) {
         await tester.pump(Duration(milliseconds: ms.toInt() - at));
         at = ms.toInt();
         rects.add(tester.getRect(mark));
@@ -374,7 +368,7 @@ void main() {
       }
       await tester.pumpAndSettle();
       final open = tester.getRect(mark);
-      for (final (i, [ms, panel, _, _]) in m3.indexed) {
+      for (final (i, [ms, panel, _, _]) in samples.indexed) {
         if (panel == null) continue;
         final r = rects[i];
         final presence = kind == 'dialog'
@@ -523,8 +517,8 @@ void main() {
     });
   }
 
-  // M3's width: as wide as it may be, never shrunk to its words; in its route
-  // a margin in from the screen's edges, at rest in a page flush with its
+  // The dialog fills the available width up to its limit, leaving
+  // a margin from the screen's edges. On a page it sits flush with its
   // column's start.
   Rect panel() => find
       .descendant(

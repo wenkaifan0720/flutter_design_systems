@@ -1,7 +1,7 @@
 name: gloss_ui
 description: >-
   Skeuomorphic widgets for Flutter with glazed controls, recessed panels, accessible forms, navigation, and charts in coordinated light and dark themes.
-version: 0.1.4
+version: 0.1.5
 homepage: https://wenkaifan0720.github.io/flutter_design_systems/gloss/
 documentation: https://wenkaifan0720.github.io/flutter_design_systems/docs/looks/gloss/
 repository: https://github.com/wenkaifan0720/flutter_design_systems/tree/main/packages/gloss_ui
@@ -32,7 +32,7 @@ resolution: workspace
 dependencies:
   flutter:
     sdk: flutter
-  ui_core: ^0.3.3
+  ui_core: ^0.3.4
   material_ui: ^1.9.0
   cupertino_ui: ^1.0.0
   lucide_icons_flutter: ">=3.1.25 <5.0.0"
@@ -42,6 +42,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   leak_tracker_flutter_testing: any
+  ui_core_test: ^0.1.4
 
 flutter:
   fonts:
