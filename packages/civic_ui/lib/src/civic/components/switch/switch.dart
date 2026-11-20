@@ -101,11 +101,15 @@ class CivicSwitch extends StatelessWidget {
             builder: (context, on, _) => CustomPaint(
               size: trackSize,
               painter: CivicWellPainter(
-                fill: Color.lerp(
-                  disabled ? t.disabledFill : t.background,
-                  disabled ? t.rule : (so.fill ?? t.action),
-                  on.clamp(0, 1),
-                )!,
+                fill: civicPointerFill(
+                  Color.lerp(
+                    disabled ? t.disabledFill : t.background,
+                    disabled ? t.rule : (so.fill ?? t.action),
+                    on.clamp(0, 1),
+                  )!,
+                  Color.lerp(t.textPrimary, t.onAction, on.clamp(0, 1))!,
+                  states,
+                ),
                 edgeColor: disabled
                     ? t.rule
                     : Color.lerp(

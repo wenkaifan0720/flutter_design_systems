@@ -1,10 +1,9 @@
-// A radio group is one stop for Tab, as Flutter's RadioGroup and a browser's radios are: Tab and Shift+Tab come to the
-// chosen answer and leave the group, and the arrow keys move the choice. A second Tab stayed inside the group, walking
-// its answers one by one. The fixture is the API audit's: the group between two buttons, real key events.
+// Tab enters and leaves a group of answers. Arrow keys move the choice.
 import 'package:civic_ui/civic_ui.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:ui_core_test/ui_core_test.dart';
 
 const _group = ValueKey('group');
 
@@ -17,6 +16,8 @@ void main() {
     String? start = 'A',
     Set<String> disabled = const {},
     TextDirection direction = TextDirection.ltr,
+    List<String> options = const ['A', 'B', 'C'],
+    Widget Function(StateSetter)? buildChoice,
   }) async {
     before = FocusNode();
     after = FocusNode();
@@ -41,19 +42,24 @@ void main() {
                     ),
                     CivicTheme(
                       data: CivicThemeData.light(),
-                      child: CivicRadioGroup<String>(
+                      child: KeyedSubtree(
                         key: _group,
-                        labelText: 'Which one?',
-                        groupValue: chosen,
-                        onChanged: (value) => setState(() => chosen = value),
-                        children: [
-                          for (final value in ['A', 'B', 'C'])
-                            CivicRadio<String>(
-                              value: value,
-                              labelText: value,
-                              enabled: !disabled.contains(value),
+                        child:
+                            buildChoice?.call(setState) ??
+                            CivicRadioGroup<String>(
+                              labelText: 'Which one?',
+                              groupValue: chosen,
+                              onChanged: (value) =>
+                                  setState(() => chosen = value),
+                              children: [
+                                for (final value in options)
+                                  CivicRadio<String>(
+                                    value: value,
+                                    labelText: value,
+                                    enabled: !disabled.contains(value),
+                                  ),
+                              ],
                             ),
-                        ],
                       ),
                     ),
                     TextButton(
@@ -97,6 +103,207 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  Future<void> verifyGroup(WidgetTester tester) async {
+    final report = await const DesignRadioGroupCheck(look: 'Civic').check(
+      tester.element(find.byKey(_group)),
+      before: before,
+      sendKeyEvent: tester.sendKeyEvent,
+      pump: tester.pump,
+    );
+    report.verify();
+  }
+
+  for (final direction in TextDirection.values) {
+    const answers = ['A', 'B', 'C', 'D'];
+    for (final initial in <String?>['C', null, 'B']) {
+      for (final segmented in [false, true]) {
+        final name = segmented ? 'segments' : 'radios';
+        testWidgets('$name in ${direction.name} with initial answer $initial', (
+          tester,
+        ) async {
+          await pump(
+            tester,
+            start: initial,
+            options: answers,
+            disabled: {'B'},
+            direction: direction,
+            buildChoice: segmented
+                ? (setState) => CivicSegmentedControl<String>(
+                    labelText: 'Period',
+                    value: chosen,
+                    segments: [
+                      for (final answer in answers)
+                        CivicSegment(
+                          value: answer,
+                          label: answer,
+                          enabled: answer != 'B',
+                        ),
+                    ],
+                    onChanged: (next) => setState(() => chosen = next),
+                  )
+                : null,
+          );
+          await verifyGroup(tester);
+        });
+      }
+    }
+
+    testWidgets('yes or no answers in ${direction.name}', (tester) async {
+      await pump(
+        tester,
+        options: ['Yes', 'No'],
+        start: null,
+        direction: direction,
+      );
+      await verifyGroup(tester);
+    });
+
+    for (final initial in [const Color(0xFF0F4C81), const Color(0xFF123456)]) {
+      testWidgets(
+        'named swatches in ${direction.name} with initial colour $initial',
+        (tester) async {
+          final controller = DesignColorController(initial);
+          addTearDown(controller.dispose);
+          await pump(
+            tester,
+            direction: direction,
+            buildChoice: (_) => CivicColorPicker(
+              labelText: 'Badge colour',
+              controller: controller,
+              showCustom: false,
+              swatches: const [
+                CivicColorSwatch(Color(0xFF0F4C81), 'Harbour blue'),
+                CivicColorSwatch(Color(0xFF0B6136), 'Park green'),
+                CivicColorSwatch(Color(0xFF8A1C1C), 'Brick red'),
+              ],
+            ),
+          );
+          await verifyGroup(tester);
+        },
+      );
+    }
+  }
+
+  testWidgets('a divider and helper stay between their answers', (
+    tester,
+  ) async {
+    await pump(
+      tester,
+      buildChoice: (setState) => CivicRadioGroup<String>(
+        labelText: 'Vehicle',
+        groupValue: chosen,
+        onChanged: (next) => setState(() => chosen = next),
+        children: const [
+          CivicRadio(value: 'A', labelText: 'Car'),
+          CivicRadioDivider(label: 'or'),
+          Text('Another way to travel'),
+          CivicRadio(value: 'B', labelText: 'Motorcycle'),
+        ],
+      ),
+    );
+    final positions = [
+      for (final label in ['Car', 'or', 'Another way to travel', 'Motorcycle'])
+        tester.getCenter(find.text(label)).dy,
+    ];
+    expect(positions, orderedEquals([...positions]..sort()));
+    await verifyGroup(tester);
+  });
+
+  testWidgets('caller focus nodes follow their answer and can be reused', (
+    tester,
+  ) async {
+    final first = FocusNode();
+    final replacement = FocusNode();
+    final afterGroup = FocusNode();
+    addTearDown(first.dispose);
+    addTearDown(replacement.dispose);
+    addTearDown(afterGroup.dispose);
+
+    var notifications = 0;
+    first.addListener(() => notifications++);
+    replacement.addListener(() => notifications++);
+    var activeNode = first;
+    var answers = ['A', 'B'];
+    var value = 'B';
+    late StateSetter rebuild;
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: CivicTheme(
+            data: CivicThemeData.light(),
+            child: StatefulBuilder(
+              builder: (context, setState) {
+                rebuild = setState;
+                return Column(
+                  children: [
+                    CivicRadioGroup<String>(
+                      labelText: 'Answer',
+                      groupValue: value,
+                      onChanged: (next) => setState(() => value = next!),
+                      children: [
+                        for (final answer in answers)
+                          CivicRadio<String>(
+                            key: ValueKey(answer),
+                            value: answer,
+                            labelText: answer,
+                            focusNode: answer == 'B' ? activeNode : null,
+                          ),
+                      ],
+                    ),
+                    TextButton(
+                      focusNode: afterGroup,
+                      onPressed: () {},
+                      child: const Text('Continue'),
+                    ),
+                  ],
+                );
+              },
+            ),
+          ),
+        ),
+      ),
+    );
+    Future<void> focus(FocusNode node) async {
+      final previous = notifications;
+      node.requestFocus();
+      await tester.pumpAndSettle();
+      expect(FocusManager.instance.primaryFocus, same(node));
+      expect(notifications, greaterThan(previous));
+    }
+
+    await focus(first);
+    rebuild(() => answers = ['B', 'A']);
+    await tester.pumpAndSettle();
+    expect(FocusManager.instance.primaryFocus, same(first));
+    rebuild(() => activeNode = replacement);
+    await tester.pumpAndSettle();
+    afterGroup.requestFocus();
+    await tester.pumpAndSettle();
+    await focus(replacement);
+    await press(tester, LogicalKeyboardKey.arrowDown);
+    expect(value, 'A');
+    await press(tester, LogicalKeyboardKey.arrowUp);
+    expect(value, 'B');
+    expect(FocusManager.instance.primaryFocus, same(replacement));
+    await press(tester, LogicalKeyboardKey.tab);
+    expect(FocusManager.instance.primaryFocus, same(afterGroup));
+    rebuild(() => answers = ['A']);
+    await tester.pumpAndSettle();
+    expect(replacement.parent, isNull);
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Column(
+          children: [
+            Focus(focusNode: first, child: const SizedBox()),
+            Focus(focusNode: replacement, child: const SizedBox()),
+          ],
+        ),
+      ),
+    );
+    await focus(first);
+    await focus(replacement);
+  });
+
   testWidgets('Tab comes to the chosen answer and leaves the group', (
     tester,
   ) async {
@@ -112,6 +319,39 @@ void main() {
     await press(tester, LogicalKeyboardKey.tab, shift: true);
     expect(place(), 'before');
     expect(chosen, 'B', reason: 'Tab chooses nothing');
+  });
+
+  testWidgets('Enter and Space press an answer, the chosen one too', (
+    tester,
+  ) async {
+    final presses = <String?>[];
+    await pump(
+      tester,
+      buildChoice: (setState) => CivicRadioGroup<String>(
+        labelText: 'Which one?',
+        groupValue: chosen,
+        onChanged: (value) => setState(() {
+          presses.add(value);
+          chosen = value;
+        }),
+        children: [
+          for (final value in ['A', 'B', 'C'])
+            CivicRadio<String>(value: value, labelText: value),
+        ],
+      ),
+    );
+    before.requestFocus();
+    await tester.pumpAndSettle();
+    await press(tester, LogicalKeyboardKey.tab);
+    expect(place(), 'A');
+    await press(tester, LogicalKeyboardKey.enter);
+    await press(tester, LogicalKeyboardKey.space);
+    expect(presses, ['A', 'A'], reason: 'the chosen answer, pressed twice');
+    await press(tester, LogicalKeyboardKey.arrowDown);
+    expect(presses, ['A', 'A', 'B']);
+    await press(tester, LogicalKeyboardKey.space);
+    expect(presses, ['A', 'A', 'B', 'B']);
+    expect((chosen, place()), ('B', 'B'));
   });
 
   testWidgets('with no answer chosen, Tab comes to the first and leaves', (

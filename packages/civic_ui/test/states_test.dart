@@ -1,11 +1,9 @@
-// The state matrix (polish3 §1): each control's states (pressed, focused,
-// disabled, selected, error) look different from its rest and from each
-// other, and none changes its size, so nothing on the page moves when a
-// state comes or goes. And motion (design6 O): a state change moves on a
-// spring, so a frame after the change stands between the two looks.
+// Compare control geometry and paint across their interactive states.
+// An intermediate animation frame should lie between its two endpoints.
 // ignore_for_file: avoid_relative_lib_imports
 import 'package:civic_ui/civic_ui.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart' show PointerDeviceKind;
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -101,6 +99,61 @@ WidgetStatesController _with(WidgetState state) =>
     WidgetStatesController({state});
 
 void main() {
+  for (final brightness in Brightness.values) {
+    for (final switchControl in [true, false]) {
+      final name = switchControl ? 'switch' : 'tab';
+      testWidgets('$name shows hover and held press in ${brightness.name}', (
+        tester,
+      ) async {
+        var changes = 0;
+        var on = false;
+        var tabIndex = 0;
+        final part = StatefulBuilder(
+          builder: (context, setState) => switchControl
+              ? CivicSwitch(
+                  value: on,
+                  labelText: 'Larger text',
+                  onChanged: (next) => setState(() {
+                    on = next;
+                    changes++;
+                  }),
+                )
+              : CivicTabBar(
+                  tabs: const ['Details', 'Documents'],
+                  selectedIndex: tabIndex,
+                  onTap: (next) => setState(() {
+                    tabIndex = next;
+                    changes++;
+                  }),
+                ),
+        );
+        await _pump(tester, part, brightness: brightness);
+        await tester.pumpAndSettle();
+        final target = switchControl
+            ? tester.getRect(find.byType(CivicSwitch)).centerRight -
+                  Offset(CivicSwitch.trackSize.width / 2, 0)
+            : tester.getCenter(find.text('Documents'));
+        final mouse = await tester.createGesture(kind: PointerDeviceKind.mouse);
+        await mouse.addPointer(location: Offset.zero);
+        addTearDown(mouse.removePointer);
+        final rest = await _picture(tester);
+        await mouse.moveTo(target);
+        await tester.pumpAndSettle();
+        final hover = await _picture(tester);
+        expect(listEquals(hover, rest), isFalse);
+        await mouse.down(target);
+        await tester.pumpAndSettle();
+        final held = await _picture(tester);
+        expect(listEquals(held, hover), isFalse);
+        expect(listEquals(held, rest), isFalse);
+        expect(changes, 0);
+        await mouse.up();
+        await tester.pumpAndSettle();
+        expect(changes, 1);
+      });
+    }
+  }
+
   group('the state matrix', () {
     for (final (kind, build)
         in <(String, Widget Function(VoidCallback?, WidgetStatesController?))>[

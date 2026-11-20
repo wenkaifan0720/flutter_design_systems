@@ -69,20 +69,7 @@ class PermitsOverview extends StatelessWidget {
               const SizedBox(height: CivicSpacing.s16),
               Text('Step 1 of 3', style: text.caption),
               const SizedBox(height: CivicSpacing.s4),
-              CivicRadioGroup<String>(
-                labelText: 'What kind of vehicle is the permit for?',
-                isPageHeading: true,
-                groupValue: 'car',
-                onChanged: (_) {},
-                children: const [
-                  CivicRadio(value: 'car', labelText: 'Car or van'),
-                  CivicRadio(
-                    value: 'motorcycle',
-                    labelText: 'Motorcycle',
-                    helperText: 'Includes mopeds and scooters.',
-                  ),
-                ],
-              ),
+              const _VehicleQuestion(),
               const SizedBox(height: CivicSpacing.s24),
               CivicButton(
                 onPressed: () {},
@@ -192,6 +179,34 @@ class PermitsOverview extends StatelessWidget {
       ],
     );
   }
+}
+
+/// The question page's question, keeping the answer chosen.
+class _VehicleQuestion extends StatefulWidget {
+  const _VehicleQuestion();
+
+  @override
+  State<_VehicleQuestion> createState() => _VehicleQuestionState();
+}
+
+class _VehicleQuestionState extends State<_VehicleQuestion> {
+  String? _vehicle = 'car';
+
+  @override
+  Widget build(BuildContext context) => CivicRadioGroup<String>(
+    labelText: 'What kind of vehicle is the permit for?',
+    isPageHeading: true,
+    groupValue: _vehicle,
+    onChanged: (v) => setState(() => _vehicle = v),
+    children: const [
+      CivicRadio(value: 'car', labelText: 'Car or van'),
+      CivicRadio(
+        value: 'motorcycle',
+        labelText: 'Motorcycle',
+        helperText: 'Includes mopeds and scooters.',
+      ),
+    ],
+  );
 }
 
 class _Move extends StatelessWidget {

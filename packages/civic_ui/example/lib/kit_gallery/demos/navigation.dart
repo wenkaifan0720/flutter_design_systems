@@ -22,7 +22,7 @@ Widget kitNavigationDemo(Brightness brightness) => kitScreen(
   sections: const [_Bar(), _Side(), _Tabs(), _Trail()],
 );
 
-/// The catalog's picture of the bar: four places, the second current.
+/// Four destinations with the second destination selected.
 Widget kitSpecimenNavigationBar() => CivicNavigationBar(
   destinations: _places,
   selectedIndex: 1,

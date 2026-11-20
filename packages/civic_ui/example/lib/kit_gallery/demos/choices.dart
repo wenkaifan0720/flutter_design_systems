@@ -72,7 +72,7 @@ class _Radios extends StatefulWidget {
 
 class _RadiosState extends State<_Radios> {
   String? _vehicle = 'car';
-  String? _error;
+  String? _zone;
 
   @override
   Widget build(BuildContext context) => KitSection(
@@ -102,9 +102,9 @@ class _RadiosState extends State<_Radios> {
       ),
       CivicRadioGroup<String>(
         labelText: 'Do you live in Zone B?',
-        errorText: _error ?? 'Select yes if you live in Zone B',
-        groupValue: null,
-        onChanged: (v) => setState(() => _error = ''),
+        errorText: _zone == null ? 'Select yes if you live in Zone B' : null,
+        groupValue: _zone,
+        onChanged: (v) => setState(() => _zone = v),
         children: const [
           CivicRadio(value: 'yes', labelText: 'Yes'),
           CivicRadio(value: 'no', labelText: 'No'),

@@ -36,6 +36,20 @@ abstract final class CivicMetrics {
   static const double cardCorner = 8;
 }
 
+/// Tints a control with its own ink on hover and while the pointer is held.
+Color civicPointerFill(Color fill, Color ink, Set<WidgetState> states) {
+  if (states.contains(WidgetState.disabled)) return fill;
+  final double opacity;
+  if (states.contains(WidgetState.pressed)) {
+    opacity = 0.12;
+  } else if (states.contains(WidgetState.hovered)) {
+    opacity = 0.08;
+  } else {
+    return fill;
+  }
+  return Color.alphaBlend(ink.withValues(alpha: ink.a * opacity), fill);
+}
+
 /// A surface that floats over the page (an open list, a dialog): the
 /// card's [face], its corners rounded ([radius]), a [hairline] round it and
 /// a soft shadow under it; never an ink edge, which Civic keeps for a

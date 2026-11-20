@@ -1,9 +1,5 @@
-// Brindlemere parking permits' ten screens, pixel for pixel: at 390 by day
-// and by night, and at 1440 by day on a desk's platform. The goldens are
-// kept beside the catalog and laid here by the package build; a published
-// or vendored copy goes without them, and compares nothing.
-// `flutter test --update-goldens --tags goldens` records them; elsewhere
-// than macOS, `flutter test --exclude-tags goldens`.
+// Compare the ten parking permit screens at phone and desktop widths.
+// Run `flutter test --update-goldens --tags goldens` on macOS to record them.
 // ignore_for_file: avoid_relative_lib_imports
 import 'dart:convert';
 import 'dart:io';

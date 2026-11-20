@@ -261,7 +261,11 @@ class _Tab extends StatelessWidget {
         final ink = Color.lerp(rest, t.onFocus, focus)!;
         return CustomPaint(
           painter: CivicFacePainter(
-            fill: t.focus.withValues(alpha: 0),
+            fill: civicPointerFill(
+              t.focus.withValues(alpha: 0),
+              t.action,
+              states,
+            ),
             edgeColor: t.onFocus,
             edgeHeight: 0,
             press: 0,

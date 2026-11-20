@@ -57,10 +57,8 @@ Widget kitApp({
   ),
 );
 
-/// Where a catalog specimen sits on its stage, and so the part of the phone
-/// the lab keeps of it (the specimen's `frame` in metadata.yaml names the
-/// same band): the bottom or top edge, a band across the middle, or the
-/// whole phone.
+/// Places a component at the top, middle or bottom of a phone, or across
+/// the whole screen.
 class KitFrame {
   /// Along the bottom edge, [height] tall.
   const KitFrame.bottom(double this.height) : _place = _KitPlace.bottom;
@@ -81,10 +79,8 @@ class KitFrame {
 
 enum _KitPlace { bottom, top, band, screen }
 
-/// The stage a catalog specimen renders on (the specimens registry the
-/// catalog generates calls it): Civic's theme in the preset [style] and
-/// [brightness], on the page's ground, [child] placed by [frame]. A
-/// specimen builder never names a style.
+/// Shows [child] in [frame] against the page background for [style]
+/// and [brightness].
 Widget kitSpecimenStage({
   required String style,
   required Brightness brightness,

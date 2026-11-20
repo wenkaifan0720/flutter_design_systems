@@ -91,6 +91,26 @@ export 'package:ui_core/inventory.dart'
 void _none() {}
 void _drop(Object? _) {}
 
+/// A specimen that keeps the value its control last chose, so the arrow
+/// keys move a radio group's choice along with its focus.
+class _Held<T> extends StatefulWidget {
+  const _Held(this.initial, this.builder);
+
+  final T initial;
+  final Widget Function(T value, ValueChanged<T> change) builder;
+
+  @override
+  State<_Held<T>> createState() => _HeldState<T>();
+}
+
+class _HeldState<T> extends State<_Held<T>> {
+  late T _value = widget.initial;
+
+  @override
+  Widget build(BuildContext context) =>
+      widget.builder(_value, (next) => setState(() => _value = next));
+}
+
 const _places = [
   CivicNavigationDestination(icon: LucideIcons.house, label: 'Home'),
   CivicNavigationDestination(icon: LucideIcons.fileText, label: 'Applications'),
@@ -472,14 +492,17 @@ final DesignInventory civicInventory = DesignInventory(
     ),
     DesignInventoryEntry.present(
       'RadioGroup',
-      (_) => const CivicRadioGroup<String>(
-        labelText: 'Vehicle',
-        groupValue: 'car',
-        onChanged: _drop,
-        children: [
-          CivicRadio(value: 'car', labelText: 'Car or van'),
-          CivicRadio(value: 'motorcycle', labelText: 'Motorcycle'),
-        ],
+      (_) => _Held<String?>(
+        'car',
+        (chosen, change) => CivicRadioGroup<String>(
+          labelText: 'Vehicle',
+          groupValue: chosen,
+          onChanged: change,
+          children: const [
+            CivicRadio(value: 'car', labelText: 'Car or van'),
+            CivicRadio(value: 'motorcycle', labelText: 'Motorcycle'),
+          ],
+        ),
       ),
     ),
     DesignInventoryEntry.present(
@@ -522,15 +545,18 @@ final DesignInventory civicInventory = DesignInventory(
     ),
     DesignInventoryEntry.present(
       'SegmentedButton',
-      (_) => const CivicSegmentedControl<String>(
-        labelText: 'Period',
-        segments: [
-          CivicSegment(value: 'week', label: 'Week'),
-          CivicSegment(value: 'month', label: 'Month'),
-          CivicSegment(value: 'year', label: 'Year'),
-        ],
-        value: 'month',
-        onChanged: _drop,
+      (_) => _Held<String>(
+        'month',
+        (chosen, change) => CivicSegmentedControl<String>(
+          labelText: 'Period',
+          segments: const [
+            CivicSegment(value: 'week', label: 'Week'),
+            CivicSegment(value: 'month', label: 'Month'),
+            CivicSegment(value: 'year', label: 'Year'),
+          ],
+          value: chosen,
+          onChanged: change,
+        ),
       ),
     ),
     DesignInventoryEntry.present(

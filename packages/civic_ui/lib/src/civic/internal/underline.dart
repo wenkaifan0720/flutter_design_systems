@@ -1,7 +1,11 @@
+import 'dart:math' as math;
+import 'dart:ui' as ui;
+
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 
-/// Keeps an underline clear of Arabic descenders without moving the label.
+/// Keeps an underline clear of Arabic descenders without moving the label,
+/// at one depth along each line of words.
 class CivicUnderlined extends StatelessWidget {
   /// Applies [style] to [child].
   const CivicUnderlined({super.key, required this.style, required this.child});
@@ -58,6 +62,9 @@ class _Underline extends SingleChildRenderObjectWidget {
   }
 }
 
+/// A run of anything but white space: a word, or a run of glyphs.
+final _word = RegExp(r'\S+');
+
 class _RenderUnderline extends RenderProxyBox {
   _RenderUnderline(this.ink, this.thickness);
 
@@ -84,22 +91,45 @@ class _RenderUnderline extends RenderProxyBox {
             true) {
           return;
         }
-        final text = node.text.toPlainText();
-        if (text.isEmpty) return;
-        final boxes = node.getBoxesForSelection(
-          TextSelection(baseOffset: 0, extentOffset: text.length),
-        );
+        // One line under each line of words, from its first word's edge to
+        // its last's, as deep as its deepest word's box: clear of Arabic
+        // descenders. Drawn box by box it stepped up at every space between
+        // Arabic words, whose face is shallower than Noto Sans Arabic's.
+        final words = [
+          for (final word in _word.allMatches(node.text.toPlainText()))
+            TextSelection(baseOffset: word.start, extentOffset: word.end),
+        ];
+        // The lines, by their foot: boxes as tall as their line share it.
+        final lines = <double, _Line>{};
+        for (final word in words) {
+          for (final box in node.getBoxesForSelection(
+            word,
+            boxHeightStyle: ui.BoxHeightStyle.max,
+          )) {
+            (lines[box.bottom] ??= _Line(
+              box.top,
+              box.bottom,
+            )).span(box.left, box.right);
+          }
+        }
+        for (final word in words) {
+          for (final box in node.getBoxesForSelection(word)) {
+            final middle = (box.top + box.bottom) / 2;
+            for (final line in lines.values) {
+              if (middle >= line.top && middle <= line.foot) {
+                line.reach(box.bottom);
+                break;
+              }
+            }
+          }
+        }
+        if (lines.isEmpty) return;
         canvas.save();
         canvas.translate(offset.dx, offset.dy);
         canvas.transform(node.getTransformTo(this).storage);
-        for (final box in boxes) {
+        for (final line in lines.values) {
           canvas.drawRect(
-            Rect.fromLTRB(
-              box.left,
-              box.bottom,
-              box.right,
-              box.bottom + thickness,
-            ),
+            Rect.fromLTRB(line.left, line.at, line.right, line.at + thickness),
             paint,
           );
         }
@@ -111,4 +141,26 @@ class _RenderUnderline extends RenderProxyBox {
 
     visitChildren(underline);
   }
+}
+
+/// A line of words under construction: its top and foot, its ends, and
+/// how deep its deepest word's box reaches.
+class _Line {
+  _Line(this.top, this.foot);
+
+  final double top;
+  final double foot;
+  double left = double.infinity;
+  double right = double.negativeInfinity;
+  double depth = double.negativeInfinity;
+
+  void span(double from, double to) {
+    left = math.min(left, from);
+    right = math.max(right, to);
+  }
+
+  void reach(double bottom) => depth = math.max(depth, bottom);
+
+  /// Where the line is drawn: under its deepest word, or its foot.
+  double get at => depth.isFinite ? depth : foot;
 }

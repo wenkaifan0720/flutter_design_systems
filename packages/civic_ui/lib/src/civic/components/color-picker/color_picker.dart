@@ -98,6 +98,9 @@ class CivicColorPicker extends StatelessWidget {
       valueListenable: controller,
       builder: (context, hsv, _) {
         final current = hsv.toColor();
+        final picked = swatches.indexWhere(
+          (s) => s.color.toARGB32() == current.toARGB32(),
+        );
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           mainAxisSize: MainAxisSize.min,
@@ -107,18 +110,24 @@ class CivicColorPicker extends StatelessWidget {
               Semantics(
                 container: true,
                 explicitChildNodes: true,
-                child: Wrap(
-                  spacing: CivicSpacing.s16,
-                  runSpacing: CivicSpacing.s8,
-                  children: [
-                    for (final s in swatches)
-                      _Swatch(
-                        swatch: s,
-                        chosen: s.color.toARGB32() == current.toARGB32(),
-                        styles: [style, t.colorPickerStyle],
-                        onPressed: () => controller.color = s.color,
-                      ),
-                  ],
+                // The swatches are one radio group: one Tab stop, and the
+                // arrow keys pick as they move.
+                child: DesignRadioGroup<int>(
+                  options: [for (var i = 0; i < swatches.length; i++) i],
+                  value: picked < 0 ? null : picked,
+                  onChanged: (i) => controller.color = swatches[i].color,
+                  itemBuilder: (context, i, node, select) => _Swatch(
+                    swatch: swatches[i],
+                    chosen: swatches[i].color.toARGB32() == current.toARGB32(),
+                    styles: [style, t.colorPickerStyle],
+                    focusNode: node,
+                    onPressed: select,
+                  ),
+                  layoutBuilder: (context, items) => Wrap(
+                    spacing: CivicSpacing.s16,
+                    runSpacing: CivicSpacing.s8,
+                    children: items,
+                  ),
                 ),
               ),
             if (showCustom) ...[
@@ -214,13 +223,15 @@ class _Swatch extends StatelessWidget {
     required this.swatch,
     required this.chosen,
     required this.styles,
+    required this.focusNode,
     required this.onPressed,
   });
 
   final CivicColorSwatch swatch;
   final bool chosen;
   final List<DesignStyle?> styles;
-  final VoidCallback onPressed;
+  final FocusNode focusNode;
+  final VoidCallback? onPressed;
 
   @override
   Widget build(BuildContext context) {
@@ -228,6 +239,7 @@ class _Swatch extends StatelessWidget {
     final text = context.civicText;
     return DesignTapTarget(
       child: DesignPressable(
+        focusNode: focusNode,
         onPressed: onPressed,
         selected: chosen,
         checked: chosen,

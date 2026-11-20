@@ -91,125 +91,65 @@ class CivicRadioGroup<T> extends StatefulWidget {
 }
 
 class _CivicRadioGroupState<T> extends State<CivicRadioGroup<T>> {
-  /// The answer the arrow keys just chose, which takes the focus with it.
-  final _CivicRadioFocus _focus = _CivicRadioFocus();
-
-  List<T> get _values => [
-    for (final c in widget.children)
-      if (c is CivicRadio<T> && c.enabled) c.value,
-  ];
-
-  void _step(int by) {
-    final change = widget.onChanged;
-    final values = _values;
-    if (change == null || values.isEmpty) return;
-    final current = widget.groupValue;
-    final at = current == null ? -1 : values.indexOf(current);
-    final next = (at + by) % values.length;
-    final value = values[next < 0 ? next + values.length : next];
-    _focus.target = value;
-    _focus.pending = true;
-    change(value);
-  }
-
   @override
   Widget build(BuildContext context) {
-    final rtl = Directionality.of(context) == TextDirection.rtl;
-    final labelText = widget.labelText;
-    final helperText = widget.helperText;
-    final errorText = widget.errorText;
-    final isPageHeading = widget.isPageHeading;
-    final groupValue = widget.groupValue;
-    final onChanged = widget.onChanged;
     final children = widget.children;
+    final answers = <T, CivicRadio<T>>{
+      for (final child in children)
+        if (child is CivicRadio<T>) child.value: child,
+    };
+    assert(
+      answers.length == children.whereType<CivicRadio<T>>().length,
+      'Each CivicRadio in a group needs its own value.',
+    );
+    final onChanged = widget.onChanged;
     return DesignField(
-      labelText: labelText,
-      helperText: helperText,
-      errorText: errorText,
+      labelText: widget.labelText,
+      helperText: widget.helperText,
+      errorText: widget.errorText,
       enabled: onChanged != null,
       builder: (context, parts) => CivicFieldFrame(
         parts: parts,
-        isPageHeading: isPageHeading,
+        isPageHeading: widget.isPageHeading,
         isLegend: true,
       ),
       child: _CivicRadioScope<T>(
-        groupValue: groupValue,
+        groupValue: widget.groupValue,
         onChanged: onChanged,
-        focus: _focus,
-        child: FocusTraversalGroup(
-          policy: _CivicRadioStop<T>(_focus, groupValue),
-          child: CallbackShortcuts(
-            bindings: {
-              const SingleActivator(LogicalKeyboardKey.arrowDown): () =>
-                  _step(1),
-              const SingleActivator(LogicalKeyboardKey.arrowUp): () =>
-                  _step(-1),
-              SingleActivator(
-                rtl
-                    ? LogicalKeyboardKey.arrowLeft
-                    : LogicalKeyboardKey.arrowRight,
-              ): () =>
-                  _step(1),
-              SingleActivator(
-                rtl
-                    ? LogicalKeyboardKey.arrowRight
-                    : LogicalKeyboardKey.arrowLeft,
-              ): () =>
-                  _step(-1),
-            },
+        // Flutter's RadioGroup, through ui_core: one Tab stop at the chosen
+        // answer (the first that can be chosen, while none is), and the
+        // arrow keys choose as they move.
+        child: DesignRadioGroup<T>(
+          options: answers.keys.toList(),
+          value: widget.groupValue,
+          onChanged: onChanged == null ? null : (value) => onChanged(value),
+          isEnabled: (value) => answers[value]!.enabled,
+          focusNodeFor: (value) => answers[value]!.focusNode,
+          itemBuilder: (context, value, node, select) => _CivicRadioSlot(
+            focusNode: node,
+            select: select,
+            child: answers[value]!,
+          ),
+          layoutBuilder: (context, items) {
+            // The answers in their places, the dividers between them.
+            var next = 0;
+            final laidOut = [
+              for (final child in children)
+                child is CivicRadio<T> ? items[next++] : child,
+            ];
             // In an app the answers stand on a card, each a row; on the site
             // they stand on the page.
-            child: CivicCardScope.cards(context)
-                ? CivicOptionCard(children: children)
+            return CivicCardScope.cards(context)
+                ? CivicOptionCard(children: laidOut)
                 : Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     mainAxisSize: MainAxisSize.min,
                     spacing: CivicSpacing.s4,
-                    children: children,
-                  ),
-          ),
+                    children: laidOut,
+                  );
+          },
         ),
       ),
-    );
-  }
-}
-
-/// The group's answers by their focus, and where the focus goes after the
-/// arrow keys choose.
-class _CivicRadioFocus {
-  final Map<FocusNode, Object?> answers = {};
-  Object? target;
-  bool pending = false;
-}
-
-/// Tab's order in a group: the chosen answer stands for the group (the first
-/// that takes the focus, while none is chosen), and the others are passed
-/// over, but the one that has the focus, so Tab leaves from it.
-class _CivicRadioStop<T> extends ReadingOrderTraversalPolicy {
-  _CivicRadioStop(this.focus, this.groupValue);
-
-  final _CivicRadioFocus focus;
-  final T? groupValue;
-
-  @override
-  Iterable<FocusNode> sortDescendants(
-    Iterable<FocusNode> descendants,
-    FocusNode currentNode,
-  ) {
-    final inOrder = super.sortDescendants(descendants, currentNode);
-    final answers = focus.answers;
-    final open = [
-      for (final node in inOrder)
-        if (answers.containsKey(node) && node.canRequestFocus) node,
-    ];
-    if (open.isEmpty) return inOrder;
-    final stop = open.firstWhere(
-      (node) => answers[node] == groupValue,
-      orElse: () => open.first,
-    );
-    return inOrder.where(
-      (node) =>
-          node == stop || node == currentNode || !answers.containsKey(node),
     );
   }
 }
@@ -218,17 +158,31 @@ class _CivicRadioScope<T> extends InheritedWidget {
   const _CivicRadioScope({
     required this.groupValue,
     required this.onChanged,
-    required this.focus,
     required super.child,
   });
 
   final T? groupValue;
   final ValueChanged<T?>? onChanged;
-  final _CivicRadioFocus focus;
 
   @override
   bool updateShouldNotify(_CivicRadioScope<T> old) =>
       groupValue != old.groupValue || onChanged != old.onChanged;
+}
+
+/// The focus node and the press the group gives one answer.
+class _CivicRadioSlot extends InheritedWidget {
+  const _CivicRadioSlot({
+    required this.focusNode,
+    required this.select,
+    required super.child,
+  });
+
+  final FocusNode focusNode;
+  final VoidCallback? select;
+
+  @override
+  bool updateShouldNotify(_CivicRadioSlot old) =>
+      focusNode != old.focusNode || select != old.select;
 }
 
 /// One answer of a [CivicRadioGroup]: a 40-point circle, the words beside
@@ -299,29 +253,9 @@ class CivicRadio<T> extends StatefulWidget {
 
 class _CivicRadioState<T> extends State<CivicRadio<T>> {
   FocusNode? _own;
-  FocusNode get _node => widget.focusNode ?? (_own ??= FocusNode());
-
-  /// The group this answer stands in, and the focus it is known there by.
-  _CivicRadioFocus? _group;
-  FocusNode? _known;
-
-  void _join(_CivicRadioFocus? group) {
-    if (_group != group || _known != _node) _leave();
-    _group = group;
-    _known = _node;
-    group?.answers[_node] = widget.value;
-  }
-
-  void _leave() {
-    final known = _known;
-    if (known != null) _group?.answers.remove(known);
-    _group = null;
-    _known = null;
-  }
 
   @override
   void dispose() {
-    _leave();
     _own?.dispose();
     super.dispose();
   }
@@ -331,33 +265,37 @@ class _CivicRadioState<T> extends State<CivicRadio<T>> {
     final scope = context
         .dependOnInheritedWidgetOfExactType<_CivicRadioScope<T>>();
     assert(scope != null, 'A CivicRadio stands in a CivicRadioGroup.');
+    final slot = context.dependOnInheritedWidgetOfExactType<_CivicRadioSlot>();
     final chosen = scope?.groupValue == widget.value;
     final change = scope?.onChanged;
-    final focus = scope?.focus;
-    _join(focus);
-    if (chosen &&
-        focus != null &&
-        focus.pending &&
-        focus.target == widget.value) {
-      // The arrow keys chose this answer: the focus follows the choice.
-      focus.pending = false;
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) _node.requestFocus();
-      });
-    }
-    return CivicOptionRow(
-      styles: [widget.style, context.civicTheme.radioStyle],
-      mark: chosen ? CivicMark.dot : CivicMark.none,
-      round: true,
-      checked: chosen,
-      inMutuallyExclusiveGroup: true,
-      labelText: widget.labelText,
-      helperText: widget.helperText,
-      focusNode: _node,
-      autofocus: widget.autofocus,
-      onPressed: change == null || !widget.enabled
-          ? null
-          : () => change(widget.value),
+    // In its group, the answer takes the group's node (this radio's own
+    // focusNode, when it has one). The group says whether it can be chosen;
+    // a press tells the group's onChanged even when it is already chosen.
+    final node = slot?.focusNode ?? widget.focusNode ?? (_own ??= FocusNode());
+    final open = slot != null
+        ? slot.select != null
+        : change != null && widget.enabled;
+    final VoidCallback? press = open && change != null
+        ? () => change(widget.value)
+        : null;
+    // Space presses the answer as Enter does, the chosen one too: the
+    // group's own Space only chooses an answer not yet chosen.
+    return Shortcuts(
+      shortcuts: const {
+        SingleActivator(LogicalKeyboardKey.space): ActivateIntent(),
+      },
+      child: CivicOptionRow(
+        styles: [widget.style, context.civicTheme.radioStyle],
+        mark: chosen ? CivicMark.dot : CivicMark.none,
+        round: true,
+        checked: chosen,
+        inMutuallyExclusiveGroup: true,
+        labelText: widget.labelText,
+        helperText: widget.helperText,
+        focusNode: node,
+        autofocus: widget.autofocus,
+        onPressed: press,
+      ),
     );
   }
 }

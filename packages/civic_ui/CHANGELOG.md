@@ -1,3 +1,14 @@
+## 0.3.2
+
+- Stands on ui_core 0.3.4.
+- The yellow focus plate keeps its dark ink bar in light and dark themes.
+- Switches and tabs tint their surface on hover and deepen the tint while pressed.
+- `CivicRadioGroup`, `CivicSegmentedControl` and `CivicColorPicker`'s named swatches are radio groups built on Flutter's `RadioGroup` through ui_core's `DesignRadioGroup`. Each is one Tab stop, on the chosen answer or the first that can be chosen, and the arrow keys move the choice, wrap at the ends and pass over answers that cannot be chosen. A `CivicRadio`'s own `focusNode` stays its focus node.
+- Right to left, an underlined part (a link, a back link, a breadcrumb, a summary row's or an error summary's link, a
+  card's title, a page number, a tab, a sortable heading, the accordion's and the details' toggles, the top bar's way
+  home, the skip link) draws one line under each line of its words, at the depth of its deepest word. Under Arabic
+  words the line stepped up at every space, whose face is shallower than Noto Sans Arabic's.
+
 ## 0.3.1
 
 - A calendar's month stands at most `CivicCalendar.monthWidth` wide (392: seven days of 56, near Material's calendar),

@@ -51,7 +51,9 @@ class PermitsStartPage extends StatelessWidget {
           children: [
             CivicListRow(
               leading: const Icon(LucideIcons.clock),
-              title: Text(context.say('Takes around 10 minutes')),
+              title: Text(
+                context.say('Takes around $permitApplicationMinutes minutes'),
+              ),
             ),
             CivicListRow(
               leading: const Icon(LucideIcons.wallet),

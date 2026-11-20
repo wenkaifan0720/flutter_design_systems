@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
@@ -173,49 +174,99 @@ class _CivicChoiceGroup<T> extends StatelessWidget {
     final t = context.civicTheme;
     final byValue = {for (final s in segments) s.value: s};
     final change = onSelectionChanged;
-    final group = DesignToggleGroup<T>(
-      options: [for (final s in segments) s.value],
-      selected: selected,
-      onSelectionChanged: change,
-      multiSelectionEnabled: multiSelectionEnabled,
-      emptySelectionAllowed: emptySelectionAllowed,
-      selectFollowsFocus: selectFollowsFocus,
-      isEnabled: (v) => byValue[v]?.enabled ?? false,
-      labelOf: (v) => byValue[v]?.semanticLabel ?? byValue[v]?.label ?? '$v',
-      semanticLabel: labelText,
-      minimumSize: const Size(48, 48),
-      layoutBuilder: (context, items) {
-        final row = CivicFitRow(
-          spacing: joined ? 2 : CivicSpacing.s8,
-          equal: joined,
-          stretch: joined,
-          children: items,
-        );
-        // A segmented control is one band: its outer corners round, its
-        // seams square.
-        return joined
-            ? ClipRRect(
-                borderRadius: BorderRadius.circular(CivicMetrics.corner),
-                child: row,
-              )
-            : row;
-      },
-      itemBuilder: (context, value, states) {
-        final segment = byValue[value];
-        final icon = segment?.icon;
-        final face = CivicChoiceFace(
-          states: states,
-          styles: [style, t.toggleStyle],
-          radius: joined ? 0 : CivicMetrics.corner,
-          leading: icon == null ? null : Icon(icon),
-          child: Text(segment?.label ?? '$value'),
-        );
-        // A band's faces fill their equal shares, seam to seam.
-        return DesignTapTarget(
-          child: joined ? SizedBox(width: double.infinity, child: face) : face,
-        );
-      },
-    );
+    String labelOf(T v) =>
+        byValue[v]?.semanticLabel ?? byValue[v]?.label ?? '$v';
+    Widget layout(BuildContext context, List<Widget> items) {
+      final row = CivicFitRow(
+        spacing: joined ? 2 : CivicSpacing.s8,
+        equal: joined,
+        stretch: joined,
+        children: items,
+      );
+      // A segmented control is one band: its outer corners round, its
+      // seams square.
+      return joined
+          ? ClipRRect(
+              borderRadius: BorderRadius.circular(CivicMetrics.corner),
+              child: row,
+            )
+          : row;
+    }
+
+    Widget face(BuildContext context, T value, Set<WidgetState> states) {
+      final segment = byValue[value];
+      final icon = segment?.icon;
+      final face = CivicChoiceFace(
+        states: states,
+        styles: [style, t.toggleStyle],
+        radius: joined ? 0 : CivicMetrics.corner,
+        leading: icon == null ? null : Icon(icon),
+        child: Text(segment?.label ?? '$value'),
+      );
+      // A band's faces fill their equal shares, seam to seam.
+      return DesignTapTarget(
+        child: joined ? SizedBox(width: double.infinity, child: face) : face,
+      );
+    }
+
+    final Widget group;
+    if (multiSelectionEnabled) {
+      group = DesignToggleGroup<T>(
+        options: [for (final s in segments) s.value],
+        selected: selected,
+        onSelectionChanged: change,
+        multiSelectionEnabled: true,
+        emptySelectionAllowed: emptySelectionAllowed,
+        selectFollowsFocus: selectFollowsFocus,
+        isEnabled: (v) => byValue[v]?.enabled ?? false,
+        labelOf: labelOf,
+        semanticLabel: labelText,
+        minimumSize: const Size(48, 48),
+        layoutBuilder: layout,
+        itemBuilder: face,
+      );
+    } else {
+      final value = selected.isEmpty ? null : selected.first;
+      group = Semantics(
+        container: true,
+        explicitChildNodes: true,
+        label: labelText,
+        child: _CivicSegmentRadios<T>(
+          values: [for (final s in segments) s.value],
+          value: value,
+          onChanged: change == null ? null : (v) => change({v}),
+          isEnabled: (v) => byValue[v]?.enabled ?? false,
+          layout: layout,
+          item: (context, v, node, select, jump) => DesignPressable(
+            focusNode: node,
+            onPressed: select,
+            selected: v == value,
+            checked: v == value,
+            inMutuallyExclusiveGroup: true,
+            minimumSize: const Size(48, 48),
+            semanticLabel: labelOf(v),
+            excludeSemantics: true,
+            shortcuts: const {
+              SingleActivator(LogicalKeyboardKey.home): _CivicEndIntent(
+                last: false,
+              ),
+              SingleActivator(LogicalKeyboardKey.end): _CivicEndIntent(
+                last: true,
+              ),
+            },
+            actions: {
+              _CivicEndIntent: CallbackAction<_CivicEndIntent>(
+                onInvoke: (intent) {
+                  jump(intent.last);
+                  return null;
+                },
+              ),
+            },
+            builder: (context, states, _) => face(context, v, states),
+          ),
+        ),
+      );
+    }
     if (labelText == null && helperText == null && errorText == null) {
       return group;
     }
@@ -229,6 +280,95 @@ class _CivicChoiceGroup<T> extends StatelessWidget {
       child: group,
     );
   }
+}
+
+/// Home or End: choose the first answer that can be chosen, or the last.
+class _CivicEndIntent extends Intent {
+  const _CivicEndIntent({required this.last});
+
+  final bool last;
+}
+
+/// A segmented control's answers as a radio group. It owns a node for each
+/// answer so that Home and End can move focus to the answer they choose.
+class _CivicSegmentRadios<T> extends StatefulWidget {
+  const _CivicSegmentRadios({
+    required this.values,
+    required this.value,
+    required this.onChanged,
+    required this.isEnabled,
+    required this.layout,
+    required this.item,
+  });
+
+  final List<T> values;
+  final T? value;
+  final ValueChanged<T>? onChanged;
+  final bool Function(T value) isEnabled;
+  final Widget Function(BuildContext context, List<Widget> items) layout;
+  final Widget Function(
+    BuildContext context,
+    T value,
+    FocusNode node,
+    VoidCallback? select,
+    ValueChanged<bool> jump,
+  )
+  item;
+
+  @override
+  State<_CivicSegmentRadios<T>> createState() => _CivicSegmentRadiosState<T>();
+}
+
+class _CivicSegmentRadiosState<T> extends State<_CivicSegmentRadios<T>> {
+  final _nodes = <T, FocusNode>{};
+
+  @override
+  void didUpdateWidget(_CivicSegmentRadios<T> oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final gone = _nodes.keys.toSet().difference(widget.values.toSet());
+    if (gone.isEmpty) return;
+    final nodes = [for (final value in gone) _nodes.remove(value)!];
+    // Their faces leave the tree in this frame; dispose the nodes after it.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      for (final node in nodes) {
+        node.dispose();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    for (final node in _nodes.values) {
+      node.dispose();
+    }
+    super.dispose();
+  }
+
+  FocusNode _node(T value) => _nodes.putIfAbsent(
+    value,
+    () => FocusNode(debugLabel: 'CivicSegmentedControl $value'),
+  );
+
+  void _jump(bool last) {
+    final change = widget.onChanged;
+    final open = widget.values.where(widget.isEnabled);
+    if (change == null || open.isEmpty) return;
+    final to = last ? open.last : open.first;
+    if (to != widget.value) change(to);
+    _nodes[to]?.requestFocus();
+  }
+
+  @override
+  Widget build(BuildContext context) => DesignRadioGroup<T>(
+    options: widget.values,
+    value: widget.value,
+    onChanged: widget.onChanged,
+    isEnabled: widget.isEnabled,
+    focusNodeFor: _node,
+    itemBuilder: (context, value, node, select) =>
+        widget.item(context, value, node, select, _jump),
+    layoutBuilder: widget.layout,
+  );
 }
 
 /// One answer of a few (two to five, said in a word or two each), all shown

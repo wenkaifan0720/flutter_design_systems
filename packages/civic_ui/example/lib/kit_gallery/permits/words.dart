@@ -92,6 +92,9 @@ TextSpan permitsReference(
   style: style,
 );
 
+/// Estimated time to complete a resident parking permit application.
+const permitApplicationMinutes = 10;
+
 /// The service's words in Arabic.
 const Map<String, String> permitsArabic = {
   'Brindlemere parking permits': 'تصاريح الوقوف في برندلمير',
@@ -106,7 +109,8 @@ const Map<String, String> permitsArabic = {
   'Step 3 of 3': 'الخطوة 3 من 3',
   'Apply for a resident parking permit': 'التقديم على تصريح وقوف للمقيمين',
   'Use this service to apply for a permit to park on your street in a Brindlemere permit zone.': 'استخدم هذه الخدمة للتقديم على تصريح يسمح لك بالوقوف في شارعك ضمن مناطق التصاريح في برندلمير.',
-  'Applying takes around 10 minutes.': 'يستغرق التقديم نحو 10 دقائق.',
+  'Applying takes around $permitApplicationMinutes minutes.':
+      'يستغرق التقديم نحو $permitApplicationMinutes دقائق.',
   'Before you start': 'قبل أن تبدأ',
   'You will need:': 'ستحتاج إلى:',
   'your address and date of birth': 'عنوانك وتاريخ ميلادك',
@@ -246,7 +250,8 @@ const Map<String, String> permitsArabic = {
   'Check and send': 'المراجعة والإرسال',
   'Check your answers, then send them to us': 'راجع إجاباتك ثم أرسلها إلينا',
   'Not sure of your zone?': 'لست متأكدًا من منطقتك؟',
-  'Takes around 10 minutes': 'يستغرق نحو 10 دقائق',
+  'Takes around $permitApplicationMinutes minutes':
+      'يستغرق نحو $permitApplicationMinutes دقائق',
   '€60 a year': '60 يورو في السنة',
   'A motorcycle permit costs €30.': 'تصريح الدراجة النارية 30 يورو.',
   'You will need': 'ستحتاج إلى',
