@@ -1,9 +1,50 @@
+import 'package:fluent2_design_ui/fluent2_design_ui.dart' show Fluent2DataGrid;
 import 'package:fluent2_design_ui_example/main.dart';
 import 'package:flutter/widgets.dart'
     show Directionality, Scrollable, Size, TextDirection;
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  testWidgets('the four file rows announce their names and checked state', (
+    t,
+  ) async {
+    t.view.physicalSize = const Size(390, 844);
+    t.view.devicePixelRatio = 1;
+    addTearDown(t.view.reset);
+    await t.pumpWidget(
+      const GalleryApp(link: GalleryLink(page: 'collections')),
+    );
+    await t.pumpAndSettle();
+    final grid = find.byWidgetPredicate((widget) => widget is Fluent2DataGrid);
+    for (final (name, owner, pages) in const [
+      ('Budget', 'Ana Ruiz', 12),
+      ('Roadmap', 'Kai Ito', 8),
+      ('Handbook', 'Sam Lee', 40),
+      ('Launch plan', 'Ana Ruiz', 21),
+    ]) {
+      final row = find.descendant(of: grid, matching: find.text(name));
+      // Centre the row so the gallery's pinned bar can't take the tap.
+      await Scrollable.ensureVisible(t.element(row), alignment: .5);
+      await t.pumpAndSettle();
+      final node = t.getSemantics(row);
+      // The row merges its cells, so read the label a screen reader hears.
+      final label = node.getSemanticsData().label;
+      expect(label, contains(name));
+      expect(label, contains(owner));
+      expect(label, contains(pages.toString()));
+      expect(
+        node,
+        isSemantics(hasCheckedState: true, isChecked: false, isButton: false),
+      );
+      await t.tap(row);
+      await t.pumpAndSettle();
+      expect(
+        t.getSemantics(row),
+        isSemantics(isChecked: true, isButton: false),
+      );
+    }
+  });
+
   testWidgets('a confirmation covers the gallery controls until dismissed', (
     t,
   ) async {

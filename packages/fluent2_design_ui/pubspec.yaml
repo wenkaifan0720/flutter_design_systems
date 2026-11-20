@@ -1,8 +1,9 @@
 name: fluent2_design_ui
 description: >-
   Fluent 2 widgets and themes for Flutter. Build forms, navigation, data grids and charts with seven light and dark presets, acrylic surfaces and Fluent icons.
-version: 0.3.3
+version: 0.3.4
 homepage: https://wenkaifan0720.github.io/flutter_design_systems/fluent2/
+documentation: https://wenkaifan0720.github.io/flutter_design_systems/docs/looks/fluent2/
 repository: https://github.com/wenkaifan0720/flutter_design_systems/tree/main/packages/fluent2_design_ui
 issue_tracker: https://github.com/wenkaifan0720/flutter_design_systems/issues
 topics:
@@ -34,7 +35,7 @@ resolution: workspace
 dependencies:
   flutter:
     sdk: flutter
-  ui_core: ^0.3.2
+  ui_core: ^0.3.4
   material_ui: ^1.9.0
   cupertino_ui: ^1.0.0
   lucide_icons_flutter: ">=3.1.25 <5.0.0"
@@ -44,7 +45,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   leak_tracker_flutter_testing: any
-  ui_core_test: ^0.1.2
+  ui_core_test: ^0.1.4
 
 flutter:
   fonts:

@@ -903,8 +903,7 @@ class Fluent2SearchEntry extends StatelessWidget {
         ),
       ),
     );
-    // From 600 it is a control at most 320 wide (design6 P (a)), its
-    // filter beside it; on a phone it runs the column.
+    // On larger screens the field is at most 320 wide, with its filter beside it.
     final roomy = fluent2Roomy(context);
     final filter = onFilter;
     if (filter == null) {

@@ -1,5 +1,4 @@
 import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
@@ -28,23 +27,17 @@ enum Fluent2RadioLayout {
 
 class _RadioScope extends InheritedWidget {
   const _RadioScope({
-    required this.value,
+    required this.chosen,
     required this.select,
     required this.stacked,
-    required this.nodes,
-    required this.values,
-    required this.live,
+    required this.focusNode,
     required super.child,
   });
 
-  final Object? value;
-  final void Function(Object? value)? select;
+  final bool chosen;
+  final VoidCallback? select;
   final bool stacked;
-  final List<FocusNode> nodes;
-  final List<Object?> values;
-
-  /// Whether each radio takes a choice ([Fluent2Radio.enabled]).
-  final List<bool> live;
+  final FocusNode focusNode;
 
   static _RadioScope of(BuildContext context) {
     final scope = context.dependOnInheritedWidgetOfExactType<_RadioScope>();
@@ -54,10 +47,10 @@ class _RadioScope extends InheritedWidget {
 
   @override
   bool updateShouldNotify(_RadioScope old) =>
-      value != old.value ||
+      chosen != old.chosen ||
       select != old.select ||
       stacked != old.stacked ||
-      nodes != old.nodes;
+      focusNode != old.focusNode;
 }
 
 /// One choice of a [Fluent2RadioGroup], Fluent's Radio: the 16 circle 8 in
@@ -103,34 +96,7 @@ class Fluent2Radio<T> extends StatelessWidget {
     final c = t.colors;
     final layers = [style, t.radioTheme];
     final scope = _RadioScope.of(context);
-    final chosen = scope.value == value;
-    final select = scope.select;
-    final index = scope.values.indexOf(value);
-    final tap = !enabled || select == null ? null : () => select(value);
-    // An arrow moves the choice and the focus to the next live radio,
-    // round the group's ends.
-    void step(int by) {
-      final n = scope.values.length;
-      for (var i = 1; i < n; i++) {
-        final next = (index + by * i) % n;
-        if (!scope.live[next]) continue;
-        select?.call(scope.values[next]);
-        scope.nodes[next].requestFocus();
-        return;
-      }
-    }
-
-    // Right is forward in a left-to-right page and back in a right-to-left one.
-    final ahead = Directionality.of(context) == TextDirection.rtl ? -1 : 1;
-    final keys = tap == null
-        ? null
-        : {
-            LogicalKeyboardKey.arrowDown: () => step(1),
-            LogicalKeyboardKey.arrowRight: () => step(ahead),
-            LogicalKeyboardKey.arrowUp: () => step(-1),
-            LogicalKeyboardKey.arrowLeft: () => step(-ahead),
-          };
-    // The press's node stands at the radio's root, its one node.
+    final chosen = scope.chosen;
     return MergeSemantics(
       child: DesignTapTarget(
         minSize: Fluent2Layout.tapFloorOf(context),
@@ -138,13 +104,13 @@ class Fluent2Radio<T> extends StatelessWidget {
         // toward the end.
         alignment: AlignmentDirectional.centerStart,
         child: Fluent2Pressable(
-          onPressed: tap,
+          onPressed: scope.select,
           radius: Fluent2Radius.medium,
+          ring: scope.stacked,
           label: label,
           checked: chosen,
           inGroup: true,
-          keys: keys,
-          focusNode: index < 0 ? null : scope.nodes[index],
+          focusNode: scope.focusNode,
           builder: (context, states) {
             final press = states.press;
             final off = press == Fluent2Press.disabled;
@@ -253,6 +219,7 @@ class Fluent2Radio<T> extends StatelessWidget {
               }
               // The circle's ink on the keyline, its room hanging outside.
               return Fluent2HangRoom(
+                focused: states.focused,
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -294,11 +261,12 @@ class Fluent2Radio<T> extends StatelessWidget {
   }
 }
 
-/// Fluent 2's RadioGroup: one choice among its [options] ([Fluent2Radio]s),
-/// laid out by [layout]; a press, Space or an arrow key chooses (the
-/// arrows move the choice and the focus along the group). [value] is the
-/// chosen one's value; null [onChanged] draws every radio disabled. Read
-/// as a group named [label] (an enclosing field's label when null).
+/// A group of [Fluent2Radio] options with one selected [value].
+///
+/// Tab enters on the selected radio if it is enabled, or the first enabled
+/// radio in reading order. Arrow keys move focus and selection together,
+/// skipping disabled options and wrapping at either end. The group uses
+/// [label] or its enclosing field's label. A null [onChanged] disables it.
 ///
 /// ```dart
 /// Fluent2RadioGroup<String>(label: 'Digest', value: digest, onChanged: (v) => setState(() => digest = v), options: const [Fluent2Radio('daily', 'Daily'), Fluent2Radio('weekly', 'Weekly')])
@@ -351,53 +319,38 @@ class Fluent2RadioGroup<T> extends StatefulWidget {
 }
 
 class _Fluent2RadioGroupState<T> extends State<Fluent2RadioGroup<T>> {
-  List<FocusNode> _nodes = const [];
-
-  void _fit() {
-    final n = widget.options.length;
-    if (_nodes.length == n) return;
-    for (final node in _nodes.skip(n)) {
-      node.dispose();
-    }
-    _nodes = [
-      for (var i = 0; i < n; i++)
-        i < _nodes.length ? _nodes[i] : FocusNode(debugLabel: 'radio $i'),
-    ];
-  }
-
-  @override
-  void dispose() {
-    for (final node in _nodes) {
-      node.dispose();
-    }
-    super.dispose();
-  }
-
   @override
   Widget build(BuildContext context) {
-    _fit();
-    final change = widget.onChanged;
-    final items = widget.options;
-    final Widget body = switch (widget.layout) {
-      Fluent2RadioLayout.vertical => Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: items,
-      ),
-      _ => Wrap(crossAxisAlignment: WrapCrossAlignment.start, children: items),
-    };
+    final options = widget.options;
+    final byValue = {for (final option in options) option.value: option};
+    final layout = widget.layout;
     return Semantics(
       container: true,
       explicitChildNodes: true,
       label: widget.label ?? Fluent2FieldScope.maybeOf(context)?.label,
-      child: _RadioScope(
+      child: DesignRadioGroup<T>(
+        options: [for (final option in options) option.value],
         value: widget.value,
-        select: change == null ? null : (v) => change(v as T),
-        stacked: widget.layout == Fluent2RadioLayout.horizontalStacked,
-        nodes: _nodes,
-        values: [for (final item in items) item.value],
-        live: [for (final item in items) item.enabled],
-        child: body,
+        onChanged: widget.onChanged,
+        isEnabled: (value) => byValue[value]!.enabled,
+        itemBuilder: (context, value, node, select) => _RadioScope(
+          chosen: value == widget.value,
+          select: select,
+          stacked: layout == Fluent2RadioLayout.horizontalStacked,
+          focusNode: node,
+          child: byValue[value]!,
+        ),
+        layoutBuilder: (context, items) => switch (layout) {
+          Fluent2RadioLayout.vertical => Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: items,
+          ),
+          _ => Wrap(
+            crossAxisAlignment: WrapCrossAlignment.start,
+            children: items,
+          ),
+        },
       ),
     );
   }

@@ -1,11 +1,6 @@
-// Enter in a field and the typing after it (coordinator's web-enter-keeps-typing spec, 11-16). Flutter restarts the
-// text input of a field told of a submit (onSubmitted) that keeps its focus, and in a browser the restarted input takes
-// no typing: the field looks focused and the arrows work, but letters and Backspace go nowhere. So a field that keeps
-// the focus after Enter (the combobox's, the multi-select's) takes Enter in onEditingComplete with no onSubmitted, and
-// a field that gives the focus up (a text field, a spin button) keeps onSubmitted with no onEditingComplete. Each case
-// sends the keyboard's done action and reads the text input channel after it: a field that keeps the focus keeps its
-// connection (no TextInput.clearClient or TextInput.setClient) and typing on edits it again; a field that gives the
-// focus up closes its connection and opens no new one.
+// Submitting a combobox or multi-select keeps its text input connection
+// open so the next keystroke edits the same field. Fields that give up
+// focus on submit close the connection.
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fluent2_design_ui/fluent2_design_ui.dart';

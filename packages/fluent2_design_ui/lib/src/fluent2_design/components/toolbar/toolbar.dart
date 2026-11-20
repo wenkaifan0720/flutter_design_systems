@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
 import '../../icons.dart';
@@ -426,10 +427,10 @@ class Fluent2ToolbarToggle<T> {
 /// Fluent 2's toolbar toggles that belong together, on the toolbar's
 /// subtle faces: a ToolbarRadioGroup (one choice of several: a list's
 /// layout) or, with [multiSelectionEnabled], ToolbarToggleButtons that
-/// share a name (any number: a mail list's flagged, unread, with files). A chosen toggle
-/// stays on the subtle selected face with its glyph filled. Tab reaches
-/// the group once, the arrows move along it (mirrored right to left),
-/// Space and Enter press. Read as a radio group or a group of toggles
+/// share a name (such as mail filters). A chosen toggle uses the selected
+/// face and filled glyph. Tab enters the group once. Arrows choose in a
+/// single-choice group and move focus among independent toggles.
+/// Space and Enter activate the focused item. Read as a radio group or a group of toggles
 /// named [label]. It keeps to its toggles' width, and where they don't
 /// fit on one line (large text on a phone) they run on to the next. One
 /// choice of a view's few modes with a sliding thumb is the segmented
@@ -477,28 +478,77 @@ class Fluent2ToolbarToggleGroup<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final touch = Fluent2Layout.padded(context);
-    final byValue = {for (final g in toggles) g.value: g};
-    return _OwnWidth(
-      child: DesignToggleGroup<T>(
-        options: [for (final g in toggles) g.value],
-        selected: selected,
-        onSelectionChanged: onSelectionChanged,
-        multiSelectionEnabled: multiSelectionEnabled,
-        emptySelectionAllowed: emptySelectionAllowed,
-        isEnabled: (v) => byValue[v]!.enabled,
-        labelOf: (v) => byValue[v]!.label,
-        semanticLabel: label,
-        direction: vertical ? Axis.vertical : Axis.horizontal,
-        // The face holds the target itself: 48 under a finger, as the
-        // toolbar's own commands.
-        minimumSize: Size.zero,
-        layoutBuilder: (context, items) => Wrap(
-          direction: vertical ? Axis.vertical : Axis.horizontal,
-          crossAxisAlignment: WrapCrossAlignment.center,
-          children: items,
+    final byValue = {for (final toggle in toggles) toggle.value: toggle};
+    final values = [for (final toggle in toggles) toggle.value];
+    final axis = vertical ? Axis.vertical : Axis.horizontal;
+    Widget layout(BuildContext context, List<Widget> items) => Wrap(
+      direction: axis,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      children: items,
+    );
+    Widget face(T value, Set<WidgetState> states) =>
+        _ToggleFace(toggle: byValue[value]!, states: states, touch: touch);
+
+    if (multiSelectionEnabled) {
+      return _OwnWidth(
+        child: DesignToggleGroup<T>(
+          options: values,
+          selected: selected,
+          onSelectionChanged: onSelectionChanged,
+          multiSelectionEnabled: true,
+          isEnabled: (value) => byValue[value]!.enabled,
+          labelOf: (value) => byValue[value]!.label,
+          semanticLabel: label,
+          direction: axis,
+          minimumSize: Size.zero,
+          layoutBuilder: layout,
+          itemBuilder: (context, value, states) => face(value, states),
         ),
-        itemBuilder: (context, v, states) =>
-            _ToggleFace(toggle: byValue[v]!, states: states, touch: touch),
+      );
+    }
+
+    final change = onSelectionChanged;
+    // Home and End still move to the first and last enabled toolbar items.
+    final enabled = toggles.where((toggle) => toggle.enabled);
+    final nodes = <T, FocusNode>{};
+    return _OwnWidth(
+      child: Semantics(
+        container: true,
+        explicitChildNodes: true,
+        label: label,
+        child: CallbackShortcuts(
+          bindings: {
+            if (enabled.isNotEmpty) ...{
+              const SingleActivator(LogicalKeyboardKey.home): () =>
+                  nodes[enabled.first.value]?.requestFocus(),
+              const SingleActivator(LogicalKeyboardKey.end): () =>
+                  nodes[enabled.last.value]?.requestFocus(),
+            },
+          },
+          child: DesignRadioGroup<T>(
+            options: values,
+            value: values.where(selected.contains).firstOrNull,
+            onChanged: change == null ? null : (value) => change({value}),
+            isEnabled: (value) => byValue[value]!.enabled,
+            layoutBuilder: layout,
+            itemBuilder: (context, value, node, select) {
+              nodes[value] = node;
+              final on = selected.contains(value);
+              return DesignPressable(
+                focusNode: node,
+                onPressed: select != null && on && emptySelectionAllowed
+                    ? () => change?.call(<T>{})
+                    : select,
+                selected: on,
+                checked: on,
+                inMutuallyExclusiveGroup: true,
+                semanticLabel: byValue[value]!.label,
+                excludeSemantics: true,
+                builder: (context, states, _) => face(value, states),
+              );
+            },
+          ),
+        ),
       ),
     );
   }

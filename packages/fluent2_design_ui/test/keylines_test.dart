@@ -1,8 +1,7 @@
-// Keylines (design6 P): an ordinary screen's sections, cards and rows start on one line and end on another, read by
-// ui_core's keyline check over the look's own regions (the screen's content, a form section, a list section, a list's
-// card, a card) at a phone's 390 and a desktop's 1440, in both directions. A checkbox's, radio's or switch's room round
-// its indicator hangs outside the keyline (the indicator's ink stands on it) and still answers a tap.
+// Sections, fields, and choice indicators share a leading edge. The space
+// around an indicator remains tappable in either text direction.
 import 'package:material_ui/material_ui.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ui_core_test/ui_core_test.dart';
 import 'package:fluent2_design_ui/fluent2_design_ui.dart';
@@ -139,6 +138,77 @@ void main() {
     double edge(Rect r) => rtl ? r.right : r.left;
 
     for (final size in const [Size(390, 1500), Size(1440, 1200)]) {
+      testWidgets(
+        'A labelled choice keeps its focus ring close at ${size.width} in ${direction.name}',
+        (t) async {
+          var toggles = 0;
+          await _pump(
+            t,
+            Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Fluent2Switch(
+                    value: false,
+                    label: 'Away',
+                    labelPosition: Fluent2LabelPosition.before,
+                    onChanged: (_) => toggles++,
+                  ),
+                  Fluent2Checkbox(
+                    value: false,
+                    label: 'Team',
+                    onChanged: (_) {},
+                  ),
+                  Fluent2RadioGroup<String>(
+                    value: 'daily',
+                    options: const [Fluent2Radio('daily', 'Daily')],
+                    onChanged: (_) {},
+                  ),
+                ],
+              ),
+            ),
+            size,
+            direction,
+          );
+          for (final (label, mark) in [
+            ('Away', _named('_Track')),
+            ('Team', _named('_Indicator')),
+            (
+              'Daily',
+              find
+                  .descendant(
+                    of: find.byType(Fluent2Radio<String>),
+                    matching: find.byType(Container),
+                  )
+                  .first,
+            ),
+          ]) {
+            await t.sendKeyEvent(LogicalKeyboardKey.tab);
+            await t.pumpAndSettle();
+            final ring = t.getRect(find.byType(Fluent2FocusRing));
+            final face = t
+                .getRect(find.text(label))
+                .expandToInclude(t.getRect(mark));
+            expect(
+              face.left - ring.left,
+              inInclusiveRange(4, 12),
+              reason: label,
+            );
+            expect(
+              ring.right - face.right,
+              inInclusiveRange(4, 12),
+              reason: label,
+            );
+          }
+          final target = t.getRect(find.byType(Fluent2Switch));
+          await t.tapAt(
+            Offset(rtl ? target.left + 6 : target.right - 6, target.center.dy),
+          );
+          expect(toggles, 1);
+        },
+      );
+
       testWidgets(
         '${direction.name}, ${size.width.round()} wide: Settings holds its keylines',
         (t) async {

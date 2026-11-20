@@ -79,7 +79,7 @@ extension Fluent2PressStates on Set<WidgetState> {
 /// it; place one yourself only to make a row or a tile you composed one tap
 /// target.
 ///
-/// It stands on the design kit's `DesignPressable`: a tap and a long press,
+/// It stands on the shared `DesignPressable`: a tap and a long press,
 /// Enter and Space through the app's shortcuts, the pointer's hover and
 /// click cursor, keyboard focus, and one semantics node with the control's
 /// role and state ([role], [selected], [toggled], [checked], [mixed],

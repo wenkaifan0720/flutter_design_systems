@@ -47,7 +47,7 @@ class Fluent2SwipeAction {
 /// custom action on the row, so a screen reader or a pointer that cannot
 /// swipe reaches it. [initiallyOpen] stands an edge open on the first
 /// frame: the trailing one, the leading one when there is no trailing act.
-/// The behaviour is the design kit's DesignSwipeActions; Fluent 2 paints
+/// The behaviour is the shared DesignSwipeActions; Fluent 2 paints
 /// the panes.
 ///
 /// ```dart

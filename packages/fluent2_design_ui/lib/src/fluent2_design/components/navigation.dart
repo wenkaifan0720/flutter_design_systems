@@ -1,4 +1,3 @@
-// Ways round an app the inventory adds: the rail, the pager, the step heading and the page dots.
 import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';

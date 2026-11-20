@@ -300,11 +300,8 @@ class _Fluent2ComposerState extends State<Fluent2Composer> {
         ),
       );
     }
-    // The row grows with the text and keeps its buttons at the foot, so
-    // every child stands one line tall at least, centred in it (design6
-    // I3): the 40 box inside its strokes, or a finger's 48. At one line the
-    // foot and the middle are the same place; more lines start where the
-    // one line stands.
+    // Centre the first line and its actions in the 40 px face or 48 px touch
+    // target. As the entry grows, the actions stay against its bottom edge.
     final strokes = Fluent2FieldFrame.strokesOf(Fluent2InputAppearance.outline);
     final line = math.max(
       t.density.height(40) - strokes.vertical,

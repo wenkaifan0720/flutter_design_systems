@@ -47,6 +47,16 @@ class _OwningState<T extends ChangeNotifier> extends State<_Owning<T>> {
       widget.builder(context, _controller ??= widget.make(context));
 }
 
+Widget _choice<T>(T initial, Widget Function(T, ValueChanged<T>) build) =>
+    _Owning<ValueNotifier<T>>(
+      (_) => ValueNotifier(initial),
+      (_, choice) => ValueListenableBuilder<T>(
+        valueListenable: choice,
+        builder: (_, value, child) =>
+            build(value, (next) => choice.value = next),
+      ),
+    );
+
 class _File {
   const _File(this.name, this.pages);
   final String name;
@@ -112,14 +122,25 @@ final DesignInventory fluent2Inventory = DesignInventory(
     ),
     DesignInventoryEntry.present(
       'ToggleGroup',
-      (_) => const Fluent2ToolbarToggleGroup<String>(
-        label: 'Layout',
-        toggles: [
-          Fluent2ToolbarToggle('list', icon: Fluent2Icons.list, label: 'List'),
-          Fluent2ToolbarToggle('grid', icon: Fluent2Icons.grid, label: 'Tiles'),
-        ],
-        selected: {'list'},
-        onSelectionChanged: _drop,
+      (_) => _choice<Set<String>>(
+        const {'list'},
+        (selected, select) => Fluent2ToolbarToggleGroup<String>(
+          label: 'Layout',
+          toggles: const [
+            Fluent2ToolbarToggle(
+              'list',
+              icon: Fluent2Icons.list,
+              label: 'List',
+            ),
+            Fluent2ToolbarToggle(
+              'grid',
+              icon: Fluent2Icons.grid,
+              label: 'Tiles',
+            ),
+          ],
+          selected: selected,
+          onSelectionChanged: select,
+        ),
       ),
     ),
     DesignInventoryEntry.present(
@@ -211,15 +232,18 @@ final DesignInventory fluent2Inventory = DesignInventory(
     ),
     DesignInventoryEntry.present(
       'RadioGroup',
-      (_) => const Fluent2RadioGroup<String>(
-        label: 'Size',
-        value: 'medium',
-        options: [
-          Fluent2Radio('small', 'Small'),
-          Fluent2Radio('medium', 'Medium'),
-          Fluent2Radio('large', 'Large'),
-        ],
-        onChanged: _drop,
+      (_) => _choice<String>(
+        'medium',
+        (selected, select) => Fluent2RadioGroup<String>(
+          label: 'Size',
+          value: selected,
+          options: const [
+            Fluent2Radio('small', 'Small'),
+            Fluent2Radio('medium', 'Medium'),
+            Fluent2Radio('large', 'Large'),
+          ],
+          onChanged: select,
+        ),
       ),
     ),
     DesignInventoryEntry.present(

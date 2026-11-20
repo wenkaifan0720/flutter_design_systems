@@ -105,6 +105,7 @@ class Fluent2Switch extends StatelessWidget {
           autofocus: autofocus,
           onPressed: tap,
           radius: Fluent2Radius.medium,
+          ring: words == null,
           label: semanticLabel ?? words,
           toggled: value,
           builder: (context, states) {
@@ -136,6 +137,7 @@ class Fluent2Switch extends StatelessWidget {
                 // The label's words and the track on the keyline, the room
                 // round them hanging outside.
                 return Fluent2HangRoom(
+                  focused: states.focused,
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -189,7 +191,11 @@ class Fluent2Switch extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: before ? [text, box] : [box, text],
                 );
-                return before ? row : Fluent2HangRoom(child: row);
+                return Fluent2HangRoom(
+                  focused: states.focused,
+                  labelFirst: before,
+                  child: row,
+                );
             }
           },
         ),

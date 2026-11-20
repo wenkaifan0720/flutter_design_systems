@@ -1576,7 +1576,7 @@ class Fluent2SplitAction {
 /// menu is open); Down on either half opens the menu, the arrows walk it,
 /// Escape closes it and gives focus back. One row of the open menu is
 /// current: opened by a key, its first in the focus ring; by a pointer,
-/// none until the pointer or a key moves. The behaviour is the design kit's
+/// none until the pointer or a key moves. The behaviour is the shared
 /// DesignSplitButton; Fluent 2 paints both halves and the menu.
 ///
 /// ```dart

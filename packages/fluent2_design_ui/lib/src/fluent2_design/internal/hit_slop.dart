@@ -1,28 +1,60 @@
 import 'package:flutter/widgets.dart';
 
+import '../components/pressable/pressable.dart' show Fluent2FocusRing;
 import '../theme.dart';
 
-/// Lets a choice control's room hang outside its keyline: a checkbox, radio
-/// or switch keeps Fluent's 8 of room round its indicator,
-/// which holds the focus ring, and is moved back by those 8 toward the start,
-/// so the indicator's ink, the label above a switch included, starts where a
-/// field and a title in the same column start. Paint and hits move together;
-/// the part lays out at its own size. Plumbing of the components; pages
-/// never place one.
+/// Aligns a labelled choice with the text in its column. The focus ring
+/// follows the label and indicator, even when the pointer target fills a row.
 class Fluent2HangRoom extends StatelessWidget {
-  /// [child] moved toward the start by Fluent's 8.
-  const Fluent2HangRoom({required this.child, super.key});
+  /// The leading indicator's padding hangs in the gutter. When [focused]
+  /// is supplied, the ring follows the face. Set [labelFirst] when the
+  /// label already starts on the column's keyline.
+  const Fluent2HangRoom({
+    required this.child,
+    this._focused,
+    this._labelFirst = false,
+    super.key,
+  });
 
   /// The control.
   final Widget child;
 
+  final bool? _focused;
+  final bool _labelFirst;
+
   @override
   Widget build(BuildContext context) {
-    final rtl = Directionality.maybeOf(context) == TextDirection.rtl;
-    return Transform.translate(
-      offset: Offset(rtl ? Fluent2Spacing.s : -Fluent2Spacing.s, 0),
-      transformHitTests: true,
-      child: child,
+    final start = Directionality.maybeOf(context) == TextDirection.rtl
+        ? Alignment.centerRight
+        : Alignment.centerLeft;
+    final offset = Offset(_labelFirst ? 0 : start.x * Fluent2Spacing.s, 0);
+    if (_focused == null) {
+      return Transform.translate(offset: offset, child: child);
+    }
+    return Align(
+      alignment: start,
+      widthFactor: 1,
+      heightFactor: 1,
+      child: Transform.translate(
+        offset: offset,
+        child: Stack(
+          fit: StackFit.passthrough,
+          clipBehavior: Clip.none,
+          children: [
+            child,
+            if (_focused)
+              PositionedDirectional(
+                start: _labelFirst ? -Fluent2Spacing.s : 0,
+                end: 0,
+                top: 0,
+                bottom: 0,
+                child: const IgnorePointer(
+                  child: Fluent2FocusRing(radius: Fluent2Radius.medium),
+                ),
+              ),
+          ],
+        ),
+      ),
     );
   }
 }

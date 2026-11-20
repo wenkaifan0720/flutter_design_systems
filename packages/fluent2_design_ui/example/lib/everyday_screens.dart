@@ -7,10 +7,6 @@ import 'kit_gallery/kit.dart';
 /// that screen: Northwind's Home, Files, a new request and Settings, a pushed
 /// page's top bar, a dialog, a sheet, the empty, error and loading states, a
 /// conversation's composer and a menu.
-///
-/// A design review (and ui_core's checks) opens each one by day and by
-/// night, left to right and right to left, at a phone's, a tablet's and a
-/// desktop's width.
 final everydayScreens =
     <
       ({

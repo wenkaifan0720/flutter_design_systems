@@ -1,6 +1,3 @@
-// Collections the inventory adds: the timeline (paint), and on ui_core's behaviours the data table
-// (DesignDataTable), the scroll area (DesignScrollArea), resizable panes (DesignSplitView), the carousel (DesignCarousel),
-// the reorderable list (DesignReorderableList) and pull to refresh (DesignPullToRefresh).
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';

@@ -1,8 +1,6 @@
-// The inventory (looks/INVENTORY.md): Fluent 2 answers every one of the shared rows, once: with a live specimen that is
-// the row's own class (`Fluent2<Stem>`), or, for a part Fluent never draws and its laws would not invent, absent with
-// the reason and what stands in its place; and the gallery that lists them lays every specimen out, at a phone's width and
-// a desktop's, in light and dark.
+// Every inventory entry has a live example or explains the available alternative.
 import 'package:material_ui/material_ui.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fluent2_design_ui/fluent2_design_ui.dart';
 import 'package:fluent2_design_ui/fluent2_design_host.dart';
@@ -15,7 +13,7 @@ Widget _app(Widget child, {Brightness brightness = Brightness.light}) =>
       home: child,
     );
 
-/// The rows Fluent 2 leaves out (DECISIONS K53): each says why and what stands in.
+/// Components without a Fluent equivalent and their alternatives.
 const _absent = {'InputOtp', 'MenuBar', 'Command'};
 
 void main() {
@@ -54,7 +52,7 @@ void main() {
         ),
       ),
     );
-    // Fluent's own component names stand where Fluent names the part (K49).
+    // Some inventory names have a more specific Fluent counterpart.
     const fluentNames = {
       'SearchField': 'SearchBox',
       'NumberField': 'SpinButton',
@@ -94,6 +92,8 @@ void main() {
       );
     }
     expect(held.keys, {
+      'ToggleGroup',
+      'RadioGroup',
       'DateRangePicker',
       'ColorPicker',
       'DataTable',
@@ -119,7 +119,37 @@ void main() {
     }
   });
 
-  // Every run lays the gallery out on a phone by day and on a desk by night; the sweep, the other two.
+  for (final (row, initial, next) in const [
+    ('ToggleGroup', 'List', 'Tiles'),
+    ('RadioGroup', 'Medium', 'Large'),
+  ]) {
+    testWidgets('the $row example keeps its keyboard selection', (
+      tester,
+    ) async {
+      final entry = fluent2Inventory.entries.singleWhere(
+        (entry) => entry.row == row,
+      );
+      await tester.pumpWidget(_app(Builder(builder: entry.builder!)));
+      await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+      await tester.pump();
+      expect(
+        tester.getSemantics(find.bySemanticsLabel(initial)),
+        isSemantics(isFocused: true, isChecked: true, isButton: false),
+      );
+      await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
+      await tester.pump();
+      expect(
+        tester.getSemantics(find.bySemanticsLabel(next)),
+        isSemantics(isFocused: true, isChecked: true, isButton: false),
+      );
+      expect(
+        tester.getSemantics(find.bySemanticsLabel(initial)),
+        isSemantics(isChecked: false),
+      );
+    });
+  }
+
+  // Exercise every size and appearance, including the larger sweep.
   for (final (at, width) in const [390.0, 1440.0].indexed) {
     for (final brightness in Brightness.values) {
       testWidgets(

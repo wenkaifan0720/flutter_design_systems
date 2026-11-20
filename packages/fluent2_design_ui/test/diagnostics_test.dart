@@ -1,7 +1,5 @@
-// The description every public Fluent 2 part gives of itself in the
-// inspector and in a failing test's tree (ui_core's template): each field it
-// is built with, a field at its default hidden; and a value out of its range
-// asserts rather than draws.
+// Widgets expose their constructor properties in the inspector, hide default
+// values, and reject parameters outside their supported ranges.
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
@@ -9,8 +7,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fluent2_design_ui/fluent2_design_ui.dart';
 
-/// Fluent 2's lib: drip's kit lays it under design_system/, the package under
-/// src/.
+/// Directory containing the widget implementations.
 final String _lib = Directory('lib/src/fluent2_design').existsSync()
     ? 'lib/src/fluent2_design'
     : 'lib/src/fluent2_design';

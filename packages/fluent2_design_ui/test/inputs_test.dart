@@ -1,7 +1,10 @@
+import 'dart:ui' show CheckedState;
+
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:ui_core_test/ui_core_test.dart' show DesignRadioGroupCheck;
 import 'package:fluent2_design_ui/fluent2_design_ui.dart';
 import 'package:fluent2_design_ui/fluent2_design_host.dart';
 
@@ -95,13 +98,14 @@ void main() {
           label: 'Email me',
           hasCheckedState: true,
           isChecked: true,
+          isButton: false,
           isEnabled: true,
           hasTapAction: true,
         ),
       );
       expect(
         tester.getSemantics(find.byType(Fluent2Checkbox).last),
-        isSemantics(isCheckStateMixed: true, isEnabled: false),
+        isSemantics(isCheckStateMixed: true, isButton: false, isEnabled: false),
       );
       await tester.tap(find.text('Mixed'));
       await tester.pump();
@@ -146,6 +150,171 @@ void main() {
   });
 
   group('radio', () {
+    for (final direction in TextDirection.values) {
+      for (final initial in <String?>['C', null, 'B']) {
+        for (final layout in [...Fluent2RadioLayout.values, null]) {
+          final variant = layout?.name ?? 'toolbar';
+          testWidgets(
+            '$variant radio traversal in ${direction.name} with $initial checked',
+            (tester) async {
+              final before = FocusNode();
+              final after = FocusNode();
+              addTearDown(before.dispose);
+              addTearDown(after.dispose);
+              var value = initial;
+              const options = ['A', 'B', 'C', 'D'];
+              await pump(
+                tester,
+                Directionality(
+                  textDirection: direction,
+                  child: StatefulBuilder(
+                    builder: (context, setState) {
+                      void choose(String next) => setState(() => value = next);
+                      return Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Focus(focusNode: before, child: const Text('Before')),
+                          SizedBox(
+                            key: const ValueKey('choices'),
+                            width: 310,
+                            child: layout == null
+                                ? Fluent2ToolbarToggleGroup<String>(
+                                    label: 'Layout',
+                                    toggles: [
+                                      for (final option in options)
+                                        Fluent2ToolbarToggle(
+                                          option,
+                                          label: option,
+                                          icon: Fluent2Icons.grid,
+                                          enabled: option != 'B',
+                                        ),
+                                    ],
+                                    selected: {if (value != null) value!},
+                                    onSelectionChanged: (next) =>
+                                        choose(next.single),
+                                  )
+                                : Fluent2RadioGroup<String>(
+                                    label: 'Size',
+                                    layout: layout,
+                                    options: [
+                                      for (final option in options)
+                                        Fluent2Radio(
+                                          option,
+                                          option,
+                                          enabled: option != 'B',
+                                        ),
+                                    ],
+                                    value: value,
+                                    onChanged: choose,
+                                  ),
+                          ),
+                          Focus(focusNode: after, child: const Text('After')),
+                        ],
+                      );
+                    },
+                  ),
+                ),
+              );
+              for (final option in options) {
+                expect(
+                  tester.getSemantics(find.bySemanticsLabel(option)),
+                  isSemantics(
+                    isInMutuallyExclusiveGroup: true,
+                    isChecked: initial == option,
+                    isButton: false,
+                    isEnabled: option != 'B',
+                  ),
+                  reason: option,
+                );
+              }
+              final report = await const DesignRadioGroupCheck(look: 'Fluent 2')
+                  .check(
+                    tester.element(find.byKey(const ValueKey('choices'))),
+                    before: before,
+                    sendKeyEvent: tester.sendKeyEvent,
+                    pump: tester.pump,
+                  );
+              report.verify();
+              final checked = options.where(
+                (option) =>
+                    tester
+                        .getSemantics(find.bySemanticsLabel(option))
+                        .getSemanticsData()
+                        .flagsCollection
+                        .isChecked ==
+                    CheckedState.isTrue,
+              );
+              expect(checked, [value]);
+            },
+          );
+        }
+      }
+    }
+
+    for (final multiple in [false, true]) {
+      testWidgets('a toolbar can clear its selection (multiple: $multiple)', (
+        tester,
+      ) async {
+        var selected = {'List'};
+        await pump(
+          tester,
+          StatefulBuilder(
+            builder: (context, setState) => Fluent2ToolbarToggleGroup<String>(
+              label: 'Layout',
+              toggles: const [
+                Fluent2ToolbarToggle(
+                  'List',
+                  label: 'List',
+                  icon: Fluent2Icons.list,
+                ),
+                Fluent2ToolbarToggle(
+                  'Tiles',
+                  label: 'Tiles',
+                  icon: Fluent2Icons.grid,
+                ),
+                Fluent2ToolbarToggle(
+                  'Board',
+                  label: 'Board',
+                  icon: Fluent2Icons.board,
+                ),
+              ],
+              selected: selected,
+              multiSelectionEnabled: multiple,
+              emptySelectionAllowed: true,
+              onSelectionChanged: (next) => setState(() => selected = next),
+            ),
+          ),
+        );
+        await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+        await tester.pump();
+        await tester.sendKeyEvent(LogicalKeyboardKey.end);
+        await tester.pump();
+        expect(
+          tester.getSemantics(find.bySemanticsLabel('Board')),
+          isSemantics(isFocused: true),
+        );
+        expect(selected, {'List'});
+        await tester.sendKeyEvent(LogicalKeyboardKey.home);
+        await tester.pump();
+        expect(
+          tester.getSemantics(find.bySemanticsLabel('List')),
+          isSemantics(isFocused: true),
+        );
+        await tester.tap(find.bySemanticsLabel('Tiles'));
+        await tester.pump();
+        expect(selected, multiple ? {'List', 'Tiles'} : {'Tiles'});
+        expect(
+          tester.getSemantics(find.bySemanticsLabel('Tiles')),
+          multiple
+              ? isSemantics(isToggled: true, isButton: false)
+              : isSemantics(isChecked: true, isButton: false),
+        );
+        await tester.tap(find.bySemanticsLabel('Tiles'));
+        await tester.pump();
+        expect(selected, multiple ? {'List'} : isEmpty);
+      });
+    }
+
     testWidgets('chooses, skips the disabled, says the group', (tester) async {
       final handle = tester.ensureSemantics();
       var value = 'daily';
@@ -176,6 +345,7 @@ void main() {
           label: 'Weekly',
           isInMutuallyExclusiveGroup: true,
           isChecked: true,
+          isButton: false,
         ),
       );
       handle.dispose();
@@ -231,7 +401,12 @@ void main() {
       expect(on, isTrue);
       expect(
         tester.getSemantics(find.byType(Fluent2Switch).first),
-        isSemantics(label: 'Away', hasToggledState: true, isToggled: true),
+        isSemantics(
+          label: 'Away',
+          hasToggledState: true,
+          isToggled: true,
+          isButton: false,
+        ),
       );
       expect(
         tester.getSemantics(find.byType(Fluent2Switch).last),

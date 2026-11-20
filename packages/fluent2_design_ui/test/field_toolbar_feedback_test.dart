@@ -44,11 +44,7 @@ Future<void> _at(WidgetTester tester, double width) async {
   addTearDown(tester.view.reset);
 }
 
-/// The parts and fixes 0.2.0 brings: a field's whole frame takes a tap,
-/// toolbar groups, the hover card, the determinate ring, the radio's dot
-/// easing in, a form field naming a group, a phone top bar folding its
-/// commands before its name shortens, and a section header's aside kept
-/// whole.
+/// Field hit targets, group labels, responsive toolbar actions, and feedback.
 void main() {
   for (final width in const [390.0, 1440.0]) {
     testWidgets('a tap on a text field frame focuses it at $width', (

@@ -132,7 +132,7 @@ class Fluent2Tree<T> extends StatefulWidget {
   }
 }
 
-// The tree's behaviour is the design kit's DesignTree: the arrows walk and open
+// The tree's behaviour is the shared DesignTree: the arrows walk and open
 // it, Home and End jump, Enter activates, Space selects, `*` opens a level, one
 // row is the tab stop, and each row says its level, place, expanded and
 // selected state. Fluent 2 paints the rows.

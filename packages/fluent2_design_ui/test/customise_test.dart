@@ -1,6 +1,5 @@
-// What an app may change and where it reaches (the 0.2.0 customisation pass): the menu theme reaches the public menu
-// and a neutral popover, a menu's own style wins over it, every field kind hands its style to the frame it draws,
-// and solidAcrylic stands the acrylic's opaque fallback in for the blur.
+// Menu and field overrides take precedence over theme defaults. An opaque
+// acrylic surface also works when backdrop blur is disabled.
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fluent2_design_ui/fluent2_design_ui.dart';

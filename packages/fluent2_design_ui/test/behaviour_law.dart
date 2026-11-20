@@ -39,7 +39,7 @@ class LawPart {
   /// Tab stops on it. False for a part that takes no focus by design.
   final bool focus;
 
-  /// It stands on the design kit's pressable, so its face is handed the states.
+  /// It stands on the shared pressable, so its face is handed the states.
   final bool pressable;
 
   /// With no callback it takes no focus (a text field still takes text).

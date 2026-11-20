@@ -1,7 +1,4 @@
-// ui_core 0.3.0 under Fluent 2's faces: what each adopted part now does
-// (the tooltip, a search's states, the tab bar, the rating, the spin button,
-// the routes, a chart, a shortcut's keys), and the look's own keeps (Enter
-// in a spin button, a tab row that re-measures as the text grows).
+// Keyboard, pointer, and accessibility behaviour of interactive controls.
 import 'dart:async';
 import 'dart:ui' show PointerDeviceKind;
 

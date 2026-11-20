@@ -20,9 +20,7 @@ void _say(String kind, String name, Iterable<String> found) {
   }
 }
 
-/// ui_core's reader refuses a boundary never painted (a row in an inner
-/// list's cache extent, the code entry's hidden line under Opacity(0)):
-/// named, reported to ui_core's owner, and the rest goes on.
+/// A cached list row or hidden entry can have a layout box without any painted pixels.
 void _unread(String name, String what) {
   // ignore: avoid_print
   print(
@@ -36,8 +34,7 @@ void _unread(String name, String what) {
 List<double> _widthsOf(GalleryPage page) =>
     page.id.startsWith('app-') ? const [390.0, 1440.0] : const [galleryWidth];
 
-/// What the row check names that is not the look's: each a pattern and
-/// why, reported to ui_core's owner.
+/// Cases where a nested glyph or badge is measured instead of the painted row.
 final _rowMisreads = <(RegExp, String)>[
   (
     RegExp(
@@ -47,7 +44,7 @@ final _rowMisreads = <(RegExp, String)>[
     'by night an unchosen circular tag\'s fill (neutralBackground3, #141414) '
         'stands within the check\'s reach of the ground, so its face is read '
         'by the avatar inside it; both pills\' edges stand on the same pixel '
-        'rows (r9 badges p390_dark, 3120)',
+        'rows',
   ),
   (
     RegExp(

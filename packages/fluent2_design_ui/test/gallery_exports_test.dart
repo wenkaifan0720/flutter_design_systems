@@ -62,9 +62,8 @@ void main() {
     expect(exportedWidgets().length, greaterThan(100));
   });
 
-  // Out of the package's leak tracking (flutter_test_config.dart): this one test builds every page twice, and the
-  // tracker keeps a record of every object each build makes until the test ends, more than the Linux run's 8 GB
-  // holds beside its other tests (11-15). Each part's own tests, and every page's guideline tests, hold the leaks.
+  // The per-page guideline tests track disposal. This test visits every
+  // page in one run, so retaining all tracked objects would exhaust memory.
   testWidgets(
     'every exported widget is built by a gallery page',
     experimentalLeakTesting: LeakTesting.settings.withIgnoredAll(),

@@ -435,7 +435,7 @@ class Fluent2FormField extends StatelessWidget {
   /// true always (one node for the whole child), false never (the label
   /// names the child as a group, each control keeping its node), null as
   /// the child's controls say: one control is one node with the label,
-  /// several keep their own (the design kit's [DesignField]).
+  /// several keep their own (the shared [DesignField]).
   final bool? mergeSemantics;
 
   @override
@@ -462,7 +462,7 @@ class Fluent2FormField extends StatelessWidget {
     final message = validationMessage;
     final error = state == Fluent2ValidationState.error;
     // The lines under the control are drawn for the eye; a screen reader
-    // hears them as the control's hint (the design kit's DesignField).
+    // hears them as the control's hint (the shared DesignField).
     final under = [
       if (message != null) ExcludeSemantics(child: _Validation(state, message)),
       if (helper != null)

@@ -16,7 +16,7 @@ Widget kitFoundationsDemo(Brightness brightness) => kitScreen(
   brightness: brightness,
   title: 'Foundations',
   sections: [
-    kitSection('Catalog roles', children: [const _Roles()]),
+    kitSection('Color roles', children: [const _Roles()]),
     kitSection('Neutral layers and strokes', children: [const _Layers()]),
     kitSection('Brand ramp', children: [const _Ramp()]),
     kitSection('Tones', children: [const _Tones()]),

@@ -1,3 +1,10 @@
+## 0.3.4
+
+- Stands on ui_core 0.3.4.
+- Labelled switches, checkboxes, and radio buttons draw their keyboard focus ring around the label and indicator.
+- Tab enters radio and single-choice toolbar groups once. Arrow keys select in reading order, skip disabled options, and wrap.
+- Checkboxes, switches, and selectable table rows each announce a single control role.
+
 ## 0.3.3
 
 - A spin button grows with the system text size, as a text field does, so its

@@ -30,7 +30,7 @@ class Fluent2ShellAction extends ShellAction {
 
 /// The bottom allowance the shell asks each branch root to reserve: the
 /// tab bar over the device inset, the act and any accessory over it. The
-/// shell publishes it through the design kit's `ShellInsets`; a screen
+/// shell publishes it through the shared `ShellInsets`; a screen
 /// reads it with [of].
 abstract final class Fluent2ShellInsets {
   /// The allowance [context]'s page reserves: the shell's on a branch

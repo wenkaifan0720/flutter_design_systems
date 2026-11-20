@@ -1,5 +1,4 @@
-// Parts looked at between their states (design6 O): what a moving, dragged or previewing part shows mid-move. The
-// state matrix shows each part at rest; these hold the frames between.
+// Examine intermediate frames while controls move, drag or preview a choice.
 import 'package:flutter/gestures.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';

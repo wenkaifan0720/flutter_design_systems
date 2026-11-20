@@ -1,15 +1,5 @@
-/// A state cell shows its state (coverage4.md, 11-10 05:30): for every part
-/// of the review's state matrix that an app can press, disable or mark
-/// wrong, the pressed, disabled and error faces keep idle's size (an error
-/// may add its message below: the same width, no shorter) and differ from
-/// idle pixel for pixel. Disabling a part never moves the layout and never
-/// leaves it looking enabled.
-///
-/// A part's disabled face is the switch an app turns: a null handler, as
-/// Flutter's, or `enabled: false` where the part has one. Fluent 2 keeps its
-/// own hover faces (its spec is its idiom, as Material 3 is Material
-/// Expressive's), so no hover check stands beside this one. Parts with no
-/// such state say why in [_Part.why].
+/// Pressed, disabled and error states remain visually distinct at the
+/// control's resting size. A validation message may extend its height.
 library;
 
 import 'dart:typed_data';
@@ -56,8 +46,7 @@ _Part _p(
   why: why,
 );
 
-/// Text fields show no press of their own: a press puts the caret in them
-/// (coverage4 leaves those cells blank).
+/// Pressing a text field focuses its editor and places the caret.
 const _noPress = 'a press focuses the field; Fluent gives it no pressed face';
 
 Widget _w(double width, Widget child) => SizedBox(width: width, child: child);

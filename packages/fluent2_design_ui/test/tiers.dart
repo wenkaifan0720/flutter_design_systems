@@ -1,8 +1,6 @@
-// The tiers of Fluent 2's tests. The everyday run, `flutter test --exclude-tags goldens,sweep`, keeps a representative
-// of every matrix: each part and page at least once, the values of each axis (width, preset, setting, light and dark,
-// text scale, platform) turning over the cases, so a fault class is still caught on every run. The rest of each matrix
-// is tagged `sweep`: `flutter test --tags sweep` runs it, and a full run (`flutter test`, at READY and release) runs
-// every tier.
+// `flutter test --exclude-tags goldens,sweep` exercises every component and page
+// with a representative set of widths, presets, settings and platforms.
+// `flutter test --tags sweep` covers the remaining combinations.
 import 'package:flutter/foundation.dart';
 
 /// The tag of a case only the full run takes.

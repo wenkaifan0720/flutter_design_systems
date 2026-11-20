@@ -1,7 +1,3 @@
-// The fields and pickers the inventory adds, on ui_core's behaviours: the password field (DesignPasswordReveal), the
-// input group (DesignInputGroup), the range slider (DesignRangeSlider), the date range
-// picker (DesignCalendar) and the colour picker (DesignColorPicker). Paint rows: the file drop zone, the time picker and
-// the wheel.
 import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';

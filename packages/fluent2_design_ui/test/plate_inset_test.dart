@@ -1,12 +1,5 @@
-// A plate set in its container keeps one inset all round (coordinator, 11-17:
-// read from painted pixels at 390 and 1440, v030/plates). Two failed under a
-// finger on ui_core 0.3.0, whose touch target keeps a face its own size:
-// - a list's rows were 44 in their 48 target, so the first row's fill stood 6
-//   from the popover's top and 4 from its sides;
-// - a one-line message bar's act, its face the whole 48 target, stood 1 from
-//   the bar's top and foot and 13 from its end.
-// Fluent's own corner is kept: a row 4 round in a 4 round surface 4 in, as
-// Fluent's MenuPopover and Listbox draw it.
+// Popover rows and message bar actions keep equal painted insets on touch
+// and pointer platforms, including when their hit targets grow.
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fluent2_design_ui/fluent2_design_ui.dart';

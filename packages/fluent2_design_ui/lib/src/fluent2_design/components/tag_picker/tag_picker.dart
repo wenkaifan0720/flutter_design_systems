@@ -44,7 +44,7 @@ enum Fluent2MultiSelectSize {
 /// "Loading" while it runs and offering "Try again" when it fails. Null
 /// [onChanged] draws it disabled. Read as a text field named
 /// [label], each tag a button "Remove …" with a Remove action. The
-/// behaviour is the design kit's DesignTagInput; Fluent 2 paints the
+/// behaviour is the shared DesignTagInput; Fluent 2 paints the
 /// field, the tags and the list.
 ///
 /// ```dart

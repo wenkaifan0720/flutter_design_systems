@@ -16,8 +16,6 @@ Widget kitWeekDemo(Brightness brightness) => kitScreen(
   brightness: brightness,
   title: 'Week strip',
   sections: [
-    // The live strip starts on today; the catalog's today specimen
-    // (kitSpecimenWeekToday) draws the same, so the page shows it once.
     kitSection('Pick a day, today picked', children: [const _Week()]),
     kitSection('Another day picked', children: [kitSpecimenWeekPicked()]),
     kitSection(

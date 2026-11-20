@@ -34,7 +34,7 @@ void releaseImages() {
 
 /// Android's 48 px targets as Flutter's guideline reads them, but for a calendar's day where seven 48s do not fit
 /// the calendar's room (a calendar in a card on a phone): there each day takes its seventh, never less than iOS's 44,
-/// so that no day reaches into its neighbour's taps (DECISIONS Z5). A day is known by its name, a full date.
+/// so adjacent days have distinct targets. The accessibility label gives the full date.
 const androidTargetGuideline = _AndroidTargets();
 
 class _AndroidTargets extends MinimumTapTargetGuideline {
@@ -208,12 +208,8 @@ Future<void> settle(WidgetTester tester) async {
   }
 }
 
-/// The leak tracking a gallery page's test runs under in [preset]: the package's own (flutter_test_config.dart) in
-/// the first preset, light and dark, where each page's disposal is held; none in the other presets and settings, which
-/// change only colours and measures, so the same widgets are made and disposed in each. Tracked in every cell, the
-/// tracker kept a record of each object a page made, about 8 GB a file (11-16, natively: gallery_guidelines_test 7.8 GB
-/// tracked against 2.0 untracked, gallery_custom_test 8.4 against 1.8), more than Linux CI's runner holds beside a
-/// second file: the run ran out of memory and every later test did not complete.
+/// Track widget disposal in both appearances of the first preset. The other
+/// presets exercise the same lifecycle with different colours and dimensions.
 LeakTesting? leakTestingIn(String preset) =>
     preset == Fluent2ThemeData.presets.first
     ? null

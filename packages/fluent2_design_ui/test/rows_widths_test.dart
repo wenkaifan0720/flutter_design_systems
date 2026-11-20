@@ -1,5 +1,4 @@
-// ui_core's checks for two faults a review caught (a button of another height
-// in a row, a dropdown of the wrong width):
+// Gallery controls keep their row alignment and responsive width.
 // - DesignRowCheck over every gallery page and the app screens, under each
 //   density the look ships, by day and by night: controls sharing a row
 //   show one top and one bottom by their drawn outline;

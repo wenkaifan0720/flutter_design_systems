@@ -1,12 +1,5 @@
-// design6 P, added 11-11 noon, read from pixels under a finger (Android, 3 device pixels to the point) and a pointer
-// (macOS, 2), at each density step:
-// (a) from 600 a select, a filling button, a stepper or a segmented control keeps its own width (at most 320) and a
-//     form section stops at its measure (560); on a phone they fill the column;
-// (b) a chosen or pressed fill covers the whole cell the user sees (segments, joined toggles, tabs, split halves);
-// (c) a glyph beside a label stands on the row's centre line within half a device pixel, its art's own offset in its
-//     box taken out, read inside the face's stroke (a small button two steps in stands 20, its glyph's height, so its
-//     stroke runs through the glyph's box); ui_core's label check holds every button's glyph and capitals on its
-//     face's middle, as laid out and as drawn.
+// Measure responsive control widths, selection fills, and glyph alignment
+// across densities at Android (3×) and macOS (2×) pixel ratios.
 import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';

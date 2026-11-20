@@ -263,6 +263,7 @@ class Fluent2Checkbox extends StatelessWidget {
           autofocus: autofocus,
           onPressed: tap,
           radius: Fluent2Radius.medium,
+          ring: words == null,
           label: semanticLabel ?? words,
           checked: value ?? false,
           mixed: value == null,
@@ -315,7 +316,11 @@ class Fluent2Checkbox extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: before ? [text, mark] : [mark, text],
               );
-              return before ? row : Fluent2HangRoom(child: row);
+              return Fluent2HangRoom(
+                focused: states.focused,
+                labelFirst: before,
+                child: row,
+              );
             });
           },
         ),

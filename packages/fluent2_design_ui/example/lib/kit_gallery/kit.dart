@@ -2,12 +2,9 @@
 /// specimens, and the sample owner, tabs and people they show (a small
 /// team's workspace, Northwind).
 ///
-/// Every demo renders inside the environment a Fluent 2 page gets live: a
-/// MaterialApp under [Fluent2Host], themed by the preset the lab applied
-/// (theme.dart's [kitPreset]), with the appearance pinned explicitly
-/// because the preview host ignores the shell's simulated platform
-/// brightness, and the owner's account ([kitInes]) above the navigator as
-/// an app mounts it.
+/// Each demo runs in a MaterialApp under [Fluent2Host] using [kitPreset].
+/// The host sets the chosen brightness explicitly and makes the owner's
+/// account ([kitInes]) available above the navigator.
 ///
 /// Demos import ONLY the Fluent 2 barrel, this file, Flutter and the packages
 /// Fluent 2 depends on.

@@ -1,8 +1,5 @@
-// Pictures for a review: New
-// request's selects at 600, 1024, 1440 and 1920 wide, closed and with Type
-// open, by day and by night, under a pointer (macOS), as a desktop or a
-// tablet's browser draws them, shadows blurred. It runs only with FLUENT2_SHOTS_DIR set,
-// writing <dir>/app-request_<width>_<brightness>[_open].png.
+// Capture the request form with its Type selector open and closed at four
+// desktop widths in both appearances. Set FLUENT2_SHOTS_DIR to save the PNGs.
 import 'dart:io';
 import 'dart:ui' as ui;
 

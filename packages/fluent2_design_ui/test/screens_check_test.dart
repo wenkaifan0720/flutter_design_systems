@@ -1,16 +1,11 @@
-// ui_core's two sweeps over the gallery:
-// - the keyline check on Northwind's four ordinary screens (Home, Files, New
-//   request, Settings) at a phone's 390 and a desktop's 1440 (right to left
-//   is the module's keylines_test): every control or well read as one item
-//   at its face, words judged only on the side they are anchored to;
-// - the label sweep under the standard and the compact density over every
-//   gallery page at 390 and the four screens at 1440 too: every labelled
-//   control's label (by its capitals) and icon on the middle of its face,
-//   as laid out and, within half a device pixel, as drawn (the faces wrap
-//   their words in DesignCapCenter, internal/cap_label.dart). It records
-//   what it names in build/label_sweep/<page>_<width>.txt; with
-//   FLUENT2_SWEEP_BEFORE=1 it also reads every page with the capitals'
-//   centring off, into build/label_sweep_before/, for the counts.
+// Checks control keylines on the Home, Files, New request and Settings screens
+// at 390 and 1440 pixels. keylines_test.dart covers right-to-left layouts.
+//
+// The label check measures the centre of capital letters and icons at standard
+// and compact density. It covers every gallery page at 390 and the four
+// screens at 1440, allowing half a device pixel of rounding.
+// Results are written to build/label_sweep/. Set FLUENT2_SWEEP_BEFORE=1 to
+// record a comparison with capital centring disabled in build/label_sweep_before/.
 import 'dart:io';
 
 import 'package:material_ui/material_ui.dart';
@@ -59,10 +54,11 @@ final _misreads = <(RegExp, String)>[
   ),
   (
     RegExp(
-      r'a button "Select [^"]*": the capitals of "[^"]*" are drawn '
+      r'a checkbox "Select [^"]*": the capitals of "[^"]*" are drawn '
       r'1\.[3-6] device px below the middle of its face',
     ),
-    'a selectable table row: its selection cell spans the row and is read '
+    'a selectable table row, which a screen reader hears as a checkbox: its '
+        'selection cell spans the row and is read '
         'as the face of the row\'s words, which stand centred between the '
         'row\'s two hairlines (its own inside its box, as Fluent\'s grid row '
         'keeps it), half a pixel off the cell\'s middle',
