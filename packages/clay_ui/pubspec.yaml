@@ -1,0 +1,55 @@
+name: clay_ui
+description: >-
+  Claymorphic widgets for Flutter: soft inflated controls, pastel colour, accessible forms, navigation and dialogs in coordinated light and dark themes.
+version: 0.1.0
+homepage: https://wenkaifan0720.github.io/flutter_design_systems/clay/
+documentation: https://wenkaifan0720.github.io/flutter_design_systems/docs/looks/clay/
+repository: https://github.com/wenkaifan0720/flutter_design_systems/tree/main/packages/clay_ui
+issue_tracker: https://github.com/wenkaifan0720/flutter_design_systems/issues
+topics:
+  - design-system
+  - widgets
+  - ui
+  - theme
+screenshots:
+  - description: "Steady's Today on a desk at 1440 and a phone at 390, by day: habits on white clay slabs, pastel glyph tiles, a coral key to add one."
+    path: screenshots/hero.webp
+  - description: "The same Today by night: deep clay on a dark ground, pale balls on their grooves, the coral key kept."
+    path: screenshots/night.webp
+  - description: "A habit on a desk by day and a phone by night: its figures, and a month of days as raised balls and pressed cups."
+    path: screenshots/habit.webp
+  - description: "Settings on a phone by day and night: grouped rows on a clay slab, segments rising out of their groove, switches."
+    path: screenshots/settings.webp
+  - description: "The look's overview at 1440: keys, segments, a progress ring, checkboxes and a switch in soft, inflated clay."
+    path: screenshots/parts.webp
+
+environment:
+  sdk: ">=3.13.0 <4.0.0"
+  flutter: ">=3.47.0"
+
+resolution: workspace
+
+dependencies:
+  flutter:
+    sdk: flutter
+  ui_core: ^0.3.4
+  material_ui: ^1.9.0
+  cupertino_ui: ^1.0.0
+  lucide_icons_flutter: ">=3.1.25 <5.0.0"
+
+dev_dependencies:
+  flutter_lints: ^6.0.0
+  flutter_test:
+    sdk: flutter
+  leak_tracker_flutter_testing: any
+  ui_core_test: ^0.1.4
+
+flutter:
+  fonts:
+
+
+
+    - family: Rubik
+      fonts:
+        - asset: assets/fonts/Rubik.ttf
+          weight: 400
