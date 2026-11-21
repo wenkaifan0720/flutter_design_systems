@@ -36,11 +36,11 @@
 
 <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">_CompareCostsState</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">State</span>&lt;<span class="hljs-title">CompareCosts</span>&gt; </span>{
   <span class="hljs-built_in">bool</span> doubleOrder = <span class="hljs-keyword">false</span>;
-  <span class="hljs-keyword">final</span> orders = DesignTableController&lt;(<span class="hljs-built_in">String</span>, <span class="hljs-built_in">int</span>)&gt;(
+  <span class="hljs-keyword">final</span> orders = RawDataTableController&lt;(<span class="hljs-built_in">String</span>, <span class="hljs-built_in">int</span>)&gt;(
     rows: <span class="hljs-keyword">const</span> [(<span class="hljs-string">'Paper'</span>, <span class="hljs-number">4</span>), (<span class="hljs-string">'Ink'</span>, <span class="hljs-number">7</span>)],
     columns: <span class="hljs-keyword">const</span> [
-      DesignTableColumn(id: <span class="hljs-string">'item'</span>, label: <span class="hljs-string">'Item'</span>),
-      DesignTableColumn(id: <span class="hljs-string">'cost'</span>, label: <span class="hljs-string">'Cost'</span>, numeric: <span class="hljs-keyword">true</span>),
+      RawDataColumn(id: <span class="hljs-string">'item'</span>, label: <span class="hljs-string">'Item'</span>),
+      RawDataColumn(id: <span class="hljs-string">'cost'</span>, label: <span class="hljs-string">'Cost'</span>, numeric: <span class="hljs-keyword">true</span>),
     ],
   );
   <span class="hljs-meta">@override</span>

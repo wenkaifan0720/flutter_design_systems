@@ -45,14 +45,14 @@
       children: [
         NeumorphicMenuBar(
           menus: [
-            DesignMenuEntry(
+            RawMenuEntry(
               label: <span class="hljs-string">'Edit'</span>,
               children: [
-                DesignMenuEntry(
+                RawMenuEntry(
                   label: <span class="hljs-string">'Mark reviewed'</span>,
                   onPressed: () =&gt; setState(() =&gt; reviewed = <span class="hljs-keyword">true</span>),
                 ),
-                DesignMenuEntry(
+                RawMenuEntry(
                   label: <span class="hljs-string">'Clear review'</span>,
                   onPressed: () =&gt; setState(() =&gt; reviewed = <span class="hljs-keyword">false</span>),
                 ),

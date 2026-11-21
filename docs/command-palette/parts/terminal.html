@@ -46,11 +46,11 @@
         onPressed: () =&gt; showTermCommandPalette(
           context: context,
           commands: [
-            DesignCommand(
+            RawCommand(
               label: <span class="hljs-string">'Review note'</span>,
               onPressed: () =&gt; setState(() =&gt; reviewed = <span class="hljs-keyword">true</span>),
             ),
-            DesignCommand(
+            RawCommand(
               label: <span class="hljs-string">'Reset note'</span>,
               onPressed: () =&gt; setState(() =&gt; reviewed = <span class="hljs-keyword">false</span>),
             ),

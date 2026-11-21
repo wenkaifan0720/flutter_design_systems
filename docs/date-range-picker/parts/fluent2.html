@@ -36,11 +36,11 @@
 }
 
 <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">_BookDatesState</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">State</span>&lt;<span class="hljs-title">BookDates</span>&gt; </span>{
-  <span class="hljs-keyword">final</span> stay = DesignCalendarController(
+  <span class="hljs-keyword">final</span> stay = RawCalendarController(
     firstDate: <span class="hljs-built_in">DateTime</span>(<span class="hljs-number">2026</span>, <span class="hljs-number">11</span>),
     lastDate: <span class="hljs-built_in">DateTime</span>(<span class="hljs-number">2026</span>, <span class="hljs-number">12</span>, <span class="hljs-number">31</span>),
     currentDate: <span class="hljs-built_in">DateTime</span>(<span class="hljs-number">2026</span>, <span class="hljs-number">11</span>, <span class="hljs-number">12</span>),
-    mode: DesignCalendarMode.range,
+    mode: RawCalendarMode.range,
   );
   <span class="hljs-meta">@override</span>
   <span class="hljs-keyword">void</span> dispose() {
