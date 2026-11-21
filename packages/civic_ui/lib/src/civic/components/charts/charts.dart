@@ -424,7 +424,7 @@ class _Cartesian extends StatelessWidget {
     final so = DesignStyleOf([style, t.chartStyle], const {});
     final scaler = MediaQuery.textScalerOf(context);
     final direction = Directionality.of(context);
-    final l = DesignLocalizations.of(context);
+    final l = RawWidgetsLocalizations.of(context);
     String say(double v) => valueLabel?.call(v) ?? l.formatDecimal(v);
     final missing = missingLabel ?? l.emptyValueLabel;
     final small = text.bodySmall.copyWith(
@@ -1039,7 +1039,7 @@ class CivicSparkline extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.civicTheme;
     final so = DesignStyleOf([style, t.chartStyle], const {});
-    final l = DesignLocalizations.of(context);
+    final l = RawWidgetsLocalizations.of(context);
     final last = values.isEmpty ? null : values.last;
     final words = valueLabel ?? (last == null ? '' : l.formatDecimal(last));
     final said = values.isEmpty

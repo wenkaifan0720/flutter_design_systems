@@ -84,7 +84,7 @@ class CivicCard extends StatelessWidget {
     final go = onPressed;
     final address = url;
     if (go == null && address == null) return _face(context, const {});
-    Widget card(VoidCallback? press, {required bool link}) => DesignPressable(
+    Widget card(VoidCallback? press, {required bool link}) => RawButton(
       onPressed: press,
       focusNode: focusNode,
       statesController: statesController,

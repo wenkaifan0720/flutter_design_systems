@@ -498,7 +498,7 @@ void main() {
             key: _part,
             labelText: 'Hour',
             columns: (_) => [
-              DesignWheelColumn(itemCount: 24, itemLabel: (i) => '$i'),
+              RawPickerColumn(itemCount: 24, itemLabel: (i) => '$i'),
             ],
             selection: const [9],
             onChanged: enabled ? (_) {} : null,

@@ -91,7 +91,7 @@ class CivicPullToRefresh extends StatefulWidget {
 /// A [CivicPullToRefresh]'s state: [refresh] runs a refresh as a pull
 /// would.
 class CivicPullToRefreshState extends State<CivicPullToRefresh> {
-  final _inner = GlobalKey<DesignPullToRefreshState>();
+  final _inner = GlobalKey<RawRefreshIndicatorState>();
   var _refreshing = false;
 
   // Moves the list down under the band while the refresh runs.
@@ -113,12 +113,12 @@ class CivicPullToRefreshState extends State<CivicPullToRefresh> {
     final t = context.civicTheme;
     final text = context.civicText;
     final so = DesignStyleOf([widget.style, t.pullToRefreshStyle], const {});
-    final l = DesignLocalizations.of(context);
+    final l = RawWidgetsLocalizations.of(context);
     final scaler = MediaQuery.textScalerOf(context);
     final rest = scaler
         .scale(CivicPullToRefresh.band)
         .clamp(CivicPullToRefresh.band, CivicPullToRefresh.band * 2);
-    return DesignPullToRefresh(
+    return RawRefreshIndicator(
       key: _inner,
       onRefresh: _run,
       restExtent: rest,
@@ -138,13 +138,16 @@ class CivicPullToRefreshState extends State<CivicPullToRefresh> {
       indicatorBuilder: (context, pull) {
         if (pull.extent <= 0) return const SizedBox.shrink();
         final words = switch (pull.mode) {
-          DesignRefreshMode.inactive || DesignRefreshMode.drag => null,
-          DesignRefreshMode.armed => widget.refreshLabel ?? l.refreshLabel,
-          DesignRefreshMode.refresh =>
+          RawRefreshIndicatorMode.inactive ||
+          RawRefreshIndicatorMode.drag => null,
+          RawRefreshIndicatorMode.armed =>
+            widget.refreshLabel ?? l.refreshLabel,
+          RawRefreshIndicatorMode.refresh =>
             widget.refreshingMessage ?? l.refreshingMessage,
-          DesignRefreshMode.done => widget.doneMessage ?? l.refreshedMessage,
+          RawRefreshIndicatorMode.done =>
+            widget.doneMessage ?? l.refreshedMessage,
         };
-        final turning = pull.mode == DesignRefreshMode.refresh;
+        final turning = pull.mode == RawRefreshIndicatorMode.refresh;
         // The screen reader hears the refresher's own messages.
         return ExcludeSemantics(
           child: SizedBox(
@@ -166,7 +169,7 @@ class CivicPullToRefreshState extends State<CivicPullToRefresh> {
                         mainAxisSize: MainAxisSize.min,
                         spacing: CivicSpacing.s12,
                         children: [
-                          if (pull.mode != DesignRefreshMode.done)
+                          if (pull.mode != RawRefreshIndicatorMode.done)
                             CivicSpinnerArc(
                               size: scaler.scale(20),
                               color: so.foreground ?? t.action,

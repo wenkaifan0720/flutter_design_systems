@@ -9,11 +9,11 @@ import '../../internal/slider_parts.dart';
 import '../../theme.dart';
 
 // A range slider's caller holds its two values.
-export 'package:ui_core/ui_core.dart' show DesignRangeValues;
+export 'package:ui_core/ui_core.dart' show RawRangeValues;
 
 // A value in the reader's figures: whole, or to one place.
 String _figure(BuildContext context, double v) =>
-    DesignLocalizations.of(context)
+    RawWidgetsLocalizations.of(context)
         .formatDecimal(v, fractionDigits: v == v.roundToDouble() ? 0 : 1);
 
 /// A value set along a scale where the exact figure matters less than
@@ -323,7 +323,7 @@ class _CivicSliderState extends State<CivicSlider> {
         widget.errorText == null) {
       return body;
     }
-    return DesignField(
+    return RawInputDecorator(
       labelText: widget.labelText,
       helperText: widget.helperText,
       errorText: widget.errorText,
@@ -377,10 +377,10 @@ class CivicRangeSlider extends StatelessWidget {
   }) : assert(min < max, 'a slider has a range');
 
   /// The range.
-  final DesignRangeValues values;
+  final RawRangeValues values;
 
   /// Called with each new range; null disables the slider.
-  final ValueChanged<DesignRangeValues>? onChanged;
+  final ValueChanged<RawRangeValues>? onChanged;
 
   /// The least value.
   final double min;
@@ -420,10 +420,10 @@ class CivicRangeSlider extends StatelessWidget {
   final bool showLimits;
 
   /// Called as a drag begins.
-  final ValueChanged<DesignRangeValues>? onChangeStart;
+  final ValueChanged<RawRangeValues>? onChangeStart;
 
   /// Called as a drag ends.
-  final ValueChanged<DesignRangeValues>? onChangeEnd;
+  final ValueChanged<RawRangeValues>? onChangeEnd;
 
   /// Overrides for the thumbs' look.
   final CivicStyle? style;
@@ -436,7 +436,7 @@ class CivicRangeSlider extends StatelessWidget {
     final live = onChanged != null;
     String say(double v) => valueLabel?.call(v) ?? _figure(context, v);
     final hasError = errorText != null;
-    final slider = DesignRangeSlider(
+    final slider = RawRangeSlider(
       values: values,
       onChanged: onChanged,
       min: min,
@@ -482,7 +482,7 @@ class CivicRangeSlider extends StatelessWidget {
     // reads right to left.
     final words =
         rangeLabel?.call(start, end) ??
-        DesignLocalizations.of(context)
+        RawWidgetsLocalizations.of(context)
             .chartRangeLabel(civicIsolate(start), civicIsolate(end));
     final body = Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -523,7 +523,7 @@ class CivicRangeSlider extends StatelessWidget {
     if (labelText == null && helperText == null && errorText == null) {
       return body;
     }
-    return DesignField(
+    return RawInputDecorator(
       labelText: labelText,
       helperText: helperText,
       errorText: errorText,
@@ -537,9 +537,9 @@ class CivicRangeSlider extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(DiagnosticsProperty<DesignRangeValues>('values', values))
+      ..add(DiagnosticsProperty<RawRangeValues>('values', values))
       ..add(
-        ObjectFlagProperty<ValueChanged<DesignRangeValues>>.has(
+        ObjectFlagProperty<ValueChanged<RawRangeValues>>.has(
           'onChanged',
           onChanged,
         ),

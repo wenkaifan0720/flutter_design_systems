@@ -115,7 +115,8 @@ void main() {
 
   for (final direction in TextDirection.values) {
     const answers = ['A', 'B', 'C', 'D'];
-    for (final initial in <String?>['C', null, 'B']) {
+    // The third chosen, none, the first, and the disabled B chosen.
+    for (final initial in <String?>['C', null, 'A', 'B']) {
       for (final segmented in [false, true]) {
         final name = segmented ? 'segments' : 'radios';
         testWidgets('$name in ${direction.name} with initial answer $initial', (
@@ -158,11 +159,16 @@ void main() {
       await verifyGroup(tester);
     });
 
-    for (final initial in [const Color(0xFF0F4C81), const Color(0xFF123456)]) {
+    // The first chosen, the last, and a colour no swatch names.
+    for (final initial in [
+      const Color(0xFF0F4C81),
+      const Color(0xFF8A1C1C),
+      const Color(0xFF123456),
+    ]) {
       testWidgets(
         'named swatches in ${direction.name} with initial colour $initial',
         (tester) async {
-          final controller = DesignColorController(initial);
+          final controller = RawColorController(initial);
           addTearDown(controller.dispose);
           await pump(
             tester,
@@ -321,7 +327,7 @@ void main() {
     expect(chosen, 'B', reason: 'Tab chooses nothing');
   });
 
-  testWidgets('Enter and Space press an answer, the chosen one too', (
+  testWidgets('Enter and Space choose an answer, and keep the chosen one', (
     tester,
   ) async {
     final presses = <String?>[];
@@ -346,12 +352,49 @@ void main() {
     expect(place(), 'A');
     await press(tester, LogicalKeyboardKey.enter);
     await press(tester, LogicalKeyboardKey.space);
-    expect(presses, ['A', 'A'], reason: 'the chosen answer, pressed twice');
+    // As Flutter's radios: the chosen answer stays chosen, and says nothing.
+    expect(presses, isEmpty, reason: 'A is chosen already');
     await press(tester, LogicalKeyboardKey.arrowDown);
-    expect(presses, ['A', 'A', 'B']);
+    expect(presses, ['B']);
     await press(tester, LogicalKeyboardKey.space);
-    expect(presses, ['A', 'A', 'B', 'B']);
+    await press(tester, LogicalKeyboardKey.enter);
+    expect(presses, ['B']);
     expect((chosen, place()), ('B', 'B'));
+  });
+
+  testWidgets('a toggleable answer clears the choice on Enter, Space or a '
+      'press', (tester) async {
+    final presses = <String?>[];
+    await pump(
+      tester,
+      buildChoice: (setState) => CivicRadioGroup<String>(
+        labelText: 'Which one?',
+        groupValue: chosen,
+        onChanged: (value) => setState(() {
+          presses.add(value);
+          chosen = value;
+        }),
+        children: [
+          for (final value in ['A', 'B'])
+            CivicRadio<String>(
+              value: value,
+              labelText: value,
+              toggleable: true,
+            ),
+        ],
+      ),
+    );
+    before.requestFocus();
+    await tester.pumpAndSettle();
+    await press(tester, LogicalKeyboardKey.tab);
+    await press(tester, LogicalKeyboardKey.space);
+    await press(tester, LogicalKeyboardKey.enter);
+    await press(tester, LogicalKeyboardKey.space);
+    await tester.tap(find.text('A'));
+    await tester.pumpAndSettle();
+    // A starts chosen.
+    expect(presses, [null, 'A', null, 'A']);
+    expect(chosen, 'A');
   });
 
   testWidgets('with no answer chosen, Tab comes to the first and leaves', (

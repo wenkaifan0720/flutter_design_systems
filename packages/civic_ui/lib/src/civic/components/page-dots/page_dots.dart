@@ -53,7 +53,7 @@ class CivicPageDots extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.civicTheme;
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     final so = DesignStyleOf([style, t.pageDotsStyle], const {});
     final at = index.clamp(0, count - 1);
     final change = onChanged;
@@ -65,7 +65,7 @@ class CivicPageDots extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             for (var i = 0; i < count; i++)
-              DesignPressable(
+              RawButton(
                 // The shown page's mark stays in reach of the keys; a press
                 // on it changes nothing.
                 onPressed: change == null

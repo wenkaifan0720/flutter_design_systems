@@ -1,3 +1,12 @@
+## 0.4.0
+
+- **Breaking:** stands on ui_core 0.4.0. Flutter 3.47 or later, as before.
+- **Renamed:** the ui_core types in this package's API take ui_core 0.4.0's `Raw` names. For example, `CivicCalendar.controller` is a `RawCalendarController`, and `CivicColorPicker.controller` is a `RawColorController`. The old names still work as deprecated typedefs, and `dart fix --apply` renames them.
+- `CivicRadioGroup` is built on Flutter's `RadioGroup`, with a `RawRadio` for each `CivicRadio`. `CivicSegmentedControl`'s segments and `CivicColorPicker`'s named swatches are the radios of a Flutter `RadioGroup` too. The keys work as before, Home and End on a segmented control included.
+- As with Flutter's radios, a press, Enter or Space on the chosen answer, segment or swatch keeps it chosen and no longer calls `onChanged`. A `CivicRadio` with `toggleable: true` clears the choice instead. A radio shows hover and focus while focus highlights are traditional (on a desktop, or once a mouse or a key was used), so its focus also shows after a mouse click. On iOS and macOS an unchosen radio reads as not selected.
+- A `CivicIconButton` that is on, and a selected `CivicChip`, read to a screen reader as a selected button, as Flutter's `IconButton(isSelected:)` does, rather than as a switch.
+- `CivicTooltip` is built on Flutter's `RawTooltip`. It shows on hover after half a second, on keyboard focus and on a long press, and rises on the look's spring, as before. Run the pointer along a row of controls, and each tip waits its turn, as Flutter's do. Before, the next tip showed at once. A press hides a tip the pointer brought, as Flutter's do; before, the tip stayed while the control was held. Over no `Overlay`, as on a toast shown above the app's `Navigator`, it gives its words to a screen reader and floats no tip.
+
 ## 0.3.2
 
 - Stands on ui_core 0.3.4.

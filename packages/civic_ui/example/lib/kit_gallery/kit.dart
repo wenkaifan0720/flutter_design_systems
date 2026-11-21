@@ -46,7 +46,7 @@ Widget kitApp({
           ? const Locale('ar')
           : const Locale('en'),
       localizationsDelegates: galleryDelegates,
-      supportedLocales: DesignLocalizations.supportedLocales,
+      supportedLocales: RawWidgetsLocalizations.supportedLocales,
       color: kitTheme(brightness).action,
       builder: (context, child) => CivicTheme(
         data: kitTheme(brightness),
@@ -91,7 +91,7 @@ Widget kitSpecimenStage({
   child: MaterialApp(
     debugShowCheckedModeBanner: false,
     localizationsDelegates: galleryDelegates,
-    supportedLocales: DesignLocalizations.supportedLocales,
+    supportedLocales: RawWidgetsLocalizations.supportedLocales,
     builder: (context, home) => CivicTheme(
       data: CivicThemeData.preset(style, brightness),
       child: home ?? const SizedBox.shrink(),

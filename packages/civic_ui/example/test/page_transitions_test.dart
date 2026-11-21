@@ -50,9 +50,7 @@ void main() {
           theme.pageTransitionsTheme.builders[defaultTargetPlatform];
       // On iOS, Civic's change with the swipe back from the edge round it.
       expect(
-        builder is DesignSwipeBackPageTransitionsBuilder
-            ? builder.builder
-            : builder,
+        builder is SwipeBackPageTransitionsBuilder ? builder.builder : builder,
         isA<CivicPageTransitions>(),
       );
       expect(find.byType(CupertinoPageTransition), findsNothing);

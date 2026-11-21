@@ -72,7 +72,7 @@ void main() {
             ),
             CivicTimeInput(
               labelText: 'Start time',
-              value: const DesignTimeOfDay(hour: 9, minute: 30),
+              value: const RawTimeOfDay(hour: 9, minute: 30),
               onChanged: (_) {},
             ),
             CivicDatePicker(
@@ -150,9 +150,10 @@ void main() {
           height: 6000,
         );
         final root = _root(tester);
-        final fields = find.byType(DesignField, skipOffstage: false);
+        final fields = find.byType(RawInputDecorator, skipOffstage: false);
         for (final field in fields.evaluate()) {
-          final question = (field.widget as DesignField).labelText?.trim();
+          final question = (field.widget as RawInputDecorator).labelText
+              ?.trim();
           if (question == null || question.isEmpty) continue;
           // The nodes over this field's box.
           final box = field.renderObject! as RenderBox;

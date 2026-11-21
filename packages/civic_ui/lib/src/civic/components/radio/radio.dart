@@ -1,5 +1,4 @@
 import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
@@ -10,8 +9,8 @@ import '../../theme.dart';
 /// A question with one answer: its [labelText] asks it (on a question page,
 /// as the page's heading with [isPageHeading]), its [CivicRadio]s are the
 /// answers, each with a hint where the words alone don't decide it. The
-/// group is one stop for Tab, as a browser's radios and Flutter's
-/// `RadioGroup` are: Tab and Shift+Tab come to the chosen answer (the first,
+/// group is Flutter's `RadioGroup`, one stop for Tab, as a browser's
+/// radios are: Tab and Shift+Tab come to the chosen answer (the first,
 /// while none is) and leave the group, and the arrow keys move the choice
 /// between the answers that can be chosen, Left and Right swapped right to
 /// left.
@@ -94,16 +93,15 @@ class _CivicRadioGroupState<T> extends State<CivicRadioGroup<T>> {
   @override
   Widget build(BuildContext context) {
     final children = widget.children;
-    final answers = <T, CivicRadio<T>>{
-      for (final child in children)
-        if (child is CivicRadio<T>) child.value: child,
-    };
-    assert(
-      answers.length == children.whereType<CivicRadio<T>>().length,
-      'Each CivicRadio in a group needs its own value.',
-    );
+    assert(() {
+      final values = [
+        for (final child in children)
+          if (child is CivicRadio<T>) child.value,
+      ];
+      return values.toSet().length == values.length;
+    }(), 'Each CivicRadio in a group needs its own value.');
     final onChanged = widget.onChanged;
-    return DesignField(
+    return RawInputDecorator(
       labelText: widget.labelText,
       helperText: widget.helperText,
       errorText: widget.errorText,
@@ -113,76 +111,34 @@ class _CivicRadioGroupState<T> extends State<CivicRadioGroup<T>> {
         isPageHeading: widget.isPageHeading,
         isLegend: true,
       ),
-      child: _CivicRadioScope<T>(
+      // Flutter's radio group: one Tab stop (the chosen answer, else the
+      // first), the arrows moving and choosing. ui_core's keyboard fix inside
+      // it gives the group its Tab stop when the chosen answer can't be
+      // chosen, and swaps Left and Right right to left, until Flutter's own
+      // fixes do.
+      child: RadioGroup<T>(
         groupValue: widget.groupValue,
-        onChanged: onChanged,
-        // Flutter's RadioGroup, through ui_core: one Tab stop at the chosen
-        // answer (the first that can be chosen, while none is), and the
-        // arrow keys choose as they move.
-        child: DesignRadioGroup<T>(
-          options: answers.keys.toList(),
-          value: widget.groupValue,
-          onChanged: onChanged == null ? null : (value) => onChanged(value),
-          isEnabled: (value) => answers[value]!.enabled,
-          focusNodeFor: (value) => answers[value]!.focusNode,
-          itemBuilder: (context, value, node, select) => _CivicRadioSlot(
-            focusNode: node,
-            select: select,
-            child: answers[value]!,
-          ),
-          layoutBuilder: (context, items) {
-            // The answers in their places, the dividers between them.
-            var next = 0;
-            final laidOut = [
-              for (final child in children)
-                child is CivicRadio<T> ? items[next++] : child,
-            ];
+        onChanged: onChanged ?? _none,
+        child: RadioGroupKeyboardFix<T>(
+          child: _CivicRadioGroupEnabled(
+            enabled: onChanged != null,
             // In an app the answers stand on a card, each a row; on the site
-            // they stand on the page.
-            return CivicCardScope.cards(context)
-                ? CivicOptionCard(children: laidOut)
+            // they stand on the page, a divider where the page put one.
+            child: CivicCardScope.cards(context)
+                ? CivicOptionCard(children: children)
                 : Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     mainAxisSize: MainAxisSize.min,
                     spacing: CivicSpacing.s4,
-                    children: laidOut,
-                  );
-          },
+                    children: children,
+                  ),
+          ),
         ),
       ),
     );
   }
-}
 
-class _CivicRadioScope<T> extends InheritedWidget {
-  const _CivicRadioScope({
-    required this.groupValue,
-    required this.onChanged,
-    required super.child,
-  });
-
-  final T? groupValue;
-  final ValueChanged<T?>? onChanged;
-
-  @override
-  bool updateShouldNotify(_CivicRadioScope<T> old) =>
-      groupValue != old.groupValue || onChanged != old.onChanged;
-}
-
-/// The focus node and the press the group gives one answer.
-class _CivicRadioSlot extends InheritedWidget {
-  const _CivicRadioSlot({
-    required this.focusNode,
-    required this.select,
-    required super.child,
-  });
-
-  final FocusNode focusNode;
-  final VoidCallback? select;
-
-  @override
-  bool updateShouldNotify(_CivicRadioSlot old) =>
-      focusNode != old.focusNode || select != old.select;
+  static void _none(Object? _) {}
 }
 
 /// One answer of a [CivicRadioGroup]: a 40-point circle, the words beside
@@ -200,6 +156,7 @@ class CivicRadio<T> extends StatefulWidget {
     required this.labelText,
     this.helperText,
     this.enabled = true,
+    this.toggleable = false,
     this.focusNode,
     this.autofocus = false,
     this.style,
@@ -216,6 +173,11 @@ class CivicRadio<T> extends StatefulWidget {
 
   /// Whether it can be chosen.
   final bool enabled;
+
+  /// Whether a press, Enter or Space on it while it is chosen clears the
+  /// choice, as Flutter's `Radio.toggleable`: the group's `onChanged` hears
+  /// null. Otherwise the chosen answer stays chosen.
+  final bool toggleable;
 
   /// {@macro civic.focusNode}
   final FocusNode? focusNode;
@@ -237,6 +199,7 @@ class CivicRadio<T> extends StatefulWidget {
       ..add(StringProperty('labelText', labelText))
       ..add(StringProperty('helperText', helperText, defaultValue: null))
       ..add(FlagProperty('enabled', value: enabled, ifFalse: 'disabled'))
+      ..add(FlagProperty('toggleable', value: toggleable, ifTrue: 'toggleable'))
       ..add(
         DiagnosticsProperty<FocusNode>(
           'focusNode',
@@ -254,6 +217,8 @@ class CivicRadio<T> extends StatefulWidget {
 class _CivicRadioState<T> extends State<CivicRadio<T>> {
   FocusNode? _own;
 
+  FocusNode get _node => widget.focusNode ?? (_own ??= FocusNode());
+
   @override
   void dispose() {
     _own?.dispose();
@@ -262,42 +227,64 @@ class _CivicRadioState<T> extends State<CivicRadio<T>> {
 
   @override
   Widget build(BuildContext context) {
-    final scope = context
-        .dependOnInheritedWidgetOfExactType<_CivicRadioScope<T>>();
-    assert(scope != null, 'A CivicRadio stands in a CivicRadioGroup.');
-    final slot = context.dependOnInheritedWidgetOfExactType<_CivicRadioSlot>();
-    final chosen = scope?.groupValue == widget.value;
-    final change = scope?.onChanged;
-    // In its group, the answer takes the group's node (this radio's own
-    // focusNode, when it has one). The group says whether it can be chosen;
-    // a press tells the group's onChanged even when it is already chosen.
-    final node = slot?.focusNode ?? widget.focusNode ?? (_own ??= FocusNode());
-    final open = slot != null
-        ? slot.select != null
-        : change != null && widget.enabled;
-    final VoidCallback? press = open && change != null
-        ? () => change(widget.value)
-        : null;
-    // Space presses the answer as Enter does, the chosen one too: the
-    // group's own Space only chooses an answer not yet chosen.
-    return Shortcuts(
-      shortcuts: const {
-        SingleActivator(LogicalKeyboardKey.space): ActivateIntent(),
-      },
-      child: CivicOptionRow(
-        styles: [widget.style, context.civicTheme.radioStyle],
-        mark: chosen ? CivicMark.dot : CivicMark.none,
-        round: true,
-        checked: chosen,
-        inMutuallyExclusiveGroup: true,
-        labelText: widget.labelText,
-        helperText: widget.helperText,
-        focusNode: node,
+    final registry = RadioGroup.maybeOf<T>(context);
+    assert(registry != null, 'A CivicRadio stands in a CivicRadioGroup.');
+    final label = widget.labelText;
+    final helper = widget.helperText;
+    // One node for the answer: RawRadio's (checked, one of a group, its focus
+    // and its tap), with the words and the hint.
+    return MergeSemantics(
+      child: RawRadio<T>(
+        value: widget.value,
+        mouseCursor: WidgetStateMouseCursor.clickable,
+        toggleable: widget.toggleable,
+        focusNode: _node,
         autofocus: widget.autofocus,
-        onPressed: press,
+        groupRegistry: registry,
+        enabled: widget.enabled && _CivicRadioGroupEnabled.of(context),
+        builder: (context, radio) => Semantics(
+          label: label,
+          hint: helper,
+          child: ExcludeSemantics(
+            // All of it takes a press, its gaps too, as RawRadio's
+            // detector finds only what the face paints.
+            child: Listener(
+              behavior: HitTestBehavior.opaque,
+              child: CivicOptionFace(
+                // RawRadio's states, and pressed while a press is down on it.
+                states: {
+                  ...radio.states,
+                  if (radio.downPosition != null) WidgetState.pressed,
+                },
+                mark: radio.value ?? false ? CivicMark.dot : CivicMark.none,
+                round: true,
+                styles: [widget.style, context.civicTheme.radioStyle],
+                labelText: label,
+                helperText: helper,
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
+}
+
+// Whether the group round an answer takes a choice (its onChanged given).
+class _CivicRadioGroupEnabled extends InheritedWidget {
+  const _CivicRadioGroupEnabled({required this.enabled, required super.child});
+
+  final bool enabled;
+
+  static bool of(BuildContext context) =>
+      context
+          .dependOnInheritedWidgetOfExactType<_CivicRadioGroupEnabled>()
+          ?.enabled ??
+      true;
+
+  @override
+  bool updateShouldNotify(_CivicRadioGroupEnabled old) =>
+      enabled != old.enabled;
 }
 
 /// The word between a group's answers and the one that stands apart from

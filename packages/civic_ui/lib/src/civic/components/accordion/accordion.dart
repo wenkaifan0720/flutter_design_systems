@@ -212,7 +212,7 @@ class _ShowWords extends StatelessWidget {
   final CivicStyle? style;
 
   @override
-  Widget build(BuildContext context) => DesignPressable(
+  Widget build(BuildContext context) => RawButton(
     onPressed: onPressed,
     expanded: open,
     semanticLabel: words,
@@ -254,7 +254,7 @@ class _Section extends StatelessWidget {
     final heading = MergeSemantics(
       child: Semantics(
         header: true,
-        child: DesignPressable(
+        child: RawButton(
           onPressed: onToggle,
           expanded: open,
           semanticLabel: summary == null

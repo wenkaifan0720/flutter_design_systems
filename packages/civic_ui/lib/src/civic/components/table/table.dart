@@ -15,10 +15,10 @@ import '../pagination/pagination.dart';
 // and selection.
 export 'package:ui_core/ui_core.dart'
     show
-        DesignSelection,
-        DesignSortDirection,
-        DesignTableColumn,
-        DesignTableController;
+        RawDataTableSelection,
+        RawSortDirection,
+        RawDataColumn,
+        RawDataTableController;
 
 /// Rows of facts in columns: a [caption] in a heading's weight, the
 /// columns' names in bold over an ink rule, each row on a hairline rule,
@@ -65,14 +65,10 @@ class CivicTable<R> extends StatelessWidget {
   });
 
   /// The rows, the columns and the table's view of them.
-  final DesignTableController<R> controller;
+  final RawDataTableController<R> controller;
 
   /// A cell's content; the table sets its words' style.
-  final Widget Function(
-    BuildContext context,
-    R row,
-    DesignTableColumn<R> column,
-  )
+  final Widget Function(BuildContext context, R row, RawDataColumn<R> column)
   cellBuilder;
 
   /// What the table shows, over it.
@@ -193,7 +189,7 @@ class CivicTable<R> extends StatelessWidget {
         );
       }
 
-      final table = DesignDataTable<R>(
+      final table = RawDataTable<R>(
         controller: controller,
         selectable: selectable,
         onActivate: onActivate,
@@ -279,9 +275,8 @@ class CivicTable<R> extends StatelessWidget {
                       ),
                       Icon(
                         switch (sort) {
-                          DesignSortDirection.ascending => LucideIcons.arrowUp,
-                          DesignSortDirection.descending =>
-                            LucideIcons.arrowDown,
+                          RawSortDirection.ascending => LucideIcons.arrowUp,
+                          RawSortDirection.descending => LucideIcons.arrowDown,
                           null => LucideIcons.arrowUpDown,
                         },
                         size: _glyph,
@@ -394,7 +389,7 @@ class CivicTable<R> extends StatelessWidget {
 
   static double _columnWidth(
     BuildContext context,
-    DesignTableColumn<dynamic> column,
+    RawDataColumn<dynamic> column,
     TextStyle style,
     TextScaler scaler,
   ) {
@@ -408,7 +403,7 @@ class CivicTable<R> extends StatelessWidget {
   double _cellsWidth(
     BuildContext context,
     List<R> rows,
-    DesignTableColumn<R> column,
+    RawDataColumn<R> column,
     TextStyle style,
     TextScaler scaler,
   ) {
@@ -454,7 +449,10 @@ class CivicTable<R> extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(
-        DiagnosticsProperty<DesignTableController<R>>('controller', controller),
+        DiagnosticsProperty<RawDataTableController<R>>(
+          'controller',
+          controller,
+        ),
       )
       ..add(StringProperty('caption', caption, defaultValue: null))
       ..add(FlagProperty('selectable', value: selectable, ifTrue: 'selectable'))

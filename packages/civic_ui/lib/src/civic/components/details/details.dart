@@ -106,9 +106,9 @@ class _CivicDetailsState extends State<CivicDetails> {
     final t = context.civicTheme;
     final text = context.civicText;
     final rtl = Directionality.of(context) == TextDirection.rtl;
-    final summary = DesignTapTarget(
+    final summary = TapTargetPadding(
       alignment: AlignmentDirectional.centerStart,
-      child: DesignPressable(
+      child: RawButton(
         onPressed: _toggle,
         focusNode: widget.focusNode,
         expanded: _open,

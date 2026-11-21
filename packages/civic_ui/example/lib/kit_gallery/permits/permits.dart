@@ -489,7 +489,7 @@ class _PermitsAppState extends State<PermitsApp> {
             : 'Brindlemere parking permits',
         locale: rtl ? const Locale('ar') : const Locale('en'),
         localizationsDelegates: galleryDelegates,
-        supportedLocales: DesignLocalizations.supportedLocales,
+        supportedLocales: RawWidgetsLocalizations.supportedLocales,
         color: kitTheme(brightness).action,
         navigatorKey: _state.navigator,
         navigatorObservers: [_state.observer],

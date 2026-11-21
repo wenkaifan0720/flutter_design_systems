@@ -1,5 +1,5 @@
 // A combobox that looks its answers up (CivicCombobox's search, ui_core's
-// DesignCombobox running it): the list says "Loading" in words while it
+// RawCombobox running it): the list says "Loading" in words while it
 // looks, then the answers found; when the search fails it says so, with
 // "Try again" under it, which a press or Down and Enter runs again.
 // ignore_for_file: avoid_relative_lib_imports

@@ -21,7 +21,7 @@ Color _scrim(CivicThemeData t) => t.isDark
 /// as a card's, a grabber over its [title] and a Close button at the
 /// title's end, the content under them scrolling, [actions] at its foot
 /// over a hairline. From 600 wide it stands on the reading measure,
-/// centred. ui_core's [DesignBottomSheetRoute], Civic's painting.
+/// centred. ui_core's [RawBottomSheetRoute], Civic's painting.
 ///
 /// It rises on Civic's panel spring (under Reduce Motion it fades) and
 /// rides above the on-screen keyboard. A drag on the grabber or the title
@@ -63,7 +63,7 @@ Future<T?> showCivicBottomSheet<T>({
 }) {
   final t = CivicTheme.of(context);
   return Navigator.of(context, rootNavigator: useRootNavigator).push(
-    DesignBottomSheetRoute<T>(
+    RawBottomSheetRoute<T>(
       snapSizes: snapSizes,
       initialSize: initialSize,
       enableDrag: enableDrag,
@@ -100,7 +100,7 @@ Future<T?> showCivicBottomSheet<T>({
 /// hairline. [width] wide from 600 (at most the screen less 56); below 600
 /// it takes the screen's width, so its words keep their length at any text
 /// size.
-/// ui_core's [DesignSideSheetRoute], Civic's painting.
+/// ui_core's [RawSideSheetRoute], Civic's painting.
 ///
 /// It slides on Civic's panel spring (under Reduce Motion it fades); a drag
 /// toward its edge closes it. Close, Escape, Android's back and a press on
@@ -125,7 +125,7 @@ Future<T?> showCivicSideSheet<T>({
   required WidgetBuilder builder,
   String? title,
   List<Widget> actions = const [],
-  DesignSheetEdge edge = DesignSheetEdge.end,
+  RawSheetEdge edge = RawSheetEdge.end,
   double width = 400,
   bool isDismissible = true,
   bool useRootNavigator = true,
@@ -137,7 +137,7 @@ Future<T?> showCivicSideSheet<T>({
       (MediaQuery.maybeSizeOf(context)?.width ?? CivicLayout.medium) <
       CivicLayout.medium;
   return Navigator.of(context, rootNavigator: useRootNavigator).push(
-    DesignSideSheetRoute<T>(
+    RawSideSheetRoute<T>(
       edge: edge,
       width: phone ? double.infinity : width,
       minGap: phone ? 0 : 56,
@@ -240,7 +240,7 @@ Future<T?> showCivicActionSheet<T>({
         expand: true,
         onPressed: () => Navigator.of(context).pop(),
         child: Text(
-          cancelLabel ?? DesignLocalizations.of(context).cancelButtonLabel,
+          cancelLabel ?? RawWidgetsLocalizations.of(context).cancelButtonLabel,
         ),
       ),
     ),
@@ -288,7 +288,7 @@ class _ActionList<T> extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               for (final a in actions)
-                DesignPressable(
+                RawButton(
                   onPressed: a.enabled ? () => onSelected(a.value) : null,
                   semanticLabel: a.label,
                   excludeSemantics: true,
@@ -357,7 +357,7 @@ class _Head extends StatelessWidget {
     final heading = title;
     final shut = close;
     if (heading == null && shut == null) return const SizedBox.shrink();
-    final words = DesignLocalizations.of(context).closeButtonLabel;
+    final words = RawWidgetsLocalizations.of(context).closeButtonLabel;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -528,7 +528,7 @@ class _Grabber extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.civicTheme;
-    return DesignBottomSheetDragHandle(
+    return RawBottomSheetDragHandle(
       // The keyboard's focus lays the yellow plate round the rule, which
       // turns to the ink bar.
       builder: (context, states) => CivicSpringValue(

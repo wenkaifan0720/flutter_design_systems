@@ -47,7 +47,7 @@ class CivicSplitAction {
 /// chevron opens a menu of the actions like it ([actions]): Send now, and
 /// in the menu Send later or Save as a draft. Two buttons in Civic's
 /// material, two tap targets and two tab stops: ui_core's
-/// [DesignSplitButton], Civic's painting.
+/// [RawSplitButton], Civic's painting.
 ///
 /// The unnamed constructor is the page's one action (solid in the action
 /// colour); [CivicSplitButton.secondary] stands beside it in the action's
@@ -116,7 +116,7 @@ class CivicSplitButton extends StatelessWidget {
   final List<CivicSplitAction> actions;
 
   /// What a screen reader and the tooltip call the chevron's face; null:
-  /// [DesignLocalizations.splitButtonMenuLabel] ("More options").
+  /// [RawWidgetsLocalizations.splitButtonMenuLabel] ("More options").
   final String? menuLabel;
 
   /// Whether the action spans its column; null spans it below 600 wide.
@@ -134,11 +134,11 @@ class CivicSplitButton extends StatelessWidget {
         ? CivicButtonKind.secondary
         : CivicButtonKind.primary;
     final words =
-        menuLabel ?? DesignLocalizations.of(context).splitButtonMenuLabel;
+        menuLabel ?? RawWidgetsLocalizations.of(context).splitButtonMenuLabel;
     final width = MediaQuery.maybeSizeOf(context)?.width ?? 1024;
     final stretch = expand ?? width < CivicLayout.medium;
     final glyphs = actions.any((a) => a.icon != null);
-    final split = DesignSplitButton(
+    final split = RawSplitButton(
       label: label,
       onPressed: onPressed,
       menuLabel: words,
@@ -147,8 +147,8 @@ class CivicSplitButton extends StatelessWidget {
       minimumSize: const Size.square(CivicMetrics.controlHeight),
       // Under the pair from the action's start: a menu wider than the pair
       // grows toward the column's room, not past its start.
-      placement: const DesignOverlayPlacement(
-        align: DesignOverlayAlign.start,
+      placement: const RawPopoverPlacement(
+        align: RawPopoverAlign.start,
         gap: CivicSpacing.s8,
         preferredExtent: 240,
       ),
@@ -157,7 +157,7 @@ class CivicSplitButton extends StatelessWidget {
       actions: [
         if (onPressed != null)
           for (final a in actions)
-            DesignSplitAction(label: a.label, onPressed: a.onPressed, data: a),
+            RawSplitAction(label: a.label, onPressed: a.onPressed, data: a),
       ],
       // The two halves share one height, however the action's words wrap.
       layoutBuilder: (context, main, toggle) => IntrinsicHeight(
@@ -179,16 +179,16 @@ class CivicSplitButton extends StatelessWidget {
       // The pressable centres a face at its own size: each is told to take
       // its slot's height, and spanning, the action its width.
       buttonBuilder: (context, part, states, open) => SizedBox(
-        width: stretch && part == DesignSplitPart.main ? double.infinity : null,
+        width: stretch && part == RawSplitPart.main ? double.infinity : null,
         height: double.infinity,
         child: switch (part) {
-          DesignSplitPart.main => CivicButtonFace(
+          RawSplitPart.main => CivicButtonFace(
             states: states,
             kind: kind,
             style: style,
             child: Text(label),
           ),
-          DesignSplitPart.toggle => CivicButtonFace(
+          RawSplitPart.toggle => CivicButtonFace(
             states: states,
             kind: kind,
             style: style,
@@ -218,7 +218,7 @@ class CivicSplitButton extends StatelessWidget {
       },
       surfaceBuilder: (context, info, items) => civicRise(
         animation: info.animation,
-        fromAbove: info.side == DesignOverlaySide.below,
+        fromAbove: info.side == RawPopoverSide.below,
         child: CivicMenuPanel(
           child: ConstrainedBox(
             constraints: BoxConstraints(maxHeight: info.maxSize.height),

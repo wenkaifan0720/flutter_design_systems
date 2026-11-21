@@ -127,7 +127,7 @@ class _CivicRatingState extends State<CivicRating> {
   String _say(double v) {
     final custom = widget.valueLabel;
     if (custom != null) return custom(v);
-    final words = DesignLocalizations.of(context)
+    final words = RawWidgetsLocalizations.of(context)
         .ratingValueLabel(v, widget.itemCount);
     final labels = widget.labels;
     final whole = v.round();
@@ -156,7 +156,7 @@ class _CivicRatingState extends State<CivicRating> {
         : (widget.value.ceil() - 1).clamp(0, widget.itemCount - 1);
     final rating = CivicKeyFocus(
       node: _focus,
-      builder: (context, shown) => DesignRating(
+      builder: (context, shown) => RawRating(
         value: widget.value,
         onChanged: widget.onChanged,
         itemCount: widget.itemCount,
@@ -206,7 +206,7 @@ class _CivicRatingState extends State<CivicRating> {
         widget.errorText == null) {
       return body;
     }
-    return DesignField(
+    return RawInputDecorator(
       labelText: widget.labelText,
       helperText: widget.helperText,
       errorText: widget.errorText,
@@ -229,7 +229,7 @@ class _Mark extends StatelessWidget {
     required this.focused,
   });
 
-  final DesignRatingItemDetails item;
+  final RawRatingItemDetails item;
   final List<DesignStyle?> styles;
   final bool live;
   final bool focused;
@@ -248,7 +248,7 @@ class _Mark extends StatelessWidget {
     final ink = preview ? t.onSecondary : onInk;
     final pressed = item.states.contains(WidgetState.pressed);
     final size = MediaQuery.textScalerOf(context).scale(40).clamp(40.0, 64.0);
-    final figure = DesignLocalizations.of(context)
+    final figure = RawWidgetsLocalizations.of(context)
         .formatDecimal(item.index + 1);
     Widget number(Color color) => Center(
       child: Text(

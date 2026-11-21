@@ -42,7 +42,7 @@ void main() {
     final button = tester.getSize(
       find.ancestor(
         of: find.byIcon(LucideIcons.search),
-        matching: find.byType(DesignPressable),
+        matching: find.byType(RawButton),
       ),
     );
     expect(button.width, 48);

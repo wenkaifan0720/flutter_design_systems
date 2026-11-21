@@ -53,7 +53,7 @@ class CivicMenuItem<T> {
 /// A menu of worded [items] that opens from the control [builder] paints
 /// (a [CivicButton.secondary] saying what the menu holds: "Actions",
 /// "Download"), on the page's face floating on a hairline and the soft
-/// shadow, as an open list does: ui_core's [DesignAnchoredOverlay] as a
+/// shadow, as an open list does: ui_core's [RawPopover] as a
 /// menu, Civic's painting.
 ///
 /// A press on the control, Enter or Space opens it. A pointer greys the
@@ -95,7 +95,7 @@ class CivicMenu<T> extends StatelessWidget {
     this.semanticLabel,
     this.controller,
     this.onOpenChanged,
-    this.align = DesignOverlayAlign.start,
+    this.align = RawPopoverAlign.start,
     this.style,
   });
 
@@ -121,20 +121,20 @@ class CivicMenu<T> extends StatelessWidget {
 
   /// Which edge of the control it lines up with: its start by default, its
   /// end for a control at the end of a row.
-  final DesignOverlayAlign align;
+  final RawPopoverAlign align;
 
   /// Overrides for this menu's look.
   final CivicStyle? style;
 
   @override
-  Widget build(BuildContext context) => DesignAnchoredOverlay(
+  Widget build(BuildContext context) => RawPopover(
     controller: controller,
     arrowKeyNavigation: true,
     semanticLabel: semanticLabel,
     onOpenChanged: onOpenChanged,
     dampingRatio: CivicMotion.state.dampingRatio,
     stiffness: CivicMotion.state.stiffness,
-    placement: DesignOverlayPlacement(
+    placement: RawPopoverPlacement(
       gap: CivicSpacing.s8,
       align: align,
       preferredExtent: 240,
@@ -143,7 +143,7 @@ class CivicMenu<T> extends StatelessWidget {
     anchorBuilder: builder,
     overlayBuilder: (context, info) => civicRise(
       animation: info.animation,
-      fromAbove: info.side == DesignOverlaySide.below,
+      fromAbove: info.side == RawPopoverSide.below,
       child: CivicMenuPanel(
         style: style,
         child: ConstrainedBox(
@@ -155,7 +155,7 @@ class CivicMenu<T> extends StatelessWidget {
               children: [
                 for (final (i, item) in items.indexed) ...[
                   if (item.startsGroup && i > 0) const CivicMenuDivider(),
-                  DesignPressable(
+                  RawButton(
                     onPressed: item.enabled
                         ? () {
                             info.close();
@@ -193,10 +193,10 @@ class CivicMenu<T> extends StatelessWidget {
       ..add(IterableProperty<CivicMenuItem<T>>('items', items))
       ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(
-        EnumProperty<DesignOverlayAlign>(
+        EnumProperty<RawPopoverAlign>(
           'align',
           align,
-          defaultValue: DesignOverlayAlign.start,
+          defaultValue: RawPopoverAlign.start,
         ),
       )
       ..add(

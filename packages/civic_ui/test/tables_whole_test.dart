@@ -101,7 +101,7 @@ void main() {
         );
         expect(tester.takeException(), isNull);
         expectChartWordsApart(tester, where: name);
-        final l = DesignLocalizations.of(
+        final l = RawWidgetsLocalizations.of(
           tester.element(find.byType(CivicBarChart)),
         );
         await openChartTables(tester, l.chartShowTableLabel);

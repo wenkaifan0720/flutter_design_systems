@@ -68,9 +68,9 @@ class CivicTabBar extends StatefulWidget {
 
 class _CivicTabBarState extends State<CivicTabBar>
     with TickerProviderStateMixin {
-  late DesignTabController _controller = _make();
+  late RawTabController _controller = _make();
 
-  DesignTabController _make() => DesignTabController(
+  RawTabController _make() => RawTabController(
     length: widget.tabs.length,
     initialIndex: widget.tabs.isEmpty
         ? 0
@@ -119,12 +119,12 @@ class _CivicTabBarState extends State<CivicTabBar>
         border: Border(bottom: BorderSide(color: t.rule)),
       ),
       child: _EdgeCue(
-        child: DesignTabBar(
+        child: RawTabBar(
           controller: _controller,
           isScrollable: true,
           tabs: [
             for (final label in widget.tabs)
-              DesignTab(label: label, enabled: enabled),
+              RawTab(label: label, enabled: enabled),
           ],
           tabBuilder: (context, tab, details) => Padding(
             padding: EdgeInsetsDirectional.only(

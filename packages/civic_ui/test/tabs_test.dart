@@ -1,4 +1,4 @@
-// Civic's tabs on ui_core's DesignTabBar: one tab stop, the arrows moving
+// Civic's tabs on ui_core's RawTabBar: one tab stop, the arrows moving
 // along it (mirrored right to left) and choosing the tab they reach, a press
 // choosing too; a screen reader hears each tab with its place; the caller
 // holds the choice.

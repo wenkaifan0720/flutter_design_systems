@@ -90,7 +90,7 @@ class CivicNavigationBar extends StatelessWidget {
     final labels = [for (final d in destinations) d.label];
     final places = [
       for (final (i, d) in destinations.indexed)
-        DesignPressable(
+        RawButton(
           key: d.key,
           onPressed: onDestinationSelected == null
               ? null
@@ -201,7 +201,7 @@ class CivicSideNavigation extends StatelessWidget {
       footer: footer,
       places: [
         for (final (i, d) in destinations.indexed)
-          DesignPressable(
+          RawButton(
             key: d.key,
             onPressed: onDestinationSelected == null
                 ? null

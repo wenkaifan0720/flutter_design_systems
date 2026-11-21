@@ -108,7 +108,8 @@ class CivicButtonFace extends StatelessWidget {
     final focused = states.contains(WidgetState.focused) ? 1.0 : 0.0;
     final hovered = !busy && states.contains(WidgetState.hovered) ? 1.0 : 0.0;
     final scaler = MediaQuery.textScalerOf(context);
-    final busyWords = busyLabel ?? DesignLocalizations.of(context).loadingLabel;
+    final busyWords =
+        busyLabel ?? RawWidgetsLocalizations.of(context).loadingLabel;
     final words = (start ? text.headingM : text.button).merge(so.textStyle);
     final padding =
         so.padding(Directionality.of(context)) ??

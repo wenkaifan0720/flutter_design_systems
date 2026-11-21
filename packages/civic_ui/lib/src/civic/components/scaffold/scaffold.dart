@@ -238,7 +238,7 @@ class _SkipLinkState extends State<_SkipLink> {
       ),
       child: FocusTraversalOrder(
         order: const NumericFocusOrder(-1),
-        child: DesignPressable(
+        child: RawButton(
           onPressed: widget.onPressed,
           link: true,
           button: false,

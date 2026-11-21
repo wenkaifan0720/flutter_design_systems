@@ -62,7 +62,7 @@ class CivicProgressBar extends StatelessWidget {
     final t = context.civicTheme;
     final text = context.civicText;
     final so = DesignStyleOf([style, t.progressBarStyle], const {});
-    final l = DesignLocalizations.of(context);
+    final l = RawWidgetsLocalizations.of(context);
     final v = value?.clamp(0.0, 1.0);
     final share = v == null ? null : l.formatPercent(v);
     final under = valueLabel ?? share;

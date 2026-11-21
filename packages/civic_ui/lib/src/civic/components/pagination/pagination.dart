@@ -101,7 +101,7 @@ class CivicPagination extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.civicTheme;
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     final rtl = Directionality.of(context) == TextDirection.rtl;
     final go = onPageChanged;
     Widget arrow(IconData icon) => Transform.flip(
@@ -263,8 +263,8 @@ class _PageNumber extends StatelessWidget {
     final address = url;
     final pressed = onPressed;
     Widget face(VoidCallback? onPressed, {required bool link}) =>
-        DesignTapTarget(
-          child: DesignPressable(
+        TapTargetPadding(
+          child: RawButton(
             onPressed: onPressed,
             // A link to its page when it has an address; else a button.
             button: !link && onPressed != null,

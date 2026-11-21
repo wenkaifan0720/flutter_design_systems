@@ -17,7 +17,7 @@ import '../../theme.dart';
 /// is a tab stop the arrow keys and Page Up and Page Down scroll, standing
 /// in the yellow ring while the keyboard is on it. Its content then stands
 /// 8 in from the region's edge, so the focus never touches the words. ui_core's
-/// [DesignScrollArea], Civic's painting.
+/// [RawScrollArea], Civic's painting.
 ///
 /// Reads [CivicStyle]'s fill (the thumb, by state) and edge (the track):
 /// its `style:`, then [CivicThemeData.scrollAreaStyle].
@@ -66,7 +66,7 @@ class CivicScrollArea extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.civicTheme;
-    return DesignScrollArea(
+    return RawScrollArea(
       controller: controller,
       axis: axis,
       thickness: _thickness,

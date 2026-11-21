@@ -172,8 +172,8 @@ class CivicButton extends StatelessWidget {
     // can still measure the button by its words.
     return _Stretch(
       stretch: stretch,
-      child: DesignTapTarget(
-        child: DesignPressable(
+      child: TapTargetPadding(
+        child: RawButton(
           // Busy, it keeps its focus and its look: it takes the press and
           // does nothing with it.
           onPressed: busy && onPressed != null ? _hold : onPressed,

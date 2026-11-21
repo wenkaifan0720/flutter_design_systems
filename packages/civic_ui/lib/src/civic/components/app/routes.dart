@@ -101,7 +101,7 @@ class CivicSheetPage<T> extends Page<T> {
 /// ```
 ///
 /// On iOS a page also pops with a swipe from the screen's leading edge, as
-/// every iOS page does ([DesignSwipeBackPageTransitionsBuilder]): the page
+/// every iOS page does ([SwipeBackPageTransitionsBuilder]): the page
 /// follows the finger while it drags; a full-screen task takes no swipe.
 ///
 /// A place switched in the app's frame (a tab, the side navigation) is no
@@ -160,7 +160,7 @@ class CivicPageRoute<T> extends PageRoute<T> {
     Animation<double> secondaryAnimation,
     Widget child,
   ) => defaultTargetPlatform == TargetPlatform.iOS
-      ? const DesignSwipeBackPageTransitionsBuilder(
+      ? const SwipeBackPageTransitionsBuilder(
           CivicPageTransitions(),
         ).buildTransitions(this, context, animation, secondaryAnimation, child)
       : _civicPageChange(context, animation, child);
@@ -196,7 +196,7 @@ Widget _civicPageChange(
 /// pushes Flutter's `MaterialPageRoute`, which reads only the app's theme
 /// (on a Mac it would play the Cupertino slide), so the app puts it there.
 /// On iOS the change keeps the swipe back from the screen's leading edge
-/// round it ([DesignSwipeBackPageTransitionsBuilder]).
+/// round it ([SwipeBackPageTransitionsBuilder]).
 ///
 /// ```dart
 /// MaterialApp(
@@ -213,9 +213,7 @@ const Map<TargetPlatform, PageTransitionsBuilder> civicPageTransitions = {
   TargetPlatform.android: CivicPageTransitions(),
   TargetPlatform.fuchsia: CivicPageTransitions(),
   // iOS's swipe back from the screen's edge, round Civic's page change.
-  TargetPlatform.iOS: DesignSwipeBackPageTransitionsBuilder(
-    CivicPageTransitions(),
-  ),
+  TargetPlatform.iOS: SwipeBackPageTransitionsBuilder(CivicPageTransitions()),
   TargetPlatform.linux: CivicPageTransitions(),
   TargetPlatform.macOS: CivicPageTransitions(),
   TargetPlatform.windows: CivicPageTransitions(),

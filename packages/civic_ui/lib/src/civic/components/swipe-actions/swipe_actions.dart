@@ -10,7 +10,7 @@ import '../icon-button/icon_button.dart';
 import '../menu/menu.dart';
 
 // A row's caller may open and shut it from outside.
-export 'package:ui_core/ui_core.dart' show DesignSwipeActionsController;
+export 'package:ui_core/ui_core.dart' show RawSwipeActionsController;
 
 /// An action a [CivicSwipeActions] row holds: its words, what it runs, a
 /// glyph beside the words, and whether it destroys something.
@@ -50,7 +50,7 @@ class CivicSwipeAction {
 /// holds the same actions, for a pointer, the keys and anyone who never
 /// thinks to swipe. With the keyboard in the row, the arrow keys open a
 /// side and Escape shuts it; a screen reader has them as the row's own
-/// actions. ui_core's [DesignSwipeActions], Civic's painting.
+/// actions. ui_core's [RawSwipeActions], Civic's painting.
 ///
 /// Reads [CivicStyle]'s fill (an ordinary action's ground, by state) and
 /// foreground (its words): its `style:`, then
@@ -115,12 +115,12 @@ class CivicSwipeActions extends StatelessWidget {
   final ValueChanged<bool>? onOpenChanged;
 
   /// Opens and shuts it from outside; the caller's.
-  final DesignSwipeActionsController? controller;
+  final RawSwipeActionsController? controller;
 
   /// Overrides for this row's look.
   final CivicStyle? style;
 
-  DesignSwipeAction _design(CivicSwipeAction a) => DesignSwipeAction(
+  RawSwipeAction _design(CivicSwipeAction a) => RawSwipeAction(
     label: a.label,
     onPressed: a.onPressed,
     destructive: a.isDestructiveAction,
@@ -137,7 +137,7 @@ class CivicSwipeActions extends StatelessWidget {
               Expanded(child: child),
               CivicMenu<CivicSwipeAction>(
                 semanticLabel: menuLabel,
-                align: DesignOverlayAlign.end,
+                align: RawPopoverAlign.end,
                 items: [
                   for (final a in all)
                     CivicMenuItem(
@@ -157,7 +157,7 @@ class CivicSwipeActions extends StatelessWidget {
               ),
             ],
           );
-    return DesignSwipeActions(
+    return RawSwipeActions(
       startActions: [for (final a in startActions) _design(a)],
       endActions: [for (final a in endActions) _design(a)],
       actionExtent: 88,
@@ -204,7 +204,7 @@ class _Ground extends StatelessWidget {
   });
 
   final CivicSwipeAction action;
-  final DesignSwipeActionDetails details;
+  final RawSwipeActionDetails details;
   final CivicStyle? style;
 
   @override

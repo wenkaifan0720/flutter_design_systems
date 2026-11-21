@@ -204,14 +204,14 @@ class _CivicChoiceGroup<T> extends StatelessWidget {
         child: Text(segment?.label ?? '$value'),
       );
       // A band's faces fill their equal shares, seam to seam.
-      return DesignTapTarget(
+      return TapTargetPadding(
         child: joined ? SizedBox(width: double.infinity, child: face) : face,
       );
     }
 
     final Widget group;
     if (multiSelectionEnabled) {
-      group = DesignToggleGroup<T>(
+      group = RawSegmentedButton<T>(
         options: [for (final s in segments) s.value],
         selected: selected,
         onSelectionChanged: change,
@@ -237,15 +237,9 @@ class _CivicChoiceGroup<T> extends StatelessWidget {
           onChanged: change == null ? null : (v) => change({v}),
           isEnabled: (v) => byValue[v]?.enabled ?? false,
           layout: layout,
-          item: (context, v, node, select, jump) => DesignPressable(
-            focusNode: node,
-            onPressed: select,
-            selected: v == value,
-            checked: v == value,
-            inMutuallyExclusiveGroup: true,
-            minimumSize: const Size(48, 48),
-            semanticLabel: labelOf(v),
-            excludeSemantics: true,
+          // Each segment a radio of the band's RadioGroup; Home and End
+          // choose the first and the last.
+          item: (context, v, node, enabled, jump) => Shortcuts(
             shortcuts: const {
               SingleActivator(LogicalKeyboardKey.home): _CivicEndIntent(
                 last: false,
@@ -254,15 +248,52 @@ class _CivicChoiceGroup<T> extends StatelessWidget {
                 last: true,
               ),
             },
-            actions: {
-              _CivicEndIntent: CallbackAction<_CivicEndIntent>(
-                onInvoke: (intent) {
-                  jump(intent.last);
-                  return null;
-                },
+            child: Actions(
+              actions: {
+                _CivicEndIntent: CallbackAction<_CivicEndIntent>(
+                  onInvoke: (intent) {
+                    jump(intent.last);
+                    return null;
+                  },
+                ),
+              },
+              child: MergeSemantics(
+                child: RawRadio<T>(
+                  value: v,
+                  mouseCursor: WidgetStateMouseCursor.clickable,
+                  toggleable: false,
+                  focusNode: node,
+                  autofocus: false,
+                  groupRegistry: RadioGroup.maybeOf<T>(context),
+                  enabled: enabled,
+                  builder: (context, radio) => Semantics(
+                    label: labelOf(v),
+                    child: ExcludeSemantics(
+                      // All of it takes a press, its gaps too, as RawRadio's
+                      // detector finds only what the face paints.
+                      child: Listener(
+                        behavior: HitTestBehavior.opaque,
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(
+                            minWidth: 48,
+                            minHeight: 48,
+                          ),
+                          child: Center(
+                            widthFactor: 1,
+                            heightFactor: 1,
+                            child: face(context, v, {
+                              ...radio.states,
+                              if (radio.downPosition != null)
+                                WidgetState.pressed,
+                            }),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
               ),
-            },
-            builder: (context, states, _) => face(context, v, states),
+            ),
           ),
         ),
       );
@@ -270,7 +301,7 @@ class _CivicChoiceGroup<T> extends StatelessWidget {
     if (labelText == null && helperText == null && errorText == null) {
       return group;
     }
-    return DesignField(
+    return RawInputDecorator(
       labelText: labelText,
       helperText: helperText,
       errorText: errorText,
@@ -310,7 +341,7 @@ class _CivicSegmentRadios<T> extends StatefulWidget {
     BuildContext context,
     T value,
     FocusNode node,
-    VoidCallback? select,
+    bool enabled,
     ValueChanged<bool> jump,
   )
   item;
@@ -358,16 +389,32 @@ class _CivicSegmentRadiosState<T> extends State<_CivicSegmentRadios<T>> {
     _nodes[to]?.requestFocus();
   }
 
+  // Flutter's radio group, with ui_core's keyboard fix round the segments.
+  // A segment's value may be null; its radios are not toggleable, so the
+  // group never clears the choice.
   @override
-  Widget build(BuildContext context) => DesignRadioGroup<T>(
-    options: widget.values,
-    value: widget.value,
-    onChanged: widget.onChanged,
-    isEnabled: widget.isEnabled,
-    focusNodeFor: _node,
-    itemBuilder: (context, value, node, select) =>
-        widget.item(context, value, node, select, _jump),
-    layoutBuilder: widget.layout,
+  Widget build(BuildContext context) => RadioGroup<T>(
+    groupValue: widget.value,
+    onChanged: (next) {
+      if (next != widget.value) widget.onChanged?.call(next as T);
+    },
+    child: RadioGroupKeyboardFix<T>(
+      child: Builder(
+        builder: (context) => widget.layout(context, [
+          for (final value in widget.values)
+            KeyedSubtree(
+              key: ObjectKey(value),
+              child: widget.item(
+                context,
+                value,
+                _node(value),
+                widget.onChanged != null && widget.isEnabled(value),
+                _jump,
+              ),
+            ),
+        ]),
+      ),
+    ),
   );
 }
 

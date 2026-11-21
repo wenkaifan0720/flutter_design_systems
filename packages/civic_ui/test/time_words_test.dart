@@ -29,7 +29,7 @@ void main() {
             builder: (context) => Localizations.override(
               context: context,
               locale: locale,
-              delegates: const [DesignLocalizations.delegate],
+              delegates: const [RawWidgetsLocalizations.delegate],
               child: Center(child: Builder(builder: wheel)),
             ),
           ),

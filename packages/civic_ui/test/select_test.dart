@@ -81,10 +81,7 @@ Future<(Rect field, Rect list)> _open(
   await tester.pumpAndSettle();
   final field = tester.getRect(
     find
-        .ancestor(
-          of: find.text('Car or van'),
-          matching: find.byType(DesignPressable),
-        )
+        .ancestor(of: find.text('Car or van'), matching: find.byType(RawButton))
         .first,
   );
   await tester.tap(find.text('Car or van'));

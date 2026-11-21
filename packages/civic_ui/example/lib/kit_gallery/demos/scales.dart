@@ -24,7 +24,7 @@ class _Sliders extends StatefulWidget {
 
 class _SlidersState extends State<_Sliders> {
   double _size = 150;
-  DesignRangeValues _cost = const DesignRangeValues(20, 60);
+  RawRangeValues _cost = const RawRangeValues(20, 60);
 
   @override
   Widget build(BuildContext context) => KitSection(
@@ -105,7 +105,7 @@ class _Colours extends StatefulWidget {
 }
 
 class _ColoursState extends State<_Colours> {
-  final _badge = DesignColorController(const Color(0xFF0F4C81));
+  final _badge = RawColorController(const Color(0xFF0F4C81));
 
   @override
   void dispose() {

@@ -131,18 +131,18 @@ class _Fees extends StatefulWidget {
 }
 
 class _FeesState extends State<_Fees> {
-  final _fees = DesignTableController<_Fee>(
+  final _fees = RawDataTableController<_Fee>(
     rows: const [
       (permit: 'Resident permit', year: '€60'),
       (permit: 'Electric vehicle', year: '€30'),
     ],
     columns: [
-      DesignTableColumn<_Fee>(
+      RawDataColumn<_Fee>(
         id: 'permit',
         label: 'Permit',
         sortKey: (f) => f.permit,
       ),
-      DesignTableColumn<_Fee>(
+      RawDataColumn<_Fee>(
         id: 'year',
         label: 'A year',
         numeric: true,
@@ -165,7 +165,7 @@ class _FeesState extends State<_Fees> {
   );
 }
 
-Widget _fee(BuildContext context, _Fee fee, DesignTableColumn<_Fee> column) =>
+Widget _fee(BuildContext context, _Fee fee, RawDataColumn<_Fee> column) =>
     Text(column.id == 'year' ? fee.year : fee.permit);
 
 /// The calendar's specimen: it owns its controller.
@@ -177,7 +177,7 @@ class _Days extends StatefulWidget {
 }
 
 class _DaysState extends State<_Days> {
-  final _days = DesignCalendarController(
+  final _days = RawCalendarController(
     firstDate: DateTime(2026),
     lastDate: DateTime(2026, 12, 31),
     selectedDate: DateTime(2026, 11, 24),
@@ -203,7 +203,7 @@ class _Colour extends StatefulWidget {
 }
 
 class _ColourState extends State<_Colour> {
-  final _colour = DesignColorController(const Color(0xFF0F4C81));
+  final _colour = RawColorController(const Color(0xFF0F4C81));
 
   @override
   void dispose() {
@@ -537,7 +537,7 @@ final DesignInventory civicInventory = DesignInventory(
       'RangeSlider',
       (_) => const CivicRangeSlider(
         labelText: 'Monthly cost',
-        values: DesignRangeValues(20, 60),
+        values: RawRangeValues(20, 60),
         max: 100,
         divisions: 20,
         onChanged: _drop,
@@ -605,7 +605,7 @@ final DesignInventory civicInventory = DesignInventory(
       'TimePicker',
       (_) => const CivicTimeInput(
         labelText: 'What time will you arrive?',
-        value: DesignTimeOfDay(hour: 9, minute: 30),
+        value: RawTimeOfDay(hour: 9, minute: 30),
         onChanged: _drop,
       ),
     ),
@@ -616,15 +616,16 @@ final DesignInventory civicInventory = DesignInventory(
       (context) => CivicWheelPicker(
         labelText: 'Collection time',
         columns: (_) => [
-          DesignWheelColumn(
+          RawPickerColumn(
             itemCount: 24,
             itemLabel: (i) => '$i'.padLeft(2, '0'),
-            semanticLabel: DesignLocalizations.of(context).timePickerHourLabel,
+            semanticLabel: RawWidgetsLocalizations.of(context)
+                .timePickerHourLabel,
           ),
-          DesignWheelColumn(
+          RawPickerColumn(
             itemCount: 4,
             itemLabel: (i) => '${i * 15}'.padLeft(2, '0'),
-            semanticLabel: DesignLocalizations.of(context)
+            semanticLabel: RawWidgetsLocalizations.of(context)
                 .timePickerMinuteLabel,
           ),
         ],
@@ -731,12 +732,12 @@ final DesignInventory civicInventory = DesignInventory(
           onPressed: () => showCivicCommandPalette(
             context: context,
             commands: const [
-              DesignCommand(
+              RawCommand(
                 label: 'Your applications',
                 group: 'Pages',
                 onPressed: _none,
               ),
-              DesignCommand(
+              RawCommand(
                 label: 'Apply for a permit',
                 group: 'Actions',
                 onPressed: _none,

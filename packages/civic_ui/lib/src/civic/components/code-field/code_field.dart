@@ -8,7 +8,7 @@ import '../../material.dart';
 import '../../theme.dart';
 
 // A code's caller builds its controller and reads the code.
-export 'package:ui_core/ui_core.dart' show DesignOtpController;
+export 'package:ui_core/ui_core.dart' show RawOtpController;
 
 /// A code sent to someone (by text message, by email) typed back: one well,
 /// as wide as the code, its figures in the mono face spread one to a
@@ -55,7 +55,7 @@ class CivicCodeField extends StatefulWidget {
   final int length;
 
   /// Holds the code, when the caller does; the caller disposes it.
-  final DesignOtpController? controller;
+  final RawOtpController? controller;
 
   /// {@macro civic.focusNode}
   final FocusNode? focusNode;
@@ -151,7 +151,7 @@ class _CivicCodeFieldState extends State<CivicCodeField> {
                 so.foreground ??
                 (widget.enabled ? t.textPrimary : t.textDisabled),
           );
-          return DesignOtpField(
+          return RawOtpField(
             length: widget.length,
             controller: widget.controller,
             focusNode: _focus,
@@ -206,7 +206,7 @@ class _CivicCodeFieldState extends State<CivicCodeField> {
         widget.errorText == null) {
       return field;
     }
-    return DesignField(
+    return RawInputDecorator(
       labelText: widget.labelText,
       helperText: widget.helperText,
       errorText: widget.errorText,
@@ -224,7 +224,7 @@ class _CivicCodeFieldState extends State<CivicCodeField> {
 class _Place extends StatelessWidget {
   const _Place({required this.slot, required this.style, required this.rule});
 
-  final DesignOtpSlot slot;
+  final RawOtpSlot slot;
   final TextStyle style;
   final Color rule;
 

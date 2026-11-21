@@ -108,7 +108,7 @@ class CivicMultiSelect<T extends Object> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.civicTheme;
-    final input = DesignTagInput<T>(
+    final input = RawTagInput<T>(
       values: values,
       onChanged: enabled ? onChanged : (_) {},
       options: options,
@@ -165,7 +165,7 @@ class CivicMultiSelect<T extends Object> extends StatelessWidget {
     if (labelText == null && helperText == null && errorText == null) {
       return input;
     }
-    return DesignField(
+    return RawInputDecorator(
       labelText: labelText,
       helperText: helperText,
       errorText: errorText,
@@ -203,7 +203,7 @@ class _Chosen extends StatefulWidget {
   });
 
   final String label;
-  final DesignTagDetails tag;
+  final RawTagDetails tag;
   final bool enabled;
   final List<CivicStyle?> styles;
 
@@ -226,7 +226,7 @@ class _ChosenState extends State<_Chosen> {
       if (enabled && _pressed) WidgetState.pressed,
       if (widget.tag.focused) WidgetState.focused,
     };
-    return DesignTapTarget(
+    return TapTargetPadding(
       child: MouseRegion(
         cursor: enabled ? SystemMouseCursors.click : MouseCursor.defer,
         onEnter: (_) => setState(() => _hovered = true),
@@ -244,7 +244,7 @@ class _ChosenState extends State<_Chosen> {
               : null,
           child: Semantics(
             label: widget.label,
-            hint: DesignLocalizations.of(context).tagInputDeleteLabel,
+            hint: RawWidgetsLocalizations.of(context).tagInputDeleteLabel,
             excludeSemantics: true,
             child: CivicChoiceFace(
               states: states,

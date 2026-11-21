@@ -31,12 +31,12 @@ class _Fees extends StatefulWidget {
 }
 
 class _FeesState extends State<_Fees> {
-  final _rows = DesignTableController<_Fee>(
+  final _rows = RawDataTableController<_Fee>(
     rows: _fees,
     columns: const [
-      DesignTableColumn(id: 'permit', label: 'Permit'),
-      DesignTableColumn(id: 'year', label: 'A year', numeric: true),
-      DesignTableColumn(id: 'month', label: 'A month', numeric: true),
+      RawDataColumn(id: 'permit', label: 'Permit'),
+      RawDataColumn(id: 'year', label: 'A year', numeric: true),
+      RawDataColumn(id: 'month', label: 'A month', numeric: true),
     ],
   );
 
@@ -83,13 +83,13 @@ class _Permits extends StatefulWidget {
 }
 
 class _PermitsState extends State<_Permits> {
-  final _rows = DesignTableController<_Permit>(
+  final _rows = RawDataTableController<_Permit>(
     rows: _permits,
     pageSize: 4,
     columns: [
-      DesignTableColumn(id: 'reg', label: 'Vehicle', sortKey: (p) => p.reg),
-      DesignTableColumn(id: 'zone', label: 'Zone', sortKey: (p) => p.zone),
-      DesignTableColumn(
+      RawDataColumn(id: 'reg', label: 'Vehicle', sortKey: (p) => p.reg),
+      RawDataColumn(id: 'zone', label: 'Zone', sortKey: (p) => p.zone),
+      RawDataColumn(
         id: 'days',
         label: 'Days left',
         numeric: true,

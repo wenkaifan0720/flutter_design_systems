@@ -337,7 +337,7 @@ class _CivicTextFieldState extends State<CivicTextField> {
     final enabled = widget.enabled;
     final hasError = widget.errorText != null || widget.isError;
     final oneLine = widget.maxLines == 1 || widget.obscureText;
-    return DesignField(
+    return RawInputDecorator(
       labelText: widget.labelText,
       helperText: widget.helperText,
       errorText: widget.errorText,

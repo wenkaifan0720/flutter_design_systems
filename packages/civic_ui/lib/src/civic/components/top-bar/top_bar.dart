@@ -96,7 +96,7 @@ class CivicTopBar extends StatelessWidget {
   /// CivicTopBar(title: 'Your permit', leading: CivicTopBar.autoLeading(context))
   /// ```
   static Widget? autoLeading(BuildContext context, {Key? key}) {
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     void leave() => Navigator.maybePop(context);
     return switch (RoutePresentation.of(context)) {
       RoutePresentation.root => null,
@@ -136,8 +136,8 @@ class CivicTopBar extends StatelessWidget {
     child: CivicIconButton(
       key: key,
       icon: LucideIcons.chevronLeft,
-      semanticLabel: DesignLocalizations.of(context).backButtonTooltip,
-      tooltip: DesignLocalizations.of(context).backButtonTooltip,
+      semanticLabel: RawWidgetsLocalizations.of(context).backButtonTooltip,
+      tooltip: RawWidgetsLocalizations.of(context).backButtonTooltip,
       onPressed: onPressed,
     ),
   );
@@ -171,7 +171,7 @@ class CivicTopBar extends StatelessWidget {
     final press = onTitlePressed;
     final titleWidget = press == null
         ? Semantics(header: false, child: name)
-        : DesignPressable(
+        : RawButton(
             onPressed: press,
             link: true,
             button: false,

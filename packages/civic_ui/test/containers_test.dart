@@ -708,8 +708,12 @@ void main() {
     });
 
     test("an amount's figures are the reader's", () async {
-      final en = await DesignLocalizations.delegate.load(const Locale('en'));
-      final ar = await DesignLocalizations.delegate.load(const Locale('ar'));
+      final en = await RawWidgetsLocalizations.delegate.load(
+        const Locale('en'),
+      );
+      final ar = await RawWidgetsLocalizations.delegate.load(
+        const Locale('ar'),
+      );
       expect(CivicAmount.show(6250, words: en), '€62.50');
       expect(CivicAmount.show(124000, words: en), '€1,240');
       expect(CivicAmount.show(-500, words: en), '−€5');

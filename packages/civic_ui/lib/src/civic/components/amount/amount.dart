@@ -124,7 +124,7 @@ class CivicAmount extends StatelessWidget {
     int minorUnits, {
     CivicCurrency currency = CivicCurrency.euro,
     bool cents = false,
-    DesignLocalizations? words,
+    RawWidgetsLocalizations? words,
   }) {
     final magnitude = minorUnits.abs();
     final String shown;
@@ -151,7 +151,7 @@ class CivicAmount extends StatelessWidget {
       minorUnits,
       currency: currency,
       cents: cents,
-      words: DesignLocalizations.of(context),
+      words: RawWidgetsLocalizations.of(context),
     );
     return Semantics(
       label: currency.read(minorUnits),

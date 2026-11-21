@@ -34,7 +34,7 @@ void main() {
         expect(tester.takeException(), isNull);
         expectWordsWhole(tester, where: page.id);
         expectChartWordsApart(tester, where: page.id);
-        final l = DesignLocalizations.of(
+        final l = RawWidgetsLocalizations.of(
           tester.element(find.byType(Navigator).first),
         );
         await openChartTables(tester, l.chartShowTableLabel);

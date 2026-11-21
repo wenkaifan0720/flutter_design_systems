@@ -56,7 +56,7 @@ void main() {
       for (final direction in TextDirection.values) {
         testWidgets('a calendar month stands at most its width from the '
             'start, ${_at(width, text, direction)}', (tester) async {
-          final days = DesignCalendarController(
+          final days = RawCalendarController(
             firstDate: DateTime(2026),
             lastDate: DateTime(2027, 12, 31),
             initialMonth: DateTime(2026, 11),
@@ -145,7 +145,7 @@ void main() {
                 ),
                 CivicDateRangePicker(
                   labelText: 'Stay',
-                  value: DesignDateRange(
+                  value: RawDateRange(
                     DateTime(2026, 12, 28),
                     DateTime(2026, 12, 30),
                   ),
@@ -155,7 +155,7 @@ void main() {
                 ),
                 CivicTimeInput(
                   labelText: 'Arrival',
-                  value: const DesignTimeOfDay(hour: 12, minute: 45),
+                  value: const RawTimeOfDay(hour: 12, minute: 45),
                   onChanged: (_) {},
                 ),
               ],

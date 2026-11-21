@@ -147,7 +147,7 @@ class _CivicSearchFieldState extends State<CivicSearchField> {
 
   @override
   Widget build(BuildContext context) {
-    final words = DesignLocalizations.of(context).searchFieldLabel;
+    final words = RawWidgetsLocalizations.of(context).searchFieldLabel;
     final submit = widget.onSubmitted;
     return CivicTextField(
       controller: _controller,
@@ -189,7 +189,7 @@ class _SearchButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.civicTheme;
-    return DesignPressable(
+    return RawButton(
       onPressed: onPressed,
       semanticLabel: label,
       mouseCursor: onPressed == null

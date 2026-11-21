@@ -136,8 +136,8 @@ class _CivicPasswordFieldState extends State<CivicPasswordField> {
 
   @override
   Widget build(BuildContext context) {
-    final words = DesignLocalizations.of(context);
-    return DesignPasswordReveal(
+    final words = RawWidgetsLocalizations.of(context);
+    return RawPasswordReveal(
       focusNode: _focus,
       builder: (context, password) => Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,

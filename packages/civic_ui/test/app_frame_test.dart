@@ -387,14 +387,14 @@ void main() {
         final builder = theme.pageTransitionsTheme.builders[platform];
         // On iOS, Civic's change with the swipe back from the edge round it.
         expect(
-          builder is DesignSwipeBackPageTransitionsBuilder
+          builder is SwipeBackPageTransitionsBuilder
               ? builder.builder
               : builder,
           isA<CivicPageTransitions>(),
           reason: '$platform',
         );
         expect(
-          builder is DesignSwipeBackPageTransitionsBuilder,
+          builder is SwipeBackPageTransitionsBuilder,
           platform == TargetPlatform.iOS,
           reason: '$platform',
         );

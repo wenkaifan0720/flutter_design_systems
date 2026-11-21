@@ -57,7 +57,7 @@ class CivicFieldset extends StatelessWidget {
   final Axis direction;
 
   @override
-  Widget build(BuildContext context) => DesignField(
+  Widget build(BuildContext context) => RawInputDecorator(
     labelText: labelText,
     helperText: helperText,
     errorText: errorText,

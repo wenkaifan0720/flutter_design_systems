@@ -539,12 +539,12 @@ void main() {
     showCivicCommandPalette(
       context: page,
       commands: [
-        DesignCommand(
+        RawCommand(
           label: 'Your permits',
           group: 'Pages',
           onPressed: () => ran.add('permits'),
         ),
-        DesignCommand(
+        RawCommand(
           label: 'Apply for a permit',
           group: 'Actions',
           onPressed: () => ran.add('apply'),

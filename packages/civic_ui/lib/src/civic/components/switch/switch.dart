@@ -73,7 +73,7 @@ class CivicSwitch extends StatelessWidget {
     final change = onChanged;
     final label = labelText;
     final helper = helperText;
-    return DesignPressable(
+    return RawButton(
       onPressed: change == null ? null : () => change(!value),
       focusNode: focusNode,
       autofocus: autofocus,

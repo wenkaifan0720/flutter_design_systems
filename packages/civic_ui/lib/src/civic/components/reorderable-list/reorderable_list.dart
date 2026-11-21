@@ -17,7 +17,7 @@ import '../link/link.dart';
 /// darkens it, a keyboard focus lays it on the yellow plate over the ink
 /// bar, and the row being dragged stands on an ink edge. A screen reader
 /// hears where it landed ("Proof of address, 2 of 4"). ui_core's
-/// [DesignReorderableList], Civic's painting.
+/// [RawReorderableList], Civic's painting.
 ///
 /// Reads [CivicStyle]'s fill (the card) and foreground (the grip, by
 /// state): its `style:`, then [CivicThemeData.reorderableListStyle].
@@ -79,7 +79,7 @@ class CivicReorderableList<T extends Object> extends StatelessWidget {
       borderRadius: BorderRadius.circular(CivicMetrics.cardCorner),
       child: ColoredBox(
         color: so.fill ?? t.background,
-        child: DesignReorderableList<T>(
+        child: RawReorderableList<T>(
           items: items,
           onReorder: onReorder,
           labelOf: labelOf,

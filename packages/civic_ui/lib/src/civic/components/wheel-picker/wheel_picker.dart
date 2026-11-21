@@ -7,7 +7,7 @@ import '../../material.dart';
 import '../../theme.dart';
 
 // A wheel's caller gives its columns.
-export 'package:ui_core/ui_core.dart' show DesignWheelColumn;
+export 'package:ui_core/ui_core.dart' show RawPickerColumn;
 
 /// Linked lists turned to a choice, a column each (hours and minutes, a
 /// month and its days): every column a flat well, the row chosen across its
@@ -28,8 +28,8 @@ export 'package:ui_core/ui_core.dart' show DesignWheelColumn;
 /// CivicWheelPicker(
 ///   labelText: 'Arrival time',
 ///   columns: (_) => [
-///     DesignWheelColumn(itemCount: 24, itemLabel: (i) => '$i', looping: true),
-///     DesignWheelColumn(itemCount: 4, itemLabel: (i) => '${i * 15}'.padLeft(2, '0')),
+///     RawPickerColumn(itemCount: 24, itemLabel: (i) => '$i', looping: true),
+///     RawPickerColumn(itemCount: 4, itemLabel: (i) => '${i * 15}'.padLeft(2, '0')),
 ///   ],
 ///   selection: slot,
 ///   onChanged: (next) => setState(() => slot = next),
@@ -51,7 +51,7 @@ class CivicWheelPicker extends StatelessWidget {
   }) : assert(visibleItemCount > 0 && visibleItemCount % 2 == 1);
 
   /// The columns for a selection (a month's days follow its month).
-  final List<DesignWheelColumn> Function(List<int> selection) columns;
+  final List<RawPickerColumn> Function(List<int> selection) columns;
 
   /// The row chosen in each column.
   final List<int> selection;
@@ -99,7 +99,7 @@ class CivicWheelPicker extends StatelessWidget {
             2 * (CivicSpacing.s16 + CivicMetrics.edge * 2) +
             CivicMetrics.insetRule,
     ];
-    final picker = DesignWheelPicker(
+    final picker = RawPicker(
       columns: columns,
       selection: selection,
       onChanged: onChanged,
@@ -171,7 +171,7 @@ class CivicWheelPicker extends StatelessWidget {
     if (labelText == null && helperText == null && errorText == null) {
       return picker;
     }
-    return DesignField(
+    return RawInputDecorator(
       labelText: labelText,
       helperText: helperText,
       errorText: errorText,
@@ -182,7 +182,7 @@ class CivicWheelPicker extends StatelessWidget {
   }
 
   static double _widest(
-    DesignWheelColumn column,
+    RawPickerColumn column,
     TextStyle style,
     TextScaler scale,
   ) {

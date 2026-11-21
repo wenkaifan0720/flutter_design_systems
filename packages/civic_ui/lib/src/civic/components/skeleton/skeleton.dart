@@ -96,7 +96,7 @@ class _CivicSkeletonState extends State<CivicSkeleton>
     return Semantics(
       container: true,
       role: SemanticsRole.loadingSpinner,
-      label: widget.label ?? DesignLocalizations.of(context).loadingLabel,
+      label: widget.label ?? RawWidgetsLocalizations.of(context).loadingLabel,
       excludeSemantics: true,
       child: _SkeletonFill(
         color: so.fill ?? _wash(t),

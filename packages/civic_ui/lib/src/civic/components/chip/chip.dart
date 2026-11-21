@@ -96,16 +96,17 @@ class CivicChip extends StatelessWidget {
         ? null
         : () => change(!selected);
     final icon = this.icon;
-    return DesignTapTarget(
-      child: DesignPressable(
+    return TapTargetPadding(
+      child: RawButton(
         onPressed: press,
         focusNode: focusNode,
         autofocus: autofocus,
         selected: !removable && selected,
-        toggled: removable ? null : selected,
+        // A filter chip is a toggle button: a button that is selected.
+        semanticSelected: removable ? null : selected,
         semanticLabel: removable ? (deleteLabel ?? label) : label,
         semanticHint: removable && deleteLabel == null
-            ? DesignLocalizations.of(context).tagInputDeleteLabel
+            ? RawWidgetsLocalizations.of(context).tagInputDeleteLabel
             : null,
         excludeSemantics: true,
         mouseCursor: press == null

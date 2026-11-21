@@ -21,8 +21,8 @@ class CivicFieldFrame extends StatelessWidget {
     this.control,
   });
 
-  /// What the field's [DesignField] made.
-  final DesignFieldParts parts;
+  /// What the field's [RawInputDecorator] made.
+  final RawInputDecoratorDetails parts;
 
   /// Whether the label is the page's heading: a page that asks one
   /// question asks it in the heading, as large as any page's heading
@@ -34,10 +34,10 @@ class CivicFieldFrame extends StatelessWidget {
   final bool isLegend;
 
   /// Whether a press on the label focuses the control (the field gave its
-  /// [DesignField] a focus node): the label then shows the click cursor.
+  /// [RawInputDecorator] a focus node): the label then shows the click cursor.
   final bool labelFocuses;
 
-  /// What stands under the words; null takes [DesignFieldParts.control].
+  /// What stands under the words; null takes [RawInputDecoratorDetails.control].
   final Widget? control;
 
   @override

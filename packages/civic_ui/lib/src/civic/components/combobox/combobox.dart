@@ -22,7 +22,7 @@ import '../text-field/text_field.dart';
 /// reader types), the list says "Loading" while it looks, in words: nothing
 /// spins. When the search fails it says so, with "Try again" under it: Down
 /// reaches it, Enter or a press runs the search again. A screen reader
-/// hears each as it appears. ui_core's [DesignCombobox] runs the search.
+/// hears each as it appears. ui_core's [RawCombobox] runs the search.
 ///
 /// Use it where a select would hold too many answers to scan (a country,
 /// a street, a school); use [CivicRadioGroup] for a few.
@@ -104,7 +104,7 @@ class CivicCombobox<T extends Object> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.civicTheme;
-    return DesignCombobox<T>(
+    return RawCombobox<T>(
       options: options,
       search: search,
       displayStringForOption: _say,
@@ -135,12 +135,12 @@ class CivicCombobox<T extends Object> extends StatelessWidget {
         child: CivicOptionSurface(child: list),
       ),
       emptyBuilder: (context) =>
-          _Note(DesignLocalizations.of(context).noResultsLabel),
+          _Note(RawWidgetsLocalizations.of(context).noResultsLabel),
       // The words say it is looking: nothing spins.
       loadingBuilder: (context) =>
-          _Note(DesignLocalizations.of(context).loadingLabel),
+          _Note(RawWidgetsLocalizations.of(context).loadingLabel),
       errorBuilder: (context, failure) {
-        final words = DesignLocalizations.of(context);
+        final words = RawWidgetsLocalizations.of(context);
         return Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -149,7 +149,7 @@ class CivicCombobox<T extends Object> extends StatelessWidget {
             ExcludeSemantics(
               child: _Note(words.searchFailedMessage, color: t.danger),
             ),
-            DesignPressable(
+            RawButton(
               onPressed: failure.retry,
               semanticLabel: words.retryButtonLabel,
               builder: (context, states, _) => CivicListOption(

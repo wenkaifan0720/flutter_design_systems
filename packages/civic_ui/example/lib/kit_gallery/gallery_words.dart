@@ -7,6 +7,6 @@ import 'package:civic_ui/civic_ui.dart';
 /// widgets ones (the widgets' give Arabic its direction). Civic's theme
 /// gives its own parts their Material and Cupertino words itself.
 const List<LocalizationsDelegate<Object?>> galleryDelegates = [
-  DesignLocalizations.delegate,
+  RawWidgetsLocalizations.delegate,
   ...GlobalMaterialLocalizations.delegates,
 ];

@@ -11,8 +11,7 @@ import '../../theme.dart';
 import '../icon-button/icon_button.dart';
 
 // A calendar's caller builds its controller and reads the day it holds.
-export 'package:ui_core/ui_core.dart'
-    show DesignCalendarController, DesignDateRange;
+export 'package:ui_core/ui_core.dart' show RawCalendarController, RawDateRange;
 
 /// A month of days to choose from: the month's name between the ways to
 /// the month before and after, the weekdays, and the days on square faces.
@@ -36,7 +35,7 @@ export 'package:ui_core/ui_core.dart'
 /// Reads [CivicStyle]'s fill and foreground by a day's state (selected
 /// among them): its `style:`, then [CivicThemeData.calendarStyle].
 ///
-/// With `dates` a `DesignCalendarController(firstDate: DateTime(2026),
+/// With `dates` a `RawCalendarController(firstDate: DateTime(2026),
 /// lastDate: DateTime(2027, 12, 31))` the page's state keeps:
 ///
 /// ```dart
@@ -59,7 +58,7 @@ class CivicCalendar extends StatefulWidget {
 
   /// The month shown, the selection and the days offered. The caller makes
   /// it, keeps it and disposes it.
-  final DesignCalendarController controller;
+  final RawCalendarController controller;
 
   /// Called with the day a press or Enter chose, after the controller took
   /// it.
@@ -101,7 +100,7 @@ class CivicCalendar extends StatefulWidget {
   /// [textScaleMost] times) with [CivicSpacing.s8] either side, where the
   /// reader's text needs more.
   static double monthWidthOf(BuildContext context) {
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     final painter = TextPainter(
       textDirection: Directionality.of(context),
       textScaler: MediaQuery.textScalerOf(context)
@@ -130,7 +129,7 @@ class CivicCalendar extends StatefulWidget {
     super.debugFillProperties(properties);
     properties
       ..add(
-        DiagnosticsProperty<DesignCalendarController>('controller', controller),
+        DiagnosticsProperty<RawCalendarController>('controller', controller),
       )
       ..add(IntProperty('months', months, defaultValue: 1))
       ..add(
@@ -164,10 +163,10 @@ class _CivicCalendarState extends State<CivicCalendar> {
     final style = widget.style;
     final t = context.civicTheme;
     final text = context.civicText;
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     final rtl = Directionality.of(context) == TextDirection.rtl;
     final widest = CivicCalendar.monthWidthOf(context);
-    final calendar = DesignCalendar(
+    final calendar = RawCalendarDatePicker(
       controller: controller,
       onChanged: widget.onChanged,
       months: widget.months,
@@ -257,7 +256,7 @@ class _CivicCalendarState extends State<CivicCalendar> {
 class _Day extends StatelessWidget {
   const _Day({required this.day, required this.states, required this.styles});
 
-  final DesignCalendarDay day;
+  final RawCalendarDayDetails day;
   final Set<WidgetState> states;
   final List<DesignStyle?> styles;
 
@@ -320,7 +319,8 @@ class _Day extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    DesignLocalizations.of(context).formatDecimal(day.date.day),
+                    RawWidgetsLocalizations.of(context)
+                        .formatDecimal(day.date.day),
                     style: (day.isToday || end ? text.label : text.body)
                         .copyWith(
                           height: 1.2,

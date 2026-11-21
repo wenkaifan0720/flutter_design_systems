@@ -159,13 +159,13 @@ class _Caller {
   String? zone = 'a';
   bool largerText = false;
   late final permits = _own(
-    DesignTableController<Map<String, String>>(
+    RawDataTableController<Map<String, String>>(
       rows: const [
         {'vehicle': 'CU57 ABC', 'ends': '3 November 2026'},
       ],
       columns: [
-        const DesignTableColumn(id: 'vehicle', label: 'Vehicle'),
-        const DesignTableColumn(id: 'ends', label: 'Ends'),
+        const RawDataColumn(id: 'vehicle', label: 'Vehicle'),
+        const RawDataColumn(id: 'ends', label: 'Ends'),
       ],
     ),
   );
@@ -182,19 +182,19 @@ class _Caller {
   bool openNow = false;
   double score = 0;
   double size = 100;
-  DesignRangeValues cost = const DesignRangeValues(20, 60);
+  RawRangeValues cost = const RawRangeValues(20, 60);
   DateTime? start;
-  DesignDateRange? stay;
-  DesignTimeOfDay? arrival;
+  RawDateRange? stay;
+  RawTimeOfDay? arrival;
   late final dates = _own(
-    DesignCalendarController(
+    RawCalendarController(
       firstDate: DateTime(2026),
       lastDate: DateTime(2027, 12, 31),
     ),
   );
   DateTime? chosen;
   List<int> slot = [9, 2];
-  late final badge = _own(DesignColorController(const Color(0xFF0F4C81)));
+  late final badge = _own(RawColorController(const Color(0xFF0F4C81)));
   final languages = const ['English', 'Welsh', 'Polish', 'Urdu'];
   List<String> spoken = ['English'];
   final router = _Router();
@@ -859,8 +859,8 @@ class _Caller {
     'CivicWheelPicker': (context) => CivicWheelPicker(
       labelText: 'Arrival time',
       columns: (_) => [
-        DesignWheelColumn(itemCount: 24, itemLabel: (i) => '$i', looping: true),
-        DesignWheelColumn(
+        RawPickerColumn(itemCount: 24, itemLabel: (i) => '$i', looping: true),
+        RawPickerColumn(
           itemCount: 4,
           itemLabel: (i) => '${i * 15}'.padLeft(2, '0'),
         ),
@@ -982,12 +982,12 @@ class _Caller {
         showCivicCommandPalette(
           context: context,
           commands: [
-            DesignCommand(
+            RawCommand(
               label: 'Your applications',
               group: 'Pages',
               onPressed: () {},
             ),
-            DesignCommand(
+            RawCommand(
               label: 'Apply for a permit',
               group: 'Actions',
               onPressed: () {},

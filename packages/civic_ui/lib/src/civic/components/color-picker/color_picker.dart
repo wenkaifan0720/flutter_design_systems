@@ -12,7 +12,7 @@ import '../../theme.dart';
 import '../text-field/text_field.dart';
 
 // A colour picker's caller builds its controller and reads the colour.
-export 'package:ui_core/ui_core.dart' show DesignColorController;
+export 'package:ui_core/ui_core.dart' show RawColorController;
 
 /// A named colour a [CivicColorPicker] offers.
 @immutable
@@ -65,7 +65,7 @@ class CivicColorPicker extends StatelessWidget {
   }) : assert(swatches.length > 0 || showCustom);
 
   /// The colour.
-  final DesignColorController controller;
+  final RawColorController controller;
 
   /// The named colours offered first.
   final List<CivicColorSwatch> swatches;
@@ -110,30 +110,34 @@ class CivicColorPicker extends StatelessWidget {
               Semantics(
                 container: true,
                 explicitChildNodes: true,
-                // The swatches are one radio group: one Tab stop, and the
-                // arrow keys pick as they move.
-                child: DesignRadioGroup<int>(
-                  options: [for (var i = 0; i < swatches.length; i++) i],
-                  value: picked < 0 ? null : picked,
-                  onChanged: (i) => controller.color = swatches[i].color,
-                  itemBuilder: (context, i, node, select) => _Swatch(
-                    swatch: swatches[i],
-                    chosen: swatches[i].color.toARGB32() == current.toARGB32(),
-                    styles: [style, t.colorPickerStyle],
-                    focusNode: node,
-                    onPressed: select,
-                  ),
-                  layoutBuilder: (context, items) => Wrap(
-                    spacing: CivicSpacing.s16,
-                    runSpacing: CivicSpacing.s8,
-                    children: items,
+                // The swatches are one radio group, Flutter's: one Tab stop,
+                // and the arrow keys pick as they move.
+                child: RadioGroup<int>(
+                  groupValue: picked < 0 ? null : picked,
+                  onChanged: (i) => controller.color = swatches[i!].color,
+                  child: RadioGroupKeyboardFix<int>(
+                    child: Wrap(
+                      spacing: CivicSpacing.s16,
+                      runSpacing: CivicSpacing.s8,
+                      children: [
+                        for (final (i, swatch) in swatches.indexed)
+                          _Swatch(
+                            key: ObjectKey(i),
+                            index: i,
+                            swatch: swatch,
+                            chosen:
+                                swatch.color.toARGB32() == current.toARGB32(),
+                            styles: [style, t.colorPickerStyle],
+                          ),
+                      ],
+                    ),
                   ),
                 ),
               ),
             if (showCustom) ...[
               ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 360),
-                child: DesignColorPicker(
+                child: RawColorPicker(
                   controller: controller,
                   showAlpha: showAlpha,
                   areaHeight: 180,
@@ -188,7 +192,7 @@ class CivicColorPicker extends StatelessWidget {
     if (labelText == null && helperText == null && errorText == null) {
       return body;
     }
-    return DesignField(
+    return RawInputDecorator(
       labelText: labelText,
       helperText: helperText,
       errorText: errorText,
@@ -202,9 +206,7 @@ class CivicColorPicker extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(
-        DiagnosticsProperty<DesignColorController>('controller', controller),
-      )
+      ..add(DiagnosticsProperty<RawColorController>('controller', controller))
       ..add(IterableProperty<CivicColorSwatch>('swatches', swatches))
       ..add(
         FlagProperty('showCustom', value: showCustom, ifFalse: 'swatches only'),
@@ -218,92 +220,138 @@ class CivicColorPicker extends StatelessWidget {
 
 /// A named swatch: its colour's square in a well, its name beside it, the
 /// whole row the target; picked, ticked and standing on the chosen rule.
-class _Swatch extends StatelessWidget {
+class _Swatch extends StatefulWidget {
   const _Swatch({
+    super.key,
+    required this.index,
     required this.swatch,
     required this.chosen,
     required this.styles,
-    required this.focusNode,
-    required this.onPressed,
   });
 
+  final int index;
   final CivicColorSwatch swatch;
   final bool chosen;
   final List<DesignStyle?> styles;
-  final FocusNode focusNode;
-  final VoidCallback? onPressed;
+
+  @override
+  State<_Swatch> createState() => _SwatchState();
+}
+
+class _SwatchState extends State<_Swatch> {
+  final FocusNode _focusNode = FocusNode();
+
+  // The pointer over the swatch, held or not, as a mouse region hears it:
+  // the plate stays while a press is down (RawRadio's hover is a focus
+  // highlight's and leaves under a press).
+  bool _hovered = false;
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final t = context.civicTheme;
     final text = context.civicText;
-    return DesignTapTarget(
-      child: DesignPressable(
-        focusNode: focusNode,
-        onPressed: onPressed,
-        selected: chosen,
-        checked: chosen,
-        inMutuallyExclusiveGroup: true,
-        button: false,
-        semanticLabel: swatch.name,
-        excludeSemantics: true,
-        builder: (context, states, _) {
-          final so = DesignStyleOf(styles, states);
-          final focused = states.contains(WidgetState.focused);
-          final hovered = states.contains(WidgetState.hovered);
-          return CivicSpringValue(
-            value: focused ? 1 : 0,
-            spring: CivicMotion.focus,
-            effects: true,
-            builder: (context, focus, _) => CustomPaint(
-              painter: CivicFacePainter(
-                fill: hovered && !focused ? t.surface : const Color(0x00000000),
-                edgeColor: t.onFocus,
-                edgeHeight: 0,
-                press: 0,
-                focus: focus,
-                focusColor: t.focus,
-                barColor: t.focusBar,
-              ),
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  4,
-                  4,
-                  8,
-                  4 + CivicMetrics.bar,
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  spacing: CivicSpacing.s8,
-                  children: [
-                    CivicWell(
-                      fill: so.fill ?? swatch.color,
-                      edgeColor: so.edge ?? t.border,
-                      child: SizedBox.square(
-                        dimension: 40,
-                        child: chosen
-                            ? Icon(
-                                LucideIcons.check,
-                                size: 24,
-                                color: swatch.color.computeLuminance() > 0.4
-                                    ? const Color(0xFF0C1116)
-                                    : const Color(0xFFFFFFFF),
-                              )
-                            : null,
-                      ),
-                    ),
-                    Text(
-                      swatch.name,
-                      style: (chosen ? text.label : text.body).copyWith(
-                        color: Color.lerp(t.textPrimary, t.onFocus, focus),
-                      ),
-                    ),
-                  ],
+    final swatch = widget.swatch;
+    final chosen = widget.chosen;
+    return TapTargetPadding(
+      // One node for the swatch: RawRadio's (checked, one of a group, its
+      // focus and its tap), with its name.
+      child: MergeSemantics(
+        child: RawRadio<int>(
+          value: widget.index,
+          mouseCursor: WidgetStateMouseCursor.clickable,
+          toggleable: false,
+          focusNode: _focusNode,
+          autofocus: false,
+          groupRegistry: RadioGroup.maybeOf<int>(context),
+          enabled: true,
+          builder: (context, radio) => Semantics(
+            label: swatch.name,
+            child: ExcludeSemantics(
+              // All of it takes a press, its gaps too, as RawRadio's
+              // detector finds only what the face paints.
+              child: Listener(
+                behavior: HitTestBehavior.opaque,
+                child: MouseRegion(
+                  onEnter: (_) => setState(() => _hovered = true),
+                  onExit: (_) => setState(() => _hovered = false),
+                  child: _face(context, t, text, swatch, chosen, {
+                    for (final state in radio.states)
+                      if (state != WidgetState.hovered) state,
+                    if (_hovered) WidgetState.hovered,
+                    if (radio.downPosition != null) WidgetState.pressed,
+                  }),
                 ),
               ),
             ),
-          );
-        },
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _face(
+    BuildContext context,
+    CivicThemeData t,
+    CivicTextTheme text,
+    CivicColorSwatch swatch,
+    bool chosen,
+    Set<WidgetState> states,
+  ) {
+    final styles = widget.styles;
+    final so = DesignStyleOf(styles, states);
+    final focused = states.contains(WidgetState.focused);
+    final hovered = states.contains(WidgetState.hovered);
+    return CivicSpringValue(
+      value: focused ? 1 : 0,
+      spring: CivicMotion.focus,
+      effects: true,
+      builder: (context, focus, _) => CustomPaint(
+        painter: CivicFacePainter(
+          fill: hovered && !focused ? t.surface : const Color(0x00000000),
+          edgeColor: t.onFocus,
+          edgeHeight: 0,
+          press: 0,
+          focus: focus,
+          focusColor: t.focus,
+          barColor: t.focusBar,
+        ),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(4, 4, 8, 4 + CivicMetrics.bar),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            spacing: CivicSpacing.s8,
+            children: [
+              CivicWell(
+                fill: so.fill ?? swatch.color,
+                edgeColor: so.edge ?? t.border,
+                child: SizedBox.square(
+                  dimension: 40,
+                  child: chosen
+                      ? Icon(
+                          LucideIcons.check,
+                          size: 24,
+                          color: swatch.color.computeLuminance() > 0.4
+                              ? const Color(0xFF0C1116)
+                              : const Color(0xFFFFFFFF),
+                        )
+                      : null,
+                ),
+              ),
+              Text(
+                swatch.name,
+                style: (chosen ? text.label : text.body).copyWith(
+                  color: Color.lerp(t.textPrimary, t.onFocus, focus),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -390,26 +438,26 @@ class _Area extends CustomPainter {
 class _Track extends CustomPainter {
   _Track(this.channel, this.color);
 
-  final DesignColorChannel channel;
+  final RawColorChannel channel;
   final HSVColor color;
 
   @override
   void paint(Canvas canvas, Size size) {
     final rect = Offset.zero & size;
     final colors = switch (channel) {
-      DesignColorChannel.hue => [
+      RawColorChannel.hue => [
         for (var h = 0; h <= 360; h += 60)
           HSVColor.fromAHSV(1, h.toDouble(), 1, 1).toColor(),
       ],
-      DesignColorChannel.saturation => [
+      RawColorChannel.saturation => [
         color.withSaturation(0).toColor(),
         color.withSaturation(1).toColor(),
       ],
-      DesignColorChannel.brightness => [
+      RawColorChannel.brightness => [
         color.withValue(0).toColor(),
         color.withValue(1).toColor(),
       ],
-      DesignColorChannel.alpha => [
+      RawColorChannel.alpha => [
         color.withAlpha(0).toColor(),
         color.withAlpha(1).toColor(),
       ],

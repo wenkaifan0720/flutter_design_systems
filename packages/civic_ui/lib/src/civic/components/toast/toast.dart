@@ -29,7 +29,7 @@ class CivicToaster extends StatelessWidget {
   final CivicStyle? style;
 
   @override
-  Widget build(BuildContext context) => DesignToaster(
+  Widget build(BuildContext context) => RawToaster(
     maxVisible: 1,
     regionLabel: null,
     padding: const EdgeInsets.all(CivicSpacing.s16),
@@ -77,10 +77,10 @@ abstract final class CivicToast {
     VoidCallback? onActionPressed,
     Duration duration = const Duration(seconds: 6),
   }) {
-    final toaster = DesignToaster.maybeOf(context);
+    final toaster = RawToaster.maybeOf(context);
     assert(toaster != null, 'No CivicToaster above this context.');
     toaster?.show(
-      DesignToast(
+      RawToast(
         id: _id,
         message: message,
         actionLabel: actionLabel,
@@ -96,7 +96,7 @@ abstract final class CivicToast {
 class _CivicToastView extends StatelessWidget {
   const _CivicToastView({required this.details, required this.style});
 
-  final DesignToastDetails details;
+  final RawToastDetails details;
   final CivicStyle? style;
 
   @override
@@ -139,9 +139,10 @@ class _CivicToastView extends StatelessWidget {
                     ),
                   CivicIconButton(
                     icon: LucideIcons.x,
-                    semanticLabel: DesignLocalizations.of(context)
+                    semanticLabel: RawWidgetsLocalizations.of(context)
                         .closeButtonLabel,
-                    tooltip: DesignLocalizations.of(context).closeButtonLabel,
+                    tooltip: RawWidgetsLocalizations.of(context)
+                        .closeButtonLabel,
                     onPressed: details.dismiss,
                   ),
                 ],
@@ -156,6 +157,6 @@ class _CivicToastView extends StatelessWidget {
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
-    properties.add(DiagnosticsProperty<DesignToastDetails>('details', details));
+    properties.add(DiagnosticsProperty<RawToastDetails>('details', details));
   }
 }

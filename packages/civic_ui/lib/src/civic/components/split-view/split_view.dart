@@ -14,7 +14,7 @@ import '../link/link.dart';
 /// keyboard focus lays it on the yellow plate with the thick dark bar
 /// along its end, and the arrow keys move it (Enter folds the first pane
 /// away and back). A screen reader hears a slider with the first pane's
-/// share. ui_core's [DesignSplitView], Civic's painting.
+/// share. ui_core's [RawSplitView], Civic's painting.
 ///
 /// Side by side in less than 600 of room, where two panes are too narrow
 /// to read, it shows one at a time: [first], or with [showSecond] [second]
@@ -118,7 +118,7 @@ class CivicSplitView extends StatelessWidget {
 
   Widget _split(BuildContext context) {
     final t = context.civicTheme;
-    return DesignSplitView(
+    return RawSplitView(
       first: first,
       second: second,
       axis: axis,

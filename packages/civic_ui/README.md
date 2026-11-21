@@ -118,7 +118,7 @@ platform. On iOS the map keeps the swipe back from the screen's leading edge rou
 const Map<TargetPlatform, PageTransitionsBuilder> transitions = {
   TargetPlatform.android: CivicPageTransitions(),
   // iOS's swipe back from the screen's edge, round Civic's page change.
-  TargetPlatform.iOS: DesignSwipeBackPageTransitionsBuilder(CivicPageTransitions()),
+  TargetPlatform.iOS: SwipeBackPageTransitionsBuilder(CivicPageTransitions()),
   TargetPlatform.macOS: CivicPageTransitions(),
   // ...
 };

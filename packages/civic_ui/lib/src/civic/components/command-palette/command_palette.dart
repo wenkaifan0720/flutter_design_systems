@@ -8,7 +8,7 @@ import '../../theme.dart';
 import '../text-field/text_field.dart';
 
 // A palette's caller gives its commands.
-export 'package:ui_core/ui_core.dart' show DesignCommand;
+export 'package:ui_core/ui_core.dart' show RawCommand;
 
 /// Opens a palette over the page that finds a page or an action of the
 /// service by its words: a text field ([labelText]: "Find a page or
@@ -36,14 +36,14 @@ export 'package:ui_core/ui_core.dart' show DesignCommand;
 /// showCivicCommandPalette(
 ///   context: context,
 ///   commands: [
-///     DesignCommand(label: 'Your applications', group: 'Pages', onPressed: () {}),
-///     DesignCommand(label: 'Apply for a permit', group: 'Actions', onPressed: () {}),
+///     RawCommand(label: 'Your applications', group: 'Pages', onPressed: () {}),
+///     RawCommand(label: 'Apply for a permit', group: 'Actions', onPressed: () {}),
 ///   ],
 /// );
 /// ```
 Future<void> showCivicCommandPalette({
   required BuildContext context,
-  required List<DesignCommand> commands,
+  required List<RawCommand> commands,
   String labelText = 'Find a page or action',
   String? hintText,
   CivicStyle? style,
@@ -56,7 +56,7 @@ Future<void> showCivicCommandPalette({
         : const Color(0xFF0C1116).withValues(alpha: 0.6),
     // Its top stays put while the results change under the typing.
     alignment: Alignment.topCenter,
-    palette: (run) => DesignCommandPalette(
+    palette: (run) => RawCommandPalette(
       commands: commands,
       onSelected: run,
       // Seven and a half rows: a longer list shows it goes on.
@@ -108,7 +108,7 @@ Future<void> showCivicCommandPalette({
           CivicSpacing.s16,
         ),
         child: Text(
-          DesignLocalizations.of(context).noResultsLabel,
+          RawWidgetsLocalizations.of(context).noResultsLabel,
           style: context.civicText.body.copyWith(
             color: context.civicTheme.textSecondary,
           ),

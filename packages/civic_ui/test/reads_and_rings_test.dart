@@ -1,5 +1,5 @@
 // What a part tells a screen reader beyond its words, and what it shows a
-// keyboard: an icon button that is on, a segment's spoken name, what a row
+// keyboard: an icon button or a chip that is on, a segment's spoken name, what a row
 // holds, whether a banner is heard as it appears, the page's heading naming
 // it, a field's hint and its whole height; a card with no title ringed by
 // its focus, a group's hairlines only between rows that draw, and a
@@ -23,9 +23,8 @@ SemanticsData _node(WidgetTester tester, Pattern words) =>
     tester.getSemantics(find.bySemanticsLabel(words)).getSemanticsData();
 
 void main() {
-  testWidgets('an icon button that is on reads as toggled, with its value', (
-    tester,
-  ) async {
+  testWidgets('an icon button that is on reads as a selected button, with its '
+      'value', (tester) async {
     final handle = tester.ensureSemantics();
     await _pump(
       tester,
@@ -49,15 +48,27 @@ void main() {
             semanticLabel: 'Share',
             onPressed: () {},
           ),
+          CivicChip(label: 'Open now', selected: true, onSelected: (_) {}),
         ],
       ),
     );
+    // A toggle button, as IconButton(isSelected:) is: a button, selected or
+    // not, never a switch.
     final on = _node(tester, 'Alerts');
-    expect(on.flagsCollection.isToggled, Tristate.isTrue);
+    expect(on.flagsCollection.isButton, isTrue);
+    expect(on.flagsCollection.isSelected, Tristate.isTrue);
+    expect(on.flagsCollection.isToggled, Tristate.none);
     expect(on.value, '3 new');
-    expect(_node(tester, 'Save').flagsCollection.isToggled, Tristate.isFalse);
+    final off = _node(tester, 'Save').flagsCollection;
+    expect(off.isSelected, Tristate.isFalse);
+    expect(off.isToggled, Tristate.none);
     // One that is never on is a plain button.
-    expect(_node(tester, 'Share').flagsCollection.isToggled, Tristate.none);
+    expect(_node(tester, 'Share').flagsCollection.isSelected, Tristate.none);
+    // A filter chip that is on is a selected button too.
+    final chip = _node(tester, 'Open now').flagsCollection;
+    expect(chip.isButton, isTrue);
+    expect(chip.isSelected, Tristate.isTrue);
+    expect(chip.isToggled, Tristate.none);
     handle.dispose();
   });
 

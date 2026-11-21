@@ -79,6 +79,65 @@ class CivicOptionRow extends StatelessWidget {
   final bool isError;
 
   @override
+  Widget build(BuildContext context) => RawButton(
+    onPressed: onPressed,
+    focusNode: focusNode,
+    autofocus: autofocus,
+    button: false,
+    checked: checked ?? false,
+    mixed: checked == null,
+    inMutuallyExclusiveGroup: inMutuallyExclusiveGroup,
+    semanticLabel: labelText,
+    semanticHint: helperText,
+    excludeSemantics: true,
+    mouseCursor: onPressed == null
+        ? SystemMouseCursors.basic
+        : SystemMouseCursors.click,
+    builder: (context, states, _) => CivicOptionFace(
+      states: states,
+      mark: mark,
+      round: round,
+      styles: styles,
+      labelText: labelText,
+      helperText: helperText,
+    ),
+  );
+}
+
+/// An option's face for its [states]: the box (or circle) and its mark,
+/// the words, the hint, the row's ground on a card. [CivicOptionRow] draws
+/// it in its pressable; a `CivicRadio`, in Flutter's `RawRadio`.
+class CivicOptionFace extends StatelessWidget {
+  /// The face of an option in [states].
+  const CivicOptionFace({
+    super.key,
+    required this.states,
+    required this.mark,
+    required this.round,
+    this.styles = const [],
+    this.labelText,
+    this.helperText,
+  });
+
+  /// The states it is drawn for.
+  final Set<WidgetState> states;
+
+  /// What the box shows.
+  final CivicMark mark;
+
+  /// Whether the box is a circle (a radio).
+  final bool round;
+
+  /// The styles it reads, first first (see [CivicOptionRow.styles]).
+  final List<CivicStyle?> styles;
+
+  /// The words; null stands the box alone.
+  final String? labelText;
+
+  /// A hint under the words.
+  final String? helperText;
+
+  @override
   Widget build(BuildContext context) {
     final t = context.civicTheme;
     final text = context.civicText;
@@ -91,143 +150,117 @@ class CivicOptionRow extends StatelessWidget {
     final boxDrop = math.max(0.0, (scaled - CivicMetrics.box) / 2);
     final label = labelText;
     final helper = helperText;
-    return DesignPressable(
-      onPressed: onPressed,
-      focusNode: focusNode,
-      autofocus: autofocus,
-      button: false,
-      checked: checked ?? false,
-      mixed: checked == null,
-      inMutuallyExclusiveGroup: inMutuallyExclusiveGroup,
-      semanticLabel: label,
-      semanticHint: helper,
-      excludeSemantics: true,
-      mouseCursor: onPressed == null
-          ? SystemMouseCursors.basic
-          : SystemMouseCursors.click,
-      builder: (context, states, _) {
-        final so = DesignStyleOf(styles, states);
-        final disabled = states.contains(WidgetState.disabled);
-        final focused = states.contains(WidgetState.focused);
-        // A pointer over it rings the box in the rule's grey, a press a
-        // shade deeper: the box answers before it is ticked.
-        final touch = disabled
-            ? 0.0
-            : states.contains(WidgetState.pressed)
-            ? 2.0
-            : states.contains(WidgetState.hovered)
-            ? 1.0
-            : 0.0;
-        final ink =
-            so.foreground ?? (disabled ? t.textDisabled : t.textPrimary);
-        final box = CivicSpringValue(
-          value: touch,
-          spring: CivicMotion.press,
-          effects: true,
-          builder: (context, halo, _) => CivicSpringValue(
-            value: focused ? 1 : 0,
-            spring: CivicMotion.focus,
+    final so = DesignStyleOf(styles, states);
+    final disabled = states.contains(WidgetState.disabled);
+    final focused = states.contains(WidgetState.focused);
+    // A pointer over it rings the box in the rule's grey, a press a
+    // shade deeper: the box answers before it is ticked.
+    final touch = disabled
+        ? 0.0
+        : states.contains(WidgetState.pressed)
+        ? 2.0
+        : states.contains(WidgetState.hovered)
+        ? 1.0
+        : 0.0;
+    final ink = so.foreground ?? (disabled ? t.textDisabled : t.textPrimary);
+    final box = CivicSpringValue(
+      value: touch,
+      spring: CivicMotion.press,
+      effects: true,
+      builder: (context, halo, _) => CivicSpringValue(
+        value: focused ? 1 : 0,
+        spring: CivicMotion.focus,
+        effects: true,
+        builder: (context, focus, _) => CustomPaint(
+          painter: _HaloPainter(
+            color: halo <= 1
+                ? t.rule.withValues(alpha: t.rule.a * halo.clamp(0, 1))
+                : Color.lerp(t.rule, t.textSecondary, 0.35 * (halo - 1))!,
+            hidden: focus,
+            round: round,
+          ),
+          child: CivicSpringValue(
+            value: mark == CivicMark.none ? 0 : 1,
+            spring: CivicMotion.press,
             effects: true,
-            builder: (context, focus, _) => CustomPaint(
-              painter: _HaloPainter(
-                color: halo <= 1
-                    ? t.rule.withValues(alpha: t.rule.a * halo.clamp(0, 1))
-                    : Color.lerp(t.rule, t.textSecondary, 0.35 * (halo - 1))!,
-                hidden: focus,
-                round: round,
+            builder: (context, on, _) => CustomPaint(
+              size: const Size.square(CivicMetrics.box),
+              painter: CivicWellPainter(
+                fill: so.fill ?? (disabled ? t.disabledFill : t.background),
+                edgeColor: so.edge ?? (disabled ? t.rule : t.border),
+                focus: focus,
+                focusColor: t.focus,
+                focusEdgeColor: t.border,
+                circle: round,
               ),
-              child: CivicSpringValue(
-                value: mark == CivicMark.none ? 0 : 1,
-                spring: CivicMotion.press,
-                effects: true,
-                builder: (context, on, _) => CustomPaint(
-                  size: const Size.square(CivicMetrics.box),
-                  painter: CivicWellPainter(
-                    fill: so.fill ?? (disabled ? t.disabledFill : t.background),
-                    edgeColor: so.edge ?? (disabled ? t.rule : t.border),
-                    focus: focus,
-                    focusColor: t.focus,
-                    focusEdgeColor: t.border,
-                    circle: round,
-                  ),
-                  foregroundPainter: _MarkPainter(
-                    mark: mark,
-                    amount: on,
-                    color: ink,
-                    direction: Directionality.of(context),
+              foregroundPainter: _MarkPainter(
+                mark: mark,
+                amount: on,
+                color: ink,
+                direction: Directionality.of(context),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    final card = _OnCard.of(context);
+    return ColoredBox(
+      // On a card the whole row answers a pointer, as an app's row does.
+      color: card && !disabled && touch > 0
+          ? Color.lerp(t.surface, t.rule, 0.3 * (touch - 1).clamp(0.0, 1.0))!
+          : const Color(0x00000000),
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          minHeight: card ? 56 : CivicMetrics.controlHeight,
+        ),
+        child: Padding(
+          padding: card
+              ? const EdgeInsets.symmetric(
+                  horizontal: CivicSpacing.s16,
+                  vertical: CivicSpacing.s8,
+                )
+              : const EdgeInsets.symmetric(vertical: CivicSpacing.s4),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: label == null ? MainAxisSize.min : MainAxisSize.max,
+            children: [
+              if (label == null)
+                box
+              else
+                Padding(
+                  padding: EdgeInsets.only(top: boxDrop),
+                  child: box,
+                ),
+              if (label != null) ...[
+                const SizedBox(width: CivicSpacing.s12),
+                Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.only(top: drop),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          label,
+                          style: words.merge(so.textStyle).copyWith(color: ink),
+                        ),
+                        if (helper != null)
+                          Padding(
+                            padding: const EdgeInsets.only(
+                              top: CivicSpacing.s4,
+                            ),
+                            child: Text(helper, style: text.caption),
+                          ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ),
+              ],
+            ],
           ),
-        );
-        final card = _OnCard.of(context);
-        return ColoredBox(
-          // On a card the whole row answers a pointer, as an app's row does.
-          color: card && !disabled && touch > 0
-              ? Color.lerp(
-                  t.surface,
-                  t.rule,
-                  0.3 * (touch - 1).clamp(0.0, 1.0),
-                )!
-              : const Color(0x00000000),
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              minHeight: card ? 56 : CivicMetrics.controlHeight,
-            ),
-            child: Padding(
-              padding: card
-                  ? const EdgeInsets.symmetric(
-                      horizontal: CivicSpacing.s16,
-                      vertical: CivicSpacing.s8,
-                    )
-                  : const EdgeInsets.symmetric(vertical: CivicSpacing.s4),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: label == null
-                    ? MainAxisSize.min
-                    : MainAxisSize.max,
-                children: [
-                  if (label == null)
-                    box
-                  else
-                    Padding(
-                      padding: EdgeInsets.only(top: boxDrop),
-                      child: box,
-                    ),
-                  if (label != null) ...[
-                    const SizedBox(width: CivicSpacing.s12),
-                    Expanded(
-                      child: Padding(
-                        padding: EdgeInsets.only(top: drop),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              label,
-                              style: words
-                                  .merge(so.textStyle)
-                                  .copyWith(color: ink),
-                            ),
-                            if (helper != null)
-                              Padding(
-                                padding: const EdgeInsets.only(
-                                  top: CivicSpacing.s4,
-                                ),
-                                child: Text(helper, style: text.caption),
-                              ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-          ),
-        );
-      },
+        ),
+      ),
     );
   }
 }

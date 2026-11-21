@@ -98,8 +98,8 @@ class CivicIconButton extends StatelessWidget {
 
   Widget _button(BuildContext context) {
     final t = context.civicTheme;
-    return DesignTapTarget(
-      child: DesignPressable(
+    return TapTargetPadding(
+      child: RawButton(
         onPressed: onPressed,
         focusNode: focusNode,
         autofocus: autofocus,
@@ -107,7 +107,9 @@ class CivicIconButton extends StatelessWidget {
         semanticLabel: semanticLabel,
         semanticValue: semanticValue,
         selected: selected ?? false,
-        toggled: selected,
+        // A toggle button: a button that is selected, as
+        // IconButton(isSelected:) is.
+        semanticSelected: selected,
         mouseCursor: onPressed == null
             ? SystemMouseCursors.basic
             : SystemMouseCursors.click,

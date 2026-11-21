@@ -185,7 +185,7 @@ class CivicListRow extends StatelessWidget {
 
     final row = !acts
         ? MergeSemantics(child: body(const {}, 0))
-        : DesignPressable(
+        : RawButton(
             onPressed: onTap,
             focusNode: focusNode,
             semanticLabel: semanticLabel,

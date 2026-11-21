@@ -249,15 +249,11 @@ final List<_Part> _parts = [
     ),
   ),
   _part('sortable heading', 'Days left', () {
-    final permits = DesignTableController<(String, int)>(
+    final permits = RawDataTableController<(String, int)>(
       rows: const [('CU57 ABC', 12), ('LB19 XYZ', 40)],
       columns: [
-        DesignTableColumn(
-          id: 'car',
-          label: 'Vehicle',
-          sortKey: (row) => row.$1,
-        ),
-        DesignTableColumn(
+        RawDataColumn(id: 'car', label: 'Vehicle', sortKey: (row) => row.$1),
+        RawDataColumn(
           id: 'days',
           label: 'Days left',
           numeric: true,

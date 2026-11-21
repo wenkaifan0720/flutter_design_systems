@@ -13,7 +13,7 @@ import '../button/button.dart';
 import '../calendar/calendar.dart';
 
 // A date's caller reads the range it holds; a time's caller, the time.
-export 'package:ui_core/ui_core.dart' show DesignTimeOfDay;
+export 'package:ui_core/ui_core.dart' show RawTimeOfDay;
 
 /// A day typed or chosen: the date typed in the field's well in the
 /// reader's order (day, month and year where they write it so), with a
@@ -94,7 +94,7 @@ class CivicDatePicker extends StatefulWidget {
   /// order and separators and figures ("3/27/2026" in English, "27/3/2026"
   /// in Arabic's digits), for the example in a field's hint.
   static String exampleOf(BuildContext context, DateTime day) {
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     final pattern = words.dateFieldPattern;
     final out = StringBuffer();
     var i = 0;
@@ -147,15 +147,15 @@ class CivicDatePicker extends StatefulWidget {
 }
 
 class _CivicDatePickerState extends State<CivicDatePicker> {
-  late DesignCalendarController _dates = _make();
+  late RawCalendarController _dates = _make();
 
-  DesignCalendarController _make() {
+  RawCalendarController _make() {
     final value = widget.value;
     final inRange =
         value != null &&
         !value.isBefore(widget.firstDate) &&
         !value.isAfter(widget.lastDate);
-    return DesignCalendarController(
+    return RawCalendarController(
       firstDate: widget.firstDate,
       lastDate: widget.lastDate,
       selectedDate: inRange ? value : null,
@@ -185,7 +185,7 @@ class _CivicDatePickerState extends State<CivicDatePicker> {
     final t = context.civicTheme;
     final change = widget.onChanged;
     final hasError = widget.errorText != null;
-    final field = DesignDateField(
+    final field = RawDateField(
       value: widget.value,
       onChanged: change,
       firstDate: widget.firstDate,
@@ -225,7 +225,7 @@ class _CivicDatePickerState extends State<CivicDatePicker> {
         widget.errorText == null) {
       return row;
     }
-    return DesignField(
+    return RawInputDecorator(
       labelText: widget.labelText,
       helperText: widget.helperText,
       errorText: widget.errorText,
@@ -266,10 +266,10 @@ class _CalendarButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.civicTheme;
-    return DesignAnchoredOverlay(
+    return RawPopover(
       semanticLabel: label,
-      placement: const DesignOverlayPlacement(
-        align: DesignOverlayAlign.start,
+      placement: const RawPopoverPlacement(
+        align: RawPopoverAlign.start,
         matchAnchorWidth: false,
         preferredExtent: 380,
         gap: CivicSpacing.s8,
@@ -344,11 +344,11 @@ class CivicDateRangePicker extends StatefulWidget {
   });
 
   /// The range; null, none.
-  final DesignDateRange? value;
+  final RawDateRange? value;
 
   /// Called with the range once both ends are set, null when one is
   /// cleared; null disables the picker.
-  final ValueChanged<DesignDateRange?>? onChanged;
+  final ValueChanged<RawDateRange?>? onChanged;
 
   /// The first day it offers.
   final DateTime firstDate;
@@ -385,14 +385,10 @@ class CivicDateRangePicker extends StatefulWidget {
     super.debugFillProperties(properties);
     properties
       ..add(
-        DiagnosticsProperty<DesignDateRange>(
-          'value',
-          value,
-          defaultValue: null,
-        ),
+        DiagnosticsProperty<RawDateRange>('value', value, defaultValue: null),
       )
       ..add(
-        ObjectFlagProperty<ValueChanged<DesignDateRange?>>.has(
+        ObjectFlagProperty<ValueChanged<RawDateRange?>>.has(
           'onChanged',
           onChanged,
         ),
@@ -405,18 +401,18 @@ class CivicDateRangePicker extends StatefulWidget {
 }
 
 class _CivicDateRangePickerState extends State<CivicDateRangePicker> {
-  late DesignCalendarController _dates;
+  late RawCalendarController _dates;
   DateTime? _start;
   DateTime? _end;
 
-  DesignCalendarController _make() {
+  RawCalendarController _make() {
     final value = widget.value;
     _start = value?.start;
     _end = value?.end;
-    return DesignCalendarController(
+    return RawCalendarController(
       firstDate: widget.firstDate,
       lastDate: widget.lastDate,
-      mode: DesignCalendarMode.range,
+      mode: RawCalendarMode.range,
       selectedRange: value,
       initialMonth: value?.start,
     );
@@ -456,9 +452,7 @@ class _CivicDateRangePickerState extends State<CivicDateRangePicker> {
       return;
     }
     change(
-      end.isBefore(start)
-          ? DesignDateRange(end, start)
-          : DesignDateRange(start, end),
+      end.isBefore(start) ? RawDateRange(end, start) : RawDateRange(start, end),
     );
   }
 
@@ -478,7 +472,7 @@ class _CivicDateRangePickerState extends State<CivicDateRangePicker> {
         ExcludeSemantics(
           child: Text(label, style: text.body.copyWith(color: t.textPrimary)),
         ),
-        DesignDateField(
+        RawDateField(
           value: value,
           onChanged: widget.onChanged == null ? null : set,
           firstDate: widget.firstDate,
@@ -541,7 +535,7 @@ class _CivicDateRangePickerState extends State<CivicDateRangePicker> {
         },
       ),
     );
-    return DesignField(
+    return RawInputDecorator(
       labelText: widget.labelText,
       helperText: widget.helperText,
       errorText: widget.errorText,
@@ -587,11 +581,11 @@ class CivicTimeInput extends StatelessWidget {
   });
 
   /// The time; null, none.
-  final DesignTimeOfDay? value;
+  final RawTimeOfDay? value;
 
   /// Called with the time once every part holds one, null when one is
   /// cleared; null disables the input.
-  final ValueChanged<DesignTimeOfDay?>? onChanged;
+  final ValueChanged<RawTimeOfDay?>? onChanged;
 
   /// The question.
   final String? labelText;
@@ -616,7 +610,7 @@ class CivicTimeInput extends StatelessWidget {
     final t = context.civicTheme;
     final field = Align(
       alignment: AlignmentDirectional.centerStart,
-      child: DesignTimeField(
+      child: RawTimeField(
         value: value,
         onChanged: onChanged,
         alwaysUse24HourFormat: alwaysUse24HourFormat,
@@ -637,7 +631,7 @@ class CivicTimeInput extends StatelessWidget {
     if (labelText == null && helperText == null && errorText == null) {
       return field;
     }
-    return DesignField(
+    return RawInputDecorator(
       labelText: labelText,
       helperText: helperText,
       errorText: errorText,
@@ -652,14 +646,10 @@ class CivicTimeInput extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(
-        DiagnosticsProperty<DesignTimeOfDay>(
-          'value',
-          value,
-          defaultValue: null,
-        ),
+        DiagnosticsProperty<RawTimeOfDay>('value', value, defaultValue: null),
       )
       ..add(
-        ObjectFlagProperty<ValueChanged<DesignTimeOfDay?>>.has(
+        ObjectFlagProperty<ValueChanged<RawTimeOfDay?>>.has(
           'onChanged',
           onChanged,
         ),

@@ -118,7 +118,7 @@ class _Overlays extends StatelessWidget {
                     },
                   ),
                 ])
-                  DesignCommand(
+                  RawCommand(
                     label: label,
                     group: group,
                     shortcut: keys,

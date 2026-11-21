@@ -18,13 +18,13 @@ class CivicDateSegment extends StatelessWidget {
   const CivicDateSegment({super.key, required this.details});
 
   /// What the field gives the segment.
-  final DesignDateSegmentDetails details;
+  final RawDateSegmentDetails details;
 
   /// The room either side of a segment's figures in [style]: what brings two
   /// figures up to the tap floor's width, and never less than 4.
   static double gapFor(BuildContext context, TextStyle style) {
     final floor = DesignTapTargets.of(context).floorOn().width;
-    final zero = DesignLocalizations.of(context).formatDecimal(0);
+    final zero = RawWidgetsLocalizations.of(context).formatDecimal(0);
     final painter = TextPainter(
       text: TextSpan(text: '$zero$zero', style: style),
       textScaler: MediaQuery.textScalerOf(context),
@@ -51,7 +51,7 @@ class CivicDateSegment extends StatelessWidget {
       fontFeatures: const [FontFeature.tabularFigures()],
     );
     final gap = gapFor(context, style);
-    return DesignTapTarget(
+    return TapTargetPadding(
       child: Padding(
         padding: EdgeInsets.symmetric(horizontal: gap - 2),
         child: CivicSpringValue(

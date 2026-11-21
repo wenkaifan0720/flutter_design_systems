@@ -24,8 +24,8 @@ class _Pickers extends StatefulWidget {
 
 class _PickersState extends State<_Pickers> {
   DateTime? _start = DateTime(2026, 11, 24);
-  DesignDateRange? _stay;
-  DesignTimeOfDay? _arrival = const DesignTimeOfDay(hour: 9, minute: 30);
+  RawDateRange? _stay;
+  RawTimeOfDay? _arrival = const RawTimeOfDay(hour: 9, minute: 30);
 
   @override
   Widget build(BuildContext context) => KitSection(
@@ -69,7 +69,7 @@ class _Calendar extends StatefulWidget {
 }
 
 class _CalendarState extends State<_Calendar> {
-  final _days = DesignCalendarController(
+  final _days = RawCalendarController(
     firstDate: DateTime(2026),
     lastDate: DateTime(2027, 12, 31),
     selectedDate: DateTime(2026, 11, 24),
@@ -113,15 +113,16 @@ class _WheelState extends State<_Wheel> {
       CivicWheelPicker(
         labelText: 'Collection time',
         columns: (_) => [
-          DesignWheelColumn(
+          RawPickerColumn(
             itemCount: 24,
             itemLabel: (i) => '$i'.padLeft(2, '0'),
-            semanticLabel: DesignLocalizations.of(context).timePickerHourLabel,
+            semanticLabel: RawWidgetsLocalizations.of(context)
+                .timePickerHourLabel,
           ),
-          DesignWheelColumn(
+          RawPickerColumn(
             itemCount: 4,
             itemLabel: (i) => '${i * 15}'.padLeft(2, '0'),
-            semanticLabel: DesignLocalizations.of(context)
+            semanticLabel: RawWidgetsLocalizations.of(context)
                 .timePickerMinuteLabel,
           ),
         ],

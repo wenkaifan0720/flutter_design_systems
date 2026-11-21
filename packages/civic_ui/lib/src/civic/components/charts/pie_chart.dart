@@ -157,7 +157,7 @@ class _CivicPieChartState extends State<CivicPieChart> {
     final t = context.civicTheme;
     final text = context.civicText;
     final so = DesignStyleOf([style, t.pieChartStyle], const {});
-    final l = DesignLocalizations.of(context);
+    final l = RawWidgetsLocalizations.of(context);
     final scaler = MediaQuery.textScalerOf(context);
     String say(double v) => valueLabel?.call(v) ?? l.formatDecimal(v);
     final total = slices.fold(0.0, (sum, s) => sum + math.max(0, s.value));

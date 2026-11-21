@@ -79,7 +79,7 @@ class _Code extends StatefulWidget {
 }
 
 class _CodeState extends State<_Code> {
-  final _code = DesignOtpController(length: 6);
+  final _code = RawOtpController(length: 6);
   String? _error;
 
   @override

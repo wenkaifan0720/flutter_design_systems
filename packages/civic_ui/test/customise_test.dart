@@ -254,7 +254,7 @@ void main() {
             (t, s) => t.copyWith(wheelPickerStyle: s),
             (s) => CivicWheelPicker(
               columns: (_) => [
-                DesignWheelColumn(itemCount: 12, itemLabel: (i) => '$i'),
+                RawPickerColumn(itemCount: 12, itemLabel: (i) => '$i'),
               ],
               selection: const [3],
               onChanged: (_) {},

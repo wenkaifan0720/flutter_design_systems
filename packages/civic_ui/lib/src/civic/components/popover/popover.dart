@@ -10,7 +10,7 @@ import '../../theme.dart';
 /// paints: an explanation ("What counts as a visitor?"), a short form (a
 /// filter of two answers). The page's face floating on a hairline and the
 /// soft shadow, as an open list does, [width] wide, with its [title] as a
-/// heading over [content]: ui_core's [DesignAnchoredOverlay] as a popover,
+/// heading over [content]: ui_core's [RawPopover] as a popover,
 /// Civic's painting.
 ///
 /// A press on the control, Enter or Space opens it and the focus moves
@@ -43,8 +43,8 @@ class CivicPopover extends StatelessWidget {
     this.width = 320,
     this.controller,
     this.onOpenChanged,
-    this.side = DesignOverlaySide.below,
-    this.align = DesignOverlayAlign.start,
+    this.side = RawPopoverSide.below,
+    this.align = RawPopoverAlign.start,
     this.style,
   });
 
@@ -72,22 +72,22 @@ class CivicPopover extends StatelessWidget {
   final ValueChanged<bool>? onOpenChanged;
 
   /// The side of the control it prefers; the other where there is no room.
-  final DesignOverlaySide side;
+  final RawPopoverSide side;
 
   /// Which edge of the control it lines up with.
-  final DesignOverlayAlign align;
+  final RawPopoverAlign align;
 
   /// Overrides for this popover's look.
   final CivicStyle? style;
 
   @override
-  Widget build(BuildContext context) => DesignAnchoredOverlay(
+  Widget build(BuildContext context) => RawPopover(
     controller: controller,
     semanticLabel: semanticLabel ?? title,
     onOpenChanged: onOpenChanged,
     dampingRatio: CivicMotion.state.dampingRatio,
     stiffness: CivicMotion.state.stiffness,
-    placement: DesignOverlayPlacement(
+    placement: RawPopoverPlacement(
       side: side,
       align: align,
       gap: CivicSpacing.s8,
@@ -104,7 +104,7 @@ class CivicPopover extends StatelessWidget {
       final ink = so.foreground ?? t.textPrimary;
       return civicRise(
         animation: info.animation,
-        fromAbove: info.side == DesignOverlaySide.below,
+        fromAbove: info.side == RawPopoverSide.below,
         child: SizedBox(
           width: width < info.maxSize.width ? width : info.maxSize.width,
           child: ConstrainedBox(
@@ -156,17 +156,17 @@ class CivicPopover extends StatelessWidget {
       ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(DoubleProperty('width', width, defaultValue: 320))
       ..add(
-        EnumProperty<DesignOverlaySide>(
+        EnumProperty<RawPopoverSide>(
           'side',
           side,
-          defaultValue: DesignOverlaySide.below,
+          defaultValue: RawPopoverSide.below,
         ),
       )
       ..add(
-        EnumProperty<DesignOverlayAlign>(
+        EnumProperty<RawPopoverAlign>(
           'align',
           align,
-          defaultValue: DesignOverlayAlign.start,
+          defaultValue: RawPopoverAlign.start,
         ),
       )
       ..add(

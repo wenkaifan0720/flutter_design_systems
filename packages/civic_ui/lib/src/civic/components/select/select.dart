@@ -168,7 +168,7 @@ class _CivicSelectState<T> extends State<CivicSelect<T>> {
     final chosen = _chosen;
     final wide =
         (MediaQuery.maybeSizeOf(context)?.width ?? 0) >= CivicLayout.medium;
-    final field = DesignField(
+    final field = RawInputDecorator(
       labelText: widget.labelText,
       helperText: widget.helperText,
       errorText: widget.errorText,
@@ -176,10 +176,10 @@ class _CivicSelectState<T> extends State<CivicSelect<T>> {
       focusNode: _focus,
       builder: (context, parts) =>
           CivicFieldFrame(parts: parts, labelFocuses: true),
-      child: DesignAnchoredOverlay(
+      child: RawPopover(
         arrowKeyNavigation: true,
         semanticLabel: widget.labelText,
-        placement: const DesignOverlayPlacement(
+        placement: const RawPopoverPlacement(
           gap: CivicSpacing.s8,
           preferredExtent: 240,
         ),
@@ -194,7 +194,7 @@ class _CivicSelectState<T> extends State<CivicSelect<T>> {
                 if (enabled && !anchor.isOpen) anchor.open();
               },
           },
-          child: DesignPressable(
+          child: RawButton(
             onPressed: enabled ? anchor.toggle : null,
             focusNode: _focus,
             autofocus: widget.autofocus,
@@ -431,7 +431,7 @@ class _CivicSelectListState<T> extends State<_CivicSelectList<T>> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 for (var i = 0; i < items.length; i++)
-                  DesignPressable(
+                  RawButton(
                     focusNode: _nodes[i],
                     onPressed: items[i].enabled
                         ? () => widget.onChosen(items[i].value)

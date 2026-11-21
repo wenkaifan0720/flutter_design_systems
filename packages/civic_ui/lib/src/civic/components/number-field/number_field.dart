@@ -99,7 +99,7 @@ class CivicNumberField extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.civicTheme;
     final enabled = onChanged != null;
-    final number = DesignNumberField(
+    final number = RawNumberField(
       value: value,
       onChanged: onChanged,
       min: min,
@@ -129,7 +129,7 @@ class CivicNumberField extends StatelessWidget {
           style: style,
         ),
       ),
-      buttonBuilder: (context, button) => DesignTapTarget(
+      buttonBuilder: (context, button) => TapTargetPadding(
         child: SizedBox(
           width: CivicMetrics.controlHeight,
           child: CivicChoiceFace(
@@ -162,7 +162,7 @@ class CivicNumberField extends StatelessWidget {
     if (labelText == null && helperText == null && errorText == null) {
       return row;
     }
-    return DesignField(
+    return RawInputDecorator(
       labelText: labelText,
       helperText: helperText,
       errorText: errorText,

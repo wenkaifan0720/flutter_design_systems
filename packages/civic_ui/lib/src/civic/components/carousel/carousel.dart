@@ -14,7 +14,7 @@ import '../page-dots/page_dots.dart';
 /// worded buttons. It never turns on its own. A swipe turns it too, and
 /// so do the arrow keys while the keyboard is on the slides (the frame
 /// then stands in the yellow ring). A screen reader hears "Slide 2 of 5"
-/// as each lands. ui_core's [DesignCarousel], Civic's painting.
+/// as each lands. ui_core's [RawCarousel], Civic's painting.
 ///
 /// What a slide says must be on the page another way too (a list, a
 /// link): a reader may never turn to it.
@@ -79,7 +79,7 @@ class CivicCarousel extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.civicTheme;
     final so = DesignStyleOf([style, t.carouselStyle], const {});
-    return DesignCarousel(
+    return RawCarousel(
       itemCount: itemCount,
       itemBuilder: itemBuilder,
       initialPage: initialPage,

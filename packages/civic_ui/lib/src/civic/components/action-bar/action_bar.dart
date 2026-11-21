@@ -95,7 +95,7 @@ class _CivicActionBarState extends State<CivicActionBar> {
     final t = context.civicTheme;
     final text = context.civicText;
     final so = DesignStyleOf([widget.style, t.actionBarStyle], const {});
-    final l = DesignLocalizations.of(context);
+    final l = RawWidgetsLocalizations.of(context);
     final open = widget.count > 0;
     final words =
         (open ? widget.label : null) ?? l.selectedRowCountTitle(_shown);

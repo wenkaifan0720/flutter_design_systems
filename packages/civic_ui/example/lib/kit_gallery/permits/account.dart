@@ -256,7 +256,7 @@ class PermitsUnavailable extends StatelessWidget {
                 state.condition = PermitsCondition.usual;
                 state.changed();
               },
-              child: Text(DesignLocalizations.of(context).retryButtonLabel),
+              child: Text(RawWidgetsLocalizations.of(context).retryButtonLabel),
             ),
             if (other != null)
               CivicLink(onPressed: onElse, child: Text(context.say(other))),

@@ -131,9 +131,9 @@ class CivicLink extends StatelessWidget {
   }
 
   Widget _pressable(VoidCallback? onPressed, {required bool link}) {
-    return DesignTapTarget(
+    return TapTargetPadding(
       alignment: AlignmentDirectional.centerStart,
-      child: DesignPressable(
+      child: RawButton(
         onPressed: onPressed,
         focusNode: focusNode,
         autofocus: autofocus,
@@ -220,7 +220,8 @@ class CivicBackLink extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.civicTheme;
-    final words = label ?? DesignLocalizations.of(context).backButtonTooltip;
+    final words =
+        label ?? RawWidgetsLocalizations.of(context).backButtonTooltip;
     final rtl = Directionality.of(context) == TextDirection.rtl;
     return CivicLink.quiet(
       onPressed: onPressed,

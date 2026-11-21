@@ -85,7 +85,7 @@ class CivicFileUpload extends StatelessWidget {
     final text = context.civicText;
     final name = fileName;
     final remove = onRemoved;
-    return DesignField(
+    return RawInputDecorator(
       labelText: labelText,
       helperText: helperText,
       errorText: errorText,

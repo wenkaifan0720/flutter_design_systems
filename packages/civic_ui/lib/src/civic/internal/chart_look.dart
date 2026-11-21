@@ -343,7 +343,7 @@ class CivicChartTableView extends StatelessWidget {
     final text = context.civicText;
     final scaler = MediaQuery.textScalerOf(context);
     final direction = Directionality.of(context);
-    final l = DesignLocalizations.of(context);
+    final l = RawWidgetsLocalizations.of(context);
     const figures = [ui.FontFeature.tabularFigures()];
     final names = text.label.copyWith(color: t.textPrimary);
     final body = text.body.copyWith(
@@ -573,7 +573,7 @@ class _CivicChartFrameState extends State<CivicChartFrame> {
           key: ValueKey(_opened),
           title:
               widget.tableLabel ??
-              DesignLocalizations.of(context).chartShowTableLabel,
+              RawWidgetsLocalizations.of(context).chartShowTableLabel,
           initiallyExpanded: _open,
           onExpansionChanged: (open) => _open = open,
           child: widget.table,

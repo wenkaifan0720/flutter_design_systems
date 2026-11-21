@@ -30,7 +30,7 @@ class CivicLoadingState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.civicTheme;
-    final words = label ?? DesignLocalizations.of(context).loadingLabel;
+    final words = label ?? RawWidgetsLocalizations.of(context).loadingLabel;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(CivicSpacing.s24),
@@ -104,7 +104,7 @@ class CivicErrorState extends StatelessWidget {
                 onPressed: retry,
                 child: Text(
                   retryLabel ??
-                      DesignLocalizations.of(context).retryButtonLabel,
+                      RawWidgetsLocalizations.of(context).retryButtonLabel,
                 ),
               ),
           ],
