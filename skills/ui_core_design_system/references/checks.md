@@ -300,7 +300,7 @@ Every Dart block in `SKILL.md` and these references is taken from
 `samples/test/docs_test.dart` fails if a block is not found, token for token,
 in the samples' sources; `examples.md`'s excerpts are matched against the
 looks' sources (the repository's `packages/` folder, or the folders listed in
-`LOOK_SOURCES`). From `samples/`, on Flutter 3.50 or later:
+`LOOK_SOURCES`). From `samples/`, on Flutter 3.47 or later:
 
 ```sh
 flutter pub get

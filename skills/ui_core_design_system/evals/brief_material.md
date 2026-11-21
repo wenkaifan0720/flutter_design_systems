@@ -30,9 +30,11 @@ A look made of a physical material, where every state must stay true to it.
 
 - Every gate in [rubric.md](rubric.md), and 80 or more review points.
 - Material truth (R2) and focus (R3) carry this brief: focus as the glaze
-  catching more light or a painted line thickening, at 3:1 against the
-  unfocused part over a 2 px perimeter's area, never a coloured halo; an
-  inset part (a field) stays inset when focused.
+  catching more light or a painted line thickening, visible and findable at
+  a glance beside material_ui's focused part at the same size and theme, and
+  something porcelain can do: never a coloured halo, never a shadow
+  sharpened to stand out; an inset part (a field) stays inset when focused.
+  No part has a painted outline at rest that glazed porcelain wouldn't.
 - Shadows are never cut by a clip (`DesignShadowClipCheck` in its tests) and
   stay within the raised parts' rows.
 - Nested shapes are concentric (a chosen segment inside its track, a list's

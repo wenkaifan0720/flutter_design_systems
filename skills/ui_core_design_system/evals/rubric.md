@@ -29,8 +29,8 @@ material_ui's matching parts at the same condition.
 | # | Item | Points | Full marks when |
 |---|---|---|---|
 | R1 | Identity | 15 | The README's laws are specific, and every part visibly follows them; no part reads as a recoloured Material control; derived parts (date picker, toast, data table) look native to the language |
-| R2 | Material truth | 15 | Every state does only what the material can; no ring, halo or paint added to reach a contrast ratio; disabled reads as unavailable, not gone |
-| R3 | Focus | 10 | Keyboard focus in the look's idiom, no heavier than Material's 2 px indicator, findable at a glance (≥3:1 over a 2 px perimeter's area, day and night), never a ring on a part that already changes its edge |
+| R2 | Material truth | 15 | Every state does only what the material can; nothing added or sharpened to reach a contrast number; no outline at rest the material wouldn't have (high-contrast mode aside); disabled reads as unavailable, not gone |
+| R3 | Focus | 10 | Keyboard focus in the look's material, visible (WCAG 2.4.7) and findable at a glance when set beside material_ui's same part at the same size and theme, day and night; no heavier than Material's 2 px indicator, or than the spec ring of the language the look follows; nothing added or sharpened to stand out; never a ring on a part that already changes its edge |
 | R4 | Motion | 10 | Every state change animates on springs, interruptibly; route motion is the look's own; mid-transition frames show no snap, clip or stray shadow; Reduce Motion settles within 150 ms with no overshoot |
 | R5 | Alignment | 10 | One control height per density; labels on their faces' middles; rows level; chosen fills cover their cells; nested corners concentric; dialog actions one height and stacking when they do not fit |
 | R6 | Every size | 10 | A phone screen reads as a phone app and a desktop screen as a desktop app (rail or sidebar, menubar, context menu, shortcut labels); nothing stretches to its column from 600 px |

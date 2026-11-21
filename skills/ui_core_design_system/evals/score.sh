@@ -6,7 +6,7 @@
 # The candidate's example/lib/inventory.dart must define
 # `final DesignInventory inventory` and
 # `Widget lookHost(BuildContext context, Widget child, Brightness brightness)`.
-# Needs Flutter 3.50 or later on PATH.
+# Needs Flutter 3.47 or later on PATH.
 set -u
 
 evals="$(cd "$(dirname "$0")" && pwd)"

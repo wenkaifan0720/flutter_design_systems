@@ -49,8 +49,13 @@ same; elsewhere the look grows like Material.
 **A state only does what the material physically can.** Glass clears or
 frosts; it does not grow a blue edge. An inset well stays inset when focused.
 Paper takes ink, not light. Lower visibility than Material is acceptable when
-the material says so; adding a ring or a paint the material cannot have, to
-reach a contrast ratio, is not.
+the material says so; nothing is added or sharpened to reach a contrast
+number: no ring, no paint the material cannot have, no shadow made crisper
+or heavier than the material's own.
+
+**No outline at rest the material would not have.** A part keeps no outline
+at rest that its material wouldn't have, such as a printed edge on a moulded
+checkbox; high-contrast mode is the exception.
 
 **Every state is distinct.** Rest, hover, focus, pressed, disabled, selected,
 error and busy each differ from rest. Pressed differs from hover and from
@@ -69,14 +74,17 @@ the ring *is* the language (Material's focus ring, Fluent's double stroke, a
 classic desktop's dotted rectangle).
 
 **Focus is quiet.** It reads clearly at no more weight than Material's own
-indicator (a 2 px outline on fields). Never stack a halo on a ring, or a ring
-on a part that already changes its edge for focus (a field's rule or
-underline).
+indicator (a 2 px outline on fields). A look that follows a language whose
+spec ring is heavier keeps that ring: Material 3 Expressive's 3 dp ring with
+a 2 dp offset. Never stack a halo on a ring, or a ring on a part that already
+changes its edge for focus (a field's rule or underline).
 
-**Focus is findable.** The focused part differs from the unfocused one over
-an area at least a 2 px perimeter's size, with at least 3:1 contrast between
-the focused and unfocused pixels (WCAG 2.4.11 and 2.4.13), day and night, at
-1x and 2x text. Do not rely on hue alone; never cover the part's words.
+**Focus is visible and findable.** Keyboard focus must be visible (WCAG
+2.4.7) and findable at a glance in the look's material. Judge it side by side
+with the same part in material_ui at the same size and theme, day and night,
+at 1x and 2x text. Lower visibility than Material is fine where the material
+is quieter; nothing is added or sharpened to reach a contrast number. Do not
+rely on hue alone; never cover the part's words.
 
 **Keyboard focus is stronger than hover; pressed is distinct from both.**
 Focus animates in and out like every other state.

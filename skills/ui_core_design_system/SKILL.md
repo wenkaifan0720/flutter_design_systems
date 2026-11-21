@@ -8,7 +8,7 @@ description: Build a complete, production-grade Flutter design-system package (a
 This skill builds a Flutter package that is a whole design language: a
 theme, every part an ordinary app needs, in every state, on every screen size,
 for every reader. It targets **ui_core ^0.4.0** and **ui_core_test ^0.2.0** on
-**Flutter 3.50 or later**, and uses only their published API.
+**Flutter 3.47 or later**, and uses only their published API.
 
 A design system on ui_core splits the work in two:
 
