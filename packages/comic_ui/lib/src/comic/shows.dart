@@ -604,7 +604,7 @@ class _ComicCarouselState extends State<ComicCarouselView> {
         final item = share * width;
         final viewport = 2 * width - item;
         final fraction = item / viewport;
-        return DesignCarousel(
+        return RawCarousel(
           focusNode: widget.focusNode,
           autofocus: widget.autofocus,
           // The kit's page view keeps the fraction it was built with.

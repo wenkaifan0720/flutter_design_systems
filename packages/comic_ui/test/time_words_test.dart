@@ -29,7 +29,7 @@ void main() {
             builder: (context) => Localizations.override(
               context: context,
               locale: locale,
-              delegates: const [DesignLocalizations.delegate],
+              delegates: const [RawWidgetsLocalizations.delegate],
               child: ComicTimePicker(
                 value: const ComicTime(9, 30),
                 use24hFormat: false,
@@ -63,7 +63,7 @@ void main() {
         locale: const Locale('de'),
         supportedLocales: const [Locale('de'), Locale('en')],
         localizationsDelegates: const [
-          DesignLocalizations.delegate,
+          RawWidgetsLocalizations.delegate,
           ComicLocalizations.delegate,
           _AnyLocale<MaterialLocalizations>(DefaultMaterialLocalizations()),
           _AnyLocale<CupertinoLocalizations>(DefaultCupertinoLocalizations()),
@@ -97,7 +97,7 @@ void main() {
   test('Comic\'s words in another language are English but for the words '
       'ui_core shares', () {
     final german = ComicLocalizations.forLocale(const Locale('de'));
-    final shared = DesignLocalizations.forLocale(const Locale('de'));
+    final shared = RawWidgetsLocalizations.forLocale(const Locale('de'));
     expect(german.tryAgain, shared.retryButtonLabel);
     expect(german.dismiss, shared.modalBarrierDismissLabel);
     expect(german.months.first, shared.formatMonth(DateTime(2000)));

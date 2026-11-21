@@ -1,10 +1,11 @@
-// ui_core 0.3.0's overlays in Comic's parts: the tooltip on DesignTooltip, a shortcut's keys in words, and a
+// ui_core's overlays in Comic's parts: the tooltip on Flutter's RawTooltip, a shortcut's keys in words, and a
 // combobox's and a multi-select's search that takes time or fails.
 import 'dart:async';
 import 'dart:ui' show PointerDeviceKind;
 
 import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:flutter/rendering.dart' show SemanticsNode;
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:comic_ui/comic_ui.dart';
@@ -51,6 +52,67 @@ void main() {
       expect(find.byType(ComicTooltipFace), findsNothing);
     },
   );
+
+  // The tip joins the tipped key's own node, as the published tooltip made it: a screen reader hears the key's name,
+  // its tip and that it is a button together, and no node round it takes the tip.
+  for (final (name, label, key) in [
+    (
+      'ComicIconButton',
+      'Save',
+      ComicIconButton(Icons.bookmark, label: 'Save', onPressed: () {}),
+    ),
+    ('ComicButton', 'Save', ComicButton('Save', onPressed: () {})),
+  ]) {
+    testWidgets(
+      "a tipped $name's own node carries its label, its tip and that it is a button",
+      (tester) async {
+        final semantics = tester.ensureSemantics();
+        const tip = 'Save to your collection';
+        await tester.pumpWidget(
+          comicApp(
+            Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text('Issue 12'),
+                  ComicTooltip(message: tip, child: key),
+                ],
+              ),
+            ),
+          ),
+        );
+        final node = tester.getSemantics(find.byWidget(key));
+        expect(
+          node,
+          isSemantics(
+            label: label,
+            tooltip: tip,
+            isButton: true,
+            hasTapAction: true,
+          ),
+        );
+        var root = node;
+        while (root.parent != null) {
+          root = root.parent!;
+        }
+        final saying = <SemanticsNode>[];
+        void visit(SemanticsNode n) {
+          final data = n.getSemanticsData();
+          if (data.tooltip.contains(tip) || data.label.contains(tip)) {
+            saying.add(n);
+          }
+          n.visitChildren((child) {
+            visit(child);
+            return true;
+          });
+        }
+
+        visit(root);
+        expect(saying, [node]);
+        semantics.dispose();
+      },
+    );
+  }
 
   testWidgets(
     "a shortcut's keys come in words, as the platform orders them",

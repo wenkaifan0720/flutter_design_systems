@@ -2192,7 +2192,7 @@ ThemeData _comicMaterialOf(ComicColors c, ComicTypeface face) => ThemeData(
 /// Materials' `PageTransitionsTheme`. Comic's own Material theme carries it, for apps on material_ui. An app on Flutter's
 /// own `MaterialApp` puts it in its own `ThemeData`, as the example does: Flutter's `MaterialPageRoute` reads Flutter's
 /// theme, which Comic doesn't reach, and would fly in. See [ComicPageTransitionsBuilder]. On iOS the cut stands in
-/// ui_core's `DesignSwipeBackPageTransitionsBuilder`, so the swipe from the screen's leading edge still takes a page
+/// ui_core's `SwipeBackPageTransitionsBuilder`, so the swipe from the screen's leading edge still takes a page
 /// back, the page following the finger.
 ///
 /// ```dart
@@ -2209,7 +2209,7 @@ const Map<TargetPlatform, PageTransitionsBuilder> comicPageTransitions = {
   TargetPlatform.android: ComicPageTransitionsBuilder(),
   TargetPlatform.fuchsia: ComicPageTransitionsBuilder(),
   // iOS's swipe back from the screen's edge, round Comic's cut.
-  TargetPlatform.iOS: DesignSwipeBackPageTransitionsBuilder(
+  TargetPlatform.iOS: SwipeBackPageTransitionsBuilder(
     ComicPageTransitionsBuilder(),
   ),
   TargetPlatform.linux: ComicPageTransitionsBuilder(),
@@ -2221,7 +2221,7 @@ const Map<TargetPlatform, PageTransitionsBuilder> comicPageTransitions = {
 /// ink in its first frame: nothing travels in from a side, fades or zooms (laws 1 and 3). [ComicTheme] gives it to the
 /// routes it reaches (Comic's own pages among them); an app's `MaterialApp` gives [comicPageTransitions] to its own
 /// theme, so a `MaterialPageRoute` it pushes cuts too. The cut alone takes no swipe: [comicPageTransitions] wraps it on
-/// iOS in ui_core's `DesignSwipeBackPageTransitionsBuilder`, which keeps the swipe from the leading edge; a map of your
+/// iOS in ui_core's `SwipeBackPageTransitionsBuilder`, which keeps the swipe from the leading edge; a map of your
 /// own does the same.
 class ComicPageTransitionsBuilder extends PageTransitionsBuilder {
   /// Creates Comic's page change.

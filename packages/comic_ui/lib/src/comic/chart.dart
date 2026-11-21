@@ -368,7 +368,7 @@ class _ComicChartState extends State<ComicChart> {
     final read =
         widget.summary ??
         (widget.loading
-            ? DesignLocalizations.of(context).loadingLabel
+            ? RawWidgetsLocalizations.of(context).loadingLabel
             : nothing
             ? widget.empty ?? words.noData
             : [

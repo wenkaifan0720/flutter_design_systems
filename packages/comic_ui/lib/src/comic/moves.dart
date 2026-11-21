@@ -214,7 +214,7 @@ class ComicTabBar extends StatefulWidget {
 
 class _ComicTabBarState extends State<ComicTabBar>
     with TickerProviderStateMixin {
-  DesignTabController? _controller;
+  RawTabController? _controller;
   bool _still = false;
   BuildContext? _chosenTab;
 
@@ -246,7 +246,7 @@ class _ComicTabBarState extends State<ComicTabBar>
   // overshoot. With still motion (Reduce Motion, a still theme) it lands within a frame: a cut, never a slide.
   void _make() {
     final old = _controller;
-    _controller = DesignTabController(
+    _controller = RawTabController(
       length: widget.tabs.length,
       initialIndex: _chosen,
       vsync: this,
@@ -346,14 +346,14 @@ class _ComicTabBarState extends State<ComicTabBar>
             fill: c.dark ? c.card : c.control,
             thumb: c.caption,
             clip: scrolls,
-            child: DesignTabBar(
+            child: RawTabBar(
               controller: _controller!,
               isScrollable: scrolls,
               semanticLabel:
                   widget.label ?? ComicLocalizations.of(context).tabs,
               tabs: [
                 for (final tab in widget.tabs)
-                  DesignTab(label: tab, enabled: enabled),
+                  RawTab(label: tab, enabled: enabled),
               ],
               tabBuilder: (context, tab, at) {
                 // A fixed strip has no viewport of its own to reveal a tab in.
@@ -1124,8 +1124,8 @@ class ComicPagination extends StatelessWidget {
 
     Widget step(bool back) => cell(
       label: back
-          ? DesignLocalizations.of(context).previousPageTooltip
-          : DesignLocalizations.of(context).nextPageTooltip,
+          ? RawWidgetsLocalizations.of(context).previousPageTooltip
+          : RawWidgetsLocalizations.of(context).nextPageTooltip,
       onPressed: onChanged == null || (back ? page == 0 : page == count - 1)
           ? null
           : () => onChanged!(page + (back ? -1 : 1)),

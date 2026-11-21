@@ -354,9 +354,9 @@ class _GalleryAppState extends State<GalleryApp> with WidgetsBindingObserver {
       // (Cancel, Close, Today) in it, and right to left the gallery reads Arabic, Comic's own words with it.
       // flutter_localizations gives Flutter's Material and Cupertino words; Comic's theme gives its own library's.
       locale: custom.direction == TextDirection.rtl ? const Locale('ar') : null,
-      supportedLocales: DesignLocalizations.supportedLocales,
+      supportedLocales: RawWidgetsLocalizations.supportedLocales,
       localizationsDelegates: [
-        DesignLocalizations.delegate,
+        RawWidgetsLocalizations.delegate,
         ...GlobalMaterialLocalizations.delegates,
         KitComicWords(arabic: custom.direction == TextDirection.rtl),
       ],

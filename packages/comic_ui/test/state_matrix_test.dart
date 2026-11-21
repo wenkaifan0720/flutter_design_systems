@@ -58,7 +58,7 @@ Future<_Shot> _paint(WidgetTester tester, MatrixRow row, Widget child) async {
 }
 
 Finder _pressTarget() {
-  for (final type in [DesignPressable, ComicPressable]) {
+  for (final type in [RawButton, ComicPressable]) {
     final found = find.descendant(
       of: find.byKey(_cell),
       matching: find.byType(type),

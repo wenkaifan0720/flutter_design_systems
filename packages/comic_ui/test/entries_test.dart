@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ui_core_test/ui_core_test.dart';
 import 'package:comic_ui/comic_ui.dart';
+import 'package:comic_ui/src/comic/internal/reach.dart' show ComicOutward;
 
 import 'support.dart';
 
@@ -414,10 +415,11 @@ void main() {
     expect(changes, ['c', 'a']);
   });
 
-  // A, B, C and D with B turned off, chosen C, nothing or B, in each direction: one Tab stop at the choice (the first
-  // that can be chosen when none can), the next Tab out, the arrows choosing as they move and passing B.
+  // A, B, C and D with B turned off, chosen C, nothing, A or B, in each direction: one Tab stop at the choice (the
+  // first that can be chosen when none can, or when the chosen one is turned off), the next Tab out, the arrows
+  // choosing as they move and passing B.
   for (final direction in TextDirection.values) {
-    for (final initial in <String?>['c', null, 'b']) {
+    for (final initial in <String?>['c', null, 'a', 'b']) {
       testWidgets('a radio group is one Tab stop whose arrows choose, '
           '${direction.name}, chosen ${initial ?? 'none'}', (tester) async {
         final semantics = tester.ensureSemantics();
@@ -480,6 +482,80 @@ void main() {
         semantics.dispose();
       });
     }
+  }
+
+  // A press anywhere in the box an option takes in its column chooses it: on its ring, on its words, in the gaps
+  // between them. RawRadio's own detector takes a press only where the face paints, so the face lies on a box that is
+  // hit all over. The room the row's wash and pop stand out into on each side (ComicOutward) is painted only, as in
+  // the published group: a tap reaches the box a screen reader outlines.
+  for (final direction in TextDirection.values) {
+    testWidgets(
+      "a press anywhere in a radio's box chooses it, ${direction.name}",
+      (tester) async {
+        final semantics = tester.ensureSemantics();
+        var chosen = 'c';
+        await tester.pumpWidget(
+          comicApp(
+            StatefulBuilder(
+              builder: (context, setState) => Padding(
+                padding: const EdgeInsets.all(24),
+                child: ComicRadioGroup<String>(
+                  label: 'Format',
+                  value: chosen,
+                  options: const [
+                    ComicRadio('a', 'A'),
+                    ComicRadio('b', 'B', enabled: false),
+                    ComicRadio('c', 'C', note: 'Kept for a week'),
+                    ComicRadio('d', 'D'),
+                  ],
+                  onChanged: (next) => setState(() => chosen = next),
+                ),
+              ),
+            ),
+            direction: direction,
+          ),
+        );
+        await tester.pumpAndSettle();
+        Rect boxOf(String value) => tester.getRect(
+          find
+              .ancestor(
+                of: find.byWidgetPredicate(
+                  (w) => w is RawRadio<String> && w.value == value,
+                ),
+                matching: find.byType(ComicOutward),
+              )
+              .first,
+        );
+        const values = ['a', 'c', 'd'];
+        for (final (i, value) in values.indexed) {
+          final other = values[(i + 1) % values.length];
+          final box = boxOf(value);
+          // The box a tap reaches is the box a screen reader outlines.
+          expect(
+            tester
+                .getSemantics(find.bySemanticsLabel(value.toUpperCase()))
+                .rect
+                .size,
+            box.size,
+          );
+          for (final at in [
+            box.centerLeft + const Offset(2, 0),
+            box.center,
+            box.centerRight - const Offset(2, 0),
+            box.topCenter + const Offset(0, 2),
+            box.bottomCenter - const Offset(0, 2),
+          ]) {
+            await tester.tapAt(boxOf(other).center);
+            await tester.pumpAndSettle();
+            expect(chosen, other);
+            await tester.tapAt(at);
+            await tester.pumpAndSettle();
+            expect(chosen, value, reason: '$value pressed at $at in $box');
+          }
+        }
+        semantics.dispose();
+      },
+    );
   }
 
   testWidgets('check row has one checkbox action', (tester) async {

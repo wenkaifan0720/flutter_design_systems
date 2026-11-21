@@ -199,7 +199,7 @@ class ComicToggleGroup<T> extends StatelessWidget {
       [t.segmentedButtonTheme],
       const {WidgetState.selected},
     );
-    return DesignToggleGroup<T>(
+    return RawSegmentedButton<T>(
       options: values,
       selected: selected,
       onSelectionChanged: onChanged,
@@ -324,7 +324,7 @@ class ComicSplitButton extends StatelessWidget {
   /// What the arrow offers. With none to take, the arrow is disabled.
   final List<ComicSplitAction> actions;
 
-  /// The arrow's name for a screen reader; null takes `DesignLocalizations.splitButtonMenuLabel`.
+  /// The arrow's name for a screen reader; null takes `RawWidgetsLocalizations.splitButtonMenuLabel`.
   final String? menuLabel;
 
   @override
@@ -335,15 +335,15 @@ class ComicSplitButton extends StatelessWidget {
     final rim = comicRim(t, look, c.nightLine);
     final inner = comicInsetShape(outer, rim.width + 3);
     final height = t.density.height(48);
-    return DesignSplitButton(
+    return RawSplitButton(
       label: label,
       onPressed: onPressed,
       menuLabel:
-          menuLabel ?? DesignLocalizations.of(context).splitButtonMenuLabel,
+          menuLabel ?? RawWidgetsLocalizations.of(context).splitButtonMenuLabel,
       actions: [
         if (actions.any((a) => a.onPressed != null))
           for (final a in actions)
-            DesignSplitAction(label: a.label, onPressed: a.onPressed),
+            RawSplitAction(label: a.label, onPressed: a.onPressed),
       ],
       // The act's two halves stand on one print (law 4), as the act does.
       layoutBuilder: (context, main, toggle) => ComicPlated(
@@ -384,11 +384,11 @@ class ComicSplitButton extends StatelessWidget {
               ringGap: look.fill ?? c.primary,
               child: Padding(
                 padding: EdgeInsets.symmetric(
-                  horizontal: part == DesignSplitPart.main ? 13 : 6,
+                  horizontal: part == RawSplitPart.main ? 13 : 6,
                 ),
                 child: Center(
                   widthFactor: 1,
-                  child: part == DesignSplitPart.main
+                  child: part == RawSplitPart.main
                       ? CapLabel(
                           child: Text(
                             label,
@@ -496,7 +496,7 @@ class ComicKbd extends StatelessWidget {
   /// `shortcut`: ui_core's `designShortcutLabel`, in the words [ComicKbd.shortcut] uses.
   ///
   /// ```dart
-  /// DesignMenuEntry(label: 'New', shortcut: ComicKbd.labelOf(context, const SingleActivator(LogicalKeyboardKey.keyN, control: true)))
+  /// RawMenuEntry(label: 'New', shortcut: ComicKbd.labelOf(context, const SingleActivator(LogicalKeyboardKey.keyN, control: true)))
   /// ```
   static String labelOf(
     BuildContext context,
@@ -508,8 +508,8 @@ class ComicKbd extends StatelessWidget {
 
   // Off Apple's platforms ui_core writes Enter as ↵ even with its symbols off; Comic's faces draw no ↵, so Enter is
   // the reader's word there too, as it is on a Mac.
-  static String _enterInWords(BuildContext context, String keys) =>
-      keys.replaceAll('↵', DesignLocalizations.of(context).keyboardKeyEnter);
+  static String _enterInWords(BuildContext context, String keys) => keys
+      .replaceAll('↵', RawWidgetsLocalizations.of(context).keyboardKeyEnter);
 
   @override
   Widget build(BuildContext context) {

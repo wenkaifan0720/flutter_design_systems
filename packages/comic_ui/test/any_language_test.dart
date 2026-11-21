@@ -25,8 +25,8 @@ void main() {
         WidgetsApp(
           color: const Color(0xFF000000),
           locale: locale,
-          supportedLocales: DesignLocalizations.supportedLocales,
-          localizationsDelegates: const [DesignLocalizations.delegate],
+          supportedLocales: RawWidgetsLocalizations.supportedLocales,
+          localizationsDelegates: const [RawWidgetsLocalizations.delegate],
           pageRouteBuilder: <T>(settings, builder) => PageRouteBuilder<T>(
             settings: settings,
             pageBuilder: (context, _, _) => builder(context),
@@ -51,15 +51,15 @@ void main() {
 
     testWidgets('a field builds and takes words under an app in $language '
         'with no Material words, and ui_core speaks $language', (tester) async {
-      late DesignLocalizations words;
+      late RawWidgetsLocalizations words;
       await pumpIn(tester, (context) {
-        words = DesignLocalizations.of(context);
+        words = RawWidgetsLocalizations.of(context);
         return const ComicTextField(label: 'Name', hint: 'As on your card');
       });
       expect(tester.takeException(), isNull);
       expect(
         words.closeButtonLabel,
-        DesignLocalizations.forLocale(locale).closeButtonLabel,
+        RawWidgetsLocalizations.forLocale(locale).closeButtonLabel,
       );
       expect(words.closeButtonLabel, isNot('Close'));
       await tester.enterText(find.byType(EditableText), 'Ada');

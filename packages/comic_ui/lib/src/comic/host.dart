@@ -250,7 +250,7 @@ class ComicSheetPage<T> extends Page<T> {
         screenInk: t.colors.scrim,
         settings: this,
         barrierDismissible: true,
-        barrierLabel: DesignLocalizations.of(context).closeButtonLabel,
+        barrierLabel: RawWidgetsLocalizations.of(context).closeButtonLabel,
         builder: (sheetContext) => Center(
           child: SizedBox(
             width: 560,

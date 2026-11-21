@@ -24,18 +24,16 @@ void main() {
               width: 340,
               child: ComicMenuBar(
                 menus: [
-                  DesignMenuEntry(
+                  RawMenuEntry(
                     label: 'File',
                     children: [
-                      DesignMenuEntry(label: 'New', onPressed: () {}),
-                      DesignMenuEntry(label: 'Export', onPressed: () {}),
+                      RawMenuEntry(label: 'New', onPressed: () {}),
+                      RawMenuEntry(label: 'Export', onPressed: () {}),
                     ],
                   ),
-                  DesignMenuEntry(
+                  RawMenuEntry(
                     label: 'Edit',
-                    children: [
-                      DesignMenuEntry(label: 'Undo', onPressed: () {}),
-                    ],
+                    children: [RawMenuEntry(label: 'Undo', onPressed: () {})],
                   ),
                 ],
               ),

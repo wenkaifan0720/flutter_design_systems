@@ -10,6 +10,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:comic_ui/comic_ui.dart';
 import 'package:comic_ui/comic_host.dart';
+import 'package:ui_core_review/ui_core_review.dart' show DesignKeylineCheck;
 import 'package:ui_core_test/ui_core_test.dart';
 
 // ignore_for_file: avoid_relative_lib_imports, avoid_print
@@ -317,7 +318,7 @@ void main() {
         'select': face(0),
         'select field': face(1),
         'combobox': find.byType(ComicTextField),
-        'multi-select': _named('DesignTagInput<String>'),
+        'multi-select': _named('RawTagInput<String>'),
       };
       for (final MapEntry(key: name, value: face) in faces.entries) {
         final rect = tester.getRect(face);

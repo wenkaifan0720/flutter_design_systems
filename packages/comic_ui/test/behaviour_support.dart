@@ -14,6 +14,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:comic_ui/comic_ui.dart';
 import 'package:comic_ui/comic_host.dart';
+import 'package:comic_ui/src/comic/press.dart' show ComicPressFace;
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import 'pages/agenda_page.dart';
@@ -196,7 +197,7 @@ final _parts = <String, _Part>{
   ),
   'ComicTabBar': _Part(
     (hit) => ComicTabBar(tabs: const ['All', 'Saved'], onChanged: _on(hit)),
-    // One tab stop, the chosen tab: the arrows choose (ui_core's DesignTabBar), and Enter on the chosen tab changes
+    // One tab stop, the chosen tab: the arrows choose (ui_core's RawTabBar), and Enter on the chosen tab changes
     // nothing, so it calls nothing (routes_values_test).
     keys: false,
   ),
@@ -402,7 +403,7 @@ final _parts = <String, _Part>{
   'ComicRangeSlider': _Part(
     (hit) => ComicRangeSlider(
       label: 'Price',
-      values: const DesignRangeValues(.2, .7),
+      values: const RawRangeValues(.2, .7),
       onChanged: _on(hit),
     ),
     keys: false,
@@ -411,7 +412,7 @@ final _parts = <String, _Part>{
   'ComicCalendar': _Part(
     (hit) => ComicCalendar(
       controller: _own(
-        DesignCalendarController(
+        RawCalendarController(
           firstDate: DateTime(2026),
           lastDate: DateTime(2027),
           initialMonth: DateTime(2026, 11),
@@ -449,7 +450,7 @@ final _parts = <String, _Part>{
   'ComicCommand': _Part(
     (hit) => ComicCommand(
       maxHeight: 160,
-      commands: [DesignCommand(label: 'New issue', onPressed: () {})],
+      commands: [RawCommand(label: 'New issue', onPressed: () {})],
       onRun: _on(hit),
     ),
     keys: false,
@@ -459,14 +460,10 @@ final _parts = <String, _Part>{
   'ComicDataTable': _Part(
     (hit) => ComicDataTable<String>(
       controller: _own(
-        DesignTableController<String>(
+        RawDataTableController<String>(
           rows: const ['Issue 12'],
           columns: [
-            DesignTableColumn(
-              id: 'title',
-              label: 'Issue',
-              sortKey: (row) => row,
-            ),
+            RawDataColumn(id: 'title', label: 'Issue', sortKey: (row) => row),
           ],
         ),
       ),
@@ -506,7 +503,7 @@ final _parts = <String, _Part>{
   ),
   'ComicSwipeActions': _Part(
     (hit) => ComicSwipeActions(
-      endActions: [DesignSwipeAction(label: 'Delete', onPressed: () {})],
+      endActions: [RawSwipeAction(label: 'Delete', onPressed: () {})],
       onOpenChanged: _on(hit),
       child: ComicListTile(title: 'Issue 12', onPressed: hit),
     ),
@@ -716,9 +713,27 @@ int _pops(WidgetTester tester) =>
                   child.transform.getTranslation().y != 0));
     }).length;
 
-List<DesignPressableState> _pressables(WidgetTester tester) => tester
-    .stateList<DesignPressableState>(find.byType(DesignPressable))
-    .toList();
+/// The part's presses: the design kit's pressables, and the radios on Flutter's `RawRadio`.
+Finder get _presses =>
+    find.byWidgetPredicate((w) => w is RawButton || w is RawRadio);
+
+/// The states [press] hands its face: a pressable's own, a radio's those it gives its [ComicPressFace].
+Set<WidgetState> _statesOf(WidgetTester tester, Finder press) {
+  if (tester.widget(press) is RawButton) {
+    return tester.state<RawButtonState>(press).states;
+  }
+  return tester
+      .widget<ComicPressFace>(
+        find.descendant(of: press, matching: find.byType(ComicPressFace)).first,
+      )
+      .states;
+}
+
+/// The states each of the part's presses hands its face.
+List<Set<WidgetState>> _pressables(WidgetTester tester) => [
+  for (var i = 0; i < _presses.evaluate().length; i++)
+    _statesOf(tester, _presses.at(i)),
+];
 
 /// The widths a part and a page lay out at: a phone, a tablet upright, a small and a large desk.
 const _widths = [390.0, 768.0, 1024.0, 1440.0];
@@ -922,7 +937,7 @@ void partBehaviours({required bool styled}) {
               if (part.pressable && !part.roving) {
                 expect(
                   _pressables(tester)
-                      .any((s) => s.states.contains(WidgetState.focused)),
+                      .any((s) => s.contains(WidgetState.focused)),
                   isTrue,
                   reason: 'the focused press was not told to pop',
                 );
@@ -970,7 +985,7 @@ void partBehaviours({required bool styled}) {
                 reason: 'a disabled $name took focus',
               );
               for (final s in _pressables(tester)) {
-                expect(s.states, contains(WidgetState.disabled));
+                expect(s, contains(WidgetState.disabled));
               }
             },
             everyday: platforms,
@@ -984,7 +999,7 @@ void partBehaviours({required bool styled}) {
             await _size(tester, 390);
             await tester.pumpWidget(_host(part.build(() {}), still: true));
             await tester.pump();
-            final first = find.byType(DesignPressable).first;
+            final first = _presses.first;
             final mouse = await tester.createGesture(
               kind: PointerDeviceKind.mouse,
             );
@@ -992,10 +1007,7 @@ void partBehaviours({required bool styled}) {
             addTearDown(mouse.removePointer);
             await mouse.moveTo(tester.getCenter(first));
             await tester.pump();
-            expect(
-              tester.state<DesignPressableState>(first).states,
-              contains(WidgetState.hovered),
-            );
+            expect(_statesOf(tester, first), contains(WidgetState.hovered));
           }, everyday: platforms);
         }
 
@@ -1007,7 +1019,7 @@ void partBehaviours({required bool styled}) {
 
             await tester.pumpWidget(_host(part.build(() {}), still: true));
             await tester.pump();
-            for (final press in find.byType(DesignPressable).evaluate()) {
+            for (final press in _presses.evaluate()) {
               final target = find.byElementPredicate(
                 (element) => identical(element, press),
               );
@@ -1030,10 +1042,7 @@ void partBehaviours({required bool styled}) {
             await tester.pumpWidget(_host(part.build(() {}), still: true));
             await tester.pump();
             if (part.pressable) {
-              await tester.tap(
-                find.byType(DesignPressable).first,
-                warnIfMissed: false,
-              );
+              await tester.tap(_presses.first, warnIfMissed: false);
             }
             await tester.pump();
             await tester.pump();

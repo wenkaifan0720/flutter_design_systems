@@ -756,8 +756,8 @@ class ComicBackButton extends StatelessWidget {
       label:
           label ??
           (close
-              ? DesignLocalizations.of(context).closeButtonLabel
-              : DesignLocalizations.of(context).backButtonTooltip),
+              ? RawWidgetsLocalizations.of(context).closeButtonLabel
+              : RawWidgetsLocalizations.of(context).backButtonTooltip),
       size: 38,
       // The way out stands on its bar's start keyline, its target growing toward the end.
       targetAlignment: AlignmentDirectional.centerStart,
@@ -1347,7 +1347,7 @@ class ComicLoadingState extends StatelessWidget {
     final t = ComicTheme.of(context);
     return Center(
       child: Semantics(
-        label: label ?? DesignLocalizations.of(context).loadingLabel,
+        label: label ?? RawWidgetsLocalizations.of(context).loadingLabel,
         child: Padding(
           padding: const EdgeInsets.all(ComicSpace.spread),
           child: ComicThought(

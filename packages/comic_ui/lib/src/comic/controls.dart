@@ -1055,9 +1055,9 @@ class ComicTextField extends StatelessWidget {
             targetAlignment: AlignmentDirectional.centerEnd,
             label: hidden
                 ? (revealLabels?.$1 ??
-                      DesignLocalizations.of(context).showPasswordLabel)
+                      RawWidgetsLocalizations.of(context).showPasswordLabel)
                 : (revealLabels?.$2 ??
-                      DesignLocalizations.of(context).hidePasswordLabel),
+                      RawWidgetsLocalizations.of(context).hidePasswordLabel),
             onPressed: enabled ? toggle : null,
           )
         : this.trailing;
@@ -3228,7 +3228,7 @@ class _Action extends StatelessWidget {
         : EdgeInsets.only(left: lead);
     final placed = lead == 0
         ? drawn
-        : DesignTapTarget(
+        : TapTargetPadding(
             minSize: Size.square(ComicTapTarget.targetOf(context)),
             child: ComicOutward(
               margin: room,

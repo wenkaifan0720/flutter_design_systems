@@ -28,7 +28,7 @@ import '../knobs.dart' show ComicSpace;
 Future<T?> showComicSheet<T>(
   BuildContext context, {
   required WidgetBuilder builder,
-  DesignSheetEdge edge = DesignSheetEdge.end,
+  RawSheetEdge edge = RawSheetEdge.end,
   double width = 384,
   bool barrierDismissible = true,
   bool useRootNavigator = true,
@@ -39,7 +39,7 @@ Future<T?> showComicSheet<T>(
   final carry = comicCarryTo(context, navigator);
   return navigator.push<T>(
     // The page behind is screened with dots, not dimmed (law 1), as behind every raised layer of Comic's.
-    DesignSideSheetRoute<T>(
+    RawSideSheetRoute<T>(
       barrierBuilder: (context, animation) => ComicScreenScrim(
         animation: animation,
         ink: ComicTheme.of(context).colors.scrim,
@@ -48,7 +48,7 @@ Future<T?> showComicSheet<T>(
       width: width,
       barrierDismissible: barrierDismissible,
       barrierLabel:
-          closeLabel ?? DesignLocalizations.of(context).closeButtonLabel,
+          closeLabel ?? RawWidgetsLocalizations.of(context).closeButtonLabel,
       semanticLabel: label,
       builder: (context, sheet) => carry(context, Builder(builder: builder)),
     ),
@@ -150,7 +150,7 @@ class ComicSheet extends StatelessWidget {
                               ComicGlyphs.close,
                               label:
                                   closeLabel ??
-                                  DesignLocalizations.of(context)
+                                  RawWidgetsLocalizations.of(context)
                                       .closeButtonLabel,
                               onPressed:
                                   onClose ??
@@ -213,7 +213,7 @@ class ComicSheet extends StatelessWidget {
 }
 
 Widget _panel(
-  DesignOverlayInfo info,
+  RawPopoverInfo info,
   double width,
   EdgeInsetsGeometry padding,
   Widget child,
@@ -246,8 +246,8 @@ class ComicPopover extends StatelessWidget {
     super.key,
     required this.anchorBuilder,
     required this.builder,
-    this.side = DesignOverlaySide.below,
-    this.align = DesignOverlayAlign.start,
+    this.side = RawPopoverSide.below,
+    this.align = RawPopoverAlign.start,
     this.width = 320,
     this.label,
     this.controller,
@@ -262,10 +262,10 @@ class ComicPopover extends StatelessWidget {
   final Widget Function(BuildContext context, VoidCallback close) builder;
 
   /// Which side of the anchor it opens on, room allowing.
-  final DesignOverlaySide side;
+  final RawPopoverSide side;
 
   /// How it lines up with the anchor.
-  final DesignOverlayAlign align;
+  final RawPopoverAlign align;
 
   /// The panel's greatest width.
   final double width;
@@ -280,12 +280,12 @@ class ComicPopover extends StatelessWidget {
   final ValueChanged<bool>? onOpenChanged;
 
   @override
-  Widget build(BuildContext context) => DesignAnchoredOverlay(
+  Widget build(BuildContext context) => RawPopover(
     controller: controller,
     onOpenChanged: onOpenChanged,
     semanticLabel: label,
     // A panel of its own width ([width]), not a list: it does not take a wide anchor's width.
-    placement: DesignOverlayPlacement(
+    placement: RawPopoverPlacement(
       side: side,
       align: align,
       gap: 8,
@@ -310,17 +310,17 @@ class ComicPopover extends StatelessWidget {
         >.has('builder', builder),
       )
       ..add(
-        EnumProperty<DesignOverlaySide>(
+        EnumProperty<RawPopoverSide>(
           'side',
           side,
-          defaultValue: DesignOverlaySide.below,
+          defaultValue: RawPopoverSide.below,
         ),
       )
       ..add(
-        EnumProperty<DesignOverlayAlign>(
+        EnumProperty<RawPopoverAlign>(
           'align',
           align,
-          defaultValue: DesignOverlayAlign.start,
+          defaultValue: RawPopoverAlign.start,
         ),
       )
       ..add(DoubleProperty('width', width, defaultValue: 320))
@@ -353,8 +353,8 @@ class ComicHoverCard extends StatelessWidget {
     super.key,
     required this.child,
     required this.card,
-    this.side = DesignOverlaySide.below,
-    this.align = DesignOverlayAlign.start,
+    this.side = RawPopoverSide.below,
+    this.align = RawPopoverAlign.start,
     this.width = 280,
     this.label,
   });
@@ -366,10 +366,10 @@ class ComicHoverCard extends StatelessWidget {
   final Widget card;
 
   /// Which side of [child] it comes up on, room allowing.
-  final DesignOverlaySide side;
+  final RawPopoverSide side;
 
   /// How it lines up with [child].
-  final DesignOverlayAlign align;
+  final RawPopoverAlign align;
 
   /// The card's greatest width.
   final double width;
@@ -378,12 +378,12 @@ class ComicHoverCard extends StatelessWidget {
   final String? label;
 
   @override
-  Widget build(BuildContext context) => DesignAnchoredOverlay(
-    trigger: DesignOverlayTrigger.hover,
+  Widget build(BuildContext context) => RawPopover(
+    trigger: RawPopoverTrigger.hover,
     focusOnOpen: false,
     semanticLabel: label,
     // A panel of its own width ([width]), not a list: it does not take a wide anchor's width.
-    placement: DesignOverlayPlacement(
+    placement: RawPopoverPlacement(
       side: side,
       align: align,
       gap: 8,
@@ -399,17 +399,17 @@ class ComicHoverCard extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(
-        EnumProperty<DesignOverlaySide>(
+        EnumProperty<RawPopoverSide>(
           'side',
           side,
-          defaultValue: DesignOverlaySide.below,
+          defaultValue: RawPopoverSide.below,
         ),
       )
       ..add(
-        EnumProperty<DesignOverlayAlign>(
+        EnumProperty<RawPopoverAlign>(
           'align',
           align,
-          defaultValue: DesignOverlayAlign.start,
+          defaultValue: RawPopoverAlign.start,
         ),
       )
       ..add(DoubleProperty('width', width, defaultValue: 280))

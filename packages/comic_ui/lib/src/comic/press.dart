@@ -403,13 +403,11 @@ class ComicPressable extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final t = ComicTheme.of(context);
-    final motion = ComicMotion.of(context);
     // Busy keeps the node and its focus only for a press that has somewhere to go; with none it is disabled, busy or not.
     final holds = onPressed != null || onLongPress != null;
     final live = holds && !busy;
     final tap = onPressed;
-    final press = DesignPressable(
+    final press = RawButton(
       onPressed: live && tap != null
           ? () {
               HapticFeedback.selectionClick();
@@ -440,59 +438,23 @@ class ComicPressable extends StatelessWidget {
       mouseCursor:
           mouseCursor ??
           (live ? SystemMouseCursors.click : SystemMouseCursors.basic),
-      builder: (context, states, _) {
-        // A busy face is not lit by a pointer: it takes nothing.
-        final shown = live
-            ? states
-            : states.difference({WidgetState.hovered, WidgetState.pressed});
-        Widget face = child ?? builder!(context, shown);
-        // Disabled screens the face back toward its paper, opaque (law 1: nothing see-through); the change of state
-        // moves, as every change of a face does.
-        face = ComicScreened(on: !holds, child: face);
-        // The marks take the face's own outline; a small face's larger target stays unmarked around it.
-        final drawn = outline?.resolve(shown) ?? _defaultOutline(radius, t);
-        final over = live ? overlay?.resolve(shown) : null;
-        // A raised face stands on its print and sinks onto it; a disabled one has none, it can't be pressed.
-        final printed = plate && holds;
-        face = ComicHighlight(
-          states: shown,
-          shape: drawn,
-          wash: wash && live,
-          washColor: washColor,
-          overlay: over,
-          ring: ring,
-          printed: printed,
-          child: face,
-        );
-        if (printed) {
-          face = ComicPlated(down: shown.pressed, shape: drawn, child: face);
-        }
-        if (target) {
-          face = ConstrainedBox(
-            constraints: const BoxConstraints(
-              minWidth: ComicTapTarget.target,
-              minHeight: ComicTapTarget.target,
-            ),
-            child: Center(widthFactor: 1, heightFactor: 1, child: face),
-          );
-        }
-        if (sink && !printed) {
-          face = TweenAnimationBuilder<double>(
-            tween: Tween(end: shown.pressed ? 1 : 0),
-            duration: motion.press,
-            // A pop: the face lands past its pixel and settles, and springs back the same way.
-            curve: Curves.easeOutBack,
-            child: face,
-            builder: (context, y, face) =>
-                Transform.translate(offset: Offset(0, y), child: face),
-          );
-        }
-        return DesignTapTarget(
-          minSize: Size.square(ComicTapTarget.targetOf(context)),
-          alignment: targetAlignment,
-          child: face,
-        );
-      },
+      builder: (context, states, _) => ComicPressFace(
+        states: states,
+        holds: holds,
+        live: live,
+        radius: radius,
+        ring: ring,
+        wash: wash,
+        washColor: washColor,
+        sink: sink,
+        plate: plate,
+        target: target,
+        targetAlignment: targetAlignment,
+        outline: outline,
+        overlay: overlay,
+        builder: builder,
+        child: child,
+      ),
     );
     return error
         ? MergeSemantics(
@@ -664,6 +626,210 @@ class ComicPressable extends StatelessWidget {
 OutlinedBorder _defaultOutline(double radius, ComicThemeData t) => radius > 0
     ? RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius))
     : t.shapes.small;
+
+/// What [ComicPressable] draws round a face for its [states]: the screen while it is disabled, the wash, the keys' pop
+/// and the print, the sink under a press, and its target. A radio drawn on Flutter's `RawRadio` draws its face with it
+/// too, so a radio and a pressable look and move alike.
+class ComicPressFace extends StatelessWidget {
+  /// Draws [child] (or what [builder] draws) for [states].
+  const ComicPressFace({
+    super.key,
+    required this.states,
+    required this.holds,
+    required this.live,
+    this.child,
+    this.builder,
+    this.radius = 0,
+    this.ring = true,
+    this.wash = true,
+    this.washColor,
+    this.sink = true,
+    this.plate = false,
+    this.target = false,
+    this.targetAlignment = AlignmentDirectional.center,
+    this.outline,
+    this.overlay,
+  }) : assert(child != null || builder != null);
+
+  /// The press's states.
+  final Set<WidgetState> states;
+
+  /// Whether it has a press to take (busy or not): false screens it back.
+  final bool holds;
+
+  /// Whether it takes a press now: false leaves it unlit by a pointer.
+  final bool live;
+
+  /// See [ComicPressable.child].
+  final Widget? child;
+
+  /// See [ComicPressable.builder].
+  final Widget Function(BuildContext context, Set<WidgetState> states)? builder;
+
+  /// See [ComicPressable.radius].
+  final double radius;
+
+  /// See [ComicPressable.ring].
+  final bool ring;
+
+  /// See [ComicPressable.wash].
+  final bool wash;
+
+  /// See [ComicPressable.washColor].
+  final Color? washColor;
+
+  /// See [ComicPressable.sink].
+  final bool sink;
+
+  /// See [ComicPressable.plate].
+  final bool plate;
+
+  /// See [ComicPressable.target].
+  final bool target;
+
+  /// See [ComicPressable.targetAlignment].
+  final AlignmentGeometry targetAlignment;
+
+  /// See [ComicPressable.outline].
+  final WidgetStateProperty<OutlinedBorder?>? outline;
+
+  /// See [ComicPressable.overlay].
+  final WidgetStateProperty<Color?>? overlay;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = ComicTheme.of(context);
+    final motion = ComicMotion.of(context);
+    // A busy face is not lit by a pointer: it takes nothing.
+    final shown = live
+        ? states
+        : states.difference({WidgetState.hovered, WidgetState.pressed});
+    Widget face = child ?? builder!(context, shown);
+    // Disabled screens the face back toward its paper, opaque (law 1: nothing see-through); the change of state
+    // moves, as every change of a face does.
+    face = ComicScreened(on: !holds, child: face);
+    // The marks take the face's own outline; a small face's larger target stays unmarked around it.
+    final drawn = outline?.resolve(shown) ?? _defaultOutline(radius, t);
+    final over = live ? overlay?.resolve(shown) : null;
+    // A raised face stands on its print and sinks onto it; a disabled one has none, it can't be pressed.
+    final printed = plate && holds;
+    face = ComicHighlight(
+      states: shown,
+      shape: drawn,
+      wash: wash && live,
+      washColor: washColor,
+      overlay: over,
+      ring: ring,
+      printed: printed,
+      child: face,
+    );
+    if (printed) {
+      face = ComicPlated(down: shown.pressed, shape: drawn, child: face);
+    }
+    if (target) {
+      face = ConstrainedBox(
+        constraints: const BoxConstraints(
+          minWidth: ComicTapTarget.target,
+          minHeight: ComicTapTarget.target,
+        ),
+        child: Center(widthFactor: 1, heightFactor: 1, child: face),
+      );
+    }
+    if (sink && !printed) {
+      face = TweenAnimationBuilder<double>(
+        tween: Tween(end: shown.pressed ? 1 : 0),
+        duration: motion.press,
+        // A pop: the face lands past its pixel and settles, and springs back the same way.
+        curve: Curves.easeOutBack,
+        child: face,
+        builder: (context, y, face) =>
+            Transform.translate(offset: Offset(0, y), child: face),
+      );
+    }
+    return TapTargetPadding(
+      minSize: Size.square(ComicTapTarget.targetOf(context)),
+      alignment: targetAlignment,
+      child: face,
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<WidgetState>('states', states))
+      ..add(FlagProperty('holds', value: holds, ifFalse: 'disabled'))
+      ..add(FlagProperty('live', value: live, ifFalse: 'busy or disabled'))
+      ..add(
+        ObjectFlagProperty<
+          Widget Function(BuildContext context, Set<WidgetState> states)
+        >.has('builder', builder),
+      )
+      ..add(DoubleProperty('radius', radius, defaultValue: 0))
+      ..add(
+        FlagProperty(
+          'ring',
+          value: ring,
+          ifFalse: 'ring: false',
+          defaultValue: true,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'wash',
+          value: wash,
+          ifFalse: 'wash: false',
+          defaultValue: true,
+        ),
+      )
+      ..add(ColorProperty('washColor', washColor, defaultValue: null))
+      ..add(
+        FlagProperty(
+          'sink',
+          value: sink,
+          ifFalse: 'sink: false',
+          defaultValue: true,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'plate',
+          value: plate,
+          ifTrue: 'plate',
+          defaultValue: false,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'target',
+          value: target,
+          ifTrue: 'target',
+          defaultValue: false,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<AlignmentGeometry>(
+          'targetAlignment',
+          targetAlignment,
+          defaultValue: AlignmentDirectional.center,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<WidgetStateProperty<OutlinedBorder?>>(
+          'outline',
+          outline,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<WidgetStateProperty<Color?>>(
+          'overlay',
+          overlay,
+          defaultValue: null,
+        ),
+      );
+  }
+}
 
 /// A plain ink tint under the pointer or a press, and the keyboard's pop: under the focus the part lifts up and to the
 /// start off a hard print of its outline, down and to the end, its words on a plain fill. The tint is uniform across the

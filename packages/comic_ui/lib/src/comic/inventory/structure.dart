@@ -39,14 +39,14 @@ const Set<WidgetState> _focused = {WidgetState.focused};
 /// walk the bar and the lists. An entry's `data`, when it is an `IconData`, is drawn beside its words.
 ///
 /// ```dart
-/// ComicMenuBar(menus: [DesignMenuEntry(label: 'File', children: [DesignMenuEntry(label: 'New', shortcut: ComicKbd.labelOf(context, const SingleActivator(LogicalKeyboardKey.keyN, control: true)))])])
+/// ComicMenuBar(menus: [RawMenuEntry(label: 'File', children: [RawMenuEntry(label: 'New', shortcut: ComicKbd.labelOf(context, const SingleActivator(LogicalKeyboardKey.keyN, control: true)))])])
 /// ```
 class ComicMenuBar extends StatelessWidget {
   /// Creates a [ComicMenuBar].
   const ComicMenuBar({super.key, required this.menus, this.label});
 
   /// The menus, in order; each one's `children` are its commands.
-  final List<DesignMenuEntry> menus;
+  final List<RawMenuEntry> menus;
 
   /// What a screen reader calls the bar.
   final String? label;
@@ -61,9 +61,9 @@ class ComicMenuBar extends StatelessWidget {
       look.shape ?? t.shapes.medium,
       rim.width + 4,
     );
-    return DesignMenuBar(
+    return RawMenuBar(
       menus: menus,
-      semanticLabel: label ?? DesignLocalizations.of(context).menuBarLabel,
+      semanticLabel: label ?? RawWidgetsLocalizations.of(context).menuBarLabel,
       barBuilder: (context, items) => DecoratedBox(
         decoration: ShapeDecoration(color: look.fill ?? c.card, shape: shape),
         child: Padding(
@@ -83,7 +83,7 @@ class ComicMenuBar extends StatelessWidget {
         ),
       ),
       itemBuilder: (context, entry, level, states) {
-        if (level == DesignMenuLevel.menu) {
+        if (level == RawMenuLevel.menu) {
           return comicMenuRow(
             states,
             (states) => ComicMenuRowFace(
@@ -154,30 +154,32 @@ class ComicMenuBar extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(IterableProperty<DesignMenuEntry>('menus', menus))
+      ..add(IterableProperty<RawMenuEntry>('menus', menus))
       ..add(StringProperty('label', label, defaultValue: null));
   }
 }
 
-DesignCommandPalette _palette(
+RawCommandPalette _palette(
   BuildContext context, {
-  required List<DesignCommand> commands,
+  required List<RawCommand> commands,
   required bool autofocus,
   required double maxHeight,
   String? hint,
   String? label,
-  ValueChanged<DesignCommand>? onRun,
+  ValueChanged<RawCommand>? onRun,
   TextEditingController? controller,
   FocusNode? focusNode,
-}) => DesignCommandPalette(
+}) => RawCommandPalette(
   commands: commands,
   focusNode: focusNode,
   autofocus: autofocus,
   maxHeight: maxHeight,
   onSelected: onRun,
   controller: controller,
-  semanticLabel: label ?? DesignLocalizations.of(context).commandPaletteLabel,
-  resultsMessage: DesignLocalizations.of(context).commandPaletteResultsMessage,
+  semanticLabel:
+      label ?? RawWidgetsLocalizations.of(context).commandPaletteLabel,
+  resultsMessage: RawWidgetsLocalizations.of(context)
+      .commandPaletteResultsMessage,
   // A tap anywhere in the field's row, the glass too, reaches the field: the row is the box a screen reader outlines.
   fieldBuilder: (context, field) => MouseRegion(
     cursor: SystemMouseCursors.text,
@@ -201,7 +203,7 @@ DesignCommandPalette _palette(
                 controller: field.controller,
                 label:
                     label ??
-                    DesignLocalizations.of(context).commandPaletteLabel,
+                    RawWidgetsLocalizations.of(context).commandPaletteLabel,
                 hint: hint ?? ComicLocalizations.of(context).searchCommands,
                 onEditingComplete: field.submit,
               ),
@@ -238,7 +240,7 @@ DesignCommandPalette _palette(
     return Padding(
       padding: const EdgeInsets.all(ComicSpace.wide),
       child: Text(
-        DesignLocalizations.of(context).noResultsLabel,
+        RawWidgetsLocalizations.of(context).noResultsLabel,
         style: t.type.body,
         textAlign: TextAlign.center,
       ),
@@ -288,7 +290,7 @@ class _FocusWithinState extends State<_FocusWithin> {
 /// `IconData`, is drawn beside its words.
 ///
 /// ```dart
-/// ComicCommand(commands: [DesignCommand(label: 'New issue', group: 'Issues', onPressed: create)])
+/// ComicCommand(commands: [RawCommand(label: 'New issue', group: 'Issues', onPressed: create)])
 /// ```
 class ComicCommand extends StatelessWidget {
   /// Creates a [ComicCommand].
@@ -305,7 +307,7 @@ class ComicCommand extends StatelessWidget {
   });
 
   /// The commands, in the order they list with no query.
-  final List<DesignCommand> commands;
+  final List<RawCommand> commands;
 
   /// The field's prompt.
   final String? hint;
@@ -314,7 +316,7 @@ class ComicCommand extends StatelessWidget {
   final String? label;
 
   /// Runs a chosen command; null runs its own `onPressed`.
-  final ValueChanged<DesignCommand>? onRun;
+  final ValueChanged<RawCommand>? onRun;
 
   /// The field's text; null keeps its own.
   final TextEditingController? controller;
@@ -355,10 +357,10 @@ class ComicCommand extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(IterableProperty<DesignCommand>('commands', commands))
+      ..add(IterableProperty<RawCommand>('commands', commands))
       ..add(StringProperty('hint', hint, defaultValue: null))
       ..add(StringProperty('label', label, defaultValue: null))
-      ..add(ObjectFlagProperty<ValueChanged<DesignCommand>>.has('onRun', onRun))
+      ..add(ObjectFlagProperty<ValueChanged<RawCommand>>.has('onRun', onRun))
       ..add(
         DiagnosticsProperty<TextEditingController>(
           'controller',
@@ -389,11 +391,11 @@ class ComicCommand extends StatelessWidget {
 /// command; Escape or a press on the scrim closes it and focus goes back where it was.
 ///
 /// ```dart
-/// showComicCommand(context, commands: [DesignCommand(label: 'New issue', onPressed: create)])
+/// showComicCommand(context, commands: [RawCommand(label: 'New issue', onPressed: create)])
 /// ```
 Future<void> showComicCommand(
   BuildContext context, {
-  required List<DesignCommand> commands,
+  required List<RawCommand> commands,
   String? hint,
   String? label,
   double maxHeight = 340,
@@ -409,7 +411,8 @@ Future<void> showComicCommand(
       animation: animation,
       ink: ComicTheme.of(context).colors.scrim,
     ),
-    barrierLabel: DesignLocalizations.of(context).commandPaletteBarrierLabel,
+    barrierLabel: RawWidgetsLocalizations.of(context)
+        .commandPaletteBarrierLabel,
     palette: (run) => _palette(
       context,
       commands: commands,
@@ -451,14 +454,10 @@ class ComicDataTable<R> extends StatelessWidget {
   });
 
   /// The rows, columns, sort, page and selection.
-  final DesignTableController<R> controller;
+  final RawDataTableController<R> controller;
 
   /// Draws one cell; a [Text] takes the table's type.
-  final Widget Function(
-    BuildContext context,
-    R row,
-    DesignTableColumn<R> column,
-  )
+  final Widget Function(BuildContext context, R row, RawDataColumn<R> column)
   cellBuilder;
 
   /// Whether a press and Space pick rows, with a box on each.
@@ -490,15 +489,15 @@ class ComicDataTable<R> extends StatelessWidget {
     final words = ComicLocalizations.of(context);
     final rowShape = t.shapes.small;
     final floor = ComicTapTarget.targetOf(context);
-    final table = DesignDataTable<R>(
+    final table = RawDataTable<R>(
       controller: controller,
       selectable: selectable,
       onActivate: onActivate,
-      sortedHint: (direction) => direction == DesignSortDirection.ascending
-          ? DesignLocalizations.of(context)
-                .dataTableSortedHint(DesignSortDirection.ascending)
-          : DesignLocalizations.of(context)
-                .dataTableSortedHint(DesignSortDirection.descending),
+      sortedHint: (direction) => direction == RawSortDirection.ascending
+          ? RawWidgetsLocalizations.of(context)
+                .dataTableSortedHint(RawSortDirection.ascending)
+          : RawWidgetsLocalizations.of(context)
+                .dataTableSortedHint(RawSortDirection.descending),
       headerBuilder: (context, column, sort, states) => ComicHighlight(
         states: states,
         shape: rowShape,
@@ -516,7 +515,7 @@ class ComicDataTable<R> extends StatelessWidget {
               if (sort != null) ...[
                 const SizedBox(width: ComicSpace.tight),
                 Icon(
-                  sort == DesignSortDirection.ascending
+                  sort == RawSortDirection.ascending
                       ? ComicGlyphs.chevronUp
                       : ComicGlyphs.chevronDown,
                   size: 18,
@@ -541,9 +540,9 @@ class ComicDataTable<R> extends StatelessWidget {
                 child: Center(
                   child: ComicCheckbox(
                     value: switch (controller.pageSelection) {
-                      DesignSelection.none => false,
-                      DesignSelection.some => null,
-                      DesignSelection.all => true,
+                      RawDataTableSelection.none => false,
+                      RawDataTableSelection.some => null,
+                      RawDataTableSelection.all => true,
                     },
                     tristate: true,
                     label: words.selectPage,
@@ -638,7 +637,10 @@ class ComicDataTable<R> extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(
-        DiagnosticsProperty<DesignTableController<R>>('controller', controller),
+        DiagnosticsProperty<RawDataTableController<R>>(
+          'controller',
+          controller,
+        ),
       )
       ..add(
         FlagProperty(
@@ -695,7 +697,7 @@ class ComicScrollArea extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = ComicTheme.of(context), c = t.colors;
-    return DesignScrollArea(
+    return RawScrollArea(
       focusNode: focusNode,
       autofocus: autofocus,
       controller: controller,
@@ -818,7 +820,7 @@ class ComicResizable extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = ComicTheme.of(context), c = t.colors;
     final thickness = t.rim(3);
-    return DesignSplitView(
+    return RawSplitView(
       focusNode: focusNode,
       autofocus: autofocus,
       first: first,
@@ -967,7 +969,7 @@ class ComicReorderableListView<T extends Object> extends StatelessWidget {
     final shape = t.shapes.small.copyWith(
       side: BorderSide(color: c.nightLine, width: t.rim(3)),
     );
-    return DesignReorderableList<T>(
+    return RawReorderableList<T>(
       items: items,
       onReorder: onReorder,
       labelOf: labelOf,
@@ -975,7 +977,8 @@ class ComicReorderableListView<T extends Object> extends StatelessWidget {
       shrinkWrap: shrinkWrap,
       controller: controller,
       padding: padding,
-      movedMessage: DesignLocalizations.of(context).reorderableListMovedMessage,
+      movedMessage: RawWidgetsLocalizations.of(context)
+          .reorderableListMovedMessage,
       // The carried row is lifted off the page: it stands on its print (law 4) until it is put down.
       proxyDecorator: (child, index, animation) => ComicPlated(
         down: false,
@@ -1075,7 +1078,7 @@ class ComicReorderableListView<T extends Object> extends StatelessWidget {
 /// Keep every action reachable another way.
 ///
 /// ```dart
-/// ComicSwipeActions(endActions: [DesignSwipeAction(label: 'Delete', onPressed: remove, destructive: true)], child: row)
+/// ComicSwipeActions(endActions: [RawSwipeAction(label: 'Delete', onPressed: remove, destructive: true)], child: row)
 /// ```
 class ComicSwipeActions extends StatefulWidget {
   /// Creates a [ComicSwipeActions].
@@ -1094,10 +1097,10 @@ class ComicSwipeActions extends StatefulWidget {
   final Widget child;
 
   /// The commands behind its start edge.
-  final List<DesignSwipeAction> startActions;
+  final List<RawSwipeAction> startActions;
 
   /// The commands behind its end edge.
-  final List<DesignSwipeAction> endActions;
+  final List<RawSwipeAction> endActions;
 
   /// Each command's width.
   final double actionExtent;
@@ -1119,14 +1122,14 @@ class ComicSwipeActions extends StatefulWidget {
     super.debugFillProperties(properties);
     properties
       ..add(
-        IterableProperty<DesignSwipeAction>(
+        IterableProperty<RawSwipeAction>(
           'startActions',
           startActions,
           defaultValue: const [],
         ),
       )
       ..add(
-        IterableProperty<DesignSwipeAction>(
+        IterableProperty<RawSwipeAction>(
           'endActions',
           endActions,
           defaultValue: const [],
@@ -1170,7 +1173,7 @@ class _ComicSwipeActionsState extends State<ComicSwipeActions> {
     return ClipRect(
       clipper: _SwipeClip(_rowFocused ? t.focus.gap + t.focus.width : 0),
       child: RingInClip(
-        child: DesignSwipeActions(
+        child: RawSwipeActions(
           startActions: widget.startActions,
           endActions: widget.endActions,
           actionExtent: widget.actionExtent,
@@ -1287,28 +1290,29 @@ class ComicRefreshIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DesignPullToRefresh(
+    return RawRefreshIndicator(
       onRefresh: onRefresh,
-      refreshLabel: DesignLocalizations.of(context).refreshLabel,
-      refreshingMessage: DesignLocalizations.of(context).refreshingMessage,
-      doneMessage: DesignLocalizations.of(context).refreshedMessage,
+      refreshLabel: RawWidgetsLocalizations.of(context).refreshLabel,
+      refreshingMessage: RawWidgetsLocalizations.of(context).refreshingMessage,
+      doneMessage: RawWidgetsLocalizations.of(context).refreshedMessage,
       indicatorBuilder: (context, state) {
         final c = ComicTheme.of(context).colors;
         return Center(
           child: ExcludeSemantics(
             child: switch (state.mode) {
-              DesignRefreshMode.done => Icon(
+              RawRefreshIndicatorMode.done => Icon(
                 ComicGlyphs.check,
                 size: 26,
                 color: c.text,
               ),
-              DesignRefreshMode.refresh => const ComicCircularProgressIndicator(
-                size: 28,
-              ),
+              RawRefreshIndicatorMode.refresh =>
+                const ComicCircularProgressIndicator(size: 28),
               _ => ComicCircularProgressIndicator(
                 value: state.progress.clamp(0.0, 1.0),
                 size: 28,
-                color: state.mode == DesignRefreshMode.armed ? c.caption : null,
+                color: state.mode == RawRefreshIndicatorMode.armed
+                    ? c.caption
+                    : null,
               ),
             },
           ),
@@ -1363,7 +1367,7 @@ class ComicTreeView<T extends Object> extends StatelessWidget {
       labelOf: labelOf,
       onActivate: onActivate,
       semanticLabel: label,
-      levelHint: DesignLocalizations.of(context).treeLevelHint,
+      levelHint: RawWidgetsLocalizations.of(context).treeLevelHint,
       // A tree keeps a picked row, chosen as Comic prints every chosen thing (the caption's yellow, a press's dots on it),
       // and the keyboard's row wears the ring: lit by focus as a menu's row is, it could not be told from a pointer's.
       rowBuilder: (context, item) => Stack(

@@ -10,7 +10,7 @@
 //
 // Comic's push is a cut: the route takes no time, and the page it pushes
 // stands whole and in place in its first frame, nothing left running. On iOS
-// the map wraps the cut in ui_core's DesignSwipeBackPageTransitionsBuilder, so
+// the map wraps the cut in ui_core's SwipeBackPageTransitionsBuilder, so
 // a swipe from the left edge still pops a page (Flutter's
 // CupertinoPageTransition is never built).
 import 'package:cupertino_ui/cupertino_ui.dart' show CupertinoPageTransition;

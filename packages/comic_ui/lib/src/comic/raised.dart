@@ -204,7 +204,7 @@ Future<T?> _raise<T>(
       builder: builder,
       dismissible: barrierDismissible,
       closeLabel:
-          closeLabel ?? DesignLocalizations.of(context).closeButtonLabel,
+          closeLabel ?? RawWidgetsLocalizations.of(context).closeButtonLabel,
       dimBackground: dimBackground,
       drawer: drawer,
     ),
@@ -269,7 +269,7 @@ Future<T?> showComicDialog<T>(
       screenInk: ComicTheme.of(context).colors.scrim,
       barrierDismissible: barrierDismissible,
       barrierLabel:
-          closeLabel ?? DesignLocalizations.of(context).closeButtonLabel,
+          closeLabel ?? RawWidgetsLocalizations.of(context).closeButtonLabel,
       builder: (context) => carry(context, Builder(builder: builder)),
     ),
   );
@@ -422,7 +422,7 @@ class _ModalPanel extends StatelessWidget {
   }
 }
 
-/// Raises a sheet from the page's foot on ui_core's [DesignBottomSheetRoute], carrying its theme and direction. It
+/// Raises a sheet from the page's foot on ui_core's [RawBottomSheetRoute], carrying its theme and direction. It
 /// travels in on a spring and stops at its edge, as tall as its content up to the window less 24; a drag down or a
 /// fling puts it away, and a [ComicBottomSheet] inside hands its scroll over to that drag. Escape, back and a press on
 /// the screen close it, and focus returns to what opened it.
@@ -444,7 +444,7 @@ Future<T?> showComicBottomSheet<T>(
       screenInk: ComicTheme.of(context).colors.scrim,
       barrierDismissible: barrierDismissible,
       barrierLabel:
-          closeLabel ?? DesignLocalizations.of(context).closeButtonLabel,
+          closeLabel ?? RawWidgetsLocalizations.of(context).closeButtonLabel,
       builder: (context, sheet) => carry(
         context,
         _SheetScope(
@@ -470,7 +470,7 @@ Future<T?> showComicBottomSheet<T>(
 // The open sheet round a ComicBottomSheet, whose scroll view takes the sheet's controller (the hand-over to its drag).
 class _SheetScope extends InheritedWidget {
   const _SheetScope({required this.sheet, required super.child});
-  final DesignBottomSheetDetails sheet;
+  final RawBottomSheetDetails sheet;
 
   static ScrollController? scrollOf(BuildContext context) => context
       .dependOnInheritedWidgetOfExactType<_SheetScope>()
@@ -529,7 +529,7 @@ class _Pop extends StatelessWidget {
 
 /// A sheet that slides up over a plain [ComicScreenScrim].
 /// The sheet is centred and at most 640 logical pixels wide.
-class ComicBottomSheetRoute<T> extends DesignBottomSheetRoute<T> {
+class ComicBottomSheetRoute<T> extends RawBottomSheetRoute<T> {
   /// Creates a [ComicBottomSheetRoute] whose panel [builder] builds.
   ComicBottomSheetRoute({
     required Color screenInk,
@@ -692,7 +692,7 @@ class ComicBottomSheet extends StatelessWidget {
                               ComicGlyphs.close,
                               label:
                                   closeLabel ??
-                                  DesignLocalizations.of(context)
+                                  RawWidgetsLocalizations.of(context)
                                       .closeButtonLabel,
                               onPressed:
                                   onClose ??
@@ -1634,12 +1634,13 @@ ComicRaised showComicTooltip(
   return handle;
 }
 
-/// Explains its child on hover, keyboard focus or long press: ui_core's [DesignTooltip] in Comic's balloon
+/// Explains its child on hover, keyboard focus or long press: Flutter's [RawTooltip] in Comic's balloon
 /// ([ComicTooltipFace]), under the child, centred on it.
 ///
-/// It shows when a pointer rests on the child for [waitDuration], at once when the keyboard's focus reaches it, and
-/// after a long press. The pointer may move onto the balloon and it stays; Escape hides it; one shows at a time, and
-/// along a toolbar the next shows at once. A screen reader hears [message] as the child's tooltip.
+/// It shows when a pointer rests on the child for [waitDuration], at once when the keyboard's focus reaches it
+/// (ui_core's [RawTooltipFocusFix]), and after a long press. The pointer may move onto the balloon and it stays; Escape
+/// hides it; one shows at a time. [RawTooltipPlacement] sets it below the child, or above where too little room is
+/// left below. A screen reader hears [message] as the child's tooltip.
 ///
 /// ```dart
 /// ComicTooltip(message: 'Save this issue', child: ComicIconButton(icon, label: 'Save', onPressed: save))
@@ -1667,35 +1668,70 @@ class ComicTooltip extends StatelessWidget {
   final ComicStyle? style;
 
   // Under the child and centred on it, 6 px off; above it where too little room is left below.
-  static const _placement = DesignOverlayPlacement(
-    side: DesignOverlaySide.below,
-    align: DesignOverlayAlign.center,
+  static const _placement = RawPopoverPlacement(
+    side: RawPopoverSide.below,
+    align: RawPopoverAlign.center,
     gap: 6,
     preferredExtent: 48,
     matchAnchorWidth: false,
   );
 
   @override
-  Widget build(BuildContext context) => DesignTooltip(
-    message: message,
-    hoverDelay: waitDuration,
-    placement: _placement,
-    tooltipBuilder: (context, info) => AnimatedBuilder(
-      animation: info.animation,
-      // A short pop from .92, opaque from its first frame, and cut away at the end: nothing fades (law 6). Under Reduce
-      // Motion it stands at its size.
-      builder: (context, face) => info.animation.isDismissed
-          ? const SizedBox.shrink()
-          : Transform.scale(
-              scale: designReduceMotionOf(context)
-                  ? 1
-                  : .92 + .08 * info.animation.value.clamp(0, 1),
-              child: face,
+  Widget build(BuildContext context) {
+    if (message.isEmpty) return child;
+    final spring = DesignMotionPolicy.of(context)
+        .effects(dampingRatio: 1, stiffness: 1600);
+    // The balloon comes and goes on its own spring. RawTooltip's animation says only whether it shows: at once when it
+    // shows, and while it hides, as long as the spring takes to close from open, so the balloon stays until it has
+    // closed.
+    final closing = _settleTime(spring);
+    // The message joins the child's node: one control, one node.
+    return MergeSemantics(
+      child: RawTooltipPlacement(
+        placement: _placement,
+        builder: (context, positionDelegate) => RawTooltip(
+          semanticsTooltip: message,
+          hoverDelay: waitDuration,
+          animationStyle: AnimationStyle(
+            duration: Duration.zero,
+            reverseDuration: closing,
+          ),
+          positionDelegate: positionDelegate,
+          tooltipBuilder: (context, shown) => ExcludeSemantics(
+            child: _TipPresence(
+              shown: shown,
+              spring: spring,
+              builder: (context, presence) => AnimatedBuilder(
+                animation: presence,
+                // A short pop from .92, opaque from its first frame, and cut away at the end: nothing fades (law 6).
+                // Under Reduce Motion it stands at its size.
+                builder: (context, face) => presence.isDismissed
+                    ? const SizedBox.shrink()
+                    : Transform.scale(
+                        scale: designReduceMotionOf(context)
+                            ? 1
+                            : .92 + .08 * presence.value.clamp(0, 1),
+                        child: face,
+                      ),
+                child: ComicTooltipFace(message: message, style: style),
+              ),
             ),
-      child: ComicTooltipFace(message: message, style: style),
-    ),
-    child: child,
-  );
+          ),
+          child: RawTooltipFocusFix(child: child),
+        ),
+      ),
+    );
+  }
+
+  // How long [spring] takes to close the balloon from open: until its simulation is done, to the millisecond above.
+  static Duration _settleTime(SpringDescription spring) {
+    final closing = designSpringSimulation(spring, from: 1, to: 0);
+    var ms = 1;
+    while (ms < 5000 && !closing.isDone(ms / 1000)) {
+      ms++;
+    }
+    return Duration(milliseconds: ms);
+  }
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -1713,6 +1749,79 @@ class ComicTooltip extends StatelessWidget {
         DiagnosticsProperty<ComicStyle>('style', style, defaultValue: null),
       );
   }
+}
+
+// A balloon's presence, 0 to 1, on [spring]: toward 1 while [shown] runs forward or has completed, toward 0 while it
+// runs back.
+class _TipPresence extends StatefulWidget {
+  const _TipPresence({
+    required this.shown,
+    required this.spring,
+    required this.builder,
+  });
+
+  final Animation<double> shown;
+  final SpringDescription spring;
+  final Widget Function(BuildContext context, Animation<double> presence)
+  builder;
+
+  @override
+  State<_TipPresence> createState() => _TipPresenceState();
+}
+
+class _TipPresenceState extends State<_TipPresence>
+    with SingleTickerProviderStateMixin {
+  // Bounded: a balloon's presence is a pop, 0 to 1.
+  late final AnimationController _presence = AnimationController(vsync: this);
+
+  @override
+  void initState() {
+    super.initState();
+    _presence.addStatusListener(_settled);
+    widget.shown.addStatusListener(_follow);
+    _follow(widget.shown.status);
+  }
+
+  @override
+  void didUpdateWidget(_TipPresence oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.shown != widget.shown) {
+      oldWidget.shown.removeStatusListener(_follow);
+      widget.shown.addStatusListener(_follow);
+      _follow(widget.shown.status);
+    }
+  }
+
+  @override
+  void dispose() {
+    widget.shown.removeStatusListener(_follow);
+    _presence.dispose();
+    super.dispose();
+  }
+
+  void _follow(AnimationStatus status) {
+    final target = status.isForwardOrCompleted ? 1.0 : 0.0;
+    if (_presence.value == target && !_presence.isAnimating) return;
+    _presence.springTo(target, widget.spring);
+  }
+
+  // The spring started or came to rest: whether the tip is gone may change.
+  void _settled(AnimationStatus status) {
+    if (mounted) setState(() {});
+  }
+
+  // A hiding tip is gone once its spring has closed it, as ui_core's tooltip
+  // took it away then. RawTooltip's own animation can run on (it lasts as
+  // long as a close from fully open), and the tip would stay in place,
+  // unseen, where a pointer could bring it back.
+  bool get _gone =>
+      !widget.shown.isForwardOrCompleted &&
+      !_presence.isAnimating &&
+      _presence.value == 0;
+
+  @override
+  Widget build(BuildContext context) =>
+      _gone ? const SizedBox.shrink() : widget.builder(context, _presence);
 }
 
 /// A short announcement printed as a narration panel, with an optional action.
@@ -1910,7 +2019,7 @@ ComicRaised showComicSnackBar(
   final host = _toasters[overlay] ??= _ToastHost(overlay, words);
   final handle = _Toasted();
   host.raise(
-    DesignToast(
+    RawToast(
       message: message,
       title: title,
       actionLabel: actionLabel,
@@ -1978,7 +2087,7 @@ class _ToastHost {
     entry = OverlayEntry(
       builder: (context) => _OverlayLifetime(
         entry: entry,
-        child: DesignToaster(
+        child: RawToaster(
           key: key,
           regionLabel: words.notifications,
           toastBuilder: _toastFace,
@@ -1989,9 +2098,9 @@ class _ToastHost {
     overlay.insert(entry);
   }
 
-  final key = GlobalKey<DesignToasterState>();
+  final key = GlobalKey<RawToasterState>();
 
-  void raise(DesignToast toast, _Toasted handle) {
+  void raise(RawToast toast, _Toasted handle) {
     final now = key.currentState;
     if (now != null) {
       handle.attach(now.show(toast));
@@ -2008,7 +2117,7 @@ class _ToastHost {
     });
   }
 
-  static Widget _toastFace(BuildContext context, DesignToastDetails view) {
+  static Widget _toastFace(BuildContext context, RawToastDetails view) {
     final toast = view.toast;
     final shown = toast.data! as _ToastShown;
     return shown.carried.wrap(
@@ -2050,11 +2159,11 @@ class _ToastHost {
 }
 
 class _Toasted implements ComicRaised {
-  DesignToastHandle? _handle;
+  RawToastController? _handle;
   bool _dismissed = false;
   final _closed = Completer<void>();
 
-  void attach(DesignToastHandle handle) {
+  void attach(RawToastController handle) {
     _handle = handle;
     handle.closed.whenComplete(finish);
     if (_dismissed) handle.dismiss();
@@ -2617,7 +2726,7 @@ class ComicCombobox<T extends Object> extends StatefulWidget {
   /// are typed are the search's for no words, and these go unused.
   final List<T> options;
 
-  /// Finds the options for the typed words in place of matching [options]: ui_core's `DesignCombobox.search`. Only
+  /// Finds the options for the typed words in place of matching [options]: ui_core's `RawCombobox.search`. Only
   /// the latest words' answer shows; while it is on its way the list says it is looking, and if it throws, the list
   /// says the search failed and offers Try again, the field keeping the focus.
   final DesignOptionSearch<T>? search;
@@ -2740,7 +2849,7 @@ class _ComicComboboxState<T extends Object> extends State<ComicCombobox<T>> {
   @override
   Widget build(BuildContext context) => comicDropdownWidth(
     context,
-    DesignCombobox<T>(
+    RawCombobox<T>(
       controller: _text,
       focusNode: widget.focusNode,
       search: widget.search ?? _search,
@@ -2781,7 +2890,7 @@ class _ComicComboboxState<T extends Object> extends State<ComicCombobox<T>> {
       ),
       emptyBuilder: (context) => comicSearchNote(
         context,
-        DesignLocalizations.of(context).noResultsLabel,
+        RawWidgetsLocalizations.of(context).noResultsLabel,
         widget.style,
       ),
       // The search's states, when an app searches (Comic's own match over the options never waits).
@@ -2789,7 +2898,7 @@ class _ComicComboboxState<T extends Object> extends State<ComicCombobox<T>> {
           ? null
           : (context) => comicSearchNote(
               context,
-              DesignLocalizations.of(context).loadingLabel,
+              RawWidgetsLocalizations.of(context).loadingLabel,
               widget.style,
             ),
       errorBuilder: widget.search == null
@@ -2827,10 +2936,10 @@ Widget comicSearchNote(
 /// are on it or the pointer is over it.
 Widget comicSearchFailed(
   BuildContext context,
-  DesignSearchError failure, [
+  RawSearchError failure, [
   ComicStyle? style,
 ]) {
-  final words = DesignLocalizations.of(context);
+  final words = RawWidgetsLocalizations.of(context);
   return Column(
     mainAxisSize: MainAxisSize.min,
     crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -2839,7 +2948,7 @@ Widget comicSearchFailed(
       ExcludeSemantics(
         child: comicSearchNote(context, words.searchFailedMessage, style),
       ),
-      DesignPressable(
+      RawButton(
         onPressed: failure.retry,
         semanticLabel: words.retryButtonLabel,
         builder: (context, states, _) => ComicMenuRowFace(

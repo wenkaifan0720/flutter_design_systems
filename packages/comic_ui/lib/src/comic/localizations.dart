@@ -1,12 +1,12 @@
 // The words only Comic's parts say on their own: a dismiss, a stepper's more and less, the text-editing menu, a
 // file drop's prompts. The words every look shares (close, cancel, back, loading, the month steps, a time's hour,
-// minute and half of the day) are ui_core's DesignLocalizations. A part takes the caller's words when given, and these
+// minute and half of the day) are ui_core's RawWidgetsLocalizations. A part takes the caller's words when given, and these
 // otherwise. Comic's delegate supports every locale: English, with the words ui_core shares in the locale's language.
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 import 'package:intl/date_symbol_data_local.dart' show initializeDateFormatting;
 
-/// The words only Comic's parts say when the caller gives none; the shared ones are `DesignLocalizations`. English
+/// The words only Comic's parts say when the caller gives none; the shared ones are `RawWidgetsLocalizations`. English
 /// ships ([ComicLocalizationsEn]); in any other language the parts say English but for the words ui_core says too (a
 /// retry, a dismiss, a rating, the months and weekdays), which come in that language. A language of your own is a
 /// subclass and a delegate that loads it.
@@ -19,7 +19,7 @@ abstract class ComicLocalizations {
   const ComicLocalizations();
 
   /// The words in force at [context]: the installed delegate's; else English, in another language with the words
-  /// ui_core shares taken from the `DesignLocalizations` in force.
+  /// ui_core shares taken from the `RawWidgetsLocalizations` in force.
   static ComicLocalizations of(BuildContext context) {
     final installed = Localizations.of<ComicLocalizations>(
       context,
@@ -29,15 +29,15 @@ abstract class ComicLocalizations {
     final language = Localizations.maybeLocaleOf(context)?.languageCode;
     return language == null || language == 'en'
         ? const ComicLocalizationsEn()
-        : _ComicLocalizationsShared(DesignLocalizations.of(context));
+        : _ComicLocalizationsShared(RawWidgetsLocalizations.of(context));
   }
 
   /// Comic's words for [locale]: English, and in another language English but for the words ui_core shares, said in
-  /// it (`DesignLocalizations.forLocale`).
+  /// it (`RawWidgetsLocalizations.forLocale`).
   static ComicLocalizations forLocale(Locale locale) =>
       locale.languageCode == 'en'
       ? const ComicLocalizationsEn()
-      : _ComicLocalizationsShared(DesignLocalizations.forLocale(locale));
+      : _ComicLocalizationsShared(RawWidgetsLocalizations.forLocale(locale));
 
   /// Loads Comic's words for any locale ([forLocale]), so an app in any language installs it without Flutter's
   /// warning that a delegate does not support its locale.
@@ -70,31 +70,31 @@ abstract class ComicLocalizations {
 
   /// A time picker's hours.
   @Deprecated(
-    'Use DesignLocalizations.timePickerHourLabel: ui_core says it in its 30 languages, and ComicTimePicker reads it there. This feature was deprecated after v0.3.3.',
+    'Use RawWidgetsLocalizations.timePickerHourLabel: ui_core says it in its 30 languages, and ComicTimePicker reads it there. This feature was deprecated after v0.3.3.',
   )
   String get hour => 'Hour';
 
   /// A time picker's minutes.
   @Deprecated(
-    'Use DesignLocalizations.timePickerMinuteLabel: ui_core says it in its 30 languages, and ComicTimePicker reads it there. This feature was deprecated after v0.3.3.',
+    'Use RawWidgetsLocalizations.timePickerMinuteLabel: ui_core says it in its 30 languages, and ComicTimePicker reads it there. This feature was deprecated after v0.3.3.',
   )
   String get minute => 'Minute';
 
   /// A time picker's AM and PM.
   @Deprecated(
-    'Use DesignLocalizations.timeFieldDayPeriodLabel: ui_core says it in its 30 languages, and ComicTimePicker reads it there. This feature was deprecated after v0.3.3.',
+    'Use RawWidgetsLocalizations.timeFieldDayPeriodLabel: ui_core says it in its 30 languages, and ComicTimePicker reads it there. This feature was deprecated after v0.3.3.',
   )
   String get period => 'AM/PM';
 
   /// The time picker's two halves of the day.
   @Deprecated(
-    'Use DesignLocalizations.anteMeridiemAbbreviation: ui_core says it in its 30 languages, and ComicTimePicker reads it there. This feature was deprecated after v0.3.3.',
+    'Use RawWidgetsLocalizations.anteMeridiemAbbreviation: ui_core says it in its 30 languages, and ComicTimePicker reads it there. This feature was deprecated after v0.3.3.',
   )
   String get am => 'AM';
 
   /// The afternoon half: 'PM'.
   @Deprecated(
-    'Use DesignLocalizations.postMeridiemAbbreviation: ui_core says it in its 30 languages, and ComicTimePicker reads it there. This feature was deprecated after v0.3.3.',
+    'Use RawWidgetsLocalizations.postMeridiemAbbreviation: ui_core says it in its 30 languages, and ComicTimePicker reads it there. This feature was deprecated after v0.3.3.',
   )
   String get pm => 'PM';
 
@@ -316,7 +316,7 @@ class ComicLocalizationsEn extends ComicLocalizations {
 class _ComicLocalizationsShared extends ComicLocalizationsEn {
   const _ComicLocalizationsShared(this._shared);
 
-  final DesignLocalizations _shared;
+  final RawWidgetsLocalizations _shared;
 
   @override
   String get dismiss => _shared.modalBarrierDismissLabel;

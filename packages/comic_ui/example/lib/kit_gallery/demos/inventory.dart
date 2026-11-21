@@ -188,8 +188,8 @@ Widget kitSpecimenMultiSelect() => kitState<List<String>>(
   ),
 );
 
-Widget kitSpecimenRangeSlider() => kitState<DesignRangeValues>(
-  const DesignRangeValues(.2, .7),
+Widget kitSpecimenRangeSlider() => kitState<RawRangeValues>(
+  const RawRangeValues(.2, .7),
   (context, values, change) => ComicRangeSlider(
     label: kitSay(context, 'Price'),
     values: values,
@@ -200,8 +200,8 @@ Widget kitSpecimenRangeSlider() => kitState<DesignRangeValues>(
 
 // ------------------------------------------------------- dates and colours
 
-Widget kitSpecimenCalendar() => _Held<DesignCalendarController>(
-  create: () => DesignCalendarController(
+Widget kitSpecimenCalendar() => _Held<RawCalendarController>(
+  create: () => RawCalendarController(
     firstDate: DateTime(2026),
     lastDate: DateTime(2027, 12, 31),
     initialMonth: DateTime(2026, 11),
@@ -213,8 +213,8 @@ Widget kitSpecimenCalendar() => _Held<DesignCalendarController>(
 );
 
 // A stay already chosen, so the range reads as one.
-Widget kitSpecimenDateRange() => kitState<DesignDateRange?>(
-  DesignDateRange(DateTime(2026, 11, 13), DateTime(2026, 11, 16)),
+Widget kitSpecimenDateRange() => kitState<RawDateRange?>(
+  RawDateRange(DateTime(2026, 11, 13), DateTime(2026, 11, 16)),
   (context, stay, change) => ComicDateRangePicker(
     firstDate: DateTime(2026),
     lastDate: DateTime(2027, 12, 31),
@@ -357,10 +357,10 @@ Widget kitSpecimenActionSheet() => Builder(
 Widget kitSpecimenMenuBar() => Builder(
   builder: (context) => ComicMenuBar(
     menus: [
-      DesignMenuEntry(
+      RawMenuEntry(
         label: kitSay(context, 'File'),
         children: [
-          DesignMenuEntry(
+          RawMenuEntry(
             label: kitSay(context, 'New'),
             shortcut: ComicKbd.labelOf(
               context,
@@ -368,7 +368,7 @@ Widget kitSpecimenMenuBar() => Builder(
             ),
             onPressed: () {},
           ),
-          DesignMenuEntry(
+          RawMenuEntry(
             label: kitSay(context, 'Open'),
             shortcut: ComicKbd.labelOf(
               context,
@@ -376,15 +376,12 @@ Widget kitSpecimenMenuBar() => Builder(
             ),
             onPressed: () {},
           ),
-          const DesignMenuEntry.divider(),
-          DesignMenuEntry(
+          const RawMenuEntry.divider(),
+          RawMenuEntry(
             label: kitSay(context, 'Export'),
             children: [
-              DesignMenuEntry(
-                label: kitSay(context, 'As PDF'),
-                onPressed: () {},
-              ),
-              DesignMenuEntry(
+              RawMenuEntry(label: kitSay(context, 'As PDF'), onPressed: () {}),
+              RawMenuEntry(
                 label: kitSay(context, 'As images'),
                 onPressed: () {},
               ),
@@ -392,10 +389,10 @@ Widget kitSpecimenMenuBar() => Builder(
           ),
         ],
       ),
-      DesignMenuEntry(
+      RawMenuEntry(
         label: kitSay(context, 'Edit'),
         children: [
-          DesignMenuEntry(
+          RawMenuEntry(
             label: kitSay(context, 'Undo'),
             shortcut: ComicKbd.labelOf(
               context,
@@ -403,7 +400,7 @@ Widget kitSpecimenMenuBar() => Builder(
             ),
             onPressed: () {},
           ),
-          DesignMenuEntry(
+          RawMenuEntry(
             label: kitSay(context, 'Redo'),
             shortcut: ComicKbd.labelOf(
               context,
@@ -412,15 +409,15 @@ Widget kitSpecimenMenuBar() => Builder(
           ),
         ],
       ),
-      DesignMenuEntry(
+      RawMenuEntry(
         label: kitSay(context, 'View'),
         children: [
-          DesignMenuEntry(
+          RawMenuEntry(
             label: kitSay(context, 'Show grid'),
             checked: true,
             onPressed: () {},
           ),
-          DesignMenuEntry(
+          RawMenuEntry(
             label: kitSay(context, 'Show bleed'),
             checked: false,
             onPressed: () {},
@@ -431,8 +428,8 @@ Widget kitSpecimenMenuBar() => Builder(
   ),
 );
 
-List<DesignCommand> _commands(BuildContext context) => [
-  DesignCommand(
+List<RawCommand> _commands(BuildContext context) => [
+  RawCommand(
     label: kitSay(context, 'New issue'),
     group: kitSay(context, 'Issues'),
     shortcut: ComicKbd.labelOf(
@@ -442,26 +439,26 @@ List<DesignCommand> _commands(BuildContext context) => [
     data: ComicGlyphs.plus,
     onPressed: () {},
   ),
-  DesignCommand(
+  RawCommand(
     label: kitSay(context, 'Search issues'),
     group: kitSay(context, 'Issues'),
     data: ComicGlyphs.search,
     keywords: [kitSay(context, 'find')],
     onPressed: () {},
   ),
-  DesignCommand(
+  RawCommand(
     label: kitSay(context, 'Share the page'),
     group: kitSay(context, 'Page'),
     data: ComicGlyphs.share,
     onPressed: () {},
   ),
-  DesignCommand(
+  RawCommand(
     label: kitSay(context, 'Send to the printer'),
     group: kitSay(context, 'Page'),
     data: ComicGlyphs.send,
     onPressed: () {},
   ),
-  DesignCommand(
+  RawCommand(
     label: kitSay(context, 'Archive the run'),
     group: kitSay(context, 'Page'),
     enabled: false,
@@ -501,22 +498,22 @@ String _cell(_Issue issue, String column) => switch (column) {
 };
 
 Widget kitSpecimenDataTable() => Builder(
-  builder: (context) => _Held<DesignTableController<_Issue>>(
-    create: () => DesignTableController<_Issue>(
+  builder: (context) => _Held<RawDataTableController<_Issue>>(
+    create: () => RawDataTableController<_Issue>(
       rows: _issues,
       pageSize: 4,
       columns: [
-        DesignTableColumn(
+        RawDataColumn(
           id: 'title',
           label: kitSay(context, 'Issue'),
           sortKey: (issue) => issue.title,
         ),
-        DesignTableColumn(
+        RawDataColumn(
           id: 'writer',
           label: kitSay(context, 'Writer'),
           sortKey: (issue) => issue.writer,
         ),
-        DesignTableColumn(
+        RawDataColumn(
           id: 'pages',
           label: kitSay(context, 'Pages'),
           sortKey: (issue) => issue.pages,
@@ -611,12 +608,12 @@ Widget kitSpecimenSwipeActions() => Builder(
       ComicSwipeActions(
         initiallyOpen: true,
         endActions: [
-          DesignSwipeAction(
+          RawSwipeAction(
             label: kitSay(context, 'Archive'),
             data: ComicGlyphs.check,
             onPressed: () {},
           ),
-          DesignSwipeAction(
+          RawSwipeAction(
             label: kitSay(context, 'Delete'),
             data: ComicGlyphs.delete,
             destructive: true,
@@ -632,7 +629,7 @@ Widget kitSpecimenSwipeActions() => Builder(
       ),
       ComicSwipeActions(
         endActions: [
-          DesignSwipeAction(
+          RawSwipeAction(
             label: kitSay(context, 'Delete'),
             destructive: true,
             onPressed: () {},
@@ -772,7 +769,7 @@ Widget kitOpenSideSheet() => Builder(
           kitSay(context, 'From the start'),
           onPressed: () => showComicSheet<void>(
             context,
-            edge: DesignSheetEdge.start,
+            edge: RawSheetEdge.start,
             builder: (context) => ComicSheet(
               title: kitSay(context, 'The run'),
               child: Text(kitSay(context, 'Twelve issues so far.')),

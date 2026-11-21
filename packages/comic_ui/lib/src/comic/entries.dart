@@ -2,12 +2,14 @@
 library;
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart' show kTouchSlop;
 import 'package:ui_core/ui_core.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
 import 'glyphs.dart';
 import 'internal/field_icon.dart';
+import 'internal/key_focus.dart';
 import 'internal/reach.dart';
 import 'internal/track.dart';
 
@@ -325,7 +327,7 @@ class _ComicSearchFieldState extends State<ComicSearchField> {
             style: comicInFieldIcon,
             label:
                 widget.clearLabel ??
-                DesignLocalizations.of(context).clearButtonTooltip,
+                RawWidgetsLocalizations.of(context).clearButtonTooltip,
             onPressed: !widget.enabled
                 ? null
                 : () {
@@ -638,6 +640,11 @@ class ComicRadio<T> {
 
 /// A group of exclusive choices, drawn as small inked caption boxes.
 ///
+/// The group is Flutter's [RadioGroup], each option a `RawRadio`, with ui_core's [RadioGroupKeyboardFix] round them:
+/// Tab stops once, on the chosen option (on the first that can be chosen while none is, or while the chosen one is
+/// turned off), and the arrows move and choose, Left and Right swapped right to left. A screen reader hears a radio
+/// group named [label], each option a radio.
+///
 /// ```dart
 /// ComicRadioGroup<String>(label: 'Format', options: const [ComicRadio('print', 'Print'), ComicRadio('digital', 'Digital')], value: 'print', onChanged: change)
 /// ```
@@ -684,112 +691,256 @@ class ComicRadioGroup<T> extends StatefulWidget {
 }
 
 class _ComicRadioGroupState<T> extends State<ComicRadioGroup<T>> {
+  // A node for each option, made here: the arrows and a press move the keys' focus onto the option chosen.
+  final Map<T, FocusNode> _nodes = {};
+  // The option under the pointer: Flutter's RawRadio shows hover only while the highlight mode is traditional, and a
+  // Comic option shows it whatever the mode, as its pressable did.
+  T? _over;
+
+  @override
+  void initState() {
+    super.initState();
+    ComicKeyFocus.addListener(_inputChanged);
+  }
+
+  @override
+  void dispose() {
+    ComicKeyFocus.removeListener(_inputChanged);
+    for (final node in _nodes.values) {
+      node.dispose();
+    }
+    super.dispose();
+  }
+
+  void _inputChanged() => setState(() {});
+
+  void _choose(T? value) {
+    final onChanged = widget.onChanged;
+    if (onChanged == null || value == null || value == widget.value) return;
+    HapticFeedback.selectionClick();
+    _nodes[value]?.requestFocus();
+    onChanged(value);
+  }
+
+  void _hover(T value, bool over) {
+    if (over) {
+      if (_over != value) setState(() => _over = value);
+    } else if (_over == value) {
+      setState(() => _over = null);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final t = ComicTheme.of(context);
-    final byValue = {for (final option in widget.options) option.value: option};
-    return DesignRadioGroup<T>(
-      options: byValue.keys.toList(),
-      value: widget.value,
-      onChanged: widget.onChanged,
-      semanticLabel: widget.label,
-      isEnabled: (value) => byValue[value]!.enabled,
-      layoutBuilder: (context, rows) => Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          ExcludeSemantics(child: Text(widget.label, style: t.type.title)),
-          ...rows,
-        ],
-      ),
-      itemBuilder: (context, option, node, select) {
-        final o = byValue[option]!;
-        // The row's side room stands outward, its wash and its pop on the column's edge.
-        return ComicOutward(
-          margin: const EdgeInsets.symmetric(horizontal: ComicSpace.tight),
-          child: ComicPressable(
-            focusNode: node,
-            label: o.label,
-            button: false,
-            inGroup: true,
-            checked: o.value == widget.value,
-            onPressed: select == null
-                ? null
-                : () {
-                    node.requestFocus();
-                    select();
-                  },
-            overlay: comicStyleOf([
-              widget.style,
-              t.radioTheme,
-            ], const {}).overlay,
-            builder: (context, states) {
-              final look = comicStyleOf([widget.style, t.radioTheme], states);
-              return Padding(
-                padding: const EdgeInsets.symmetric(
-                  vertical: 10,
-                  horizontal: 4,
-                ),
-                child: Row(
-                  children: [
-                    // An empty ring on the ground; chosen, the same ring holds a dot in the ring's own ink, so
-                    // the chosen one is the one with something in it, by day and by night.
-                    AnimatedComicShape(
-                      shape: look.shape ?? const CircleBorder(),
-                      builder: (context, shape) {
-                        final rim = comicRim(t, look, t.colors.nightLine);
-                        final outline = shape ?? const RoundedRectangleBorder();
-                        return Container(
-                          width: 24,
-                          height: 24,
-                          decoration: ShapeDecoration(
-                            color: look.fill ?? const Color(0x00000000),
-                            shape: outline.copyWith(side: rim),
-                          ),
-                          child: o.value == widget.value
-                              ? Padding(
-                                  // The dot is the ring moved in: concentric, 3 px of ground between them.
-                                  padding: EdgeInsets.all(rim.width + 3),
-                                  child: ComicStateDecoration(
-                                    decoration: ShapeDecoration(
-                                      color: look.foreground ?? rim.color,
-                                      shape: comicInsetShape(
-                                        outline,
-                                        rim.width + 3,
-                                      ),
-                                    ),
-                                  ),
-                                )
-                              : null,
-                        );
-                      },
-                    ),
-                    const SizedBox(width: ComicSpace.close),
-                    Expanded(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            o.label,
-                            style: t.type.body
-                                .merge(look.textStyle)
-                                .copyWith(color: look.foreground),
-                          ),
-                          if (o.note != null)
-                            Text(o.note!, style: t.type.small),
-                        ],
+    final options = {for (final option in widget.options) option.value};
+    assert(
+      options.length == widget.options.length,
+      'Radio values must be distinct.',
+    );
+    for (final value in _nodes.keys.toSet().difference(options)) {
+      _nodes.remove(value)!.dispose();
+    }
+    final takes = widget.onChanged != null;
+    final overlay = comicStyleOf([
+      widget.style,
+      t.radioTheme,
+    ], const {}).overlay;
+    return RadioGroup<T>(
+      groupValue: widget.value,
+      // RadioGroup takes no null: a group that takes no choice gives a no-op and turns each option off.
+      onChanged: _choose,
+      child: RadioGroupKeyboardFix<T>(
+        child: Semantics(
+          label: widget.label,
+          // Under the group, where each option finds it.
+          child: Builder(
+            builder: (context) {
+              final registry = RadioGroup.maybeOf<T>(context);
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  ExcludeSemantics(
+                    child: Text(widget.label, style: t.type.title),
+                  ),
+                  for (final o in widget.options)
+                    // The row's side room stands outward, its wash and its pop on the column's edge.
+                    ComicOutward(
+                      key: ObjectKey(o.value),
+                      margin: const EdgeInsets.symmetric(
+                        horizontal: ComicSpace.tight,
+                      ),
+                      child: _option(
+                        t,
+                        registry,
+                        o,
+                        takes && o.enabled,
+                        overlay,
                       ),
                     ),
-                  ],
-                ),
+                ],
               );
             },
           ),
-        );
-      },
+        ),
+      ),
     );
   }
+
+  Widget _option(
+    ComicThemeData t,
+    RadioGroupRegistry<T>? registry,
+    ComicRadio<T> o,
+    bool enabled,
+    WidgetStateProperty<Color?>? overlay,
+  ) => MergeSemantics(
+    child: RawRadio<T>(
+      value: o.value,
+      mouseCursor: WidgetStateMouseCursor.clickable,
+      toggleable: false,
+      focusNode: _nodes[o.value] ??= FocusNode(),
+      autofocus: false,
+      groupRegistry: registry,
+      enabled: enabled,
+      builder: (context, radio) => Semantics(
+        label: o.label,
+        child: ExcludeSemantics(
+          child: MouseRegion(
+            onEnter: (_) => _hover(o.value, true),
+            onExit: (_) => _hover(o.value, false),
+            // A tap puts the focus on the option, the chosen one too, so the arrows go on from it.
+            child: _TapFocus(
+              node: _nodes[o.value]!,
+              enabled: enabled,
+              // The whole row takes the press, its gaps too, as the pressable's did.
+              child: MetaData(
+                behavior: HitTestBehavior.opaque,
+                child: ComicPressFace(
+                  states: {
+                    // The keys' pop shows after a key only, as a pressable's does.
+                    for (final s in radio.states)
+                      if (s != WidgetState.focused || ComicKeyFocus.shown) s,
+                    if (_over == o.value && enabled) WidgetState.hovered,
+                    if (radio.downPosition != null) WidgetState.pressed,
+                  },
+                  holds: enabled,
+                  live: enabled,
+                  overlay: overlay,
+                  builder: (context, states) {
+                    final look = comicStyleOf([
+                      widget.style,
+                      t.radioTheme,
+                    ], states);
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 10,
+                        horizontal: 4,
+                      ),
+                      child: Row(
+                        children: [
+                          // An empty ring on the ground; chosen, the same ring holds a dot in the ring's own ink, so
+                          // the chosen one is the one with something in it, by day and by night.
+                          AnimatedComicShape(
+                            shape: look.shape ?? const CircleBorder(),
+                            builder: (context, shape) {
+                              final rim = comicRim(t, look, t.colors.nightLine);
+                              final outline =
+                                  shape ?? const RoundedRectangleBorder();
+                              return Container(
+                                width: 24,
+                                height: 24,
+                                decoration: ShapeDecoration(
+                                  color: look.fill ?? const Color(0x00000000),
+                                  shape: outline.copyWith(side: rim),
+                                ),
+                                child: o.value == widget.value
+                                    ? Padding(
+                                        // The dot is the ring moved in: concentric, 3 px of ground between them.
+                                        padding: EdgeInsets.all(rim.width + 3),
+                                        child: ComicStateDecoration(
+                                          decoration: ShapeDecoration(
+                                            color: look.foreground ?? rim.color,
+                                            shape: comicInsetShape(
+                                              outline,
+                                              rim.width + 3,
+                                            ),
+                                          ),
+                                        ),
+                                      )
+                                    : null,
+                              );
+                            },
+                          ),
+                          const SizedBox(width: ComicSpace.close),
+                          Expanded(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  o.label,
+                                  style: t.type.body
+                                      .merge(look.textStyle)
+                                      .copyWith(color: look.foreground),
+                                ),
+                                if (o.note != null)
+                                  Text(o.note!, style: t.type.small),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
+/// Puts the focus on [node] when a pointer taps [child]: down and up within
+/// the touch slop, as a tap. Flutter's `RawRadio` takes the tap without
+/// taking the focus.
+class _TapFocus extends StatefulWidget {
+  const _TapFocus({
+    required this.node,
+    required this.enabled,
+    required this.child,
+  });
+
+  final FocusNode node;
+  final bool enabled;
+  final Widget child;
+
+  @override
+  State<_TapFocus> createState() => _TapFocusState();
+}
+
+class _TapFocusState extends State<_TapFocus> {
+  int? _pointer;
+  Offset _down = Offset.zero;
+
+  @override
+  Widget build(BuildContext context) => Listener(
+    onPointerDown: (event) {
+      _pointer = event.pointer;
+      _down = event.position;
+    },
+    onPointerUp: (event) {
+      if (event.pointer != _pointer) return;
+      _pointer = null;
+      if (widget.enabled && (event.position - _down).distance <= kTouchSlop) {
+        widget.node.requestFocus();
+      }
+    },
+    onPointerCancel: (event) => _pointer = null,
+    child: widget.child,
+  );
 }
 
 /// A segment's value, label and optional glyph.

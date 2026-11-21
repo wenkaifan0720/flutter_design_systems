@@ -473,11 +473,11 @@ final Map<String, DocExample> _examples = {
     );
   },
   'ComicRangeSlider': (context) {
-    var price = const DesignRangeValues(20, 80);
+    var price = const RawRangeValues(20, 80);
     void setState(VoidCallback fn) => fn();
     return ComicRangeSlider(
       label: 'Price',
-      values: const DesignRangeValues(20, 80),
+      values: const RawRangeValues(20, 80),
       max: 100,
       onChanged: (next) => setState(() => price = next),
     );
@@ -485,7 +485,7 @@ final Map<String, DocExample> _examples = {
   'ComicCalendar': (context) {
     void setState(VoidCallback fn) => fn();
     final calendar = _own(
-      DesignCalendarController(
+      RawCalendarController(
         firstDate: DateTime(2026),
         lastDate: DateTime(2027),
       ),
@@ -496,7 +496,7 @@ final Map<String, DocExample> _examples = {
     );
   },
   'ComicDateRangePicker': (context) {
-    var stay = DesignDateRange(DateTime(2026, 5, 1), DateTime(2026, 5, 4));
+    var stay = RawDateRange(DateTime(2026, 5, 1), DateTime(2026, 5, 4));
     void setState(VoidCallback fn) => fn();
     return ComicDateRangePicker(
       firstDate: DateTime(2026),
@@ -603,10 +603,10 @@ final Map<String, DocExample> _examples = {
   },
   'ComicMenuBar': (context) => ComicMenuBar(
     menus: [
-      DesignMenuEntry(
+      RawMenuEntry(
         label: 'File',
         children: [
-          DesignMenuEntry(
+          RawMenuEntry(
             label: 'New',
             shortcut: ComicKbd.labelOf(
               context,
@@ -617,7 +617,7 @@ final Map<String, DocExample> _examples = {
       ),
     ],
   ),
-  'ComicKbd.labelOf': (context) => DesignMenuEntry(
+  'ComicKbd.labelOf': (context) => RawMenuEntry(
     label: 'New',
     shortcut: ComicKbd.labelOf(
       context,
@@ -628,7 +628,7 @@ final Map<String, DocExample> _examples = {
     void create([Object? a, Object? b]) {}
     return ComicCommand(
       commands: [
-        DesignCommand(label: 'New issue', group: 'Issues', onPressed: create),
+        RawCommand(label: 'New issue', group: 'Issues', onPressed: create),
       ],
     );
   },
@@ -637,7 +637,7 @@ final Map<String, DocExample> _examples = {
       void create([Object? a, Object? b]) {}
       showComicCommand(
         context,
-        commands: [DesignCommand(label: 'New issue', onPressed: create)],
+        commands: [RawCommand(label: 'New issue', onPressed: create)],
       );
     }
 
@@ -645,12 +645,12 @@ final Map<String, DocExample> _examples = {
   },
   'ComicDataTable': (context) {
     final issues = _own(
-      DesignTableController<Map<String, String>>(
+      RawDataTableController<Map<String, String>>(
         rows: const [
           {'issue': 'Twelve'},
         ],
         columns: const [
-          DesignTableColumn<Map<String, String>>(id: 'issue', label: 'Issue'),
+          RawDataColumn<Map<String, String>>(id: 'issue', label: 'Issue'),
         ],
       ),
     );
@@ -692,11 +692,7 @@ final Map<String, DocExample> _examples = {
     void remove([Object? a, Object? b]) {}
     return ComicSwipeActions(
       endActions: [
-        DesignSwipeAction(
-          label: 'Delete',
-          onPressed: remove,
-          destructive: true,
-        ),
+        RawSwipeAction(label: 'Delete', onPressed: remove, destructive: true),
       ],
       child: row,
     );

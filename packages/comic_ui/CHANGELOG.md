@@ -1,3 +1,19 @@
+## 0.4.0
+
+- Stands on ui_core 0.4.0, on Flutter 3.47 or later as before. The ui_core types comic_ui's API names take their
+  new names (`DesignTableController` is `RawDataTableController`, `DesignSheetEdge` is `RawSheetEdge`, and so on);
+  `dart fix --apply` moves your code.
+- `ComicRadioGroup` is Flutter's `RadioGroup`, each option a `RawRadio`, in place of ui_core's `DesignRadioGroup`,
+  which ui_core 0.4.0 deprecates. It looks and moves as before and answers the same keys: one Tab stop, arrows that
+  choose, and a tap that puts the focus on the option, the chosen one too. On iOS and macOS a screen reader now also
+  hears each option as selected or not, as Flutter's `Radio` reads.
+- `ComicTooltip` stands on Flutter's `RawTooltip`. A tip no longer shows at once when another closed less than
+  300 ms before: each waits its own delay.
+- A password field's show and hide reads as a button, selected while the password shows, as
+  `IconButton(isSelected:)` does. It used to read as toggled.
+- A `ComicToggleGroup` with `multiple` reads each of its toggles the same way, a button selected or not: it
+  stands on ui_core 0.4.0's `RawSegmentedButton`. They used to read as toggled.
+
 ## 0.3.6
 
 - A `ComicMenu` row shows the keyboard's focus as Comic's other parts do: a hard print inside its outline, along

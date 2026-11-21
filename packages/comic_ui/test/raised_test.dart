@@ -9,14 +9,14 @@ import 'package:comic_ui/comic_ui.dart';
 import 'support.dart';
 
 // Comic's own words in French, and the words every look shares, translated as the README says: by extending
-// DefaultDesignLocalizations.
+// DefaultRawWidgetsLocalizations.
 class _Words extends ComicLocalizationsEn {
   const _Words();
   @override
   String get dismiss => 'Masquer';
 }
 
-class _SharedWords extends DefaultDesignLocalizations {
+class _SharedWords extends DefaultRawWidgetsLocalizations {
   const _SharedWords();
   @override
   String get closeButtonLabel => 'Fermer';
@@ -33,12 +33,12 @@ class _Delegate extends LocalizationsDelegate<ComicLocalizations> {
   bool shouldReload(_Delegate old) => false;
 }
 
-class _SharedDelegate extends LocalizationsDelegate<DesignLocalizations> {
+class _SharedDelegate extends LocalizationsDelegate<RawWidgetsLocalizations> {
   const _SharedDelegate();
   @override
   bool isSupported(Locale locale) => true;
   @override
-  Future<DesignLocalizations> load(Locale locale) =>
+  Future<RawWidgetsLocalizations> load(Locale locale) =>
       SynchronousFuture(const _SharedWords());
   @override
   bool shouldReload(_SharedDelegate old) => false;
@@ -93,7 +93,8 @@ void main() {
                     Widget builder(BuildContext context) {
                       theme = ComicTheme.of(context).id;
                       direction = Directionality.of(context);
-                      close = DesignLocalizations.of(context).closeButtonLabel;
+                      close = RawWidgetsLocalizations.of(context)
+                          .closeButtonLabel;
                       return sheet
                           ? const ComicBottomSheet(
                               title: 'Details',

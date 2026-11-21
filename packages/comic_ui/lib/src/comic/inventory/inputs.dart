@@ -478,13 +478,15 @@ class _ComicPasswordFieldState extends State<ComicPasswordField>
 
   @override
   Widget build(BuildContext context) {
-    return DesignPasswordReveal(
+    return RawPasswordReveal(
       focusNode: focus,
       hideOnBlur: widget.hideOnBlur,
       showLabel:
-          widget.showLabel ?? DesignLocalizations.of(context).showPasswordLabel,
+          widget.showLabel ??
+          RawWidgetsLocalizations.of(context).showPasswordLabel,
       hideLabel:
-          widget.hideLabel ?? DesignLocalizations.of(context).hidePasswordLabel,
+          widget.hideLabel ??
+          RawWidgetsLocalizations.of(context).hidePasswordLabel,
       builder: (context, password) => ComicTextField(
         autofocus: widget.autofocus,
         controller: widget.controller,
@@ -500,10 +502,12 @@ class _ComicPasswordFieldState extends State<ComicPasswordField>
         textInputAction: widget.textInputAction,
         keyboardType: TextInputType.visiblePassword,
         obscureText: password.obscured,
-        // The reveal is one toggle: its state is read on its own button, not left as a node of its own.
+        // The reveal is a toggle button, read on its own node: a button, selected while the password shows, as
+        // IconButton(isSelected:) is.
         trailing: MergeSemantics(
           child: Semantics(
-            toggled: !password.obscured,
+            button: true,
+            selected: !password.obscured,
             child: ComicIconButton(
               password.obscured ? ComicGlyphs.show : ComicGlyphs.hide,
               style: comicInFieldIcon,
@@ -715,7 +719,7 @@ class _ComicInputGroupState extends State<ComicInputGroup>
 /// type, on the menu's raised face. Down or Up opens the suggestions (every option not yet chosen, until words are
 /// typed), and the keys wrap at their ends; Enter takes the lit suggestion (or, with [onCreate], the typed words);
 /// Backspace on an empty editor steps onto the tags, and Backspace or Delete removes one. The behaviour is the design
-/// kit's `DesignTagInput`.
+/// kit's `RawTagInput`.
 ///
 /// ```dart
 /// ComicMultiSelect<String>(label: 'Genres', values: genres, options: const ['Noir', 'Western', 'Horror'], onChanged: (next) => setState(() => genres = next))
@@ -881,7 +885,7 @@ class _ComicMultiSelectState<T extends Object>
           style.shape ?? t.shapes.small,
           tagInset,
         );
-        return DesignTagInput<T>(
+        return RawTagInput<T>(
           values: widget.values,
           onChanged: widget.onChanged,
           options: widget.options,
@@ -891,7 +895,7 @@ class _ComicMultiSelectState<T extends Object>
               ? null
               : (context) => comicSearchNote(
                   context,
-                  DesignLocalizations.of(context).loadingLabel,
+                  RawWidgetsLocalizations.of(context).loadingLabel,
                 ),
           errorBuilder: widget.search == null
               ? null
@@ -1036,7 +1040,7 @@ class _ComicTag extends StatelessWidget {
               ),
               ExcludeSemantics(
                 child: ExcludeFocus(
-                  child: DesignPressable(
+                  child: RawButton(
                     onPressed: onRemove,
                     enableFeedback: false,
                     mouseCursor: onRemove == null
@@ -1069,7 +1073,7 @@ class _ComicTag extends StatelessWidget {
 /// its own keyboard focus and screen-reader label.
 ///
 /// ```dart
-/// ComicRangeSlider(label: 'Price', values: const DesignRangeValues(20, 80), max: 100, onChanged: (next) => setState(() => price = next))
+/// ComicRangeSlider(label: 'Price', values: const RawRangeValues(20, 80), max: 100, onChanged: (next) => setState(() => price = next))
 /// ```
 class ComicRangeSlider extends StatelessWidget {
   /// Creates a [ComicRangeSlider]. Null [onChanged] disables it.
@@ -1095,10 +1099,10 @@ class ComicRangeSlider extends StatelessWidget {
   final String label;
 
   /// The span.
-  final DesignRangeValues values;
+  final RawRangeValues values;
 
   /// The new span; null disables it.
-  final ValueChanged<DesignRangeValues>? onChanged;
+  final ValueChanged<RawRangeValues>? onChanged;
 
   /// [min]: the least value. [max]: the greatest.
   final double min, max;
@@ -1130,7 +1134,7 @@ class ComicRangeSlider extends StatelessWidget {
       [t.sliderTheme],
       {if (!live) WidgetState.disabled},
     );
-    final slider = DesignRangeSlider(
+    final slider = RawRangeSlider(
       values: values,
       onChanged: onChanged,
       min: min,
@@ -1203,9 +1207,9 @@ class ComicRangeSlider extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(StringProperty('label', label))
-      ..add(DiagnosticsProperty<DesignRangeValues>('values', values))
+      ..add(DiagnosticsProperty<RawRangeValues>('values', values))
       ..add(
-        ObjectFlagProperty<ValueChanged<DesignRangeValues>>.has(
+        ObjectFlagProperty<ValueChanged<RawRangeValues>>.has(
           'onChanged',
           onChanged,
         ),
@@ -1355,7 +1359,7 @@ class ComicCalendar extends StatelessWidget {
   });
 
   /// The calendar's month, focus and choice.
-  final DesignCalendarController controller;
+  final RawCalendarController controller;
 
   /// Called with the chosen day after each choice (the [controller] holds the selection); null disables the
   /// calendar.
@@ -1375,7 +1379,7 @@ class ComicCalendar extends StatelessWidget {
     final t = ComicTheme.of(context);
     final words = ComicLocalizations.of(context);
     final locale = _locale(context);
-    final calendar = DesignCalendar(
+    final calendar = RawCalendarDatePicker(
       controller: controller,
       onChanged: onChanged,
       months: months,
@@ -1392,7 +1396,7 @@ class ComicCalendar extends StatelessWidget {
             Directionality.of(context) == TextDirection.rtl
                 ? ComicGlyphs.chevronRight
                 : ComicGlyphs.chevronLeft,
-            label: DesignLocalizations.of(context).previousMonthTooltip,
+            label: RawWidgetsLocalizations.of(context).previousMonthTooltip,
             // The arrows stand on the header's keylines, their targets growing inward.
             targetAlignment: AlignmentDirectional.centerStart,
             onPressed: header.previous,
@@ -1416,7 +1420,7 @@ class ComicCalendar extends StatelessWidget {
             Directionality.of(context) == TextDirection.rtl
                 ? ComicGlyphs.chevronLeft
                 : ComicGlyphs.chevronRight,
-            label: DesignLocalizations.of(context).nextMonthTooltip,
+            label: RawWidgetsLocalizations.of(context).nextMonthTooltip,
             targetAlignment: AlignmentDirectional.centerEnd,
             onPressed: header.next,
           ),
@@ -1474,7 +1478,7 @@ class ComicCalendar extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(
-        DiagnosticsProperty<DesignCalendarController>('controller', controller),
+        DiagnosticsProperty<RawCalendarController>('controller', controller),
       )
       ..add(
         ObjectFlagProperty<ValueChanged<DateTime>>.has('onChanged', onChanged),
@@ -1506,7 +1510,7 @@ class _CalendarDay extends StatelessWidget {
   const _CalendarDay({required this.day, required this.states});
 
   /// The day's facts.
-  final DesignCalendarDay day;
+  final RawCalendarDayDetails day;
 
   /// Its press states.
   final Set<WidgetState> states;
@@ -1616,10 +1620,10 @@ class ComicDateRangePicker extends StatefulWidget {
   final DateTime firstDate, lastDate;
 
   /// The span.
-  final DesignDateRange? value;
+  final RawDateRange? value;
 
   /// Hears a whole span; null disables it.
-  final ValueChanged<DesignDateRange>? onChanged;
+  final ValueChanged<RawDateRange>? onChanged;
 
   /// How many months show side by side.
   final int months;
@@ -1640,14 +1644,10 @@ class ComicDateRangePicker extends StatefulWidget {
       ..add(DiagnosticsProperty<DateTime>('firstDate', firstDate))
       ..add(DiagnosticsProperty<DateTime>('lastDate', lastDate))
       ..add(
-        DiagnosticsProperty<DesignDateRange>(
-          'value',
-          value,
-          defaultValue: null,
-        ),
+        DiagnosticsProperty<RawDateRange>('value', value, defaultValue: null),
       )
       ..add(
-        ObjectFlagProperty<ValueChanged<DesignDateRange>>.has(
+        ObjectFlagProperty<ValueChanged<RawDateRange>>.has(
           'onChanged',
           onChanged,
         ),
@@ -1671,12 +1671,12 @@ class ComicDateRangePicker extends StatefulWidget {
 }
 
 class _ComicDateRangePickerState extends State<ComicDateRangePicker> {
-  late DesignCalendarController _calendar = _make();
+  late RawCalendarController _calendar = _make();
 
-  DesignCalendarController _make() => DesignCalendarController(
+  RawCalendarController _make() => RawCalendarController(
     firstDate: widget.firstDate,
     lastDate: widget.lastDate,
-    mode: DesignCalendarMode.range,
+    mode: RawCalendarMode.range,
     selectedRange: widget.value,
     initialMonth: widget.value?.start,
     currentDate: widget.currentDate,
@@ -1747,18 +1747,18 @@ class _ComicDateRangePickerState extends State<ComicDateRangePicker> {
 /// ```dart
 /// final stay = await showComicDateRangePicker(context, firstDate: DateTime(2026), lastDate: DateTime(2027));
 /// ```
-Future<DesignDateRange?> showComicDateRangePicker(
+Future<RawDateRange?> showComicDateRangePicker(
   BuildContext context, {
   required DateTime firstDate,
   required DateTime lastDate,
-  DesignDateRange? value,
+  RawDateRange? value,
   DateTime? currentDate,
   String? title,
   String? confirm,
   String? cancel,
 }) {
   var picked = value;
-  return showComicDialog<DesignDateRange>(
+  return showComicDialog<RawDateRange>(
     context,
     builder: (context) => StatefulBuilder(
       builder: (context, setState) => ComicDialog(
@@ -1774,7 +1774,7 @@ Future<DesignDateRange?> showComicDateRangePicker(
         ],
         actions: [
           ComicButton(
-            cancel ?? DesignLocalizations.of(context).cancelButtonLabel,
+            cancel ?? RawWidgetsLocalizations.of(context).cancelButtonLabel,
             onPressed: () => Navigator.pop(context),
           ),
           ComicButton.filled(
@@ -1794,7 +1794,7 @@ Future<DesignDateRange?> showComicDateRangePicker(
 
 // ---------------------------------------------------------------------------------------------------------------------
 
-/// One value off a turning drum, on ui_core's [DesignWheelPicker]: the rows roll past a caption band that holds the
+/// One value off a turning drum, on ui_core's [RawPicker]: the rows roll past a caption band that holds the
 /// chosen one. A drag or a fling turns it; Up and Down step it, Page Up and Down by five, Home and End to the ends, and
 /// typing jumps to a value's words; a screen reader hears it as an adjustable value.
 ///
@@ -1904,9 +1904,9 @@ class _ComicWheelPickerState<T> extends State<ComicWheelPicker<T>>
     final live = widget.onChanged != null;
     final frame = t.shapes.medium;
     final band = t.shapes.small;
-    final picker = DesignWheelPicker(
+    final picker = RawPicker(
       columns: (_) => [
-        DesignWheelColumn(
+        RawPickerColumn(
           itemCount: widget.values.length,
           itemLabel: (i) => widget.labelOf(widget.values[i]),
           semanticLabel: widget.label,
@@ -2197,10 +2197,10 @@ class ComicInputOtp extends StatefulWidget {
 }
 
 class _ComicInputOtpState extends State<ComicInputOtp> {
-  late DesignOtpController _code = _make();
+  late RawOtpController _code = _make();
 
-  DesignOtpController _make() =>
-      DesignOtpController(length: widget.length, text: widget.controller);
+  RawOtpController _make() =>
+      RawOtpController(length: widget.length, text: widget.controller);
 
   @override
   void didUpdateWidget(ComicInputOtp old) {
@@ -2220,7 +2220,7 @@ class _ComicInputOtpState extends State<ComicInputOtp> {
     super.dispose();
   }
 
-  Widget _box(BuildContext context, DesignOtpSlot slot) {
+  Widget _box(BuildContext context, RawOtpSlot slot) {
     final t = ComicTheme.of(context), c = t.colors;
     final live = slot.active && slot.focused;
     final look = comicStyleOf(
@@ -2274,7 +2274,7 @@ class _ComicInputOtpState extends State<ComicInputOtp> {
   @override
   Widget build(BuildContext context) {
     final t = ComicTheme.of(context);
-    final field = DesignOtpField(
+    final field = RawOtpField(
       controller: _code,
       focusNode: widget.focusNode,
       autofocus: widget.autofocus,

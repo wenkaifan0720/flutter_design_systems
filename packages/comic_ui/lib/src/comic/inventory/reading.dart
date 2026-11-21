@@ -584,7 +584,8 @@ class ComicActionSheet<T> extends StatelessWidget {
             ),
           const SizedBox(height: ComicSpace.near),
           ComicButton(
-            cancelLabel ?? DesignLocalizations.of(context).cancelButtonLabel,
+            cancelLabel ??
+                RawWidgetsLocalizations.of(context).cancelButtonLabel,
             onPressed: onCancel ?? () => Navigator.maybePop(context),
           ),
         ],

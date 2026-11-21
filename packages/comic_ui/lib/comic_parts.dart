@@ -20,6 +20,7 @@ export 'src/comic/frames.dart';
 export 'src/comic/internal/cap_label.dart';
 export 'src/comic/internal/field_icon.dart';
 export 'src/comic/internal/geometry.dart';
+export 'src/comic/internal/key_focus.dart';
 export 'src/comic/internal/lettered.dart';
 export 'src/comic/internal/lettering.dart';
 export 'src/comic/internal/lettering_reach.dart';

@@ -45,18 +45,18 @@ class _OwnedState<T extends ChangeNotifier> extends State<_Owned<T>> {
 }
 
 Widget _table(BuildContext context) => _Owned(
-  () => DesignTableController<List<String>>(
+  () => RawDataTableController<List<String>>(
     rows: const [
       ['Twelve', '24'],
       ['Thirteen', '32'],
     ],
     columns: [
-      DesignTableColumn<List<String>>(
+      RawDataColumn<List<String>>(
         id: 'issue',
         label: 'Issue',
         sortKey: (row) => row[0],
       ),
-      DesignTableColumn<List<String>>(
+      RawDataColumn<List<String>>(
         id: 'pages',
         label: 'Pages',
         sortKey: (row) => int.parse(row[1]),
@@ -238,7 +238,7 @@ final DesignInventory comicInventory = DesignInventory(
       'RangeSlider',
       (context) => const ComicRangeSlider(
         label: 'Price',
-        values: DesignRangeValues(.2, .8),
+        values: RawRangeValues(.2, .8),
         onChanged: _take,
       ),
     ),
@@ -291,7 +291,7 @@ final DesignInventory comicInventory = DesignInventory(
     DesignInventoryEntry.present(
       'Calendar',
       (context) => _Owned(
-        () => DesignCalendarController(
+        () => RawCalendarController(
           firstDate: DateTime(2026),
           lastDate: DateTime(2027),
         ),
@@ -374,10 +374,10 @@ final DesignInventory comicInventory = DesignInventory(
       'MenuBar',
       (context) => ComicMenuBar(
         menus: [
-          DesignMenuEntry(
+          RawMenuEntry(
             label: 'File',
             children: [
-              DesignMenuEntry(
+              RawMenuEntry(
                 label: 'New',
                 shortcut: ComicKbd.labelOf(
                   context,
@@ -393,7 +393,7 @@ final DesignInventory comicInventory = DesignInventory(
     DesignInventoryEntry.present(
       'Command',
       (context) => const ComicCommand(
-        commands: [DesignCommand(label: 'New issue', onPressed: _tap)],
+        commands: [RawCommand(label: 'New issue', onPressed: _tap)],
       ),
     ),
     DesignInventoryEntry.present(
@@ -474,11 +474,7 @@ final DesignInventory comicInventory = DesignInventory(
       'SwipeActions',
       (context) => const ComicSwipeActions(
         endActions: [
-          DesignSwipeAction(
-            label: 'Delete',
-            onPressed: _tap,
-            destructive: true,
-          ),
+          RawSwipeAction(label: 'Delete', onPressed: _tap, destructive: true),
         ],
         child: ComicListTile(title: 'Issue 12'),
       ),

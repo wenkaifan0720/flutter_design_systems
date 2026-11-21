@@ -24,7 +24,7 @@ void main() {
             color: const Color(0xFF000000),
             locale: locale,
             supportedLocales: [locale],
-            localizationsDelegates: const [DesignLocalizations.delegate],
+            localizationsDelegates: const [RawWidgetsLocalizations.delegate],
             pageRouteBuilder: <T>(settings, builder) => PageRouteBuilder<T>(
               settings: settings,
               pageBuilder: (context, _, _) => builder(context),

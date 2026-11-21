@@ -435,7 +435,7 @@ class _ComicDatePickerState extends State<ComicDatePicker> {
       rtl ? ComicGlyphs.chevronRight : ComicGlyphs.chevronLeft,
       label:
           widget.previousLabel ??
-          DesignLocalizations.of(context).previousMonthTooltip,
+          RawWidgetsLocalizations.of(context).previousMonthTooltip,
       // The arrows stand on the header's keylines, their targets growing inward.
       targetAlignment: AlignmentDirectional.centerStart,
       onPressed: canBack
@@ -445,7 +445,8 @@ class _ComicDatePickerState extends State<ComicDatePicker> {
     final next = ComicIconButton(
       rtl ? ComicGlyphs.chevronLeft : ComicGlyphs.chevronRight,
       label:
-          widget.nextLabel ?? DesignLocalizations.of(context).nextMonthTooltip,
+          widget.nextLabel ??
+          RawWidgetsLocalizations.of(context).nextMonthTooltip,
       targetAlignment: AlignmentDirectional.centerEnd,
       onPressed: canNext
           ? () => _walk(_bound(_shiftMonth(1)), focus: false)
@@ -647,7 +648,7 @@ class ComicTimePicker extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // The hour, minute and half of the day in the app's language: ui_core's words.
-    final shared = DesignLocalizations.of(context),
+    final shared = RawWidgetsLocalizations.of(context),
         time = value ?? const ComicTime(0, 0),
         h24 = use24hFormat ?? MediaQuery.alwaysUse24HourFormatOf(context);
     final minutes = {
@@ -838,7 +839,7 @@ Future<DateTime?> showComicDatePicker(
         ],
         actions: [
           ComicButton(
-            cancel ?? DesignLocalizations.of(context).cancelButtonLabel,
+            cancel ?? RawWidgetsLocalizations.of(context).cancelButtonLabel,
             onPressed: () => Navigator.pop(context),
           ),
           ComicButton.filled(
@@ -884,7 +885,7 @@ Future<ComicTime?> showComicTimePicker(
         ],
         actions: [
           ComicButton(
-            cancel ?? DesignLocalizations.of(context).cancelButtonLabel,
+            cancel ?? RawWidgetsLocalizations.of(context).cancelButtonLabel,
             onPressed: () => Navigator.pop(context),
           ),
           ComicButton.filled(

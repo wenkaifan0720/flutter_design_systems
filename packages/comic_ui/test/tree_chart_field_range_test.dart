@@ -160,7 +160,7 @@ void main() {
           firstDate: DateTime(2026),
           lastDate: DateTime(2028, 12, 31),
           currentDate: DateTime(2026, 11, 9),
-          value: DesignDateRange(start, end),
+          value: RawDateRange(start, end),
           onChanged: (_) {},
         ),
       ),

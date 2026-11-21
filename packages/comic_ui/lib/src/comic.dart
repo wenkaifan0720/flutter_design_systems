@@ -23,6 +23,7 @@ export 'comic/press.dart'
         ComicStateLerp,
         comicStateCurve,
         ComicPlated,
+        ComicPressFace,
         ComicScreened;
 export 'comic/print.dart'
     hide ComicScreenGrid, ComicDotFade, RenderComicLettering;
@@ -85,25 +86,25 @@ export 'comic/inventory/structure.dart';
 
 // The design kit's value types a Comic row takes or gives.
 export 'package:ui_core/ui_core.dart'
-    show DesignOverlayAlign, DesignOverlayAnchor, DesignOverlaySide;
+    show RawPopoverAlign, DesignOverlayAnchor, RawPopoverSide;
 export 'package:ui_core/ui_core.dart'
-    show DesignCalendarController, DesignCalendarMode, DesignDateRange;
-export 'package:ui_core/ui_core.dart' show DesignColorController;
-export 'package:ui_core/ui_core.dart' show DesignCommand;
+    show RawCalendarController, RawCalendarMode, RawDateRange;
+export 'package:ui_core/ui_core.dart' show RawColorController;
+export 'package:ui_core/ui_core.dart' show RawCommand;
 export 'package:ui_core/ui_core.dart'
     show
-        DesignSelection,
-        DesignSortDirection,
-        DesignTableColumn,
-        DesignTableController;
-export 'package:ui_core/ui_core.dart' show DesignMenuEntry;
+        RawDataTableSelection,
+        RawSortDirection,
+        RawDataColumn,
+        RawDataTableController;
+export 'package:ui_core/ui_core.dart' show RawMenuEntry;
 export 'package:ui_core/ui_core.dart'
-    show DesignLocalizations, DefaultDesignLocalizations;
-export 'package:ui_core/ui_core.dart' show DesignRangeValues;
+    show RawWidgetsLocalizations, DefaultRawWidgetsLocalizations;
+export 'package:ui_core/ui_core.dart' show RawRangeValues;
 export 'package:ui_core/ui_core.dart' show DesignScrollbarVisibility;
-export 'package:ui_core/ui_core.dart' show DesignSheetEdge;
+export 'package:ui_core/ui_core.dart' show RawSheetEdge;
 export 'package:ui_core/ui_core.dart' show DesignStyle, DesignStyleOf;
-export 'package:ui_core/ui_core.dart' show DesignSwipeAction;
+export 'package:ui_core/ui_core.dart' show RawSwipeAction;
 export 'package:ui_core/ui_core.dart' show DesignTreeController;
 
 export 'comic/component_themes.dart' hide comicStates;

@@ -1325,7 +1325,7 @@ class ComicFormField extends StatelessWidget {
     final many = group ?? (child is ComicChoices || child is ComicRadioGroup);
     // No room of its own above the label: a form field stands where its column puts it, as a text field or a
     // select beside it does, so a form keeps one rhythm whichever part each row is.
-    return DesignField(
+    return RawInputDecorator(
       mergeSemantics: !many,
       labelText: label,
       helperText: help,
@@ -1333,7 +1333,7 @@ class ComicFormField extends StatelessWidget {
       required: required,
       enabled: enabled,
       focusNode: focusNode,
-      requiredHint: DesignLocalizations.of(context).requiredHint,
+      requiredHint: RawWidgetsLocalizations.of(context).requiredHint,
       builder: (context, parts) => ComicColumn(
         children: [
           ExcludeSemantics(

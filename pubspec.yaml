@@ -39,6 +39,8 @@ workspace:
   - packages/gloss_ui/example
   - packages/ledger_ui
   - packages/ledger_ui/example
+  - packages/comic_ui
+  - packages/comic_ui/example
 
 dev_dependencies:
   flutter_lints: ^6.0.0

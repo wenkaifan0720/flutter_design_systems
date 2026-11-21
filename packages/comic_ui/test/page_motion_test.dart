@@ -74,14 +74,14 @@ void main() {
       for (final platform in TargetPlatform.values) {
         final builder = comicPageTransitions[platform];
         expect(
-          builder is DesignSwipeBackPageTransitionsBuilder
+          builder is SwipeBackPageTransitionsBuilder
               ? builder.builder
               : builder,
           isA<ComicPageTransitionsBuilder>(),
           reason: '$platform',
         );
         expect(
-          builder is DesignSwipeBackPageTransitionsBuilder,
+          builder is SwipeBackPageTransitionsBuilder,
           platform == TargetPlatform.iOS,
           reason: '$platform',
         );

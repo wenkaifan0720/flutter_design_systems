@@ -189,7 +189,7 @@ List<MatrixRow> matrixRows() {
       240,
       (off) => ComicRangeSlider(
         label: 'Price',
-        values: const DesignRangeValues(.2, .7),
+        values: const RawRangeValues(.2, .7),
         onChanged: off ? null : _no,
       ),
       press: false,
@@ -461,16 +461,16 @@ List<MatrixRow> matrixRows() {
       300,
       (off) => ComicMenuBar(
         menus: [
-          DesignMenuEntry(
+          RawMenuEntry(
             label: 'File',
             children: [
-              if (!off) const DesignMenuEntry(label: 'New', onPressed: _tap),
+              if (!off) const RawMenuEntry(label: 'New', onPressed: _tap),
             ],
           ),
-          DesignMenuEntry(
+          RawMenuEntry(
             label: 'Edit',
             children: [
-              if (!off) const DesignMenuEntry(label: 'Undo', onPressed: _tap),
+              if (!off) const RawMenuEntry(label: 'Undo', onPressed: _tap),
             ],
           ),
         ],
@@ -483,7 +483,7 @@ List<MatrixRow> matrixRows() {
           ? null
           : _Owned(
               key: ValueKey(f),
-              () => DesignCalendarController(
+              () => RawCalendarController(
                 firstDate: DateTime(2026),
                 lastDate: DateTime(2027, 12, 31),
                 initialMonth: DateTime(2026, 11),
@@ -506,7 +506,7 @@ List<MatrixRow> matrixRows() {
               lastDate: DateTime(2027, 12, 31),
               currentDate: day,
               value: f.selected
-                  ? DesignDateRange(day, DateTime(2026, 11, 13))
+                  ? RawDateRange(day, DateTime(2026, 11, 13))
                   : null,
               onChanged: f.disabled ? null : _no,
             ),
@@ -593,12 +593,8 @@ List<MatrixRow> matrixRows() {
       (off) => ComicCommand(
         maxHeight: 200,
         commands: [
-          DesignCommand(label: 'New issue', enabled: !off, onPressed: _tap),
-          DesignCommand(
-            label: 'Share the page',
-            enabled: !off,
-            onPressed: _tap,
-          ),
+          RawCommand(label: 'New issue', enabled: !off, onPressed: _tap),
+          RawCommand(label: 'Share the page', enabled: !off, onPressed: _tap),
         ],
       ),
     ),
@@ -607,15 +603,11 @@ List<MatrixRow> matrixRows() {
       return _Owned(
         key: ValueKey(f),
         () {
-          final table = DesignTableController<String>(
+          final table = RawDataTableController<String>(
             rows: const ['The Long Night', 'Harbor Lights'],
             pageSize: 4,
             columns: [
-              DesignTableColumn(
-                id: 'title',
-                label: 'Issue',
-                sortKey: (row) => row,
-              ),
+              RawDataColumn(id: 'title', label: 'Issue', sortKey: (row) => row),
             ],
           );
           if (f.selected) table.toggle('The Long Night');
@@ -662,11 +654,7 @@ List<MatrixRow> matrixRows() {
       () => const ComicSwipeActions(
         initiallyOpen: true,
         endActions: [
-          DesignSwipeAction(
-            label: 'Delete',
-            destructive: true,
-            onPressed: _tap,
-          ),
+          RawSwipeAction(label: 'Delete', destructive: true, onPressed: _tap),
         ],
         child: ComicListTile(title: 'Issue 12', subtitle: 'Slide left'),
       ),

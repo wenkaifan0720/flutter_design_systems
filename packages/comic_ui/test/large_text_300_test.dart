@@ -153,7 +153,7 @@ void main() {
     testWidgets("a $which's weekday initials stand apart at 300% text", (
       tester,
     ) async {
-      final calendar = DesignCalendarController(
+      final calendar = RawCalendarController(
         firstDate: DateTime(2026),
         lastDate: DateTime(2027),
         initialMonth: DateTime(2026, 11),
@@ -195,7 +195,7 @@ void main() {
         testWidgets(
           "a $which's days fit at 300% text, at most twice their size, $width wide, ${direction.name}",
           (tester) async {
-            final calendar = DesignCalendarController(
+            final calendar = RawCalendarController(
               firstDate: DateTime(2026),
               lastDate: DateTime(2027),
               initialMonth: DateTime(2026, 11),
@@ -264,7 +264,7 @@ void main() {
         testWidgets(
           "a $which's month name stays whole at 300% text, $width wide, month $month",
           (tester) async {
-            final calendar = DesignCalendarController(
+            final calendar = RawCalendarController(
               firstDate: DateTime(2026),
               lastDate: DateTime(2027),
               initialMonth: DateTime(2026, month),
@@ -315,7 +315,7 @@ void main() {
             builder: (context) => Localizations.override(
               context: context,
               locale: locale,
-              delegates: const [DesignLocalizations.delegate],
+              delegates: const [RawWidgetsLocalizations.delegate],
               child: ComicTimePicker(
                 value: const ComicTime(9, 30),
                 use24hFormat: false,

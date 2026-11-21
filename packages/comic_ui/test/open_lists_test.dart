@@ -744,16 +744,15 @@ void main() {
     'letter jumps (a run spells a start), and Enter runs the lit command',
     (tester) async {
       final ran = <String>[];
-      DesignMenuEntry command(String label, {bool on = true}) =>
-          DesignMenuEntry(
-            label: label,
-            onPressed: on ? () => ran.add(label) : null,
-          );
+      RawMenuEntry command(String label, {bool on = true}) => RawMenuEntry(
+        label: label,
+        onPressed: on ? () => ran.add(label) : null,
+      );
       await tester.pumpWidget(
         comicApp(
           ComicMenuBar(
             menus: [
-              DesignMenuEntry(
+              RawMenuEntry(
                 label: 'File',
                 children: [
                   command('New'),
@@ -764,7 +763,7 @@ void main() {
                   command('Close'),
                 ],
               ),
-              DesignMenuEntry(label: 'View', children: [command('Zoom')]),
+              RawMenuEntry(label: 'View', children: [command('Zoom')]),
             ],
           ),
         ),
@@ -817,8 +816,8 @@ void main() {
       final semantics = tester.ensureSemantics();
       final taken = <String>[];
       final ran = <String>[];
-      DesignMenuEntry command(String label) =>
-          DesignMenuEntry(label: label, onPressed: () => ran.add(label));
+      RawMenuEntry command(String label) =>
+          RawMenuEntry(label: label, onPressed: () => ran.add(label));
       Finder words(String w) => find.byWidgetPredicate(
         (x) => x is Text && x.data?.toLowerCase() == w.toLowerCase(),
       );
@@ -829,7 +828,7 @@ void main() {
             children: [
               ComicMenuBar(
                 menus: [
-                  DesignMenuEntry(
+                  RawMenuEntry(
                     label: 'File',
                     children: [
                       command('New'),

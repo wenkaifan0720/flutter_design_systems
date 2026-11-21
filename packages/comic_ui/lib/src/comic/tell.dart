@@ -230,7 +230,7 @@ class _ComicCircularProgressState extends State<ComicCircularProgressIndicator>
     final t = ComicTheme.of(context);
     final c = t.colors;
     return Semantics(
-      label: widget.label ?? DesignLocalizations.of(context).loadingLabel,
+      label: widget.label ?? RawWidgetsLocalizations.of(context).loadingLabel,
       value: widget.value == null ? null : '${(widget.value! * 100).round()}%',
       child: RepaintBoundary(
         child: AnimatedBuilder(
@@ -406,7 +406,7 @@ class _ComicLinearProgressIndicatorState
     final t = ComicTheme.of(context);
     final c = t.colors;
     return Semantics(
-      label: widget.label ?? DesignLocalizations.of(context).loadingLabel,
+      label: widget.label ?? RawWidgetsLocalizations.of(context).loadingLabel,
       value: widget.value == null ? null : '${(widget.value! * 100).round()}%',
       child: RepaintBoundary(
         child: AnimatedBuilder(

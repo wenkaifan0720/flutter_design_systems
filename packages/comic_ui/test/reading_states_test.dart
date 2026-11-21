@@ -316,7 +316,7 @@ void main() {
           child: Center(
             child: ComicRangeSlider(
               label: 'Price',
-              values: const DesignRangeValues(20, 60),
+              values: const RawRangeValues(20, 60),
               max: 100,
               valueLabel: (value) => '\$${value.round()}',
               onChanged: (_) {},
@@ -446,9 +446,9 @@ void main() {
           'ملف',
           ComicMenuBar(
             menus: [
-              DesignMenuEntry(
+              RawMenuEntry(
                 label: 'ملف',
-                children: [DesignMenuEntry(label: 'جديد', onPressed: () {})],
+                children: [RawMenuEntry(label: 'جديد', onPressed: () {})],
               ),
             ],
           ),

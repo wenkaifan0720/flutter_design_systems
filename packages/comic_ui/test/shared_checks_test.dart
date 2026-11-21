@@ -1,5 +1,6 @@
-// ui_core_test's shared checks, for two faults a look can make: buttons in one row that do not stand one height, and
-// dropdowns as wide as their column. Over every page of the live example (its ordinary screens among them):
+// The shared checks (ui_core_test's and ui_core_review's), for two faults a look can make: buttons in one row that
+// do not stand one height, and dropdowns as wide as their column. Over every page of the live example (its ordinary
+// screens among them):
 // - DesignRowCheck: controls sharing a row, by their drawn outlines and their capitals, under each density Comic ships,
 //   by day and by night (every density at 390, the standard one at 1440 too);
 // - DesignWidthCheck: buttons, selects, steppers, segmented controls, groups of choices and tab bars keep to their
@@ -23,6 +24,8 @@ import 'package:comic_ui/comic_ui.dart';
 import 'package:comic_ui/comic_host.dart';
 import 'package:comic_ui/src/comic/raised.dart'
     show ComicRaisedFrame, comicRaisedPlate;
+import 'package:ui_core_review/ui_core_review.dart'
+    show DesignRowCheck, DesignWidthCheck;
 import 'package:ui_core_test/ui_core_test.dart';
 
 // ignore_for_file: avoid_relative_lib_imports, avoid_print
