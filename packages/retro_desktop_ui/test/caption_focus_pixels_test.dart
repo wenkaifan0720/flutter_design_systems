@@ -275,7 +275,7 @@ void main() {
                   find
                       .ancestor(
                         of: words,
-                        matching: find.byType(RetroDesktopPressable),
+                        matching: find.byWidgetPredicate((w) => w is RawRadio),
                       )
                       .first,
                 ),
@@ -377,7 +377,7 @@ void main() {
                 _ => RetroDesktopSplitButton(
                   label: 'First',
                   onPressed: () {},
-                  actions: [DesignSplitAction(label: 'Last', onPressed: () {})],
+                  actions: [RawSplitAction(label: 'Last', onPressed: () {})],
                 ),
               };
               final key = await _pump(
@@ -751,13 +751,10 @@ void main() {
             tester,
             RetroDesktopMenuBar(
               menus: [
-                DesignMenuEntry(
+                RawMenuEntry(
                   label: 'File',
                   children: [
-                    DesignMenuEntry(
-                      label: 'Open',
-                      onPressed: () => opened = true,
-                    ),
+                    RawMenuEntry(label: 'Open', onPressed: () => opened = true),
                   ],
                 ),
               ],

@@ -123,8 +123,8 @@ Widget kitSpecimenSplitButton() => kitAction(
     label: 'Save',
     onPressed: press,
     actions: [
-      DesignSplitAction(label: 'Save as', onPressed: press),
-      DesignSplitAction(label: 'Save a copy', onPressed: press),
+      RawSplitAction(label: 'Save as', onPressed: press),
+      RawSplitAction(label: 'Save a copy', onPressed: press),
     ],
   ),
 );
@@ -147,7 +147,7 @@ Widget kitSpecimenFormField() => const RetroDesktopFormField(
   child: RetroDesktopTextField(hint: 'name@example.com'),
 );
 Widget kitSpecimenRangeSlider() => kitValue(
-  const DesignRangeValues(20, 80),
+  const RawRangeValues(20, 80),
   (value, change) => RetroDesktopRangeSlider(
     label: 'Price',
     values: value,
@@ -176,7 +176,7 @@ Widget kitSpecimenCombobox() => Builder(
   ),
 );
 Widget kitSpecimenCalendar() => _Held(
-  make: (_) => DesignCalendarController(
+  make: (_) => RawCalendarController(
     firstDate: DateTime(2026, 6),
     lastDate: DateTime(2026, 9, 30),
     selectedDate: DateTime(2026, 6, 14),
@@ -184,8 +184,8 @@ Widget kitSpecimenCalendar() => _Held(
   ),
   builder: (controller) => RetroDesktopCalendar(controller: controller),
 );
-Widget kitSpecimenDateRangePicker() => kitValue<DesignDateRange?>(
-  DesignDateRange(DateTime(2026, 6, 14), DateTime(2026, 6, 18)),
+Widget kitSpecimenDateRangePicker() => kitValue<RawDateRange?>(
+  RawDateRange(DateTime(2026, 6, 14), DateTime(2026, 6, 18)),
   (value, change) => RetroDesktopDateRangePicker(
     label: 'Stay',
     firstDate: DateTime(2026, 6),
@@ -197,26 +197,26 @@ Widget kitSpecimenDateRangePicker() => kitValue<DesignDateRange?>(
 );
 Widget kitSpecimenColorPicker() => _Held(
   make: (context) =>
-      DesignColorController(RetroDesktopTheme.of(context).colors.highlight),
+      RawColorController(RetroDesktopTheme.of(context).colors.highlight),
   builder: (controller) => RetroDesktopColorPicker(controller: controller),
 );
 Widget kitSpecimenMenuBar() => kitAction(
   'Chose from the menu',
   (press) => RetroDesktopMenuBar(
     menus: [
-      DesignMenuEntry(
+      RawMenuEntry(
         label: 'File',
         children: [
-          DesignMenuEntry(label: 'New', onPressed: press),
-          DesignMenuEntry(label: 'Open', onPressed: press),
-          DesignMenuEntry(label: 'Close', onPressed: press),
+          RawMenuEntry(label: 'New', onPressed: press),
+          RawMenuEntry(label: 'Open', onPressed: press),
+          RawMenuEntry(label: 'Close', onPressed: press),
         ],
       ),
-      DesignMenuEntry(
+      RawMenuEntry(
         label: 'Edit',
         children: [
-          DesignMenuEntry(label: 'Undo', onPressed: press),
-          DesignMenuEntry(label: 'Copy', onPressed: press),
+          RawMenuEntry(label: 'Undo', onPressed: press),
+          RawMenuEntry(label: 'Copy', onPressed: press),
         ],
       ),
     ],
@@ -230,7 +230,7 @@ class _Doc {
 }
 
 Widget kitSpecimenDataTable() => _Held(
-  make: (_) => DesignTableController<_Doc>(
+  make: (_) => RawDataTableController<_Doc>(
     rows: const [
       _Doc('Budget', 12),
       _Doc('Letters', 48),
@@ -238,12 +238,12 @@ Widget kitSpecimenDataTable() => _Held(
       _Doc('Plans', 27),
     ],
     columns: [
-      DesignTableColumn<_Doc>(
+      RawDataColumn<_Doc>(
         id: 'name',
         label: 'Name',
         sortKey: (doc) => doc.name,
       ),
-      DesignTableColumn<_Doc>(
+      RawDataColumn<_Doc>(
         id: 'size',
         label: 'Size',
         numeric: true,

@@ -1,3 +1,11 @@
+## 0.4.0
+
+- **Breaking:** stands on ui_core 0.4.0. Flutter 3.47 or later, as before.
+- **Renamed:** the ui_core types in this package's API take ui_core 0.4.0's `Raw` names. For example, `RetroDesktopMenuBar.menus` is a `List<RawMenuEntry>`, and `RetroDesktopDataTable.controller` is a `RawDataTableController`. The old names still work as deprecated typedefs, and `dart fix --apply` renames them.
+- `RetroDesktopRadioGroup` is built on Flutter's `RadioGroup`, with a `RawRadio` for each option. The keys work as before. As with Flutter's `Radio`, a radio shows hover and focus while focus highlights are traditional (on a desktop, or once a mouse or a key was used), so its focus also shows after a mouse click. On iOS and macOS an unchosen radio reads as not selected.
+- `RetroDesktopTooltip` is built on Flutter's `RawTooltip`. It shows on hover after its wait, on keyboard focus and on a long press, and rises and falls on the look's spring, as before. Run the pointer along a row of controls, and each tip waits its turn, as Flutter's do. Before, the next tip showed at once. A press hides a tip the pointer brought, as Flutter's do; before, the tip stayed while the control was held. A finger held anywhere on the area the tip belongs to shows it, as a resting pointer already did; before, only a finger held on the control itself did.
+- When the buttons of a `RetroDesktopDialog` or a `RetroDesktopBottomSheet` don't fit in one row (long labels on a phone, large text), they stand in one column at the trailing end, each as wide as the widest, the default one on top. Before, the ones that didn't fit wrapped onto a row below.
+
 ## 0.3.3
 
 - In Chisel, a focused radio's dotted rectangle stands round its label, a pixel clear of the words, as the PC drew it. The radio's sunken disc keeps its bevel and its dot. Platinum's focus ring is unchanged.

@@ -2468,7 +2468,7 @@ RetroDesktopColors _retroDesktopColorsFrom({
 /// or material_ui's: a `MaterialPageRoute` then changes as a [RetroDesktopPageRoute] does, in place and at once, where
 /// the platform's slid in from the side or zoomed (on a Mac, the Cupertino slide). The look's own pages and raised
 /// windows change this way already, and the Material theme the look builds carries it. On iOS the swipe back from
-/// the screen's edge still pops a page (ui_core's [DesignSwipeBackPageTransitionsBuilder] round the look's change):
+/// the screen's edge still pops a page (ui_core's [SwipeBackPageTransitionsBuilder] round the look's change):
 /// the page follows the finger while it swipes, and stands in place otherwise.
 ///
 /// ```dart
@@ -2482,7 +2482,7 @@ retroDesktopPageTransitions = {
   TargetPlatform.fuchsia: _RetroDesktopPageTransitions(
     RetroDesktopMotion.still,
   ),
-  TargetPlatform.iOS: DesignSwipeBackPageTransitionsBuilder(
+  TargetPlatform.iOS: SwipeBackPageTransitionsBuilder(
     _RetroDesktopPageTransitions(RetroDesktopMotion.still),
   ),
   TargetPlatform.linux: _RetroDesktopPageTransitions(RetroDesktopMotion.still),

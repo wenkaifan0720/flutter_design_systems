@@ -55,11 +55,11 @@ final Map<String, _Kind> _kinds = {
   "a menu bar's menu": (
     widget: RetroDesktopMenuBar(
       menus: [
-        DesignMenuEntry(
+        RawMenuEntry(
           label: 'File',
           children: [
             for (final label in _rows)
-              DesignMenuEntry(label: label, onPressed: () {}),
+              RawMenuEntry(label: label, onPressed: () {}),
           ],
         ),
       ],
@@ -73,7 +73,7 @@ final Map<String, _Kind> _kinds = {
       onPressed: () {},
       actions: [
         for (final label in _rows)
-          DesignSplitAction(label: label, onPressed: () {}),
+          RawSplitAction(label: label, onPressed: () {}),
       ],
     ),
     opener: find.byType(RetroDesktopTriangleMark),

@@ -73,16 +73,16 @@ export 'retro_desktop/raised_more.dart';
 
 // ui_core's values the new parts take, so a page needs only this import.
 export 'package:ui_core/ui_core.dart'
-    show DesignCalendarController, DesignCalendarMode, DesignDateRange;
-export 'package:ui_core/ui_core.dart' show DesignColorController;
+    show RawCalendarController, RawCalendarMode, RawDateRange;
+export 'package:ui_core/ui_core.dart' show RawColorController;
 export 'package:ui_core/ui_core.dart'
-    show DesignTableController, DesignTableColumn, DesignSortDirection;
+    show RawDataTableController, RawDataColumn, RawSortDirection;
 export 'package:ui_core/inventory.dart'
     show DesignInventory, DesignInventoryEntry, DesignInventoryRow;
-export 'package:ui_core/ui_core.dart' show DesignMenuEntry;
-export 'package:ui_core/ui_core.dart' show DesignRangeValues;
-export 'package:ui_core/ui_core.dart' show DesignSheetEdge;
-export 'package:ui_core/ui_core.dart' show DesignSplitAction;
-export 'package:ui_core/ui_core.dart' show DesignSwipeAction;
-export 'package:ui_core/ui_core.dart' show DesignToastHandle;
+export 'package:ui_core/ui_core.dart' show RawMenuEntry;
+export 'package:ui_core/ui_core.dart' show RawRangeValues;
+export 'package:ui_core/ui_core.dart' show RawSheetEdge;
+export 'package:ui_core/ui_core.dart' show RawSplitAction;
+export 'package:ui_core/ui_core.dart' show RawSwipeAction;
+export 'package:ui_core/ui_core.dart' show RawToastController;
 export 'package:ui_core/ui_core.dart' show DesignTreeController;

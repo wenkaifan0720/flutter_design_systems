@@ -129,10 +129,10 @@ Widget kitScreen({
 List<LocalizationsDelegate<dynamic>> kitHostWords = const [];
 
 /// The words the gallery's apps load: [words] (a page's own) first, then ui_core's in the app's language, one of 30
-/// ([DesignLocalizations.supportedLocales]), then the app's own ([kitHostWords]).
+/// ([RawWidgetsLocalizations.supportedLocales]), then the app's own ([kitHostWords]).
 List<LocalizationsDelegate<dynamic>> kitWords([
   List<LocalizationsDelegate<Object>>? words,
-]) => [...?words, DesignLocalizations.delegate, ...kitHostWords];
+]) => [...?words, RawWidgetsLocalizations.delegate, ...kitHostWords];
 
 /// A screen that is a whole application: [home] draws its own menu bar, so
 /// the gallery's sample bar of places stays out. [words] load the look's own
@@ -154,7 +154,7 @@ Widget kitAppScreen({
     debugShowCheckedModeBanner: false,
     title: 'Retro Desktop',
     localizationsDelegates: kitWords(words),
-    supportedLocales: DesignLocalizations.supportedLocales,
+    supportedLocales: RawWidgetsLocalizations.supportedLocales,
     builder: (context, child) => _kitDirected(
       RetroDesktopHost(
         light: kitTheme(Brightness.light),
@@ -279,7 +279,7 @@ Widget _kitApp({required Brightness brightness, required Widget home}) =>
           debugShowCheckedModeBanner: false,
           title: 'Retro Desktop',
           localizationsDelegates: kitWords(),
-          supportedLocales: DesignLocalizations.supportedLocales,
+          supportedLocales: RawWidgetsLocalizations.supportedLocales,
           builder: (context, child) => _kitDirected(
             RetroDesktopHost(
               light: kitTheme(Brightness.light),
@@ -371,7 +371,7 @@ Widget kitSpecimenStage({
       debugShowCheckedModeBanner: false,
       title: 'Retro Desktop',
       localizationsDelegates: kitWords(),
-      supportedLocales: DesignLocalizations.supportedLocales,
+      supportedLocales: RawWidgetsLocalizations.supportedLocales,
       builder: (context, home) => RetroDesktopHost(
         light: RetroDesktopThemeData.preset(style, Brightness.light),
         dark: RetroDesktopThemeData.preset(style, Brightness.dark),

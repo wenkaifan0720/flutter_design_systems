@@ -109,7 +109,7 @@ the platform's slide from the side or its zoom (on a Mac, the Cupertino slide), 
 your app's `ThemeData` the look's `retroDesktopPageTransitions`, one for every platform, as in the setup above, and it
 changes in place too. The map fits Flutter's `ThemeData` and material_ui's alike. On iOS a page still pops with the
 swipe from the screen's leading edge, which lives in Cupertino's slide: the map's iOS entry, and `RetroDesktopPageRoute`
-there, stand ui_core's `DesignSwipeBackPageTransitionsBuilder` round the look's change, so the page follows the finger
+there, stand ui_core's `SwipeBackPageTransitionsBuilder` round the look's change, so the page follows the finger
 while it swipes and stands in place otherwise. A map of your own keeps the swipe the same way, through ui_core's
 `designSwipeBack(map)`.
 
@@ -288,8 +288,8 @@ Use these controls for common desktop interactions.
 ### On ui_core
 
 The look draws; ui_core behaves. Under the pixels, ui_core gives the parts their keys, focus, screen-reader words and
-placement: the tooltip (`DesignTooltip`), the menus' rows and shortcut labels, the combobox's search, the number field
-(`DesignNumberField`), the rating (`DesignRating`), the tab bar (`DesignTabBar`), a chart's scale, the dialog and sheet
+placement: the tooltip (Flutter's `RawTooltip`), the menus' rows and shortcut labels, the combobox's search, the number field
+(`RawNumberField`), the rating (`RawRating`), the tab bar (`RawTabBar`), a chart's scale, the dialog and sheet
 routes, the side sheet and the page transitions. Retro keeps its own where the period did something ui_core doesn't:
 the menu bar across the top of every page, a chart that reads a whole column at once, and a lit menu row that only a
 moving pointer or the keys can light. Its motion stays the period's, at once, unless an app sets a time.
@@ -400,15 +400,15 @@ What keeps the look:
   the right. Digits keep their own left-to-right order inside right-to-left words. The example's settings have a
   reading direction switch.
 - **Words.** The words a part says by itself that every look shares (Cancel, Close, Back, Today, Next month,
-  Loading, Show password, Dismiss) come from ui_core's `DesignLocalizations`, under `MaterialLocalizations`' names.
-  To translate them, extend `DefaultDesignLocalizations`, override the words you translate, and add a delegate for
+  Loading, Show password, Dismiss) come from ui_core's `RawWidgetsLocalizations`, under `MaterialLocalizations`' names.
+  To translate them, extend `DefaultRawWidgetsLocalizations`, override the words you translate, and add a delegate for
   your subclass to `localizationsDelegates`; every ui_core look then speaks your language. The words only this look
   says (a pager's name, a time picker's wheels, a stepper's More and Less, a file drop's invitation) are
   `RetroDesktopLocalizations`. Its default language is English; a time picker's Hour, Minute and AM/PM are
-  `DesignLocalizations`', so they follow the app's language.
+  `RawWidgetsLocalizations`', so they follow the app's language.
 - **Dates and numbers.** Month and weekday names, dates, numbers and percentages use `intl` in the locale
   `RetroDesktopLocalizations.delegate` loads (add it for a locale other than US English; it takes every locale); the
-  calendar starts its week on the day `DesignLocalizations.firstDayOfWeek` names, and times are 12- or 24-hour as the
+  calendar starts its week on the day `RawWidgetsLocalizations.firstDayOfWeek` names, and times are 12- or 24-hour as the
   platform says.
 - **Scripts.** The look's faces (Jersey 15 for window titles and buttons, Atkinson Hyperlegible Next and Mono for the
   rest) cover the Latin alphabet. Other scripts (Arabic, Hebrew, Chinese, Japanese, Devanagari, Thai) are drawn in the

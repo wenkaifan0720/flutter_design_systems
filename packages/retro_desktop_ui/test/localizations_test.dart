@@ -30,19 +30,19 @@ class _Words extends RetroDesktopLocalizationsEn {
   String get copy => 'Look copy';
 }
 
-// The words every look shares are ui_core's: an app translates them by extending DefaultDesignLocalizations.
-class _Shared extends DefaultDesignLocalizations {
+// The words every look shares are ui_core's: an app translates them by extending DefaultRawWidgetsLocalizations.
+class _Shared extends DefaultRawWidgetsLocalizations {
   const _Shared();
   @override
   String get closeButtonLabel => 'Schließen';
 }
 
-class _SharedDelegate extends LocalizationsDelegate<DesignLocalizations> {
+class _SharedDelegate extends LocalizationsDelegate<RawWidgetsLocalizations> {
   const _SharedDelegate();
   @override
   bool isSupported(Locale locale) => true;
   @override
-  Future<DesignLocalizations> load(Locale locale) =>
+  Future<RawWidgetsLocalizations> load(Locale locale) =>
       SynchronousFuture(const _Shared());
   @override
   bool shouldReload(_SharedDelegate old) => false;
@@ -157,14 +157,14 @@ void main() {
         TargetPlatform.iOS,
       }),
       (tester) async {
-        late DesignLocalizations shared;
+        late RawWidgetsLocalizations shared;
         late BuildContext inside;
         await tester.pumpWidget(
           WidgetsApp(
             color: const Color(0xFF000000),
             locale: locale,
-            supportedLocales: DesignLocalizations.supportedLocales,
-            localizationsDelegates: const [DesignLocalizations.delegate],
+            supportedLocales: RawWidgetsLocalizations.supportedLocales,
+            localizationsDelegates: const [RawWidgetsLocalizations.delegate],
             builder: (context, _) => Directionality(
               textDirection: direction,
               child: Overlay(
@@ -174,7 +174,7 @@ void main() {
                       data: RetroDesktopThemeData.classic(),
                       child: Builder(
                         builder: (context) {
-                          shared = DesignLocalizations.of(context);
+                          shared = RawWidgetsLocalizations.of(context);
                           inside = context;
                           return SingleChildScrollView(
                             child: Column(
@@ -228,14 +228,14 @@ void main() {
         // The parts' own words are the app's language.
         expect(
           shared.closeButtonLabel,
-          DesignLocalizations.forLocale(locale).closeButtonLabel,
+          RawWidgetsLocalizations.forLocale(locale).closeButtonLabel,
         );
         expect(shared.closeButtonLabel, isNot('Close'));
       },
     );
   }
 
-  // A time picker's wheels are named in the app's language, by its DesignLocalizations, with no Retro Desktop words
+  // A time picker's wheels are named in the app's language, by its RawWidgetsLocalizations, with no Retro Desktop words
   // for it: they said "Hour", "Minute" and "AM or PM" in every language.
   for (final (locale, direction) in const [
     (Locale('ar'), TextDirection.rtl),
@@ -248,8 +248,8 @@ void main() {
         WidgetsApp(
           color: const Color(0xFF000000),
           locale: locale,
-          supportedLocales: DesignLocalizations.supportedLocales,
-          localizationsDelegates: const [DesignLocalizations.delegate],
+          supportedLocales: RawWidgetsLocalizations.supportedLocales,
+          localizationsDelegates: const [RawWidgetsLocalizations.delegate],
           builder: (context, _) => Directionality(
             textDirection: direction,
             child: RetroDesktopTheme(
@@ -287,7 +287,7 @@ void main() {
             .semanticsOwner!
             .rootSemanticsNode!,
       );
-      final words = DesignLocalizations.forLocale(locale);
+      final words = RawWidgetsLocalizations.forLocale(locale);
       for (final word in [
         words.timePickerHourLabel,
         words.timePickerMinuteLabel,

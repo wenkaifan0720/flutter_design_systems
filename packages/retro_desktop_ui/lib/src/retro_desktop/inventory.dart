@@ -53,29 +53,32 @@ const _bin = RetroDesktopNavItem(
 
 // The specimens' controllers: each specimen owns its own (_Own), made when it is first built and disposed with it, as
 // each scroll area keeps its own scroll controller (_OwnScroll).
-DesignCalendarController _day(BuildContext context) => DesignCalendarController(
+RawCalendarController _day(BuildContext context) => RawCalendarController(
   firstDate: DateTime(2026, 6),
   lastDate: DateTime(2026, 9, 30),
   selectedDate: DateTime(2026, 6, 14),
   currentDate: DateTime(2026, 6, 10),
 );
 // The colour picker's starts on the theme's highlight.
-DesignColorController _colour(BuildContext context) =>
-    DesignColorController(RetroDesktopTheme.of(context).colors.highlight);
-DesignTableController<_File> _files(
-  BuildContext context,
-) => DesignTableController<_File>(
-  rows: const [_File('Budget', 12), _File('Letters', 48), _File('Notes', 3)],
-  columns: [
-    DesignTableColumn<_File>(id: 'name', label: 'Name', sortKey: (f) => f.name),
-    DesignTableColumn<_File>(
-      id: 'size',
-      label: 'Size',
-      numeric: true,
-      sortKey: (f) => f.size,
-    ),
-  ],
-);
+RawColorController _colour(BuildContext context) =>
+    RawColorController(RetroDesktopTheme.of(context).colors.highlight);
+RawDataTableController<_File> _files(BuildContext context) =>
+    RawDataTableController<_File>(
+      rows: const [
+        _File('Budget', 12),
+        _File('Letters', 48),
+        _File('Notes', 3),
+      ],
+      columns: [
+        RawDataColumn<_File>(id: 'name', label: 'Name', sortKey: (f) => f.name),
+        RawDataColumn<_File>(
+          id: 'size',
+          label: 'Size',
+          numeric: true,
+          sortKey: (f) => f.size,
+        ),
+      ],
+    );
 DesignTreeController<String> _folders(BuildContext context) =>
     DesignTreeController<String>(
       roots: const ['System'],
@@ -194,8 +197,8 @@ final DesignInventory retroDesktopInventory = DesignInventory(
         label: 'Save',
         onPressed: _none,
         actions: [
-          DesignSplitAction(label: 'Save as', onPressed: _none),
-          DesignSplitAction(label: 'Save a copy', onPressed: _none),
+          RawSplitAction(label: 'Save as', onPressed: _none),
+          RawSplitAction(label: 'Save a copy', onPressed: _none),
         ],
       ),
     ),
@@ -310,7 +313,7 @@ final DesignInventory retroDesktopInventory = DesignInventory(
       'RangeSlider',
       (_) => const RetroDesktopRangeSlider(
         label: 'Price',
-        values: DesignRangeValues(20, 80),
+        values: RawRangeValues(20, 80),
         max: 100,
         onChanged: _drop,
       ),
@@ -364,7 +367,7 @@ final DesignInventory retroDesktopInventory = DesignInventory(
         firstDate: DateTime(2026, 6),
         lastDate: DateTime(2026, 9, 30),
         initialMonth: DateTime(2026, 6),
-        value: DesignDateRange(DateTime(2026, 6, 14), DateTime(2026, 6, 18)),
+        value: RawDateRange(DateTime(2026, 6, 14), DateTime(2026, 6, 18)),
         onChanged: _drop,
       ),
     ),
@@ -467,16 +470,16 @@ final DesignInventory retroDesktopInventory = DesignInventory(
       'MenuBar',
       (_) => const RetroDesktopMenuBar(
         menus: [
-          DesignMenuEntry(
+          RawMenuEntry(
             label: 'File',
             children: [
-              DesignMenuEntry(label: 'New', onPressed: _none),
-              DesignMenuEntry(label: 'Open', onPressed: _none),
+              RawMenuEntry(label: 'New', onPressed: _none),
+              RawMenuEntry(label: 'Open', onPressed: _none),
             ],
           ),
-          DesignMenuEntry(
+          RawMenuEntry(
             label: 'Edit',
-            children: [DesignMenuEntry(label: 'Undo', onPressed: _none)],
+            children: [RawMenuEntry(label: 'Undo', onPressed: _none)],
           ),
         ],
       ),

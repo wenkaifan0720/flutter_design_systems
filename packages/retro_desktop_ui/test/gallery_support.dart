@@ -223,8 +223,8 @@ String slug(String label) => label
     .replaceAll(RegExp(r'^_|_$'), '');
 
 /// Flutter's Android 48 px tap-target guideline, with one exemption keyed to a type: a calendar's day, at least 44 wide
-/// and 48 tall. A day is a press in a week's row of seven Expanded cells, in ui_core's [DesignCalendar] (a
-/// [DesignPressable]) or in [RetroDesktopDatePicker] (a [RetroDesktopPressable]). On a phone a week of 48 px days is
+/// and 48 tall. A day is a press in a week's row of seven Expanded cells, in ui_core's [RawCalendarDatePicker] (a
+/// [RawButton]) or in [RetroDesktopDatePicker] (a [RetroDesktopPressable]). On a phone a week of 48 px days is
 /// wider than a window's column, so a day takes its seventh of the row and at least the touch floor of 44 (iOS's, which
 /// it meets), as Material's own phone date picker's days are narrower than 48 too. Every other node keeps Flutter's 48.
 ///
@@ -233,7 +233,7 @@ String slug(String label) => label
 AccessibilityGuideline androidTargetsBesideCalendarDays(WidgetTester tester) {
   final days = [
     for (final (calendar, press) in const [
-      (DesignCalendar, DesignPressable),
+      (RawCalendarDatePicker, RawButton),
       (RetroDesktopDatePicker, RetroDesktopPressable),
     ])
       ...find
@@ -254,7 +254,7 @@ AccessibilityGuideline androidTargetsBesideCalendarDays(WidgetTester tester) {
       continue;
     }
     final widget = element.widget;
-    final name = widget is DesignPressable
+    final name = widget is RawButton
         ? widget.semanticLabel
         : (widget as RetroDesktopPressable).label;
     if (name != null) names.add(name);

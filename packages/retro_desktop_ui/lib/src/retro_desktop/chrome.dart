@@ -1034,8 +1034,8 @@ class RetroDesktopBackButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = RetroDesktopTheme.of(context);
     final label = close
-        ? DesignLocalizations.of(context).closeButtonLabel
-        : DesignLocalizations.of(context).backButtonTooltip;
+        ? RawWidgetsLocalizations.of(context).closeButtonLabel
+        : RawWidgetsLocalizations.of(context).backButtonTooltip;
     final rtl = Directionality.of(context) == TextDirection.rtl;
     final inBar = context.getInheritedWidgetOfExactType<_InBar>() != null;
     final button = close
@@ -1644,7 +1644,7 @@ class RetroDesktopLoadingState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = RetroDesktopTheme.of(context);
-    final name = title ?? DesignLocalizations.of(context).loadingLabel;
+    final name = title ?? RawWidgetsLocalizations.of(context).loadingLabel;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(RetroDesktopSpacing.s24),

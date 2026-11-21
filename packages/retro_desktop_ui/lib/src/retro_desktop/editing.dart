@@ -264,7 +264,7 @@ class RetroDesktopTextContextMenu extends StatelessWidget {
       ContextMenuButtonType.copy => w.copy,
       ContextMenuButtonType.paste => w.paste,
       ContextMenuButtonType.selectAll => w.selectAll,
-      ContextMenuButtonType.delete => DesignLocalizations.of(
+      ContextMenuButtonType.delete => RawWidgetsLocalizations.of(
         context,
       ).deleteButtonTooltip,
       ContextMenuButtonType.lookUp => w.lookUp,

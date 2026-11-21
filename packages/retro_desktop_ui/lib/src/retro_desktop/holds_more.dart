@@ -53,10 +53,10 @@ class RetroDesktopDataTable<R> extends StatelessWidget {
   });
 
   /// The rows, columns, sort, page and selection; the caller disposes it.
-  final DesignTableController<R> controller;
+  final RawDataTableController<R> controller;
 
   /// A cell's words.
-  final String Function(R row, DesignTableColumn<R> column) cellText;
+  final String Function(R row, RawDataColumn<R> column) cellText;
 
   /// Whether rows can be chosen with boxes.
   final bool selectable;
@@ -75,7 +75,7 @@ class RetroDesktopDataTable<R> extends StatelessWidget {
       width: math.max(40, RetroDesktopReach.least(context)),
       child: Center(child: child),
     );
-    final table = DesignDataTable<R>(
+    final table = RawDataTable<R>(
       controller: controller,
       selectable: selectable,
       onActivate: onActivate,
@@ -103,9 +103,9 @@ class RetroDesktopDataTable<R> extends StatelessWidget {
                               selectAllLabel ??
                               RetroDesktopLocalizations.of(context)
                                   .selectAllRows,
-                          value: all == DesignSelection.all
+                          value: all == RawDataTableSelection.all
                               ? true
-                              : all == DesignSelection.none
+                              : all == RawDataTableSelection.none
                               ? false
                               : null,
                           onChanged: (_) => controller.togglePage(),
@@ -153,7 +153,7 @@ class RetroDesktopDataTable<R> extends StatelessWidget {
                   if (sort != null) ...[
                     const SizedBox(width: RetroDesktopSpacing.s6),
                     RetroDesktopTriangleMark(
-                      sort == DesignSortDirection.ascending
+                      sort == RawSortDirection.ascending
                           ? AxisDirection.up
                           : AxisDirection.down,
                       size: 8,
@@ -258,12 +258,16 @@ class RetroDesktopDataTable<R> extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(
-        DiagnosticsProperty<DesignTableController<R>>('controller', controller),
+        DiagnosticsProperty<RawDataTableController<R>>(
+          'controller',
+          controller,
+        ),
       )
       ..add(
-        ObjectFlagProperty<
-          String Function(R row, DesignTableColumn<R> column)
-        >.has('cellText', cellText),
+        ObjectFlagProperty<String Function(R row, RawDataColumn<R> column)>.has(
+          'cellText',
+          cellText,
+        ),
       )
       ..add(
         FlagProperty(
@@ -322,7 +326,7 @@ class RetroDesktopScrollArea extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = RetroDesktopTheme.of(context);
     final c = t.colors;
-    return DesignScrollArea(
+    return RawScrollArea(
       controller: controller,
       axis: axis,
       thickness: 16,
@@ -465,7 +469,7 @@ class RetroDesktopResizable extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = RetroDesktopTheme.of(context);
     final c = t.colors;
-    return DesignSplitView(
+    return RawSplitView(
       first: first,
       second: second,
       axis: axis,
@@ -476,7 +480,7 @@ class RetroDesktopResizable extends StatelessWidget {
       dividerThickness: 6,
       hitExtent: math.max(12, RetroDesktopReach.least(context)),
       semanticLabel:
-          label ?? DesignLocalizations.of(context).splitViewHandleLabel,
+          label ?? RawWidgetsLocalizations.of(context).splitViewHandleLabel,
       focusNode: focusNode,
       autofocus: autofocus,
       dividerBuilder: (context, states, axis) => RetroDesktopHighlight(
@@ -693,7 +697,7 @@ class _ReorderableListState<T extends Object>
       unawaited(
         SemanticsService.sendAnnouncement(
           View.of(context),
-          DesignLocalizations.of(context)
+          RawWidgetsLocalizations.of(context)
               .reorderableListMovedMessage(label, to + 1, items.length),
           Directionality.of(context),
         ),
@@ -716,7 +720,7 @@ class _ReorderableListState<T extends Object>
         key: _list,
         fit: StackFit.passthrough,
         children: [
-          DesignReorderableList<T>(
+          RawReorderableList<T>(
             items: widget.items,
             onReorder: widget.onReorder,
             labelOf: widget.labelOf,

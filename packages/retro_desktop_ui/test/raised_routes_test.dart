@@ -1,6 +1,6 @@
 // The look's raised windows on ui_core 0.3.0's routes: a dialog (DesignDialogRoute) is a screen reader's dialog, keeps
 // Tab inside, gives the focus back to the button that opened it, and Escape closes it only when escapeDismissible
-// says so; a sheet page on a phone (DesignBottomSheetRoute) follows a finger that drags it closed; each stands at once
+// says so; a sheet page on a phone (RawBottomSheetRoute) follows a finger that drags it closed; each stands at once
 // under the look's default motion.
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/semantics.dart';

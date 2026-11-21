@@ -515,7 +515,7 @@ void main() {
             ? 48.0
             : 44.0;
         // On a touch screen the reach pads across as well as down; on a desk
-        // down and to the pointer floor across, 24 (ui_core's DesignTapTarget).
+        // down and to the pointer floor across, 24 (ui_core's TapTargetPadding).
         expect(
           tester.getSize(find.byType(RetroDesktopPressable)),
           target == 48 ? Size.square(target) : Size(24, target),

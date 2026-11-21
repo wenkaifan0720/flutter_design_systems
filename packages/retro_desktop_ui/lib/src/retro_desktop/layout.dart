@@ -15,7 +15,7 @@ import 'chrome_metrics.dart';
 /// The least a control reaches to a finger on a phone, each way.
 const retroDesktopReach = RetroDesktopChromeMetrics.touchTarget;
 
-/// A control's reach, ui_core's `DesignTapTarget` at the look's floors: the area a press reaches, the box a screen reader
+/// A control's reach, ui_core's `TapTargetPadding` at the look's floors: the area a press reaches, the box a screen reader
 /// outlines and the layout are one. On a phone at least [retroDesktopReach] by [retroDesktopReach] to a finger, its drawing
 /// unchanged at [alignment] in it (the middle, unless the drawing must keep an edge where it was); on a desk at least 44
 /// logical pixels high and at least the pointer's floor wide (`DesignTapTargets`, 24), so a face starts where its column
@@ -80,7 +80,7 @@ class RetroDesktopReach extends StatelessWidget {
         child: child,
       );
     }
-    return DesignTapTarget(
+    return TapTargetPadding(
       minSize: reach,
       alignment: alignment,
       child: _OwnHeight(alignment: alignment, child: child),

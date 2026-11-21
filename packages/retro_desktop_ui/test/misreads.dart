@@ -93,7 +93,7 @@ final _tabs = Misread(
       r'"(General|Sharing)"|'
       // The label check: the chosen tab's words stay on the row of tabs' line,
       // not on the middle of its taller face. Since 0.3.0 a tab is ui_core's
-      // DesignTab, named "Today 3, Tab 1 of 3" with no button role: the same
+      // RawTab, named "Today 3, Tab 1 of 3" with no button role: the same
       // pixels as 0.2.1's, read under the new name.
       r'(controls|everyday|tabs): a (button "(Today|Recent)"|control '
       r'"(Today|Recent)( \d+)?\nTab \d+ of \d+"): the capitals of '
@@ -102,13 +102,14 @@ final _tabs = Misread(
 
 // A held toggle sinks its words a pixel down and right inside its turned-in bevel, as the period's pressed toggles did
 // (the segment keeps its size); the check reads them a pixel under the row's line. Both appearances sink them;
-// a held segment that only darkened would read as unpressed.
+// a held segment that only darkened would read as unpressed. A held toggle reads as a selected button (ui_core 0.4.0's
+// semanticSelected), a switch before.
 final _heldSinks = Misread(
   'held toggle',
   'a held toggle sinks its words a pixel down and right, as the period\'s '
       'pressed toggles did',
-  r'a switch "Bold"( beside a switch "(Italic|Underline)")?: the capitals of '
-      r'"Bold" are',
+  r'a (switch|button) "Bold"( beside a (switch|button) "(Italic|Underline)")?: '
+      r'the capitals of "Bold" are',
 );
 
 // A row that spans its container and presses as a whole (a table's column head, a sheet's or a palette's row, a

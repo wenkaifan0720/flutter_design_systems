@@ -76,7 +76,8 @@ Future<GlobalKey> _host(
   return key;
 }
 
-/// The pixels of [child] idle, and while the pointer holds its first press.
+/// The pixels of [child] idle, and while the pointer holds its first press
+/// (a pressable, or a radio).
 Future<(Uint8List, Uint8List, Size, Size)> _idleAndHeld(
   WidgetTester tester,
   RetroDesktopAppearance appearance,
@@ -87,7 +88,11 @@ Future<(Uint8List, Uint8List, Size, Size)> _idleAndHeld(
   final idle = await _pixels(tester, key);
   final idleSize = tester.getSize(find.byKey(key));
   final down = await tester.startGesture(
-    tester.getCenter(find.byType(RetroDesktopPressable).first),
+    tester.getCenter(
+      find
+          .byWidgetPredicate((w) => w is RetroDesktopPressable || w is RawRadio)
+          .first,
+    ),
   );
   await tester.pump(kPressTimeout);
   await tester.pump(const Duration(milliseconds: 100));
@@ -236,7 +241,7 @@ void main() {
         );
         expect(offSize, onSize);
         expect(listEquals(on, off), isFalse, reason: 'disabled not dimmed');
-        // A press on a disabled star (ui_core's DesignRating draws no pressables) does nothing, and throws nothing.
+        // A press on a disabled star (ui_core's RawRating draws no pressables) does nothing, and throws nothing.
         await tester.tap(
           find
               .descendant(

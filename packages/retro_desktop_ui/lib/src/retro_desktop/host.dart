@@ -310,7 +310,7 @@ class RetroDesktopSheetPage<T> extends Page<T> {
     if (t.desk) {
       return _SheetWindowRoute<T>(
         settings: this,
-        barrierLabel: DesignLocalizations.of(context).closeButtonLabel,
+        barrierLabel: RawWidgetsLocalizations.of(context).closeButtonLabel,
         time: motion.raise,
         builder: (sheetContext, _) => Center(
           child: SizedBox(
@@ -327,7 +327,7 @@ class RetroDesktopSheetPage<T> extends Page<T> {
     // ui_core's sheet keeps the panel above the on-screen keyboard and follows a finger that drags it closed.
     return _SheetFootRoute<T>(
       settings: this,
-      barrierLabel: DesignLocalizations.of(context).closeButtonLabel,
+      barrierLabel: RawWidgetsLocalizations.of(context).closeButtonLabel,
       time: motion.travel,
       builder: (sheetContext, _) => ConstrainedBox(
         constraints: BoxConstraints(maxHeight: most(sheetContext)),
@@ -362,7 +362,7 @@ class _SheetWindowRoute<T> extends DesignDialogRoute<T>
   final Duration retroDesktopTime;
 }
 
-class _SheetFootRoute<T> extends DesignBottomSheetRoute<T>
+class _SheetFootRoute<T> extends RawBottomSheetRoute<T>
     with RetroDesktopModalRoute<T>, RetroDesktopRouteStill<T> {
   _SheetFootRoute({
     required super.builder,

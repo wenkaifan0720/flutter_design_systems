@@ -723,7 +723,7 @@ class _GalleryAppState extends State<GalleryApp> {
       ),
       // ui_core's words in the app's language, one of 30.
       localizationsDelegates: kitWords(),
-      supportedLocales: DesignLocalizations.supportedLocales,
+      supportedLocales: RawWidgetsLocalizations.supportedLocales,
       builder: (context, child) => MediaQuery(
         data: _textScale == null
             ? MediaQuery.of(context)

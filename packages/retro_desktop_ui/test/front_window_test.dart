@@ -225,9 +225,9 @@ void main() {
             alignment: Alignment.topCenter,
             child: RetroDesktopMenuBar(
               menus: [
-                DesignMenuEntry(
+                RawMenuEntry(
                   label: 'File',
-                  children: [DesignMenuEntry(label: 'New', onPressed: () {})],
+                  children: [RawMenuEntry(label: 'New', onPressed: () {})],
                 ),
               ],
             ),

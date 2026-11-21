@@ -167,12 +167,12 @@ const Map<String, String> _hebrew = {
 
 /// The words Retro Desktop says by itself (Cancel, Close, Clear, Search...),
 /// in Hebrew: what Papers reads under them when it reads right to left.
-class KitPapersHebrewDesignWords extends DefaultDesignLocalizations {
+class KitPapersHebrewDesignWords extends DefaultRawWidgetsLocalizations {
   /// The Hebrew words.
   const KitPapersHebrewDesignWords();
 
   /// A delegate that loads them, for [Localizations.override].
-  static const LocalizationsDelegate<DesignLocalizations> delegate =
+  static const LocalizationsDelegate<RawWidgetsLocalizations> delegate =
       _HebrewDelegate();
 
   @override
@@ -223,15 +223,15 @@ class KitPapersHebrewDesignWords extends DefaultDesignLocalizations {
   String get menuBarLabel => 'שורת התפריטים';
 }
 
-class _HebrewDelegate extends LocalizationsDelegate<DesignLocalizations> {
+class _HebrewDelegate extends LocalizationsDelegate<RawWidgetsLocalizations> {
   const _HebrewDelegate();
 
   @override
   bool isSupported(Locale locale) => true;
 
   @override
-  Future<DesignLocalizations> load(Locale locale) =>
-      SynchronousFuture<DesignLocalizations>(
+  Future<RawWidgetsLocalizations> load(Locale locale) =>
+      SynchronousFuture<RawWidgetsLocalizations>(
         const KitPapersHebrewDesignWords(),
       );
 

@@ -31,16 +31,12 @@ class _Doc {
   final int size;
 }
 
-DesignTableController<_Doc> _table(bool selected) {
-  final controller = DesignTableController<_Doc>(
+RawDataTableController<_Doc> _table(bool selected) {
+  final controller = RawDataTableController<_Doc>(
     rows: const [_Doc('Budget', 12), _Doc('Letters', 48)],
     columns: [
-      DesignTableColumn<_Doc>(
-        id: 'name',
-        label: 'Name',
-        sortKey: (d) => d.name,
-      ),
-      DesignTableColumn<_Doc>(
+      RawDataColumn<_Doc>(id: 'name', label: 'Name', sortKey: (d) => d.name),
+      RawDataColumn<_Doc>(
         id: 'size',
         label: 'Size',
         numeric: true,
@@ -279,9 +275,7 @@ final Map<String, Widget? Function(String)> stateParts = {
       : RetroDesktopSplitButton(
           label: 'Save',
           onPressed: s == 'disabled' ? null : _noop,
-          actions: [
-            const DesignSplitAction(label: 'Save as', onPressed: _noop),
-          ],
+          actions: [const RawSplitAction(label: 'Save as', onPressed: _noop)],
         ),
   'Text area': (s) => s == 'selected' || s == 'pressed'
       ? null
@@ -352,7 +346,7 @@ final Map<String, Widget? Function(String)> stateParts = {
           width: 280,
           child: RetroDesktopRangeSlider(
             label: 'Price',
-            values: const DesignRangeValues(20, 80),
+            values: const RawRangeValues(20, 80),
             max: 100,
             onChanged: s == 'disabled' ? null : _take,
           ),
@@ -363,7 +357,7 @@ final Map<String, Widget? Function(String)> stateParts = {
           width: 320,
           child: RetroDesktopCalendar(
             controller: _owned(
-              DesignCalendarController(
+              RawCalendarController(
                 firstDate: _june,
                 lastDate: _september,
                 selectedDate: s == 'selected' ? DateTime(2026, 6, 14) : null,
@@ -382,7 +376,7 @@ final Map<String, Widget? Function(String)> stateParts = {
             lastDate: _september,
             initialMonth: _june,
             value: s == 'selected'
-                ? DesignDateRange(DateTime(2026, 6, 14), DateTime(2026, 6, 18))
+                ? RawDateRange(DateTime(2026, 6, 14), DateTime(2026, 6, 18))
                 : null,
             onChanged: _take,
           ),
@@ -391,7 +385,7 @@ final Map<String, Widget? Function(String)> stateParts = {
       ? SizedBox(
           width: 280,
           child: RetroDesktopColorPicker(
-            controller: _owned(DesignColorController(const Color(0xff3366cc))),
+            controller: _owned(RawColorController(const Color(0xff3366cc))),
           ),
         )
       : null,
@@ -400,12 +394,12 @@ final Map<String, Widget? Function(String)> stateParts = {
       : RetroDesktopMenuBar(
           menus: [
             for (final word in const ['File', 'Edit'])
-              DesignMenuEntry(
+              RawMenuEntry(
                 label: word,
                 // A menu with nothing in it is unavailable.
                 children: s == 'disabled'
                     ? const []
-                    : [const DesignMenuEntry(label: 'New', onPressed: _noop)],
+                    : [const RawMenuEntry(label: 'New', onPressed: _noop)],
               ),
           ],
         ),
@@ -594,7 +588,7 @@ Future<GlobalKey> pumpStateHost(
 
 /// Where the pointer goes on a part whose first control is not where a press
 /// shows: the stepper's field takes no press look (its step buttons do), and
-/// the rating's stars are ui_core's DesignRating, not pressables (a held star
+/// the rating's stars are ui_core's RawRating, not pressables (a held star
 /// darkens).
 final Map<String, Finder Function()> statePressTargets = {
   'Stepper': () => find.byIcon(RetroDesktopGlyphs.plus),
@@ -604,6 +598,9 @@ final Map<String, Finder Function()> statePressTargets = {
         matching: find.byType(RetroDesktopPixelPaint),
       )
       .at(1),
+  // A radio group's options are Flutter's RawRadio, not pressables (its
+  // disabled cell has one too, unpressed).
+  'Radio group': () => find.byWidgetPredicate((w) => w is RawRadio).first,
 };
 
 /// Puts what is on screen into [state]: the pointer over or down on the part's
@@ -623,7 +620,7 @@ Future<TestGesture?> enterState(
   );
   final raw = find.byWidgetPredicate(
     (w) =>
-        w is DesignPressable &&
+        w is RawButton &&
         (w.enabled ?? (w.onPressed != null || w.onLongPress != null)),
   );
   final target =

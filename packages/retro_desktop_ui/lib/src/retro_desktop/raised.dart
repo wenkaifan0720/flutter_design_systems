@@ -26,6 +26,7 @@ import 'tokens.dart';
 import 'internal/parts.dart' show RetroDesktopLastInput, retroDesktopHeldGround;
 import 'glyphs.dart' show RetroDesktopGlyphs;
 import 'internal/modal.dart';
+import 'internal/actions.dart';
 import 'frames.dart' show retroDesktopTitleBar, retroDesktopWindowFrame;
 
 class _WordsDelegate extends LocalizationsDelegate<RetroDesktopLocalizations> {
@@ -40,13 +41,15 @@ class _WordsDelegate extends LocalizationsDelegate<RetroDesktopLocalizations> {
   bool shouldReload(_WordsDelegate old) => words != old.words;
 }
 
-class _SharedWordsDelegate extends LocalizationsDelegate<DesignLocalizations> {
+class _SharedWordsDelegate
+    extends LocalizationsDelegate<RawWidgetsLocalizations> {
   const _SharedWordsDelegate(this.words);
-  final DesignLocalizations words;
+  final RawWidgetsLocalizations words;
   @override
   bool isSupported(Locale locale) => true;
   @override
-  Future<DesignLocalizations> load(Locale locale) => SynchronousFuture(words);
+  Future<RawWidgetsLocalizations> load(Locale locale) =>
+      SynchronousFuture(words);
   @override
   bool shouldReload(_SharedWordsDelegate old) => words != old.words;
 }
@@ -58,7 +61,7 @@ class _Carried {
       motion = RetroDesktopMotion.of(context),
       direction = Directionality.of(context),
       words = RetroDesktopLocalizations.of(context),
-      shared = DesignLocalizations.of(context),
+      shared = RawWidgetsLocalizations.of(context),
       locale = Localizations.maybeLocaleOf(context) ?? const Locale('en'),
       media = MediaQuery.of(context),
       scroll = ScrollConfiguration.of(context),
@@ -67,7 +70,7 @@ class _Carried {
   final RetroDesktopMotion motion;
   final TextDirection direction;
   final RetroDesktopLocalizations words;
-  final DesignLocalizations shared;
+  final RawWidgetsLocalizations shared;
   final Locale locale;
   final MediaQueryData media;
   final ScrollBehavior scroll;
@@ -449,7 +452,9 @@ class RetroDesktopDialog extends StatelessWidget {
   /// The content displayed inside the raised surface.
   final List<Widget> content;
 
-  /// The actions displayed after the content.
+  /// The actions displayed after the content, in reading order, the default one last. They stand in one row at the
+  /// trailing end; when they don't fit (long words on a phone, large text), in one column at the trailing end, each as
+  /// wide as the widest, the default one on top.
   final List<Widget> actions;
 
   /// {@macro retro_desktop.style}
@@ -572,10 +577,8 @@ class RetroDesktopDialog extends StatelessWidget {
                           padding: const EdgeInsets.only(
                             top: RetroDesktopSpacing.s16,
                           ),
-                          child: Wrap(
-                            alignment: WrapAlignment.end,
+                          child: RetroDesktopActionBar(
                             spacing: RetroDesktopSpacing.s8,
-                            runSpacing: RetroDesktopSpacing.s8,
                             children: actions,
                           ),
                         ),
@@ -697,13 +700,11 @@ class RetroDesktopBottomSheet extends StatelessWidget {
     final framed = title != null || close != null;
 
     // A sheet's actions stand as a dialog's do: at the trailing end, in
-    // reading order, the confirming one last.
+    // reading order, the confirming one last; stacked when they don't fit.
     final footer = Padding(
       padding: const EdgeInsets.only(top: RetroDesktopSpacing.s16),
-      child: Wrap(
-        alignment: WrapAlignment.end,
+      child: RetroDesktopActionBar(
         spacing: RetroDesktopSpacing.s8,
-        runSpacing: RetroDesktopSpacing.s8,
         children: actions,
       ),
     );
@@ -1839,10 +1840,10 @@ RetroDesktopRaised showRetroDesktopTooltip(
   return handle;
 }
 
-/// Pointer hover, keyboard focus and long press reveal the same tooltip: ui_core's [DesignTooltip] (the pointer may
-/// rest on the tip, Escape hides it, one shows at a time and the next at once), drawn as the look's paper label. It
-/// stands at once and goes at once, as the look's windows do; with a raise or a leave set in the theme's motion it
-/// fades on ui_core's spring.
+/// Pointer hover, keyboard focus and long press reveal the same tooltip: Flutter's [RawTooltip] (the pointer may rest
+/// on the tip, Escape hides it, and a screen reader hears the message as the control's tooltip), drawn as the look's
+/// paper label. It stands at once and goes at once, as the look's windows do; with a raise or a leave set in the
+/// theme's motion it fades on ui_core's spring.
 ///
 /// ```dart
 /// RetroDesktopTooltip(message: 'Save this document', child: RetroDesktopButton('Save', isDefaultAction: true, onPressed: () {}))
@@ -1870,14 +1871,27 @@ class RetroDesktopTooltip extends StatelessWidget {
   final RetroDesktopStyle? style;
 
   @override
-  Widget build(BuildContext context) => DesignTooltip(
-    message: message,
-    hoverDelay: wait,
-    tooltipBuilder: (context, tip) => _RaisedPresence(
-      presence: tip.animation,
-      child: RetroDesktopTooltipFace(message: message, style: style),
+  Widget build(BuildContext context) => MergeSemantics(
+    // ui_core's placement: above the control, centred on it, below where there is no room.
+    child: RawTooltipPlacement(
+      builder: (context, positionDelegate) => RawTooltip(
+        semanticsTooltip: message,
+        hoverDelay: wait,
+        positionDelegate: positionDelegate,
+        animationStyle: _TipSpring.life,
+        tooltipBuilder: (context, animation) => ExcludeSemantics(
+          child: _TipSpring(
+            showing: animation,
+            builder: (context, presence) => _RaisedPresence(
+              presence: presence,
+              child: RetroDesktopTooltipFace(message: message, style: style),
+            ),
+          ),
+        ),
+        // Shows the tip while the control has the keys' focus, as a hover does.
+        child: RawTooltipFocusFix(child: child),
+      ),
     ),
-    child: child,
   );
 
   @override
@@ -1900,6 +1914,74 @@ class RetroDesktopTooltip extends StatelessWidget {
         ),
       );
   }
+}
+
+// A tooltip's presence on ui_core's effects spring (critically damped, k 1600; under Reduce Motion a short fade),
+// following the way [showing], the RawTooltip's animation, runs: forward springs it to 1, reverse to 0.
+class _TipSpring extends StatefulWidget {
+  const _TipSpring({required this.showing, required this.builder});
+
+  // How long the RawTooltip keeps a hidden tip in the overlay: longer than the spring takes to fade it out (about
+  // 230 ms).
+  static const AnimationStyle life = AnimationStyle(
+    duration: Duration(milliseconds: 150),
+    reverseDuration: Duration(milliseconds: 300),
+  );
+
+  final Animation<double> showing;
+  final Widget Function(BuildContext context, Animation<double> presence)
+  builder;
+
+  @override
+  State<_TipSpring> createState() => _TipSpringState();
+}
+
+class _TipSpringState extends State<_TipSpring>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _presence = AnimationController(vsync: this);
+  bool? _shown;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.showing.addStatusListener(_follow);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _follow(widget.showing.status);
+  }
+
+  @override
+  void didUpdateWidget(_TipSpring old) {
+    super.didUpdateWidget(old);
+    if (old.showing != widget.showing) {
+      old.showing.removeStatusListener(_follow);
+      widget.showing.addStatusListener(_follow);
+      _follow(widget.showing.status);
+    }
+  }
+
+  @override
+  void dispose() {
+    widget.showing.removeStatusListener(_follow);
+    _presence.dispose();
+    super.dispose();
+  }
+
+  void _follow(AnimationStatus status) {
+    final shown = status.isForwardOrCompleted;
+    if (shown == _shown) return;
+    _shown = shown;
+    _presence.springTo(
+      shown ? 1 : 0,
+      DesignMotionPolicy.of(context).effects(dampingRatio: 1, stiffness: 1600),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.builder(context, _presence);
 }
 
 // A surface ui_core shows and hides on its own spring ([presence]), as the look raises it: whole from the moment it
@@ -2020,7 +2102,7 @@ class RetroDesktopSnackBar extends StatelessWidget {
                     if (onDismissed != null)
                       RetroDesktopButton(
                         dismissLabel ??
-                            DesignLocalizations.of(context)
+                            RawWidgetsLocalizations.of(context)
                                 .modalBarrierDismissLabel,
                         onPressed: onDismissed,
                       ),

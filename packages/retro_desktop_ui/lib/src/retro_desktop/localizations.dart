@@ -1,6 +1,6 @@
 // The words only Retro Desktop's parts say, and its date and number formats. The words every look says (Cancel, Close,
-// Today, Next month, Loading) are ui_core's DesignLocalizations, under MaterialLocalizations' names: the parts read them
-// there, so an app translates them once for every look by extending DefaultDesignLocalizations.
+// Today, Next month, Loading) are ui_core's RawWidgetsLocalizations, under MaterialLocalizations' names: the parts read them
+// there, so an app translates them once for every look by extending DefaultRawWidgetsLocalizations.
 import 'package:material_ui/material_ui.dart' show MaterialLocalizations;
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
@@ -14,8 +14,8 @@ import 'format.dart';
 /// ([RetroDesktopLocalizationsEn]); another language is a subclass and a delegate that loads it. [delegate] takes every
 /// locale: in another language than English it loads the English words with the app's locale's dates and numbers, and
 /// with no delegate installed the parts speak English. Either way, a text menu says the app's own editing words, and a
-/// time picker's words ([hour], [minute], [period], [am], [pm]) are the app's `DesignLocalizations`' (ui_core's in the
-/// app's language, where it installs none). The words every look shares come from `DesignLocalizations` instead.
+/// time picker's words ([hour], [minute], [period], [am], [pm]) are the app's `RawWidgetsLocalizations`' (ui_core's in the
+/// app's language, where it installs none). The words every look shares come from `RawWidgetsLocalizations` instead.
 ///
 /// ```dart
 /// MaterialApp(localizationsDelegates: const [RetroDesktopLocalizations.delegate], home: home)
@@ -34,10 +34,15 @@ abstract class RetroDesktopLocalizations {
     return _WidgetWords(
       Localizations.of<WidgetsLocalizations>(context, WidgetsLocalizations),
       Localizations.of<MaterialLocalizations>(context, MaterialLocalizations),
-      Localizations.of<DesignLocalizations>(context, DesignLocalizations) ??
+      Localizations.of<RawWidgetsLocalizations>(
+            context,
+            RawWidgetsLocalizations,
+          ) ??
           (installed == null
               ? null
-              : DesignLocalizations.forLocale(Localizations.localeOf(context))),
+              : RawWidgetsLocalizations.forLocale(
+                  Localizations.localeOf(context),
+                )),
       localeName: installed?.localeName ?? 'en_US',
     );
   }
@@ -148,14 +153,14 @@ abstract class RetroDesktopLocalizations {
   /// A time picker's title and its three wheels.
   String get chooseTime;
 
-  /// A time picker's hours. With no Retro Desktop words for the app's language, `DesignLocalizations`'
+  /// A time picker's hours. With no Retro Desktop words for the app's language, `RawWidgetsLocalizations`'
   /// `timePickerHourLabel`.
   String get hour;
 
-  /// A time picker's minutes; else `DesignLocalizations`' `timePickerMinuteLabel`.
+  /// A time picker's minutes; else `RawWidgetsLocalizations`' `timePickerMinuteLabel`.
   String get minute;
 
-  /// A time picker's AM and PM; else `DesignLocalizations`' `timeFieldDayPeriodLabel`.
+  /// A time picker's AM and PM; else `RawWidgetsLocalizations`' `timeFieldDayPeriodLabel`.
   String get period;
 
   /// The time picker's two halves of the day.
@@ -327,7 +332,7 @@ class _StockWords extends RetroDesktopLocalizationsEn {
 // The words when no look delegate was supplied, or its stock English: the text menu says the app's own editing words
 // (flutter_localizations gives them in its language); where it gives none, WidgetsApp's English defaults stand in, and
 // the Material words say them instead, which the look loads in the app's language (RetroDesktopTheme); else English.
-// A time picker's words are the app's DesignLocalizations' (ui_core speaks 30 languages); where they are its English
+// A time picker's words are the app's RawWidgetsLocalizations' (ui_core speaks 30 languages); where they are its English
 // ones, the look's English.
 class _WidgetWords extends RetroDesktopLocalizationsEn {
   _WidgetWords(
@@ -340,11 +345,12 @@ class _WidgetWords extends RetroDesktopLocalizationsEn {
            : widgets;
   final WidgetsLocalizations? widgets;
   final MaterialLocalizations? material;
-  final DesignLocalizations? design;
+  final RawWidgetsLocalizations? design;
 
-  static const DesignLocalizations _english = DefaultDesignLocalizations();
+  static const RawWidgetsLocalizations _english =
+      DefaultRawWidgetsLocalizations();
 
-  String _shared(String Function(DesignLocalizations) word, String own) {
+  String _shared(String Function(RawWidgetsLocalizations) word, String own) {
     final said = design == null ? null : word(design!);
     return said == null || said == word(_english) ? own : said;
   }

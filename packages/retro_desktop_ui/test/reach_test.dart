@@ -30,7 +30,7 @@ final _parts = {
 };
 
 /// The parts a finger drives through ui_core's detectors, not a press (the rating's stars since ui_core 0.3.0's
-/// `DesignRating`: a tap or a sweep along the row); and the list table, one focus stop whose rows take a finger as the
+/// `RawRating`: a tap or a sweep along the row); and the list table, one focus stop whose rows take a finger as the
 /// period's lists did.
 const _byPointer = {
   'RetroDesktopRangeSlider',
@@ -78,14 +78,16 @@ List<(String, Rect)> _reaches(
     final w = e.widget;
     bool held() =>
         e.findAncestorWidgetOfExactType<RetroDesktopPressable>() != null ||
-        e.findAncestorWidgetOfExactType<DesignPressable>() != null;
+        e.findAncestorWidgetOfExactType<RawButton>() != null;
     final takes = switch (w) {
       RetroDesktopPressable(:final onPressed, :final onLongPress) =>
         off || onPressed != null || onLongPress != null,
       // ui_core's own presses: a split button's halves, a table's headers.
-      DesignPressable(:final onPressed, :final onLongPress) =>
+      RawButton(:final onPressed, :final onLongPress) =>
         e.findAncestorWidgetOfExactType<RetroDesktopPressable>() == null &&
             (off || onPressed != null || onLongPress != null),
+      // A radio of a group: Flutter's RawRadio, its whole option the press.
+      RawRadio(:final enabled) => off || enabled,
       GestureDetector() when gestures =>
         !held() &&
             (w.onTap != null ||

@@ -224,7 +224,7 @@ void main() {
       _host(
         RetroDesktopMenuBar(
           menus: [
-            DesignMenuEntry(
+            RawMenuEntry(
               label: 'File',
               children: [
                 for (final label in [
@@ -235,7 +235,7 @@ void main() {
                   'Close',
                   'Quit',
                 ])
-                  DesignMenuEntry(label: label, onPressed: () {}),
+                  RawMenuEntry(label: label, onPressed: () {}),
               ],
             ),
           ],

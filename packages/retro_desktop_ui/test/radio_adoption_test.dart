@@ -1,6 +1,7 @@
-// RetroDesktopRadioGroup keeps ui_core's keyboard contract for a radio group, in both appearances and both text
-// directions: one Tab stop on the chosen option (or the first enabled one), arrows that choose as they move, wrap at
-// the ends and skip an option out of use, Left advancing in right-to-left text, and a second Tab leaving the group.
+// RetroDesktopRadioGroup is Flutter's RadioGroup over RawRadio, and keeps its keyboard contract in both appearances
+// and both text directions: one Tab stop on the chosen option (or the first enabled one), arrows that choose as they
+// move, wrap at the ends and skip an option out of use, Left advancing in right-to-left text, and a second Tab leaving
+// the group, a disabled option chosen included. A toggle button reads as a button that is selected.
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:retro_desktop_ui/retro_desktop_ui.dart';
@@ -12,8 +13,8 @@ void main() {
   setUpAll(loadRetroDesktopFonts);
   for (final appearance in RetroDesktopAppearance.values) {
     for (final direction in TextDirection.values) {
-      // C chosen, nothing chosen, and the disabled B chosen.
-      for (final initial in <String?>['C', null, 'B']) {
+      // The third chosen, nothing chosen, the first chosen, and the disabled B chosen.
+      for (final initial in <String?>['C', null, 'A', 'B']) {
         testWidgets(
           'radio group ${appearance.name} ${direction.name}, chosen $initial',
           (tester) async {
@@ -66,4 +67,53 @@ void main() {
       }
     }
   }
+
+  testWidgets('a selected icon button reads as a button that is selected', (
+    tester,
+  ) async {
+    final semantics = tester.ensureSemantics();
+    try {
+      await tester.pumpWidget(
+        retroDesktopApp(
+          Center(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                RetroDesktopIconButton(
+                  RetroDesktopGlyphs.add,
+                  label: 'Pin',
+                  selected: true,
+                  onPressed: () {},
+                ),
+                RetroDesktopIconButton(
+                  RetroDesktopGlyphs.add,
+                  label: 'Mute',
+                  selected: false,
+                  onPressed: () {},
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(
+        tester.getSemantics(find.bySemanticsLabel('Pin')),
+        isSemantics(
+          isButton: true,
+          hasSelectedState: true,
+          isSelected: true,
+          hasToggledState: false,
+          hasCheckedState: false,
+          hasTapAction: true,
+        ),
+      );
+      expect(
+        tester.getSemantics(find.bySemanticsLabel('Mute')),
+        isSemantics(isButton: true, isSelected: false, hasToggledState: false),
+      );
+    } finally {
+      semantics.dispose();
+    }
+  });
 }

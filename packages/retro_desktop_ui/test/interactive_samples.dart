@@ -412,7 +412,7 @@ final retroDesktopInteractiveSamples = <String, Widget Function(VoidCallback?)>{
   'RetroDesktopSplitButton': (hit) => RetroDesktopSplitButton(
     label: 'Save',
     onPressed: hit,
-    actions: [DesignSplitAction(label: 'Save as', onPressed: () {})],
+    actions: [RawSplitAction(label: 'Save as', onPressed: () {})],
   ),
   'RetroDesktopTextArea': (hit) => RetroDesktopTextArea(
     hint: 'Notes',
@@ -438,13 +438,13 @@ final retroDesktopInteractiveSamples = <String, Widget Function(VoidCallback?)>{
   ),
   'RetroDesktopRangeSlider': (hit) => RetroDesktopRangeSlider(
     label: 'Price',
-    values: const DesignRangeValues(20, 80),
+    values: const RawRangeValues(20, 80),
     max: 100,
     onChanged: hit == null ? null : (_) => hit(),
   ),
   'RetroDesktopCalendar': (hit) => RetroDesktopCalendar(
     controller: _owned(
-      DesignCalendarController(
+      RawCalendarController(
         firstDate: DateTime(2026),
         lastDate: DateTime(2027),
         currentDate: DateTime(2026, 6, 10),
@@ -461,14 +461,10 @@ final retroDesktopInteractiveSamples = <String, Widget Function(VoidCallback?)>{
   ),
   'RetroDesktopDataTable': (hit) => RetroDesktopDataTable<String>(
     controller: _owned(
-      DesignTableController<String>(
+      RawDataTableController<String>(
         rows: const ['Ada', 'Grace'],
         columns: [
-          DesignTableColumn<String>(
-            id: 'name',
-            label: 'Name',
-            sortKey: (r) => r,
-          ),
+          RawDataColumn<String>(id: 'name', label: 'Name', sortKey: (r) => r),
         ],
       ),
     ),

@@ -29,7 +29,7 @@ import 'tokens.dart';
 /// as it closes (the motion's raise and leave, zero by default).
 Widget _panel(
   BuildContext context,
-  DesignOverlayInfo info,
+  RawPopoverInfo info,
   Widget child, {
   double minWidth = 180,
   double? maxWidth,
@@ -56,7 +56,7 @@ Widget _panel(
 /// app's mark) stands before the titles and [trailing] at the bar's end.
 ///
 /// ```dart
-/// RetroDesktopMenuBar(menus: [DesignMenuEntry(label: 'File', children: [DesignMenuEntry(label: 'New', shortcut: 'Ctrl+N', onPressed: () {})])])
+/// RetroDesktopMenuBar(menus: [RawMenuEntry(label: 'File', children: [RawMenuEntry(label: 'New', shortcut: 'Ctrl+N', onPressed: () {})])])
 /// ```
 class RetroDesktopMenuBar extends StatelessWidget {
   /// Creates a [RetroDesktopMenuBar].
@@ -69,7 +69,7 @@ class RetroDesktopMenuBar extends StatelessWidget {
   });
 
   /// The bar's titles, each with its menu.
-  final List<DesignMenuEntry> menus;
+  final List<RawMenuEntry> menus;
 
   /// The bar's name for a screen reader.
   final String? label;
@@ -93,14 +93,14 @@ class RetroDesktopMenuBar extends StatelessWidget {
     RetroDesktopThemeData t,
     RetroDesktopColors c,
   ) {
-    return DesignMenuBar(
+    return RawMenuBar(
       menus: menus,
       // One row lit, the keys' or the pointer's, whichever moved last, as 0.2.1 drew it (retroDesktopMenuRowLit,
       // RetroDesktopPointerFocus): ui_core's own highlight also hands the keys to a row that comes to stand under a
       // resting pointer, so a menu opened from the keys lit the row under the mouse, not its first; the period's menus
       // (and a Mac's today) wait for the pointer to move.
       highlightFollowsPointer: false,
-      semanticLabel: label ?? DesignLocalizations.of(context).menuBarLabel,
+      semanticLabel: label ?? RawWidgetsLocalizations.of(context).menuBarLabel,
       // An alert stands below the bar, however many rows it wraps to.
       barBuilder: (context, items) => RetroDesktopBarFoot(
         child: DecoratedBox(
@@ -155,8 +155,8 @@ class RetroDesktopMenuBar extends StatelessWidget {
       // edge).
       surfaceBuilder: (context, info, items) => Transform.translate(
         offset: switch (info.side) {
-          DesignOverlaySide.below => const Offset(0, -5),
-          DesignOverlaySide.above => const Offset(0, 5),
+          RawPopoverSide.below => const Offset(0, -5),
+          RawPopoverSide.above => const Offset(0, 5),
           _ => Offset.zero,
         },
         child: _panel(
@@ -184,11 +184,11 @@ class RetroDesktopMenuBar extends StatelessWidget {
         // another lit both.
         final lit =
             states.contains(WidgetState.selected) ||
-            (level == DesignMenuLevel.bar &&
+            (level == RawMenuLevel.bar &&
                 states.contains(WidgetState.pressed)) ||
-            (level == DesignMenuLevel.menu &&
+            (level == RawMenuLevel.menu &&
                 retroDesktopMenuRowLit(states, enabled: enabled));
-        if (level == DesignMenuLevel.bar) {
+        if (level == RawMenuLevel.bar) {
           return RetroDesktopHighlight(
             shape: retroDesktopItemShape(t),
             focused: states.contains(WidgetState.focused) && !lit,
@@ -293,7 +293,7 @@ class RetroDesktopMenuBar extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(IterableProperty<DesignMenuEntry>('menus', menus))
+      ..add(IterableProperty<RawMenuEntry>('menus', menus))
       ..add(StringProperty('label', label, defaultValue: null));
   }
 }
@@ -357,7 +357,7 @@ Future<T?> showRetroDesktopSheet<T>(
   BuildContext context, {
   required String title,
   required WidgetBuilder builder,
-  DesignSheetEdge edge = DesignSheetEdge.end,
+  RawSheetEdge edge = RawSheetEdge.end,
   double width = 360,
   IconData? icon,
 }) => Navigator.of(context).push<T>(
@@ -404,7 +404,7 @@ Future<T?> showRetroDesktopSheet<T>(
 
 // A side sheet is one of the look's modal windows: the window under it is no longer the front one. It stands at once,
 // or with a travel set, moves on ui_core's spring within it.
-class _SideSheetRoute<T> extends DesignSideSheetRoute<T>
+class _SideSheetRoute<T> extends RawSideSheetRoute<T>
     with RetroDesktopModalRoute<T>, RetroDesktopRouteStill<T> {
   _SideSheetRoute({
     required super.builder,
@@ -627,10 +627,10 @@ class RetroDesktopPopover extends StatelessWidget {
   Widget build(BuildContext context) =>
       RetroDesktopClosesUnderModal(child: _popover(context));
 
-  Widget _popover(BuildContext context) => DesignAnchoredOverlay(
+  Widget _popover(BuildContext context) => RawPopover(
     semanticLabel: semanticLabel ?? label,
     // The panel keeps its own width under a wide anchor.
-    placement: const DesignOverlayPlacement(matchAnchorWidth: false),
+    placement: const RawPopoverPlacement(matchAnchorWidth: false),
     anchorBuilder: (context, a) =>
         anchorBuilder?.call(context, a.toggle, a.isOpen) ??
         RetroDesktopButton(label!, wide: true, icon: icon, onPressed: a.toggle),

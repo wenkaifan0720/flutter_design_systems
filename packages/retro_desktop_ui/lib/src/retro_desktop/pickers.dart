@@ -172,7 +172,7 @@ class _DatePickerState extends State<RetroDesktopDatePicker> {
     final month = _showing;
     final count = DateTime(month.year, month.month + 1, 0).day;
     // The week starts where the locale's does, as the calendar's does.
-    final first = DesignLocalizations.of(context).firstDayOfWeek;
+    final first = RawWidgetsLocalizations.of(context).firstDayOfWeek;
     final before = (month.weekday - first + 7) % 7;
     final rows = ((before + count) / 7).ceil();
     final canBack = _month(_first).isBefore(month);
@@ -345,7 +345,7 @@ class _DatePickerState extends State<RetroDesktopDatePicker> {
                 Directionality.of(context) == TextDirection.rtl
                     ? RetroDesktopGlyphs.chevronRight
                     : RetroDesktopGlyphs.chevronLeft,
-                label: DesignLocalizations.of(context).previousMonthTooltip,
+                label: RawWidgetsLocalizations.of(context).previousMonthTooltip,
                 onPressed: widget.onChanged != null && canBack
                     ? () => _moveMonth(-1)
                     : null,
@@ -371,7 +371,7 @@ class _DatePickerState extends State<RetroDesktopDatePicker> {
                 Directionality.of(context) == TextDirection.rtl
                     ? RetroDesktopGlyphs.chevronLeft
                     : RetroDesktopGlyphs.chevronRight,
-                label: DesignLocalizations.of(context).nextMonthTooltip,
+                label: RawWidgetsLocalizations.of(context).nextMonthTooltip,
                 onPressed: widget.onChanged != null && canNext
                     ? () => _moveMonth(1)
                     : null,
@@ -642,7 +642,7 @@ Future<DateTime?> showRetroDesktopDatePicker(
         ],
         actions: [
           RetroDesktopButton(
-            DesignLocalizations.of(context).cancelButtonLabel,
+            RawWidgetsLocalizations.of(context).cancelButtonLabel,
             onPressed: () => Navigator.pop(context),
           ),
           RetroDesktopButton(
@@ -861,7 +861,7 @@ Future<RetroDesktopTime?> showRetroDesktopTimePicker(
         ],
         actions: [
           RetroDesktopButton(
-            DesignLocalizations.of(context).cancelButtonLabel,
+            RawWidgetsLocalizations.of(context).cancelButtonLabel,
             onPressed: () => Navigator.pop(context),
           ),
           RetroDesktopButton(

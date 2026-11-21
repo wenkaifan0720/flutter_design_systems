@@ -374,7 +374,7 @@ class RetroDesktopToggleGroup<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final least = RetroDesktopReach.least(context);
-    return DesignToggleGroup<T>(
+    return RawSegmentedButton<T>(
       options: values,
       selected: selected,
       onSelectionChanged: onChanged,
@@ -440,7 +440,7 @@ class RetroDesktopToggleGroup<T> extends StatelessWidget {
 /// focus.
 ///
 /// ```dart
-/// RetroDesktopSplitButton(label: 'Save', onPressed: () {}, actions: [DesignSplitAction(label: 'Save as…', onPressed: () {})])
+/// RetroDesktopSplitButton(label: 'Save', onPressed: () {}, actions: [RawSplitAction(label: 'Save as…', onPressed: () {})])
 /// ```
 class RetroDesktopSplitButton extends StatelessWidget {
   /// Creates a [RetroDesktopSplitButton].
@@ -460,7 +460,7 @@ class RetroDesktopSplitButton extends StatelessWidget {
   final VoidCallback? onPressed;
 
   /// The other actions, in the menu's order.
-  final List<DesignSplitAction> actions;
+  final List<RawSplitAction> actions;
 
   /// The main action's glyph.
   final IconData? icon;
@@ -471,20 +471,20 @@ class RetroDesktopSplitButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final least = RetroDesktopReach.least(context);
-    return DesignSplitButton(
+    return RawSplitButton(
       label: label,
       onPressed: onPressed,
       // A disabled button is disabled whole: its arrow doesn't open either.
       actions: onPressed == null ? const [] : actions,
       menuLabel:
-          menuLabel ?? DesignLocalizations.of(context).splitButtonMenuLabel,
+          menuLabel ?? RawWidgetsLocalizations.of(context).splitButtonMenuLabel,
       // The look's own highlight (see RetroDesktopMenuBar): only a moving pointer takes the keys.
       highlightFollowsPointer: false,
       minimumSize: Size(least, least),
       layoutBuilder: (context, main, toggle) =>
           _joined(context, [main, toggle]),
       buttonBuilder: (context, part, states, open) {
-        final face = part == DesignSplitPart.main
+        final face = part == RawSplitPart.main
             ? _segment(context, states, label: label, icon: icon)
             : _segment(
                 context,
@@ -532,7 +532,7 @@ class RetroDesktopSplitButton extends StatelessWidget {
     properties
       ..add(StringProperty('label', label))
       ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
-      ..add(IterableProperty<DesignSplitAction>('actions', actions))
+      ..add(IterableProperty<RawSplitAction>('actions', actions))
       ..add(DiagnosticsProperty<IconData>('icon', icon, defaultValue: null))
       ..add(StringProperty('menuLabel', menuLabel, defaultValue: null));
   }
@@ -542,7 +542,7 @@ class RetroDesktopSplitButton extends StatelessWidget {
 /// as it closes (the motion's raise and leave, zero by default).
 Widget _menuPanel(
   BuildContext context,
-  DesignOverlayInfo info,
+  RawPopoverInfo info,
   List<Widget> items,
 ) => RetroDesktopPresence(
   animation: info.animation,

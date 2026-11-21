@@ -15,6 +15,7 @@ import 'internal/caps.dart';
 import 'tokens.dart';
 import 'internal/parts.dart' show retroDesktopOutdent;
 import 'internal/modal.dart';
+import 'internal/actions.dart' show retroDesktopInActionBar;
 import 'frames.dart' show retroDesktopActiveHere;
 
 const _clear = Color(0x00000000);
@@ -310,6 +311,9 @@ class _DefaultButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) => wide
       ? retroDesktopButtonFill(child: _draw(context))
+      // In a window's buttons the bar sizes the face: its own size in the row, the column's width when it stacks.
+      : retroDesktopInActionBar(context)
+      ? _draw(context)
       : retroDesktopOwnSize(child: _draw(context));
   Widget _draw(BuildContext context) {
     final t = RetroDesktopTheme.of(context);
@@ -500,6 +504,9 @@ class _PlainButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) => wide
       ? retroDesktopButtonFill(child: _draw(context))
+      // In a window's buttons the bar sizes the face: its own size in the row, the column's width when it stacks.
+      : retroDesktopInActionBar(context)
+      ? _draw(context)
       : retroDesktopOwnSize(child: _draw(context));
   Widget _draw(BuildContext context) {
     final t = RetroDesktopTheme.of(context);

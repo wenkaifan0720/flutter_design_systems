@@ -26,10 +26,10 @@ void main() {
             color: const Color(0xFF000000),
             locale: locale,
             supportedLocales: {
-              ...DesignLocalizations.supportedLocales,
+              ...RawWidgetsLocalizations.supportedLocales,
               locale,
             }.toList(),
-            localizationsDelegates: const [DesignLocalizations.delegate],
+            localizationsDelegates: const [RawWidgetsLocalizations.delegate],
             builder: (context, _) => Directionality(
               textDirection: direction,
               child: Overlay(

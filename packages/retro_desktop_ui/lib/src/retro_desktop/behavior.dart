@@ -228,7 +228,7 @@ class RetroDesktopPageRoute<T> extends PageRoute<T> {
           );
     // On iOS the swipe back from the screen's edge pops it, as it does every page there (ui_core's swipe back).
     return defaultTargetPlatform == TargetPlatform.iOS
-        ? const DesignSwipeBackPageTransitionsBuilder(
+        ? const SwipeBackPageTransitionsBuilder(
             _AsBuilt(),
           ).buildTransitions(this, context, animation, secondaryAnimation, page)
         : page;

@@ -5,6 +5,8 @@
 // day each case runs on a desk platform and a phone one, and each part's 2x type
 // and RTL check at one width, the parts taking the four in turn; the rest of the
 // matrix is tagged sweep.
+import 'dart:ui' as ui;
+
 import 'package:flutter/gestures.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
@@ -69,7 +71,7 @@ const _onCore = {
 /// the next row. Their rows are places to press, not presses, so hover changes nothing.
 const _oneStop = {'RetroDesktopListTable'};
 
-/// Parts that are one tab stop ui_core steps (its DesignNumberField, its DesignRating): Tab reaches it and Up and Down
+/// Parts that are one tab stop ui_core steps (its RawNumberField, its RawRating): Tab reaches it and Up and Down
 /// step it; the pointer presses what each names (a step button, a star), which are no tab stops of their own.
 final _stepper = <String, Finder Function()>{
   'RetroDesktopNumberField': () => find.byIcon(RetroDesktopGlyphs.plus),
@@ -180,12 +182,10 @@ void behaviourTests({required int part, required int parts}) {
           expect(hits, greaterThan(0));
         } else {
           expect(
-            tester
-                .stateList<DesignPressableState>(find.byType(DesignPressable))
-                .any((state) => state.states.contains(WidgetState.focused)),
+            _partStates(tester).any((s) => s.contains(WidgetState.focused)),
             isTrue,
           );
-          // Choices of one value (a tab bar's on ui_core's DesignTabBar): the chosen one again is no change.
+          // Choices of one value (a tab bar's on ui_core's RawTabBar): the chosen one again is no change.
           if (entry.key == 'RetroDesktopRadioGroup' ||
               entry.key == 'RetroDesktopSegmentedButton' ||
               entry.key == 'RetroDesktopTabBar') {
@@ -231,8 +231,8 @@ void behaviourTests({required int part, required int parts}) {
           await tester.sendKeyEvent(LogicalKeyboardKey.tab);
           await tester.pump();
           expect(_focusedInPart(), isFalse);
-          for (final state in tester.stateList<DesignPressableState>(
-            find.byType(DesignPressable),
+          for (final state in tester.stateList<RawButtonState>(
+            find.byType(RawButton),
           )) {
             expect(state.states, contains(WidgetState.disabled));
           }
@@ -266,15 +266,24 @@ void behaviourTests({required int part, required int parts}) {
               expect(tester.takeException(), isNull);
               return;
             }
+            // A pressable, or a radio of a group (a RawRadio).
             final first = find
                 .byWidgetPredicate(
                   (widget) =>
-                      widget is DesignPressable &&
-                      (widget.enabled ??
-                          (widget.onPressed != null ||
-                              widget.onLongPress != null)),
+                      widget is RawButton &&
+                          (widget.enabled ??
+                              (widget.onPressed != null ||
+                                  widget.onLongPress != null)) ||
+                      widget is RawRadio && widget.enabled,
                 )
                 .first;
+            // A radio shows hover where highlights are traditional, as a mouse makes them.
+            FocusManager.instance.highlightStrategy =
+                FocusHighlightStrategy.alwaysTraditional;
+            addTearDown(
+              () => FocusManager.instance.highlightStrategy =
+                  FocusHighlightStrategy.automatic,
+            );
             final mouse = await tester.createGesture(
               kind: PointerDeviceKind.mouse,
             );
@@ -282,14 +291,23 @@ void behaviourTests({required int part, required int parts}) {
             addTearDown(mouse.removePointer);
             await mouse.moveTo(tester.getCenter(first));
             await tester.pump();
-            expect(
-              tester.state<DesignPressableState>(first).states,
-              contains(WidgetState.hovered),
-            );
+            expect(switch (tester.state(first)) {
+              final RawButtonState button => button.states,
+              final ToggleableStateMixin radio => radio.states,
+              final other => throw StateError('No states on $other'),
+            }, contains(WidgetState.hovered));
             if (!closingAction) await tester.tap(first);
             await tester.pump();
             await tester.pump();
-            expect(tester.hasRunningAnimations, isFalse);
+            if (first.evaluate().single.widget is RawRadio) {
+              // Flutter's RawRadio runs its own toggle and reaction controllers (200 ms) whatever the motion; the look
+              // draws none of them, so the frame after the press is already the settled one.
+              final now = await _frame(tester, first);
+              await tester.pumpAndSettle();
+              expect(await _frame(tester, first), now, reason: 'nothing moves');
+            } else {
+              expect(tester.hasRunningAnimations, isFalse);
+            }
             expect(tester.takeException(), isNull);
           },
           everyday: const {TargetPlatform.macOS},
@@ -317,3 +335,22 @@ void behaviourTests({required int part, required int parts}) {
     });
   }
 }
+
+/// The states of every pressable and every group radio (a RawRadio) on screen.
+Iterable<Set<WidgetState>> _partStates(WidgetTester tester) => [
+  for (final state in tester.stateList<RawButtonState>(find.byType(RawButton)))
+    state.states,
+  for (final state in tester.stateList<State>(
+    find.byWidgetPredicate((widget) => widget is RawRadio),
+  ))
+    if (state case final ToggleableStateMixin radio) radio.states,
+];
+
+/// The pixels of the layer [at] paints in.
+Future<List<int>> _frame(WidgetTester tester, Finder at) async =>
+    (await tester.runAsync(() async {
+      final image = await captureImage(at.evaluate().single);
+      final bytes = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+      image.dispose();
+      return bytes!.buffer.asUint8List().toList();
+    }))!;

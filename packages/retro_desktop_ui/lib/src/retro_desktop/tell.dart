@@ -86,7 +86,7 @@ class RetroDesktopBanner extends StatelessWidget {
       if (onDismissed != null)
         RetroDesktopButton(
           dismissLabel ??
-              DesignLocalizations.of(context).modalBarrierDismissLabel,
+              RawWidgetsLocalizations.of(context).modalBarrierDismissLabel,
           onPressed: onDismissed,
         ),
     ],
@@ -289,7 +289,7 @@ class _ProgressState extends State<RetroDesktopCircularProgressIndicator>
       slot((s) => s.minimumSize)?.longestSide ?? 0,
     );
     return Semantics(
-      label: widget.label ?? DesignLocalizations.of(context).loadingLabel,
+      label: widget.label ?? RawWidgetsLocalizations.of(context).loadingLabel,
       value: widget.value == null
           ? null
           : RetroDesktopLocalizations.of(context).formatPercent(widget.value!),
@@ -365,7 +365,7 @@ class RetroDesktopSkeleton extends StatelessWidget {
         slot((s) => s.fill) ??
         (t.colors.dark ? t.colors.bevelLight : t.colors.bevelDark);
     return Semantics(
-      label: label ?? DesignLocalizations.of(context).loadingLabel,
+      label: label ?? RawWidgetsLocalizations.of(context).loadingLabel,
       child: ExcludeSemantics(
         child: SizedBox(
           width: width,

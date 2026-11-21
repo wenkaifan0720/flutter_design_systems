@@ -39,7 +39,7 @@ void main() {
             ),
           ),
         );
-        // ui_core's shared word (DesignLocalizations.clearButtonTooltip).
+        // ui_core's shared word (RawWidgetsLocalizations.clearButtonTooltip).
         await tester.tap(find.bySemanticsLabel('Clear'));
         await tester.pump();
         expect(controller.text, isEmpty);

@@ -226,7 +226,7 @@ class _ChartState extends State<RetroDesktopChart> {
     }
     // The scale widens to the round values that hold the data, and every
     // gridline stands on one and is named in the gutter.
-    final ticks = _roundTicks(DesignLocalizations.of(context), low, high);
+    final ticks = _roundTicks(RawWidgetsLocalizations.of(context), low, high);
     low = ticks.first;
     high = ticks.last;
     String fmt(double value) =>
@@ -247,7 +247,7 @@ class _ChartState extends State<RetroDesktopChart> {
     }
 
     final read = widget.loading
-        ? DesignLocalizations.of(context).loadingLabel
+        ? RawWidgetsLocalizations.of(context).loadingLabel
         : empty
         ? words.noData
         : widget.summary ??
@@ -1078,7 +1078,11 @@ class _ChartPainter extends CustomPainter {
 /// Round gridline values holding [low] to [high], on ui_core's scale ([DesignLinearScale.nice]): a step of 1, 2 or 5
 /// times a power of ten, about four steps to a chart, from the last round value at or under [low] to the first at or
 /// over [high]. A range too wide to subtract keeps its two ends.
-List<double> _roundTicks(DesignLocalizations words, double low, double high) {
+List<double> _roundTicks(
+  RawWidgetsLocalizations words,
+  double low,
+  double high,
+) {
   final range = high - low;
   if (!range.isFinite || range <= 0) return [low, high];
   final scale = DesignLinearScale.nice(

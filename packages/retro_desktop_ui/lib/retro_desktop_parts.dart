@@ -17,6 +17,7 @@ export 'retro_desktop_host.dart';
 export 'src/retro_desktop/component_themes.dart';
 export 'src/retro_desktop/controls.dart';
 export 'src/retro_desktop/frames.dart';
+export 'src/retro_desktop/internal/actions.dart';
 export 'src/retro_desktop/internal/caps.dart';
 export 'src/retro_desktop/internal/face.dart';
 export 'src/retro_desktop/internal/marks.dart';

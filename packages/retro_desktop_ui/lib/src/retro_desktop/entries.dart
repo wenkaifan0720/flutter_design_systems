@@ -284,7 +284,7 @@ class _SearchState extends State<RetroDesktopSearchField> {
             icon: RetroDesktopGlyphs.close,
             label:
                 widget.clearLabel ??
-                DesignLocalizations.of(context).clearButtonTooltip,
+                RawWidgetsLocalizations.of(context).clearButtonTooltip,
             onPressed: !widget.enabled
                 ? null
                 : () {
@@ -483,11 +483,11 @@ class RetroDesktopInputOtp extends StatefulWidget {
 }
 
 class _InputOtpState extends State<RetroDesktopInputOtp> {
-  late DesignOtpController _otp = _make();
+  late RawOtpController _otp = _make();
 
   // The code lives in the caller's controller when there is one.
-  DesignOtpController _make() =>
-      DesignOtpController(length: widget.length, text: widget.controller);
+  RawOtpController _make() =>
+      RawOtpController(length: widget.length, text: widget.controller);
 
   @override
   void didUpdateWidget(RetroDesktopInputOtp old) {
@@ -520,7 +520,7 @@ class _InputOtpState extends State<RetroDesktopInputOtp> {
     final component = t.textFieldTheme.over(
       RetroDesktopStyle(fill: WidgetStatePropertyAll(c.paper)),
     );
-    Widget field = DesignOtpField(
+    Widget field = RawOtpField(
       length: widget.length,
       controller: _otp,
       focusNode: widget.focusNode,
@@ -1343,32 +1343,47 @@ class RetroDesktopRadioGroup<T> extends StatelessWidget {
   final RetroDesktopStyle? style;
   @override
   Widget build(BuildContext context) {
-    final byValue = {for (final option in options) option.value: option};
+    assert(
+      options.map((o) => o.value).toSet().length == options.length,
+      'Radio values must be distinct.',
+    );
+    final takesChoice = onChanged != null;
     return _labelled(
       context,
       Semantics(
         label: showLabel ? null : label,
         container: true,
         explicitChildNodes: true,
-        // ui_core's group gives the keyboard: one Tab stop, on the chosen
-        // option or else the first enabled one, and arrows that choose as they
-        // move, wrapping and skipping options out of use.
-        child: DesignRadioGroup<T>(
-          options: byValue.keys.toList(),
-          value: value,
-          onChanged: onChanged,
-          isEnabled: (value) => byValue[value]!.enabled,
-          layoutBuilder: (context, items) => _hugged(
-            context,
-            Column(mainAxisSize: MainAxisSize.min, children: items),
-          ),
-          itemBuilder: (context, option, node, select) => _RadioOption<T>(
-            option: byValue[option]!,
-            chosen: option == value,
-            focusNode: node,
-            onPressed: select,
-            error: error != null,
-            style: style,
+        // Flutter's radio group: one Tab stop, on the chosen option or else
+        // the first one that can be chosen, and arrows that choose as they
+        // move, wrapping and passing over options out of use. ui_core's
+        // keyboard fix inside it keeps the Tab stop when the chosen option is
+        // out of use, and swaps Left and Right in right-to-left text.
+        child: RadioGroup<T>(
+          groupValue: value,
+          // RadioGroup takes no null: a group that takes no choice is given a
+          // change that does nothing, and each option is turned off.
+          onChanged: (next) {
+            if (next != null && next != value) onChanged?.call(next);
+          },
+          child: RadioGroupKeyboardFix<T>(
+            child: _hugged(
+              context,
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  for (final option in options)
+                    _RadioOption<T>(
+                      key: ObjectKey(option.value),
+                      option: option,
+                      chosen: option.value == value,
+                      enabled: option.enabled && takesChoice,
+                      error: error != null,
+                      style: style,
+                    ),
+                ],
+              ),
+            ),
           ),
         ),
       ),
@@ -1577,12 +1592,12 @@ Widget _hugged(BuildContext context, Widget group) => retroDesktopHugs(context)
 
 /// One option of a [RetroDesktopRadioGroup]: the appearance's disc and the
 /// option's words, pressed as one part on the focus node the group gives it.
-class _RadioOption<T> extends StatelessWidget {
+class _RadioOption<T> extends StatefulWidget {
   const _RadioOption({
+    super.key,
     required this.option,
     required this.chosen,
-    required this.focusNode,
-    required this.onPressed,
+    required this.enabled,
     required this.error,
     this.style,
   });
@@ -1593,11 +1608,9 @@ class _RadioOption<T> extends StatelessWidget {
   /// Whether this option is the group's value.
   final bool chosen;
 
-  /// The node the group registered for this option.
-  final FocusNode focusNode;
-
-  /// Chooses this option; null while the option or the group is out of use.
-  final VoidCallback? onPressed;
+  /// Whether the option can be chosen: its own [RetroDesktopRadio.enabled], in
+  /// a group that takes a choice.
+  final bool enabled;
 
   /// Whether the group shows a validation error.
   final bool error;
@@ -1606,89 +1619,142 @@ class _RadioOption<T> extends StatelessWidget {
   final RetroDesktopStyle? style;
 
   @override
+  State<_RadioOption<T>> createState() => _RadioOptionState<T>();
+}
+
+// One option: Flutter's RawRadio on the group's registry, which takes the
+// focus, the tap and the keys and says the option is checked and one of a
+// group, standing the look's press chrome (its reach, focus ring and dimming)
+// round the disc and the words.
+class _RadioOptionState<T> extends State<_RadioOption<T>> {
+  final FocusNode _focusNode = FocusNode();
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final t = RetroDesktopTheme.of(context);
-    return RetroDesktopPressable(
-      focusShape: t.shapes.small,
-      label: option.label,
-      hint: option.note,
-      button: false,
-      checked: chosen,
-      inGroup: true,
-      error: error,
-      focusNode: focusNode,
-      onPressed: onPressed,
-      builder: (context, states) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: RetroDesktopSpacing.s8),
-        child: Row(
-          // The dot on the label's first line, however many lines
-          // the label or its note take.
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            RetroDesktopOnCaps(
-              style: t.type.body,
-              child: SizedBox.square(
-                dimension: 18,
-                // Chisel: a sunken white disc, greyed while the
-                // pointer holds it. Platinum: a raised, bevelled grey
-                // disc. A black dot in either. Platinum's focus ring
-                // follows the disc; Chisel's goes round the words, so
-                // the disc is drawn without it.
-                child: retroDesktopFace(
-                  states: t.chisel
-                      ? states.difference({WidgetState.focused})
-                      : states,
-                  sunken: t.chisel,
-                  component: t.radioTheme.over(
-                    RetroDesktopStyle(
-                      shape: WidgetStatePropertyAll(t.shapes.radio),
-                      fill: WidgetStatePropertyAll(
-                        !t.chisel
-                            ? t.colors.platinumLight
-                            : states.contains(WidgetState.pressed)
-                            ? retroDesktopChiselHeldBox(t.colors)
-                            : t.colors.controlFace,
-                      ),
-                      foreground: WidgetStatePropertyAll(t.colors.text),
+    final option = widget.option;
+    final style = widget.style;
+    // One node for the option: RawRadio's (checked, one of a group, its focus
+    // and its tap), with the words and the note.
+    return MergeSemantics(
+      child: RawRadio<T>(
+        value: option.value,
+        mouseCursor: WidgetStateMouseCursor.clickable,
+        toggleable: false,
+        focusNode: _focusNode,
+        autofocus: false,
+        groupRegistry: RadioGroup.maybeOf<T>(context),
+        enabled: widget.enabled,
+        builder: (context, radio) {
+          final chosen = radio.value ?? widget.chosen;
+          // RawRadio's states (hovered, focused, selected, disabled), pressed
+          // while a press is down on it, and the group's error.
+          final states = {
+            ...radio.states,
+            if (radio.downPosition != null) WidgetState.pressed,
+            if (widget.error) WidgetState.error,
+          };
+          return Semantics(
+            label: option.label,
+            hint: option.note,
+            child: ExcludeSemantics(
+              // All of it takes a press, its gaps too, as RawRadio's
+              // detector finds only what the face paints.
+              child: Listener(
+                behavior: HitTestBehavior.opaque,
+                child: retroDesktopPressChrome(
+                  context,
+                  states,
+                  focusShape: t.shapes.small,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      vertical: RetroDesktopSpacing.s8,
                     ),
-                  ),
-                  style: style,
-                  padding: const EdgeInsets.all(
-                    RetroDesktopSpacing.s2 + RetroDesktopSpacing.px,
-                  ),
-                  child: Builder(
-                    builder: (context) => DecoratedBox(
-                      decoration: ShapeDecoration(
-                        shape: t.shapes.radio,
-                        color: chosen
-                            ? DefaultTextStyle.of(context).style.color
-                            : const Color(0x00000000),
-                      ),
+                    child: Row(
+                      // The dot on the label's first line, however many lines
+                      // the label or its note take.
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        RetroDesktopOnCaps(
+                          style: t.type.body,
+                          child: SizedBox.square(
+                            dimension: 18,
+                            // Chisel: a sunken white disc, greyed while the
+                            // pointer holds it. Platinum: a raised, bevelled grey
+                            // disc. A black dot in either. Platinum's focus ring
+                            // follows the disc; Chisel's goes round the words, so
+                            // the disc is drawn without it.
+                            child: retroDesktopFace(
+                              states: t.chisel
+                                  ? states.difference({WidgetState.focused})
+                                  : states,
+                              sunken: t.chisel,
+                              component: t.radioTheme.over(
+                                RetroDesktopStyle(
+                                  shape: WidgetStatePropertyAll(t.shapes.radio),
+                                  fill: WidgetStatePropertyAll(
+                                    !t.chisel
+                                        ? t.colors.platinumLight
+                                        : states.contains(WidgetState.pressed)
+                                        ? retroDesktopChiselHeldBox(t.colors)
+                                        : t.colors.controlFace,
+                                  ),
+                                  foreground: WidgetStatePropertyAll(
+                                    t.colors.text,
+                                  ),
+                                ),
+                              ),
+                              style: style,
+                              padding: const EdgeInsets.all(
+                                RetroDesktopSpacing.s2 + RetroDesktopSpacing.px,
+                              ),
+                              child: Builder(
+                                builder: (context) => DecoratedBox(
+                                  decoration: ShapeDecoration(
+                                    shape: t.shapes.radio,
+                                    color: chosen
+                                        ? DefaultTextStyle.of(context)
+                                              .style
+                                              .color
+                                        : const Color(0x00000000),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: RetroDesktopSpacing.s10),
+                        Expanded(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              if (t.chisel)
+                                _WordsFocus(
+                                  states: states,
+                                  child: Text(option.label, style: t.type.body),
+                                )
+                              else
+                                Text(option.label, style: t.type.body),
+                              if (option.note != null)
+                                Text(option.note!, style: t.type.meta),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
               ),
             ),
-            const SizedBox(width: RetroDesktopSpacing.s10),
-            Expanded(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  if (t.chisel)
-                    _WordsFocus(
-                      states: states,
-                      child: Text(option.label, style: t.type.body),
-                    )
-                  else
-                    Text(option.label, style: t.type.body),
-                  if (option.note != null)
-                    Text(option.note!, style: t.type.meta),
-                ],
-              ),
-            ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
@@ -2269,7 +2335,7 @@ class _SliderState extends State<RetroDesktopSlider> {
                     final width = box.hasBoundedWidth
                         ? box.maxWidth
                         : widget.rowWidth;
-                    // Taps and keyboard activation use DesignPressable. Only the drag recognizer lives here.
+                    // Taps and keyboard activation use RawButton. Only the drag recognizer lives here.
                     return GestureDetector(
                       excludeFromSemantics: true,
                       onHorizontalDragStart: !_enabled

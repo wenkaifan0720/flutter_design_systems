@@ -64,7 +64,7 @@ void main() {
       'RetroDesktopSplitButton': (context) => RetroDesktopSplitButton(
         label: 'Save',
         onPressed: () {},
-        actions: [DesignSplitAction(label: 'Save as…', onPressed: () {})],
+        actions: [RawSplitAction(label: 'Save as…', onPressed: () {})],
       ),
       'RetroDesktopMotion': (context) =>
           const RetroDesktopMotion(state: Duration(milliseconds: 100)),
@@ -496,11 +496,11 @@ void main() {
       'RetroDesktopLabel': (context) => const RetroDesktopLabel('Notebook'),
       'RetroDesktopMonogram': (context) => const RetroDesktopMonogram('AC'),
       'RetroDesktopDataTable': (context) {
-        final orders = DesignTableController<Map<String, String>>(
+        final orders = RawDataTableController<Map<String, String>>(
           rows: const [
             {'id': '1', 'item': 'Chair'},
           ],
-          columns: const [DesignTableColumn(id: 'item', label: 'Item')],
+          columns: const [RawDataColumn(id: 'item', label: 'Item')],
         );
         addTearDown(orders.dispose);
         return RetroDesktopDataTable<Map<String, String>>(
@@ -678,13 +678,13 @@ void main() {
       ),
       'RetroDesktopRangeSlider': (context) => RetroDesktopRangeSlider(
         label: 'Price',
-        values: const DesignRangeValues(20, 80),
+        values: const RawRangeValues(20, 80),
         max: 100,
         onChanged: (_) {},
       ),
       'RetroDesktopColorPicker': (context) {
         final example = RetroDesktopColorPicker(
-          controller: DesignColorController(
+          controller: RawColorController(
             RetroDesktopTheme.of(context).colors.highlight,
           ),
         );
@@ -693,7 +693,7 @@ void main() {
       },
       'RetroDesktopCalendar': (context) {
         final example = RetroDesktopCalendar(
-          controller: DesignCalendarController(
+          controller: RawCalendarController(
             firstDate: DateTime(2026),
             lastDate: DateTime(2027),
           ),
@@ -778,14 +778,10 @@ void main() {
       ),
       'RetroDesktopMenuBar': (context) => RetroDesktopMenuBar(
         menus: [
-          DesignMenuEntry(
+          RawMenuEntry(
             label: 'File',
             children: [
-              DesignMenuEntry(
-                label: 'New',
-                shortcut: 'Ctrl+N',
-                onPressed: () {},
-              ),
+              RawMenuEntry(label: 'New', shortcut: 'Ctrl+N', onPressed: () {}),
             ],
           ),
         ],

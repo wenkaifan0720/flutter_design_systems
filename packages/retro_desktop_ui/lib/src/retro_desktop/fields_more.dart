@@ -168,10 +168,10 @@ class RetroDesktopPasswordField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DesignPasswordReveal(
+    return RawPasswordReveal(
       focusNode: focusNode,
-      showLabel: DesignLocalizations.of(context).showPasswordLabel,
-      hideLabel: DesignLocalizations.of(context).hidePasswordLabel,
+      showLabel: RawWidgetsLocalizations.of(context).showPasswordLabel,
+      hideLabel: RawWidgetsLocalizations.of(context).hidePasswordLabel,
       builder: (context, s) => RetroDesktopTextField(
         controller: controller,
         focusNode: focusNode,
@@ -723,7 +723,7 @@ class RetroDesktopCombobox<T extends Object> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final words = displayString ?? (T option) => '$option';
-    final box = DesignCombobox<T>(
+    final box = RawCombobox<T>(
       options: options,
       search: search,
       debounceDuration: debounceDuration,
@@ -830,7 +830,7 @@ Widget _noMatchesRow(BuildContext context) {
     Padding(
       padding: _optionPadding(t),
       child: Text(
-        DesignLocalizations.of(context).noResultsLabel,
+        RawWidgetsLocalizations.of(context).noResultsLabel,
         style: t.type.body.copyWith(color: t.colors.textSecondary),
       ),
     ),
@@ -853,7 +853,7 @@ Widget _searchingRow(BuildContext context) {
     Padding(
       padding: _optionPadding(t),
       child: Text(
-        DesignLocalizations.of(context).loadingLabel,
+        RawWidgetsLocalizations.of(context).loadingLabel,
         style: t.type.body.copyWith(color: t.colors.textSecondary),
       ),
     ),
@@ -862,9 +862,9 @@ Widget _searchingRow(BuildContext context) {
 
 /// Says in the list that the search failed, then a "Try again" row drawn as an
 /// option is: lit while the keys are on it, run by Enter or a press.
-Widget _failedRows(BuildContext context, DesignSearchError failed) {
+Widget _failedRows(BuildContext context, RawSearchError failed) {
   final t = RetroDesktopTheme.of(context);
-  final words = DesignLocalizations.of(context);
+  final words = RawWidgetsLocalizations.of(context);
   return Column(
     mainAxisSize: MainAxisSize.min,
     crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -1049,9 +1049,9 @@ class RetroDesktopFormField extends StatelessWidget {
     final c = t.colors;
     final decide = mergeSemantics == null;
     final requiredWords =
-        requiredHint ?? DesignLocalizations.of(context).requiredHint;
+        requiredHint ?? RawWidgetsLocalizations.of(context).requiredHint;
     final hint = [?error, ?help].join('. ');
-    return DesignField(
+    return RawInputDecorator(
       // Left to Retro (null), the field is told to merge, which adds no node round the field, and the builder places
       // the look's own node in place of the merged control: ui_core 0.3.1's field merges whatever it holds.
       mergeSemantics: mergeSemantics ?? true,

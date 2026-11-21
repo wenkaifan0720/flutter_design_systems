@@ -548,6 +548,34 @@ void main() {
     expect(find.text('Unavailable'), findsNothing);
   });
 
+  // RawTooltip's Semantics(tooltip:) does not merge: without the tooltip's own MergeSemantics the words left the key's
+  // node for an ancestor, and a screen reader heard 'Search' where it had heard 'Search every document, Search'.
+  testWidgets('a tipped key reads its tip in its own node', (tester) async {
+    final semantics = tester.ensureSemantics();
+    try {
+      await tester.pumpWidget(
+        _host(
+          RetroDesktopTooltip(
+            message: 'Search every document',
+            child: RetroDesktopIconButton(
+              RetroDesktopGlyphs.search,
+              label: 'Search',
+              onPressed: () {},
+            ),
+          ),
+        ),
+      );
+      final data = tester
+          .getSemantics(find.byType(RetroDesktopIconButton))
+          .getSemanticsData();
+      expect(data.label, 'Search');
+      expect(data.tooltip, 'Search every document');
+      expect(data.flagsCollection.isButton, isTrue);
+    } finally {
+      semantics.dispose();
+    }
+  });
+
   testWidgets(
     'tooltip leaves focus in place and Escape dismisses exactly once',
     (tester) async {

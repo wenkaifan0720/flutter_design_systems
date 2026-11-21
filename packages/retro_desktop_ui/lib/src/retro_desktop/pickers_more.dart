@@ -133,7 +133,7 @@ class _Groove extends CustomPainter {
 /// ui_core's range slider carries both handles, their keys and semantics.
 ///
 /// ```dart
-/// RetroDesktopRangeSlider(label: 'Price', values: const DesignRangeValues(20, 80), max: 100, onChanged: (_) {})
+/// RetroDesktopRangeSlider(label: 'Price', values: const RawRangeValues(20, 80), max: 100, onChanged: (_) {})
 /// ```
 class RetroDesktopRangeSlider extends StatelessWidget {
   /// Creates a [RetroDesktopRangeSlider].
@@ -151,10 +151,10 @@ class RetroDesktopRangeSlider extends StatelessWidget {
   }) : assert(divisions == null || divisions > 0);
 
   /// The stretch chosen.
-  final DesignRangeValues values;
+  final RawRangeValues values;
 
   /// Reports a new stretch; null disables the slider.
-  final ValueChanged<DesignRangeValues>? onChanged;
+  final ValueChanged<RawRangeValues>? onChanged;
 
   /// The ends of the scale.
   final double min, max;
@@ -178,7 +178,7 @@ class RetroDesktopRangeSlider extends StatelessWidget {
     final reach = math.max(44.0, RetroDesktopReach.least(context));
     final slider = Opacity(
       opacity: onChanged == null ? .5 : 1,
-      child: DesignRangeSlider(
+      child: RawRangeSlider(
         values: values,
         onChanged: onChanged,
         min: min,
@@ -187,9 +187,10 @@ class RetroDesktopRangeSlider extends StatelessWidget {
         thumbSize: Size(reach, reach),
         semanticFormatterCallback: semanticFormatterCallback,
         startLabel:
-            startLabel ?? DesignLocalizations.of(context).rangeSliderStartLabel,
+            startLabel ??
+            RawWidgetsLocalizations.of(context).rangeSliderStartLabel,
         endLabel:
-            endLabel ?? DesignLocalizations.of(context).rangeSliderEndLabel,
+            endLabel ?? RawWidgetsLocalizations.of(context).rangeSliderEndLabel,
         trackBuilder: (context, track) => SizedBox(
           height: 32,
           child: CustomPaint(
@@ -236,9 +237,9 @@ class RetroDesktopRangeSlider extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(DiagnosticsProperty<DesignRangeValues>('values', values))
+      ..add(DiagnosticsProperty<RawRangeValues>('values', values))
       ..add(
-        ObjectFlagProperty<ValueChanged<DesignRangeValues>>.has(
+        ObjectFlagProperty<ValueChanged<RawRangeValues>>.has(
           'onChanged',
           onChanged,
         ),
@@ -263,7 +264,7 @@ class RetroDesktopRangeSlider extends StatelessWidget {
 /// colour picker carries the channels, their keys and semantics.
 ///
 /// ```dart
-/// RetroDesktopColorPicker(controller: DesignColorController(RetroDesktopTheme.of(context).colors.highlight))
+/// RetroDesktopColorPicker(controller: RawColorController(RetroDesktopTheme.of(context).colors.highlight))
 /// ```
 class RetroDesktopColorPicker extends StatelessWidget {
   /// Creates a [RetroDesktopColorPicker].
@@ -275,7 +276,7 @@ class RetroDesktopColorPicker extends StatelessWidget {
   });
 
   /// The colour being chosen; the caller disposes it.
-  final DesignColorController controller;
+  final RawColorController controller;
 
   /// Whether an opacity strip shows.
   final bool showAlpha;
@@ -300,7 +301,7 @@ class RetroDesktopColorPicker extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        DesignColorPicker(
+        RawColorPicker(
           controller: controller,
           showAlpha: showAlpha,
           areaHeight: areaHeight,
@@ -367,7 +368,7 @@ class RetroDesktopColorPicker extends StatelessWidget {
                   gradient: LinearGradient(
                     begin: AlignmentDirectional.centerStart,
                     end: AlignmentDirectional.centerEnd,
-                    colors: channel == DesignColorChannel.alpha
+                    colors: channel == RawColorChannel.alpha
                         ? [
                             color.toColor().withAlpha(0),
                             color.toColor().withAlpha(255),
@@ -426,9 +427,7 @@ class RetroDesktopColorPicker extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(
-        DiagnosticsProperty<DesignColorController>('controller', controller),
-      )
+      ..add(DiagnosticsProperty<RawColorController>('controller', controller))
       ..add(FlagProperty('showAlpha', value: showAlpha, ifTrue: 'showAlpha'))
       ..add(DoubleProperty('areaHeight', areaHeight, defaultValue: 160));
   }
@@ -438,11 +437,11 @@ class RetroDesktopColorPicker extends StatelessWidget {
 /// lit in the highlight, the days between tinted, today outlined, the days of
 /// other months and the days off-limits quieter. While a range waits for its
 /// end, the day under the pointer or the keyboard (ui_core's
-/// [DesignCalendarDay.isPreviewEnd]) is lit as the end it would be, so the
+/// [RawCalendarDayDetails.isPreviewEnd]) is lit as the end it would be, so the
 /// preview's band ends where the range would.
 Widget _day(
   BuildContext context,
-  DesignCalendarDay day,
+  RawCalendarDayDetails day,
   Set<WidgetState> states,
 ) {
   final t = RetroDesktopTheme.of(context);
@@ -527,7 +526,7 @@ Widget _day(
 
 Widget _monthHead(
   BuildContext context,
-  DesignCalendarHeader h, {
+  RawCalendarHeaderDetails h, {
   bool back = true,
   bool on = true,
 }) {
@@ -554,7 +553,7 @@ Widget _monthHead(
               Directionality.of(context) == TextDirection.rtl
                   ? RetroDesktopGlyphs.chevronRight
                   : RetroDesktopGlyphs.chevronLeft,
-              label: DesignLocalizations.of(context).previousMonthTooltip,
+              label: RawWidgetsLocalizations.of(context).previousMonthTooltip,
               onPressed: h.previous,
             ),
           ),
@@ -576,7 +575,7 @@ Widget _monthHead(
               Directionality.of(context) == TextDirection.rtl
                   ? RetroDesktopGlyphs.chevronLeft
                   : RetroDesktopGlyphs.chevronRight,
-              label: DesignLocalizations.of(context).nextMonthTooltip,
+              label: RawWidgetsLocalizations.of(context).nextMonthTooltip,
               onPressed: h.next,
             ),
           ),
@@ -619,7 +618,7 @@ Widget _weekday(BuildContext context, int weekday, String label) {
   // is wider than its column, as the date picker's do (twice the text size
   // on a phone broke "Su" into "S" over "u"; chosen name by name, the head
   // read "Su M Tu W").
-  final names = DesignLocalizations.of(context);
+  final names = RawWidgetsLocalizations.of(context);
   return LayoutBuilder(
     builder: (context, box) {
       var fits = true;
@@ -656,7 +655,7 @@ Widget _weekday(BuildContext context, int weekday, String label) {
 /// keys, the selection and the announcements.
 ///
 /// ```dart
-/// RetroDesktopCalendar(controller: DesignCalendarController(firstDate: DateTime(2026), lastDate: DateTime(2027)))
+/// RetroDesktopCalendar(controller: RawCalendarController(firstDate: DateTime(2026), lastDate: DateTime(2027)))
 /// ```
 class RetroDesktopCalendar extends StatelessWidget {
   /// Creates a [RetroDesktopCalendar].
@@ -670,7 +669,7 @@ class RetroDesktopCalendar extends StatelessWidget {
   }) : assert(minDayWidth > 0);
 
   /// What is chosen, the month shown and the limits; the caller disposes it.
-  final DesignCalendarController controller;
+  final RawCalendarController controller;
 
   /// How many months stand side by side.
   final int months;
@@ -680,7 +679,7 @@ class RetroDesktopCalendar extends StatelessWidget {
   final ValueChanged<DateTime>? onChanged;
 
   /// The week's first day (`DateTime.monday`..`sunday`); null starts it where
-  /// the locale does (`DesignLocalizations.firstDayOfWeek`: Sunday in English).
+  /// the locale does (`RawWidgetsLocalizations.firstDayOfWeek`: Sunday in English).
   final int? firstWeekday;
 
   /// The narrowest a day may be, so it keeps its target in a narrow month.
@@ -706,7 +705,7 @@ class RetroDesktopCalendar extends StatelessWidget {
       context,
       states: const {},
       padding: EdgeInsets.all(pad),
-      child: DesignCalendar(
+      child: RawCalendarDatePicker(
         controller: controller,
         months: months,
         onChanged: onChanged,
@@ -761,7 +760,7 @@ class RetroDesktopCalendar extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(
-        DiagnosticsProperty<DesignCalendarController>('controller', controller),
+        DiagnosticsProperty<RawCalendarController>('controller', controller),
       )
       ..add(IntProperty('months', months, defaultValue: 1))
       ..add(
@@ -794,10 +793,10 @@ class RetroDesktopDateRangePicker extends StatefulWidget {
   final DateTime firstDate, lastDate;
 
   /// The range chosen first.
-  final DesignDateRange? value;
+  final RawDateRange? value;
 
   /// Reports each change of the range; null shows it still.
-  final ValueChanged<DesignDateRange?>? onChanged;
+  final ValueChanged<RawDateRange?>? onChanged;
 
   /// The words above the readout.
   final String? label;
@@ -815,14 +814,10 @@ class RetroDesktopDateRangePicker extends StatefulWidget {
       ..add(DiagnosticsProperty<DateTime>('firstDate', firstDate))
       ..add(DiagnosticsProperty<DateTime>('lastDate', lastDate))
       ..add(
-        DiagnosticsProperty<DesignDateRange>(
-          'value',
-          value,
-          defaultValue: null,
-        ),
+        DiagnosticsProperty<RawDateRange>('value', value, defaultValue: null),
       )
       ..add(
-        ObjectFlagProperty<ValueChanged<DesignDateRange?>>.has(
+        ObjectFlagProperty<ValueChanged<RawDateRange?>>.has(
           'onChanged',
           onChanged,
         ),
@@ -839,10 +834,10 @@ class RetroDesktopDateRangePicker extends StatefulWidget {
 }
 
 class _RangePickerState extends State<RetroDesktopDateRangePicker> {
-  late final DesignCalendarController _calendar = DesignCalendarController(
+  late final RawCalendarController _calendar = RawCalendarController(
     firstDate: widget.firstDate,
     lastDate: widget.lastDate,
-    mode: DesignCalendarMode.range,
+    mode: RawCalendarMode.range,
     selectedRange: widget.value,
     initialMonth: widget.initialMonth ?? widget.value?.start,
   );

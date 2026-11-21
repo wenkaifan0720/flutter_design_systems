@@ -1074,11 +1074,11 @@ class _KitPapersState extends State<KitPapers> {
     );
   }
 
-  List<DesignMenuEntry> _menus(KitPapersHost? host) {
+  List<RawMenuEntry> _menus(KitPapersHost? host) {
     final selected = _view.visibleSelection;
     final front = _open.isEmpty ? null : _open.last;
     final say = context.say;
-    DesignMenuEntry sort(int k, String label) => DesignMenuEntry(
+    RawMenuEntry sort(int k, String label) => RawMenuEntry(
       label: say(label),
       checked: _view.sort == k,
       onPressed: () => setState(() => _view.sortBy(k)),
@@ -1098,79 +1098,79 @@ class _KitPapersState extends State<KitPapers> {
     }
 
     return [
-      DesignMenuEntry(
+      RawMenuEntry(
         label: say('Papers'),
         children: [
-          DesignMenuEntry(
+          RawMenuEntry(
             label: say('About Papers'),
             onPressed: () => showRetroDesktopSnackBar(
               context,
               say('Papers keeps your documents in one place'),
             ),
           ),
-          const DesignMenuEntry.divider(),
-          DesignMenuEntry(
+          const RawMenuEntry.divider(),
+          RawMenuEntry(
             label: say('Your details…'),
             onPressed: () => _front(KitPapersWindow.details),
           ),
-          DesignMenuEntry(
+          RawMenuEntry(
             label: say('Settings…'),
             shortcut: keys(LogicalKeyboardKey.comma),
             onPressed: () => _front(KitPapersWindow.settings),
           ),
         ],
       ),
-      DesignMenuEntry(
+      RawMenuEntry(
         label: say('File'),
         children: [
-          DesignMenuEntry(
+          RawMenuEntry(
             label: say('Open'),
             shortcut: keys(LogicalKeyboardKey.keyO),
             onPressed: selected == null ? null : () => _openDocument(selected),
           ),
-          DesignMenuEntry(
+          RawMenuEntry(
             label: say('Close window'),
             shortcut: keys(LogicalKeyboardKey.keyW),
             onPressed: front == null ? null : () => _close(front),
           ),
-          const DesignMenuEntry.divider(),
-          DesignMenuEntry(
+          const RawMenuEntry.divider(),
+          RawMenuEntry(
             label: say('Find…'),
             shortcut: keys(LogicalKeyboardKey.keyF),
             onPressed: _find,
           ),
-          const DesignMenuEntry.divider(),
-          DesignMenuEntry(
+          const RawMenuEntry.divider(),
+          RawMenuEntry(
             label: say('Order printed copies…'),
             shortcut: keys(LogicalKeyboardKey.keyP),
             onPressed: selected == null ? null : () => _order(selected),
           ),
         ],
       ),
-      DesignMenuEntry(
+      RawMenuEntry(
         label: say('Edit'),
         // Nothing is chosen, so the edit commands have no onPressed: unavailable.
         children: [
-          DesignMenuEntry(
+          RawMenuEntry(
             label: say('Undo'),
             shortcut: keys(LogicalKeyboardKey.keyZ),
           ),
-          const DesignMenuEntry.divider(),
-          DesignMenuEntry(
+          const RawMenuEntry.divider(),
+          RawMenuEntry(
             label: say('Cut'),
             shortcut: keys(LogicalKeyboardKey.keyX),
           ),
-          DesignMenuEntry(
+          RawMenuEntry(
             label: say('Copy'),
             shortcut: keys(LogicalKeyboardKey.keyC),
           ),
-          DesignMenuEntry(
+          RawMenuEntry(
             label: say('Paste'),
             shortcut: keys(LogicalKeyboardKey.keyV),
           ),
         ],
       ),
-      DesignMenuEntry(
+      RawMenuEntry(
         label: say('View'),
         children: [
           sort(0, 'By name'),
@@ -1178,8 +1178,8 @@ class _KitPapersState extends State<KitPapers> {
           sort(2, 'By date changed'),
           sort(3, 'By size'),
           if (host != null) ...[
-            const DesignMenuEntry.divider(),
-            DesignMenuEntry(
+            const RawMenuEntry.divider(),
+            RawMenuEntry(
               label: say('Night'),
               checked: host.night,
               onPressed: () => host.onNight(!host.night),
@@ -1187,11 +1187,11 @@ class _KitPapersState extends State<KitPapers> {
           ],
         ],
       ),
-      DesignMenuEntry(
+      RawMenuEntry(
         label: say('Window'),
         children: [
           for (final w in KitPapersWindow.values)
-            DesignMenuEntry(
+            RawMenuEntry(
               label: _title(w, _opened),
               checked: front == w,
               onPressed: w != KitPapersWindow.prints

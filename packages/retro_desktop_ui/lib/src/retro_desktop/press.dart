@@ -116,7 +116,7 @@ class RetroDesktopPressable extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final enabled = onPressed != null || onLongPress != null;
-    return DesignPressable(
+    return RawButton(
       // The pointer says "this presses"; the face doesn't change under it.
       mouseCursor: enabled && !busy
           ? cursor ?? SystemMouseCursors.click
@@ -215,7 +215,7 @@ class RetroDesktopPressable extends StatelessWidget {
   }
 }
 
-/// What a [RetroDesktopPressable] stands round its face, for a press ui_core builds (a tab of its DesignTabBar): the
+/// What a [RetroDesktopPressable] stands round its face, for a press ui_core builds (a tab of its RawTabBar): the
 /// reach a finger needs, the focus ring a face under it claims (else round [child] in [focusShape]), and the dimming
 /// while [states] is disabled. Not exported: the look's own.
 Widget retroDesktopPressChrome(

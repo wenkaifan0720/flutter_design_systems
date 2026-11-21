@@ -35,7 +35,7 @@ final _variants = <String, Widget Function()>{
   'a split button': () => RetroDesktopSplitButton(
     label: 'Save',
     onPressed: () {},
-    actions: [DesignSplitAction(label: 'Save as…', onPressed: () {})],
+    actions: [RawSplitAction(label: 'Save as…', onPressed: () {})],
   ),
   'a popup': () => RetroDesktopPopupButton('Workshop', onPressed: () {}),
   'an icon button': () => RetroDesktopIconButton(

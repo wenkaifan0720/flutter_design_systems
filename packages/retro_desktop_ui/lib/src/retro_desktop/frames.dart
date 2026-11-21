@@ -475,7 +475,7 @@ class _TitleBar extends StatelessWidget {
                     child: RetroDesktopPressable(
                       label:
                           closeLabel ??
-                          DesignLocalizations.of(context).closeButtonLabel,
+                          RawWidgetsLocalizations.of(context).closeButtonLabel,
                       onPressed: onClose,
                       // Focus rings the 13 pixels drawn, not the padded target; held, the box drawn there turns in.
                       builder: (context, states) => LayoutBuilder(
@@ -648,7 +648,7 @@ extension _ChiselTitleBar on _TitleBar {
                     child: RetroDesktopPressable(
                       label:
                           closeLabel ??
-                          DesignLocalizations.of(context).closeButtonLabel,
+                          RawWidgetsLocalizations.of(context).closeButtonLabel,
                       onPressed: onClose,
                       // Focus marks the button drawn, not the padded target.
                       builder: (context, states) => Stack(
@@ -869,7 +869,7 @@ class RetroDesktopWindow extends StatelessWidget {
         : inset;
     final route = ModalRoute.of(context);
     final titleNamedByRoute =
-        route is DesignSideSheetRoute &&
+        route is RawSideSheetRoute &&
         route.semanticLabel == title &&
         context.getInheritedWidgetOfExactType<_InsideWindow>() == null;
     return Semantics(

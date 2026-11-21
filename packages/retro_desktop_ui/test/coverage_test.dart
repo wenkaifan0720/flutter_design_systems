@@ -81,12 +81,12 @@ void main() {
         tester,
       ) async {
         await _pump(tester, appearance, kitSpecimenRangeSlider());
-        DesignRangeValues values() => tester
+        RawRangeValues values() => tester
             .widget<RetroDesktopRangeSlider>(
               find.byType(RetroDesktopRangeSlider),
             )
             .values;
-        expect(values(), const DesignRangeValues(20, 80));
+        expect(values(), const RawRangeValues(20, 80));
         await tester.sendKeyEvent(LogicalKeyboardKey.tab);
         await tester.pump();
         await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
@@ -118,7 +118,7 @@ void main() {
         await tester.pump();
         await tester.enterText(find.byType(EditableText), 'zz');
         await tester.pumpAndSettle();
-        // ui_core's shared word (DesignLocalizations.noResultsLabel).
+        // ui_core's shared word (RawWidgetsLocalizations.noResultsLabel).
         expect(find.text('No results'), findsOneWidget);
         expect(tester.takeException(), isNull);
       });

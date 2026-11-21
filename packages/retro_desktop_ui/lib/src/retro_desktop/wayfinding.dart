@@ -231,7 +231,7 @@ class RetroDesktopPagination extends StatelessWidget {
                 rtl
                     ? RetroDesktopGlyphs.chevronRight
                     : RetroDesktopGlyphs.chevronLeft,
-                label: DesignLocalizations.of(context).previousPageTooltip,
+                label: RawWidgetsLocalizations.of(context).previousPageTooltip,
                 size: RetroDesktopButtonSize.small,
                 style: arrow,
                 onPressed: live && page > 0 ? () => onChanged!(page - 1) : null,
@@ -311,7 +311,7 @@ class RetroDesktopPagination extends StatelessWidget {
                 rtl
                     ? RetroDesktopGlyphs.chevronLeft
                     : RetroDesktopGlyphs.chevronRight,
-                label: DesignLocalizations.of(context).nextPageTooltip,
+                label: RawWidgetsLocalizations.of(context).nextPageTooltip,
                 size: RetroDesktopButtonSize.small,
                 style: arrow,
                 onPressed: live && page < count - 1
@@ -343,7 +343,7 @@ class RetroDesktopPagination extends StatelessWidget {
   }
 }
 
-/// A row of pixel stars: filled up to the value, outlined after it. ui_core's [DesignRating] carries it: one tab stop,
+/// A row of pixel stars: filled up to the value, outlined after it. ui_core's [RawRating] carries it: one tab stop,
 /// the arrows a star at a time, Home or 0 none, End all, a digit that many; a drag sweeps across; a screen reader hears
 /// a slider it can step. A tap on the stars already given clears them, as before. [onChanged] null shows a still
 /// reading, a compact row for a review or a product. [enabled] false keeps the stars at their chosen size and spacing,
@@ -436,7 +436,7 @@ class _RatingState extends State<RetroDesktopRating> {
     if (_stars.length != w.max) {
       _stars = [for (var i = 0; i < w.max; i++) GlobalKey()];
     }
-    Widget star(DesignRatingItemDetails item) {
+    Widget star(RawRatingItemDetails item) {
       // The value's own fill: a hovering pointer's preview lights nothing.
       final share = item.isPreview
           ? (w.value - item.index).clamp(0.0, 1.0)
@@ -490,7 +490,7 @@ class _RatingState extends State<RetroDesktopRating> {
       );
     }
 
-    final rating = DesignRating(
+    final rating = RawRating(
       value: still ? w.value : chosen.toDouble(),
       itemCount: w.max,
       readOnly: still,

@@ -604,9 +604,9 @@ class _TextFieldState extends State<RetroDesktopTextField> {
             icon: _hidden ? RetroDesktopGlyphs.eye : RetroDesktopGlyphs.eyeOff,
             label: _hidden
                 ? widget.revealLabels?.$1 ??
-                      DesignLocalizations.of(context).showPasswordLabel
+                      RawWidgetsLocalizations.of(context).showPasswordLabel
                 : widget.revealLabels?.$2 ??
-                      DesignLocalizations.of(context).hidePasswordLabel,
+                      RawWidgetsLocalizations.of(context).hidePasswordLabel,
             onPressed: enabled
                 ? () {
                     setState(() => _hidden = !_hidden);
@@ -1326,7 +1326,7 @@ class RetroDesktopChip extends StatelessWidget {
             RetroDesktopGlyphs.x,
             label:
                 deleteLabel ??
-                DesignLocalizations.of(context).deleteButtonTooltip,
+                RawWidgetsLocalizations.of(context).deleteButtonTooltip,
             onPressed: enabled ? onDeleted : null,
           ),
       ],
@@ -2270,7 +2270,7 @@ class RetroDesktopChoices extends StatelessWidget {
 }
 
 /// A number stepper: a small button each side of a sunk value and its unit, and a note under it. ui_core's
-/// [DesignNumberField] carries it: the value types as well as steps, Up and Down step it and Page Up and Page Down ten
+/// [RawNumberField] carries it: the value types as well as steps, Up and Down step it and Page Up and Page Down ten
 /// steps, a held button repeats, a number typed is kept within [min] and [max], and a screen reader hears one field it
 /// can step, with its unit.
 ///
@@ -2358,7 +2358,7 @@ class _NumberFieldState extends State<RetroDesktopNumberField> {
   // A number taken. Cleared, the box shows the value again: a stepper always holds one.
   void _changed(double? taken) {
     if (taken == null) {
-      _text.text = DesignLocalizations.of(context)
+      _text.text = RawWidgetsLocalizations.of(context)
           .formatDecimal(widget.value.toDouble());
       return;
     }
@@ -2369,11 +2369,11 @@ class _NumberFieldState extends State<RetroDesktopNumberField> {
   Widget build(BuildContext context) {
     final t = RetroDesktopTheme.of(context);
     final w = widget;
-    final digits = DesignLocalizations.of(context);
+    final digits = RawWidgetsLocalizations.of(context);
     // One row, one height: the two buttons and the value between them all show a button's face height, the buttons
     // square, so the stepper stands level with a button or a field beside it.
     final faceHeight = retroDesktopButtonFaceHeight(context);
-    final field = DesignNumberField(
+    final field = RawNumberField(
       value: w.value.toDouble(),
       onChanged: w.onChanged == null ? null : _changed,
       min: w.min.toDouble(),
@@ -2457,12 +2457,12 @@ class _NumberFieldState extends State<RetroDesktopNumberField> {
   Widget _box(
     BuildContext context,
     RetroDesktopThemeData t,
-    DesignNumberFieldDetails input,
+    RawNumberFieldDetails input,
     double faceHeight,
   ) {
     final c = t.colors;
     final w = widget;
-    final digits = DesignLocalizations.of(context);
+    final digits = RawWidgetsLocalizations.of(context);
     final enabled = !input.states.contains(WidgetState.disabled);
     final style = t.type.small.copyWith(color: c.text);
     return _NumberInput(
@@ -2550,7 +2550,7 @@ class _NumberInput extends StatefulWidget {
     required this.box,
   });
 
-  final DesignNumberFieldDetails input;
+  final RawNumberFieldDetails input;
   final bool enabled;
   final TextStyle style;
 
@@ -3067,13 +3067,13 @@ class _WholeTabs extends CustomClipper<Rect> {
   bool shouldReclip(_WholeTabs oldClipper) => true;
 }
 
-// The tabs on ui_core's DesignTabBar: one tab stop on the open tab, the arrows along the row (mirrored right to left,
+// The tabs on ui_core's RawTabBar: one tab stop on the open tab, the arrows along the row (mirrored right to left,
 // wrapping), Home and End, a tab chosen as the keys reach it, a screen reader's tab bar of tabs ("Tab 1 of 3"), and
 // the open tab brought whole into view. The look paints each folder tab, and keeps its own arrows and its strip of
 // whole tabs when they overflow. The bar is controlled: the open tab is [RetroDesktopTabBar.selectedIndex].
 class _TabBarState extends State<RetroDesktopTabBar>
     with TickerProviderStateMixin {
-  DesignTabController? _controller;
+  RawTabController? _controller;
   final _metrics = ValueNotifier(0);
   // The scroller keeps its place when the arrows come and go around it.
   final _scroller = GlobalKey();
@@ -3081,7 +3081,7 @@ class _TabBarState extends State<RetroDesktopTabBar>
 
   // A change of tab, and the strip brought to it, are at once while the theme's move is zero (the default and Reduce
   // Motion), else on ui_core's spring within it.
-  DesignTabController _controllerFor(BuildContext context) {
+  RawTabController _controllerFor(BuildContext context) {
     final length = widget.tabs.length;
     final at = length == 0 ? 0 : widget.selectedIndex.clamp(0, length - 1);
     final current = _controller;
@@ -3095,7 +3095,7 @@ class _TabBarState extends State<RetroDesktopTabBar>
       WidgetsBinding.instance.addPostFrameCallback((_) => current.dispose());
     }
     final move = RetroDesktopMotion.of(context).move;
-    return _controller = DesignTabController(
+    return _controller = RawTabController(
       length: length,
       initialIndex: at,
       vsync: this,
@@ -3258,13 +3258,13 @@ class _TabBarState extends State<RetroDesktopTabBar>
         .ceilToDouble();
     String? countOf(int i) =>
         i < widget.counts.length ? widget.counts[i] : null;
-    final bar = DesignTabBar(
+    final bar = RawTabBar(
       controller: controller,
       isScrollable: true,
       semanticLabel: widget.label ?? words.tabs,
       tabs: [
         for (var i = 0; i < widget.tabs.length; i++)
-          DesignTab(
+          RawTab(
             // A screen reader hears the count after the name, as it reads.
             label: countOf(i) == null
                 ? widget.tabs[i]
