@@ -102,8 +102,8 @@ void main() {
         WidgetsApp(
           color: const Color(0xFF000000),
           locale: locale,
-          supportedLocales: DesignLocalizations.supportedLocales,
-          localizationsDelegates: const [DesignLocalizations.delegate],
+          supportedLocales: RawWidgetsLocalizations.supportedLocales,
+          localizationsDelegates: const [RawWidgetsLocalizations.delegate],
           pageRouteBuilder: <T>(settings, builder) => PageRouteBuilder<T>(
             settings: settings,
             pageBuilder: (context, _, _) => builder(context),
@@ -145,9 +145,9 @@ void main() {
       expect(find.text('Freeze the card?'), findsOneWidget);
       expect(MaterialLocalizations.of(at).okButtonLabel, isNotEmpty);
       expect(Directionality.of(at), direction);
-      final shared = DesignLocalizations.forLocale(locale);
+      final shared = RawWidgetsLocalizations.forLocale(locale);
       expect(
-        DesignLocalizations.of(at).closeButtonLabel,
+        RawWidgetsLocalizations.of(at).closeButtonLabel,
         shared.closeButtonLabel,
       );
       expect(shared.closeButtonLabel, isNot('Close'));
@@ -184,8 +184,8 @@ void main() {
             WidgetsApp(
               color: const Color(0xFF000000),
               locale: locale,
-              supportedLocales: DesignLocalizations.supportedLocales,
-              localizationsDelegates: const [DesignLocalizations.delegate],
+              supportedLocales: RawWidgetsLocalizations.supportedLocales,
+              localizationsDelegates: const [RawWidgetsLocalizations.delegate],
               pageRouteBuilder: <T>(settings, builder) => PageRouteBuilder<T>(
                 settings: settings,
                 pageBuilder: (context, _, _) => builder(context),

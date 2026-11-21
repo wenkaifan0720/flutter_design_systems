@@ -37,7 +37,7 @@ abstract final class FrostedToast {
   /// (the tone's glyph by default: the check for success). [actionLabel] plus
   /// [onAction] add ONE inline action; the slab then lingers longer and a
   /// tap on the action dismisses it. The host's toaster (ui_core's
-  /// [DesignToaster]) holds it: its time stops while a pointer rests on it
+  /// [RawToaster]) holds it: its time stops while a pointer rests on it
   /// or focus is in it, a swipe or Escape dismisses it, and F6 reaches it.
   static void show(
     BuildContext context,
@@ -48,7 +48,7 @@ abstract final class FrostedToast {
     String? actionLabel,
     VoidCallback? onAction,
   }) {
-    final toaster = DesignToaster.maybeOf(context);
+    final toaster = RawToaster.maybeOf(context);
     assert(toaster != null, 'FrostedToast.show needs a FrostedHost above it');
     if (toaster == null) return;
     final double bottom;
@@ -74,7 +74,7 @@ abstract final class FrostedToast {
             );
     }
     toaster.show(
-      DesignToast(
+      RawToast(
         id: _id,
         message: message,
         title: title,

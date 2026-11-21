@@ -13,7 +13,7 @@ import '../pressable/pressable.dart';
 import '../../internal/dim.dart';
 import '../../internal/shared_words.dart';
 
-export 'package:ui_core/ui_core.dart' show DesignDateRange;
+export 'package:ui_core/ui_core.dart' show RawDateRange;
 
 /// A month (or [months] side by side) laid open on the page (shadcn's
 /// Calendar, Material's CalendarDatePicker): the month's name with its
@@ -22,7 +22,7 @@ export 'package:ui_core/ui_core.dart' show DesignDateRange;
 /// the days (Page Up and Down the months, Home and End the week), Return
 /// or Space chooses. Days outside [firstDate] to [lastDate], or that
 /// [selectableDayPredicate] refuses, fade and take no press. ui_core's
-/// [DesignCalendar] is the behaviour.
+/// [RawCalendarDatePicker] is the behaviour.
 ///
 /// ```dart
 /// FrostedCalendar(firstDate: DateTime(2026), lastDate: DateTime(2027, 12, 31), value: due, onChanged: (d) => setState(() => due = d))
@@ -92,9 +92,9 @@ class FrostedCalendar extends StatefulWidget {
 }
 
 class _FrostedCalendarState extends State<FrostedCalendar> {
-  late DesignCalendarController _controller = _make();
+  late RawCalendarController _controller = _make();
 
-  DesignCalendarController _make() => DesignCalendarController(
+  RawCalendarController _make() => RawCalendarController(
     firstDate: widget.firstDate,
     lastDate: widget.lastDate,
     selectedDate: widget.value,
@@ -146,7 +146,7 @@ class _FrostedCalendarState extends State<FrostedCalendar> {
 /// of the accent's wash joins the ends, each on the ink act, and before
 /// the second press the band follows the pointer or the keyboard as a
 /// paler preview. Two months stand side by side by default. ui_core's
-/// [DesignCalendar] (range mode) is the behaviour.
+/// [RawCalendarDatePicker] (range mode) is the behaviour.
 ///
 /// ```dart
 /// FrostedDateRangePicker(firstDate: DateTime(2026), lastDate: DateTime(2027, 12, 31), value: trip, onChanged: (r) => setState(() => trip = r))
@@ -170,11 +170,11 @@ class FrostedDateRangePicker extends StatefulWidget {
   final DateTime lastDate;
 
   /// The chosen range.
-  final DesignDateRange? value;
+  final RawDateRange? value;
 
   /// Called with the range as it is chosen: first with its start alone,
   /// then whole.
-  final ValueChanged<DesignDateRange>? onChanged;
+  final ValueChanged<RawDateRange>? onChanged;
 
   /// Today (the clock's, when null).
   final DateTime? currentDate;
@@ -192,14 +192,10 @@ class FrostedDateRangePicker extends StatefulWidget {
       ..add(DiagnosticsProperty<DateTime>('firstDate', firstDate))
       ..add(DiagnosticsProperty<DateTime>('lastDate', lastDate))
       ..add(
-        DiagnosticsProperty<DesignDateRange>(
-          'value',
-          value,
-          defaultValue: null,
-        ),
+        DiagnosticsProperty<RawDateRange>('value', value, defaultValue: null),
       )
       ..add(
-        ObjectFlagProperty<ValueChanged<DesignDateRange>>.has(
+        ObjectFlagProperty<ValueChanged<RawDateRange>>.has(
           'onChanged',
           onChanged,
         ),
@@ -216,12 +212,12 @@ class FrostedDateRangePicker extends StatefulWidget {
 }
 
 class _FrostedDateRangePickerState extends State<FrostedDateRangePicker> {
-  late DesignCalendarController _controller = _make();
+  late RawCalendarController _controller = _make();
 
-  DesignCalendarController _make() => DesignCalendarController(
+  RawCalendarController _make() => RawCalendarController(
     firstDate: widget.firstDate,
     lastDate: widget.lastDate,
-    mode: DesignCalendarMode.range,
+    mode: RawCalendarMode.range,
     selectedRange: widget.value,
     initialMonth: widget.value?.start ?? widget.currentDate,
     currentDate: widget.currentDate,
@@ -275,13 +271,13 @@ class _FrostedMonths extends StatelessWidget {
   });
 
   /// The days, the chosen ones and the month shown.
-  final DesignCalendarController controller;
+  final RawCalendarController controller;
 
   /// How many months stand side by side.
   final int months;
 
   /// Called as the choice changes.
-  final ValueChanged<DesignCalendarController>? onChanged;
+  final ValueChanged<RawCalendarController>? onChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -324,10 +320,10 @@ class _FrostedMonths extends StatelessWidget {
     // A month stands at most 400 wide, at the start of a wider field: on a
     // desktop column its days keep together rather than spread 100 apart.
     const monthMax = 400.0;
-    final calendar = DesignCalendar(
+    final calendar = RawCalendarDatePicker(
       controller: controller,
       months: months,
-      firstWeekday: DesignLocalizations.of(context).firstDayOfWeek,
+      firstWeekday: RawWidgetsLocalizations.of(context).firstDayOfWeek,
       showOutsideDays: false,
       minDayWidth: target,
       // The behaviour gives the day chosen; the choice (a day, or a range
@@ -335,7 +331,7 @@ class _FrostedMonths extends StatelessWidget {
       onChanged: onChanged == null ? null : (_) => onChanged!(controller),
       dayLabel: FrostedSharedWords.of(context).fullDate,
       monthLabel: FrostedSharedWords.of(context).monthYear,
-      weekdayLabel: DesignLocalizations.of(context).formatShortWeekday,
+      weekdayLabel: RawWidgetsLocalizations.of(context).formatShortWeekday,
       monthsBuilder: (context, grids) => Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         spacing: FrostedSpacing.s24,
@@ -352,7 +348,7 @@ class _FrostedMonths extends StatelessWidget {
               if (header.previous != null || months == 1)
                 step(
                   FrostedGlyphs.chevronLeft,
-                  DesignLocalizations.of(context).previousMonthTooltip,
+                  RawWidgetsLocalizations.of(context).previousMonthTooltip,
                   header.previous,
                   AlignmentDirectional.centerStart,
                 ),
@@ -366,7 +362,7 @@ class _FrostedMonths extends StatelessWidget {
               if (header.next != null || months == 1)
                 step(
                   FrostedGlyphs.forward,
-                  DesignLocalizations.of(context).nextMonthTooltip,
+                  RawWidgetsLocalizations.of(context).nextMonthTooltip,
                   header.next,
                   AlignmentDirectional.centerEnd,
                 ),
@@ -417,7 +413,7 @@ class _FrostedMonths extends StatelessWidget {
             child: Center(
               // In the reader's digits (Arabic's ١٨), as its name is read.
               child: Text(
-                DesignLocalizations.of(context).formatDecimal(day.date.day),
+                RawWidgetsLocalizations.of(context).formatDecimal(day.date.day),
                 style:
                     (ends || day.isToday
                             ? t.textTheme.labelLarge.semibold
@@ -457,7 +453,7 @@ class _FrostedMonths extends StatelessWidget {
         // stood square past the grid's last day.
         final column =
             (day.date.weekday -
-                DesignLocalizations.of(context).firstDayOfWeek) %
+                RawWidgetsLocalizations.of(context).firstDayOfWeek) %
             7;
         final rowStart = column == 0 || day.date.day == 1;
         final rowEnd =

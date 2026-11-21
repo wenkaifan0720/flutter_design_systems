@@ -8,18 +8,18 @@ import '../../internal/panel.dart';
 import '../../theme.dart';
 import '../../internal/dim.dart';
 
-export 'package:ui_core/ui_core.dart' show DesignRangeValues;
+export 'package:ui_core/ui_core.dart' show RawRangeValues;
 
 /// A range on a track with two knobs (Material's RangeSlider): the
 /// [FrostedSlider]'s track and white knobs, the stretch between the knobs
 /// in the signature band. Each knob is a Tab stop of its own (named
 /// [startLabel] and [endLabel]); the arrows step it, Page Up and Down take
 /// big steps, Home and End go to the ends; a press on the track moves the
-/// nearer knob, and the knobs never cross. ui_core's [DesignRangeSlider]
+/// nearer knob, and the knobs never cross. ui_core's [RawRangeSlider]
 /// is the behaviour.
 ///
 /// ```dart
-/// FrostedRangeSlider(values: const DesignRangeValues(20, 80), max: 100, onChanged: (v) => setState(() => price = v), startLabel: 'Lowest price', endLabel: 'Highest price')
+/// FrostedRangeSlider(values: const RawRangeValues(20, 80), max: 100, onChanged: (v) => setState(() => price = v), startLabel: 'Lowest price', endLabel: 'Highest price')
 /// ```
 class FrostedRangeSlider extends StatelessWidget {
   /// A range slider at [values].
@@ -44,10 +44,10 @@ class FrostedRangeSlider extends StatelessWidget {
        assert(minGap >= 0, 'The gap between the thumbs is not negative.');
 
   /// The range.
-  final DesignRangeValues values;
+  final RawRangeValues values;
 
   /// Called as a knob moves; null leaves it inert.
-  final ValueChanged<DesignRangeValues>? onChanged;
+  final ValueChanged<RawRangeValues>? onChanged;
 
   /// The track's low end.
   final double min;
@@ -66,17 +66,17 @@ class FrostedRangeSlider extends StatelessWidget {
   final String Function(double value)? semanticFormatterCallback;
 
   /// Called as a drag starts.
-  final ValueChanged<DesignRangeValues>? onChangeStart;
+  final ValueChanged<RawRangeValues>? onChangeStart;
 
   /// Called as a drag ends.
-  final ValueChanged<DesignRangeValues>? onChangeEnd;
+  final ValueChanged<RawRangeValues>? onChangeEnd;
 
   /// What a screen reader calls the low knob; null says
-  /// `DesignLocalizations.rangeSliderStartLabel` ("Minimum" in English).
+  /// `RawWidgetsLocalizations.rangeSliderStartLabel` ("Minimum" in English).
   final String? startLabel;
 
   /// What a screen reader calls the high knob; null says
-  /// `DesignLocalizations.rangeSliderEndLabel` ("Maximum" in English).
+  /// `RawWidgetsLocalizations.rangeSliderEndLabel` ("Maximum" in English).
   final String? endLabel;
 
   @override
@@ -93,7 +93,7 @@ class FrostedRangeSlider extends StatelessWidget {
         cursor: onChanged != null
             ? SystemMouseCursors.click
             : MouseCursor.defer,
-        child: DesignRangeSlider(
+        child: RawRangeSlider(
           values: values,
           onChanged: onChanged,
           min: min,
@@ -176,9 +176,9 @@ class FrostedRangeSlider extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(DiagnosticsProperty<DesignRangeValues>('values', values))
+      ..add(DiagnosticsProperty<RawRangeValues>('values', values))
       ..add(
-        ObjectFlagProperty<ValueChanged<DesignRangeValues>>.has(
+        ObjectFlagProperty<ValueChanged<RawRangeValues>>.has(
           'onChanged',
           onChanged,
         ),
@@ -194,13 +194,13 @@ class FrostedRangeSlider extends StatelessWidget {
         ),
       )
       ..add(
-        ObjectFlagProperty<ValueChanged<DesignRangeValues>>.has(
+        ObjectFlagProperty<ValueChanged<RawRangeValues>>.has(
           'onChangeStart',
           onChangeStart,
         ),
       )
       ..add(
-        ObjectFlagProperty<ValueChanged<DesignRangeValues>>.has(
+        ObjectFlagProperty<ValueChanged<RawRangeValues>>.has(
           'onChangeEnd',
           onChangeEnd,
         ),

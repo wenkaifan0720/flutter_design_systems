@@ -300,7 +300,7 @@ void main() {
           ],
         ),
       );
-      // Each tab says its place after its name (ui_core's DesignTabBar).
+      // Each tab says its place after its name (ui_core's RawTabBar).
       SemanticsNode tab(String name) =>
           t.getSemantics(find.bySemanticsLabel(RegExp('^$name\n')));
       expect(

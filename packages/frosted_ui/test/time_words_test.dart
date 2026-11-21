@@ -1,5 +1,5 @@
 // The time wheel names its columns, and says its halves of the day, in the reader's language: ui_core's shared words
-// (DesignLocalizations, 30 languages) while Frosted's own are left at English, an app's own Frosted words when it
+// (RawWidgetsLocalizations, 30 languages) while Frosted's own are left at English, an app's own Frosted words when it
 // gives them. It said Hour and Minute in English in every locale. FrostedLocalizations.delegate serves every locale,
 // so an app in German installs it and is not warned that its locale lacks a delegate.
 import 'package:flutter/foundation.dart';
@@ -60,9 +60,9 @@ Future<void> _pump(
     WidgetsApp(
       color: const Color(0xFF000000),
       locale: locale,
-      supportedLocales: DesignLocalizations.supportedLocales,
+      supportedLocales: RawWidgetsLocalizations.supportedLocales,
       localizationsDelegates: [
-        DesignLocalizations.delegate,
+        RawWidgetsLocalizations.delegate,
         if (own)
           const _OwnDelegate()
         else if (englishOnly)
@@ -110,7 +110,7 @@ void main() {
       final semantics = tester.ensureSemantics();
       final locale = Locale(language);
       await _pump(tester, locale);
-      final words = DesignLocalizations.forLocale(locale);
+      final words = RawWidgetsLocalizations.forLocale(locale);
       expect(words.timePickerHourLabel, isNot('Hour'));
       for (final name in [
         words.timePickerHourLabel,

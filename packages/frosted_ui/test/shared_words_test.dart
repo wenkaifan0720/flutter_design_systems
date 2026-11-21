@@ -1,5 +1,5 @@
 // The words Frosted's parts share with every design system (Done, Try again, a day's and a month's names, a time) are
-// the reader's: in German, with FrostedLocalizations.delegate installed, ui_core's DesignLocalizations words; in
+// the reader's: in German, with FrostedLocalizations.delegate installed, ui_core's RawWidgetsLocalizations words; in
 // English, Frosted's own ("Monday, March 9, 2026"); an app's own Frosted words, when it gives them, in any language.
 // They were English in every locale.
 import 'package:flutter/foundation.dart';
@@ -44,9 +44,9 @@ Future<void> _pump(
     WidgetsApp(
       color: const Color(0xFF000000),
       locale: locale,
-      supportedLocales: DesignLocalizations.supportedLocales,
+      supportedLocales: RawWidgetsLocalizations.supportedLocales,
       localizationsDelegates: [
-        DesignLocalizations.delegate,
+        RawWidgetsLocalizations.delegate,
         if (own) const _OwnDelegate() else FrostedLocalizations.delegate,
       ],
       pageRouteBuilder: <T>(settings, builder) => PageRouteBuilder<T>(
@@ -99,12 +99,12 @@ final _parts = Column(
 );
 
 void main() {
-  testWidgets("in German the parts say DesignLocalizations' words", (
+  testWidgets("in German the parts say RawWidgetsLocalizations' words", (
     tester,
   ) async {
     final semantics = tester.ensureSemantics();
     const de = Locale('de');
-    final words = DesignLocalizations.forLocale(de);
+    final words = RawWidgetsLocalizations.forLocale(de);
     await _pump(tester, de, _parts);
     final month = words.formatMonthYear(_day);
     expect(month, isNot('March 2026'));
@@ -118,7 +118,7 @@ void main() {
     expect(_named(tester, words.doneButtonLabel), isTrue);
     expect(
       _told,
-      words.formatTimeOfDay(const DesignTimeOfDay(hour: 21, minute: 5)),
+      words.formatTimeOfDay(const RawTimeOfDay(hour: 21, minute: 5)),
     );
     semantics.dispose();
   });

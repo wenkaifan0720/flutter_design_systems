@@ -504,25 +504,25 @@ void main() {
       ),
       'FrostedMenuBar': (context) => FrostedMenuBar(
         menus: [
-          DesignMenuEntry(
+          RawMenuEntry(
             label: 'File',
             children: [
-              DesignMenuEntry(label: 'New', shortcut: '⌘N', onPressed: create),
-              DesignMenuEntry.divider(),
-              DesignMenuEntry(label: 'Close', onPressed: close),
+              RawMenuEntry(label: 'New', shortcut: '⌘N', onPressed: create),
+              RawMenuEntry.divider(),
+              RawMenuEntry(label: 'Close', onPressed: close),
             ],
           ),
         ],
       ),
       'FrostedContextMenu': (context) => FrostedContextMenu(
         items: [
-          DesignMenuEntry(label: 'Copy', onPressed: copy),
-          DesignMenuEntry.divider(),
-          DesignMenuEntry(label: 'Delete', onPressed: delete),
+          RawMenuEntry(label: 'Copy', onPressed: copy),
+          RawMenuEntry.divider(),
+          RawMenuEntry(label: 'Delete', onPressed: delete),
         ],
         child: card,
       ),
-      'frostedShortcutLabel': (context) => DesignMenuEntry(
+      'frostedShortcutLabel': (context) => RawMenuEntry(
         label: 'Redo',
         shortcut: frostedShortcutLabel(
           context,
@@ -539,13 +539,13 @@ void main() {
           FrostedCommand.show(
             context,
             commands: [
-              DesignCommand(
+              RawCommand(
                 label: 'New payment',
                 group: 'Money',
                 shortcut: '⌘P',
                 onPressed: pay,
               ),
-              DesignCommand(label: 'Settings', onPressed: openSettings),
+              RawCommand(label: 'Settings', onPressed: openSettings),
             ],
           );
         });
@@ -680,16 +680,16 @@ void main() {
       ),
       'FrostedDataTable': (context) =>
           FrostedDataTable<({String payee, int cents})>(
-            controller: DesignTableController(
+            controller: RawDataTableController(
               rows: payments,
               pageSize: 10,
               columns: [
-                DesignTableColumn(
+                RawDataColumn(
                   id: 'who',
                   label: 'Payee',
                   sortKey: (p) => p.payee,
                 ),
-                DesignTableColumn(
+                RawDataColumn(
                   id: 'sum',
                   label: 'Amount',
                   numeric: true,
@@ -1495,7 +1495,7 @@ void main() {
         title: 'Category',
         close: FrostedIconButton(
           FrostedGlyphs.close,
-          label: DesignLocalizations.of(context).closeButtonLabel,
+          label: RawWidgetsLocalizations.of(context).closeButtonLabel,
           size: FrostedIconButtonSize.small,
           onPressed: close,
         ),
@@ -1596,7 +1596,7 @@ void main() {
         'email',
       ], onPressed: signIn),
       'FrostedRangeSlider': (context) => FrostedRangeSlider(
-        values: const DesignRangeValues(20, 80),
+        values: const RawRangeValues(20, 80),
         max: 100,
         onChanged: (v) => setState(() => price = v),
         startLabel: 'Lowest price',
@@ -1971,7 +1971,7 @@ void main() {
         return MaterialApp(
           localizationsDelegates: const [
             FrostedLocalizations.delegate,
-            DesignLocalizations.delegate,
+            RawWidgetsLocalizations.delegate,
           ],
           home: home,
         );

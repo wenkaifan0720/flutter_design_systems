@@ -146,7 +146,7 @@ class FrostedTextContextMenu extends StatelessWidget {
       ContextMenuButtonType.copy => w.copyButtonLabel,
       ContextMenuButtonType.paste => w.pasteButtonLabel,
       ContextMenuButtonType.selectAll => w.selectAllButtonLabel,
-      ContextMenuButtonType.delete => DesignLocalizations.of(
+      ContextMenuButtonType.delete => RawWidgetsLocalizations.of(
         context,
       ).deleteButtonTooltip,
       ContextMenuButtonType.lookUp => w.lookUpButtonLabel,

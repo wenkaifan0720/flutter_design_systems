@@ -118,7 +118,7 @@ void main() {
       'grip and a swipe row show their cursors', (t) async {
     await _pump(t, [
       const FrostedRangeSlider(
-        values: DesignRangeValues(.2, .7),
+        values: RawRangeValues(.2, .7),
         onChanged: _drop,
       ),
       const FrostedColorPicker(value: Color(0xFF3366FF), onChanged: _drop),
@@ -166,7 +166,7 @@ void main() {
       SystemMouseCursors.click,
       reason: 'the range slider\'s track between its thumbs',
     );
-    final hue = t.getRect(_named('DesignColorSlider').first);
+    final hue = t.getRect(_named('RawColorSlider').first);
     expect(
       await _cursorAt(
         mouse,

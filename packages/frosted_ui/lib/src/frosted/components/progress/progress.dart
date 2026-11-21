@@ -282,7 +282,7 @@ class _FrostedCircularProgressIndicatorState
             builder: (context, v, _) => ring(v),
           );
     return Semantics(
-      label: widget.label ?? DesignLocalizations.of(context).loadingLabel,
+      label: widget.label ?? RawWidgetsLocalizations.of(context).loadingLabel,
       value:
           widget.valueLabel ??
           (value == null ? null : '${(value * 100).round()}%'),

@@ -23,7 +23,7 @@ const double _stripReach = FrostedChromeMetrics.stripReach;
 /// hairline edge, its word in the 600 ink), the rest bare in the quieter
 /// ink. A row too long for its width scrolls sideways; with [expand] the
 /// tabs share the width instead (a few short ones). A null [onChanged]
-/// shows the choice inert. ui_core's [DesignTabBar] is the behaviour: the
+/// shows the choice inert. ui_core's [RawTabBar] is the behaviour: the
 /// row is one Tab stop, on the chosen tab; the arrows move along it
 /// (mirrored right to left, wrapping), Home and End to its ends, choosing
 /// as they go; a screen reader hears a tab bar named [label], each tab its
@@ -104,13 +104,13 @@ class FrostedTabBar extends StatefulWidget {
 
 class _FrostedTabBarState extends State<FrostedTabBar>
     with SingleTickerProviderStateMixin {
-  late DesignTabController _controller = _made();
+  late RawTabController _controller = _made();
 
   int get _shown => widget.tabs.isEmpty
       ? 0
       : widget.selectedIndex.clamp(0, widget.tabs.length - 1);
 
-  DesignTabController _made() => DesignTabController(
+  RawTabController _made() => RawTabController(
     length: widget.tabs.length,
     initialIndex: _shown,
     vsync: this,
@@ -203,11 +203,11 @@ class _FrostedTabBarState extends State<FrostedTabBar>
       );
     }
 
-    final bar = DesignTabBar(
+    final bar = RawTabBar(
       controller: _controller,
       semanticLabel: label,
       tabs: [
-        for (final name in widget.tabs) DesignTab(label: name, enabled: !inert),
+        for (final name in widget.tabs) RawTab(label: name, enabled: !inert),
       ],
       // The face is 40 tall; the tab stands in a row a target tall (48 under
       // a finger, 44 under a pointer), so its tap reaches the box a screen

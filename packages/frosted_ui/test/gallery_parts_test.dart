@@ -172,7 +172,7 @@ void main() {
                 }).isEmpty;
             // A node whose one act is a long press, beside a custom action
             // that names it, is a context menu's region (ui_core's
-            // `DesignContextMenu`, Android's long-press menu): it is what it
+            // `RawContextMenu`, Android's long-press menu): it is what it
             // wraps, read by its own words, and the action ("Show menu") says
             // what holding it does.
             final named = [

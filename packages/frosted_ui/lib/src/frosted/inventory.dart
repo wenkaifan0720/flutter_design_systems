@@ -214,7 +214,7 @@ final DesignInventory frostedInventory = DesignInventory(
     DesignInventoryEntry.present(
       'RangeSlider',
       (context) => const FrostedRangeSlider(
-        values: DesignRangeValues(.2, .7),
+        values: RawRangeValues(.2, .7),
         onChanged: _drop,
       ),
     ),
@@ -363,13 +363,13 @@ final DesignInventory frostedInventory = DesignInventory(
       'MenuBar',
       (context) => const FrostedMenuBar(
         menus: [
-          DesignMenuEntry(
+          RawMenuEntry(
             label: 'File',
-            children: [DesignMenuEntry(label: 'New', onPressed: _none)],
+            children: [RawMenuEntry(label: 'New', onPressed: _none)],
           ),
-          DesignMenuEntry(
+          RawMenuEntry(
             label: 'Edit',
-            children: [DesignMenuEntry(label: 'Copy', onPressed: _none)],
+            children: [RawMenuEntry(label: 'Copy', onPressed: _none)],
           ),
         ],
       ),
@@ -379,8 +379,8 @@ final DesignInventory frostedInventory = DesignInventory(
       (context) => const FrostedCommand(
         width: 340,
         commands: [
-          DesignCommand(label: 'New payment', group: 'Money'),
-          DesignCommand(label: 'Settings'),
+          RawCommand(label: 'New payment', group: 'Money'),
+          RawCommand(label: 'Settings'),
         ],
       ),
     ),
@@ -427,11 +427,11 @@ final DesignInventory frostedInventory = DesignInventory(
     DesignInventoryEntry.present(
       'DataTable',
       (context) => _Owned(
-        create: () => DesignTableController<(String, int)>(
+        create: () => RawDataTableController<(String, int)>(
           rows: const [('Notebook', 2), ('Pens', 10)],
           columns: [
-            DesignTableColumn(id: 'item', label: 'Item', sortKey: (r) => r.$1),
-            DesignTableColumn(
+            RawDataColumn(id: 'item', label: 'Item', sortKey: (r) => r.$1),
+            RawDataColumn(
               id: 'qty',
               label: 'Qty',
               numeric: true,

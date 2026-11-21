@@ -20,7 +20,7 @@ import 'menu/menu.dart';
 import '../internal/cap.dart';
 import '../internal/act_row.dart';
 
-export 'package:ui_core/ui_core.dart' show DesignSheetEdge;
+export 'package:ui_core/ui_core.dart' show RawSheetEdge;
 
 /// A sheet's head (`.sheet-h`): its [title] in the sheet's type (the h1
 /// set on a line of 24) and, at its end, the small round close ([close];
@@ -30,7 +30,7 @@ export 'package:ui_core/ui_core.dart' show DesignSheetEdge;
 /// its card with it.
 ///
 /// ```dart
-/// FrostedSheetHead(title: 'Category', close: FrostedIconButton(FrostedGlyphs.close, label: DesignLocalizations.of(context).closeButtonLabel, size: FrostedIconButtonSize.small, onPressed: close))
+/// FrostedSheetHead(title: 'Category', close: FrostedIconButton(FrostedGlyphs.close, label: RawWidgetsLocalizations.of(context).closeButtonLabel, size: FrostedIconButtonSize.small, onPressed: close))
 /// ```
 class FrostedSheetHead extends StatelessWidget {
   /// Creates a [FrostedSheetHead].
@@ -205,7 +205,8 @@ class FrostedSheetShell extends StatelessWidget {
                   ? FrostedIconButton(
                       FrostedGlyphs.close,
                       key: closeKey,
-                      label: DesignLocalizations.of(context).closeButtonLabel,
+                      label: RawWidgetsLocalizations.of(context)
+                          .closeButtonLabel,
                       size: FrostedIconButtonSize.small,
                       onPressed:
                           onClose ?? () => Navigator.of(context).maybePop(),
@@ -330,7 +331,7 @@ class _OnCard extends InheritedWidget {
 /// sheet's face with its rim and drop, its inner corners on the sheet's
 /// radius, the head ([FrostedSheetHead]: [title] and the close) over the
 /// scrolling [children] and the [foot]'s acts. [showSide] raises one
-/// (ui_core's [DesignSideSheetRoute]: a scrim, a drag towards its edge, the
+/// (ui_core's [RawSideSheetRoute]: a scrim, a drag towards its edge, the
 /// system back or Escape close it, focus returning to the control).
 ///
 /// [show] raises a transient sheet from a control (a category, an amount, a
@@ -354,7 +355,7 @@ class FrostedSheet extends StatelessWidget {
     required this.title,
     required this.children,
     this.foot = const [],
-    this.edge = DesignSheetEdge.end,
+    this.edge = RawSheetEdge.end,
     this.onClose,
     super.key,
   });
@@ -371,7 +372,7 @@ class FrostedSheet extends StatelessWidget {
   /// The screen edge the panel stands at, in reading terms: the end is the
   /// right in English and the left in Arabic. Its corners are rounded on
   /// the other side.
-  final DesignSheetEdge edge;
+  final RawSheetEdge edge;
 
   /// What the close does; null pops the sheet's route.
   final VoidCallback? onClose;
@@ -385,7 +386,7 @@ class FrostedSheet extends StatelessWidget {
     required String title,
     required List<Widget> Function(BuildContext context) builder,
     List<Widget> Function(BuildContext context)? foot,
-    DesignSheetEdge edge = DesignSheetEdge.end,
+    RawSheetEdge edge = RawSheetEdge.end,
     double width = FrostedChromeMetrics.sideSheetWidth,
   }) {
     final navigator = FrostedHost.navigatorOf(context);
@@ -421,7 +422,7 @@ class FrostedSheet extends StatelessWidget {
     final s = FrostedStyleLayers(null, t.components.sheet);
     const inner = Radius.circular(FrostedCorners.r22);
     final ltr = Directionality.of(context) == TextDirection.ltr;
-    final atLeft = (edge == DesignSheetEdge.start) == ltr;
+    final atLeft = (edge == RawSheetEdge.start) == ltr;
     final radius = BorderRadius.horizontal(
       left: atLeft ? Radius.zero : inner,
       right: atLeft ? inner : Radius.zero,
@@ -458,7 +459,7 @@ class FrostedSheet extends StatelessWidget {
                   title: title,
                   close: FrostedIconButton(
                     FrostedGlyphs.close,
-                    label: DesignLocalizations.of(context).closeButtonLabel,
+                    label: RawWidgetsLocalizations.of(context).closeButtonLabel,
                     size: FrostedIconButtonSize.small,
                     onPressed:
                         onClose ?? () => Navigator.of(context).maybePop(),
@@ -657,10 +658,10 @@ class FrostedSheet extends StatelessWidget {
     properties
       ..add(StringProperty('title', title))
       ..add(
-        EnumProperty<DesignSheetEdge>(
+        EnumProperty<RawSheetEdge>(
           'edge',
           edge,
-          defaultValue: DesignSheetEdge.end,
+          defaultValue: RawSheetEdge.end,
         ),
       )
       ..add(ObjectFlagProperty<VoidCallback>.has('onClose', onClose));

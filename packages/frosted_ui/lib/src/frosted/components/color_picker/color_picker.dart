@@ -14,7 +14,7 @@ import '../forms/forms.dart';
 /// slider for the hue (and a fading one for the opacity with [showAlpha]),
 /// the swatch and its hex in a field. Each part is a Tab stop; the arrows
 /// move the ring and the knobs, and a screen reader hears each as a slider
-/// with its value. ui_core's [DesignColorPicker] is the behaviour.
+/// with its value. ui_core's [RawColorPicker] is the behaviour.
 ///
 /// ```dart
 /// FrostedColorPicker(value: tint, onChanged: (c) => setState(() => tint = c))
@@ -56,7 +56,7 @@ class FrostedColorPicker extends StatefulWidget {
 }
 
 class _FrostedColorPickerState extends State<FrostedColorPicker> {
-  late final DesignColorController _colour = DesignColorController(widget.value)
+  late final RawColorController _colour = RawColorController(widget.value)
     ..addListener(_changed);
   late final TextEditingController _hex = TextEditingController(
     text: _colour.hex,
@@ -112,7 +112,7 @@ class _FrostedColorPickerState extends State<FrostedColorPicker> {
       return Center(child: frostedRingFor(states, face, radius: 11));
     }
 
-    return DesignColorPicker(
+    return RawColorPicker(
       controller: _colour,
       showAlpha: widget.showAlpha,
       areaHeight: 180,
@@ -148,7 +148,7 @@ class _FrostedColorPickerState extends State<FrostedColorPicker> {
         // left to right under a right-to-left thumb, each thumb stood on
         // another colour.
         final gradient = switch (channel) {
-          DesignColorChannel.hue => LinearGradient(
+          RawColorChannel.hue => LinearGradient(
             begin: AlignmentDirectional.centerStart,
             end: AlignmentDirectional.centerEnd,
             colors: [
@@ -176,7 +176,7 @@ class _FrostedColorPickerState extends State<FrostedColorPicker> {
               child: Stack(
                 fit: StackFit.expand,
                 children: [
-                  if (channel == DesignColorChannel.alpha)
+                  if (channel == RawColorChannel.alpha)
                     ClipRRect(
                       borderRadius: BorderRadius.circular(6),
                       child: const CustomPaint(painter: _Checker()),

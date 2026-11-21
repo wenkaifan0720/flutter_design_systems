@@ -31,7 +31,7 @@ import '../../internal/dim.dart';
 /// hiding it (shadcn's password input): the text hidden at first, the eye
 /// saying what it will do ("Show password"), the caret and focus kept as it
 /// flips. Autofill fills it as a password ([newPassword] for a new one).
-/// ui_core's [DesignPasswordReveal] is the behaviour.
+/// ui_core's [RawPasswordReveal] is the behaviour.
 ///
 /// ```dart
 /// FrostedPasswordField(label: 'Password', value: password, onChanged: (v) => setState(() => password = v))
@@ -92,10 +92,10 @@ class FrostedPasswordField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DesignPasswordReveal(
+    return RawPasswordReveal(
       focusNode: focusNode,
-      showLabel: DesignLocalizations.of(context).showPasswordLabel,
-      hideLabel: DesignLocalizations.of(context).hidePasswordLabel,
+      showLabel: RawWidgetsLocalizations.of(context).showPasswordLabel,
+      hideLabel: RawWidgetsLocalizations.of(context).hidePasswordLabel,
       builder: (context, password) => FrostedTextField(
         label: label,
         value: value,
@@ -436,7 +436,7 @@ class _FrostedInputGroupState extends State<FrostedInputGroup>
 /// takes the over ink when [error] says what is wrong. One real input
 /// stands under the boxes, so a paste, the code from a message and
 /// Backspace all just work. [onCompleted] hears the code once every box
-/// is full. ui_core's [DesignOtpField] is the behaviour.
+/// is full. ui_core's [RawOtpField] is the behaviour.
 ///
 /// ```dart
 /// FrostedInputOtp(label: 'Code from your text', onCompleted: verify)
@@ -485,7 +485,7 @@ class FrostedInputOtp extends StatelessWidget {
   final Iterable<String> autofillHints;
 
   /// The code's controller, when the caller holds it.
-  final DesignOtpController? controller;
+  final RawOtpController? controller;
 
   /// The field's focus.
   final FocusNode? focusNode;
@@ -521,7 +521,7 @@ class FrostedInputOtp extends StatelessWidget {
       spacing: FrostedChromeMetrics.fieldLabelGap,
       children: [
         if (label != null) FrostedFieldLabel(label),
-        DesignOtpField(
+        RawOtpField(
           length: length,
           controller: controller,
           focusNode: focusNode,
@@ -642,7 +642,7 @@ class FrostedInputOtp extends StatelessWidget {
         ),
       )
       ..add(
-        DiagnosticsProperty<DesignOtpController>(
+        DiagnosticsProperty<RawOtpController>(
           'controller',
           controller,
           defaultValue: null,
@@ -683,7 +683,7 @@ class FrostedInputOtp extends StatelessWidget {
 /// [FrostedTextField] and its kin carry theirs. A single control takes the
 /// field's name as its own; a group keeps each control's node under the
 /// field's name, so a tap reaches the control it lands on.
-/// ui_core's [DesignField] is the behaviour.
+/// ui_core's [RawInputDecorator] is the behaviour.
 ///
 /// ```dart
 /// FrostedFormField(label: 'Notify me', helper: 'Pick at least one', child: Row(children: [chipA, chipB]))
@@ -782,7 +782,7 @@ class FrostedFormField extends StatelessWidget {
     // decides for itself).
     final own = merge ? null : _ownName(child)?.trim().toLowerCase();
     final heard = own != null && own == label?.trim().toLowerCase();
-    return DesignField(
+    return RawInputDecorator(
       labelText: heard ? null : label,
       helperText: helper,
       errorText: error,
@@ -790,7 +790,7 @@ class FrostedFormField extends StatelessWidget {
       enabled: enabled,
       focusNode: focusNode,
       mergeSemantics: merge,
-      requiredHint: DesignLocalizations.of(context).requiredHint,
+      requiredHint: RawWidgetsLocalizations.of(context).requiredHint,
       builder: (context, parts) {
         final head =
             parts.label ??

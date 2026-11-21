@@ -84,7 +84,7 @@ void main() {
 
   // iOS's swipe back lives in Cupertino's page transition, which Frosted's
   // push replaces; Frosted's map keeps it (ui_core's
-  // DesignSwipeBackPageTransitionsBuilder round the push).
+  // SwipeBackPageTransitionsBuilder round the push).
   testWidgets(
     "with Frosted's map, a swipe from the left edge past half way pops the "
     'page, and one let go short of half settles it back',

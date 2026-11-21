@@ -49,14 +49,14 @@ Widget kitDataDemo(Brightness brightness) => kitScreen(
   ],
 );
 
-DesignTableController<_File> _filesTable() => DesignTableController<_File>(
+RawDataTableController<_File> _filesTable() => RawDataTableController<_File>(
   rows: _files,
   rowKey: (f) => f.name,
   pageSize: 5,
   columns: [
-    DesignTableColumn(id: 'name', label: 'Name', sortKey: (f) => f.name),
-    DesignTableColumn(id: 'kind', label: 'Kind', sortKey: (f) => f.kind),
-    DesignTableColumn(
+    RawDataColumn(id: 'name', label: 'Name', sortKey: (f) => f.name),
+    RawDataColumn(id: 'kind', label: 'Kind', sortKey: (f) => f.kind),
+    RawDataColumn(
       id: 'size',
       label: 'Size',
       numeric: true,
@@ -72,7 +72,7 @@ DesignTreeController<_Folder> _folders() => DesignTreeController<_Folder>(
 );
 
 /// Files to sort, select and page through, five a page.
-Widget kitSpecimenDataTable() => KitOwned<DesignTableController<_File>>(
+Widget kitSpecimenDataTable() => KitOwned<RawDataTableController<_File>>(
   _filesTable,
   (rows) => FrostedDataTable<_File>(
     controller: rows,

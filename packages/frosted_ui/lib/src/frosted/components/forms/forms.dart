@@ -1104,7 +1104,7 @@ class FrostedSearchField extends StatefulWidget {
   /// way back to the plain list.
   final VoidCallback? onClear;
 
-  /// What a screen reader calls the clear; null says `DesignLocalizations.clearButtonTooltip` ("Clear").
+  /// What a screen reader calls the clear; null says `RawWidgetsLocalizations.clearButtonTooltip` ("Clear").
   final String? clearLabel;
 
   /// The walkthrough key set on the clear's hit target.
@@ -1181,7 +1181,7 @@ class _FrostedSearchFieldState extends State<FrostedSearchField>
         onPressed: widget.onClear ?? _clear,
         label:
             widget.clearLabel ??
-            DesignLocalizations.of(context).clearButtonTooltip,
+            RawWidgetsLocalizations.of(context).clearButtonTooltip,
         role: widget.onClear == null
             ? FrostedPressRole.button
             : FrostedPressRole.link,
@@ -1619,7 +1619,7 @@ class FrostedSwapButton extends StatelessWidget {
 /// puts the value back. Up and Down in the well step too. A null [onChanged]
 /// leaves it inert. A screen reader hears a text field named [label] that
 /// steps up and down; the rounds are for the eye and the finger. ui_core's
-/// [DesignNumberField] is the behaviour.
+/// [RawNumberField] is the behaviour.
 ///
 /// ```dart
 /// FrostedNumberField(value: guests, onChanged: (v) => setState(() => guests = v), label: 'Guests', min: 1, max: 12, step: 1, unit: (n) => n == 1 ? 'person' : 'people')
@@ -1693,7 +1693,7 @@ class FrostedNumberField extends StatelessWidget {
     // .stepper { gap: 12px }  .step-b { width: 48px; height: 48px }
     // .stepper .amount-in { flex: 1; justify-content: center }
     // .stepper-c { text-align: center; margin-top: -8px }
-    final row = DesignNumberField(
+    final row = RawNumberField(
       value: value.toDouble(),
       // An emptied well takes no number: the value stands.
       onChanged: live
@@ -1735,7 +1735,7 @@ class FrostedNumberField extends StatelessWidget {
             // so typing 12 over a floor of 5 never snaps at the 1.
             onChanged: live
                 ? (text) {
-                    final read = DesignLocalizations.of(context)
+                    final read = RawWidgetsLocalizations.of(context)
                         .parseDecimal(text);
                     if (read == null || read != read.roundToDouble()) return;
                     final n = read.round();

@@ -1,6 +1,6 @@
 // The words Frosted's parts say that every design system says too (Done, Try again, a day's and a month's names, a
 // time), in the reader's language. Frosted's own, when the app gives Frosted words of its own or the reader reads
-// English (its English is the design's: "Monday, November 9, 2026"); else ui_core's DesignLocalizations, which speak
+// English (its English is the design's: "Monday, November 9, 2026"); else ui_core's RawWidgetsLocalizations, which speak
 // 30 languages. An app installs FrostedLocalizations.delegate in any language and its parts speak that language's
 // shared words.
 import 'package:flutter/widgets.dart';
@@ -10,19 +10,19 @@ import '../localizations.dart';
 
 /// The words at a context that Frosted shares with every design system,
 /// each Frosted's own unless it is Frosted's stock English and the reader
-/// reads another language: then `DesignLocalizations`' word for it.
+/// reads another language: then `RawWidgetsLocalizations`' word for it.
 class FrostedSharedWords {
   const FrostedSharedWords._(this._own, this._shared, this._english);
 
   /// The words in force at [context].
   factory FrostedSharedWords.of(BuildContext context) => FrostedSharedWords._(
     FrostedLocalizations.of(context),
-    DesignLocalizations.of(context),
+    RawWidgetsLocalizations.of(context),
     (Localizations.maybeLocaleOf(context)?.languageCode ?? 'en') == 'en',
   );
 
   final FrostedLocalizations _own;
-  final DesignLocalizations _shared;
+  final RawWidgetsLocalizations _shared;
   final bool _english;
 
   static const _stock = FrostedLocalizationsEn();
@@ -66,7 +66,7 @@ class FrostedSharedWords {
       told(_own),
       told(_stock),
       () => _shared.formatTimeOfDay(
-        DesignTimeOfDay(hour: hour, minute: minute),
+        RawTimeOfDay(hour: hour, minute: minute),
         alwaysUse24HourFormat: use24,
       ),
     );

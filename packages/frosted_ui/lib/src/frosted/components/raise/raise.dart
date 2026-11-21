@@ -292,7 +292,7 @@ class FrostedActionSheet<T> extends StatelessWidget {
                 card(
                   row(
                     cancelLabel ??
-                        DesignLocalizations.of(context).cancelButtonLabel,
+                        RawWidgetsLocalizations.of(context).cancelButtonLabel,
                     t.textTheme.bodyLarge.semibold.c(t.colorScheme.textPrimary),
                     () => Navigator.of(context).pop(),
                   ),
@@ -364,11 +364,11 @@ Future<T?> showFrostedActionSheet<T>(
 
 /// A few words about [child], raised over it: the toast's ink slab, 8
 /// round, the [message] in the inverse caption, standing 8 over the child
-/// (under it when there is no room above). ui_core's [DesignTooltip] runs
-/// it: it shows while a pointer rests on the child (and on the tip itself),
-/// after a long press (for a moment past the lift), and while the
-/// keyboard's focus is on it; Escape hides it; one shows at a time, and
-/// along a toolbar the next shows at once. A screen reader hears [message]
+/// (under it when there is no room above). Flutter's [RawTooltip] runs it,
+/// with ui_core's [RawTooltipFocusFix] and [RawTooltipPlacement]: it shows
+/// while a pointer rests on the child (and on the tip itself), after a long
+/// press (for a moment past the lift), and while the keyboard's focus is on
+/// it; Escape hides it; one shows at a time. A screen reader hears [message]
 /// as the child's tooltip.
 ///
 /// ```dart
@@ -414,9 +414,9 @@ class FrostedTooltip extends StatelessWidget {
 
   /// Above the child, centred on it, 8 from it; below it when there are 48
   /// or fewer above.
-  static const DesignOverlayPlacement _placement = DesignOverlayPlacement(
-    side: DesignOverlaySide.above,
-    align: DesignOverlayAlign.center,
+  static const RawPopoverPlacement _placement = RawPopoverPlacement(
+    side: RawPopoverSide.above,
+    align: RawPopoverAlign.center,
     gap: 8,
     preferredExtent: 48,
     matchAnchorWidth: false,
@@ -431,24 +431,31 @@ class FrostedTooltip extends StatelessWidget {
       FrostedStyleLayers.stockMedium,
       8,
     );
-    return DesignTooltip(
-      message: message,
-      hoverDelay: waitDuration,
-      touchDelay: showDuration,
-      placement: _placement,
-      tooltipBuilder: (context, info) => _TooltipBubble(
-        presence: info.animation,
-        message: message,
-        slab: bubble.fill ?? t.colorScheme.surfaceInverse,
-        style: bubble.words(
-          t.textTheme.labelMedium.c(t.colorScheme.textInverse),
+    // One node, the tooltip on its control, as the published look read.
+    return MergeSemantics(
+      child: RawTooltipPlacement(
+        placement: _placement,
+        builder: (context, positionDelegate) => RawTooltip(
+          semanticsTooltip: message,
+          hoverDelay: waitDuration,
+          touchDelay: showDuration,
+          positionDelegate: positionDelegate,
+          tooltipBuilder: (context, animation) => _TooltipBubble(
+            presence: animation,
+            message: message,
+            slab: bubble.fill ?? t.colorScheme.surfaceInverse,
+            style: bubble.words(
+              t.textTheme.labelMedium.c(t.colorScheme.textInverse),
+            ),
+            shadows: t.shadows.menu,
+            shape: cut,
+            radius: corner,
+            padding: bubble.padding,
+          ),
+          // It shows on the keyboard's focus as well.
+          child: RawTooltipFocusFix(child: child),
         ),
-        shadows: t.shadows.menu,
-        shape: cut,
-        radius: corner,
-        padding: bubble.padding,
       ),
-      child: child,
     );
   }
 

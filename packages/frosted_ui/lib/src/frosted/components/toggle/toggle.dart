@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
@@ -12,6 +13,7 @@ import '../../internal/menu_wake.dart';
 import '../../internal/panel.dart';
 import '../../theme.dart';
 import '../controls/controls.dart';
+import '../pressable/pressable.dart' show FrostedPointerHover;
 import '../../internal/dim.dart';
 import '../../internal/cap.dart';
 
@@ -25,10 +27,10 @@ import '../../internal/cap.dart';
 /// choice. With [multiple] each toggles on its own; without, it is one
 /// choice and a press on the chosen one keeps it unless [allowEmpty]. One
 /// Tab stop for the strip, Space or Return to press. Several at once,
-/// ui_core's [DesignToggleGroup] is the behaviour: the arrows move between
-/// the toggles. One at a time it is a group of radio buttons, ui_core's
-/// [DesignRadioGroup]: Tab lands on the chosen toggle and the four arrows
-/// choose as they move, wrapping.
+/// ui_core's [RawSegmentedButton] is the behaviour: the arrows move between
+/// the toggles. One at a time it is a group of radio buttons, Flutter's
+/// [RadioGroup] with ui_core's [RadioGroupKeyboardFix] inside: Tab lands on
+/// the chosen toggle and the four arrows choose as they move, wrapping.
 ///
 /// ```dart
 /// FrostedToggleGroup<String>(label: 'Text style', multiple: true, segments: const [FrostedButtonSegment('b', 'Bold'), FrostedButtonSegment('i', 'Italic')], selected: styles, onChanged: (v) => setState(() => styles = v))
@@ -181,7 +183,7 @@ class FrostedToggleGroup<T> extends StatelessWidget {
     final values = [for (final s in segments) s.value];
     final minimum = Size(FrostedChromeMetrics.segmentMinWidth, height);
     if (multiple) {
-      return DesignToggleGroup<T>(
+      return RawSegmentedButton<T>(
         options: values,
         selected: selected,
         onSelectionChanged: onChanged,
@@ -194,39 +196,40 @@ class FrostedToggleGroup<T> extends StatelessWidget {
         itemBuilder: (context, value, states) => toggle(value, states),
       );
     }
-    // One at a time: a group of radio buttons, each toggle the same pressable
-    // and plate as before, its node the one the group registers.
+    // One at a time: a group of radio buttons, each toggle one of Flutter's
+    // radios drawing the same plate as before.
     final change = onChanged;
     final chosen = selected.isEmpty ? null : selected.first;
     return Semantics(
       container: true,
       explicitChildNodes: true,
       label: label,
-      child: DesignRadioGroup<T>(
-        options: values,
-        value: chosen,
-        onChanged: change == null ? null : (value) => change({value}),
-        direction: Axis.horizontal,
-        layoutBuilder: row,
-        itemBuilder: (context, value, node, select) {
-          final on = selected.contains(value);
-          return DesignPressable(
-            focusNode: node,
-            // A press on the chosen toggle keeps it, or with [allowEmpty]
-            // clears it.
-            onPressed: on && allowEmpty && select != null
-                ? () => change!(<T>{})
-                : select,
-            selected: on,
-            minimumSize: minimum,
-            semanticLabel: labels[value] ?? '$value',
-            excludeSemantics: true,
-            button: false,
-            checked: on,
-            inMutuallyExclusiveGroup: true,
-            builder: (context, states, _) => toggle(value, states),
-          );
+      child: RadioGroup<T>(
+        groupValue: chosen,
+        onChanged: (value) {
+          if (change == null) return;
+          // A press on the chosen toggle keeps it, or with [allowEmpty]
+          // clears it.
+          if (value != null) {
+            change({value});
+          } else if (allowEmpty) {
+            change(<T>{});
+          }
         },
+        child: RadioGroupKeyboardFix<T>(
+          child: row(context, [
+            for (final value in values)
+              _ToggleRadio<T>(
+                key: ObjectKey(value),
+                value: value,
+                enabled: change != null,
+                toggleable: allowEmpty,
+                label: labels[value] ?? '$value',
+                minimumSize: minimum,
+                face: (states) => toggle(value, states),
+              ),
+          ]),
+        ),
       ),
     );
   }
@@ -246,6 +249,87 @@ class FrostedToggleGroup<T> extends StatelessWidget {
   }
 }
 
+// One toggle of a one-at-a-time [FrostedToggleGroup]: a RawRadio of the
+// group's RadioGroup, at least [minimumSize] (its plate centred in it), the
+// whole of it its target, named [label] and drawn by [face] from the radio's
+// states.
+class _ToggleRadio<T> extends StatefulWidget {
+  const _ToggleRadio({
+    required this.value,
+    required this.enabled,
+    required this.toggleable,
+    required this.label,
+    required this.minimumSize,
+    required this.face,
+    super.key,
+  });
+
+  final T value;
+  final bool enabled;
+  final bool toggleable;
+  final String label;
+  final Size minimumSize;
+  final Widget Function(Set<WidgetState> states) face;
+
+  @override
+  State<_ToggleRadio<T>> createState() => _ToggleRadioState<T>();
+}
+
+class _ToggleRadioState<T> extends State<_ToggleRadio<T>> {
+  final FocusNode _node = FocusNode();
+
+  @override
+  void dispose() {
+    _node.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => MergeSemantics(
+    child: RawRadio<T>(
+      value: widget.value,
+      mouseCursor: WidgetStateProperty.resolveWith(
+        (states) => states.contains(WidgetState.disabled)
+            ? MouseCursor.defer
+            : SystemMouseCursors.click,
+      ),
+      toggleable: widget.toggleable,
+      focusNode: _node,
+      autofocus: false,
+      groupRegistry: RadioGroup.maybeOf<T>(context),
+      enabled: widget.enabled,
+      // RawRadio shows a hover only while Flutter's highlight mode is
+      // traditional; the face shows one wherever a pointer rests on it, as
+      // before.
+      builder: (context, radio) => FrostedPointerHover(
+        builder: (context, hovered) => Semantics(
+          label: widget.label,
+          child: ExcludeSemantics(
+            child: MetaData(
+              behavior: HitTestBehavior.opaque,
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  minWidth: widget.minimumSize.width,
+                  minHeight: widget.minimumSize.height,
+                ),
+                child: Center(
+                  widthFactor: 1,
+                  heightFactor: 1,
+                  child: widget.face({
+                    ...radio.states,
+                    if (hovered && radio.isInteractive) WidgetState.hovered,
+                    if (radio.downPosition != null) WidgetState.pressed,
+                  }),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
 // ---------------------------------------------------------------------------
 // Split button
 // ---------------------------------------------------------------------------
@@ -255,7 +339,7 @@ class FrostedToggleGroup<T> extends StatelessWidget {
 /// chevron that drops [actions] on the look's panel. Each half is its own
 /// Tab stop and target (the chevron's named "More"); the menu walks
 /// with the arrows and closes on Escape, focus going back to the chevron.
-/// ui_core's [DesignSplitButton] is the behaviour.
+/// ui_core's [RawSplitButton] is the behaviour.
 ///
 /// ```dart
 /// FrostedSplitButton(label: 'Save', onPressed: save, actions: [FrostedSplitAction(label: 'Save as…', onPressed: saveAs), FrostedSplitAction(label: 'Save all', onPressed: saveAll)])
@@ -299,10 +383,10 @@ class FrostedSplitButton extends StatelessWidget {
     // half is drawn that wide, and both reach above and below the button.
     final target = FrostedBreakpoints.hitTargetOf(context);
     final reach = math.max(height, target);
-    return DesignSplitButton(
+    return RawSplitButton(
       label: label,
       onPressed: onPressed,
-      menuLabel: DesignLocalizations.of(context).moreButtonTooltip,
+      menuLabel: RawWidgetsLocalizations.of(context).moreButtonTooltip,
       // Frosted's rows follow a moving pointer (FrostedPanelRow, woken by
       // FrostedMenuWake), as the menu bar's: ui_core's follow would light the
       // row a key-opened menu appears under.
@@ -310,7 +394,7 @@ class FrostedSplitButton extends StatelessWidget {
       minimumSize: Size(height, height),
       actions: [
         for (final a in actions)
-          DesignSplitAction(label: a.label, onPressed: a.onPressed),
+          RawSplitAction(label: a.label, onPressed: a.onPressed),
       ],
       layoutBuilder: (context, main, toggle) => Row(
         mainAxisSize: MainAxisSize.min,
@@ -329,7 +413,7 @@ class FrostedSplitButton extends StatelessWidget {
         ],
       ),
       buttonBuilder: (context, part, states, open) {
-        final main = part == DesignSplitPart.main;
+        final main = part == RawSplitPart.main;
         final pressed = states.contains(WidgetState.pressed);
         final off = states.contains(WidgetState.disabled);
         final corners = Directionality.of(context) == TextDirection.ltr
@@ -440,6 +524,6 @@ class FrostedSplitAction {
   /// The row's words.
   final String label;
 
-  /// What it does; null disables the row, as ui_core's [DesignSplitAction].
+  /// What it does; null disables the row, as ui_core's [RawSplitAction].
   final VoidCallback? onPressed;
 }

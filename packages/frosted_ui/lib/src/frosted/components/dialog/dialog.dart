@@ -151,7 +151,7 @@ class FrostedDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final confirmLabel =
-        this.confirmLabel ?? DesignLocalizations.of(context).okButtonLabel;
+        this.confirmLabel ?? RawWidgetsLocalizations.of(context).okButtonLabel;
     final t = context.frostedTheme;
     final decline = cancelLabel;
     final s = FrostedStyleLayers(style, t.components.dialog);

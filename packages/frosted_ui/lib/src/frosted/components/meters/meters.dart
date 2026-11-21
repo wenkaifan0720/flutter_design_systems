@@ -2757,7 +2757,7 @@ class FrostedVisitStrip extends StatelessWidget {
                         at(now!.day),
                         width,
                         _line(
-                          DesignLocalizations.of(context).currentDateLabel,
+                          RawWidgetsLocalizations.of(context).currentDateLabel,
                           captions.semibold.c(t.colorScheme.textPrimary),
                         ),
                       ),

@@ -1142,7 +1142,7 @@ void main() {
     );
     expect(find.text('a month'), findsOneWidget);
     expect(find.text('250'), findsOneWidget);
-    // The steps are the field's node's (ui_core's DesignNumberField); the
+    // The steps are the field's node's (ui_core's RawNumberField); the
     // rounds are for the eye and the finger.
     expect(
       _stepper(t, 'the budget'),

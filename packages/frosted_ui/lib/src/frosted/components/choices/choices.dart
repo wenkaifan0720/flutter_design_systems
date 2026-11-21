@@ -72,10 +72,9 @@ class FrostedRadio<T> extends StatelessWidget {
     final slot = _RadioSlot.of<T>(context);
     final t = context.frostedTheme;
     final motion = FrostedMotion.of(context);
-    final on = slot.chosen;
     const d = 22.0;
     final layers = FrostedStyleLayers(style, t.components.radio);
-    Widget draw(Set<WidgetState> states) {
+    Widget draw(Set<WidgetState> states, bool on) {
       final s = layers.at(states);
       final shape = s.shape;
       final fill = s.fill;
@@ -157,16 +156,48 @@ class FrostedRadio<T> extends StatelessWidget {
       return row;
     }
 
-    return FrostedPressable(
-      focusNode: slot.node,
-      onPressed: slot.select,
-      label: label,
-      value: note,
-      role: FrostedPressRole.control,
-      checked: on,
-      inMutuallyExclusiveGroup: true,
-      radius: FrostedCorners.r12,
-      builder: (context, states, _) => draw(states),
+    // One of Flutter's radios in the group's RadioGroup: the RawRadio takes
+    // the focus, the press, the group's keys and the radio's semantics (one
+    // of a group, checked or not), and draws the row as a FrostedPressable
+    // draws its face, from the radio's states.
+    return MergeSemantics(
+      child: RawRadio<T>(
+        value: value,
+        mouseCursor: _radioCursor,
+        toggleable: false,
+        focusNode: slot.node,
+        autofocus: false,
+        groupRegistry: RadioGroup.maybeOf<T>(context),
+        enabled: enabled && slot.takesChoice,
+        // RawRadio shows a hover only while Flutter's highlight mode is
+        // traditional; the row shows one wherever a pointer rests on it, as
+        // before.
+        builder: (context, radio) => FrostedPointerHover(
+          builder: (context, hovered) {
+            final states = <WidgetState>{
+              ...radio.states,
+              if (hovered && radio.isInteractive) WidgetState.hovered,
+              if (radio.downPosition != null) WidgetState.pressed,
+            };
+            return Semantics(
+              label: label,
+              value: note,
+              child: ExcludeSemantics(
+                // The whole row takes the press, its gaps too.
+                child: MetaData(
+                  behavior: HitTestBehavior.opaque,
+                  child: frostedPressableFace(
+                    context,
+                    states,
+                    draw(states, radio.value ?? false),
+                    radius: FrostedCorners.r12,
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
+      ),
     );
   }
 
@@ -184,40 +215,74 @@ class FrostedRadio<T> extends StatelessWidget {
   }
 }
 
-// What ui_core's DesignRadioGroup hands one FrostedRadio: the focus node the
-// group registers for it, the press that chooses it (null while it cannot be
-// chosen) and whether it is the chosen one.
-class _RadioSlot<T> extends InheritedWidget {
-  const _RadioSlot({
-    required this.node,
-    required this.select,
-    required this.chosen,
-    required super.child,
-  });
+// The pointer over a radio: a click while it can be chosen, else the one
+// round it.
+final WidgetStateProperty<MouseCursor> _radioCursor =
+    WidgetStateProperty.resolveWith(
+      (states) => states.contains(WidgetState.disabled)
+          ? MouseCursor.defer
+          : SystemMouseCursors.click,
+    );
 
-  final FocusNode node;
-  final VoidCallback? select;
-  final bool chosen;
+// What a FrostedRadioGroup hands one FrostedRadio: its focus node, kept while
+// the option stays, and whether the group takes a choice.
+class _RadioSlot<T> extends StatefulWidget {
+  const _RadioSlot({required this.takesChoice, required this.child, super.key});
 
-  static _RadioSlot<T> of<T>(BuildContext context) {
-    final slot = context.dependOnInheritedWidgetOfExactType<_RadioSlot<T>>();
+  final bool takesChoice;
+  final Widget child;
+
+  static _RadioScope<T> of<T>(BuildContext context) {
+    final slot = context.dependOnInheritedWidgetOfExactType<_RadioScope<T>>();
     assert(slot != null, 'A FrostedRadio stands in a FrostedRadioGroup.');
     return slot!;
   }
 
   @override
-  bool updateShouldNotify(_RadioSlot<T> old) =>
-      old.node != node || old.select != select || old.chosen != chosen;
+  State<_RadioSlot<T>> createState() => _RadioSlotState<T>();
+}
+
+class _RadioSlotState<T> extends State<_RadioSlot<T>> {
+  final FocusNode _node = FocusNode();
+
+  @override
+  void dispose() {
+    _node.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => _RadioScope<T>(
+    node: _node,
+    takesChoice: widget.takesChoice,
+    child: widget.child,
+  );
+}
+
+class _RadioScope<T> extends InheritedWidget {
+  const _RadioScope({
+    required this.node,
+    required this.takesChoice,
+    required super.child,
+  });
+
+  final FocusNode node;
+  final bool takesChoice;
+
+  @override
+  bool updateShouldNotify(_RadioScope<T> old) =>
+      old.node != node || old.takesChoice != takesChoice;
 }
 
 /// One choice of several, all in view: [options] down the column, each a
 /// round bead of glass before its words (the chosen one's a little clearer,
 /// a dot printed at its centre), the whole row its target. The page owns
 /// [value]; a null [onChanged] leaves them inert. A screen reader hears
-/// [label] over a group of radio buttons, each checked or not. ui_core's
-/// [DesignRadioGroup] is the behaviour: one Tab stop, on the chosen option
-/// (else the first that can be chosen), and the four arrows choose as they
-/// move, in reading order, wrapping and passing over a disabled option.
+/// [label] over a group of radio buttons, each checked or not. Flutter's
+/// [RadioGroup] is the behaviour, each option a [RawRadio], with ui_core's
+/// [RadioGroupKeyboardFix] inside: one Tab stop, on the chosen option (else
+/// the first that can be chosen), and the four arrows choose as they move,
+/// in reading order, wrapping and passing over a disabled option.
 ///
 /// ```dart
 /// FrostedRadioGroup<String>(label: 'Delivery', value: speed, onChanged: (v) => setState(() => speed = v), options: const [FrostedRadio('standard', 'Standard', note: '3 to 5 days'), FrostedRadio('express', 'Express', note: 'Tomorrow')])
@@ -251,43 +316,45 @@ class FrostedRadioGroup<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.frostedTheme;
-    final byValue = {for (final option in options) option.value: option};
+    final onChanged = this.onChanged;
     return Semantics(
       container: true,
       label: label,
       explicitChildNodes: true,
-      child: DesignRadioGroup<T>(
-        options: [for (final option in options) option.value],
-        value: value,
-        onChanged: onChanged,
-        isEnabled: (v) => byValue[v]!.enabled,
-        itemBuilder: (context, v, node, select) => _RadioSlot<T>(
-          node: node,
-          select: select,
-          chosen: v == value,
-          child: byValue[v]!,
-        ),
-        layoutBuilder: (context, items) => Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ExcludeSemantics(
-              child: Text(
-                label,
-                style: t.textTheme.labelMedium.c(t.colorScheme.textSecondary),
-              ),
-            ),
-            const SizedBox(height: FrostedSpacing.s4),
-            ...items,
-            if (error case final error?)
-              Semantics(
-                liveRegion: true,
+      child: RadioGroup<T>(
+        groupValue: value,
+        // A group that takes no choice turns each radio off.
+        onChanged: (choice) {
+          if (choice != null) onChanged?.call(choice);
+        },
+        child: RadioGroupKeyboardFix<T>(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ExcludeSemantics(
                 child: Text(
-                  error,
-                  style: t.textTheme.bodySmall.c(t.colorScheme.over),
+                  label,
+                  style: t.textTheme.labelMedium.c(t.colorScheme.textSecondary),
                 ),
               ),
-          ],
+              const SizedBox(height: FrostedSpacing.s4),
+              for (final option in options)
+                _RadioSlot<T>(
+                  key: ObjectKey(option.value),
+                  takesChoice: onChanged != null,
+                  child: option,
+                ),
+              if (error case final error?)
+                Semantics(
+                  liveRegion: true,
+                  child: Text(
+                    error,
+                    style: t.textTheme.bodySmall.c(t.colorScheme.over),
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );
@@ -560,7 +627,7 @@ class FrostedChip extends StatelessWidget {
 /// row sets it (a pointer resting over it shows what a press would set),
 /// the arrow keys step it, Home or 0 clears it, End fills it and a digit
 /// sets that many; without, it only states. Read aloud as [label] and
-/// "3 of 5". ui_core's [DesignRating] is the behaviour.
+/// "3 of 5". ui_core's [RawRating] is the behaviour.
 ///
 /// ```dart
 /// FrostedRating(value: stars, label: 'Your rating', onChanged: (v) => setState(() => stars = v))
@@ -615,7 +682,7 @@ class FrostedRating extends StatelessWidget {
     final rtl = Directionality.of(context) == TextDirection.rtl;
     String spoken(double v) =>
         words.rating(v == v.roundToDouble() ? v.round() : v, max);
-    Widget rating(FocusNode? node) => DesignRating(
+    Widget rating(FocusNode? node) => RawRating(
       value: value,
       onChanged: onChanged,
       readOnly: !live,

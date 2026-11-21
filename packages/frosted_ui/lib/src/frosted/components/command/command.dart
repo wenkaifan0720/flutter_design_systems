@@ -17,22 +17,22 @@ import '../../localizations.dart';
 import '../../theme.dart';
 import '../host.dart';
 
-export 'package:ui_core/ui_core.dart' show DesignCommand;
-export 'package:ui_core/ui_core.dart' show DesignMenuEntry;
+export 'package:ui_core/ui_core.dart' show RawCommand;
+export 'package:ui_core/ui_core.dart' show RawMenuEntry;
 
 // ---------------------------------------------------------------------------
 // Shortcuts
 // ---------------------------------------------------------------------------
 
 /// [shortcut]'s keys as Frosted's menus and palette write them, for a
-/// [DesignMenuEntry.shortcut] or a [DesignCommand.shortcut]: ui_core's keys
+/// [RawMenuEntry.shortcut] or a [RawCommand.shortcut]: ui_core's keys
 /// ([designShortcutKeys]) in the platform's order and the reader's words,
 /// close together with Apple's symbols ("⇧⌘Z", each symbol drawn as the
 /// look's glyph) on macOS and iOS, and joined by "+" elsewhere
 /// ("Ctrl+Shift+Z"). [platform] is [defaultTargetPlatform] when null.
 ///
 /// ```dart
-/// DesignMenuEntry(label: 'Redo', shortcut: frostedShortcutLabel(context, const SingleActivator(LogicalKeyboardKey.keyZ, meta: true, shift: true)), onPressed: redo)
+/// RawMenuEntry(label: 'Redo', shortcut: frostedShortcutLabel(context, const SingleActivator(LogicalKeyboardKey.keyZ, meta: true, shift: true)), onPressed: redo)
 /// ```
 String frostedShortcutLabel(
   BuildContext context,
@@ -57,19 +57,19 @@ String frostedShortcutLabel(
 /// under it, a submenu beside its row. Once one menu is open the pointer
 /// moving along the bar opens the next; the arrows walk the bar and the
 /// menus, Return runs an item, Escape closes the menu and goes back to its
-/// name. Each item may show its [DesignMenuEntry.shortcut] (written by
+/// name. Each item may show its [RawMenuEntry.shortcut] (written by
 /// [frostedShortcutLabel]) and a check.
-/// ui_core's [DesignMenuBar] is the behaviour.
+/// ui_core's [RawMenuBar] is the behaviour.
 ///
 /// ```dart
-/// FrostedMenuBar(menus: [DesignMenuEntry(label: 'File', children: [DesignMenuEntry(label: 'New', shortcut: '⌘N', onPressed: create), DesignMenuEntry.divider(), DesignMenuEntry(label: 'Close', onPressed: close)])])
+/// FrostedMenuBar(menus: [RawMenuEntry(label: 'File', children: [RawMenuEntry(label: 'New', shortcut: '⌘N', onPressed: create), RawMenuEntry.divider(), RawMenuEntry(label: 'Close', onPressed: close)])])
 /// ```
 class FrostedMenuBar extends StatelessWidget {
   /// A menu bar of [menus].
   const FrostedMenuBar({required this.menus, this.label, super.key});
 
   /// The bar's menus, in order.
-  final List<DesignMenuEntry> menus;
+  final List<RawMenuEntry> menus;
 
   /// What a screen reader calls the bar.
   final String? label;
@@ -84,14 +84,14 @@ class FrostedMenuBar extends StatelessWidget {
     const item = 32.0, inset = FrostedSpacing.s4;
     final target = FrostedBreakpoints.hitTargetOf(context);
     final reach = math.max(item + 2 * inset, target);
-    return DesignMenuBar(
+    return RawMenuBar(
       menus: menus,
       // Frosted's rows follow a moving pointer (FrostedPanelRow.followsPointer,
       // woken by FrostedMenuWake); ui_core's follow lights the row a menu
       // opens under a resting pointer, so a menu the keys open would light
       // that row rather than the first.
       highlightFollowsPointer: false,
-      semanticLabel: label ?? DesignLocalizations.of(context).menuBarLabel,
+      semanticLabel: label ?? RawWidgetsLocalizations.of(context).menuBarLabel,
       barBuilder: (context, items) => SizedBox(
         height: reach,
         child: Stack(
@@ -119,7 +119,7 @@ class FrostedMenuBar extends StatelessWidget {
         ),
       ),
       itemBuilder: (context, entry, level, states) {
-        if (level == DesignMenuLevel.bar) {
+        if (level == RawMenuLevel.bar) {
           final on =
               states.contains(WidgetState.selected) ||
               states.contains(WidgetState.hovered) ||
@@ -168,7 +168,7 @@ class FrostedMenuBar extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(IterableProperty<DesignMenuEntry>('menus', menus))
+      ..add(IterableProperty<RawMenuEntry>('menus', menus))
       ..add(StringProperty('label', label, defaultValue: null));
   }
 }
@@ -178,7 +178,7 @@ class FrostedMenuBar extends StatelessWidget {
 /// or its shortcut at the end.
 Widget _menuRow(
   BuildContext context,
-  DesignMenuEntry entry,
+  RawMenuEntry entry,
   Set<WidgetState> states,
 ) {
   final t = context.frostedTheme;
@@ -216,7 +216,7 @@ Widget _menuDivider(BuildContext context) => Padding(
 /// is short.
 Widget _menuSurface(
   BuildContext context,
-  DesignOverlayInfo info,
+  RawPopoverInfo info,
   List<Widget> items,
 ) => FrostedPanel(
   presence: info.animation,
@@ -251,10 +251,10 @@ Widget _menuSurface(
 /// dividers, checks, shortcuts), the light following the pointer. Escape, a
 /// tap outside or the system back closes it and the focus goes back; on the
 /// web the browser's own menu stays shut over [child]. ui_core's
-/// [DesignContextMenu] is the behaviour.
+/// [RawContextMenu] is the behaviour.
 ///
 /// ```dart
-/// FrostedContextMenu(items: [DesignMenuEntry(label: 'Copy', onPressed: copy), DesignMenuEntry.divider(), DesignMenuEntry(label: 'Delete', onPressed: delete)], child: card)
+/// FrostedContextMenu(items: [RawMenuEntry(label: 'Copy', onPressed: copy), RawMenuEntry.divider(), RawMenuEntry(label: 'Delete', onPressed: delete)], child: card)
 /// ```
 class FrostedContextMenu extends StatelessWidget {
   /// A context menu of [items] over [child].
@@ -267,7 +267,7 @@ class FrostedContextMenu extends StatelessWidget {
 
   /// The menu's rows, in order: commands, submenus and dividers. Empty: no
   /// menu.
-  final List<DesignMenuEntry> items;
+  final List<RawMenuEntry> items;
 
   /// The region that opens it.
   final Widget child;
@@ -279,7 +279,7 @@ class FrostedContextMenu extends StatelessWidget {
   Widget build(BuildContext context) {
     // Its menu tells a key's opening from a pointer's (FrostedMenuWake).
     FrostedLastInput.watch();
-    return DesignContextMenu(
+    return RawContextMenu(
       menuChildren: items,
       // Frosted's rows follow a moving pointer (FrostedPanelRow.followsPointer,
       // woken by FrostedMenuWake); ui_core's follow lights the row a menu
@@ -299,7 +299,7 @@ class FrostedContextMenu extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(IterableProperty<DesignMenuEntry>('items', items))
+      ..add(IterableProperty<RawMenuEntry>('items', items))
       ..add(StringProperty('label', label, defaultValue: null));
   }
 }
@@ -309,15 +309,15 @@ class FrostedContextMenu extends StatelessWidget {
 // ---------------------------------------------------------------------------
 
 /// A palette of [commands] found by typing (shadcn's Command, a desktop's
-/// ⌘K): a search field over the matches, grouped under their [DesignCommand.group]
+/// ⌘K): a search field over the matches, grouped under their [RawCommand.group]
 /// names, the best match lit; the arrows move the light, Return runs it,
 /// Escape closes. A screen reader hears how many match as the query
 /// changes. Build it in place, or raise it over the app with [show] (and
-/// on Ctrl+K or ⌘K with ui_core's `DesignCommandShortcut`). ui_core's
-/// [DesignCommandPalette] is the behaviour.
+/// on Ctrl+K or ⌘K with ui_core's `RawCommandShortcut`). ui_core's
+/// [RawCommandPalette] is the behaviour.
 ///
 /// ```dart
-/// FrostedCommand.show(context, commands: [DesignCommand(label: 'New payment', group: 'Money', shortcut: '⌘P', onPressed: pay), DesignCommand(label: 'Settings', onPressed: openSettings)])
+/// FrostedCommand.show(context, commands: [RawCommand(label: 'New payment', group: 'Money', shortcut: '⌘P', onPressed: pay), RawCommand(label: 'Settings', onPressed: openSettings)])
 /// ```
 class FrostedCommand extends StatelessWidget {
   /// A palette of [commands].
@@ -332,10 +332,10 @@ class FrostedCommand extends StatelessWidget {
   });
 
   /// What it offers.
-  final List<DesignCommand> commands;
+  final List<RawCommand> commands;
 
   /// Called with the command run (as well as its own `onPressed`).
-  final ValueChanged<DesignCommand>? onSelected;
+  final ValueChanged<RawCommand>? onSelected;
 
   /// The field's placeholder ("Type a command or search" when null).
   final String? hint;
@@ -353,7 +353,7 @@ class FrostedCommand extends StatelessWidget {
   /// down, over the scrim; running a command closes it and runs it.
   static Future<void> show(
     BuildContext context, {
-    required List<DesignCommand> commands,
+    required List<RawCommand> commands,
     String? hint,
   }) {
     final t = context.frostedTheme;
@@ -367,7 +367,7 @@ class FrostedCommand extends StatelessWidget {
         color: t.colorScheme.overlay,
         soften: t.materials.soften,
       ),
-      barrierLabel: DesignLocalizations.of(context).closeButtonLabel,
+      barrierLabel: RawWidgetsLocalizations.of(context).closeButtonLabel,
       palette: (run) => _palette(
         context,
         commands: commands,
@@ -382,17 +382,17 @@ class FrostedCommand extends StatelessWidget {
     );
   }
 
-  static DesignCommandPalette _palette(
+  static RawCommandPalette _palette(
     BuildContext context, {
-    required List<DesignCommand> commands,
-    required ValueChanged<DesignCommand>? onSelected,
+    required List<RawCommand> commands,
+    required ValueChanged<RawCommand>? onSelected,
     required String? hint,
     required double maxHeight,
     required String? label,
   }) {
     final t = context.frostedTheme;
     final words = FrostedLocalizations.of(context);
-    return DesignCommandPalette(
+    return RawCommandPalette(
       commands: commands,
       onSelected: onSelected,
       maxHeight: maxHeight,
@@ -460,7 +460,7 @@ class FrostedCommand extends StatelessWidget {
       emptyBuilder: (context) => Padding(
         padding: const EdgeInsets.all(FrostedSpacing.s24),
         child: Text(
-          DesignLocalizations.of(context).noResultsLabel,
+          RawWidgetsLocalizations.of(context).noResultsLabel,
           textAlign: TextAlign.center,
           style: t.textTheme.titleMedium.c(t.colorScheme.textTertiary),
         ),
@@ -495,9 +495,9 @@ class FrostedCommand extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(IterableProperty<DesignCommand>('commands', commands))
+      ..add(IterableProperty<RawCommand>('commands', commands))
       ..add(
-        ObjectFlagProperty<ValueChanged<DesignCommand>>.has(
+        ObjectFlagProperty<ValueChanged<RawCommand>>.has(
           'onSelected',
           onSelected,
         ),

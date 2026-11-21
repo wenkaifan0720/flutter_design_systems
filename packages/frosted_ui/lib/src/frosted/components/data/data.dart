@@ -16,7 +16,7 @@ import '../pressable/pressable.dart';
 import '../../internal/cap.dart';
 
 export 'package:ui_core/ui_core.dart'
-    show DesignTableColumn, DesignTableController;
+    show RawDataColumn, RawDataTableController;
 export 'package:ui_core/ui_core.dart' show DesignTreeController;
 
 // ---------------------------------------------------------------------------
@@ -31,11 +31,11 @@ export 'package:ui_core/ui_core.dart' show DesignTreeController;
 /// numbers under the table once there is more than a page. One Tab stop
 /// for the rows. Narrow tables scroll horizontally, and longer cells wrap.
 /// The arrows walk the rows, Space selects, Shift extends, and Return
-/// opens a row with [onActivate]. ui_core's [DesignDataTable] and
-/// [DesignTableController] are the behaviour.
+/// opens a row with [onActivate]. ui_core's [RawDataTable] and
+/// [RawDataTableController] are the behaviour.
 ///
 /// ```dart
-/// FrostedDataTable<({String payee, int cents})>(controller: DesignTableController(rows: payments, pageSize: 10, columns: [DesignTableColumn(id: 'who', label: 'Payee', sortKey: (p) => p.payee), DesignTableColumn(id: 'sum', label: 'Amount', numeric: true, sortKey: (p) => p.cents)]), cellBuilder: (context, p, column) => Text(column.id == 'who' ? p.payee : money(p.cents)))
+/// FrostedDataTable<({String payee, int cents})>(controller: RawDataTableController(rows: payments, pageSize: 10, columns: [RawDataColumn(id: 'who', label: 'Payee', sortKey: (p) => p.payee), RawDataColumn(id: 'sum', label: 'Amount', numeric: true, sortKey: (p) => p.cents)]), cellBuilder: (context, p, column) => Text(column.id == 'who' ? p.payee : money(p.cents)))
 /// ```
 class FrostedDataTable<R> extends StatelessWidget {
   /// A table of [controller]'s rows, each cell from [cellBuilder].
@@ -49,14 +49,10 @@ class FrostedDataTable<R> extends StatelessWidget {
   });
 
   /// The rows, columns, sort, pages and selection.
-  final DesignTableController<R> controller;
+  final RawDataTableController<R> controller;
 
   /// Builds a cell (a [Text] takes the table's type).
-  final Widget Function(
-    BuildContext context,
-    R row,
-    DesignTableColumn<R> column,
-  )
+  final Widget Function(BuildContext context, R row, RawDataColumn<R> column)
   cellBuilder;
 
   /// Whether rows carry a check and can be selected.
@@ -118,7 +114,7 @@ class FrostedDataTable<R> extends StatelessWidget {
         );
       },
     );
-    Widget celled(DesignTableColumn<R> column, Widget child) => Expanded(
+    Widget celled(RawDataColumn<R> column, Widget child) => Expanded(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: FrostedSpacing.s12),
         child: Align(
@@ -142,7 +138,7 @@ class FrostedDataTable<R> extends StatelessWidget {
             Semantics(
               label: label,
               container: true,
-              child: DesignDataTable<R>(
+              child: RawDataTable<R>(
                 controller: controller,
                 selectable: selectable,
                 onActivate: onActivate,
@@ -168,9 +164,9 @@ class FrostedDataTable<R> extends StatelessWidget {
                             ),
                             child: FrostedCheckbox(
                               value: switch (controller.pageSelection) {
-                                DesignSelection.none => false,
-                                DesignSelection.some => null,
-                                DesignSelection.all => true,
+                                RawDataTableSelection.none => false,
+                                RawDataTableSelection.some => null,
+                                RawDataTableSelection.all => true,
                               },
                               label: words.selectAll,
                               onChanged: (_) => controller.togglePage(),
@@ -209,9 +205,9 @@ class FrostedDataTable<R> extends StatelessWidget {
                             Icon(
                               switch (sort) {
                                 null => FrostedGlyphs.sort,
-                                DesignSortDirection.ascending =>
+                                RawSortDirection.ascending =>
                                   FrostedGlyphs.chevronUp,
-                                DesignSortDirection.descending =>
+                                RawSortDirection.descending =>
                                   FrostedGlyphs.chevronDown,
                               },
                               size: 14,
@@ -328,7 +324,10 @@ class FrostedDataTable<R> extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(
-        DiagnosticsProperty<DesignTableController<R>>('controller', controller),
+        DiagnosticsProperty<RawDataTableController<R>>(
+          'controller',
+          controller,
+        ),
       )
       ..add(
         FlagProperty(
@@ -426,9 +425,9 @@ class FrostedTreeView<T extends Object> extends StatelessWidget {
                           child: Semantics(
                             button: true,
                             label: item.expanded
-                                ? DesignLocalizations.of(context)
+                                ? RawWidgetsLocalizations.of(context)
                                       .expandedIconTapHint
-                                : DesignLocalizations.of(context)
+                                : RawWidgetsLocalizations.of(context)
                                       .collapsedIconTapHint,
                             excludeSemantics: true,
                             child: AnimatedRotation(

@@ -34,7 +34,7 @@ class FrostedLoadingState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final message =
-        this.message ?? DesignLocalizations.of(context).loadingLabel;
+        this.message ?? RawWidgetsLocalizations.of(context).loadingLabel;
     final t = context.frostedTheme;
     return _Centred(
       mark: const _Ring(),
@@ -301,7 +301,7 @@ class FrostedEmptyState extends StatelessWidget {
     );
     return Semantics(
       container: true,
-      label: DesignLocalizations.of(context).noResultsLabel,
+      label: RawWidgetsLocalizations.of(context).noResultsLabel,
       explicitChildNodes: true,
       // .glass-tile { box-shadow: var(--edge), var(--lift) }: the edge a
       // ring just outside the glass, as a tile's, taking no room (a face's

@@ -1,3 +1,10 @@
+## 0.4.0
+
+- Needs ui_core 0.4.0 and Flutter 3.47. `frosted_ui` re-exports ui_core, whose types now take `Raw` names (`DesignPressable` is `RawButton`). The old names stay through ui_core 0.4 as deprecated typedefs, and `dart fix --apply` renames them.
+- `FrostedRadioGroup` and a one-at-a-time `FrostedToggleGroup` are Flutter's `RadioGroup`, each option a `RawRadio`, with ui_core's `RadioGroupKeyboardFix` inside. They answer Tab and the arrows as before, and a toggle strip with `allowEmpty` still clears on a press of its chosen toggle. A radio shows its focus and its press as Flutter's `Radio` does, and on iOS and macOS an option also reads as selected.
+- `FrostedTooltip` is Flutter's `RawTooltip`, with ui_core's `RawTooltipFocusFix` and `RawTooltipPlacement`. It fades on Flutter's tooltip timing, and each tooltip along a toolbar waits its half second.
+- A `FrostedIconButton` with `selected` reads as a button, selected while on, as `IconButton(isSelected:)` does, and so does a `FrostedWeekStrip` day, selected while kept. Before, they read as switches.
+
 ## 0.3.4
 
 - Chosen glass stays glass. A chosen chip prints a check before its word, an on switch a check beside its knob, a checkbox its check, a radio its dot and a menu's chosen option its tick, inside the glass, and the chosen glass is a little clearer. A chosen quick amount or icon well prints a dot in its corner, and a toggled icon button a dot under its glyph. Each mark stands at 3:1 or more against the unchosen part. The calendar's chosen days stay ink.

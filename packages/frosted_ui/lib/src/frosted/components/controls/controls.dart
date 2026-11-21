@@ -1148,7 +1148,7 @@ class FrostedMonthSwitch extends StatelessWidget {
             step(
               FrostedGlyphs.chevronLeft,
               onEarlier,
-              DesignLocalizations.of(context).previousMonthTooltip,
+              RawWidgetsLocalizations.of(context).previousMonthTooltip,
               AlignmentDirectional.centerStart,
             ),
             if (previous case final previous?)
@@ -1172,7 +1172,7 @@ class FrostedMonthSwitch extends StatelessWidget {
             step(
               FrostedGlyphs.forward,
               onLater,
-              DesignLocalizations.of(context).nextMonthTooltip,
+              RawWidgetsLocalizations.of(context).nextMonthTooltip,
               AlignmentDirectional.centerEnd,
             ),
           ],

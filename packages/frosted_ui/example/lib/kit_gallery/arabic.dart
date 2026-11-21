@@ -52,7 +52,7 @@ class _ArabicFrosted extends LocalizationsDelegate<FrostedLocalizations> {
   bool shouldReload(_ArabicFrosted old) => false;
 }
 
-class _ArabicShared extends LocalizationsDelegate<DesignLocalizations> {
+class _ArabicShared extends LocalizationsDelegate<RawWidgetsLocalizations> {
   const _ArabicShared();
 
   @override
@@ -61,9 +61,9 @@ class _ArabicShared extends LocalizationsDelegate<DesignLocalizations> {
   // ui_core's own Arabic (it speaks 30 languages), whatever the app's
   // locale.
   @override
-  Future<DesignLocalizations> load(Locale locale) =>
-      SynchronousFuture<DesignLocalizations>(
-        DesignLocalizations.forLocale(const Locale('ar')),
+  Future<RawWidgetsLocalizations> load(Locale locale) =>
+      SynchronousFuture<RawWidgetsLocalizations>(
+        RawWidgetsLocalizations.forLocale(const Locale('ar')),
       );
 
   @override

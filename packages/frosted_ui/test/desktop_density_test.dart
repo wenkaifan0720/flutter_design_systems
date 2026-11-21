@@ -320,8 +320,8 @@ final _cases = <_Case>[
     () => const FrostedCommand(
       hint: 'Type a command',
       commands: [
-        DesignCommand(label: 'New payment', group: 'Money'),
-        DesignCommand(label: 'Settings'),
+        RawCommand(label: 'New payment', group: 'Money'),
+        RawCommand(label: 'Settings'),
       ],
     ),
     () => find

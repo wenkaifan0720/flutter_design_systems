@@ -30,7 +30,7 @@ enum FrostedPressRole {
 const double _pressedScale = 0.97;
 
 /// The one press machine every Frosted control rides, built on the design
-/// kit's `DesignPressable`: it takes the press and the long press, the
+/// kit's `RawButton`: it takes the press and the long press, the
 /// pointer's click cursor, keyboard focus with Enter and Space, a quiet
 /// pressed read (the face easing to 97% of its size and back, its words at
 /// full strength; no ink), the frost clearing ([FrostedFocusRing]) a little
@@ -163,7 +163,7 @@ class FrostedPressable extends StatelessWidget {
     return _pressable();
   }
 
-  Widget _pressable() => DesignPressable(
+  Widget _pressable() => RawButton(
     onPressed: onPressed,
     onLongPress: onLongPress,
     focusNode: focusNode,
@@ -180,34 +180,16 @@ class FrostedPressable extends StatelessWidget {
     expanded: expanded,
     inMutuallyExclusiveGroup: inMutuallyExclusiveGroup,
     excludeSemantics: excludeChild && label != null,
-    builder: (context, states, child) {
-      var face = builder?.call(context, states, child) ?? child!;
-      // All three always stand round the face, so a press or a focus coming
-      // and going eases (from where it is, when it turns mid-way) and the
-      // face's own state is kept. A press sinks the glass a little, its
-      // words at full strength: a face fading to 0.7 read as a disabled
-      // one and took its words under 4.5:1.
-      final pressed = states.contains(WidgetState.pressed);
-      final motion = FrostedMotion.of(context);
-      face = AnimatedScale(
-        scale: pressed ? _pressedScale : 1,
-        duration: motion.fast,
-        curve: motion.curve,
-        child: face,
-      );
-      face = FrostedFade(opacity: pressed ? pressedOpacity : 1, child: face);
-      face = FrostedFocusRing(
-        shown: states.contains(WidgetState.focused),
-        hovered: states.contains(WidgetState.hovered),
-        radius: radius,
-        shape: shape,
-        insets: ringInsets,
-        inside: ringInside,
-        child: face,
-      );
-      // The control spans the target round its face.
-      return FrostedHitSlop(child: face);
-    },
+    builder: (context, states, child) => frostedPressableFace(
+      context,
+      states,
+      builder?.call(context, states, child) ?? child!,
+      radius: radius,
+      shape: shape,
+      ringInsets: ringInsets,
+      ringInside: ringInside,
+      pressedOpacity: pressedOpacity,
+    ),
     child: child,
   );
 
@@ -266,6 +248,92 @@ class FrostedPressable extends StatelessWidget {
       )
       ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
   }
+}
+
+/// Builds its child knowing whether a pointer rests on it, anywhere in its
+/// box: a face drawn from a [RawRadio]'s states, which shows a hover only
+/// while Flutter's highlight mode is traditional, shows one as a
+/// [FrostedPressable] does.
+class FrostedPointerHover extends StatefulWidget {
+  /// Builds [builder]'s child, told whether a pointer rests on it.
+  const FrostedPointerHover({required this.builder, super.key});
+
+  /// Builds the child from whether a pointer rests on it.
+  final Widget Function(BuildContext context, bool hovered) builder;
+
+  @override
+  State<FrostedPointerHover> createState() => _FrostedPointerHoverState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(
+      ObjectFlagProperty<Widget Function(BuildContext, bool)>.has(
+        'builder',
+        builder,
+      ),
+    );
+  }
+}
+
+class _FrostedPointerHoverState extends State<FrostedPointerHover> {
+  bool _hovered = false;
+
+  void _hover(bool hovered) {
+    if (hovered != _hovered) setState(() => _hovered = hovered);
+  }
+
+  // Opaque, so the region counts as hit and the radio's own detector above it
+  // takes the press.
+  @override
+  Widget build(BuildContext context) => MouseRegion(
+    onEnter: (_) => _hover(true),
+    onExit: (_) => _hover(false),
+    child: widget.builder(context, _hovered),
+  );
+}
+
+/// [face] as a [FrostedPressable] draws it in [states]: sinking a little while
+/// pressed, faded to [pressedOpacity], its frost cleared under a pointer and
+/// in full while focused ([FrostedFocusRing], by [radius] or [shape], standing
+/// [ringInsets] inside it, glowing inward with [ringInside]), and spanning
+/// the touch target round it. A control whose press and focus come from
+/// elsewhere (a radio's `RawRadio`) draws its face through it as well.
+Widget frostedPressableFace(
+  BuildContext context,
+  Set<WidgetState> states,
+  Widget face, {
+  double radius = 0,
+  OutlinedBorder? shape,
+  EdgeInsetsGeometry ringInsets = EdgeInsets.zero,
+  bool ringInside = false,
+  double pressedOpacity = 1,
+}) {
+  // All three always stand round the face, so a press or a focus coming
+  // and going eases (from where it is, when it turns mid-way) and the
+  // face's own state is kept. A press sinks the glass a little, its
+  // words at full strength: a face fading to 0.7 read as a disabled
+  // one and took its words under 4.5:1.
+  final pressed = states.contains(WidgetState.pressed);
+  final motion = FrostedMotion.of(context);
+  face = AnimatedScale(
+    scale: pressed ? _pressedScale : 1,
+    duration: motion.fast,
+    curve: motion.curve,
+    child: face,
+  );
+  face = FrostedFade(opacity: pressed ? pressedOpacity : 1, child: face);
+  face = FrostedFocusRing(
+    shown: states.contains(WidgetState.focused),
+    hovered: states.contains(WidgetState.hovered),
+    radius: radius,
+    shape: shape,
+    insets: ringInsets,
+    inside: ringInside,
+    child: face,
+  );
+  // The control spans the target round its face.
+  return FrostedHitSlop(child: face);
 }
 
 /// The keyboard's focus, said in glass: the frost clears and the rim

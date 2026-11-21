@@ -55,7 +55,7 @@ class FrostedSwipeAction {
 /// does the first action on that edge (the row's delete), its tile
 /// widening to say so. The arrows open a side from the keyboard and Escape
 /// closes it; each action is also a custom action on the row, so a screen
-/// reader reaches it without the gesture. ui_core's [DesignSwipeActions]
+/// reader reaches it without the gesture. ui_core's [RawSwipeActions]
 /// is the behaviour. [initiallyOpen] starts the row open, its trailing
 /// actions showing (the leading ones when it has no trailing): a preview,
 /// or a one-time hint that the row swipes; it closes as any open row does.
@@ -94,7 +94,7 @@ class FrostedSwipeActions extends StatelessWidget {
   /// ones when it has no trailing).
   final bool initiallyOpen;
 
-  static DesignSwipeAction _behind(FrostedSwipeAction a) => DesignSwipeAction(
+  static RawSwipeAction _behind(FrostedSwipeAction a) => RawSwipeAction(
     label: a.label,
     onPressed: a.onPressed,
     destructive: a.tone == FrostedSwipeTone.destructive,
@@ -134,7 +134,7 @@ class FrostedSwipeActions extends StatelessWidget {
         cursor: leading.isEmpty && trailing.isEmpty
             ? MouseCursor.defer
             : SystemMouseCursors.grab,
-        child: DesignSwipeActions(
+        child: RawSwipeActions(
           startActions: [for (final a in leading) _behind(a)],
           endActions: [for (final a in trailing) _behind(a)],
           actionExtent: extent,

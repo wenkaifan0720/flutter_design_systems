@@ -7,7 +7,7 @@ import 'package:ui_core/ui_core.dart';
 import '../theme.dart';
 
 /// Lays [child] out at least a [target] square, as Material pads its
-/// targets (ui_core's [DesignTapTarget]): a 32 point disc stands in a 48
+/// targets (ui_core's [TapTargetPadding]): a 32 point disc stands in a 48
 /// square under a finger (44 under a pointer:
 /// `FrostedBreakpoints.hitTargetOf`). Placed inside the control's node and
 /// its gesture (a `FrostedPressable` places its own round its face), the
@@ -40,7 +40,7 @@ class FrostedHitSlop extends StatelessWidget {
   final AlignmentDirectional? alignment;
 
   @override
-  Widget build(BuildContext context) => DesignTapTarget(
+  Widget build(BuildContext context) => TapTargetPadding(
     minSize: Size.square(target ?? FrostedBreakpoints.hitTargetOf(context)),
     alignment:
         FrostedTargetSide.maybeOf(context) ??

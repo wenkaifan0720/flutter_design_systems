@@ -58,9 +58,9 @@ class FrostedBack extends StatelessWidget {
     final t = context.frostedTheme;
     final where = label ?? _BackLabel.of(context);
     final spoken = close
-        ? DesignLocalizations.of(context).closeButtonLabel
+        ? RawWidgetsLocalizations.of(context).closeButtonLabel
         : where == null
-        ? DesignLocalizations.of(context).backButtonTooltip
+        ? RawWidgetsLocalizations.of(context).backButtonTooltip
         : 'Back to $where';
     if (FrostedSheetShell.around(context)) {
       return FrostedIconButton(
@@ -100,8 +100,9 @@ class FrostedBack extends StatelessWidget {
           frostedCapCentred(
             Text(
               close
-                  ? DesignLocalizations.of(context).closeButtonLabel
-                  : where ?? DesignLocalizations.of(context).backButtonTooltip,
+                  ? RawWidgetsLocalizations.of(context).closeButtonLabel
+                  : where ??
+                        RawWidgetsLocalizations.of(context).backButtonTooltip,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: t.textTheme.labelMedium,

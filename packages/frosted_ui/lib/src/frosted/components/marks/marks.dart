@@ -301,7 +301,7 @@ class FrostedDateBlock extends StatelessWidget {
                 ),
                 // `.date span`: 500 16/1 in the display face, -.01em.
                 Text(
-                  DesignLocalizations.of(context).formatDecimal(date.day),
+                  RawWidgetsLocalizations.of(context).formatDecimal(date.day),
                   maxLines: 1,
                   textScaler: TextScaler.noScaling,
                   style: t.textTheme.titleLarge.medium

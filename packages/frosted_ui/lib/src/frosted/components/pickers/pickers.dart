@@ -91,7 +91,7 @@ const int _wheelRows = 5;
 /// fading to nothing. It settles on a row and hands over that row's value.
 /// Read aloud as an adjustable value named [label]: a swipe up or down
 /// turns it a row. A disabled option stands faded and the wheel turns past
-/// it. ui_core's [DesignWheelPicker] is the behaviour: the arrows, Page Up
+/// it. ui_core's [RawPicker] is the behaviour: the arrows, Page Up
 /// and Down, Home and End, and typing a row's first letters turn it on a
 /// spring, and a row crossing the band ticks.
 ///
@@ -142,7 +142,7 @@ class FrostedWheelPicker<T> extends StatelessWidget {
             context,
             live: onChanged != null,
             columns: [
-              DesignWheelColumn(
+              RawPickerColumn(
                 itemCount: options.length,
                 itemLabel: (i) => options[i].label,
                 semanticLabel: label,
@@ -216,7 +216,7 @@ class _WheelBand extends StatelessWidget {
   );
 }
 
-/// Frosted's wheels on ui_core's [DesignWheelPicker] (the turning, its
+/// Frosted's wheels on ui_core's [RawPicker] (the turning, its
 /// settling and its spring, the keys, a screen reader's steps, the haptic
 /// tick): [columns] standing on [selection], each row in the body type (the
 /// chosen one in the 600 ink), the rows above and below receding and fading
@@ -227,7 +227,7 @@ class _WheelBand extends StatelessWidget {
 Widget _wheels(
   BuildContext context, {
   required bool live,
-  required List<DesignWheelColumn> columns,
+  required List<RawPickerColumn> columns,
   required List<int> selection,
   required ValueChanged<List<int>> onChanged,
   Alignment Function(int column)? align,
@@ -237,7 +237,7 @@ Widget _wheels(
   final style = t.textTheme.bodyLarge.line(_wheelRow / 2);
   return FrostedDim(
     off: !live,
-    child: DesignWheelPicker(
+    child: RawPicker(
       columns: (_) => columns,
       selection: selection,
       onChanged: live && columns.every((c) => c.itemCount > 0)
@@ -352,7 +352,7 @@ class FrostedTimePicker extends StatelessWidget {
     final hourIndex = h24 ? now.hour : (now.hour % 12 + 11) % 12;
     // Frosted's own words where an app gives them; left at English, the
     // shared ones ui_core speaks in the reader's language.
-    final shared = DesignLocalizations.of(context);
+    final shared = RawWidgetsLocalizations.of(context);
     const english = FrostedLocalizationsEn();
     String say(String own, String plain, String theirs) =>
         own == plain ? theirs : own;
@@ -369,20 +369,20 @@ class FrostedTimePicker extends StatelessWidget {
       context,
       live: change != null,
       columns: [
-        DesignWheelColumn(
+        RawPickerColumn(
           itemCount: h24 ? 24 : 12,
           itemLabel: (i) => h24 ? _two(i) : '${i + 1}',
           semanticLabel: hourName,
           looping: true,
         ),
-        DesignWheelColumn(
+        RawPickerColumn(
           itemCount: 60 ~/ minuteInterval,
           itemLabel: (i) => _two(i * minuteInterval),
           semanticLabel: minuteName,
           looping: true,
         ),
         if (!h24)
-          DesignWheelColumn(
+          RawPickerColumn(
             itemCount: 2,
             itemLabel: (i) => halves[i],
             semanticLabel: words.am == english.am && words.pm == english.pm
@@ -600,7 +600,8 @@ class _FrostedDatePickerState extends State<FrostedDatePicker> {
     final canOn = last == null || _month.isBefore(_monthOf(last));
     final days = DateTime(_month.year, _month.month + 1, 0).day;
     final lead =
-        (_month.weekday - DesignLocalizations.of(context).firstDayOfWeek) % 7;
+        (_month.weekday - RawWidgetsLocalizations.of(context).firstDayOfWeek) %
+        7;
     final shared = FrostedSharedWords.of(context);
     final title = shared.monthYear(_month);
 
@@ -637,12 +638,12 @@ class _FrostedDatePickerState extends State<FrostedDatePicker> {
         ),
         step(
           FrostedGlyphs.chevronLeft,
-          DesignLocalizations.of(context).previousMonthTooltip,
+          RawWidgetsLocalizations.of(context).previousMonthTooltip,
           canBack ? () => _go(-1) : null,
         ),
         step(
           FrostedGlyphs.forward,
-          DesignLocalizations.of(context).nextMonthTooltip,
+          RawWidgetsLocalizations.of(context).nextMonthTooltip,
           canOn ? () => _go(1) : null,
         ),
       ],
@@ -655,8 +656,10 @@ class _FrostedDatePickerState extends State<FrostedDatePicker> {
             Expanded(
               child: Center(
                 child: Text(
-                  DesignLocalizations.of(context).formatShortWeekday(
-                    (DesignLocalizations.of(context).firstDayOfWeek - 1 + i) %
+                  RawWidgetsLocalizations.of(context).formatShortWeekday(
+                    (RawWidgetsLocalizations.of(context).firstDayOfWeek -
+                                1 +
+                                i) %
                             7 +
                         1,
                   ),
@@ -887,14 +890,14 @@ class _PickerCard extends StatelessWidget {
                 children: [
                   Expanded(
                     child: FrostedButton.glass(
-                      DesignLocalizations.of(context).cancelButtonLabel,
+                      RawWidgetsLocalizations.of(context).cancelButtonLabel,
                       expand: true,
                       onPressed: () => Navigator.of(context).pop(),
                     ),
                   ),
                   Expanded(
                     child: FrostedButton(
-                      DesignLocalizations.of(context).okButtonLabel,
+                      RawWidgetsLocalizations.of(context).okButtonLabel,
                       expand: true,
                       onPressed: onDone,
                     ),

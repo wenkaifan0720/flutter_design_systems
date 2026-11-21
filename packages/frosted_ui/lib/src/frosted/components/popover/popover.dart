@@ -11,7 +11,7 @@ import '../../theme.dart';
 /// what the panel holds (a short form, a filter, details). The panel takes
 /// the side with room ([placement], below by default), grows in on a
 /// spring, holds Tab inside it, and closes on Escape or a tap outside,
-/// focus going back to the control. ui_core's [DesignAnchoredOverlay] is
+/// focus going back to the control. ui_core's [RawPopover] is
 /// the behaviour; this paints it.
 ///
 /// ```dart
@@ -25,10 +25,7 @@ class FrostedPopover extends StatelessWidget {
     this.child,
     this.width = 288,
     // A panel of its own width, whatever the control it opens from.
-    this.placement = const DesignOverlayPlacement(
-      gap: 8,
-      matchAnchorWidth: false,
-    ),
+    this.placement = const RawPopoverPlacement(gap: 8, matchAnchorWidth: false),
     this.label,
     this.controller,
     this.onOpenChanged,
@@ -53,7 +50,7 @@ class FrostedPopover extends StatelessWidget {
   final double width;
 
   /// Which side of the control the panel prefers, and how far off.
-  final DesignOverlayPlacement placement;
+  final RawPopoverPlacement placement;
 
   /// What a screen reader calls the panel.
   final String? label;
@@ -67,7 +64,7 @@ class FrostedPopover extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.frostedTheme;
-    return DesignAnchoredOverlay(
+    return RawPopover(
       controller: controller,
       placement: placement,
       semanticLabel: label,
@@ -92,10 +89,10 @@ class FrostedPopover extends StatelessWidget {
     properties
       ..add(DoubleProperty('width', width, defaultValue: 288))
       ..add(
-        DiagnosticsProperty<DesignOverlayPlacement>(
+        DiagnosticsProperty<RawPopoverPlacement>(
           'placement',
           placement,
-          defaultValue: const DesignOverlayPlacement(
+          defaultValue: const RawPopoverPlacement(
             gap: 8,
             matchAnchorWidth: false,
           ),
@@ -124,7 +121,7 @@ class FrostedPopover extends StatelessWidget {
 /// child and the card, so a pointer can travel onto the card; a keyboard
 /// reaches it the same way. Pointers only: on a phone it stays shut, so
 /// what it says must also be reachable by a tap. ui_core's
-/// [DesignAnchoredOverlay] (`trigger: hover`) is the behaviour.
+/// [RawPopover] (`trigger: hover`) is the behaviour.
 ///
 /// ```dart
 /// FrostedHoverCard(content: Text('Maya Chen · Design lead'), child: FrostedLink('@maya', link: '@maya', onPressed: openProfile))
@@ -136,10 +133,7 @@ class FrostedHoverCard extends StatelessWidget {
     required this.content,
     this.width = 300,
     // A panel of its own width, whatever the control it opens from.
-    this.placement = const DesignOverlayPlacement(
-      gap: 8,
-      matchAnchorWidth: false,
-    ),
+    this.placement = const RawPopoverPlacement(gap: 8, matchAnchorWidth: false),
     this.label,
     super.key,
   });
@@ -154,7 +148,7 @@ class FrostedHoverCard extends StatelessWidget {
   final double width;
 
   /// Which side of [child] the card prefers, and how far off.
-  final DesignOverlayPlacement placement;
+  final RawPopoverPlacement placement;
 
   /// What a screen reader calls the card.
   final String? label;
@@ -162,8 +156,8 @@ class FrostedHoverCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.frostedTheme;
-    return DesignAnchoredOverlay(
-      trigger: DesignOverlayTrigger.hover,
+    return RawPopover(
+      trigger: RawPopoverTrigger.hover,
       focusOnOpen: false,
       placement: placement,
       semanticLabel: label,
@@ -186,10 +180,10 @@ class FrostedHoverCard extends StatelessWidget {
     properties
       ..add(DoubleProperty('width', width, defaultValue: 300))
       ..add(
-        DiagnosticsProperty<DesignOverlayPlacement>(
+        DiagnosticsProperty<RawPopoverPlacement>(
           'placement',
           placement,
-          defaultValue: const DesignOverlayPlacement(
+          defaultValue: const RawPopoverPlacement(
             gap: 8,
             matchAnchorWidth: false,
           ),

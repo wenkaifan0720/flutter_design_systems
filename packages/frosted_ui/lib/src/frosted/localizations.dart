@@ -1,6 +1,6 @@
 // The words only Frosted's parts say on their own: a card's labels, the
 // composer's, the text menu's. The words every design system says (Close,
-// Back, Cancel, Loading) are ui_core's DesignLocalizations. A part takes the
+// Back, Cancel, Loading) are ui_core's RawWidgetsLocalizations. A part takes the
 // caller's words when given, and these otherwise, so an app in another
 // language installs a delegate for each and every part speaks it.
 import 'package:flutter/foundation.dart';
@@ -9,22 +9,22 @@ import 'package:flutter/widgets.dart';
 /// The words Frosted's own parts say when the caller gives none (a card's
 /// number and CVC, the composer's Send, the text menu's Cut and Copy), as
 /// Material's `MaterialLocalizations` are. The words every design system
-/// shares (Close, Back, Cancel, Today) are ui_core's `DesignLocalizations`.
+/// shares (Close, Back, Cancel, Today) are ui_core's `RawWidgetsLocalizations`.
 /// English ships ([FrostedLocalizationsEn]); another language is a subclass
 /// and a delegate that loads it. ui_core speaks the shared words in 30
-/// languages (`DesignLocalizations.delegate`); an app words them its own way
-/// with a `DefaultDesignLocalizations` subclass. [delegate] serves every
+/// languages (`RawWidgetsLocalizations.delegate`); an app words them its own way
+/// with a `DefaultRawWidgetsLocalizations` subclass. [delegate] serves every
 /// locale with the English words: where a part says a word every design
 /// system shares (Done, Try again, a day's or a month's name, a time, the
 /// time wheel's columns), a reader of another language hears
-/// `DesignLocalizations`' word for it, unless the app gives Frosted words of
+/// `RawWidgetsLocalizations`' word for it, unless the app gives Frosted words of
 /// its own. With no delegate installed the parts speak English.
 ///
 /// ```dart
 /// MaterialApp(
 ///   localizationsDelegates: const [
 ///     FrostedLocalizations.delegate,
-///     DesignLocalizations.delegate,
+///     RawWidgetsLocalizations.delegate,
 ///   ],
 ///   home: home,
 /// )
@@ -40,8 +40,8 @@ abstract class FrostedLocalizations {
       const FrostedLocalizationsEn();
 
   /// Loads Frosted's English words, for every locale: an app in any
-  /// language installs it beside `DesignLocalizations.delegate`, and the
-  /// words the two share come from `DesignLocalizations` in the reader's
+  /// language installs it beside `RawWidgetsLocalizations.delegate`, and the
+  /// words the two share come from `RawWidgetsLocalizations` in the reader's
   /// language.
   static const LocalizationsDelegate<FrostedLocalizations> delegate =
       _FrostedLocalizationsDelegate();
@@ -271,7 +271,7 @@ abstract class FrostedLocalizations {
   String get select;
 
   /// The time wheel's columns. Left at English ("Hour", "Minute"), the
-  /// wheel says ui_core's `DesignLocalizations` words in the reader's
+  /// wheel says ui_core's `RawWidgetsLocalizations` words in the reader's
   /// language (`timePickerHourLabel`, `timePickerMinuteLabel`).
   String get hour;
 
@@ -279,7 +279,7 @@ abstract class FrostedLocalizations {
   String get minute;
 
   /// Before and after noon. Left at English, the time wheel says
-  /// `DesignLocalizations`' (`anteMeridiemAbbreviation`,
+  /// `RawWidgetsLocalizations`' (`anteMeridiemAbbreviation`,
   /// `postMeridiemAbbreviation`, and `timeFieldDayPeriodLabel` for the
   /// column).
   String get am;
@@ -677,7 +677,7 @@ class _FrostedLocalizationsDelegate
     extends LocalizationsDelegate<FrostedLocalizations> {
   const _FrostedLocalizationsDelegate();
 
-  // Every locale: the shared words come from DesignLocalizations, and an
+  // Every locale: the shared words come from RawWidgetsLocalizations, and an
   // app missing a delegate for its locale is warned at startup.
   @override
   bool isSupported(Locale locale) => true;

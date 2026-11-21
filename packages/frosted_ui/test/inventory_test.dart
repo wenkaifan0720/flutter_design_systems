@@ -388,7 +388,8 @@ void main() {
       expect(find.text('12'), findsOneWidget);
     });
 
-    testWidgets('FrostedIconButton says when a toggle is on', (t) async {
+    testWidgets('FrostedIconButton says when a toggle is on: a button, '
+        'selected', (t) async {
       await _pump(
         t,
         FrostedIconButton(
@@ -398,7 +399,10 @@ void main() {
           onPressed: () {},
         ),
       );
-      expect(_node(t, 'Shared'), isSemantics(isToggled: true));
+      expect(
+        _node(t, 'Shared'),
+        isSemantics(isButton: true, isSelected: true, hasToggledState: false),
+      );
     });
   });
 
@@ -507,6 +511,37 @@ void main() {
       await t.pump(const Duration(seconds: 2));
       await t.pumpAndSettle();
       expect(find.text('Share with your team'), findsNothing);
+    });
+
+    testWidgets("FrostedTooltip's message is on its control's own node", (
+      t,
+    ) async {
+      final semantics = t.ensureSemantics();
+      await _pump(
+        t,
+        Center(
+          child: FrostedTooltip(
+            message: 'Share with your team',
+            child: FrostedIconButton(
+              FrostedGlyphs.share,
+              label: 'Share',
+              onPressed: () {},
+            ),
+          ),
+        ),
+      );
+      // One node, as published: a screen reader hears the button's name with
+      // its tooltip, not the tooltip on a node of its own above it.
+      expect(
+        t.getSemantics(find.bySemanticsLabel('Share')),
+        isSemantics(
+          label: 'Share',
+          tooltip: 'Share with your team',
+          isButton: true,
+          hasTapAction: true,
+        ),
+      );
+      semantics.dispose();
     });
   });
 

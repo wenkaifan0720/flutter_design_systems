@@ -92,10 +92,10 @@ class FrostedSoftDialogRoute<T> extends DesignDialogRoute<T> {
   );
 }
 
-/// The phone's sheet route (ui_core's [DesignBottomSheetRoute]: a spring that
+/// The phone's sheet route (ui_core's [RawBottomSheetRoute]: a spring that
 /// carries a drag's speed, a drag down or the scrim closing it, focus given
 /// back), softening the page below by [soften].
-class FrostedSoftBottomSheetRoute<T> extends DesignBottomSheetRoute<T> {
+class FrostedSoftBottomSheetRoute<T> extends RawBottomSheetRoute<T> {
   /// A sheet route of [builder]'s panel, softening the page below by
   /// [soften] under [barrierColor].
   FrostedSoftBottomSheetRoute({
@@ -124,10 +124,10 @@ class FrostedSoftBottomSheetRoute<T> extends DesignBottomSheetRoute<T> {
   );
 }
 
-/// The side sheet's route (ui_core's [DesignSideSheetRoute] on its spring),
+/// The side sheet's route (ui_core's [RawSideSheetRoute] on its spring),
 /// softening the page below as the dialog and the bottom sheet do: the whole
 /// page behind it blurred under the scrim, not dimmed alone.
-class FrostedSoftSideSheetRoute<T> extends DesignSideSheetRoute<T> {
+class FrostedSoftSideSheetRoute<T> extends RawSideSheetRoute<T> {
   /// A side sheet route softening the page below by [soften].
   FrostedSoftSideSheetRoute({
     required double soften,

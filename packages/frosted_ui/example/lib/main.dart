@@ -222,10 +222,10 @@ class _GalleryAppState extends State<GalleryApp> {
       // right-to-left mode puts the first two in Arabic.
       localizationsDelegates: const [
         FrostedLocalizations.delegate,
-        DesignLocalizations.delegate,
+        RawWidgetsLocalizations.delegate,
         ...GlobalMaterialLocalizations.delegates,
       ],
-      supportedLocales: DesignLocalizations.supportedLocales,
+      supportedLocales: RawWidgetsLocalizations.supportedLocales,
       debugShowCheckedModeBanner: false,
       // A link's page and modes are read above; the navigator starts at home.
       initialRoute: Navigator.defaultRouteName,
@@ -575,8 +575,8 @@ class _RaisedWatch extends NavigatorObserver {
   /// [ModalRoute.barrierColor].
   static DesignBarrierBuilder? painted(Route<Object?> route) => switch (route) {
     DesignDialogRoute<Object?>(:final barrierBuilder) => barrierBuilder,
-    DesignBottomSheetRoute<Object?>(:final barrierBuilder) => barrierBuilder,
-    DesignSideSheetRoute<Object?>(:final barrierBuilder) => barrierBuilder,
+    RawBottomSheetRoute<Object?>(:final barrierBuilder) => barrierBuilder,
+    RawSideSheetRoute<Object?>(:final barrierBuilder) => barrierBuilder,
     _ => null,
   };
 

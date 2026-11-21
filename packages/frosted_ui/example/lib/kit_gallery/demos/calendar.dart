@@ -41,8 +41,8 @@ Widget kitCalendarDemo(Brightness brightness) => kitScreen(
     kitSection(
       'A span',
       children: [
-        KitHeld<DesignDateRange?>(
-          DesignDateRange(DateTime(2026, 11, 20), DateTime(2026, 11, 27)),
+        KitHeld<RawDateRange?>(
+          RawDateRange(DateTime(2026, 11, 20), DateTime(2026, 11, 27)),
           (span, set) => FrostedDateRangePicker(
             firstDate: DateTime(2026),
             lastDate: DateTime(2027, 12, 31),
@@ -71,6 +71,6 @@ Widget kitSpecimenDateRange() => FrostedDateRangePicker(
   lastDate: DateTime(2027, 12, 31),
   currentDate: DateTime(2026, 5, 1),
   months: 1,
-  value: DesignDateRange(DateTime(2026, 5, 14), DateTime(2026, 5, 19)),
+  value: RawDateRange(DateTime(2026, 5, 14), DateTime(2026, 5, 19)),
   onChanged: (_) {},
 );

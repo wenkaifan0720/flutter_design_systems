@@ -224,11 +224,11 @@ void main() {
           t,
           FrostedMenuBar(
             menus: [
-              DesignMenuEntry(
+              RawMenuEntry(
                 label: 'File',
                 children: [
                   for (final r in rows)
-                    DesignMenuEntry(label: r, onPressed: () {}),
+                    RawMenuEntry(label: r, onPressed: () {}),
                 ],
               ),
             ],
@@ -256,11 +256,11 @@ void main() {
           t,
           FrostedMenuBar(
             menus: [
-              DesignMenuEntry(
+              RawMenuEntry(
                 label: 'File',
                 children: [
                   for (final r in rows)
-                    DesignMenuEntry(label: r, onPressed: () {}),
+                    RawMenuEntry(label: r, onPressed: () {}),
                 ],
               ),
             ],
@@ -346,8 +346,8 @@ void main() {
           t,
           FrostedContextMenu(
             items: [
-              DesignMenuEntry(label: 'Copy', onPressed: () {}),
-              DesignMenuEntry(label: 'Delete', onPressed: () {}),
+              RawMenuEntry(label: 'Copy', onPressed: () {}),
+              RawMenuEntry(label: 'Delete', onPressed: () {}),
             ],
             child: const SizedBox(height: 160),
           ),

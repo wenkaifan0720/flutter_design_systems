@@ -59,7 +59,7 @@ void main() {
     });
   }
 
-  // ui_core 0.3.4's DesignDataTable: a row that can be chosen is a checkbox,
+  // ui_core 0.3.4's RawDataTable: a row that can be chosen is a checkbox,
   // checked or not, that a tap toggles, not a button. The data page's five
   // file rows, as a screen reader meets them at 390.
   testWidgets('Data: each row that can be chosen is heard as a checkbox, '

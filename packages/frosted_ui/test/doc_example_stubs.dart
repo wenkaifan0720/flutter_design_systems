@@ -27,7 +27,7 @@ void disposeOwned() {
 // A page's state, as its State would hold it.
 void setState(VoidCallback fn) => fn();
 DateTime? due = DateTime(2026, 11, 12);
-DesignDateRange? trip;
+RawDateRange? trip;
 FrostedTime? alarm;
 bool faceId = true;
 bool veg = false;
@@ -40,7 +40,7 @@ bool shown = true;
 bool dark = false;
 double stars = 4;
 Color tint = const Color(0xFF3A5BD9);
-DesignRangeValues price = const DesignRangeValues(20, 80);
+RawRangeValues price = const RawRangeValues(20, 80);
 List<String> chosen = ['Travel'];
 int budget = 2700;
 String? amount = '580';

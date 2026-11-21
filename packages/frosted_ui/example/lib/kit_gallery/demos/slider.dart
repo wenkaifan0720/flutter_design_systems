@@ -42,8 +42,8 @@ Widget kitSliderDemo(Brightness brightness) => kitScreen(
     kitSection(
       'Range',
       children: [
-        KitHeld<DesignRangeValues>(
-          const DesignRangeValues(20, 80),
+        KitHeld<RawRangeValues>(
+          const RawRangeValues(20, 80),
           (span, set) => FrostedRangeSlider(
             values: span,
             max: 100,
@@ -106,7 +106,7 @@ class _HeldState extends State<_Held> {
 
 /// A price between two thumbs.
 Widget kitSpecimenRangeSlider() => FrostedRangeSlider(
-  values: const DesignRangeValues(20, 80),
+  values: const RawRangeValues(20, 80),
   max: 100,
   onChanged: (_) {},
   startLabel: 'Lowest price',

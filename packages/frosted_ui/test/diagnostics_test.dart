@@ -112,7 +112,7 @@ void main() {
         label: 'Volume',
       ),
       'a range slider whose max passes its min': () => FrostedRangeSlider(
-        values: const DesignRangeValues(.2, .4),
+        values: const RawRangeValues(.2, .4),
         min: 1,
         max: 0,
         onChanged: null,

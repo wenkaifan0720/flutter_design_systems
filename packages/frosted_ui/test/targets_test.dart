@@ -1,5 +1,5 @@
 // Frosted's small controls stand in their touch targets, as Material pads
-// its own (ui_core's DesignTapTarget): a 40 bell, a 24 check and a 44 × 26
+// its own (ui_core's TapTargetPadding): a 40 bell, a 24 check and a 44 × 26
 // switch each lay out at 48 under a finger, the face at its own size in the
 // middle, so the box a screen reader outlines, the area a tap reaches and
 // the layout are one; a press in the margin reaches the control, and

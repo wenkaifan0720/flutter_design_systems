@@ -116,11 +116,9 @@ void main() {
   });
 
   testWidgets('FrostedDataTable sorts by the column pressed', (t) async {
-    final rows = DesignTableController<String>(
+    final rows = RawDataTableController<String>(
       rows: const ['Pear', 'Apple', 'Fig'],
-      columns: [
-        DesignTableColumn(id: 'name', label: 'Name', sortKey: (s) => s),
-      ],
+      columns: [RawDataColumn(id: 'name', label: 'Name', sortKey: (s) => s)],
     );
     addTearDown(rows.dispose);
     await _pump(

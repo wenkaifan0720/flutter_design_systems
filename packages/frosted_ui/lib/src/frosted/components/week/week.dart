@@ -184,7 +184,8 @@ class FrostedWeekStrip extends StatelessWidget {
       return FrostedPressable(
         onPressed: () => onChanged!(date),
         label: spoken,
-        toggled: state == FrostedDayStatus.complete,
+        // A button, selected while the day is kept.
+        selected: state == FrostedDayStatus.complete,
         radius: FrostedChromeMetrics.weekBead / 2,
         child: column,
       );
@@ -219,7 +220,7 @@ class FrostedWeekStrip extends StatelessWidget {
   static Widget _date(DateTime date, TextStyle style) => Builder(
     builder: (context) => frostedCapCentred(
       Text(
-        DesignLocalizations.of(context).formatDecimal(date.day),
+        RawWidgetsLocalizations.of(context).formatDecimal(date.day),
         maxLines: 1,
         style: style.tabular,
       ),

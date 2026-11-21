@@ -30,92 +30,92 @@ String _keys(
   );
 }
 
-List<DesignMenuEntry> _menus(BuildContext context) => [
-  DesignMenuEntry(
+List<RawMenuEntry> _menus(BuildContext context) => [
+  RawMenuEntry(
     label: 'File',
     children: [
-      DesignMenuEntry(
+      RawMenuEntry(
         label: 'New',
         shortcut: _keys(context, LogicalKeyboardKey.keyN),
         onPressed: _none,
       ),
-      DesignMenuEntry(
+      RawMenuEntry(
         label: 'Open…',
         shortcut: _keys(context, LogicalKeyboardKey.keyO),
         onPressed: _none,
       ),
-      const DesignMenuEntry(
+      const RawMenuEntry(
         label: 'Open recent',
         children: [
-          DesignMenuEntry(label: 'Notes', onPressed: _none),
-          DesignMenuEntry(label: 'Roadmap', onPressed: _none),
+          RawMenuEntry(label: 'Notes', onPressed: _none),
+          RawMenuEntry(label: 'Roadmap', onPressed: _none),
         ],
       ),
-      const DesignMenuEntry.divider(),
-      DesignMenuEntry(
+      const RawMenuEntry.divider(),
+      RawMenuEntry(
         label: 'Close',
         shortcut: _keys(context, LogicalKeyboardKey.keyW),
         onPressed: _none,
       ),
     ],
   ),
-  DesignMenuEntry(
+  RawMenuEntry(
     label: 'Edit',
     children: [
-      DesignMenuEntry(
+      RawMenuEntry(
         label: 'Undo',
         shortcut: _keys(context, LogicalKeyboardKey.keyZ),
         onPressed: _none,
       ),
       // No onPressed: disabled.
-      DesignMenuEntry(
+      RawMenuEntry(
         label: 'Redo',
         shortcut: _keys(context, LogicalKeyboardKey.keyZ, shift: true),
       ),
-      const DesignMenuEntry.divider(),
-      DesignMenuEntry(
+      const RawMenuEntry.divider(),
+      RawMenuEntry(
         label: 'Cut',
         shortcut: _keys(context, LogicalKeyboardKey.keyX),
         onPressed: _none,
       ),
-      DesignMenuEntry(
+      RawMenuEntry(
         label: 'Copy',
         shortcut: _keys(context, LogicalKeyboardKey.keyC),
         onPressed: _none,
       ),
-      DesignMenuEntry(
+      RawMenuEntry(
         label: 'Paste',
         shortcut: _keys(context, LogicalKeyboardKey.keyV),
         onPressed: _none,
       ),
     ],
   ),
-  const DesignMenuEntry(
+  const RawMenuEntry(
     label: 'View',
     children: [
-      DesignMenuEntry(label: 'Sidebar', checked: true, onPressed: _none),
-      DesignMenuEntry(label: 'Status bar', checked: false, onPressed: _none),
+      RawMenuEntry(label: 'Sidebar', checked: true, onPressed: _none),
+      RawMenuEntry(label: 'Status bar', checked: false, onPressed: _none),
     ],
   ),
 ];
 
-List<DesignCommand> _commands(BuildContext context) => [
-  DesignCommand(
+List<RawCommand> _commands(BuildContext context) => [
+  RawCommand(
     label: 'New document',
     group: 'Create',
     shortcut: _keys(context, LogicalKeyboardKey.keyN),
     onPressed: _none,
   ),
-  const DesignCommand(label: 'New folder', group: 'Create', onPressed: _none),
-  DesignCommand(
+  const RawCommand(label: 'New folder', group: 'Create', onPressed: _none),
+  RawCommand(
     label: 'Search files',
     group: 'Go to',
     keywords: const ['find'],
     shortcut: _keys(context, LogicalKeyboardKey.keyP),
     onPressed: _none,
   ),
-  const DesignCommand(label: 'Settings', group: 'Go to', onPressed: _none),
-  const DesignCommand(
+  const RawCommand(label: 'Settings', group: 'Go to', onPressed: _none),
+  const RawCommand(
     label: 'Sign out',
     group: 'Account',
     keywords: ['log out'],
@@ -144,14 +144,14 @@ Widget kitCommandDemo(Brightness brightness) => kitScreen(
           builder: (context) => FrostedContextMenu(
             label: 'Note',
             items: [
-              DesignMenuEntry(
+              RawMenuEntry(
                 label: 'Copy',
                 shortcut: _keys(context, LogicalKeyboardKey.keyC),
                 onPressed: _none,
               ),
-              const DesignMenuEntry(label: 'Duplicate', onPressed: _none),
-              const DesignMenuEntry.divider(),
-              const DesignMenuEntry(label: 'Delete', onPressed: _none),
+              const RawMenuEntry(label: 'Duplicate', onPressed: _none),
+              const RawMenuEntry.divider(),
+              const RawMenuEntry(label: 'Delete', onPressed: _none),
             ],
             child: const FrostedCard(
               child: Text('Right-click or long-press this note'),
@@ -184,17 +184,17 @@ Widget kitCommandDemo(Brightness brightness) => kitScreen(
 /// An app's menus, along a desktop window's top.
 Widget kitSpecimenMenuBar() => FrostedMenuBar(
   menus: [
-    DesignMenuEntry(
+    RawMenuEntry(
       label: 'File',
-      children: [DesignMenuEntry(label: 'New transfer', onPressed: () {})],
+      children: [RawMenuEntry(label: 'New transfer', onPressed: () {})],
     ),
-    DesignMenuEntry(
+    RawMenuEntry(
       label: 'Edit',
-      children: [DesignMenuEntry(label: 'Copy', onPressed: () {})],
+      children: [RawMenuEntry(label: 'Copy', onPressed: () {})],
     ),
-    DesignMenuEntry(
+    RawMenuEntry(
       label: 'View',
-      children: [DesignMenuEntry(label: 'Activity', onPressed: () {})],
+      children: [RawMenuEntry(label: 'Activity', onPressed: () {})],
     ),
   ],
 );

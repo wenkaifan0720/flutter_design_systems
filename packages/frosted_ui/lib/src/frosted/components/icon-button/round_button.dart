@@ -120,7 +120,9 @@ class FrostedIconButton extends StatelessWidget {
       autofocus: autofocus,
       onPressed: onPressed,
       label: label,
-      toggled: selected,
+      // A toggle button: a button, selected while on, as Flutter's
+      // `IconButton(isSelected:)` says it.
+      selected: selected,
       radius: FrostedStyleLayers.radiusOf(cut, d, d / 2),
       shape: cut,
       builder: (context, states, _) => frostedIconButtonFace(

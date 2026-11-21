@@ -42,7 +42,7 @@ void main() {
                           onChanged: (_) {},
                         ),
                         FrostedRangeSlider(
-                          values: const DesignRangeValues(.2, .8),
+                          values: const RawRangeValues(.2, .8),
                           onChanged: (_) {},
                         ),
                       ],

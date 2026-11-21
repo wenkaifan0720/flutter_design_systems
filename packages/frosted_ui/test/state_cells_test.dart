@@ -231,7 +231,7 @@ final stateParts = <StatePart>[
     (on, _) => SizedBox(
       width: 240,
       child: FrostedRangeSlider(
-        values: const DesignRangeValues(.2, .7),
+        values: const RawRangeValues(.2, .7),
         onChanged: on ? _drop : null,
       ),
     ),

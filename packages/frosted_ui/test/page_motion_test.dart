@@ -138,14 +138,12 @@ void main() {
     for (final platform in TargetPlatform.values) {
       final builder = frostedPageTransitions[platform];
       expect(
-        builder is DesignSwipeBackPageTransitionsBuilder
-            ? builder.builder
-            : builder,
+        builder is SwipeBackPageTransitionsBuilder ? builder.builder : builder,
         isA<FrostedPageMotion>(),
         reason: '$platform',
       );
       expect(
-        builder is DesignSwipeBackPageTransitionsBuilder,
+        builder is SwipeBackPageTransitionsBuilder,
         platform == TargetPlatform.iOS,
         reason: '$platform',
       );

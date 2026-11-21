@@ -135,7 +135,7 @@ Widget _kitApp({required Brightness brightness, required Widget home}) =>
         // it, beside GlobalMaterialLocalizations.
         localizationsDelegates: const [
           FrostedLocalizations.delegate,
-          DesignLocalizations.delegate,
+          RawWidgetsLocalizations.delegate,
         ],
         navigatorObservers:
             kitNavigatorObservers?.call() ?? const <NavigatorObserver>[],

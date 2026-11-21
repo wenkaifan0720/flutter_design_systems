@@ -28,16 +28,14 @@ import '../theme.dart';
 /// ```
 ///
 /// On iOS the motion stands inside ui_core's
-/// [DesignSwipeBackPageTransitionsBuilder], so a drag from the leading edge
+/// [SwipeBackPageTransitionsBuilder], so a drag from the leading edge
 /// still takes a page back, as on every iOS screen.
 const Map<TargetPlatform, PageTransitionsBuilder> frostedPageTransitions =
     <TargetPlatform, PageTransitionsBuilder>{
       TargetPlatform.android: FrostedPageMotion(),
       TargetPlatform.fuchsia: FrostedPageMotion(),
       // iOS's swipe back from the leading edge, round Frosted's push.
-      TargetPlatform.iOS: DesignSwipeBackPageTransitionsBuilder(
-        FrostedPageMotion(),
-      ),
+      TargetPlatform.iOS: SwipeBackPageTransitionsBuilder(FrostedPageMotion()),
       TargetPlatform.linux: FrostedPageMotion(),
       TargetPlatform.macOS: FrostedPageMotion(),
       TargetPlatform.windows: FrostedPageMotion(),
@@ -53,7 +51,7 @@ const Map<TargetPlatform, PageTransitionsBuilder> frostedPageTransitions =
 /// pane lifting off the way it came. A full-screen dialog settles the same
 /// [travel] up from below. Under Reduce Motion it is a cut. It takes no
 /// drag of its own: on iOS [frostedPageTransitions] stands it inside ui_core's
-/// [DesignSwipeBackPageTransitionsBuilder], whose drag from the leading edge
+/// [SwipeBackPageTransitionsBuilder], whose drag from the leading edge
 /// pulls the page off under the finger, as the platform's own pages do.
 class FrostedPageMotion extends PageTransitionsBuilder {
   /// Frosted's page motion.

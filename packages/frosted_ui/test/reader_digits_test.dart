@@ -14,8 +14,8 @@ Future<void> _pump(WidgetTester tester, Locale locale) async {
     WidgetsApp(
       color: const Color(0xFF000000),
       locale: locale,
-      supportedLocales: DesignLocalizations.supportedLocales,
-      localizationsDelegates: const [DesignLocalizations.delegate],
+      supportedLocales: RawWidgetsLocalizations.supportedLocales,
+      localizationsDelegates: const [RawWidgetsLocalizations.delegate],
       pageRouteBuilder: <T>(settings, builder) => PageRouteBuilder<T>(
         settings: settings,
         pageBuilder: (context, _, _) => builder(context),

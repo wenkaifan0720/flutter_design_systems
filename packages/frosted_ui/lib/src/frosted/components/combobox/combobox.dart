@@ -33,7 +33,7 @@ Widget _searching(BuildContext context) {
   return Padding(
     padding: const EdgeInsets.all(FrostedSpacing.s24),
     child: Text(
-      DesignLocalizations.of(context).loadingLabel,
+      RawWidgetsLocalizations.of(context).loadingLabel,
       textAlign: TextAlign.center,
       style: t.textTheme.titleMedium.c(t.colorScheme.textTertiary),
     ),
@@ -43,9 +43,9 @@ Widget _searching(BuildContext context) {
 /// A failed search's list, on the panel: what went wrong, in the empty
 /// list's words, over a Try again row, under the wash while the keys hold
 /// it.
-Widget _searchFailed(BuildContext context, DesignSearchError failure) {
+Widget _searchFailed(BuildContext context, RawSearchError failure) {
   final t = context.frostedTheme;
-  final words = DesignLocalizations.of(context);
+  final words = RawWidgetsLocalizations.of(context);
   return Column(
     mainAxisSize: MainAxisSize.min,
     crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -94,7 +94,7 @@ Widget _searchFailed(BuildContext context, DesignSearchError failure) {
 /// closed list they open it), Return or a press takes the held row, Escape
 /// closes the list. With
 /// [requireSelection] text that is not an option is put back. [search]
-/// fetches matches from elsewhere (a server). ui_core's [DesignCombobox] is
+/// fetches matches from elsewhere (a server). ui_core's [RawCombobox] is
 /// the behaviour.
 ///
 /// ```dart
@@ -190,7 +190,7 @@ class FrostedCombobox<T extends Object> extends StatelessWidget {
     final t = context.frostedTheme;
     // A select's measure: its column on a phone, at most 320 from 600 up.
     return FrostedControlMeasure(
-      child: DesignCombobox<T>(
+      child: RawCombobox<T>(
         options: options,
         search: search,
         debounceDuration: debounceDuration,
@@ -237,7 +237,7 @@ class FrostedCombobox<T extends Object> extends StatelessWidget {
         emptyBuilder: (context) => Padding(
           padding: const EdgeInsets.all(FrostedSpacing.s24),
           child: Text(
-            DesignLocalizations.of(context).noResultsLabel,
+            RawWidgetsLocalizations.of(context).noResultsLabel,
             textAlign: TextAlign.center,
             style: t.textTheme.titleMedium.c(t.colorScheme.textTertiary),
           ),
@@ -319,7 +319,7 @@ class FrostedCombobox<T extends Object> extends StatelessWidget {
 /// pointer moving over it: one place); Backspace in an empty field lights the last
 /// chip and a second removes it; the arrow keys walk the chips. With
 /// [onCreate] what is typed becomes a value of its own (a new tag); [maxTags]
-/// stops taking more. ui_core's [DesignTagInput] is the behaviour.
+/// stops taking more. ui_core's [RawTagInput] is the behaviour.
 ///
 /// ```dart
 /// FrostedMultiSelect<String>(label: 'Tags', options: tags, values: chosen, onChanged: (v) => setState(() => chosen = v))
@@ -496,7 +496,7 @@ class _FrostedMultiSelectState<T extends Object>
         spacing: FrostedChromeMetrics.fieldLabelGap,
         children: [
           FrostedFieldLabel(widget.label),
-          DesignTagInput<T>(
+          RawTagInput<T>(
             values: widget.values,
             onChanged: widget.onChanged,
             options: widget.options,

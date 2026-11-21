@@ -27,7 +27,7 @@ class FrostedToastLook {
 }
 
 /// The toasts' layer over the app, which [FrostedHost] mounts above the
-/// navigator: ui_core's [DesignToaster] (the queue, the timer that pauses
+/// navigator: ui_core's [RawToaster] (the queue, the timer that pauses
 /// under a pointer or focus, the swipe and Escape that dismiss, F6 to reach
 /// it, the live region), one toast at a time, each painted as a
 /// [FrostedSnackBar] rising from below. On a phone it spans the row 16 in;
@@ -42,7 +42,7 @@ class FrostedToaster extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final wide = FrostedBreakpoints.isWide(context);
-    return DesignToaster(
+    return RawToaster(
       maxVisible: 1,
       alignment: wide
           ? AlignmentDirectional.bottomEnd
@@ -65,7 +65,7 @@ class FrostedToaster extends StatelessWidget {
     );
   }
 
-  static Widget _paint(BuildContext context, DesignToastDetails view) {
+  static Widget _paint(BuildContext context, RawToastDetails view) {
     final toast = view.toast;
     final data = toast.data;
     final look = data is FrostedToastLook

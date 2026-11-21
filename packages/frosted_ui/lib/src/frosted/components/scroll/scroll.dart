@@ -22,7 +22,7 @@ import '../progress/progress.dart';
 /// track pages. The area is a Tab stop of its own when [focusable], ringed
 /// while the keyboard holds it, and the arrows, Page Up and Down, Home and
 /// End scroll it. [child] is a scroll view on [controller]. ui_core's
-/// [DesignScrollArea] is the behaviour.
+/// [RawScrollArea] is the behaviour.
 ///
 /// ```dart
 /// FrostedScrollArea(controller: scroll, child: ListView(controller: scroll, children: rows))
@@ -69,7 +69,7 @@ class FrostedScrollArea extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.frostedTheme;
     final motion = FrostedMotion.of(context);
-    return DesignScrollArea(
+    return RawScrollArea(
       controller: controller,
       axis: axis,
       focusable: focusable,
@@ -166,7 +166,7 @@ class FrostedScrollArea extends StatelessWidget {
 /// under the pointer or while dragged; the arrows move it from the
 /// keyboard and Return folds the first pane away and back. [minFirst] and
 /// [minSecond] keep each pane at least that wide (tall, with
-/// [Axis.vertical]). ui_core's [DesignSplitView] is the behaviour.
+/// [Axis.vertical]). ui_core's [RawSplitView] is the behaviour.
 ///
 /// ```dart
 /// FrostedResizable(first: list, second: detail, initialFraction: .35, minFirst: 240)
@@ -232,7 +232,7 @@ class FrostedResizable extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.frostedTheme;
-    return DesignSplitView(
+    return RawSplitView(
       first: first,
       second: second,
       axis: axis,
@@ -244,7 +244,7 @@ class FrostedResizable extends StatelessWidget {
       hitExtent: 16,
       focusNode: focusNode,
       autofocus: autofocus,
-      // The handle's name: DesignLocalizations.splitViewHandleLabel.
+      // The handle's name: RawWidgetsLocalizations.splitViewHandleLabel.
       dividerBuilder: (context, states, axis) {
         final lit =
             states.contains(WidgetState.hovered) ||
@@ -319,7 +319,7 @@ class FrostedResizable extends StatelessWidget {
 /// the page dots under it, and a play and pause button when it turns by
 /// itself every [autoplay] (stopping while the pointer or the keyboard is
 /// on it, and under Reduce Motion). A swipe, the arrows from the keyboard
-/// and a screen reader's own swipe all turn it. ui_core's [DesignCarousel]
+/// and a screen reader's own swipe all turn it. ui_core's [RawCarousel]
 /// is the behaviour.
 ///
 /// ```dart
@@ -381,7 +381,7 @@ class FrostedCarouselView extends StatelessWidget {
   final ValueChanged<int>? onPageChanged;
 
   /// What a screen reader calls it; null says
-  /// `DesignLocalizations.carouselLabel` ("Carousel" in English).
+  /// `RawWidgetsLocalizations.carouselLabel` ("Carousel" in English).
   final String? label;
 
   /// {@macro frosted.focusNode}
@@ -393,13 +393,13 @@ class FrostedCarouselView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final words = FrostedLocalizations.of(context);
-    final shared = DesignLocalizations.of(context);
+    final shared = RawWidgetsLocalizations.of(context);
     final slides = children;
     final count = slides?.length ?? itemCount!;
     final slide = slides == null
         ? itemBuilder!
         : (BuildContext _, int i) => slides[i];
-    return DesignCarousel(
+    return RawCarousel(
       itemCount: count,
       viewportFraction: viewportFraction,
       loop: loop,
@@ -407,7 +407,7 @@ class FrostedCarouselView extends StatelessWidget {
       onPageChanged: onPageChanged,
       focusNode: focusNode,
       autofocus: autofocus,
-      // Null names: DesignLocalizations' carouselLabel and
+      // Null names: RawWidgetsLocalizations' carouselLabel and
       // carouselSlideLabel ("Slide 2 of 5").
       semanticLabel: label,
       duration: FrostedMotion.of(context).base,
@@ -557,7 +557,7 @@ class FrostedCarouselView extends StatelessWidget {
 /// thicker slab glass in the menu's lift (nearer is thicker); a long press anywhere on a row drags it too. From the
 /// keyboard Alt with Up or Down moves the focused row, and a screen reader
 /// has Move up and Move down; each move is announced with the row's new
-/// place. ui_core's [DesignReorderableList] is the behaviour.
+/// place. ui_core's [RawReorderableList] is the behaviour.
 ///
 /// ```dart
 /// FrostedReorderableListView<String>(items: tasks, labelOf: (t) => t, onReorder: (from, to) => setState(() => tasks.insert(to, tasks.removeAt(from))), itemBuilder: (context, t) => Text(t))
@@ -605,7 +605,7 @@ class FrostedReorderableListView<T extends Object> extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.frostedTheme;
     final words = FrostedLocalizations.of(context);
-    return DesignReorderableList<T>(
+    return RawReorderableList<T>(
       items: items,
       onReorder: onReorder,
       labelOf: labelOf,
@@ -756,7 +756,7 @@ class _LiftedFace extends StatelessWidget {
 /// RefreshIndicator): a glass disc follows the pull, its ring filling
 /// as the pull nears the mark, turning while [onRefresh] runs; a screen
 /// reader has a Refresh action and hears "Refreshing" and then that it is
-/// done. ui_core's [DesignPullToRefresh] is the behaviour.
+/// done. ui_core's [RawRefreshIndicator] is the behaviour.
 ///
 /// ```dart
 /// FrostedRefreshIndicator(onRefresh: reload, child: ListView(children: rows))
@@ -778,12 +778,14 @@ class FrostedRefreshIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.frostedTheme;
-    // Its words (Refresh, Refreshing): DesignLocalizations'.
-    return DesignPullToRefresh(
+    // Its words (Refresh, Refreshing): RawWidgetsLocalizations'.
+    return RawRefreshIndicator(
       onRefresh: onRefresh,
       indicatorBuilder: (context, state) {
-        if (state.mode == DesignRefreshMode.inactive) return const SizedBox();
-        final turning = state.mode == DesignRefreshMode.refresh;
+        if (state.mode == RawRefreshIndicatorMode.inactive) {
+          return const SizedBox();
+        }
+        final turning = state.mode == RawRefreshIndicatorMode.refresh;
         return Center(
           child: Opacity(
             opacity: state.progress.clamp(0.0, 1.0),
@@ -798,7 +800,8 @@ class FrostedRefreshIndicator extends StatelessWidget {
                 child: Center(
                   child: ExcludeSemantics(
                     child: FrostedCircularProgressIndicator(
-                      value: turning || state.mode == DesignRefreshMode.done
+                      value:
+                          turning || state.mode == RawRefreshIndicatorMode.done
                           ? (turning ? null : 1)
                           : state.progress.clamp(0.0, 1.0),
                       size: 20,

@@ -366,14 +366,14 @@ void main() {
             FocusHighlightStrategy.automatic,
       );
       final ran = <String>[];
-      DesignMenuEntry item(String label) =>
-          DesignMenuEntry(label: label, onPressed: () => ran.add(label));
+      RawMenuEntry item(String label) =>
+          RawMenuEntry(label: label, onPressed: () => ran.add(label));
       await tester.pumpWidget(
         _host(
           t,
           FrostedMenuBar(
             menus: [
-              DesignMenuEntry(
+              RawMenuEntry(
                 label: 'File',
                 children: [
                   item('New'),

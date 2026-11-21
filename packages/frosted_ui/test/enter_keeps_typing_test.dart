@@ -161,11 +161,8 @@ void main() {
         _host(
           FrostedCommand(
             commands: [
-              DesignCommand(
-                label: 'New payment',
-                onPressed: () => ran.add('pay'),
-              ),
-              DesignCommand(
+              RawCommand(label: 'New payment', onPressed: () => ran.add('pay')),
+              RawCommand(
                 label: 'Settings',
                 onPressed: () => ran.add('settings'),
               ),
