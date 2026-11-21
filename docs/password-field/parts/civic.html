@@ -39,20 +39,18 @@
   <span class="hljs-built_in">bool</span> entered = <span class="hljs-keyword">false</span>;
 
   <span class="hljs-meta">@override</span>
-  Widget build(BuildContext context) =&gt; SingleChildScrollView(
-    child: ConstrainedBox(
-      constraints: <span class="hljs-keyword">const</span> BoxConstraints(maxWidth: <span class="hljs-number">360</span>),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          CivicPasswordField(
-            labelText: <span class="hljs-string">'Sample password'</span>,
-            onChanged: (value) =&gt; setState(() =&gt; entered = value.isNotEmpty),
-          ),
-          <span class="hljs-keyword">const</span> SizedBox(height: <span class="hljs-number">12</span>),
-          Text(entered ? <span class="hljs-string">'Sample entered'</span> : <span class="hljs-string">'Enter a sample word'</span>),
-        ],
-      ),
+  Widget build(BuildContext context) =&gt; ConstrainedBox(
+    constraints: <span class="hljs-keyword">const</span> BoxConstraints(maxWidth: <span class="hljs-number">360</span>),
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        CivicPasswordField(
+          labelText: <span class="hljs-string">'Sample password'</span>,
+          onChanged: (value) =&gt; setState(() =&gt; entered = value.isNotEmpty),
+        ),
+        <span class="hljs-keyword">const</span> SizedBox(height: <span class="hljs-number">12</span>),
+        Text(entered ? <span class="hljs-string">'Sample entered'</span> : <span class="hljs-string">'Enter a sample word'</span>),
+      ],
     ),
   );
 }

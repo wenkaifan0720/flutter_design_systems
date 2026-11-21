@@ -101,10 +101,6 @@ async function renderLook(id) {
   const option = select.selectedOptions[0];
   document.title = document.querySelector('h1').textContent + ' in ' + option.dataset.name + ' · Flutter Design Systems';
   document.querySelector('#swatch').style.background = option.dataset.swatch;
-  const reference = option.dataset.reference === 'true';
-  gallery.hidden = reference;
-  document.querySelector('.stint-link').hidden = option.dataset.study !== 'true';
-  document.querySelector('#behaviour').hidden = reference;
   gallery.href = gallery.dataset.galleries + '/' + id + '/';
   gallery.textContent = option.dataset.name + ' gallery ↗';
   for (const viewport of specimens.querySelectorAll('.viewport')) {

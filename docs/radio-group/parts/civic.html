@@ -39,25 +39,23 @@
   <span class="hljs-built_in">String</span>? delivery = <span class="hljs-string">'Pickup'</span>;
 
   <span class="hljs-meta">@override</span>
-  Widget build(BuildContext context) =&gt; SingleChildScrollView(
-    child: ConstrainedBox(
-      constraints: <span class="hljs-keyword">const</span> BoxConstraints(maxWidth: <span class="hljs-number">360</span>),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          CivicRadioGroup&lt;<span class="hljs-built_in">String</span>&gt;(
-            labelText: <span class="hljs-string">'Delivery method'</span>,
-            groupValue: delivery,
-            children: <span class="hljs-keyword">const</span> [
-              CivicRadio(value: <span class="hljs-string">'Pickup'</span>, labelText: <span class="hljs-string">'Pickup'</span>),
-              CivicRadio(value: <span class="hljs-string">'Courier'</span>, labelText: <span class="hljs-string">'Courier'</span>),
-            ],
-            onChanged: (value) =&gt; setState(() =&gt; delivery = value),
-          ),
-          <span class="hljs-keyword">const</span> SizedBox(height: <span class="hljs-number">12</span>),
-          Text(<span class="hljs-string">'Delivery: <span class="hljs-subst">$delivery</span>'</span>),
-        ],
-      ),
+  Widget build(BuildContext context) =&gt; ConstrainedBox(
+    constraints: <span class="hljs-keyword">const</span> BoxConstraints(maxWidth: <span class="hljs-number">360</span>),
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        CivicRadioGroup&lt;<span class="hljs-built_in">String</span>&gt;(
+          labelText: <span class="hljs-string">'Delivery method'</span>,
+          groupValue: delivery,
+          children: <span class="hljs-keyword">const</span> [
+            CivicRadio(value: <span class="hljs-string">'Pickup'</span>, labelText: <span class="hljs-string">'Pickup'</span>),
+            CivicRadio(value: <span class="hljs-string">'Courier'</span>, labelText: <span class="hljs-string">'Courier'</span>),
+          ],
+          onChanged: (value) =&gt; setState(() =&gt; delivery = value),
+        ),
+        <span class="hljs-keyword">const</span> SizedBox(height: <span class="hljs-number">12</span>),
+        Text(<span class="hljs-string">'Delivery: <span class="hljs-subst">$delivery</span>'</span>),
+      ],
     ),
   );
 }

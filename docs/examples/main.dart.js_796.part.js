@@ -1,1 +1,6 @@
-(() => { const u = new URL(location.href); u.searchParams.set('build', '838b130155b8c6e89f40'); if (u.href !== location.href) location.replace(u); else location.reload(); })();
+((a,b)=>{a[b]=a[b]||{}})(self,"$__dart_deferred_initializers__")
+$__dart_deferred_initializers__.current=function(a,b,c,$){var A,B
+A=c[0]
+B=c[524]
+var z=a.updateTypes([]);(function constants(){B.anQ=new A.t(null,5,null,null)})()};
+(a=>{a["WJFCybz0KA0jVBB8MMgE4eyeVR0="]=a.current})($__dart_deferred_initializers__);

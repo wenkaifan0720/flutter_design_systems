@@ -38,33 +38,31 @@
   <span class="hljs-built_in">bool</span> failed = <span class="hljs-keyword">true</span>;
 
   <span class="hljs-meta">@override</span>
-  Widget build(BuildContext context) =&gt; SingleChildScrollView(
-    child: ConstrainedBox(
-      constraints: <span class="hljs-keyword">const</span> BoxConstraints(maxWidth: <span class="hljs-number">380</span>),
-      child: failed
-          ? CivicEmptyState(
-              title: <span class="hljs-string">'Files unavailable'</span>,
-              actions: [
-                CivicButton(
-                  onPressed: () =&gt; setState(() =&gt; failed = <span class="hljs-keyword">false</span>),
-                  child: <span class="hljs-keyword">const</span> Text(<span class="hljs-string">'Retry'</span>),
-                ),
-              ],
-              announce: <span class="hljs-keyword">true</span>,
-              children: <span class="hljs-keyword">const</span> [Text(<span class="hljs-string">'The connection was interrupted.'</span>)],
-            )
-          : Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                <span class="hljs-keyword">const</span> Text(<span class="hljs-string">'Planning notes'</span>),
-                <span class="hljs-keyword">const</span> SizedBox(height: <span class="hljs-number">12</span>),
-                CivicButton(
-                  onPressed: () =&gt; setState(() =&gt; failed = <span class="hljs-keyword">true</span>),
-                  child: <span class="hljs-keyword">const</span> Text(<span class="hljs-string">'Reset example'</span>),
-                ),
-              ],
-            ),
-    ),
+  Widget build(BuildContext context) =&gt; ConstrainedBox(
+    constraints: <span class="hljs-keyword">const</span> BoxConstraints(maxWidth: <span class="hljs-number">380</span>),
+    child: failed
+        ? CivicEmptyState(
+            title: <span class="hljs-string">'Files unavailable'</span>,
+            actions: [
+              CivicButton(
+                onPressed: () =&gt; setState(() =&gt; failed = <span class="hljs-keyword">false</span>),
+                child: <span class="hljs-keyword">const</span> Text(<span class="hljs-string">'Retry'</span>),
+              ),
+            ],
+            announce: <span class="hljs-keyword">true</span>,
+            children: <span class="hljs-keyword">const</span> [Text(<span class="hljs-string">'The connection was interrupted.'</span>)],
+          )
+        : Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              <span class="hljs-keyword">const</span> Text(<span class="hljs-string">'Planning notes'</span>),
+              <span class="hljs-keyword">const</span> SizedBox(height: <span class="hljs-number">12</span>),
+              CivicButton(
+                onPressed: () =&gt; setState(() =&gt; failed = <span class="hljs-keyword">true</span>),
+                child: <span class="hljs-keyword">const</span> Text(<span class="hljs-string">'Reset example'</span>),
+              ),
+            ],
+          ),
   );
 }
 </code></pre>

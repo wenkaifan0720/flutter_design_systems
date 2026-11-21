@@ -5,59 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Flutter component preview</title>
   <meta name="description" content="Run a Flutter component example or open the Stint team planner.">
-  <meta name="preview-build" content="838b130155b8c6e89f40">
   <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
   <style>
     html,body{margin:0;height:100%}
     body{background:transparent}
     #preview{position:relative;height:100%;max-width:1440px;margin-inline:auto}
-    #opening{position:absolute;inset:0;z-index:1;display:grid;place-content:center;gap:.75rem;text-align:center;font:1rem system-ui;color:#464a51;background:#fff}
-    #opening[hidden]{display:none}
   </style>
 </head>
 <body>
-  <div id="opening" role="status"><span>Loading preview…</span><button type="button" hidden>Reload preview</button></div>
-  <script>
-    // An open preview can request another edition after a new site goes live.
-    const build = document.querySelector('meta[name="preview-build"]').content;
-    const opening = document.getElementById('opening');
-    const reload = opening.querySelector('button');
-    if (new URLSearchParams(location.search).has('stint')) {
-      opening.firstElementChild.textContent = 'Opening Stint…';
-    }
-    reload.onclick = () => location.reload();
-    let checkingBuild;
-    let reloading = false;
-    function offerReload() {
-      opening.hidden = false;
-      opening.firstElementChild.textContent = 'The preview could not load.';
-      reload.hidden = false;
-    }
-    const slow = setTimeout(() => { reload.hidden = false; }, 12000);
-    window.addEventListener('flutter-first-frame', () => {
-      clearTimeout(slow);
-      opening.hidden = true;
-    }, {once: true});
-    window.addEventListener('error', event => {
-      const src = event.target instanceof HTMLScriptElement ? event.target.src : event.filename;
-      if (reloading || !build || !src || !new URL(src, location.href).pathname.includes('/bundles/' + build + '/')) return;
-      checkingBuild ??= fetch('bundle.json', {cache: 'no-store'})
-        .then(response => response.ok ? response.json() : null)
-        .then(latest => {
-          const address = new URL(location.href);
-          if (latest && latest.build !== build && address.searchParams.get('build') !== latest.build) {
-            reloading = true;
-            address.searchParams.set('build', latest.build);
-            location.replace(address);
-          } else if (!src.includes('.part.js')) {
-            offerReload();
-          }
-        })
-        .catch(offerReload)
-        .finally(() => { checkingBuild = null; });
-    }, true);
-  </script>
   <script src="modal_focus.js"></script>
-  <script src="bundles/838b130155b8c6e89f40/flutter_bootstrap.js" async></script>
+  <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>

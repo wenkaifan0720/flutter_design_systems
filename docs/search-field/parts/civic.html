@@ -45,25 +45,23 @@
   <span class="hljs-keyword">void</span> filter(<span class="hljs-built_in">String</span> value) =&gt;
       setState(() =&gt; query = value.trim().toLowerCase());
   <span class="hljs-meta">@override</span>
-  Widget build(BuildContext context) =&gt; SingleChildScrollView(
-    child: ConstrainedBox(
-      constraints: <span class="hljs-keyword">const</span> BoxConstraints(maxWidth: <span class="hljs-number">360</span>),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          CivicSearchField(
-            labelText: <span class="hljs-string">'Find a title'</span>,
-            onSubmitted: filter,
-            hintText: <span class="hljs-string">'Search titles'</span>,
-            onChanged: filter,
-          ),
-          <span class="hljs-keyword">const</span> SizedBox(height: <span class="hljs-number">12</span>),
-          Text(
-            matches.isEmpty ? <span class="hljs-string">'No matching titles'</span> : matches.join(<span class="hljs-string">'\n'</span>),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
+  Widget build(BuildContext context) =&gt; ConstrainedBox(
+    constraints: <span class="hljs-keyword">const</span> BoxConstraints(maxWidth: <span class="hljs-number">360</span>),
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        CivicSearchField(
+          labelText: <span class="hljs-string">'Find a title'</span>,
+          onSubmitted: filter,
+          hintText: <span class="hljs-string">'Search titles'</span>,
+          onChanged: filter,
+        ),
+        <span class="hljs-keyword">const</span> SizedBox(height: <span class="hljs-number">12</span>),
+        Text(
+          matches.isEmpty ? <span class="hljs-string">'No matching titles'</span> : matches.join(<span class="hljs-string">'\n'</span>),
+          textAlign: TextAlign.center,
+        ),
+      ],
     ),
   );
 }
