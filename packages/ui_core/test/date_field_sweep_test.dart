@@ -19,16 +19,16 @@ enum _Field { date, time, time24, seconds }
 
 Object? _value;
 
-Widget _segment(BuildContext context, DesignDateSegmentDetails d) =>
+Widget _segment(BuildContext context, RawDateSegmentDetails d) =>
     SizedBox(width: 40, height: 40, child: Text(d.text, key: ValueKey(d.type)));
 
 Widget _field(_Field field) => switch (field) {
-  _Field.date => DesignDateField(
+  _Field.date => RawDateField(
     value: null,
     onChanged: (v) => _value = v,
     segmentBuilder: _segment,
   ),
-  _ => DesignTimeField(
+  _ => RawTimeField(
     value: null,
     onChanged: (v) => _value = v,
     alwaysUse24HourFormat: field == _Field.time ? false : true,
@@ -37,15 +37,15 @@ Widget _field(_Field field) => switch (field) {
   ),
 };
 
-DesignDateSegmentType? _focused() {
+RawDateSegmentType? _focused() {
   final label = FocusManager.instance.primaryFocus?.debugLabel ?? '';
   if (!label.startsWith('date segment ')) return null;
   final name = label.substring('date segment '.length);
-  return DesignDateSegmentType.values.firstWhere((t) => t.name == name);
+  return RawDateSegmentType.values.firstWhere((t) => t.name == name);
 }
 
 void main() {
-  for (final locale in DesignLocalizations.supportedLocales) {
+  for (final locale in RawWidgetsLocalizations.supportedLocales) {
     for (final field in _Field.values) {
       testWidgets('${locale.toLanguageTag()} ${field.name}', (tester) async {
         _value = null;
@@ -57,7 +57,7 @@ void main() {
             Localizations(
               locale: locale,
               delegates: const [
-                DesignLocalizations.delegate,
+                RawWidgetsLocalizations.delegate,
                 DefaultWidgetsLocalizations.delegate,
               ],
               child: Directionality(
@@ -71,7 +71,7 @@ void main() {
           ),
         );
         final context = tester.element(find.byType(Align).last);
-        final l = DesignLocalizations.of(context);
+        final l = RawWidgetsLocalizations.of(context);
         final pattern = field == _Field.date
             ? l.dateFieldPattern
             : l.timeFieldPattern(
@@ -86,27 +86,27 @@ void main() {
         // Each segment drawn, empty, and named in the locale's words.
         expect(
           find.byWidgetPredicate(
-            (w) => w is Text && w.key is ValueKey<DesignDateSegmentType>,
+            (w) => w is Text && w.key is ValueKey<RawDateSegmentType>,
           ),
           findsNWidgets(segments.length),
           reason: where,
         );
         if (field == _Field.date) {
           expect(types, {
-            DesignDateSegmentType.year,
-            DesignDateSegmentType.month,
-            DesignDateSegmentType.day,
+            RawDateSegmentType.year,
+            RawDateSegmentType.month,
+            RawDateSegmentType.day,
           }, reason: where);
         } else {
           expect(
-            types.contains(DesignDateSegmentType.second),
+            types.contains(RawDateSegmentType.second),
             field == _Field.seconds,
             reason: where,
           );
           if (field != _Field.time) {
             expect(
               types,
-              isNot(contains(DesignDateSegmentType.dayPeriod)),
+              isNot(contains(RawDateSegmentType.dayPeriod)),
               reason: where,
             );
           }
@@ -130,20 +130,19 @@ void main() {
 
         // Typed in tab order, ASCII digits, to a whole value.
         final hour = segments
-            .where((p) => p.type == DesignDateSegmentType.hour)
+            .where((p) => p.type == RawDateSegmentType.hour)
             .firstOrNull
             ?.letter;
-        String keysFor(DesignDateSegmentType type) => switch (type) {
-          DesignDateSegmentType.year => '2026',
-          DesignDateSegmentType.month => '11',
-          DesignDateSegmentType.day => '16',
-          DesignDateSegmentType.hour =>
-            hour == 'h' || hour == 'K' ? '03' : '15',
-          DesignDateSegmentType.minute => '05',
-          DesignDateSegmentType.second => '09',
-          DesignDateSegmentType.dayPeriod => 'p',
+        String keysFor(RawDateSegmentType type) => switch (type) {
+          RawDateSegmentType.year => '2026',
+          RawDateSegmentType.month => '11',
+          RawDateSegmentType.day => '16',
+          RawDateSegmentType.hour => hour == 'h' || hour == 'K' ? '03' : '15',
+          RawDateSegmentType.minute => '05',
+          RawDateSegmentType.second => '09',
+          RawDateSegmentType.dayPeriod => 'p',
         };
-        final visited = <DesignDateSegmentType>[];
+        final visited = <RawDateSegmentType>[];
         for (var i = 0; i < segments.length; i++) {
           if (_focused() == null) {
             await tester.sendKeyEvent(LogicalKeyboardKey.tab);
@@ -167,32 +166,26 @@ void main() {
         expect(visited, [for (final p in segments) p.type], reason: where);
         final whole = switch (field) {
           _Field.date => DateTime(2026, 11, 16),
-          _Field.seconds => const DesignTimeOfDay(
-            hour: 15,
-            minute: 5,
-            second: 9,
-          ),
-          _ => const DesignTimeOfDay(hour: 15, minute: 5),
+          _Field.seconds => const RawTimeOfDay(hour: 15, minute: 5, second: 9),
+          _ => const RawTimeOfDay(hour: 15, minute: 5),
         };
         expect(_value, whole, reason: where);
         final read = whole is DateTime
             ? l.formatFullDate(whole)
             : l.formatTimeOfDay(
-                whole as DesignTimeOfDay,
+                whole as RawTimeOfDay,
                 alwaysUse24HourFormat:
                     field != _Field.time ||
-                    !types.contains(DesignDateSegmentType.dayPeriod),
+                    !types.contains(RawDateSegmentType.dayPeriod),
                 showSeconds: field == _Field.seconds,
               );
         final root = tester.getSemantics(
-          find.byWidgetPredicate(
-            (w) => w is DesignDateField || w is DesignTimeField,
-          ),
+          find.byWidgetPredicate((w) => w is RawDateField || w is RawTimeField),
         );
         expect(root.getSemanticsData().value, read, reason: where);
 
         // Each run of digits draws left to right, in any direction.
-        final centre = <DesignDateSegmentType, double>{
+        final centre = <RawDateSegmentType, double>{
           for (final p in segments)
             p.type!: tester.getCenter(find.byKey(ValueKey(p.type!))).dx,
         };

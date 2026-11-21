@@ -1,7 +1,7 @@
 import 'dart:ui' show CheckedState, Tristate;
 
 import 'package:flutter/gestures.dart';
-import 'package:material_ui/material_ui.dart' show MaterialApp;
+import 'package:material_ui/material_ui.dart' show IconButton, MaterialApp;
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
@@ -24,9 +24,9 @@ void main() {
 
   var presses = 0;
   behaviourContract(
-    'DesignPressable',
+    'RawButton',
     build: (c) => Center(
-      child: DesignPressable(
+      child: RawButton(
         onPressed: c.enabled ? () => presses++ : null,
         isError: c.error,
         semanticLabel: 'Save',
@@ -70,7 +70,7 @@ void main() {
     addTearDown(node.dispose);
     await tester.pumpWidget(
       _app(
-        DesignPressable(
+        RawButton(
           onPressed: () => n++,
           focusNode: node,
           minimumSize: const Size(44, 44),
@@ -79,7 +79,7 @@ void main() {
       ),
     );
     final gesture = await tester.startGesture(
-      tester.getCenter(find.byType(DesignPressable)),
+      tester.getCenter(find.byType(RawButton)),
     );
     await tester.pump();
     expect(seen, contains(WidgetState.pressed));
@@ -88,14 +88,14 @@ void main() {
     expect(n, 1);
     // The press stays its least time, then goes.
     expect(seen, contains(WidgetState.pressed));
-    await tester.pump(DesignPressable.minimumPressDuration);
+    await tester.pump(RawButton.minimumPressDuration);
     expect(seen, isNot(contains(WidgetState.pressed)));
     node.requestFocus();
     await tester.pump();
     await tester.sendKeyEvent(LogicalKeyboardKey.enter);
     await tester.sendKeyEvent(LogicalKeyboardKey.space);
     expect(n, 3);
-    expect(tester.getSize(find.byType(DesignPressable)), const Size(44, 44));
+    expect(tester.getSize(find.byType(RawButton)), const Size(44, 44));
   });
 
   testWidgets('hover and a keyboard focus reach the face; a tap\'s does not', (
@@ -104,12 +104,12 @@ void main() {
     final node = FocusNode();
     addTearDown(node.dispose);
     await tester.pumpWidget(
-      _app(DesignPressable(onPressed: () {}, focusNode: node, builder: face)),
+      _app(RawButton(onPressed: () {}, focusNode: node, builder: face)),
     );
     final mouse = await tester.createGesture(kind: PointerDeviceKind.mouse);
     addTearDown(mouse.removePointer);
     await mouse.addPointer(location: Offset.zero);
-    await mouse.moveTo(tester.getCenter(find.byType(DesignPressable)));
+    await mouse.moveTo(tester.getCenter(find.byType(RawButton)));
     await tester.pump();
     expect(seen, contains(WidgetState.hovered));
     await mouse.moveTo(Offset.zero);
@@ -134,17 +134,13 @@ void main() {
   ) async {
     final node = FocusNode();
     addTearDown(node.dispose);
-    await tester.pumpWidget(
-      _app(DesignPressable(focusNode: node, builder: face)),
-    );
+    await tester.pumpWidget(_app(RawButton(focusNode: node, builder: face)));
     expect(seen, contains(WidgetState.disabled));
     node.requestFocus();
     await tester.pump();
     expect(node.hasPrimaryFocus, isFalse);
     final h = tester.ensureSemantics();
-    final data = tester
-        .getSemantics(find.byType(DesignPressable))
-        .getSemanticsData();
+    final data = tester.getSemantics(find.byType(RawButton)).getSemanticsData();
     expect(data.flagsCollection.isEnabled, Tristate.isFalse);
     h.dispose();
   });
@@ -156,12 +152,10 @@ void main() {
     final node = FocusNode();
     addTearDown(node.dispose);
     await tester.pumpWidget(
-      _app(DesignPressable(enabled: true, focusNode: node, builder: face)),
+      _app(RawButton(enabled: true, focusNode: node, builder: face)),
     );
     expect(seen, isNot(contains(WidgetState.disabled)));
-    final data = tester
-        .getSemantics(find.byType(DesignPressable))
-        .getSemanticsData();
+    final data = tester.getSemantics(find.byType(RawButton)).getSemanticsData();
     expect(data.hasAction(SemanticsAction.tap), isTrue);
     expect(data.flagsCollection.isEnabled, Tristate.isTrue);
     h.dispose();
@@ -169,7 +163,7 @@ void main() {
     await tester.pump();
     expect(node.hasPrimaryFocus, isTrue);
     await tester.sendKeyEvent(LogicalKeyboardKey.enter);
-    await tester.tap(find.byType(DesignPressable));
+    await tester.tap(find.byType(RawButton));
     await tester.pump();
     expect(seen, isNot(contains(WidgetState.pressed)));
   });
@@ -178,12 +172,7 @@ void main() {
     tester,
   ) async {
     Widget build(bool on) => _app(
-      DesignPressable(
-        onPressed: () {},
-        selected: on,
-        isError: on,
-        builder: face,
-      ),
+      RawButton(onPressed: () {}, selected: on, isError: on, builder: face),
     );
     await tester.pumpWidget(build(true));
     expect(seen, containsAll([WidgetState.selected, WidgetState.error]));
@@ -198,7 +187,7 @@ void main() {
     final h = tester.ensureSemantics();
     await tester.pumpWidget(
       _app(
-        DesignPressable(
+        RawButton(
           onPressed: () {},
           semanticLabel: 'Save',
           toggled: true,
@@ -207,9 +196,7 @@ void main() {
         ),
       ),
     );
-    final data = tester
-        .getSemantics(find.byType(DesignPressable))
-        .getSemanticsData();
+    final data = tester.getSemantics(find.byType(RawButton)).getSemanticsData();
     expect(data.label, 'Save');
     expect(data.flagsCollection.isButton, isFalse);
     expect(data.flagsCollection.isToggled, Tristate.isTrue);
@@ -218,16 +205,60 @@ void main() {
     h.dispose();
   });
 
+  testWidgets('a toggle button stays a button, selected, as '
+      'IconButton(isSelected:) does; a switch is not a button', (tester) async {
+    final semantics = tester.ensureSemantics();
+    SemanticsData read(Finder f) => tester.getSemantics(f).getSemanticsData();
+    for (final on in [true, false]) {
+      await tester.pumpWidget(
+        _app(
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
+                isSelected: on,
+                onPressed: () {},
+                icon: const Text('B'),
+              ),
+              RawButton(
+                semanticSelected: on,
+                onPressed: () {},
+                builder: (_, _, _) => const Text('Bold'),
+              ),
+              RawButton(
+                toggled: on,
+                onPressed: () {},
+                builder: (_, _, _) => const Text('Sounds'),
+              ),
+            ],
+          ),
+        ),
+      );
+      final material = read(find.byType(IconButton)).flagsCollection;
+      final toggle = read(find.byType(RawButton).at(0)).flagsCollection;
+      expect(material.isButton, isTrue);
+      expect(toggle.isButton, material.isButton);
+      expect(toggle.isSelected, material.isSelected);
+      expect(toggle.isToggled, material.isToggled);
+      expect(toggle.isChecked, material.isChecked);
+      expect(toggle.isSelected, on ? Tristate.isTrue : Tristate.isFalse);
+      final aSwitch = read(find.byType(RawButton).at(1)).flagsCollection;
+      expect(aSwitch.isButton, isFalse);
+      expect(aSwitch.isToggled, on ? Tristate.isTrue : Tristate.isFalse);
+    }
+    semantics.dispose();
+  });
+
   testWidgets('checked, mixed, toggled and radio states keep their roles', (
     tester,
   ) async {
     for (final checked in [false, true]) {
       for (final control in [
-        DesignPressable(checked: checked, builder: face),
-        DesignPressable(checked: false, mixed: true, builder: face),
-        DesignPressable(toggled: checked, builder: face),
-        DesignPressable(inMutuallyExclusiveGroup: true, builder: face),
-        DesignPressable(
+        RawButton(checked: checked, builder: face),
+        RawButton(checked: false, mixed: true, builder: face),
+        RawButton(toggled: checked, builder: face),
+        RawButton(inMutuallyExclusiveGroup: true, builder: face),
+        RawButton(
           checked: checked,
           inMutuallyExclusiveGroup: true,
           onPressed: () {},
@@ -236,7 +267,7 @@ void main() {
       ]) {
         await tester.pumpWidget(_app(control));
         final data = tester
-            .getSemantics(find.byType(DesignPressable))
+            .getSemantics(find.byType(RawButton))
             .getSemanticsData();
         expect(data.flagsCollection.isButton, isFalse);
         expect(
@@ -268,7 +299,7 @@ void main() {
     final semantics = tester.ensureSemantics();
     Future<void> show(String subtitle) => tester.pumpWidget(
       _app(
-        DesignPressable(
+        RawButton(
           semanticLabel: 'Paper size',
           semanticValue: 'A4',
           onPressed: () {},
@@ -285,7 +316,7 @@ void main() {
     for (final subtitle in ['Unread', 'Read']) {
       await show(subtitle);
       final data = tester
-          .getSemantics(find.byType(DesignPressable))
+          .getSemantics(find.byType(RawButton))
           .getSemanticsData();
       expect(data.label.split('\n'), ['Paper size', subtitle]);
       expect(data.value, 'A4');
@@ -307,7 +338,7 @@ void main() {
             mainAxisSize: MainAxisSize.min,
             children: [
               for (final (label, on) in [('Spending', true), ('Income', false)])
-                DesignPressable(
+                RawButton(
                   onPressed: () {},
                   tab: true,
                   selected: on,
@@ -341,7 +372,7 @@ void main() {
     addTearDown(node.dispose);
     await tester.pumpWidget(
       _app(
-        DesignPressable(
+        RawButton(
           onPressed: () {},
           focusNode: node,
           shortcuts: const {
@@ -392,7 +423,7 @@ void main() {
             height: 300,
             child: ListView(
               children: [
-                DesignPressable(onPressed: () => taps++, builder: recording),
+                RawButton(onPressed: () => taps++, builder: recording),
                 const SizedBox(height: 600),
               ],
             ),
@@ -400,7 +431,7 @@ void main() {
         ),
       );
       frames.clear();
-      await quickTap(tester, find.byType(DesignPressable));
+      await quickTap(tester, find.byType(RawButton));
       expect(taps, 1);
       expect(
         pressedIn(frames),
@@ -417,7 +448,7 @@ void main() {
       var taps = 0;
       await tester.pumpWidget(
         _app(
-          DesignPressable(
+          RawButton(
             onPressed: () => taps++,
             onLongPress: () {},
             builder: recording,
@@ -425,7 +456,7 @@ void main() {
         ),
       );
       frames.clear();
-      await quickTap(tester, find.byType(DesignPressable));
+      await quickTap(tester, find.byType(RawButton));
       expect(taps, 1);
       expect(
         pressedIn(frames),
@@ -441,10 +472,10 @@ void main() {
     ) async {
       var longs = 0;
       await tester.pumpWidget(
-        _app(DesignPressable(onLongPress: () => longs++, builder: recording)),
+        _app(RawButton(onLongPress: () => longs++, builder: recording)),
       );
       final finger = await tester.startGesture(
-        tester.getCenter(find.byType(DesignPressable)),
+        tester.getCenter(find.byType(RawButton)),
       );
       await tester.pump(const Duration(milliseconds: 50));
       expect(frames.last, contains(WidgetState.pressed));
@@ -466,7 +497,7 @@ void main() {
             height: 300,
             child: ListView(
               children: [
-                DesignPressable(onPressed: () => taps++, builder: recording),
+                RawButton(onPressed: () => taps++, builder: recording),
                 const SizedBox(height: 600),
               ],
             ),
@@ -474,7 +505,7 @@ void main() {
         ),
       );
       final finger = await tester.startGesture(
-        tester.getCenter(find.byType(DesignPressable)),
+        tester.getCenter(find.byType(RawButton)),
       );
       await tester.pump(const Duration(milliseconds: 150));
       expect(
@@ -492,6 +523,75 @@ void main() {
       expect(pressedIn(frames), isFalse);
     });
 
+    testWidgets('in a list, a mouse press shows at once and a finger waits '
+        'kPressTimeout, as InkWell: a mouse does not drag the list', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _app(
+          SizedBox(
+            height: 300,
+            child: ListView(
+              children: [
+                RawButton(onPressed: () {}, builder: recording),
+                const SizedBox(height: 600),
+              ],
+            ),
+          ),
+        ),
+      );
+      final at = tester.getCenter(find.byType(RawButton));
+      for (final kind in [PointerDeviceKind.mouse, PointerDeviceKind.touch]) {
+        frames.clear();
+        final pointer = await tester.startGesture(at, kind: kind);
+        await tester.pump(const Duration(milliseconds: 20));
+        // No frame since the clear: nothing changed, so not pressed.
+        expect(
+          frames.isNotEmpty && frames.last.contains(WidgetState.pressed),
+          kind == PointerDeviceKind.mouse,
+          reason: '$kind, 20 ms after it went down',
+        );
+        await tester.pump(const Duration(milliseconds: 100));
+        expect(frames.last, contains(WidgetState.pressed), reason: '$kind');
+        await pointer.up();
+        await tester.pump(const Duration(milliseconds: 200));
+        expect(frames.last, isNot(contains(WidgetState.pressed)));
+      }
+    });
+
+    testWidgets("a list that drags with a mouse (its ScrollBehavior's "
+        'dragDevices) makes a mouse press wait too', (tester) async {
+      await tester.pumpWidget(
+        _app(
+          SizedBox(
+            height: 300,
+            child: ScrollConfiguration(
+              behavior: const ScrollBehavior().copyWith(
+                dragDevices: PointerDeviceKind.values.toSet(),
+              ),
+              child: ListView(
+                children: [
+                  RawButton(onPressed: () {}, builder: recording),
+                  const SizedBox(height: 600),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+      frames.clear();
+      final mouse = await tester.startGesture(
+        tester.getCenter(find.byType(RawButton)),
+        kind: PointerDeviceKind.mouse,
+      );
+      await tester.pump(const Duration(milliseconds: 20));
+      expect(pressedIn(frames), isFalse);
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(frames.last, contains(WidgetState.pressed));
+      await mouse.up();
+      await tester.pump(const Duration(milliseconds: 200));
+    });
+
     testWidgets('a fling in a list never shows a press', (tester) async {
       await tester.pumpWidget(
         _app(
@@ -499,7 +599,7 @@ void main() {
             height: 300,
             child: ListView(
               children: [
-                DesignPressable(onPressed: () {}, builder: recording),
+                RawButton(onPressed: () {}, builder: recording),
                 const SizedBox(height: 600),
               ],
             ),
@@ -507,11 +607,7 @@ void main() {
         ),
       );
       frames.clear();
-      await tester.fling(
-        find.byType(DesignPressable),
-        const Offset(0, -200),
-        1000,
-      );
+      await tester.fling(find.byType(RawButton), const Offset(0, -200), 1000);
       await tester.pump(const Duration(milliseconds: 200));
       expect(pressedIn(frames), isFalse);
     });
@@ -525,7 +621,7 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         home: Center(
-          child: DesignPressable(
+          child: RawButton(
             enabled: false,
             semanticLabel: 'Commit',
             excludeSemantics: true,
@@ -542,9 +638,9 @@ void main() {
     final node = tester
         .getSemantics(find.bySemanticsLabel('Commit'))
         .getSemanticsData();
-    await tester.tap(find.byType(DesignPressable));
+    await tester.tap(find.byType(RawButton));
     await tester.pumpAndSettle();
-    await tester.longPress(find.byType(DesignPressable));
+    await tester.longPress(find.byType(RawButton));
     await tester.pumpAndSettle();
     expect([taps, longPresses], [0, 0]);
     expect(node.hasAction(SemanticsAction.tap), isFalse);
@@ -562,7 +658,7 @@ void main() {
     controller.addListener(() => heard++);
     Widget app(bool selected) => MaterialApp(
       home: Center(
-        child: DesignPressable(
+        child: RawButton(
           onPressed: () {},
           selected: selected,
           statesController: controller,

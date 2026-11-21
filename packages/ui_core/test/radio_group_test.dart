@@ -1,3 +1,6 @@
+// DesignRadioGroup is deprecated in the package, which keeps its tests for
+// its one last release.
+// ignore_for_file: deprecated_member_use_from_same_package
 import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
@@ -49,16 +52,15 @@ void main() {
                         changes.add(option);
                         chosen = option;
                       }),
-                      itemBuilder: (context, option, node, select) =>
-                          DesignPressable(
-                            key: ValueKey(option),
-                            focusNode: node,
-                            onPressed: select,
-                            checked: option == chosen,
-                            inMutuallyExclusiveGroup: true,
-                            semanticLabel: option,
-                            builder: (context, states, _) => Text(option),
-                          ),
+                      itemBuilder: (context, option, node, select) => RawButton(
+                        key: ValueKey(option),
+                        focusNode: node,
+                        onPressed: select,
+                        checked: option == chosen,
+                        inMutuallyExclusiveGroup: true,
+                        semanticLabel: option,
+                        builder: (context, states, _) => Text(option),
+                      ),
                     ),
                     Focus(focusNode: after, child: const Text('After')),
                   ],
@@ -68,9 +70,8 @@ void main() {
             textDirection: direction,
           ),
         );
-        FocusNode node(String option) => tester
-            .widget<DesignPressable>(find.byKey(ValueKey(option)))
-            .focusNode!;
+        FocusNode node(String option) =>
+            tester.widget<RawButton>(find.byKey(ValueKey(option))).focusNode!;
         Future<void> key(LogicalKeyboardKey key) async {
           await tester.sendKeyEvent(key);
           await tester.pump();
@@ -181,7 +182,7 @@ void main() {
               value: chosen,
               onChanged: (v) => setState(() => chosen = v),
               focusNodeFor: (v) => v == 'A' ? supplied : null,
-              itemBuilder: (context, v, node, select) => DesignPressable(
+              itemBuilder: (context, v, node, select) => RawButton(
                 key: ValueKey(v),
                 focusNode: node,
                 onPressed: select,
@@ -195,7 +196,7 @@ void main() {
       ),
     );
     FocusNode node(String value) =>
-        tester.widget<DesignPressable>(find.byKey(ValueKey(value))).focusNode!;
+        tester.widget<RawButton>(find.byKey(ValueKey(value))).focusNode!;
     final owned = node('B');
     first.requestFocus();
     await tester.pump();

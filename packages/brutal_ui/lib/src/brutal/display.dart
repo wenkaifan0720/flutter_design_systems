@@ -102,7 +102,7 @@ class _BrutalDisclosureState extends State<BrutalDisclosure> {
       children: [
         Semantics(
           expanded: open,
-          child: DesignPressable(
+          child: RawButton(
             onPressed: _toggle,
             builder: (context, states, _) {
               final lit = states.contains(WidgetState.pressed);

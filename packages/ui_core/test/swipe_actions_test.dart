@@ -11,7 +11,7 @@ import 'behaviour_contract.dart';
 import 'behaviour_harness.dart';
 
 final List<String> _ran = [];
-final Map<String, DesignSwipeActionDetails> _seen = {};
+final Map<String, RawSwipeActionDetails> _seen = {};
 final FocusNode _rowNode = FocusNode();
 
 // The bare reference painter: a 300 by 60 row; actions as labelled boxes.
@@ -30,28 +30,25 @@ Widget _view({bool initiallyOpen = false, double underlap = 0}) => Align(
   alignment: Alignment.topLeft,
   child: SizedBox(
     width: 300,
-    child: DesignSwipeActions(
+    child: RawSwipeActions(
       initiallyOpen: initiallyOpen,
       underlap: underlap,
       startActions: [
-        DesignSwipeAction(label: 'Pin', onPressed: () => _ran.add('pin')),
+        RawSwipeAction(label: 'Pin', onPressed: () => _ran.add('pin')),
       ],
       endActions: [
-        DesignSwipeAction(
+        RawSwipeAction(
           label: 'Delete',
           destructive: true,
           onPressed: () => _ran.add('delete'),
         ),
-        DesignSwipeAction(
-          label: 'Archive',
-          onPressed: () => _ran.add('archive'),
-        ),
+        RawSwipeAction(label: 'Archive', onPressed: () => _ran.add('archive')),
       ],
       actionBuilder: (context, action, state) {
         _seen[action.label] = state;
         return Center(child: Text(action.label));
       },
-      child: DesignPressable(
+      child: RawButton(
         focusNode: _rowNode,
         onPressed: () => _ran.add('open'),
         builder: (context, states, _) =>
@@ -79,7 +76,7 @@ void main() {
       Tristate.isTrue;
 
   behaviourContract(
-    'DesignSwipeActions',
+    'RawSwipeActions',
     build: (c) => _view(),
     node: () => find.text('Message'),
     semantics: isSemantics(
@@ -214,10 +211,7 @@ void main() {
     double slot(String label) => tester
         .getSize(
           find
-              .ancestor(
-                of: find.text(label),
-                matching: find.byType(DesignPressable),
-              )
+              .ancestor(of: find.text(label), matching: find.byType(RawButton))
               .first,
         )
         .width;
@@ -286,10 +280,7 @@ void main() {
     expect(_rowLeft(tester), -160);
     final archive = tester.getRect(
       find
-          .ancestor(
-            of: find.text('Archive'),
-            matching: find.byType(DesignPressable),
-          )
+          .ancestor(of: find.text('Archive'), matching: find.byType(RawButton))
           .first,
     );
     expect(archive.width, 92);
@@ -371,17 +362,17 @@ void main() {
   group('0.3.0', () {
     Widget row(
       String label, {
-      DesignSwipeActionsController? controller,
+      RawSwipeActionsController? controller,
       bool closeOnScroll = true,
       double dampingRatio = 1,
-    }) => DesignSwipeActions(
+    }) => RawSwipeActions(
       key: ValueKey(label),
       controller: controller,
       closeOnScroll: closeOnScroll,
       dampingRatio: dampingRatio,
-      startActions: [DesignSwipeAction(label: 'Pin', onPressed: () {})],
+      startActions: [RawSwipeAction(label: 'Pin', onPressed: () {})],
       endActions: [
-        DesignSwipeAction(
+        RawSwipeAction(
           label: 'Delete',
           destructive: true,
           onPressed: () => _ran.add('delete $label'),
@@ -425,7 +416,7 @@ void main() {
     testWidgets('the controller opens either side, closes it, and says so', (
       tester,
     ) async {
-      final controller = DesignSwipeActionsController();
+      final controller = RawSwipeActionsController();
       addTearDown(controller.dispose);
       var told = 0;
       controller
@@ -457,7 +448,7 @@ void main() {
       expect(told, 2);
 
       // A new controller takes over; the old one lets go.
-      final next = DesignSwipeActionsController();
+      final next = RawSwipeActionsController();
       addTearDown(next.dispose);
       await tester.pumpWidget(
         harness(
@@ -532,7 +523,7 @@ void main() {
     testWidgets('an underdamped token springs past its rest and back', (
       tester,
     ) async {
-      final controller = DesignSwipeActionsController();
+      final controller = RawSwipeActionsController();
       addTearDown(controller.dispose);
       await tester.pumpWidget(
         harness(
@@ -557,7 +548,7 @@ void main() {
     });
 
     test('its new fields, for the inspector', () {
-      final text = DesignSwipeActions(
+      final text = RawSwipeActions(
         closeOnScroll: false,
         dampingRatio: 0.5,
         actionBuilder: (context, action, details) => const SizedBox(),

@@ -1,10 +1,10 @@
 /// A wheel picker, headless: one or more columns of rows that turn past a
 /// centre line (iOS's picker), the rows and the lens the look's.
 ///
-/// [DesignWheelPicker] keeps a selection, one row per column. Its columns
+/// [RawPicker] keeps a selection, one row per column. Its columns
 /// are a function of that selection, so a pick in one refills the others (a
 /// month's day count, a minimum date's months): when a column comes to rest,
-/// every other column moves to its nearest live row and [DesignWheelPicker.onChanged] gets the
+/// every other column moves to its nearest live row and [RawPicker.onChanged] gets the
 /// whole, valid selection once. Disabled rows, and rows outside a column's
 /// least and greatest, show disabled; a wheel that comes to rest on one turns
 /// on to the nearest live row. Each column is one tab stop and one adjustable
@@ -23,16 +23,16 @@ import 'haptics.dart';
 import 'internal/focus_visible.dart';
 import 'motion.dart';
 
-/// One column of a [DesignWheelPicker]: its rows, their names and which of
+/// One column of a [RawPicker]: its rows, their names and which of
 /// them can be chosen.
 ///
 /// ```dart
-/// DesignWheelColumn(itemCount: 12, itemLabel: (index) => 'Month ${index + 1}', semanticLabel: 'Month')
+/// RawPickerColumn(itemCount: 12, itemLabel: (index) => 'Month ${index + 1}', semanticLabel: 'Month')
 /// ```
 @immutable
-class DesignWheelColumn {
+class RawPickerColumn {
   /// A column of [itemCount] rows, each named by [itemLabel].
-  const DesignWheelColumn({
+  const RawPickerColumn({
     required this.itemCount,
     required this.itemLabel,
     this.semanticLabel,
@@ -145,11 +145,11 @@ class DesignWheelColumn {
   int? get lastEnabled => nearestEnabled(itemCount - 1, forward: false);
 }
 
-/// One row of a [DesignWheelPicker], as the look paints it.
+/// One row of a [RawPicker], as the look paints it.
 @immutable
-class DesignWheelItemDetails {
+class RawPickerItemDetails {
   /// A row's details.
-  const DesignWheelItemDetails({
+  const RawPickerItemDetails({
     required this.column,
     required this.index,
     required this.label,
@@ -163,23 +163,23 @@ class DesignWheelItemDetails {
   /// Its index in the column.
   final int index;
 
-  /// Its name ([DesignWheelColumn.itemLabel]).
+  /// Its name ([RawPickerColumn.itemLabel]).
   final String label;
 
   /// Whether it is at the wheel's centre now, as the wheel turns.
   final bool selected;
 
-  /// Whether it can be chosen ([DesignWheelColumn.isEnabled]) in a picker
+  /// Whether it can be chosen ([RawPickerColumn.isEnabled]) in a picker
   /// that takes input.
   final bool enabled;
 }
 
-/// One column of a [DesignWheelPicker], as the look frames it: its lens, a
+/// One column of a [RawPicker], as the look frames it: its lens, a
 /// band behind the centre row, a focus ring.
 @immutable
-class DesignWheelColumnDetails {
+class RawPickerColumnDetails {
   /// A column's details.
-  const DesignWheelColumnDetails({
+  const RawPickerColumnDetails({
     required this.column,
     required this.states,
     required this.itemExtent,
@@ -189,24 +189,25 @@ class DesignWheelColumnDetails {
   final int column;
 
   /// Its states: [WidgetState.focused] while the keyboard is on it,
-  /// [WidgetState.hovered], [WidgetState.pressed] while a finger or a
-  /// pointer turns it, [WidgetState.disabled] when the picker takes no input.
+  /// [WidgetState.hovered], [WidgetState.dragged] (and
+  /// [WidgetState.pressed]) while a finger or a pointer turns it,
+  /// [WidgetState.disabled] when the picker takes no input.
   final Set<WidgetState> states;
 
   /// The height of one row, for a band behind the centre row.
   final double itemExtent;
 }
 
-/// Builds one row of a [DesignWheelPicker].
-typedef DesignWheelItemBuilder = Widget Function(
+/// Builds one row of a [RawPicker].
+typedef RawPickerItemBuilder = Widget Function(
   BuildContext context,
-  DesignWheelItemDetails details,
+  RawPickerItemDetails details,
 );
 
-/// Frames one column of a [DesignWheelPicker] round its [wheel].
-typedef DesignWheelColumnBuilder = Widget Function(
+/// Frames one column of a [RawPicker] round its [wheel].
+typedef RawPickerColumnBuilder = Widget Function(
   BuildContext context,
-  DesignWheelColumnDetails details,
+  RawPickerColumnDetails details,
   Widget wheel,
 );
 
@@ -231,11 +232,11 @@ typedef DesignWheelColumnBuilder = Widget Function(
 /// Right the column before and after as drawn (mirrored right to left).
 ///
 /// ```dart
-/// DesignWheelPicker(columns: (selection) => [DesignWheelColumn(itemCount: 24, itemLabel: (index) => '$index', semanticLabel: 'Hour', looping: true)], selection: const [9], onChanged: (selection) {}, itemExtent: 40, itemBuilder: (context, details) => Center(child: Text(details.label)))
+/// RawPicker(columns: (selection) => [RawPickerColumn(itemCount: 24, itemLabel: (index) => '$index', semanticLabel: 'Hour', looping: true)], selection: const [9], onChanged: (selection) {}, itemExtent: 40, itemBuilder: (context, details) => Center(child: Text(details.label)))
 /// ```
-class DesignWheelPicker extends StatefulWidget {
+class RawPicker extends StatefulWidget {
   /// A picker showing [selection] in the [columns] it gives.
-  const DesignWheelPicker({
+  const RawPicker({
     super.key,
     required this.columns,
     required this.selection,
@@ -262,7 +263,7 @@ class DesignWheelPicker extends StatefulWidget {
 
   /// The columns for a selection: called with the selection a pick makes,
   /// so a column's rows can follow the others' (a month's days).
-  final List<DesignWheelColumn> Function(List<int> selection) columns;
+  final List<RawPickerColumn> Function(List<int> selection) columns;
 
   /// The row chosen in each column, one per column.
   final List<int> selection;
@@ -277,10 +278,10 @@ class DesignWheelPicker extends StatefulWidget {
   final double itemExtent;
 
   /// Paints a row.
-  final DesignWheelItemBuilder itemBuilder;
+  final RawPickerItemBuilder itemBuilder;
 
   /// Frames a column round its wheel; null: the wheel alone.
-  final DesignWheelColumnBuilder? columnBuilder;
+  final RawPickerColumnBuilder? columnBuilder;
 
   /// Lays the framed columns out; null: a [Row] with each column
   /// [Expanded].
@@ -328,26 +329,26 @@ class DesignWheelPicker extends StatefulWidget {
   final double stiffness;
 
   @override
-  State<DesignWheelPicker> createState() => _DesignWheelPickerState();
+  State<RawPicker> createState() => _DesignWheelPickerState();
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
       ..add(
-        ObjectFlagProperty<List<DesignWheelColumn> Function(List<int>)>.has(
+        ObjectFlagProperty<List<RawPickerColumn> Function(List<int>)>.has(
           'columns',
           columns,
         ),
       )
       ..add(
-        ObjectFlagProperty<DesignWheelItemBuilder>.has(
+        ObjectFlagProperty<RawPickerItemBuilder>.has(
           'itemBuilder',
           itemBuilder,
         ),
       )
       ..add(
-        ObjectFlagProperty<DesignWheelColumnBuilder>.has(
+        ObjectFlagProperty<RawPickerColumnBuilder>.has(
           'columnBuilder',
           columnBuilder,
         ),
@@ -392,7 +393,7 @@ class DesignWheelPicker extends StatefulWidget {
   }
 }
 
-class _DesignWheelPickerState extends State<DesignWheelPicker> {
+class _DesignWheelPickerState extends State<RawPicker> {
   final List<FixedExtentScrollController> _controllers = [];
   final List<FocusNode> _nodes = [];
   // Per column: the row at the centre now, where a spring is heading, the
@@ -406,7 +407,7 @@ class _DesignWheelPickerState extends State<DesignWheelPicker> {
   final List<DesignFocusShown> _focus = [];
   final List<bool> _hovered = [];
   final List<bool> _dragged = [];
-  late List<DesignWheelColumn> _columns;
+  late List<RawPickerColumn> _columns;
   String _typed = '';
   Timer? _typedClear;
 
@@ -419,7 +420,7 @@ class _DesignWheelPickerState extends State<DesignWheelPicker> {
     _sizeTo(widget.selection);
   }
 
-  List<DesignWheelColumn> _columnsFor(List<int> selection) {
+  List<RawPickerColumn> _columnsFor(List<int> selection) {
     final columns = widget.columns(selection);
     assert(
       columns.length == selection.length,
@@ -448,7 +449,7 @@ class _DesignWheelPickerState extends State<DesignWheelPicker> {
     }
     for (var c = _controllers.length; c < selection.length; c++) {
       _controllers.add(FixedExtentScrollController(initialItem: selection[c]));
-      _nodes.add(FocusNode(debugLabel: 'DesignWheelPicker column $c'));
+      _nodes.add(FocusNode(debugLabel: 'RawPicker column $c'));
       _centre.add(selection[c]);
       _heading.add(null);
       _springs.add(null);
@@ -465,7 +466,7 @@ class _DesignWheelPickerState extends State<DesignWheelPicker> {
   }
 
   @override
-  void didUpdateWidget(DesignWheelPicker oldWidget) {
+  void didUpdateWidget(RawPicker oldWidget) {
     super.didUpdateWidget(oldWidget);
     _columns = _columnsFor(widget.selection);
     _sizeTo(widget.selection);
@@ -679,7 +680,7 @@ class _DesignWheelPickerState extends State<DesignWheelPicker> {
 
   // The next live row from [row] whose name starts with [typed]: after it
   // for one character (so a letter cycles), from it for more.
-  int? _matching(DesignWheelColumn column, int row, String typed) {
+  int? _matching(RawPickerColumn column, int row, String typed) {
     final count = column.itemCount;
     final start = typed.length == 1 ? 1 : 0;
     for (var d = start; d < count + start; d++) {
@@ -700,7 +701,7 @@ class _DesignWheelPickerState extends State<DesignWheelPicker> {
       if (!enabled) WidgetState.disabled,
       if (enabled && _focused[c]) WidgetState.focused,
       if (enabled && _hovered[c]) WidgetState.hovered,
-      if (enabled && _dragged[c]) WidgetState.pressed,
+      if (enabled && _dragged[c]) ...{WidgetState.pressed, WidgetState.dragged},
     };
     Widget item(BuildContext context, int index) {
       final live = enabled && column.isEnabled(index);
@@ -708,7 +709,7 @@ class _DesignWheelPickerState extends State<DesignWheelPicker> {
         onTap: live ? () => _moveTo(c, index) : null,
         child: widget.itemBuilder(
           context,
-          DesignWheelItemDetails(
+          RawPickerItemDetails(
             column: c,
             index: index,
             label: column.itemLabel(index),
@@ -759,7 +760,7 @@ class _DesignWheelPickerState extends State<DesignWheelPicker> {
     final framed =
         widget.columnBuilder?.call(
           context,
-          DesignWheelColumnDetails(
+          RawPickerColumnDetails(
             column: c,
             states: states,
             itemExtent: widget.itemExtent,

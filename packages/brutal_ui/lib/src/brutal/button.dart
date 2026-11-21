@@ -129,7 +129,7 @@ class BrutalButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = BrutalTheme.of(context);
-    return DesignPressable(
+    return RawButton(
       onPressed: busy && onPressed != null ? _stay : onPressed,
       onLongPress: busy ? null : onLongPress,
       focusNode: focusNode,
@@ -196,7 +196,7 @@ class BrutalButton extends StatelessWidget {
                 ],
               )
             : row;
-        return DesignTapTarget(
+        return TapTargetPadding(
           child: ConstrainedBox(
             constraints: BoxConstraints(
               minWidth: minimum.width,
@@ -481,7 +481,7 @@ class BrutalIconButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = BrutalTheme.of(context);
     final c = theme.colors;
-    return DesignPressable(
+    return RawButton(
       onPressed: onPressed,
       focusNode: focusNode,
       autofocus: autofocus,
@@ -523,7 +523,7 @@ class BrutalIconButton extends StatelessWidget {
           borderWidth: plain ? 0 : null,
         );
         final side = layered.minimumSize?.height ?? theme.controlHeight;
-        return DesignTapTarget(
+        return TapTargetPadding(
           child: SizedBox.square(
             dimension: side,
             child: AnimatedBrutalSurface(
@@ -606,12 +606,12 @@ class BrutalSplitButton extends StatelessWidget {
     final theme = BrutalTheme.of(context);
     final kind = filled ? _ButtonKind.filled : _ButtonKind.framed;
     final layers = _buttonLayers(theme, kind, false, style);
-    return DesignSplitButton(
+    return RawSplitButton(
       label: label,
       onPressed: onPressed,
       actions: [
         for (final item in actions)
-          DesignSplitAction(
+          RawSplitAction(
             label: item.label,
             onPressed: item.onPressed,
             data: item,
@@ -631,7 +631,7 @@ class BrutalSplitButton extends StatelessWidget {
         // The menu half stays pressed home while its menu is open.
         final now = {
           ...states,
-          if (open && part == DesignSplitPart.toggle) WidgetState.pressed,
+          if (open && part == RawSplitPart.toggle) WidgetState.pressed,
         };
         final layered = DesignStyleOf(layers, now);
         final face = _buttonFace(
@@ -642,13 +642,13 @@ class BrutalSplitButton extends StatelessWidget {
           layers: layers,
         );
         final height = layered.minimumSize?.height ?? theme.controlHeight;
-        return DesignTapTarget(
+        return TapTargetPadding(
           child: SizedBox(
             height: height,
-            width: part == DesignSplitPart.toggle ? height : null,
+            width: part == RawSplitPart.toggle ? height : null,
             child: AnimatedBrutalSurface(
               face: face,
-              child: part == DesignSplitPart.main
+              child: part == RawSplitPart.main
                   ? Padding(
                       padding:
                           layered.padding(Directionality.of(context)) ??
@@ -799,7 +799,7 @@ class BrutalFloatingButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = BrutalTheme.of(context);
-    return DesignPressable(
+    return RawButton(
       onPressed: onPressed,
       semanticLabel: label ?? tooltip,
       excludeSemantics: true,

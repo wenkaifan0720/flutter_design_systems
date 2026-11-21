@@ -1,4 +1,4 @@
-/// What a [DesignField] says round its control, for a control of ui_core's
+/// What a [RawInputDecorator] says round its control, for a control of ui_core's
 /// that carries those words on a node of its own: a number field's entry,
 /// whose node spans the entry alone so that a tap through the semantics
 /// tree on a step button reaches no node in the button's place. Inside

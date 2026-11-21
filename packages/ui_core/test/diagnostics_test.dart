@@ -1,6 +1,9 @@
 // The description every public part gives of itself in the inspector and
 // in a failing test's tree: each field it is built with, a field at its
 // default hidden.
+// DesignRadioGroup is deprecated in the package, which keeps its tests for
+// its one last release.
+// ignore_for_file: deprecated_member_use_from_same_package
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
@@ -12,91 +15,91 @@ import 'package:ui_core/inventory.dart';
 
 // What each part, built with what it requires alone, says of itself.
 final Map<String, List<Object>> _expected = {
-  'DesignAnchoredOverlay': ['has anchorBuilder', 'has overlayBuilder'],
-  'DesignCalendar': [
-    'controller: Instance of \'DesignCalendarController\'',
+  'RawPopover': ['has anchorBuilder', 'has overlayBuilder'],
+  'RawCalendarDatePicker': [
+    'controller: Instance of \'RawCalendarController\'',
     'has dayBuilder',
   ],
-  'DesignCarousel': ['itemCount: 3', 'has itemBuilder'],
+  'RawCarousel': ['itemCount: 3', 'has itemBuilder'],
   'RoutePresentationScope': ['presentation: sheet'],
   'ChromeGroundScope': ['ground: surface'],
   'ShellInsets': ['bottomInset: 80.0'],
-  'DesignColorArea': [
-    startsWith('controller: DesignColorController#'),
+  'RawColorArea': [
+    startsWith('controller: RawColorController#'),
     'has builder',
     'has thumbBuilder',
   ],
-  'DesignColorSlider': [
-    startsWith('controller: DesignColorController#'),
+  'RawColorSlider': [
+    startsWith('controller: RawColorController#'),
     'channel: hue',
     'has trackBuilder',
     'has thumbBuilder',
   ],
-  'DesignColorPicker': [
-    startsWith('controller: DesignColorController#'),
+  'RawColorPicker': [
+    startsWith('controller: RawColorController#'),
     'has areaBuilder',
     'has areaThumbBuilder',
     'has trackBuilder',
     'has thumbBuilder',
   ],
-  'DesignCombobox': [
+  'RawCombobox': [
     'has fieldBuilder',
     'has optionBuilder',
     'has displayStringForOption',
   ],
-  'DesignCommandPalette': [
+  'RawCommandPalette': [
     'commands: []',
     'has fieldBuilder',
     'has itemBuilder',
     'has score',
   ],
-  'DesignCommandShortcut': ['has onOpen'],
+  'RawCommandShortcut': ['has onOpen'],
   'DesignControlBox': ['minHeight: 48.0'],
   'DesignTextEntryBox': ['minHeight: 48.0'],
-  'DesignDataTable': [
-    'controller: Instance of \'DesignTableController<String>\'',
+  'RawDataTable': [
+    'controller: Instance of \'RawDataTableController<String>\'',
     'has headerBuilder',
     'has cellBuilder',
     'has rowBuilder',
   ],
-  'DesignField': ['has builder'],
+  'RawInputDecorator': ['has builder'],
   'DesignForm': [],
   'DesignInputGroup': [startsWith('focusNode: FocusNode#'), 'has builder'],
-  'DesignPasswordReveal': ['has builder'],
+  'RawPasswordReveal': ['has builder'],
   'DesignInventoryGallery': ['inventory: Instance of \'DesignInventory\''],
   'DesignKeylineRegion': [],
   'MediaSlotImage': ['slotId: "hero"'],
-  'DesignMenuBar': ['menus: []', 'has itemBuilder', 'has surfaceBuilder'],
-  'DesignOtpField': ['has slotBuilder'],
-  'DesignPressable': ['has builder'],
+  'RawMenuBar': ['menus: []', 'has itemBuilder', 'has surfaceBuilder'],
+  'RawOtpField': ['has slotBuilder'],
+  'RawButton': ['has builder'],
   'PreviewFrame': [],
   'PreviewStage': ['has route'],
-  'DesignPullToRefresh': ['has onRefresh', 'has indicatorBuilder'],
-  'DesignRangeSlider': [
-    'values: DesignRangeValues(0.2, 0.8)',
+  'RawRefreshIndicator': ['has onRefresh', 'has indicatorBuilder'],
+  'RawRangeSlider': [
+    'values: RawRangeValues(0.2, 0.8)',
     'has trackBuilder',
     'has thumbBuilder',
   ],
-  'DesignReorderableList': [
+  'RawReorderableList': [
     'items: []',
     'has onReorder',
     'has itemBuilder',
     'has labelOf',
   ],
-  'DesignScrollArea': [
+  'RawScrollArea': [
     startsWith('controller: ScrollController#'),
     'has thumbBuilder',
   ],
-  'DesignSplitButton': [
+  'RawSplitButton': [
     'label: "Save"',
     'actions: []',
     'has buttonBuilder',
     'has itemBuilder',
     'has surfaceBuilder',
   ],
-  'DesignSplitView': ['has dividerBuilder'],
-  'DesignSwipeActions': ['has actionBuilder'],
-  'DesignTagInput': [
+  'RawSplitView': ['has dividerBuilder'],
+  'RawSwipeActions': ['has actionBuilder'],
+  'RawTagInput': [
     'values: []',
     'has onChanged',
     'has fieldBuilder',
@@ -104,14 +107,14 @@ final Map<String, List<Object>> _expected = {
     'has tagBuilder',
     'has displayStringForOption',
   ],
-  'DesignToaster': ['has toastBuilder'],
+  'RawToaster': ['has toastBuilder'],
   'DesignRadioGroup': [
     'options: Day, Week',
     'has onChanged',
     'has itemBuilder',
     'has focusNodeFor',
   ],
-  'DesignToggleGroup': [
+  'RawSegmentedButton': [
     'options: Day, Week',
     'selected: Day',
     'has onSelectionChanged',
@@ -217,7 +220,7 @@ void main() {
   test('a pressable says its states and roles set off their defaults', () {
     expect(
       _description(
-        DesignPressable(
+        RawButton(
           builder: _b3,
           onPressed: () {},
           selected: true,
@@ -258,33 +261,33 @@ void main() {
       ),
       'a handle of no step': () =>
           DesignValueHandle(value: .5, step: 0, onChanged: null, builder: _b2),
-      'a range whose start passes its end': () => DesignRangeValues(.8, .2),
-      'a range slider whose min passes its max': () => DesignRangeSlider(
-        values: const DesignRangeValues(.2, .8),
+      'a range whose start passes its end': () => RawRangeValues(.8, .2),
+      'a range slider whose min passes its max': () => RawRangeSlider(
+        values: const RawRangeValues(.2, .8),
         min: 1,
         max: 0,
         onChanged: null,
         thumbBuilder: _b3,
         trackBuilder: _b2,
       ),
-      'a range slider of a negative gap': () => DesignRangeSlider(
-        values: const DesignRangeValues(.2, .8),
+      'a range slider of a negative gap': () => RawRangeSlider(
+        values: const RawRangeValues(.2, .8),
         minGap: -1,
         onChanged: null,
         thumbBuilder: _b3,
         trackBuilder: _b2,
       ),
       'a carousel of fewer than no items': () =>
-          DesignCarousel(itemBuilder: _b2, itemCount: -1),
+          RawCarousel(itemBuilder: _b2, itemCount: -1),
       'a carousel whose pages take no room': () =>
-          DesignCarousel(itemBuilder: _b2, itemCount: 3, viewportFraction: 0),
-      'a split past its end': () => DesignSplitView(
+          RawCarousel(itemBuilder: _b2, itemCount: 3, viewportFraction: 0),
+      'a split past its end': () => RawSplitView(
         first: _box,
         second: _box,
         dividerBuilder: _b3,
         initialFraction: 1.5,
       ),
-      'a tag input that takes no tags': () => DesignTagInput<String>(
+      'a tag input that takes no tags': () => RawTagInput<String>(
         values: const [],
         onChanged: (_) {},
         fieldBuilder: _b2,
@@ -293,27 +296,24 @@ void main() {
         maxTags: 0,
       ),
       'a toaster of no stiffness': () =>
-          DesignToaster(toastBuilder: _b2, stiffness: 0, child: _box),
-      'an overlay of no damping': () => DesignAnchoredOverlay(
-        anchorBuilder: _b2,
-        overlayBuilder: _b2,
-        dampingRatio: 0,
-      ),
-      'a palette of no height': () => DesignCommandPalette(
+          RawToaster(toastBuilder: _b2, stiffness: 0, child: _box),
+      'an overlay of no damping': () =>
+          RawPopover(anchorBuilder: _b2, overlayBuilder: _b2, dampingRatio: 0),
+      'a palette of no height': () => RawCommandPalette(
         commands: const [],
         fieldBuilder: _b2,
         itemBuilder: _b3,
         maxHeight: 0,
       ),
-      'a refresh that triggers at once': () => DesignPullToRefresh(
+      'a refresh that triggers at once': () => RawRefreshIndicator(
         onRefresh: () async {},
         indicatorBuilder: _b2,
         triggerDistance: 0,
         child: _box,
       ),
       'a swipe action of no width': () =>
-          DesignSwipeActions(actionBuilder: _b3, actionExtent: 0, child: _box),
-      'a combobox list of no height': () => DesignCombobox<String>(
+          RawSwipeActions(actionBuilder: _b3, actionExtent: 0, child: _box),
+      'a combobox list of no height': () => RawCombobox<String>(
         fieldBuilder: _b2,
         optionBuilder: _b3,
         optionsMaxHeight: 0,
@@ -324,13 +324,13 @@ void main() {
     }
 
     test('a calendar whose week starts on an eighth day', () {
-      final controller = DesignCalendarController(
+      final controller = RawCalendarController(
         firstDate: DateTime(2026),
         lastDate: DateTime(2027),
       );
       addTearDown(controller.dispose);
       expect(
-        () => DesignCalendar(
+        () => RawCalendarDatePicker(
           controller: controller,
           dayBuilder: _b3,
           firstWeekday: 8,
@@ -340,10 +340,10 @@ void main() {
     });
 
     test('a colour area of no step and a picker of no height', () {
-      final controller = DesignColorController();
+      final controller = RawColorController();
       addTearDown(controller.dispose);
       expect(
-        () => DesignColorArea(
+        () => RawColorArea(
           controller: controller,
           builder: _b2,
           thumbBuilder: _b2,
@@ -352,7 +352,7 @@ void main() {
         throwsAssertionError,
       );
       expect(
-        () => DesignColorPicker(
+        () => RawColorPicker(
           controller: controller,
           areaBuilder: _b2,
           areaThumbBuilder: _b2,
@@ -368,7 +368,7 @@ void main() {
       final controller = ScrollController();
       addTearDown(controller.dispose);
       expect(
-        () => DesignScrollArea(
+        () => RawScrollArea(
           controller: controller,
           thumbBuilder: _b2,
           thickness: 0,
@@ -384,8 +384,8 @@ void main() {
       await tester.pumpWidget(
         const Directionality(
           textDirection: TextDirection.ltr,
-          child: DesignRangeSlider(
-            values: DesignRangeValues(.2, 1.5),
+          child: RawRangeSlider(
+            values: RawRangeValues(.2, 1.5),
             onChanged: null,
             thumbBuilder: _b3,
             trackBuilder: _b2,
@@ -411,20 +411,17 @@ Map<String, Widget> _parts() {
   }
 
   return {
-    'DesignAnchoredOverlay': const DesignAnchoredOverlay(
-      anchorBuilder: _b2,
-      overlayBuilder: _b2,
-    ),
-    'DesignCalendar': DesignCalendar(
+    'RawPopover': const RawPopover(anchorBuilder: _b2, overlayBuilder: _b2),
+    'RawCalendarDatePicker': RawCalendarDatePicker(
       controller: held(
-        DesignCalendarController(
+        RawCalendarController(
           firstDate: DateTime(2026),
           lastDate: DateTime(2027),
         ),
       ),
       dayBuilder: _b3,
     ),
-    'DesignCarousel': const DesignCarousel(itemBuilder: _b2, itemCount: 3),
+    'RawCarousel': const RawCarousel(itemBuilder: _b2, itemCount: 3),
     'RoutePresentationScope': const RoutePresentationScope(
       presentation: RoutePresentation.sheet,
       child: _box,
@@ -434,93 +431,93 @@ Map<String, Widget> _parts() {
       child: _box,
     ),
     'ShellInsets': const ShellInsets(bottomInset: 80, child: _box),
-    'DesignColorArea': DesignColorArea(
-      controller: held(DesignColorController()),
+    'RawColorArea': RawColorArea(
+      controller: held(RawColorController()),
       builder: _b2,
       thumbBuilder: _b2,
     ),
-    'DesignColorSlider': DesignColorSlider(
-      channel: DesignColorChannel.hue,
-      controller: held(DesignColorController()),
+    'RawColorSlider': RawColorSlider(
+      channel: RawColorChannel.hue,
+      controller: held(RawColorController()),
       thumbBuilder: _b2,
       trackBuilder: _b3,
     ),
-    'DesignColorPicker': DesignColorPicker(
-      controller: held(DesignColorController()),
+    'RawColorPicker': RawColorPicker(
+      controller: held(RawColorController()),
       areaBuilder: _b2,
       areaThumbBuilder: _b2,
       thumbBuilder: _b2,
       trackBuilder: _b3,
     ),
-    'DesignCombobox': const DesignCombobox<String>(
+    'RawCombobox': const RawCombobox<String>(
       fieldBuilder: _b2,
       optionBuilder: _b3,
     ),
-    'DesignCommandPalette': const DesignCommandPalette(
+    'RawCommandPalette': const RawCommandPalette(
       commands: [],
       fieldBuilder: _b2,
       itemBuilder: _b3,
     ),
-    'DesignCommandShortcut': DesignCommandShortcut(onOpen: () {}, child: _box),
+    'RawCommandShortcut': RawCommandShortcut(onOpen: () {}, child: _box),
     'DesignControlBox': const DesignControlBox(minHeight: 48, child: _box),
     'DesignTextEntryBox': const DesignTextEntryBox(minHeight: 48, child: _box),
-    'DesignDataTable': DesignDataTable<String>(
+    'RawDataTable': RawDataTable<String>(
       controller: held(
-        DesignTableController<String>(rows: const [], columns: const []),
+        RawDataTableController<String>(rows: const [], columns: const []),
       ),
       headerBuilder: _b4,
       rowBuilder: _b3,
       cellBuilder: _b3,
     ),
-    'DesignField': const DesignField(builder: _b2, child: _box),
+    'RawInputDecorator': const RawInputDecorator(builder: _b2, child: _box),
     'DesignForm': const DesignForm(child: _box),
     'DesignInputGroup': DesignInputGroup(
       focusNode: held(FocusNode()),
       builder: _b3,
       child: _box,
     ),
-    'DesignPasswordReveal': const DesignPasswordReveal(builder: _b2),
+    'RawPasswordReveal': const RawPasswordReveal(builder: _b2),
     'DesignInventoryGallery': const DesignInventoryGallery(
       inventory: DesignInventory(look: 'Test', entries: []),
     ),
     'DesignKeylineRegion': const DesignKeylineRegion(child: _box),
     'MediaSlotImage': const MediaSlotImage(slotId: 'hero', fallback: _box),
-    'DesignMenuBar': const DesignMenuBar(
+    'RawMenuBar': const RawMenuBar(
       menus: [],
       itemBuilder: _b4,
       surfaceBuilder: _b3,
     ),
-    'DesignOtpField': const DesignOtpField(slotBuilder: _b2),
-    'DesignPressable': const DesignPressable(builder: _b3),
+    'RawOtpField': const RawOtpField(slotBuilder: _b2),
+    'RawButton': const RawButton(builder: _b3),
     'PreviewFrame': const PreviewFrame(child: _box),
     'PreviewStage': PreviewStage(
       route: (context, page) =>
           PageRouteBuilder<void>(pageBuilder: (_, _, _) => page),
       child: _box,
     ),
-    'DesignPullToRefresh': DesignPullToRefresh(
+    'RawRefreshIndicator': RawRefreshIndicator(
       onRefresh: () async {},
       indicatorBuilder: _b2,
       child: _box,
     ),
-    'DesignRangeSlider': const DesignRangeSlider(
-      values: DesignRangeValues(.2, .8),
+    'RawRangeSlider': const RawRangeSlider(
+      values: RawRangeValues(.2, .8),
       onChanged: null,
       thumbBuilder: _b3,
       trackBuilder: _b2,
     ),
-    'DesignReorderableList': DesignReorderableList<String>(
+    'RawReorderableList': RawReorderableList<String>(
       items: const [],
       labelOf: (item) => item,
       onReorder: (_, _) {},
       itemBuilder: _b3,
     ),
-    'DesignScrollArea': DesignScrollArea(
+    'RawScrollArea': RawScrollArea(
       controller: held(ScrollController()),
       thumbBuilder: _b2,
       child: _box,
     ),
-    'DesignSplitButton': const DesignSplitButton(
+    'RawSplitButton': const RawSplitButton(
       label: 'Save',
       onPressed: null,
       actions: [],
@@ -528,23 +525,20 @@ Map<String, Widget> _parts() {
       itemBuilder: _b3,
       surfaceBuilder: _b3,
     ),
-    'DesignSplitView': const DesignSplitView(
+    'RawSplitView': const RawSplitView(
       first: _box,
       second: _box,
       dividerBuilder: _b3,
     ),
-    'DesignSwipeActions': const DesignSwipeActions(
-      actionBuilder: _b3,
-      child: _box,
-    ),
-    'DesignTagInput': DesignTagInput<String>(
+    'RawSwipeActions': const RawSwipeActions(actionBuilder: _b3, child: _box),
+    'RawTagInput': RawTagInput<String>(
       values: const [],
       onChanged: (_) {},
       fieldBuilder: _b2,
       optionBuilder: _b3,
       tagBuilder: _b3,
     ),
-    'DesignToaster': const DesignToaster(toastBuilder: _b2, child: _box),
+    'RawToaster': const RawToaster(toastBuilder: _b2, child: _box),
     'DesignRadioGroup': DesignRadioGroup<String>(
       options: const ['Day', 'Week'],
       value: null,
@@ -552,7 +546,7 @@ Map<String, Widget> _parts() {
       itemBuilder: _b4,
       focusNodeFor: (_) => null,
     ),
-    'DesignToggleGroup': const DesignToggleGroup<String>(
+    'RawSegmentedButton': const RawSegmentedButton<String>(
       options: ['Day', 'Week'],
       selected: {'Day'},
       onSelectionChanged: _chose,

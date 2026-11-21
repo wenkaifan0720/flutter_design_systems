@@ -55,7 +55,7 @@ class _Page extends PageRoute<void> {
     Animation<double> animation,
     Animation<double> secondaryAnimation,
     Widget child,
-  ) => const DesignSwipeBackPageTransitionsBuilder(_Plain())
+  ) => const SwipeBackPageTransitionsBuilder(_Plain())
       .buildTransitions(this, context, animation, secondaryAnimation, child);
 }
 

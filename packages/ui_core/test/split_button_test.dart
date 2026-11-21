@@ -21,21 +21,16 @@ Widget _button({
     padding: const EdgeInsets.symmetric(horizontal: 24),
     child: Align(
       alignment: alignment,
-      child: DesignSplitButton(
+      child: RawSplitButton(
         label: 'Save',
         onPressed: () => _ran.add('save'),
         actions: [
-          DesignSplitAction(label: 'Save as', onPressed: () => _ran.add('as')),
-          DesignSplitAction(
-            label: 'Save all',
-            onPressed: () => _ran.add('all'),
-          ),
+          RawSplitAction(label: 'Save as', onPressed: () => _ran.add('as')),
+          RawSplitAction(label: 'Save all', onPressed: () => _ran.add('all')),
         ],
         buttonBuilder: (context, part, states, open) {
           _states[part.name] = states;
-          return Text(
-            part == DesignSplitPart.main ? 'Save' : (open ? '^' : 'v'),
-          );
+          return Text(part == RawSplitPart.main ? 'Save' : (open ? '^' : 'v'));
         },
         itemBuilder: (context, action, states) {
           _states[action.label] = states;
@@ -61,16 +56,16 @@ Future<void> _key(WidgetTester tester, LogicalKeyboardKey key) async {
 
 void main() {
   behaviourContract(
-    'DesignSplitButton',
+    'RawSplitButton',
     build: (c) => Center(
-      child: DesignSplitButton(
+      child: RawSplitButton(
         label: 'Save',
         onPressed: c.enabled ? () => _ran.add('save') : null,
         actions: [
-          DesignSplitAction(label: 'Save as', onPressed: () => _ran.add('as')),
+          RawSplitAction(label: 'Save as', onPressed: () => _ran.add('as')),
         ],
         buttonBuilder: (context, part, states, open) =>
-            Text(part == DesignSplitPart.main ? 'Save' : (open ? '^' : 'v')),
+            Text(part == RawSplitPart.main ? 'Save' : (open ? '^' : 'v')),
         itemBuilder: (context, action, states) =>
             SizedBox(width: 120, height: 44, child: Text(action.label)),
         surfaceBuilder: (context, info, items) => ColoredBox(
@@ -142,7 +137,7 @@ void main() {
             alignment: AlignmentDirectional.centerStart,
           ),
         );
-        final button = tester.getRect(find.byType(DesignSplitButton));
+        final button = tester.getRect(find.byType(RawSplitButton));
         await tester.tap(find.text('v'));
         await tester.pumpAndSettle();
         final menu = tester.getRect(find.byKey(const ValueKey('menu surface')));
@@ -161,7 +156,7 @@ void main() {
       'the default menu meets the trailing edge in ${direction.name}',
       (tester) async {
         await tester.pumpWidget(_button(direction: direction));
-        final button = tester.getRect(find.byType(DesignSplitButton));
+        final button = tester.getRect(find.byType(RawSplitButton));
         await tester.tap(find.text('v'));
         await tester.pumpAndSettle();
         final menu = tester.getRect(find.byKey(const ValueKey('menu surface')));
@@ -198,15 +193,10 @@ void main() {
         // A centred button has space on both sides. At the trailing margin a
         // wide list fits only if its trailing outline touches the button's.
         for (final (position, align, itemWidth, leading) in [
-          (AlignmentDirectional.center, DesignOverlayAlign.start, 174.0, true),
-          (
-            AlignmentDirectional.centerEnd,
-            DesignOverlayAlign.start,
-            174.0,
-            false,
-          ),
-          (AlignmentDirectional.center, DesignOverlayAlign.end, 174.0, false),
-          (AlignmentDirectional.center, DesignOverlayAlign.start, 35.0, true),
+          (AlignmentDirectional.center, RawPopoverAlign.start, 174.0, true),
+          (AlignmentDirectional.centerEnd, RawPopoverAlign.start, 174.0, false),
+          (AlignmentDirectional.center, RawPopoverAlign.end, 174.0, false),
+          (AlignmentDirectional.center, RawPopoverAlign.start, 35.0, true),
         ]) {
           await tester.pumpWidget(
             harness(
@@ -214,13 +204,11 @@ void main() {
                 padding: const EdgeInsets.symmetric(horizontal: 24),
                 child: Align(
                   alignment: position,
-                  child: DesignSplitButton(
+                  child: RawSplitButton(
                     label: 'Save',
                     onPressed: () {},
-                    actions: [
-                      DesignSplitAction(label: 'Copy', onPressed: () {}),
-                    ],
-                    placement: DesignOverlayPlacement(
+                    actions: [RawSplitAction(label: 'Copy', onPressed: () {})],
+                    placement: RawPopoverPlacement(
                       align: align,
                       matchAnchorWidth: itemWidth >= 44,
                     ),
@@ -236,7 +224,7 @@ void main() {
                       ),
                     ),
                     buttonBuilder: (_, part, states, open) =>
-                        Text(part == DesignSplitPart.main ? 'Save' : 'v'),
+                        Text(part == RawSplitPart.main ? 'Save' : 'v'),
                     itemBuilder: (_, action, states) => SizedBox(
                       width: itemWidth,
                       height: 44,
@@ -302,7 +290,7 @@ void main() {
     await tester.tap(find.text('Save'));
     expect(_ran, ['save']);
     expect(
-      tester.getSize(find.byType(DesignSplitButton)),
+      tester.getSize(find.byType(RawSplitButton)),
       const Size(56 + 44, 44),
       reason: 'the toggle\'s one glyph still gets a 44 px target',
     );

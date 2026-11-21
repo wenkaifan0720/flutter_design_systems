@@ -261,7 +261,9 @@ void main() {
         ),
       );
       expect(
-        t.widget<DesignField>(find.byType(DesignField)).mergeSemantics,
+        t
+            .widget<RawInputDecorator>(find.byType(RawInputDecorator))
+            .mergeSemantics,
         merge,
       );
     }

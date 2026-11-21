@@ -1,0 +1,25 @@
+name: ui_core_review
+description: >-
+  Our looks' layout review on ui_core, never published: rows in line, labels and keylines, widths, spacing
+  and a field's own parts, each held to the look's own numbers.
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ">=3.13.0 <4.0.0"
+  flutter: ">=3.47.0"
+
+resolution: workspace
+
+dependencies:
+  flutter:
+    sdk: flutter
+  ui_core: ^0.4.0
+  ui_core_test: ^0.2.0
+
+dev_dependencies:
+  material_ui: ^1.9.0
+  flutter_lints: ^6.0.0
+  flutter_test:
+    sdk: flutter
+  leak_tracker_flutter_testing: any

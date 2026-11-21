@@ -17,11 +17,11 @@ import 'combobox.dart';
 import 'internal/option_list.dart';
 import 'localizations.dart';
 
-/// One tag, as [DesignTagInput.tagBuilder] gets it.
+/// One tag, as [RawTagInput.tagBuilder] gets it.
 @immutable
-class DesignTagDetails {
+class RawTagDetails {
   /// A tag; the input makes these.
-  const DesignTagDetails({
+  const RawTagDetails({
     required this.focused,
     required this.onDeleted,
     required this.index,
@@ -38,14 +38,14 @@ class DesignTagDetails {
 }
 
 /// Paints one tag.
-typedef DesignTagBuilder<T> = Widget Function(
+typedef RawTagBuilder<T> = Widget Function(
   BuildContext context,
   T value,
-  DesignTagDetails tag,
+  RawTagDetails tag,
 );
 
 /// Lays out the tags and the field (a wrap, by default).
-typedef DesignTagLayoutBuilder = Widget Function(
+typedef RawTagLayoutBuilder = Widget Function(
   BuildContext context,
   List<Widget> tags,
   Widget field,
@@ -61,11 +61,11 @@ typedef DesignTagLayoutBuilder = Widget Function(
 /// edge, not from the field after the tags.
 ///
 /// ```dart
-/// DesignTagInput<String>(values: const ['red'], onChanged: (values) {}, onCreate: (text) => text, fieldBuilder: (context, field) => EditableText(controller: field.controller, focusNode: field.focusNode, style: const TextStyle(), cursorColor: const Color(0xFF000000), backgroundCursorColor: const Color(0xFF808080), onEditingComplete: field.submit), optionBuilder: (context, option, states) => Text(option), tagBuilder: (context, value, tag) => Text(value))
+/// RawTagInput<String>(values: const ['red'], onChanged: (values) {}, onCreate: (text) => text, fieldBuilder: (context, field) => EditableText(controller: field.controller, focusNode: field.focusNode, style: const TextStyle(), cursorColor: const Color(0xFF000000), backgroundCursorColor: const Color(0xFF808080), onEditingComplete: field.submit), optionBuilder: (context, option, states) => Text(option), tagBuilder: (context, value, tag) => Text(value))
 /// ```
-class DesignTagInput<T extends Object> extends StatefulWidget {
+class RawTagInput<T extends Object> extends StatefulWidget {
   /// A tag input over [values].
-  const DesignTagInput({
+  const RawTagInput({
     super.key,
     required this.values,
     required this.onChanged,
@@ -103,10 +103,10 @@ class DesignTagInput<T extends Object> extends StatefulWidget {
   final DesignComboboxFieldBuilder fieldBuilder;
 
   /// Paints one suggestion.
-  final DesignOptionBuilder<T> optionBuilder;
+  final RawOptionBuilder<T> optionBuilder;
 
   /// Paints one tag.
-  final DesignTagBuilder<T> tagBuilder;
+  final RawTagBuilder<T> tagBuilder;
 
   /// What typing suggests (less what is chosen), when there is no
   /// [search].
@@ -121,7 +121,7 @@ class DesignTagInput<T extends Object> extends StatefulWidget {
   final bool Function(T option)? isOptionEnabled;
 
   /// Whether the pointer moves the suggestions' highlight, as
-  /// [DesignCombobox.highlightFollowsPointer]; off: two places, the
+  /// [RawCombobox.highlightFollowsPointer]; off: two places, the
   /// pointer's [WidgetState.hovered] and the keys' [WidgetState.focused].
   final bool highlightFollowsPointer;
 
@@ -134,10 +134,10 @@ class DesignTagInput<T extends Object> extends StatefulWidget {
 
   /// Lays out the tags and the field (a face round both, when the look
   /// draws one); the suggestions open from what it lays out.
-  final DesignTagLayoutBuilder? layoutBuilder;
+  final RawTagLayoutBuilder? layoutBuilder;
 
   /// Paints the suggestion list's surface.
-  final DesignListSurfaceBuilder? surfaceBuilder;
+  final RawOptionsSurfaceBuilder? surfaceBuilder;
 
   /// The most tags it takes; null for no limit.
   final int? maxTags;
@@ -160,7 +160,7 @@ class DesignTagInput<T extends Object> extends StatefulWidget {
   final String? semanticLabel;
 
   /// The screen reader's action that removes a tag; null:
-  /// [DesignLocalizations.tagInputDeleteLabel].
+  /// [RawWidgetsLocalizations.tagInputDeleteLabel].
   final String? deleteLabel;
 
   /// How long typing rests before [search] runs: a search per pause, not
@@ -170,20 +170,20 @@ class DesignTagInput<T extends Object> extends StatefulWidget {
 
   /// Says that [search] is finding options, in the list's surface, while its
   /// future is pending (and while [debounceDuration] runs); a screen reader
-  /// hears [DesignLocalizations.loadingLabel] as it appears. Null (the
+  /// hears [RawWidgetsLocalizations.loadingLabel] as it appears. Null (the
   /// default): the options found last stay until the new ones come.
   final WidgetBuilder? loadingBuilder;
 
   /// Says that [search] failed, in the list's surface, with a way to try
-  /// again ([DesignSearchError.retry]; Down moves the keys there, Enter
+  /// again ([RawSearchError.retry]; Down moves the keys there, Enter
   /// runs it); a screen reader hears
-  /// [DesignLocalizations.searchFailedMessage] as it appears, and the focus
+  /// [RawWidgetsLocalizations.searchFailedMessage] as it appears, and the focus
   /// stays in the field. Null (the default): the list closes and the error
   /// goes to [FlutterError.reportError].
-  final DesignSearchErrorBuilder? errorBuilder;
+  final RawSearchErrorBuilder? errorBuilder;
 
   @override
-  State<DesignTagInput<T>> createState() => _DesignTagInputState<T>();
+  State<RawTagInput<T>> createState() => _DesignTagInputState<T>();
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -200,14 +200,12 @@ class DesignTagInput<T extends Object> extends StatefulWidget {
         ),
       )
       ..add(
-        ObjectFlagProperty<DesignOptionBuilder<T>>.has(
+        ObjectFlagProperty<RawOptionBuilder<T>>.has(
           'optionBuilder',
           optionBuilder,
         ),
       )
-      ..add(
-        ObjectFlagProperty<DesignTagBuilder<T>>.has('tagBuilder', tagBuilder),
-      )
+      ..add(ObjectFlagProperty<RawTagBuilder<T>>.has('tagBuilder', tagBuilder))
       ..add(
         IterableProperty<T>('options', options, defaultValue: const <Never>[]),
       )
@@ -236,13 +234,13 @@ class DesignTagInput<T extends Object> extends StatefulWidget {
         ObjectFlagProperty<T? Function(String text)>.has('onCreate', onCreate),
       )
       ..add(
-        ObjectFlagProperty<DesignTagLayoutBuilder>.has(
+        ObjectFlagProperty<RawTagLayoutBuilder>.has(
           'layoutBuilder',
           layoutBuilder,
         ),
       )
       ..add(
-        ObjectFlagProperty<DesignListSurfaceBuilder>.has(
+        ObjectFlagProperty<RawOptionsSurfaceBuilder>.has(
           'surfaceBuilder',
           surfaceBuilder,
         ),
@@ -285,7 +283,7 @@ class DesignTagInput<T extends Object> extends StatefulWidget {
         ObjectFlagProperty<WidgetBuilder>.has('loadingBuilder', loadingBuilder),
       )
       ..add(
-        ObjectFlagProperty<DesignSearchErrorBuilder>.has(
+        ObjectFlagProperty<RawSearchErrorBuilder>.has(
           'errorBuilder',
           errorBuilder,
         ),
@@ -303,7 +301,7 @@ class _Searching {
 
 const Object _searching = _Searching();
 
-class _DesignTagInputState<T extends Object> extends State<DesignTagInput<T>> {
+class _DesignTagInputState<T extends Object> extends State<RawTagInput<T>> {
   TextEditingController? _ownController;
   FocusNode? _ownFocus;
   final List<FocusNode> _tagNodes = [];
@@ -317,8 +315,7 @@ class _DesignTagInputState<T extends Object> extends State<DesignTagInput<T>> {
       widget.controller ?? (_ownController ??= TextEditingController());
 
   FocusNode get _field =>
-      widget.focusNode ??
-      (_ownFocus ??= FocusNode(debugLabel: 'DesignTagInput'));
+      widget.focusNode ?? (_ownFocus ??= FocusNode(debugLabel: 'RawTagInput'));
 
   bool get _full =>
       widget.maxTags != null && widget.values.length >= widget.maxTags!;
@@ -331,7 +328,7 @@ class _DesignTagInputState<T extends Object> extends State<DesignTagInput<T>> {
   }
 
   @override
-  void didUpdateWidget(DesignTagInput<T> oldWidget) {
+  void didUpdateWidget(RawTagInput<T> oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.controller != widget.controller) {
       (oldWidget.controller ?? _ownController)?.removeListener(_textChanged);
@@ -354,9 +351,7 @@ class _DesignTagInputState<T extends Object> extends State<DesignTagInput<T>> {
 
   void _syncNodes() {
     while (_tagNodes.length < widget.values.length) {
-      _tagNodes.add(
-        FocusNode(debugLabel: 'DesignTagDetails ${_tagNodes.length}'),
-      );
+      _tagNodes.add(FocusNode(debugLabel: 'RawTagDetails ${_tagNodes.length}'));
     }
     while (_tagNodes.length > widget.values.length) {
       _tagNodes.removeLast().dispose();
@@ -527,14 +522,14 @@ class _DesignTagInputState<T extends Object> extends State<DesignTagInput<T>> {
           CustomSemanticsAction(
             label:
                 widget.deleteLabel ??
-                DesignLocalizations.of(context).tagInputDeleteLabel,
+                RawWidgetsLocalizations.of(context).tagInputDeleteLabel,
           ): () =>
               _remove(index),
         },
         child: widget.tagBuilder(
           context,
           value,
-          DesignTagDetails(
+          RawTagDetails(
             focused: _focusedTag == index,
             onDeleted: () => _remove(index),
             index: index,
@@ -616,7 +611,7 @@ class _DesignTagInputState<T extends Object> extends State<DesignTagInput<T>> {
           skipTraversal: true,
           includeSemantics: false,
           onKeyEvent: _fieldKey,
-          // ui_core's keys over the autocomplete's, as DesignCombobox's.
+          // ui_core's keys over the autocomplete's, as RawCombobox's.
           child: _keys.field(
             controller,
             widget.fieldBuilder(
@@ -632,7 +627,7 @@ class _DesignTagInputState<T extends Object> extends State<DesignTagInput<T>> {
         final tags = [
           for (var i = 0; i < widget.values.length; i++) _tag(context, i),
         ];
-        // Explicit child nodes, as DesignCombobox's: the OverlayPortal's
+        // Explicit child nodes, as RawCombobox's: the OverlayPortal's
         // annotation would otherwise stretch the field's node over the tags.
         return Semantics(
           explicitChildNodes: true,

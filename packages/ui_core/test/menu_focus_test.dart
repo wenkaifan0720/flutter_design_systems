@@ -17,27 +17,25 @@ import 'behaviour_harness.dart';
 final List<String> _ran = [];
 final Map<String, Set<WidgetState>> _states = {};
 
-List<DesignMenuEntry> _menus() => [
-  DesignMenuEntry(
+List<RawMenuEntry> _menus() => [
+  RawMenuEntry(
     label: 'File',
     children: [
-      DesignMenuEntry(label: 'New', onPressed: () => _ran.add('new')),
-      DesignMenuEntry(
+      RawMenuEntry(label: 'New', onPressed: () => _ran.add('new')),
+      RawMenuEntry(
         label: 'Open recent',
         children: [
-          DesignMenuEntry(label: 'a.txt', onPressed: () => _ran.add('a')),
-          DesignMenuEntry(label: 'b.txt', onPressed: () => _ran.add('b')),
+          RawMenuEntry(label: 'a.txt', onPressed: () => _ran.add('a')),
+          RawMenuEntry(label: 'b.txt', onPressed: () => _ran.add('b')),
         ],
       ),
-      const DesignMenuEntry(label: 'Revert'),
-      DesignMenuEntry(label: 'Quit', onPressed: () => _ran.add('quit')),
+      const RawMenuEntry(label: 'Revert'),
+      RawMenuEntry(label: 'Quit', onPressed: () => _ran.add('quit')),
     ],
   ),
-  DesignMenuEntry(
+  RawMenuEntry(
     label: 'Edit',
-    children: [
-      DesignMenuEntry(label: 'Undo', onPressed: () => _ran.add('undo')),
-    ],
+    children: [RawMenuEntry(label: 'Undo', onPressed: () => _ran.add('undo'))],
   ),
 ];
 
@@ -46,13 +44,13 @@ Widget _view({
   AlignmentGeometry alignment = Alignment.topLeft,
 }) => Align(
   alignment: alignment,
-  child: DesignMenuBar(
+  child: RawMenuBar(
     menus: _menus(),
     highlightFollowsPointer: follow,
     itemBuilder: (context, entry, level, states) {
       _states[entry.label] = states;
       return SizedBox(
-        width: level == DesignMenuLevel.bar ? 60 : 160,
+        width: level == RawMenuLevel.bar ? 60 : 160,
         height: 44,
         child: Text(entry.label),
       );
@@ -243,7 +241,7 @@ void main() {
       expect(_has('New', WidgetState.focused), isTrue);
       expect(_has('Quit', WidgetState.hovered), isTrue);
       expect(_litRows(_fileRows), ['New', 'Quit']);
-      const bar = DesignMenuBar(
+      const bar = RawMenuBar(
         menus: [],
         itemBuilder: _noItem,
         surfaceBuilder: _noSurface,
@@ -263,16 +261,16 @@ void main() {
   group('a split button\'s menu', () {
     Widget split({bool follow = true}) => Align(
       alignment: Alignment.topLeft,
-      child: DesignSplitButton(
+      child: RawSplitButton(
         label: 'Save',
         onPressed: () => _ran.add('save'),
         highlightFollowsPointer: follow,
         actions: [
-          DesignSplitAction(label: 'Save as', onPressed: () => _ran.add('as')),
-          DesignSplitAction(label: 'Export', onPressed: () => _ran.add('ex')),
+          RawSplitAction(label: 'Save as', onPressed: () => _ran.add('as')),
+          RawSplitAction(label: 'Export', onPressed: () => _ran.add('ex')),
         ],
         buttonBuilder: (context, part, states, open) =>
-            Text(part == DesignSplitPart.main ? 'Save' : 'More'),
+            Text(part == RawSplitPart.main ? 'Save' : 'More'),
         itemBuilder: (context, action, states) {
           _states[action.label] = states;
           return SizedBox(width: 160, height: 44, child: Text(action.label));
@@ -338,7 +336,7 @@ void main() {
   });
 
   behaviourContract(
-    'DesignMenuBar, a menu a click opened',
+    'RawMenuBar, a menu a click opened',
     // In the middle: room on both sides, so nothing shifts it.
     build: (c) => _view(alignment: Alignment.topCenter),
     open: (tester) async {
@@ -352,7 +350,7 @@ void main() {
     ),
     semantics: isSemantics(label: 'File'),
     noDisabledState:
-        'a menu is never disabled; each entry is (DesignMenuEntry.enabled)',
+        'a menu is never disabled; each entry is (RawMenuEntry.enabled)',
     keyboard: (p) async {
       final t = p.tester;
       expect(_litRows(_fileRows), isEmpty, reason: 'no row lit');
@@ -382,13 +380,13 @@ void main() {
 
 Widget _noItem(
   BuildContext context,
-  DesignMenuEntry entry,
-  DesignMenuLevel level,
+  RawMenuEntry entry,
+  RawMenuLevel level,
   Set<WidgetState> states,
 ) => const SizedBox();
 
 Widget _noSurface(
   BuildContext context,
-  DesignOverlayInfo info,
+  RawPopoverInfo info,
   List<Widget> items,
 ) => const SizedBox();

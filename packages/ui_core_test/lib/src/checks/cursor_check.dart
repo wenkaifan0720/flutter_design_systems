@@ -33,6 +33,8 @@ part of '../alignment.dart';
 ///     .check(tester.element(find.byType(SettingsScreen)))
 ///     .verify();
 /// ```
+///
+/// It reads the mouse regions and hit tests the layout, and no pixels.
 @immutable
 class DesignCursorCheck {
   /// A check for [look].
@@ -196,21 +198,6 @@ List<(RenderBox, List<RenderBox>)> _controlsWithin(RenderObject root) {
   ];
 }
 
-// Whether [node] is [ancestor] or under it.
-bool _isWithin(RenderObject node, RenderObject ancestor) {
-  for (RenderObject? up = node; up != null; up = up.parent) {
-    if (identical(up, ancestor)) return true;
-  }
-  return false;
-}
-
-// What a pointer at [at] hits, innermost first.
-List<HitTestEntry> _pathAt(Offset at, int viewId) {
-  final result = HitTestResult();
-  RendererBinding.instance.hitTestInView(result, at, viewId);
-  return result.path.toList();
-}
-
 // The cursor the mouse tracker shows at [at], and the region it comes from
 // (null: none decides, the arrow).
 (MouseCursor, RenderMouseRegion?) _cursorAt(Offset at, int viewId) =>
@@ -253,28 +240,6 @@ bool _saysItActs(
       shown != MouseCursor.uncontrolled &&
       shown != SystemMouseCursors.none &&
       shown != SystemMouseCursors.forbidden;
-}
-
-// Whether [box] is a modal barrier's: the scrim behind a sheet or a dialog.
-bool _isBarrier(RenderBox box) {
-  var found = false;
-  final creator = box.debugCreator;
-  if (creator is DebugCreator) {
-    if (creator.element.widget.runtimeType.toString().contains(
-      'ModalBarrier',
-    )) {
-      return true;
-    }
-    var depth = 0;
-    creator.element.visitAncestorElements((e) {
-      // ModalBarrier, AnimatedModalBarrier and their private parts.
-      if (e.widget.runtimeType.toString().contains('ModalBarrier')) {
-        found = true;
-      }
-      return !found && ++depth < 12;
-    });
-  }
-  return found;
 }
 
 // Whether [region] is a Material ink response's, whose adaptive cursor

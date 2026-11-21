@@ -1,9 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
-import 'color_picker.dart' show DesignColorChannel;
-import 'data_table.dart' show DesignSortDirection;
-import 'date_field.dart' show DesignTimeOfDay;
+import 'color_picker.dart' show RawColorChannel;
+import 'data_table.dart' show RawSortDirection;
+import 'date_field.dart' show RawTimeOfDay;
 import 'internal/decimal.dart' as decimal;
 import 'internal/localizations_data.dart';
 import 'internal/segments.dart';
@@ -19,7 +19,7 @@ import 'internal/segments.dart';
 /// `WidgetsApp`) has them.
 ///
 /// [of] reads the nearest [Localizations]' instance, and English
-/// ([DefaultDesignLocalizations]) when there is none, so nothing needs
+/// ([DefaultRawWidgetsLocalizations]) when there is none, so nothing needs
 /// setting up.
 ///
 /// ui_core speaks 30 languages ([supportedLocales]): an app adds [delegate]
@@ -32,30 +32,33 @@ import 'internal/segments.dart';
 /// English.
 ///
 /// An app that words a message its own way extends
-/// [DefaultDesignLocalizations], overriding the words it changes, and adds a
+/// [DefaultRawWidgetsLocalizations], overriding the words it changes, and adds a
 /// delegate for its subclass, as it does for `WidgetsLocalizations`.
 /// Extending it, rather than implementing this class, keeps a word added in
 /// a later minor version in English until the app words it.
 ///
 /// ```dart
-/// Localizations(locale: const Locale('en'), delegates: const [DefaultDesignLocalizations.delegate, DefaultWidgetsLocalizations.delegate], child: Builder(builder: (context) => Text(DesignLocalizations.of(context).carouselLabel)))
+/// Localizations(locale: const Locale('en'), delegates: const [DefaultRawWidgetsLocalizations.delegate, DefaultWidgetsLocalizations.delegate], child: Builder(builder: (context) => Text(RawWidgetsLocalizations.of(context).carouselLabel)))
 /// ```
-abstract class DesignLocalizations {
+abstract class RawWidgetsLocalizations {
   /// Abstract const constructor, for subclasses.
-  const DesignLocalizations();
+  const RawWidgetsLocalizations();
 
   /// The words for [context]'s locale: the nearest [Localizations]'
-  /// [DesignLocalizations], else English.
-  static DesignLocalizations of(BuildContext context) =>
-      Localizations.of<DesignLocalizations>(context, DesignLocalizations) ??
-      const DefaultDesignLocalizations();
+  /// [RawWidgetsLocalizations], else English.
+  static RawWidgetsLocalizations of(BuildContext context) =>
+      Localizations.of<RawWidgetsLocalizations>(
+        context,
+        RawWidgetsLocalizations,
+      ) ??
+      const DefaultRawWidgetsLocalizations();
 
   /// The words for [locale]: its language's (Traditional Chinese for `zh`
   /// written in Hant, or in Taiwan, Hong Kong or Macau), else English.
-  static DesignLocalizations forLocale(Locale locale) {
+  static RawWidgetsLocalizations forLocale(Locale locale) {
     final data = designLocaleData[_key(locale)];
     if (data == null || locale.languageCode == 'en') {
-      return const DefaultDesignLocalizations();
+      return const DefaultRawWidgetsLocalizations();
     }
     return _TranslatedDesignLocalizations(data);
   }
@@ -100,7 +103,7 @@ abstract class DesignLocalizations {
   /// It takes every locale: one ui_core does not speak loads English, so a
   /// look's parts are never left without words, and Flutter warns of no
   /// missing delegate (the words fall back as `WidgetsLocalizations`' do).
-  static const LocalizationsDelegate<DesignLocalizations> delegate =
+  static const LocalizationsDelegate<RawWidgetsLocalizations> delegate =
       _DesignLocalizationsDelegate();
 
   static String _key(Locale locale) => switch (locale.languageCode) {
@@ -207,24 +210,24 @@ abstract class DesignLocalizations {
   /// for a step, a page or a slide a look numbers itself.
   String positionLabel(int position, int count);
 
-  /// What a screen reader calls a carousel (`DesignCarousel.semanticLabel`).
+  /// What a screen reader calls a carousel (`RawCarousel.semanticLabel`).
   String get carouselLabel;
 
   /// What a screen reader calls slide [index] (from 0) of [count], and
   /// what it hears when the reader turns to it
-  /// (`DesignCarousel.slideLabel`).
+  /// (`RawCarousel.slideLabel`).
   String carouselSlideLabel(int index, int count);
 
   /// What a screen reader calls a colour picker's area
-  /// (`DesignColorArea.semanticLabel`).
+  /// (`RawColorArea.semanticLabel`).
   String get colorAreaLabel;
 
   /// What a screen reader calls a colour slider for [channel]
-  /// (`DesignColorSlider.semanticLabel`).
-  String colorChannelLabel(DesignColorChannel channel);
+  /// (`RawColorSlider.semanticLabel`).
+  String colorChannelLabel(RawColorChannel channel);
 
   /// What a screen reader calls the command palette
-  /// (`DesignCommandPalette.semanticLabel`).
+  /// (`RawCommandPalette.semanticLabel`).
   String get commandPaletteLabel;
 
   /// The barrier's label behind a shown command palette
@@ -232,29 +235,29 @@ abstract class DesignLocalizations {
   String get commandPaletteBarrierLabel;
 
   /// What is announced when the palette's results change to [count]
-  /// (`DesignCommandPalette.resultsMessage`).
+  /// (`RawCommandPalette.resultsMessage`).
   String commandPaletteResultsMessage(int count);
 
-  /// A sorted column header's hint (`DesignDataTable.sortedHint`).
-  String dataTableSortedHint(DesignSortDirection direction);
+  /// A sorted column header's hint (`RawDataTable.sortedHint`).
+  String dataTableSortedHint(RawSortDirection direction);
 
   /// A calendar day's full name, read and announced as focus moves to it
-  /// (`DesignCalendar.dayLabel`).
+  /// (`RawCalendarDatePicker.dayLabel`).
   String formatFullDate(DateTime date);
 
-  /// The name of [date]'s month and year (`DesignCalendar.monthLabel`).
+  /// The name of [date]'s month and year (`RawCalendarDatePicker.monthLabel`).
   String formatMonthYear(DateTime date);
 
   /// The calendar's short name for [weekday] ([DateTime.monday] is 1)
-  /// (`DesignCalendar.weekdayLabel`).
+  /// (`RawCalendarDatePicker.weekdayLabel`).
   String formatShortWeekday(int weekday);
 
   /// The day a week starts on in this locale ([DateTime.monday] …
   /// [DateTime.sunday]), which a calendar shows first
-  /// (`DesignCalendar.firstWeekday`).
+  /// (`RawCalendarDatePicker.firstWeekday`).
   int get firstDayOfWeek;
 
-  /// The hint a required field adds (`DesignField.requiredHint`).
+  /// The hint a required field adds (`RawInputDecorator.requiredHint`).
   String get requiredHint;
 
   /// What is announced when a form's submit finds [count] fields wrong
@@ -262,57 +265,57 @@ abstract class DesignLocalizations {
   String formProblemsMessage(int count);
 
   /// The label of a password field's reveal toggle while the text is
-  /// hidden (`DesignPasswordReveal.showLabel`).
+  /// hidden (`RawPasswordReveal.showLabel`).
   String get showPasswordLabel;
 
   /// The label of a password field's reveal toggle while the text shows
-  /// (`DesignPasswordReveal.hideLabel`).
+  /// (`RawPasswordReveal.hideLabel`).
   String get hidePasswordLabel;
 
   /// What a screen reader calls a menu bar
-  /// (`DesignMenuBar.semanticLabel`).
+  /// (`RawMenuBar.semanticLabel`).
   String get menuBarLabel;
 
-  /// The refresh action's label (`DesignPullToRefresh.refreshLabel`).
+  /// The refresh action's label (`RawRefreshIndicator.refreshLabel`).
   String get refreshLabel;
 
   /// What is announced as a refresh starts
-  /// (`DesignPullToRefresh.refreshingMessage`).
+  /// (`RawRefreshIndicator.refreshingMessage`).
   String get refreshingMessage;
 
   /// What is announced when a refresh ends
-  /// (`DesignPullToRefresh.doneMessage`).
+  /// (`RawRefreshIndicator.doneMessage`).
   String get refreshedMessage;
 
   /// What a screen reader calls a range slider's start thumb
-  /// (`DesignRangeSlider.startLabel`).
+  /// (`RawRangeSlider.startLabel`).
   String get rangeSliderStartLabel;
 
   /// What a screen reader calls a range slider's end thumb
-  /// (`DesignRangeSlider.endLabel`).
+  /// (`RawRangeSlider.endLabel`).
   String get rangeSliderEndLabel;
 
   /// What is announced when the item called [label] moves to [position]
-  /// (from 1) of [count] (`DesignReorderableList.movedMessage`).
+  /// (from 1) of [count] (`RawReorderableList.movedMessage`).
   String reorderableListMovedMessage(String label, int position, int count);
 
   /// The barrier's label behind a side sheet
-  /// (`DesignSideSheetRoute.barrierLabel`).
+  /// (`RawSideSheetRoute.barrierLabel`).
   String get sideSheetBarrierLabel;
 
   /// The label of a split button's menu part
-  /// (`DesignSplitButton.menuLabel`).
+  /// (`RawSplitButton.menuLabel`).
   String get splitButtonMenuLabel;
 
   /// What a screen reader calls a split view's handle
-  /// (`DesignSplitView.semanticLabel`).
+  /// (`RawSplitView.semanticLabel`).
   String get splitViewHandleLabel;
 
-  /// The custom action that removes a tag (`DesignTagInput.deleteLabel`).
+  /// The custom action that removes a tag (`RawTagInput.deleteLabel`).
   String get tagInputDeleteLabel;
 
   /// What a screen reader calls the toasts' region
-  /// (`DesignToaster.regionLabel`).
+  /// (`RawToaster.regionLabel`).
   String get toasterRegionLabel;
 
   /// A tree row's hint: [level] (from 1), and [position] (from 1) of the
@@ -375,9 +378,9 @@ abstract class DesignLocalizations {
   /// The Tab key, in a shortcut's label (ui_core's own).
   String get keyboardKeyTab;
 
-  // 0.3.0 overlays: a search that failed (DesignCombobox.errorBuilder).
+  // 0.3.0 overlays: a search that failed (RawCombobox.errorBuilder).
 
-  /// What a screen reader hears as a combobox's or a tag input's search fails (DesignCombobox.errorBuilder), in a shortcut's label (ui_core's own).
+  /// What a screen reader hears as a combobox's or a tag input's search fails (RawCombobox.errorBuilder), in a shortcut's label (ui_core's own).
   String get searchFailedMessage;
 
   // 0.3.0 routes: the words ui_core's routes, tabs and shell say, under
@@ -388,7 +391,7 @@ abstract class DesignLocalizations {
   String get alertDialogLabel;
 
   /// What a screen reader calls a bottom sheet that names itself no other
-  /// way (`DesignBottomSheetRoute.semanticLabel`) ("Bottom Sheet").
+  /// way (`RawBottomSheetRoute.semanticLabel`) ("Bottom Sheet").
   String get bottomSheetLabel;
 
   /// What a screen reader calls a dialog that names itself no other way
@@ -400,7 +403,7 @@ abstract class DesignLocalizations {
   String get drawerLabel;
 
   /// What a screen reader calls a bottom sheet's drag handle
-  /// (`DesignBottomSheetDragHandle`) ("Drag handle"). ui_core's own word.
+  /// (`RawBottomSheetDragHandle`) ("Drag handle"). ui_core's own word.
   String get dragHandleLabel;
 
   /// Where a tab stands among [tabCount], [tabIndex] from 1 ("Tab 2 of 5"):
@@ -523,7 +526,7 @@ abstract class DesignLocalizations {
   /// 24-hour clock when [alwaysUse24HourFormat], with its seconds when
   /// [showSeconds].
   String formatTimeOfDay(
-    DesignTimeOfDay time, {
+    RawTimeOfDay time, {
     bool alwaysUse24HourFormat = false,
     bool showSeconds = false,
   });
@@ -546,21 +549,21 @@ abstract class DesignLocalizations {
 /// The words in English, with no localizations package.
 ///
 /// ```dart
-/// const DefaultDesignLocalizations().carouselSlideLabel(0, 3)
+/// const DefaultRawWidgetsLocalizations().carouselSlideLabel(0, 3)
 /// ```
-class DefaultDesignLocalizations implements DesignLocalizations {
-  /// English, the words [DesignLocalizations.of] falls back to.
-  const DefaultDesignLocalizations();
+class DefaultRawWidgetsLocalizations implements RawWidgetsLocalizations {
+  /// English, the words [RawWidgetsLocalizations.of] falls back to.
+  const DefaultRawWidgetsLocalizations();
 
   /// Makes the English words: what [delegate] loads for any locale.
-  static Future<DesignLocalizations> load(Locale locale) =>
-      SynchronousFuture<DesignLocalizations>(
-        const DefaultDesignLocalizations(),
+  static Future<RawWidgetsLocalizations> load(Locale locale) =>
+      SynchronousFuture<RawWidgetsLocalizations>(
+        const DefaultRawWidgetsLocalizations(),
       );
 
   /// A delegate that loads English, for an app's
   /// `localizationsDelegates`.
-  static const LocalizationsDelegate<DesignLocalizations> delegate =
+  static const LocalizationsDelegate<RawWidgetsLocalizations> delegate =
       _DefaultDesignLocalizationsDelegate();
 
   static const List<String> _months = <String>[
@@ -684,11 +687,11 @@ class DefaultDesignLocalizations implements DesignLocalizations {
   String get colorAreaLabel => 'Saturation and brightness';
 
   @override
-  String colorChannelLabel(DesignColorChannel channel) => switch (channel) {
-    DesignColorChannel.hue => 'Hue',
-    DesignColorChannel.saturation => 'Saturation',
-    DesignColorChannel.brightness => 'Brightness',
-    DesignColorChannel.alpha => 'Alpha',
+  String colorChannelLabel(RawColorChannel channel) => switch (channel) {
+    RawColorChannel.hue => 'Hue',
+    RawColorChannel.saturation => 'Saturation',
+    RawColorChannel.brightness => 'Brightness',
+    RawColorChannel.alpha => 'Alpha',
   };
 
   @override
@@ -705,8 +708,8 @@ class DefaultDesignLocalizations implements DesignLocalizations {
   };
 
   @override
-  String dataTableSortedHint(DesignSortDirection direction) =>
-      direction == DesignSortDirection.ascending
+  String dataTableSortedHint(RawSortDirection direction) =>
+      direction == RawSortDirection.ascending
       ? 'sorted ascending'
       : 'sorted descending';
 
@@ -836,7 +839,7 @@ class DefaultDesignLocalizations implements DesignLocalizations {
   @override
   String get keyboardKeyTab => 'Tab';
 
-  // 0.3.0 overlays: a search that failed (DesignCombobox.errorBuilder).
+  // 0.3.0 overlays: a search that failed (RawCombobox.errorBuilder).
 
   @override
   String get searchFailedMessage => "Couldn't load results";
@@ -984,7 +987,7 @@ class DefaultDesignLocalizations implements DesignLocalizations {
 
   @override
   String formatTimeOfDay(
-    DesignTimeOfDay time, {
+    RawTimeOfDay time, {
     bool alwaysUse24HourFormat = false,
     bool showSeconds = false,
   }) => _pattern(
@@ -1016,28 +1019,28 @@ class DefaultDesignLocalizations implements DesignLocalizations {
 }
 
 class _DesignLocalizationsDelegate
-    extends LocalizationsDelegate<DesignLocalizations> {
+    extends LocalizationsDelegate<RawWidgetsLocalizations> {
   const _DesignLocalizationsDelegate();
 
   @override
   bool isSupported(Locale locale) => true;
 
   @override
-  Future<DesignLocalizations> load(Locale locale) =>
-      SynchronousFuture<DesignLocalizations>(
-        DesignLocalizations.forLocale(locale),
+  Future<RawWidgetsLocalizations> load(Locale locale) =>
+      SynchronousFuture<RawWidgetsLocalizations>(
+        RawWidgetsLocalizations.forLocale(locale),
       );
 
   @override
   bool shouldReload(_DesignLocalizationsDelegate old) => false;
 
   @override
-  String toString() => 'DesignLocalizations.delegate(30 locales)';
+  String toString() => 'RawWidgetsLocalizations.delegate(30 locales)';
 }
 
 // One locale's words from its table (designLocaleData), English for a word
 // the table lacks.
-class _TranslatedDesignLocalizations extends DefaultDesignLocalizations {
+class _TranslatedDesignLocalizations extends DefaultRawWidgetsLocalizations {
   const _TranslatedDesignLocalizations(this._data);
 
   final DesignLocaleData _data;
@@ -1248,13 +1251,12 @@ class _TranslatedDesignLocalizations extends DefaultDesignLocalizations {
   String get colorAreaLabel => _word('colorAreaLabel', super.colorAreaLabel);
 
   @override
-  String colorChannelLabel(DesignColorChannel channel) =>
-      _word(switch (channel) {
-        DesignColorChannel.hue => 'colorChannelHue',
-        DesignColorChannel.saturation => 'colorChannelSaturation',
-        DesignColorChannel.brightness => 'colorChannelBrightness',
-        DesignColorChannel.alpha => 'colorChannelAlpha',
-      }, super.colorChannelLabel(channel));
+  String colorChannelLabel(RawColorChannel channel) => _word(switch (channel) {
+    RawColorChannel.hue => 'colorChannelHue',
+    RawColorChannel.saturation => 'colorChannelSaturation',
+    RawColorChannel.brightness => 'colorChannelBrightness',
+    RawColorChannel.alpha => 'colorChannelAlpha',
+  }, super.colorChannelLabel(channel));
 
   @override
   String get commandPaletteLabel =>
@@ -1272,8 +1274,8 @@ class _TranslatedDesignLocalizations extends DefaultDesignLocalizations {
   );
 
   @override
-  String dataTableSortedHint(DesignSortDirection direction) => _word(
-    direction == DesignSortDirection.ascending
+  String dataTableSortedHint(RawSortDirection direction) => _word(
+    direction == RawSortDirection.ascending
         ? 'sortedAscendingHint'
         : 'sortedDescendingHint',
     super.dataTableSortedHint(direction),
@@ -1432,7 +1434,7 @@ class _TranslatedDesignLocalizations extends DefaultDesignLocalizations {
   @override
   String get keyboardKeyTab => _word('keyboardKeyTab', super.keyboardKeyTab);
 
-  // 0.3.0 overlays: a search that failed (DesignCombobox.errorBuilder).
+  // 0.3.0 overlays: a search that failed (RawCombobox.errorBuilder).
 
   @override
   String get searchFailedMessage =>
@@ -1657,19 +1659,19 @@ String _pluralCategory(String rule, int n) {
 }
 
 class _DefaultDesignLocalizationsDelegate
-    extends LocalizationsDelegate<DesignLocalizations> {
+    extends LocalizationsDelegate<RawWidgetsLocalizations> {
   const _DefaultDesignLocalizationsDelegate();
 
   @override
   bool isSupported(Locale locale) => true;
 
   @override
-  Future<DesignLocalizations> load(Locale locale) =>
-      DefaultDesignLocalizations.load(locale);
+  Future<RawWidgetsLocalizations> load(Locale locale) =>
+      DefaultRawWidgetsLocalizations.load(locale);
 
   @override
   bool shouldReload(_DefaultDesignLocalizationsDelegate old) => false;
 
   @override
-  String toString() => 'DefaultDesignLocalizations.delegate(en)';
+  String toString() => 'DefaultRawWidgetsLocalizations.delegate(en)';
 }

@@ -1,5 +1,5 @@
 /// A menu's rows, shared by the menubar, the context menu and the split
-/// button: commands, submenus and dividers from [DesignMenuEntry], their
+/// button: commands, submenus and dividers from [RawMenuEntry], their
 /// focus and typed letters, and, with the highlight following the pointer,
 /// one current row lit. Inside ui_core; not exported.
 library;
@@ -27,10 +27,10 @@ class DesignMenuPainters {
   });
 
   /// Paints a row.
-  final DesignMenuItemBuilder itemBuilder;
+  final RawMenuItemBuilder itemBuilder;
 
   /// Paints a panel round its rows.
-  final DesignMenuSurfaceBuilder surfaceBuilder;
+  final RawMenuBarOverlayBuilder surfaceBuilder;
 
   /// Paints a divider; null: a 1 px gap.
   final WidgetBuilder? dividerBuilder;
@@ -65,7 +65,7 @@ Set<WidgetState> designMenuRowStates(
   return out;
 }
 
-/// A menu's row: a [DesignPressable] that, with [highlightFollowsPointer],
+/// A menu's row: a [RawButton] that, with [highlightFollowsPointer],
 /// takes the keys as a pointer moves over it (a disabled one gives them to
 /// the surface: no row lit), lights none as the pointer leaves it for no
 /// other row, and paints [designMenuRowStates].
@@ -154,7 +154,7 @@ class _DesignMenuRowState extends State<DesignMenuRow> {
         ? DesignSurfaceFocus.maybeOf(context)
         : null;
     final node = _node;
-    Widget row = DesignPressable(
+    Widget row = RawButton(
       focusNode: node,
       onPressed: widget.onPressed,
       checked: widget.checked,
@@ -207,10 +207,10 @@ class DesignMenuItems extends StatefulWidget {
   });
 
   /// The surface's info.
-  final DesignOverlayInfo info;
+  final RawPopoverInfo info;
 
   /// Its rows.
-  final List<DesignMenuEntry> entries;
+  final List<RawMenuEntry> entries;
 
   /// The whole menu's controller, which a command closes.
   final MenuController root;
@@ -338,7 +338,7 @@ class _DesignMenuItemsState extends State<DesignMenuItems> {
             semanticLabel: e.label,
             semanticHint: e.shortcut,
             builder: (context, states) =>
-                painters.itemBuilder(context, e, DesignMenuLevel.menu, states),
+                painters.itemBuilder(context, e, RawMenuLevel.menu, states),
           ),
     ];
   }
@@ -373,7 +373,7 @@ class _Submenu extends StatefulWidget {
     required this.focusNode,
   });
 
-  final DesignMenuEntry entry;
+  final RawMenuEntry entry;
   final DesignMenuPainters painters;
   final MenuController root;
 
@@ -421,15 +421,12 @@ class _SubmenuState extends State<_Submenu> {
       skipTraversal: true,
       includeSemantics: false,
       onKeyEvent: _key,
-      child: DesignAnchoredOverlay(
+      child: RawPopover(
         controller: _menu,
-        trigger: DesignOverlayTrigger.manual,
+        trigger: RawPopoverTrigger.manual,
         arrowKeyNavigation: true,
         semanticLabel: e.label,
-        placement: const DesignOverlayPlacement(
-          side: DesignOverlaySide.end,
-          gap: 0,
-        ),
+        placement: const RawPopoverPlacement(side: RawPopoverSide.end, gap: 0),
         onOpenChanged: (_) => setState(() {}),
         anchorBuilder: (context, anchor) => DesignMenuRow(
           focusNode: _node,
@@ -447,7 +444,7 @@ class _SubmenuState extends State<_Submenu> {
             }
           },
           builder: (context, states) =>
-              painters.itemBuilder(context, e, DesignMenuLevel.menu, states),
+              painters.itemBuilder(context, e, RawMenuLevel.menu, states),
         ),
         overlayBuilder: (context, info) => DesignMenuItems(
           info: info,

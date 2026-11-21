@@ -1,3 +1,4 @@
+import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -8,20 +9,40 @@ import 'behaviour_harness.dart';
 
 const _panel = ValueKey('panel');
 
+// Where a screen reader outlines the barrier, [label], in the screen's
+// coordinates: null when no node says it.
+Rect? _barrierRect(String label) {
+  Rect? found;
+  void visit(SemanticsNode node, Matrix4 parent) {
+    final m = parent.clone();
+    if (node.transform != null) m.multiply(node.transform!);
+    if (node.getSemanticsData().label == label) {
+      found = MatrixUtils.transformRect(m, node.rect);
+    }
+    node.visitChildren((child) {
+      visit(child, m);
+      return true;
+    });
+  }
+
+  visit(semanticsOwner().rootSemanticsNode!, Matrix4.identity());
+  return found;
+}
+
 // The opener and the bare reference painter: a grey panel with a field-less
 // close button.
 Widget _app({
-  DesignSheetEdge edge = DesignSheetEdge.end,
+  RawSheetEdge edge = RawSheetEdge.end,
   TextDirection direction = TextDirection.ltr,
   bool reduceMotion = false,
   DesignBarrierBuilder? barrierBuilder,
 }) => harness(
   Builder(
     builder: (context) => Center(
-      child: DesignPressable(
+      child: RawButton(
         semanticLabel: 'Open',
         onPressed: () => Navigator.of(context).push(
-          DesignSideSheetRoute<void>(
+          RawSideSheetRoute<void>(
             edge: edge,
             barrierBuilder: barrierBuilder,
             semanticLabel: 'Filters',
@@ -30,7 +51,7 @@ Widget _app({
               color: const Color(0xFFEEEEEE),
               child: Align(
                 alignment: Alignment.topCenter,
-                child: DesignPressable(
+                child: RawButton(
                   onPressed: sheet.close,
                   semanticLabel: 'Close',
                   minimumSize: const Size(44, 44),
@@ -55,10 +76,10 @@ Widget _fieldApp(WidgetTester tester, FocusNode field) {
   return harness(
     Builder(
       builder: (context) => Center(
-        child: DesignPressable(
+        child: RawButton(
           semanticLabel: 'Open',
           onPressed: () => Navigator.of(context).push(
-            DesignSideSheetRoute<void>(
+            RawSideSheetRoute<void>(
               builder: (context, sheet) => Container(
                 key: _panel,
                 color: const Color(0xFFEEEEEE),
@@ -87,23 +108,60 @@ Widget _fieldApp(WidgetTester tester, FocusNode field) {
 }
 
 void main() {
+  testWidgets("the barrier's node is the part the sheet leaves, at either "
+      'edge, either way the screen reads', (tester) async {
+    final semantics = tester.ensureSemantics();
+    tester.view.physicalSize = const Size(1000, 600);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    for (final (edge, direction, expected) in [
+      (
+        RawSheetEdge.end,
+        TextDirection.ltr,
+        const Rect.fromLTRB(0, 0, 640, 600),
+      ),
+      (
+        RawSheetEdge.start,
+        TextDirection.ltr,
+        const Rect.fromLTRB(360, 0, 1000, 600),
+      ),
+      (
+        RawSheetEdge.end,
+        TextDirection.rtl,
+        const Rect.fromLTRB(360, 0, 1000, 600),
+      ),
+    ]) {
+      await tester.pumpWidget(const SizedBox());
+      await tester.pumpWidget(_app(edge: edge, direction: direction));
+      await tester.tap(find.text('open'));
+      await tester.pumpAndSettle();
+      final route = ModalRoute.of(tester.element(find.byKey(_panel)))!;
+      expect(
+        _barrierRect(route.barrierLabel!),
+        expected,
+        reason: '$edge ${direction.name}',
+      );
+    }
+    semantics.dispose();
+  });
+
   behaviourContract(
-    'DesignSideSheetRoute',
+    'RawSideSheetRoute',
     build: (c) => Builder(
       builder: (context) => Center(
-        child: DesignPressable(
+        child: RawButton(
           semanticLabel: 'Open',
           excludeSemantics: true,
           minimumSize: const Size(44, 44),
           onPressed: () => Navigator.of(context).push(
-            DesignSideSheetRoute<void>(
+            RawSideSheetRoute<void>(
               semanticLabel: 'Filters',
               builder: (context, sheet) => Container(
                 key: _panel,
                 color: const Color(0xFFEEEEEE),
                 child: Align(
                   alignment: Alignment.topCenter,
-                  child: DesignPressable(
+                  child: RawButton(
                     onPressed: sheet.close,
                     semanticLabel: 'Close',
                     excludeSemantics: true,
@@ -198,7 +256,7 @@ void main() {
   testWidgets('right to left: the start edge is on the right; a tap on the '
       'barrier closes it', (tester) async {
     await tester.pumpWidget(
-      _app(edge: DesignSheetEdge.start, direction: TextDirection.rtl),
+      _app(edge: RawSheetEdge.start, direction: TextDirection.rtl),
     );
     await tester.tap(find.text('open'));
     await tester.pumpAndSettle();
@@ -232,7 +290,7 @@ void main() {
     expect(find.byKey(const ValueKey('dots')), findsOneWidget);
     final route =
         ModalRoute.of(tester.element(find.byKey(_panel)))!
-            as DesignSideSheetRoute<void>;
+            as RawSideSheetRoute<void>;
     expect(route.barrierColor, isNull, reason: 'the builder paints it');
     expect(route.animation!.value, 1);
     // The painting is only seen: the barrier says its label, not the dots.
@@ -255,14 +313,14 @@ void main() {
     await tester.pumpAndSettle();
     final route =
         ModalRoute.of(tester.element(find.byKey(_panel)))!
-            as DesignSideSheetRoute<void>;
+            as RawSideSheetRoute<void>;
     expect(route.barrierColor, const Color(0x66000000));
   });
 
   testWidgets('a drag toward its edge closes it; a short one does not', (
     tester,
   ) async {
-    await tester.pumpWidget(_app(edge: DesignSheetEdge.start));
+    await tester.pumpWidget(_app(edge: RawSheetEdge.start));
     await tester.tap(find.text('open'));
     await tester.pumpAndSettle();
     expect(tester.getRect(find.byKey(_panel)).left, 0);
@@ -280,7 +338,7 @@ void main() {
 
   testWidgets('let go part way, it settles from where it is: no frame '
       'jumps, back open or closed', (tester) async {
-    await tester.pumpWidget(_app(edge: DesignSheetEdge.start));
+    await tester.pumpWidget(_app(edge: RawSheetEdge.start));
     await tester.tap(find.text('open'));
     await tester.pumpAndSettle();
     double? left() {
@@ -391,12 +449,12 @@ void main() {
   // 0.3.0 routes
   test('it moves on a spring: critically damped by default, or the one '
       'given', () {
-    final sheet = DesignSideSheetRoute<void>(
+    final sheet = RawSideSheetRoute<void>(
       builder: (context, sheet) => const SizedBox(),
     );
     expect(sheet.dampingRatio, 1);
     expect(sheet.stiffness, 700);
-    final given = DesignSideSheetRoute<void>(
+    final given = RawSideSheetRoute<void>(
       dampingRatio: 0.5,
       stiffness: 400,
       builder: (context, sheet) => const SizedBox(),
@@ -408,16 +466,16 @@ void main() {
   testWidgets('an underdamped token: the route stays within 0 and 1', (
     tester,
   ) async {
-    late DesignSideSheetRoute<void> route;
+    late RawSideSheetRoute<void> route;
     await tester.pumpWidget(
       harness(
         Builder(
           builder: (context) => Center(
-            child: DesignPressable(
+            child: RawButton(
               semanticLabel: 'Open',
               minimumSize: const Size(44, 44),
               onPressed: () => Navigator.of(context).push(
-                route = DesignSideSheetRoute<void>(
+                route = RawSideSheetRoute<void>(
                   dampingRatio: 0.3,
                   stiffness: 900,
                   builder: (context, sheet) => const SizedBox(key: _panel),

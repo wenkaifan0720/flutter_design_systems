@@ -1,3 +1,21 @@
+## 0.2.0
+
+- **Breaking:** needs ui_core 0.4.0. `DesignRadioGroupCheck` checks any group of radios,
+  Flutter's `RadioGroup` with `RawRadio` and ui_core's `RadioGroupKeyboardFix` among them.
+- **Breaking:** the layout review leaves this package, which keeps the checks of what is wrong in any design. The
+  alignment matrix and its sheet (`DesignAlignmentMatrix`, `DesignAlignmentRow`, `DesignAlignmentEntry`,
+  `DesignAlignmentBuilder`, `DesignInlineControl`, `DesignAlignmentSheet`), `DesignTextEntryCheck` and
+  `DesignTextEntryBuilder`, `DesignKeylineCheck` and `DesignKeylineSheet`, `DesignRowCheck`, `DesignWidthCheck`,
+  `DesignWidthLimit` and `DesignWidthKind`, `DesignSpacingCheck` and `DesignFieldPartsCheck` hold a look's own grid and
+  taste; they are no longer published. A test that used one keeps it from the design systems repository.
+- `DesignTextFieldNameCheck`: each text field on a screen says a name (a label, a hint or a tooltip) on its own node,
+  so a screen reader does not read it as "text field" alone. It reads the semantics tree.
+- `package:ui_core_test/guidelines.dart` offers the behaviour checks as Flutter accessibility guidelines, beside
+  `androidTapTargetGuideline`: `await expectLater(tester, meetsGuideline(checkableRoleGuideline))`, with
+  `fieldSemanticsGuideline`, `textFieldNameGuideline`, `tapTargetReachGuideline`, `cursorGuideline` and
+  `labelPlacementGuideline`. The package now depends on flutter_test for them; its main library imports none of it.
+- Each check's documentation says whether it reads layout boxes and the semantics tree, or the drawn pixels.
+
 ## 0.1.4
 
 - `DesignRowCheck` reads the edge of a raised face that matches its background from its cast light and shadow.

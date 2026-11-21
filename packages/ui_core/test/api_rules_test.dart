@@ -11,14 +11,14 @@ import 'behaviour_harness.dart';
 // The single-stop widgets that take a focus node, each built with [node]
 // and [autofocus].
 final Map<String, Widget Function(FocusNode node, bool autofocus)> _stops = {
-  'DesignCarousel': (node, autofocus) => DesignCarousel(
+  'RawCarousel': (node, autofocus) => RawCarousel(
     itemCount: 3,
     itemBuilder: (context, index) => Text('Slide $index'),
     focusNode: node,
     autofocus: autofocus,
   ),
-  'DesignScrollArea': (node, autofocus) => _ScrollHost(
-    builder: (controller) => DesignScrollArea(
+  'RawScrollArea': (node, autofocus) => _ScrollHost(
+    builder: (controller) => RawScrollArea(
       controller: controller,
       thumbBuilder: (context, thumb) => const SizedBox.expand(),
       focusNode: node,
@@ -29,11 +29,11 @@ final Map<String, Widget Function(FocusNode node, bool autofocus)> _stops = {
       ),
     ),
   ),
-  'DesignColorArea': (node, autofocus) => _ColorHost(
+  'RawColorArea': (node, autofocus) => _ColorHost(
     builder: (controller) => SizedBox(
       width: 200,
       height: 200,
-      child: DesignColorArea(
+      child: RawColorArea(
         controller: controller,
         builder: (context, area) => const SizedBox.expand(),
         thumbBuilder: (context, area) => const SizedBox(width: 16, height: 16),
@@ -42,12 +42,12 @@ final Map<String, Widget Function(FocusNode node, bool autofocus)> _stops = {
       ),
     ),
   ),
-  'DesignColorSlider': (node, autofocus) => _ColorHost(
+  'RawColorSlider': (node, autofocus) => _ColorHost(
     builder: (controller) => SizedBox(
       width: 200,
-      child: DesignColorSlider(
+      child: RawColorSlider(
         controller: controller,
-        channel: DesignColorChannel.hue,
+        channel: RawColorChannel.hue,
         trackBuilder: (context, channel, color) => const SizedBox(height: 8),
         thumbBuilder: (context, states) =>
             const SizedBox(width: 16, height: 16),
@@ -56,10 +56,10 @@ final Map<String, Widget Function(FocusNode node, bool autofocus)> _stops = {
       ),
     ),
   ),
-  'DesignSplitView': (node, autofocus) => SizedBox(
+  'RawSplitView': (node, autofocus) => SizedBox(
     width: 400,
     height: 200,
-    child: DesignSplitView(
+    child: RawSplitView(
       first: const SizedBox.expand(),
       second: const SizedBox.expand(),
       dividerBuilder: (context, states, axis) => const SizedBox.expand(),
@@ -67,8 +67,8 @@ final Map<String, Widget Function(FocusNode node, bool autofocus)> _stops = {
       autofocus: autofocus,
     ),
   ),
-  'DesignCommandPalette': (node, autofocus) => DesignCommandPalette(
-    commands: [DesignCommand(label: 'New file', onPressed: () {})],
+  'RawCommandPalette': (node, autofocus) => RawCommandPalette(
+    commands: [RawCommand(label: 'New file', onPressed: () {})],
     fieldBuilder: (context, field) => EditableText(
       controller: field.controller,
       focusNode: field.focusNode,
@@ -81,7 +81,7 @@ final Map<String, Widget Function(FocusNode node, bool autofocus)> _stops = {
     autofocus: autofocus,
   ),
   // 0.3.0 values
-  'DesignNumberField': (node, autofocus) => DesignNumberField(
+  'RawNumberField': (node, autofocus) => RawNumberField(
     value: 2,
     onChanged: (value) {},
     fieldBuilder: (context, field) => SizedBox(
@@ -98,7 +98,7 @@ final Map<String, Widget Function(FocusNode node, bool autofocus)> _stops = {
     focusNode: node,
     autofocus: autofocus,
   ),
-  'DesignRating': (node, autofocus) => DesignRating(
+  'RawRating': (node, autofocus) => RawRating(
     value: 3,
     onChanged: (value) {},
     itemBuilder: (context, item) => const SizedBox(width: 24, height: 24),
@@ -158,14 +158,14 @@ class _ScrollHostState extends State<_ScrollHost> {
 class _ColorHost extends StatefulWidget {
   const _ColorHost({required this.builder});
 
-  final Widget Function(DesignColorController controller) builder;
+  final Widget Function(RawColorController controller) builder;
 
   @override
   State<_ColorHost> createState() => _ColorHostState();
 }
 
 class _ColorHostState extends State<_ColorHost> {
-  final _controller = DesignColorController(const Color(0xFF3366FF));
+  final _controller = RawColorController(const Color(0xFF3366FF));
 
   @override
   void dispose() {
@@ -206,20 +206,20 @@ void main() {
 
   test('a menu entry with no onPressed is disabled; a submenu with items '
       'is not; a divider never is', () {
-    expect(DesignMenuEntry(label: 'Paste', onPressed: () {}).enabled, isTrue);
-    expect(const DesignMenuEntry(label: 'Paste').enabled, isFalse);
+    expect(RawMenuEntry(label: 'Paste', onPressed: () {}).enabled, isTrue);
+    expect(const RawMenuEntry(label: 'Paste').enabled, isFalse);
     expect(
-      const DesignMenuEntry(
+      const RawMenuEntry(
         label: 'Open recent',
-        children: [DesignMenuEntry(label: 'a.txt')],
+        children: [RawMenuEntry(label: 'a.txt')],
       ).enabled,
       isTrue,
     );
     expect(
-      const DesignMenuEntry(label: 'Open recent', children: []).enabled,
+      const RawMenuEntry(label: 'Open recent', children: []).enabled,
       isFalse,
     );
-    expect(const DesignMenuEntry.divider().enabled, isFalse);
+    expect(const RawMenuEntry.divider().enabled, isFalse);
   });
 
   testWidgets("a split button's action with no onPressed is listed but "
@@ -228,15 +228,15 @@ void main() {
     await tester.pumpWidget(
       harness(
         Center(
-          child: DesignSplitButton(
+          child: RawSplitButton(
             label: 'Save',
             onPressed: () {},
             actions: [
-              DesignSplitAction(label: 'Save a copy', onPressed: () => saved++),
-              const DesignSplitAction(label: 'Save as', onPressed: null),
+              RawSplitAction(label: 'Save a copy', onPressed: () => saved++),
+              const RawSplitAction(label: 'Save as', onPressed: null),
             ],
             buttonBuilder: (context, part, states, open) =>
-                Text(part == DesignSplitPart.main ? 'Save' : 'More'),
+                Text(part == RawSplitPart.main ? 'Save' : 'More'),
             itemBuilder: (context, action, states) => Text(
               '${action.label}${states.contains(WidgetState.disabled) ? ' (off)' : ''}',
             ),
@@ -259,18 +259,18 @@ void main() {
 
   testWidgets("a calendar's onChanged gives the day chosen; the controller "
       'holds the selection', (tester) async {
-    final controller = DesignCalendarController(
+    final controller = RawCalendarController(
       firstDate: DateTime(2026),
       lastDate: DateTime(2026, 12, 31),
       initialMonth: DateTime(2026, 3),
-      mode: DesignCalendarMode.range,
+      mode: RawCalendarMode.range,
     );
     addTearDown(controller.dispose);
     final days = <DateTime>[];
     await tester.pumpWidget(
       harness(
         Center(
-          child: DesignCalendar(
+          child: RawCalendarDatePicker(
             controller: controller,
             firstWeekday: DateTime.monday,
             onChanged: days.add,

@@ -96,33 +96,30 @@ class _ChoicesState extends State<_Choices> {
           gap: BrutalSpacing.small,
           children: [
             // One radio group: one Tab stop, and the arrows move the choice.
-            DesignRadioGroup<String>(
-              options: _payments.keys.toList(),
-              value: _pay,
-              onChanged: (v) => setState(() => _pay = v),
-              isEnabled: (v) => v != 'invoice',
-              itemBuilder: (context, v, node, select) => BrutalRadio<String>(
-                value: v,
-                groupValue: _pay,
-                focusNode: node,
-                onChanged: select == null ? null : (_) => select(),
-                semanticLabel: _payments[v],
-              ),
-              layoutBuilder: (context, items) => Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  for (final (i, (v, label))
-                      in _payments.entries
-                          .map((e) => (e.key, e.value))
-                          .indexed) ...[
-                    if (i > 0) const SizedBox(height: BrutalSpacing.small),
-                    line(
-                      items[i],
-                      label,
-                      v == 'invoice' ? null : () => setState(() => _pay = v),
-                    ),
+            RadioGroup<String>(
+              groupValue: _pay,
+              onChanged: (v) => setState(() => _pay = v!),
+              child: RadioGroupKeyboardFix<String>(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    for (final (i, (v, label))
+                        in _payments.entries
+                            .map((e) => (e.key, e.value))
+                            .indexed) ...[
+                      if (i > 0) const SizedBox(height: BrutalSpacing.small),
+                      line(
+                        BrutalRadio<String>(
+                          value: v,
+                          enabled: v != 'invoice',
+                          semanticLabel: label,
+                        ),
+                        label,
+                        v == 'invoice' ? null : () => setState(() => _pay = v),
+                      ),
+                    ],
                   ],
-                ],
+                ),
               ),
             ),
           ],
@@ -360,32 +357,26 @@ const _places = {
 
 Widget kitSpecimenRadio() => kitState(
   'standing',
-  (context, chosen, change) => DesignRadioGroup<String>(
-    options: _places.keys.toList(),
-    value: chosen,
-    onChanged: change,
-    itemBuilder: (context, value, node, select) => BrutalRadio<String>(
-      value: value,
-      groupValue: chosen,
-      focusNode: node,
-      onChanged: select == null ? null : (_) => select(),
-      semanticLabel: _places[value],
-    ),
-    layoutBuilder: (context, items) => Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        for (final (i, label) in _places.values.indexed)
-          Padding(
-            padding: const EdgeInsets.only(bottom: BrutalSpacing.small),
-            child: Row(
-              children: [
-                items[i],
-                const SizedBox(width: BrutalSpacing.medium),
-                Expanded(child: Text(label)),
-              ],
+  (context, chosen, change) => RadioGroup<String>(
+    groupValue: chosen,
+    onChanged: (value) => change(value!),
+    child: RadioGroupKeyboardFix<String>(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          for (final MapEntry(key: value, value: label) in _places.entries)
+            Padding(
+              padding: const EdgeInsets.only(bottom: BrutalSpacing.small),
+              child: Row(
+                children: [
+                  BrutalRadio<String>(value: value, semanticLabel: label),
+                  const SizedBox(width: BrutalSpacing.medium),
+                  Expanded(child: Text(label)),
+                ],
+              ),
             ),
-          ),
-      ],
+        ],
+      ),
     ),
   ),
 );

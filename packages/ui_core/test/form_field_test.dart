@@ -6,10 +6,10 @@ import 'package:ui_core/ui_core.dart';
 import 'behaviour_contract.dart';
 import 'behaviour_harness.dart';
 
-late DesignFieldParts _parts;
+late RawInputDecoratorDetails _parts;
 
 // The bare reference painter: label over the control over help or error.
-Widget _layout(BuildContext context, DesignFieldParts parts) {
+Widget _layout(BuildContext context, RawInputDecoratorDetails parts) {
   _parts = parts;
   return Column(
     mainAxisSize: MainAxisSize.min,
@@ -26,11 +26,11 @@ void main() {
     contractText.dispose();
   });
   behaviourContract(
-    'DesignField',
+    'RawInputDecorator',
     build: (c) => Center(
       child: SizedBox(
         width: 240,
-        child: DesignField(
+        child: RawInputDecorator(
           labelText: 'Email',
           helperText: 'Work address',
           errorText: c.error ? 'Enter an email' : null,
@@ -51,7 +51,7 @@ void main() {
       validationResult: SemanticsValidationResult.none,
     ),
     noDisabledState:
-        'DesignField names a control the look builds; the control carries '
+        'RawInputDecorator names a control the look builds; the control carries '
         'its own disabled state',
     error: isSemantics(
       hint: 'Enter an email. Work address',
@@ -74,7 +74,7 @@ void main() {
     await tester.pumpWidget(
       harness(
         Center(
-          child: DesignField(
+          child: RawInputDecorator(
             labelText: 'Email',
             helperText: 'We never share it',
             errorText: 'Enter a valid email',
@@ -106,7 +106,7 @@ void main() {
     await tester.pumpWidget(
       harness(
         Center(
-          child: DesignField(
+          child: RawInputDecorator(
             labelText: 'Name',
             focusNode: node,
             builder: _layout,
@@ -128,7 +128,7 @@ void main() {
     await tester.pumpWidget(
       harness(
         Center(
-          child: DesignField(
+          child: RawInputDecorator(
             labelText: 'Size',
             mergeSemantics: false,
             builder: _layout,
@@ -136,7 +136,7 @@ void main() {
               mainAxisSize: MainAxisSize.min,
               children: [
                 for (final size in ['S', 'M'])
-                  DesignPressable(
+                  RawButton(
                     onPressed: () {},
                     semanticLabel: size,
                     excludeSemantics: true,
@@ -184,7 +184,7 @@ void main() {
       return count;
     }
 
-    Widget part(String label, VoidCallback onPressed) => DesignPressable(
+    Widget part(String label, VoidCallback onPressed) => RawButton(
       onPressed: onPressed,
       semanticLabel: label,
       excludeSemantics: true,
@@ -198,7 +198,7 @@ void main() {
       await tester.pumpWidget(
         harness(
           Center(
-            child: DesignField(
+            child: RawInputDecorator(
               labelText: 'Priority',
               builder: _layout,
               child: Row(
@@ -228,7 +228,7 @@ void main() {
         harness(
           Center(
             child: StatefulBuilder(
-              builder: (context, setState) => DesignField(
+              builder: (context, setState) => RawInputDecorator(
                 labelText: 'Estimate',
                 builder: _layout,
                 child: Row(
@@ -273,7 +273,7 @@ void main() {
         await tester.pumpWidget(
           harness(
             Center(
-              child: DesignField(
+              child: RawInputDecorator(
                 labelText: 'Estimate',
                 helperText: 'In minutes',
                 required: true,
@@ -332,10 +332,10 @@ void main() {
       await tester.pumpWidget(
         harness(
           Center(
-            child: DesignField(
+            child: RawInputDecorator(
               labelText: 'Estimate',
               builder: _layout,
-              child: DesignNumberField(
+              child: RawNumberField(
                 value: 45,
                 semanticLabel: 'Estimate',
                 onChanged: (_) {},
@@ -386,10 +386,10 @@ void main() {
       // Its node spans the field but its buttons, so no tap node lies over
       // a button.
       final rect = globalRect(
-        tester.getSemantics(find.byType(DesignNumberField)),
+        tester.getSemantics(find.byType(RawNumberField)),
         tester.view.devicePixelRatio,
       );
-      final whole = tester.getRect(find.byType(DesignNumberField));
+      final whole = tester.getRect(find.byType(RawNumberField));
       for (final (a, b) in [
         (rect.left, tester.getRect(find.byKey(const ValueKey('-'))).right),
         (rect.top, whole.top),
@@ -407,13 +407,13 @@ void main() {
       await tester.pumpWidget(
         harness(
           Center(
-            child: DesignField(
+            child: RawInputDecorator(
               labelText: 'Estimate',
               helperText: 'In minutes',
               errorText: 'Too long',
               required: true,
               builder: _layout,
-              child: DesignNumberField(
+              child: RawNumberField(
                 value: 45,
                 semanticLabel: 'Minutes',
                 onChanged: (_) {},
@@ -432,7 +432,7 @@ void main() {
         ),
       );
       final data = tester
-          .getSemantics(find.byType(DesignNumberField))
+          .getSemantics(find.byType(RawNumberField))
           .getSemanticsData();
       expect(data.label, 'Estimate, required');
       expect(data.hint, 'Too long. In minutes');
@@ -466,7 +466,7 @@ void main() {
       await tester.pumpWidget(
         harness(
           Center(
-            child: DesignField(
+            child: RawInputDecorator(
               labelText: 'Search',
               helperText: 'Titles and authors',
               required: true,
@@ -513,7 +513,7 @@ void main() {
       await tester.pumpWidget(
         harness(
           Center(
-            child: DesignField(
+            child: RawInputDecorator(
               labelText: 'Size',
               builder: _layout,
               child: Semantics(
@@ -547,7 +547,7 @@ void main() {
         harness(
           Center(
             child: StatefulBuilder(
-              builder: (context, setState) => DesignField(
+              builder: (context, setState) => RawInputDecorator(
                 labelText: 'Wi-Fi',
                 builder: _layout,
                 child: Semantics(
@@ -579,7 +579,7 @@ void main() {
       await tester.pumpWidget(
         harness(
           Center(
-            child: DesignField(
+            child: RawInputDecorator(
               labelText: 'Priority',
               mergeSemantics: true,
               builder: _layout,
@@ -623,7 +623,7 @@ void main() {
       initialValue: '',
       validator: (value) => check(value ?? ''),
       onSaved: (value) => saved.add('$label=$value'),
-      builder: (state) => DesignField(
+      builder: (state) => RawInputDecorator(
         labelText: label,
         errorText: state.errorText,
         focusNode: node,

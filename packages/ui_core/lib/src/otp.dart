@@ -6,7 +6,7 @@
 /// focus from box to box. Typing fills the first empty box; anything the
 /// code does not allow is dropped; a paste longer than the code is cut. A
 /// long press or a secondary click offers Paste, in the menu the look draws
-/// ([DesignOtpField.contextMenuBuilder]).
+/// ([RawOtpField.contextMenuBuilder]).
 library;
 
 import 'package:flutter/semantics.dart' show SemanticsValidationResult;
@@ -20,14 +20,14 @@ import 'package:flutter/widgets.dart';
 /// and disposes it; a widget it is given to only listens to it.
 ///
 /// ```dart
-/// DesignOtpController(length: 6)
+/// RawOtpController(length: 6)
 /// ```
-class DesignOtpController extends ChangeNotifier {
+class RawOtpController extends ChangeNotifier {
   /// A code of [length] characters, starting at [initialValue] (filtered by
   /// [allowed]). Given [text], the code lives in that input instead (a form's
   /// own controller): its text is the code, filtered the same way, and it is
   /// the caller's to dispose.
-  DesignOtpController({
+  RawOtpController({
     required this.length,
     String initialValue = '',
     RegExp? allowed,
@@ -60,7 +60,7 @@ class DesignOtpController extends ChangeNotifier {
   /// One character the code takes (a digit, by default).
   final RegExp allowed;
 
-  /// The input under the boxes; [DesignOtpField] attaches it.
+  /// The input under the boxes; [RawOtpField] attaches it.
   late final TextEditingController text;
 
   String _last = '';
@@ -132,11 +132,11 @@ class DesignOtpController extends ChangeNotifier {
   }
 }
 
-/// One box, as [DesignOtpField.slotBuilder] gets it.
+/// One box, as [RawOtpField.slotBuilder] gets it.
 @immutable
-class DesignOtpSlot {
+class RawOtpSlot {
   /// A box; the field makes these.
-  const DesignOtpSlot({
+  const RawOtpSlot({
     required this.index,
     required this.character,
     required this.active,
@@ -173,13 +173,13 @@ class DesignOtpSlot {
 }
 
 /// Paints one box.
-typedef DesignOtpSlotBuilder = Widget Function(
+typedef RawOtpSlotBuilder = Widget Function(
   BuildContext context,
-  DesignOtpSlot slot,
+  RawOtpSlot slot,
 );
 
 /// Lays out the boxes (a row; a look may put a dash in the middle).
-typedef DesignOtpLayoutBuilder = Widget Function(
+typedef RawOtpLayoutBuilder = Widget Function(
   BuildContext context,
   List<Widget> slots,
 );
@@ -190,7 +190,7 @@ typedef DesignOtpLayoutBuilder = Widget Function(
 /// its own. [items] is the Paste item (its label from its
 /// [ContextMenuButtonType], in the app's language); pressing it pastes and
 /// closes the menu.
-typedef DesignOtpContextMenuBuilder = Widget Function(
+typedef RawOtpContextMenuBuilder = Widget Function(
   BuildContext context,
   TextSelectionToolbarAnchors anchors,
   List<ContextMenuButtonItem> items,
@@ -199,11 +199,11 @@ typedef DesignOtpContextMenuBuilder = Widget Function(
 /// A one-time code drawn as boxes over one input.
 ///
 /// ```dart
-/// DesignOtpField(length: 4, slotBuilder: (context, slot) => Text(slot.character))
+/// RawOtpField(length: 4, slotBuilder: (context, slot) => Text(slot.character))
 /// ```
-class DesignOtpField extends StatefulWidget {
+class RawOtpField extends StatefulWidget {
   /// A code field of [length] boxes.
-  const DesignOtpField({
+  const RawOtpField({
     super.key,
     required this.slotBuilder,
     this.length = 6,
@@ -228,14 +228,14 @@ class DesignOtpField extends StatefulWidget {
   });
 
   /// Paints one box.
-  final DesignOtpSlotBuilder slotBuilder;
+  final RawOtpSlotBuilder slotBuilder;
 
   /// How many boxes; ignored when [controller] is given (its length wins).
   final int length;
 
   /// Holds the code, when the caller does. The caller disposes it; null:
   /// the field makes its own and disposes it.
-  final DesignOtpController? controller;
+  final RawOtpController? controller;
 
   /// The input's focus.
   ///
@@ -243,7 +243,7 @@ class DesignOtpField extends StatefulWidget {
   final FocusNode? focusNode;
 
   /// Lays out the boxes; null puts them in a row.
-  final DesignOtpLayoutBuilder? layoutBuilder;
+  final RawOtpLayoutBuilder? layoutBuilder;
 
   /// Called with the code as it changes.
   final ValueChanged<String>? onChanged;
@@ -275,7 +275,7 @@ class DesignOtpField extends StatefulWidget {
   /// maximum length, which the platform reads out in the user's language.
   /// Null gives the input no name of its own, for a caller whose own
   /// semantics (a form field's) name it; so, unlike the other behaviours'
-  /// words, its default is English here rather than `DesignLocalizations`'.
+  /// words, its default is English here rather than `RawWidgetsLocalizations`'.
   final String? semanticLabel;
 
   /// The keyboard's action key; null: the platform's for one line (done).
@@ -287,7 +287,7 @@ class DesignOtpField extends StatefulWidget {
 
   /// Draws the menu a long press or a secondary click opens, offering Paste
   /// while the clipboard holds text; null offers none.
-  final DesignOtpContextMenuBuilder? contextMenuBuilder;
+  final RawOtpContextMenuBuilder? contextMenuBuilder;
 
   /// Called with the code when the action key is pressed.
   final ValueChanged<String>? onSubmitted;
@@ -301,21 +301,18 @@ class DesignOtpField extends StatefulWidget {
   final Iterable<String> autofillHints;
 
   @override
-  State<DesignOtpField> createState() => _DesignOtpFieldState();
+  State<RawOtpField> createState() => _DesignOtpFieldState();
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
       ..add(
-        ObjectFlagProperty<DesignOtpSlotBuilder>.has(
-          'slotBuilder',
-          slotBuilder,
-        ),
+        ObjectFlagProperty<RawOtpSlotBuilder>.has('slotBuilder', slotBuilder),
       )
       ..add(IntProperty('length', length, defaultValue: 6))
       ..add(
-        DiagnosticsProperty<DesignOtpController>(
+        DiagnosticsProperty<RawOtpController>(
           'controller',
           controller,
           defaultValue: null,
@@ -329,7 +326,7 @@ class DesignOtpField extends StatefulWidget {
         ),
       )
       ..add(
-        ObjectFlagProperty<DesignOtpLayoutBuilder>.has(
+        ObjectFlagProperty<RawOtpLayoutBuilder>.has(
           'layoutBuilder',
           layoutBuilder,
         ),
@@ -410,7 +407,7 @@ class DesignOtpField extends StatefulWidget {
         ),
       )
       ..add(
-        ObjectFlagProperty<DesignOtpContextMenuBuilder>.has(
+        ObjectFlagProperty<RawOtpContextMenuBuilder>.has(
           'contextMenuBuilder',
           contextMenuBuilder,
         ),
@@ -438,16 +435,15 @@ class DesignOtpField extends StatefulWidget {
   }
 }
 
-class _DesignOtpFieldState extends State<DesignOtpField> {
-  DesignOtpController? _own;
+class _DesignOtpFieldState extends State<RawOtpField> {
+  RawOtpController? _own;
   FocusNode? _ownFocus;
   bool _wasComplete = false;
   final ContextMenuController _menu = ContextMenuController();
   final GlobalKey<EditableTextState> _editable = GlobalKey<EditableTextState>();
 
-  DesignOtpController get _controller =>
-      widget.controller ??
-      (_own ??= DesignOtpController(length: widget.length));
+  RawOtpController get _controller =>
+      widget.controller ?? (_own ??= RawOtpController(length: widget.length));
 
   FocusNode get _focus =>
       widget.focusNode ?? (_ownFocus ??= FocusNode(debugLabel: 'DesignOtp'));
@@ -461,7 +457,7 @@ class _DesignOtpFieldState extends State<DesignOtpField> {
   }
 
   @override
-  void didUpdateWidget(DesignOtpField oldWidget) {
+  void didUpdateWidget(RawOtpField oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.controller != widget.controller) {
       (oldWidget.controller ?? _own)?.removeListener(_changed);
@@ -539,7 +535,7 @@ class _DesignOtpFieldState extends State<DesignOtpField> {
       for (var i = 0; i < c.length; i++)
         widget.slotBuilder(
           context,
-          DesignOtpSlot(
+          RawOtpSlot(
             index: i,
             character: c.charAt(i),
             active: i == c.activeIndex && widget.enabled,

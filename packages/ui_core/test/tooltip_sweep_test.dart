@@ -3,6 +3,9 @@
 @Tags(['sweep'])
 library;
 
+// DesignTooltip is deprecated in the package, which keeps its tests for its
+// one last release.
+// ignore_for_file: deprecated_member_use_from_same_package
 import 'package:flutter/gestures.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';

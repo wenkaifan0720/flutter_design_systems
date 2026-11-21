@@ -5,8 +5,8 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ui_core/ui_core.dart';
 
-DesignLocalizations _l(String language, [String? country]) =>
-    DesignLocalizations.forLocale(Locale(language, country));
+RawWidgetsLocalizations _l(String language, [String? country]) =>
+    RawWidgetsLocalizations.forLocale(Locale(language, country));
 
 const _nbsp = ' ';
 const _narrow = ' ';
@@ -77,7 +77,7 @@ void main() {
 
   group('dates and times', () {
     final at = DateTime(2026, 11, 16, 15, 5, 9);
-    const time = DesignTimeOfDay(hour: 15, minute: 5, second: 9);
+    const time = RawTimeOfDay(hour: 15, minute: 5, second: 9);
 
     test('a tick\'s year, month and day', () {
       expect(_l('en').formatYear(at), '2026');
@@ -105,7 +105,7 @@ void main() {
         '3:05:09${_narrow}PM',
       );
       expect(
-        _l('en').formatTimeOfDay(const DesignTimeOfDay(hour: 0, minute: 0)),
+        _l('en').formatTimeOfDay(const RawTimeOfDay(hour: 0, minute: 0)),
         '12:00${_narrow}AM',
       );
     });

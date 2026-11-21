@@ -441,7 +441,7 @@ class BrutalListTile extends StatelessWidget {
         child: body({if (!enabled) WidgetState.disabled}),
       );
     }
-    return DesignPressable(
+    return RawButton(
       onPressed: enabled ? onTap : null,
       selected: selected,
       semanticSelected: selected ? true : null,

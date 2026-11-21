@@ -1,3 +1,169 @@
+## 0.4.0
+
+- **Renamed:** the behaviours and the parts they are built from take `Raw` names, as Flutter's own unstyled widgets do (`RawButton`, `RawPopover`, `RawCombobox`, `RawDataTable`), 148 names in all (the table below). Each old name stays through 0.4 as a deprecated typedef of its new one, so code that names it still builds, and `dart fix --apply` renames it (`lib/fix_data.yaml`) where a file imports it from ui_core or from a published look. What `dart fix` cannot reach is renamed by hand: a name in a `show` or `hide` list, in a string (a test that finds a widget by its type's name), or in a file that imports it through a library of its own that re-exports it. `DesignValueHandle` and `DesignInputGroup` keep their names until they change shape.
+- **Deprecated:** `DesignRadioGroup`. Use Flutter's `RadioGroup` with a `RawRadio` per radio, its face drawn in `RawRadio.builder` on a box that is hit all over (a press between a face's painted parts otherwise misses the radio), and `RadioGroupKeyboardFix` inside the group, round the radios. The fix makes two keys work as Flutter's own fixes make them, until a Flutter release that ui_core needs has them: Tab stops on the group when the chosen radio is turned off ([flutter#197073](https://github.com/flutter/flutter/pull/197073)), and Left and Right follow right-to-left text. `dart fix` can't make this move: the group's shape differs.
+- **Deprecated:** `DesignTooltip`. Use Flutter's `RawTooltip`, with `RawTooltipFocusFix` round its child, which shows it on the keyboard's focus as a hover does ([flutter#196554](https://github.com/flutter/flutter/issues/196554)) and hides it on Escape, as Flutter 3.47's `RawTooltip` does not, and `RawTooltipPlacement` round it, which places the tip as a popover is placed and tells it which side it took (`RawTooltipPlacement.sideOf`), for a tail. Drive the tip's spring or fade from the animation `tooltipBuilder` gets. Put the `RawTooltip` in a `MergeSemantics`: `DesignTooltip` merged its message into the control's semantics node, and `RawTooltip` does not, so without it a screen reader hears the tip apart from the control. `dart fix` can't make this move either.
+- A toggle button built with `RawButton` reads as a button that is selected, as `IconButton(isSelected:)` does: give it `semanticSelected`. `toggled` and `checked` are for a switch and a checkbox, which are not buttons. A `RawSegmentedButton` that allows many choices gives its items `semanticSelected`. Before, it gave them `toggled`, and a screen reader heard switches.
+- In a scroll view, a mouse press shows as pressed at once. A touch or a stylus still waits `kPressTimeout`, in case it starts a scroll. A mouse waits too when the scroll view drags with a mouse (its `ScrollBehavior.dragDevices`).
+- `DesignRadioGroup`, `RawSegmentedButton` (and so a segmented control) and `RawTabBar` answer the keys alike, through one implementation inside the package: one Tab stop on the chosen item (else the first enabled one), arrows that wrap and pass over items turned off, mirrored right to left. A `RawSegmentedButton` of one choice now moves and chooses with every arrow, as a radio group does; before, the arrows across it moved without choosing.
+- `RawRovingFocusIntent` (with `RawRovingFocusMove`) is the move an arrow, Home or End makes in those groups. An `Actions` round a group with an action for it runs in place of the group's own, which is `Action.overridable`.
+- A `RawBottomSheetRoute`'s barrier says "Dismiss", and a `RawSideSheetRoute`'s "Close sheet", only over the part of the screen the sheet leaves (above the sheet and the keyboard, beside a side sheet), as Material's modal bottom sheet does. Before, a screen reader outlined the whole window.
+- A drag adds `WidgetState.dragged` beside `WidgetState.pressed` to the states a look draws for, as Flutter's `Slider` and `Scrollbar` do: a `DesignValueHandle` (and so a range slider's thumbs, a split view's divider and a colour slider), a `RawColorArea`'s thumb, a `RawScrollArea`'s thumb and a `RawPicker`'s column. A `RawBottomSheetDragHandle`'s states take it while a finger drags the sheet, as Material's sheet's drag handle does.
+- `DesignValueHandle.statesController`: a caller's `WidgetStatesController` watches and drives a handle's states, as `RawButton.statesController` does a pressable's.
+
+### The renames
+
+| 0.3 name | 0.4 name |
+|---|---|
+| `DefaultDesignLocalizations` | `DefaultRawWidgetsLocalizations` |
+| `DesignAnchoredOverlay` | `RawPopover` |
+| `DesignBottomSheetBuilder` | `RawBottomSheetBuilder` |
+| `DesignBottomSheetController` | `RawBottomSheetController` |
+| `DesignBottomSheetDetails` | `RawBottomSheetDetails` |
+| `DesignBottomSheetDragHandle` | `RawBottomSheetDragHandle` |
+| `DesignBottomSheetRoute` | `RawBottomSheetRoute` |
+| `DesignCalendar` | `RawCalendarDatePicker` |
+| `DesignCalendarController` | `RawCalendarController` |
+| `DesignCalendarDay` | `RawCalendarDayDetails` |
+| `DesignCalendarDayBuilder` | `RawCalendarDayBuilder` |
+| `DesignCalendarHeader` | `RawCalendarHeaderDetails` |
+| `DesignCalendarMode` | `RawCalendarMode` |
+| `DesignCarousel` | `RawCarousel` |
+| `DesignCarouselControls` | `RawCarouselDetails` |
+| `DesignColorArea` | `RawColorArea` |
+| `DesignColorAreaDetails` | `RawColorAreaDetails` |
+| `DesignColorChannel` | `RawColorChannel` |
+| `DesignColorController` | `RawColorController` |
+| `DesignColorPicker` | `RawColorPicker` |
+| `DesignColorSlider` | `RawColorSlider` |
+| `DesignCombobox` | `RawCombobox` |
+| `DesignCommand` | `RawCommand` |
+| `DesignCommandPalette` | `RawCommandPalette` |
+| `DesignCommandShortcut` | `RawCommandShortcut` |
+| `DesignContextMenu` | `RawContextMenu` |
+| `DesignDataTable` | `RawDataTable` |
+| `DesignDateField` | `RawDateField` |
+| `DesignDateFieldFrameBuilder` | `RawDateFieldFrameBuilder` |
+| `DesignDateLiteralBuilder` | `RawDateLiteralBuilder` |
+| `DesignDateRange` | `RawDateRange` |
+| `DesignDateSegmentBuilder` | `RawDateSegmentBuilder` |
+| `DesignDateSegmentDetails` | `RawDateSegmentDetails` |
+| `DesignDateSegmentType` | `RawDateSegmentType` |
+| `DesignDialog` | `RawAlertDialog` |
+| `DesignDialogAction` | `RawDialogAction` |
+| `DesignDialogActionBuilder` | `RawDialogActionBuilder` |
+| `DesignDialogActionDetails` | `RawDialogActionDetails` |
+| `DesignDialogFrameDetails` | `RawAlertDialogFrameDetails` |
+| `DesignDialogPartBuilder` | `RawAlertDialogPartBuilder` |
+| `DesignDividerBuilder` | `RawDividerBuilder` |
+| `DesignField` | `RawInputDecorator` |
+| `DesignFieldBuilder` | `RawInputDecoratorBuilder` |
+| `DesignFieldParts` | `RawInputDecoratorDetails` |
+| `DesignListSurfaceBuilder` | `RawOptionsSurfaceBuilder` |
+| `DesignLocalizations` | `RawWidgetsLocalizations` |
+| `DesignMenuBar` | `RawMenuBar` |
+| `DesignMenuEntry` | `RawMenuEntry` |
+| `DesignMenuItemBuilder` | `RawMenuItemBuilder` |
+| `DesignMenuLevel` | `RawMenuLevel` |
+| `DesignMenuSurfaceBuilder` | `RawMenuBarOverlayBuilder` |
+| `DesignNumberField` | `RawNumberField` |
+| `DesignNumberFieldBuilder` | `RawNumberFieldBuilder` |
+| `DesignNumberFieldButtonBuilder` | `RawNumberFieldButtonBuilder` |
+| `DesignNumberFieldButtonDetails` | `RawNumberFieldButtonDetails` |
+| `DesignNumberFieldDetails` | `RawNumberFieldDetails` |
+| `DesignNumberFieldLayoutBuilder` | `RawNumberFieldLayoutBuilder` |
+| `DesignOptionBuilder` | `RawOptionBuilder` |
+| `DesignOtpContextMenuBuilder` | `RawOtpContextMenuBuilder` |
+| `DesignOtpController` | `RawOtpController` |
+| `DesignOtpField` | `RawOtpField` |
+| `DesignOtpLayoutBuilder` | `RawOtpLayoutBuilder` |
+| `DesignOtpSlot` | `RawOtpSlot` |
+| `DesignOtpSlotBuilder` | `RawOtpSlotBuilder` |
+| `DesignOverlayAlign` | `RawPopoverAlign` |
+| `DesignOverlayInfo` | `RawPopoverInfo` |
+| `DesignOverlayPadding` | `RawPopoverPadding` |
+| `DesignOverlayPlacement` | `RawPopoverPlacement` |
+| `DesignOverlaySide` | `RawPopoverSide` |
+| `DesignOverlaySurfaceBuilder` | `RawPopoverOverlayBuilder` |
+| `DesignOverlayTrigger` | `RawPopoverTrigger` |
+| `DesignPaletteLayoutBuilder` | `RawPaletteLayoutBuilder` |
+| `DesignPasswordController` | `RawPasswordController` |
+| `DesignPasswordDetails` | `RawPasswordDetails` |
+| `DesignPasswordReveal` | `RawPasswordReveal` |
+| `DesignPressable` | `RawButton` |
+| `DesignPressableBuilder` | `RawButtonBuilder` |
+| `DesignPressableState` | `RawButtonState` |
+| `DesignPullToRefresh` | `RawRefreshIndicator` |
+| `DesignPullToRefreshState` | `RawRefreshIndicatorState` |
+| `DesignRangeSlider` | `RawRangeSlider` |
+| `DesignRangeTrack` | `RawRangeSliderTrackDetails` |
+| `DesignRangeValues` | `RawRangeValues` |
+| `DesignRating` | `RawRating` |
+| `DesignRatingItemBuilder` | `RawRatingItemBuilder` |
+| `DesignRatingItemDetails` | `RawRatingItemDetails` |
+| `DesignRatingLayoutBuilder` | `RawRatingLayoutBuilder` |
+| `DesignRefreshDetails` | `RawRefreshIndicatorDetails` |
+| `DesignRefreshMode` | `RawRefreshIndicatorMode` |
+| `DesignReorderItem` | `RawReorderItemDetails` |
+| `DesignReorderableList` | `RawReorderableList` |
+| `DesignScrollArea` | `RawScrollArea` |
+| `DesignScrollThumb` | `RawScrollbarThumbDetails` |
+| `DesignScrollbarBuilder` | `RawScrollbarThumbBuilder` |
+| `DesignSearchError` | `RawSearchError` |
+| `DesignSearchErrorBuilder` | `RawSearchErrorBuilder` |
+| `DesignSelection` | `RawDataTableSelection` |
+| `DesignSheetEdge` | `RawSheetEdge` |
+| `DesignSheetInfo` | `RawSideSheetDetails` |
+| `DesignSheetPageRoute` | `RawSheetRoute` |
+| `DesignSideSheetRoute` | `RawSideSheetRoute` |
+| `DesignSortDirection` | `RawSortDirection` |
+| `DesignSplitAction` | `RawSplitAction` |
+| `DesignSplitButton` | `RawSplitButton` |
+| `DesignSplitPart` | `RawSplitPart` |
+| `DesignSplitView` | `RawSplitView` |
+| `DesignSwipeAction` | `RawSwipeAction` |
+| `DesignSwipeActionBuilder` | `RawSwipeActionBuilder` |
+| `DesignSwipeActionDetails` | `RawSwipeActionDetails` |
+| `DesignSwipeActions` | `RawSwipeActions` |
+| `DesignSwipeActionsController` | `RawSwipeActionsController` |
+| `DesignSwipeBackPageTransitionsBuilder` | `SwipeBackPageTransitionsBuilder` |
+| `DesignTab` | `RawTab` |
+| `DesignTabBar` | `RawTabBar` |
+| `DesignTabBuilder` | `RawTabBuilder` |
+| `DesignTabController` | `RawTabController` |
+| `DesignTabDetails` | `RawTabDetails` |
+| `DesignTabIndicatorBuilder` | `RawTabIndicatorBuilder` |
+| `DesignTabIndicatorDetails` | `RawTabIndicatorDetails` |
+| `DesignTabView` | `RawTabBarView` |
+| `DesignTableColumn` | `RawDataColumn` |
+| `DesignTableController` | `RawDataTableController` |
+| `DesignTableHeaderBuilder` | `RawDataTableHeaderBuilder` |
+| `DesignTableRow` | `RawDataRowDetails` |
+| `DesignTagBuilder` | `RawTagBuilder` |
+| `DesignTagDetails` | `RawTagDetails` |
+| `DesignTagInput` | `RawTagInput` |
+| `DesignTagLayoutBuilder` | `RawTagLayoutBuilder` |
+| `DesignTapTarget` | `TapTargetPadding` |
+| `DesignTimeField` | `RawTimeField` |
+| `DesignTimeOfDay` | `RawTimeOfDay` |
+| `DesignToast` | `RawToast` |
+| `DesignToastBuilder` | `RawToastBuilder` |
+| `DesignToastClosedReason` | `RawToastClosedReason` |
+| `DesignToastDetails` | `RawToastDetails` |
+| `DesignToastHandle` | `RawToastController` |
+| `DesignToastStackBuilder` | `RawToastStackBuilder` |
+| `DesignToaster` | `RawToaster` |
+| `DesignToasterState` | `RawToasterState` |
+| `DesignToggleGroup` | `RawSegmentedButton` |
+| `DesignToggleItemBuilder` | `RawSegmentBuilder` |
+| `DesignWheelColumn` | `RawPickerColumn` |
+| `DesignWheelColumnBuilder` | `RawPickerColumnBuilder` |
+| `DesignWheelColumnDetails` | `RawPickerColumnDetails` |
+| `DesignWheelItemBuilder` | `RawPickerItemBuilder` |
+| `DesignWheelItemDetails` | `RawPickerItemDetails` |
+| `DesignWheelPicker` | `RawPicker` |
+| `RenderDesignTapTarget` | `RenderTapTargetPadding` |
+
 ## 0.3.4
 
 - A checkbox, switch or radio built with `DesignPressable` exposes its checkable role by default. An ordinary button keeps its button role.

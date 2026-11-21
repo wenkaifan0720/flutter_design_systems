@@ -21,28 +21,26 @@ const _rowKey = ValueKey('row');
 final List<String> _ran = [];
 final Map<String, Set<WidgetState>> _states = {};
 
-List<DesignMenuEntry> _entries() => [
-  DesignMenuEntry(label: 'Copy', onPressed: () => _ran.add('copy')),
-  DesignMenuEntry(
+List<RawMenuEntry> _entries() => [
+  RawMenuEntry(label: 'Copy', onPressed: () => _ran.add('copy')),
+  RawMenuEntry(
     label: 'Share',
-    children: [
-      DesignMenuEntry(label: 'Mail', onPressed: () => _ran.add('mail')),
-    ],
+    children: [RawMenuEntry(label: 'Mail', onPressed: () => _ran.add('mail'))],
   ),
-  const DesignMenuEntry.divider(),
-  DesignMenuEntry(label: 'Delete', onPressed: () => _ran.add('delete')),
+  const RawMenuEntry.divider(),
+  RawMenuEntry(label: 'Delete', onPressed: () => _ran.add('delete')),
 ];
 
 // The reference painter: a region 300 by 200, a file's tile, with a
 // focusable name in it whose words the region's node reads.
 Widget _menu({
-  List<DesignMenuEntry>? entries,
+  List<RawMenuEntry>? entries,
   MenuController? controller,
   ValueChanged<bool>? onOpenChanged,
   bool enableFeedback = true,
   String label = 'outer',
   Widget? inside,
-}) => DesignContextMenu(
+}) => RawContextMenu(
   menuChildren: entries ?? _entries(),
   controller: controller,
   onOpenChanged: onOpenChanged,
@@ -214,7 +212,7 @@ void main() {
                 child: _menu(
                   label: 'inner',
                   entries: [
-                    DesignMenuEntry(
+                    RawMenuEntry(
                       label: 'Rename',
                       onPressed: () => _ran.add('rename'),
                     ),
@@ -531,7 +529,7 @@ void main() {
   });
 
   behaviourContract(
-    'DesignContextMenu',
+    'RawContextMenu',
     // Disabled: no rows, over a row that is disabled too (the region itself
     // never takes the focus; its row does).
     build: (c) => Align(

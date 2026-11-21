@@ -51,13 +51,13 @@ Color _colorOf(BrutalColors c, List<BrutalSeries> series, int i) =>
     series[i].color ?? _palette(c)[i % 5];
 
 // A value in the reader's digits: whole, or to one decimal.
-String _number(DesignLocalizations numbers, double v) =>
+String _number(RawWidgetsLocalizations numbers, double v) =>
     numbers.formatDecimal(v, fractionDigits: v == v.roundToDouble() ? 0 : 1);
 
 String _readOut(
   List<String> labels,
   List<BrutalSeries> series,
-  DesignLocalizations numbers,
+  RawWidgetsLocalizations numbers,
 ) => [
   for (final s in series)
     '${s.label}: ${[for (final (i, v) in s.values.indexed) '${i < labels.length ? labels[i] : i + 1} ${_number(numbers, v)}'].join(', ')}',
@@ -172,7 +172,7 @@ abstract class _AxesPainter extends CustomPainter {
   final Color words;
 
   /// The reader's numbers, for the ticks' labels.
-  final DesignLocalizations numbers;
+  final RawWidgetsLocalizations numbers;
 
   // The value axis: from 0 to a whole tick over the largest value, about
   // four steps of 1, 2 or 5 × 10ⁿ (ui_core's nice scale), mapped 0 to 1;
@@ -458,7 +458,7 @@ abstract class _AxesChart extends StatelessWidget {
     BrutalThemeData theme,
     DesignStyleOf layered,
     TextDirection direction,
-    DesignLocalizations numbers, [
+    RawWidgetsLocalizations numbers, [
     TextScaler textScaler = TextScaler.noScaling,
   ]);
 
@@ -469,7 +469,7 @@ abstract class _AxesChart extends StatelessWidget {
     return _Framed(
       layered: layered,
       semanticLabel: semanticLabel,
-      readOut: _readOut(labels, series, DesignLocalizations.of(context)),
+      readOut: _readOut(labels, series, RawWidgetsLocalizations.of(context)),
       legend: [
         for (final (i, s) in series.indexed)
           (s.label, _colorOf(theme.colors, series, i)),
@@ -481,7 +481,7 @@ abstract class _AxesChart extends StatelessWidget {
             theme,
             layered,
             Directionality.of(context),
-            DesignLocalizations.of(context),
+            RawWidgetsLocalizations.of(context),
             MediaQuery.textScalerOf(context),
           ),
           size: Size.infinite,
@@ -520,7 +520,7 @@ class BrutalLineChart extends _AxesChart {
     BrutalThemeData theme,
     DesignStyleOf layered,
     TextDirection direction,
-    DesignLocalizations numbers, [
+    RawWidgetsLocalizations numbers, [
     TextScaler textScaler = TextScaler.noScaling,
   ]) => _LinePainter(
     colors: theme.colors,
@@ -558,7 +558,7 @@ class BrutalAreaChart extends _AxesChart {
     BrutalThemeData theme,
     DesignStyleOf layered,
     TextDirection direction,
-    DesignLocalizations numbers, [
+    RawWidgetsLocalizations numbers, [
     TextScaler textScaler = TextScaler.noScaling,
   ]) => _LinePainter(
     colors: theme.colors,
@@ -596,7 +596,7 @@ class BrutalBarChart extends _AxesChart {
     BrutalThemeData theme,
     DesignStyleOf layered,
     TextDirection direction,
-    DesignLocalizations numbers, [
+    RawWidgetsLocalizations numbers, [
     TextScaler textScaler = TextScaler.noScaling,
   ]) => _BarPainter(
     colors: theme.colors,
@@ -867,8 +867,8 @@ class BrutalSparkline extends StatelessWidget {
       label: semanticLabel,
       value: values.isEmpty
           ? null
-          : 'from ${_number(DesignLocalizations.of(context), values.first)} '
-                'to ${_number(DesignLocalizations.of(context), values.last)}',
+          : 'from ${_number(RawWidgetsLocalizations.of(context), values.first)} '
+                'to ${_number(RawWidgetsLocalizations.of(context), values.last)}',
       excludeSemantics: true,
       child: SizedBox(
         width: width,

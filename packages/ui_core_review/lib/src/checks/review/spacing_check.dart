@@ -1,4 +1,4 @@
-part of '../alignment.dart';
+part of '../../review.dart';
 
 /// Whether a screen keeps its spacing: one page margin that its floating
 /// bars and sheets start on too, a shape inside a shape set in by one
@@ -54,6 +54,9 @@ part of '../alignment.dart';
 /// );
 /// report.verify();
 /// ```
+///
+/// It reads layout boxes, and the drawn pixels where only they show it (a
+/// painted corner's radius), so it takes the tester's `runAsync`.
 @immutable
 class DesignSpacingCheck {
   /// A check for [look].
@@ -265,7 +268,7 @@ class DesignSpacingCheck {
         Offset.zero & s.box.size,
       );
       final radii = _readCorners(px, local);
-      return radii == null ? null : _Shape(s.box, s.rect, radii, read: true);
+      return radii == null ? null : _ReadShape(s.box, s.rect, radii);
     }
 
     for (final inner in kept) {
@@ -595,86 +598,6 @@ class DesignSpacingCheck {
   }
 }
 
-typedef _Radii = ({double tl, double tr, double bl, double br});
-
-// A box whose outline the check knows: its rect and its corners' radii,
-// null until read from its pixels.
-class _Shape {
-  _Shape(this.box, this.rect, this.radii, {this.read = false});
-
-  final RenderBox box;
-  final Rect rect;
-  final _Radii? radii;
-
-  // Whether [radii] were read from pixels.
-  final bool read;
-
-  static _Shape? of(RenderBox box) {
-    final size = box.size;
-    ({double tl, double tr, double bl, double br})? radii;
-    ({double tl, double tr, double bl, double br}) fromRadius(
-      BorderRadiusGeometry r,
-    ) {
-      final b = r.resolve(TextDirection.ltr);
-      double cap(Radius v) =>
-          math.min(math.min(v.x, v.y), size.shortestSide / 2);
-      return (
-        tl: cap(b.topLeft),
-        tr: cap(b.topRight),
-        bl: cap(b.bottomLeft),
-        br: cap(b.bottomRight),
-      );
-    }
-
-    ({double tl, double tr, double bl, double br})? fromShape(
-      ShapeBorder shape,
-    ) => switch (shape) {
-      StadiumBorder() || CircleBorder() => (
-        tl: size.shortestSide / 2,
-        tr: size.shortestSide / 2,
-        bl: size.shortestSide / 2,
-        br: size.shortestSide / 2,
-      ),
-      RoundedRectangleBorder(:final borderRadius) ||
-      RoundedSuperellipseBorder(:final borderRadius) ||
-      ContinuousRectangleBorder(
-        :final borderRadius,
-      ) => fromRadius(borderRadius),
-      _ => null,
-    };
-
-    switch (box) {
-      // A clip is a shape only where it rounds: a square one cuts, unseen.
-      case RenderClipRRect(:final borderRadius)
-          when borderRadius != BorderRadius.zero:
-        radii = fromRadius(borderRadius);
-      case RenderClipRSuperellipse(:final borderRadius)
-          when borderRadius != BorderRadius.zero:
-        radii = fromRadius(borderRadius);
-      case RenderDecoratedBox(:final decoration) when _shows(decoration):
-        radii = switch (decoration) {
-          BoxDecoration(shape: BoxShape.circle) => fromShape(
-            const CircleBorder(),
-          ),
-          BoxDecoration(:final borderRadius) => fromRadius(
-            borderRadius ?? BorderRadius.zero,
-          ),
-          ShapeDecoration(:final shape) => fromShape(shape),
-          _ => null,
-        };
-      case RenderPhysicalShape(:final clipper?)
-          when clipper is ShapeBorderClipper:
-        radii = fromShape(clipper.shape);
-      case RenderClipPath(:final clipper?) when clipper is ShapeBorderClipper:
-        radii = fromShape(clipper.shape);
-      default:
-        radii = null;
-    }
-    if (radii == null) return null;
-    return _Shape(box, _global(box), radii);
-  }
-}
-
 // Whether [s] is a face drawn: a decoration, a physical shape or a marked
 // face, or a rounded clip round one as large as it (a picture, a fill).
 bool _painted(_Shape s, Set<RenderBox> marked) {
@@ -701,12 +624,6 @@ bool _painted(_Shape s, Set<RenderBox> marked) {
   visit(box);
   return found;
 }
-
-bool _same(Rect a, Rect b) =>
-    (a.left - b.left).abs() < .5 &&
-    (a.top - b.top).abs() < .5 &&
-    (a.right - b.right).abs() < .5 &&
-    (a.bottom - b.bottom).abs() < .5;
 
 // The value most of [values] agree on, within [tolerance] (of those, the
 // one most often exact); null when none is held by a third of them.
@@ -918,3 +835,11 @@ String _list(List<String> words) => switch (words.length) {
   1 => words.single,
   _ => '${words.sublist(0, words.length - 1).join(', ')} and ${words.last}',
 };
+
+// A shape whose corners were read from its pixels.
+class _ReadShape extends _Shape {
+  _ReadShape(super.box, super.rect, super.radii);
+
+  @override
+  bool get read => true;
+}

@@ -13,7 +13,7 @@ Future<void> _pump(WidgetTester tester, {Locale locale = const Locale('en')}) =>
       Localizations(
         locale: locale,
         delegates: const [
-          DesignLocalizations.delegate,
+          RawWidgetsLocalizations.delegate,
           DefaultWidgetsLocalizations.delegate,
         ],
         child: Builder(

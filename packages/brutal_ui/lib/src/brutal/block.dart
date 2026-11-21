@@ -111,7 +111,7 @@ class BrutalBlock extends StatelessWidget {
         child: inside(layered),
       );
     }
-    return DesignPressable(
+    return RawButton(
       onPressed: onTap,
       semanticLabel: semanticLabel,
       // Named, it is read by its name alone, not its name and then its words.

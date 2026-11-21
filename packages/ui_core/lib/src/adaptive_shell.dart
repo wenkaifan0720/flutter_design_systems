@@ -729,11 +729,11 @@ class _DesignAdaptiveShellState extends State<DesignAdaptiveShell>
     _focus
       ..sync(n)
       ..stopAt(_stop());
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     final rtl = Directionality.of(context) == TextDirection.rtl;
     final destinations = [
       for (var i = 0; i < n; i++)
-        DesignPressable(
+        RawButton(
           focusNode: _focus[i],
           onPressed: _enabled(i) ? () => _choose(i) : null,
           onKeyEvent: (node, event) => _key(i, event, mode),

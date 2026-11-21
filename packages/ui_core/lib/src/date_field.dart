@@ -2,7 +2,7 @@
 /// segment (month, day, year; hour, minute, AM/PM) in the reader's order,
 /// digits and words, the segments and the text between them the look's.
 ///
-/// [DesignDateField] and [DesignTimeField] lay their segments out in the
+/// [RawDateField] and [RawTimeField] lay their segments out in the
 /// locale's pattern (CLDR's: `M/d/y`, `d.M.y`, `y/M/d`; `h:mm a`, `HH:mm`,
 /// `a h:mm`), each segment a tab stop and an adjustable node a screen reader
 /// steps. Digits fill a segment and move on when no further digit fits;
@@ -22,15 +22,15 @@ import 'localizations.dart';
 /// A time of day with no date: an hour (0–23), a minute and a second.
 ///
 /// ui_core's own, as Flutter's `TimeOfDay` is Material's; a time field
-/// ([DesignTimeField]) takes and gives one.
+/// ([RawTimeField]) takes and gives one.
 ///
 /// ```dart
-/// Text(DesignLocalizations.of(context).formatTimeOfDay(const DesignTimeOfDay(hour: 15, minute: 5)))
+/// Text(RawWidgetsLocalizations.of(context).formatTimeOfDay(const RawTimeOfDay(hour: 15, minute: 5)))
 /// ```
 @immutable
-class DesignTimeOfDay implements Comparable<DesignTimeOfDay> {
+class RawTimeOfDay implements Comparable<RawTimeOfDay> {
   /// The time [hour]:[minute]:[second].
-  const DesignTimeOfDay({
+  const RawTimeOfDay({
     required this.hour,
     required this.minute,
     this.second = 0,
@@ -39,7 +39,7 @@ class DesignTimeOfDay implements Comparable<DesignTimeOfDay> {
        assert(second >= 0 && second < 60, 'a second is 0 to 59');
 
   /// [time]'s hour, minute and second.
-  DesignTimeOfDay.fromDateTime(DateTime time)
+  RawTimeOfDay.fromDateTime(DateTime time)
     : hour = time.hour,
       minute = time.minute,
       second = time.second;
@@ -60,27 +60,26 @@ class DesignTimeOfDay implements Comparable<DesignTimeOfDay> {
   bool get isPm => hour >= 12;
 
   /// This time with the given parts changed.
-  DesignTimeOfDay replacing({int? hour, int? minute, int? second}) =>
-      DesignTimeOfDay(
-        hour: hour ?? this.hour,
-        minute: minute ?? this.minute,
-        second: second ?? this.second,
-      );
+  RawTimeOfDay replacing({int? hour, int? minute, int? second}) => RawTimeOfDay(
+    hour: hour ?? this.hour,
+    minute: minute ?? this.minute,
+    second: second ?? this.second,
+  );
 
   /// Whether it comes before [other] in the day.
-  bool isBefore(DesignTimeOfDay other) => compareTo(other) < 0;
+  bool isBefore(RawTimeOfDay other) => compareTo(other) < 0;
 
   /// Whether it comes after [other] in the day.
-  bool isAfter(DesignTimeOfDay other) => compareTo(other) > 0;
+  bool isAfter(RawTimeOfDay other) => compareTo(other) > 0;
 
   int get _seconds => (hour * 60 + minute) * 60 + second;
 
   @override
-  int compareTo(DesignTimeOfDay other) => _seconds.compareTo(other._seconds);
+  int compareTo(RawTimeOfDay other) => _seconds.compareTo(other._seconds);
 
   @override
   bool operator ==(Object other) =>
-      other is DesignTimeOfDay && other._seconds == _seconds;
+      other is RawTimeOfDay && other._seconds == _seconds;
 
   @override
   int get hashCode => _seconds.hashCode;
@@ -88,12 +87,12 @@ class DesignTimeOfDay implements Comparable<DesignTimeOfDay> {
   @override
   String toString() {
     String two(int n) => n.toString().padLeft(2, '0');
-    return 'DesignTimeOfDay(${two(hour)}:${two(minute)}:${two(second)})';
+    return 'RawTimeOfDay(${two(hour)}:${two(minute)}:${two(second)})';
   }
 }
 
 /// The kinds of segment a date or a time field is typed in.
-enum DesignDateSegmentType {
+enum RawDateSegmentType {
   /// The year.
   year,
 
@@ -116,12 +115,12 @@ enum DesignDateSegmentType {
   dayPeriod,
 }
 
-/// One segment of a [DesignDateField] or [DesignTimeField], as the look
+/// One segment of a [RawDateField] or [RawTimeField], as the look
 /// paints it.
 @immutable
-class DesignDateSegmentDetails {
+class RawDateSegmentDetails {
   /// A segment's details.
-  const DesignDateSegmentDetails({
+  const RawDateSegmentDetails({
     required this.type,
     required this.text,
     required this.isPlaceholder,
@@ -129,7 +128,7 @@ class DesignDateSegmentDetails {
   });
 
   /// What it holds.
-  final DesignDateSegmentType type;
+  final RawDateSegmentType type;
 
   /// Its text: the value in the reader's digits ("07", "2026", "PM"), what
   /// has been typed so far, or, when [isPlaceholder], the empty segment's
@@ -146,15 +145,15 @@ class DesignDateSegmentDetails {
 }
 
 /// Paints one segment of a date or time field. A segment is a tap target:
-/// a look gives its face the floor ([DesignTapTarget]).
-typedef DesignDateSegmentBuilder = Widget Function(
+/// a look gives its face the floor ([TapTargetPadding]).
+typedef RawDateSegmentBuilder = Widget Function(
   BuildContext context,
-  DesignDateSegmentDetails details,
+  RawDateSegmentDetails details,
 );
 
 /// Paints the text between a field's segments ("/", ".", ":", Japanese's
 /// year mark U+5E74).
-typedef DesignDateLiteralBuilder = Widget Function(
+typedef RawDateLiteralBuilder = Widget Function(
   BuildContext context,
   String literal,
 );
@@ -162,7 +161,7 @@ typedef DesignDateLiteralBuilder = Widget Function(
 /// Frames a date or time field's laid-out [segments] (its box, its focus
 /// ring); [states] are the field's: focused (a segment has the focus),
 /// hovered, disabled, error.
-typedef DesignDateFieldFrameBuilder = Widget Function(
+typedef RawDateFieldFrameBuilder = Widget Function(
   BuildContext context,
   Set<WidgetState> states,
   Widget segments,
@@ -172,12 +171,12 @@ typedef DesignDateFieldFrameBuilder = Widget Function(
 /// day (its time ignored), null when empty; [onChanged] gets the day once
 /// every segment holds one, and null when one is cleared.
 ///
-/// The segments follow [DesignLocalizations.dateFieldPattern] (month, day,
+/// The segments follow [RawWidgetsLocalizations.dateFieldPattern] (month, day,
 /// year in English; day, month, year in German; year first in Japanese),
 /// the text between them the locale's. A day past the month's end moves
 /// back to its last day when the month or the year changes. Outside
 /// [firstDate] and [lastDate] the segments carry [WidgetState.error], the
-/// field reads as invalid and says so ([DesignLocalizations.dateOutOfRangeLabel]),
+/// field reads as invalid and says so ([RawWidgetsLocalizations.dateOutOfRangeLabel]),
 /// and the value still comes through.
 ///
 /// Keys, on a segment (each a tab stop): digits type, Up and Down step it
@@ -186,11 +185,11 @@ typedef DesignDateFieldFrameBuilder = Widget Function(
 /// separator moves on, Enter calls [onEditingComplete].
 ///
 /// ```dart
-/// DesignDateField(value: DateTime(2026, 11, 16), onChanged: (day) {}, segmentBuilder: (context, details) => Text(details.text))
+/// RawDateField(value: DateTime(2026, 11, 16), onChanged: (day) {}, segmentBuilder: (context, details) => Text(details.text))
 /// ```
-class DesignDateField extends StatefulWidget {
+class RawDateField extends StatefulWidget {
   /// A date field showing [value].
-  const DesignDateField({
+  const RawDateField({
     super.key,
     required this.value,
     required this.onChanged,
@@ -214,13 +213,13 @@ class DesignDateField extends StatefulWidget {
   final ValueChanged<DateTime?>? onChanged;
 
   /// Paints a segment.
-  final DesignDateSegmentBuilder segmentBuilder;
+  final RawDateSegmentBuilder segmentBuilder;
 
   /// Paints the text between segments; null: a [Text].
-  final DesignDateLiteralBuilder? literalBuilder;
+  final RawDateLiteralBuilder? literalBuilder;
 
   /// Frames the laid-out segments; null: the segments alone.
-  final DesignDateFieldFrameBuilder? frameBuilder;
+  final RawDateFieldFrameBuilder? frameBuilder;
 
   /// The first day in range; null: none before is out of range.
   final DateTime? firstDate;
@@ -239,26 +238,26 @@ class DesignDateField extends StatefulWidget {
   final VoidCallback? onEditingComplete;
 
   @override
-  State<DesignDateField> createState() => _DesignDateFieldState();
+  State<RawDateField> createState() => _DesignDateFieldState();
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
       ..add(
-        ObjectFlagProperty<DesignDateSegmentBuilder>.has(
+        ObjectFlagProperty<RawDateSegmentBuilder>.has(
           'segmentBuilder',
           segmentBuilder,
         ),
       )
       ..add(
-        ObjectFlagProperty<DesignDateLiteralBuilder>.has(
+        ObjectFlagProperty<RawDateLiteralBuilder>.has(
           'literalBuilder',
           literalBuilder,
         ),
       )
       ..add(
-        ObjectFlagProperty<DesignDateFieldFrameBuilder>.has(
+        ObjectFlagProperty<RawDateFieldFrameBuilder>.has(
           'frameBuilder',
           frameBuilder,
         ),
@@ -299,19 +298,19 @@ class DesignDateField extends StatefulWidget {
 /// time, null when empty; [onChanged] gets it once every segment holds one,
 /// and null when one is cleared.
 ///
-/// The segments follow [DesignLocalizations.timeFieldPattern]: hour,
+/// The segments follow [RawWidgetsLocalizations.timeFieldPattern]: hour,
 /// minute and AM/PM in English; a 24-hour clock in German, or wherever
 /// [alwaysUse24HourFormat] (by default the platform's setting,
 /// `MediaQuery.alwaysUse24HourFormatOf`) says so; seconds when
 /// [showSeconds]. AM/PM takes the first letter of either word, and Up and
-/// Down swap it. The keys are [DesignDateField]'s.
+/// Down swap it. The keys are [RawDateField]'s.
 ///
 /// ```dart
-/// DesignTimeField(value: const DesignTimeOfDay(hour: 9, minute: 30), onChanged: (time) {}, segmentBuilder: (context, details) => Text(details.text))
+/// RawTimeField(value: const RawTimeOfDay(hour: 9, minute: 30), onChanged: (time) {}, segmentBuilder: (context, details) => Text(details.text))
 /// ```
-class DesignTimeField extends StatefulWidget {
+class RawTimeField extends StatefulWidget {
   /// A time field showing [value].
-  const DesignTimeField({
+  const RawTimeField({
     super.key,
     required this.value,
     required this.onChanged,
@@ -326,22 +325,22 @@ class DesignTimeField extends StatefulWidget {
   });
 
   /// The time shown; null, empty.
-  final DesignTimeOfDay? value;
+  final RawTimeOfDay? value;
 
   /// Called with the time once every segment holds one, and with null when
   /// a segment is cleared.
   ///
   /// {@macro design.nullDisables}
-  final ValueChanged<DesignTimeOfDay?>? onChanged;
+  final ValueChanged<RawTimeOfDay?>? onChanged;
 
   /// Paints a segment.
-  final DesignDateSegmentBuilder segmentBuilder;
+  final RawDateSegmentBuilder segmentBuilder;
 
   /// Paints the text between segments; null: a [Text].
-  final DesignDateLiteralBuilder? literalBuilder;
+  final RawDateLiteralBuilder? literalBuilder;
 
   /// Frames the laid-out segments; null: the segments alone.
-  final DesignDateFieldFrameBuilder? frameBuilder;
+  final RawDateFieldFrameBuilder? frameBuilder;
 
   /// Whether it has a seconds segment. Defaults to false.
   final bool showSeconds;
@@ -360,26 +359,26 @@ class DesignTimeField extends StatefulWidget {
   final VoidCallback? onEditingComplete;
 
   @override
-  State<DesignTimeField> createState() => _DesignTimeFieldState();
+  State<RawTimeField> createState() => _DesignTimeFieldState();
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
       ..add(
-        ObjectFlagProperty<DesignDateSegmentBuilder>.has(
+        ObjectFlagProperty<RawDateSegmentBuilder>.has(
           'segmentBuilder',
           segmentBuilder,
         ),
       )
       ..add(
-        ObjectFlagProperty<DesignDateLiteralBuilder>.has(
+        ObjectFlagProperty<RawDateLiteralBuilder>.has(
           'literalBuilder',
           literalBuilder,
         ),
       )
       ..add(
-        ObjectFlagProperty<DesignDateFieldFrameBuilder>.has(
+        ObjectFlagProperty<RawDateFieldFrameBuilder>.has(
           'frameBuilder',
           frameBuilder,
         ),
@@ -390,9 +389,9 @@ class DesignTimeField extends StatefulWidget {
           onEditingComplete,
         ),
       )
-      ..add(DiagnosticsProperty<DesignTimeOfDay>('value', value))
+      ..add(DiagnosticsProperty<RawTimeOfDay>('value', value))
       ..add(
-        ObjectFlagProperty<ValueChanged<DesignTimeOfDay?>>.has(
+        ObjectFlagProperty<ValueChanged<RawTimeOfDay?>>.has(
           'onChanged',
           onChanged,
         ),
@@ -426,7 +425,7 @@ class DesignTimeField extends StatefulWidget {
 
 DateTime _dateOnly(DateTime d) => DateTime(d.year, d.month, d.day);
 
-class _DesignDateFieldState extends _SegmentedFieldState<DesignDateField> {
+class _DesignDateFieldState extends _SegmentedFieldState<RawDateField> {
   bool _wasOutOfRange = false;
 
   @override
@@ -438,26 +437,26 @@ class _DesignDateFieldState extends _SegmentedFieldState<DesignDateField> {
   @override
   VoidCallback? get onEditingComplete => widget.onEditingComplete;
   @override
-  DesignDateSegmentBuilder get segmentBuilder => widget.segmentBuilder;
+  RawDateSegmentBuilder get segmentBuilder => widget.segmentBuilder;
   @override
-  DesignDateLiteralBuilder? get literalBuilder => widget.literalBuilder;
+  RawDateLiteralBuilder? get literalBuilder => widget.literalBuilder;
   @override
-  DesignDateFieldFrameBuilder? get frameBuilder => widget.frameBuilder;
+  RawDateFieldFrameBuilder? get frameBuilder => widget.frameBuilder;
 
   @override
-  String patternOf(DesignLocalizations l) => l.dateFieldPattern;
+  String patternOf(RawWidgetsLocalizations l) => l.dateFieldPattern;
 
   @override
   void load() {
     final v = widget.value;
     values
-      ..[DesignDateSegmentType.year] = v?.year
-      ..[DesignDateSegmentType.month] = v?.month
-      ..[DesignDateSegmentType.day] = v?.day;
+      ..[RawDateSegmentType.year] = v?.year
+      ..[RawDateSegmentType.month] = v?.month
+      ..[RawDateSegmentType.day] = v?.day;
   }
 
   @override
-  void didUpdateWidget(DesignDateField oldWidget) {
+  void didUpdateWidget(RawDateField oldWidget) {
     super.didUpdateWidget(oldWidget);
     final v = widget.value;
     final day = v == null ? null : _dateOnly(v);
@@ -468,9 +467,9 @@ class _DesignDateFieldState extends _SegmentedFieldState<DesignDateField> {
   }
 
   DateTime? _composed() {
-    final y = values[DesignDateSegmentType.year];
-    final m = values[DesignDateSegmentType.month];
-    final d = values[DesignDateSegmentType.day];
+    final y = values[RawDateSegmentType.year];
+    final m = values[RawDateSegmentType.month];
+    final d = values[RawDateSegmentType.day];
     if (y == null || m == null || d == null) return null;
     if (d > daysInMonth(y, m)) return null;
     return DateTime(y, m, d);
@@ -485,19 +484,19 @@ class _DesignDateFieldState extends _SegmentedFieldState<DesignDateField> {
   @override
   int maxOf(PatternPart part) => segmentMax(
     part.letter,
-    year: values[DesignDateSegmentType.year],
-    month: values[DesignDateSegmentType.month],
+    year: values[RawDateSegmentType.year],
+    month: values[RawDateSegmentType.month],
   );
 
   @override
-  void settle(DesignDateSegmentType changed) {
+  void settle(RawDateSegmentType changed) {
     // A day past the month's end moves back to its last day (iOS's rule).
-    if (changed == DesignDateSegmentType.day) return;
-    final m = values[DesignDateSegmentType.month];
-    final d = values[DesignDateSegmentType.day];
+    if (changed == RawDateSegmentType.day) return;
+    final m = values[RawDateSegmentType.month];
+    final d = values[RawDateSegmentType.day];
     if (m == null || d == null) return;
-    final last = daysInMonth(values[DesignDateSegmentType.year], m);
-    if (d > last) values[DesignDateSegmentType.day] = last;
+    final last = daysInMonth(values[RawDateSegmentType.year], m);
+    if (d > last) values[RawDateSegmentType.day] = last;
   }
 
   bool get _outOfRange {
@@ -518,14 +517,14 @@ class _DesignDateFieldState extends _SegmentedFieldState<DesignDateField> {
     if (out && !_wasOutOfRange) {
       designAnnounce(
         context,
-        DesignLocalizations.of(context).dateOutOfRangeLabel,
+        RawWidgetsLocalizations.of(context).dateOutOfRangeLabel,
       );
     }
     _wasOutOfRange = out;
   }
 
   @override
-  String? fieldValue(DesignLocalizations l) {
+  String? fieldValue(RawWidgetsLocalizations l) {
     final day = _composed();
     return day == null ? null : l.formatFullDate(day);
   }
@@ -535,7 +534,7 @@ class _DesignDateFieldState extends _SegmentedFieldState<DesignDateField> {
     final type = part.type!;
     final v = values[type];
     if (v == null) {
-      if (type == DesignDateSegmentType.year) {
+      if (type == RawDateSegmentType.year) {
         return (widget.firstDate ?? widget.lastDate ?? DateTime.now()).year;
       }
       return delta > 0 ? segmentMin(part.letter) : maxOf(part);
@@ -545,18 +544,18 @@ class _DesignDateFieldState extends _SegmentedFieldState<DesignDateField> {
       delta,
       segmentMin(part.letter),
       maxOf(part),
-      wrap: type != DesignDateSegmentType.year,
+      wrap: type != RawDateSegmentType.year,
     );
   }
 
   @override
-  String spoken(PatternPart part, int value, DesignLocalizations l) =>
-      part.type == DesignDateSegmentType.month
+  String spoken(PatternPart part, int value, RawWidgetsLocalizations l) =>
+      part.type == RawDateSegmentType.month
       ? l.formatMonth(DateTime(2000, value))
       : digitsOf(l, value);
 }
 
-class _DesignTimeFieldState extends _SegmentedFieldState<DesignTimeField> {
+class _DesignTimeFieldState extends _SegmentedFieldState<RawTimeField> {
   // The clock the hour is held on: its pattern letter.
   String _clock = 'h';
 
@@ -569,14 +568,14 @@ class _DesignTimeFieldState extends _SegmentedFieldState<DesignTimeField> {
   @override
   VoidCallback? get onEditingComplete => widget.onEditingComplete;
   @override
-  DesignDateSegmentBuilder get segmentBuilder => widget.segmentBuilder;
+  RawDateSegmentBuilder get segmentBuilder => widget.segmentBuilder;
   @override
-  DesignDateLiteralBuilder? get literalBuilder => widget.literalBuilder;
+  RawDateLiteralBuilder? get literalBuilder => widget.literalBuilder;
   @override
-  DesignDateFieldFrameBuilder? get frameBuilder => widget.frameBuilder;
+  RawDateFieldFrameBuilder? get frameBuilder => widget.frameBuilder;
 
   @override
-  String patternOf(DesignLocalizations l) => l.timeFieldPattern(
+  String patternOf(RawWidgetsLocalizations l) => l.timeFieldPattern(
     alwaysUse24HourFormat:
         widget.alwaysUse24HourFormat ??
         MediaQuery.alwaysUse24HourFormatOf(context),
@@ -587,7 +586,7 @@ class _DesignTimeFieldState extends _SegmentedFieldState<DesignTimeField> {
   void patternChanged(List<PatternPart> parts) {
     final clock =
         parts
-            .where((p) => p.type == DesignDateSegmentType.hour)
+            .where((p) => p.type == RawDateSegmentType.hour)
             .firstOrNull
             ?.letter ??
         'H';
@@ -602,9 +601,9 @@ class _DesignTimeFieldState extends _SegmentedFieldState<DesignTimeField> {
 
   // The hour on a 24-hour clock, from the held clock (AM when not chosen).
   int? _hour24() {
-    final h = values[DesignDateSegmentType.hour];
+    final h = values[RawDateSegmentType.hour];
     if (h == null) return null;
-    final pm = values[DesignDateSegmentType.dayPeriod] == 1;
+    final pm = values[RawDateSegmentType.dayPeriod] == 1;
     return switch (_clock) {
       'h' => h % 12 + (pm ? 12 : 0),
       'K' => h + (pm ? 12 : 0),
@@ -615,30 +614,30 @@ class _DesignTimeFieldState extends _SegmentedFieldState<DesignTimeField> {
 
   void _setHour(int? hour) {
     if (hour == null) {
-      values[DesignDateSegmentType.hour] = null;
+      values[RawDateSegmentType.hour] = null;
       return;
     }
-    values[DesignDateSegmentType.hour] = switch (_clock) {
+    values[RawDateSegmentType.hour] = switch (_clock) {
       'h' => hour % 12 == 0 ? 12 : hour % 12,
       'K' => hour % 12,
       'k' => hour == 0 ? 24 : hour,
       _ => hour,
     };
-    if (_twelve) values[DesignDateSegmentType.dayPeriod] = hour >= 12 ? 1 : 0;
+    if (_twelve) values[RawDateSegmentType.dayPeriod] = hour >= 12 ? 1 : 0;
   }
 
   @override
   void load() {
     final v = widget.value;
     _setHour(v?.hour);
-    if (v == null) values[DesignDateSegmentType.dayPeriod] = null;
+    if (v == null) values[RawDateSegmentType.dayPeriod] = null;
     values
-      ..[DesignDateSegmentType.minute] = v?.minute
-      ..[DesignDateSegmentType.second] = v?.second;
+      ..[RawDateSegmentType.minute] = v?.minute
+      ..[RawDateSegmentType.second] = v?.second;
   }
 
   @override
-  void didUpdateWidget(DesignTimeField oldWidget) {
+  void didUpdateWidget(RawTimeField oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.value != widget.value && widget.value != _composed()) {
       load();
@@ -646,23 +645,23 @@ class _DesignTimeFieldState extends _SegmentedFieldState<DesignTimeField> {
     }
   }
 
-  DesignTimeOfDay? _composed() {
+  RawTimeOfDay? _composed() {
     final hour = _hour24();
-    final minute = values[DesignDateSegmentType.minute];
+    final minute = values[RawDateSegmentType.minute];
     if (hour == null || minute == null) return null;
-    if (_twelve && values[DesignDateSegmentType.dayPeriod] == null) return null;
+    if (_twelve && values[RawDateSegmentType.dayPeriod] == null) return null;
     final second = widget.showSeconds
-        ? values[DesignDateSegmentType.second]
-        : (values[DesignDateSegmentType.second] ?? 0);
+        ? values[RawDateSegmentType.second]
+        : (values[RawDateSegmentType.second] ?? 0);
     if (second == null) return null;
-    return DesignTimeOfDay(hour: hour, minute: minute, second: second);
+    return RawTimeOfDay(hour: hour, minute: minute, second: second);
   }
 
   @override
   Object? compose() => _composed();
 
   @override
-  void send(Object? value) => widget.onChanged?.call(value as DesignTimeOfDay?);
+  void send(Object? value) => widget.onChanged?.call(value as RawTimeOfDay?);
 
   @override
   int maxOf(PatternPart part) => segmentMax(part.letter);
@@ -677,13 +676,13 @@ class _DesignTimeFieldState extends _SegmentedFieldState<DesignTimeField> {
   }
 
   @override
-  String spoken(PatternPart part, int value, DesignLocalizations l) =>
-      part.type == DesignDateSegmentType.dayPeriod
+  String spoken(PatternPart part, int value, RawWidgetsLocalizations l) =>
+      part.type == RawDateSegmentType.dayPeriod
       ? (value == 0 ? l.anteMeridiemAbbreviation : l.postMeridiemAbbreviation)
       : digitsOf(l, value);
 
   @override
-  String? fieldValue(DesignLocalizations l) {
+  String? fieldValue(RawWidgetsLocalizations l) {
     final time = _composed();
     if (time == null) return null;
     return l.formatTimeOfDay(
@@ -700,15 +699,15 @@ class _DesignTimeFieldState extends _SegmentedFieldState<DesignTimeField> {
 abstract class _SegmentedFieldState<W extends StatefulWidget> extends State<W>
     implements TextInputClient {
   /// Each segment's value, on its own scale (a 12-hour hour 1–12, AM 0).
-  final Map<DesignDateSegmentType, int?> values = {};
+  final Map<RawDateSegmentType, int?> values = {};
 
   /// The value last sent to (or taken from) the parent.
   Object? sent;
 
-  final Map<DesignDateSegmentType, FocusNode> _nodes = {};
+  final Map<RawDateSegmentType, FocusNode> _nodes = {};
   List<PatternPart> _parts = const [];
   String? _pattern;
-  DesignDateSegmentType? _focused;
+  RawDateSegmentType? _focused;
   // The digits typed into the focused segment since it took the focus.
   String _typed = '';
   bool _hovered = false;
@@ -725,22 +724,22 @@ abstract class _SegmentedFieldState<W extends StatefulWidget> extends State<W>
   bool get autofocus;
   String? get semanticLabel;
   VoidCallback? get onEditingComplete;
-  DesignDateSegmentBuilder get segmentBuilder;
-  DesignDateLiteralBuilder? get literalBuilder;
-  DesignDateFieldFrameBuilder? get frameBuilder;
+  RawDateSegmentBuilder get segmentBuilder;
+  RawDateLiteralBuilder? get literalBuilder;
+  RawDateFieldFrameBuilder? get frameBuilder;
   bool get hasError => false;
 
-  String patternOf(DesignLocalizations l);
+  String patternOf(RawWidgetsLocalizations l);
   void patternChanged(List<PatternPart> parts) {}
   void load();
   Object? compose();
   void send(Object? value);
   int maxOf(PatternPart part);
   int stepFrom(PatternPart part, int delta);
-  void settle(DesignDateSegmentType changed) {}
+  void settle(RawDateSegmentType changed) {}
   void afterChange() {}
-  String spoken(PatternPart part, int value, DesignLocalizations l);
-  String? fieldValue(DesignLocalizations l);
+  String spoken(PatternPart part, int value, RawWidgetsLocalizations l);
+  String? fieldValue(RawWidgetsLocalizations l);
 
   Iterable<PatternPart> get _segments => _parts.where((p) => p.type != null);
 
@@ -770,7 +769,7 @@ abstract class _SegmentedFieldState<W extends StatefulWidget> extends State<W>
   }
 
   void _readPattern() {
-    final pattern = patternOf(DesignLocalizations.of(context));
+    final pattern = patternOf(RawWidgetsLocalizations.of(context));
     if (pattern == _pattern) return;
     _pattern = pattern;
     _parts = parsePattern(pattern);
@@ -793,11 +792,11 @@ abstract class _SegmentedFieldState<W extends StatefulWidget> extends State<W>
     super.dispose();
   }
 
-  PatternPart _part(DesignDateSegmentType type) =>
+  PatternPart _part(RawDateSegmentType type) =>
       _segments.firstWhere((p) => p.type == type);
 
   // Digits in the reader's script, ungrouped ("2026", not "2,026").
-  String digitsOf(DesignLocalizations l, int value, {int width = 1}) {
+  String digitsOf(RawWidgetsLocalizations l, int value, {int width = 1}) {
     final zero = l.formatDecimal(0).codeUnitAt(0);
     return String.fromCharCodes(
       value
@@ -809,7 +808,7 @@ abstract class _SegmentedFieldState<W extends StatefulWidget> extends State<W>
   }
 
   // A typed digit's value: ASCII or the reader's; null when not a digit.
-  int? _digit(String character, DesignLocalizations l) {
+  int? _digit(String character, RawWidgetsLocalizations l) {
     if (character.length != 1) return null;
     final c = character.codeUnitAt(0);
     if (c >= 0x30 && c <= 0x39) return c - 0x30;
@@ -817,7 +816,7 @@ abstract class _SegmentedFieldState<W extends StatefulWidget> extends State<W>
     return d >= 0 && d <= 9 ? d : null;
   }
 
-  void _focusChanged(DesignDateSegmentType type, FocusNode node) {
+  void _focusChanged(RawDateSegmentType type, FocusNode node) {
     if (!mounted) return;
     if (node.hasFocus) {
       if (_focused != type) {
@@ -841,7 +840,7 @@ abstract class _SegmentedFieldState<W extends StatefulWidget> extends State<W>
 
   // A segment left with a number below its least (a month's "0") is empty;
   // a year typed in part is taken as typed.
-  void _commit(DesignDateSegmentType type) {
+  void _commit(RawDateSegmentType type) {
     final part = _segments.where((p) => p.type == type).firstOrNull;
     if (part == null) return;
     final v = values[type];
@@ -851,10 +850,10 @@ abstract class _SegmentedFieldState<W extends StatefulWidget> extends State<W>
 
   // After [type] changed: the other segments settle, the parent hears of a
   // new whole value (not while a year is half typed).
-  void _changed(DesignDateSegmentType type) {
+  void _changed(RawDateSegmentType type) {
     settle(type);
     final yearPending =
-        _focused == DesignDateSegmentType.year &&
+        _focused == RawDateSegmentType.year &&
         _typed.isNotEmpty &&
         _typed.length < 4;
     if (!yearPending) {
@@ -868,28 +867,28 @@ abstract class _SegmentedFieldState<W extends StatefulWidget> extends State<W>
     setState(() {});
   }
 
-  void _set(DesignDateSegmentType type, int? value) {
+  void _set(RawDateSegmentType type, int? value) {
     values[type] = value;
     _changed(type);
   }
 
-  void _focus(DesignDateSegmentType type) => _nodes[type]?.requestFocus();
+  void _focus(RawDateSegmentType type) => _nodes[type]?.requestFocus();
 
   // The segment after (or before) [type] in the pattern.
-  DesignDateSegmentType? _beside(DesignDateSegmentType type, int way) {
+  RawDateSegmentType? _beside(RawDateSegmentType type, int way) {
     final list = _segments.map((p) => p.type!).toList();
     final i = list.indexOf(type) + way;
     return i >= 0 && i < list.length ? list[i] : null;
   }
 
-  void _advance(DesignDateSegmentType type) {
+  void _advance(RawDateSegmentType type) {
     final next = _beside(type, 1);
     if (next != null) _focus(next);
   }
 
   // The segment drawn nearest [type] to the right (or left).
-  DesignDateSegmentType? _drawnBeside(DesignDateSegmentType type, bool right) {
-    Offset? centre(DesignDateSegmentType t) {
+  RawDateSegmentType? _drawnBeside(RawDateSegmentType type, bool right) {
+    Offset? centre(RawDateSegmentType t) {
       final box = _nodes[t]?.context?.findRenderObject();
       if (box is! RenderBox || !box.hasSize) return null;
       return box.localToGlobal(box.size.center(Offset.zero));
@@ -897,7 +896,7 @@ abstract class _SegmentedFieldState<W extends StatefulWidget> extends State<W>
 
     final from = centre(type);
     if (from == null) return null;
-    DesignDateSegmentType? best;
+    RawDateSegmentType? best;
     var bestDx = double.infinity;
     for (final p in _segments) {
       final c = centre(p.type!);
@@ -911,7 +910,7 @@ abstract class _SegmentedFieldState<W extends StatefulWidget> extends State<W>
     return best;
   }
 
-  KeyEventResult _onKey(DesignDateSegmentType type, KeyEvent event) {
+  KeyEventResult _onKey(RawDateSegmentType type, KeyEvent event) {
     if (event is! KeyDownEvent && event is! KeyRepeatEvent) {
       return KeyEventResult.ignored;
     }
@@ -971,7 +970,7 @@ abstract class _SegmentedFieldState<W extends StatefulWidget> extends State<W>
     _set(part.type!, stepFrom(part, delta));
   }
 
-  void _backspace(DesignDateSegmentType type) {
+  void _backspace(RawDateSegmentType type) {
     if (values[type] != null || _typed.isNotEmpty) {
       _typed = '';
       _set(type, null);
@@ -991,10 +990,10 @@ abstract class _SegmentedFieldState<W extends StatefulWidget> extends State<W>
   }
 
   // A character typed into [type]: a digit, AM/PM's letter, a separator.
-  void _type(DesignDateSegmentType type, String character) {
-    final l = DesignLocalizations.of(context);
+  void _type(RawDateSegmentType type, String character) {
+    final l = RawWidgetsLocalizations.of(context);
     final part = _part(type);
-    if (type == DesignDateSegmentType.dayPeriod) {
+    if (type == RawDateSegmentType.dayPeriod) {
       // The first letter where the two words differ: a, p; the second of
       // Japanese's two (U+5348 U+524D and U+5348 U+5F8C share the first);
       // and a and p in any language.
@@ -1053,7 +1052,7 @@ abstract class _SegmentedFieldState<W extends StatefulWidget> extends State<W>
   // ---- A phone's keyboard: one text input while a segment has the focus.
 
   TextInputConfiguration get _configuration => TextInputConfiguration(
-    inputType: _focused == DesignDateSegmentType.dayPeriod
+    inputType: _focused == RawDateSegmentType.dayPeriod
         ? TextInputType.text
         : TextInputType.number,
     inputAction: TextInputAction.done,
@@ -1144,32 +1143,32 @@ abstract class _SegmentedFieldState<W extends StatefulWidget> extends State<W>
 
   // ---- Building.
 
-  String _placeholder(DesignDateSegmentType type, DesignLocalizations l) =>
+  String _placeholder(RawDateSegmentType type, RawWidgetsLocalizations l) =>
       switch (type) {
-        DesignDateSegmentType.year => l.dateFieldYearPlaceholder,
-        DesignDateSegmentType.month => l.dateFieldMonthPlaceholder,
-        DesignDateSegmentType.day => l.dateFieldDayPlaceholder,
+        RawDateSegmentType.year => l.dateFieldYearPlaceholder,
+        RawDateSegmentType.month => l.dateFieldMonthPlaceholder,
+        RawDateSegmentType.day => l.dateFieldDayPlaceholder,
         _ => '––',
       };
 
-  String _label(DesignDateSegmentType type, DesignLocalizations l) =>
+  String _label(RawDateSegmentType type, RawWidgetsLocalizations l) =>
       switch (type) {
-        DesignDateSegmentType.year => l.dateFieldYearLabel,
-        DesignDateSegmentType.month => l.dateFieldMonthLabel,
-        DesignDateSegmentType.day => l.dateFieldDayLabel,
-        DesignDateSegmentType.hour => l.timePickerHourLabel,
-        DesignDateSegmentType.minute => l.timePickerMinuteLabel,
-        DesignDateSegmentType.second => l.timeFieldSecondLabel,
-        DesignDateSegmentType.dayPeriod => l.timeFieldDayPeriodLabel,
+        RawDateSegmentType.year => l.dateFieldYearLabel,
+        RawDateSegmentType.month => l.dateFieldMonthLabel,
+        RawDateSegmentType.day => l.dateFieldDayLabel,
+        RawDateSegmentType.hour => l.timePickerHourLabel,
+        RawDateSegmentType.minute => l.timePickerMinuteLabel,
+        RawDateSegmentType.second => l.timeFieldSecondLabel,
+        RawDateSegmentType.dayPeriod => l.timeFieldDayPeriodLabel,
       };
 
-  String _text(PatternPart part, DesignLocalizations l) {
+  String _text(PatternPart part, RawWidgetsLocalizations l) {
     final type = part.type!;
     if (_focused == type && _typed.isNotEmpty) {
       return digitsOf(l, int.parse(_typed), width: _typed.length);
     }
     final v = values[type]!;
-    if (type == DesignDateSegmentType.dayPeriod) {
+    if (type == RawDateSegmentType.dayPeriod) {
       return v == 0 ? l.anteMeridiemAbbreviation : l.postMeridiemAbbreviation;
     }
     return digitsOf(l, v, width: part.width >= 2 ? 2 : 1);
@@ -1178,7 +1177,7 @@ abstract class _SegmentedFieldState<W extends StatefulWidget> extends State<W>
   Widget _segment(
     BuildContext context,
     PatternPart part,
-    DesignLocalizations l,
+    RawWidgetsLocalizations l,
   ) {
     final type = part.type!;
     final value = values[type];
@@ -1203,7 +1202,7 @@ abstract class _SegmentedFieldState<W extends StatefulWidget> extends State<W>
 
     final face = segmentBuilder(
       context,
-      DesignDateSegmentDetails(
+      RawDateSegmentDetails(
         type: type,
         text: empty ? _placeholder(type, l) : _text(part, l),
         isPlaceholder: empty,
@@ -1238,7 +1237,7 @@ abstract class _SegmentedFieldState<W extends StatefulWidget> extends State<W>
 
   @override
   Widget build(BuildContext context) {
-    final l = DesignLocalizations.of(context);
+    final l = RawWidgetsLocalizations.of(context);
     var order = 0.0;
     Widget part(PatternPart p) {
       if (p.literal != null) {

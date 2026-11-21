@@ -1,5 +1,5 @@
-/// A data table, headless: the model ([DesignTableController]: filter,
-/// sort, select, paginate) and a body ([DesignDataTable]) whose rows take
+/// A data table, headless: the model ([RawDataTableController]: filter,
+/// sort, select, paginate) and a body ([RawDataTable]) whose rows take
 /// one tab stop (Up and Down move between them, Home and End to the ends,
 /// Space or a press selects, Shift with either selects a run, Ctrl or Cmd
 /// with A selects the page, Enter opens a row) and whose headers sort on a press.
@@ -13,7 +13,7 @@ import 'localizations.dart';
 import 'pressable.dart';
 
 /// Which way a column sorts.
-enum DesignSortDirection {
+enum RawSortDirection {
   /// Smallest first.
   ascending,
 
@@ -21,11 +21,11 @@ enum DesignSortDirection {
   descending,
 }
 
-/// A column of a [DesignTableController].
+/// A column of a [RawDataTableController].
 @immutable
-class DesignTableColumn<R> {
+class RawDataColumn<R> {
   /// A column [id], headed [label]; [sortKey] makes it sortable.
-  const DesignTableColumn({
+  const RawDataColumn({
     required this.id,
     required this.label,
     this.sortKey,
@@ -49,7 +49,7 @@ class DesignTableColumn<R> {
 }
 
 /// A page's selection, for its select-all checkbox.
-enum DesignSelection {
+enum RawDataTableSelection {
   /// No row on the page is selected.
   none,
 
@@ -67,13 +67,13 @@ enum DesignSelection {
 /// and disposes it; a widget it is given to only listens to it.
 ///
 /// ```dart
-/// DesignTableController<String>(rows: const ['a', 'b'], columns: [DesignTableColumn<String>(id: 'name', label: 'Name', sortKey: (row) => row)])
+/// RawDataTableController<String>(rows: const ['a', 'b'], columns: [RawDataColumn<String>(id: 'name', label: 'Name', sortKey: (row) => row)])
 /// ```
-class DesignTableController<R> extends ChangeNotifier {
+class RawDataTableController<R> extends ChangeNotifier {
   /// A table of [rows] in [columns]. [rowKey] tells rows apart across
   /// replacements of the data (the row itself by default); [pageSize] null
   /// shows every row.
-  DesignTableController({
+  RawDataTableController({
     required List<R> rows,
     required this.columns,
     Object Function(R row)? rowKey,
@@ -85,7 +85,7 @@ class DesignTableController<R> extends ChangeNotifier {
        _perPage = pageSize;
 
   /// The columns, in order.
-  final List<DesignTableColumn<R>> columns;
+  final List<RawDataColumn<R>> columns;
 
   /// Whether [query] keeps a row; null: every row is kept.
   final bool Function(R row, String query)? filter;
@@ -100,7 +100,7 @@ class DesignTableController<R> extends ChangeNotifier {
   int _page = 0;
   String _query = '';
   String? _sortColumn;
-  DesignSortDirection _direction = DesignSortDirection.ascending;
+  RawSortDirection _direction = RawSortDirection.ascending;
   final Set<Object> _selected = {};
   Object? _anchor;
   List<R>? _view;
@@ -130,12 +130,11 @@ class DesignTableController<R> extends ChangeNotifier {
   String? get sortColumn => _sortColumn;
 
   /// Which way it sorts.
-  DesignSortDirection get sortDirection => _direction;
+  RawSortDirection get sortDirection => _direction;
 
   /// The sort of the column [id]: its direction, or null while it is not
   /// the sorted column.
-  DesignSortDirection? sortOf(String id) =>
-      id == _sortColumn ? _direction : null;
+  RawSortDirection? sortOf(String id) => id == _sortColumn ? _direction : null;
 
   /// A header's press: sorts by the column [id] ascending, then descending,
   /// then (with [cycleToUnsorted]) not at all. Equal rows keep their order.
@@ -144,14 +143,14 @@ class DesignTableController<R> extends ChangeNotifier {
     if (!column.sortable) return;
     if (_sortColumn != id) {
       _sortColumn = id;
-      _direction = DesignSortDirection.ascending;
-    } else if (_direction == DesignSortDirection.ascending) {
-      _direction = DesignSortDirection.descending;
+      _direction = RawSortDirection.ascending;
+    } else if (_direction == RawSortDirection.ascending) {
+      _direction = RawSortDirection.descending;
     } else if (cycleToUnsorted) {
       _sortColumn = null;
-      _direction = DesignSortDirection.ascending;
+      _direction = RawSortDirection.ascending;
     } else {
-      _direction = DesignSortDirection.ascending;
+      _direction = RawSortDirection.ascending;
     }
     _changed();
   }
@@ -159,7 +158,7 @@ class DesignTableController<R> extends ChangeNotifier {
   /// Sorts by [id] in [direction] (null [id]: unsorted).
   void sortBy(
     String? id, [
-    DesignSortDirection direction = DesignSortDirection.ascending,
+    RawSortDirection direction = RawSortDirection.ascending,
   ]) {
     _sortColumn = id;
     _direction = direction;
@@ -179,7 +178,7 @@ class DesignTableController<R> extends ChangeNotifier {
     if (id != null) {
       final key = columns.firstWhere((c) => c.id == id).sortKey!;
       final order = {for (var i = 0; i < kept.length; i++) _key(kept[i]): i};
-      final sign = _direction == DesignSortDirection.ascending ? 1 : -1;
+      final sign = _direction == RawSortDirection.ascending ? 1 : -1;
       kept.sort((a, b) {
         final c = _compare(key(a), key(b)) * sign;
         return c != 0 ? c : order[_key(a)]!.compareTo(order[_key(b)]!);
@@ -277,18 +276,20 @@ class DesignTableController<R> extends ChangeNotifier {
   }
 
   /// The shown page's selection, for its select-all box.
-  DesignSelection get pageSelection {
+  RawDataTableSelection get pageSelection {
     final page = pageRows;
     final n = page.where(isSelected).length;
-    if (n == 0) return DesignSelection.none;
-    return n == page.length ? DesignSelection.all : DesignSelection.some;
+    if (n == 0) return RawDataTableSelection.none;
+    return n == page.length
+        ? RawDataTableSelection.all
+        : RawDataTableSelection.some;
   }
 
   /// The select-all box's press: clears the page when all of it is
   /// selected, else selects all of it.
   void togglePage() {
     final keys = [for (final r in pageRows) _key(r)];
-    if (pageSelection == DesignSelection.all) {
+    if (pageSelection == RawDataTableSelection.all) {
       _selected.removeAll(keys);
     } else {
       _selected.addAll(keys);
@@ -316,11 +317,11 @@ class DesignTableController<R> extends ChangeNotifier {
   }
 }
 
-/// One row, as [DesignDataTable.rowBuilder] gets it.
+/// One row, as [RawDataTable.rowBuilder] gets it.
 @immutable
-class DesignTableRow<R> {
+class RawDataRowDetails<R> {
   /// A row; the table makes these.
-  const DesignTableRow({
+  const RawDataRowDetails({
     required this.row,
     required this.index,
     required this.selected,
@@ -345,24 +346,24 @@ class DesignTableRow<R> {
   final VoidCallback toggle;
 }
 
-/// A sortable header, as [DesignDataTable.headerBuilder] gets it.
-typedef DesignTableHeaderBuilder<R> = Widget Function(
+/// A sortable header, as [RawDataTable.headerBuilder] gets it.
+typedef RawDataTableHeaderBuilder<R> = Widget Function(
   BuildContext context,
-  DesignTableColumn<R> column,
-  DesignSortDirection? sort,
+  RawDataColumn<R> column,
+  RawSortDirection? sort,
   Set<WidgetState> states,
 );
 
-/// The rows of a [DesignTableController]'s page under a header row, with
+/// The rows of a [RawDataTableController]'s page under a header row, with
 /// one tab stop for the rows. The look paints the header cells, the cells,
 /// and each row around its cells.
 ///
 /// ```dart
-/// DesignDataTable<String>(controller: controller, headerBuilder: (context, column, sort, states) => Text(column.label), cellBuilder: (context, row, column) => Text(row), rowBuilder: (context, row, cells) => Row(children: cells))
+/// RawDataTable<String>(controller: controller, headerBuilder: (context, column, sort, states) => Text(column.label), cellBuilder: (context, row, column) => Text(row), rowBuilder: (context, row, cells) => Row(children: cells))
 /// ```
-class DesignDataTable<R> extends StatefulWidget {
+class RawDataTable<R> extends StatefulWidget {
   /// The table of [controller].
-  const DesignDataTable({
+  const RawDataTable({
     super.key,
     required this.controller,
     required this.headerBuilder,
@@ -377,23 +378,19 @@ class DesignDataTable<R> extends StatefulWidget {
   /// The model: the rows, the columns and the table's view of them.
   /// The caller makes it, keeps it across
   /// rebuilds and disposes it.
-  final DesignTableController<R> controller;
+  final RawDataTableController<R> controller;
 
   /// Paints a header cell.
-  final DesignTableHeaderBuilder<R> headerBuilder;
+  final RawDataTableHeaderBuilder<R> headerBuilder;
 
   /// Paints a cell.
-  final Widget Function(
-    BuildContext context,
-    R row,
-    DesignTableColumn<R> column,
-  )
+  final Widget Function(BuildContext context, R row, RawDataColumn<R> column)
   cellBuilder;
 
   /// Paints a row around its cells.
   final Widget Function(
     BuildContext context,
-    DesignTableRow<R> row,
+    RawDataRowDetails<R> row,
     List<Widget> cells,
   )
   rowBuilder;
@@ -411,39 +408,38 @@ class DesignDataTable<R> extends StatefulWidget {
   final ValueChanged<R>? onActivate;
 
   /// What a screen reader hears after a sorted header's label; null:
-  /// [DesignLocalizations.dataTableSortedHint].
-  final String Function(DesignSortDirection direction)? sortedHint;
+  /// [RawWidgetsLocalizations.dataTableSortedHint].
+  final String Function(RawSortDirection direction)? sortedHint;
 
   @override
-  State<DesignDataTable<R>> createState() => _DesignDataTableState<R>();
+  State<RawDataTable<R>> createState() => _DesignDataTableState<R>();
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
       ..add(
-        DiagnosticsProperty<DesignTableController<R>>('controller', controller),
+        DiagnosticsProperty<RawDataTableController<R>>(
+          'controller',
+          controller,
+        ),
       )
       ..add(
-        ObjectFlagProperty<DesignTableHeaderBuilder<R>>.has(
+        ObjectFlagProperty<RawDataTableHeaderBuilder<R>>.has(
           'headerBuilder',
           headerBuilder,
         ),
       )
       ..add(
         ObjectFlagProperty<
-          Widget Function(
-            BuildContext context,
-            R row,
-            DesignTableColumn<R> column,
-          )
+          Widget Function(BuildContext context, R row, RawDataColumn<R> column)
         >.has('cellBuilder', cellBuilder),
       )
       ..add(
         ObjectFlagProperty<
           Widget Function(
             BuildContext context,
-            DesignTableRow<R> row,
+            RawDataRowDetails<R> row,
             List<Widget> cells,
           )
         >.has('rowBuilder', rowBuilder),
@@ -463,7 +459,7 @@ class DesignDataTable<R> extends StatefulWidget {
       )
       ..add(ObjectFlagProperty<ValueChanged<R>>.has('onActivate', onActivate))
       ..add(
-        ObjectFlagProperty<String Function(DesignSortDirection direction)>.has(
+        ObjectFlagProperty<String Function(RawSortDirection direction)>.has(
           'sortedHint',
           sortedHint,
         ),
@@ -479,7 +475,7 @@ class _OpenRowIntent extends Intent {
   const _OpenRowIntent();
 }
 
-class _DesignDataTableState<R> extends State<DesignDataTable<R>> {
+class _DesignDataTableState<R> extends State<RawDataTable<R>> {
   final List<FocusNode> _nodes = [];
   int _current = 0;
 
@@ -490,7 +486,7 @@ class _DesignDataTableState<R> extends State<DesignDataTable<R>> {
   }
 
   @override
-  void didUpdateWidget(DesignDataTable<R> oldWidget) {
+  void didUpdateWidget(RawDataTable<R> oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.controller != widget.controller) {
       oldWidget.controller.removeListener(_changed);
@@ -511,7 +507,7 @@ class _DesignDataTableState<R> extends State<DesignDataTable<R>> {
 
   void _syncNodes(int count) {
     while (_nodes.length < count) {
-      _nodes.add(FocusNode(debugLabel: 'DesignDataTable row ${_nodes.length}'));
+      _nodes.add(FocusNode(debugLabel: 'RawDataTable row ${_nodes.length}'));
     }
     while (_nodes.length > count) {
       _nodes.removeLast().dispose();
@@ -566,7 +562,7 @@ class _DesignDataTableState<R> extends State<DesignDataTable<R>> {
     return KeyEventResult.handled;
   }
 
-  Widget _header(BuildContext context, DesignTableColumn<R> column) {
+  Widget _header(BuildContext context, RawDataColumn<R> column) {
     final c = widget.controller;
     final sort = c.sortOf(column.id);
     if (!column.sortable) {
@@ -580,13 +576,14 @@ class _DesignDataTableState<R> extends State<DesignDataTable<R>> {
     return MergeSemantics(
       child: Semantics(
         header: true,
-        child: DesignPressable(
+        child: RawButton(
           onPressed: () => c.sort(column.id),
           semanticLabel: column.label,
           semanticValue: sort == null
               ? null
               : (widget.sortedHint ??
-                    DesignLocalizations.of(context).dataTableSortedHint)(sort),
+                    RawWidgetsLocalizations.of(context)
+                        .dataTableSortedHint)(sort),
           excludeSemantics: true,
           builder: (context, states, _) =>
               widget.headerBuilder(context, column, sort, states),
@@ -599,7 +596,7 @@ class _DesignDataTableState<R> extends State<DesignDataTable<R>> {
     final c = widget.controller;
     final selected = c.isSelected(row);
     final activate = widget.onActivate;
-    return DesignPressable(
+    return RawButton(
       key: ValueKey<Object?>(row),
       focusNode: _nodes[i],
       onPressed: () => _press(row, i),
@@ -619,7 +616,7 @@ class _DesignDataTableState<R> extends State<DesignDataTable<R>> {
           : null,
       builder: (context, states, _) => widget.rowBuilder(
         context,
-        DesignTableRow(
+        RawDataRowDetails(
           row: row,
           index: i,
           selected: selected,

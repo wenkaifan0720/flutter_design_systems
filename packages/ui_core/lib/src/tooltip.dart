@@ -49,6 +49,9 @@ import 'motion.dart';
 /// ```dart
 /// DesignTooltip(message: 'Save the report', tooltipBuilder: (context, info) => Text('Save the report'), child: const Text('Save'))
 /// ```
+@Deprecated(
+  'Use RawTooltip, in a MergeSemantics so the tip stays on the semantics node of the control: RawTooltipFocusFix round its child shows it on the keyboard focus, and RawTooltipPlacement round it places the tip and tells it its side. Drive the tip spring or fade from the animation tooltipBuilder gets. This feature was deprecated after ui_core 0.4.0.',
+)
 class DesignTooltip extends StatefulWidget {
   /// A tooltip of [message] for [child].
   const DesignTooltip({
@@ -69,25 +72,25 @@ class DesignTooltip extends StatefulWidget {
   /// tooltip at all.
   final String message;
 
-  /// Paints the tip: [DesignOverlayInfo.side] is the side of [child] it
-  /// took, [DesignOverlayInfo.animation] its presence (0 hidden, 1 shown),
-  /// and [DesignOverlayInfo.surfaceRect] where it landed, for a tail that
+  /// Paints the tip: [RawPopoverInfo.side] is the side of [child] it
+  /// took, [RawPopoverInfo.animation] its presence (0 hidden, 1 shown),
+  /// and [RawPopoverInfo.surfaceRect] where it landed, for a tail that
   /// points at [child]. It never takes the focus.
-  final DesignOverlaySurfaceBuilder tooltipBuilder;
+  final RawPopoverOverlayBuilder tooltipBuilder;
 
   /// The control it describes.
   final Widget child;
 
   /// Where the tip goes: [defaultPlacement] by default. Wherever it goes,
   /// it keeps clear of the screen's edges, the on-screen keyboard and a
-  /// [DesignOverlayPadding].
-  final DesignOverlayPlacement placement;
+  /// [RawPopoverPadding].
+  final RawPopoverPlacement placement;
 
   /// Above [child], centred on it, 4 px from it; below where there are
   /// fewer than 48 px above (two lines of a tip) and more below.
-  static const DesignOverlayPlacement defaultPlacement = DesignOverlayPlacement(
-    side: DesignOverlaySide.above,
-    align: DesignOverlayAlign.center,
+  static const RawPopoverPlacement defaultPlacement = RawPopoverPlacement(
+    side: RawPopoverSide.above,
+    align: RawPopoverAlign.center,
     preferredExtent: 48,
     matchAnchorWidth: false,
   );
@@ -140,13 +143,13 @@ class DesignTooltip extends StatefulWidget {
     properties
       ..add(StringProperty('message', message))
       ..add(
-        ObjectFlagProperty<DesignOverlaySurfaceBuilder>.has(
+        ObjectFlagProperty<RawPopoverOverlayBuilder>.has(
           'tooltipBuilder',
           tooltipBuilder,
         ),
       )
       ..add(
-        DiagnosticsProperty<DesignOverlayPlacement>(
+        DiagnosticsProperty<RawPopoverPlacement>(
           'placement',
           placement,
           defaultValue: defaultPlacement,
@@ -426,7 +429,7 @@ class _DesignTooltipState extends State<DesignTooltip>
     final bounds = designOverlayBounds(
       overlaySize: layout.overlaySize,
       view: _overlayView(context),
-      padding: DesignOverlayPadding.of(context),
+      padding: RawPopoverPadding.of(context),
       margin: placement.margin,
     );
     final side = designResolveSide(anchor, bounds, placement, direction);
@@ -437,7 +440,7 @@ class _DesignTooltipState extends State<DesignTooltip>
       placement.gap,
       direction,
     );
-    final info = DesignOverlayInfo(
+    final info = RawPopoverInfo(
       side: side,
       anchorRect: anchor,
       maxSize: maxSize,

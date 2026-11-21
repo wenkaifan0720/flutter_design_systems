@@ -3,7 +3,7 @@
 // for a date or a time in a locale's names and digits.
 import 'package:flutter/foundation.dart';
 
-import '../date_field.dart' show DesignDateSegmentType;
+import '../date_field.dart' show RawDateSegmentType;
 import 'localizations_data.dart';
 
 /// One part of a pattern: a field's segment, or the text between.
@@ -21,7 +21,7 @@ class PatternPart {
       width = 0;
 
   /// The segment's kind; null for text.
-  final DesignDateSegmentType? type;
+  final RawDateSegmentType? type;
 
   /// The pattern letter (`h`, `H`, `K`, `k` tell the clock apart).
   final String letter;
@@ -49,14 +49,14 @@ class PatternPart {
       : 'PatternPart.segment($type, $letter×$width)';
 }
 
-DesignDateSegmentType? _typeOf(String letter) => switch (letter) {
-  'y' => DesignDateSegmentType.year,
-  'M' || 'L' => DesignDateSegmentType.month,
-  'd' => DesignDateSegmentType.day,
-  'h' || 'H' || 'K' || 'k' => DesignDateSegmentType.hour,
-  'm' => DesignDateSegmentType.minute,
-  's' => DesignDateSegmentType.second,
-  'a' => DesignDateSegmentType.dayPeriod,
+RawDateSegmentType? _typeOf(String letter) => switch (letter) {
+  'y' => RawDateSegmentType.year,
+  'M' || 'L' => RawDateSegmentType.month,
+  'd' => RawDateSegmentType.day,
+  'h' || 'H' || 'K' || 'k' => RawDateSegmentType.hour,
+  'm' => RawDateSegmentType.minute,
+  's' => RawDateSegmentType.second,
+  'a' => RawDateSegmentType.dayPeriod,
   _ => null,
 };
 
@@ -269,7 +269,7 @@ bool hasRightToLeft(String text) => text.runes.any(
 /// its own. Each run is a list of indices into [parts].
 List<List<int>> numberRuns(List<PatternPart> parts) {
   bool numeric(PatternPart p) =>
-      p.type != null && p.type != DesignDateSegmentType.dayPeriod;
+      p.type != null && p.type != RawDateSegmentType.dayPeriod;
   final runs = <List<int>>[];
   var i = 0;
   while (i < parts.length) {

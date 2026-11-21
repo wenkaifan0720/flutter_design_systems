@@ -3,9 +3,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:ui_core/ui_core.dart';
 import 'package:ui_core/src/internal/localizations_data.dart';
 
-// Each message's DesignLocalizations member, by its name in the tables, with
+// Each message's RawWidgetsLocalizations member, by its name in the tables, with
 // the values a test fills its placeholders with.
-final Map<String, String Function(DesignLocalizations l)> _words = {
+final Map<String, String Function(RawWidgetsLocalizations l)> _words = {
   'cancelButtonLabel': (l) => l.cancelButtonLabel,
   'okButtonLabel': (l) => l.okButtonLabel,
   'closeButtonLabel': (l) => l.closeButtonLabel,
@@ -35,18 +35,18 @@ final Map<String, String Function(DesignLocalizations l)> _words = {
   'carouselLabel': (l) => l.carouselLabel,
   'carouselSlideLabel': (l) => l.carouselSlideLabel(1, 5),
   'colorAreaLabel': (l) => l.colorAreaLabel,
-  'colorChannelHue': (l) => l.colorChannelLabel(DesignColorChannel.hue),
+  'colorChannelHue': (l) => l.colorChannelLabel(RawColorChannel.hue),
   'colorChannelSaturation': (l) =>
-      l.colorChannelLabel(DesignColorChannel.saturation),
+      l.colorChannelLabel(RawColorChannel.saturation),
   'colorChannelBrightness': (l) =>
-      l.colorChannelLabel(DesignColorChannel.brightness),
-  'colorChannelAlpha': (l) => l.colorChannelLabel(DesignColorChannel.alpha),
+      l.colorChannelLabel(RawColorChannel.brightness),
+  'colorChannelAlpha': (l) => l.colorChannelLabel(RawColorChannel.alpha),
   'commandPaletteLabel': (l) => l.commandPaletteLabel,
   'commandPaletteBarrierLabel': (l) => l.commandPaletteBarrierLabel,
   'sortedAscendingHint': (l) =>
-      l.dataTableSortedHint(DesignSortDirection.ascending),
+      l.dataTableSortedHint(RawSortDirection.ascending),
   'sortedDescendingHint': (l) =>
-      l.dataTableSortedHint(DesignSortDirection.descending),
+      l.dataTableSortedHint(RawSortDirection.descending),
   'requiredHint': (l) => l.requiredHint,
   'showPasswordLabel': (l) => l.showPasswordLabel,
   'hidePasswordLabel': (l) => l.hidePasswordLabel,
@@ -83,7 +83,7 @@ final Map<String, String Function(DesignLocalizations l)> _words = {
   'keyboardKeyOption': (l) => l.keyboardKeyOption,
   'keyboardKeyEnter': (l) => l.keyboardKeyEnter,
   'keyboardKeyTab': (l) => l.keyboardKeyTab,
-  // 0.3.0 overlays: a search that failed (DesignCombobox.errorBuilder).
+  // 0.3.0 overlays: a search that failed (RawCombobox.errorBuilder).
   'searchFailedMessage': (l) => l.searchFailedMessage,
   // 0.3.0 routes
   'alertDialogLabel': (l) => l.alertDialogLabel,
@@ -97,7 +97,7 @@ final Map<String, String Function(DesignLocalizations l)> _words = {
 };
 
 // 0.3.0 values
-final Map<String, String Function(DesignLocalizations l)> _valueWords = {
+final Map<String, String Function(RawWidgetsLocalizations l)> _valueWords = {
   'anteMeridiemAbbreviation': (l) => l.anteMeridiemAbbreviation,
   'postMeridiemAbbreviation': (l) => l.postMeridiemAbbreviation,
   'timePickerHourLabel': (l) => l.timePickerHourLabel,
@@ -168,15 +168,17 @@ const _filled = {
   'series': 'Milk',
   'y': '4',
 };
-final Map<String, String Function(DesignLocalizations l, int n)> _counted = {
-  'selectedRowCountTitle': (l, n) => l.selectedRowCountTitle(n),
-  'commandPaletteResultsMessage': (l, n) => l.commandPaletteResultsMessage(n),
-  'formProblemsMessage': (l, n) => l.formProblemsMessage(n),
-  // 0.3.0 values
-  'chartSeriesCountLabel': (l, n) => l.chartSeriesCountLabel(n),
-  'chartPointCountLabel': (l, n) => l.chartPointCountLabel(n),
-  'chartSliceCountLabel': (l, n) => l.chartSliceCountLabel(n),
-};
+final Map<String, String Function(RawWidgetsLocalizations l, int n)> _counted =
+    {
+      'selectedRowCountTitle': (l, n) => l.selectedRowCountTitle(n),
+      'commandPaletteResultsMessage': (l, n) =>
+          l.commandPaletteResultsMessage(n),
+      'formProblemsMessage': (l, n) => l.formProblemsMessage(n),
+      // 0.3.0 values
+      'chartSeriesCountLabel': (l, n) => l.chartSeriesCountLabel(n),
+      'chartPointCountLabel': (l, n) => l.chartPointCountLabel(n),
+      'chartSliceCountLabel': (l, n) => l.chartSliceCountLabel(n),
+    };
 
 String _key(Locale l) => l.countryCode == null
     ? l.languageCode
@@ -201,22 +203,22 @@ bool _rtl(int c) =>
 
 void main() {
   test('supportedLocales are the 30 the tables hold', () {
-    expect(DesignLocalizations.supportedLocales, hasLength(30));
+    expect(RawWidgetsLocalizations.supportedLocales, hasLength(30));
     expect(
-      DesignLocalizations.supportedLocales.map(_key).toSet(),
+      RawWidgetsLocalizations.supportedLocales.map(_key).toSet(),
       designLocaleData.keys.toSet(),
     );
   });
 
   test('every locale says every message from its table, filled, in its '
       'digits', () {
-    for (final locale in DesignLocalizations.supportedLocales) {
+    for (final locale in RawWidgetsLocalizations.supportedLocales) {
       if (locale.languageCode == 'en') continue;
       final data = designLocaleData[_key(locale)]!;
-      final l = DesignLocalizations.forLocale(locale);
+      final l = RawWidgetsLocalizations.forLocale(locale);
       expect(
         l.runtimeType,
-        isNot(DefaultDesignLocalizations),
+        isNot(DefaultRawWidgetsLocalizations),
         reason: '$locale',
       );
       expect(
@@ -235,9 +237,9 @@ void main() {
     }
   });
 
-  test('English: the template ARB says what DefaultDesignLocalizations '
+  test('English: the template ARB says what DefaultRawWidgetsLocalizations '
       'says', () {
-    const en = DefaultDesignLocalizations();
+    const en = DefaultRawWidgetsLocalizations();
     final data = designLocaleData['en']!;
     for (final MapEntry(:key, :value) in _words.entries) {
       expect(value(en), _fill(data.words[key]!, _filled), reason: key);
@@ -250,18 +252,19 @@ void main() {
       }
     }
     expect(
-      DesignLocalizations.forLocale(const Locale('en', 'GB')),
-      isA<DefaultDesignLocalizations>(),
+      RawWidgetsLocalizations.forLocale(const Locale('en', 'GB')),
+      isA<DefaultRawWidgetsLocalizations>(),
     );
   });
 
   test('counted messages take the form for the exact count, else the '
       'count\'s plural category', () {
     String results(String locale, int n) =>
-        DesignLocalizations.forLocale(Locale(locale))
+        RawWidgetsLocalizations.forLocale(Locale(locale))
             .commandPaletteResultsMessage(n);
     String problems(String locale, int n) =>
-        DesignLocalizations.forLocale(Locale(locale)).formProblemsMessage(n);
+        RawWidgetsLocalizations.forLocale(Locale(locale))
+            .formProblemsMessage(n);
 
     expect([1, 2, 5, 11, 21, 22, 112].map((n) => results('ru', n)), [
       '1 результат',
@@ -311,7 +314,7 @@ void main() {
     ]);
     expect(results('ja', 3), '3 件の結果');
     // Flutter's Material words, with its Zero and One as exact counts.
-    final de = DesignLocalizations.forLocale(const Locale('de'));
+    final de = RawWidgetsLocalizations.forLocale(const Locale('de'));
     expect([0, 1, 3].map(de.selectedRowCountTitle), [
       'Keine Objekte ausgewählt',
       // Flutter's German keeps a count on its noun's line.
@@ -322,8 +325,8 @@ void main() {
 
   test('placeholders take their values, a slide counted from 1, numbers in '
       'the locale\'s digits', () {
-    DesignLocalizations l(String language) =>
-        DesignLocalizations.forLocale(Locale(language));
+    RawWidgetsLocalizations l(String language) =>
+        RawWidgetsLocalizations.forLocale(Locale(language));
     expect(l('de').carouselSlideLabel(0, 3), 'Folie 1 von 3');
     expect(
       l('ja').reorderableListMovedMessage('牛乳', 2, 5),
@@ -336,8 +339,8 @@ void main() {
   });
 
   test('dates: each locale\'s names, patterns, digits and first day', () {
-    DesignLocalizations l(Locale locale) =>
-        DesignLocalizations.forLocale(locale);
+    RawWidgetsLocalizations l(Locale locale) =>
+        RawWidgetsLocalizations.forLocale(locale);
     final monday = DateTime(2025, 3, 3);
     final december = DateTime(2025, 12);
     expect(
@@ -387,7 +390,7 @@ void main() {
     // Arabic's short names are whole words; a month's columns take one letter.
     expect(l(const Locale('ar')).formatShortWeekday(DateTime.saturday), 'س');
     // Every locale names all seven days, distinctly where its names allow.
-    for (final locale in DesignLocalizations.supportedLocales) {
+    for (final locale in RawWidgetsLocalizations.supportedLocales) {
       final days = [
         for (var d = 1; d <= 7; d++) l(locale).formatShortWeekday(d),
       ];
@@ -399,7 +402,7 @@ void main() {
   test('a locale finds its language: Traditional Chinese by script or '
       'region, the older codes, English for the rest', () {
     String handle(Locale l) =>
-        DesignLocalizations.forLocale(l).splitViewHandleLabel;
+        RawWidgetsLocalizations.forLocale(l).splitViewHandleLabel;
     expect(handle(const Locale('zh')), '调整大小');
     expect(handle(const Locale('zh', 'CN')), '调整大小');
     expect(handle(const Locale('zh', 'TW')), '調整大小');
@@ -413,30 +416,30 @@ void main() {
     expect(handle(const Locale('tl')), handle(const Locale('fil')));
     expect(handle(const Locale('pt', 'BR')), 'Redimensionar');
     expect(
-      DesignLocalizations.forLocale(const Locale('sw')),
-      isA<DefaultDesignLocalizations>(),
+      RawWidgetsLocalizations.forLocale(const Locale('sw')),
+      isA<DefaultRawWidgetsLocalizations>(),
     );
     expect(handle(const Locale('sw')), 'Resize');
   });
 
   test('the delegate takes every locale, loads its words at once and never '
       'reloads', () async {
-    const delegate = DesignLocalizations.delegate;
+    const delegate = RawWidgetsLocalizations.delegate;
     expect(delegate.isSupported(const Locale('sw')), isTrue);
     expect(delegate.isSupported(const Locale('ko')), isTrue);
     expect((await delegate.load(const Locale('ko'))).cancelButtonLabel, '취소');
     expect(
       await delegate.load(const Locale('sw')),
-      isA<DefaultDesignLocalizations>(),
+      isA<DefaultRawWidgetsLocalizations>(),
     );
     expect(delegate.shouldReload(delegate), isFalse);
-    expect(delegate.toString(), 'DesignLocalizations.delegate(30 locales)');
+    expect(delegate.toString(), 'RawWidgetsLocalizations.delegate(30 locales)');
   });
 
   for (final language in ['ar', 'fa', 'ur', 'he']) {
     testWidgets('$language: written right to left, and a behaviour says it '
         'in a right-to-left app', (tester) async {
-      final l = DesignLocalizations.forLocale(Locale(language));
+      final l = RawWidgetsLocalizations.forLocale(Locale(language));
       for (final MapEntry(:key, :value) in _words.entries) {
         if (_latinInRtl[language]?.contains(key) ?? false) continue;
         // Every message is in its script (Milk, a label, aside).
@@ -452,7 +455,7 @@ void main() {
         Localizations(
           locale: Locale(language),
           delegates: const [
-            DesignLocalizations.delegate,
+            RawWidgetsLocalizations.delegate,
             DefaultWidgetsLocalizations.delegate,
           ],
           child: Directionality(
@@ -463,7 +466,7 @@ void main() {
                 return SizedBox(
                   width: 400,
                   height: 200,
-                  child: DesignSplitView(
+                  child: RawSplitView(
                     first: const SizedBox.expand(),
                     second: const SizedBox.expand(),
                     dividerBuilder: (context, states, axis) =>

@@ -10,11 +10,11 @@ import 'package:flutter/widgets.dart';
 import 'haptics.dart';
 import 'localizations.dart';
 
-/// One item of a [DesignRating], as the look paints it.
+/// One item of a [RawRating], as the look paints it.
 @immutable
-class DesignRatingItemDetails {
+class RawRatingItemDetails {
   /// An item's details.
-  const DesignRatingItemDetails({
+  const RawRatingItemDetails({
     required this.index,
     required this.fill,
     required this.isPreview,
@@ -39,13 +39,13 @@ class DesignRatingItemDetails {
 }
 
 /// Paints one item of a rating.
-typedef DesignRatingItemBuilder = Widget Function(
+typedef RawRatingItemBuilder = Widget Function(
   BuildContext context,
-  DesignRatingItemDetails details,
+  RawRatingItemDetails details,
 );
 
 /// Lays out a rating's [items], in reading order.
-typedef DesignRatingLayoutBuilder = Widget Function(
+typedef RawRatingLayoutBuilder = Widget Function(
   BuildContext context,
   List<Widget> items,
 );
@@ -62,17 +62,17 @@ typedef DesignRatingLayoutBuilder = Widget Function(
 /// Up step up, Left and Down back (Right and Left as drawn, so mirrored
 /// right to left), End sets [itemCount], Home or 0 clears it, a digit
 /// sets that many. A screen reader hears a slider, "Rating, 3 of 5"
-/// ([DesignLocalizations.ratingValueLabel]), and steps it.
+/// ([RawWidgetsLocalizations.ratingValueLabel]), and steps it.
 ///
 /// [readOnly] shows a value (an average of 3.7): no input and no tab stop,
 /// read as a value, not as disabled.
 ///
 /// ```dart
-/// DesignRating(value: 3, onChanged: (value) {}, itemBuilder: (context, item) => Text(item.fill >= 1 ? '★' : '☆'))
+/// RawRating(value: 3, onChanged: (value) {}, itemBuilder: (context, item) => Text(item.fill >= 1 ? '★' : '☆'))
 /// ```
-class DesignRating extends StatefulWidget {
+class RawRating extends StatefulWidget {
   /// A rating showing [value].
-  const DesignRating({
+  const RawRating({
     super.key,
     required this.value,
     required this.onChanged,
@@ -100,7 +100,7 @@ class DesignRating extends StatefulWidget {
   final ValueChanged<double>? onChanged;
 
   /// Paints an item.
-  final DesignRatingItemBuilder itemBuilder;
+  final RawRatingItemBuilder itemBuilder;
 
   /// How many items. Defaults to 5.
   final int itemCount;
@@ -114,7 +114,7 @@ class DesignRating extends StatefulWidget {
   final bool readOnly;
 
   /// Lays out the items; null: a [Row] in reading order.
-  final DesignRatingLayoutBuilder? layoutBuilder;
+  final RawRatingLayoutBuilder? layoutBuilder;
 
   /// Called with the value as a change begins (a press, a drag, a key).
   final ValueChanged<double>? onChangeStart;
@@ -123,11 +123,11 @@ class DesignRating extends StatefulWidget {
   final ValueChanged<double>? onChangeEnd;
 
   /// What a screen reader calls it; null: "Rating"
-  /// ([DesignLocalizations.ratingLabel]).
+  /// ([RawWidgetsLocalizations.ratingLabel]).
   final String? semanticLabel;
 
   /// How a screen reader says a value; null: "3.5 of 5" in the reader's
-  /// numbers ([DesignLocalizations.ratingValueLabel]).
+  /// numbers ([RawWidgetsLocalizations.ratingValueLabel]).
   final String Function(double value)? semanticFormatterCallback;
 
   /// The rating's focus; null: its own.
@@ -141,20 +141,20 @@ class DesignRating extends StatefulWidget {
   final MouseCursor? mouseCursor;
 
   @override
-  State<DesignRating> createState() => _DesignRatingState();
+  State<RawRating> createState() => _DesignRatingState();
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
       ..add(
-        ObjectFlagProperty<DesignRatingItemBuilder>.has(
+        ObjectFlagProperty<RawRatingItemBuilder>.has(
           'itemBuilder',
           itemBuilder,
         ),
       )
       ..add(
-        ObjectFlagProperty<DesignRatingLayoutBuilder>.has(
+        ObjectFlagProperty<RawRatingLayoutBuilder>.has(
           'layoutBuilder',
           layoutBuilder,
         ),
@@ -224,7 +224,7 @@ class DesignRating extends StatefulWidget {
   }
 }
 
-class _DesignRatingState extends State<DesignRating> {
+class _DesignRatingState extends State<RawRating> {
   FocusNode? _ownNode;
   List<GlobalKey> _keys = const [];
   // The value a hovering pointer would set; null, none.
@@ -247,7 +247,7 @@ class _DesignRatingState extends State<DesignRating> {
   }
 
   @override
-  void didUpdateWidget(DesignRating oldWidget) {
+  void didUpdateWidget(RawRating oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.focusNode != widget.focusNode) {
       (oldWidget.focusNode ?? _ownNode)?.removeListener(_rebuild);
@@ -379,7 +379,7 @@ class _DesignRatingState extends State<DesignRating> {
 
   @override
   Widget build(BuildContext context) {
-    final l = DesignLocalizations.of(context);
+    final l = RawWidgetsLocalizations.of(context);
     if (_keys.length != widget.itemCount) {
       _keys = [for (var i = 0; i < widget.itemCount; i++) GlobalKey()];
     }
@@ -398,7 +398,7 @@ class _DesignRatingState extends State<DesignRating> {
           key: _keys[i],
           child: widget.itemBuilder(
             context,
-            DesignRatingItemDetails(
+            RawRatingItemDetails(
               index: i,
               fill: (shown - i).clamp(0, 1).toDouble(),
               isPreview: preview != null,

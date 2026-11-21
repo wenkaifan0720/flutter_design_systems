@@ -1,0 +1,19 @@
+name: ui_core_review_example
+description: A review page of ui_core_review's keyline sheet, over plainly painted controls.
+publish_to: none
+
+environment:
+  sdk: ">=3.13.0 <4.0.0"
+  flutter: ">=3.47.0"
+
+resolution: workspace
+
+dependencies:
+  flutter:
+    sdk: flutter
+  ui_core: ^0.4.0
+  ui_core_review:
+    path: ../
+
+dev_dependencies:
+  flutter_lints: ^6.0.0

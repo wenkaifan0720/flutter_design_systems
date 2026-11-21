@@ -1,6 +1,6 @@
 part of '../alignment.dart';
 
-/// Whether each control inside a [DesignField] takes a tap through the
+/// Whether each control inside a [RawInputDecorator] takes a tap through the
 /// semantics tree, and whether the field's label is read once.
 ///
 /// A screen reader's double tap, and a click on the web while semantics
@@ -44,7 +44,7 @@ class DesignFieldSemanticsCheck {
   /// The look's name, for messages.
   final String look;
 
-  /// Checks every [DesignField] shown under [context].
+  /// Checks every [RawInputDecorator] shown under [context].
   DesignAlignmentReport check(BuildContext context) {
     final root = context.findRenderObject();
     if (root == null || !root.attached) {
@@ -59,9 +59,9 @@ class DesignFieldSemanticsCheck {
       );
     }
     final view = View.of(context);
-    final fields = <(DesignField, RenderBox)>[];
+    final fields = <(RawInputDecorator, RenderBox)>[];
     void find(Element e) {
-      if (e.widget case final DesignField field) {
+      if (e.widget case final RawInputDecorator field) {
         final box = e.renderObject;
         if (box is RenderBox && box.attached && box.hasSize && _isShown(box)) {
           fields.add((field, box));
@@ -97,7 +97,7 @@ class _FieldSemanticsReader {
     this.viewId,
   );
 
-  final DesignField field;
+  final RawInputDecorator field;
   final RenderBox box;
   final SemanticsNode root;
   final List<(SemanticsNode, Rect)> placed;

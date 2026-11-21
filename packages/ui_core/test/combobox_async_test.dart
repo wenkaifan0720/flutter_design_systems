@@ -18,7 +18,7 @@ const _loadingKey = ValueKey('loading');
 const _errorKey = ValueKey('error');
 
 late FocusNode _focus;
-DesignSearchError? _error;
+RawSearchError? _error;
 
 // A search the test answers: each query waits on its own completer.
 class _Searches {
@@ -57,14 +57,14 @@ Widget _field(DesignComboboxField field) {
   );
 }
 
-Widget _failure(BuildContext context, DesignSearchError error) {
+Widget _failure(BuildContext context, RawSearchError error) {
   _error = error;
   return Column(
     key: _errorKey,
     mainAxisSize: MainAxisSize.min,
     children: [
       const ExcludeSemantics(child: Text('Offline')),
-      DesignPressable(
+      RawButton(
         onPressed: error.retry,
         semanticLabel: 'Try again',
         minimumSize: const Size(44, 44),
@@ -81,7 +81,7 @@ Widget _combobox(
   bool loading = true,
   bool failure = true,
   ValueChanged<String>? onSelected,
-}) => DesignCombobox<String>(
+}) => RawCombobox<String>(
   search: search,
   debounceDuration: debounce,
   onSelected: onSelected,
@@ -320,7 +320,7 @@ void main() {
       await tester.pumpWidget(
         _page(
           StatefulBuilder(
-            builder: (context, setState) => DesignTagInput<String>(
+            builder: (context, setState) => RawTagInput<String>(
               values: values,
               onChanged: (next) => setState(() => values = next),
               onCreate: (text) => text,
@@ -374,7 +374,7 @@ void main() {
   });
 
   behaviourContract(
-    'DesignCombobox, a search that failed',
+    'RawCombobox, a search that failed',
     build: (c) => Align(
       alignment: Alignment.topCenter,
       child: _combobox((query) => throw StateError('offline')),

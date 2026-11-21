@@ -2,7 +2,7 @@
 /// its own. A tap and a long press; Enter and Space through the app's
 /// shortcuts ([ActivateIntent], [ButtonActivateIntent]); hover, a keyboard
 /// focus that shows only when the keyboard moves it; a hit area of at least
-/// [DesignPressable.minimumSize]; one semantics node with the control's role
+/// [RawButton.minimumSize]; one semantics node with the control's role
 /// and state. Under it sit a [WidgetStatesController] and a
 /// [FocusableActionDetector], and the look's builder gets the
 /// `Set<WidgetState>` to resolve its styles against, as
@@ -30,7 +30,7 @@ import 'internal/focus_visible.dart';
 /// pressed, disabled, selected, error). [child] is the pressable's own
 /// child, passed through so a face that does not change with state is
 /// built once.
-typedef DesignPressableBuilder = Widget Function(
+typedef RawButtonBuilder = Widget Function(
   BuildContext context,
   Set<WidgetState> states,
   Widget? child,
@@ -50,21 +50,22 @@ typedef DesignPressableBuilder = Widget Function(
 /// directly.
 ///
 /// [WidgetState.pressed] comes from the pointer itself, as soon as a finger
-/// or a button goes down (after [kPressTimeout] inside a scroll view, so a
-/// scroll that starts on it does not light it), and stays at least
+/// or a button goes down (a touch or a stylus inside a scroll view waits
+/// [kPressTimeout], so a scroll that starts on it does not light it; a mouse
+/// does not drag a scroll view, so its press shows at once), and stays at least
 /// [minimumPressDuration], so a quick tap, shorter than a frame's worth of
 /// the press animation, still shows its press. A drag past [kTouchSlop]
 /// lets it go at once: a scroll took the pointer. A long press holds it
 /// until the finger lifts.
 ///
 /// It is as large as its face, or [minimumSize]: a `DesignTapTargetScope`'s
-/// floors reach it only through a `DesignTapTarget` round it. A small icon
+/// floors reach it only through a `TapTargetPadding` round it. A small icon
 /// (16 by 16) under a touch scope stays 16 by 16 to a finger and to a
 /// screen reader until it is wrapped:
 ///
 /// ```dart
-/// DesignTapTarget(
-///   child: DesignPressable(
+/// TapTargetPadding(
+///   child: RawButton(
 ///     semanticLabel: 'Play',
 ///     onPressed: play,
 ///     builder: (context, states, _) => const SizedBox.square(dimension: 16),
@@ -73,11 +74,11 @@ typedef DesignPressableBuilder = Widget Function(
 /// ```
 ///
 /// ```dart
-/// DesignPressable(onPressed: () {}, semanticLabel: 'Save', builder: (context, states, child) => Opacity(opacity: states.contains(WidgetState.pressed) ? 0.6 : 1, child: const Text('Save')))
+/// RawButton(onPressed: () {}, semanticLabel: 'Save', builder: (context, states, child) => Opacity(opacity: states.contains(WidgetState.pressed) ? 0.6 : 1, child: const Text('Save')))
 /// ```
-class DesignPressable extends StatefulWidget {
+class RawButton extends StatefulWidget {
   /// A pressable area drawn by [builder].
-  const DesignPressable({
+  const RawButton({
     super.key,
     required this.builder,
     this.child,
@@ -112,7 +113,7 @@ class DesignPressable extends StatefulWidget {
   });
 
   /// Draws the face for the current states.
-  final DesignPressableBuilder builder;
+  final RawButtonBuilder builder;
 
   /// Passed to [builder] untouched.
   final Widget? child;
@@ -197,8 +198,12 @@ class DesignPressable extends StatefulWidget {
   final bool tab;
 
   /// A screen reader's selected flag, when the control is a choice; null
-  /// leaves it out. Defaults to nothing even when [selected] is true: a
-  /// pressed toggle says [toggled], a checkbox [checked].
+  /// leaves it out. Defaults to nothing even when [selected] is true.
+  ///
+  /// A toggle button (a formatting bar's Bold, a pin, a password reveal) says
+  /// it here and stays a button, read as a button that is selected, as
+  /// `IconButton(isSelected:)` is. A switch says [toggled] and a checkbox
+  /// [checked] instead, and neither is a button.
   final bool? semanticSelected;
 
   /// A screen reader's checked flag, for a checkbox or a radio. Null leaves it out.
@@ -208,6 +213,9 @@ class DesignPressable extends StatefulWidget {
   final bool mixed;
 
   /// A screen reader's toggled flag, for a switch. Null leaves it out.
+  ///
+  /// A switch is not a button, so this drops the button role. A toggle button
+  /// says [semanticSelected] instead and keeps it.
   final bool? toggled;
 
   /// A screen reader's expanded flag, for a disclosure. Null leaves it out.
@@ -229,13 +237,13 @@ class DesignPressable extends StatefulWidget {
   static const Duration minimumPressDuration = kPressTimeout;
 
   @override
-  State<DesignPressable> createState() => DesignPressableState();
+  State<RawButton> createState() => RawButtonState();
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(ObjectFlagProperty<DesignPressableBuilder>.has('builder', builder))
+      ..add(ObjectFlagProperty<RawButtonBuilder>.has('builder', builder))
       ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
       ..add(ObjectFlagProperty<VoidCallback>.has('onLongPress', onLongPress))
       ..add(DiagnosticsProperty<bool>('enabled', enabled, defaultValue: null))
@@ -376,9 +384,9 @@ class DesignPressable extends StatefulWidget {
   }
 }
 
-/// The state of a [DesignPressable]: [states] is what its builder was last
+/// The state of a [RawButton]: [states] is what its builder was last
 /// given.
-class DesignPressableState extends State<DesignPressable> {
+class RawButtonState extends State<RawButton> {
   WidgetStatesController? _own;
 
   WidgetStatesController get _controller =>
@@ -418,7 +426,7 @@ class DesignPressableState extends State<DesignPressable> {
   }
 
   @override
-  void didUpdateWidget(DesignPressable oldWidget) {
+  void didUpdateWidget(RawButton oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.statesController != widget.statesController) {
       (oldWidget.statesController ?? _own)?.removeListener(_changed);
@@ -495,11 +503,25 @@ class DesignPressableState extends State<DesignPressable> {
     _pointer = event.pointer;
     _downAt = event.position;
     _lifted = false;
-    if (context.findAncestorStateOfType<ScrollableState>() != null) {
+    if (_scrollMayTake(event.kind)) {
       _pressDelay = Timer(kPressTimeout, _show);
     } else {
       _show();
     }
+  }
+
+  // Whether the scroll view round the pressable can still take this pointer
+  // for a drag: then the press waits kPressTimeout, as the tap recognizer's
+  // tap down does while a drag may win. A mouse is not a drag device
+  // (ScrollBehavior.dragDevices), so its press shows at once, as InkWell's
+  // splash does.
+  bool _scrollMayTake(PointerDeviceKind kind) {
+    final scrollable = context.findAncestorStateOfType<ScrollableState>();
+    if (scrollable == null) return false;
+    final behavior =
+        scrollable.widget.scrollBehavior ??
+        ScrollConfiguration.of(scrollable.context);
+    return behavior.dragDevices.contains(kind);
   }
 
   void _show() {
@@ -508,7 +530,7 @@ class DesignPressableState extends State<DesignPressable> {
     if (!mounted || _pointer == null) return;
     _heldLongEnough = false;
     _hold?.cancel();
-    _hold = Timer(DesignPressable.minimumPressDuration, () {
+    _hold = Timer(RawButton.minimumPressDuration, () {
       _heldLongEnough = true;
       if (_lifted) _forget();
     });

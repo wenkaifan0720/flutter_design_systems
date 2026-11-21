@@ -8,10 +8,10 @@ import 'package:ui_core/ui_core.dart';
 import 'behaviour_contract.dart';
 import 'behaviour_harness.dart';
 
-final Map<int, DesignRatingItemDetails> _items = {};
+final Map<int, RawRatingItemDetails> _items = {};
 
 // The bare reference painter: a 40-wide item whose face says its fill.
-Widget _item(BuildContext context, DesignRatingItemDetails d) {
+Widget _item(BuildContext context, RawRatingItemDetails d) {
   _items[d.index] = d;
   return SizedBox(
     key: ValueKey('item ${d.index}'),
@@ -62,7 +62,7 @@ class _HostState extends State<_Host> {
     _host = this;
     final rating = Align(
       alignment: Alignment.topLeft,
-      child: DesignRating(
+      child: RawRating(
         value: value,
         itemCount: widget.itemCount,
         allowHalf: widget.allowHalf,
@@ -84,7 +84,7 @@ class _HostState extends State<_Host> {
     return Localizations(
       locale: locale,
       delegates: const [
-        DesignLocalizations.delegate,
+        RawWidgetsLocalizations.delegate,
         DefaultWidgetsLocalizations.delegate,
       ],
       child: Directionality(textDirection: direction, child: rating),
@@ -104,10 +104,10 @@ void main() {
   setUp(_items.clear);
 
   behaviourContract(
-    'DesignRating',
+    'RawRating',
     build: (c) => _Host(value: 3, enabled: c.enabled),
     node: () => find.bySemanticsLabel('Rating'),
-    root: () => find.byType(DesignRating),
+    root: () => find.byType(RawRating),
     semantics: isSemantics(
       label: 'Rating',
       value: '3 of 5',
@@ -359,7 +359,9 @@ void main() {
         textDirection: TextDirection.rtl,
       ),
     );
-    final l = DesignLocalizations.of(tester.element(find.byType(DesignRating)));
+    final l = RawWidgetsLocalizations.of(
+      tester.element(find.byType(RawRating)),
+    );
     final data = semanticsOf(
       tester,
       find.bySemanticsLabel(l.ratingLabel),
@@ -373,7 +375,7 @@ void main() {
   ) async {
     await tester.pumpWidget(
       harness(
-        DesignRating(
+        RawRating(
           value: 2,
           onChanged: (_) {},
           itemBuilder: _item,
@@ -424,7 +426,7 @@ void main() {
   });
 
   test('diagnostics name what it was given', () {
-    const rating = DesignRating(
+    const rating = RawRating(
       value: 1,
       onChanged: null,
       itemBuilder: _item,

@@ -231,7 +231,7 @@ class DesignTree<T extends Object> extends StatefulWidget {
   final ValueChanged<T>? onActivate;
 
   /// What a screen reader hears of a row's place; null:
-  /// [DesignLocalizations.treeLevelHint].
+  /// [RawWidgetsLocalizations.treeLevelHint].
   final String Function(int level, int position, int count)? levelHint;
 
   /// What a screen reader calls the tree.
@@ -407,7 +407,7 @@ class _DesignTreeState<T extends Object> extends State<DesignTree<T>> {
       final parentCount = row.siblingCount;
       final open = c.hasChildren(node) ? c.isExpanded(node) : null;
       children.add(
-        DesignPressable(
+        RawButton(
           key: ValueKey<Object>(node),
           focusNode: focus,
           onPressed: () => _press(row),
@@ -418,7 +418,7 @@ class _DesignTreeState<T extends Object> extends State<DesignTree<T>> {
           semanticLabel: widget.labelOf(node),
           semanticHint:
               (widget.levelHint ??
-              DesignLocalizations.of(context)
+              RawWidgetsLocalizations.of(context)
                   .treeLevelHint)(row.depth + 1, row.position + 1, parentCount),
           excludeSemantics: true,
           builder: (context, states, _) => widget.rowBuilder(

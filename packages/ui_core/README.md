@@ -10,7 +10,7 @@ it, so an app that uses a look rarely imports it directly. Import it to build a 
 import 'package:ui_core/ui_core.dart';
 ```
 
-A button of your own, for example: `DesignPressable` keeps the press, the keys, focus, hover and what a screen reader
+A button of your own, for example: `RawButton` keeps the press, the keys, focus, hover and what a screen reader
 hears, and its builder draws the button for each set of states.
 
 ```dart
@@ -25,7 +25,7 @@ class InkButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DesignPressable(
+    return RawButton(
       onPressed: onPressed,
       semanticLabel: label,
       minimumSize: const Size(44, 44),
@@ -70,10 +70,10 @@ flutter pub get
 flutter run -d chrome -t lib/ink_proof.dart
 ```
 
-The proof uses `DesignWheelPicker` for dragging, arrow keys, accessibility adjustments and reduced-motion scrolling.
-Its item builder paints the tints and its column builder marks the focused row. `DesignField` labels the paper
-selector, and `DesignToggleGroup` keeps each paper choice individually operable. The reset button draws the states
-from `DesignPressable` and reserves a 48-pixel target.
+The proof uses `RawPicker` for dragging, arrow keys, accessibility adjustments and reduced-motion scrolling.
+Its item builder paints the tints and its column builder marks the focused row. `RawInputDecorator` labels the paper
+selector, and `RawSegmentedButton` keeps each paper choice individually operable. The reset button draws the states
+from `RawButton` and reserves a 48-pixel target.
 
 The app supplies its own English and Arabic copy and its light and dark colours. Registering the widgets and
 design localization delegates supplies reading direction and localized percentages. Try the screen with your
@@ -89,50 +89,50 @@ through its accessibility nodes and change appearance with Arabic text at twice 
 
 | Behaviour | Class | Flutter's nearest |
 |---|---|---|
-| Anchored overlay (popover, menu surface) | `DesignAnchoredOverlay` | `RawMenuAnchor` |
-| Calendar | `DesignCalendar`, `DesignCalendarController` | `CalendarDatePicker` |
-| Carousel | `DesignCarousel` | `CarouselView` |
-| Colour picker | `DesignColorPicker`, `DesignColorArea`, `DesignColorSlider` | |
-| Combobox | `DesignCombobox` | `RawAutocomplete` |
-| Command palette | `DesignCommandPalette`, `showDesignCommandPalette` | |
-| Data table | `DesignDataTable`, `DesignTableController` | `DataTable` |
-| Form field | `DesignField`, `DesignForm`, `DesignFormField` | `InputDecorator`, `Form` |
+| Anchored overlay (popover, menu surface) | `RawPopover` | `RawMenuAnchor` |
+| Calendar | `RawCalendarDatePicker`, `RawCalendarController` | `CalendarDatePicker` |
+| Carousel | `RawCarousel` | `CarouselView` |
+| Colour picker | `RawColorPicker`, `RawColorArea`, `RawColorSlider` | |
+| Combobox | `RawCombobox` | `RawAutocomplete` |
+| Command palette | `RawCommandPalette`, `showDesignCommandPalette` | |
+| Data table | `RawDataTable`, `RawDataTableController` | `DataTable` |
+| Form field | `RawInputDecorator`, `DesignForm`, `DesignFormField` | `InputDecorator`, `Form` |
 | Input group | `DesignInputGroup` | |
-| Menu bar | `DesignMenuBar` | `MenuBar` |
-| One-time code | `DesignOtpField` | |
-| Password reveal | `DesignPasswordReveal` | |
-| Pull to refresh | `DesignPullToRefresh` | `RefreshIndicator` |
-| Range slider | `DesignRangeSlider` | `RangeSlider` |
-| Reorderable list | `DesignReorderableList` | `ReorderableListView` |
-| Scroll area | `DesignScrollArea` | `RawScrollbar` |
-| Side sheet | `DesignSideSheetRoute` | |
-| Split button | `DesignSplitButton` | |
-| Split view | `DesignSplitView` | |
-| Swipe actions | `DesignSwipeActions` | `Dismissible` |
-| Tag input | `DesignTagInput` | `InputChip` |
-| Toasts | `DesignToaster` | `ScaffoldMessenger` |
-| Toggle group | `DesignToggleGroup` | `SegmentedButton` |
-| Radio group | `DesignRadioGroup` | `RadioGroup` |
+| Menu bar | `RawMenuBar` | `MenuBar` |
+| One-time code | `RawOtpField` | |
+| Password reveal | `RawPasswordReveal` | |
+| Pull to refresh | `RawRefreshIndicator` | `RefreshIndicator` |
+| Range slider | `RawRangeSlider` | `RangeSlider` |
+| Reorderable list | `RawReorderableList` | `ReorderableListView` |
+| Scroll area | `RawScrollArea` | `RawScrollbar` |
+| Side sheet | `RawSideSheetRoute` | |
+| Split button | `RawSplitButton` | |
+| Split view | `RawSplitView` | |
+| Swipe actions | `RawSwipeActions` | `Dismissible` |
+| Tag input | `RawTagInput` | `InputChip` |
+| Toasts | `RawToaster` | `ScaffoldMessenger` |
+| Toggle group | `RawSegmentedButton` | `SegmentedButton` |
+| Radio group | `RadioGroupKeyboardFix`, inside Flutter's `RadioGroup`, round its `RawRadio`s | `RadioGroup` |
 | Tree | `DesignTree`, `DesignTreeController` | `TreeSliver` |
 | Haptics | `DesignHaptics`, `DesignHapticsScope` | `HapticFeedback` |
-| Overlay padding (a look's chrome a surface keeps clear of) | `DesignOverlayPadding` | `MediaQuery.padding` |
-| Context menu | `DesignContextMenu` | `ContextMenuController` |
-| Tooltip | `DesignTooltip` | `RawTooltip` |
+| Overlay padding (a look's chrome a surface keeps clear of) | `RawPopoverPadding` | `MediaQuery.padding` |
+| Context menu | `RawContextMenu` | `ContextMenuController` |
+| Tooltip | `RawTooltipFocusFix` and `RawTooltipPlacement`, round Flutter's `RawTooltip`, in a `MergeSemantics` | `Tooltip` |
 | Shortcut label (a menu row's keys) | `designShortcutLabel`, `designShortcutKeys` | `MenuItemButton`'s |
-| Bottom sheet | `DesignBottomSheetRoute`, `DesignBottomSheetController`, `DesignBottomSheetDragHandle` | `ModalBottomSheetRoute`, `DraggableScrollableSheet` |
-| Full-screen sheet | `DesignSheetPageRoute` | `PageRoute` |
-| Dialog and alert | `DesignDialogRoute`, `DesignDialog` | `DialogRoute`, `AlertDialog` |
-| Swipe actions, from outside | `DesignSwipeActionsController` | |
-| Tabs | `DesignTabController`, `DesignTabBar`, `DesignTabView` | `TabController`, `TabBar`, `TabBarView` |
+| Bottom sheet | `RawBottomSheetRoute`, `RawBottomSheetController`, `RawBottomSheetDragHandle` | `ModalBottomSheetRoute`, `DraggableScrollableSheet` |
+| Full-screen sheet | `RawSheetRoute` | `PageRoute` |
+| Dialog and alert | `DesignDialogRoute`, `RawAlertDialog` | `DialogRoute`, `AlertDialog` |
+| Swipe actions, from outside | `RawSwipeActionsController` | |
+| Tabs | `RawTabController`, `RawTabBar`, `RawTabBarView` | `TabController`, `TabBar`, `TabBarView` |
 | Adaptive shell | `DesignAdaptiveShell`, `DesignWindowSizeClass`, `DesignNavigationMode` | `NavigationBar`, `NavigationRail`, `NavigationDrawer` |
 | List and detail | `DesignListDetail` | |
-| Wheel picker | `DesignWheelPicker`, `DesignWheelColumn` | `CupertinoPicker` |
-| Date and time fields | `DesignDateField`, `DesignTimeField`, `DesignTimeOfDay` | `InputDatePickerFormField`, `TimeOfDay` |
-| Number field | `DesignNumberField` | `TextField` with `keyboardType: number` |
-| Rating | `DesignRating` | (none) |
+| Wheel picker | `RawPicker`, `RawPickerColumn` | `CupertinoPicker` |
+| Date and time fields | `RawDateField`, `RawTimeField`, `RawTimeOfDay` | `InputDatePickerFormField`, `TimeOfDay` |
+| Number field | `RawNumberField` | `TextField` with `keyboardType: number` |
+| Rating | `RawRating` | (none) |
 | Charts | `DesignChart`, `DesignPieChart`, `DesignChartTable`; `DesignLinearScale`, `DesignTimeScale`, `DesignBandScale` | (none) |
 
-They are built from `DesignPressable` (a press, focus, hover and semantics on any widget) and `DesignValueHandle`
+They are built from `RawButton` (a press, focus, hover and semantics on any widget) and `DesignValueHandle`
 (a value dragged or stepped with the keys). Each class's documentation has an example.
 
 ## Flutter's conventions
@@ -146,8 +146,8 @@ The behaviours take what Flutter's own widgets take, under Flutter's names:
 - A single tab stop takes `focusNode` and `autofocus`. A behaviour of many stops (a toggle group, a menubar, a
   table, a tree) keeps one node per item, as `SegmentedButton` and `MenuBar` do.
 - A value comes with `onChanged`, and a null `onPressed` or `onChanged` disables, with no second switch. Two
-  keep one, as `ListTile` and `TextField` do: `DesignPressable.enabled` (a busy button keeps its focus and
-  reads as enabled while it ignores presses) and `DesignCommand.enabled` (a palette given `onSelected` runs
+  keep one, as `ListTile` and `TextField` do: `RawButton.enabled` (a busy button keeps its focus and
+  reads as enabled while it ignores presses) and `RawCommand.enabled` (a palette given `onSelected` runs
   commands that carry no `onPressed` of their own).
 - What a builder paints (a split button's label and its actions, a menu entry, a command, a toast, a table's column,
   a shell's tab) carries its words as a `String` and its glyph as `IconData`: they are what type-ahead, search and a screen reader read, and your
@@ -192,14 +192,14 @@ which never reads it: on a Mac it plays the Cupertino slide. So a look exposes i
 const Map<TargetPlatform, PageTransitionsBuilder> comicPageTransitions = {
   TargetPlatform.android: ComicPageTransitionsBuilder(),
   // iOS's swipe back from the screen's edge, round the look's push.
-  TargetPlatform.iOS: DesignSwipeBackPageTransitionsBuilder(ComicPageTransitionsBuilder()),
+  TargetPlatform.iOS: SwipeBackPageTransitionsBuilder(ComicPageTransitionsBuilder()),
   TargetPlatform.macOS: ComicPageTransitionsBuilder(),
   // ...
 };
 ```
 
 On iOS a page pops with a swipe from the screen's leading edge, and the swipe lives in Cupertino's page transition,
-which a look's own push replaces. `DesignSwipeBackPageTransitionsBuilder` keeps it round any builder: while a finger
+which a look's own push replaces. `SwipeBackPageTransitionsBuilder` keeps it round any builder: while a finger
 drives the swipe, the page follows it and the page under it shows, as on every iOS screen; otherwise the look's push
 and pop play. `designSwipeBack(map)` wraps a map's iOS entry the same way, for a map built at run time.
 
@@ -239,12 +239,12 @@ the same way in every look.
 ## Words
 
 The words a behaviour says on its own ("Close sheet", "Slide 2 of 5", a sorted column's hint) come from
-`DesignLocalizations`, each also a parameter on its behaviour. So do the general words a look shows or says by
+`RawWidgetsLocalizations`, each also a parameter on its behaviour. So do the general words a look shows or says by
 itself (Cancel, Close, Today, Next month, "2 of 5", "3 items selected"), under `MaterialLocalizations`' names where
-Flutter has the word: a look reads them from `DesignLocalizations.of(context)` rather than writing English. English
+Flutter has the word: a look reads them from `RawWidgetsLocalizations.of(context)` rather than writing English. English
 is the default, with nothing to set up under `MaterialApp`, `CupertinoApp` or `WidgetsApp`.
 
-ui_core speaks 30 languages (`DesignLocalizations.supportedLocales`): its dates, plurals and digits come from
+ui_core speaks 30 languages (`RawWidgetsLocalizations.supportedLocales`): its dates, plurals and digits come from
 Unicode CLDR, as Flutter's do, and its words are Material's own translations where Material has the word. Opt in
 with its delegate beside Flutter's, from `flutter_localizations` (add `flutter_localizations: sdk: flutter` to your
 pubspec, as a look's gallery does):
@@ -254,10 +254,10 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 
 MaterialApp(
   localizationsDelegates: const [
-    DesignLocalizations.delegate,
+    RawWidgetsLocalizations.delegate,
     ...GlobalMaterialLocalizations.delegates,
   ],
-  supportedLocales: DesignLocalizations.supportedLocales,
+  supportedLocales: RawWidgetsLocalizations.supportedLocales,
   // ...
 )
 ```
@@ -267,9 +267,9 @@ Flutter widgets: without the Material one, a Material `TextField` under a langua
 the Widgets one gives Arabic, Hebrew, Persian and Urdu their direction. A look supplies its own Material and
 Cupertino words in the app's language: it is drawn with `material_ui` and `cupertino_ui`, whose words are types of
 their own, and loads them itself. A locale ui_core does not speak gets English. For a language of your own, or
-words of your own, extend `DefaultDesignLocalizations`, override the words you translate, and add a delegate for
+words of your own, extend `DefaultRawWidgetsLocalizations`, override the words you translate, and add a delegate for
 your subclass to `localizationsDelegates`; a word added in a later minor version then stays English until you
-translate it. `DesignLocalizations` also says the day a week starts on (`firstDayOfWeek`), which a calendar follows unless told
+translate it. `RawWidgetsLocalizations` also says the day a week starts on (`firstDayOfWeek`), which a calendar follows unless told
 otherwise.
 
 For number and chart labels, use `formatDecimal`, `parseDecimal` and `formatPercent`. Date and time controls use the locale’s calendar order, digits, separators and first day of the week.
@@ -278,7 +278,7 @@ For number and chart labels, use `formatDecimal`, `parseDecimal` and `formatPerc
 
 A look declares the floors its controls stand at once, as a theme does: `DesignTapTargetScope` holds
 `DesignTapTargets` (44 by 44 for a finger, 24 by 24 for a pointer, unless the look says otherwise), and
-`DesignTapTarget` lays a control out at the floor, as Material's padded tap target size does: its face keeps its
+`TapTargetPadding` lays a control out at the floor, as Material's padded tap target size does: its face keeps its
 size, aligned where you say (centred by default), and the room round it takes the taps and is what a screen reader
 outlines and Flutter's tap-target guideline measures, so the hit area, the semantics and the layout agree. Whether a finger or a pointer
 reaches the controls is `DesignInput`, by platform unless the look decides. `DesignDensity` tightens a control's

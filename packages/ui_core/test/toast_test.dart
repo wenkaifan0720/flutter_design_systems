@@ -11,7 +11,7 @@ import 'behaviour_contract.dart';
 import 'behaviour_harness.dart';
 
 // The bare reference painter: the message, and the action as a pressable.
-Widget _paint(BuildContext context, DesignToastDetails details) => Container(
+Widget _paint(BuildContext context, RawToastDetails details) => Container(
   key: ValueKey('toast-${details.toast.message}'),
   color: const Color(0xFFEEEEEE),
   padding: const EdgeInsets.all(8),
@@ -19,7 +19,7 @@ Widget _paint(BuildContext context, DesignToastDetails details) => Container(
     children: [
       Expanded(child: Text(details.toast.message)),
       if (details.runAction != null)
-        DesignPressable(
+        RawButton(
           onPressed: details.runAction,
           minimumSize: const Size(48, 48),
           builder: (context, states, _) => Text(details.toast.actionLabel!),
@@ -28,7 +28,7 @@ Widget _paint(BuildContext context, DesignToastDetails details) => Container(
   ),
 );
 
-late DesignToasterState _toaster;
+late RawToasterState _toaster;
 
 Widget _app({
   int maxVisible = 3,
@@ -39,14 +39,14 @@ Widget _app({
   double textScale = 1,
   AlignmentGeometry alignment = AlignmentDirectional.bottomCenter,
   Widget home = const SizedBox.expand(),
-  DesignToastBuilder toastBuilder = _paint,
+  RawToastBuilder toastBuilder = _paint,
 }) => harness(
   home,
   reduceMotion: reduceMotion,
   accessibleNavigation: accessibleNavigation,
   textDirection: textDirection,
   textScale: textScale,
-  wrap: (context, navigator) => DesignToaster(
+  wrap: (context, navigator) => RawToaster(
     maxVisible: maxVisible,
     dampingRatio: dampingRatio,
     alignment: alignment,
@@ -54,7 +54,7 @@ Widget _app({
     toastBuilder: toastBuilder,
     child: Builder(
       builder: (context) {
-        _toaster = DesignToaster.of(context);
+        _toaster = RawToaster.of(context);
         return navigator!;
       },
     ),
@@ -66,19 +66,19 @@ void main() {
   final page = FocusNode(debugLabel: 'page');
   tearDownAll(page.dispose);
   behaviourContract(
-    'DesignToaster',
-    build: (c) => DesignToaster(
+    'RawToaster',
+    build: (c) => RawToaster(
       toastBuilder: _paint,
       constraints: const BoxConstraints(maxWidth: 300),
       child: Builder(
         builder: (context) {
-          _toaster = DesignToaster.of(context);
+          _toaster = RawToaster.of(context);
           return Focus(focusNode: page, child: plainFace('page'));
         },
       ),
     ),
     open: (tester) async => _toaster.show(
-      DesignToast(
+      RawToast(
         message: 'Saved',
         actionLabel: 'Undo',
         onAction: () => undone++,
@@ -96,7 +96,7 @@ void main() {
       await p.key(LogicalKeyboardKey.f6);
       expect(
         FocusManager.instance.primaryFocus?.debugLabel,
-        'DesignToast',
+        'RawToast',
         reason: 'F6 jumps to the newest toast',
       );
       await p.key(LogicalKeyboardKey.escape);
@@ -104,18 +104,18 @@ void main() {
       expect(page.hasPrimaryFocus, isTrue, reason: 'focus goes back');
     },
     motion: (p) async {
-      _toaster.show(const DesignToast(message: 'More', duration: null));
+      _toaster.show(const RawToast(message: 'More', duration: null));
       await p.tester.pump();
     },
   );
 
   testWidgets('more than maxVisible wait their turn, in order', (tester) async {
     await tester.pumpWidget(_app(maxVisible: 2));
-    final a = _toaster.show(const DesignToast(message: 'a'));
+    final a = _toaster.show(const RawToast(message: 'a'));
     final b = _toaster.show(
-      const DesignToast(message: 'b', duration: Duration(seconds: 8)),
+      const RawToast(message: 'b', duration: Duration(seconds: 8)),
     );
-    final c = _toaster.show(const DesignToast(message: 'c'));
+    final c = _toaster.show(const RawToast(message: 'c'));
     await tester.pump();
     expect(find.text('a'), findsOneWidget);
     expect(find.text('b'), findsOneWidget);
@@ -123,7 +123,7 @@ void main() {
     expect(_toaster.waitingCount, 1);
 
     await tester.pump(const Duration(seconds: 4));
-    expect(await a.closed, DesignToastClosedReason.timeout);
+    expect(await a.closed, RawToastClosedReason.timeout);
     await tester.pumpAndSettle();
     expect(find.text('a'), findsNothing);
     expect(find.text('c'), findsOneWidget);
@@ -134,14 +134,14 @@ void main() {
     expect(find.text('c'), findsOneWidget);
     await tester.pump(const Duration(seconds: 2));
     await tester.pumpAndSettle();
-    expect(await b.closed, DesignToastClosedReason.timeout);
-    expect(await c.closed, DesignToastClosedReason.timeout);
+    expect(await b.closed, RawToastClosedReason.timeout);
+    expect(await c.closed, RawToastClosedReason.timeout);
     expect(find.text('c'), findsNothing);
   });
 
   testWidgets('a pointer over the stack pauses its time', (tester) async {
     await tester.pumpWidget(_app());
-    final handle = _toaster.show(const DesignToast(message: 'hover'));
+    final handle = _toaster.show(const RawToast(message: 'hover'));
     await tester.pumpAndSettle(const Duration(milliseconds: 100));
     var closed = false;
     unawaited(handle.closed.then((_) => closed = true));
@@ -181,8 +181,8 @@ void main() {
     );
     await tester.pump();
     expect(field.hasPrimaryFocus, isTrue);
-    _toaster.show(const DesignToast(message: 'older'));
-    final newest = _toaster.show(const DesignToast(message: 'newest'));
+    _toaster.show(const RawToast(message: 'older'));
+    final newest = _toaster.show(const RawToast(message: 'newest'));
     await tester.pumpAndSettle(const Duration(milliseconds: 100));
 
     await tester.sendKeyEvent(LogicalKeyboardKey.f6);
@@ -195,7 +195,7 @@ void main() {
 
     await tester.sendKeyEvent(LogicalKeyboardKey.escape);
     await tester.pump();
-    expect(await newest.closed, DesignToastClosedReason.dismissed);
+    expect(await newest.closed, RawToastClosedReason.dismissed);
     expect(field.hasPrimaryFocus, isTrue);
     await tester.pumpAndSettle();
     expect(find.text('newest'), findsNothing);
@@ -217,7 +217,7 @@ void main() {
           addTearDown(() => debugSemanticsDisableAnimations = null);
         }
         var most = 0.0;
-        Widget watch(BuildContext context, DesignToastDetails details) =>
+        Widget watch(BuildContext context, RawToastDetails details) =>
             AnimatedBuilder(
               animation: details.animation,
               builder: (context, _) {
@@ -230,7 +230,7 @@ void main() {
         await tester.pumpWidget(
           _app(reduceMotion: !ios, dampingRatio: 0.4, toastBuilder: watch),
         );
-        _toaster.show(const DesignToast(message: 'calm'));
+        _toaster.show(const RawToast(message: 'calm'));
         await tester.pumpAndSettle(const Duration(milliseconds: 16));
         await tester.pump(const Duration(seconds: 3));
         expect(find.text('calm'), findsOneWidget);
@@ -243,7 +243,7 @@ void main() {
         }
         most = 0;
         await tester.pumpWidget(_app(dampingRatio: 0.4, toastBuilder: watch));
-        _toaster.show(const DesignToast(message: 'lively'));
+        _toaster.show(const RawToast(message: 'lively'));
         await tester.pumpAndSettle(const Duration(milliseconds: 16));
         expect(most, greaterThan(1.0));
       },
@@ -256,22 +256,22 @@ void main() {
     var undone = 0;
     await tester.pumpWidget(_app(accessibleNavigation: true));
     final undo = _toaster.show(
-      DesignToast(
+      RawToast(
         message: 'Deleted',
         actionLabel: 'Undo',
         onAction: () => undone++,
       ),
     );
-    final plain = _toaster.show(const DesignToast(message: 'Saved'));
+    final plain = _toaster.show(const RawToast(message: 'Saved'));
     await tester.pump();
     await tester.pump(const Duration(seconds: 10));
     await tester.pumpAndSettle();
-    expect(await plain.closed, DesignToastClosedReason.timeout);
+    expect(await plain.closed, RawToastClosedReason.timeout);
     expect(find.text('Deleted'), findsOneWidget);
 
     await tester.tap(find.text('Undo'));
     expect(undone, 1);
-    expect(await undo.closed, DesignToastClosedReason.action);
+    expect(await undo.closed, RawToastClosedReason.action);
     await tester.pumpAndSettle();
     expect(find.text('Deleted'), findsNothing);
   });
@@ -279,11 +279,11 @@ void main() {
   testWidgets('a toast with a shown id replaces it in place', (tester) async {
     await tester.pumpWidget(_app());
     final first = _toaster.show(
-      const DesignToast(message: 'Uploading', id: 'upload', duration: null),
+      const RawToast(message: 'Uploading', id: 'upload', duration: null),
     );
     await tester.pumpAndSettle();
     final second = _toaster.show(
-      const DesignToast(message: 'Uploaded', id: 'upload'),
+      const RawToast(message: 'Uploaded', id: 'upload'),
     );
     await tester.pump();
     expect(first.id, second.id);
@@ -291,16 +291,16 @@ void main() {
     expect(find.text('Uploading'), findsNothing);
     expect(find.text('Uploaded'), findsOneWidget);
     await tester.pump(const Duration(seconds: 4));
-    expect(await first.closed, DesignToastClosedReason.timeout);
+    expect(await first.closed, RawToastClosedReason.timeout);
   });
 
   testWidgets('a swipe dismisses it', (tester) async {
     await tester.pumpWidget(_app());
-    final handle = _toaster.show(const DesignToast(message: 'swipe me'));
+    final handle = _toaster.show(const RawToast(message: 'swipe me'));
     await tester.pumpAndSettle();
     await tester.fling(find.text('swipe me'), const Offset(300, 0), 1000);
     await tester.pumpAndSettle();
-    expect(await handle.closed, DesignToastClosedReason.swiped);
+    expect(await handle.closed, RawToastClosedReason.swiped);
     expect(find.text('swipe me'), findsNothing);
     expect(tester.takeException(), isNull);
   });
@@ -308,9 +308,9 @@ void main() {
   testWidgets('a swiped toast leaves through the look\'s exit: its '
       'animation goes to 0 as its slot closes, and the one below moves up '
       'with it, frame by frame', (tester) async {
-    final seen = <String, DesignToastDetails>{};
+    final seen = <String, RawToastDetails>{};
     // A look that sizes each toast by its animation.
-    Widget sized(BuildContext context, DesignToastDetails details) {
+    Widget sized(BuildContext context, RawToastDetails details) {
       seen[details.toast.message] = details;
       return SizeTransition(
         sizeFactor: details.animation.drive(Tween(begin: 0.0, end: 1.0)),
@@ -321,8 +321,8 @@ void main() {
     await tester.pumpWidget(
       _app(alignment: AlignmentDirectional.topCenter, toastBuilder: sized),
     );
-    final handle = _toaster.show(const DesignToast(message: 'first'));
-    _toaster.show(const DesignToast(message: 'second'));
+    final handle = _toaster.show(const RawToast(message: 'first'));
+    _toaster.show(const RawToast(message: 'second'));
     await tester.pumpAndSettle();
     double top() => tester.getTopLeft(find.text('second')).dy;
     final before = top();
@@ -340,7 +340,7 @@ void main() {
       tops.add(top());
     }
     expect(mid, isTrue, reason: 'its animation went part way to 0');
-    expect(await handle.closed, DesignToastClosedReason.swiped);
+    expect(await handle.closed, RawToastClosedReason.swiped);
     await tester.pumpAndSettle();
     expect(find.text('first'), findsNothing);
     expect(top(), before - 60);
@@ -358,12 +358,12 @@ void main() {
   ) async {
     final semantics = tester.ensureSemantics();
     await tester.pumpWidget(_app());
-    final handle = _toaster.show(const DesignToast(message: 'Heard'));
+    final handle = _toaster.show(const RawToast(message: 'Heard'));
     await tester.pumpAndSettle();
     final node = tester.getSemantics(find.byKey(const ValueKey('toast-Heard')));
     expect(node, isSemantics(isLiveRegion: true, hasDismissAction: true));
     semanticsOwner().performAction(node.id, SemanticsAction.dismiss);
-    expect(await handle.closed, DesignToastClosedReason.dismissed);
+    expect(await handle.closed, RawToastClosedReason.dismissed);
     semantics.dispose();
   });
 
@@ -378,7 +378,7 @@ void main() {
       ),
     );
     _toaster.show(
-      const DesignToast(
+      const RawToast(
         message:
             'A long message that wraps over several lines at twice the '
             'size, and still fits',

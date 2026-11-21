@@ -645,10 +645,10 @@ void main() {
   testWidgets('a shown toaster is one more pane: F6 reaches the newest toast '
       'after the body, and Escape there goes back', (tester) async {
     await _width(tester, 768);
-    final toaster = GlobalKey<DesignToasterState>();
+    final toaster = GlobalKey<RawToasterState>();
     await tester.pumpWidget(
       harness(
-        DesignToaster(
+        RawToaster(
           key: toaster,
           toastBuilder: (context, details) =>
               SizedBox(height: 48, child: Text(details.toast.message)),
@@ -667,7 +667,7 @@ void main() {
     expect(_focusedOn(tester, 'Home'), isTrue, reason: 'and round');
 
     toaster.currentState!.show(
-      const DesignToast(message: 'Saved', duration: null),
+      const RawToast(message: 'Saved', duration: null),
     );
     await tester.pumpAndSettle();
     await tester.sendKeyEvent(LogicalKeyboardKey.f6);
@@ -675,7 +675,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(
       FocusManager.instance.primaryFocus?.debugLabel,
-      'DesignToast',
+      'RawToast',
       reason: 'the toast after the body',
     );
     await tester.sendKeyEvent(LogicalKeyboardKey.escape);
@@ -691,7 +691,7 @@ void main() {
     await _width(tester, 768);
     await tester.pumpWidget(
       harness(
-        DesignToaster(
+        RawToaster(
           toastBuilder: (context, details) => Text(details.toast.message),
           child: const Column(
             children: [

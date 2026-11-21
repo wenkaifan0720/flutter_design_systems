@@ -22,11 +22,11 @@ final _routes = <String, PopupRoute<void> Function(Widget child)>{
     isAlert: true,
     builder: (context, details) => Center(child: child),
   ),
-  'bottom sheet': (child) => DesignBottomSheetRoute<void>(
+  'bottom sheet': (child) => RawBottomSheetRoute<void>(
     barrierDismissible: false,
     builder: (context, details) => child,
   ),
-  'side sheet': (child) => DesignSideSheetRoute<void>(
+  'side sheet': (child) => RawSideSheetRoute<void>(
     barrierDismissible: false,
     builder: (context, sheet) => child,
   ),

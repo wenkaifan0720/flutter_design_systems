@@ -301,10 +301,10 @@ class DesignOptionList<T extends Object> extends StatefulWidget {
   final String Function(T option) displayStringForOption;
 
   /// Paints one option.
-  final DesignOptionBuilder<T> optionBuilder;
+  final RawOptionBuilder<T> optionBuilder;
 
   /// Paints the surface around the list.
-  final DesignListSurfaceBuilder? surfaceBuilder;
+  final RawOptionsSurfaceBuilder? surfaceBuilder;
 
   /// The list's greatest height.
   final double maxHeight;
@@ -448,7 +448,7 @@ class _OptionListState<T extends Object> extends State<DesignOptionList<T>>
           final lit = index == highlighted;
           final enabled = _enabled(index);
           final follows = widget.highlightFollowsPointer;
-          Widget item = DesignPressable(
+          Widget item = RawButton(
             onPressed: enabled ? () => widget.onSelected(option) : null,
             selected: option == widget.value,
             semanticSelected: option == widget.value,
@@ -752,17 +752,17 @@ void _report(Object error, StackTrace stackTrace) => FlutterError.reportError(
 );
 
 /// The list's surface while a search is pending: [builder]'s painting, read
-/// as [DesignLocalizations.loadingLabel], as it appears.
+/// as [RawWidgetsLocalizations.loadingLabel], as it appears.
 Widget designSearchLoading(
   BuildContext context,
   WidgetBuilder builder,
-  DesignListSurfaceBuilder? surfaceBuilder,
+  RawOptionsSurfaceBuilder? surfaceBuilder,
 ) {
   final painted = builder(context);
   return Semantics(
     container: true,
     liveRegion: true,
-    label: DesignLocalizations.of(context).loadingLabel,
+    label: RawWidgetsLocalizations.of(context).loadingLabel,
     child: ExcludeSemantics(
       child: surfaceBuilder?.call(context, painted) ?? painted,
     ),
@@ -772,7 +772,7 @@ Widget designSearchLoading(
 /// The list's surface after a search failed: the look's [builder] with a
 /// way to try again, which the keys reach as the list's one row (Down moves
 /// there, Enter runs [retry]); a screen reader hears
-/// [DesignLocalizations.searchFailedMessage] as it appears, and the focus
+/// [RawWidgetsLocalizations.searchFailedMessage] as it appears, and the focus
 /// stays in the field.
 class DesignSearchFailure extends StatefulWidget {
   /// A failure of [error], with [retry].
@@ -799,10 +799,10 @@ class DesignSearchFailure extends StatefulWidget {
   final VoidCallback retry;
 
   /// Paints the failure.
-  final DesignSearchErrorBuilder builder;
+  final RawSearchErrorBuilder builder;
 
   /// Paints the list's surface around it.
-  final DesignListSurfaceBuilder? surfaceBuilder;
+  final RawOptionsSurfaceBuilder? surfaceBuilder;
 
   @override
   State<DesignSearchFailure> createState() => _SearchFailureState();
@@ -820,7 +820,7 @@ class _SearchFailureState extends State<DesignSearchFailure>
       if (mounted) {
         designAnnounce(
           context,
-          DesignLocalizations.of(context).searchFailedMessage,
+          RawWidgetsLocalizations.of(context).searchFailedMessage,
         );
       }
     });
@@ -846,7 +846,10 @@ class _SearchFailureState extends State<DesignSearchFailure>
   void _light() {
     if (_lit) return;
     setState(() => _lit = true);
-    designAnnounce(context, DesignLocalizations.of(context).retryButtonLabel);
+    designAnnounce(
+      context,
+      RawWidgetsLocalizations.of(context).retryButtonLabel,
+    );
   }
 
   @override
@@ -872,7 +875,7 @@ class _SearchFailureState extends State<DesignSearchFailure>
   Widget build(BuildContext context) {
     final painted = widget.builder(
       context,
-      DesignSearchError(
+      RawSearchError(
         error: widget.error,
         stackTrace: widget.stackTrace,
         retry: widget.retry,
@@ -883,7 +886,7 @@ class _SearchFailureState extends State<DesignSearchFailure>
       container: true,
       explicitChildNodes: true,
       liveRegion: true,
-      label: DesignLocalizations.of(context).searchFailedMessage,
+      label: RawWidgetsLocalizations.of(context).searchFailedMessage,
       child: widget.surfaceBuilder?.call(context, painted) ?? painted,
     );
   }

@@ -66,7 +66,7 @@ class BrutalDialogAction extends StatelessWidget {
     final restWords = primary
         ? (destructive ? c.onDanger : c.onSignal)
         : (destructive ? c.danger : c.ink);
-    return DesignPressable(
+    return RawButton(
       onPressed: onPressed,
       focusNode: focusNode,
       autofocus: autofocus,
@@ -291,7 +291,8 @@ Future<T?> showBrutalDialog<T>({
   return Navigator.of(context, rootNavigator: true).push<T>(
     DesignDialogRoute<T>(
       barrierDismissible: barrierDismissible,
-      barrierLabel: DesignLocalizations.of(context).modalBarrierDismissLabel,
+      barrierLabel: RawWidgetsLocalizations.of(context)
+          .modalBarrierDismissLabel,
       barrierColor: theme.colors.scrim,
       dampingRatio: BrutalMotion.dampingRatio,
       stiffness: BrutalMotion.overlayStiffness,
@@ -414,7 +415,7 @@ class _ArriveState extends State<_Arrive> {
 /// cell or Escape closes it, and so does a drag down: the sheet follows the
 /// finger, and let go low enough or flung down it closes (its content,
 /// scrolled to its top, hands the drag on). The route is ui_core's
-/// ([DesignBottomSheetRoute]).
+/// ([RawBottomSheetRoute]).
 ///
 /// Its panel reads [style]'s `fill`, `edge` (its rules), `foreground` (its
 /// words), `padding` (round the content) and `textStyle` (the title), then
@@ -443,7 +444,7 @@ Future<T?> showBrutalBottomSheet<T>({
 /// Raises [builder]'s sheet (a [BrutalSheet] of your own: with a footer, a
 /// body of slivers, no close) from the bottom edge, as
 /// [showBrutalBottomSheet] raises its own, on ui_core's
-/// [DesignBottomSheetRoute]: it rises on a spring, a drag moves it with the
+/// [RawBottomSheetRoute]: it rises on a spring, a drag moves it with the
 /// finger, and let go low enough or flung down it closes. Tapping the scrim
 /// closes it when [barrierDismissible]; Escape and Back always do. It rises
 /// clear of the keyboard, and the focus goes back to what raised it.
@@ -457,7 +458,7 @@ Future<T?> showBrutalSheet<T>({
   bool barrierDismissible = true,
 }) {
   final theme = BrutalTheme.of(context);
-  final words = DesignLocalizations.of(context);
+  final words = RawWidgetsLocalizations.of(context);
   final navigator = Navigator.of(context, rootNavigator: true);
   return navigator.push<T>(
     _sheetRoute<T>(
@@ -476,13 +477,13 @@ Future<T?> showBrutalSheet<T>({
 // A sheet's route: ui_core's, on the overlays' spring (ζ 1, k 700: the
 // 240 ms the sheet rose in before), over the look's scrim. A [BrutalSheet]
 // in it takes the route's scroll controller, so its body hands drags over.
-DesignBottomSheetRoute<T> _sheetRoute<T>({
+RawBottomSheetRoute<T> _sheetRoute<T>({
   required BrutalThemeData theme,
   required String barrierLabel,
   required WidgetBuilder builder,
   bool barrierDismissible = true,
   RouteSettings? settings,
-}) => DesignBottomSheetRoute<T>(
+}) => RawBottomSheetRoute<T>(
   settings: settings,
   barrierColor: theme.colors.scrim,
   barrierLabel: barrierLabel,
@@ -519,7 +520,7 @@ class _SheetScroll extends InheritedWidget {
 /// raises a whole page instead. Its screen reads the route as a sheet
 /// ([RoutePresentation.sheet]), so the bar's way out is a close. Tapping
 /// the scrim, Escape or a drag down closes it (ui_core's
-/// [DesignBottomSheetRoute]). A go_router route's `pageBuilder` returns
+/// [RawBottomSheetRoute]). A go_router route's `pageBuilder` returns
 /// it with the route's `state.pageKey`.
 ///
 /// ```dart
@@ -583,7 +584,8 @@ class BrutalSheetPage<T> extends Page<T> {
     return _sheetRoute<T>(
       theme: theme,
       settings: this,
-      barrierLabel: DesignLocalizations.of(context).modalBarrierDismissLabel,
+      barrierLabel: RawWidgetsLocalizations.of(context)
+          .modalBarrierDismissLabel,
       builder: (context) => scoped(
         Align(
           alignment: Alignment.bottomCenter,
@@ -737,7 +739,7 @@ class BrutalSheet extends StatelessWidget {
     final size = MediaQuery.sizeOf(context);
     final pad = MediaQuery.paddingOf(context);
     final framed = size.width >= 600;
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     final direction = Directionality.of(context);
     final padding =
         layered.padding(direction) ?? const EdgeInsets.all(BrutalSpacing.large);
@@ -895,7 +897,7 @@ class _CloseCell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = BrutalTheme.of(context).colors;
-    return DesignPressable(
+    return RawButton(
       onPressed: onPressed,
       semanticLabel: label,
       builder: (context, states, _) {
@@ -943,7 +945,7 @@ class BrutalToaster extends StatelessWidget {
   final BrutalStyle? style;
 
   @override
-  Widget build(BuildContext context) => DesignToaster(
+  Widget build(BuildContext context) => RawToaster(
     dampingRatio: BrutalMotion.dampingRatio,
     stiffness: BrutalMotion.overlayStiffness,
     constraints: const BoxConstraints(maxWidth: 480),
@@ -963,7 +965,7 @@ class BrutalToaster extends StatelessWidget {
 class _Toast extends StatelessWidget {
   const _Toast(this.details, this.style);
 
-  final DesignToastDetails details;
+  final RawToastDetails details;
   final BrutalStyle? style;
 
   @override
@@ -974,7 +976,7 @@ class _Toast extends StatelessWidget {
     final layered = DesignStyleOf([style, theme.toastStyle], const {});
     final block = layered.fill ?? c.ink;
     final paper = layered.foreground ?? c.onColor(block);
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     Widget cell({
       required String label,
       required VoidCallback onPressed,
@@ -982,7 +984,7 @@ class _Toast extends StatelessWidget {
       double? width,
     }) => SizedBox(
       width: width,
-      child: DesignPressable(
+      child: RawButton(
         onPressed: onPressed,
         semanticLabel: label,
         builder: (context, states, _) {
@@ -1101,15 +1103,15 @@ class _Toast extends StatelessWidget {
 /// ```dart
 /// showBrutalToast(context, 'Ticket cancelled', actionLabel: 'Undo', onAction: () {})
 /// ```
-DesignToastHandle showBrutalToast(
+RawToastController showBrutalToast(
   BuildContext context,
   String message, {
   String? title,
   String? actionLabel,
   VoidCallback? onAction,
   Duration? duration = const Duration(seconds: 4),
-}) => DesignToaster.of(context).show(
-  DesignToast(
+}) => RawToaster.of(context).show(
+  RawToast(
     message: message,
     title: title,
     actionLabel: actionLabel,

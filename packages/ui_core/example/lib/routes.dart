@@ -23,11 +23,8 @@ class _RoutesPageState extends State<RoutesPage>
     with SingleTickerProviderStateMixin {
   String _said = '';
   final List<String> _mail = [for (var i = 1; i <= 12; i++) 'Message $i'];
-  final DesignSwipeActionsController _first = DesignSwipeActionsController();
-  late final DesignTabController _tabs = DesignTabController(
-    length: 2,
-    vsync: this,
-  );
+  final RawSwipeActionsController _first = RawSwipeActionsController();
+  late final RawTabController _tabs = RawTabController(length: 2, vsync: this);
 
   @override
   void dispose() {
@@ -42,15 +39,15 @@ class _RoutesPageState extends State<RoutesPage>
         isAlert: true,
         builder: (context, details) => _Pop(
           animation: details.animation,
-          child: DesignDialog(
+          child: RawAlertDialog(
             title: 'Delete the draft?',
             content: const Text('It cannot be brought back.'),
             actions: [
-              DesignDialogAction(
+              RawDialogAction(
                 label: 'Cancel',
                 onPressed: () => Navigator.of(context).pop(false),
               ),
-              DesignDialogAction(
+              RawDialogAction(
                 label: 'Delete',
                 isDestructiveAction: true,
                 onPressed: () => Navigator.of(context).pop(true),
@@ -74,7 +71,7 @@ class _RoutesPageState extends State<RoutesPage>
   }
 
   void _showRecent() => Navigator.of(context).push(
-    DesignBottomSheetRoute<void>(
+    RawBottomSheetRoute<void>(
       snapSizes: const [0.5, 1],
       builder: (context, details) => AnimatedBuilder(
         animation: details.size,
@@ -91,7 +88,7 @@ class _RoutesPageState extends State<RoutesPage>
         ),
         child: Column(
           children: [
-            DesignBottomSheetDragHandle(
+            RawBottomSheetDragHandle(
               builder: (context, states) => Container(
                 margin: const EdgeInsets.symmetric(vertical: 20),
                 width: 32,
@@ -140,11 +137,11 @@ class _RoutesPageState extends State<RoutesPage>
             Text(_said),
             const SizedBox(height: 12),
             // Two tabs, an underline sliding between them as the pages swipe.
-            DesignTabBar(
+            RawTabBar(
               controller: _tabs,
               tabs: const [
-                DesignTab(label: 'Routes'),
-                DesignTab(label: 'Mail'),
+                RawTab(label: 'Routes'),
+                RawTab(label: 'Mail'),
               ],
               tabBuilder: (context, tab, details) => Container(
                 height: 44,
@@ -172,7 +169,7 @@ class _RoutesPageState extends State<RoutesPage>
             ),
             const SizedBox(height: 12),
             Expanded(
-              child: DesignTabView(
+              child: RawTabBarView(
                 controller: _tabs,
                 children: [_routes(), _mailbox()],
               ),
@@ -214,17 +211,17 @@ class _RoutesPageState extends State<RoutesPage>
         child: ListView(
           children: [
             for (final m in _mail)
-              DesignSwipeActions(
+              RawSwipeActions(
                 key: ValueKey(m),
                 controller: m == _mail.first ? _first : null,
                 startActions: [
-                  DesignSwipeAction(
+                  RawSwipeAction(
                     label: 'Pin',
                     onPressed: () => setState(() => _said = 'Pinned $m'),
                   ),
                 ],
                 endActions: [
-                  DesignSwipeAction(
+                  RawSwipeAction(
                     label: 'Delete',
                     destructive: true,
                     onPressed: () => setState(() => _mail.remove(m)),
@@ -301,8 +298,8 @@ class _Frame extends StatelessWidget {
 class _Action extends StatelessWidget {
   const _Action({required this.action, required this.details});
 
-  final DesignDialogAction action;
-  final DesignDialogActionDetails details;
+  final RawDialogAction action;
+  final RawDialogActionDetails details;
 
   @override
   Widget build(BuildContext context) {
@@ -331,7 +328,7 @@ class _Button extends StatelessWidget {
   final VoidCallback onPressed;
 
   @override
-  Widget build(BuildContext context) => DesignPressable(
+  Widget build(BuildContext context) => RawButton(
     onPressed: onPressed,
     semanticLabel: label,
     builder: (context, states, _) => Container(

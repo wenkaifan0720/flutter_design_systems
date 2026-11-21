@@ -12,7 +12,7 @@ import 'package:flutter/widgets.dart';
 import 'internal/focus_visible.dart';
 import 'motion.dart';
 
-/// When a [DesignScrollArea]'s scrollbar shows.
+/// When a [RawScrollArea]'s scrollbar shows.
 enum DesignScrollbarVisibility {
   /// While it scrolls, and while a pointer is over the scrollbar.
   auto,
@@ -26,9 +26,9 @@ enum DesignScrollbarVisibility {
 
 /// A scrollbar's geometry and state, for the look to paint.
 @immutable
-class DesignScrollThumb {
+class RawScrollbarThumbDetails {
   /// The scrollbar's state; the area makes it.
-  const DesignScrollThumb({
+  const RawScrollbarThumbDetails({
     required this.axis,
     required this.trackExtent,
     required this.thumbExtent,
@@ -53,25 +53,26 @@ class DesignScrollThumb {
   final bool visible;
 
   /// [WidgetState.hovered] while a pointer is over it,
-  /// [WidgetState.pressed] while the thumb is dragged.
+  /// [WidgetState.dragged] (and [WidgetState.pressed]) while the thumb is
+  /// dragged.
   final Set<WidgetState> states;
 }
 
 /// Paints a scrollbar's thumb or track.
-typedef DesignScrollbarBuilder = Widget Function(
+typedef RawScrollbarThumbBuilder = Widget Function(
   BuildContext context,
-  DesignScrollThumb thumb,
+  RawScrollbarThumbDetails thumb,
 );
 
 /// [child], a scroll view on [controller], with a scrollbar from
 /// [thumbBuilder] (and [trackBuilder]) on its end edge (or bottom).
 ///
 /// ```dart
-/// DesignScrollArea(controller: controller, thumbBuilder: (context, thumb) => const ColoredBox(color: Color(0x66000000)), child: SingleChildScrollView(controller: controller, child: const Text('Terms')))
+/// RawScrollArea(controller: controller, thumbBuilder: (context, thumb) => const ColoredBox(color: Color(0x66000000)), child: SingleChildScrollView(controller: controller, child: const Text('Terms')))
 /// ```
-class DesignScrollArea extends StatefulWidget {
+class RawScrollArea extends StatefulWidget {
   /// A scroll area around [child], which scrolls on [controller].
-  const DesignScrollArea({
+  const RawScrollArea({
     super.key,
     required this.controller,
     required this.thumbBuilder,
@@ -99,10 +100,10 @@ class DesignScrollArea extends StatefulWidget {
   final ScrollController controller;
 
   /// Paints the thumb.
-  final DesignScrollbarBuilder thumbBuilder;
+  final RawScrollbarThumbBuilder thumbBuilder;
 
   /// Paints the track; null: none.
-  final DesignScrollbarBuilder? trackBuilder;
+  final RawScrollbarThumbBuilder? trackBuilder;
 
   /// The scroll view.
   final Widget child;
@@ -156,7 +157,7 @@ class DesignScrollArea extends StatefulWidget {
   frameBuilder;
 
   @override
-  State<DesignScrollArea> createState() => _DesignScrollAreaState();
+  State<RawScrollArea> createState() => _DesignScrollAreaState();
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -164,13 +165,13 @@ class DesignScrollArea extends StatefulWidget {
     properties
       ..add(DiagnosticsProperty<ScrollController>('controller', controller))
       ..add(
-        ObjectFlagProperty<DesignScrollbarBuilder>.has(
+        ObjectFlagProperty<RawScrollbarThumbBuilder>.has(
           'thumbBuilder',
           thumbBuilder,
         ),
       )
       ..add(
-        ObjectFlagProperty<DesignScrollbarBuilder>.has(
+        ObjectFlagProperty<RawScrollbarThumbBuilder>.has(
           'trackBuilder',
           trackBuilder,
         ),
@@ -226,7 +227,7 @@ class DesignScrollArea extends StatefulWidget {
   }
 }
 
-class _DesignScrollAreaState extends State<DesignScrollArea> {
+class _DesignScrollAreaState extends State<RawScrollArea> {
   bool _scrolling = false;
   bool _hovered = false;
   bool _dragging = false;
@@ -333,7 +334,7 @@ class _DesignScrollAreaState extends State<DesignScrollArea> {
       DesignScrollbarVisibility.never => false,
       DesignScrollbarVisibility.auto => _scrolling || _hovered || _dragging,
     };
-    final info = DesignScrollThumb(
+    final info = RawScrollbarThumbDetails(
       axis: widget.axis,
       trackExtent: track,
       thumbExtent: thumb,
@@ -341,7 +342,7 @@ class _DesignScrollAreaState extends State<DesignScrollArea> {
       visible: visible,
       states: {
         if (_hovered) WidgetState.hovered,
-        if (_dragging) WidgetState.pressed,
+        if (_dragging) ...{WidgetState.pressed, WidgetState.dragged},
       },
     );
     // Pointer pixels to scroll pixels while dragging the thumb.

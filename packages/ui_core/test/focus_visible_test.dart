@@ -41,11 +41,11 @@ Widget _face(String label, Set<WidgetState> states) {
   );
 }
 
-DesignPressable _button(
+RawButton _button(
   String label, {
   VoidCallback? onPressed,
   bool autofocus = false,
-}) => DesignPressable(
+}) => RawButton(
   semanticLabel: label,
   excludeSemantics: true,
   autofocus: autofocus,
@@ -58,17 +58,17 @@ int _cancelled = 0;
 DesignDialogRoute<void> _dialog() => DesignDialogRoute<void>(
   isAlert: true,
   semanticLabel: 'Discard changes',
-  builder: (context, details) => DesignDialog(
+  builder: (context, details) => RawAlertDialog(
     title: 'Discard changes?',
     actions: [
-      DesignDialogAction(
+      RawDialogAction(
         label: 'Keep editing',
         onPressed: () {
           _cancelled++;
           Navigator.of(context).pop();
         },
       ),
-      DesignDialogAction(
+      RawDialogAction(
         label: 'Discard',
         isDestructiveAction: true,
         onPressed: () => Navigator.of(context).pop(),
@@ -84,7 +84,7 @@ DesignDialogRoute<void> _dialog() => DesignDialogRoute<void>(
   ),
 );
 
-DesignBottomSheetRoute<void> _sheet() => DesignBottomSheetRoute<void>(
+RawBottomSheetRoute<void> _sheet() => RawBottomSheetRoute<void>(
   semanticLabel: 'Filters',
   builder: (context, details) => Container(
     color: const Color(0xFFFFFFFF),
@@ -111,7 +111,7 @@ Widget _page(Route<void> Function() route) => harness(
 // A popover from an opener, its first control taking the focus as it opens.
 Widget _popover({Widget? content}) => harness(
   Center(
-    child: DesignAnchoredOverlay(
+    child: RawPopover(
       semanticLabel: 'Options',
       anchorBuilder: (context, anchor) =>
           _button('Open', onPressed: anchor.toggle),
@@ -323,7 +323,7 @@ void main() {
       'it on the first arrow',
       (tester) async {
         final days = <DateTime, Set<WidgetState>>{};
-        final controller = DesignCalendarController(
+        final controller = RawCalendarController(
           firstDate: DateTime(2025),
           lastDate: DateTime(2027, 12, 31),
           initialMonth: DateTime(2026, 1),
@@ -335,7 +335,7 @@ void main() {
             false;
         final calendar = SizedBox(
           width: 320,
-          child: DesignCalendar(
+          child: RawCalendarDatePicker(
             controller: controller,
             autofocus: true,
             dayBuilder: (context, day, states) {

@@ -90,7 +90,7 @@ class DesignInventoryRow {
     'Actions',
     'Toggle button / toggle group',
     refs: 'MS',
-    behaviour: 'DesignToggleGroup',
+    behaviour: 'RawSegmentedButton',
   );
 
   /// Split button.
@@ -99,7 +99,7 @@ class DesignInventoryRow {
     'Actions',
     'Split button',
     refs: 'M',
-    behaviour: 'DesignSplitButton',
+    behaviour: 'RawSplitButton',
   );
 
   /// Link.
@@ -148,7 +148,7 @@ class DesignInventoryRow {
     'Inputs',
     'Password field (reveal)',
     refs: 'S',
-    behaviour: 'DesignPasswordReveal',
+    behaviour: 'RawPasswordReveal',
   );
 
   /// Input group (prefix and suffix add-ons).
@@ -166,7 +166,7 @@ class DesignInventoryRow {
     'Inputs',
     'OTP / PIN code',
     refs: 'S',
-    behaviour: 'DesignOtpField',
+    behaviour: 'RawOtpField',
   );
 
   /// Number field or quantity stepper.
@@ -175,7 +175,7 @@ class DesignInventoryRow {
     'Inputs',
     'Number field / quantity stepper',
     // 0.3.0 values
-    behaviour: 'DesignNumberField',
+    behaviour: 'RawNumberField',
     // 0.3.0 values end
   );
 
@@ -193,7 +193,7 @@ class DesignInventoryRow {
     'Inputs',
     'Combobox / autocomplete',
     refs: 'MS',
-    behaviour: 'DesignCombobox',
+    behaviour: 'RawCombobox',
   );
 
   /// Multi-select or tag input.
@@ -201,7 +201,7 @@ class DesignInventoryRow {
     'MultiSelect',
     'Inputs',
     'Multi-select / tag input',
-    behaviour: 'DesignTagInput',
+    behaviour: 'RawTagInput',
   );
 
   /// Checkbox.
@@ -242,7 +242,7 @@ class DesignInventoryRow {
     'Inputs',
     'Range slider',
     refs: 'M',
-    behaviour: 'DesignRangeSlider',
+    behaviour: 'RawRangeSlider',
   );
 
   /// Segmented control: a single-choice [toggleGroup].
@@ -251,7 +251,7 @@ class DesignInventoryRow {
     'Inputs',
     'Segmented control',
     refs: 'MC',
-    behaviour: 'DesignToggleGroup',
+    behaviour: 'RawSegmentedButton',
   );
 
   /// Chips (filter, choice, input).
@@ -268,7 +268,7 @@ class DesignInventoryRow {
     'Inputs',
     'Rating',
     // 0.3.0 values
-    behaviour: 'DesignRating',
+    behaviour: 'RawRating',
     // 0.3.0 values end
   );
 
@@ -293,7 +293,7 @@ class DesignInventoryRow {
     'Inputs',
     'Date range picker',
     refs: 'M',
-    behaviour: 'DesignCalendar',
+    behaviour: 'RawCalendarDatePicker',
   );
 
   /// Time picker.
@@ -303,7 +303,7 @@ class DesignInventoryRow {
     'Time picker',
     refs: 'MCS',
     // 0.3.0 values
-    behaviour: 'DesignTimeField',
+    behaviour: 'RawTimeField',
     // 0.3.0 values end
   );
 
@@ -313,7 +313,7 @@ class DesignInventoryRow {
     'Inputs',
     'Inline calendar',
     refs: 'MS',
-    behaviour: 'DesignCalendar',
+    behaviour: 'RawCalendarDatePicker',
   );
 
   /// Wheel picker.
@@ -323,7 +323,7 @@ class DesignInventoryRow {
     'Wheel picker',
     refs: 'C',
     // 0.3.0 values
-    behaviour: 'DesignWheelPicker',
+    behaviour: 'RawPicker',
     // 0.3.0 values end
   );
 
@@ -332,7 +332,7 @@ class DesignInventoryRow {
     'ColorPicker',
     'Inputs',
     'Color picker',
-    behaviour: 'DesignColorPicker',
+    behaviour: 'RawColorPicker',
   );
 
   /// Form and field (label, help, error).
@@ -341,7 +341,7 @@ class DesignInventoryRow {
     'Inputs',
     'Form + field (label, help, error)',
     refs: 'MCS',
-    behaviour: 'DesignField',
+    behaviour: 'RawInputDecorator',
   );
 
   /// App bar, large and collapsing included.
@@ -389,7 +389,7 @@ class DesignInventoryRow {
     'Tabs',
     refs: 'MCS',
     // 0.3.0 routes
-    behaviour: 'DesignTabBar',
+    behaviour: 'RawTabBar',
   );
 
   /// Breadcrumbs.
@@ -429,7 +429,7 @@ class DesignInventoryRow {
     'Navigation',
     'Menubar (desktop)',
     refs: 'MS',
-    behaviour: 'DesignMenuBar',
+    behaviour: 'RawMenuBar',
   );
 
   /// Command palette.
@@ -438,7 +438,7 @@ class DesignInventoryRow {
     'Navigation',
     'Command palette',
     refs: 'S',
-    behaviour: 'DesignCommandPalette',
+    behaviour: 'RawCommandPalette',
   );
 
   /// Adaptive app shell or scaffold.
@@ -505,7 +505,7 @@ class DesignInventoryRow {
     'Containers',
     'Data table (sort, select, paginate)',
     refs: 'MS',
-    behaviour: 'DesignTableController',
+    behaviour: 'RawDataTableController',
   );
 
   /// Divider or separator.
@@ -522,7 +522,7 @@ class DesignInventoryRow {
     'Containers',
     'Scroll area / scrollbar',
     refs: 'MCS',
-    behaviour: 'DesignScrollArea',
+    behaviour: 'RawScrollArea',
   );
 
   /// Resizable panels or split view.
@@ -531,7 +531,7 @@ class DesignInventoryRow {
     'Containers',
     'Resizable panels / split view',
     refs: 'S',
-    behaviour: 'DesignSplitView',
+    behaviour: 'RawSplitView',
   );
 
   /// Carousel.
@@ -540,7 +540,7 @@ class DesignInventoryRow {
     'Containers',
     'Carousel',
     refs: 'MS',
-    behaviour: 'DesignCarousel',
+    behaviour: 'RawCarousel',
   );
 
   /// Reorderable list.
@@ -549,7 +549,7 @@ class DesignInventoryRow {
     'Containers',
     'Reorderable list',
     refs: 'M',
-    behaviour: 'DesignReorderableList',
+    behaviour: 'RawReorderableList',
   );
 
   /// Swipe actions or dismissible.
@@ -558,7 +558,7 @@ class DesignInventoryRow {
     'Containers',
     'Swipe actions / dismissible',
     refs: 'C',
-    behaviour: 'DesignSwipeActions',
+    behaviour: 'RawSwipeActions',
   );
 
   /// Pull to refresh.
@@ -567,7 +567,7 @@ class DesignInventoryRow {
     'Containers',
     'Pull to refresh',
     refs: 'MC',
-    behaviour: 'DesignPullToRefresh',
+    behaviour: 'RawRefreshIndicator',
   );
 
   /// Tree view.
@@ -655,7 +655,7 @@ class DesignInventoryRow {
     'Bottom sheet / modal sheet',
     refs: 'MCS',
     // 0.3.0 routes
-    behaviour: 'DesignBottomSheetRoute',
+    behaviour: 'RawBottomSheetRoute',
   );
 
   /// Side sheet or drawer overlay.
@@ -664,7 +664,7 @@ class DesignInventoryRow {
     'Overlays',
     'Side sheet / drawer overlay',
     refs: 'MS',
-    behaviour: 'DesignSideSheetRoute',
+    behaviour: 'RawSideSheetRoute',
   );
 
   /// Action sheet.
@@ -681,7 +681,7 @@ class DesignInventoryRow {
     'Overlays',
     'Popover',
     refs: 'S',
-    behaviour: 'DesignAnchoredOverlay',
+    behaviour: 'RawPopover',
   );
 
   /// Hover card.
@@ -690,7 +690,7 @@ class DesignInventoryRow {
     'Overlays',
     'Hover card',
     refs: 'S',
-    behaviour: 'DesignAnchoredOverlay',
+    behaviour: 'RawPopover',
   );
 
   /// Tooltip.
@@ -699,7 +699,7 @@ class DesignInventoryRow {
     'Overlays',
     'Tooltip',
     refs: 'MS',
-    behaviour: 'DesignTooltip',
+    behaviour: 'RawTooltip',
   );
 
   /// Menu or context menu.
@@ -708,7 +708,7 @@ class DesignInventoryRow {
     'Overlays',
     'Menu / context menu',
     refs: 'MCS',
-    behaviour: 'DesignContextMenu',
+    behaviour: 'RawContextMenu',
   );
 
   /// Toast or snackbar, stacking.
@@ -717,7 +717,7 @@ class DesignInventoryRow {
     'Overlays',
     'Toast / snackbar (stacking)',
     refs: 'MS',
-    behaviour: 'DesignToaster',
+    behaviour: 'RawToaster',
   );
 
   /// Banner or inline alert.

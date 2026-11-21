@@ -22,7 +22,7 @@ class _HostState extends State<_Host> {
   @override
   Widget build(BuildContext context) {
     _host = this;
-    return DesignReorderableList<String>(
+    return RawReorderableList<String>(
       items: items,
       labelOf: (item) => item,
       onReorder: (from, to) => setState(() {
@@ -36,7 +36,7 @@ class _HostState extends State<_Host> {
         child: Row(
           children: [
             Expanded(
-              child: DesignPressable(
+              child: RawButton(
                 onPressed: () {},
                 builder: (context, states, _) => Text(item),
               ),
@@ -62,7 +62,7 @@ Finder _item(String label) => find
     .first;
 
 Finder _press(String label) =>
-    find.ancestor(of: find.text(label), matching: find.byType(DesignPressable));
+    find.ancestor(of: find.text(label), matching: find.byType(RawButton));
 
 Future<void> _alt(WidgetTester tester, LogicalKeyboardKey key) async {
   await tester.sendKeyDownEvent(LogicalKeyboardKey.altLeft);
@@ -73,7 +73,7 @@ Future<void> _alt(WidgetTester tester, LogicalKeyboardKey key) async {
 
 void main() {
   behaviourContract(
-    'DesignReorderableList',
+    'RawReorderableList',
     build: (c) => const _Host(),
     node: () => _item('two'),
     semantics: isSemantics(
@@ -141,7 +141,7 @@ void main() {
     await tester.pumpWidget(
       harness(
         StatefulBuilder(
-          builder: (context, update) => DesignReorderableList<String>(
+          builder: (context, update) => RawReorderableList<String>(
             items: List.of(items),
             labelOf: (v) => v,
             onReorder: (from, to) =>

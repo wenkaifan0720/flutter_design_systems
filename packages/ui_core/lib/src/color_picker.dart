@@ -1,9 +1,9 @@
 /// A colour picker, headless: a controller over hue, saturation, brightness
 /// and alpha (with hex in and out), a saturation-brightness area, channel
-/// sliders on [DesignValueHandle], and [DesignColorPicker] composing them.
+/// sliders on [DesignValueHandle], and [RawColorPicker] composing them.
 /// Every part takes the keyboard (arrows a step, Shift ten) and tells a
 /// screen reader its value; the hex text is the look's own field on
-/// [DesignColorController.hex] and [DesignColorController.setHex].
+/// [RawColorController.hex] and [RawColorController.setHex].
 library;
 
 import 'package:flutter/foundation.dart';
@@ -20,11 +20,11 @@ import 'value_handle.dart';
 /// and disposes it; a widget it is given to only listens to it.
 ///
 /// ```dart
-/// DesignColorController(const Color(0xFF3366FF))
+/// RawColorController(const Color(0xFF3366FF))
 /// ```
-class DesignColorController extends ValueNotifier<HSVColor> {
+class RawColorController extends ValueNotifier<HSVColor> {
   /// A picker starting at [initial].
-  DesignColorController([Color initial = const Color(0xFF000000)])
+  RawColorController([Color initial = const Color(0xFF000000)])
     : super(HSVColor.fromColor(initial));
 
   /// The colour.
@@ -73,8 +73,8 @@ class DesignColorController extends ValueNotifier<HSVColor> {
   }
 }
 
-/// A channel a [DesignColorSlider] sets.
-enum DesignColorChannel {
+/// A channel a [RawColorSlider] sets.
+enum RawColorChannel {
   /// Hue, 0 to 360.
   hue,
 
@@ -99,42 +99,42 @@ enum DesignColorChannel {
   };
 }
 
-void _setChannel(DesignColorController c, DesignColorChannel ch, double v) {
+void _setChannel(RawColorController c, RawColorChannel ch, double v) {
   switch (ch) {
-    case DesignColorChannel.hue:
+    case RawColorChannel.hue:
       c.hue = v;
-    case DesignColorChannel.saturation:
+    case RawColorChannel.saturation:
       c.saturation = v;
-    case DesignColorChannel.brightness:
+    case RawColorChannel.brightness:
       c.brightness = v;
-    case DesignColorChannel.alpha:
+    case RawColorChannel.alpha:
       c.alpha = v;
   }
 }
 
 /// What the look paints the area from.
 @immutable
-class DesignColorAreaDetails {
+class RawColorAreaDetails {
   /// The state; the area makes it.
-  const DesignColorAreaDetails({required this.color, required this.states});
+  const RawColorAreaDetails({required this.color, required this.states});
 
   /// The colour: its hue fills the area, its saturation is the thumb's x
   /// (0 left to 1 right) and its brightness the thumb's height (1 at top).
   final HSVColor color;
 
   /// The thumb's states (focused while the keyboard is on it, hovered,
-  /// pressed while dragged).
+  /// dragged and pressed while dragged).
   final Set<WidgetState> states;
 }
 
 /// A saturation (across) and brightness (up) area for [controller]'s hue.
 ///
 /// ```dart
-/// DesignColorArea(controller: controller, builder: (context, area) => const SizedBox.expand(), thumbBuilder: (context, area) => const SizedBox(width: 16, height: 16))
+/// RawColorArea(controller: controller, builder: (context, area) => const SizedBox.expand(), thumbBuilder: (context, area) => const SizedBox(width: 16, height: 16))
 /// ```
-class DesignColorArea extends StatefulWidget {
+class RawColorArea extends StatefulWidget {
   /// An area over [controller].
-  const DesignColorArea({
+  const RawColorArea({
     super.key,
     required this.controller,
     required this.builder,
@@ -148,21 +148,20 @@ class DesignColorArea extends StatefulWidget {
 
   /// The colour. The caller makes it, keeps it across rebuilds
   /// and disposes it.
-  final DesignColorController controller;
+  final RawColorController controller;
 
   /// Paints the area (the hue's gradients).
-  final Widget Function(BuildContext context, DesignColorAreaDetails area)
-  builder;
+  final Widget Function(BuildContext context, RawColorAreaDetails area) builder;
 
   /// Paints the thumb, centred in its [thumbSize] target.
-  final Widget Function(BuildContext context, DesignColorAreaDetails area)
+  final Widget Function(BuildContext context, RawColorAreaDetails area)
   thumbBuilder;
 
   /// An arrow's change (Shift: ten times).
   final double step;
 
   /// What a screen reader calls it; null:
-  /// [DesignLocalizations.colorAreaLabel].
+  /// [RawWidgetsLocalizations.colorAreaLabel].
   final String? semanticLabel;
 
   /// The thumb's target.
@@ -177,23 +176,21 @@ class DesignColorArea extends StatefulWidget {
   final bool autofocus;
 
   @override
-  State<DesignColorArea> createState() => _DesignColorAreaState();
+  State<RawColorArea> createState() => _DesignColorAreaState();
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(
-        DiagnosticsProperty<DesignColorController>('controller', controller),
-      )
+      ..add(DiagnosticsProperty<RawColorController>('controller', controller))
       ..add(
         ObjectFlagProperty<
-          Widget Function(BuildContext context, DesignColorAreaDetails area)
+          Widget Function(BuildContext context, RawColorAreaDetails area)
         >.has('builder', builder),
       )
       ..add(
         ObjectFlagProperty<
-          Widget Function(BuildContext context, DesignColorAreaDetails area)
+          Widget Function(BuildContext context, RawColorAreaDetails area)
         >.has('thumbBuilder', thumbBuilder),
       )
       ..add(DoubleProperty('step', step, defaultValue: 0.01))
@@ -223,7 +220,7 @@ class DesignColorArea extends StatefulWidget {
   }
 }
 
-class _DesignColorAreaState extends State<DesignColorArea> {
+class _DesignColorAreaState extends State<RawColorArea> {
   bool _focused = false;
   // Shown as a browser's :focus-visible shows it (internal/focus_visible.dart).
   late final DesignFocusShown _focus;
@@ -242,7 +239,7 @@ class _DesignColorAreaState extends State<DesignColorArea> {
     super.dispose();
   }
 
-  DesignColorController get _c => widget.controller;
+  RawColorController get _c => widget.controller;
 
   void _at(Offset p, Size size) {
     if (size.width <= 0 || size.height <= 0) return;
@@ -275,7 +272,7 @@ class _DesignColorAreaState extends State<DesignColorArea> {
 
   @override
   Widget build(BuildContext context) {
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     // The reader's direction, for what a screen reader says of the area.
     final reading = Directionality.maybeOf(context);
     // A colour area is not mirrored right to left: saturation grows rightward.
@@ -284,20 +281,20 @@ class _DesignColorAreaState extends State<DesignColorArea> {
       child: ValueListenableBuilder<HSVColor>(
         valueListenable: _c,
         builder: (context, hsv, _) {
-          final area = DesignColorAreaDetails(
+          final area = RawColorAreaDetails(
             color: hsv,
             states: {
               if (_focused) WidgetState.focused,
               if (_hovered) WidgetState.hovered,
-              if (_dragging) WidgetState.pressed,
+              if (_dragging) ...{WidgetState.pressed, WidgetState.dragged},
             },
           );
           // "Saturation 40%, Brightness 60%", in the reader's words, digits
           // and percent sign.
           String said(double brightness) => [
-            '${words.colorChannelLabel(DesignColorChannel.saturation)} '
+            '${words.colorChannelLabel(RawColorChannel.saturation)} '
                 '${words.formatPercent(hsv.saturation)}',
-            '${words.colorChannelLabel(DesignColorChannel.brightness)} '
+            '${words.colorChannelLabel(RawColorChannel.brightness)} '
                 '${words.formatPercent(brightness)}',
           ].join(words.listSeparator);
           final page = widget.step * 10;
@@ -363,11 +360,11 @@ class _DesignColorAreaState extends State<DesignColorArea> {
 /// A slider for one [channel] of [controller]'s colour.
 ///
 /// ```dart
-/// DesignColorSlider(controller: controller, channel: DesignColorChannel.hue, trackBuilder: (context, channel, color) => const SizedBox(height: 8), thumbBuilder: (context, states) => const SizedBox(width: 16, height: 16))
+/// RawColorSlider(controller: controller, channel: RawColorChannel.hue, trackBuilder: (context, channel, color) => const SizedBox(height: 8), thumbBuilder: (context, states) => const SizedBox(width: 16, height: 16))
 /// ```
-class DesignColorSlider extends StatefulWidget {
+class RawColorSlider extends StatefulWidget {
   /// A slider of [channel].
-  const DesignColorSlider({
+  const RawColorSlider({
     super.key,
     required this.controller,
     required this.channel,
@@ -381,15 +378,15 @@ class DesignColorSlider extends StatefulWidget {
 
   /// The colour. The caller makes it, keeps it across rebuilds
   /// and disposes it.
-  final DesignColorController controller;
+  final RawColorController controller;
 
   /// The channel it sets.
-  final DesignColorChannel channel;
+  final RawColorChannel channel;
 
   /// Paints the track (the hue spectrum, or the colour fading out).
   final Widget Function(
     BuildContext context,
-    DesignColorChannel channel,
+    RawColorChannel channel,
     HSVColor color,
   )
   trackBuilder;
@@ -398,7 +395,7 @@ class DesignColorSlider extends StatefulWidget {
   final DesignHandleBuilder thumbBuilder;
 
   /// What a screen reader calls it; null:
-  /// [DesignLocalizations.colorChannelLabel].
+  /// [RawWidgetsLocalizations.colorChannelLabel].
   final String? semanticLabel;
 
   /// The thumb's target.
@@ -413,21 +410,19 @@ class DesignColorSlider extends StatefulWidget {
   final bool autofocus;
 
   @override
-  State<DesignColorSlider> createState() => _DesignColorSliderState();
+  State<RawColorSlider> createState() => _DesignColorSliderState();
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(
-        DiagnosticsProperty<DesignColorController>('controller', controller),
-      )
-      ..add(EnumProperty<DesignColorChannel>('channel', channel))
+      ..add(DiagnosticsProperty<RawColorController>('controller', controller))
+      ..add(EnumProperty<RawColorChannel>('channel', channel))
       ..add(
         ObjectFlagProperty<
           Widget Function(
             BuildContext context,
-            DesignColorChannel channel,
+            RawColorChannel channel,
             HSVColor color,
           )
         >.has('trackBuilder', trackBuilder),
@@ -464,14 +459,14 @@ class DesignColorSlider extends StatefulWidget {
   }
 }
 
-class _DesignColorSliderState extends State<DesignColorSlider> {
+class _DesignColorSliderState extends State<RawColorSlider> {
   bool _dragging = false;
 
   @override
   Widget build(BuildContext context) {
     final ch = widget.channel;
     final c = widget.controller;
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     final rtl = Directionality.of(context) == TextDirection.rtl;
     final t = widget.thumbSize;
     return ValueListenableBuilder<HSVColor>(
@@ -529,8 +524,8 @@ class _DesignColorSliderState extends State<DesignColorSlider> {
                       child: DesignValueHandle(
                         value: ch.of(hsv),
                         max: ch.max,
-                        step: ch == DesignColorChannel.hue ? 1 : 0.01,
-                        pageStep: ch == DesignColorChannel.hue ? 10 : 0.1,
+                        step: ch == RawColorChannel.hue ? 1 : 0.01,
+                        pageStep: ch == RawColorChannel.hue ? 10 : 0.1,
                         dragging: _dragging,
                         minimumSize: t,
                         focusNode: widget.focusNode,
@@ -539,7 +534,7 @@ class _DesignColorSliderState extends State<DesignColorSlider> {
                             widget.semanticLabel ?? words.colorChannelLabel(ch),
                         // In the reader's digits: the hue in degrees ("270°"),
                         // the others as a percentage.
-                        semanticFormatterCallback: ch == DesignColorChannel.hue
+                        semanticFormatterCallback: ch == RawColorChannel.hue
                             ? (v) => '${words.formatDecimal(v.round())}°'
                             : words.formatPercent,
                         onChanged: (v) => _setChannel(c, ch, v),
@@ -560,11 +555,11 @@ class _DesignColorSliderState extends State<DesignColorSlider> {
 /// An area over a hue slider (and an alpha slider), on one controller.
 ///
 /// ```dart
-/// DesignColorPicker(controller: controller, areaBuilder: (context, area) => const SizedBox.expand(), areaThumbBuilder: (context, area) => const SizedBox(width: 16, height: 16), trackBuilder: (context, channel, color) => const SizedBox(height: 8), thumbBuilder: (context, states) => const SizedBox(width: 16, height: 16))
+/// RawColorPicker(controller: controller, areaBuilder: (context, area) => const SizedBox.expand(), areaThumbBuilder: (context, area) => const SizedBox(width: 16, height: 16), trackBuilder: (context, channel, color) => const SizedBox(height: 8), thumbBuilder: (context, states) => const SizedBox(width: 16, height: 16))
 /// ```
-class DesignColorPicker extends StatelessWidget {
+class RawColorPicker extends StatelessWidget {
   /// A picker over [controller].
-  const DesignColorPicker({
+  const RawColorPicker({
     super.key,
     required this.controller,
     required this.areaBuilder,
@@ -578,20 +573,20 @@ class DesignColorPicker extends StatelessWidget {
 
   /// The colour. The caller makes it, keeps it across rebuilds
   /// and disposes it.
-  final DesignColorController controller;
+  final RawColorController controller;
 
   /// Paints the area.
-  final Widget Function(BuildContext context, DesignColorAreaDetails area)
+  final Widget Function(BuildContext context, RawColorAreaDetails area)
   areaBuilder;
 
   /// Paints the area's thumb.
-  final Widget Function(BuildContext context, DesignColorAreaDetails area)
+  final Widget Function(BuildContext context, RawColorAreaDetails area)
   areaThumbBuilder;
 
   /// Paints a slider's track.
   final Widget Function(
     BuildContext context,
-    DesignColorChannel channel,
+    RawColorChannel channel,
     HSVColor color,
   )
   trackBuilder;
@@ -615,22 +610,22 @@ class DesignColorPicker extends StatelessWidget {
     final parts = [
       SizedBox(
         height: areaHeight,
-        child: DesignColorArea(
+        child: RawColorArea(
           controller: controller,
           builder: areaBuilder,
           thumbBuilder: areaThumbBuilder,
         ),
       ),
-      DesignColorSlider(
+      RawColorSlider(
         controller: controller,
-        channel: DesignColorChannel.hue,
+        channel: RawColorChannel.hue,
         trackBuilder: trackBuilder,
         thumbBuilder: thumbBuilder,
       ),
       if (showAlpha)
-        DesignColorSlider(
+        RawColorSlider(
           controller: controller,
-          channel: DesignColorChannel.alpha,
+          channel: RawColorChannel.alpha,
           trackBuilder: trackBuilder,
           thumbBuilder: thumbBuilder,
         ),
@@ -647,24 +642,22 @@ class DesignColorPicker extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(
-        DiagnosticsProperty<DesignColorController>('controller', controller),
-      )
+      ..add(DiagnosticsProperty<RawColorController>('controller', controller))
       ..add(
         ObjectFlagProperty<
-          Widget Function(BuildContext context, DesignColorAreaDetails area)
+          Widget Function(BuildContext context, RawColorAreaDetails area)
         >.has('areaBuilder', areaBuilder),
       )
       ..add(
         ObjectFlagProperty<
-          Widget Function(BuildContext context, DesignColorAreaDetails area)
+          Widget Function(BuildContext context, RawColorAreaDetails area)
         >.has('areaThumbBuilder', areaThumbBuilder),
       )
       ..add(
         ObjectFlagProperty<
           Widget Function(
             BuildContext context,
-            DesignColorChannel channel,
+            RawColorChannel channel,
             HSVColor color,
           )
         >.has('trackBuilder', trackBuilder),

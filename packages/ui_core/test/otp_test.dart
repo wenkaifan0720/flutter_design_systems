@@ -9,11 +9,11 @@ import 'package:ui_core/ui_core.dart';
 import 'behaviour_contract.dart';
 import 'behaviour_harness.dart';
 
-final List<DesignOtpSlot> _slots = [];
+final List<RawOtpSlot> _slots = [];
 
 // The bare reference painter: a 44 by 44 box per slot, its character, a bar
 // under the active one.
-Widget _slot(BuildContext context, DesignOtpSlot slot) {
+Widget _slot(BuildContext context, RawOtpSlot slot) {
   if (slot.index == 0) _slots.clear();
   _slots.add(slot);
   return Container(
@@ -35,9 +35,9 @@ int _active() => _slots.indexWhere((s) => s.active);
 
 void main() {
   behaviourContract(
-    'DesignOtpField',
+    'RawOtpField',
     build: (c) => Center(
-      child: DesignOtpField(
+      child: RawOtpField(
         length: 4,
         enabled: c.enabled,
         isError: c.error,
@@ -93,7 +93,7 @@ void main() {
     await tester.pumpWidget(
       harness(
         Center(
-          child: DesignOtpField(
+          child: RawOtpField(
             focusNode: focus,
             slotBuilder: _slot,
             onCompleted: done.add,
@@ -129,16 +129,16 @@ void main() {
   testWidgets('a paste fills every box, cut to length, separators dropped', (
     tester,
   ) async {
-    final controller = DesignOtpController(length: 6);
+    final controller = RawOtpController(length: 6);
     addTearDown(controller.dispose);
     await tester.pumpWidget(
       harness(
         Center(
-          child: DesignOtpField(controller: controller, slotBuilder: _slot),
+          child: RawOtpField(controller: controller, slotBuilder: _slot),
         ),
       ),
     );
-    await tester.tap(find.byType(DesignOtpField));
+    await tester.tap(find.byType(RawOtpField));
     await tester.enterText(find.byType(EditableText), '12-34 5678');
     await tester.pump();
     expect(_shown(), '123456');
@@ -168,7 +168,7 @@ void main() {
     final semantics = tester.ensureSemantics();
     Widget field({bool error = false}) => harness(
       Center(
-        child: DesignOtpField(
+        child: RawOtpField(
           length: 4,
           isError: error,
           semanticLabel: 'Code de vérification',
@@ -202,7 +202,7 @@ void main() {
     final semantics = tester.ensureSemantics();
     Widget field({bool enabled = true}) => harness(
       Center(
-        child: DesignOtpField(
+        child: RawOtpField(
           length: 4,
           enabled: enabled,
           semanticLabel: 'Code',
@@ -249,7 +249,7 @@ void main() {
         null,
       ),
     );
-    final controller = DesignOtpController(length: 4);
+    final controller = RawOtpController(length: 4);
     addTearDown(controller.dispose);
     TextSelectionToolbarAnchors? anchors;
     List<ContextMenuButtonItem>? items;
@@ -273,7 +273,7 @@ void main() {
     await tester.pumpWidget(
       harness(
         Center(
-          child: DesignOtpField(
+          child: RawOtpField(
             controller: controller,
             slotBuilder: _slot,
             contextMenuBuilder: menu,
@@ -281,7 +281,7 @@ void main() {
         ),
       ),
     );
-    final centre = tester.getCenter(find.byType(DesignOtpField));
+    final centre = tester.getCenter(find.byType(RawOtpField));
     await tester.longPressAt(centre);
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('paste')), findsOneWidget);
@@ -300,7 +300,7 @@ void main() {
     expect(find.byKey(const ValueKey('paste')), findsOneWidget);
     // A tap on the field (clear of the menu, drawn at the press) closes it.
     await tester.tapAt(
-      tester.getTopLeft(find.byType(DesignOtpField)) + const Offset(4, 4),
+      tester.getTopLeft(find.byType(RawOtpField)) + const Offset(4, 4),
     );
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('paste')), findsNothing);
@@ -316,7 +316,7 @@ void main() {
   ) async {
     await tester.pumpWidget(
       harness(
-        const Center(child: DesignOtpField(length: 4, slotBuilder: _slot)),
+        const Center(child: RawOtpField(length: 4, slotBuilder: _slot)),
         textDirection: TextDirection.rtl,
       ),
     );
@@ -333,7 +333,7 @@ void main() {
     await tester.pumpWidget(
       harness(
         Center(
-          child: DesignOtpField(
+          child: RawOtpField(
             length: 4,
             obscureText: true,
             focusNode: focus,
@@ -342,7 +342,7 @@ void main() {
         ),
       ),
     );
-    await tester.tap(find.byType(DesignOtpField));
+    await tester.tap(find.byType(RawOtpField));
     await tester.enterText(find.byType(EditableText), '42');
     await tester.pump();
     expect(find.text('*'), findsNWidgets(2));
@@ -356,7 +356,7 @@ void main() {
     await tester.pumpWidget(
       harness(
         Center(
-          child: DesignOtpField(
+          child: RawOtpField(
             length: 4,
             enabled: false,
             focusNode: focus,
@@ -366,7 +366,7 @@ void main() {
       ),
     );
     // Disabled, it ignores the pointer.
-    await tester.tap(find.byType(DesignOtpField), warnIfMissed: false);
+    await tester.tap(find.byType(RawOtpField), warnIfMissed: false);
     await tester.pump();
     expect(focus.hasFocus, isFalse);
     expect(_slots.every((s) => !s.enabled && !s.active), isTrue);
@@ -376,19 +376,19 @@ void main() {
       'filtered, and stays the form\'s', (tester) async {
     final text = TextEditingController(text: '12a3');
     addTearDown(text.dispose);
-    final controller = DesignOtpController(length: 4, text: text);
+    final controller = RawOtpController(length: 4, text: text);
     expect(text.text, '123', reason: 'what it holds is filtered at once');
     final clean = TextEditingController();
     addTearDown(clean.dispose);
     var heard = 0;
     clean.addListener(() => heard++);
-    DesignOtpController(length: 4, text: clean).dispose();
+    RawOtpController(length: 4, text: clean).dispose();
     expect(heard, 0, reason: 'a clean input is left alone while it is built');
     String? done;
     await tester.pumpWidget(
       harness(
         Center(
-          child: DesignOtpField(
+          child: RawOtpField(
             controller: controller,
             slotBuilder: _slot,
             onCompleted: (v) => done = v,
@@ -419,7 +419,7 @@ void main() {
           child: MergeSemantics(
             child: Semantics(
               label: 'Code',
-              child: DesignOtpField(
+              child: RawOtpField(
                 length: 4,
                 slotBuilder: _slot,
                 semanticLabel: null,
@@ -452,7 +452,7 @@ void main() {
     final submitted = <String>[];
     final text = TextEditingController();
     addTearDown(text.dispose);
-    final code = DesignOtpController(
+    final code = RawOtpController(
       length: 4,
       allowed: RegExp('[A-Z0-9]'),
       text: text,
@@ -461,7 +461,7 @@ void main() {
     await tester.pumpWidget(
       harness(
         Center(
-          child: DesignOtpField(
+          child: RawOtpField(
             controller: code,
             slotBuilder: _slot,
             textInputAction: TextInputAction.next,
@@ -479,7 +479,7 @@ void main() {
     final input = tester.widget<EditableText>(find.byType(EditableText));
     expect(input.autofillHints, [AutofillHints.postalCode]);
 
-    await tester.tap(find.byType(DesignOtpField));
+    await tester.tap(find.byType(RawOtpField));
     await tester.enterText(find.byType(EditableText), 'ab-c9z');
     await tester.pump();
     expect(text.text, 'ABC9', reason: 'upper-cased, filtered, then cut');

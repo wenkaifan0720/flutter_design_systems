@@ -7,7 +7,7 @@ import 'package:ui_core/ui_core.dart';
 import 'behaviour_contract.dart';
 import 'behaviour_harness.dart';
 
-DesignCarouselControls? _controls;
+RawCarouselDetails? _controls;
 
 // The bare reference painter: the slide's name, previous and next under it.
 Widget _carousel({
@@ -26,7 +26,7 @@ Widget _view({bool loop = false, Duration? autoplayInterval}) => Align(
   child: SizedBox(
     width: 300,
     height: 300,
-    child: DesignCarousel(
+    child: RawCarousel(
       itemCount: 3,
       loop: loop,
       autoplayInterval: autoplayInterval,
@@ -38,13 +38,13 @@ Widget _view({bool loop = false, Duration? autoplayInterval}) => Align(
             Expanded(child: viewport),
             Row(
               children: [
-                DesignPressable(
+                RawButton(
                   onPressed: controls.previous,
                   semanticLabel: 'Previous',
                   minimumSize: const Size(44, 44),
                   builder: (context, states, _) => const Text('<'),
                 ),
-                DesignPressable(
+                RawButton(
                   onPressed: controls.next,
                   semanticLabel: 'Next',
                   minimumSize: const Size(44, 44),
@@ -61,7 +61,7 @@ Widget _view({bool loop = false, Duration? autoplayInterval}) => Align(
 
 void main() {
   behaviourContract(
-    'DesignCarousel',
+    'RawCarousel',
     // Under Reduce Motion it is asked to play: it must not.
     build: (c) => Builder(
       builder: (context) => _view(
@@ -243,7 +243,7 @@ void main() {
     expect(cut(), Clip.hardEdge);
     await tester.pumpWidget(
       harness(
-        DesignCarousel(
+        RawCarousel(
           itemCount: 2,
           clipBehavior: Clip.none,
           itemBuilder: (context, i) => Text('slide $i'),

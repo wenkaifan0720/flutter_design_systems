@@ -26,7 +26,7 @@ Widget _app(TextDirection direction, Widget child) => WidgetsApp(
   ),
 );
 
-Widget _group() => DesignToggleGroup<String>(
+Widget _group() => RawSegmentedButton<String>(
   options: const ['Day', 'Week', 'Month'],
   selected: const {'Day'},
   onSelectionChanged: (_) {},
@@ -58,7 +58,7 @@ void main() {
     await tester.pumpWidget(
       _app(
         TextDirection.ltr,
-        DesignPressable(
+        RawButton(
           onPressed: () {},
           semanticLabel: 'Save',
           minimumSize: const Size(44, 44),

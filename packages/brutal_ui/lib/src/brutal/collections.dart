@@ -18,7 +18,7 @@ import 'wayfinding.dart';
 
 /// A column of a [BrutalDataTable]: [label] over its cells, sortable when
 /// it has a [sortKey].
-class BrutalDataColumn<R> extends DesignTableColumn<R> {
+class BrutalDataColumn<R> extends RawDataColumn<R> {
   /// A column named [id], headed [label].
   const BrutalDataColumn({
     required super.id,
@@ -39,7 +39,7 @@ class BrutalDataColumn<R> extends DesignTableColumn<R> {
 /// ```dart
 /// final table = BrutalTableController<Map<String, String>>(rows: orders, columns: [BrutalDataColumn(id: 'name', label: 'Name', sortKey: (o) => o['name']!)], pageSize: 10);
 /// ```
-class BrutalTableController<R> extends DesignTableController<R> {
+class BrutalTableController<R> extends RawDataTableController<R> {
   /// A table of [rows] in [columns]; [pageSize] null shows every row.
   BrutalTableController({
     required super.rows,
@@ -108,7 +108,7 @@ class BrutalDataTable<R> extends StatelessWidget {
     final layers = [style, theme.dataTableStyle];
     final frame = DesignStyleOf(layers, const {});
     final rule = frame.side?.color ?? frame.edge ?? c.ink;
-    BrutalDataColumn<R> brutal(DesignTableColumn<R> col) =>
+    BrutalDataColumn<R> brutal(RawDataColumn<R> col) =>
         col as BrutalDataColumn<R>;
     Widget check(bool on, Color ink, {bool some = false}) => SizedBox(
       width: _box,
@@ -141,7 +141,7 @@ class BrutalDataTable<R> extends StatelessWidget {
           horizontal: BrutalSpacing.medium,
           vertical: BrutalSpacing.medium,
         );
-    final table = DesignDataTable<R>(
+    final table = RawDataTable<R>(
       controller: controller,
       selectable: selectable,
       onActivate: onActivate,
@@ -173,9 +173,8 @@ class BrutalDataTable<R> extends StatelessWidget {
                       const SizedBox(width: BrutalSpacing.tight),
                       Icon(
                         switch (sort) {
-                          DesignSortDirection.ascending => LucideIcons.arrowUp,
-                          DesignSortDirection.descending =>
-                            LucideIcons.arrowDown,
+                          RawSortDirection.ascending => LucideIcons.arrowUp,
+                          RawSortDirection.descending => LucideIcons.arrowDown,
                           null => LucideIcons.arrowUpDown,
                         },
                         size: 14,
@@ -200,20 +199,20 @@ class BrutalDataTable<R> extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 if (selectable)
-                  DesignPressable(
+                  RawButton(
                     onPressed: controller.pageRows.isEmpty
                         ? null
                         : controller.togglePage,
                     semanticLabel: 'Select the page',
-                    checked: page == DesignSelection.all,
+                    checked: page == RawDataTableSelection.all,
                     builder: (context, states, _) => CustomPaint(
                       foregroundPainter: states.contains(WidgetState.focused)
                           ? BrutalInsetFocusPainter(c.paper)
                           : null,
                       child: check(
-                        page == DesignSelection.all,
+                        page == RawDataTableSelection.all,
                         c.paper,
-                        some: page == DesignSelection.some,
+                        some: page == RawDataTableSelection.some,
                       ),
                     ),
                   ),
@@ -330,7 +329,7 @@ class BrutalDataTable<R> extends StatelessWidget {
                 Expanded(
                   child: Text(
                     selectable && controller.selectedCount > 0
-                        ? DesignLocalizations.of(context)
+                        ? RawWidgetsLocalizations.of(context)
                               .selectedRowCountTitle(controller.selectedCount)
                         : BrutalLocalizations.of(context)
                               .rowCount(controller.filteredRows.length),
@@ -402,7 +401,7 @@ class BrutalScrollArea extends StatelessWidget {
     final layers = [style, theme.scrollAreaStyle];
     final track = DesignStyleOf(layers, const {});
     final rule = track.side?.color ?? track.edge;
-    return DesignScrollArea(
+    return RawScrollArea(
       controller: controller,
       axis: axis,
       semanticLabel: semanticLabel,
@@ -508,7 +507,7 @@ class BrutalSplitView extends StatelessWidget {
     final theme = BrutalTheme.of(context);
     final c = theme.colors;
     final layers = [style, theme.splitViewStyle];
-    return DesignSplitView(
+    return RawSplitView(
       first: first,
       second: second,
       axis: axis,
@@ -617,7 +616,7 @@ class BrutalCarousel extends StatelessWidget {
     final frame = DesignStyleOf(layers, const {});
     final rule = frame.side?.color ?? frame.edge ?? c.ink;
     Widget turn(IconData icon, String label, VoidCallback? onPressed) =>
-        DesignPressable(
+        RawButton(
           onPressed: onPressed,
           semanticLabel: label,
           builder: (context, states, _) {
@@ -647,7 +646,7 @@ class BrutalCarousel extends StatelessWidget {
             );
           },
         );
-    return DesignCarousel(
+    return RawCarousel(
       itemCount: itemCount,
       itemBuilder: itemBuilder,
       semanticLabel: semanticLabel,
@@ -771,7 +770,7 @@ class BrutalReorderableList<T extends Object> extends StatelessWidget {
     final rowHeight = layered.minimumSize?.height ?? theme.controlHeight + 8;
     return BrutalSurface(
       face: BrutalFace(fill: fill, border: rule, foreground: words),
-      child: DesignReorderableList<T>(
+      child: RawReorderableList<T>(
         items: items,
         onReorder: onReorder,
         labelOf: labelOf,
@@ -914,7 +913,7 @@ class BrutalSwipeRow extends StatelessWidget {
     final theme = BrutalTheme.of(context);
     final c = theme.colors;
     final layers = [style, theme.swipeRowStyle];
-    DesignSwipeAction wrap(BrutalSwipeAction a) => DesignSwipeAction(
+    RawSwipeAction wrap(BrutalSwipeAction a) => RawSwipeAction(
       label: a.label,
       onPressed: a.onPressed,
       destructive: a.destructive,
@@ -923,7 +922,7 @@ class BrutalSwipeRow extends StatelessWidget {
     // The row's box holds the moving row: dragged, it slides under its own
     // edge, never past it.
     return ClipRect(
-      child: DesignSwipeActions(
+      child: RawSwipeActions(
         startActions: [for (final a in startActions) wrap(a)],
         endActions: [for (final a in endActions) wrap(a)],
         actionExtent: 88,
@@ -1028,13 +1027,13 @@ class BrutalPullToRefresh extends StatelessWidget {
     final theme = BrutalTheme.of(context);
     final c = theme.colors;
     final layered = DesignStyleOf([style, theme.pullToRefreshStyle], const {});
-    return DesignPullToRefresh(
+    return RawRefreshIndicator(
       onRefresh: onRefresh,
       indicatorBuilder: (context, details) {
-        final armed = details.mode == DesignRefreshMode.armed;
+        final armed = details.mode == RawRefreshIndicatorMode.armed;
         final Widget mark = switch (details.mode) {
-          DesignRefreshMode.refresh => const BrutalSpinner(size: 20),
-          DesignRefreshMode.done => Icon(
+          RawRefreshIndicatorMode.refresh => const BrutalSpinner(size: 20),
+          RawRefreshIndicatorMode.done => Icon(
             LucideIcons.check,
             size: 20,
             color: c.paper,
@@ -1045,7 +1044,7 @@ class BrutalPullToRefresh extends StatelessWidget {
             color: armed ? c.paper : c.ink,
           ),
         };
-        final solid = armed || details.mode == DesignRefreshMode.done;
+        final solid = armed || details.mode == RawRefreshIndicatorMode.done;
         return SizedBox(
           height: details.extent,
           child: ClipRect(
@@ -1062,7 +1061,8 @@ class BrutalPullToRefresh extends StatelessWidget {
                   child: Stack(
                     alignment: Alignment.center,
                     children: [
-                      if (!solid && details.mode == DesignRefreshMode.drag)
+                      if (!solid &&
+                          details.mode == RawRefreshIndicatorMode.drag)
                         Align(
                           alignment: Alignment.bottomCenter,
                           child: FractionallySizedBox(

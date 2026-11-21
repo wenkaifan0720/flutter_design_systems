@@ -8,7 +8,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 
-import 'date_field.dart' show DesignTimeOfDay;
+import 'date_field.dart' show RawTimeOfDay;
 import 'internal/decimal.dart' as decimal;
 import 'localizations.dart';
 
@@ -70,7 +70,7 @@ abstract class DesignScale {
 
   /// About [count] ticks across the scale, labelled for [localizations].
   List<DesignScaleTick> ticks(
-    DesignLocalizations localizations, {
+    RawWidgetsLocalizations localizations, {
     int count = 5,
   });
 }
@@ -178,7 +178,7 @@ class DesignLinearScale extends DesignScale {
 
   @override
   List<DesignScaleTick> ticks(
-    DesignLocalizations localizations, {
+    RawWidgetsLocalizations localizations, {
     int count = 5,
   }) {
     if (max <= min) {
@@ -350,7 +350,7 @@ class DesignTimeScale extends DesignScale {
 
   @override
   List<DesignScaleTick> ticks(
-    DesignLocalizations localizations, {
+    RawWidgetsLocalizations localizations, {
     int count = 5,
   }) {
     final (unit, n) = _stepFor(min, max, count);
@@ -374,17 +374,17 @@ class DesignTimeScale extends DesignScale {
   /// [time] labelled as a tick on a scale this long would be: a time of
   /// day within a day or two, a month and day within months, a month
   /// within years (January as its year), a year beyond.
-  String label(DesignLocalizations localizations, DateTime time) =>
+  String label(RawWidgetsLocalizations localizations, DateTime time) =>
       _label(localizations, time, _stepFor(min, max, 5).$1);
 
-  static String _label(DesignLocalizations l, DateTime at, _Unit unit) =>
+  static String _label(RawWidgetsLocalizations l, DateTime at, _Unit unit) =>
       switch (unit) {
         _Unit.second => l.formatTimeOfDay(
-          DesignTimeOfDay.fromDateTime(at),
+          RawTimeOfDay.fromDateTime(at),
           showSeconds: true,
         ),
         _Unit.minute ||
-        _Unit.hour => l.formatTimeOfDay(DesignTimeOfDay.fromDateTime(at)),
+        _Unit.hour => l.formatTimeOfDay(RawTimeOfDay.fromDateTime(at)),
         _Unit.day || _Unit.week => l.formatShortMonthDay(at),
         _Unit.month =>
           at.month == 1 ? l.formatYear(at) : l.formatShortMonth(at),
@@ -514,7 +514,7 @@ class DesignBandScale extends DesignScale {
 
   @override
   List<DesignScaleTick> ticks(
-    DesignLocalizations localizations, {
+    RawWidgetsLocalizations localizations, {
     int count = 5,
   }) => [
     for (var i = 0; i < this.count; i++)

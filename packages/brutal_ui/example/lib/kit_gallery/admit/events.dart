@@ -72,7 +72,7 @@ class _EventRow extends StatelessWidget {
     final c = theme.colors;
     final t = theme.textTheme;
     final price = admitFrom(event);
-    return DesignPressable(
+    return RawButton(
       onPressed: onTap,
       selected: chosen,
       semanticSelected: chosen ? true : null,

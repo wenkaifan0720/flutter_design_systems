@@ -25,7 +25,7 @@ class _Host extends StatefulWidget {
 late _HostState _host;
 
 class _HostState extends State<_Host> {
-  DesignRangeValues values = const DesignRangeValues(20, 80);
+  RawRangeValues values = const RawRangeValues(20, 80);
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +34,7 @@ class _HostState extends State<_Host> {
       alignment: Alignment.topLeft,
       child: SizedBox(
         width: 444,
-        child: DesignRangeSlider(
+        child: RawRangeSlider(
           values: values,
           max: 100,
           minGap: 10,
@@ -78,10 +78,10 @@ void main() {
   });
 
   behaviourContract(
-    'DesignRangeSlider',
+    'RawRangeSlider',
     build: (c) => _Host(enabled: c.enabled),
     node: () => find.bySemanticsLabel('Minimum'),
-    root: () => find.byType(DesignRangeSlider),
+    root: () => find.byType(RawRangeSlider),
     semantics: isSemantics(
       label: 'Minimum',
       value: '20',
@@ -191,7 +191,7 @@ void main() {
           Localizations(
             locale: Locale(locale),
             delegates: const [
-              DesignLocalizations.delegate,
+              RawWidgetsLocalizations.delegate,
               DefaultWidgetsLocalizations.delegate,
             ],
             child: DesignValueHandle(
@@ -223,18 +223,14 @@ void main() {
     expect(tester.getCenter(find.byKey(const ValueKey('thumb 1'))).dx, 342);
     await tester.tapAt(const Offset(22 + 300, 22));
     await tester.pump();
-    expect(_host.values, const DesignRangeValues(20, 75));
+    expect(_host.values, const RawRangeValues(20, 75));
 
     await tester.drag(
       find.byKey(const ValueKey('thumb 0')),
       const Offset(400, 0),
     );
     await tester.pump();
-    expect(
-      _host.values,
-      const DesignRangeValues(65, 75),
-      reason: 'a gap of 10',
-    );
+    expect(_host.values, const RawRangeValues(65, 75), reason: 'a gap of 10');
   });
 
   testWidgets('the thumb moved last is drawn on top, mid-drag and after, '
@@ -350,11 +346,11 @@ void main() {
   testWidgets('a thumb announces only the adjustments its gap permits', (
     tester,
   ) async {
-    var values = const DesignRangeValues(60, 80);
+    var values = const RawRangeValues(60, 80);
     await tester.pumpWidget(
       harness(
         StatefulBuilder(
-          builder: (_, setState) => DesignRangeSlider(
+          builder: (_, setState) => RawRangeSlider(
             values: values,
             max: 100,
             divisions: 10,
@@ -406,8 +402,8 @@ void main() {
   ) async {
     await tester.pumpWidget(
       harness(
-        DesignRangeSlider(
-          values: const DesignRangeValues(4, 4),
+        RawRangeSlider(
+          values: const RawRangeValues(4, 4),
           min: 4,
           max: 4,
           divisions: 4,
@@ -465,7 +461,7 @@ void main() {
     testWidgets('a drag cancelled${turnedOff ? ' while turned off' : ''} '
         'lets the thumb go: not pressed, the click cursor', (tester) async {
       var enabled = true;
-      var values = const DesignRangeValues(0.2, 0.8);
+      var values = const RawRangeValues(0.2, 0.8);
       var pressed = false;
       var ended = 0;
       late StateSetter host;
@@ -477,7 +473,7 @@ void main() {
               child: StatefulBuilder(
                 builder: (_, setState) {
                   host = setState;
-                  return DesignRangeSlider(
+                  return RawRangeSlider(
                     values: values,
                     onChanged: enabled
                         ? (next) => setState(() => values = next)
@@ -522,7 +518,7 @@ void main() {
         pointer: 42,
       );
       await mouse.addPointer(
-        location: tester.getCenter(find.byType(DesignRangeSlider)),
+        location: tester.getCenter(find.byType(RawRangeSlider)),
       );
       await tester.pump();
       final cursor = RendererBinding.instance.mouseTracker

@@ -34,13 +34,13 @@ final _routes = <String, _Make>{
         ),
       ),
   'bottom sheet': ({closeDampingRatio, closeStiffness, seen}) =>
-      DesignBottomSheetRoute<void>(
+      RawBottomSheetRoute<void>(
         closeDampingRatio: closeDampingRatio,
         closeStiffness: closeStiffness,
         builder: (context, details) => const SizedBox(key: _page, height: 300),
       ),
   'side sheet': ({closeDampingRatio, closeStiffness, seen}) =>
-      DesignSideSheetRoute<void>(
+      RawSideSheetRoute<void>(
         closeDampingRatio: closeDampingRatio,
         closeStiffness: closeStiffness,
         builder: (context, sheet) => const SizedBox.expand(key: _page),

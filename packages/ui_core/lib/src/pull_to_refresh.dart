@@ -1,8 +1,8 @@
 /// Pull to refresh, headless: an overscroll past the top of [child] arms a
-/// refresh; letting go past [DesignPullToRefresh.triggerDistance] runs it.
+/// refresh; letting go past [RawRefreshIndicator.triggerDistance] runs it.
 /// The look paints the indicator from its state. A screen reader gets a
 /// "Refresh" action on the list and hears when it starts and ends; the
-/// keyboard and anything else can call [DesignPullToRefreshState.refresh].
+/// keyboard and anything else can call [RawRefreshIndicatorState.refresh].
 library;
 
 import 'dart:async';
@@ -16,7 +16,7 @@ import 'localizations.dart';
 import 'motion.dart';
 
 /// Where a pull stands.
-enum DesignRefreshMode {
+enum RawRefreshIndicatorMode {
   /// Nothing pulled.
   inactive,
 
@@ -35,16 +35,16 @@ enum DesignRefreshMode {
 
 /// What the look paints the indicator from.
 @immutable
-class DesignRefreshDetails {
+class RawRefreshIndicatorDetails {
   /// The state; the refresher makes it.
-  const DesignRefreshDetails({
+  const RawRefreshIndicatorDetails({
     required this.mode,
     required this.progress,
     required this.extent,
   });
 
   /// Where the pull stands.
-  final DesignRefreshMode mode;
+  final RawRefreshIndicatorMode mode;
 
   /// The pull as a share of the trigger distance (1 = armed; it can pass 1).
   final double progress;
@@ -56,11 +56,11 @@ class DesignRefreshDetails {
 /// [child], a scroll view, refreshed by [onRefresh] on a pull.
 ///
 /// ```dart
-/// DesignPullToRefresh(onRefresh: () async {}, indicatorBuilder: (context, details) => const SizedBox(height: 40), child: ListView())
+/// RawRefreshIndicator(onRefresh: () async {}, indicatorBuilder: (context, details) => const SizedBox(height: 40), child: ListView())
 /// ```
-class DesignPullToRefresh extends StatefulWidget {
+class RawRefreshIndicator extends StatefulWidget {
   /// A refresher around [child].
-  const DesignPullToRefresh({
+  const RawRefreshIndicator({
     super.key,
     required this.onRefresh,
     required this.indicatorBuilder,
@@ -75,8 +75,11 @@ class DesignPullToRefresh extends StatefulWidget {
   /// Refreshes; the indicator stays until it completes.
   final Future<void> Function() onRefresh;
 
-  /// Paints the indicator, at the top, [DesignRefreshDetails.extent] tall.
-  final Widget Function(BuildContext context, DesignRefreshDetails details)
+  /// Paints the indicator, at the top, [RawRefreshIndicatorDetails.extent] tall.
+  final Widget Function(
+    BuildContext context,
+    RawRefreshIndicatorDetails details,
+  )
   indicatorBuilder;
 
   /// The scroll view.
@@ -89,19 +92,19 @@ class DesignPullToRefresh extends StatefulWidget {
   final double restExtent;
 
   /// The screen reader's action; null:
-  /// [DesignLocalizations.refreshLabel].
+  /// [RawWidgetsLocalizations.refreshLabel].
   final String? refreshLabel;
 
   /// What a screen reader hears when a refresh starts; null:
-  /// [DesignLocalizations.refreshingMessage].
+  /// [RawWidgetsLocalizations.refreshingMessage].
   final String? refreshingMessage;
 
   /// What a screen reader hears when it ends; null:
-  /// [DesignLocalizations.refreshedMessage].
+  /// [RawWidgetsLocalizations.refreshedMessage].
   final String? doneMessage;
 
   @override
-  State<DesignPullToRefresh> createState() => DesignPullToRefreshState();
+  State<RawRefreshIndicator> createState() => RawRefreshIndicatorState();
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -112,7 +115,10 @@ class DesignPullToRefresh extends StatefulWidget {
       )
       ..add(
         ObjectFlagProperty<
-          Widget Function(BuildContext context, DesignRefreshDetails details)
+          Widget Function(
+            BuildContext context,
+            RawRefreshIndicatorDetails details,
+          )
         >.has('indicatorBuilder', indicatorBuilder),
       )
       ..add(
@@ -133,12 +139,12 @@ class DesignPullToRefresh extends StatefulWidget {
 
 /// The refresher's state: [refresh] runs one (a keyboard shortcut, a
 /// menu's "Refresh").
-class DesignPullToRefreshState extends State<DesignPullToRefresh>
+class RawRefreshIndicatorState extends State<RawRefreshIndicator>
     with SingleTickerProviderStateMixin {
   late final AnimationController _extent = AnimationController.unbounded(
     vsync: this,
   );
-  DesignRefreshMode _mode = DesignRefreshMode.inactive;
+  RawRefreshIndicatorMode _mode = RawRefreshIndicatorMode.inactive;
   double _pull = 0;
 
   @override
@@ -161,28 +167,28 @@ class DesignPullToRefreshState extends State<DesignPullToRefresh>
 
   /// Runs a refresh, showing the indicator until it completes.
   Future<void> refresh() async {
-    if (_mode == DesignRefreshMode.refresh) return;
-    setState(() => _mode = DesignRefreshMode.refresh);
+    if (_mode == RawRefreshIndicatorMode.refresh) return;
+    setState(() => _mode = RawRefreshIndicatorMode.refresh);
     _go(widget.restExtent);
     designAnnounce(
       context,
       widget.refreshingMessage ??
-          DesignLocalizations.of(context).refreshingMessage,
+          RawWidgetsLocalizations.of(context).refreshingMessage,
     );
     try {
       await widget.onRefresh();
     } finally {
       if (mounted) {
-        setState(() => _mode = DesignRefreshMode.done);
+        setState(() => _mode = RawRefreshIndicatorMode.done);
         designAnnounce(
           context,
           widget.doneMessage ??
-              DesignLocalizations.of(context).refreshedMessage,
+              RawWidgetsLocalizations.of(context).refreshedMessage,
         );
         _go(0);
         Timer(const Duration(milliseconds: 200), () {
-          if (mounted && _mode == DesignRefreshMode.done) {
-            setState(() => _mode = DesignRefreshMode.inactive);
+          if (mounted && _mode == RawRefreshIndicatorMode.done) {
+            setState(() => _mode = RawRefreshIndicatorMode.inactive);
           }
         });
       }
@@ -191,7 +197,8 @@ class DesignPullToRefreshState extends State<DesignPullToRefresh>
 
   bool _onScroll(ScrollNotification n) {
     if (n.depth != 0 || n.metrics.axis != Axis.vertical) return false;
-    if (_mode == DesignRefreshMode.refresh || _mode == DesignRefreshMode.done) {
+    if (_mode == RawRefreshIndicatorMode.refresh ||
+        _mode == RawRefreshIndicatorMode.done) {
       return false;
     }
     final atTop = n.metrics.pixels <= n.metrics.minScrollExtent;
@@ -221,20 +228,20 @@ class DesignPullToRefreshState extends State<DesignPullToRefresh>
     // The indicator follows the finger at half its speed.
     _extent.value = _pull / 2;
     final mode = _pull == 0
-        ? DesignRefreshMode.inactive
+        ? RawRefreshIndicatorMode.inactive
         : _pull >= widget.triggerDistance
-        ? DesignRefreshMode.armed
-        : DesignRefreshMode.drag;
+        ? RawRefreshIndicatorMode.armed
+        : RawRefreshIndicatorMode.drag;
     if (mode != _mode) setState(() => _mode = mode);
   }
 
   void _release() {
-    if (_mode == DesignRefreshMode.armed) {
+    if (_mode == RawRefreshIndicatorMode.armed) {
       _pull = 0;
       unawaited(refresh());
-    } else if (_mode == DesignRefreshMode.drag) {
+    } else if (_mode == RawRefreshIndicatorMode.drag) {
       _pull = 0;
-      setState(() => _mode = DesignRefreshMode.inactive);
+      setState(() => _mode = RawRefreshIndicatorMode.inactive);
       _go(0);
     }
   }
@@ -250,7 +257,7 @@ class DesignPullToRefreshState extends State<DesignPullToRefresh>
         CustomSemanticsAction(
           label:
               widget.refreshLabel ??
-              DesignLocalizations.of(context).refreshLabel,
+              RawWidgetsLocalizations.of(context).refreshLabel,
         ): () =>
             unawaited(refresh()),
       },
@@ -263,7 +270,7 @@ class DesignPullToRefreshState extends State<DesignPullToRefresh>
               animation: _extent,
               builder: (context, _) {
                 final extent = _extent.value < 0 ? 0.0 : _extent.value;
-                if (extent == 0 && _mode == DesignRefreshMode.inactive) {
+                if (extent == 0 && _mode == RawRefreshIndicatorMode.inactive) {
                   return const SizedBox.shrink();
                 }
                 return Positioned(
@@ -274,11 +281,11 @@ class DesignPullToRefreshState extends State<DesignPullToRefresh>
                   child: ClipRect(
                     child: widget.indicatorBuilder(
                       context,
-                      DesignRefreshDetails(
+                      RawRefreshIndicatorDetails(
                         mode: _mode,
                         progress: switch (_mode) {
-                          DesignRefreshMode.refresh ||
-                          DesignRefreshMode.done => 1,
+                          RawRefreshIndicatorMode.refresh ||
+                          RawRefreshIndicatorMode.done => 1,
                           _ => _pull / widget.triggerDistance,
                         },
                         extent: extent,

@@ -4,14 +4,15 @@
 library;
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
+import 'package:flutter/semantics.dart' show SemanticsRole;
 import 'package:flutter/widgets.dart';
 
 import 'pressable.dart';
+import 'internal/roving_group.dart';
 
 /// Builds an item's face for its [states] (selected, focused while the
 /// keyboard is on it, hovered, pressed, disabled).
-typedef DesignToggleItemBuilder<T> = Widget Function(
+typedef RawSegmentBuilder<T> = Widget Function(
   BuildContext context,
   T value,
   Set<WidgetState> states,
@@ -19,22 +20,25 @@ typedef DesignToggleItemBuilder<T> = Widget Function(
 
 /// A row (or column) of toggles over [options].
 ///
-/// With [multiSelectionEnabled] false it is one choice: a screen reader
-/// hears a radio group, and a press on the chosen item keeps it unless
+/// With [multiSelectionEnabled] false it is one choice and answers as
+/// [DesignRadioGroup] and Flutter's [RadioGroup] do: a screen reader hears
+/// a radio group of radios, all four arrows move and choose (mirrored right
+/// to left), and a press on the chosen item keeps it unless
 /// [emptySelectionAllowed]. With [multiSelectionEnabled] true each item
-/// toggles on its own.
+/// toggles on its own: the arrows along [direction] move without pressing.
 ///
-/// Tab reaches the group once, at its chosen item (or its first enabled
-/// one); the arrows move along it (and wrap), mirrored right to left; Home
-/// and End go to its ends; Space and Enter press. [selectFollowsFocus]
-/// chooses as the arrows move, as a segmented control does.
+/// Tab reaches the group once, at its chosen item (its first chosen one
+/// when several are, else its first enabled one); the arrows wrap and pass
+/// over items turned off; Home and End go to its ends (and choose, with
+/// one choice); Space and Enter press. Each arrow, Home and End is a
+/// [RawRovingFocusIntent], which an [Actions] round the group overrides.
 ///
 /// ```dart
-/// DesignToggleGroup<String>(options: const ['day', 'week'], selected: const {'day'}, onSelectionChanged: (next) {}, itemBuilder: (context, value, states) => Text(value))
+/// RawSegmentedButton<String>(options: const ['day', 'week'], selected: const {'day'}, onSelectionChanged: (next) {}, itemBuilder: (context, value, states) => Text(value))
 /// ```
-class DesignToggleGroup<T> extends StatefulWidget {
+class RawSegmentedButton<T> extends StatefulWidget {
   /// A group of [options], [selected] chosen.
-  const DesignToggleGroup({
+  const RawSegmentedButton({
     super.key,
     required this.options,
     required this.selected,
@@ -63,7 +67,7 @@ class DesignToggleGroup<T> extends StatefulWidget {
   final ValueChanged<Set<T>>? onSelectionChanged;
 
   /// Paints an item.
-  final DesignToggleItemBuilder<T> itemBuilder;
+  final RawSegmentBuilder<T> itemBuilder;
 
   /// Whether any number may be chosen.
   final bool multiSelectionEnabled;
@@ -71,7 +75,9 @@ class DesignToggleGroup<T> extends StatefulWidget {
   /// Whether a one-choice group may be left with none.
   final bool emptySelectionAllowed;
 
-  /// Whether the arrows choose as they move (one-choice groups).
+  /// Kept for older callers: a one-choice group chooses as the arrows
+  /// move whatever it says, as a radio group does, and a group of many
+  /// never does.
   final bool selectFollowsFocus;
 
   /// Whether an item can be pressed; null: all can.
@@ -96,7 +102,7 @@ class DesignToggleGroup<T> extends StatefulWidget {
   final Size minimumSize;
 
   @override
-  State<DesignToggleGroup<T>> createState() => _DesignToggleGroupState<T>();
+  State<RawSegmentedButton<T>> createState() => _DesignToggleGroupState<T>();
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -111,7 +117,7 @@ class DesignToggleGroup<T> extends StatefulWidget {
         ),
       )
       ..add(
-        ObjectFlagProperty<DesignToggleItemBuilder<T>>.has(
+        ObjectFlagProperty<RawSegmentBuilder<T>>.has(
           'itemBuilder',
           itemBuilder,
         ),
@@ -169,9 +175,8 @@ class DesignToggleGroup<T> extends StatefulWidget {
   }
 }
 
-class _DesignToggleGroupState<T> extends State<DesignToggleGroup<T>> {
+class _DesignToggleGroupState<T> extends State<RawSegmentedButton<T>> {
   final List<FocusNode> _nodes = [];
-  int? _current;
 
   bool _enabled(int i) =>
       widget.onSelectionChanged != null &&
@@ -183,20 +188,6 @@ class _DesignToggleGroupState<T> extends State<DesignToggleGroup<T>> {
       n.dispose();
     }
     super.dispose();
-  }
-
-  // The tab stop: the item the keyboard was last on, else the first chosen,
-  // else the first enabled.
-  int? _stop() {
-    final c = _current;
-    if (c != null && c < widget.options.length && _enabled(c)) return c;
-    for (var i = 0; i < widget.options.length; i++) {
-      if (_enabled(i) && widget.selected.contains(widget.options[i])) return i;
-    }
-    for (var i = 0; i < widget.options.length; i++) {
-      if (_enabled(i)) return i;
-    }
-    return null;
   }
 
   void _press(int i) {
@@ -211,69 +202,26 @@ class _DesignToggleGroupState<T> extends State<DesignToggleGroup<T>> {
     } else {
       next = {v};
     }
-    setState(() => _current = i);
     widget.onSelectionChanged?.call(next);
   }
 
-  void _move(int from, int step) {
-    final n = widget.options.length;
-    for (var k = 1; k <= n; k++) {
-      final i = (from + step * k) % n;
-      if (_enabled(i)) {
-        _go(i);
-        return;
-      }
-    }
-  }
-
-  void _go(int i) {
-    setState(() => _current = i);
-    _nodes[i].requestFocus();
-    if (widget.selectFollowsFocus &&
-        !widget.multiSelectionEnabled &&
-        !widget.selected.contains(widget.options[i])) {
-      widget.onSelectionChanged?.call({widget.options[i]});
-    }
-  }
-
-  KeyEventResult _key(int i, KeyEvent event) {
-    if (event is! KeyDownEvent && event is! KeyRepeatEvent) {
-      return KeyEventResult.ignored;
-    }
-    final rtl = Directionality.of(context) == TextDirection.rtl;
-    final key = event.logicalKey;
-    final horizontal = widget.direction == Axis.horizontal;
-    final forward = horizontal
-        ? (rtl ? LogicalKeyboardKey.arrowLeft : LogicalKeyboardKey.arrowRight)
-        : LogicalKeyboardKey.arrowDown;
-    final back = horizontal
-        ? (rtl ? LogicalKeyboardKey.arrowRight : LogicalKeyboardKey.arrowLeft)
-        : LogicalKeyboardKey.arrowUp;
-    if (key == forward) {
-      _move(i, 1);
-    } else if (key == back) {
-      _move(i, -1);
-    } else if (key == LogicalKeyboardKey.home) {
-      _move(-1, 1);
-    } else if (key == LogicalKeyboardKey.end) {
-      _move(0, -1);
-    } else {
-      return KeyEventResult.ignored;
-    }
-    return KeyEventResult.handled;
+  // One choice is a radio group: a key that moves to an item chooses it.
+  void _movedTo(int i) {
+    final v = widget.options[i];
+    if (!widget.selected.contains(v)) widget.onSelectionChanged?.call({v});
   }
 
   @override
   Widget build(BuildContext context) {
     final n = widget.options.length;
     while (_nodes.length < n) {
-      _nodes.add(FocusNode(debugLabel: 'DesignToggleGroup ${_nodes.length}'));
+      _nodes.add(FocusNode(debugLabel: 'RawSegmentedButton ${_nodes.length}'));
     }
     while (_nodes.length > n) {
       _nodes.removeLast().dispose();
     }
-    final stop = _stop();
-    final items = <Widget>[for (var i = 0; i < n; i++) _item(context, i, stop)];
+    final single = !widget.multiSelectionEnabled;
+    final items = <Widget>[for (var i = 0; i < n; i++) _item(context, i)];
     final layout =
         widget.layoutBuilder?.call(context, items) ??
         Flex(
@@ -284,28 +232,42 @@ class _DesignToggleGroupState<T> extends State<DesignToggleGroup<T>> {
     return Semantics(
       container: true,
       explicitChildNodes: true,
+      role: single ? SemanticsRole.radioGroup : null,
       label: widget.semanticLabel,
-      child: FocusTraversalGroup(child: layout),
+      child: RovingGroup(
+        // One choice answers every arrow, as a radio group does; many, the
+        // arrows along the group, as a toolbar's toggles do.
+        orientation: single ? null : widget.direction,
+        child: layout,
+      ),
     );
   }
 
-  Widget _item(BuildContext context, int i, int? stop) {
+  Widget _item(BuildContext context, int i) {
     final v = widget.options[i];
     final on = widget.selected.contains(v);
-    _nodes[i].skipTraversal = i != stop;
-    return DesignPressable(
+    return RovingItem(
       focusNode: _nodes[i],
-      onPressed: _enabled(i) ? () => _press(i) : null,
-      onKeyEvent: (node, event) => _key(i, event),
+      enabled: _enabled(i),
       selected: on,
-      minimumSize: widget.minimumSize,
-      semanticLabel: widget.labelOf?.call(v),
-      excludeSemantics: widget.labelOf != null,
-      button: widget.multiSelectionEnabled,
-      checked: widget.multiSelectionEnabled ? null : on,
-      inMutuallyExclusiveGroup: !widget.multiSelectionEnabled,
-      toggled: widget.multiSelectionEnabled ? on : null,
-      builder: (context, states, _) => widget.itemBuilder(context, v, states),
+      order: i,
+      onMovedTo: widget.multiSelectionEnabled ? null : () => _movedTo(i),
+      child: RawButton(
+        focusNode: _nodes[i],
+        onPressed: _enabled(i) ? () => _press(i) : null,
+        selected: on,
+        minimumSize: widget.minimumSize,
+        semanticLabel: widget.labelOf?.call(v),
+        excludeSemantics: widget.labelOf != null,
+        button: widget.multiSelectionEnabled,
+        // One choice: radios. Many: toggle buttons, each a button that is
+        // selected or not, as SegmentedButton's segments and
+        // IconButton(isSelected:) are.
+        checked: widget.multiSelectionEnabled ? null : on,
+        inMutuallyExclusiveGroup: !widget.multiSelectionEnabled,
+        semanticSelected: widget.multiSelectionEnabled ? on : null,
+        builder: (context, states, _) => widget.itemBuilder(context, v, states),
+      ),
     );
   }
 }

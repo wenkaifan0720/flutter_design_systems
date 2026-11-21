@@ -13,13 +13,13 @@ import 'behaviour_harness.dart';
 const _anchorKey = ValueKey('anchor');
 const _surfaceKey = ValueKey('surface');
 
-late DesignOverlayInfo _info;
+late RawPopoverInfo _info;
 
 // The bare reference painter: a pressable anchor and a column of pressable
 // items.
 Widget _overlay({
-  DesignOverlayTrigger trigger = DesignOverlayTrigger.press,
-  DesignOverlayPlacement placement = const DesignOverlayPlacement(),
+  RawPopoverTrigger trigger = RawPopoverTrigger.press,
+  RawPopoverPlacement placement = const RawPopoverPlacement(),
   bool arrowKeyNavigation = false,
   bool focusOnOpen = true,
   FocusNode? anchorNode,
@@ -28,17 +28,17 @@ Widget _overlay({
   double dampingRatio = 1,
   ValueChanged<double>? onPresence,
   Size surfaceSize = const Size(120, 90),
-}) => DesignAnchoredOverlay(
+}) => RawPopover(
   trigger: trigger,
   placement: placement,
   arrowKeyNavigation: arrowKeyNavigation,
   focusOnOpen: focusOnOpen,
   dampingRatio: dampingRatio,
   semanticLabel: 'Options',
-  anchorBuilder: (context, anchor) => DesignPressable(
+  anchorBuilder: (context, anchor) => RawButton(
     focusNode: anchorNode,
     expanded: anchor.isOpen,
-    onPressed: trigger == DesignOverlayTrigger.press ? anchor.toggle : () {},
+    onPressed: trigger == RawPopoverTrigger.press ? anchor.toggle : () {},
     builder: (context, states, _) => plainFace('Open', key: _anchorKey),
   ),
   overlayBuilder: (context, info) {
@@ -56,7 +56,7 @@ Widget _overlay({
           mainAxisSize: MainAxisSize.min,
           children: [
             for (var i = 0; i < itemNodes.length; i++)
-              DesignPressable(
+              RawButton(
                 focusNode: itemNodes[i],
                 onPressed: () {
                   onItem?.call('item $i');
@@ -104,7 +104,7 @@ void main() {
     }
   });
   behaviourContract(
-    'DesignAnchoredOverlay',
+    'RawPopover',
     build: (c) => Center(child: _overlay(itemNodes: items)),
     node: () => find.byKey(_anchorKey),
     // The anchor is the look's press; the behaviour gives it its state.
@@ -116,7 +116,7 @@ void main() {
       isFocusable: true,
     ),
     noDisabledState:
-        'the anchor is the look\'s DesignPressable, whose contract covers '
+        'the anchor is the look\'s RawButton, whose contract covers '
         'a disabled anchor',
     keyboard: (p) async {
       await p.tabInto();
@@ -145,7 +145,7 @@ void main() {
       await p.tester.tap(p.node);
       await p.tester.pump();
     },
-    // The anchor's size is the look's press (DesignPressable.minimumSize).
+    // The anchor's size is the look's press (RawButton.minimumSize).
     targets: false,
   );
 
@@ -234,7 +234,7 @@ void main() {
     await tester.pumpWidget(_at(Alignment.bottomCenter, _overlay()));
     await tester.tap(find.byKey(_anchorKey));
     await tester.pumpAndSettle();
-    expect(_info.side, DesignOverlaySide.above);
+    expect(_info.side, RawPopoverSide.above);
     final anchor = tester.getRect(find.byKey(_anchorKey));
     final surface = tester.getRect(find.byKey(_surfaceKey));
     expect(surface.bottom, lessThanOrEqualTo(anchor.top));
@@ -246,7 +246,7 @@ void main() {
       await tester.tap(find.byKey(_anchorKey));
       await tester.pumpAndSettle();
     }
-    expect(_info.side, DesignOverlaySide.below);
+    expect(_info.side, RawPopoverSide.below);
   });
 
   testWidgets('start alignment follows the text direction, and it shifts to '
@@ -280,9 +280,9 @@ void main() {
       'on its leading edge, unless told otherwise; beside it, its own width', (
     tester,
   ) async {
-    Widget wide(DesignOverlayPlacement placement) => _at(
+    Widget wide(RawPopoverPlacement placement) => _at(
       Alignment.center,
-      DesignAnchoredOverlay(
+      RawPopover(
         placement: placement,
         focusOnOpen: false,
         anchorBuilder: (context, anchor) => GestureDetector(
@@ -294,7 +294,7 @@ void main() {
             const SizedBox(key: _surfaceKey, width: 80, height: 40),
       ),
     );
-    Future<Rect> surface(DesignOverlayPlacement placement) async {
+    Future<Rect> surface(RawPopoverPlacement placement) async {
       await tester.pumpWidget(wide(placement));
       await tester.tap(find.byKey(_anchorKey));
       await tester.pumpAndSettle();
@@ -304,20 +304,20 @@ void main() {
       return rect;
     }
 
-    final below = await surface(const DesignOverlayPlacement());
+    final below = await surface(const RawPopoverPlacement());
     final anchor = tester.getRect(find.byKey(_anchorKey));
     expect(below.width, 200);
     expect(below.left, moreOrLessEquals(anchor.left));
     final above = await surface(
-      const DesignOverlayPlacement(side: DesignOverlaySide.above),
+      const RawPopoverPlacement(side: RawPopoverSide.above),
     );
     expect(above.width, 200);
     final own = await surface(
-      const DesignOverlayPlacement(matchAnchorWidth: false),
+      const RawPopoverPlacement(matchAnchorWidth: false),
     );
     expect(own.width, 80);
     final beside = await surface(
-      const DesignOverlayPlacement(side: DesignOverlaySide.end),
+      const RawPopoverPlacement(side: RawPopoverSide.end),
     );
     expect(beside.width, 80);
   });
@@ -330,14 +330,14 @@ void main() {
     Widget field(
       double width,
       List<String> items, {
-      DesignOverlayPlacement placement = const DesignOverlayPlacement(),
+      RawPopoverPlacement placement = const RawPopoverPlacement(),
       TextDirection direction = TextDirection.ltr,
       bool lazy = false,
     }) => _at(
       Alignment.topCenter,
       Padding(
         padding: const EdgeInsets.only(top: 40),
-        child: DesignAnchoredOverlay(
+        child: RawPopover(
           placement: placement,
           focusOnOpen: false,
           anchorBuilder: (context, anchor) => GestureDetector(
@@ -425,7 +425,7 @@ void main() {
         field(120, [
           'Day',
           'A' * 40,
-        ], placement: const DesignOverlayPlacement(maxWidth: 240)),
+        ], placement: const RawPopoverPlacement(maxWidth: 240)),
       );
       await tester.tap(find.byKey(_anchorKey));
       await tester.pump();
@@ -464,9 +464,9 @@ void main() {
       _at(
         Alignment.center,
         _overlay(
-          trigger: DesignOverlayTrigger.hover,
+          trigger: RawPopoverTrigger.hover,
           focusOnOpen: false,
-          placement: const DesignOverlayPlacement(gap: 0),
+          placement: const RawPopoverPlacement(gap: 0),
         ),
       ),
     );
@@ -508,7 +508,7 @@ void main() {
       _at(
         Alignment.center,
         _overlay(
-          trigger: DesignOverlayTrigger.hover,
+          trigger: RawPopoverTrigger.hover,
           focusOnOpen: false,
           anchorNode: anchor,
         ),
@@ -585,7 +585,7 @@ void main() {
     final height =
         tester.view.physicalSize.height / tester.view.devicePixelRatio;
     final anchor = tester.getRect(find.byKey(_anchorKey));
-    expect(_info.side, DesignOverlaySide.below);
+    expect(_info.side, RawPopoverSide.below);
     expect(_info.maxSize.height, lessThan(height - anchor.bottom));
     final surface = tester.getRect(find.byKey(_surfaceKey));
     expect(surface.bottom, lessThanOrEqualTo(height - 8));
@@ -597,7 +597,7 @@ void main() {
     Route<void> dialog() => PageRouteBuilder<void>(
       opaque: false,
       pageBuilder: (context, _, _) => Center(
-        child: DesignPressable(
+        child: RawButton(
           autofocus: true,
           onPressed: () => Navigator.of(context).pop(),
           builder: (context, states, _) => plainFace('OK'),
@@ -766,18 +766,16 @@ void main() {
         tester,
         Align(
           alignment: Alignment.topLeft,
-          child: DesignAnchoredOverlay(
+          child: RawPopover(
             focusOnOpen: false,
-            anchorBuilder: (context, anchor) => DesignPressable(
+            anchorBuilder: (context, anchor) => RawButton(
               onPressed: anchor.toggle,
               builder: (context, states, _) => face('Menu'),
             ),
-            overlayBuilder: (context, info) => DesignAnchoredOverlay(
+            overlayBuilder: (context, info) => RawPopover(
               focusOnOpen: false,
-              placement: const DesignOverlayPlacement(
-                side: DesignOverlaySide.end,
-              ),
-              anchorBuilder: (context, anchor) => DesignPressable(
+              placement: const RawPopoverPlacement(side: RawPopoverSide.end),
+              anchorBuilder: (context, anchor) => RawButton(
                 onPressed: anchor.toggle,
                 builder: (context, states, _) => face('More'),
               ),
@@ -844,7 +842,7 @@ void main() {
       'wholly in view (${lazy ? 'a lazy list' : 'a column'})',
       (tester) async {
         const count = 40;
-        Widget item(int i) => DesignPressable(
+        Widget item(int i) => RawButton(
           onPressed: () {},
           builder: (context, states, _) => SizedBox(
             key: ValueKey('item $i'),
@@ -857,9 +855,9 @@ void main() {
         await tester.pumpWidget(
           _at(
             Alignment.topCenter,
-            DesignAnchoredOverlay(
+            RawPopover(
               arrowKeyNavigation: true,
-              anchorBuilder: (context, overlay) => DesignPressable(
+              anchorBuilder: (context, overlay) => RawButton(
                 focusNode: anchor,
                 onPressed: overlay.toggle,
                 builder: (context, states, _) =>

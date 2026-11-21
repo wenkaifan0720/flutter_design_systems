@@ -1,10 +1,10 @@
 /// A calendar, headless: an inline month grid and its model, for a date
 /// picker, a date range picker and an inline calendar.
 ///
-/// [DesignCalendarController] holds the shown month, the keyboard's day,
+/// [RawCalendarController] holds the shown month, the keyboard's day,
 /// and the selection: one day, a range (first tap the start, second the
 /// end, a pointer resting on a day previews the range) or several days.
-/// [DesignCalendar] lays out one or more months as grids of days the look
+/// [RawCalendarDatePicker] lays out one or more months as grids of days the look
 /// paints, with one tab stop: arrows move a day or a week, Home and End to
 /// the week's ends, Page Up and Down a month (with Shift a year), Enter or
 /// Space selects; moving off a month's edge turns the page, so a range can
@@ -51,9 +51,9 @@ bool _sameDay(DateTime? a, DateTime? b) =>
 /// A range of days, [start] to [end] inclusive; [end] is null while only
 /// the start is chosen.
 @immutable
-class DesignDateRange {
+class RawDateRange {
   /// A range from [start] to [end].
-  DesignDateRange(DateTime start, [DateTime? end])
+  RawDateRange(DateTime start, [DateTime? end])
     : start = _dateOnly(start),
       end = end == null ? null : _dateOnly(end);
 
@@ -86,17 +86,17 @@ class DesignDateRange {
 
   @override
   bool operator ==(Object other) =>
-      other is DesignDateRange && other.start == start && other.end == end;
+      other is RawDateRange && other.start == start && other.end == end;
 
   @override
   int get hashCode => Object.hash(start, end);
 
   @override
-  String toString() => 'DesignDateRange($start, $end)';
+  String toString() => 'RawDateRange($start, $end)';
 }
 
 /// How a calendar selects.
-enum DesignCalendarMode {
+enum RawCalendarMode {
   /// One day.
   single,
 
@@ -114,19 +114,19 @@ enum DesignCalendarMode {
 /// and disposes it; a widget it is given to only listens to it.
 ///
 /// ```dart
-/// DesignCalendarController(firstDate: DateTime(2026), lastDate: DateTime(2027))
+/// RawCalendarController(firstDate: DateTime(2026), lastDate: DateTime(2027))
 /// ```
-class DesignCalendarController extends ChangeNotifier {
+class RawCalendarController extends ChangeNotifier {
   /// A calendar between [firstDate] and [lastDate]. It opens on the month of
   /// `initialMonth`, else of the selection (its earliest day), else of
   /// [currentDate].
-  DesignCalendarController({
+  RawCalendarController({
     required DateTime firstDate,
     required DateTime lastDate,
-    this.mode = DesignCalendarMode.single,
+    this.mode = RawCalendarMode.single,
     DateTime? initialMonth,
     DateTime? selectedDate,
-    DesignDateRange? selectedRange,
+    RawDateRange? selectedRange,
     Iterable<DateTime> selectedDates = const [],
     this.selectable,
     DateTime? currentDate,
@@ -154,7 +154,7 @@ class DesignCalendarController extends ChangeNotifier {
   final DateTime lastDate;
 
   /// How it selects.
-  final DesignCalendarMode mode;
+  final RawCalendarMode mode;
 
   /// Which days can be chosen, beside the bounds; null for all.
   final bool Function(DateTime day)? selectable;
@@ -165,7 +165,7 @@ class DesignCalendarController extends ChangeNotifier {
   late DateTime _month;
   late DateTime _focused;
   DateTime? _selected;
-  DesignDateRange? _range;
+  RawDateRange? _range;
   final Set<DateTime> _days;
   DateTime? _hovered;
 
@@ -181,13 +181,13 @@ class DesignCalendarController extends ChangeNotifier {
   /// The day the keyboard is on.
   DateTime get focusedDay => _focused;
 
-  /// The chosen day ([DesignCalendarMode.single]).
+  /// The chosen day ([RawCalendarMode.single]).
   DateTime? get selectedDate => _selected;
 
-  /// The chosen range ([DesignCalendarMode.range]).
-  DesignDateRange? get selectedRange => _range;
+  /// The chosen range ([RawCalendarMode.range]).
+  RawDateRange? get selectedRange => _range;
 
-  /// The chosen days ([DesignCalendarMode.multiple]), in order.
+  /// The chosen days ([RawCalendarMode.multiple]), in order.
   List<DateTime> get selectedDates => _days.toList()..sort();
 
   /// The day a pointer rests on while a range waits for its end.
@@ -257,17 +257,17 @@ class DesignCalendarController extends ChangeNotifier {
     if (!isSelectable(d)) return;
     _focused = d;
     switch (mode) {
-      case DesignCalendarMode.single:
+      case RawCalendarMode.single:
         _selected = d;
-      case DesignCalendarMode.range:
+      case RawCalendarMode.range:
         final r = _range;
         if (r == null || r.isComplete || d.isBefore(r.start)) {
-          _range = DesignDateRange(d);
+          _range = RawDateRange(d);
         } else {
-          _range = DesignDateRange(r.start, d);
+          _range = RawDateRange(r.start, d);
           _hovered = null;
         }
-      case DesignCalendarMode.multiple:
+      case RawCalendarMode.multiple:
         if (!_days.remove(d)) _days.add(d);
     }
     notifyListeners();
@@ -282,28 +282,28 @@ class DesignCalendarController extends ChangeNotifier {
   }
 
   /// The range a waiting start and a resting pointer preview, or null.
-  DesignDateRange? get preview {
+  RawDateRange? get preview {
     final r = _range;
     final h = _hovered;
-    if (mode != DesignCalendarMode.range || r == null || r.isComplete) {
+    if (mode != RawCalendarMode.range || r == null || r.isComplete) {
       return null;
     }
     if (h == null || h.isBefore(r.start)) return null;
-    return DesignDateRange(r.start, h);
+    return RawDateRange(r.start, h);
   }
 
   /// [day] as the grid paints it.
-  DesignCalendarDay dayOf(DateTime day, {required DateTime inMonth}) {
+  RawCalendarDayDetails dayOf(DateTime day, {required DateTime inMonth}) {
     final d = _dateOnly(day);
     final r = _range;
     final p = preview;
     final chosen = switch (mode) {
-      DesignCalendarMode.single => _sameDay(d, _selected),
-      DesignCalendarMode.range =>
+      RawCalendarMode.single => _sameDay(d, _selected),
+      RawCalendarMode.range =>
         r != null && (_sameDay(d, r.start) || _sameDay(d, r.end)),
-      DesignCalendarMode.multiple => _days.contains(d),
+      RawCalendarMode.multiple => _days.contains(d),
     };
-    return DesignCalendarDay(
+    return RawCalendarDayDetails(
       date: d,
       inMonth: d.month == inMonth.month && d.year == inMonth.year,
       isToday: _sameDay(d, currentDate),
@@ -336,9 +336,9 @@ class DesignCalendarController extends ChangeNotifier {
 
 /// One day as the grid paints it.
 @immutable
-class DesignCalendarDay {
+class RawCalendarDayDetails {
   /// A day; the controller makes these.
-  const DesignCalendarDay({
+  const RawCalendarDayDetails({
     required this.date,
     required this.inMonth,
     required this.isToday,
@@ -397,17 +397,17 @@ class DesignCalendarDay {
 /// Paints one day for its [states] ([WidgetState.selected] when chosen,
 /// [WidgetState.focused] while the keyboard is on it, hovered, pressed,
 /// disabled).
-typedef DesignCalendarDayBuilder = Widget Function(
+typedef RawCalendarDayBuilder = Widget Function(
   BuildContext context,
-  DesignCalendarDay day,
+  RawCalendarDayDetails day,
   Set<WidgetState> states,
 );
 
-/// A month's header, as [DesignCalendar.headerBuilder] gets it.
+/// A month's header, as [RawCalendarDatePicker.headerBuilder] gets it.
 @immutable
-class DesignCalendarHeader {
+class RawCalendarHeaderDetails {
   /// A header for [month].
-  const DesignCalendarHeader({
+  const RawCalendarHeaderDetails({
     required this.month,
     required this.label,
     required this.previous,
@@ -429,14 +429,14 @@ class DesignCalendarHeader {
   final VoidCallback? next;
 }
 
-/// One or more month grids over a [DesignCalendarController].
+/// One or more month grids over a [RawCalendarController].
 ///
 /// ```dart
-/// DesignCalendar(controller: controller, dayBuilder: (context, day, states) => Text('${day.date.day}'))
+/// RawCalendarDatePicker(controller: controller, dayBuilder: (context, day, states) => Text('${day.date.day}'))
 /// ```
-class DesignCalendar extends StatefulWidget {
+class RawCalendarDatePicker extends StatefulWidget {
   /// A calendar over [controller].
-  const DesignCalendar({
+  const RawCalendarDatePicker({
     super.key,
     required this.controller,
     required this.dayBuilder,
@@ -463,13 +463,13 @@ class DesignCalendar extends StatefulWidget {
   /// The model: the shown month, the keyboard's day and the selection.
   /// The caller makes it, keeps it across
   /// rebuilds and disposes it.
-  final DesignCalendarController controller;
+  final RawCalendarController controller;
 
   /// Paints a day.
-  final DesignCalendarDayBuilder dayBuilder;
+  final RawCalendarDayBuilder dayBuilder;
 
   /// Paints a month's header; null shows its label.
-  final Widget Function(BuildContext context, DesignCalendarHeader header)?
+  final Widget Function(BuildContext context, RawCalendarHeaderDetails header)?
   headerBuilder;
 
   /// Paints a weekday's heading ([DateTime.monday] …).
@@ -485,7 +485,7 @@ class DesignCalendar extends StatefulWidget {
   final int months;
 
   /// The day a week starts on ([DateTime.monday] … [DateTime.sunday]). Null
-  /// takes it from [DesignLocalizations.firstDayOfWeek], as
+  /// takes it from [RawWidgetsLocalizations.firstDayOfWeek], as
   /// `CalendarDatePicker` takes it from its localizations.
   final int? firstWeekday;
 
@@ -503,15 +503,15 @@ class DesignCalendar extends StatefulWidget {
   final bool autofocus;
 
   /// A day's name for a screen reader; null:
-  /// [DesignLocalizations.formatFullDate].
+  /// [RawWidgetsLocalizations.formatFullDate].
   final String Function(DateTime day)? dayLabel;
 
   /// A month's name; null:
-  /// [DesignLocalizations.formatMonthYear].
+  /// [RawWidgetsLocalizations.formatMonthYear].
   final String Function(DateTime month)? monthLabel;
 
   /// A weekday's short heading; null:
-  /// [DesignLocalizations.formatShortWeekday].
+  /// [RawWidgetsLocalizations.formatShortWeekday].
   final String Function(int weekday)? weekdayLabel;
 
   /// Whether days of the neighbouring months fill the first and last weeks
@@ -525,24 +525,21 @@ class DesignCalendar extends StatefulWidget {
   final double minDayWidth;
 
   @override
-  State<DesignCalendar> createState() => _DesignCalendarState();
+  State<RawCalendarDatePicker> createState() => _DesignCalendarState();
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
       ..add(
-        DiagnosticsProperty<DesignCalendarController>('controller', controller),
+        DiagnosticsProperty<RawCalendarController>('controller', controller),
       )
       ..add(
-        ObjectFlagProperty<DesignCalendarDayBuilder>.has(
-          'dayBuilder',
-          dayBuilder,
-        ),
+        ObjectFlagProperty<RawCalendarDayBuilder>.has('dayBuilder', dayBuilder),
       )
       ..add(
         ObjectFlagProperty<
-          Widget Function(BuildContext context, DesignCalendarHeader header)
+          Widget Function(BuildContext context, RawCalendarHeaderDetails header)
         >.has('headerBuilder', headerBuilder),
       )
       ..add(
@@ -605,21 +602,22 @@ class DesignCalendar extends StatefulWidget {
   }
 }
 
-class _DesignCalendarState extends State<DesignCalendar> {
+class _DesignCalendarState extends State<RawCalendarDatePicker> {
   String _dayLabel(DateTime day) =>
-      (widget.dayLabel ?? DesignLocalizations.of(context).formatFullDate)(day);
-
-  String _monthLabel(DateTime month) =>
-      (widget.monthLabel ?? DesignLocalizations.of(context).formatMonthYear)(
-        month,
+      (widget.dayLabel ?? RawWidgetsLocalizations.of(context).formatFullDate)(
+        day,
       );
 
+  String _monthLabel(DateTime month) =>
+      (widget.monthLabel ??
+      RawWidgetsLocalizations.of(context).formatMonthYear)(month);
+
   int get _firstWeekday =>
-      widget.firstWeekday ?? DesignLocalizations.of(context).firstDayOfWeek;
+      widget.firstWeekday ?? RawWidgetsLocalizations.of(context).firstDayOfWeek;
 
   String _weekdayLabel(int weekday) =>
       (widget.weekdayLabel ??
-      DesignLocalizations.of(context).formatShortWeekday)(weekday);
+      RawWidgetsLocalizations.of(context).formatShortWeekday)(weekday);
 
   FocusNode? _own;
   // Whether the keyboard's day is lit: the calendar's focus, shown as a
@@ -629,7 +627,8 @@ class _DesignCalendarState extends State<DesignCalendar> {
   late final DesignFocusShown _focus;
 
   FocusNode get _node =>
-      widget.focusNode ?? (_own ??= FocusNode(debugLabel: 'DesignCalendar'));
+      widget.focusNode ??
+      (_own ??= FocusNode(debugLabel: 'RawCalendarDatePicker'));
 
   @override
   void initState() {
@@ -639,7 +638,7 @@ class _DesignCalendarState extends State<DesignCalendar> {
   }
 
   @override
-  void didUpdateWidget(DesignCalendar oldWidget) {
+  void didUpdateWidget(RawCalendarDatePicker oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.controller != widget.controller) {
       oldWidget.controller.removeListener(_changed);
@@ -697,7 +696,7 @@ class _DesignCalendarState extends State<DesignCalendar> {
     } else {
       return KeyEventResult.ignored;
     }
-    if (c.mode == DesignCalendarMode.range) c.hovered = c.focusedDay;
+    if (c.mode == RawCalendarMode.range) c.hovered = c.focusedDay;
     // The keyboard's day is no node's focus: a screen reader is told it,
     // and what scrolls round the grid shows it.
     if (c.focusedDay != day) {
@@ -721,7 +720,7 @@ class _DesignCalendarState extends State<DesignCalendar> {
   Widget _monthGrid(BuildContext context, int index) {
     final c = widget.controller;
     final month = DateTime(c.month.year, c.month.month + index);
-    final header = DesignCalendarHeader(
+    final header = RawCalendarHeaderDetails(
       month: month,
       label: _monthLabel(month),
       previous: index == 0 && c.canGoBack ? () => c.turn(-1) : null,
@@ -739,7 +738,7 @@ class _DesignCalendarState extends State<DesignCalendar> {
         return const SizedBox.shrink();
       }
       final lit = day.focused && day.inMonth && focusShows;
-      Widget face = DesignPressable(
+      Widget face = RawButton(
         onPressed: day.enabled ? () => _select(date) : null,
         selected: day.selected,
         semanticLabel: _dayLabel(date),
@@ -752,7 +751,7 @@ class _DesignCalendarState extends State<DesignCalendar> {
         }),
       );
       if (!day.inMonth) face = ExcludeSemantics(child: face);
-      if (c.mode == DesignCalendarMode.range && day.enabled) {
+      if (c.mode == RawCalendarMode.range && day.enabled) {
         face = MouseRegion(onEnter: (_) => c.hovered = date, child: face);
       }
       final shown = face;

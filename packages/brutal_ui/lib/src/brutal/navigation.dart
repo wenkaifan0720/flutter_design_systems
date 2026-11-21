@@ -50,7 +50,7 @@ class _Cell extends StatelessWidget {
   builder;
 
   @override
-  Widget build(BuildContext context) => DesignPressable(
+  Widget build(BuildContext context) => RawButton(
     onPressed: onPressed,
     selected: chosen,
     semanticSelected: chosen ? true : null,
@@ -387,7 +387,7 @@ class _ExitCell extends StatelessWidget {
         context.getInheritedWidgetOfExactType<_BarLayers>()?.layers ??
         [theme.appBarStyle];
     final bar = DesignStyleOf(layers, const {});
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     final rtl = Directionality.of(context) == TextDirection.rtl;
     return _Cell(
       onPressed: onPressed ?? () => Navigator.maybePop(context),
@@ -1095,7 +1095,7 @@ class BrutalScaffold extends StatelessWidget {
 /// its words' width and the rule runs on, scrolling sideways when more tabs
 /// than fit.
 ///
-/// The bar is ui_core's ([DesignTabBar]): one tab stop, on the chosen tab;
+/// The bar is ui_core's ([RawTabBar]): one tab stop, on the chosen tab;
 /// the arrows move the choice along it (mirrored right to left), wrapping
 /// round, Home and End to the ends. A screen reader hears a tab bar, "Past,
 /// tab 2 of 2". The chosen tab's bar grows from the rule on the tabs' spring.
@@ -1155,9 +1155,9 @@ class BrutalTabBar extends StatefulWidget {
 
 class _BrutalTabBarState extends State<BrutalTabBar>
     with TickerProviderStateMixin {
-  late DesignTabController _controller = _make();
+  late RawTabController _controller = _make();
 
-  DesignTabController _make() => DesignTabController(
+  RawTabController _make() => RawTabController(
     length: widget.tabs.length,
     initialIndex: widget.tabs.isEmpty
         ? 0
@@ -1225,7 +1225,7 @@ class _BrutalTabBarState extends State<BrutalTabBar>
       return room;
     }
 
-    Widget cell(DesignTabDetails details) {
+    Widget cell(RawTabDetails details) {
       final i = details.index;
       final chosen = details.selection >= 0.5;
       final states = details.states;
@@ -1354,10 +1354,10 @@ class _BrutalTabBarState extends State<BrutalTabBar>
           // Tabs that hug their words scroll sideways when more of them
           // than fit; tabs that fill share the width.
           Positioned.fill(
-            child: DesignTabBar(
+            child: RawTabBar(
               controller: _controller,
               isScrollable: !wide,
-              tabs: [for (final tab in tabs) DesignTab(label: tab)],
+              tabs: [for (final tab in tabs) RawTab(label: tab)],
               tabBuilder: (context, tab, details) => cell(details),
             ),
           ),

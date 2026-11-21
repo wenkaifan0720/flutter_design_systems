@@ -26,7 +26,7 @@ Widget _view({Axis axis = Axis.horizontal, ValueChanged<double>? onChanged}) =>
       child: SizedBox(
         width: 401,
         height: 401,
-        child: DesignSplitView(
+        child: RawSplitView(
           axis: axis,
           minFirst: 100,
           minSecond: 50,
@@ -51,7 +51,7 @@ Future<void> _press(WidgetTester tester, LogicalKeyboardKey key) async {
 
 void main() {
   behaviourContract(
-    'DesignSplitView',
+    'RawSplitView',
     build: (c) => _view(),
     node: () => find.bySemanticsLabel('Resize'),
     semantics: isSemantics(
@@ -104,12 +104,13 @@ void main() {
     await gesture.moveBy(const Offset(30, 0));
     await gesture.moveBy(const Offset(50, 0));
     await tester.pump();
-    expect(_divider, contains(WidgetState.pressed));
+    expect(_divider, containsAll([WidgetState.pressed, WidgetState.dragged]));
     await gesture.moveBy(const Offset(400, 0));
     await gesture.up();
     await tester.pump();
     expect(tester.getSize(find.byKey(_b)).width, 50, reason: 'its least');
     expect(_divider, isNot(contains(WidgetState.pressed)));
+    expect(_divider, isNot(contains(WidgetState.dragged)));
   });
 
   testWidgets('the divider is a tab stop: arrows move it, Enter collapses '

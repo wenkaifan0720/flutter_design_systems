@@ -1,0 +1,146 @@
+/// The behaviour checks as Flutter's accessibility guidelines, beside
+/// `androidTapTargetGuideline` and `labeledTapTargetGuideline`: a test pumps
+/// a screen and expects it to meet one.
+///
+/// ```dart
+/// await expectLater(tester, meetsGuideline(checkableRoleGuideline));
+/// ```
+///
+/// Each runs its check over every view's whole screen and fails with the
+/// check's own lines. The check classes stay, for a test that checks one
+/// part of a screen or names its look in the messages. The radio group check
+/// is not one of them: it drives the keys over one group from the focusable
+/// before it, and a guideline reads a screen without changing it.
+library;
+
+import 'dart:async';
+
+import 'package:flutter/rendering.dart';
+import 'package:flutter/widgets.dart';
+import 'package:flutter_test/flutter_test.dart';
+
+import 'alignment.dart';
+
+/// One of the checks as an [AccessibilityGuideline]: [run] checks a view's
+/// screen, and the guideline fails with every problem it finds on any view.
+class DesignCheckGuideline extends AccessibilityGuideline {
+  /// A guideline that runs [run] on each view's screen.
+  const DesignCheckGuideline({required this.description, required this.run});
+
+  @override
+  final String description;
+
+  /// Checks [screen], the topmost widget of one view, under [tester].
+  final FutureOr<DesignAlignmentReport> Function(
+    WidgetTester tester,
+    BuildContext screen,
+  )
+  run;
+
+  @override
+  Future<Evaluation> evaluate(WidgetTester tester) async {
+    final problems = <String>[];
+    for (final screen in _screens(tester)) {
+      problems.addAll((await run(tester, screen)).problems);
+    }
+    return problems.isEmpty
+        ? const Evaluation.pass()
+        : Evaluation.fail(problems.join('\n'));
+  }
+}
+
+// The topmost widget of each view: the one whose box the view holds.
+List<BuildContext> _screens(WidgetTester tester) {
+  final found = <BuildContext>[];
+  final roots = <RenderObject>{};
+  for (final element in collectAllElementsFrom(
+    tester.binding.rootElement!,
+    skipOffstage: false,
+  )) {
+    final box = element.renderObject;
+    if (box is RenderBox && box.parent is RenderView && roots.add(box)) {
+      found.add(element);
+    }
+  }
+  return found;
+}
+
+/// Each checkbox, radio and switch says what it is, as Flutter's do
+/// (`DesignCheckableCheck`).
+const AccessibilityGuideline checkableRoleGuideline = DesignCheckGuideline(
+  description:
+      'Each checkbox, radio and switch says what it is: no button beside a '
+      'checked or toggled state, and a radio says whether it is checked.',
+  run: _checkable,
+);
+
+/// Each control inside a field takes a tap through the semantics tree, and
+/// the field's label is read once (`DesignFieldSemanticsCheck`).
+const AccessibilityGuideline fieldSemanticsGuideline = DesignCheckGuideline(
+  description:
+      "Each control inside a field has a node of its own that takes a tap, "
+      "and the field's label is read once.",
+  run: _fieldSemantics,
+);
+
+/// Each text field says a name on its own node (`DesignTextFieldNameCheck`).
+const AccessibilityGuideline textFieldNameGuideline = DesignCheckGuideline(
+  description:
+      'Each text field says a name (a label, a hint or a tooltip) on its own '
+      'node.',
+  run: _textFieldName,
+);
+
+/// Each tap target takes a tap over the floor for its input, where a screen
+/// reader outlines it (`DesignTapTargetCheck`): what Flutter's tap-target
+/// guidelines read from the semantics box alone, read from hit testing.
+const AccessibilityGuideline tapTargetReachGuideline = DesignCheckGuideline(
+  description:
+      'Each tap target takes a tap over the floor for its input, and a '
+      'screen reader outlines no more than a tap reaches.',
+  run: _tapTarget,
+);
+
+/// Each control shows a pointer that says it acts, and nothing else does
+/// (`DesignCursorCheck`).
+const AccessibilityGuideline cursorGuideline = DesignCheckGuideline(
+  description:
+      'Each control shows the click cursor where it takes a click, and a '
+      'text field the text cursor.',
+  run: _cursor,
+);
+
+/// Each control's words and icon sit on the middle of its face, as drawn
+/// (`DesignLabelCheck`). It reads the drawn pixels.
+const AccessibilityGuideline labelPlacementGuideline = DesignCheckGuideline(
+  description:
+      "Each control's words and icon sit on the middle of its face, as they "
+      'are drawn.',
+  run: _label,
+);
+
+DesignAlignmentReport _checkable(WidgetTester tester, BuildContext screen) =>
+    const DesignCheckableCheck(look: 'Screen').check(screen);
+
+DesignAlignmentReport _fieldSemantics(
+  WidgetTester tester,
+  BuildContext screen,
+) => const DesignFieldSemanticsCheck(look: 'Screen').check(screen);
+
+DesignAlignmentReport _textFieldName(
+  WidgetTester tester,
+  BuildContext screen,
+) => const DesignTextFieldNameCheck(look: 'Screen').check(screen);
+
+DesignAlignmentReport _tapTarget(WidgetTester tester, BuildContext screen) =>
+    const DesignTapTargetCheck(look: 'Screen').check(screen);
+
+DesignAlignmentReport _cursor(WidgetTester tester, BuildContext screen) =>
+    const DesignCursorCheck(look: 'Screen').check(screen);
+
+Future<DesignAlignmentReport> _label(
+  WidgetTester tester,
+  BuildContext screen,
+) =>
+    const DesignLabelCheck(look: 'Screen')
+        .check(screen, runAsync: tester.runAsync);

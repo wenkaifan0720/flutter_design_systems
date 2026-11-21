@@ -5,9 +5,9 @@ import 'package:ui_core/ui_core.dart';
 import 'package:ui_core/src/internal/localizations_data.dart';
 import 'package:ui_core/src/internal/segments.dart';
 
-const _y = DesignDateSegmentType.year;
-const _m = DesignDateSegmentType.month;
-const _d = DesignDateSegmentType.day;
+const _y = RawDateSegmentType.year;
+const _m = RawDateSegmentType.month;
+const _d = RawDateSegmentType.day;
 
 void main() {
   test('a pattern reads into segments and the text between', () {
@@ -35,7 +35,7 @@ void main() {
     expect(parsePattern("'open")[0], const PatternPart.literal('open'));
     expect(
       parsePattern('a h:mm').first,
-      const PatternPart.segment(DesignDateSegmentType.dayPeriod, 'a', 1),
+      const PatternPart.segment(RawDateSegmentType.dayPeriod, 'a', 1),
     );
   });
 

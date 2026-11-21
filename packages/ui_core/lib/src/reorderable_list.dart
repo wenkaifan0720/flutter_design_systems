@@ -12,12 +12,12 @@ import 'package:flutter/widgets.dart';
 import 'internal/announce.dart';
 import 'localizations.dart';
 
-/// An item's place and moves, as [DesignReorderableList.itemBuilder] gets
+/// An item's place and moves, as [RawReorderableList.itemBuilder] gets
 /// them.
 @immutable
-class DesignReorderItem {
+class RawReorderItemDetails {
   /// The item's controls; the list makes them.
-  const DesignReorderItem({
+  const RawReorderItemDetails({
     required this.index,
     required this.count,
     required this.handle,
@@ -52,11 +52,11 @@ class DesignReorderItem {
 /// lifted item is the look's to paint ([proxyDecorator]).
 ///
 /// ```dart
-/// DesignReorderableList<String>(items: const ['a', 'b'], onReorder: (from, to) {}, labelOf: (item) => item, itemBuilder: (context, item, reorder) => reorder.handle(Text(item)))
+/// RawReorderableList<String>(items: const ['a', 'b'], onReorder: (from, to) {}, labelOf: (item) => item, itemBuilder: (context, item, reorder) => reorder.handle(Text(item)))
 /// ```
-class DesignReorderableList<T extends Object> extends StatefulWidget {
+class RawReorderableList<T extends Object> extends StatefulWidget {
   /// A reorderable list of [items].
-  const DesignReorderableList({
+  const RawReorderableList({
     super.key,
     required this.items,
     required this.onReorder,
@@ -77,8 +77,12 @@ class DesignReorderableList<T extends Object> extends StatefulWidget {
   /// Moves the item at `from` to `to`.
   final void Function(int from, int to) onReorder;
 
-  /// Paints an item; put its handle in [DesignReorderItem.handle].
-  final Widget Function(BuildContext context, T item, DesignReorderItem reorder)
+  /// Paints an item; put its handle in [RawReorderItemDetails.handle].
+  final Widget Function(
+    BuildContext context,
+    T item,
+    RawReorderItemDetails reorder,
+  )
   itemBuilder;
 
   /// What a screen reader calls an item.
@@ -105,11 +109,11 @@ class DesignReorderableList<T extends Object> extends StatefulWidget {
   final EdgeInsetsGeometry? padding;
 
   /// What a screen reader hears after a move; null:
-  /// [DesignLocalizations.reorderableListMovedMessage].
+  /// [RawWidgetsLocalizations.reorderableListMovedMessage].
   final String Function(String label, int position, int count)? movedMessage;
 
   @override
-  State<DesignReorderableList<T>> createState() =>
+  State<RawReorderableList<T>> createState() =>
       _DesignReorderableListState<T>();
 
   @override
@@ -128,7 +132,7 @@ class DesignReorderableList<T extends Object> extends StatefulWidget {
           Widget Function(
             BuildContext context,
             T item,
-            DesignReorderItem reorder,
+            RawReorderItemDetails reorder,
           )
         >.has('itemBuilder', itemBuilder),
       )
@@ -184,7 +188,7 @@ class _MoveIntent extends Intent {
 }
 
 class _DesignReorderableListState<T extends Object>
-    extends State<DesignReorderableList<T>> {
+    extends State<RawReorderableList<T>> {
   // Each item's focus group, by its key, so a moved item gets focus back.
   final Map<Object, FocusNode> _groups = {};
 
@@ -197,7 +201,7 @@ class _DesignReorderableListState<T extends Object>
   Object _keyOf(T item) => widget.keyOf?.call(item) ?? item;
 
   @override
-  void didUpdateWidget(DesignReorderableList<T> oldWidget) {
+  void didUpdateWidget(RawReorderableList<T> oldWidget) {
     super.didUpdateWidget(oldWidget);
     _pending = null;
   }
@@ -229,7 +233,7 @@ class _DesignReorderableListState<T extends Object>
     designAnnounce(
       context,
       (widget.movedMessage ??
-          DesignLocalizations.of(context)
+          RawWidgetsLocalizations.of(context)
               .reorderableListMovedMessage)(label, target + 1, n),
     );
     if (!refocus) return;
@@ -255,7 +259,7 @@ class _DesignReorderableListState<T extends Object>
     final item = widget.items[index];
     final key = _keyOf(item);
     final n = widget.items.length;
-    final reorder = DesignReorderItem(
+    final reorder = RawReorderItemDetails(
       index: index,
       count: n,
       handle: (handle) => Focus(
@@ -289,7 +293,7 @@ class _DesignReorderableListState<T extends Object>
             focusNode: _groups.putIfAbsent(
               key,
               () => FocusNode(
-                debugLabel: 'DesignReorderableList item',
+                debugLabel: 'RawReorderableList item',
                 canRequestFocus: false,
                 skipTraversal: true,
               ),

@@ -1,6 +1,6 @@
 // Where an anchored surface goes, and where its focus starts: opened at a
 // point (a context menu at the pointer), clear of the on-screen keyboard,
-// the safe area and a look's own chrome (DesignOverlayPadding), its placed
+// the safe area and a look's own chrome (RawPopoverPadding), its placed
 // rectangle told to a painter in the frame it lands, and a menu a pointer
 // opened holding the keys itself with no item lit.
 import 'package:flutter/foundation.dart';
@@ -17,9 +17,9 @@ import 'behaviour_harness.dart';
 
 const _anchorKey = ValueKey('anchor');
 const _surfaceKey = ValueKey('surface');
-const _loose = DesignOverlayPlacement(matchAnchorWidth: false);
+const _loose = RawPopoverPlacement(matchAnchorWidth: false);
 
-late DesignOverlayInfo _info;
+late RawPopoverInfo _info;
 DesignSurfaceFocus? _shared;
 
 // The reference painter: a pressable anchor of [anchorSize] that opens the
@@ -29,18 +29,18 @@ Widget _menu({
   MenuController? controller,
   Offset? at,
   List<FocusNode> items = const [],
-  DesignOverlayPlacement placement = _loose,
+  RawPopoverPlacement placement = _loose,
   Size anchorSize = const Size(200, 44),
   Size surfaceSize = const Size(120, 90),
   FocusNode? anchorNode,
   bool arrowKeyNavigation = true,
   Widget Function(Widget surface)? paint,
-}) => DesignAnchoredOverlay(
+}) => RawPopover(
   controller: controller,
   placement: placement,
   arrowKeyNavigation: arrowKeyNavigation,
   semanticLabel: 'Options',
-  anchorBuilder: (context, anchor) => DesignPressable(
+  anchorBuilder: (context, anchor) => RawButton(
     focusNode: anchorNode,
     onPressed: () =>
         anchor.isOpen ? anchor.close() : anchor.controller.open(position: at),
@@ -65,7 +65,7 @@ Widget _menu({
             },
           ),
           for (var i = 0; i < items.length; i++)
-            DesignPressable(
+            RawButton(
               focusNode: items[i],
               onPressed: info.close,
               minimumSize: const Size(44, 44),
@@ -101,7 +101,7 @@ Rect _surface(WidgetTester tester) => tester.getRect(find.byKey(_surfaceKey));
 
 bool _anyItemFocused(List<FocusNode> items) => items.any((n) => n.hasFocus);
 
-// Records what [DesignOverlayInfo.surfaceRect] says each time it paints.
+// Records what [RawPopoverInfo.surfaceRect] says each time it paints.
 class _Tail extends CustomPainter {
   _Tail(this.placed) : super(repaint: placed);
 
@@ -126,7 +126,7 @@ class _PaddingProbe extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     builds++;
-    seen = DesignOverlayPadding.of(context);
+    seen = RawPopoverPadding.of(context);
     return const SizedBox();
   }
 }
@@ -173,37 +173,34 @@ void main() {
     test('the side flips only when its own has less than the preferred '
         'extent and the other more', () {
       const bounds = Rect.fromLTRB(8, 8, 792, 592);
-      DesignOverlaySide sideFor(Rect anchor, DesignOverlayPlacement p) =>
+      RawPopoverSide sideFor(Rect anchor, RawPopoverPlacement p) =>
           designResolveSide(anchor, bounds, p, TextDirection.ltr);
       const low = Rect.fromLTWH(100, 500, 100, 44);
-      expect(sideFor(low, _loose), DesignOverlaySide.above);
+      expect(sideFor(low, _loose), RawPopoverSide.above);
       expect(
-        sideFor(low, const DesignOverlayPlacement(flip: false)),
-        DesignOverlaySide.below,
+        sideFor(low, const RawPopoverPlacement(flip: false)),
+        RawPopoverSide.below,
       );
       const left = Rect.fromLTWH(10, 300, 40, 40);
       expect(
-        sideFor(
-          left,
-          const DesignOverlayPlacement(side: DesignOverlaySide.start),
-        ),
-        DesignOverlaySide.end,
+        sideFor(left, const RawPopoverPlacement(side: RawPopoverSide.start)),
+        RawPopoverSide.end,
       );
       expect(
         designResolveSide(
           left,
           bounds,
-          const DesignOverlayPlacement(side: DesignOverlaySide.end),
+          const RawPopoverPlacement(side: RawPopoverSide.end),
           TextDirection.rtl,
         ),
-        DesignOverlaySide.start,
+        RawPopoverSide.start,
         reason: 'right to left, the end is the left',
       );
       expect(
         designOverlayMaxSize(
           left,
           bounds,
-          DesignOverlaySide.end,
+          RawPopoverSide.end,
           4,
           TextDirection.ltr,
         ),
@@ -217,8 +214,8 @@ void main() {
       const size = Size(120, 90);
       Offset place(
         Offset point, {
-        DesignOverlaySide side = DesignOverlaySide.below,
-        DesignOverlayAlign align = DesignOverlayAlign.start,
+        RawPopoverSide side = RawPopoverSide.below,
+        RawPopoverAlign align = RawPopoverAlign.start,
         TextDirection direction = TextDirection.ltr,
       }) => designPlaceOverlay(
         anchor: Rect.fromLTWH(point.dx, point.dy, 0, 0),
@@ -240,25 +237,25 @@ void main() {
         const Offset(60, 104),
       );
       expect(
-        place(const Offset(100, 550), side: DesignOverlaySide.above),
+        place(const Offset(100, 550), side: RawPopoverSide.above),
         const Offset(100, 456),
       );
       // Beside the point, it turns from below it to above it.
       expect(
-        place(const Offset(400, 560), side: DesignOverlaySide.end),
+        place(const Offset(400, 560), side: RawPopoverSide.end),
         const Offset(404, 470),
       );
       expect(
         place(
           const Offset(400, 20),
-          side: DesignOverlaySide.end,
-          align: DesignOverlayAlign.end,
+          side: RawPopoverSide.end,
+          align: RawPopoverAlign.end,
         ),
         const Offset(404, 20),
       );
       // Centred, it only shifts.
       expect(
-        place(const Offset(20, 100), align: DesignOverlayAlign.center),
+        place(const Offset(20, 100), align: RawPopoverAlign.center),
         const Offset(8, 104),
       );
     });
@@ -272,8 +269,8 @@ void main() {
             flipAlignment: flip,
             bounds: bounds,
             size: size,
-            side: DesignOverlaySide.below,
-            align: DesignOverlayAlign.start,
+            side: RawPopoverSide.below,
+            align: RawPopoverAlign.start,
             gap: 4,
             textDirection: direction,
           );
@@ -324,7 +321,7 @@ void main() {
       await open(tester, const Offset(100, 100));
       expect(_surface(tester), const Rect.fromLTWH(100, 104, 120, 90));
       expect(_info.position, const Offset(100, 100));
-      expect(_info.side, DesignOverlaySide.below);
+      expect(_info.side, RawPopoverSide.below);
       expect(_info.anchorRect, const Rect.fromLTWH(0, 0, 800, 600));
     });
 
@@ -339,7 +336,7 @@ void main() {
       tester,
     ) async {
       await open(tester, const Offset(100, 550));
-      expect(_info.side, DesignOverlaySide.above);
+      expect(_info.side, RawPopoverSide.above);
       expect(_surface(tester).bottom, 546);
     });
 
@@ -360,7 +357,7 @@ void main() {
           _menu(
             controller: controller,
             anchorSize: const Size(800, 600),
-            placement: const DesignOverlayPlacement(),
+            placement: const RawPopoverPlacement(),
           ),
         ),
       );
@@ -410,14 +407,14 @@ void main() {
         await tester.pumpWidget(middle(scaffoldLike: scaffoldLike));
         ctl.open();
         await tester.pumpAndSettle();
-        expect(_info.side, DesignOverlaySide.below);
+        expect(_info.side, RawPopoverSide.below);
         // The keyboard comes up under the open surface: 300 tall.
         tester.view.viewInsets = FakeViewPadding(
           bottom: 300 * tester.view.devicePixelRatio,
         );
         addTearDown(tester.view.resetViewInsets);
         await tester.pumpAndSettle();
-        expect(_info.side, DesignOverlaySide.above);
+        expect(_info.side, RawPopoverSide.above);
         expect(_surface(tester).bottom, lessThanOrEqualTo(300 - 8));
       });
 
@@ -430,7 +427,7 @@ void main() {
         ctl.open();
         await tester.pumpAndSettle();
         // 166 below (600 - 100 - 8 - 322 - 4) is short of 200.
-        expect(_info.side, DesignOverlaySide.above);
+        expect(_info.side, RawPopoverSide.above);
       });
     }
 
@@ -442,7 +439,7 @@ void main() {
         await tester.pumpWidget(
           _at(
             AlignmentDirectional.topStart.resolve(direction),
-            DesignOverlayPadding(
+            RawPopoverPadding(
               padding: const EdgeInsetsDirectional.only(start: 280),
               child: _menu(
                 controller: controller,
@@ -463,15 +460,12 @@ void main() {
       });
     }
 
-    testWidgets('DesignOverlayPadding.of: none is zero; a change tells its '
+    testWidgets('RawPopoverPadding.of: none is zero; a change tells its '
         'dependents', (tester) async {
       Widget app(EdgeInsetsGeometry? padding) => harness(
         padding == null
             ? const _PaddingProbe()
-            : DesignOverlayPadding(
-                padding: padding,
-                child: const _PaddingProbe(),
-              ),
+            : RawPopoverPadding(padding: padding, child: const _PaddingProbe()),
         textDirection: TextDirection.rtl,
       );
       await tester.pumpWidget(app(null));
@@ -484,7 +478,7 @@ void main() {
       await tester.pumpWidget(app(const EdgeInsetsDirectional.only(start: 20)));
       expect(_PaddingProbe.seen, const EdgeInsets.only(right: 20));
       expect(_PaddingProbe.builds, before + 1);
-      const padding = DesignOverlayPadding(
+      const padding = RawPopoverPadding(
         padding: EdgeInsets.all(1),
         child: SizedBox(),
       );
@@ -520,12 +514,12 @@ void main() {
       addTearDown(tester.view.resetViewInsets);
       await tester.pumpAndSettle();
       expect(_Tail.painted.last, _surface(tester));
-      expect(_info.side, DesignOverlaySide.above);
+      expect(_info.side, RawPopoverSide.above);
     });
 
     test('a surface built by hand has none', () {
-      final info = DesignOverlayInfo(
-        side: DesignOverlaySide.below,
+      final info = RawPopoverInfo(
+        side: RawPopoverSide.below,
         anchorRect: Rect.zero,
         maxSize: Size.zero,
         animation: kAlwaysCompleteAnimation,
@@ -710,7 +704,7 @@ void main() {
     }
   });
   behaviourContract(
-    'DesignAnchoredOverlay at a point',
+    'RawPopover at a point',
     build: (c) => Align(
       alignment: Alignment.topLeft,
       child: _menu(
@@ -755,13 +749,13 @@ void main() {
       'point, stays on screen', () {
     const xs = [0.0, 370.0, 740.0];
     const ys = [0.0, 285.0, 570.0];
-    for (final side in DesignOverlaySide.values) {
-      for (final align in DesignOverlayAlign.values) {
+    for (final side in RawPopoverSide.values) {
+      for (final align in RawPopoverAlign.values) {
         for (final direction in TextDirection.values) {
           testWidgets('${side.name} ${align.name} ${direction.name}', (
             tester,
           ) async {
-            final placement = DesignOverlayPlacement(
+            final placement = RawPopoverPlacement(
               side: side,
               align: align,
               matchAnchorWidth: false,

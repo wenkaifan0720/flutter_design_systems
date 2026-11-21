@@ -9,11 +9,11 @@ import 'behaviour_contract.dart';
 import 'behaviour_harness.dart';
 
 const _fieldKey = Key('number');
-DesignNumberFieldDetails? _details;
-final Map<bool, DesignNumberFieldButtonDetails> _buttons = {};
+RawNumberFieldDetails? _details;
+final Map<bool, RawNumberFieldButtonDetails> _buttons = {};
 
 // The bare reference painter: an input, and two 44-point buttons.
-Widget _field(BuildContext context, DesignNumberFieldDetails d) {
+Widget _field(BuildContext context, RawNumberFieldDetails d) {
   _details = d;
   return SizedBox(
     width: 120,
@@ -33,7 +33,7 @@ Widget _field(BuildContext context, DesignNumberFieldDetails d) {
   );
 }
 
-Widget _button(BuildContext context, DesignNumberFieldButtonDetails d) {
+Widget _button(BuildContext context, RawNumberFieldButtonDetails d) {
   _buttons[d.isIncrement] = d;
   return SizedBox(
     width: 44,
@@ -81,7 +81,7 @@ class _HostState extends State<_Host> {
     _host = this;
     final field = Align(
       alignment: Alignment.topLeft,
-      child: DesignNumberField(
+      child: RawNumberField(
         value: value,
         semanticLabel: 'Quantity',
         min: widget.min,
@@ -105,7 +105,7 @@ class _HostState extends State<_Host> {
     return Localizations(
       locale: locale,
       delegates: const [
-        DesignLocalizations.delegate,
+        RawWidgetsLocalizations.delegate,
         DefaultWidgetsLocalizations.delegate,
       ],
       child: Directionality(textDirection: direction, child: field),
@@ -149,7 +149,7 @@ void main() {
       );
       final data = semanticsOf(
         tester,
-        find.byType(DesignNumberField),
+        find.byType(RawNumberField),
       ).getSemanticsData();
       expect(data.minValue, '0.0');
       expect(data.maxValue, '8.0');
@@ -161,10 +161,10 @@ void main() {
   });
 
   behaviourContract(
-    'DesignNumberField',
+    'RawNumberField',
     build: (c) => _Host(value: 2, min: 0, max: 10, enabled: c.enabled),
     node: () => find.byKey(_fieldKey),
-    root: () => find.byType(DesignNumberField),
+    root: () => find.byType(RawNumberField),
     semantics: isSemantics(
       label: 'Quantity',
       value: '2',
@@ -470,7 +470,7 @@ void main() {
     testWidgets('a layoutBuilder places them', (tester) async {
       await tester.pumpWidget(
         harness(
-          DesignNumberField(
+          RawNumberField(
             value: 1,
             onChanged: (_) {},
             fieldBuilder: _field,
@@ -535,7 +535,7 @@ void main() {
           StatefulBuilder(
             builder: (context, setState) => Align(
               alignment: Alignment.topLeft,
-              child: DesignNumberField(
+              child: RawNumberField(
                 value: value,
                 semanticLabel: 'Quantity',
                 onChanged: (next) => setState(() => value = next ?? value),
@@ -557,7 +557,7 @@ void main() {
         ),
       );
       expect(tester.takeException(), isNull);
-      final node = semanticsOf(tester, find.byType(DesignNumberField));
+      final node = semanticsOf(tester, find.byType(RawNumberField));
       expect(
         semanticsOf(tester, find.byKey(_fieldKey)).id,
         isNot(node.id),
@@ -601,7 +601,7 @@ void main() {
       addTearDown(controller.dispose);
       await tester.pumpWidget(
         harness(
-          DesignNumberField(
+          RawNumberField(
             value: 3,
             onChanged: (_) {},
             controller: controller,
@@ -616,7 +616,7 @@ void main() {
     });
 
     test('diagnostics name what it was given', () {
-      const field = DesignNumberField(
+      const field = RawNumberField(
         value: 1,
         onChanged: null,
         fieldBuilder: _field,
@@ -638,7 +638,7 @@ void main() {
     Widget field(Widget Function(Widget entry, Widget down, Widget up) lay) =>
         harness(
           Center(
-            child: DesignNumberField(
+            child: RawNumberField(
               value: 4,
               semanticLabel: 'Guests',
               onChanged: (_) {},
@@ -664,11 +664,11 @@ void main() {
           ),
         );
     Rect node() => globalRect(
-      tester.getSemantics(find.byType(DesignNumberField)),
+      tester.getSemantics(find.byType(RawNumberField)),
       tester.view.devicePixelRatio,
     );
     Rect box(Finder f) => tester.getRect(f);
-    final whole = find.byType(DesignNumberField);
+    final whole = find.byType(RawNumberField);
     final up = find.byKey(const ValueKey('+'));
     final down = find.byKey(const ValueKey('-'));
 

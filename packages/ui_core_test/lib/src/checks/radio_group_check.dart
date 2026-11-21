@@ -32,6 +32,9 @@ part of '../alignment.dart';
 /// );
 /// report.verify();
 /// ```
+///
+/// It drives the keys and reads the focus and the semantics tree, and no
+/// pixels.
 @immutable
 class DesignRadioGroupCheck {
   /// A check for [look].

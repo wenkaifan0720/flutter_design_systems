@@ -397,8 +397,8 @@ class BrutalRangeSlider extends StatelessWidget {
     final theme = BrutalTheme.of(context);
     final c = theme.colors;
     final layers = [style, theme.sliderStyle];
-    return DesignRangeSlider(
-      values: DesignRangeValues(values.start, values.end),
+    return RawRangeSlider(
+      values: RawRangeValues(values.start, values.end),
       onChanged: onChanged == null
           ? null
           : (v) => onChanged!(BrutalRangeValues(v.start, v.end)),
@@ -477,11 +477,12 @@ class BrutalChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = BrutalTheme.of(context);
     final c = theme.colors;
-    return DesignTapTarget(
-      child: DesignPressable(
+    return TapTargetPadding(
+      child: RawButton(
         onPressed: onSelected == null ? null : () => onSelected!(!selected),
         selected: selected,
-        toggled: selected,
+        // A filter chip is a toggle button: a button that is selected.
+        semanticSelected: selected,
         semanticLabel: label,
         excludeSemantics: true,
         builder: (context, states, _) {
@@ -579,7 +580,7 @@ class BrutalChip extends StatelessWidget {
 /// each; the cells up to [value] are ink with a paper star. A null
 /// [onChanged] greys it.
 ///
-/// The behaviour is ui_core's ([DesignRating]): a tap sets the cell tapped,
+/// The behaviour is ui_core's ([RawRating]): a tap sets the cell tapped,
 /// a drag sweeps along the strip, and a pointer resting over it inks the
 /// cells up to it, the score it would set. It is one tab stop: Right and Up
 /// raise the score, Left and Down lower it (mirrored right to left), End
@@ -636,7 +637,7 @@ class BrutalRating extends StatelessWidget {
       alignment: AlignmentDirectional.centerStart,
       widthFactor: 1,
       heightFactor: 1,
-      child: DesignRating(
+      child: RawRating(
         value: value.toDouble(),
         itemCount: max,
         onChanged: enabled
@@ -661,7 +662,7 @@ class BrutalRating extends StatelessWidget {
                   : c.ink);
           // Each cell stands in its own target (48 under a finger), so a
           // lit cell is a block inside its rules.
-          return DesignTapTarget(
+          return TapTargetPadding(
             child: SizedBox.square(
               dimension: side,
               child: ColoredBox(
@@ -794,7 +795,7 @@ class BrutalFileDrop extends StatelessWidget {
       if (onChoose == null) WidgetState.disabled,
     });
     final fileRule = rest.side?.color ?? rest.edge ?? c.ink;
-    final box = DesignPressable(
+    final box = RawButton(
       onPressed: onChoose,
       semanticLabel: [
         label,
@@ -931,8 +932,8 @@ class BrutalFileDrop extends StatelessWidget {
                     ),
                   ),
                   if (onRemove != null)
-                    DesignTapTarget(
-                      child: DesignPressable(
+                    TapTargetPadding(
+                      child: RawButton(
                         onPressed: () => onRemove!(file),
                         semanticLabel: 'Remove ${file.name}',
                         builder: (context, states, _) {

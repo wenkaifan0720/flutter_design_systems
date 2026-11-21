@@ -61,8 +61,10 @@ part of '../alignment.dart';
 /// See also:
 ///
 ///  * [DesignTapTargets], the floors a look declares.
-///  * [DesignTapTarget], which lays a control out at its floor, so the
+///  * [TapTargetPadding], which lays a control out at its floor, so the
 ///    check holds.
+///
+/// It reads the semantics tree and hit tests the layout, and no pixels.
 @immutable
 class DesignTapTargetCheck {
   /// A check for [look].
@@ -458,15 +460,6 @@ RenderBox _controlRound(RenderBox node) {
   }
   return node;
 }
-
-// Whether [outer] holds [inner].
-bool _contains(Rect outer, Rect inner) =>
-    inner.left >= outer.left - .01 &&
-    inner.top >= outer.top - .01 &&
-    inner.right <= outer.right + .01 &&
-    inner.bottom <= outer.bottom + .01;
-
-String _size(Size s) => '${_px(s.width)} × ${_px(s.height)}';
 
 // A node's role and words, as a screen reader would name it.
 String _nodeName(SemanticsData d) {

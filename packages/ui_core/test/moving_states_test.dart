@@ -16,7 +16,7 @@ Widget _app(Widget home) => WidgetsApp(
 
 void main() {
   late Set<WidgetState> states;
-  Widget button(String label) => DesignPressable(
+  Widget button(String label) => RawButton(
     onPressed: () {},
     semanticLabel: label,
     builder: (context, s, _) {
@@ -31,7 +31,7 @@ void main() {
     await tester.pumpWidget(
       _app(Column(children: [button('Back'), button('Save')])),
     );
-    final save = find.byType(DesignPressable).last;
+    final save = find.byType(RawButton).last;
     final seen = <String, Set<WidgetState>>{};
     Future<void> look(String moment) async => seen[moment] = {...states};
     await atPressHalfway(tester, save, look);

@@ -1,5 +1,5 @@
 /// A split button, headless: a main action and, beside it, a toggle that
-/// opens a menu of the others (a [DesignAnchoredOverlay] with arrow keys).
+/// opens a menu of the others (a [RawPopover] with arrow keys).
 /// Both halves are tab stops; Down (with Alt or without) on either half
 /// opens the menu at its first item; Escape closes it and focus goes back
 /// to the half that opened it.
@@ -16,9 +16,9 @@ import 'pressable.dart';
 
 /// An action in a split button's menu.
 @immutable
-class DesignSplitAction {
+class RawSplitAction {
   /// An action [label]led, that [onPressed] runs; null disables it.
-  const DesignSplitAction({
+  const RawSplitAction({
     required this.label,
     required this.onPressed,
     this.data,
@@ -40,7 +40,7 @@ class DesignSplitAction {
 }
 
 /// Which part of a split button a builder paints.
-enum DesignSplitPart {
+enum RawSplitPart {
   /// The main action.
   main,
 
@@ -51,11 +51,11 @@ enum DesignSplitPart {
 /// A main action with a menu of [actions] beside it.
 ///
 /// ```dart
-/// DesignSplitButton(label: 'Save', onPressed: () {}, actions: [DesignSplitAction(label: 'Save as', onPressed: () {})], buttonBuilder: (context, part, states, open) => Text(part.name), itemBuilder: (context, action, states) => Text(action.label), surfaceBuilder: (context, info, items) => Column(mainAxisSize: MainAxisSize.min, children: items))
+/// RawSplitButton(label: 'Save', onPressed: () {}, actions: [RawSplitAction(label: 'Save as', onPressed: () {})], buttonBuilder: (context, part, states, open) => Text(part.name), itemBuilder: (context, action, states) => Text(action.label), surfaceBuilder: (context, info, items) => Column(mainAxisSize: MainAxisSize.min, children: items))
 /// ```
-class DesignSplitButton extends StatelessWidget {
+class RawSplitButton extends StatelessWidget {
   /// A split button whose main action is [onPressed].
-  const DesignSplitButton({
+  const RawSplitButton({
     super.key,
     required this.label,
     required this.onPressed,
@@ -67,9 +67,7 @@ class DesignSplitButton extends StatelessWidget {
     this.layoutBuilder,
     this.minimumSize = const Size(44, 44),
     this.controller,
-    this.placement = const DesignOverlayPlacement(
-      align: DesignOverlayAlign.end,
-    ),
+    this.placement = const RawPopoverPlacement(align: RawPopoverAlign.end),
     this.highlightFollowsPointer = true,
   });
 
@@ -81,12 +79,12 @@ class DesignSplitButton extends StatelessWidget {
   final VoidCallback? onPressed;
 
   /// The menu's actions.
-  final List<DesignSplitAction> actions;
+  final List<RawSplitAction> actions;
 
   /// Paints a half; `open` while the menu shows.
   final Widget Function(
     BuildContext context,
-    DesignSplitPart part,
+    RawSplitPart part,
     Set<WidgetState> states,
     bool open,
   )
@@ -95,7 +93,7 @@ class DesignSplitButton extends StatelessWidget {
   /// Paints a menu item.
   final Widget Function(
     BuildContext context,
-    DesignSplitAction action,
+    RawSplitAction action,
     Set<WidgetState> states,
   )
   itemBuilder;
@@ -103,13 +101,13 @@ class DesignSplitButton extends StatelessWidget {
   /// Paints the menu's panel around its `items`.
   final Widget Function(
     BuildContext context,
-    DesignOverlayInfo info,
+    RawPopoverInfo info,
     List<Widget> items,
   )
   surfaceBuilder;
 
   /// What a screen reader calls the toggle; null:
-  /// [DesignLocalizations.splitButtonMenuLabel].
+  /// [RawWidgetsLocalizations.splitButtonMenuLabel].
   final String? menuLabel;
 
   /// Lays out the two halves; null: a row.
@@ -125,10 +123,10 @@ class DesignSplitButton extends StatelessWidget {
   /// Where the menu opens relative to both halves of the button. Its trailing
   /// edge aligns with the button by default. The menu is at least as wide
   /// as the button when the screen has room.
-  final DesignOverlayPlacement placement;
+  final RawPopoverPlacement placement;
 
   /// Whether a pointer over a menu item moves the keys there; true by
-  /// default, as `DesignMenuBar.highlightFollowsPointer`: one item lit, the
+  /// default, as `RawMenuBar.highlightFollowsPointer`: one item lit, the
   /// current one (hovered when the pointer moved last, focused when the keys
   /// did), and none once the pointer leaves the menu. A menu a click opened
   /// lights none until the pointer or a key picks one.
@@ -136,12 +134,12 @@ class DesignSplitButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DesignAnchoredOverlay(
+    return RawPopover(
       controller: controller,
-      trigger: DesignOverlayTrigger.manual,
+      trigger: RawPopoverTrigger.manual,
       arrowKeyNavigation: true,
       semanticLabel:
-          menuLabel ?? DesignLocalizations.of(context).splitButtonMenuLabel,
+          menuLabel ?? RawWidgetsLocalizations.of(context).splitButtonMenuLabel,
       placement: placement,
       anchorBuilder: (context, anchor) {
         KeyEventResult open(FocusNode node, KeyEvent event) {
@@ -154,31 +152,28 @@ class DesignSplitButton extends StatelessWidget {
           return KeyEventResult.ignored;
         }
 
-        final main = DesignPressable(
+        final main = RawButton(
           onPressed: onPressed,
           onKeyEvent: open,
           minimumSize: minimumSize,
           semanticLabel: label,
           excludeSemantics: true,
-          builder: (context, states, _) => buttonBuilder(
-            context,
-            DesignSplitPart.main,
-            states,
-            anchor.isOpen,
-          ),
+          builder: (context, states, _) =>
+              buttonBuilder(context, RawSplitPart.main, states, anchor.isOpen),
         );
-        final toggle = DesignPressable(
+        final toggle = RawButton(
           onPressed: actions.isEmpty ? null : anchor.toggle,
           onKeyEvent: open,
           minimumSize: minimumSize,
           selected: anchor.isOpen,
           expanded: anchor.isOpen,
           semanticLabel:
-              menuLabel ?? DesignLocalizations.of(context).splitButtonMenuLabel,
+              menuLabel ??
+              RawWidgetsLocalizations.of(context).splitButtonMenuLabel,
           excludeSemantics: true,
           builder: (context, states, _) => buttonBuilder(
             context,
-            DesignSplitPart.toggle,
+            RawSplitPart.toggle,
             states,
             anchor.isOpen,
           ),
@@ -214,12 +209,12 @@ class DesignSplitButton extends StatelessWidget {
     properties
       ..add(StringProperty('label', label))
       ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
-      ..add(IterableProperty<DesignSplitAction>('actions', actions))
+      ..add(IterableProperty<RawSplitAction>('actions', actions))
       ..add(
         ObjectFlagProperty<
           Widget Function(
             BuildContext context,
-            DesignSplitPart part,
+            RawSplitPart part,
             Set<WidgetState> states,
             bool open,
           )
@@ -229,7 +224,7 @@ class DesignSplitButton extends StatelessWidget {
         ObjectFlagProperty<
           Widget Function(
             BuildContext context,
-            DesignSplitAction action,
+            RawSplitAction action,
             Set<WidgetState> states,
           )
         >.has('itemBuilder', itemBuilder),
@@ -238,19 +233,17 @@ class DesignSplitButton extends StatelessWidget {
         ObjectFlagProperty<
           Widget Function(
             BuildContext context,
-            DesignOverlayInfo info,
+            RawPopoverInfo info,
             List<Widget> items,
           )
         >.has('surfaceBuilder', surfaceBuilder),
       )
       ..add(StringProperty('menuLabel', menuLabel, defaultValue: null))
       ..add(
-        DiagnosticsProperty<DesignOverlayPlacement>(
+        DiagnosticsProperty<RawPopoverPlacement>(
           'placement',
           placement,
-          defaultValue: const DesignOverlayPlacement(
-            align: DesignOverlayAlign.end,
-          ),
+          defaultValue: const RawPopoverPlacement(align: RawPopoverAlign.end),
         ),
       )
       ..add(

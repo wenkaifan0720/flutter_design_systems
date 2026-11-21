@@ -23,12 +23,12 @@ import 'localizations.dart';
 /// Then the key: an arrow as ← → ↑ ↓; Enter as ↵ (as a word, with Apple's
 /// symbols off); a letter or a digit in capitals; Tab, Esc, Space, Delete,
 /// Backspace, Home, End, Page Up and Down, and Insert in the reader's words
-/// ([DesignLocalizations]); any other key by its key label. A
+/// ([RawWidgetsLocalizations]); any other key by its key label. A
 /// [CharacterActivator]'s character as it is, with no Shift (the character
 /// says it).
 ///
 /// [platform] is [defaultTargetPlatform] when null. The words come from
-/// [DesignLocalizations.of] at [context].
+/// [RawWidgetsLocalizations.of] at [context].
 ///
 /// ```dart
 /// designShortcutKeys(context, const SingleActivator(LogicalKeyboardKey.keyN, meta: true, shift: true))
@@ -39,7 +39,7 @@ List<String> designShortcutKeys(
   TargetPlatform? platform,
   bool appleSymbols = true,
 }) {
-  final words = DesignLocalizations.of(context);
+  final words = RawWidgetsLocalizations.of(context);
   final on = platform ?? defaultTargetPlatform;
   final apple = on == TargetPlatform.macOS || on == TargetPlatform.iOS;
   final symbols = apple && appleSymbols;
@@ -97,7 +97,7 @@ String designShortcutLabel(
 
 String _keyLabel(
   LogicalKeyboardKey key,
-  DesignLocalizations words, {
+  RawWidgetsLocalizations words, {
   required bool enterSymbol,
 }) {
   if (key == LogicalKeyboardKey.arrowLeft) return '←';

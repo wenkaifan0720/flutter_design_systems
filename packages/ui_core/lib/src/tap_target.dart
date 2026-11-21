@@ -34,7 +34,7 @@ enum DesignInput {
 ///
 /// A look may raise either (Android's 48 for a finger, 44 for a pointer
 /// that a look keeps roomy) and declares its floors with a
-/// [DesignTapTargetScope] round the app, in its theme; [DesignTapTarget]
+/// [DesignTapTargetScope] round the app, in its theme; [TapTargetPadding]
 /// lays a control out at the floor, and `DesignTapTargetCheck` holds every
 /// screen to it. Density never moves the floor: a compact face stands in
 /// the same target, with more room round it.
@@ -48,7 +48,7 @@ enum DesignInput {
 ///
 /// See also:
 ///
-///  * [DesignTapTarget], which lays a control out at the floor.
+///  * [TapTargetPadding], which lays a control out at the floor.
 ///  * [DesignDensity], which tightens a control's face, never its target.
 @immutable
 class DesignTapTargets with Diagnosticable {
@@ -193,17 +193,17 @@ class DesignTapTargetScope extends InheritedTheme {
 /// nothing stood round it; the target grows round it as far as they let.
 ///
 /// ```dart
-/// DesignTapTarget(
-///   child: DesignPressable(onPressed: onPressed, builder: face),
+/// TapTargetPadding(
+///   child: RawButton(onPressed: onPressed, builder: face),
 /// )
 /// ```
 ///
 /// A face on the column's start edge:
 ///
 /// ```dart
-/// DesignTapTarget(
+/// TapTargetPadding(
 ///   alignment: AlignmentDirectional.centerStart,
-///   child: DesignPressable(onPressed: onPressed, builder: face),
+///   child: RawButton(onPressed: onPressed, builder: face),
 /// )
 /// ```
 ///
@@ -211,9 +211,9 @@ class DesignTapTargetScope extends InheritedTheme {
 ///
 ///  * [DesignTapTargets], the floors a look declares.
 ///  * `DesignTapTargetCheck`, which holds a screen to them.
-class DesignTapTarget extends SingleChildRenderObjectWidget {
+class TapTargetPadding extends SingleChildRenderObjectWidget {
   /// Lays [child] out at least [minSize], placed by [alignment].
-  const DesignTapTarget({
+  const TapTargetPadding({
     super.key,
     this.minSize,
     this.alignment = AlignmentDirectional.center,
@@ -233,7 +233,7 @@ class DesignTapTarget extends SingleChildRenderObjectWidget {
 
   @override
   RenderObject createRenderObject(BuildContext context) =>
-      RenderDesignTapTarget(
+      RenderTapTargetPadding(
         _floor(context),
         alignment: alignment,
         textDirection: Directionality.maybeOf(context),
@@ -248,7 +248,7 @@ class DesignTapTarget extends SingleChildRenderObjectWidget {
   @override
   void updateRenderObject(
     BuildContext context,
-    RenderDesignTapTarget renderObject,
+    RenderTapTargetPadding renderObject,
   ) => renderObject
     ..minSize = _floor(context)
     ..alignment = alignment
@@ -270,10 +270,10 @@ class DesignTapTarget extends SingleChildRenderObjectWidget {
   }
 }
 
-/// [DesignTapTarget]'s render object: its child laid out as given, itself at
+/// [TapTargetPadding]'s render object: its child laid out as given, itself at
 /// least [minSize], the child placed by [alignment], a hit anywhere in it
 /// sent to the child's centre.
-class RenderDesignTapTarget extends RenderShiftedBox {
+class RenderTapTargetPadding extends RenderShiftedBox {
   /// The visible face inside a laid-out [box], in its local coordinates.
   /// Follows single-child wrappers to their tap target, using layout
   /// offsets so an animated press transform does not move the indicator.
@@ -292,7 +292,7 @@ class RenderDesignTapTarget extends RenderShiftedBox {
       if (count != 1 || child == null) return Offset.zero & box.size;
       final data = child.parentData;
       if (data is BoxParentData) offset += data.offset;
-      if (node is RenderDesignTapTarget &&
+      if (node is RenderTapTargetPadding &&
           child is RenderBox &&
           child.hasSize) {
         return offset & child.size;
@@ -303,7 +303,7 @@ class RenderDesignTapTarget extends RenderShiftedBox {
 
   /// A target at least [minSize], [child] placed by [alignment] (resolved
   /// for [textDirection]) on whole pixels at [devicePixelRatio].
-  RenderDesignTapTarget(
+  RenderTapTargetPadding(
     Size minSize, {
     AlignmentGeometry alignment = AlignmentDirectional.center,
     TextDirection? textDirection,

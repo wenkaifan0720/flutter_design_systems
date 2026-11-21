@@ -11,13 +11,33 @@ import 'behaviour_harness.dart';
 
 const _panel = ValueKey('panel');
 
+// Where a screen reader outlines the barrier, [label], in the screen's
+// coordinates: null when no node says it.
+Rect? _barrierRect(String label) {
+  Rect? found;
+  void visit(SemanticsNode node, Matrix4 parent) {
+    final m = parent.clone();
+    if (node.transform != null) m.multiply(node.transform!);
+    if (node.getSemanticsData().label == label) {
+      found = MatrixUtils.transformRect(m, node.rect);
+    }
+    node.visitChildren((child) {
+      visit(child, m);
+      return true;
+    });
+  }
+
+  visit(semanticsOwner().rootSemanticsNode!, Matrix4.identity());
+  return found;
+}
+
 // The bare reference painter: a grey panel, a handle, a close button,
 // [field] and, when [rows], a list under them.
 Widget _panelOf(
-  DesignBottomSheetDetails details, {
+  RawBottomSheetDetails details, {
   int rows = 0,
   Widget? field,
-  ValueChanged<DesignBottomSheetDetails>? onDetails,
+  ValueChanged<RawBottomSheetDetails>? onDetails,
 }) {
   onDetails?.call(details);
   return Container(
@@ -26,7 +46,7 @@ Widget _panelOf(
     child: Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        DesignBottomSheetDragHandle(
+        RawBottomSheetDragHandle(
           builder: (context, states) => Container(
             key: const ValueKey('handle'),
             width: 32,
@@ -36,7 +56,7 @@ Widget _panelOf(
                 : const Color(0xFF888888),
           ),
         ),
-        DesignPressable(
+        RawButton(
           onPressed: details.close,
           semanticLabel: 'Close',
           excludeSemantics: true,
@@ -61,7 +81,7 @@ Widget _panelOf(
 
 // An app whose opener pushes [route]; haptics recorded into [played].
 Widget _app(
-  DesignBottomSheetRoute<void> Function() route, {
+  RawBottomSheetRoute<void> Function() route, {
   List<String>? played,
   TextDirection direction = TextDirection.ltr,
   bool reduceMotion = false,
@@ -70,7 +90,7 @@ Widget _app(
   Builder(
     builder: (context) => Align(
       alignment: Alignment.topCenter,
-      child: DesignPressable(
+      child: RawButton(
         semanticLabel: 'Open',
         excludeSemantics: true,
         minimumSize: const Size(44, 44),
@@ -129,11 +149,42 @@ Future<void> _drag(WidgetTester tester, double dy) async {
 }
 
 void main() {
+  testWidgets("the barrier's node stops at the sheet's top, as Material's "
+      'modal bottom sheet does', (tester) async {
+    final semantics = tester.ensureSemantics();
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(
+      harness(
+        Builder(
+          builder: (context) => Center(
+            child: RawButton(
+              semanticLabel: 'Open',
+              onPressed: () => Navigator.of(context).push(
+                RawBottomSheetRoute<void>(
+                  barrierLabel: 'Dismiss',
+                  builder: (context, details) =>
+                      const SizedBox(height: 400, width: double.infinity),
+                ),
+              ),
+              builder: (context, states, _) => const Text('open'),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('open'));
+    await tester.pumpAndSettle();
+    expect(_barrierRect('Dismiss'), const Rect.fromLTRB(0, 0, 390, 444));
+    semantics.dispose();
+  });
+
   for (final reduce in [false, true]) {
     testWidgets(
       'a full-screen sheet is a named page with motion and Escape (reduce $reduce)',
       (tester) async {
-        final route = DesignSheetPageRoute<void>(
+        final route = RawSheetRoute<void>(
           semanticLabel: 'Edit recording',
           builder: (_) =>
               const ColoredBox(key: _panel, color: Color(0xFFEEEEEE)),
@@ -165,15 +216,15 @@ void main() {
   }
 
   behaviourContract(
-    'DesignBottomSheetRoute',
+    'RawBottomSheetRoute',
     build: (c) => Builder(
       builder: (context) => Center(
-        child: DesignPressable(
+        child: RawButton(
           semanticLabel: 'Open',
           excludeSemantics: true,
           minimumSize: const Size(44, 44),
           onPressed: () => Navigator.of(context).push(
-            DesignBottomSheetRoute<void>(
+            RawBottomSheetRoute<void>(
               semanticLabel: 'Filters',
               snapSizes: const [0.5, 1],
               builder: (context, details) => _panelOf(details),
@@ -230,12 +281,12 @@ void main() {
     final activated = <String>[];
     await tester.pumpWidget(
       _app(
-        () => DesignBottomSheetRoute<void>(
+        () => RawBottomSheetRoute<void>(
           builder: (_, details) => Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               for (final label in ['Pin', 'Share'])
-                DesignPressable(
+                RawButton(
                   onPressed: () {
                     activated.add(label);
                     details.close();
@@ -259,10 +310,10 @@ void main() {
 
   testWidgets('it rises to its first size, a share of the room, and is laid '
       'out at it', (tester) async {
-    late DesignBottomSheetDetails details;
+    late RawBottomSheetDetails details;
     await tester.pumpWidget(
       _app(
-        () => DesignBottomSheetRoute<void>(
+        () => RawBottomSheetRoute<void>(
           snapSizes: const [0.5, 1],
           builder: (context, d) => _panelOf(details = d),
         ),
@@ -285,7 +336,7 @@ void main() {
     final dragging = <bool>[];
     await tester.pumpWidget(
       _app(
-        () => DesignBottomSheetRoute<void>(
+        () => RawBottomSheetRoute<void>(
           snapSizes: const [0.5, 1],
           builder: (context, d) =>
               _panelOf(d, onDetails: (d) => dragging.add(d.dragging)),
@@ -316,7 +367,7 @@ void main() {
       'from its smallest, it closes', (tester) async {
     await tester.pumpWidget(
       _app(
-        () => DesignBottomSheetRoute<void>(
+        () => RawBottomSheetRoute<void>(
           snapSizes: const [0.25, 0.5, 1],
           initialSize: 0.5,
           builder: (context, d) => _panelOf(d),
@@ -344,7 +395,7 @@ void main() {
     final played = <String>[];
     await tester.pumpWidget(
       _app(
-        () => DesignBottomSheetRoute<void>(
+        () => RawBottomSheetRoute<void>(
           snapSizes: const [0.5],
           builder: (context, d) => _panelOf(d),
         ),
@@ -367,7 +418,7 @@ void main() {
     var asked = 0;
     await tester.pumpWidget(
       _app(
-        () => DesignBottomSheetRoute<void>(
+        () => RawBottomSheetRoute<void>(
           snapSizes: const [0.5],
           builder: (context, d) => PopScope<void>(
             canPop: false,
@@ -396,7 +447,7 @@ void main() {
     addTearDown(field.dispose);
     await tester.pumpWidget(
       _app(
-        () => DesignBottomSheetRoute<void>(
+        () => RawBottomSheetRoute<void>(
           snapSizes: const [0.5, 1],
           builder: (context, d) => _panelOf(d, field: _field(tester, field)),
         ),
@@ -426,7 +477,7 @@ void main() {
     addTearDown(field.dispose);
     await tester.pumpWidget(
       _app(
-        () => DesignBottomSheetRoute<void>(
+        () => RawBottomSheetRoute<void>(
           snapSizes: const [0.5],
           builder: (context, d) => PopScope<void>(
             canPop: false,
@@ -450,7 +501,7 @@ void main() {
     addTearDown(field.dispose);
     await tester.pumpWidget(
       _app(
-        () => DesignBottomSheetRoute<void>(
+        () => RawBottomSheetRoute<void>(
           snapSizes: const [0.5, 1],
           builder: (context, d) => _panelOf(d, field: _field(tester, field)),
         ),
@@ -476,7 +527,7 @@ void main() {
       'grows first; down at the top, it shrinks', (tester) async {
     await tester.pumpWidget(
       _app(
-        () => DesignBottomSheetRoute<void>(
+        () => RawBottomSheetRoute<void>(
           snapSizes: const [0.5, 1],
           builder: (context, d) => _panelOf(d, rows: 40),
         ),
@@ -521,7 +572,7 @@ void main() {
   ) async {
     await tester.pumpWidget(
       _app(
-        () => DesignBottomSheetRoute<void>(
+        () => RawBottomSheetRoute<void>(
           snapSizes: const [0.5, 1],
           initialSize: 1,
           builder: (context, d) => _panelOf(d, rows: 60),
@@ -547,8 +598,7 @@ void main() {
       'half', (tester) async {
     await tester.pumpWidget(
       _app(
-        () =>
-            DesignBottomSheetRoute<void>(builder: (context, d) => _panelOf(d)),
+        () => RawBottomSheetRoute<void>(builder: (context, d) => _panelOf(d)),
       ),
     );
     await _open(tester);
@@ -568,7 +618,7 @@ void main() {
   ) async {
     await tester.pumpWidget(
       _app(
-        () => DesignBottomSheetRoute<void>(
+        () => RawBottomSheetRoute<void>(
           snapSizes: const [0.3, 0.6],
           initialSize: 0.6,
           builder: (context, d) => _panelOf(d),
@@ -592,13 +642,13 @@ void main() {
 
   testWidgets('the controller moves it, says its size, and lets go as it '
       'closes', (tester) async {
-    final controller = DesignBottomSheetController();
+    final controller = RawBottomSheetController();
     addTearDown(controller.dispose);
     var told = 0;
     controller.addListener(() => told++);
     await tester.pumpWidget(
       _app(
-        () => DesignBottomSheetRoute<void>(
+        () => RawBottomSheetRoute<void>(
           snapSizes: const [0.25, 0.5, 1],
           sheetController: controller,
           builder: (context, d) => _panelOf(d),
@@ -628,7 +678,7 @@ void main() {
     final semantics = tester.ensureSemantics();
     await tester.pumpWidget(
       _app(
-        () => DesignBottomSheetRoute<void>(
+        () => RawBottomSheetRoute<void>(
           snapSizes: const [0.5, 1],
           builder: (context, d) => _panelOf(d),
         ),
@@ -702,8 +752,7 @@ void main() {
       'handle is painted and moves nothing', (tester) async {
     await tester.pumpWidget(
       _app(
-        () =>
-            DesignBottomSheetRoute<void>(builder: (context, d) => _panelOf(d)),
+        () => RawBottomSheetRoute<void>(builder: (context, d) => _panelOf(d)),
       ),
     );
     await _open(tester);
@@ -714,7 +763,7 @@ void main() {
     await tester.pumpWidget(
       harness(
         Center(
-          child: DesignBottomSheetDragHandle(
+          child: RawBottomSheetDragHandle(
             semanticLabel: 'Grip',
             builder: (context, states) =>
                 const SizedBox(key: ValueKey('grip'), width: 32, height: 4),
@@ -723,8 +772,49 @@ void main() {
       ),
     );
     expect(find.bySemanticsLabel('Grip'), findsOneWidget);
-    await tester.tap(find.byType(DesignBottomSheetDragHandle));
+    await tester.tap(find.byType(RawBottomSheetDragHandle));
     await tester.pump();
+  });
+
+  testWidgets("the handle's states take dragged while a finger drags the "
+      "sheet, as Material's sheet's handle does", (tester) async {
+    Set<WidgetState>? handle;
+    await tester.pumpWidget(
+      _app(
+        () => RawBottomSheetRoute<void>(
+          snapSizes: const [0.5],
+          builder: (context, d) => Container(
+            key: _panel,
+            color: const Color(0xFFEEEEEE),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                RawBottomSheetDragHandle(
+                  builder: (context, states) {
+                    handle = states;
+                    return const SizedBox(width: 32, height: 4);
+                  },
+                ),
+                const SizedBox(height: 200),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+    await _open(tester);
+    expect(handle, isNot(contains(WidgetState.dragged)));
+    final top = _rect(tester).topCenter + const Offset(0, 60);
+    final gesture = await tester.startGesture(top);
+    await gesture.moveBy(const Offset(0, 30));
+    await gesture.moveBy(const Offset(0, 30));
+    await tester.pump();
+    expect(handle, contains(WidgetState.dragged));
+    expect(handle, isNot(contains(WidgetState.pressed)));
+    await gesture.moveBy(const Offset(0, -60));
+    await gesture.up();
+    await tester.pumpAndSettle();
+    expect(handle, isNot(contains(WidgetState.dragged)));
   });
 
   testWidgets('under Reduce Motion it fades in place; a drag still moves '
@@ -732,7 +822,7 @@ void main() {
     final seen = <double>[];
     await tester.pumpWidget(
       _app(
-        () => DesignBottomSheetRoute<void>(
+        () => RawBottomSheetRoute<void>(
           snapSizes: const [0.5],
           dampingRatio: 0.5,
           builder: (context, d) {
@@ -777,7 +867,7 @@ void main() {
     addTearDown(tester.view.reset);
     await tester.pumpWidget(
       _app(
-        () => DesignBottomSheetRoute<void>(
+        () => RawBottomSheetRoute<void>(
           snapSizes: const [1],
           useSafeArea: true,
           builder: (context, d) => _panelOf(d),
@@ -792,7 +882,7 @@ void main() {
       'a barrier builder paints the barrier', (tester) async {
     await tester.pumpWidget(
       _app(
-        () => DesignBottomSheetRoute<void>(
+        () => RawBottomSheetRoute<void>(
           snapSizes: const [0.5, 1],
           enableDrag: false,
           barrierBuilder: (context, animation) => const ColoredBox(
@@ -807,7 +897,7 @@ void main() {
     expect(find.byKey(const ValueKey('screen')), findsOneWidget);
     final route =
         ModalRoute.of(tester.element(find.byKey(_panel)))!
-            as DesignBottomSheetRoute<void>;
+            as RawBottomSheetRoute<void>;
     expect(route.barrierColor, isNull);
     expect(route.barrierLabel, 'Dismiss');
     expect(route.barrierDismissible, isTrue);
@@ -824,7 +914,7 @@ void main() {
       'back in, then grows', (tester) async {
     await tester.pumpWidget(
       _app(
-        () => DesignBottomSheetRoute<void>(
+        () => RawBottomSheetRoute<void>(
           snapSizes: const [0.5, 1],
           builder: (context, d) => _panelOf(d),
         ),
@@ -846,10 +936,10 @@ void main() {
 
   testWidgets('at its content\'s own height, its size is its share of the '
       'room', (tester) async {
-    late DesignBottomSheetDetails details;
+    late RawBottomSheetDetails details;
     await tester.pumpWidget(
       _app(
-        () => DesignBottomSheetRoute<void>(
+        () => RawBottomSheetRoute<void>(
           builder: (context, d) => _panelOf(details = d),
         ),
       ),
@@ -863,7 +953,7 @@ void main() {
       'and flings on scrolls the content', (tester) async {
     await tester.pumpWidget(
       _app(
-        () => DesignBottomSheetRoute<void>(
+        () => RawBottomSheetRoute<void>(
           snapSizes: const [0.9, 1],
           builder: (context, d) => _panelOf(d, rows: 60),
         ),
@@ -884,7 +974,7 @@ void main() {
   ) async {
     await tester.pumpWidget(
       _app(
-        () => DesignBottomSheetRoute<void>(
+        () => RawBottomSheetRoute<void>(
           snapSizes: const [0.5, 1],
           builder: (context, d) => _panelOf(d, rows: 40),
         ),
@@ -912,7 +1002,7 @@ void main() {
     addTearDown(listed.dispose);
     await tester.pumpWidget(
       _app(
-        () => DesignBottomSheetRoute<void>(
+        () => RawBottomSheetRoute<void>(
           snapSizes: const [0.5, 1],
           builder: (context, d) => ValueListenableBuilder<bool>(
             valueListenable: listed,
@@ -943,7 +1033,7 @@ void main() {
   });
 
   test('the drag handle\'s properties for the inspector', () {
-    final text = DesignBottomSheetDragHandle(
+    final text = RawBottomSheetDragHandle(
       semanticLabel: 'Grip',
       builder: (context, states) => const SizedBox(),
     ).toDiagnosticsNode().toStringDeep();
@@ -969,7 +1059,7 @@ void main() {
             addTearDown(tester.view.reset);
             await tester.pumpWidget(
               _app(
-                () => DesignBottomSheetRoute<void>(
+                () => RawBottomSheetRoute<void>(
                   snapSizes: const [0.4, 0.9],
                   builder: (context, d) => _panelOf(d, rows: 20),
                 ),

@@ -11,14 +11,14 @@ import 'package:ui_core/ui_core.dart';
 import 'behaviour_contract.dart';
 import 'behaviour_harness.dart';
 
-final List<DesignDateSegmentDetails> _painted = [];
+final List<RawDateSegmentDetails> _painted = [];
 Set<WidgetState> _frame = {};
 
 // The bare reference painter: each segment's text at the tap floor, the
 // frame reporting its states.
-Widget _segment(BuildContext context, DesignDateSegmentDetails d) {
+Widget _segment(BuildContext context, RawDateSegmentDetails d) {
   _painted.add(d);
-  return DesignTapTarget(
+  return TapTargetPadding(
     child: Text(
       d.text,
       key: ValueKey(d.type),
@@ -69,7 +69,7 @@ class _DateHostState extends State<_DateHost> {
     _date = this;
     final field = Align(
       alignment: Alignment.topLeft,
-      child: DesignDateField(
+      child: RawDateField(
         value: value,
         semanticLabel: 'Due',
         firstDate: widget.firstDate,
@@ -93,7 +93,7 @@ class _DateHostState extends State<_DateHost> {
     return Localizations(
       locale: locale,
       delegates: const [
-        DesignLocalizations.delegate,
+        RawWidgetsLocalizations.delegate,
         DefaultWidgetsLocalizations.delegate,
       ],
       child: Directionality(textDirection: direction, child: field),
@@ -113,7 +113,7 @@ class _TimeHost extends StatefulWidget {
     this.locale,
   });
 
-  final DesignTimeOfDay? value;
+  final RawTimeOfDay? value;
   final bool enabled;
   final bool? h24;
   final bool seconds;
@@ -124,18 +124,18 @@ class _TimeHost extends StatefulWidget {
 }
 
 class _TimeHostState extends State<_TimeHost> {
-  late DesignTimeOfDay? value = widget.value;
-  final List<DesignTimeOfDay?> sent = [];
+  late RawTimeOfDay? value = widget.value;
+  final List<RawTimeOfDay?> sent = [];
   int done = 0;
 
-  void set(DesignTimeOfDay? next) => setState(() => value = next);
+  void set(RawTimeOfDay? next) => setState(() => value = next);
 
   @override
   Widget build(BuildContext context) {
     _time = this;
     final field = Align(
       alignment: Alignment.topLeft,
-      child: DesignTimeField(
+      child: RawTimeField(
         value: value,
         semanticLabel: 'Start',
         alwaysUse24HourFormat: widget.h24,
@@ -158,7 +158,7 @@ class _TimeHostState extends State<_TimeHost> {
     return Localizations(
       locale: locale,
       delegates: const [
-        DesignLocalizations.delegate,
+        RawWidgetsLocalizations.delegate,
         DefaultWidgetsLocalizations.delegate,
       ],
       child: Directionality(textDirection: direction, child: field),
@@ -179,7 +179,7 @@ List<String> _drawn(WidgetTester tester) {
   final texts =
       tester
           .widgetList<Text>(find.byType(Text))
-          .where((t) => t.key is ValueKey<DesignDateSegmentType>)
+          .where((t) => t.key is ValueKey<RawDateSegmentType>)
           .map((t) => (t.data!, tester.getCenter(find.byWidget(t)).dx))
           .toList()
         ..sort((a, b) => a.$2.compareTo(b.$2));
@@ -218,10 +218,10 @@ void main() {
   });
 
   behaviourContract(
-    'DesignDateField',
+    'RawDateField',
     build: (c) => _DateHost(value: DateTime(2026, 11, 16), enabled: c.enabled),
     node: () => _node('Month'),
-    root: () => find.byType(DesignDateField),
+    root: () => find.byType(RawDateField),
     semantics: isSemantics(
       label: 'Month',
       value: 'November',
@@ -283,13 +283,13 @@ void main() {
   );
 
   behaviourContract(
-    'DesignTimeField',
+    'RawTimeField',
     build: (c) => _TimeHost(
-      value: const DesignTimeOfDay(hour: 15, minute: 5),
+      value: const RawTimeOfDay(hour: 15, minute: 5),
       enabled: c.enabled,
     ),
     node: () => _node('Hour'),
-    root: () => find.byType(DesignTimeField),
+    root: () => find.byType(RawTimeField),
     semantics: isSemantics(
       label: 'Hour',
       value: '3',
@@ -316,12 +316,12 @@ void main() {
       final t = p.tester;
       await p.tabInto();
       await p.key(LogicalKeyboardKey.arrowDown);
-      expect(_time.value, const DesignTimeOfDay(hour: 14, minute: 5));
+      expect(_time.value, const RawTimeOfDay(hour: 14, minute: 5));
       await p.tab();
       await p.tab();
       expect(_focusedOn(t, 'AM/PM'), isTrue);
       await p.key(LogicalKeyboardKey.arrowUp);
-      expect(_time.value, const DesignTimeOfDay(hour: 2, minute: 5));
+      expect(_time.value, const RawTimeOfDay(hour: 2, minute: 5));
       expect(_data(t, 'AM/PM').value, 'AM');
     },
   );
@@ -638,10 +638,10 @@ void main() {
       expect(_focusedOn(tester, 'AM/PM'), isTrue);
       expect(_time.sent, isEmpty, reason: 'AM or PM not chosen');
       await _type(tester, 'p');
-      expect(_time.value, const DesignTimeOfDay(hour: 21, minute: 30));
+      expect(_time.value, const RawTimeOfDay(hour: 21, minute: 30));
       expect(_data(tester, 'Start').value, '9:30 PM');
       await _type(tester, 'a');
-      expect(_time.value, const DesignTimeOfDay(hour: 9, minute: 30));
+      expect(_time.value, const RawTimeOfDay(hour: 9, minute: 30));
       expect(
         _inputType(tester),
         'TextInputType.text',
@@ -653,13 +653,13 @@ void main() {
       tester,
     ) async {
       await tester.pumpWidget(
-        harness(const _TimeHost(value: DesignTimeOfDay(hour: 0, minute: 0))),
+        harness(const _TimeHost(value: RawTimeOfDay(hour: 0, minute: 0))),
       );
       expect(_drawn(tester), ['12', '00', 'AM']);
       await _tab(tester);
       await tester.sendKeyEvent(LogicalKeyboardKey.arrowUp);
       await tester.pump();
-      expect(_time.value, const DesignTimeOfDay(hour: 1, minute: 0));
+      expect(_time.value, const RawTimeOfDay(hour: 1, minute: 0));
     });
 
     testWidgets('24 hours, with seconds; the platform\'s setting', (
@@ -668,7 +668,7 @@ void main() {
       await tester.pumpWidget(
         harness(
           const _TimeHost(
-            value: DesignTimeOfDay(hour: 15, minute: 5, second: 9),
+            value: RawTimeOfDay(hour: 15, minute: 5, second: 9),
             h24: true,
             seconds: true,
           ),
@@ -678,15 +678,12 @@ void main() {
       expect(find.bySemanticsLabel('AM/PM'), findsNothing);
       await _tab(tester);
       await _type(tester, '23');
-      expect(
-        _time.value,
-        const DesignTimeOfDay(hour: 23, minute: 5, second: 9),
-      );
+      expect(_time.value, const RawTimeOfDay(hour: 23, minute: 5, second: 9));
       await tester.pumpWidget(
         harness(
           const _TimeHost(
             key: ValueKey('platform'),
-            value: DesignTimeOfDay(hour: 15, minute: 5),
+            value: RawTimeOfDay(hour: 15, minute: 5),
           ),
           wrap: (context, child) => MediaQuery(
             data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
@@ -703,7 +700,7 @@ void main() {
       await tester.pumpWidget(
         harness(
           const _TimeHost(
-            value: DesignTimeOfDay(hour: 15, minute: 5),
+            value: RawTimeOfDay(hour: 15, minute: 5),
             locale: Locale('ko'),
           ),
         ),
@@ -713,7 +710,7 @@ void main() {
         harness(
           const _TimeHost(
             key: ValueKey('de'),
-            value: DesignTimeOfDay(hour: 15, minute: 5),
+            value: RawTimeOfDay(hour: 15, minute: 5),
             locale: Locale('de'),
           ),
         ),
@@ -727,7 +724,7 @@ void main() {
       await tester.pumpWidget(
         harness(
           const _TimeHost(
-            value: DesignTimeOfDay(hour: 15, minute: 5),
+            value: RawTimeOfDay(hour: 15, minute: 5),
             locale: Locale('ar'),
           ),
           textDirection: TextDirection.rtl,
@@ -809,8 +806,7 @@ void main() {
       await tester.pumpWidget(
         harness(_DateHost(value: DateTime(2026, 11, 16))),
       );
-      final client =
-          tester.state(find.byType(DesignDateField)) as TextInputClient;
+      final client = tester.state(find.byType(RawDateField)) as TextInputClient;
       expect(client.currentTextEditingValue!.text, '​​');
       expect(client.currentAutofillScope, isNull);
       expect(client.onFocusReceived(), isFalse);
@@ -836,18 +832,18 @@ void main() {
     testWidgets('a time field: Enter, a parent\'s new time, the clock '
         'changing under it', (tester) async {
       await tester.pumpWidget(
-        harness(const _TimeHost(value: DesignTimeOfDay(hour: 15, minute: 5))),
+        harness(const _TimeHost(value: RawTimeOfDay(hour: 15, minute: 5))),
       );
       await _tab(tester);
       await tester.sendKeyEvent(LogicalKeyboardKey.enter);
       expect(_time.done, 1);
-      _time.set(const DesignTimeOfDay(hour: 8, minute: 0));
+      _time.set(const RawTimeOfDay(hour: 8, minute: 0));
       await tester.pump();
       expect(_drawn(tester), ['8', '00', 'AM']);
       // The platform's 24-hour setting turning on keeps the time.
       await tester.pumpWidget(
         harness(
-          const _TimeHost(value: DesignTimeOfDay(hour: 15, minute: 5)),
+          const _TimeHost(value: RawTimeOfDay(hour: 15, minute: 5)),
           wrap: (context, child) => MediaQuery(
             data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
             child: child!,
@@ -871,16 +867,16 @@ void main() {
 
   group('the segments in a frame narrower than them', () {
     const widths = {
-      DesignDateSegmentType.day: 30.0,
-      DesignDateSegmentType.month: 30.0,
-      DesignDateSegmentType.year: 50.0,
-      DesignDateSegmentType.hour: 30.0,
-      DesignDateSegmentType.minute: 30.0,
-      DesignDateSegmentType.dayPeriod: 30.0,
+      RawDateSegmentType.day: 30.0,
+      RawDateSegmentType.month: 30.0,
+      RawDateSegmentType.year: 50.0,
+      RawDateSegmentType.hour: 30.0,
+      RawDateSegmentType.minute: 30.0,
+      RawDateSegmentType.dayPeriod: 30.0,
     };
     // Each segment's face 20 px tall, each piece of text between them a
     // 10 px square.
-    Widget face(BuildContext context, DesignDateSegmentDetails d) => SizedBox(
+    Widget face(BuildContext context, RawDateSegmentDetails d) => SizedBox(
       key: ValueKey(d.type),
       width: widths[d.type],
       height: 20,
@@ -909,7 +905,7 @@ void main() {
         shown = Localizations(
           locale: locale,
           delegates: const [
-            DesignLocalizations.delegate,
+            RawWidgetsLocalizations.delegate,
             DefaultWidgetsLocalizations.delegate,
           ],
           child: Directionality(textDirection: direction, child: shown),
@@ -918,7 +914,7 @@ void main() {
       return harness(shown, textDirection: direction);
     }
 
-    Widget date({double? minHeight}) => DesignDateField(
+    Widget date({double? minHeight}) => RawDateField(
       value: DateTime(2026, 11, 16),
       semanticLabel: 'Due',
       onChanged: (_) {},
@@ -934,14 +930,14 @@ void main() {
     // Where each segment and each piece of text lies in the field.
     Rect at(WidgetTester tester, Finder piece) {
       final origin = tester.getTopLeft(
-        find.byType(DesignDateField).evaluate().isEmpty
-            ? find.byType(DesignTimeField)
-            : find.byType(DesignDateField),
+        find.byType(RawDateField).evaluate().isEmpty
+            ? find.byType(RawTimeField)
+            : find.byType(RawDateField),
       );
       return tester.getRect(piece).shift(-origin);
     }
 
-    Rect segment(WidgetTester tester, DesignDateSegmentType type) =>
+    Rect segment(WidgetTester tester, RawDateSegmentType type) =>
         at(tester, find.byKey(ValueKey(type)));
     List<Rect> texts(WidgetTester tester) => [
       for (final e in find.byKey(const ValueKey('text')).evaluate())
@@ -950,32 +946,26 @@ void main() {
 
     testWidgets('when they fit, one line, as a row lays them', (tester) async {
       await tester.pumpWidget(host(800, date()));
-      expect(segment(tester, DesignDateSegmentType.month), _ltrb(0, 0, 30, 20));
-      expect(segment(tester, DesignDateSegmentType.day), _ltrb(40, 0, 70, 20));
-      expect(
-        segment(tester, DesignDateSegmentType.year),
-        _ltrb(80, 0, 130, 20),
-      );
+      expect(segment(tester, RawDateSegmentType.month), _ltrb(0, 0, 30, 20));
+      expect(segment(tester, RawDateSegmentType.day), _ltrb(40, 0, 70, 20));
+      expect(segment(tester, RawDateSegmentType.year), _ltrb(80, 0, 130, 20));
       expect(texts(tester), [_ltrb(30, 5, 40, 15), _ltrb(70, 5, 80, 15)]);
       // In a frame taller than them, centred in it as a row centres them.
       await tester.pumpWidget(host(800, date(minHeight: 48)));
-      expect(
-        segment(tester, DesignDateSegmentType.month),
-        _ltrb(0, 14, 30, 34),
-      );
+      expect(segment(tester, RawDateSegmentType.month), _ltrb(0, 14, 30, 34));
       expect(texts(tester).first, _ltrb(30, 19, 40, 29));
     });
 
     testWidgets('narrower, they wrap between parts, each segment kept with '
         'the text after it', (tester) async {
       await tester.pumpWidget(host(100, date()));
-      expect(segment(tester, DesignDateSegmentType.day), _ltrb(40, 0, 70, 20));
-      expect(segment(tester, DesignDateSegmentType.year), _ltrb(0, 20, 50, 40));
+      expect(segment(tester, RawDateSegmentType.day), _ltrb(40, 0, 70, 20));
+      expect(segment(tester, RawDateSegmentType.year), _ltrb(0, 20, 50, 40));
       expect(texts(tester), [_ltrb(30, 5, 40, 15), _ltrb(70, 5, 80, 15)]);
-      expect(tester.getSize(find.byType(DesignDateField)), const Size(80, 40));
+      expect(tester.getSize(find.byType(RawDateField)), const Size(80, 40));
       await tester.pumpWidget(host(50, date()));
-      expect(segment(tester, DesignDateSegmentType.day), _ltrb(0, 20, 30, 40));
-      expect(segment(tester, DesignDateSegmentType.year), _ltrb(0, 40, 50, 60));
+      expect(segment(tester, RawDateSegmentType.day), _ltrb(0, 20, 30, 40));
+      expect(segment(tester, RawDateSegmentType.year), _ltrb(0, 40, 50, 60));
       expect(texts(tester), [_ltrb(30, 5, 40, 15), _ltrb(30, 25, 40, 35)]);
     });
 
@@ -985,8 +975,8 @@ void main() {
       await tester.pumpWidget(
         host(
           85,
-          DesignTimeField(
-            value: const DesignTimeOfDay(hour: 15, minute: 5),
+          RawTimeField(
+            value: const RawTimeOfDay(hour: 15, minute: 5),
             semanticLabel: 'Start',
             alwaysUse24HourFormat: false,
             onChanged: (_) {},
@@ -995,12 +985,9 @@ void main() {
           ),
         ),
       );
+      expect(segment(tester, RawDateSegmentType.minute), _ltrb(40, 0, 70, 20));
       expect(
-        segment(tester, DesignDateSegmentType.minute),
-        _ltrb(40, 0, 70, 20),
-      );
-      expect(
-        segment(tester, DesignDateSegmentType.dayPeriod),
+        segment(tester, RawDateSegmentType.dayPeriod),
         _ltrb(0, 20, 30, 40),
       );
       expect(texts(tester), [_ltrb(30, 5, 40, 15), _ltrb(70, 5, 80, 15)]);
@@ -1016,15 +1003,9 @@ void main() {
           direction: TextDirection.rtl,
         ),
       );
-      expect(segment(tester, DesignDateSegmentType.day), _ltrb(0, 0, 30, 20));
-      expect(
-        segment(tester, DesignDateSegmentType.month),
-        _ltrb(40, 0, 70, 20),
-      );
-      expect(
-        segment(tester, DesignDateSegmentType.year),
-        _ltrb(30, 20, 80, 40),
-      );
+      expect(segment(tester, RawDateSegmentType.day), _ltrb(0, 0, 30, 20));
+      expect(segment(tester, RawDateSegmentType.month), _ltrb(40, 0, 70, 20));
+      expect(segment(tester, RawDateSegmentType.year), _ltrb(30, 20, 80, 40));
       expect(texts(tester), [_ltrb(30, 5, 40, 15), _ltrb(70, 5, 80, 15)]);
     });
 
@@ -1038,15 +1019,9 @@ void main() {
           direction: TextDirection.rtl,
         ),
       );
-      expect(segment(tester, DesignDateSegmentType.day), _ltrb(50, 0, 80, 20));
-      expect(
-        segment(tester, DesignDateSegmentType.month),
-        _ltrb(10, 0, 40, 20),
-      );
-      expect(
-        segment(tester, DesignDateSegmentType.year),
-        _ltrb(30, 20, 80, 40),
-      );
+      expect(segment(tester, RawDateSegmentType.day), _ltrb(50, 0, 80, 20));
+      expect(segment(tester, RawDateSegmentType.month), _ltrb(10, 0, 40, 20));
+      expect(segment(tester, RawDateSegmentType.year), _ltrb(30, 20, 80, 40));
       expect(texts(tester), [_ltrb(40, 5, 50, 15), _ltrb(0, 5, 10, 15)]);
     });
 
@@ -1073,7 +1048,7 @@ void main() {
       await tester.pump();
       // Beside the year, on its line.
       await tester.tapAt(
-        tester.getTopLeft(find.byType(DesignDateField)) + const Offset(65, 30),
+        tester.getTopLeft(find.byType(RawDateField)) + const Offset(65, 30),
       );
       await tester.pump();
       expect(_focusedOn(tester, 'Month'), isTrue);
@@ -1081,37 +1056,34 @@ void main() {
     });
   });
 
-  group('DesignTimeOfDay', () {
+  group('RawTimeOfDay', () {
     test('its parts, its period and its order', () {
-      const t = DesignTimeOfDay(hour: 15, minute: 5);
+      const t = RawTimeOfDay(hour: 15, minute: 5);
       expect(t.hourOfPeriod, 3);
       expect(t.isPm, isTrue);
-      expect(const DesignTimeOfDay(hour: 0, minute: 1).hourOfPeriod, 12);
-      expect(const DesignTimeOfDay(hour: 12, minute: 0).isPm, isTrue);
-      expect(
-        t.replacing(minute: 6),
-        const DesignTimeOfDay(hour: 15, minute: 6),
-      );
+      expect(const RawTimeOfDay(hour: 0, minute: 1).hourOfPeriod, 12);
+      expect(const RawTimeOfDay(hour: 12, minute: 0).isPm, isTrue);
+      expect(t.replacing(minute: 6), const RawTimeOfDay(hour: 15, minute: 6));
       expect(t.isBefore(t.replacing(second: 1)), isTrue);
       expect(t.isAfter(t.replacing(hour: 14)), isTrue);
-      expect(t.hashCode, const DesignTimeOfDay(hour: 15, minute: 5).hashCode);
-      expect(t.toString(), 'DesignTimeOfDay(15:05:00)');
+      expect(t.hashCode, const RawTimeOfDay(hour: 15, minute: 5).hashCode);
+      expect(t.toString(), 'RawTimeOfDay(15:05:00)');
       expect(
-        DesignTimeOfDay.fromDateTime(DateTime(2026, 1, 1, 7, 8, 9)),
-        const DesignTimeOfDay(hour: 7, minute: 8, second: 9),
+        RawTimeOfDay.fromDateTime(DateTime(2026, 1, 1, 7, 8, 9)),
+        const RawTimeOfDay(hour: 7, minute: 8, second: 9),
       );
     });
   });
 
   testWidgets('diagnostics name what each field was given', (tester) async {
     await tester.pumpWidget(harness(const _DateHost()));
-    final date = tester.widget<DesignDateField>(find.byType(DesignDateField));
+    final date = tester.widget<RawDateField>(find.byType(RawDateField));
     expect(
       date.toDiagnosticsNode().getProperties().map((p) => p.name),
       containsAll(['value', 'onChanged', 'semanticLabel']),
     );
     await tester.pumpWidget(harness(const _TimeHost()));
-    final time = tester.widget<DesignTimeField>(find.byType(DesignTimeField));
+    final time = tester.widget<RawTimeField>(find.byType(RawTimeField));
     expect(
       time.toDiagnosticsNode().getProperties().map((p) => p.name),
       containsAll(['value', 'onChanged', 'showSeconds']),

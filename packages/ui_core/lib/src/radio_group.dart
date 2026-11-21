@@ -2,13 +2,17 @@
 library;
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+
+import 'internal/roving_group.dart';
 
 /// Builds the look's radio for [option]. Attach [focusNode] to the control
 /// that takes the press and use [select] as its press callback. A null
 /// callback disables the control. Use the supplied node directly so a caller
 /// can focus the radio through [DesignRadioGroup.focusNodeFor].
+@Deprecated(
+  'Use RadioGroup and RawRadio, with RadioGroupKeyboardFix inside the group round the radios, and draw each face in RawRadio.builder. This feature was deprecated after ui_core 0.4.0.',
+)
 typedef DesignRadioItemBuilder<T> = Widget Function(
   BuildContext context,
   T option,
@@ -16,17 +20,22 @@ typedef DesignRadioItemBuilder<T> = Widget Function(
   VoidCallback? select,
 );
 
-/// A single choice drawn by [itemBuilder]. Flutter's [RadioGroup] manages
-/// the focus and selection of the look's own pressable for each option.
+/// A single choice drawn by [itemBuilder], the look's own pressable for each
+/// option, under a Flutter [RadioGroup].
 ///
 /// Tab and Shift+Tab enter on the chosen enabled option, or the first
 /// enabled option in reading order. All four arrows move and choose in
 /// that order, wrapping and skipping disabled options. Left advances in
 /// right-to-left text. Space, Enter, a tap or a semantics tap chooses.
+/// Home and End do nothing, as in Flutter's [RadioGroup]. Each arrow is a
+/// [RawRovingFocusIntent], which an [Actions] round the group overrides.
 ///
 /// ```dart
-/// DesignRadioGroup<String>(options: const ['Day', 'Week'], value: chosen, onChanged: choose, itemBuilder: (context, option, node, select) => DesignPressable(focusNode: node, onPressed: select, checked: option == chosen, inMutuallyExclusiveGroup: true, builder: (context, states, _) => Text(option)))
+/// DesignRadioGroup<String>(options: const ['Day', 'Week'], value: chosen, onChanged: choose, itemBuilder: (context, option, node, select) => RawButton(focusNode: node, onPressed: select, checked: option == chosen, inMutuallyExclusiveGroup: true, builder: (context, states, _) => Text(option)))
 /// ```
+@Deprecated(
+  'Use RadioGroup and RawRadio, with RadioGroupKeyboardFix inside the group round the radios, and draw each face in RawRadio.builder. This feature was deprecated after ui_core 0.4.0.',
+)
 class DesignRadioGroup<T> extends StatefulWidget {
   /// A group with one pressable for each distinct value in [options].
   const DesignRadioGroup({
@@ -109,35 +118,16 @@ class DesignRadioGroup<T> extends StatefulWidget {
   }
 }
 
-// Register the same node the pressable uses. A RawRadio wrapped around a
-// pressable would introduce a second focus target and gesture recognizer.
-class _RadioOption<T> with RadioClient<T> {
-  _RadioOption(this.radioValue);
-
-  @override
-  final T radioValue;
-  FocusNode? suppliedNode;
-  FocusNode? _ownedNode;
-  @override
-  FocusNode get focusNode => suppliedNode ?? (_ownedNode ??= FocusNode());
-  @override
-  bool get enabled => registry != null;
-  @override
-  bool get tristate => false;
-
-  void dispose() {
-    registry = null;
-    _ownedNode?.dispose();
-  }
-}
-
 class _DesignRadioGroupState<T> extends State<DesignRadioGroup<T>> {
-  final _radios = <T, _RadioOption<T>>{};
+  // The group's own node for each option that has been built without one of
+  // the caller's: kept while the option stays, so a caller that stops
+  // supplying a node finds the radio where it was.
+  final _owned = <T, FocusNode>{};
 
   @override
   void dispose() {
-    for (final radio in _radios.values) {
-      radio.dispose();
+    for (final node in _owned.values) {
+      node.dispose();
     }
     super.dispose();
   }
@@ -146,16 +136,11 @@ class _DesignRadioGroupState<T> extends State<DesignRadioGroup<T>> {
     if (widget.value != value) widget.onChanged?.call(value);
   }
 
-  void _move(_RadioOption<T> from, int step) {
-    final byNode = {
-      for (final radio in _radios.values)
-        if (radio.enabled) radio.focusNode: radio,
-    };
-    final order = ReadingOrderTraversalPolicy.sort(byNode.keys).toList();
-    final next = order[(order.indexOf(from.focusNode) + step) % order.length];
-    _choose(byNode[next]!.radioValue);
-    next.requestFocus();
-  }
+  bool _enabled(T value) =>
+      widget.onChanged != null && (widget.isEnabled?.call(value) ?? true);
+
+  FocusNode _nodeFor(T value) =>
+      widget.focusNodeFor?.call(value) ?? (_owned[value] ??= FocusNode());
 
   @override
   Widget build(BuildContext context) {
@@ -164,39 +149,31 @@ class _DesignRadioGroupState<T> extends State<DesignRadioGroup<T>> {
       options.length == widget.options.length,
       'Radio values must be distinct.',
     );
-    for (final value in _radios.keys.toSet().difference(options)) {
-      _radios.remove(value)!.dispose();
+    for (final value in _owned.keys.toSet().difference(options)) {
+      _owned.remove(value)!.dispose();
     }
-    return RadioGroup<T>(
-      groupValue: widget.value,
-      // These clients never ask the registry to clear a choice.
-      onChanged: (value) => _choose(value as T),
-      child: Builder(builder: _buildOptions),
-    );
-  }
-
-  Widget _buildOptions(BuildContext context) {
-    final registry = RadioGroup.maybeOf<T>(context)!;
-    for (final value in widget.options) {
-      final radio = _radios.putIfAbsent(value, () => _RadioOption<T>(value));
-      radio.suppliedNode = widget.focusNodeFor?.call(value);
-      // A selected disabled radio still says it is checked. Leaving it out
-      // of the registry lets Flutter find the first enabled Tab stop.
-      radio.registry =
-          widget.onChanged != null && (widget.isEnabled?.call(value) ?? true)
-          ? registry
-          : null;
-    }
+    final nodes = {for (final value in widget.options) value: _nodeFor(value)};
     assert(
-      _radios.values.map((radio) => radio.focusNode).toSet().length ==
-          _radios.length,
+      nodes.values.toSet().length == nodes.length,
       'Each radio needs its own FocusNode.',
     );
-    final rtl = Directionality.of(context) == TextDirection.rtl;
-    final single = _radios.values.where((radio) => radio.enabled).length == 1;
     final items = [
       for (final value in widget.options)
-        _item(_radios[value]!, rtl: rtl, single: single),
+        RovingItem(
+          key: ObjectKey(value),
+          focusNode: nodes[value]!,
+          enabled: _enabled(value),
+          selected: value == widget.value,
+          onMovedTo: () => _choose(value),
+          child: Builder(
+            builder: (context) => widget.itemBuilder(
+              context,
+              value,
+              nodes[value]!,
+              _enabled(value) ? () => _choose(value) : null,
+            ),
+          ),
+        ),
     ];
     final layout =
         widget.layoutBuilder?.call(context, items) ??
@@ -206,40 +183,17 @@ class _DesignRadioGroupState<T> extends State<DesignRadioGroup<T>> {
           children: items,
         );
     final label = widget.semanticLabel;
-    return label == null ? layout : Semantics(label: label, child: layout);
-  }
-
-  Widget _item(
-    _RadioOption<T> radio, {
-    required bool rtl,
-    required bool single,
-  }) {
-    final value = radio.radioValue;
-    return CallbackShortcuts(
-      key: ObjectKey(radio),
-      // Flutter binds Right to next in both text directions, and ignores
-      // arrows when only one client is enabled. Supply those two cases.
-      bindings: {
-        if (radio.enabled && (rtl || single)) ...{
-          const SingleActivator(LogicalKeyboardKey.arrowLeft): () =>
-              _move(radio, rtl ? 1 : -1),
-          const SingleActivator(LogicalKeyboardKey.arrowRight): () =>
-              _move(radio, rtl ? -1 : 1),
-        },
-        if (radio.enabled && single) ...{
-          const SingleActivator(LogicalKeyboardKey.arrowDown): () =>
-              _move(radio, 1),
-          const SingleActivator(LogicalKeyboardKey.arrowUp): () =>
-              _move(radio, -1),
-        },
+    // RadioGroup says the group is a radio group, and gives a Radio or a
+    // RawRadio in a face the group's value; the keys and the tab stop are
+    // the roving group's.
+    return RadioGroup<T>(
+      groupValue: widget.value,
+      onChanged: (value) {
+        if (value != null) _choose(value);
       },
-      child: Builder(
-        builder: (context) => widget.itemBuilder(
-          context,
-          value,
-          radio.focusNode,
-          radio.enabled ? () => _choose(value) : null,
-        ),
+      child: RovingGroup(
+        homeAndEnd: false,
+        child: label == null ? layout : Semantics(label: label, child: layout),
       ),
     );
   }

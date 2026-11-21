@@ -5,11 +5,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:ui_core/ui_core.dart';
 
 void main() {
-  DesignLocalizations l(String language) =>
-      DesignLocalizations.forLocale(Locale(language));
+  RawWidgetsLocalizations l(String language) =>
+      RawWidgetsLocalizations.forLocale(Locale(language));
 
   test('English, the defaults', () {
-    const en = DefaultDesignLocalizations();
+    const en = DefaultRawWidgetsLocalizations();
     expect(en.dialogLabel, 'Dialog');
     expect(en.alertDialogLabel, 'Alert');
     expect(en.bottomSheetLabel, 'Bottom Sheet');
@@ -32,7 +32,8 @@ void main() {
     expect(l('ja').dragHandleLabel, 'ドラッグ ハンドル');
     expect(l('zh').dragHandleLabel, '拖动手柄');
     expect(
-      DesignLocalizations.forLocale(const Locale('zh', 'TW')).dragHandleLabel,
+      RawWidgetsLocalizations.forLocale(const Locale('zh', 'TW'))
+          .dragHandleLabel,
       '拖曳控點',
     );
   });

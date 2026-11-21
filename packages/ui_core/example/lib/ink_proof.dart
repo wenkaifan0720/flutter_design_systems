@@ -17,7 +17,7 @@ class InkProofApp extends StatelessWidget {
     debugShowCheckedModeBanner: false,
     supportedLocales: const [Locale('en'), Locale('ar')],
     localizationsDelegates: const [
-      DesignLocalizations.delegate,
+      RawWidgetsLocalizations.delegate,
       GlobalWidgetsLocalizations.delegate,
     ],
     onGenerateTitle: (context) => _Words.of(context).title,
@@ -118,7 +118,7 @@ class _InkProofPageState extends State<InkProofPage> {
                       Align(
                         alignment: AlignmentDirectional.centerStart,
                         child: _Button(
-                          label: DesignLocalizations.of(context)
+                          label: RawWidgetsLocalizations.of(context)
                               .backButtonTooltip,
                           onPressed: () => Navigator.pop(context),
                         ),
@@ -134,7 +134,7 @@ class _InkProofPageState extends State<InkProofPage> {
                       ),
                     ),
                     const SizedBox(height: 24),
-                    DesignField(
+                    RawInputDecorator(
                       labelText: words.stock,
                       builder: (context, parts) => Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -144,7 +144,7 @@ class _InkProofPageState extends State<InkProofPage> {
                           parts.control,
                         ],
                       ),
-                      child: DesignToggleGroup<bool>(
+                      child: RawSegmentedButton<bool>(
                         options: const [false, true],
                         selected: {_textured},
                         semanticLabel: words.stock,
@@ -199,7 +199,7 @@ class _Button extends StatelessWidget {
   final VoidCallback? onPressed;
 
   @override
-  Widget build(BuildContext context) => DesignPressable(
+  Widget build(BuildContext context) => RawButton(
     onPressed: onPressed,
     semanticLabel: label,
     excludeSemantics: true,
@@ -284,18 +284,18 @@ class InkCoverage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = _Palette.of(context);
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     final extent = math.max(
       48.0,
       MediaQuery.textScalerOf(context).scale(24) + 16,
     );
-    return DesignWheelPicker(
+    return RawPicker(
       selection: [value ~/ 10],
       onChanged: onChanged == null
           ? null
           : (selection) => onChanged!(selection.single * 10),
       columns: (_) => [
-        DesignWheelColumn(
+        RawPickerColumn(
           semanticLabel: label,
           itemCount: 11,
           itemLabel: (index) => words.formatPercent(index / 10),

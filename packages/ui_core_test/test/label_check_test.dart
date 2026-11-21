@@ -812,7 +812,7 @@ void main() {
                 onTap: () {},
                 selected: label == 'Posts',
                 role: SemanticsRole.tab,
-                child: DesignTapTarget(
+                child: TapTargetPadding(
                   minSize: const Size(66, 48),
                   child: SizedBox(
                     width: 56,

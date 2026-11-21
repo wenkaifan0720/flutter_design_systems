@@ -20,19 +20,14 @@ const List<_Person> _people = [
   (name: 'Ed', age: 52),
 ];
 
-final List<DesignTableColumn<_Person>> _columns = [
-  DesignTableColumn(id: 'name', label: 'Name', sortKey: (p) => p.name),
-  DesignTableColumn(
-    id: 'age',
-    label: 'Age',
-    sortKey: (p) => p.age,
-    numeric: true,
-  ),
-  const DesignTableColumn(id: 'note', label: 'Note'),
+final List<RawDataColumn<_Person>> _columns = [
+  RawDataColumn(id: 'name', label: 'Name', sortKey: (p) => p.name),
+  RawDataColumn(id: 'age', label: 'Age', sortKey: (p) => p.age, numeric: true),
+  const RawDataColumn(id: 'note', label: 'Note'),
 ];
 
-DesignTableController<_Person> _controller({int? pageSize}) =>
-    DesignTableController(
+RawDataTableController<_Person> _controller({int? pageSize}) =>
+    RawDataTableController(
       rows: _people,
       columns: _columns,
       rowKey: (p) => p.name,
@@ -46,18 +41,18 @@ final Map<String, Set<WidgetState>> _rowStates = {};
 
 // The bare reference painter: text cells in rows, a header that says its sort.
 Widget _table(
-  DesignTableController<_Person> c, {
+  RawDataTableController<_Person> c, {
   ValueChanged<_Person>? onActivate,
   bool selectable = true,
 }) => harness(_view(c, onActivate: onActivate, selectable: selectable));
 
 Widget _view(
-  DesignTableController<_Person> c, {
+  RawDataTableController<_Person> c, {
   ValueChanged<_Person>? onActivate,
   bool selectable = true,
 }) => Column(
   children: [
-    DesignDataTable<_Person>(
+    RawDataTable<_Person>(
       controller: c,
       selectable: selectable,
       onActivate: onActivate,
@@ -89,7 +84,7 @@ Widget _view(
 );
 
 Finder _rowOf(String name) =>
-    find.ancestor(of: find.text(name), matching: find.byType(DesignPressable));
+    find.ancestor(of: find.text(name), matching: find.byType(RawButton));
 
 void main() {
   setUp(_rowStates.clear);
@@ -102,8 +97,8 @@ void main() {
       Tristate.isTrue;
 
   behaviourContract(
-    'DesignDataTable',
-    build: (c) => Owned<DesignTableController<_Person>>(
+    'RawDataTable',
+    build: (c) => Owned<RawDataTableController<_Person>>(
       create: _controller,
       builder: (context, c) => _view(c),
     ),
@@ -117,7 +112,7 @@ void main() {
       hasSelectedState: true,
       isSelected: false,
     ),
-    root: () => find.byType(DesignDataTable<_Person>),
+    root: () => find.byType(RawDataTable<_Person>),
     noDisabledState: 'a table is never disabled; a look greys a row',
     keyboard: (p) async {
       final t = p.tester;
@@ -163,7 +158,7 @@ void main() {
     c.sort('age');
     expect(_names(c.filteredRows), ['Di', 'Bo', 'Ada', 'Cy', 'Ed']);
     c.sort('age');
-    expect(c.sortOf('age'), DesignSortDirection.descending);
+    expect(c.sortOf('age'), RawSortDirection.descending);
     expect(_names(c.filteredRows), ['Ed', 'Ada', 'Cy', 'Bo', 'Di']);
     c.sort('age');
     expect(c.sortColumn, isNull);
@@ -197,13 +192,13 @@ void main() {
     c.toggle(_people[0]);
     c.toggle(_people[2], extend: true);
     expect(_names(c.selectedRows), ['Ada', 'Bo', 'Cy']);
-    expect(c.pageSelection, DesignSelection.all);
+    expect(c.pageSelection, RawDataTableSelection.all);
     c.togglePage();
     expect(c.selectedCount, 0);
     c.toggle(_people[1]);
-    expect(c.pageSelection, DesignSelection.some);
+    expect(c.pageSelection, RawDataTableSelection.some);
     c.togglePage();
-    expect(c.pageSelection, DesignSelection.all);
+    expect(c.pageSelection, RawDataTableSelection.all);
     c.rows = _people.where((p) => p.name != 'Cy').toList();
     expect(_names(c.selectedRows), ['Ada', 'Bo']);
     c.selectAll();
@@ -252,7 +247,7 @@ void main() {
     await tester.sendKeyDownEvent(LogicalKeyboardKey.controlLeft);
     await tester.sendKeyEvent(LogicalKeyboardKey.keyA);
     await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
-    expect(c.pageSelection, DesignSelection.all);
+    expect(c.pageSelection, RawDataTableSelection.all);
 
     await tester.sendKeyEvent(LogicalKeyboardKey.home);
     await tester.pump();
@@ -289,16 +284,16 @@ void main() {
 
   testWidgets('a selectable row and its checkbox share the checked state, '
       'and Enter still opens the row', (tester) async {
-    final c = DesignTableController<String>(
+    final c = RawDataTableController<String>(
       rows: const ['Budget'],
-      columns: const [DesignTableColumn(id: 'name', label: 'Name')],
+      columns: const [RawDataColumn(id: 'name', label: 'Name')],
     );
     addTearDown(c.dispose);
     final opened = <String>[];
     await tester.pumpWidget(
       MaterialApp(
         home: Material(
-          child: DesignDataTable<String>(
+          child: RawDataTable<String>(
             controller: c,
             onActivate: opened.add,
             headerBuilder: (context, column, sort, states) =>
@@ -318,7 +313,7 @@ void main() {
         ),
       ),
     );
-    final row = find.byType(DesignPressable);
+    final row = find.byType(RawButton);
     void expectChecked(bool checked) {
       final node = tester.getSemantics(row);
       expect(
@@ -340,7 +335,7 @@ void main() {
     await tester.tap(find.byType(Checkbox));
     await tester.pumpAndSettle();
     expectChecked(true);
-    tester.widget<DesignPressable>(row).focusNode!.requestFocus();
+    tester.widget<RawButton>(row).focusNode!.requestFocus();
     await tester.pump();
     await tester.sendKeyEvent(LogicalKeyboardKey.enter);
     await tester.pump();
@@ -380,7 +375,7 @@ void main() {
     addTearDown(c.dispose);
     await tester.pumpWidget(
       harness(
-        DesignDataTable<_Person>(
+        RawDataTable<_Person>(
           controller: c,
           headerBuilder: (context, column, sort, states) => Text(column.label),
           cellBuilder: (context, row, column) => const SizedBox(),

@@ -10,9 +10,9 @@ import 'value_handle.dart';
 
 /// A range's two ends.
 @immutable
-class DesignRangeValues {
+class RawRangeValues {
   /// The range from [start] to [end].
-  const DesignRangeValues(this.start, this.end)
+  const RawRangeValues(this.start, this.end)
     : assert(start <= end, 'start $start is at most end $end');
 
   /// Its lower end.
@@ -23,20 +23,20 @@ class DesignRangeValues {
 
   @override
   bool operator ==(Object other) =>
-      other is DesignRangeValues && other.start == start && other.end == end;
+      other is RawRangeValues && other.start == start && other.end == end;
 
   @override
   int get hashCode => Object.hash(start, end);
 
   @override
-  String toString() => 'DesignRangeValues($start, $end)';
+  String toString() => 'RawRangeValues($start, $end)';
 }
 
 /// The track's state, for the look to paint its rail and the filled part.
 @immutable
-class DesignRangeTrack {
+class RawRangeSliderTrackDetails {
   /// The track's state; the slider makes it.
-  const DesignRangeTrack({
+  const RawRangeSliderTrackDetails({
     required this.start,
     required this.end,
     required this.enabled,
@@ -56,11 +56,11 @@ class DesignRangeTrack {
 /// A slider of [values] between [min] and [max].
 ///
 /// ```dart
-/// DesignRangeSlider(values: const DesignRangeValues(20, 80), max: 100, onChanged: (values) {}, trackBuilder: (context, track) => const SizedBox(height: 4), thumbBuilder: (context, index, states) => const SizedBox(width: 20, height: 20))
+/// RawRangeSlider(values: const RawRangeValues(20, 80), max: 100, onChanged: (values) {}, trackBuilder: (context, track) => const SizedBox(height: 4), thumbBuilder: (context, index, states) => const SizedBox(width: 20, height: 20))
 /// ```
-class DesignRangeSlider extends StatefulWidget {
+class RawRangeSlider extends StatefulWidget {
   /// A range slider at [values].
-  const DesignRangeSlider({
+  const RawRangeSlider({
     super.key,
     required this.values,
     required this.onChanged,
@@ -85,15 +85,15 @@ class DesignRangeSlider extends StatefulWidget {
        assert(pageStep == null || pageStep > 0);
 
   /// The range.
-  final DesignRangeValues values;
+  final RawRangeValues values;
 
   /// A drag's, a key's or a screen reader's new range.
   ///
   /// {@macro design.nullDisables}
-  final ValueChanged<DesignRangeValues>? onChanged;
+  final ValueChanged<RawRangeValues>? onChanged;
 
   /// Paints the track (full width, centred under the thumbs).
-  final Widget Function(BuildContext context, DesignRangeTrack track)
+  final Widget Function(BuildContext context, RawRangeSliderTrackDetails track)
   trackBuilder;
 
   /// Paints thumb `index` (0 the lower, 1 the upper).
@@ -123,43 +123,46 @@ class DesignRangeSlider extends StatefulWidget {
   final double? pageStep;
 
   /// Called when a drag starts.
-  final ValueChanged<DesignRangeValues>? onChangeStart;
+  final ValueChanged<RawRangeValues>? onChangeStart;
 
   /// Called when a drag ends.
-  final ValueChanged<DesignRangeValues>? onChangeEnd;
+  final ValueChanged<RawRangeValues>? onChangeEnd;
 
   /// What a screen reader hears for a value, as
   /// `RangeSlider.semanticFormatterCallback`.
   final String Function(double value)? semanticFormatterCallback;
 
   /// What a screen reader calls the lower thumb; null:
-  /// [DesignLocalizations.rangeSliderStartLabel].
+  /// [RawWidgetsLocalizations.rangeSliderStartLabel].
   final String? startLabel;
 
   /// What a screen reader calls the upper thumb; null:
-  /// [DesignLocalizations.rangeSliderEndLabel].
+  /// [RawWidgetsLocalizations.rangeSliderEndLabel].
   final String? endLabel;
 
   /// Each thumb's target (its face is centred in it).
   final Size thumbSize;
 
   @override
-  State<DesignRangeSlider> createState() => _DesignRangeSliderState();
+  State<RawRangeSlider> createState() => _DesignRangeSliderState();
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(DiagnosticsProperty<DesignRangeValues>('values', values))
+      ..add(DiagnosticsProperty<RawRangeValues>('values', values))
       ..add(
-        ObjectFlagProperty<ValueChanged<DesignRangeValues>>.has(
+        ObjectFlagProperty<ValueChanged<RawRangeValues>>.has(
           'onChanged',
           onChanged,
         ),
       )
       ..add(
         ObjectFlagProperty<
-          Widget Function(BuildContext context, DesignRangeTrack track)
+          Widget Function(
+            BuildContext context,
+            RawRangeSliderTrackDetails track,
+          )
         >.has('trackBuilder', trackBuilder),
       )
       ..add(
@@ -178,13 +181,13 @@ class DesignRangeSlider extends StatefulWidget {
       ..add(DoubleProperty('step', step, defaultValue: null))
       ..add(DoubleProperty('pageStep', pageStep, defaultValue: null))
       ..add(
-        ObjectFlagProperty<ValueChanged<DesignRangeValues>>.has(
+        ObjectFlagProperty<ValueChanged<RawRangeValues>>.has(
           'onChangeStart',
           onChangeStart,
         ),
       )
       ..add(
-        ObjectFlagProperty<ValueChanged<DesignRangeValues>>.has(
+        ObjectFlagProperty<ValueChanged<RawRangeValues>>.has(
           'onChangeEnd',
           onChangeEnd,
         ),
@@ -207,14 +210,14 @@ class DesignRangeSlider extends StatefulWidget {
   }
 }
 
-class _DesignRangeSliderState extends State<DesignRangeSlider> {
+class _DesignRangeSliderState extends State<RawRangeSlider> {
   int? _dragging;
 
   // The thumb painted on top where the two meet: the one moved last.
   int _onTop = 1;
 
   @override
-  void didUpdateWidget(DesignRangeSlider oldWidget) {
+  void didUpdateWidget(RawRangeSlider oldWidget) {
     super.didUpdateWidget(oldWidget);
     // Turned off mid-drag, the slider drops its drag recognizer, which then
     // tells it nothing more: the drag ends here.
@@ -256,8 +259,8 @@ class _DesignRangeSliderState extends State<DesignRangeSlider> {
   void _set(int index, double value) {
     final r = widget.values;
     final next = index == 0
-        ? DesignRangeValues(value, r.end)
-        : DesignRangeValues(r.start, value);
+        ? RawRangeValues(value, r.end)
+        : RawRangeValues(r.start, value);
     if (next != r) widget.onChanged?.call(next);
   }
 
@@ -324,9 +327,9 @@ class _DesignRangeSliderState extends State<DesignRangeSlider> {
             minimumSize: thumb,
             semanticLabel: index == 0
                 ? widget.startLabel ??
-                      DesignLocalizations.of(context).rangeSliderStartLabel
+                      RawWidgetsLocalizations.of(context).rangeSliderStartLabel
                 : widget.endLabel ??
-                      DesignLocalizations.of(context).rangeSliderEndLabel,
+                      RawWidgetsLocalizations.of(context).rangeSliderEndLabel,
             semanticFormatterCallback: widget.semanticFormatterCallback,
             onChanged: enabled
                 ? (v) {
@@ -402,7 +405,7 @@ class _DesignRangeSliderState extends State<DesignRangeSlider> {
                         child: ExcludeSemantics(
                           child: widget.trackBuilder(
                             context,
-                            DesignRangeTrack(
+                            RawRangeSliderTrackDetails(
                               start: _fraction(r.start),
                               end: _fraction(r.end),
                               enabled: enabled,

@@ -10,7 +10,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:ui_core_test/ui_core_test.dart';
+import 'package:ui_core_review/ui_core_review.dart';
 import 'package:ui_core/ui_core.dart';
 
 import 'behaviour_harness.dart';
@@ -138,10 +138,10 @@ class _RenderOwnSurface extends RenderProxyBox {
 Widget _select(
   String value, {
   List<String> options = const ['Apple', 'Banana', 'Cherry'],
-  DesignOverlayPlacement placement = const DesignOverlayPlacement(),
+  RawPopoverPlacement placement = const RawPopoverPlacement(),
   double itemPad = 12,
   bool ownSurface = false,
-}) => DesignAnchoredOverlay(
+}) => RawPopover(
   placement: placement,
   focusOnOpen: false,
   anchorBuilder: (context, anchor) => _selectFace(value, anchor.toggle),
@@ -251,7 +251,7 @@ class _ComboboxState extends State<_Combobox> {
   }
 
   @override
-  Widget build(BuildContext context) => DesignAnchoredOverlay(
+  Widget build(BuildContext context) => RawPopover(
     focusOnOpen: false,
     anchorBuilder: (context, anchor) => DecoratedBox(
       key: _fieldKey,
@@ -391,7 +391,7 @@ class _TypedFieldState extends State<_TypedField> {
   }
 
   @override
-  Widget build(BuildContext context) => DesignAnchoredOverlay(
+  Widget build(BuildContext context) => RawPopover(
     controller: widget.controller,
     focusOnOpen: false,
     anchorBuilder: (context, anchor) => Column(
@@ -1775,7 +1775,7 @@ void main() {
 
   group('a list opened from a field', () {
     Widget field({
-      DesignOverlayPlacement placement = const DesignOverlayPlacement(),
+      RawPopoverPlacement placement = const RawPopoverPlacement(),
       List<String> options = const ['Apple', 'Banana', 'Cherry'],
       double itemPad = 12,
       bool ownSurface = false,
@@ -1811,7 +1811,7 @@ void main() {
       await _pump(
         tester,
         field(
-          placement: const DesignOverlayPlacement(matchAnchorWidth: false),
+          placement: const RawPopoverPlacement(matchAnchorWidth: false),
           options: const ['Fig', 'Kiwi'],
         ),
       );
@@ -1861,8 +1861,8 @@ void main() {
                 SizedBox(
                   width: 250,
                   height: 32,
-                  child: DesignAnchoredOverlay(
-                    placement: const DesignOverlayPlacement(
+                  child: RawPopover(
+                    placement: const RawPopoverPlacement(
                       matchAnchorWidth: false,
                     ),
                     focusOnOpen: false,
@@ -1928,8 +1928,8 @@ void main() {
             _hugging(
               SizedBox(
                 width: 198,
-                child: DesignAnchoredOverlay(
-                  placement: const DesignOverlayPlacement(gap: 0),
+                child: RawPopover(
+                  placement: const RawPopoverPlacement(gap: 0),
                   focusOnOpen: false,
                   anchorBuilder: (context, anchor) => Semantics(
                     button: true,
@@ -2004,8 +2004,8 @@ void main() {
       await _pump(
         tester,
         field(
-          placement: const DesignOverlayPlacement(
-            align: DesignOverlayAlign.end,
+          placement: const RawPopoverPlacement(
+            align: RawPopoverAlign.end,
             matchAnchorWidth: false,
           ),
           options: const [
@@ -2063,7 +2063,7 @@ void main() {
         tester,
         field(
           ownSurface: true,
-          placement: const DesignOverlayPlacement(matchAnchorWidth: false),
+          placement: const RawPopoverPlacement(matchAnchorWidth: false),
           options: const ['Fig', 'Kiwi'],
         ),
       );
@@ -2170,7 +2170,7 @@ void main() {
       );
     });
 
-    testWidgets('a list from a DesignAnchoredOverlay stays inside the rule '
+    testWidgets('a list from a RawPopover stays inside the rule '
         'whatever its rows do', (tester) async {
       // Rows that stretch and no IntrinsicWidth of the look's own: the
       // overlay holds the list to the field, wider only for its widest row.
@@ -2179,7 +2179,7 @@ void main() {
         _hugging(
           SizedBox(
             width: 240,
-            child: DesignAnchoredOverlay(
+            child: RawPopover(
               focusOnOpen: false,
               anchorBuilder: (context, anchor) =>
                   _selectFace('Apple', anchor.toggle),
@@ -2291,7 +2291,7 @@ void main() {
         _hugging(
           SizedBox(
             width: 244,
-            child: DesignAnchoredOverlay(
+            child: RawPopover(
               focusOnOpen: false,
               anchorBuilder: (context, anchor) => Padding(
                 padding: const EdgeInsets.all(2),
@@ -2317,7 +2317,7 @@ void main() {
         "the page under it: its frame line 4 px in is not its edge", (
       tester,
     ) async {
-      // Terminal's lists on paper (11-15): DesignAnchoredOverlay draws the
+      // Terminal's lists on paper (11-15): RawPopover draws the
       // surface in a repaint boundary the list's size, whose own pixels are
       // the list's white to the edge; read against that white, the frame
       // line was taken for the list's edge, 8 px narrower than the field.
@@ -2326,7 +2326,7 @@ void main() {
         _hugging(
           SizedBox(
             width: 240,
-            child: DesignAnchoredOverlay(
+            child: RawPopover(
               focusOnOpen: false,
               anchorBuilder: (context, anchor) =>
                   _selectFace('Apple', anchor.toggle),
@@ -2352,8 +2352,8 @@ void main() {
       await _pump(
         tester,
         _stretched(
-          DesignAnchoredOverlay(
-            placement: const DesignOverlayPlacement(gap: -2),
+          RawPopover(
+            placement: const RawPopoverPlacement(gap: -2),
             focusOnOpen: false,
             anchorBuilder: (context, anchor) =>
                 _selectFace('Apple', anchor.toggle),
@@ -2402,8 +2402,8 @@ void main() {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   _words('City'),
-                  DesignAnchoredOverlay(
-                    placement: const DesignOverlayPlacement(gap: -2),
+                  RawPopover(
+                    placement: const RawPopoverPlacement(gap: -2),
                     focusOnOpen: false,
                     anchorBuilder: (context, anchor) => Semantics(
                       button: true,
@@ -2492,7 +2492,7 @@ void main() {
             child: _Beside(
               child: _select(
                 'Apple',
-                placement: const DesignOverlayPlacement(gap: 8),
+                placement: const RawPopoverPlacement(gap: 8),
               ),
             ),
           ),
@@ -2518,7 +2518,7 @@ void main() {
               child: _hugging(
                 SizedBox(
                   width: 240,
-                  child: DesignAnchoredOverlay(
+                  child: RawPopover(
                     focusOnOpen: false,
                     anchorBuilder: (context, anchor) => Semantics(
                       button: true,

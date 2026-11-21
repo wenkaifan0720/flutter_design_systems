@@ -1,7 +1,7 @@
 // The counts a data table speaks under its pages: how many rows its filter
 // leaves, and how many are selected. Each is given its count by the
 // localizations (the rows by BrutalLocalizations, the selection by ui_core's
-// DesignLocalizations), so English says "1 row" and "2 rows", and a language
+// RawWidgetsLocalizations), so English says "1 row" and "2 rows", and a language
 // with more plural forms (Polish here: one, few, many) picks its own from an
 // app's own words.
 import 'package:brutal_ui/brutal_ui.dart';
@@ -47,7 +47,7 @@ Widget _app(Widget page, {BrutalLocalizations? words}) => WidgetsApp(
   supportedLocales: const [Locale('en'), Locale('pl')],
   localizationsDelegates: [
     if (words != null) _Words(words),
-    DesignLocalizations.delegate,
+    RawWidgetsLocalizations.delegate,
   ],
   builder: (context, _) => BrutalTheme(
     data: BrutalThemeData.light(),

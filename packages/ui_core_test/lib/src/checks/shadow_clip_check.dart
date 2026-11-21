@@ -39,6 +39,10 @@ part of '../alignment.dart';
 /// A press, a hover or a focus changes only its own neighbourhood: a test
 /// of one control's moments passes its rect as `near:`, and only the boxes
 /// whose cast reaches into it are painted and read, however long the page.
+///
+/// It reads layout boxes for where a shadow falls and a clip cuts, and the
+/// drawn pixels where only they show what a shadow paints, so it takes the
+/// tester's `runAsync`.
 @immutable
 class DesignShadowClipCheck {
   /// A check for [look].
@@ -593,24 +597,6 @@ String _clipName(RenderObject clip) {
   };
   if (clip is! RenderBox || !clip.hasSize) return kind;
   return '$kind ${_size(clip.size)}${_holding(clip)}';
-}
-
-// ', holding "Raised"': the first words [box] holds, to find it by.
-String _holding(RenderBox box) {
-  String? words;
-  void visit(RenderObject n) {
-    if (words != null) return;
-    if (n is RenderParagraph) {
-      final t = n.text.toPlainText(includeSemanticsLabels: false).trim();
-      if (t.isNotEmpty && !isIconGlyph(t)) words = t;
-    }
-    _visitShown(n, visit);
-  }
-
-  visit(box);
-  if (words == null) return '';
-  final w = words!.replaceAll('\n', ' ');
-  return ', holding "${w.length > 28 ? '${w.substring(0, 27)}…' : w}"';
 }
 
 // [box] (a box that casts), in words: the control it is part of, else the

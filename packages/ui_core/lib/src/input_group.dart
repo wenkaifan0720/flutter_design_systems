@@ -5,7 +5,7 @@
 /// it has focus, a pointer over it, and whether it is disabled or wrong; a
 /// tap on the frame or a plain add-on puts the caret in the field.
 ///
-/// [DesignPasswordReveal] holds whether a password shows, and the toggle's
+/// [RawPasswordReveal] holds whether a password shows, and the toggle's
 /// label and state, keeping the field's focus and caret as it flips.
 library;
 
@@ -149,11 +149,11 @@ class _DesignInputGroupState extends State<DesignInputGroup> {
 /// and disposes it; a widget it is given to only listens to it.
 ///
 /// ```dart
-/// DesignPasswordController(obscured: false)
+/// RawPasswordController(obscured: false)
 /// ```
-class DesignPasswordController extends ValueNotifier<bool> {
+class RawPasswordController extends ValueNotifier<bool> {
   /// Starts hidden unless [obscured] is false.
-  DesignPasswordController({bool obscured = true}) : super(obscured);
+  RawPasswordController({bool obscured = true}) : super(obscured);
 
   /// Whether it is hidden.
   bool get obscured => value;
@@ -162,11 +162,11 @@ class DesignPasswordController extends ValueNotifier<bool> {
   void toggle() => value = !value;
 }
 
-/// What a [DesignPasswordReveal]'s builder paints from.
+/// What a [RawPasswordReveal]'s builder paints from.
 @immutable
-class DesignPasswordDetails {
+class RawPasswordDetails {
   /// The details of a reveal.
-  const DesignPasswordDetails({
+  const RawPasswordDetails({
     required this.obscured,
     required this.toggle,
     required this.toggleLabel,
@@ -179,7 +179,9 @@ class DesignPasswordDetails {
   final VoidCallback toggle;
 
   /// What the toggle says to a screen reader ("Show password" while hidden,
-  /// "Hide password" while shown); give the toggle `toggled: !obscured`.
+  /// "Hide password" while shown). Give the toggle
+  /// `semanticSelected: !obscured`: a toggle button, read as a button that is
+  /// selected while the password shows.
   final String toggleLabel;
 }
 
@@ -188,11 +190,11 @@ class DesignPasswordDetails {
 /// [hideOnBlur] a shown password hides again when focus leaves the field.
 ///
 /// ```dart
-/// DesignPasswordReveal(builder: (context, password) => Text(password.toggleLabel))
+/// RawPasswordReveal(builder: (context, password) => Text(password.toggleLabel))
 /// ```
-class DesignPasswordReveal extends StatefulWidget {
+class RawPasswordReveal extends StatefulWidget {
   /// A reveal for one password field.
-  const DesignPasswordReveal({
+  const RawPasswordReveal({
     super.key,
     required this.builder,
     this.controller,
@@ -203,12 +205,12 @@ class DesignPasswordReveal extends StatefulWidget {
   });
 
   /// Paints the field and its toggle.
-  final Widget Function(BuildContext context, DesignPasswordDetails password)
+  final Widget Function(BuildContext context, RawPasswordDetails password)
   builder;
 
   /// Holds whether it shows, when the caller watches it. The caller
   /// disposes it; null: the reveal makes its own and disposes it.
-  final DesignPasswordController? controller;
+  final RawPasswordController? controller;
 
   /// The field's focus, for [hideOnBlur] and to keep focus on the field as
   /// the toggle flips it. The caller's, who disposes it; the reveal only
@@ -219,15 +221,15 @@ class DesignPasswordReveal extends StatefulWidget {
   final bool hideOnBlur;
 
   /// The toggle's label while hidden; null:
-  /// [DesignLocalizations.showPasswordLabel].
+  /// [RawWidgetsLocalizations.showPasswordLabel].
   final String? showLabel;
 
   /// The toggle's label while shown; null:
-  /// [DesignLocalizations.hidePasswordLabel].
+  /// [RawWidgetsLocalizations.hidePasswordLabel].
   final String? hideLabel;
 
   @override
-  State<DesignPasswordReveal> createState() => _DesignPasswordRevealState();
+  State<RawPasswordReveal> createState() => _DesignPasswordRevealState();
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -235,11 +237,11 @@ class DesignPasswordReveal extends StatefulWidget {
     properties
       ..add(
         ObjectFlagProperty<
-          Widget Function(BuildContext context, DesignPasswordDetails password)
+          Widget Function(BuildContext context, RawPasswordDetails password)
         >.has('builder', builder),
       )
       ..add(
-        DiagnosticsProperty<DesignPasswordController>(
+        DiagnosticsProperty<RawPasswordController>(
           'controller',
           controller,
           defaultValue: null,
@@ -265,11 +267,11 @@ class DesignPasswordReveal extends StatefulWidget {
   }
 }
 
-class _DesignPasswordRevealState extends State<DesignPasswordReveal> {
-  DesignPasswordController? _own;
+class _DesignPasswordRevealState extends State<RawPasswordReveal> {
+  RawPasswordController? _own;
 
-  DesignPasswordController get _controller =>
-      widget.controller ?? (_own ??= DesignPasswordController());
+  RawPasswordController get _controller =>
+      widget.controller ?? (_own ??= RawPasswordController());
 
   @override
   void initState() {
@@ -279,7 +281,7 @@ class _DesignPasswordRevealState extends State<DesignPasswordReveal> {
   }
 
   @override
-  void didUpdateWidget(DesignPasswordReveal oldWidget) {
+  void didUpdateWidget(RawPasswordReveal oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.controller != widget.controller) {
       (oldWidget.controller ?? _own)?.removeListener(_changed);
@@ -320,14 +322,14 @@ class _DesignPasswordRevealState extends State<DesignPasswordReveal> {
     final obscured = _controller.obscured;
     return widget.builder(
       context,
-      DesignPasswordDetails(
+      RawPasswordDetails(
         obscured: obscured,
         toggle: _toggle,
         toggleLabel: obscured
             ? widget.showLabel ??
-                  DesignLocalizations.of(context).showPasswordLabel
+                  RawWidgetsLocalizations.of(context).showPasswordLabel
             : widget.hideLabel ??
-                  DesignLocalizations.of(context).hidePasswordLabel,
+                  RawWidgetsLocalizations.of(context).hidePasswordLabel,
       ),
     );
   }

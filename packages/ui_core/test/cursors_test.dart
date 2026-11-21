@@ -40,14 +40,14 @@ class _Range extends StatefulWidget {
 }
 
 class _RangeState extends State<_Range> {
-  DesignRangeValues values = const DesignRangeValues(20, 80);
+  RawRangeValues values = const RawRangeValues(20, 80);
 
   @override
   Widget build(BuildContext context) => Align(
     alignment: Alignment.topLeft,
     child: SizedBox(
       width: 400,
-      child: DesignRangeSlider(
+      child: RawRangeSlider(
         values: values,
         max: 100,
         onChanged: widget.enabled
@@ -161,7 +161,7 @@ void main() {
 
   testWidgets("a colour slider's thumb grabs and its track clicks; the area is "
       'precise', (tester) async {
-    final c = DesignColorController(const Color(0xFFFF0000));
+    final c = RawColorController(const Color(0xFFFF0000));
     addTearDown(c.dispose);
     await tester.pumpWidget(
       harness(
@@ -169,7 +169,7 @@ void main() {
           alignment: Alignment.topLeft,
           child: SizedBox(
             width: 300,
-            child: DesignColorPicker(
+            child: RawColorPicker(
               controller: c,
               areaHeight: 100,
               areaBuilder: (context, area) => const ColoredBox(
@@ -212,7 +212,7 @@ void main() {
       SizedBox(
         width: 400,
         height: 400,
-        child: DesignSplitView(
+        child: RawSplitView(
           axis: axis,
           first: const SizedBox.expand(),
           second: const SizedBox.expand(),
@@ -240,12 +240,12 @@ void main() {
       Center(
         child: SizedBox(
           width: 200,
-          child: DesignWheelPicker(
+          child: RawPicker(
             semanticLabel: 'Hour',
             selection: const [5],
             itemExtent: 40,
             columns: (s) => [
-              DesignWheelColumn(
+              RawPickerColumn(
                 itemCount: 24,
                 itemLabel: (i) => '$i',
                 semanticLabel: 'Hour',
@@ -261,7 +261,7 @@ void main() {
 
     testWidgets('grabs, grabbing while the mouse turns it', (tester) async {
       await tester.pumpWidget(wheel());
-      final at = tester.getCenter(find.byType(DesignWheelPicker));
+      final at = tester.getCenter(find.byType(RawPicker));
       final mouse = await _mouseAt(tester, at);
       expect(_cursor(), SystemMouseCursors.grab);
       await mouse.down(at);
@@ -275,7 +275,7 @@ void main() {
 
     testWidgets('disabled, it is the basic arrow', (tester) async {
       await tester.pumpWidget(wheel(enabled: false));
-      await _mouseAt(tester, tester.getCenter(find.byType(DesignWheelPicker)));
+      await _mouseAt(tester, tester.getCenter(find.byType(RawPicker)));
       expect(_cursor(), SystemMouseCursors.basic);
     });
   });

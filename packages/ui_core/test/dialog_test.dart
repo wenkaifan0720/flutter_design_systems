@@ -10,7 +10,7 @@ import 'behaviour_harness.dart';
 const _frame = ValueKey('frame');
 
 // The bare reference painter: a white frame, plain words, grey actions.
-Widget _action(DesignDialogAction action, DesignDialogActionDetails details) =>
+Widget _action(RawDialogAction action, RawDialogActionDetails details) =>
     Container(
       key: ValueKey('action ${action.label}'),
       constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
@@ -22,21 +22,21 @@ Widget _action(DesignDialogAction action, DesignDialogActionDetails details) =>
       child: Text(action.label),
     );
 
-DesignDialog _alert({
+RawAlertDialog _alert({
   String? title = 'Delete the draft?',
   Widget? content = const Text('It cannot be brought back.'),
-  List<DesignDialogAction>? actions,
-  ValueChanged<DesignDialogFrameDetails>? onFrame,
+  List<RawDialogAction>? actions,
+  ValueChanged<RawAlertDialogFrameDetails>? onFrame,
   ScrollController? scrollController,
-}) => DesignDialog(
+}) => RawAlertDialog(
   title: title,
   content: content,
   scrollController: scrollController,
   actions:
       actions ??
       [
-        DesignDialogAction(label: 'Cancel', onPressed: () {}),
-        DesignDialogAction(
+        RawDialogAction(label: 'Cancel', onPressed: () {}),
+        RawDialogAction(
           label: 'Delete',
           isDestructiveAction: true,
           onPressed: () {},
@@ -54,8 +54,8 @@ DesignDialog _alert({
   },
 );
 
-extension on DesignDialog {
-  DesignDialog copyWithSpacing(double spacing) => DesignDialog(
+extension on RawAlertDialog {
+  RawAlertDialog copyWithSpacing(double spacing) => RawAlertDialog(
     title: title,
     content: content,
     actions: actions,
@@ -69,7 +69,7 @@ extension on DesignDialog {
 // An opener that pushes [route] when pressed.
 Widget _opener(Route<Object?> Function() route) => Builder(
   builder: (context) => Center(
-    child: DesignPressable(
+    child: RawButton(
       semanticLabel: 'Open',
       excludeSemantics: true,
       minimumSize: const Size(44, 44),
@@ -110,7 +110,7 @@ void main() {
       var pressed = 0;
       final actions = [
         for (final text in ['Keep', 'Discard'])
-          DesignPressable(
+          RawButton(
             key: ValueKey(text),
             semanticLabel: text,
             onPressed: () => pressed++,
@@ -121,7 +121,7 @@ void main() {
       ];
       Future<void> show(double scale) => tester.pumpWidget(
         harness(
-          DesignDialog(title: 'Changes', actionWidgets: actions),
+          RawAlertDialog(title: 'Changes', actionWidgets: actions),
           textDirection: TextDirection.rtl,
           textScale: scale,
         ),
@@ -201,13 +201,13 @@ void main() {
     },
   );
 
-  group('DesignDialog.safeActionIndex', () {
-    DesignDialogAction a(
+  group('RawAlertDialog.safeActionIndex', () {
+    RawDialogAction a(
       String label, {
       bool destructive = false,
       bool isDefault = false,
       bool enabled = true,
-    }) => DesignDialogAction(
+    }) => RawDialogAction(
       label: label,
       onPressed: enabled ? () {} : null,
       isDestructiveAction: destructive,
@@ -216,7 +216,7 @@ void main() {
 
     test('a destructive action: the first enabled one that is not', () {
       expect(
-        DesignDialog.safeActionIndex([
+        RawAlertDialog.safeActionIndex([
           a('Off', enabled: false),
           a('Keep'),
           a('Delete', destructive: true),
@@ -224,7 +224,7 @@ void main() {
         1,
       );
       expect(
-        DesignDialog.safeActionIndex([a('Delete', destructive: true)]),
+        RawAlertDialog.safeActionIndex([a('Delete', destructive: true)]),
         isNull,
         reason: 'no safe action: nothing takes focus by itself',
       );
@@ -232,15 +232,21 @@ void main() {
 
     test('else the default action, else the first enabled', () {
       expect(
-        DesignDialog.safeActionIndex([a('Cancel'), a('Save', isDefault: true)]),
+        RawAlertDialog.safeActionIndex([
+          a('Cancel'),
+          a('Save', isDefault: true),
+        ]),
         1,
       );
       expect(
-        DesignDialog.safeActionIndex([a('Off', enabled: false), a('OK')]),
+        RawAlertDialog.safeActionIndex([a('Off', enabled: false), a('OK')]),
         1,
       );
-      expect(DesignDialog.safeActionIndex([a('Off', enabled: false)]), isNull);
-      expect(DesignDialog.safeActionIndex(const []), isNull);
+      expect(
+        RawAlertDialog.safeActionIndex([a('Off', enabled: false)]),
+        isNull,
+      );
+      expect(RawAlertDialog.safeActionIndex(const []), isNull);
     });
   });
 
@@ -381,7 +387,7 @@ void main() {
       harness(
         Builder(
           builder: (context) => Center(
-            child: DesignPressable(
+            child: RawButton(
               semanticLabel: 'Open',
               minimumSize: const Size(44, 44),
               onPressed: () async {
@@ -389,11 +395,11 @@ void main() {
                   DesignDialogRoute<bool>(
                     builder: (context, details) => _alert(
                       actions: [
-                        DesignDialogAction(
+                        RawDialogAction(
                           label: 'No',
                           onPressed: () => Navigator.of(context).pop(false),
                         ),
-                        DesignDialogAction(
+                        RawDialogAction(
                           label: 'Yes',
                           isDefaultAction: true,
                           onPressed: () => Navigator.of(context).pop(true),
@@ -448,7 +454,7 @@ void main() {
     tester.view.physicalSize = const Size(390, 500);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
-    DesignDialogFrameDetails? frame;
+    RawAlertDialogFrameDetails? frame;
     final scroll = ScrollController();
     addTearDown(scroll.dispose);
     await tester.pumpWidget(
@@ -500,8 +506,8 @@ void main() {
               () => DesignDialogRoute<void>(
                 builder: (context, details) => _alert(
                   actions: [
-                    DesignDialogAction(label: 'Keep editing', onPressed: () {}),
-                    DesignDialogAction(
+                    RawDialogAction(label: 'Keep editing', onPressed: () {}),
+                    RawDialogAction(
                       label: 'Discard the changes',
                       isDestructiveAction: true,
                       onPressed: () {},
@@ -579,10 +585,10 @@ void main() {
               key: ValueKey('screen'),
               color: Color(0x33000000),
             ),
-            builder: (context, details) => DesignDialog(
+            builder: (context, details) => RawAlertDialog(
               title: 'Rename',
               titleBuilder: (context, title) => Text('[$title]'),
-              actions: [DesignDialogAction(label: 'OK', onPressed: () {})],
+              actions: [RawDialogAction(label: 'OK', onPressed: () {})],
               actionBuilder: (context, action, details) =>
                   _action(action, details),
               actionsBuilder: (context, details, child) =>
@@ -614,8 +620,8 @@ void main() {
               width: 300,
               child: _alert(
                 actions: [
-                  DesignDialogAction(label: 'No', onPressed: () {}),
-                  DesignDialogAction(label: 'Yes', onPressed: () {}),
+                  RawDialogAction(label: 'No', onPressed: () {}),
+                  RawDialogAction(label: 'Yes', onPressed: () {}),
                 ],
               ).copyWithSpacing(spacing),
             ),
@@ -692,8 +698,8 @@ void main() {
                         ],
                       ),
                       actions: [
-                        DesignDialogAction(label: 'Not now', onPressed: () {}),
-                        DesignDialogAction(
+                        RawDialogAction(label: 'Not now', onPressed: () {}),
+                        RawDialogAction(
                           label: 'Turn on notifications',
                           isDefaultAction: true,
                           onPressed: () {},

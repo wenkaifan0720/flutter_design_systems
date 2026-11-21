@@ -1,4 +1,4 @@
-/// A menubar, headless: top menus in a row, each a [DesignAnchoredOverlay]
+/// A menubar, headless: top menus in a row, each a [RawPopover]
 /// of items and submenus, on a [RawMenuAnchorGroup].
 ///
 /// The bar is one tab stop: Left and Right move along it (mirrored right to
@@ -25,11 +25,11 @@ import 'pressable.dart';
 
 /// An item of a menubar: a command, a submenu ([children]), or a divider.
 @immutable
-class DesignMenuEntry {
+class RawMenuEntry {
   /// An item [label]led, that [onPressed] runs, or a submenu of
   /// [children]. A command with no [onPressed] is disabled, as a Flutter
   /// menu item is.
-  const DesignMenuEntry({
+  const RawMenuEntry({
     required this.label,
     this.onPressed,
     this.children,
@@ -39,7 +39,7 @@ class DesignMenuEntry {
   }) : divider = false;
 
   /// A line between groups of items.
-  const DesignMenuEntry.divider()
+  const RawMenuEntry.divider()
     : label = '',
       onPressed = null,
       children = null,
@@ -55,7 +55,7 @@ class DesignMenuEntry {
   final VoidCallback? onPressed;
 
   /// Its submenu's items; null: it is a command.
-  final List<DesignMenuEntry>? children;
+  final List<RawMenuEntry>? children;
 
   /// Its key, for the look to show ("Ctrl+S"). `designShortcutLabel` spells
   /// a [SingleActivator] as the platform's own menus do ("⌘ S" on macOS).
@@ -80,8 +80,8 @@ class DesignMenuEntry {
   bool get isSubmenu => children != null;
 }
 
-/// Where a [DesignMenuBar]'s builder paints: the bar, a menu or a submenu.
-enum DesignMenuLevel {
+/// Where a [RawMenuBar]'s builder paints: the bar, a menu or a submenu.
+enum RawMenuLevel {
   /// A top item, on the bar.
   bar,
 
@@ -93,30 +93,30 @@ enum DesignMenuLevel {
 /// keyboard is on it, [WidgetState.selected] for the active menu title,
 /// hovered, pressed, disabled). In a menu whose highlight follows the
 /// pointer, one item at most is focused or hovered: the current one.
-typedef DesignMenuItemBuilder = Widget Function(
+typedef RawMenuItemBuilder = Widget Function(
   BuildContext context,
-  DesignMenuEntry entry,
-  DesignMenuLevel level,
+  RawMenuEntry entry,
+  RawMenuLevel level,
   Set<WidgetState> states,
 );
 
 /// Paints a menu's panel round its `items` (scroll them when
-/// [DesignOverlayInfo.maxSize] is short): a menubar's menus, a context
+/// [RawPopoverInfo.maxSize] is short): a menubar's menus, a context
 /// menu's.
-typedef DesignMenuSurfaceBuilder = Widget Function(
+typedef RawMenuBarOverlayBuilder = Widget Function(
   BuildContext context,
-  DesignOverlayInfo info,
+  RawPopoverInfo info,
   List<Widget> items,
 );
 
 /// A row of menus.
 ///
 /// ```dart
-/// DesignMenuBar(menus: [DesignMenuEntry(label: 'File', children: [DesignMenuEntry(label: 'New', onPressed: () {})])], itemBuilder: (context, entry, level, states) => Text(entry.label), surfaceBuilder: (context, info, items) => Column(mainAxisSize: MainAxisSize.min, children: items))
+/// RawMenuBar(menus: [RawMenuEntry(label: 'File', children: [RawMenuEntry(label: 'New', onPressed: () {})])], itemBuilder: (context, entry, level, states) => Text(entry.label), surfaceBuilder: (context, info, items) => Column(mainAxisSize: MainAxisSize.min, children: items))
 /// ```
-class DesignMenuBar extends StatefulWidget {
-  /// A menubar of [menus] (each with [DesignMenuEntry.children]).
-  const DesignMenuBar({
+class RawMenuBar extends StatefulWidget {
+  /// A menubar of [menus] (each with [RawMenuEntry.children]).
+  const RawMenuBar({
     super.key,
     required this.menus,
     required this.itemBuilder,
@@ -128,14 +128,14 @@ class DesignMenuBar extends StatefulWidget {
   });
 
   /// The top menus.
-  final List<DesignMenuEntry> menus;
+  final List<RawMenuEntry> menus;
 
   /// Paints a top item or a menu item.
-  final DesignMenuItemBuilder itemBuilder;
+  final RawMenuItemBuilder itemBuilder;
 
   /// Paints a menu's panel around its `items` (scroll them when
-  /// [DesignOverlayInfo.maxSize] is short).
-  final DesignMenuSurfaceBuilder surfaceBuilder;
+  /// [RawPopoverInfo.maxSize] is short).
+  final RawMenuBarOverlayBuilder surfaceBuilder;
 
   /// Paints a divider; null: a 1 px gap.
   final WidgetBuilder? dividerBuilder;
@@ -144,7 +144,7 @@ class DesignMenuBar extends StatefulWidget {
   final Widget Function(BuildContext context, List<Widget> items)? barBuilder;
 
   /// What a screen reader calls the bar; null:
-  /// [DesignLocalizations.menuBarLabel].
+  /// [RawWidgetsLocalizations.menuBarLabel].
   final String? semanticLabel;
 
   /// Whether a pointer over a menu item moves the keys there; true by
@@ -158,21 +158,18 @@ class DesignMenuBar extends StatefulWidget {
   final bool highlightFollowsPointer;
 
   @override
-  State<DesignMenuBar> createState() => _DesignMenuBarState();
+  State<RawMenuBar> createState() => _DesignMenuBarState();
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(IterableProperty<DesignMenuEntry>('menus', menus))
+      ..add(IterableProperty<RawMenuEntry>('menus', menus))
       ..add(
-        ObjectFlagProperty<DesignMenuItemBuilder>.has(
-          'itemBuilder',
-          itemBuilder,
-        ),
+        ObjectFlagProperty<RawMenuItemBuilder>.has('itemBuilder', itemBuilder),
       )
       ..add(
-        ObjectFlagProperty<DesignMenuSurfaceBuilder>.has(
+        ObjectFlagProperty<RawMenuBarOverlayBuilder>.has(
           'surfaceBuilder',
           surfaceBuilder,
         ),
@@ -196,7 +193,7 @@ class DesignMenuBar extends StatefulWidget {
   }
 }
 
-class _DesignMenuBarState extends State<DesignMenuBar> {
+class _DesignMenuBarState extends State<RawMenuBar> {
   final MenuController _group = MenuController();
   final List<MenuController> _menus = [];
   final List<FocusNode> _nodes = [];
@@ -216,7 +213,7 @@ class _DesignMenuBarState extends State<DesignMenuBar> {
     final n = widget.menus.length;
     while (_menus.length < n) {
       _menus.add(MenuController());
-      _nodes.add(FocusNode(debugLabel: 'DesignMenuBar ${_nodes.length}'));
+      _nodes.add(FocusNode(debugLabel: 'RawMenuBar ${_nodes.length}'));
     }
     while (_menus.length > n) {
       _menus.removeLast();
@@ -290,7 +287,8 @@ class _DesignMenuBarState extends State<DesignMenuBar> {
       container: true,
       explicitChildNodes: true,
       label:
-          widget.semanticLabel ?? DesignLocalizations.of(context).menuBarLabel,
+          widget.semanticLabel ??
+          RawWidgetsLocalizations.of(context).menuBarLabel,
       child: RawMenuAnchorGroup(
         controller: _group,
         child: FocusTraversalGroup(
@@ -309,9 +307,9 @@ class _DesignMenuBarState extends State<DesignMenuBar> {
       skipTraversal: true,
       includeSemantics: false,
       onKeyEvent: (node, event) => _barKey(i, node, event),
-      child: DesignAnchoredOverlay(
+      child: RawPopover(
         controller: _menus[i],
-        trigger: DesignOverlayTrigger.manual,
+        trigger: RawPopoverTrigger.manual,
         arrowKeyNavigation: true,
         semanticLabel: entry.label,
         onOpenChanged: (open) {
@@ -331,7 +329,7 @@ class _DesignMenuBarState extends State<DesignMenuBar> {
             }
           },
           onExit: (_) => _highlightTitle(i, false),
-          child: DesignPressable(
+          child: RawButton(
             focusNode: _nodes[i],
             onPressed: entry.enabled
                 ? () {
@@ -344,7 +342,7 @@ class _DesignMenuBarState extends State<DesignMenuBar> {
             semanticLabel: entry.label,
             excludeSemantics: true,
             builder: (context, states, _) =>
-                widget.itemBuilder(context, entry, DesignMenuLevel.bar, states),
+                widget.itemBuilder(context, entry, RawMenuLevel.bar, states),
           ),
         ),
         overlayBuilder: (context, info) => DesignMenuItems(

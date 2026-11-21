@@ -288,7 +288,7 @@ void main() {
               const _Host(),
               Align(
                 alignment: Alignment.bottomRight,
-                child: DesignAnchoredOverlay(
+                child: RawPopover(
                   controller: menu,
                   arrowKeyNavigation: true,
                   anchorBuilder: (_, _) => const Text('Menu'),

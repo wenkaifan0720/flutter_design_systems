@@ -164,7 +164,7 @@ void main() {
       tester,
     ) async {
       final log = <String>[];
-      var values = const DesignRangeValues(20, 80);
+      var values = const RawRangeValues(20, 80);
       await tester.pumpWidget(
         harness(
           DesignHapticsScope(
@@ -174,7 +174,7 @@ void main() {
                 alignment: Alignment.topLeft,
                 child: SizedBox(
                   width: 444,
-                  child: DesignRangeSlider(
+                  child: RawRangeSlider(
                     values: values,
                     max: 100,
                     divisions: 10,

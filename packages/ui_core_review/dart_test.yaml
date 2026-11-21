@@ -1,0 +1,5 @@
+# The pixel goldens were recorded on macOS: elsewhere, `flutter test --exclude-tags goldens`. Exhaustive matrices
+# carry `sweep`: everyday, `flutter test --exclude-tags goldens,sweep`.
+tags:
+  goldens: {}
+  sweep: {}

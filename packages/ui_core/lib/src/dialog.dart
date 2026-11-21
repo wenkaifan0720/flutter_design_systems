@@ -64,7 +64,7 @@ class DesignDialogDetails {
 /// though its barrier does not.
 ///
 /// A screen reader hears a dialog (an alert when [isAlert]) named by
-/// [semanticLabel]; with none, a [DesignDialog] inside names it by its
+/// [semanticLabel]; with none, a [RawAlertDialog] inside names it by its
 /// title, or by the words for a dialog or an alert.
 ///
 /// An alert that asks whether to delete, pushed with
@@ -73,15 +73,15 @@ class DesignDialogDetails {
 /// ```dart
 /// DesignDialogRoute<bool>(
 ///   isAlert: true,
-///   builder: (context, details) => DesignDialog(
+///   builder: (context, details) => RawAlertDialog(
 ///     title: 'Delete the draft?',
 ///     content: const Text('It cannot be brought back.'),
 ///     actions: [
-///       DesignDialogAction(
+///       RawDialogAction(
 ///         label: 'Cancel',
 ///         onPressed: () => Navigator.of(context).pop(false),
 ///       ),
-///       DesignDialogAction(
+///       RawDialogAction(
 ///         label: 'Delete',
 ///         isDestructiveAction: true,
 ///         onPressed: () => Navigator.of(context).pop(true),
@@ -119,7 +119,7 @@ class DesignDialogRoute<T> extends PopupRoute<T> {
          closeStiffness: closeStiffness,
        );
 
-  /// Paints the dialog's page, which fills the screen: a [DesignDialog]
+  /// Paints the dialog's page, which fills the screen: a [RawAlertDialog]
   /// places itself in it.
   final DesignDialogBuilder builder;
 
@@ -130,9 +130,9 @@ class DesignDialogRoute<T> extends PopupRoute<T> {
   final bool isAlert;
 
   /// What a screen reader calls the dialog, usually its title; null: a
-  /// [DesignDialog]'s title names it, else
-  /// [DesignLocalizations.dialogLabel] or
-  /// [DesignLocalizations.alertDialogLabel].
+  /// [RawAlertDialog]'s title names it, else
+  /// [RawWidgetsLocalizations.dialogLabel] or
+  /// [RawWidgetsLocalizations.alertDialogLabel].
   final String? semanticLabel;
 
   /// The open spring's damping ratio (ζ), and the close spring's unless
@@ -166,14 +166,14 @@ class DesignDialogRoute<T> extends PopupRoute<T> {
   final RouteFocusReturn _focus = RouteFocusReturn();
 
   /// What a screen reader calls the barrier; null:
-  /// [DesignLocalizations.modalBarrierDismissLabel].
+  /// [RawWidgetsLocalizations.modalBarrierDismissLabel].
   @override
   String? get barrierLabel {
     final context = navigator?.context;
     return _givenBarrierLabel ??
         (context == null
             ? null
-            : DesignLocalizations.of(context).modalBarrierDismissLabel);
+            : RawWidgetsLocalizations.of(context).modalBarrierDismissLabel);
   }
 
   /// The barrier's colour; null while [barrierBuilder] paints it.
@@ -270,7 +270,7 @@ class DesignDialogRoute<T> extends PopupRoute<T> {
       : child;
 }
 
-// What a DesignDialog reads of the route round it.
+// What a RawAlertDialog reads of the route round it.
 class _DialogScope extends InheritedWidget {
   const _DialogScope({
     required this.isAlert,
@@ -289,11 +289,11 @@ class _DialogScope extends InheritedWidget {
       isAlert != oldWidget.isAlert || labelled != oldWidget.labelled;
 }
 
-/// An action at the foot of a [DesignDialog].
+/// An action at the foot of a [RawAlertDialog].
 @immutable
-class DesignDialogAction {
+class RawDialogAction {
   /// An action [label]led, that [onPressed] runs.
-  const DesignDialogAction({
+  const RawDialogAction({
     required this.label,
     required this.onPressed,
     this.isDefaultAction = false,
@@ -324,11 +324,11 @@ class DesignDialogAction {
   bool get enabled => onPressed != null;
 }
 
-/// What the look paints a [DesignDialogAction] from.
+/// What the look paints a [RawDialogAction] from.
 @immutable
-class DesignDialogActionDetails {
+class RawDialogActionDetails {
   /// The action's details; the dialog makes them.
-  const DesignDialogActionDetails({
+  const RawDialogActionDetails({
     required this.states,
     required this.stacked,
     required this.index,
@@ -349,11 +349,11 @@ class DesignDialogActionDetails {
   final int count;
 }
 
-/// What the look paints a [DesignDialog]'s frame and action bar from.
+/// What the look paints a [RawAlertDialog]'s frame and action bar from.
 @immutable
-class DesignDialogFrameDetails {
+class RawAlertDialogFrameDetails {
   /// The layout's details; the dialog makes them.
-  const DesignDialogFrameDetails({
+  const RawAlertDialogFrameDetails({
     required this.scrolled,
     required this.overflows,
     required this.stacked,
@@ -367,28 +367,28 @@ class DesignDialogFrameDetails {
   /// line over the actions.
   final bool overflows;
 
-  /// Whether the actions are stacked ([DesignDialogActionDetails.stacked]).
+  /// Whether the actions are stacked ([RawDialogActionDetails.stacked]).
   final bool stacked;
 }
 
-/// Paints an action of a [DesignDialog].
-typedef DesignDialogActionBuilder = Widget Function(
+/// Paints an action of a [RawAlertDialog].
+typedef RawDialogActionBuilder = Widget Function(
   BuildContext context,
-  DesignDialogAction action,
-  DesignDialogActionDetails details,
+  RawDialogAction action,
+  RawDialogActionDetails details,
 );
 
 Widget _actionLabel(
   BuildContext context,
-  DesignDialogAction action,
-  DesignDialogActionDetails details,
+  RawDialogAction action,
+  RawDialogActionDetails details,
 ) => Text(action.label);
 
-/// Wraps a part of a [DesignDialog] (its frame or its action bar) in the
+/// Wraps a part of a [RawAlertDialog] (its frame or its action bar) in the
 /// look's paint.
-typedef DesignDialogPartBuilder = Widget Function(
+typedef RawAlertDialogPartBuilder = Widget Function(
   BuildContext context,
-  DesignDialogFrameDetails details,
+  RawAlertDialogFrameDetails details,
   Widget child,
 );
 
@@ -412,12 +412,12 @@ typedef DesignDialogPartBuilder = Widget Function(
 /// round the actions, [titleBuilder] the title, [actionBuilder] each action.
 ///
 /// ```dart
-/// DesignDialog(
+/// RawAlertDialog(
 ///   title: 'Discard changes?',
 ///   content: const Text('Your edits to this note will be lost.'),
 ///   actions: [
-///     DesignDialogAction(label: 'Keep editing', onPressed: () {}),
-///     DesignDialogAction(label: 'Discard', isDestructiveAction: true, onPressed: () {}),
+///     RawDialogAction(label: 'Keep editing', onPressed: () {}),
+///     RawDialogAction(label: 'Discard', isDestructiveAction: true, onPressed: () {}),
 ///   ],
 ///   actionBuilder: (context, action, details) => Text(action.label),
 ///   frameBuilder: (context, details, child) => DecoratedBox(
@@ -426,9 +426,9 @@ typedef DesignDialogPartBuilder = Widget Function(
 ///   ),
 /// )
 /// ```
-class DesignDialog extends StatefulWidget {
+class RawAlertDialog extends StatefulWidget {
   /// A dialog's layout of [title], [content] and [actions].
-  const DesignDialog({
+  const RawAlertDialog({
     super.key,
     this.title,
     this.content,
@@ -456,7 +456,7 @@ class DesignDialog extends StatefulWidget {
   final Widget? content;
 
   /// The actions at the foot, in reading order (the dismissive one first).
-  final List<DesignDialogAction> actions;
+  final List<RawDialogAction> actions;
 
   /// Complete action controls in reading order, as an alternative to
   /// [actions]. Each keeps its own semantics, focus and activation. Set
@@ -464,17 +464,17 @@ class DesignDialog extends StatefulWidget {
   final List<Widget> actionWidgets;
 
   /// Paints an action from [actions]. Defaults to its label.
-  final DesignDialogActionBuilder actionBuilder;
+  final RawDialogActionBuilder actionBuilder;
 
   /// Paints the title; null: a plain `Text`.
   final Widget Function(BuildContext context, String title)? titleBuilder;
 
   /// Wraps the action bar (its padding, a line over it when the words
   /// overflow); null: the bar as it is.
-  final DesignDialogPartBuilder? actionsBuilder;
+  final RawAlertDialogPartBuilder? actionsBuilder;
 
   /// Wraps the whole dialog in the look's surface; null: no surface.
-  final DesignDialogPartBuilder? frameBuilder;
+  final RawAlertDialogPartBuilder? frameBuilder;
 
   /// The least room left round it, inside the screen's insets and the
   /// on-screen keyboard. Defaults to 40 at the sides and 24 above and
@@ -498,7 +498,7 @@ class DesignDialog extends StatefulWidget {
   /// opens, or null when none can: while one is destructive, the first
   /// enabled action that is not; else the first enabled default action;
   /// else the first enabled one.
-  static int? safeActionIndex(List<DesignDialogAction> actions) {
+  static int? safeActionIndex(List<RawDialogAction> actions) {
     final enabled = [
       for (final (i, a) in actions.indexed)
         if (a.enabled) i,
@@ -517,7 +517,7 @@ class DesignDialog extends StatefulWidget {
   }
 
   @override
-  State<DesignDialog> createState() => _DesignDialogState();
+  State<RawAlertDialog> createState() => _DesignDialogState();
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -525,7 +525,7 @@ class DesignDialog extends StatefulWidget {
     properties
       ..add(StringProperty('title', title, defaultValue: null))
       ..add(
-        ObjectFlagProperty<DesignDialogActionBuilder>.has(
+        ObjectFlagProperty<RawDialogActionBuilder>.has(
           'actionBuilder',
           actionBuilder,
         ),
@@ -537,13 +537,13 @@ class DesignDialog extends StatefulWidget {
         ),
       )
       ..add(
-        ObjectFlagProperty<DesignDialogPartBuilder>.has(
+        ObjectFlagProperty<RawAlertDialogPartBuilder>.has(
           'actionsBuilder',
           actionsBuilder,
         ),
       )
       ..add(
-        ObjectFlagProperty<DesignDialogPartBuilder>.has(
+        ObjectFlagProperty<RawAlertDialogPartBuilder>.has(
           'frameBuilder',
           frameBuilder,
         ),
@@ -556,10 +556,10 @@ class DesignDialog extends StatefulWidget {
         ),
       )
       ..add(
-        IterableProperty<DesignDialogAction>(
+        IterableProperty<RawDialogAction>(
           'actions',
           actions,
-          defaultValue: const <DesignDialogAction>[],
+          defaultValue: const <RawDialogAction>[],
         ),
       )
       ..add(
@@ -577,7 +577,7 @@ class DesignDialog extends StatefulWidget {
   }
 }
 
-class _DesignDialogState extends State<DesignDialog> {
+class _DesignDialogState extends State<RawAlertDialog> {
   ScrollController? _own;
   bool _scrolled = false;
   bool _overflows = false;
@@ -620,9 +620,9 @@ class _DesignDialogState extends State<DesignDialog> {
   @override
   Widget build(BuildContext context) {
     final scope = _DialogScope.maybeOf(context);
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     final names = !(scope?.labelled ?? false);
-    final details = DesignDialogFrameDetails(
+    final details = RawAlertDialogFrameDetails(
       scrolled: _scrolled,
       overflows: _overflows,
       stacked: _stacked,
@@ -656,7 +656,7 @@ class _DesignDialogState extends State<DesignDialog> {
       actions.isEmpty || widget.actionWidgets.isEmpty,
       'Give either actions or actionWidgets.',
     );
-    final safe = DesignDialog.safeActionIndex(actions);
+    final safe = RawAlertDialog.safeActionIndex(actions);
     Widget? bar;
     if (actions.isNotEmpty || widget.actionWidgets.isNotEmpty) {
       bar = _ActionBar(
@@ -668,7 +668,7 @@ class _DesignDialogState extends State<DesignDialog> {
         children: [
           ...widget.actionWidgets,
           for (final (i, a) in actions.indexed)
-            DesignPressable(
+            RawButton(
               onPressed: a.onPressed,
               autofocus: i == safe,
               semanticLabel: a.label,
@@ -676,7 +676,7 @@ class _DesignDialogState extends State<DesignDialog> {
               builder: (context, states, _) => widget.actionBuilder(
                 context,
                 a,
-                DesignDialogActionDetails(
+                RawDialogActionDetails(
                   states: states,
                   stacked: _stacked,
                   index: i,

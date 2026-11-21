@@ -136,8 +136,8 @@ class _StripCell extends StatelessWidget {
     final side =
         DesignStyleOf(layers, const {}).minimumSize?.height ??
         theme.controlHeight;
-    return DesignTapTarget(
-      child: DesignPressable(
+    return TapTargetPadding(
+      child: RawButton(
         onPressed: onPressed,
         selected: chosen,
         semanticLabel: semanticLabel,
@@ -279,7 +279,7 @@ class BrutalPagination extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = BrutalTheme.of(context);
     final layers = [style, theme.paginationStyle];
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     final rtl = Directionality.of(context) == TextDirection.rtl;
     VoidCallback? go(int p) =>
         onChanged == null || p < 1 || p > pageCount || p == page
@@ -632,7 +632,7 @@ class BrutalPageDots extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = BrutalTheme.of(context);
     final c = theme.colors;
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     final reduce = designReduceMotionOf(context);
     final layers = [style, theme.pageDotsStyle];
     Widget dot(int i) => AnimatedContainer(
@@ -661,8 +661,8 @@ class BrutalPageDots extends StatelessWidget {
                 child: ExcludeSemantics(child: dot(i)),
               )
             else
-              DesignTapTarget(
-                child: DesignPressable(
+              TapTargetPadding(
+                child: RawButton(
                   onPressed: () => onChanged!(i),
                   selected: i == index,
                   semanticLabel: words.positionLabel(i + 1, count),
@@ -737,14 +737,14 @@ class BrutalMenuBar extends StatelessWidget {
     final layers = [style, theme.menuBarStyle];
     final bar = DesignStyleOf(layers, const {});
     final rule = bar.side?.color ?? bar.edge ?? c.ink;
-    return DesignMenuBar(
+    return RawMenuBar(
       menus: [
         for (final menu in menus)
-          DesignMenuEntry(
+          RawMenuEntry(
             label: menu.label,
             children: [
               for (final item in menu.items)
-                DesignMenuEntry(
+                RawMenuEntry(
                   label: item.label,
                   onPressed: item.onPressed,
                   shortcut: item.shortcutLabel(context),
@@ -776,7 +776,7 @@ class BrutalMenuBar extends StatelessWidget {
         ),
       ),
       itemBuilder: (context, entry, level, states) {
-        if (level == DesignMenuLevel.menu) {
+        if (level == RawMenuLevel.menu) {
           final item = entry.data as BrutalMenuItem?;
           return BrutalMenuRow(
             label: entry.label,
@@ -919,79 +919,78 @@ class BrutalCommandPalette extends StatelessWidget {
   /// {@macro design.autofocus}
   final bool autofocus;
 
-  DesignCommandPalette _body(ValueChanged<DesignCommand>? run) =>
-      DesignCommandPalette(
-        commands: [
-          for (final c in commands)
-            DesignCommand(
-              label: c.label,
-              onPressed: c.onPressed,
-              group: c.group,
-              keywords: c.keywords,
-              shortcut: c.shortcut,
-              enabled: c.onPressed != null,
-              data: c,
-            ),
-        ],
-        autofocus: autofocus,
-        onSelected: run,
-        fieldBuilder: (context, field) => BrutalTextField(
-          controller: field.controller,
-          focusNode: field.focusNode,
-          hint: hint,
-          semanticLabel: hint,
-          prefixIcon: const Icon(LucideIcons.search),
-          // Enter in onEditingComplete alone: the field keeps the keyboard, and
-          // with no onSubmitted Flutter does not restart its text input (a
-          // browser's restarted input takes no typing).
-          onEditingComplete: field.submit,
+  RawCommandPalette _body(ValueChanged<RawCommand>? run) => RawCommandPalette(
+    commands: [
+      for (final c in commands)
+        RawCommand(
+          label: c.label,
+          onPressed: c.onPressed,
+          group: c.group,
+          keywords: c.keywords,
+          shortcut: c.shortcut,
+          enabled: c.onPressed != null,
+          data: c,
         ),
-        itemBuilder: (context, command, states) {
-          final c = command.data! as BrutalCommand;
-          return BrutalMenuRow(
-            label: c.label,
-            icon: c.icon,
-            states: states,
-            trailing: c.shortcut == null ? null : Text(c.shortcut!),
-          );
-        },
-        groupBuilder: (context, group) => Padding(
-          padding: const EdgeInsets.fromLTRB(
-            BrutalSpacing.medium,
-            BrutalSpacing.medium,
-            BrutalSpacing.medium,
-            BrutalSpacing.tight,
-          ),
-          child: Text(
-            group.toUpperCase(),
-            style:
-                DesignStyleOf([
-                  style,
-                  BrutalTheme.of(context).commandPaletteStyle,
-                ], const {}).text(
-                  BrutalTheme.of(context).textTheme.caption
-                      .copyWith(color: BrutalTheme.of(context).colors.inkMuted),
-                ),
-          ),
-        ),
-        emptyBuilder: (context) => Padding(
-          padding: const EdgeInsets.all(BrutalSpacing.medium),
-          child: Text(
-            emptyText,
-            style: BrutalTheme.of(context).textTheme.secondary,
-          ),
-        ),
-        layoutBuilder: (context, field, results) => Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            field,
-            const SizedBox(height: BrutalSpacing.small),
-            // The results take what room is left and scroll in it.
-            Flexible(child: results),
-          ],
-        ),
+    ],
+    autofocus: autofocus,
+    onSelected: run,
+    fieldBuilder: (context, field) => BrutalTextField(
+      controller: field.controller,
+      focusNode: field.focusNode,
+      hint: hint,
+      semanticLabel: hint,
+      prefixIcon: const Icon(LucideIcons.search),
+      // Enter in onEditingComplete alone: the field keeps the keyboard, and
+      // with no onSubmitted Flutter does not restart its text input (a
+      // browser's restarted input takes no typing).
+      onEditingComplete: field.submit,
+    ),
+    itemBuilder: (context, command, states) {
+      final c = command.data! as BrutalCommand;
+      return BrutalMenuRow(
+        label: c.label,
+        icon: c.icon,
+        states: states,
+        trailing: c.shortcut == null ? null : Text(c.shortcut!),
       );
+    },
+    groupBuilder: (context, group) => Padding(
+      padding: const EdgeInsets.fromLTRB(
+        BrutalSpacing.medium,
+        BrutalSpacing.medium,
+        BrutalSpacing.medium,
+        BrutalSpacing.tight,
+      ),
+      child: Text(
+        group.toUpperCase(),
+        style:
+            DesignStyleOf([
+              style,
+              BrutalTheme.of(context).commandPaletteStyle,
+            ], const {}).text(
+              BrutalTheme.of(context).textTheme.caption
+                  .copyWith(color: BrutalTheme.of(context).colors.inkMuted),
+            ),
+      ),
+    ),
+    emptyBuilder: (context) => Padding(
+      padding: const EdgeInsets.all(BrutalSpacing.medium),
+      child: Text(
+        emptyText,
+        style: BrutalTheme.of(context).textTheme.secondary,
+      ),
+    ),
+    layoutBuilder: (context, field, results) => Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        field,
+        const SizedBox(height: BrutalSpacing.small),
+        // The results take what room is left and scroll in it.
+        Flexible(child: results),
+      ],
+    ),
+  );
 
   @override
   Widget build(BuildContext context) => _panel(

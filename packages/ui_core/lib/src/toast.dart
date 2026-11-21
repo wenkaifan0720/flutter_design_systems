@@ -1,7 +1,7 @@
 /// Toasts, headless: a queue with stacking, per-toast timers that pause on
 /// hover and focus, swipe and Escape to dismiss, a key that jumps focus to
 /// the newest toast and back, and a live-region announcement. The look
-/// paints each toast from a [DesignToastDetails].
+/// paints each toast from a [RawToastDetails].
 library;
 
 import 'dart:async';
@@ -17,7 +17,7 @@ import 'localizations.dart';
 import 'motion.dart';
 
 /// Why a toast left.
-enum DesignToastClosedReason {
+enum RawToastClosedReason {
   /// Its time ran out.
   timeout,
 
@@ -25,22 +25,22 @@ enum DesignToastClosedReason {
   action,
 
   /// It was dismissed: its close control, Escape, a screen reader's dismiss
-  /// or [DesignToasterState.dismiss].
+  /// or [RawToasterState.dismiss].
   dismissed,
 
   /// It was swiped away.
   swiped,
 
-  /// [DesignToasterState.clear] removed it, shown or waiting.
+  /// [RawToasterState.clear] removed it, shown or waiting.
   cleared,
 }
 
 /// What a toast says and does. The look reads the fields it paints; [data]
 /// carries anything else it needs (a tone, an icon).
 @immutable
-class DesignToast {
+class RawToast {
   /// A toast reading [message].
-  const DesignToast({
+  const RawToast({
     required this.message,
     this.title,
     this.actionLabel,
@@ -78,28 +78,28 @@ class DesignToast {
   bool get hasAction => actionLabel != null && onAction != null;
 }
 
-/// A shown or waiting toast, as [DesignToasterState.show] returns it.
-class DesignToastHandle {
-  DesignToastHandle._(this._record);
+/// A shown or waiting toast, as [RawToasterState.show] returns it.
+class RawToastController {
+  RawToastController._(this._record);
 
   final _ToastRecord _record;
 
-  /// The toast's id: its own [DesignToast.id], or one the toaster made.
+  /// The toast's id: its own [RawToast.id], or one the toaster made.
   Object get id => _record.id;
 
   /// Completes with why the toast left.
-  Future<DesignToastClosedReason> get closed => _record.completer.future;
+  Future<RawToastClosedReason> get closed => _record.completer.future;
 
   /// Dismisses it, shown or waiting.
   void dismiss() =>
-      _record.owner?._close(_record, DesignToastClosedReason.dismissed);
+      _record.owner?._close(_record, RawToastClosedReason.dismissed);
 }
 
-/// What the look's [DesignToaster.toastBuilder] paints one toast from.
+/// What the look's [RawToaster.toastBuilder] paints one toast from.
 @immutable
-class DesignToastDetails {
+class RawToastDetails {
   /// The details of [toast]; the toaster makes these.
-  const DesignToastDetails({
+  const RawToastDetails({
     required this.toast,
     required this.index,
     required this.count,
@@ -113,7 +113,7 @@ class DesignToastDetails {
   });
 
   /// The toast.
-  final DesignToast toast;
+  final RawToast toast;
 
   /// Its place among the shown toasts, oldest first (0).
   final int index;
@@ -129,7 +129,7 @@ class DesignToastDetails {
   final Animation<double> animation;
 
   /// The share of its time left, 1 to 0, in steps of
-  /// [DesignToaster.tick]; stays at 1 for a toast without a time. A look
+  /// [RawToaster.tick]; stays at 1 for a toast without a time. A look
   /// that draws it as a bar smooths it itself.
   final ValueListenable<double> remaining;
 
@@ -141,7 +141,7 @@ class DesignToastDetails {
   /// away).
   final bool exiting;
 
-  /// Whether the keyboard moved focus to it ([DesignToaster.focusShortcut]),
+  /// Whether the keyboard moved focus to it ([RawToaster.focusShortcut]),
   /// for its focus ring.
   final bool focused;
 
@@ -156,20 +156,20 @@ class DesignToastDetails {
 }
 
 /// Paints one toast.
-typedef DesignToastBuilder = Widget Function(
+typedef RawToastBuilder = Widget Function(
   BuildContext context,
-  DesignToastDetails details,
+  RawToastDetails details,
 );
 
 /// Lays out the shown toasts, oldest first.
-typedef DesignToastStackBuilder = Widget Function(
+typedef RawToastStackBuilder = Widget Function(
   BuildContext context,
   List<Widget> toasts,
 );
 
 /// Hosts toasts over [child]: put it above the app's navigator
-/// (`WidgetsApp.builder`), then call [DesignToaster.of] and
-/// [DesignToasterState.show] from anywhere below.
+/// (`WidgetsApp.builder`), then call [RawToaster.of] and
+/// [RawToasterState.show] from anywhere below.
 ///
 /// At most [maxVisible] show at once, oldest first; the rest wait their turn
 /// in order. Each shown toast's time runs only while the stack is neither
@@ -177,11 +177,11 @@ typedef DesignToastStackBuilder = Widget Function(
 /// toast; Escape there dismisses it and focus goes back where it was.
 ///
 /// ```dart
-/// DesignToaster(toastBuilder: (context, details) => Text(details.toast.message), child: const SizedBox())
+/// RawToaster(toastBuilder: (context, details) => Text(details.toast.message), child: const SizedBox())
 /// ```
-class DesignToaster extends StatefulWidget {
+class RawToaster extends StatefulWidget {
   /// A toaster over [child].
-  const DesignToaster({
+  const RawToaster({
     super.key,
     required this.child,
     required this.toastBuilder,
@@ -205,10 +205,10 @@ class DesignToaster extends StatefulWidget {
   final Widget child;
 
   /// Paints one toast.
-  final DesignToastBuilder toastBuilder;
+  final RawToastBuilder toastBuilder;
 
   /// Lays out the shown toasts; null stacks them in a column, oldest first.
-  final DesignToastStackBuilder? stackBuilder;
+  final RawToastStackBuilder? stackBuilder;
 
   /// How many show at once; 1 is a snackbar's queue.
   final int maxVisible;
@@ -243,38 +243,35 @@ class DesignToaster extends StatefulWidget {
 
   /// What a screen reader calls the stack while it holds a toast; an empty
   /// stack is silent, so no screen stops on it. Null:
-  /// [DesignLocalizations.toasterRegionLabel].
+  /// [RawWidgetsLocalizations.toasterRegionLabel].
   final String? regionLabel;
 
   /// How finely a toast's time is counted.
   final Duration tick;
 
   /// The nearest toaster's state.
-  static DesignToasterState of(BuildContext context) {
+  static RawToasterState of(BuildContext context) {
     final state = maybeOf(context);
-    assert(state != null, 'No DesignToaster above this context.');
+    assert(state != null, 'No RawToaster above this context.');
     return state!;
   }
 
   /// The nearest toaster's state, or null.
-  static DesignToasterState? maybeOf(BuildContext context) =>
-      context.findAncestorStateOfType<DesignToasterState>();
+  static RawToasterState? maybeOf(BuildContext context) =>
+      context.findAncestorStateOfType<RawToasterState>();
 
   @override
-  State<DesignToaster> createState() => DesignToasterState();
+  State<RawToaster> createState() => RawToasterState();
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
       ..add(
-        ObjectFlagProperty<DesignToastBuilder>.has(
-          'toastBuilder',
-          toastBuilder,
-        ),
+        ObjectFlagProperty<RawToastBuilder>.has('toastBuilder', toastBuilder),
       )
       ..add(
-        ObjectFlagProperty<DesignToastStackBuilder>.has(
+        ObjectFlagProperty<RawToastStackBuilder>.has(
           'stackBuilder',
           stackBuilder,
         ),
@@ -348,10 +345,10 @@ class _ToastRecord {
   _ToastRecord(this.id, this.toast, this.owner);
 
   final Object id;
-  DesignToast toast;
-  DesignToasterState? owner;
-  final completer = Completer<DesignToastClosedReason>();
-  final focusNode = FocusNode(debugLabel: 'DesignToast');
+  RawToast toast;
+  RawToasterState? owner;
+  final completer = Completer<RawToastClosedReason>();
+  final focusNode = FocusNode(debugLabel: 'RawToast');
   AnimationController? presence;
   // The clock: a periodic tick while it runs, counted into [elapsed]. Not a
   // Ticker, which would draw a frame every vsync for the whole duration,
@@ -377,9 +374,8 @@ class _JumpToToastIntent extends Intent {
   const _JumpToToastIntent();
 }
 
-/// The state of a [DesignToaster]: show and dismiss toasts through it.
-class DesignToasterState extends State<DesignToaster>
-    with TickerProviderStateMixin {
+/// The state of a [RawToaster]: show and dismiss toasts through it.
+class RawToasterState extends State<RawToaster> with TickerProviderStateMixin {
   final List<_ToastRecord> _shown = [];
   final List<_ToastRecord> _waiting = [];
   int _nextId = 0;
@@ -401,40 +397,40 @@ class DesignToasterState extends State<DesignToaster>
   bool get paused =>
       (widget.pauseOnHover && _hovered) || (widget.pauseOnFocus && _focused);
 
-  /// Shows [toast], or queues it while [DesignToaster.maxVisible] are shown.
-  /// A toast whose [DesignToast.id] matches one shown or waiting replaces
+  /// Shows [toast], or queues it while [RawToaster.maxVisible] are shown.
+  /// A toast whose [RawToast.id] matches one shown or waiting replaces
   /// that one in place.
-  DesignToastHandle show(DesignToast toast) {
+  RawToastController show(RawToast toast) {
     final id = toast.id;
     if (id != null) {
       for (final record in [..._shown, ..._waiting]) {
         if (record.id == id && !record.exiting) {
           setState(() => record.toast = toast);
           if (record.shown) _restartTimer(record);
-          return DesignToastHandle._(record);
+          return RawToastController._(record);
         }
       }
     }
     final record = _ToastRecord(id ?? _ToastId(_nextId++), toast, this);
     _waiting.add(record);
     _promote();
-    return DesignToastHandle._(record);
+    return RawToastController._(record);
   }
 
   /// Dismisses the toast with [id], shown or waiting.
   void dismiss(Object id) {
     for (final record in [..._shown, ..._waiting]) {
-      if (record.id == id) _close(record, DesignToastClosedReason.dismissed);
+      if (record.id == id) _close(record, RawToastClosedReason.dismissed);
     }
   }
 
   /// Removes every toast, shown and waiting.
   void clear() {
     for (final record in [..._waiting]) {
-      _close(record, DesignToastClosedReason.cleared);
+      _close(record, RawToastClosedReason.cleared);
     }
     for (final record in [..._shown]) {
-      _close(record, DesignToastClosedReason.cleared);
+      _close(record, RawToastClosedReason.cleared);
     }
   }
 
@@ -494,7 +490,7 @@ class DesignToasterState extends State<DesignToaster>
     if (record.elapsed >= duration) {
       record.ticker?.cancel();
       record.ticker = null;
-      _close(record, DesignToastClosedReason.timeout);
+      _close(record, RawToastClosedReason.timeout);
     }
   }
 
@@ -504,7 +500,7 @@ class DesignToasterState extends State<DesignToaster>
     }
   }
 
-  void _close(_ToastRecord record, DesignToastClosedReason reason) {
+  void _close(_ToastRecord record, RawToastClosedReason reason) {
     if (record.completer.isCompleted) return;
     record.completer.complete(reason);
     if (_waiting.remove(record)) {
@@ -517,7 +513,7 @@ class DesignToasterState extends State<DesignToaster>
     record.exiting = true;
     record.ticker?.cancel();
     record.ticker = null;
-    if (reason == DesignToastClosedReason.swiped) {
+    if (reason == RawToastClosedReason.swiped) {
       // A dismissed Dismissible must leave the tree in this frame.
       _remove(record);
     } else {
@@ -597,7 +593,7 @@ class DesignToasterState extends State<DesignToaster>
   }
 
   @override
-  void didUpdateWidget(DesignToaster oldWidget) {
+  void didUpdateWidget(RawToaster oldWidget) {
     super.didUpdateWidget(oldWidget);
     _syncTimers();
     if (widget.maxVisible != oldWidget.maxVisible) _promote();
@@ -607,7 +603,7 @@ class DesignToasterState extends State<DesignToaster>
   void dispose() {
     for (final record in [..._shown, ..._waiting]) {
       if (!record.completer.isCompleted) {
-        record.completer.complete(DesignToastClosedReason.cleared);
+        record.completer.complete(RawToastClosedReason.cleared);
       }
       record.dispose();
     }
@@ -621,10 +617,10 @@ class DesignToasterState extends State<DesignToaster>
       action = () {
         if (record.exiting) return;
         toast.onAction!();
-        _close(record, DesignToastClosedReason.action);
+        _close(record, RawToastClosedReason.action);
       };
     }
-    final details = DesignToastDetails(
+    final details = RawToastDetails(
       toast: toast,
       index: index,
       count: _shown.length,
@@ -633,7 +629,7 @@ class DesignToasterState extends State<DesignToaster>
       paused: paused || _held(record),
       exiting: record.exiting || record.swiped,
       focused: record.focused,
-      dismiss: () => _close(record, DesignToastClosedReason.dismissed),
+      dismiss: () => _close(record, RawToastClosedReason.dismissed),
       runAction: action,
     );
     Widget face = Semantics(
@@ -641,7 +637,7 @@ class DesignToasterState extends State<DesignToaster>
       liveRegion: true,
       onDismiss: record.exiting
           ? null
-          : () => _close(record, DesignToastClosedReason.dismissed),
+          : () => _close(record, RawToastClosedReason.dismissed),
       child: widget.toastBuilder(context, details),
     );
     face = Focus(
@@ -653,7 +649,7 @@ class DesignToasterState extends State<DesignToaster>
       onKeyEvent: (node, event) {
         if (event is KeyDownEvent &&
             event.logicalKey == LogicalKeyboardKey.escape) {
-          _close(record, DesignToastClosedReason.dismissed);
+          _close(record, RawToastClosedReason.dismissed);
           return KeyEventResult.handled;
         }
         return KeyEventResult.ignored;
@@ -672,7 +668,7 @@ class DesignToasterState extends State<DesignToaster>
           _swipedOut(record);
           return true;
         },
-        onDismissed: (_) => _close(record, DesignToastClosedReason.swiped),
+        onDismissed: (_) => _close(record, RawToastClosedReason.swiped),
         child: face,
       );
     }
@@ -697,7 +693,7 @@ class DesignToasterState extends State<DesignToaster>
       label: _shown.isEmpty
           ? null
           : widget.regionLabel ??
-                DesignLocalizations.of(context).toasterRegionLabel,
+                RawWidgetsLocalizations.of(context).toasterRegionLabel,
       child: stack,
     );
     stack = Focus(
@@ -741,11 +737,7 @@ class DesignToasterState extends State<DesignToaster>
     }
     // 0.3.0 routes
     // Shown, the toasts are one of F6's panes, entered at the newest.
-    stack = Pane(
-      debugLabel: 'DesignToaster',
-      enter: _focusNewest,
-      child: stack,
-    );
+    stack = Pane(debugLabel: 'RawToaster', enter: _focusNewest, child: stack);
     // 0.3.0 routes end
     // The region stays mounted when empty: an unmounted MouseRegion never
     // reports its exit, and the next toast would wait out a stale hover.

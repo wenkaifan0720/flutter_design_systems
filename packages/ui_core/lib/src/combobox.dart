@@ -18,7 +18,7 @@ import 'package:flutter/widgets.dart';
 
 import 'internal/option_list.dart';
 
-/// The field, as [DesignCombobox.fieldBuilder] gets it: wire [controller]
+/// The field, as [RawCombobox.fieldBuilder] gets it: wire [controller]
 /// and [focusNode] to the look's text input, and [submit] to its
 /// `onEditingComplete` (and give it no `onSubmitted`; see [submit]).
 @immutable
@@ -60,14 +60,14 @@ typedef DesignComboboxFieldBuilder = Widget Function(
 /// highlighted (the keyboard's place in the list), [WidgetState.selected]
 /// when it is the combobox's value, [WidgetState.disabled] when it cannot be
 /// taken, and a pointer's hovered and pressed.
-typedef DesignOptionBuilder<T> = Widget Function(
+typedef RawOptionBuilder<T> = Widget Function(
   BuildContext context,
   T option,
   Set<WidgetState> states,
 );
 
 /// Paints the list's surface around [list] (a panel, its shadow).
-typedef DesignListSurfaceBuilder = Widget Function(
+typedef RawOptionsSurfaceBuilder = Widget Function(
   BuildContext context,
   Widget list,
 );
@@ -77,16 +77,16 @@ typedef DesignOptionSearch<T> = FutureOr<Iterable<T>> Function(String query);
 
 /// A search that failed, as a combobox's or a tag input's `errorBuilder`
 /// gets it: paint a message and a "Try again"
-/// ([DesignLocalizations.retryButtonLabel]) that calls [retry], lit while
+/// ([RawWidgetsLocalizations.retryButtonLabel]) that calls [retry], lit while
 /// [focused].
 ///
 /// ```dart
-/// DesignSearchError(error: StateError('offline'), retry: () {})
+/// RawSearchError(error: StateError('offline'), retry: () {})
 /// ```
 @immutable
-class DesignSearchError {
+class RawSearchError {
   /// A search that threw [error].
-  const DesignSearchError({
+  const RawSearchError({
     required this.error,
     this.stackTrace,
     required this.retry,
@@ -108,9 +108,9 @@ class DesignSearchError {
 }
 
 /// Paints a failed search ([error]) in the list's surface.
-typedef DesignSearchErrorBuilder = Widget Function(
+typedef RawSearchErrorBuilder = Widget Function(
   BuildContext context,
-  DesignSearchError error,
+  RawSearchError error,
 );
 
 String _string(Object option) => option.toString();
@@ -140,11 +140,11 @@ const Object _searching = _Searching();
 /// view, takes a choice, and announces.
 ///
 /// ```dart
-/// DesignCombobox<String>(options: const ['Apple', 'Pear'], fieldBuilder: (context, field) => EditableText(controller: field.controller, focusNode: field.focusNode, style: const TextStyle(), cursorColor: const Color(0xFF000000), backgroundCursorColor: const Color(0xFF808080), onEditingComplete: field.submit), optionBuilder: (context, option, states) => Text(option))
+/// RawCombobox<String>(options: const ['Apple', 'Pear'], fieldBuilder: (context, field) => EditableText(controller: field.controller, focusNode: field.focusNode, style: const TextStyle(), cursorColor: const Color(0xFF000000), backgroundCursorColor: const Color(0xFF808080), onEditingComplete: field.submit), optionBuilder: (context, option, states) => Text(option))
 /// ```
-class DesignCombobox<T extends Object> extends StatefulWidget {
+class RawCombobox<T extends Object> extends StatefulWidget {
   /// A combobox over [options] or [search].
-  const DesignCombobox({
+  const RawCombobox({
     super.key,
     required this.fieldBuilder,
     required this.optionBuilder,
@@ -172,7 +172,7 @@ class DesignCombobox<T extends Object> extends StatefulWidget {
   final DesignComboboxFieldBuilder fieldBuilder;
 
   /// Paints one option.
-  final DesignOptionBuilder<T> optionBuilder;
+  final RawOptionBuilder<T> optionBuilder;
 
   /// The options typing filters, when there is no [search].
   final Iterable<T> options;
@@ -185,7 +185,7 @@ class DesignCombobox<T extends Object> extends StatefulWidget {
   final String Function(T option) displayStringForOption;
 
   /// Paints the list's surface; null shows the bare list.
-  final DesignListSurfaceBuilder? surfaceBuilder;
+  final RawOptionsSurfaceBuilder? surfaceBuilder;
 
   /// Called with the option taken.
   final ValueChanged<T>? onSelected;
@@ -243,20 +243,20 @@ class DesignCombobox<T extends Object> extends StatefulWidget {
 
   /// Says that [search] is finding options, in the list's surface, while its
   /// future is pending (and while [debounceDuration] runs); a screen reader
-  /// hears [DesignLocalizations.loadingLabel] as it appears. Null (the
+  /// hears [RawWidgetsLocalizations.loadingLabel] as it appears. Null (the
   /// default): the options found last stay until the new ones come.
   final WidgetBuilder? loadingBuilder;
 
   /// Says that [search] failed, in the list's surface, with a way to try
-  /// again ([DesignSearchError.retry]; Down moves the keys there, Enter
+  /// again ([RawSearchError.retry]; Down moves the keys there, Enter
   /// runs it); a screen reader hears
-  /// [DesignLocalizations.searchFailedMessage] as it appears, and the focus
+  /// [RawWidgetsLocalizations.searchFailedMessage] as it appears, and the focus
   /// stays in the field. Null (the default): the list closes and the error
   /// goes to [FlutterError.reportError].
-  final DesignSearchErrorBuilder? errorBuilder;
+  final RawSearchErrorBuilder? errorBuilder;
 
   @override
-  State<DesignCombobox<T>> createState() => _DesignComboboxState<T>();
+  State<RawCombobox<T>> createState() => _DesignComboboxState<T>();
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -269,7 +269,7 @@ class DesignCombobox<T extends Object> extends StatefulWidget {
         ),
       )
       ..add(
-        ObjectFlagProperty<DesignOptionBuilder<T>>.has(
+        ObjectFlagProperty<RawOptionBuilder<T>>.has(
           'optionBuilder',
           optionBuilder,
         ),
@@ -285,7 +285,7 @@ class DesignCombobox<T extends Object> extends StatefulWidget {
         ),
       )
       ..add(
-        ObjectFlagProperty<DesignListSurfaceBuilder>.has(
+        ObjectFlagProperty<RawOptionsSurfaceBuilder>.has(
           'surfaceBuilder',
           surfaceBuilder,
         ),
@@ -351,7 +351,7 @@ class DesignCombobox<T extends Object> extends StatefulWidget {
         ObjectFlagProperty<WidgetBuilder>.has('loadingBuilder', loadingBuilder),
       )
       ..add(
-        ObjectFlagProperty<DesignSearchErrorBuilder>.has(
+        ObjectFlagProperty<RawSearchErrorBuilder>.has(
           'errorBuilder',
           errorBuilder,
         ),
@@ -359,7 +359,7 @@ class DesignCombobox<T extends Object> extends StatefulWidget {
   }
 }
 
-class _DesignComboboxState<T extends Object> extends State<DesignCombobox<T>> {
+class _DesignComboboxState<T extends Object> extends State<RawCombobox<T>> {
   TextEditingController? _ownController;
   FocusNode? _ownFocus;
   final DesignListKeys _keys = DesignListKeys();
@@ -376,8 +376,7 @@ class _DesignComboboxState<T extends Object> extends State<DesignCombobox<T>> {
       widget.controller ?? (_ownController ??= TextEditingController());
 
   FocusNode get _focus =>
-      widget.focusNode ??
-      (_ownFocus ??= FocusNode(debugLabel: 'DesignCombobox'));
+      widget.focusNode ?? (_ownFocus ??= FocusNode(debugLabel: 'RawCombobox'));
 
   @override
   void initState() {
@@ -388,7 +387,7 @@ class _DesignComboboxState<T extends Object> extends State<DesignCombobox<T>> {
   }
 
   @override
-  void didUpdateWidget(DesignCombobox<T> oldWidget) {
+  void didUpdateWidget(RawCombobox<T> oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.focusNode != widget.focusNode) {
       (oldWidget.focusNode ?? _ownFocus)?.removeListener(_focusChanged);

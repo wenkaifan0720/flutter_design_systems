@@ -8,22 +8,22 @@ import 'package:ui_core/ui_core.dart';
 import 'behaviour_harness.dart';
 
 // An app's own words: Default's English but for the split view's handle.
-class _French extends DefaultDesignLocalizations {
+class _French extends DefaultRawWidgetsLocalizations {
   const _French();
 
   @override
   String get splitViewHandleLabel => 'Redimensionner';
 }
 
-class _FrenchDelegate extends LocalizationsDelegate<DesignLocalizations> {
+class _FrenchDelegate extends LocalizationsDelegate<RawWidgetsLocalizations> {
   const _FrenchDelegate();
 
   @override
   bool isSupported(Locale locale) => locale.languageCode == 'fr';
 
   @override
-  Future<DesignLocalizations> load(Locale locale) =>
-      SynchronousFuture<DesignLocalizations>(const _French());
+  Future<RawWidgetsLocalizations> load(Locale locale) =>
+      SynchronousFuture<RawWidgetsLocalizations>(const _French());
 
   @override
   bool shouldReload(_FrenchDelegate old) => false;
@@ -32,7 +32,7 @@ class _FrenchDelegate extends LocalizationsDelegate<DesignLocalizations> {
 Widget _split({String? semanticLabel}) => SizedBox(
   width: 400,
   height: 200,
-  child: DesignSplitView(
+  child: RawSplitView(
     first: const SizedBox.expand(),
     second: const SizedBox.expand(),
     semanticLabel: semanticLabel,
@@ -42,11 +42,11 @@ Widget _split({String? semanticLabel}) => SizedBox(
 
 void main() {
   test('English: every word, and the messages counted', () {
-    const en = DefaultDesignLocalizations();
+    const en = DefaultRawWidgetsLocalizations();
     expect(en.carouselLabel, 'Carousel');
     expect(en.carouselSlideLabel(1, 3), 'Slide 2 of 3');
     expect(en.colorAreaLabel, 'Saturation and brightness');
-    expect(DesignColorChannel.values.map(en.colorChannelLabel), [
+    expect(RawColorChannel.values.map(en.colorChannelLabel), [
       'Hue',
       'Saturation',
       'Brightness',
@@ -59,7 +59,7 @@ void main() {
       '1 result',
       '4 results',
     ]);
-    expect(DesignSortDirection.values.map(en.dataTableSortedHint), [
+    expect(RawSortDirection.values.map(en.dataTableSortedHint), [
       'sorted ascending',
       'sorted descending',
     ]);
@@ -96,7 +96,7 @@ void main() {
   });
 
   test('English: the general words a look says by itself', () {
-    const en = DefaultDesignLocalizations();
+    const en = DefaultRawWidgetsLocalizations();
     expect(
       [
         en.cancelButtonLabel,
@@ -168,25 +168,25 @@ void main() {
       (home) => CupertinoApp(home: home),
       harness,
     ]) {
-      DesignLocalizations? words;
+      RawWidgetsLocalizations? words;
       await tester.pumpWidget(
         app(
           Builder(
             builder: (context) {
-              words = DesignLocalizations.of(context);
+              words = RawWidgetsLocalizations.of(context);
               return Text(words!.cancelButtonLabel);
             },
           ),
         ),
       );
-      expect(words, isA<DefaultDesignLocalizations>());
+      expect(words, isA<DefaultRawWidgetsLocalizations>());
       expect(find.text('Cancel'), findsOneWidget);
     }
   });
 
   testWidgets('a translation that extends the English keeps a word it does '
       'not translate in English', (tester) async {
-    late DesignLocalizations words;
+    late RawWidgetsLocalizations words;
     await tester.pumpWidget(
       harness(
         Builder(
@@ -196,7 +196,7 @@ void main() {
             delegates: const [_FrenchDelegate()],
             child: Builder(
               builder: (context) {
-                words = DesignLocalizations.of(context);
+                words = RawWidgetsLocalizations.of(context);
                 return const SizedBox();
               },
             ),
@@ -212,32 +212,35 @@ void main() {
   test(
     'the delegate loads English for any locale, and never reloads',
     () async {
-      const delegate = DefaultDesignLocalizations.delegate;
+      const delegate = DefaultRawWidgetsLocalizations.delegate;
       expect(delegate.isSupported(const Locale('ja')), isTrue);
       expect(
         await delegate.load(const Locale('en')),
-        isA<DefaultDesignLocalizations>(),
+        isA<DefaultRawWidgetsLocalizations>(),
       );
       expect(delegate.shouldReload(delegate), isFalse);
-      expect(delegate.toString(), 'DefaultDesignLocalizations.delegate(en)');
+      expect(
+        delegate.toString(),
+        'DefaultRawWidgetsLocalizations.delegate(en)',
+      );
     },
   );
 
-  testWidgets('with no DesignLocalizations delegate, a behaviour says '
+  testWidgets('with no RawWidgetsLocalizations delegate, a behaviour says '
       'English', (tester) async {
     final semantics = tester.ensureSemantics();
-    late DesignLocalizations words;
+    late RawWidgetsLocalizations words;
     await tester.pumpWidget(
       harness(
         Builder(
           builder: (context) {
-            words = DesignLocalizations.of(context);
+            words = RawWidgetsLocalizations.of(context);
             return _split();
           },
         ),
       ),
     );
-    expect(words, isA<DefaultDesignLocalizations>());
+    expect(words, isA<DefaultRawWidgetsLocalizations>());
     expect(find.bySemanticsLabel('Resize'), findsOneWidget);
     semantics.dispose();
   });

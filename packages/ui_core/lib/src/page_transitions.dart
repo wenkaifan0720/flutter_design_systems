@@ -12,7 +12,7 @@ import 'package:flutter/widgets.dart';
 import 'internal/gesture_focus.dart';
 
 /// [builders] with the entries for [platforms] (iOS, by default) wrapped in
-/// [DesignSwipeBackPageTransitionsBuilder], so a page there pops with a
+/// [SwipeBackPageTransitionsBuilder], so a page there pops with a
 /// swipe from the screen's leading edge and otherwise plays the look's push.
 ///
 /// ```dart
@@ -23,10 +23,8 @@ Map<TargetPlatform, PageTransitionsBuilder> designSwipeBack(
   Set<TargetPlatform> platforms = const {TargetPlatform.iOS},
 }) => {
   for (final MapEntry(:key, :value) in builders.entries)
-    key:
-        platforms.contains(key) &&
-            value is! DesignSwipeBackPageTransitionsBuilder
-        ? DesignSwipeBackPageTransitionsBuilder(value)
+    key: platforms.contains(key) && value is! SwipeBackPageTransitionsBuilder
+        ? SwipeBackPageTransitionsBuilder(value)
         : value,
 };
 
@@ -41,11 +39,11 @@ Map<TargetPlatform, PageTransitionsBuilder> designSwipeBack(
 /// page, a full-screen dialog and a page that refuses to pop take no swipe.
 ///
 /// ```dart
-/// const DesignSwipeBackPageTransitionsBuilder(FadeUpwardsPageTransitionsBuilder())
+/// const SwipeBackPageTransitionsBuilder(FadeUpwardsPageTransitionsBuilder())
 /// ```
-class DesignSwipeBackPageTransitionsBuilder extends PageTransitionsBuilder {
+class SwipeBackPageTransitionsBuilder extends PageTransitionsBuilder {
   /// [builder] with the swipe back round it.
-  const DesignSwipeBackPageTransitionsBuilder(this.builder);
+  const SwipeBackPageTransitionsBuilder(this.builder);
 
   /// The look's page transition.
   final PageTransitionsBuilder builder;
@@ -88,12 +86,10 @@ class DesignSwipeBackPageTransitionsBuilder extends PageTransitionsBuilder {
 
   @override
   bool operator ==(Object other) =>
-      other is DesignSwipeBackPageTransitionsBuilder &&
-      other.builder == builder;
+      other is SwipeBackPageTransitionsBuilder && other.builder == builder;
 
   @override
-  int get hashCode =>
-      Object.hash(DesignSwipeBackPageTransitionsBuilder, builder);
+  int get hashCode => Object.hash(SwipeBackPageTransitionsBuilder, builder);
 }
 
 // iOS's: the edge a swipe starts in, a fling's least speed (screen widths a

@@ -32,18 +32,18 @@ int _daysIn(int year, int month) => DateTime(year, month + 2, 0).day;
 /// A date wheel in month, day, year order: the day column, between the
 /// other two, follows both (February of a leap year); 2020 is before the
 /// minimum.
-List<DesignWheelColumn> _dateColumns(List<int> s) => [
-  DesignWheelColumn(
+List<RawPickerColumn> _dateColumns(List<int> s) => [
+  RawPickerColumn(
     itemCount: 12,
     itemLabel: (i) => _months[i],
     semanticLabel: 'Month',
   ),
-  DesignWheelColumn(
+  RawPickerColumn(
     itemCount: _daysIn(2020 + s[2], s[0]),
     itemLabel: (i) => '${i + 1}',
     semanticLabel: 'Day',
   ),
-  DesignWheelColumn(
+  RawPickerColumn(
     itemCount: 11,
     itemLabel: (i) => '${2020 + i}',
     semanticLabel: 'Year',
@@ -52,7 +52,7 @@ List<DesignWheelColumn> _dateColumns(List<int> s) => [
 ];
 
 late _HostState _host;
-final List<DesignWheelItemDetails> _painted = [];
+final List<RawPickerItemDetails> _painted = [];
 final Map<int, Set<WidgetState>> _frames = {};
 
 class _Host extends StatefulWidget {
@@ -63,7 +63,7 @@ class _Host extends StatefulWidget {
   });
 
   final List<int> selection;
-  final List<DesignWheelColumn> Function(List<int> selection) columns;
+  final List<RawPickerColumn> Function(List<int> selection) columns;
   final bool enabled;
 
   @override
@@ -85,7 +85,7 @@ class _HostState extends State<_Host> {
       alignment: Alignment.topCenter,
       child: SizedBox(
         width: 600,
-        child: DesignWheelPicker(
+        child: RawPicker(
           semanticLabel: 'Date',
           columns: widget.columns,
           selection: selection,
@@ -159,10 +159,10 @@ void main() {
   });
 
   behaviourContract(
-    'DesignWheelPicker',
+    'RawPicker',
     build: (c) => _Host(enabled: c.enabled),
     node: () => _columnNode('Month'),
-    root: () => find.byType(DesignWheelPicker),
+    root: () => find.byType(RawPicker),
     semantics: isSemantics(
       label: 'Month',
       value: 'March',
@@ -434,21 +434,22 @@ void main() {
     );
     await finger.moveBy(const Offset(0, -30));
     await tester.pump();
-    expect(_frames[0], contains(WidgetState.pressed));
+    expect(_frames[0], containsAll([WidgetState.pressed, WidgetState.dragged]));
     await finger.up();
     await tester.pumpAndSettle();
     expect(_frames[0], isNot(contains(WidgetState.pressed)));
+    expect(_frames[0], isNot(contains(WidgetState.dragged)));
   });
 
-  group('DesignWheelColumn', () {
-    final column = DesignWheelColumn(
+  group('RawPickerColumn', () {
+    final column = RawPickerColumn(
       itemCount: 10,
       itemLabel: (i) => '$i',
       minIndex: 2,
       maxIndex: 7,
       isItemEnabled: (i) => i != 5,
     );
-    final ring = DesignWheelColumn(
+    final ring = RawPickerColumn(
       itemCount: 10,
       itemLabel: (i) => '$i',
       isItemEnabled: (i) => i > 1 && i < 9,
@@ -475,7 +476,7 @@ void main() {
       expect(column.nearestEnabled(9, forward: true), 7, reason: 'then back');
       expect(ring.nearestEnabled(0), 8, reason: 'round the end is nearer');
       expect(ring.nearestEnabled(1), 2);
-      final none = DesignWheelColumn(
+      final none = RawPickerColumn(
         itemCount: 3,
         itemLabel: (i) => '$i',
         isItemEnabled: (i) => false,
@@ -496,9 +497,7 @@ void main() {
 
   testWidgets('its diagnostics name what it was given', (tester) async {
     await tester.pumpWidget(harness(const _Host()));
-    final picker = tester.widget<DesignWheelPicker>(
-      find.byType(DesignWheelPicker),
-    );
+    final picker = tester.widget<RawPicker>(find.byType(RawPicker));
     final names = picker
         .toDiagnosticsNode()
         .getProperties()
@@ -508,8 +507,8 @@ void main() {
   });
 }
 
-List<DesignWheelColumn> _slots(List<int> s) => [
-  DesignWheelColumn(
+List<RawPickerColumn> _slots(List<int> s) => [
+  RawPickerColumn(
     itemCount: 8,
     itemLabel: (i) => '${9 + i}:00',
     semanticLabel: 'Slot',
@@ -517,8 +516,8 @@ List<DesignWheelColumn> _slots(List<int> s) => [
   ),
 ];
 
-List<DesignWheelColumn> _hours(List<int> s) => [
-  DesignWheelColumn(
+List<RawPickerColumn> _hours(List<int> s) => [
+  RawPickerColumn(
     itemCount: 24,
     itemLabel: (i) => '$i',
     semanticLabel: 'Hour',

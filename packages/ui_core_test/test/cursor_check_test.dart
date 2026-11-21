@@ -109,7 +109,7 @@ void main() {
     for (final enabled in [true, false]) {
       final report = await _check(
         tester,
-        DesignPressable(
+        RawButton(
           onPressed: enabled ? () {} : null,
           semanticLabel: 'Save',
           builder: (context, states, _) =>
@@ -402,15 +402,7 @@ void main() {
     final context = tester.element(find.byType(Navigator));
     final reports = <DesignAlignmentReport>[
       const DesignCursorCheck(look: 'Test').check(context),
-      await const DesignKeylineCheck(look: 'Test')
-          .check(context, runAsync: tester.runAsync),
       await const DesignLabelCheck(look: 'Test')
-          .check(context, runAsync: tester.runAsync),
-      await const DesignRowCheck(look: 'Test')
-          .check(context, runAsync: tester.runAsync),
-      await const DesignWidthCheck(look: 'Test')
-          .check(context, runAsync: tester.runAsync),
-      await const DesignSpacingCheck(look: 'Test')
           .check(context, runAsync: tester.runAsync),
       await const DesignShadowClipCheck(look: 'Test')
           .check(context, runAsync: tester.runAsync),

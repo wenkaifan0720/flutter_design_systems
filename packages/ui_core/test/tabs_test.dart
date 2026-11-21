@@ -12,14 +12,14 @@ import 'behaviour_contract.dart';
 import 'behaviour_harness.dart';
 
 const List<String> _labels = ['Inbox', 'Sent', 'Drafts'];
-final Map<int, DesignTabDetails> _seen = {};
-DesignTabIndicatorDetails? _indicator;
+final Map<int, RawTabDetails> _seen = {};
+RawTabIndicatorDetails? _indicator;
 
-DesignTabController _controller({
+RawTabController _controller({
   int length = 3,
   int initialIndex = 0,
   double dampingRatio = 1,
-}) => DesignTabController(
+}) => RawTabController(
   length: length,
   initialIndex: initialIndex,
   vsync: const TestVSync(),
@@ -29,7 +29,7 @@ DesignTabController _controller({
 // The bare reference painter: a bar 300 wide of 48-high tabs, labelled; a
 // black indicator; the pages under it (beside it, the tabs vertical).
 Widget _tabs(
-  DesignTabController controller, {
+  RawTabController controller, {
   List<String> labels = _labels,
   Set<int> disabled = const {},
   bool isScrollable = false,
@@ -39,12 +39,12 @@ Widget _tabs(
   ScrollPhysics? physics,
   bool indicator = true,
 }) {
-  final bar = DesignTabBar(
+  final bar = RawTabBar(
     key: const ValueKey('bar'),
     controller: controller,
     tabs: [
       for (var i = 0; i < labels.length; i++)
-        DesignTab(label: labels[i], enabled: !disabled.contains(i)),
+        RawTab(label: labels[i], enabled: !disabled.contains(i)),
     ],
     isScrollable: isScrollable,
     direction: direction,
@@ -69,7 +69,7 @@ Widget _tabs(
           }
         : null,
   );
-  final view = DesignTabView(
+  final view = RawTabBarView(
     controller: controller,
     physics: physics,
     children: [for (final l in labels) Center(child: Text('$l page'))],
@@ -94,8 +94,8 @@ Widget _tabs(
   );
 }
 
-Widget _owned(Widget Function(DesignTabController controller) build) =>
-    Owned<DesignTabController>(
+Widget _owned(Widget Function(RawTabController controller) build) =>
+    Owned<RawTabController>(
       create: _controller,
       builder: (context, controller) => build(controller),
     );
@@ -103,7 +103,7 @@ Widget _owned(Widget Function(DesignTabController controller) build) =>
 ScrollPosition _pages(WidgetTester tester) => tester
     .state<ScrollableState>(
       find.descendant(
-        of: find.byType(DesignTabView),
+        of: find.byType(RawTabBarView),
         matching: find.byType(Scrollable),
       ),
     )
@@ -127,7 +127,7 @@ void main() {
   });
 
   behaviourContract(
-    'DesignTabBar',
+    'RawTabBar',
     build: (c) => _owned(
       (controller) =>
           _tabs(controller, disabled: c.enabled ? const {} : const {0, 1, 2}),
@@ -491,7 +491,7 @@ void main() {
   // A bar whose tabs take their words' size (8 round them): a row (or
   // column) of words that reports overflowing its tab.
   Widget grown(
-    DesignTabController controller, {
+    RawTabController controller, {
     required List<String> labels,
     required Axis direction,
     required bool isScrollable,
@@ -500,9 +500,9 @@ void main() {
     alignment: AlignmentDirectional.topStart,
     child: SizedBox(
       width: 300,
-      child: DesignTabBar(
+      child: RawTabBar(
         controller: controller,
-        tabs: [for (final l in labels) DesignTab(label: l)],
+        tabs: [for (final l in labels) RawTab(label: l)],
         direction: direction,
         isScrollable: isScrollable,
         tabBuilder: (context, tab, details) => Padding(
@@ -580,20 +580,20 @@ void main() {
             _indicator!.rect,
             tester
                 .getRect(find.byKey(const ValueKey('tab 0')))
-                .shift(-tester.getTopLeft(find.byType(DesignTabBar))),
+                .shift(-tester.getTopLeft(find.byType(RawTabBar))),
           );
         }
 
         await pump(const ['In', 'Out', 'All'], 1);
-        final small = tester.getSize(find.byType(DesignTabBar));
+        final small = tester.getSize(find.byType(RawTabBar));
         final first = tester.getSize(find.byKey(const ValueKey('tab 0')));
         await pump(const ['In', 'Out', 'All'], 2);
         expect(
-          tester.getSize(find.byType(DesignTabBar)).height,
+          tester.getSize(find.byType(RawTabBar)).height,
           greaterThan(small.height),
         );
         await pump(const ['In', 'Out', 'All'], 1);
-        expect(tester.getSize(find.byType(DesignTabBar)), small);
+        expect(tester.getSize(find.byType(RawTabBar)), small);
         // Renamed, longer: in a scrolling row the tab grows along it.
         await pump(const ['Inbox', 'Out', 'All'], 1);
         if (isScrollable && direction == Axis.horizontal) {
@@ -603,7 +603,7 @@ void main() {
           );
         }
         await pump(const ['In', 'Out', 'All'], 1);
-        expect(tester.getSize(find.byType(DesignTabBar)), small);
+        expect(tester.getSize(find.byType(RawTabBar)), small);
       });
     }
   }
@@ -668,18 +668,18 @@ void main() {
 
   // A tab whose face (32 square) stands in a 48 touch target.
   Widget targeted(
-    DesignTabController controller, {
+    RawTabController controller, {
     required Axis direction,
     DecorationPosition indicatorPosition = DecorationPosition.background,
   }) => Align(
     alignment: AlignmentDirectional.topStart,
-    child: DesignTabBar(
+    child: RawTabBar(
       controller: controller,
-      tabs: [for (final l in _labels) DesignTab(label: l)],
+      tabs: [for (final l in _labels) RawTab(label: l)],
       direction: direction,
       isScrollable: true,
       indicatorPosition: indicatorPosition,
-      tabBuilder: (context, tab, details) => DesignTapTarget(
+      tabBuilder: (context, tab, details) => TapTargetPadding(
         key: ValueKey('target ${tab.label}'),
         minSize: const Size.square(48),
         child: ColoredBox(
@@ -708,7 +708,7 @@ void main() {
         harness(targeted(controller, direction: direction)),
       );
       await tester.pumpAndSettle();
-      final bar = tester.getTopLeft(find.byType(DesignTabBar));
+      final bar = tester.getTopLeft(find.byType(RawTabBar));
       final face = _rect(tester, 'face Sent');
       final target = _rect(tester, 'target Sent');
       expect(target.size, const Size.square(48), reason: '$direction');
@@ -828,9 +828,9 @@ void main() {
           child: IntrinsicHeight(
             child: SizedBox(
               width: 300,
-              child: DesignTabBar(
+              child: RawTabBar(
                 controller: controller,
-                tabs: [for (final l in _labels) DesignTab(label: l)],
+                tabs: [for (final l in _labels) RawTab(label: l)],
                 tabBuilder: (context, tab, details) =>
                     SizedBox(height: 48, child: Text(tab.label)),
               ),
@@ -839,7 +839,7 @@ void main() {
         ),
       ),
     );
-    expect(tester.getSize(find.byType(DesignTabBar)), const Size(300, 48));
+    expect(tester.getSize(find.byType(RawTabBar)), const Size(300, 48));
     expect(find.byKey(const ValueKey('indicator')), findsNothing);
   });
 
@@ -892,9 +892,9 @@ void main() {
   test('its parts describe themselves', () {
     final controller = _controller();
     addTearDown(controller.dispose);
-    final bar = DesignTabBar(
+    final bar = RawTabBar(
       controller: controller,
-      tabs: const [DesignTab(label: 'Inbox')],
+      tabs: const [RawTab(label: 'Inbox')],
       tabBuilder: (context, tab, details) => const SizedBox(),
       isScrollable: true,
       direction: Axis.vertical,
@@ -913,7 +913,7 @@ void main() {
     ]) {
       expect(bar, contains(s));
     }
-    final view = DesignTabView(
+    final view = RawTabBarView(
       controller: controller,
       physics: const NeverScrollableScrollPhysics(),
       dragStartBehavior: DragStartBehavior.down,
@@ -921,33 +921,30 @@ void main() {
     ).toDiagnosticsNode().toStringDeep();
     expect(view, contains('physics: NeverScrollableScrollPhysics'));
     expect(view, contains('dragStartBehavior: down'));
-    const details = DesignTabIndicatorDetails(
+    const details = RawTabIndicatorDetails(
       rect: Rect.zero,
       direction: Axis.horizontal,
     );
     expect(
       details,
-      const DesignTabIndicatorDetails(
-        rect: Rect.zero,
-        direction: Axis.horizontal,
-      ),
+      const RawTabIndicatorDetails(rect: Rect.zero, direction: Axis.horizontal),
     );
     expect(
       details.hashCode,
-      const DesignTabIndicatorDetails(
+      const RawTabIndicatorDetails(
         rect: Rect.zero,
         direction: Axis.horizontal,
       ).hashCode,
     );
     expect(details.tabRect, Rect.zero, reason: 'the face, unless given');
     expect(details.states, isEmpty);
-    const hovered = DesignTabIndicatorDetails(
+    const hovered = RawTabIndicatorDetails(
       rect: Rect.zero,
       tabRect: Rect.fromLTWH(0, 0, 48, 48),
       direction: Axis.horizontal,
       states: {WidgetState.selected, WidgetState.hovered},
     );
-    const same = DesignTabIndicatorDetails(
+    const same = RawTabIndicatorDetails(
       rect: Rect.zero,
       tabRect: Rect.fromLTWH(0, 0, 48, 48),
       direction: Axis.horizontal,
@@ -959,7 +956,7 @@ void main() {
     expect(
       hovered,
       isNot(
-        const DesignTabIndicatorDetails(
+        const RawTabIndicatorDetails(
           rect: Rect.zero,
           tabRect: Rect.fromLTWH(0, 0, 48, 48),
           direction: Axis.horizontal,

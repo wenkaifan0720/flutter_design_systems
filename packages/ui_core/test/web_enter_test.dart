@@ -70,7 +70,7 @@ void main() {
     await tester.pumpWidget(
       harness(
         Center(
-          child: DesignCombobox<String>(
+          child: RawCombobox<String>(
             options: const ['Apple', 'Pear'],
             onSelected: (option) => taken = option,
             fieldBuilder: (context, field) => _field(field),
@@ -92,7 +92,7 @@ void main() {
       harness(
         Center(
           child: StatefulBuilder(
-            builder: (context, setState) => DesignTagInput<String>(
+            builder: (context, setState) => RawTagInput<String>(
               values: values,
               onChanged: (next) => setState(() => values = next),
               onCreate: (text) => text,
@@ -114,9 +114,9 @@ void main() {
     await tester.pumpWidget(
       harness(
         Center(
-          child: DesignCommandPalette(
+          child: RawCommandPalette(
             commands: [
-              DesignCommand(label: 'Zoom in', onPressed: () => ran.add('zoom')),
+              RawCommand(label: 'Zoom in', onPressed: () => ran.add('zoom')),
             ],
             autofocus: true,
             fieldBuilder: (context, field) => _field(field),

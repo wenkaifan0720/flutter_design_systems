@@ -16,7 +16,7 @@ import '../anchored_overlay.dart';
 /// The rectangle in an overlay of [overlaySize] a surface keeps to: the
 /// overlay less, on each side, the larger of the view's padding and its
 /// insets (the on-screen keyboard), less [padding] (a look's own chrome,
-/// `DesignOverlayPadding`), less [margin].
+/// `RawPopoverPadding`), less [margin].
 ///
 /// [view] is the overlay's own media query, not the anchor's: a page's
 /// scaffold may have taken the keyboard's inset or the status bar's padding
@@ -42,12 +42,12 @@ Rect designOverlayBounds({
 }
 
 /// The side a surface takes: [placement]'s own, unless it has less room
-/// than [DesignOverlayPlacement.preferredExtent] and the opposite side has
+/// than [RawPopoverPlacement.preferredExtent] and the opposite side has
 /// more. [bounds] is [designOverlayBounds].
-DesignOverlaySide designResolveSide(
+RawPopoverSide designResolveSide(
   Rect anchor,
   Rect bounds,
-  DesignOverlayPlacement placement,
+  RawPopoverPlacement placement,
   TextDirection textDirection,
 ) {
   final side = placement.side;
@@ -70,19 +70,19 @@ DesignOverlaySide designResolveSide(
 double designOverlayRoom(
   Rect anchor,
   Rect bounds,
-  DesignOverlaySide side,
+  RawPopoverSide side,
   double gap,
   TextDirection direction,
 ) {
   final left = direction == TextDirection.ltr;
   return switch (side) {
-    DesignOverlaySide.below => bounds.bottom - anchor.bottom - gap,
-    DesignOverlaySide.above => anchor.top - bounds.top - gap,
-    DesignOverlaySide.start =>
+    RawPopoverSide.below => bounds.bottom - anchor.bottom - gap,
+    RawPopoverSide.above => anchor.top - bounds.top - gap,
+    RawPopoverSide.start =>
       left
           ? anchor.left - bounds.left - gap
           : bounds.right - anchor.right - gap,
-    DesignOverlaySide.end =>
+    RawPopoverSide.end =>
       left
           ? bounds.right - anchor.right - gap
           : anchor.left - bounds.left - gap,
@@ -94,7 +94,7 @@ double designOverlayRoom(
 Size designOverlayMaxSize(
   Rect anchor,
   Rect bounds,
-  DesignOverlaySide side,
+  RawPopoverSide side,
   double gap,
   TextDirection direction,
 ) {
@@ -112,8 +112,8 @@ Offset designPlaceOverlay({
   required Rect anchor,
   required Rect bounds,
   required Size size,
-  required DesignOverlaySide side,
-  required DesignOverlayAlign align,
+  required RawPopoverSide side,
+  required RawPopoverAlign align,
   required double gap,
   required TextDirection textDirection,
   bool flipAlignment = true,
@@ -123,17 +123,17 @@ Offset designPlaceOverlay({
   double x;
   double y;
   if (side.isVertical) {
-    y = side == DesignOverlaySide.below
+    y = side == RawPopoverSide.below
         ? anchor.bottom + gap
         : anchor.top - gap - size.height;
     final startX = ltr ? anchor.left : anchor.right - size.width;
     final endX = ltr ? anchor.right - size.width : anchor.left;
     x = switch (align) {
-      DesignOverlayAlign.start => startX,
-      DesignOverlayAlign.center => anchor.center.dx - size.width / 2,
-      DesignOverlayAlign.end => endX,
+      RawPopoverAlign.start => startX,
+      RawPopoverAlign.center => anchor.center.dx - size.width / 2,
+      RawPopoverAlign.end => endX,
     };
-    if ((point || flipAlignment) && align != DesignOverlayAlign.center) {
+    if ((point || flipAlignment) && align != RawPopoverAlign.center) {
       final fits = x >= bounds.left && x + size.width <= bounds.right;
       final other = x == startX ? endX : startX;
       if (!fits && other >= bounds.left && other + size.width <= bounds.right) {
@@ -141,16 +141,16 @@ Offset designPlaceOverlay({
       }
     }
   } else {
-    final onLeft = (side == DesignOverlaySide.start) == ltr;
+    final onLeft = (side == RawPopoverSide.start) == ltr;
     x = onLeft ? anchor.left - gap - size.width : anchor.right + gap;
     y = switch (align) {
-      DesignOverlayAlign.start => anchor.top,
-      DesignOverlayAlign.center => anchor.center.dy - size.height / 2,
-      DesignOverlayAlign.end => anchor.bottom - size.height,
+      RawPopoverAlign.start => anchor.top,
+      RawPopoverAlign.center => anchor.center.dy - size.height / 2,
+      RawPopoverAlign.end => anchor.bottom - size.height,
     };
-    if (point && align != DesignOverlayAlign.center) {
+    if (point && align != RawPopoverAlign.center) {
       final fits = y >= bounds.top && y + size.height <= bounds.bottom;
-      final other = align == DesignOverlayAlign.start
+      final other = align == RawPopoverAlign.start
           ? anchor.bottom - size.height
           : anchor.top;
       if (!fits &&
@@ -172,7 +172,7 @@ Offset designPlaceOverlay({
 }
 
 /// Where a surface was placed, told to its listeners as it is laid out:
-/// [DesignOverlayInfo.surfaceRect]'s value.
+/// [RawPopoverInfo.surfaceRect]'s value.
 class DesignSurfaceRect extends ChangeNotifier
     implements ValueListenable<Rect?> {
   Rect? _value;
@@ -211,10 +211,10 @@ class DesignOverlayLayout extends SingleChildLayoutDelegate {
   final Rect bounds;
 
   /// The side it takes.
-  final DesignOverlaySide side;
+  final RawPopoverSide side;
 
   /// Its placement.
-  final DesignOverlayPlacement placement;
+  final RawPopoverPlacement placement;
 
   /// The reading direction.
   final TextDirection textDirection;
@@ -252,7 +252,7 @@ class DesignOverlayLayout extends SingleChildLayoutDelegate {
       flipAlignment:
           placement.flip &&
           placement.matchAnchorWidth &&
-          placement.align == DesignOverlayAlign.start,
+          placement.align == RawPopoverAlign.start,
       anchor: anchor,
       bounds: bounds,
       size: childSize,

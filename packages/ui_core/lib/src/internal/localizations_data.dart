@@ -45,7 +45,7 @@ class DesignLocaleData {
   /// The plural rule for whole numbers, by name.
   final String plural;
 
-  /// Each message without a count, by its DesignLocalizations name, with
+  /// Each message without a count, by its RawWidgetsLocalizations name, with
   /// `{name}` placeholders.
   final Map<String, String> words;
 

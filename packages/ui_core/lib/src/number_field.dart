@@ -15,13 +15,13 @@ import 'internal/decimal.dart' as decimal;
 import 'internal/field_words.dart';
 import 'localizations.dart';
 
-/// The field, as [DesignNumberField.fieldBuilder] gets it: wire
+/// The field, as [RawNumberField.fieldBuilder] gets it: wire
 /// [controller], [focusNode], [keyboardType], [inputFormatters] and
 /// [onEditingComplete] to the look's text input.
 @immutable
-class DesignNumberFieldDetails {
+class RawNumberFieldDetails {
   /// The field's wiring.
-  const DesignNumberFieldDetails({
+  const RawNumberFieldDetails({
     required this.controller,
     required this.focusNode,
     required this.keyboardType,
@@ -59,9 +59,9 @@ class DesignNumberFieldDetails {
 
 /// One of a number field's step buttons, as the look paints it.
 @immutable
-class DesignNumberFieldButtonDetails {
+class RawNumberFieldButtonDetails {
   /// A button's details.
-  const DesignNumberFieldButtonDetails({
+  const RawNumberFieldButtonDetails({
     required this.isIncrement,
     required this.states,
   });
@@ -75,20 +75,20 @@ class DesignNumberFieldButtonDetails {
 }
 
 /// Paints the field's text input.
-typedef DesignNumberFieldBuilder = Widget Function(
+typedef RawNumberFieldBuilder = Widget Function(
   BuildContext context,
-  DesignNumberFieldDetails details,
+  RawNumberFieldDetails details,
 );
 
 /// Paints a step button: a look gives it a finger's floor
-/// ([DesignTapTarget]).
-typedef DesignNumberFieldButtonBuilder = Widget Function(
+/// ([TapTargetPadding]).
+typedef RawNumberFieldButtonBuilder = Widget Function(
   BuildContext context,
-  DesignNumberFieldButtonDetails details,
+  RawNumberFieldButtonDetails details,
 );
 
 /// Lays out the [field] and its [decrement] and [increment] buttons.
-typedef DesignNumberFieldLayoutBuilder = Widget Function(
+typedef RawNumberFieldLayoutBuilder = Widget Function(
   BuildContext context,
   Widget field,
   Widget decrement,
@@ -99,7 +99,7 @@ typedef DesignNumberFieldLayoutBuilder = Widget Function(
 /// [onChanged] gets it as it is taken (Enter, the focus leaving, a step),
 /// not on each key typed.
 ///
-/// The text is the reader's ([DesignLocalizations.formatDecimal]: German's
+/// The text is the reader's ([RawWidgetsLocalizations.formatDecimal]: German's
 /// `1.234,5`; Arabic's in Arabic-Indic digits, U+0660 to U+0669, grouped
 /// by U+066C with U+066B for the point) and reads back in their digits or
 /// ASCII.
@@ -117,7 +117,7 @@ typedef DesignNumberFieldLayoutBuilder = Widget Function(
 /// it stands on, so a tap through the semantics tree on a button (a click
 /// on the web with semantics on) reaches no node in the button's place.
 /// Inside a
-/// [DesignField] it takes the field's name, help and error, and the field
+/// [RawInputDecorator] it takes the field's name, help and error, and the field
 /// adds no node of its own that says them.
 ///
 /// That node takes its value from the input's, merged into it. An input
@@ -131,11 +131,11 @@ typedef DesignNumberFieldLayoutBuilder = Widget Function(
 /// input then stands in a node of its own under it).
 ///
 /// ```dart
-/// DesignNumberField(value: 2, onChanged: (value) {}, min: 0, fieldBuilder: (context, field) => EditableText(controller: field.controller, focusNode: field.focusNode, keyboardType: field.keyboardType, inputFormatters: field.inputFormatters, onEditingComplete: field.onEditingComplete, style: const TextStyle(), cursorColor: const Color(0xFF000000), backgroundCursorColor: const Color(0xFF808080)), buttonBuilder: (context, button) => Text(button.isIncrement ? '+' : '−'))
+/// RawNumberField(value: 2, onChanged: (value) {}, min: 0, fieldBuilder: (context, field) => EditableText(controller: field.controller, focusNode: field.focusNode, keyboardType: field.keyboardType, inputFormatters: field.inputFormatters, onEditingComplete: field.onEditingComplete, style: const TextStyle(), cursorColor: const Color(0xFF000000), backgroundCursorColor: const Color(0xFF808080)), buttonBuilder: (context, button) => Text(button.isIncrement ? '+' : '−'))
 /// ```
-class DesignNumberField extends StatefulWidget {
+class RawNumberField extends StatefulWidget {
   /// A number field showing [value].
-  const DesignNumberField({
+  const RawNumberField({
     super.key,
     required this.value,
     required this.onChanged,
@@ -168,15 +168,15 @@ class DesignNumberField extends StatefulWidget {
 
   /// Paints the text input. One that says itself whether it is enabled
   /// (Material's `TextField`) gives the field's node its value round it
-  /// (see [DesignNumberField]).
-  final DesignNumberFieldBuilder fieldBuilder;
+  /// (see [RawNumberField]).
+  final RawNumberFieldBuilder fieldBuilder;
 
   /// Paints a step button.
-  final DesignNumberFieldButtonBuilder buttonBuilder;
+  final RawNumberFieldButtonBuilder buttonBuilder;
 
   /// Lays out the input and the buttons; null: a row of decrement, field,
   /// increment, in reading order (mirrored right to left).
-  final DesignNumberFieldLayoutBuilder? layoutBuilder;
+  final RawNumberFieldLayoutBuilder? layoutBuilder;
 
   /// The least value; null, none.
   final double? min;
@@ -205,7 +205,7 @@ class DesignNumberField extends StatefulWidget {
   final bool autofocus;
 
   /// What a screen reader calls the field ("Quantity"); null: the look's
-  /// label, if it gives one. Inside a [DesignField] with a label, the
+  /// label, if it gives one. Inside a [RawInputDecorator] with a label, the
   /// field's label names it.
   final String? semanticLabel;
 
@@ -220,26 +220,26 @@ class DesignNumberField extends StatefulWidget {
   final Duration repeatInterval;
 
   @override
-  State<DesignNumberField> createState() => _DesignNumberFieldState();
+  State<RawNumberField> createState() => _DesignNumberFieldState();
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
       ..add(
-        ObjectFlagProperty<DesignNumberFieldBuilder>.has(
+        ObjectFlagProperty<RawNumberFieldBuilder>.has(
           'fieldBuilder',
           fieldBuilder,
         ),
       )
       ..add(
-        ObjectFlagProperty<DesignNumberFieldButtonBuilder>.has(
+        ObjectFlagProperty<RawNumberFieldButtonBuilder>.has(
           'buttonBuilder',
           buttonBuilder,
         ),
       )
       ..add(
-        ObjectFlagProperty<DesignNumberFieldLayoutBuilder>.has(
+        ObjectFlagProperty<RawNumberFieldLayoutBuilder>.has(
           'layoutBuilder',
           layoutBuilder,
         ),
@@ -299,7 +299,7 @@ class DesignNumberField extends StatefulWidget {
   }
 }
 
-class _DesignNumberFieldState extends State<DesignNumberField> {
+class _DesignNumberFieldState extends State<RawNumberField> {
   TextEditingController? _ownController;
   FocusNode? _ownNode;
   bool _hovered = false;
@@ -349,7 +349,7 @@ class _DesignNumberFieldState extends State<DesignNumberField> {
   }
 
   @override
-  void didUpdateWidget(DesignNumberField oldWidget) {
+  void didUpdateWidget(RawNumberField oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.controller != widget.controller) {
       (oldWidget.controller ?? _ownController)?.removeListener(_textChanged);
@@ -393,11 +393,11 @@ class _DesignNumberFieldState extends State<DesignNumberField> {
   bool get _unread {
     final text = _controller.text.trim();
     if (text.isEmpty || _controller.text == _shown) return false;
-    return DesignLocalizations.of(context).parseDecimal(text) == null;
+    return RawWidgetsLocalizations.of(context).parseDecimal(text) == null;
   }
 
   String _format(double value) =>
-      DesignLocalizations.of(context)
+      RawWidgetsLocalizations.of(context)
           .formatDecimal(decimal.roundTo(value, _places));
 
   void _show(double? value) {
@@ -431,7 +431,7 @@ class _DesignNumberFieldState extends State<DesignNumberField> {
     if (_controller.text == _shown) return _value;
     final text = _controller.text.trim();
     if (text.isEmpty) return null;
-    final read = DesignLocalizations.of(context).parseDecimal(text);
+    final read = RawWidgetsLocalizations.of(context).parseDecimal(text);
     if (read == null) return _value;
     return _clamp(decimal.roundTo(read, _places));
   }
@@ -497,7 +497,7 @@ class _DesignNumberFieldState extends State<DesignNumberField> {
 
   // Lets through text on its way to a number: empty, a lone minus, a
   // trailing separator, the grouping as it is being typed.
-  bool _partial(String text, DesignLocalizations l) {
+  bool _partial(String text, RawWidgetsLocalizations l) {
     if (text.isEmpty) return true;
     // The reader's separators, read off numbers written their way.
     final zero = l.formatDecimal(0).runes.first;
@@ -540,7 +540,7 @@ class _DesignNumberFieldState extends State<DesignNumberField> {
 
   @override
   Widget build(BuildContext context) {
-    final l = DesignLocalizations.of(context);
+    final l = RawWidgetsLocalizations.of(context);
     final empty = _wasEmpty = _controller.text.isEmpty;
     final unread = _wasUnread = _unread;
     final states = <WidgetState>{
@@ -555,7 +555,7 @@ class _DesignNumberFieldState extends State<DesignNumberField> {
         widget.semanticFormatterCallback?.call(v) ?? _format(v);
     final field = widget.fieldBuilder(
       context,
-      DesignNumberFieldDetails(
+      RawNumberFieldDetails(
         controller: _controller,
         focusNode: _node,
         keyboardType: TextInputType.numberWithOptions(
@@ -573,7 +573,7 @@ class _DesignNumberFieldState extends State<DesignNumberField> {
     );
     final decrement = _button(false);
     final increment = _button(true);
-    // The field's words, when a DesignField round it gives them to this
+    // The field's words, when a RawInputDecorator round it gives them to this
     // field's node.
     final words = DesignFieldWords.maybeOf(context);
     final entry = _Entry(
@@ -747,7 +747,7 @@ class _StepButton extends StatefulWidget {
 
   final bool enabled;
   final bool isIncrement;
-  final DesignNumberFieldButtonBuilder builder;
+  final RawNumberFieldButtonBuilder builder;
   // Steps once; false when it could not (the limit), which ends a hold.
   final bool Function() onStep;
   final Duration repeatDelay;
@@ -805,7 +805,7 @@ class _StepButtonState extends State<_StepButton> {
           onTapCancel: _release,
           child: widget.builder(
             context,
-            DesignNumberFieldButtonDetails(
+            RawNumberFieldButtonDetails(
               isIncrement: widget.isIncrement,
               states: {
                 if (!widget.enabled) WidgetState.disabled,

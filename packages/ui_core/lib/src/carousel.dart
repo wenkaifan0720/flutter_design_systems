@@ -21,9 +21,9 @@ import 'motion.dart';
 
 /// What a carousel's controls act on.
 @immutable
-class DesignCarouselControls {
+class RawCarouselDetails {
   /// The controls; the carousel makes them.
-  const DesignCarouselControls({
+  const RawCarouselDetails({
     required this.page,
     required this.count,
     required this.position,
@@ -75,11 +75,11 @@ class DesignCarouselControls {
 /// [layoutBuilder] to that shape (a `ClipRRect` around it).
 ///
 /// ```dart
-/// DesignCarousel(itemCount: 3, itemBuilder: (context, index) => Text('Slide $index'))
+/// RawCarousel(itemCount: 3, itemBuilder: (context, index) => Text('Slide $index'))
 /// ```
-class DesignCarousel extends StatefulWidget {
+class RawCarousel extends StatefulWidget {
   /// A carousel of [itemCount] slides.
-  const DesignCarousel({
+  const RawCarousel({
     super.key,
     required this.itemCount,
     required this.itemBuilder,
@@ -111,7 +111,7 @@ class DesignCarousel extends StatefulWidget {
   final Widget Function(
     BuildContext context,
     Widget viewport,
-    DesignCarouselControls controls,
+    RawCarouselDetails controls,
   )?
   layoutBuilder;
 
@@ -144,11 +144,11 @@ class DesignCarousel extends StatefulWidget {
   final bool autofocus;
 
   /// What a screen reader calls the carousel; null:
-  /// [DesignLocalizations.carouselLabel].
+  /// [RawWidgetsLocalizations.carouselLabel].
   final String? semanticLabel;
 
   /// What a screen reader calls slide `index` of `count`; null:
-  /// [DesignLocalizations.carouselSlideLabel].
+  /// [RawWidgetsLocalizations.carouselSlideLabel].
   final String Function(int index, int count)? slideLabel;
 
   /// How long a turn takes.
@@ -161,7 +161,7 @@ class DesignCarousel extends StatefulWidget {
   final Clip clipBehavior;
 
   @override
-  State<DesignCarousel> createState() => _DesignCarouselState();
+  State<RawCarousel> createState() => _DesignCarouselState();
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -179,7 +179,7 @@ class DesignCarousel extends StatefulWidget {
           Widget Function(
             BuildContext context,
             Widget viewport,
-            DesignCarouselControls controls,
+            RawCarouselDetails controls,
           )
         >.has('layoutBuilder', layoutBuilder),
       )
@@ -250,12 +250,10 @@ class DesignCarousel extends StatefulWidget {
   }
 }
 
-class _DesignCarouselState extends State<DesignCarousel> {
+class _DesignCarouselState extends State<RawCarousel> {
   String _slideLabel(int index, int count) =>
-      (widget.slideLabel ?? DesignLocalizations.of(context).carouselSlideLabel)(
-        index,
-        count,
-      );
+      (widget.slideLabel ??
+      RawWidgetsLocalizations.of(context).carouselSlideLabel)(index, count);
 
   // A carousel that loops runs on pages without end: page p shows slide
   // p mod count, starting this many rounds in so it can go back as far.
@@ -279,7 +277,7 @@ class _DesignCarouselState extends State<DesignCarousel> {
   FocusNode? _ownSlides;
   FocusNode get _slides =>
       widget.focusNode ??
-      (_ownSlides ??= FocusNode(debugLabel: 'DesignCarousel slides'));
+      (_ownSlides ??= FocusNode(debugLabel: 'RawCarousel slides'));
   bool _slidesFocused = false;
   bool _playing = true;
   bool _playChosen = false;
@@ -323,7 +321,7 @@ class _DesignCarouselState extends State<DesignCarousel> {
   }
 
   @override
-  void didUpdateWidget(DesignCarousel oldWidget) {
+  void didUpdateWidget(RawCarousel oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.loop != widget.loop ||
         oldWidget.itemCount != widget.itemCount) {
@@ -476,7 +474,7 @@ class _DesignCarouselState extends State<DesignCarousel> {
         ),
       ),
     );
-    final controls = DesignCarouselControls(
+    final controls = RawCarouselDetails(
       page: _page,
       count: n,
       position: _position,
@@ -496,7 +494,8 @@ class _DesignCarouselState extends State<DesignCarousel> {
       container: true,
       explicitChildNodes: true,
       label:
-          widget.semanticLabel ?? DesignLocalizations.of(context).carouselLabel,
+          widget.semanticLabel ??
+          RawWidgetsLocalizations.of(context).carouselLabel,
       // The named carousel is the tab stop a screen reader hears, and says
       // when the keyboard is on its slides.
       focusable: widget.focusable,

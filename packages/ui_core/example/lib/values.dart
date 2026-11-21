@@ -101,25 +101,25 @@ class _ValuesPageState extends State<ValuesPage> {
   // A date as a wheel: month, day, year; the year starts at 2020.
   List<int> _date = const [10, 15, 6];
   DateTime? _due;
-  DesignTimeOfDay? _start = const DesignTimeOfDay(hour: 9, minute: 30);
+  RawTimeOfDay? _start = const RawTimeOfDay(hour: 9, minute: 30);
   double? _guests = 2;
   double _stars = 3.5;
   // The visits as a table (a screen reader's "Show data table").
   bool _visitsTable = false;
 
-  static List<DesignWheelColumn> _dateColumns(List<int> s) => [
-    DesignWheelColumn(
+  static List<RawPickerColumn> _dateColumns(List<int> s) => [
+    RawPickerColumn(
       itemCount: 12,
       itemLabel: (i) => _months[i],
       semanticLabel: 'Month',
     ),
-    DesignWheelColumn(
+    RawPickerColumn(
       // The day count follows the month and the year.
       itemCount: DateTime(2020 + s[2], s[0] + 2, 0).day,
       itemLabel: (i) => '${i + 1}',
       semanticLabel: 'Day',
     ),
-    DesignWheelColumn(
+    RawPickerColumn(
       itemCount: 11,
       itemLabel: (i) => '${2020 + i}',
       semanticLabel: 'Year',
@@ -142,7 +142,7 @@ class _ValuesPageState extends State<ValuesPage> {
           const SizedBox(height: 6),
           SizedBox(
             width: 360,
-            child: DesignWheelPicker(
+            child: RawPicker(
               semanticLabel: 'Date',
               columns: _dateColumns,
               selection: _date,
@@ -186,7 +186,7 @@ class _ValuesPageState extends State<ValuesPage> {
           const SizedBox(height: 6),
           Align(
             alignment: AlignmentDirectional.centerStart,
-            child: DesignDateField(
+            child: RawDateField(
               semanticLabel: 'Due date',
               value: _due,
               firstDate: DateTime(2020),
@@ -202,7 +202,7 @@ class _ValuesPageState extends State<ValuesPage> {
           const SizedBox(height: 6),
           Align(
             alignment: AlignmentDirectional.centerStart,
-            child: DesignTimeField(
+            child: RawTimeField(
               semanticLabel: 'Start time',
               value: _start,
               onChanged: (time) => setState(() => _start = time),
@@ -215,7 +215,7 @@ class _ValuesPageState extends State<ValuesPage> {
           const SizedBox(height: 6),
           Align(
             alignment: AlignmentDirectional.centerStart,
-            child: DesignNumberField(
+            child: RawNumberField(
               semanticLabel: 'Guests',
               value: _guests,
               min: 1,
@@ -231,7 +231,7 @@ class _ValuesPageState extends State<ValuesPage> {
           const SizedBox(height: 6),
           Align(
             alignment: AlignmentDirectional.centerStart,
-            child: DesignRating(
+            child: RawRating(
               semanticLabel: 'Stars',
               value: _stars,
               allowHalf: true,
@@ -311,9 +311,9 @@ class _ValuesPageState extends State<ValuesPage> {
 
 // A segment: its text on a tint while it has the focus, its placeholder
 // muted; a tap target at the floor.
-Widget _segment(BuildContext context, DesignDateSegmentDetails details) {
+Widget _segment(BuildContext context, RawDateSegmentDetails details) {
   final focused = details.states.contains(WidgetState.focused);
-  return DesignTapTarget(
+  return TapTargetPadding(
     child: Container(
       padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
       decoration: BoxDecoration(
@@ -358,30 +358,29 @@ Widget _frame(BuildContext context, Set<WidgetState> states, Widget segments) =>
 
 // A number: a box with the input between a minus and a plus; the buttons
 // are no tab stops and say nothing (the field itself is adjustable).
-Widget _number(BuildContext context, DesignNumberFieldDetails field) =>
-    SizedBox(
-      width: 56,
-      child: EditableText(
-        controller: field.controller,
-        focusNode: field.focusNode,
-        keyboardType: field.keyboardType,
-        inputFormatters: field.inputFormatters,
-        readOnly: field.states.contains(WidgetState.disabled),
-        onEditingComplete: field.onEditingComplete,
-        textAlign: TextAlign.center,
-        style: TextStyle(
-          color: field.states.contains(WidgetState.error) ? _danger : _ink,
-          fontSize: 14,
-          fontFeatures: const [FontFeature.tabularFigures()],
-        ),
-        cursorColor: _accent,
-        backgroundCursorColor: _muted,
-      ),
-    );
+Widget _number(BuildContext context, RawNumberFieldDetails field) => SizedBox(
+  width: 56,
+  child: EditableText(
+    controller: field.controller,
+    focusNode: field.focusNode,
+    keyboardType: field.keyboardType,
+    inputFormatters: field.inputFormatters,
+    readOnly: field.states.contains(WidgetState.disabled),
+    onEditingComplete: field.onEditingComplete,
+    textAlign: TextAlign.center,
+    style: TextStyle(
+      color: field.states.contains(WidgetState.error) ? _danger : _ink,
+      fontSize: 14,
+      fontFeatures: const [FontFeature.tabularFigures()],
+    ),
+    cursorColor: _accent,
+    backgroundCursorColor: _muted,
+  ),
+);
 
-Widget _stepper(BuildContext context, DesignNumberFieldButtonDetails button) {
+Widget _stepper(BuildContext context, RawNumberFieldButtonDetails button) {
   final off = button.states.contains(WidgetState.disabled);
-  return DesignTapTarget(
+  return TapTargetPadding(
     child: Container(
       width: 32,
       height: 32,
@@ -417,7 +416,7 @@ Widget _numberBox(
 
 // A star: an outline, filled as far as its fill reaches (from the start
 // edge), darker while it previews; a tap target at the floor.
-Widget _star(BuildContext context, DesignRatingItemDetails item) {
+Widget _star(BuildContext context, RawRatingItemDetails item) {
   final color = item.isPreview
       ? const Color(0xFFBF8700)
       : const Color(0xFFD4A72C);
@@ -478,11 +477,11 @@ class _Toggle extends StatelessWidget {
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) => DesignPressable(
+  Widget build(BuildContext context) => RawButton(
     onPressed: onTap,
     semanticLabel: label,
     excludeSemantics: true,
-    builder: (context, states, _) => DesignTapTarget(
+    builder: (context, states, _) => TapTargetPadding(
       child: DecoratedBox(
         decoration: BoxDecoration(
           color: states.contains(WidgetState.pressed) ? _band : null,
@@ -546,7 +545,7 @@ Widget _readout(BuildContext context, DesignChartDetails chart) {
   final active = chart.active!;
   final at = chart.activePosition!;
   final series = chart.series[active.series];
-  final value = DesignLocalizations.of(context)
+  final value = RawWidgetsLocalizations.of(context)
       .formatDecimal(series.points[active.index].y!.round());
   final lift = chart.activeBy == PointerDeviceKind.touch ? 64.0 : 36.0;
   return Positioned(
@@ -694,7 +693,7 @@ class _BarsPainter extends CustomPainter {
 // hole.
 Widget _donut(BuildContext context, DesignPieChartDetails pie) {
   final active = pie.active;
-  final l = DesignLocalizations.of(context);
+  final l = RawWidgetsLocalizations.of(context);
   return Stack(
     children: [
       Positioned.fill(child: CustomPaint(painter: _DonutPainter(pie))),

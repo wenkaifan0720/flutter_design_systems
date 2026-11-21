@@ -6,7 +6,7 @@ import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:ui_core_test/ui_core_test.dart';
+import 'package:ui_core_review/ui_core_review.dart';
 import 'package:ui_core/ui_core.dart';
 
 import 'behaviour_harness.dart';
@@ -94,8 +94,8 @@ Widget _date({
   double segmentHeight = 48,
   double? segmentWidth,
   bool segmentFaces = true,
-  DesignDateFieldFrameBuilder? frame,
-}) => DesignDateField(
+  RawDateFieldFrameBuilder? frame,
+}) => RawDateField(
   value: DateTime(2026, 11, 20),
   onChanged: (_) {},
   semanticLabel: 'Due date',
@@ -148,11 +148,11 @@ Widget _row(List<Widget> children) => Row(
   ],
 );
 
-DesignNumberField _stepper({
+RawNumberField _stepper({
   double buttonHeight = 48,
   double fieldHeight = 48,
   bool stacked = false,
-}) => DesignNumberField(
+}) => RawNumberField(
   value: 45,
   onChanged: (_) {},
   semanticLabel: 'Estimate',
@@ -244,7 +244,7 @@ void main() {
 
   testWidgets("a painted ring is read to its inner edge: 5 px in, a 3 px "
       'ring leaves 2', (tester) async {
-    Widget well(double ring) => DesignDateField(
+    Widget well(double ring) => RawDateField(
       value: DateTime(2026, 11, 20),
       onChanged: (_) {},
       semanticLabel: 'Due date',

@@ -71,7 +71,7 @@ void main() {
     });
   });
 
-  group('DesignTapTarget', () {
+  group('TapTargetPadding', () {
     testWidgets('lays a small face out at the floor, centred', (tester) async {
       var taps = 0;
       await tester.pumpWidget(
@@ -79,7 +79,7 @@ void main() {
           textDirection: TextDirection.ltr,
           child: Align(
             alignment: Alignment.topLeft,
-            child: DesignTapTarget(
+            child: TapTargetPadding(
               child: GestureDetector(
                 key: const Key('face'),
                 behavior: HitTestBehavior.opaque,
@@ -90,7 +90,7 @@ void main() {
           ),
         ),
       );
-      expect(tester.getSize(find.byType(DesignTapTarget)), const Size(44, 44));
+      expect(tester.getSize(find.byType(TapTargetPadding)), const Size(44, 44));
       expect(
         tester.getTopLeft(find.byKey(const Key('face'))),
         const Offset(10, 10),
@@ -121,7 +121,7 @@ void main() {
               textDirection: direction,
               child: Align(
                 alignment: Alignment.topLeft,
-                child: DesignTapTarget(
+                child: TapTargetPadding(
                   alignment: alignment,
                   child: GestureDetector(
                     key: const Key('face'),
@@ -134,7 +134,7 @@ void main() {
             ),
           );
           expect(
-            tester.getSize(find.byType(DesignTapTarget)),
+            tester.getSize(find.byType(TapTargetPadding)),
             const Size(44, 44),
           );
           expect(
@@ -175,7 +175,7 @@ void main() {
                 textDirection: direction,
                 child: const Align(
                   alignment: Alignment.topLeft,
-                  child: DesignTapTarget(
+                  child: TapTargetPadding(
                     child: SizedBox.square(key: Key('face'), dimension: 27),
                   ),
                 ),
@@ -195,7 +195,7 @@ void main() {
             textDirection: TextDirection.rtl,
             child: Align(
               alignment: Alignment.topLeft,
-              child: DesignTapTarget(
+              child: TapTargetPadding(
                 alignment: AlignmentDirectional.bottomStart,
                 child: SizedBox(key: Key('face'), width: 27, height: 27),
               ),
@@ -237,17 +237,17 @@ void main() {
       await tester.pumpWidget(page(face(const Size(44, 26))));
       await expectLater(tester, doesNotMeetGuideline(iOSTapTargetGuideline));
       await tester.pumpWidget(
-        page(DesignTapTarget(child: face(const Size(44, 26)))),
+        page(TapTargetPadding(child: face(const Size(44, 26)))),
       );
       expect(
-        tester.getSemantics(find.byType(DesignTapTarget)).rect.size,
+        tester.getSemantics(find.byType(TapTargetPadding)).rect.size,
         const Size(44, 44),
       );
       await expectLater(tester, meetsGuideline(iOSTapTargetGuideline));
       // A face on its start edge, at Android's 48.
       await tester.pumpWidget(
         page(
-          DesignTapTarget(
+          TapTargetPadding(
             alignment: AlignmentDirectional.centerStart,
             child: face(const Size(28, 28)),
           ),
@@ -267,7 +267,7 @@ void main() {
       await expectLater(tester, doesNotMeetGuideline(pointer));
       await tester.pumpWidget(
         page(
-          DesignTapTarget(child: face(const Size(16, 16))),
+          TapTargetPadding(child: face(const Size(16, 16))),
           const DesignTapTargets(input: DesignInput.pointer),
         ),
       );
@@ -279,13 +279,16 @@ void main() {
       await tester.pumpWidget(
         const Align(
           alignment: Alignment.topLeft,
-          child: DesignTapTarget(
+          child: TapTargetPadding(
             minSize: Size.square(24),
             child: SizedBox(width: 120, height: 32),
           ),
         ),
       );
-      expect(tester.getSize(find.byType(DesignTapTarget)), const Size(120, 32));
+      expect(
+        tester.getSize(find.byType(TapTargetPadding)),
+        const Size(120, 32),
+      );
     });
 
     testWidgets('it takes the floor from the scope and its input', (
@@ -296,11 +299,11 @@ void main() {
           targets: DesignTapTargets(input: DesignInput.pointer),
           child: Align(
             alignment: Alignment.topLeft,
-            child: DesignTapTarget(child: SizedBox.square(dimension: 16)),
+            child: TapTargetPadding(child: SizedBox.square(dimension: 16)),
           ),
         ),
       );
-      expect(tester.getSize(find.byType(DesignTapTarget)), const Size(24, 24));
+      expect(tester.getSize(find.byType(TapTargetPadding)), const Size(24, 24));
     });
   });
 

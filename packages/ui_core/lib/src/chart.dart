@@ -15,7 +15,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
 import 'chart_scale.dart';
-import 'date_field.dart' show DesignTimeOfDay;
+import 'date_field.dart' show RawTimeOfDay;
 import 'internal/announce.dart';
 import 'localizations.dart';
 import 'motion.dart';
@@ -199,7 +199,7 @@ double _xGapOf(List<DesignChartSeries> series) {
 // name, or a date as fine as [gap] needs.
 String _xText(
   double x,
-  DesignLocalizations l, {
+  RawWidgetsLocalizations l, {
   required DesignChartXAxis axis,
   required List<String>? categories,
   required DesignChartFormat? format,
@@ -222,7 +222,7 @@ String _xText(
       if (gap >= 28 * day) return l.formatMonthYear(at);
       if (gap >= day) return l.formatFullDate(at);
       return '${l.formatShortMonthDay(at)}${l.listSeparator}'
-          '${l.formatTimeOfDay(DesignTimeOfDay.fromDateTime(at))}';
+          '${l.formatTimeOfDay(RawTimeOfDay.fromDateTime(at))}';
   }
 }
 
@@ -503,7 +503,7 @@ mixin _Picking<W extends StatefulWidget> on State<W> {
     required String? previousValue,
     required VoidCallback? onShowTable,
   }) {
-    final l = DesignLocalizations.of(context);
+    final l = RawWidgetsLocalizations.of(context);
     // A drag ends: a finger's pick goes with it, a mouse's stays as a hover.
     void letGo() {
       if (!_dragging) return;
@@ -730,7 +730,7 @@ class _DesignChartState extends State<DesignChart>
 
   // ---- Words.
 
-  String _xLabel(double x, DesignLocalizations l) => _xText(
+  String _xLabel(double x, RawWidgetsLocalizations l) => _xText(
     x,
     l,
     axis: widget.xAxis,
@@ -739,16 +739,16 @@ class _DesignChartState extends State<DesignChart>
     gap: _xGapOf(widget.series),
   );
 
-  String _yLabel(double y, DesignLocalizations l) =>
+  String _yLabel(double y, RawWidgetsLocalizations l) =>
       widget.formatY?.call(y) ?? l.formatDecimal(y);
 
-  String _pointLabel(DesignChartPointRef ref, DesignLocalizations l) {
+  String _pointLabel(DesignChartPointRef ref, RawWidgetsLocalizations l) {
     final s = widget.series[ref.series];
     final p = s.points[ref.index];
     return l.chartPointLabel(_xLabel(p.x, l), s.label, _yLabel(p.y!, l));
   }
 
-  String _summary(DesignLocalizations l) {
+  String _summary(RawWidgetsLocalizations l) {
     final given = widget.semanticSummary;
     if (given != null) return given;
     final xs = <double>{};
@@ -794,7 +794,7 @@ class _DesignChartState extends State<DesignChart>
     if (say && ref != null) {
       designAnnounce(
         context,
-        _pointLabel(ref, DesignLocalizations.of(context)),
+        _pointLabel(ref, RawWidgetsLocalizations.of(context)),
       );
     }
   }
@@ -915,7 +915,7 @@ class _DesignChartState extends State<DesignChart>
     return KeyEventResult.handled;
   }
 
-  DesignChartDetails _layout(Size size, DesignLocalizations l) {
+  DesignChartDetails _layout(Size size, RawWidgetsLocalizations l) {
     final t = _motion.value;
     final domain = _drawnDomain(t, widget);
     final direction = Directionality.of(context);
@@ -984,7 +984,7 @@ class _DesignChartState extends State<DesignChart>
 
   @override
   Widget build(BuildContext context) {
-    final l = DesignLocalizations.of(context);
+    final l = RawWidgetsLocalizations.of(context);
     final a = _active;
     final next = _stepThrough(1);
     final previous = _stepThrough(-1);
@@ -1338,10 +1338,10 @@ class _DesignPieChartState extends State<DesignPieChart>
 
   // ---- Words.
 
-  String _valueLabel(double v, DesignLocalizations l) =>
+  String _valueLabel(double v, RawWidgetsLocalizations l) =>
       widget.formatValue?.call(v) ?? l.formatDecimal(v);
 
-  String _sliceLabel(int i, DesignLocalizations l) {
+  String _sliceLabel(int i, RawWidgetsLocalizations l) {
     final total = widget.slices.fold(0.0, (sum, s) => sum + _value(s));
     final s = widget.slices[i];
     return l.chartPointLabel(
@@ -1351,7 +1351,7 @@ class _DesignPieChartState extends State<DesignPieChart>
     );
   }
 
-  String _summary(DesignLocalizations l) {
+  String _summary(RawWidgetsLocalizations l) {
     final given = widget.semanticSummary;
     if (given != null) return given;
     final parts = [l.chartSliceCountLabel(widget.slices.length)];
@@ -1380,7 +1380,10 @@ class _DesignPieChartState extends State<DesignPieChart>
     if (!changed) return;
     widget.onActiveSliceChanged?.call(i);
     if (say && i != null) {
-      designAnnounce(context, _sliceLabel(i, DesignLocalizations.of(context)));
+      designAnnounce(
+        context,
+        _sliceLabel(i, RawWidgetsLocalizations.of(context)),
+      );
     }
   }
 
@@ -1488,7 +1491,7 @@ class _DesignPieChartState extends State<DesignPieChart>
 
   @override
   Widget build(BuildContext context) {
-    final l = DesignLocalizations.of(context);
+    final l = RawWidgetsLocalizations.of(context);
     final a = _active;
     final n = widget.slices.length;
     final next = a == null ? _step(-1, 1) : _step(a, 1);
@@ -1632,7 +1635,7 @@ class DesignChartTable extends StatelessWidget {
   /// The table's name, said first; null: none.
   final String? semanticLabel;
 
-  List<List<String>> _rows(DesignLocalizations l) {
+  List<List<String>> _rows(RawWidgetsLocalizations l) {
     String y(double v) => formatY?.call(v) ?? l.formatDecimal(v);
     final slices = this.slices;
     if (slices != null) {
@@ -1676,7 +1679,7 @@ class DesignChartTable extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l = DesignLocalizations.of(context);
+    final l = RawWidgetsLocalizations.of(context);
     final rows = _rows(l);
     Widget cell(int row, int column) {
       final text = rows[row][column];

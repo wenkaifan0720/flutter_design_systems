@@ -92,9 +92,9 @@ class BrutalPopover extends StatelessWidget {
   final BrutalStyle? style;
 
   @override
-  Widget build(BuildContext context) => DesignAnchoredOverlay(
+  Widget build(BuildContext context) => RawPopover(
     semanticLabel: semanticLabel,
-    placement: const DesignOverlayPlacement(
+    placement: const RawPopoverPlacement(
       gap: BrutalSpacing.small,
       margin: BrutalSpacing.small,
       matchAnchorWidth: false,
@@ -160,10 +160,10 @@ class BrutalHoverCard extends StatelessWidget {
   final BrutalStyle? style;
 
   @override
-  Widget build(BuildContext context) => DesignAnchoredOverlay(
-    trigger: DesignOverlayTrigger.hover,
+  Widget build(BuildContext context) => RawPopover(
+    trigger: RawPopoverTrigger.hover,
     focusOnOpen: false,
-    placement: const DesignOverlayPlacement(
+    placement: const RawPopoverPlacement(
       gap: BrutalSpacing.small,
       margin: BrutalSpacing.small,
       matchAnchorWidth: false,
@@ -192,11 +192,10 @@ class BrutalHoverCard extends StatelessWidget {
 }
 
 /// A short label on an ink slab over [child] (below it where there is no
-/// room above), over ui_core's [DesignTooltip]: it shows after a pointer
-/// rests on [child] half a second, at once when the keys bring the focus
-/// there, or after a long press. The pointer may move onto it, Escape hides
-/// it, and it goes as the pointer or the focus leaves; running the pointer
-/// along a row of controls shows each one's at once. A screen reader hears
+/// room above), on Flutter's [RawTooltip]: it shows after a pointer rests
+/// on [child] half a second, at once when the keys bring the focus there,
+/// or after a long press. The pointer may move onto it, Escape hides it,
+/// and it goes as the pointer or the focus leaves. A screen reader hears
 /// [message] as [child]'s tooltip.
 ///
 /// Reads [style]'s `fill` (the slab), `foreground`, `padding` and
@@ -228,47 +227,54 @@ class BrutalTooltip extends StatelessWidget {
     final theme = BrutalTheme.of(context);
     final c = theme.colors;
     final layered = DesignStyleOf([style, theme.tooltipStyle], const {});
-    return DesignTooltip(
-      message: message,
-      placement: _placement,
-      tooltipBuilder: (context, info) => FadeTransition(
-        opacity: info.animation,
-        child: ExcludeSemantics(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 240),
-            child: ColoredBox(
-              color: layered.fill ?? c.ink,
-              child: Padding(
-                padding:
-                    layered.padding(Directionality.of(context)) ??
-                    const EdgeInsets.symmetric(
-                      horizontal: BrutalSpacing.small,
-                      vertical: 6,
-                    ),
-                child: Text(
-                  message,
-                  style: layered.text(
-                    theme.textTheme.caption.copyWith(
-                      color:
-                          layered.foreground ??
-                          c.onColor(layered.fill ?? c.ink),
+    return MergeSemantics(
+      child: RawTooltipPlacement(
+        placement: _placement,
+        builder: (context, positionDelegate) => RawTooltip(
+          semanticsTooltip: message,
+          hoverDelay: const Duration(milliseconds: 500),
+          positionDelegate: positionDelegate,
+          animationStyle: _TipFade.life,
+          tooltipBuilder: (context, animation) => _TipFade(
+            showing: animation,
+            child: ExcludeSemantics(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 240),
+                child: ColoredBox(
+                  color: layered.fill ?? c.ink,
+                  child: Padding(
+                    padding:
+                        layered.padding(Directionality.of(context)) ??
+                        const EdgeInsets.symmetric(
+                          horizontal: BrutalSpacing.small,
+                          vertical: 6,
+                        ),
+                    child: Text(
+                      message,
+                      style: layered.text(
+                        theme.textTheme.caption.copyWith(
+                          color:
+                              layered.foreground ??
+                              c.onColor(layered.fill ?? c.ink),
+                        ),
+                      ),
                     ),
                   ),
                 ),
               ),
             ),
           ),
+          child: RawTooltipFocusFix(child: child),
         ),
       ),
-      child: child,
     );
   }
 
   // Above the child and centred on it, 6 from it, a gutter in from the
   // screen's edges; below it where two lines of a tip do not fit above.
-  static const DesignOverlayPlacement _placement = DesignOverlayPlacement(
-    side: DesignOverlaySide.above,
-    align: DesignOverlayAlign.center,
+  static const RawPopoverPlacement _placement = RawPopoverPlacement(
+    side: RawPopoverSide.above,
+    align: RawPopoverAlign.center,
     gap: 6,
     margin: BrutalSpacing.small,
     preferredExtent: 48,
@@ -284,6 +290,74 @@ class BrutalTooltip extends StatelessWidget {
         DiagnosticsProperty<BrutalStyle>('style', style, defaultValue: null),
       );
   }
+}
+
+/// A tip's fade on ui_core's effects spring, following [RawTooltip]'s
+/// animation: in as it starts forward, out as it starts back.
+class _TipFade extends StatefulWidget {
+  const _TipFade({required this.showing, required this.child});
+
+  /// How long the [RawTooltip] keeps a hidden tip in the overlay: longer
+  /// than the spring takes to fade it out (about 230 ms).
+  static const AnimationStyle life = AnimationStyle(
+    duration: Duration(milliseconds: 150),
+    reverseDuration: Duration(milliseconds: 300),
+  );
+
+  final Animation<double> showing;
+  final Widget child;
+
+  @override
+  State<_TipFade> createState() => _TipFadeState();
+}
+
+class _TipFadeState extends State<_TipFade>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _opacity = AnimationController(vsync: this);
+  bool? _shown;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.showing.addStatusListener(_follow);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _follow(widget.showing.status);
+  }
+
+  @override
+  void didUpdateWidget(_TipFade old) {
+    super.didUpdateWidget(old);
+    if (old.showing != widget.showing) {
+      old.showing.removeStatusListener(_follow);
+      widget.showing.addStatusListener(_follow);
+      _follow(widget.showing.status);
+    }
+  }
+
+  @override
+  void dispose() {
+    widget.showing.removeStatusListener(_follow);
+    _opacity.dispose();
+    super.dispose();
+  }
+
+  void _follow(AnimationStatus status) {
+    final shown = status.isForwardOrCompleted;
+    if (shown == _shown) return;
+    _shown = shown;
+    _opacity.springTo(
+      shown ? 1 : 0,
+      DesignMotionPolicy.of(context).effects(dampingRatio: 1, stiffness: 1600),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) =>
+      FadeTransition(opacity: _opacity, child: widget.child);
 }
 
 /// Opens a panel the full height of the screen from its end edge (start,
@@ -307,10 +381,10 @@ Future<T?> showBrutalSideSheet<T>({
   BrutalStyle? style,
 }) {
   final theme = BrutalTheme.of(context);
-  final words = DesignLocalizations.of(context);
+  final words = RawWidgetsLocalizations.of(context);
   return Navigator.of(context, rootNavigator: true).push<T>(
-    DesignSideSheetRoute<T>(
-      edge: fromStart ? DesignSheetEdge.start : DesignSheetEdge.end,
+    RawSideSheetRoute<T>(
+      edge: fromStart ? RawSheetEdge.start : RawSheetEdge.end,
       width: width,
       barrierColor: theme.colors.scrim,
       barrierLabel: words.modalBarrierDismissLabel,
@@ -337,7 +411,7 @@ class _SidePanel extends StatelessWidget {
   });
 
   final String title;
-  final DesignSheetInfo sheet;
+  final RawSideSheetDetails sheet;
   final WidgetBuilder builder;
   final BrutalStyle? style;
 
@@ -346,7 +420,7 @@ class _SidePanel extends StatelessWidget {
     final theme = BrutalTheme.of(context);
     final c = theme.colors;
     final pad = MediaQuery.paddingOf(context);
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     final layered = DesignStyleOf([style, theme.sideSheetStyle], const {});
     final edge = layered.side?.color ?? layered.edge ?? c.ink;
     final ink0 = layered.foreground ?? c.ink;
@@ -396,7 +470,7 @@ class _SidePanel extends StatelessWidget {
                   BrutalRule(vertical: true, color: edge),
                   SizedBox(
                     width: 56,
-                    child: DesignPressable(
+                    child: RawButton(
                       onPressed: sheet.close,
                       semanticLabel: words.closeButtonLabel,
                       builder: (context, states, _) {
@@ -522,7 +596,7 @@ Future<T?> showBrutalActionSheet<T>({
             children: [
               for (final (i, a) in actions.indexed) ...[
                 if (i > 0) BrutalRule(color: edge),
-                DesignPressable(
+                RawButton(
                   onPressed: () => Navigator.of(context).pop(a.value),
                   semanticLabel: a.label,
                   builder: (context, states, _) {

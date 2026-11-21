@@ -1,11 +1,11 @@
-part of '../alignment.dart';
+part of '../../review.dart';
 
 /// Whether a field's own parts have room and stand at one height: a date or
 /// time field's segments, the button that opens its picker, and a stepper's
 /// buttons beside its field.
 ///
-/// - **Room in a segment**: each segment of a [DesignDateField] or a
-///   [DesignTimeField] holds its text at least [segmentInset] logical px in
+/// - **Room in a segment**: each segment of a [RawDateField] or a
+///   [RawTimeField] holds its text at least [segmentInset] logical px in
 ///   from its frame on both sides, the frame being the segment's own face
 ///   when it paints one, else the field's frame round all its segments, and
 ///   its inner edge as drawn (a border, or a ring a painter draws, is not
@@ -23,7 +23,7 @@ part of '../alignment.dart';
 ///   stepper "Estimate": its buttons are 40 px tall beside its field, 48 px
 ///   tall`. Within [tolerance] logical px.
 ///
-/// A stepper is a [DesignNumberField] (its two step buttons and its field); two
+/// A stepper is a [RawNumberField] (its two step buttons and its field); two
 /// buttons round or beside a value (one whose semantics step it or say its
 /// value) or a text entry, with nothing else that acts in the box that lays
 /// them out; or one node that steps or says its value, with two buttons inside
@@ -46,6 +46,9 @@ part of '../alignment.dart';
 /// );
 /// report.verify();
 /// ```
+///
+/// It reads layout boxes, and the drawn pixels where only they show it (a
+/// segment's text ink, a painted frame), so it takes the tester's `runAsync`.
 @immutable
 class DesignFieldPartsCheck {
   /// A check for [look].
@@ -84,18 +87,18 @@ class DesignFieldPartsCheck {
     final numbers = <(RenderBox, List<RenderBox>)>[];
     void visit(Element e) {
       final w = e.widget;
-      if (w is DesignDateField || w is DesignTimeField) {
+      if (w is RawDateField || w is RawTimeField) {
         final box = e.findRenderObject();
         if (box is RenderBox && _readable(box)) {
           dates.add((
             box,
             _segmentsIn(e),
-            w is DesignTimeField ? 'a time field' : 'a date field',
+            w is RawTimeField ? 'a time field' : 'a date field',
           ));
         }
         return;
       }
-      if (w is DesignNumberField) {
+      if (w is RawNumberField) {
         final box = e.findRenderObject();
         if (box is RenderBox && _readable(box)) {
           numbers.add((box, _stepButtonsIn(e)));

@@ -1,11 +1,11 @@
-/// Brutal's own words, the few that ui_core's DesignLocalizations has no
+/// Brutal's own words, the few that ui_core's RawWidgetsLocalizations has no
 /// entry for. English by default; an app in another language gives its own
 /// through Flutter's localizations.
 library;
 
 import 'package:flutter/widgets.dart';
 
-/// The words Brutal's parts speak that ui_core's `DesignLocalizations` does
+/// The words Brutal's parts speak that ui_core's `RawWidgetsLocalizations` does
 /// not carry. Each counted message is given its count, so a language picks
 /// its own plural form (English has two, Polish three, Arabic six).
 ///

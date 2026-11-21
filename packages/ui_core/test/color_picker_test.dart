@@ -12,15 +12,15 @@ Set<WidgetState> _area = {};
 // The bare reference painter: the colour as a fill, square thumbs, a grey
 // track.
 Widget _picker(
-  DesignColorController c, {
+  RawColorController c, {
   TextDirection direction = TextDirection.ltr,
 }) => harness(_view(c), textDirection: direction);
 
-Widget _view(DesignColorController c) => Align(
+Widget _view(RawColorController c) => Align(
   alignment: Alignment.topLeft,
   child: SizedBox(
     width: 244,
-    child: DesignColorPicker(
+    child: RawColorPicker(
       controller: c,
       showAlpha: true,
       areaHeight: 100,
@@ -43,13 +43,13 @@ Widget _view(DesignColorController c) => Align(
   ),
 );
 
-late DesignColorController _cc;
+late RawColorController _cc;
 
 void main() {
   behaviourContract(
-    'DesignColorPicker',
-    build: (c) => Owned<DesignColorController>(
-      create: () => _cc = DesignColorController(const Color(0xFFFF0000)),
+    'RawColorPicker',
+    build: (c) => Owned<RawColorController>(
+      create: () => _cc = RawColorController(const Color(0xFFFF0000)),
       builder: (context, c) => _view(c),
     ),
     node: () => find.bySemanticsLabel('Saturation and brightness'),
@@ -92,7 +92,7 @@ void main() {
   );
 
   test('hex in and out; greys keep the hue; nonsense changes nothing', () {
-    final c = DesignColorController(const Color(0xFF3366CC));
+    final c = RawColorController(const Color(0xFF3366CC));
     expect(c.hex, '#3366CC');
     expect(c.setHex('#f80'), isTrue);
     expect(c.hex, '#FF8800');
@@ -115,7 +115,7 @@ void main() {
       () => FocusManager.instance.highlightStrategy =
           FocusHighlightStrategy.automatic,
     );
-    final c = DesignColorController(const Color(0xFFFF0000));
+    final c = RawColorController(const Color(0xFFFF0000));
     addTearDown(c.dispose);
     await tester.pumpWidget(_picker(c));
     await tester.tapAt(const Offset(61, 25));
@@ -136,7 +136,7 @@ void main() {
   testWidgets('the area says its value in the reader\'s words, digits and '
       'percent sign', (tester) async {
     final semantics = tester.ensureSemantics();
-    final c = DesignColorController(const Color(0xFF996633));
+    final c = RawColorController(const Color(0xFF996633));
     addTearDown(c.dispose);
     Future<SemanticsData> area(
       Locale locale,
@@ -148,7 +148,7 @@ void main() {
           Localizations(
             locale: locale,
             delegates: const [
-              DesignLocalizations.delegate,
+              RawWidgetsLocalizations.delegate,
               DefaultWidgetsLocalizations.delegate,
             ],
             child: Directionality(textDirection: direction, child: _view(c)),
@@ -170,14 +170,14 @@ void main() {
     expect(en.value, 'Saturation 67%, Brightness 60%');
     expect(en.increasedValue, 'Saturation 67%, Brightness 70%');
     expect(en.textDirection, TextDirection.ltr);
-    final de = DesignLocalizations.forLocale(const Locale('de'));
+    final de = RawWidgetsLocalizations.forLocale(const Locale('de'));
     final german = await area(
       const Locale('de'),
       TextDirection.ltr,
       de.colorAreaLabel,
     );
     expect(german.value, 'Sättigung 67 %, Helligkeit 60 %');
-    final ar = DesignLocalizations.forLocale(const Locale('ar'));
+    final ar = RawWidgetsLocalizations.forLocale(const Locale('ar'));
     final arabic = await area(
       const Locale('ar'),
       TextDirection.rtl,
@@ -199,7 +199,7 @@ void main() {
     expect(
       tester
           .getSemantics(
-            find.bySemanticsLabel(ar.colorChannelLabel(DesignColorChannel.hue)),
+            find.bySemanticsLabel(ar.colorChannelLabel(RawColorChannel.hue)),
           )
           .getSemanticsData()
           .value,
@@ -208,9 +208,7 @@ void main() {
     expect(
       tester
           .getSemantics(
-            find.bySemanticsLabel(
-              ar.colorChannelLabel(DesignColorChannel.alpha),
-            ),
+            find.bySemanticsLabel(ar.colorChannelLabel(RawColorChannel.alpha)),
           )
           .getSemanticsData()
           .value,
@@ -222,7 +220,7 @@ void main() {
   testWidgets('the hue slider: a press, then keys; right to left mirrors '
       'it; a screen reader hears degrees', (tester) async {
     final semantics = tester.ensureSemantics();
-    final c = DesignColorController(const Color(0xFFFF0000));
+    final c = RawColorController(const Color(0xFFFF0000));
     addTearDown(c.dispose);
     await tester.pumpWidget(_picker(c, direction: TextDirection.rtl));
     final track = tester.getRect(find.byKey(const ValueKey('track hue')));

@@ -16,7 +16,7 @@ import 'internal/focus_visible.dart';
 import 'localizations.dart';
 
 /// Builds a handle's face for its [states] (focused while the keyboard is
-/// on it, hovered, pressed while dragged, disabled).
+/// on it, hovered, pressed and dragged while dragged, disabled).
 typedef DesignHandleBuilder = Widget Function(
   BuildContext context,
   Set<WidgetState> states,
@@ -55,6 +55,7 @@ class DesignValueHandle extends StatefulWidget {
     this.mouseCursor,
     this.minimumSize = const Size(44, 44),
     this.onKeyEvent,
+    this.statesController,
   }) : assert(min <= max, 'min is at most max'),
        assert(
          value >= min && value <= max,
@@ -110,7 +111,8 @@ class DesignValueHandle extends StatefulWidget {
   /// Called after a key changed the value.
   final ValueChanged<double>? onChangeEnd;
 
-  /// Whether the parent is dragging it ([WidgetState.pressed]).
+  /// Whether the parent is dragging it ([WidgetState.dragged], and
+  /// [WidgetState.pressed] as before it).
   final bool dragging;
 
   /// What a screen reader calls it.
@@ -139,6 +141,11 @@ class DesignValueHandle extends StatefulWidget {
 
   /// Keys it does not handle itself (Enter on a split view's divider).
   final KeyEventResult Function(FocusNode node, KeyEvent event)? onKeyEvent;
+
+  /// The states, when the caller watches or drives them itself, as
+  /// [RawButton.statesController]. The caller's, who disposes it; null:
+  /// the handle makes its own and disposes it.
+  final WidgetStatesController? statesController;
 
   @override
   State<DesignValueHandle> createState() => _DesignValueHandleState();
@@ -231,26 +238,79 @@ class DesignValueHandle extends StatefulWidget {
         ObjectFlagProperty<
           KeyEventResult Function(FocusNode node, KeyEvent event)
         >.has('onKeyEvent', onKeyEvent),
+      )
+      ..add(
+        DiagnosticsProperty<WidgetStatesController>(
+          'statesController',
+          statesController,
+          defaultValue: null,
+        ),
       );
   }
 }
 
 class _DesignValueHandleState extends State<DesignValueHandle> {
+  WidgetStatesController? _own;
+
+  WidgetStatesController get _controller =>
+      widget.statesController ?? (_own ??= WidgetStatesController());
+
   bool _hovered = false;
   bool _focused = false;
   // Shown as a browser's :focus-visible shows it (internal/focus_visible.dart).
   late final DesignFocusShown _focus;
 
+  bool get _enabled => widget.onChanged != null;
+
   @override
   void initState() {
     super.initState();
-    _focus = DesignFocusShown((on) => setState(() => _focused = on));
+    _focus = DesignFocusShown((on) {
+      _focused = on;
+      _putState(WidgetState.focused, _enabled && on);
+    });
+    _controller.addListener(_changed);
+    _sync(null);
   }
 
   @override
   void dispose() {
     _focus.dispose();
+    _controller.removeListener(_changed);
+    _own?.dispose();
     super.dispose();
+  }
+
+  void _changed() {
+    if (mounted) setState(() {});
+  }
+
+  void _putState(WidgetState state, bool on) {
+    if (_controller.value.contains(state) != on) {
+      _controller.update(state, on);
+    }
+  }
+
+  // Brings the states a change of the widget makes in line, during
+  // build-time updates (no listener runs mid-build): disabled with
+  // [DesignValueHandle.onChanged], pressed and dragged with
+  // [DesignValueHandle.dragging]. What the pointer and the focus bring stays.
+  void _sync(DesignValueHandle? old) {
+    final v = _controller.value;
+    void put(WidgetState state, bool on) => on ? v.add(state) : v.remove(state);
+    final enabled = _enabled;
+    if (old == null || (old.onChanged != null) != enabled) {
+      put(WidgetState.disabled, !enabled);
+      put(WidgetState.hovered, enabled && _hovered);
+      put(WidgetState.focused, enabled && _focused);
+    }
+    final dragged = enabled && widget.dragging;
+    if (old == null
+        ? dragged
+        : (old.onChanged != null && old.dragging) != dragged) {
+      put(WidgetState.pressed, dragged);
+      put(WidgetState.dragged, dragged);
+    }
   }
 
   double get _range => widget.max - widget.min;
@@ -272,6 +332,23 @@ class _DesignValueHandleState extends State<DesignValueHandle> {
   @override
   void didUpdateWidget(DesignValueHandle oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (oldWidget.statesController != widget.statesController) {
+      (oldWidget.statesController ?? _own)?.removeListener(_changed);
+      if (widget.statesController != null) {
+        _own?.dispose();
+        _own = null;
+      }
+      _controller.addListener(_changed);
+    }
+    final before = Set.of(_controller.value);
+    _sync(oldWidget);
+    // A change the widget brought is told to the controller's listeners once
+    // the frame is built, as [RawButton] tells one.
+    if (!setEquals(before, _controller.value)) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _controller.value = Set.of(_controller.value);
+      });
+    }
     final d = widget.divisions;
     if (!widget.dragging || d == null || _range == 0) return;
     int division(double v) => ((v - widget.min) / (_range / d)).round();
@@ -304,7 +381,7 @@ class _DesignValueHandleState extends State<DesignValueHandle> {
 
   String _say(double v) =>
       widget.semanticFormatterCallback?.call(v) ??
-      DesignLocalizations.of(context)
+      RawWidgetsLocalizations.of(context)
           .formatPercent(_range == 0 ? 0 : (v - widget.min) / _range);
 
   KeyEventResult _key(FocusNode node, KeyEvent event) {
@@ -355,12 +432,7 @@ class _DesignValueHandleState extends State<DesignValueHandle> {
     final v = widget.value;
     final higher = _nextValue(v + _step);
     final lower = _nextValue(v - _step);
-    final states = <WidgetState>{
-      if (!enabled) WidgetState.disabled,
-      if (enabled && _hovered) WidgetState.hovered,
-      if (enabled && _focused) WidgetState.focused,
-      if (enabled && widget.dragging) WidgetState.pressed,
-    };
+    final states = Set<WidgetState>.unmodifiable(_controller.value);
     final cursor =
         widget.mouseCursor ??
         (!enabled
@@ -390,8 +462,14 @@ class _DesignValueHandleState extends State<DesignValueHandle> {
           mouseCursor: cursor,
           onShowFocusHighlight: _focus.focused,
           child: MouseRegion(
-            onEnter: (_) => setState(() => _hovered = true),
-            onExit: (_) => setState(() => _hovered = false),
+            onEnter: (_) {
+              _hovered = true;
+              _putState(WidgetState.hovered, _enabled);
+            },
+            onExit: (_) {
+              _hovered = false;
+              _putState(WidgetState.hovered, false);
+            },
             child: ConstrainedBox(
               constraints: BoxConstraints(
                 minWidth: widget.minimumSize.width,

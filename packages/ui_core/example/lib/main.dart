@@ -24,7 +24,7 @@ const Color _accent = Color(0xFF0969DA);
 const Color _wrong = Color(0xFFCF222E);
 
 /// The example: a bare [WidgetsApp] whose navigator stands in a
-/// [DesignToaster], so any page can show a toast.
+/// [RawToaster], so any page can show a toast.
 class ExampleApp extends StatelessWidget {
   /// The example app.
   const ExampleApp({super.key});
@@ -40,7 +40,7 @@ class ExampleApp extends StatelessWidget {
         ),
     builder: (context, navigator) => DefaultTextStyle(
       style: const TextStyle(fontSize: 16, color: _ink),
-      child: DesignToaster(
+      child: RawToaster(
         toastBuilder: (context, details) => _Toast(details: details),
         child: navigator!,
       ),
@@ -79,8 +79,8 @@ class _ReportPageState extends State<ReportPage> {
       _nameFocus.requestFocus();
       return;
     }
-    DesignToaster.of(context)
-        .show(DesignToast(message: 'Saved "$name" for the ${_period.single}'));
+    RawToaster.of(context)
+        .show(RawToast(message: 'Saved "$name" for the ${_period.single}'));
   }
 
   @override
@@ -104,7 +104,7 @@ class _ReportPageState extends State<ReportPage> {
                     style: TextStyle(fontSize: 24, fontWeight: FontWeight.w600),
                   ),
                   const SizedBox(height: 24),
-                  DesignField(
+                  RawInputDecorator(
                     labelText: 'Name',
                     helperText: 'Shown at the top of the report',
                     errorText: _nameError,
@@ -155,7 +155,7 @@ class _ReportPageState extends State<ReportPage> {
                   const SizedBox(height: 24),
                   const Text('Period'),
                   const SizedBox(height: 6),
-                  DesignToggleGroup<String>(
+                  RawSegmentedButton<String>(
                     options: const ['Day', 'Week', 'Month'],
                     selected: _period,
                     onSelectionChanged: (next) =>
@@ -171,7 +171,7 @@ class _ReportPageState extends State<ReportPage> {
                     ),
                   ),
                   const SizedBox(height: 32),
-                  DesignPressable(
+                  RawButton(
                     onPressed: _save,
                     semanticLabel: 'Save',
                     builder: (context, states, child) => _Box(
@@ -192,7 +192,7 @@ class _ReportPageState extends State<ReportPage> {
                     runSpacing: 16,
                     children: [
                       // 0.3.0 routes
-                      DesignPressable(
+                      RawButton(
                         onPressed: () => Navigator.of(context).push(
                           PageRouteBuilder<void>(
                             pageBuilder: (context, _, _) => const RoutesPage(),
@@ -207,7 +207,7 @@ class _ReportPageState extends State<ReportPage> {
                       ),
                       // 0.3.0 routes end
                       // 0.3.0 values
-                      DesignPressable(
+                      RawButton(
                         onPressed: () => Navigator.of(context).push(
                           PageRouteBuilder<void>(
                             pageBuilder: (context, _, _) => const ValuesPage(),
@@ -221,7 +221,7 @@ class _ReportPageState extends State<ReportPage> {
                         ),
                       ),
                       // 0.3.0 values end
-                      DesignPressable(
+                      RawButton(
                         onPressed: () => Navigator.of(context).push(
                           PageRouteBuilder<void>(
                             pageBuilder: (context, _, _) =>
@@ -347,7 +347,7 @@ class _Segment extends StatelessWidget {
 class _Toast extends StatelessWidget {
   const _Toast({required this.details});
 
-  final DesignToastDetails details;
+  final RawToastDetails details;
 
   @override
   Widget build(BuildContext context) => Padding(
@@ -378,7 +378,7 @@ class _ReportFile extends StatelessWidget {
   const _ReportFile();
 
   void _say(BuildContext context, String words) =>
-      DesignToaster.of(context).show(DesignToast(message: words));
+      RawToaster.of(context).show(RawToast(message: words));
 
   // A command's keys: Cmd on Apple's platforms, Ctrl elsewhere.
   static SingleActivator _keys(LogicalKeyboardKey key) {
@@ -397,21 +397,21 @@ class _ReportFile extends StatelessWidget {
     return Row(
       children: [
         Expanded(
-          child: DesignContextMenu(
+          child: RawContextMenu(
             semanticLabel: 'Q3 report.pdf',
             menuChildren: [
-              DesignMenuEntry(
+              RawMenuEntry(
                 label: 'Open',
                 shortcut: designShortcutLabel(context, openKeys),
                 onPressed: open,
               ),
-              DesignMenuEntry(
+              RawMenuEntry(
                 label: 'Duplicate',
                 shortcut: designShortcutLabel(context, duplicateKeys),
                 onPressed: duplicate,
               ),
-              const DesignMenuEntry.divider(),
-              const DesignMenuEntry(label: 'Delete'),
+              const RawMenuEntry.divider(),
+              const RawMenuEntry(label: 'Delete'),
             ],
             itemBuilder: (context, entry, level, states) => _MenuRow(
               lit:
@@ -443,7 +443,7 @@ class _ReportFile extends StatelessWidget {
             ),
             child: CallbackShortcuts(
               bindings: {openKeys: open, duplicateKeys: duplicate},
-              child: DesignPressable(
+              child: RawButton(
                 onPressed: open,
                 semanticLabel: 'Q3 report.pdf',
                 builder: (context, states, child) => _Box(
@@ -456,17 +456,30 @@ class _ReportFile extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 8),
-        DesignTooltip(
-          message: 'About this report',
-          tooltipBuilder: (context, info) =>
-              _Tip(info: info, message: 'About this report'),
-          child: DesignPressable(
-            onPressed: () => _say(context, 'Q3 report: 12 pages, edited today'),
-            semanticLabel: 'About',
-            builder: (context, states, child) => _Box(
-              selected: false,
-              focused: states.contains(WidgetState.focused),
-              child: const Text('i'),
+        // Flutter's RawTooltip, which shows the tip on a pointer's rest and a
+        // long press; ui_core's fixes show it on the keys' focus and tell the
+        // tip the side it took.
+        RawTooltipPlacement(
+          builder: (context, positionDelegate) => RawTooltip(
+            semanticsTooltip: 'About this report',
+            hoverDelay: const Duration(milliseconds: 500),
+            positionDelegate: positionDelegate,
+            tooltipBuilder: (context, animation) => _Tip(
+              animation: animation,
+              side: RawTooltipPlacement.sideOf(context),
+              message: 'About this report',
+            ),
+            child: RawTooltipFocusFix(
+              child: RawButton(
+                onPressed: () =>
+                    _say(context, 'Q3 report: 12 pages, edited today'),
+                semanticLabel: 'About',
+                builder: (context, states, child) => _Box(
+                  selected: false,
+                  focused: states.contains(WidgetState.focused),
+                  child: const Text('i'),
+                ),
+              ),
             ),
           ),
         ),
@@ -533,16 +546,21 @@ class _MenuRow extends StatelessWidget {
 /// A tooltip's tip: dark, with a tail at the control's centre, on the side
 /// the tip took.
 class _Tip extends StatelessWidget {
-  const _Tip({required this.info, required this.message});
+  const _Tip({
+    required this.animation,
+    required this.side,
+    required this.message,
+  });
 
-  final DesignOverlayInfo info;
+  final Animation<double> animation;
+  final RawPopoverSide? side;
   final String message;
 
   @override
   Widget build(BuildContext context) => FadeTransition(
-    opacity: info.animation,
+    opacity: animation,
     child: CustomPaint(
-      painter: _TipPainter(info),
+      painter: _TipPainter(side),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         child: Text(
@@ -554,12 +572,13 @@ class _Tip extends StatelessWidget {
   );
 }
 
-// Where the tip landed is known only as it is laid out: the painter
-// listens to it, so the tail is right in the first frame.
+// The tail at the tip's centre, on the side facing the control: the tip is
+// centred on it. Before the tip was laid out its side is unknown, and it has
+// no tail.
 class _TipPainter extends CustomPainter {
-  _TipPainter(this.info) : super(repaint: info.surfaceRect);
+  _TipPainter(this.side);
 
-  final DesignOverlayInfo info;
+  final RawPopoverSide? side;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -568,13 +587,10 @@ class _TipPainter extends CustomPainter {
       RRect.fromRectAndRadius(Offset.zero & size, const Radius.circular(6)),
       paint,
     );
-    final placed = info.surfaceRect.value;
-    if (placed == null || size.width < 20) return;
-    final x = (info.anchorRect.center.dx - placed.left).clamp(
-      10.0,
-      size.width - 10,
-    );
-    final below = info.side == DesignOverlaySide.below;
+    final side = this.side;
+    if (side == null || !side.isVertical || size.width < 20) return;
+    final x = size.width / 2;
+    final below = side == RawPopoverSide.below;
     final edge = below ? 0.0 : size.height;
     final point = below ? -5.0 : 5.0;
     canvas.drawPath(
@@ -588,7 +604,7 @@ class _TipPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_TipPainter oldDelegate) => oldDelegate.info != info;
+  bool shouldRepaint(_TipPainter oldDelegate) => oldDelegate.side != side;
 }
 
 /// Whom to send the report to: a search that takes its time and can fail.
@@ -627,7 +643,7 @@ class _SendToState extends State<_SendTo> {
 
   @override
   Widget build(BuildContext context) {
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -636,7 +652,7 @@ class _SendToState extends State<_SendTo> {
         Row(
           children: [
             Expanded(
-              child: DesignCombobox<String>(
+              child: RawCombobox<String>(
                 search: _search,
                 debounceDuration: const Duration(milliseconds: 250),
                 semanticLabel: 'Send to',
@@ -688,7 +704,7 @@ class _SendToState extends State<_SendTo> {
                         child: Text(words.searchFailedMessage),
                       ),
                     ),
-                    DesignPressable(
+                    RawButton(
                       onPressed: failure.retry,
                       semanticLabel: words.retryButtonLabel,
                       builder: (context, states, child) => _MenuRow(
@@ -707,7 +723,7 @@ class _SendToState extends State<_SendTo> {
               ),
             ),
             const SizedBox(width: 8),
-            DesignPressable(
+            RawButton(
               onPressed: () => setState(() => _offline = !_offline),
               semanticLabel: 'Offline',
               toggled: _offline,

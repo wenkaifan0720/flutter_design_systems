@@ -25,7 +25,7 @@ import 'motion.dart';
 
 /// Which side of the anchor a surface sits on. [start] and [end] follow the
 /// text direction.
-enum DesignOverlaySide {
+enum RawPopoverSide {
   /// Under the anchor.
   below,
 
@@ -39,7 +39,7 @@ enum DesignOverlaySide {
   end;
 
   /// The side across the anchor.
-  DesignOverlaySide get opposite => switch (this) {
+  RawPopoverSide get opposite => switch (this) {
     below => above,
     above => below,
     start => end,
@@ -51,7 +51,7 @@ enum DesignOverlaySide {
 }
 
 /// How a surface lines up with its anchor along the side it sits on.
-enum DesignOverlayAlign {
+enum RawPopoverAlign {
   /// Their start edges line up (left edges in left-to-right text; top edges
   /// beside the anchor).
   start,
@@ -64,7 +64,7 @@ enum DesignOverlayAlign {
 }
 
 /// What opens an anchored surface.
-enum DesignOverlayTrigger {
+enum RawPopoverTrigger {
   /// The anchor's press toggles it ([DesignOverlayAnchor.toggle]): a popover
   /// or a menu.
   press,
@@ -79,11 +79,11 @@ enum DesignOverlayTrigger {
 
 /// Where a surface goes relative to its anchor.
 @immutable
-class DesignOverlayPlacement {
+class RawPopoverPlacement {
   /// A placement on [side], lined up by [align].
-  const DesignOverlayPlacement({
-    this.side = DesignOverlaySide.below,
-    this.align = DesignOverlayAlign.start,
+  const RawPopoverPlacement({
+    this.side = RawPopoverSide.below,
+    this.align = RawPopoverAlign.start,
     this.gap = 4,
     this.margin = 8,
     this.flip = true,
@@ -93,10 +93,10 @@ class DesignOverlayPlacement {
   }) : assert(maxWidth > 0);
 
   /// The side it prefers.
-  final DesignOverlaySide side;
+  final RawPopoverSide side;
 
   /// How it lines up along that side.
-  final DesignOverlayAlign align;
+  final RawPopoverAlign align;
 
   /// Space between anchor and surface.
   final double gap;
@@ -118,7 +118,7 @@ class DesignOverlayPlacement {
   /// Whether, above or below the anchor, it is a list opened from a field
   /// (a select's, a combobox's, a menu from a form field): as wide as the
   /// anchor, wider only as far as its widest item needs, up to [maxWidth],
-  /// never to the screen; with [align] at [DesignOverlayAlign.start] it
+  /// never to the screen; with [align] at [RawPopoverAlign.start] it
   /// starts on the anchor's leading edge. Its width is set before its first
   /// frame, so a reveal inside it (an `Align` or a `SizeTransition` growing
   /// its height) stays under the field from the start. On by default; a
@@ -142,7 +142,7 @@ class DesignOverlayPlacement {
 
   @override
   bool operator ==(Object other) =>
-      other is DesignOverlayPlacement &&
+      other is RawPopoverPlacement &&
       other.side == side &&
       other.align == align &&
       other.gap == gap &&
@@ -165,7 +165,7 @@ class DesignOverlayPlacement {
   );
 }
 
-/// The anchor, as [DesignAnchoredOverlay.anchorBuilder] gets it.
+/// The anchor, as [RawPopover.anchorBuilder] gets it.
 @immutable
 class DesignOverlayAnchor {
   /// The anchor of an overlay driven by [controller].
@@ -194,13 +194,13 @@ class DesignOverlayAnchor {
   final VoidCallback toggle;
 }
 
-/// What [DesignAnchoredOverlay.overlayBuilder] paints the surface from.
+/// What [RawPopover.overlayBuilder] paints the surface from.
 @immutable
-class DesignOverlayInfo {
+class RawPopoverInfo {
   /// Info for a surface on [side] of [anchorRect], opened at [position] when
   /// it opened at a point, whose place is told to [surfaceRect] (none, by
   /// default).
-  const DesignOverlayInfo({
+  const RawPopoverInfo({
     required this.side,
     required this.anchorRect,
     required this.maxSize,
@@ -212,7 +212,7 @@ class DesignOverlayInfo {
 
   /// The side it sits on, after any flip: where an arrow points from, the
   /// edge a grow animation starts at.
-  final DesignOverlaySide side;
+  final RawPopoverSide side;
 
   /// The anchor's rectangle in the overlay.
   final Rect anchorRect;
@@ -249,7 +249,7 @@ class DesignOverlayInfo {
   final ValueListenable<Rect?> surfaceRect;
 }
 
-// A surface rectangle no one tells: [DesignOverlayInfo]'s default.
+// A surface rectangle no one tells: [RawPopoverInfo]'s default.
 class _NoSurfaceRect implements ValueListenable<Rect?> {
   const _NoSurfaceRect();
 
@@ -267,19 +267,19 @@ class _NoSurfaceRect implements ValueListenable<Rect?> {
 /// safe area and the on-screen keyboard: a look's own chrome over its pages,
 /// such as a desktop side bar a page's overlay runs under.
 ///
-/// Every [DesignAnchoredOverlay] below it (and so every menu, list, popover,
+/// Every [RawPopover] below it (and so every menu, list, popover,
 /// context menu and tooltip of ui_core's) keeps its surface inside the
 /// overlay less [padding], as it keeps clear of a notch. Put it round the
 /// pages the chrome stands over: a side bar 280 wide at the start of the
 /// screen, say.
 ///
 /// ```dart
-/// DesignOverlayPadding(padding: const EdgeInsetsDirectional.only(start: 280), child: const Text('A page beside the side bar'))
+/// RawPopoverPadding(padding: const EdgeInsetsDirectional.only(start: 280), child: const Text('A page beside the side bar'))
 /// ```
-class DesignOverlayPadding extends InheritedWidget {
+class RawPopoverPadding extends InheritedWidget {
   /// Keeps the surfaces opened in [child] [padding] clear of the overlay's
   /// edges.
-  const DesignOverlayPadding({
+  const RawPopoverPadding({
     super.key,
     required this.padding,
     required super.child,
@@ -293,14 +293,14 @@ class DesignOverlayPadding extends InheritedWidget {
   /// ([EdgeInsets.zero]) when there is none above it.
   static EdgeInsets of(BuildContext context) {
     final padding = context
-        .dependOnInheritedWidgetOfExactType<DesignOverlayPadding>()
+        .dependOnInheritedWidgetOfExactType<RawPopoverPadding>()
         ?.padding;
     if (padding == null) return EdgeInsets.zero;
     return padding.resolve(Directionality.maybeOf(context));
   }
 
   @override
-  bool updateShouldNotify(DesignOverlayPadding oldWidget) =>
+  bool updateShouldNotify(RawPopoverPadding oldWidget) =>
       padding != oldWidget.padding;
 
   @override
@@ -317,9 +317,9 @@ typedef DesignOverlayAnchorBuilder = Widget Function(
 );
 
 /// Paints the surface.
-typedef DesignOverlaySurfaceBuilder = Widget Function(
+typedef RawPopoverOverlayBuilder = Widget Function(
   BuildContext context,
-  DesignOverlayInfo info,
+  RawPopoverInfo info,
 );
 
 /// Hover intent: open after the pointer rests, close after it leaves, so a
@@ -412,34 +412,34 @@ class _LeaveArrows extends Action<DirectionalFocusIntent> {
 }
 
 /// A surface anchored to [anchorBuilder]'s widget: a popover
-/// ([DesignOverlayTrigger.press], [focusOnOpen]), a hover card
-/// ([DesignOverlayTrigger.hover]) or a menu ([arrowKeyNavigation] on).
+/// ([RawPopoverTrigger.press], [focusOnOpen]), a hover card
+/// ([RawPopoverTrigger.hover]) or a menu ([arrowKeyNavigation] on).
 ///
 /// On open, focus moves into the surface (when [focusOnOpen]) and Tab stays
 /// inside it; Escape, a tap outside or Android's back closes it, and focus
 /// goes back to where it was (the anchor). The surface takes the side with
-/// room ([DesignOverlayPlacement]) and [DesignOverlayInfo.side] says which;
+/// room ([RawPopoverPlacement]) and [RawPopoverInfo.side] says which;
 /// it keeps clear of the screen's safe area, the on-screen keyboard and a
-/// [DesignOverlayPadding] above it. [DesignOverlayInfo.surfaceRect] says
+/// [RawPopoverPadding] above it. [RawPopoverInfo.surfaceRect] says
 /// where it landed, for a tail or an arrow.
 ///
 /// `controller.open(position: offset)` (an offset in the anchor) opens it at
 /// that point, as a context menu opens at the pointer: below the point and
 /// from its start in reading order, above it or towards its other end where
-/// there is no room. [DesignOverlayInfo.position] says so.
+/// there is no room. [RawPopoverInfo.position] says so.
 ///
 /// ```dart
-/// DesignAnchoredOverlay(anchorBuilder: (context, anchor) => GestureDetector(onTap: anchor.toggle, child: const Text('More')), overlayBuilder: (context, info) => const Text('Details'))
+/// RawPopover(anchorBuilder: (context, anchor) => GestureDetector(onTap: anchor.toggle, child: const Text('More')), overlayBuilder: (context, info) => const Text('Details'))
 /// ```
-class DesignAnchoredOverlay extends StatefulWidget {
+class RawPopover extends StatefulWidget {
   /// A surface anchored to [anchorBuilder]'s widget.
-  const DesignAnchoredOverlay({
+  const RawPopover({
     super.key,
     required this.anchorBuilder,
     required this.overlayBuilder,
     this.controller,
-    this.trigger = DesignOverlayTrigger.press,
-    this.placement = const DesignOverlayPlacement(),
+    this.trigger = RawPopoverTrigger.press,
+    this.placement = const RawPopoverPlacement(),
     this.focusOnOpen = true,
     this.arrowKeyNavigation = false,
     this.semanticLabel,
@@ -456,17 +456,17 @@ class DesignAnchoredOverlay extends StatefulWidget {
   final DesignOverlayAnchorBuilder anchorBuilder;
 
   /// Paints the surface.
-  final DesignOverlaySurfaceBuilder overlayBuilder;
+  final RawPopoverOverlayBuilder overlayBuilder;
 
   /// Opens and closes it from outside, and opens it at a point
   /// (`open(position:)`); null: it makes its own.
   final MenuController? controller;
 
   /// What opens it.
-  final DesignOverlayTrigger trigger;
+  final RawPopoverTrigger trigger;
 
   /// Where it goes.
-  final DesignOverlayPlacement placement;
+  final RawPopoverPlacement placement;
 
   /// Whether focus moves into the surface when it opens (a popover, a menu)
   /// and Tab stays inside it; true by default. A hover card leaves focus on
@@ -510,7 +510,7 @@ class DesignAnchoredOverlay extends StatefulWidget {
   final double stiffness;
 
   @override
-  State<DesignAnchoredOverlay> createState() => _DesignAnchoredOverlayState();
+  State<RawPopover> createState() => _DesignAnchoredOverlayState();
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -523,7 +523,7 @@ class DesignAnchoredOverlay extends StatefulWidget {
         ),
       )
       ..add(
-        ObjectFlagProperty<DesignOverlaySurfaceBuilder>.has(
+        ObjectFlagProperty<RawPopoverOverlayBuilder>.has(
           'overlayBuilder',
           overlayBuilder,
         ),
@@ -536,17 +536,17 @@ class DesignAnchoredOverlay extends StatefulWidget {
         ),
       )
       ..add(
-        EnumProperty<DesignOverlayTrigger>(
+        EnumProperty<RawPopoverTrigger>(
           'trigger',
           trigger,
-          defaultValue: DesignOverlayTrigger.press,
+          defaultValue: RawPopoverTrigger.press,
         ),
       )
       ..add(
-        DiagnosticsProperty<DesignOverlayPlacement>(
+        DiagnosticsProperty<RawPopoverPlacement>(
           'placement',
           placement,
-          defaultValue: const DesignOverlayPlacement(),
+          defaultValue: const RawPopoverPlacement(),
         ),
       )
       ..add(
@@ -607,19 +607,17 @@ class DesignAnchoredOverlay extends StatefulWidget {
   }
 }
 
-class _DesignAnchoredOverlayState extends State<DesignAnchoredOverlay>
+class _DesignAnchoredOverlayState extends State<RawPopover>
     with SingleTickerProviderStateMixin {
   MenuController? _own;
   late final AnimationController _presence = AnimationController.unbounded(
     vsync: this,
   );
-  late final FocusScopeNode _scope = FocusScopeNode(
-    debugLabel: 'DesignAnchoredOverlay',
-  );
+  late final FocusScopeNode _scope = FocusScopeNode(debugLabel: 'RawPopover');
   // The surface itself, inside [_scope]: a menu a pointer opened holds the
   // keys here, no item lit.
   final FocusNode _surfaceNode = FocusNode(
-    debugLabel: 'DesignAnchoredOverlay surface',
+    debugLabel: 'RawPopover surface',
     skipTraversal: true,
   );
   // Where the surface landed, for the look's tail.
@@ -644,7 +642,7 @@ class _DesignAnchoredOverlayState extends State<DesignAnchoredOverlay>
   // Round the anchor, taking no focus itself: the anchor's own node is the
   // first one in it that can take focus.
   final FocusNode _anchorArea = FocusNode(
-    debugLabel: 'DesignAnchoredOverlay anchor',
+    debugLabel: 'RawPopover anchor',
     canRequestFocus: false,
     skipTraversal: true,
   );
@@ -769,7 +767,7 @@ class _DesignAnchoredOverlayState extends State<DesignAnchoredOverlay>
   }
 
   @override
-  void didUpdateWidget(DesignAnchoredOverlay oldWidget) {
+  void didUpdateWidget(RawPopover oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.trigger != widget.trigger ||
         oldWidget.hoverOpenDelay != widget.hoverOpenDelay ||
@@ -782,7 +780,7 @@ class _DesignAnchoredOverlayState extends State<DesignAnchoredOverlay>
     _intent?.removeListener(_hoverChanged);
     _intent?.dispose();
     _intent = null;
-    if (widget.trigger == DesignOverlayTrigger.hover) {
+    if (widget.trigger == RawPopoverTrigger.hover) {
       _intent = _HoverIntent(
         openDelay: widget.hoverOpenDelay,
         closeDelay: widget.hoverCloseDelay,
@@ -1036,7 +1034,7 @@ class _DesignAnchoredOverlayState extends State<DesignAnchoredOverlay>
     final bounds = designOverlayBounds(
       overlaySize: raw.overlaySize,
       view: _overlayView(context),
-      padding: DesignOverlayPadding.of(context),
+      padding: RawPopoverPadding.of(context),
       margin: widget.placement.margin,
     );
     // Opened at a point (a context menu at the pointer): placed round the
@@ -1053,7 +1051,7 @@ class _DesignAnchoredOverlayState extends State<DesignAnchoredOverlay>
     final gap = widget.placement.gap;
     final side = designResolveSide(anchor, bounds, widget.placement, direction);
     final maxSize = designOverlayMaxSize(anchor, bounds, side, gap, direction);
-    final info = DesignOverlayInfo(
+    final info = RawPopoverInfo(
       side: side,
       anchorRect: raw.anchorRect,
       maxSize: maxSize,

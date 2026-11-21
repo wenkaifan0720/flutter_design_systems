@@ -2,6 +2,9 @@
 // after a long press with its haptic; hoverable, dismissible with Escape
 // (which then goes no further) and persistent (WCAG 1.4.13); one at a time
 // with a warm-up; a screen reader hears it on the control.
+// DesignTooltip is deprecated in the package, which keeps its tests for its
+// one last release.
+// ignore_for_file: deprecated_member_use_from_same_package
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/rendering.dart';
@@ -16,7 +19,7 @@ import 'behaviour_harness.dart';
 const _childKey = ValueKey('child');
 const _tipKey = ValueKey('tip');
 
-late DesignOverlayInfo _info;
+late RawPopoverInfo _info;
 
 // The reference painter: a 44 px button and a 140 by 32 tip.
 Widget _tooltip({
@@ -48,7 +51,7 @@ Widget _tooltip({
   },
   child:
       child ??
-      DesignPressable(
+      RawButton(
         key: childKey,
         onPressed: enabled ? () {} : null,
         minimumSize: const Size(44, 44),
@@ -388,7 +391,7 @@ void main() {
       await tester.pumpAndSettle();
       final child = tester.getRect(find.byKey(_childKey));
       final tip = tester.getRect(find.byKey(_tipKey));
-      expect(_info.side, DesignOverlaySide.above);
+      expect(_info.side, RawPopoverSide.above);
       expect(tip.bottom, child.top - 4);
       expect(tip.center.dx, child.center.dx);
       expect(_info.surfaceRect.value, tip);
@@ -399,7 +402,7 @@ void main() {
       );
       await tester.sendKeyEvent(LogicalKeyboardKey.tab);
       await tester.pumpAndSettle();
-      expect(_info.side, DesignOverlaySide.below);
+      expect(_info.side, RawPopoverSide.below);
       await tester.pump(DesignTooltip.warmUpDuration);
     });
   });

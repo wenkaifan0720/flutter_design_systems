@@ -17,6 +17,7 @@ import 'package:flutter/widgets.dart';
 
 import 'barrier.dart';
 import 'haptics.dart';
+import 'internal/barrier_clip.dart';
 import 'internal/gesture_focus.dart';
 import 'internal/painted_barrier.dart';
 import 'internal/route_spring.dart';
@@ -26,16 +27,16 @@ import 'motion.dart';
 import 'pressable.dart';
 
 /// Builds a bottom sheet's panel from [details].
-typedef DesignBottomSheetBuilder = Widget Function(
+typedef RawBottomSheetBuilder = Widget Function(
   BuildContext context,
-  DesignBottomSheetDetails details,
+  RawBottomSheetDetails details,
 );
 
-/// What a [DesignBottomSheetRoute]'s panel paints from.
+/// What a [RawBottomSheetRoute]'s panel paints from.
 @immutable
-class DesignBottomSheetDetails {
+class RawBottomSheetDetails {
   /// The panel's details; the route makes them.
-  const DesignBottomSheetDetails({
+  const RawBottomSheetDetails({
     required this.animation,
     required this.size,
     required this.snapSizes,
@@ -54,7 +55,7 @@ class DesignBottomSheetDetails {
   /// drags and settles: a look's corner that squares as it reaches the top.
   final Animation<double> size;
 
-  /// The sizes it rests at ([DesignBottomSheetRoute.snapSizes]); empty for
+  /// The sizes it rests at ([RawBottomSheetRoute.snapSizes]); empty for
   /// a sheet at its content's own height.
   final List<double> snapSizes;
 
@@ -72,17 +73,17 @@ class DesignBottomSheetDetails {
   final VoidCallback close;
 }
 
-/// Drives an open [DesignBottomSheetRoute]'s size from outside it, as
+/// Drives an open [RawBottomSheetRoute]'s size from outside it, as
 /// `DraggableScrollableController` drives a sheet, on the route's spring.
 /// The caller makes it, gives it to one route at a time, and disposes it.
-class DesignBottomSheetController extends ChangeNotifier {
+class RawBottomSheetController extends ChangeNotifier {
   _SheetHost? _host;
 
   /// Whether a pushed route is using it.
   bool get isAttached => _host != null;
 
   /// The panel's height as a share of the room it has
-  /// ([DesignBottomSheetDetails.size]). Only while [isAttached].
+  /// ([RawBottomSheetDetails.size]). Only while [isAttached].
   double get size {
     assert(isAttached, 'the controller is not attached to a sheet');
     return _host!.share;
@@ -121,6 +122,7 @@ abstract interface class _SheetHost {
   void jumpToSize(double size);
   void close();
   Listenable get changes;
+  ValueListenable<bool> get dragging;
 }
 
 /// A modal bottom sheet. Push it with `Navigator.push`; its panel is
@@ -140,11 +142,11 @@ abstract interface class _SheetHost {
 /// away. Let go, it settles on the size nearest, or, flung, on the next one
 /// the fling points to; below half its smallest size, or flung down from
 /// there, it closes. Its content's scroll view hands drags over
-/// ([DesignBottomSheetDetails.scrollController]).
+/// ([RawBottomSheetDetails.scrollController]).
 ///
 /// It closes through `Navigator.maybePop` on Escape, Android's back, a
 /// barrier tap ([barrierDismissible]), a drag and
-/// [DesignBottomSheetDetails.close], so a `PopScope` may refuse any of them;
+/// [RawBottomSheetDetails.close], so a `PopScope` may refuse any of them;
 /// refused, a dragged sheet springs back. Focus moves into it and stays
 /// there, and goes back to what held it as it closes. When opened from a
 /// focused control, keyboard focus starts at the first stop unless the
@@ -156,7 +158,7 @@ abstract interface class _SheetHost {
 /// drag settles it on another size.
 ///
 /// ```dart
-/// DesignBottomSheetRoute<void>(
+/// RawBottomSheetRoute<void>(
 ///   snapSizes: const [0.5, 1],
 ///   builder: (context, details) => ListView(
 ///     controller: details.scrollController,
@@ -164,9 +166,9 @@ abstract interface class _SheetHost {
 ///   ),
 /// )
 /// ```
-class DesignBottomSheetRoute<T> extends PopupRoute<T> {
+class RawBottomSheetRoute<T> extends PopupRoute<T> {
   /// A sheet whose panel [builder] paints.
-  DesignBottomSheetRoute({
+  RawBottomSheetRoute({
     required this.builder,
     List<double>? snapSizes,
     double? initialSize,
@@ -220,7 +222,7 @@ class DesignBottomSheetRoute<T> extends PopupRoute<T> {
   }
 
   /// Paints the panel.
-  final DesignBottomSheetBuilder builder;
+  final RawBottomSheetBuilder builder;
 
   /// The sizes it rests at, ascending, each a share of the room in (0, 1];
   /// empty: one rest at its content's own height.
@@ -232,7 +234,7 @@ class DesignBottomSheetRoute<T> extends PopupRoute<T> {
 
   /// Moves it from outside; the caller's, never disposed by the route.
   /// (Not `controller`: a route's `controller` is its own animation's.)
-  final DesignBottomSheetController? sheetController;
+  final RawBottomSheetController? sheetController;
 
   /// Whether a drag moves it. Defaults to true.
   final bool enableDrag;
@@ -262,7 +264,7 @@ class DesignBottomSheetRoute<T> extends PopupRoute<T> {
   final DesignBarrierBuilder? barrierBuilder;
 
   /// What a screen reader calls it; null:
-  /// [DesignLocalizations.bottomSheetLabel].
+  /// [RawWidgetsLocalizations.bottomSheetLabel].
   final String? semanticLabel;
 
   final Color _scrim;
@@ -286,6 +288,8 @@ class DesignBottomSheetRoute<T> extends PopupRoute<T> {
   // The room's height, and the content's own, as last laid out.
   double _room = 0;
   double _content = 0;
+  // The keyboard's height under the sheet, as the page was last built.
+  double _keyboard = 0;
 
   // A drag moved it since it last rested: under Reduce Motion it moves with
   // the finger, and slides on from there.
@@ -318,14 +322,14 @@ class DesignBottomSheetRoute<T> extends PopupRoute<T> {
   }
 
   /// What a screen reader calls the barrier; null:
-  /// [DesignLocalizations.modalBarrierDismissLabel].
+  /// [RawWidgetsLocalizations.modalBarrierDismissLabel].
   @override
   String? get barrierLabel {
     final context = navigator?.context;
     return _givenBarrierLabel ??
         (context == null
             ? null
-            : DesignLocalizations.of(context).modalBarrierDismissLabel);
+            : RawWidgetsLocalizations.of(context).modalBarrierDismissLabel);
   }
 
   /// The barrier's colour; null while [barrierBuilder] paints it.
@@ -345,9 +349,13 @@ class DesignBottomSheetRoute<T> extends PopupRoute<T> {
   @override
   Duration get transitionDuration => const Duration(milliseconds: 300);
 
+  // What the panel covers of the barrier, from the screen's foot: a screen
+  // reader outlines the barrier above it, where a tap reaches it.
+  final ValueNotifier<EdgeInsets> _barrierClip = ValueNotifier(EdgeInsets.zero);
+
   @override
   Widget buildModalBarrier() {
-    final barrier = super.buildModalBarrier();
+    final barrier = clippedModalBarrier(this, _barrierClip);
     final paint = barrierBuilder;
     return paint == null ? barrier : paintedBarrier(paint, animation!, barrier);
   }
@@ -410,6 +418,7 @@ class DesignBottomSheetRoute<T> extends PopupRoute<T> {
     _size?.dispose();
     _scroll.dispose();
     _dragging.dispose();
+    _barrierClip.dispose();
     super.dispose();
   }
 
@@ -519,7 +528,7 @@ class DesignBottomSheetRoute<T> extends PopupRoute<T> {
       } else {
         _dragEnd(0);
       }
-    }, debugLabel: 'DesignBottomSheetRoute.dragAbandon');
+    }, debugLabel: 'RawBottomSheetRoute.dragAbandon');
   }
 
   // A drag past this speed, in logical pixels a second, is a fling: it
@@ -606,14 +615,15 @@ class DesignBottomSheetRoute<T> extends PopupRoute<T> {
     Animation<double> animation,
     Animation<double> secondaryAnimation,
   ) {
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     final media = MediaQuery.of(context);
     final top = useSafeArea ? media.padding.top : 0.0;
+    _keyboard = media.viewInsets.bottom;
     Widget panel = ValueListenableBuilder<bool>(
       valueListenable: _dragging,
       builder: (context, dragging, _) => builder(
         context,
-        DesignBottomSheetDetails(
+        RawBottomSheetDetails(
           animation: _spring.reduced
               ? kAlwaysCompleteAnimation
               : _spring.presence,
@@ -679,12 +689,12 @@ class DesignBottomSheetRoute<T> extends PopupRoute<T> {
 /// Reduce Motion it fades. Escape and Back respect the page's [PopScope].
 ///
 /// ```dart
-/// DesignSheetPageRoute<void>(builder: (context) => const Text('Edit recording'))
+/// RawSheetRoute<void>(builder: (context) => const Text('Edit recording'))
 /// ```
-class DesignSheetPageRoute<T> extends PageRoute<T> {
+class RawSheetRoute<T> extends PageRoute<T> {
   /// A full-screen page drawn by [builder]. The spring defaults match a
-  /// [DesignBottomSheetRoute]; a separate closing spring is optional.
-  DesignSheetPageRoute({
+  /// [RawBottomSheetRoute]; a separate closing spring is optional.
+  RawSheetRoute({
     required this.builder,
     this.semanticLabel,
     double dampingRatio = 1,
@@ -750,7 +760,8 @@ class DesignSheetPageRoute<T> extends PageRoute<T> {
       scopesRoute: true,
       namesRoute: true,
       explicitChildNodes: true,
-      label: semanticLabel ?? DesignLocalizations.of(context).bottomSheetLabel,
+      label:
+          semanticLabel ?? RawWidgetsLocalizations.of(context).bottomSheetLabel,
       child: SizedBox.expand(child: Builder(builder: builder)),
     ),
   );
@@ -777,7 +788,7 @@ class _SizeShare extends Animation<double>
     with AnimationWithParentMixin<double> {
   _SizeShare(this.route);
 
-  final DesignBottomSheetRoute<Object?> route;
+  final RawBottomSheetRoute<Object?> route;
 
   @override
   Animation<double> get parent => route._size ?? kAlwaysCompleteAnimation;
@@ -795,7 +806,7 @@ class _SizeShare extends Animation<double>
 class _RouteHost implements _SheetHost {
   _RouteHost(this.route);
 
-  final DesignBottomSheetRoute<Object?> route;
+  final RawBottomSheetRoute<Object?> route;
 
   @override
   double get share => route._share.value;
@@ -817,13 +828,16 @@ class _RouteHost implements _SheetHost {
 
   @override
   Listenable get changes => route._size!;
+
+  @override
+  ValueListenable<bool> get dragging => route._dragging;
 }
 
 // The sheet's own drag, for the content's scroll view to hand over.
 class _SheetDrag implements SheetDragTarget {
   _SheetDrag(this.route);
 
-  final DesignBottomSheetRoute<Object?> route;
+  final RawBottomSheetRoute<Object?> route;
 
   @override
   bool get canGrow =>
@@ -851,7 +865,7 @@ class _SheetDrag implements SheetDragTarget {
 class _SheetLayout extends SingleChildRenderObjectWidget {
   const _SheetLayout({required this.route, required super.child});
 
-  final DesignBottomSheetRoute<Object?> route;
+  final RawBottomSheetRoute<Object?> route;
 
   // One route, one layout: the route is the same in every build.
   @override
@@ -862,7 +876,7 @@ class _SheetLayout extends SingleChildRenderObjectWidget {
 class _RenderSheetLayout extends RenderShiftedBox {
   _RenderSheetLayout(this._route) : super(null);
 
-  final DesignBottomSheetRoute<Object?> _route;
+  final RawBottomSheetRoute<Object?> _route;
 
   Listenable? _listening;
 
@@ -917,6 +931,11 @@ class _RenderSheetLayout extends RenderShiftedBox {
       height = child.size.height;
       route._content = height;
     }
+    // The barrier's node stops at the sheet's top (and the keyboard under
+    // it), as Material's modal bottom sheet's does.
+    route._barrierClip.value = EdgeInsets.only(
+      bottom: math.min(height + route._keyboard, room + route._keyboard),
+    );
     final c = route.animation!.value;
     final shown = route._spring.reduced && !route._dragged
         ? 1.0
@@ -951,24 +970,27 @@ class _ShrinkIntent extends Intent {
 /// the sheet to its next size (from the largest back to the smallest; a
 /// sheet of one size closes), Up and Down to a larger or smaller size when
 /// focused, and a screen reader's increase and decrease. Put it in a
-/// [DesignBottomSheetRoute]'s panel.
+/// [RawBottomSheetRoute]'s panel. Its states take
+/// [WidgetState.dragged] while a finger drags the sheet, as Material's
+/// sheet's drag handle does.
 ///
 /// ```dart
-/// DesignBottomSheetDragHandle(builder: (context, states) => const SizedBox(width: 32, height: 4))
+/// RawBottomSheetDragHandle(builder: (context, states) => const SizedBox(width: 32, height: 4))
 /// ```
-class DesignBottomSheetDragHandle extends StatelessWidget {
+class RawBottomSheetDragHandle extends StatelessWidget {
   /// A drag handle [builder] paints.
-  const DesignBottomSheetDragHandle({
+  const RawBottomSheetDragHandle({
     super.key,
     required this.builder,
     this.semanticLabel,
   });
 
-  /// Paints the handle in its pressable states.
+  /// Paints the handle in its pressable states, and dragged while the
+  /// sheet is dragged.
   final Widget Function(BuildContext context, Set<WidgetState> states) builder;
 
   /// What a screen reader calls it; null:
-  /// [DesignLocalizations.dragHandleLabel].
+  /// [RawWidgetsLocalizations.dragHandleLabel].
   final String? semanticLabel;
 
   @override
@@ -989,11 +1011,11 @@ class DesignBottomSheetDragHandle extends StatelessWidget {
     final host = context
         .dependOnInheritedWidgetOfExactType<_SheetScope>()
         ?.host;
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     final label = semanticLabel ?? words.dragHandleLabel;
     if (host == null) {
       // Outside a sheet: painted, but it moves nothing.
-      return DesignPressable(
+      return RawButton(
         semanticLabel: label,
         excludeSemantics: true,
         minimumSize: const Size(44, 44),
@@ -1001,8 +1023,9 @@ class DesignBottomSheetDragHandle extends StatelessWidget {
       );
     }
     return ListenableBuilder(
-      listenable: host.changes,
+      listenable: Listenable.merge([host.changes, host.dragging]),
       builder: (context, _) {
+        final dragged = host.dragging.value;
         final stops = host.stops;
         final at = stops.indexOf(host.stop);
         final larger = at + 1 < stops.length ? stops[at + 1] : null;
@@ -1013,7 +1036,7 @@ class DesignBottomSheetDragHandle extends StatelessWidget {
           child: Semantics(
             onIncrease: larger == null ? null : grow,
             onDecrease: smaller == null ? null : shrink,
-            child: DesignPressable(
+            child: RawButton(
               onPressed: stops.length == 1
                   ? host.close
                   : () => host.animateToSize(larger ?? stops.first),
@@ -1032,7 +1055,12 @@ class DesignBottomSheetDragHandle extends StatelessWidget {
                   onInvoke: (_) => smaller == null ? null : shrink(),
                 ),
               },
-              builder: (context, states, _) => builder(context, states),
+              builder: (context, states, _) => builder(
+                context,
+                dragged
+                    ? Set.unmodifiable({...states, WidgetState.dragged})
+                    : states,
+              ),
             ),
           ),
         );

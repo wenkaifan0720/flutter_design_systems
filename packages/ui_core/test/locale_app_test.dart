@@ -1,5 +1,5 @@
 // A Material app that lists the 30 locales builds under any of them, with
-// its Material library's delegates beside DesignLocalizations.delegate: its
+// its Material library's delegates beside RawWidgetsLocalizations.delegate: its
 // text fields find their words, and Arabic its direction. Without them, a
 // Material text field under German asserts, which is why the delegates line
 // names both: the README's line, which a look's gallery writes too
@@ -16,7 +16,7 @@ Widget _gallery(
 ) => MaterialApp(
   locale: locale,
   localizationsDelegates: delegates,
-  supportedLocales: DesignLocalizations.supportedLocales,
+  supportedLocales: RawWidgetsLocalizations.supportedLocales,
   home: Material(
     child: Builder(
       builder: (context) {
@@ -40,17 +40,17 @@ void main() {
     testWidgets('under $locale, a gallery with a text field builds', (
       tester,
     ) async {
-      DesignLocalizations? words;
+      RawWidgetsLocalizations? words;
       TextDirection? shown;
       await tester.pumpWidget(
         _gallery(
           locale,
           const [
-            DesignLocalizations.delegate,
+            RawWidgetsLocalizations.delegate,
             ...GlobalMaterialLocalizations.delegates,
           ],
           (context) {
-            words = DesignLocalizations.of(context);
+            words = RawWidgetsLocalizations.of(context);
             shown = Directionality.of(context);
           },
         ),
@@ -72,7 +72,7 @@ void main() {
     try {
       await tester.pumpWidget(
         _gallery(const Locale('de'), const [
-          DesignLocalizations.delegate,
+          RawWidgetsLocalizations.delegate,
         ], (_) {}),
       );
     } finally {

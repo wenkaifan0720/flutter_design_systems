@@ -127,8 +127,8 @@ class BrutalButtonGroup extends StatelessWidget {
     List<BrutalStyle?> layers,
   ) {
     final c = theme.colors;
-    return DesignTapTarget(
-      child: DesignPressable(
+    return TapTargetPadding(
+      child: RawButton(
         onPressed: item.onPressed,
         semanticLabel: item.label ?? item.tooltip,
         excludeSemantics: true,
@@ -286,7 +286,7 @@ class BrutalToggleGroup<T> extends StatelessWidget {
             border: rule,
             foreground: c.ink,
           ),
-          child: DesignToggleGroup<T>(
+          child: RawSegmentedButton<T>(
             options: options,
             selected: selected,
             onSelectionChanged: onSelectionChanged,
@@ -448,8 +448,8 @@ class BrutalLink extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = BrutalTheme.of(context);
     final c = theme.colors;
-    return DesignTapTarget(
-      child: DesignPressable(
+    return TapTargetPadding(
+      child: RawButton(
         onPressed: onPressed,
         focusNode: focusNode,
         autofocus: autofocus,

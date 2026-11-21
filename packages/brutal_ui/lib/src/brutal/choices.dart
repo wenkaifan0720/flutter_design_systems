@@ -116,7 +116,7 @@ class BrutalCheckbox extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = BrutalTheme.of(context);
     final c = theme.colors;
-    return DesignPressable(
+    return RawButton(
       onPressed: onChanged == null ? null : () => onChanged!(!value),
       focusNode: focusNode,
       autofocus: autofocus,
@@ -176,7 +176,7 @@ class BrutalCheckbox extends StatelessWidget {
             ),
           ),
         );
-        return DesignTapTarget(
+        return TapTargetPadding(
           child: disabled && isError
               ? Row(
                   mainAxisSize: MainAxisSize.min,
@@ -247,28 +247,32 @@ class _CheckPainter extends CustomPainter {
 }
 
 /// One of a set: a circle with a dot, round by meaning so it never reads as
-/// a checkbox (the look's one round control). Chosen when [value] equals
-/// [groupValue]. Held down, it turns over (an ink face, a paper dot), as a
-/// cell does under a press. A null [onChanged] disables it.
+/// a checkbox (the look's one round control). Chosen when [value] is the
+/// set's chosen value. Held down, it turns over (an ink face, a paper dot),
+/// as a cell does under a press.
 ///
 /// Reads [style]'s `fill` (the face), `edge` (the ring and the dot; selected
 /// while chosen) and `minimumSize` (its diameter), then
 /// [BrutalThemeData.radioStyle]'s.
 ///
-/// Build a set's radios in a [DesignRadioGroup] and pass its node to
-/// [focusNode]: the set is then one Tab stop, and the arrow keys move the
-/// choice.
+/// Build a set's radios in Flutter's [RadioGroup], with a
+/// [RadioGroupKeyboardFix] inside it round them: the group holds the choice,
+/// the set is one Tab stop, and the arrow keys move the choice. Inside a
+/// group a radio takes the group's choice, and [enabled] turns it off. On
+/// its own, as Flutter's `Radio`, it reads [groupValue] and calls
+/// [onChanged], and a null [onChanged] disables it.
 ///
 /// ```dart
-/// BrutalRadio<String>(value: 'card', groupValue: method, onChanged: (value) => setState(() => method = value!))
+/// RadioGroup<String>(groupValue: method, onChanged: (value) => setState(() => method = value!), child: RadioGroupKeyboardFix<String>(child: Column(children: [BrutalRadio<String>(value: 'card', semanticLabel: 'Card'), BrutalRadio<String>(value: 'cash', semanticLabel: 'Cash')])))
 /// ```
 class BrutalRadio<T> extends StatelessWidget {
   /// A radio for [value].
   const BrutalRadio({
     super.key,
     required this.value,
-    required this.groupValue,
-    required this.onChanged,
+    this.groupValue,
+    this.onChanged,
+    this.enabled,
     this.semanticLabel,
     this.focusNode,
     this.autofocus = false,
@@ -278,11 +282,18 @@ class BrutalRadio<T> extends StatelessWidget {
   /// The value it stands for.
   final T value;
 
-  /// The set's chosen value.
+  /// The set's chosen value, for a radio outside a [RadioGroup]; a group's
+  /// own choice wins inside one.
   final T? groupValue;
 
-  /// Called with [value] when it is chosen; null disables it.
+  /// Called with [value] when it is chosen, for a radio outside a
+  /// [RadioGroup]; null disables it there. Inside a group, the group's
+  /// `onChanged` is called instead.
   final ValueChanged<T?>? onChanged;
+
+  /// Whether it can be chosen. Null: inside a [RadioGroup] it can, and on
+  /// its own it can while [onChanged] is set.
+  final bool? enabled;
 
   /// Its style, over [BrutalThemeData.radioStyle].
   final BrutalStyle? style;
@@ -297,58 +308,7 @@ class BrutalRadio<T> extends StatelessWidget {
   final bool autofocus;
 
   @override
-  Widget build(BuildContext context) {
-    final theme = BrutalTheme.of(context);
-    final c = theme.colors;
-    final chosen = value == groupValue;
-    return DesignPressable(
-      onPressed: onChanged == null ? null : () => onChanged!(value),
-      focusNode: focusNode,
-      autofocus: autofocus,
-      checked: chosen,
-      inMutuallyExclusiveGroup: true,
-      semanticLabel: semanticLabel,
-      // Space presses it as Enter does, chosen or not: in a radio group the
-      // group's own Space only chooses a radio not yet chosen.
-      shortcuts: const {
-        SingleActivator(LogicalKeyboardKey.space): ActivateIntent(),
-      },
-      builder: (context, states, _) {
-        final layered = DesignStyleOf(
-          [style, theme.radioStyle],
-          {...states, if (chosen) WidgetState.selected},
-        );
-        final disabled = states.contains(WidgetState.disabled);
-        final focused = states.contains(WidgetState.focused);
-        final pressed = states.contains(WidgetState.pressed) && !disabled;
-        final rule =
-            layered.side?.color ??
-            layered.edge ??
-            (disabled ? c.disabled : c.ink);
-        final face = layered.fill ?? c.surface;
-        return DesignTapTarget(
-          child: SizedBox.square(
-            dimension: layered.minimumSize?.height ?? 24,
-            child: _Spring(
-              value: chosen ? 1 : 0,
-              stiffness: BrutalMotion.moveStiffness,
-              builder: (context, t) => CustomPaint(
-                painter: _RadioPainter(
-                  t: t,
-                  rule: rule,
-                  // Held down, it turns over: an ink face, a paper dot.
-                  face: pressed ? rule : face,
-                  dot: pressed ? face : rule,
-                  width: theme.borderWidth,
-                  focus: focused ? brutalFocusInk(c, c.paper) : null,
-                ),
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
+  Widget build(BuildContext context) => _BrutalRadio<T>(radio: this);
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -357,9 +317,127 @@ class BrutalRadio<T> extends StatelessWidget {
       ..add(DiagnosticsProperty<T>('value', value))
       ..add(DiagnosticsProperty<T>('groupValue', groupValue))
       ..add(
-        FlagProperty('enabled', value: onChanged != null, ifFalse: 'disabled'),
+        FlagProperty(
+          'enabled',
+          value: enabled ?? onChanged != null,
+          ifFalse: 'disabled',
+        ),
       );
   }
+}
+
+/// A radio's [RawRadio], with the focus node and the lone radio's registry
+/// it keeps between builds.
+class _BrutalRadio<T> extends StatefulWidget {
+  const _BrutalRadio({required this.radio});
+
+  final BrutalRadio<T> radio;
+
+  @override
+  State<_BrutalRadio<T>> createState() => _BrutalRadioState<T>();
+}
+
+class _BrutalRadioState<T> extends State<_BrutalRadio<T>> {
+  FocusNode? _ownNode;
+  late final _LoneRadioRegistry<T> _lone = _LoneRadioRegistry<T>(this);
+
+  FocusNode get _node =>
+      widget.radio.focusNode ??
+      (_ownNode ??= FocusNode(debugLabel: 'BrutalRadio'));
+
+  @override
+  void dispose() {
+    _ownNode?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final radio = widget.radio;
+    final group = RadioGroup.maybeOf<T>(context);
+    final theme = BrutalTheme.of(context);
+    final c = theme.colors;
+    return MergeSemantics(
+      child: RawRadio<T>(
+        value: radio.value,
+        mouseCursor: WidgetStateMouseCursor.clickable,
+        toggleable: false,
+        focusNode: _node,
+        autofocus: radio.autofocus,
+        groupRegistry: group ?? _lone,
+        enabled: radio.enabled ?? (group != null || radio.onChanged != null),
+        builder: (context, state) {
+          final states = {
+            ...state.states,
+            if (state.downPosition != null) WidgetState.pressed,
+          };
+          final chosen = states.contains(WidgetState.selected);
+          final layered = DesignStyleOf([
+            radio.style,
+            theme.radioStyle,
+          ], states);
+          final disabled = states.contains(WidgetState.disabled);
+          final focused = states.contains(WidgetState.focused);
+          final pressed = states.contains(WidgetState.pressed) && !disabled;
+          final rule =
+              layered.side?.color ??
+              layered.edge ??
+              (disabled ? c.disabled : c.ink);
+          final face = layered.fill ?? c.surface;
+          return Semantics(
+            label: radio.semanticLabel,
+            child: ExcludeSemantics(
+              // All of it takes a press, its gaps too, as RawRadio's
+              // detector finds only what the face paints.
+              child: Listener(
+                behavior: HitTestBehavior.opaque,
+                child: TapTargetPadding(
+                  child: SizedBox.square(
+                    dimension: layered.minimumSize?.height ?? 24,
+                    child: _Spring(
+                      value: chosen ? 1 : 0,
+                      stiffness: BrutalMotion.moveStiffness,
+                      builder: (context, t) => CustomPaint(
+                        painter: _RadioPainter(
+                          t: t,
+                          rule: rule,
+                          // Held down, it turns over: an ink face, a paper dot.
+                          face: pressed ? rule : face,
+                          dot: pressed ? face : rule,
+                          width: theme.borderWidth,
+                          focus: focused ? brutalFocusInk(c, c.paper) : null,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+/// A radio on its own: its [BrutalRadio.groupValue] and
+/// [BrutalRadio.onChanged], as Flutter's `Radio` reads them.
+class _LoneRadioRegistry<T> extends RadioGroupRegistry<T> {
+  _LoneRadioRegistry(this.state);
+
+  final _BrutalRadioState<T> state;
+
+  @override
+  T? get groupValue => state.widget.radio.groupValue;
+
+  @override
+  ValueChanged<T?> get onChanged => state.widget.radio.onChanged ?? (_) {};
+
+  @override
+  void registerClient(RadioClient<T> radio) {}
+
+  @override
+  void unregisterClient(RadioClient<T> radio) {}
 }
 
 class _RadioPainter extends CustomPainter {
@@ -465,7 +543,7 @@ class BrutalSwitch extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = BrutalTheme.of(context);
     final c = theme.colors;
-    return DesignPressable(
+    return RawButton(
       onPressed: onChanged == null ? null : () => onChanged!(!value),
       focusNode: focusNode,
       autofocus: autofocus,
@@ -485,7 +563,7 @@ class BrutalSwitch extends StatelessWidget {
         // slides the thumb.
         final inked =
             value != (states.contains(WidgetState.pressed) && !disabled);
-        return DesignTapTarget(
+        return TapTargetPadding(
           child: SizedBox(
             width: trackWidth,
             height: trackHeight,
@@ -661,14 +739,13 @@ class BrutalSegmentedButton<T> extends StatelessWidget {
           values: [for (final s in segments) s.value],
           value: value,
           onChanged: onChanged,
-          cell: (context, i, node, select, jump) => _cell(
+          cell: (context, i, node, jump) => _cell(
             context,
             theme,
             segments[i],
             style,
             wide ? null : cell,
             node,
-            select,
             jump,
             layers,
           ),
@@ -731,103 +808,127 @@ class BrutalSegmentedButton<T> extends StatelessWidget {
     TextStyle style,
     double? width,
     FocusNode node,
-    VoidCallback? select,
     ValueChanged<bool> jump,
     List<BrutalStyle?> layers,
   ) {
-    final c = theme.colors;
     final chosen = s.value == value;
-    return DesignPressable(
-      focusNode: node,
-      // The group says whether the cell can be chosen; a press reports its
-      // value even when it is already chosen.
-      onPressed: select == null ? null : () => onChanged?.call(s.value),
-      selected: chosen,
-      checked: chosen,
-      inMutuallyExclusiveGroup: true,
-      semanticLabel: s.semanticLabel ?? s.label,
-      excludeSemantics: true,
+    // Each cell is a radio of the segments' RadioGroup; Home and End choose
+    // the first and the last.
+    return Shortcuts(
       shortcuts: const {
-        // Space presses the cell as Enter does, the chosen one too: the
-        // group's own Space only chooses a cell not yet chosen.
-        SingleActivator(LogicalKeyboardKey.space): ActivateIntent(),
         SingleActivator(LogicalKeyboardKey.home): _EndIntent(last: false),
         SingleActivator(LogicalKeyboardKey.end): _EndIntent(last: true),
       },
-      actions: {
-        _EndIntent: CallbackAction<_EndIntent>(
-          onInvoke: (intent) {
-            jump(intent.last);
-            return null;
-          },
-        ),
-      },
-      builder: (context, states, _) {
-        final layered = DesignStyleOf(layers, states);
-        final disabled = states.contains(WidgetState.disabled);
-        final lit = chosen || states.contains(WidgetState.pressed);
-        final words =
-            layered.foreground ??
-            (disabled
-                ? (chosen ? c.surface : c.disabled)
-                : lit
-                ? c.paper
-                : c.ink);
-        // Inside the frame's rule, top and bottom.
-        return Padding(
-          padding: EdgeInsets.symmetric(vertical: theme.borderWidth),
-          child: AnimatedBrutalSurface(
-            stiffness: BrutalMotion.colorStiffness,
-            face: BrutalFace(
-              fill: lit
-                  ? (disabled ? c.disabled : c.ink)
-                  : c.ink.withValues(alpha: 0),
-              border: c.ink.withValues(alpha: 0),
-              foreground: words,
-              borderWidth: 0,
-            ),
-            child: CustomPaint(
-              foregroundPainter: states.contains(WidgetState.focused)
-                  ? BrutalInsetFocusPainter(
-                      brutalFocusInk(c, lit ? c.ink : c.surface),
-                    )
-                  : null,
-              child: Padding(
-                padding:
-                    layered.padding(Directionality.of(context)) ??
-                    const EdgeInsets.symmetric(horizontal: BrutalSpacing.small),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    if (s.icon != null) ...[
-                      IconTheme.merge(
-                        data: IconThemeData(size: layered.iconSize ?? 20),
-                        child: s.icon!,
-                      ),
-                      const SizedBox(width: BrutalSpacing.small),
-                    ],
-                    Flexible(
-                      child: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: DesignCapCenter(
-                          capHeightFactor: BrutalTheme.of(context)
-                              .capHeightFactor,
-                          child: Text(
-                            s.label,
-                            maxLines: 1,
-                            softWrap: false,
-                            style: style.copyWith(color: words),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
+      child: Actions(
+        actions: {
+          _EndIntent: CallbackAction<_EndIntent>(
+            onInvoke: (intent) {
+              jump(intent.last);
+              return null;
+            },
+          ),
+        },
+        child: MergeSemantics(
+          child: RawRadio<T>(
+            value: s.value,
+            mouseCursor: WidgetStateMouseCursor.clickable,
+            toggleable: false,
+            focusNode: node,
+            autofocus: false,
+            groupRegistry: RadioGroup.maybeOf<T>(context),
+            enabled: onChanged != null,
+            builder: (context, radio) => Semantics(
+              label: s.semanticLabel ?? s.label,
+              child: ExcludeSemantics(
+                // All of it takes a press, its gaps too, as RawRadio's
+                // detector finds only what the face paints.
+                child: Listener(
+                  behavior: HitTestBehavior.opaque,
+                  child: _segmentFace(context, theme, s, style, chosen, {
+                    ...radio.states,
+                    if (radio.downPosition != null) WidgetState.pressed,
+                  }, layers),
                 ),
               ),
             ),
           ),
-        );
-      },
+        ),
+      ),
+    );
+  }
+
+  Widget _segmentFace(
+    BuildContext context,
+    BrutalThemeData theme,
+    BrutalSegment<T> s,
+    TextStyle style,
+    bool chosen,
+    Set<WidgetState> states,
+    List<BrutalStyle?> layers,
+  ) {
+    final c = theme.colors;
+    final layered = DesignStyleOf(layers, states);
+    final disabled = states.contains(WidgetState.disabled);
+    final lit = chosen || states.contains(WidgetState.pressed);
+    final words =
+        layered.foreground ??
+        (disabled
+            ? (chosen ? c.surface : c.disabled)
+            : lit
+            ? c.paper
+            : c.ink);
+    // Inside the frame's rule, top and bottom.
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: theme.borderWidth),
+      child: AnimatedBrutalSurface(
+        stiffness: BrutalMotion.colorStiffness,
+        face: BrutalFace(
+          fill: lit
+              ? (disabled ? c.disabled : c.ink)
+              : c.ink.withValues(alpha: 0),
+          border: c.ink.withValues(alpha: 0),
+          foreground: words,
+          borderWidth: 0,
+        ),
+        child: CustomPaint(
+          foregroundPainter: states.contains(WidgetState.focused)
+              ? BrutalInsetFocusPainter(
+                  brutalFocusInk(c, lit ? c.ink : c.surface),
+                )
+              : null,
+          child: Padding(
+            padding:
+                layered.padding(Directionality.of(context)) ??
+                const EdgeInsets.symmetric(horizontal: BrutalSpacing.small),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (s.icon != null) ...[
+                  IconTheme.merge(
+                    data: IconThemeData(size: layered.iconSize ?? 20),
+                    child: s.icon!,
+                  ),
+                  const SizedBox(width: BrutalSpacing.small),
+                ],
+                Flexible(
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: DesignCapCenter(
+                      capHeightFactor: BrutalTheme.of(context).capHeightFactor,
+                      child: Text(
+                        s.label,
+                        maxLines: 1,
+                        softWrap: false,
+                        style: style.copyWith(color: words),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 
@@ -850,8 +951,9 @@ class _EndIntent extends Intent {
   final bool last;
 }
 
-/// The segments' radio group. It owns a node for each segment so that Home
-/// and End can move focus to the cell they choose.
+/// The segments' radio group: Flutter's [RadioGroup], with a
+/// [RadioGroupKeyboardFix] round the cells. It owns a node for each segment
+/// so that Home and End can move focus to the cell they choose.
 class _SegmentGroup<T> extends StatefulWidget {
   const _SegmentGroup({
     required this.values,
@@ -868,7 +970,6 @@ class _SegmentGroup<T> extends StatefulWidget {
     BuildContext context,
     int index,
     FocusNode node,
-    VoidCallback? select,
     ValueChanged<bool> jump,
   )
   cell;
@@ -917,15 +1018,24 @@ class _SegmentGroupState<T> extends State<_SegmentGroup<T>> {
 
   @override
   Widget build(BuildContext context) {
-    final index = {for (final (i, v) in widget.values.indexed) v: i};
-    return DesignRadioGroup<T>(
-      options: widget.values,
-      value: widget.value,
-      onChanged: widget.onChanged,
-      focusNodeFor: _node,
-      itemBuilder: (context, value, node, select) =>
-          widget.cell(context, index[value]!, node, select, _jump),
-      layoutBuilder: widget.layout,
+    return RadioGroup<T>(
+      groupValue: widget.value,
+      // A segment's value may be null (an "All" segment); its radios are not
+      // toggleable, so the group never clears the choice.
+      onChanged: (next) {
+        if (next != widget.value) widget.onChanged?.call(next as T);
+      },
+      child: RadioGroupKeyboardFix<T>(
+        child: Builder(
+          builder: (context) => widget.layout(context, [
+            for (final (i, value) in widget.values.indexed)
+              KeyedSubtree(
+                key: ObjectKey(value),
+                child: widget.cell(context, i, _node(value), _jump),
+              ),
+          ]),
+        ),
+      ),
     );
   }
 }
@@ -934,7 +1044,7 @@ class _SegmentGroupState<T> extends State<_SegmentGroup<T>> {
 /// cell, butted on shared rules. A cell at its bound is off. A null
 /// [onChanged] disables it.
 ///
-/// The behaviour is ui_core's ([DesignNumberField]): the number is a field
+/// The behaviour is ui_core's ([RawNumberField]): the number is a field
 /// that takes typing (in the reader's digits), read as Enter is pressed or
 /// the keyboard leaves, clamped to [min] and [max]; Up and Down step it,
 /// Page Up and Down by ten. The cells step on a press and repeat while
@@ -1017,7 +1127,7 @@ class BrutalStepper extends StatelessWidget {
       (widest.height + 2 * BrutalSpacing.small).ceilToDouble(),
     );
     widest.dispose();
-    Widget cell(DesignNumberFieldButtonDetails button) {
+    Widget cell(RawNumberFieldButtonDetails button) {
       final states = button.states;
       final layered = DesignStyleOf(layers, states);
       final disabled = states.contains(WidgetState.disabled);
@@ -1063,7 +1173,7 @@ class BrutalStepper extends StatelessWidget {
             border: ruleColor,
             foreground: c.ink,
           ),
-          child: DesignNumberField(
+          child: RawNumberField(
             value: value.toDouble(),
             onChanged: off
                 ? null

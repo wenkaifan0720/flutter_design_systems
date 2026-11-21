@@ -22,7 +22,7 @@ import 'theme.dart';
 
 // The controller BrutalCodeField takes, from the design kit, so an app (or a
 // kit) reaches it through Brutal.
-export 'package:ui_core/ui_core.dart' show DesignOtpController;
+export 'package:ui_core/ui_core.dart' show RawOtpController;
 
 /// A glyph button that stands inside a field's box: 32 px square, ink with
 /// paper glyph under a press, the inset focus rule on the keyboard's.
@@ -60,8 +60,8 @@ class BrutalFieldButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = BrutalTheme.of(context);
     final c = theme.colors;
-    return DesignTapTarget(
-      child: DesignPressable(
+    return TapTargetPadding(
+      child: RawButton(
         onPressed: onPressed,
         semanticLabel: semanticLabel,
         builder: (context, states, _) {
@@ -387,7 +387,7 @@ class BrutalPasswordField extends StatelessWidget {
   final BrutalStyle? style;
 
   @override
-  Widget build(BuildContext context) => DesignPasswordReveal(
+  Widget build(BuildContext context) => RawPasswordReveal(
     focusNode: focusNode,
     showLabel: revealLabels?.$1,
     hideLabel: revealLabels?.$2,
@@ -865,7 +865,7 @@ class BrutalCodeField extends StatefulWidget {
   final int length;
 
   /// The code. Yours to dispose; given none, it makes its own.
-  final DesignOtpController? controller;
+  final RawOtpController? controller;
 
   /// {@macro design.focusNode}
   final FocusNode? focusNode;
@@ -923,7 +923,7 @@ class BrutalCodeField extends StatefulWidget {
     properties
       ..add(IntProperty('length', length))
       ..add(
-        DiagnosticsProperty<DesignOtpController>(
+        DiagnosticsProperty<RawOtpController>(
           'controller',
           controller,
           defaultValue: null,
@@ -1045,7 +1045,7 @@ class _BrutalCodeFieldState extends State<BrutalCodeField> {
             : c.ink);
     final height = theme.controlHeight + BrutalSpacing.small;
     final decorate = widget.decorate;
-    final otp = DesignOtpField(
+    final otp = RawOtpField(
       length: widget.length,
       controller: widget.controller,
       focusNode: _focus,
@@ -1203,15 +1203,15 @@ Widget _searchLine(BuildContext context, Widget lead, String words) {
 Widget _searching(BuildContext context) => _searchLine(
   context,
   const BrutalSpinner(size: 16),
-  DesignLocalizations.of(context).loadingLabel,
+  RawWidgetsLocalizations.of(context).loadingLabel,
 );
 
 /// What the suggestions say when a search failed: the failure, then "Try
 /// again" as a row, lit while the keys are on it (ui_core moves them there on
 /// Down), run by Enter or a press.
-Widget _failed(BuildContext context, DesignSearchError failed) {
+Widget _failed(BuildContext context, RawSearchError failed) {
   final theme = BrutalTheme.of(context);
-  final words = DesignLocalizations.of(context);
+  final words = RawWidgetsLocalizations.of(context);
   return Column(
     mainAxisSize: MainAxisSize.min,
     crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -1252,7 +1252,7 @@ Widget _failed(BuildContext context, DesignSearchError failed) {
 /// list says "Loading" by a small spinner while it runs, and a failed one
 /// says so over a "Try again" row that Down reaches and Enter or a press
 /// runs, the keyboard staying in the field; only the latest words' result
-/// shows. The behaviour is ui_core's ([DesignCombobox]).
+/// shows. The behaviour is ui_core's ([RawCombobox]).
 ///
 /// The box reads [style] as [BrutalTextField] does, then
 /// [BrutalThemeData.textFieldStyle]; the list reads
@@ -1337,7 +1337,7 @@ class BrutalCombobox<T extends Object> extends StatelessWidget {
     children: [
       if (label != null)
         ExcludeSemantics(child: BrutalFieldLabel(label!, enabled: enabled)),
-      DesignCombobox<T>(
+      RawCombobox<T>(
         options: options,
         search: search,
         debounceDuration: debounceDuration,
@@ -1565,7 +1565,7 @@ class _BrutalTagInputState<T extends Object> extends State<BrutalTagInput<T>> {
           ExcludeSemantics(
             child: BrutalFieldLabel(widget.label!, enabled: widget.enabled),
           ),
-        DesignTagInput<T>(
+        RawTagInput<T>(
           values: widget.values,
           onChanged: widget.onChanged,
           options: widget.options,
@@ -1735,7 +1735,7 @@ class _Tag extends StatelessWidget {
             bottom: 0,
             end: 0,
             width: 44,
-            child: DesignPressable(
+            child: RawButton(
               onPressed: enabled ? onDeleted : null,
               semanticLabel: 'Remove $label',
               builder: (context, states, _) => const SizedBox.expand(),
@@ -1801,7 +1801,7 @@ class BrutalFormField extends StatelessWidget {
   final bool? mergeSemantics;
 
   @override
-  Widget build(BuildContext context) => DesignField(
+  Widget build(BuildContext context) => RawInputDecorator(
     labelText: labelText,
     helperText: helperText,
     errorText: errorText,

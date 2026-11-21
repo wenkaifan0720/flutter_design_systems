@@ -232,11 +232,11 @@ class _AdmitAppState extends State<AdmitApp> {
           ),
         ),
         localizationsDelegates: const [
-          DesignLocalizations.delegate,
+          RawWidgetsLocalizations.delegate,
           DefaultMaterialLocalizations.delegate,
           DefaultWidgetsLocalizations.delegate,
         ],
-        supportedLocales: DesignLocalizations.supportedLocales,
+        supportedLocales: RawWidgetsLocalizations.supportedLocales,
         onGenerateInitialRoutes: (_) => [
           MaterialPageRoute<void>(builder: (_) => frame),
         ],

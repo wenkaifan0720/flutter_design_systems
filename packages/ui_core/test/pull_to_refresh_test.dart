@@ -8,16 +8,16 @@ import 'package:ui_core/ui_core.dart';
 import 'behaviour_contract.dart';
 import 'behaviour_harness.dart';
 
-DesignRefreshDetails? _state;
+RawRefreshIndicatorDetails? _state;
 int _refreshes = 0;
 Completer<void>? _pending;
 
-final GlobalKey<DesignPullToRefreshState> _key = GlobalKey();
+final GlobalKey<RawRefreshIndicatorState> _key = GlobalKey();
 
 // The bare reference painter: the mode's name in the indicator's room.
 Widget _list({ScrollPhysics? physics}) => harness(_view(physics: physics));
 
-Widget _view({ScrollPhysics? physics}) => DesignPullToRefresh(
+Widget _view({ScrollPhysics? physics}) => RawRefreshIndicator(
   key: _key,
   onRefresh: () {
     _refreshes++;
@@ -43,9 +43,9 @@ void main() {
   });
 
   behaviourContract(
-    'DesignPullToRefresh',
+    'RawRefreshIndicator',
     build: (c) => _view(),
-    node: () => find.byType(DesignPullToRefresh),
+    node: () => find.byType(RawRefreshIndicator),
     semantics: isSemantics(
       customActions: const [CustomSemanticsAction(label: 'Refresh')],
     ),
@@ -53,7 +53,7 @@ void main() {
     motion: (p) async {
       unawaited(_key.currentState!.refresh());
       await p.tester.pump();
-      expect(_state!.mode, DesignRefreshMode.refresh);
+      expect(_state!.mode, RawRefreshIndicatorMode.refresh);
       _pending!.complete();
       await p.tester.pump();
       await p.tester.pump(const Duration(milliseconds: 300));
@@ -67,7 +67,7 @@ void main() {
       if (ios) iosReduceMotion(tester);
       await tester.pumpWidget(harness(_view(), reduceMotion: !ios));
       final rest = tester
-          .widget<DesignPullToRefresh>(find.byType(DesignPullToRefresh))
+          .widget<RawRefreshIndicator>(find.byType(RawRefreshIndicator))
           .restExtent;
       unawaited(_key.currentState!.refresh());
       await tester.pump();
@@ -76,7 +76,7 @@ void main() {
       _pending!.complete();
       await tester.pump();
       await tester.pump();
-      expect(_state!.mode, DesignRefreshMode.done);
+      expect(_state!.mode, RawRefreshIndicatorMode.done);
       expect(_state!.extent, 0, reason: 'out at once');
       expect(tester.hasRunningAnimations, isFalse);
       await tester.pump(const Duration(milliseconds: 200));
@@ -94,7 +94,7 @@ void main() {
       await short.moveBy(const Offset(0, 20));
       await short.moveBy(const Offset(0, 40));
       await tester.pump();
-      expect(_state!.mode, DesignRefreshMode.drag);
+      expect(_state!.mode, RawRefreshIndicatorMode.drag);
       await short.up();
       await tester.pumpAndSettle();
       expect(_refreshes, 0);
@@ -105,11 +105,11 @@ void main() {
         await long.moveBy(const Offset(0, 40));
         await tester.pump();
       }
-      expect(_state!.mode, DesignRefreshMode.armed);
+      expect(_state!.mode, RawRefreshIndicatorMode.armed);
       await long.up();
       await tester.pumpAndSettle();
       expect(_refreshes, 1);
-      expect(_state!.mode, DesignRefreshMode.refresh);
+      expect(_state!.mode, RawRefreshIndicatorMode.refresh);
       expect(find.text('refresh'), findsOneWidget);
       _pending!.complete();
       await tester.pumpAndSettle();
@@ -123,7 +123,7 @@ void main() {
   ) async {
     final semantics = tester.ensureSemantics();
     await tester.pumpWidget(_list());
-    final target = semanticsOf(tester, find.byType(DesignPullToRefresh));
+    final target = semanticsOf(tester, find.byType(RawRefreshIndicator));
     final owner = semanticsOwner();
     owner.performAction(
       target.id,

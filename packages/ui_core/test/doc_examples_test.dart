@@ -6,6 +6,9 @@
 //
 // An example may name `controller` or `focusNode`: the caller's own, which
 // its entry makes first, as the docs say the caller does.
+// DesignRadioGroup and DesignTooltip are deprecated in the package, which
+// keeps their tests for their one last release.
+// ignore_for_file: deprecated_member_use_from_same_package
 import 'package:material_ui/material_ui.dart'
     show DefaultMaterialLocalizations, Material, TextField;
 import 'package:flutter/services.dart' show LogicalKeyboardKey;
@@ -49,15 +52,15 @@ final Map<String, DocExample> _examples = {
       ),
     );
   },
-  'DefaultDesignLocalizations': (context) =>
-      const DefaultDesignLocalizations().carouselSlideLabel(0, 3),
-  'DesignAnchoredOverlay': (context) => DesignAnchoredOverlay(
+  'DefaultRawWidgetsLocalizations': (context) =>
+      const DefaultRawWidgetsLocalizations().carouselSlideLabel(0, 3),
+  'RawPopover': (context) => RawPopover(
     anchorBuilder: (context, anchor) =>
         GestureDetector(onTap: anchor.toggle, child: const Text('More')),
     overlayBuilder: (context, info) => const Text('Details'),
   ),
-  'DesignContextMenu': (context) => DesignContextMenu(
-    menuChildren: [DesignMenuEntry(label: 'Copy', onPressed: () {})],
+  'RawContextMenu': (context) => RawContextMenu(
+    menuChildren: [RawMenuEntry(label: 'Copy', onPressed: () {})],
     itemBuilder: (context, entry, level, states) => Text(entry.label),
     surfaceBuilder: (context, info, items) =>
         Column(mainAxisSize: MainAxisSize.min, children: items),
@@ -76,45 +79,42 @@ final Map<String, DocExample> _examples = {
     context,
     const SingleActivator(LogicalKeyboardKey.keyS, control: true),
   ),
-  'DesignOverlayPadding': (context) => const DesignOverlayPadding(
+  'RawPopoverPadding': (context) => const RawPopoverPadding(
     padding: EdgeInsetsDirectional.only(start: 280),
     child: Text('A page beside the side bar'),
   ),
-  'DesignCalendar': (context) {
+  'RawCalendarDatePicker': (context) {
     final controller = _own(
-      DesignCalendarController(
+      RawCalendarController(
         firstDate: DateTime(2026),
         lastDate: DateTime(2027),
       ),
     );
-    return DesignCalendar(
+    return RawCalendarDatePicker(
       controller: controller,
       dayBuilder: (context, day, states) => Text('${day.date.day}'),
     );
   },
-  'DesignCalendarController': (context) => _own(
-    DesignCalendarController(
-      firstDate: DateTime(2026),
-      lastDate: DateTime(2027),
-    ),
+  'RawCalendarController': (context) => _own(
+    RawCalendarController(firstDate: DateTime(2026), lastDate: DateTime(2027)),
   ),
-  'DesignCarousel': (context) => DesignCarousel(
+  'RawCarousel': (context) => RawCarousel(
     itemCount: 3,
     itemBuilder: (context, index) => Text('Slide $index'),
   ),
-  'DesignColorArea': (context) {
-    final controller = _own(DesignColorController());
-    return DesignColorArea(
+  'RawColorArea': (context) {
+    final controller = _own(RawColorController());
+    return RawColorArea(
       controller: controller,
       builder: (context, area) => const SizedBox.expand(),
       thumbBuilder: (context, area) => const SizedBox(width: 16, height: 16),
     );
   },
-  'DesignColorController': (context) =>
-      _own(DesignColorController(const Color(0xFF3366FF))),
-  'DesignColorPicker': (context) {
-    final controller = _own(DesignColorController());
-    return DesignColorPicker(
+  'RawColorController': (context) =>
+      _own(RawColorController(const Color(0xFF3366FF))),
+  'RawColorPicker': (context) {
+    final controller = _own(RawColorController());
+    return RawColorPicker(
       controller: controller,
       areaBuilder: (context, area) => const SizedBox.expand(),
       areaThumbBuilder: (context, area) =>
@@ -123,16 +123,16 @@ final Map<String, DocExample> _examples = {
       thumbBuilder: (context, states) => const SizedBox(width: 16, height: 16),
     );
   },
-  'DesignColorSlider': (context) {
-    final controller = _own(DesignColorController());
-    return DesignColorSlider(
+  'RawColorSlider': (context) {
+    final controller = _own(RawColorController());
+    return RawColorSlider(
       controller: controller,
-      channel: DesignColorChannel.hue,
+      channel: RawColorChannel.hue,
       trackBuilder: (context, channel, color) => const SizedBox(height: 8),
       thumbBuilder: (context, states) => const SizedBox(width: 16, height: 16),
     );
   },
-  'DesignCombobox': (context) => DesignCombobox<String>(
+  'RawCombobox': (context) => RawCombobox<String>(
     options: const ['Apple', 'Pear'],
     fieldBuilder: (context, field) => EditableText(
       controller: field.controller,
@@ -144,10 +144,10 @@ final Map<String, DocExample> _examples = {
     ),
     optionBuilder: (context, option, states) => Text(option),
   ),
-  'DesignSearchError': (context) =>
-      DesignSearchError(error: StateError('offline'), retry: () {}),
-  'DesignCommandPalette': (context) => DesignCommandPalette(
-    commands: const [DesignCommand(label: 'New file')],
+  'RawSearchError': (context) =>
+      RawSearchError(error: StateError('offline'), retry: () {}),
+  'RawCommandPalette': (context) => RawCommandPalette(
+    commands: const [RawCommand(label: 'New file')],
     fieldBuilder: (context, field) => EditableText(
       controller: field.controller,
       focusNode: field.focusNode,
@@ -158,14 +158,14 @@ final Map<String, DocExample> _examples = {
     ),
     itemBuilder: (context, command, states) => Text(command.label),
   ),
-  'DesignCommandShortcut': (context) =>
-      DesignCommandShortcut(onOpen: () {}, child: const SizedBox()),
-  'DesignDataTable': (context) {
+  'RawCommandShortcut': (context) =>
+      RawCommandShortcut(onOpen: () {}, child: const SizedBox()),
+  'RawDataTable': (context) {
     final controller = _own(
-      DesignTableController<String>(
+      RawDataTableController<String>(
         rows: const ['a', 'b'],
         columns: [
-          DesignTableColumn<String>(
+          RawDataColumn<String>(
             id: 'name',
             label: 'Name',
             sortKey: (row) => row,
@@ -173,26 +173,22 @@ final Map<String, DocExample> _examples = {
         ],
       ),
     );
-    return DesignDataTable<String>(
+    return RawDataTable<String>(
       controller: controller,
       headerBuilder: (context, column, sort, states) => Text(column.label),
       cellBuilder: (context, row, column) => Text(row),
       rowBuilder: (context, row, cells) => Row(children: cells),
     );
   },
-  'DesignTableController': (context) => _own(
-    DesignTableController<String>(
+  'RawDataTableController': (context) => _own(
+    RawDataTableController<String>(
       rows: const ['a', 'b'],
       columns: [
-        DesignTableColumn<String>(
-          id: 'name',
-          label: 'Name',
-          sortKey: (row) => row,
-        ),
+        RawDataColumn<String>(id: 'name', label: 'Name', sortKey: (row) => row),
       ],
     ),
   ),
-  'DesignField': (context) => DesignField(
+  'RawInputDecorator': (context) => RawInputDecorator(
     labelText: 'Email',
     builder: (context, parts) =>
         Column(children: [?parts.label, parts.control]),
@@ -223,35 +219,35 @@ final Map<String, DocExample> _examples = {
   ),
   'DesignInventoryEntry': (context) =>
       DesignInventoryEntry.present('Link', (context) => const Text('Terms')),
-  'DesignMenuBar': (context) => DesignMenuBar(
+  'RawMenuBar': (context) => RawMenuBar(
     menus: [
-      DesignMenuEntry(
+      RawMenuEntry(
         label: 'File',
-        children: [DesignMenuEntry(label: 'New', onPressed: () {})],
+        children: [RawMenuEntry(label: 'New', onPressed: () {})],
       ),
     ],
     itemBuilder: (context, entry, level, states) => Text(entry.label),
     surfaceBuilder: (context, info, items) =>
         Column(mainAxisSize: MainAxisSize.min, children: items),
   ),
-  'DesignOtpField': (context) => DesignOtpField(
+  'RawOtpField': (context) => RawOtpField(
     length: 4,
     slotBuilder: (context, slot) => Text(slot.character),
   ),
-  'DesignOtpController': (context) => _own(DesignOtpController(length: 6)),
-  'DesignPasswordReveal': (context) => DesignPasswordReveal(
+  'RawOtpController': (context) => _own(RawOtpController(length: 6)),
+  'RawPasswordReveal': (context) => RawPasswordReveal(
     builder: (context, password) => Text(password.toggleLabel),
   ),
-  'DesignPasswordController': (context) =>
-      _own(DesignPasswordController(obscured: false)),
+  'RawPasswordController': (context) =>
+      _own(RawPasswordController(obscured: false)),
   'designSwipeBack': (context) => designSwipeBack({
     TargetPlatform.iOS: const FadeUpwardsPageTransitionsBuilder(),
   }),
-  'DesignSwipeBackPageTransitionsBuilder': (context) =>
-      const DesignSwipeBackPageTransitionsBuilder(
+  'SwipeBackPageTransitionsBuilder': (context) =>
+      const SwipeBackPageTransitionsBuilder(
         FadeUpwardsPageTransitionsBuilder(),
       ),
-  'DesignPressable': (context) => DesignPressable(
+  'RawButton': (context) => RawButton(
     onPressed: () {},
     semanticLabel: 'Save',
     builder: (context, states, child) => Opacity(
@@ -273,31 +269,31 @@ final Map<String, DocExample> _examples = {
       child: app,
     );
   },
-  'DesignTapTarget, on its start edge': (context) {
+  'TapTargetPadding, on its start edge': (context) {
     void onPressed() {}
     Widget face(BuildContext context, Set<WidgetState> states, Widget? child) =>
         const Text('Add');
-    return DesignTapTarget(
+    return TapTargetPadding(
       alignment: AlignmentDirectional.centerStart,
-      child: DesignPressable(onPressed: onPressed, builder: face),
+      child: RawButton(onPressed: onPressed, builder: face),
     );
   },
-  'DesignPressable, a small icon in its tap target': (context) {
+  'RawButton, a small icon in its tap target': (context) {
     void play() {}
-    return DesignTapTarget(
-      child: DesignPressable(
+    return TapTargetPadding(
+      child: RawButton(
         semanticLabel: 'Play',
         onPressed: play,
         builder: (context, states, _) => const SizedBox.square(dimension: 16),
       ),
     );
   },
-  'DesignTapTarget': (context) {
+  'TapTargetPadding': (context) {
     void onPressed() {}
     Widget face(BuildContext context, Set<WidgetState> states, Widget? child) =>
         const Text('Add');
-    return DesignTapTarget(
-      child: DesignPressable(onPressed: onPressed, builder: face),
+    return TapTargetPadding(
+      child: RawButton(onPressed: onPressed, builder: face),
     );
   },
   'DesignStyle': (context) {
@@ -334,28 +330,28 @@ final Map<String, DocExample> _examples = {
     final height = DesignDensity.compact.height(44); // 36
     return SizedBox(height: height, child: const Text('Row'));
   },
-  'DesignPullToRefresh': (context) => DesignPullToRefresh(
+  'RawRefreshIndicator': (context) => RawRefreshIndicator(
     onRefresh: () async {},
     indicatorBuilder: (context, details) => const SizedBox(height: 40),
     child: ListView(),
   ),
-  'DesignRangeSlider': (context) => DesignRangeSlider(
-    values: const DesignRangeValues(20, 80),
+  'RawRangeSlider': (context) => RawRangeSlider(
+    values: const RawRangeValues(20, 80),
     max: 100,
     onChanged: (values) {},
     trackBuilder: (context, track) => const SizedBox(height: 4),
     thumbBuilder: (context, index, states) =>
         const SizedBox(width: 20, height: 20),
   ),
-  'DesignReorderableList': (context) => DesignReorderableList<String>(
+  'RawReorderableList': (context) => RawReorderableList<String>(
     items: const ['a', 'b'],
     onReorder: (from, to) {},
     labelOf: (item) => item,
     itemBuilder: (context, item, reorder) => reorder.handle(Text(item)),
   ),
-  'DesignScrollArea': (context) {
+  'RawScrollArea': (context) {
     final controller = _own(ScrollController());
-    return DesignScrollArea(
+    return RawScrollArea(
       controller: controller,
       thumbBuilder: (context, thumb) =>
           const ColoredBox(color: Color(0x66000000)),
@@ -365,32 +361,32 @@ final Map<String, DocExample> _examples = {
       ),
     );
   },
-  'DesignSideSheetRoute': (context) => DesignSideSheetRoute<void>(
+  'RawSideSheetRoute': (context) => RawSideSheetRoute<void>(
     builder: (context, sheet) => const SizedBox(width: 320),
   ),
-  'DesignSplitButton': (context) => DesignSplitButton(
+  'RawSplitButton': (context) => RawSplitButton(
     label: 'Save',
     onPressed: () {},
-    actions: [DesignSplitAction(label: 'Save as', onPressed: () {})],
+    actions: [RawSplitAction(label: 'Save as', onPressed: () {})],
     buttonBuilder: (context, part, states, open) => Text(part.name),
     itemBuilder: (context, action, states) => Text(action.label),
     surfaceBuilder: (context, info, items) =>
         Column(mainAxisSize: MainAxisSize.min, children: items),
   ),
-  'DesignSplitView': (context) => DesignSplitView(
+  'RawSplitView': (context) => RawSplitView(
     first: const SizedBox(),
     second: const SizedBox(),
     dividerBuilder: (context, states, axis) =>
         const ColoredBox(color: Color(0xFFDDDDDD)),
   ),
-  'DesignSwipeActions': (context) => DesignSwipeActions(
+  'RawSwipeActions': (context) => RawSwipeActions(
     endActions: [
-      DesignSwipeAction(label: 'Delete', onPressed: () {}, destructive: true),
+      RawSwipeAction(label: 'Delete', onPressed: () {}, destructive: true),
     ],
     actionBuilder: (context, action, details) => Text(action.label),
     child: const Text('Message'),
   ),
-  'DesignTagInput': (context) => DesignTagInput<String>(
+  'RawTagInput': (context) => RawTagInput<String>(
     values: const ['red'],
     onChanged: (values) {},
     onCreate: (text) => text,
@@ -405,7 +401,7 @@ final Map<String, DocExample> _examples = {
     optionBuilder: (context, option, states) => Text(option),
     tagBuilder: (context, value, tag) => Text(value),
   ),
-  'DesignToaster': (context) => DesignToaster(
+  'RawToaster': (context) => RawToaster(
     toastBuilder: (context, details) => Text(details.toast.message),
     child: const SizedBox(),
   ),
@@ -416,7 +412,7 @@ final Map<String, DocExample> _examples = {
       options: const ['Day', 'Week'],
       value: chosen,
       onChanged: choose,
-      itemBuilder: (context, option, node, select) => DesignPressable(
+      itemBuilder: (context, option, node, select) => RawButton(
         focusNode: node,
         onPressed: select,
         checked: option == chosen,
@@ -425,7 +421,68 @@ final Map<String, DocExample> _examples = {
       ),
     );
   },
-  'DesignToggleGroup': (context) => DesignToggleGroup<String>(
+  'RawTooltipFocusFix': (context) => RawTooltip(
+    semanticsTooltip: 'Save the report',
+    tooltipBuilder: (context, animation) => const Text('Save the report'),
+    child: const RawTooltipFocusFix(child: Focus(child: Text('Save'))),
+  ),
+  'RawTooltipPlacement': (context) => RawTooltipPlacement(
+    builder: (context, positionDelegate) => RawTooltip(
+      semanticsTooltip: 'Save the report',
+      positionDelegate: positionDelegate,
+      tooltipBuilder: (context, animation) =>
+          Text('Save the report, ${RawTooltipPlacement.sideOf(context)}'),
+      child: const Text('Save'),
+    ),
+  ),
+  'RadioGroupKeyboardFix': (context) {
+    String? chosen = 'Day';
+    void choose(String? value) => chosen = value;
+    const dayRadio = LookRadio<String>(value: 'Day');
+    const weekRadio = LookRadio<String>(value: 'Week');
+    return RadioGroup<String>(
+      groupValue: chosen,
+      onChanged: choose,
+      child: const RadioGroupKeyboardFix<String>(
+        child: Column(children: [dayRadio, weekRadio]),
+      ),
+    );
+  },
+  'RadioGroupKeyboardFix, a look\'s radio': (context) {
+    final focusNode = _own(FocusNode());
+    Widget radioFace(Set<WidgetState> states, bool chosen) =>
+        Text(chosen ? 'Day, chosen' : 'Day');
+    return RadioGroup<String>(
+      groupValue: 'Day',
+      onChanged: (value) {},
+      child: RadioGroupKeyboardFix<String>(
+        // Inside the group, where RadioGroup.maybeOf finds it.
+        child: Builder(
+          builder: (context) => MergeSemantics(
+            child: RawRadio<String>(
+              value: 'Day',
+              mouseCursor: WidgetStateMouseCursor.clickable,
+              toggleable: false,
+              focusNode: focusNode, // the caller's, else one its State owns
+              autofocus: false,
+              groupRegistry: RadioGroup.maybeOf<String>(context),
+              enabled: true,
+              builder: (context, radio) => Semantics(
+                label: 'Day',
+                child: ExcludeSemantics(
+                  child: radioFace({
+                    ...radio.states,
+                    if (radio.downPosition != null) WidgetState.pressed,
+                  }, radio.value ?? false),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  },
+  'RawSegmentedButton': (context) => RawSegmentedButton<String>(
     options: const ['day', 'week'],
     selected: const {'day'},
     onSelectionChanged: (next) {},
@@ -460,11 +517,12 @@ final Map<String, DocExample> _examples = {
   'Localizations': (context) => Localizations(
     locale: const Locale('en'),
     delegates: const [
-      DefaultDesignLocalizations.delegate,
+      DefaultRawWidgetsLocalizations.delegate,
       DefaultWidgetsLocalizations.delegate,
     ],
     child: Builder(
-      builder: (context) => Text(DesignLocalizations.of(context).carouselLabel),
+      builder: (context) =>
+          Text(RawWidgetsLocalizations.of(context).carouselLabel),
     ),
   ),
   'MediaSlotImage': (context) => const MediaSlotImage(
@@ -511,14 +569,14 @@ final Map<String, DocExample> _examples = {
     haptics: DesignHaptics.silent(),
     child: Text('Quiet'),
   ),
-  'DesignWheelColumn': (context) => DesignWheelColumn(
+  'RawPickerColumn': (context) => RawPickerColumn(
     itemCount: 12,
     itemLabel: (index) => 'Month ${index + 1}',
     semanticLabel: 'Month',
   ),
-  'DesignWheelPicker': (context) => DesignWheelPicker(
+  'RawPicker': (context) => RawPicker(
     columns: (selection) => [
-      DesignWheelColumn(
+      RawPickerColumn(
         itemCount: 24,
         itemLabel: (index) => '$index',
         semanticLabel: 'Hour',
@@ -530,21 +588,21 @@ final Map<String, DocExample> _examples = {
     itemExtent: 40,
     itemBuilder: (context, details) => Center(child: Text(details.label)),
   ),
-  'DesignTimeOfDay': (context) => Text(
-    DesignLocalizations.of(context)
-        .formatTimeOfDay(const DesignTimeOfDay(hour: 15, minute: 5)),
+  'RawTimeOfDay': (context) => Text(
+    RawWidgetsLocalizations.of(context)
+        .formatTimeOfDay(const RawTimeOfDay(hour: 15, minute: 5)),
   ),
-  'DesignDateField': (context) => DesignDateField(
+  'RawDateField': (context) => RawDateField(
     value: DateTime(2026, 11, 16),
     onChanged: (day) {},
     segmentBuilder: (context, details) => Text(details.text),
   ),
-  'DesignTimeField': (context) => DesignTimeField(
-    value: const DesignTimeOfDay(hour: 9, minute: 30),
+  'RawTimeField': (context) => RawTimeField(
+    value: const RawTimeOfDay(hour: 9, minute: 30),
     onChanged: (time) {},
     segmentBuilder: (context, details) => Text(details.text),
   ),
-  'DesignNumberField': (context) => DesignNumberField(
+  'RawNumberField': (context) => RawNumberField(
     value: 2,
     onChanged: (value) {},
     min: 0,
@@ -560,7 +618,7 @@ final Map<String, DocExample> _examples = {
     ),
     buttonBuilder: (context, button) => Text(button.isIncrement ? '+' : '−'),
   ),
-  'DesignRating': (context) => DesignRating(
+  'RawRating': (context) => RawRating(
     value: 3,
     onChanged: (value) {},
     itemBuilder: (context, item) => Text(item.fill >= 1 ? '★' : '☆'),
@@ -609,15 +667,15 @@ final Map<String, DocExample> _examples = {
   // 0.3.0 routes
   'DesignDialogRoute': (context) => DesignDialogRoute<bool>(
     isAlert: true,
-    builder: (context, details) => DesignDialog(
+    builder: (context, details) => RawAlertDialog(
       title: 'Delete the draft?',
       content: const Text('It cannot be brought back.'),
       actions: [
-        DesignDialogAction(
+        RawDialogAction(
           label: 'Cancel',
           onPressed: () => Navigator.of(context).pop(false),
         ),
-        DesignDialogAction(
+        RawDialogAction(
           label: 'Delete',
           isDestructiveAction: true,
           onPressed: () => Navigator.of(context).pop(true),
@@ -626,12 +684,12 @@ final Map<String, DocExample> _examples = {
       actionBuilder: (context, action, details) => Text(action.label),
     ),
   ),
-  'DesignDialog': (context) => DesignDialog(
+  'RawAlertDialog': (context) => RawAlertDialog(
     title: 'Discard changes?',
     content: const Text('Your edits to this note will be lost.'),
     actions: [
-      DesignDialogAction(label: 'Keep editing', onPressed: () {}),
-      DesignDialogAction(
+      RawDialogAction(label: 'Keep editing', onPressed: () {}),
+      RawDialogAction(
         label: 'Discard',
         isDestructiveAction: true,
         onPressed: () {},
@@ -643,50 +701,64 @@ final Map<String, DocExample> _examples = {
       child: child,
     ),
   ),
-  'DesignSheetPageRoute': (context) => DesignSheetPageRoute<void>(
-    builder: (context) => const Text('Edit recording'),
-  ),
-  'DesignBottomSheetRoute': (context) => DesignBottomSheetRoute<void>(
+  'RawSheetRoute': (context) =>
+      RawSheetRoute<void>(builder: (context) => const Text('Edit recording')),
+  'RawBottomSheetRoute': (context) => RawBottomSheetRoute<void>(
     snapSizes: const [0.5, 1],
     builder: (context, details) => ListView(
       controller: details.scrollController,
       children: [for (var i = 0; i < 30; i++) Text('Row $i')],
     ),
   ),
-  'DesignBottomSheetDragHandle': (context) => DesignBottomSheetDragHandle(
+  'RawBottomSheetDragHandle': (context) => RawBottomSheetDragHandle(
     builder: (context, states) => const SizedBox(width: 32, height: 4),
   ),
-  'DesignSwipeActionsController': (context) {
-    final controller = _own(DesignSwipeActionsController());
-    return DesignSwipeActions(
+  'RawSwipeActionsController': (context) {
+    final controller = _own(RawSwipeActionsController());
+    return RawSwipeActions(
       controller: controller,
       endActions: [
-        DesignSwipeAction(label: 'Archive', onPressed: controller.close),
+        RawSwipeAction(label: 'Archive', onPressed: controller.close),
       ],
       actionBuilder: (context, action, details) => Text(action.label),
       child: const Text('Message'),
     );
   },
-  'DesignTabBar': (context) {
+  'RawTabBar': (context) {
     const vsync = TestVSync();
-    final controller = _own(DesignTabController(length: 2, vsync: vsync));
+    final controller = _own(RawTabController(length: 2, vsync: vsync));
     return Column(
       children: [
-        DesignTabBar(
+        RawTabBar(
           controller: controller,
           tabs: const [
-            DesignTab(label: 'Inbox'),
-            DesignTab(label: 'Sent'),
+            RawTab(label: 'Inbox'),
+            RawTab(label: 'Sent'),
           ],
           tabBuilder: (context, tab, details) => Text(tab.label),
         ),
         Expanded(
-          child: DesignTabView(
+          child: RawTabBarView(
             controller: controller,
             children: const [Text('Inbox'), Text('Sent')],
           ),
         ),
       ],
+    );
+  },
+  'RawRovingFocusIntent': (context) {
+    const vsync = TestVSync();
+    final controller = _own(RawTabController(length: 2, vsync: vsync));
+    return Actions(
+      actions: {RawRovingFocusIntent: DoNothingAction(consumesKey: false)},
+      child: RawTabBar(
+        controller: controller,
+        tabs: const [
+          RawTab(label: 'Inbox'),
+          RawTab(label: 'Sent'),
+        ],
+        tabBuilder: (context, tab, details) => Text(tab.label),
+      ),
     );
   },
   'DesignWindowSizeClass': (context) => DesignWindowSizeClass.fromWidth(900),
@@ -738,23 +810,65 @@ const Set<String> _hostAppOnly = {
   'chrome.dart',
   'annotations.dart',
   // 0.3.0 tooling: the checks' examples are ui_core_test's
-  // (checks_doc_examples_test.dart); drip's kit still holds the files.
+  // (checks_doc_examples_test.dart) and the review's ui_core_review's
+  // (review_doc_examples_test.dart); drip's kit still holds the files.
   ..._checksFiles,
 };
 
-/// The checks' files, which ui_core_test carries.
+/// The checks' files, which ui_core_test and ui_core_review carry.
 const Set<String> _checksFiles = {
   'alignment.dart',
   'checkable_check.dart',
   'cursor_check.dart',
-  'field_parts_check.dart',
   'field_semantics_check.dart',
   'radio_group_check.dart',
   'shadow_clip_check.dart',
-  'spacing_check.dart',
   'tap_target_check.dart',
+  'text_field_name_check.dart',
+  'reading.dart',
+  'shape.dart',
   'drawn_pixels.dart',
+  'review.dart',
+  'alignment_matrix.dart',
+  'field_parts_check.dart',
+  'keyline_check.dart',
+  'row_check.dart',
+  'spacing_check.dart',
+  'width_check.dart',
 };
+
+/// A look's radio, as RadioGroupKeyboardFix's example names it: a [RawRadio]
+/// on the group's registry, its face drawn in its builder.
+class LookRadio<T> extends StatefulWidget {
+  const LookRadio({super.key, required this.value});
+
+  final T value;
+
+  @override
+  State<LookRadio<T>> createState() => _LookRadioState<T>();
+}
+
+class _LookRadioState<T> extends State<LookRadio<T>> {
+  final _node = FocusNode();
+
+  @override
+  void dispose() {
+    _node.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => RawRadio<T>(
+    value: widget.value,
+    mouseCursor: WidgetStateMouseCursor.clickable,
+    toggleable: false,
+    focusNode: _node,
+    autofocus: false,
+    groupRegistry: RadioGroup.maybeOf<T>(context),
+    enabled: true,
+    builder: (context, state) => Text('${widget.value}'),
+  );
+}
 
 void main() {
   tearDown(() {

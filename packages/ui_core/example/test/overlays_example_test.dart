@@ -5,7 +5,6 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:ui_core/ui_core.dart';
 
 // The example's own app, as its package's tests reach it once published.
 // ignore: avoid_relative_lib_imports
@@ -54,7 +53,7 @@ void main() {
       tester.getBottomLeft(tip).dy,
       lessThan(tester.getTopLeft(find.text('i')).dy),
     );
-    DesignTooltip.dismissAll();
+    RawTooltip.dismissAllToolTips();
     await tester.pumpAndSettle();
   });
 

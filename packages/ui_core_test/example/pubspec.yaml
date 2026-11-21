@@ -1,5 +1,5 @@
 name: ui_core_test_example
-description: A review page of ui_core_test's alignment sheet, over plainly painted controls.
+description: A settings card checked in the app by ui_core_test's tap target, word break and clip checks.
 publish_to: none
 
 environment:
@@ -11,7 +11,7 @@ resolution: workspace
 dependencies:
   flutter:
     sdk: flutter
-  ui_core: ^0.3.4
+  ui_core: ^0.4.0
   ui_core_test:
     path: ../
 

@@ -323,7 +323,7 @@ class BrutalPageTransitionsBuilder extends PageTransitionsBuilder {
 
 /// Brutal's page change on every platform, with iOS's swipe back from the
 /// screen's leading edge round it there (ui_core's
-/// [DesignSwipeBackPageTransitionsBuilder]): the builders for a `PageTransitionsTheme`, Flutter's material library's or
+/// [SwipeBackPageTransitionsBuilder]): the builders for a `PageTransitionsTheme`, Flutter's material library's or
 /// the one Brutal is built on (they are widgets-level builders, so one map
 /// fits both). [BrutalTheme] puts them in the Material theme it lays; an app
 /// on Flutter's own `MaterialApp`, whose `MaterialPageRoute` reads only the
@@ -336,7 +336,7 @@ const Map<TargetPlatform, PageTransitionsBuilder> brutalPageTransitions = {
   TargetPlatform.android: BrutalPageTransitionsBuilder(),
   TargetPlatform.fuchsia: BrutalPageTransitionsBuilder(),
   // iOS's swipe back from the screen's edge, round Brutal's push.
-  TargetPlatform.iOS: DesignSwipeBackPageTransitionsBuilder(
+  TargetPlatform.iOS: SwipeBackPageTransitionsBuilder(
     BrutalPageTransitionsBuilder(),
   ),
   TargetPlatform.linux: BrutalPageTransitionsBuilder(),
@@ -358,7 +358,7 @@ class _BrutalPageRoute<T> extends PageRoute<T> {
   static const _change = BrutalPageTransitionsBuilder();
 
   // On iOS, the swipe back from the leading edge round it.
-  static const _swipe = DesignSwipeBackPageTransitionsBuilder(_change);
+  static const _swipe = SwipeBackPageTransitionsBuilder(_change);
 
   @override
   Duration get transitionDuration => _change.transitionDuration;
@@ -566,7 +566,7 @@ class BrutalPreview extends StatelessWidget {
           key: ValueKey<Object>((presentation, drawer)),
           debugShowCheckedModeBanner: false,
           localizationsDelegates: const [
-            DesignLocalizations.delegate,
+            RawWidgetsLocalizations.delegate,
             DefaultMaterialLocalizations.delegate,
             DefaultWidgetsLocalizations.delegate,
           ],
@@ -834,7 +834,7 @@ class BrutalLoadingState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = BrutalTheme.of(context);
-    final words = label ?? DesignLocalizations.of(context).loadingLabel;
+    final words = label ?? RawWidgetsLocalizations.of(context).loadingLabel;
     return Center(
       child: Semantics(
         liveRegion: true,
@@ -908,7 +908,8 @@ class BrutalErrorState extends StatelessWidget {
         (retry == null
             ? null
             : BrutalButton(
-                retryLabel ?? DesignLocalizations.of(context).retryButtonLabel,
+                retryLabel ??
+                    RawWidgetsLocalizations.of(context).retryButtonLabel,
                 onPressed: retry,
               ));
     return Center(

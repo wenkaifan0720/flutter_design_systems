@@ -14,25 +14,25 @@ const _fieldKey = ValueKey('field');
 final List<String> _ran = [];
 final Map<String, Set<WidgetState>> _items = {};
 
-List<DesignCommand> _commands() => [
-  DesignCommand(
+List<RawCommand> _commands() => [
+  RawCommand(
     label: 'New file',
     group: 'File',
     onPressed: () => _ran.add('new'),
   ),
-  DesignCommand(
+  RawCommand(
     label: 'Open recent',
     group: 'File',
     keywords: const ['history'],
     onPressed: () => _ran.add('recent'),
   ),
-  const DesignCommand(label: 'Save all', group: 'File', enabled: false),
-  DesignCommand(
+  const RawCommand(label: 'Save all', group: 'File', enabled: false),
+  RawCommand(
     label: 'Toggle theme',
     group: 'View',
     onPressed: () => _ran.add('theme'),
   ),
-  DesignCommand(
+  RawCommand(
     label: 'Zoom in',
     group: 'View',
     onPressed: () => _ran.add('zoom'),
@@ -40,10 +40,10 @@ List<DesignCommand> _commands() => [
 ];
 
 // The bare reference painter: a field and labelled rows.
-DesignCommandPalette _palette({
-  ValueChanged<DesignCommand>? onSelected,
+RawCommandPalette _palette({
+  ValueChanged<RawCommand>? onSelected,
   bool autofocus = true,
-}) => DesignCommandPalette(
+}) => RawCommandPalette(
   commands: _commands(),
   onSelected: onSelected,
   autofocus: autofocus,
@@ -70,7 +70,7 @@ void main() {
   });
 
   behaviourContract(
-    'DesignCommandPalette',
+    'RawCommandPalette',
     build: (c) => _palette(),
     node: () => find.byKey(_fieldKey),
     semantics: isSemantics(
@@ -80,7 +80,7 @@ void main() {
     ),
     noDisabledState:
         'the field is the look\'s; a command disables itself '
-        '(DesignCommand.enabled)',
+        '(RawCommand.enabled)',
     keyboard: (p) async {
       final t = p.tester;
       expect(
@@ -173,11 +173,11 @@ void main() {
       'round the ends too', (tester) async {
     final many = [
       for (var i = 0; i < 30; i++)
-        DesignCommand(label: 'Command $i', onPressed: () {}),
+        RawCommand(label: 'Command $i', onPressed: () {}),
     ];
     await tester.pumpWidget(
       harness(
-        DesignCommandPalette(
+        RawCommandPalette(
           commands: many,
           maxHeight: 200,
           fieldBuilder: (context, field) => plainField(
@@ -417,10 +417,10 @@ void main() {
         Builder(
           builder: (context) {
             app = context;
-            return DesignCommandShortcut(
+            return RawCommandShortcut(
               onOpen: open,
               child: Center(
-                child: DesignPressable(
+                child: RawButton(
                   focusNode: opener,
                   onPressed: () {},
                   builder: (context, states, _) => const Text('opener'),

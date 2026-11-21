@@ -313,19 +313,25 @@ Widget _siblingRadios({
   required ValueChanged<String> change,
   Set<String> disabled = const {},
   Map<String, FocusNode> callerNodes = const {},
-}) => DesignRadioGroup<String>(
-  options: options,
-  value: value,
-  onChanged: change,
-  isEnabled: (option) => !disabled.contains(option),
-  focusNodeFor: (option) => callerNodes[option],
-  itemBuilder: (context, option, node, select) => BrutalRadio<String>(
-    key: ValueKey(option),
-    value: option,
-    groupValue: value,
-    focusNode: node,
-    semanticLabel: option,
-    onChanged: select == null ? null : (_) => select(),
+  Axis direction = Axis.vertical,
+}) => RadioGroup<String>(
+  groupValue: value,
+  onChanged: (next) => change(next!),
+  child: RadioGroupKeyboardFix<String>(
+    child: Flex(
+      direction: direction,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        for (final option in options)
+          BrutalRadio<String>(
+            key: ValueKey(option),
+            value: option,
+            enabled: !disabled.contains(option),
+            focusNode: callerNodes[option],
+            semanticLabel: option,
+          ),
+      ],
+    ),
   ),
 );
 
@@ -367,29 +373,34 @@ Future<void> _checkChoices(WidgetTester tester, FocusNode before) async {
 
 void _testRadioGroups() {
   for (final direction in TextDirection.values) {
-    for (final initial in <String?>['C', null, 'B']) {
-      testWidgets(
-        'radio siblings in ${direction.name} with initial choice $initial',
-        (tester) async {
-          final before = FocusNode();
-          addTearDown(before.dispose);
-          var chosen = initial;
-          await _pumpChoices(
-            tester,
-            direction: direction,
-            before: before,
-            child: StatefulBuilder(
-              builder: (context, setState) => _siblingRadios(
-                options: const ['A', 'B', 'C', 'D'],
-                disabled: const {'B'},
-                value: chosen,
-                change: (next) => setState(() => chosen = next),
+    // The third chosen, nothing chosen, the first chosen, and the disabled B
+    // chosen; in a column and in a row (where Left moves on, right to left).
+    for (final axis in Axis.values) {
+      for (final initial in <String?>['C', null, 'A', 'B']) {
+        testWidgets(
+          'radio siblings in a ${axis.name} ${direction.name} with initial choice $initial',
+          (tester) async {
+            final before = FocusNode();
+            addTearDown(before.dispose);
+            var chosen = initial;
+            await _pumpChoices(
+              tester,
+              direction: direction,
+              before: before,
+              child: StatefulBuilder(
+                builder: (context, setState) => _siblingRadios(
+                  options: const ['A', 'B', 'C', 'D'],
+                  disabled: const {'B'},
+                  value: chosen,
+                  direction: axis,
+                  change: (next) => setState(() => chosen = next),
+                ),
               ),
-            ),
-          );
-          await _checkChoices(tester, before);
-        },
-      );
+            );
+            await _checkChoices(tester, before);
+          },
+        );
+      }
     }
 
     for (final (labels, initial) in [
@@ -475,7 +486,45 @@ void _testRadioGroups() {
     expect(FocusManager.instance.primaryFocus, same(nodeOf('Today')));
   });
 
-  testWidgets('Enter and Space press the chosen segment and radio', (
+  testWidgets('a selected filter chip reads as a button that is selected', (
+    tester,
+  ) async {
+    final semantics = tester.ensureSemantics();
+    try {
+      await tester.pumpWidget(
+        kitApp(
+          brightness: Brightness.light,
+          home: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              BrutalChip(label: 'Talks', selected: true, onSelected: (_) {}),
+              BrutalChip(label: 'Films', selected: false, onSelected: (_) {}),
+            ],
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(
+        tester.getSemantics(find.bySemanticsLabel('Talks')),
+        isSemantics(
+          isButton: true,
+          hasSelectedState: true,
+          isSelected: true,
+          hasToggledState: false,
+          hasCheckedState: false,
+          hasTapAction: true,
+        ),
+      );
+      expect(
+        tester.getSemantics(find.bySemanticsLabel('Films')),
+        isSemantics(isButton: true, isSelected: false, hasToggledState: false),
+      );
+    } finally {
+      semantics.dispose();
+    }
+  });
+
+  testWidgets('Enter and Space keep the chosen segment and radio chosen', (
     tester,
   ) async {
     final before = FocusNode();
@@ -497,17 +546,24 @@ void _testRadioGroups() {
             value: 'Today',
             onChanged: (next) => presses.add('segment $next'),
           ),
-          DesignRadioGroup<String>(
-            options: const ['Card', 'Cash'],
-            value: 'Card',
-            onChanged: (_) {},
-            focusNodeFor: (option) => option == 'Card' ? radio : null,
-            itemBuilder: (context, option, node, select) => BrutalRadio<String>(
-              value: option,
-              groupValue: 'Card',
-              focusNode: node,
-              semanticLabel: option,
-              onChanged: (next) => presses.add('radio $next'),
+          RadioGroup<String>(
+            groupValue: 'Card',
+            onChanged: (next) => presses.add('radio $next'),
+            child: RadioGroupKeyboardFix<String>(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  BrutalRadio<String>(
+                    value: 'Card',
+                    focusNode: radio,
+                    semanticLabel: 'Card',
+                  ),
+                  const BrutalRadio<String>(
+                    value: 'Cash',
+                    semanticLabel: 'Cash',
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -527,12 +583,11 @@ void _testRadioGroups() {
     expect(FocusManager.instance.primaryFocus, same(radio));
     await press(LogicalKeyboardKey.enter);
     await press(LogicalKeyboardKey.space);
-    expect(presses, [
-      'segment Today',
-      'segment Today',
-      'radio Card',
-      'radio Card',
-    ]);
+    // As Flutter's radios and segmented button, the chosen one stays chosen
+    // and reports nothing; an arrow chooses the next.
+    expect(presses, isEmpty);
+    await press(LogicalKeyboardKey.arrowDown);
+    expect(presses, ['radio Cash']);
   });
 
   testWidgets('a null segment value can be the selected All option', (

@@ -4,7 +4,7 @@ import 'dart:ui' as ui;
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:ui_core_test/ui_core_test.dart';
+import 'package:ui_core_review/ui_core_review.dart';
 import 'package:ui_core/ui_core.dart';
 
 const _cardColor = Color(0xFFE6E6E6);
@@ -358,7 +358,7 @@ void main() {
         _text('Paid'),
         Align(
           alignment: AlignmentDirectional.centerStart,
-          child: DesignTapTarget(
+          child: TapTargetPadding(
             alignment: alignment,
             child: _faced('Paid', width: 24, height: 24),
           ),

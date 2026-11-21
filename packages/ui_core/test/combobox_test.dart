@@ -36,7 +36,7 @@ Widget _combobox({
   DesignOptionSearch<String>? search,
   bool Function(String option)? isOptionEnabled,
   bool highlightFollowsPointer = false,
-}) => DesignCombobox<String>(
+}) => RawCombobox<String>(
   options: options,
   search: search,
   isOptionEnabled: isOptionEnabled,
@@ -115,14 +115,14 @@ Widget _besidePopover({MenuController? popover}) => Column(
   mainAxisSize: MainAxisSize.min,
   children: [
     _combobox(value: 'Banana', options: const ['Apple', 'Banana']),
-    DesignAnchoredOverlay(
+    RawPopover(
       controller: popover,
-      anchorBuilder: (context, anchor) => DesignPressable(
+      anchorBuilder: (context, anchor) => RawButton(
         onPressed: anchor.toggle,
         builder: (context, states, _) =>
             plainFace('Filter', key: const ValueKey('anchor')),
       ),
-      overlayBuilder: (context, info) => DesignPressable(
+      overlayBuilder: (context, info) => RawButton(
         onPressed: info.close,
         builder: (context, states, _) =>
             plainFace('Clear', key: const ValueKey('item')),
@@ -161,7 +161,7 @@ void main() {
 
   String? chosen;
   behaviourContract(
-    'DesignCombobox',
+    'RawCombobox',
     build: (c) => Align(
       alignment: Alignment.topCenter,
       child: _combobox(onSelected: (v) => chosen = v),
@@ -253,7 +253,7 @@ void main() {
     await tester.pumpWidget(
       _page(
         StatefulBuilder(
-          builder: (context, setState) => DesignCombobox<String>(
+          builder: (context, setState) => RawCombobox<String>(
             options: _fruit,
             value: value,
             onSelected: (o) => setState(() => value = o),
@@ -424,7 +424,7 @@ void main() {
     double height(String c) => 30.0 + (countries.indexOf(c) % 3) * 15;
     await tester.pumpWidget(
       _page(
-        DesignCombobox<String>(
+        RawCombobox<String>(
           options: countries,
           value: 'United Kingdom',
           optionsMaxHeight: 245,
@@ -700,7 +700,7 @@ void main() {
     const frame = ValueKey('frame');
     await tester.pumpWidget(
       _page(
-        DesignCombobox<String>(
+        RawCombobox<String>(
           options: _fruit,
           fieldBuilder: (context, field) => SizedBox(
             width: 366,
@@ -851,8 +851,8 @@ void main() {
       Align(
         alignment: Alignment.topCenter,
         // A popover with a field in it: focus moves in as it opens.
-        child: DesignAnchoredOverlay(
-          anchorBuilder: (context, anchor) => DesignPressable(
+        child: RawPopover(
+          anchorBuilder: (context, anchor) => RawButton(
             onPressed: anchor.toggle,
             builder: (context, states, _) =>
                 plainFace('Filter', key: const ValueKey('anchor')),

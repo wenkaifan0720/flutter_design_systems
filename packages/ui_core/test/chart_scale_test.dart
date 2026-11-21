@@ -2,7 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ui_core/ui_core.dart';
 
-const DesignLocalizations en = DefaultDesignLocalizations();
+const RawWidgetsLocalizations en = DefaultRawWidgetsLocalizations();
 
 // CLDR spaces a time's AM with a narrow no-break space.
 List<String> labels(DesignScale s, {int count = 5}) => [
@@ -43,7 +43,9 @@ void main() {
     test(
       'fixed divisions span the nice endpoints in both directions',
       () async {
-        final ar = await DesignLocalizations.delegate.load(const Locale('ar'));
+        final ar = await RawWidgetsLocalizations.delegate.load(
+          const Locale('ar'),
+        );
         for (final (lo, hi) in [
           (0.0, 23.0),
           (-23.0, 0.0),
@@ -98,7 +100,9 @@ void main() {
     });
 
     test('ticks in the reader\'s numbers', () async {
-      final ar = await DesignLocalizations.delegate.load(const Locale('ar'));
+      final ar = await RawWidgetsLocalizations.delegate.load(
+        const Locale('ar'),
+      );
       final s = DesignLinearScale.nice(min: 0, max: 2000, start: 0, end: 1);
       expect(s.ticks(ar).last.label, ar.formatDecimal(2000));
       expect(s.ticks(ar).last.label, contains('٢'));

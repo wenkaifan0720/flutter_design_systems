@@ -18,7 +18,7 @@ import 'behaviour_harness.dart';
 
 const _rtl = {'ar', 'fa', 'he', 'ur'};
 
-const DesignLocalizations _en = DefaultDesignLocalizations();
+const RawWidgetsLocalizations _en = DefaultRawWidgetsLocalizations();
 
 DesignChartDetails? _last;
 DesignPieChartDetails? _lastPie;
@@ -156,7 +156,7 @@ void main() {
     }
   });
 
-  for (final locale in DesignLocalizations.supportedLocales) {
+  for (final locale in RawWidgetsLocalizations.supportedLocales) {
     for (final axis in DesignChartXAxis.values) {
       final direction = _rtl.contains(locale.languageCode)
           ? TextDirection.rtl
@@ -187,7 +187,7 @@ void main() {
             Localizations(
               locale: locale,
               delegates: const [
-                DesignLocalizations.delegate,
+                RawWidgetsLocalizations.delegate,
                 DefaultWidgetsLocalizations.delegate,
               ],
               child: Directionality(
@@ -213,7 +213,7 @@ void main() {
             textDirection: direction,
           ),
         );
-        final l = await DesignLocalizations.delegate.load(locale);
+        final l = await RawWidgetsLocalizations.delegate.load(locale);
         final node = semanticsOf(tester, find.bySemanticsLabel('Chart'));
         final summary = node.getSemanticsData().value;
         expect(summary, startsWith(l.chartSeriesCountLabel(2)));

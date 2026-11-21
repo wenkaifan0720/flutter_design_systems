@@ -1,6 +1,6 @@
 /// A form field and a form, headless.
 ///
-/// [DesignField] wires a control to its label, help and error: a screen
+/// [RawInputDecorator] wires a control to its label, help and error: a screen
 /// reader hears the label as the control's name and the error and help as
 /// its hint, with the control marked invalid; a tap on the label focuses
 /// the control; the look gets whether anything in the field has focus.
@@ -11,12 +11,12 @@
 ///
 /// Which one a control needs:
 ///
-/// - [DesignField] alone, for a control whose label, help and error the app
+/// - [RawInputDecorator] alone, for a control whose label, help and error the app
 ///   sets itself (a settings switch, a search box): it carries the words and
 ///   their semantics, and validates nothing.
-/// - A [DesignFormField] round the [DesignField], for a value the form
+/// - A [DesignFormField] round the [RawInputDecorator], for a value the form
 ///   checks: it registers with the [Form] above it, runs its validator and
-///   hands its `errorText` to the [DesignField], whose control takes the
+///   hands its `errorText` to the [RawInputDecorator], whose control takes the
 ///   [DesignFormField.focusNode].
 /// - [DesignForm] round the fields: it submits them, and on a submit that
 ///   fails focuses the first field that is wrong.
@@ -32,11 +32,11 @@ import 'internal/announce.dart';
 import 'internal/field_words.dart';
 import 'localizations.dart';
 
-/// What a [DesignField]'s builder lays out.
+/// What a [RawInputDecorator]'s builder lays out.
 @immutable
-class DesignFieldParts {
-  /// The parts of a field; [DesignField] makes these.
-  const DesignFieldParts({
+class RawInputDecoratorDetails {
+  /// The parts of a field; [RawInputDecorator] makes these.
+  const RawInputDecoratorDetails({
     required this.control,
     required this.labelText,
     required this.helperText,
@@ -91,9 +91,9 @@ class DesignFieldParts {
 }
 
 /// Lays out a field's parts.
-typedef DesignFieldBuilder = Widget Function(
+typedef RawInputDecoratorBuilder = Widget Function(
   BuildContext context,
-  DesignFieldParts parts,
+  RawInputDecoratorDetails parts,
 );
 
 /// A control with its label, help and error.
@@ -111,11 +111,11 @@ typedef DesignFieldBuilder = Widget Function(
 /// read once.
 ///
 /// ```dart
-/// DesignField(labelText: 'Email', builder: (context, parts) => Column(children: [?parts.label, parts.control]), child: const Text('field'))
+/// RawInputDecorator(labelText: 'Email', builder: (context, parts) => Column(children: [?parts.label, parts.control]), child: const Text('field'))
 /// ```
-class DesignField extends StatefulWidget {
+class RawInputDecorator extends StatefulWidget {
   /// A field around [child].
-  const DesignField({
+  const RawInputDecorator({
     super.key,
     required this.builder,
     required this.child,
@@ -130,7 +130,7 @@ class DesignField extends StatefulWidget {
   });
 
   /// Lays out the parts.
-  final DesignFieldBuilder builder;
+  final RawInputDecoratorBuilder builder;
 
   /// The control.
   final Widget child;
@@ -157,21 +157,23 @@ class DesignField extends StatefulWidget {
   /// Whether the label, hint and validity join the control's own node:
   /// true always (one node for the whole child), false never (the label
   /// names the child as a group and each control keeps its node), null as
-  /// the child's controls say (see [DesignField]).
+  /// the child's controls say (see [RawInputDecorator]).
   final bool? mergeSemantics;
 
   /// Added to the name of a required field; null:
-  /// [DesignLocalizations.requiredHint].
+  /// [RawWidgetsLocalizations.requiredHint].
   final String? requiredHint;
 
   @override
-  State<DesignField> createState() => _DesignFieldState();
+  State<RawInputDecorator> createState() => _DesignFieldState();
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(ObjectFlagProperty<DesignFieldBuilder>.has('builder', builder))
+      ..add(
+        ObjectFlagProperty<RawInputDecoratorBuilder>.has('builder', builder),
+      )
       ..add(StringProperty('labelText', labelText, defaultValue: null))
       ..add(StringProperty('helperText', helperText, defaultValue: null))
       ..add(StringProperty('errorText', errorText, defaultValue: null))
@@ -209,11 +211,11 @@ class DesignField extends StatefulWidget {
   }
 }
 
-class _DesignFieldState extends State<DesignField> {
+class _DesignFieldState extends State<RawInputDecorator> {
   bool _focused = false;
 
   @override
-  void didUpdateWidget(DesignField oldWidget) {
+  void didUpdateWidget(RawInputDecorator oldWidget) {
     super.didUpdateWidget(oldWidget);
     // An error that appears or changes is announced (where the platform
     // takes announcements; elsewhere its line is a live region).
@@ -229,7 +231,8 @@ class _DesignFieldState extends State<DesignField> {
     final error = widget.errorText;
     final help = widget.helperText;
     final needed = widget.required
-        ? widget.requiredHint ?? DesignLocalizations.of(context).requiredHint
+        ? widget.requiredHint ??
+              RawWidgetsLocalizations.of(context).requiredHint
         : null;
     final name = label == null
         ? null
@@ -273,7 +276,7 @@ class _DesignFieldState extends State<DesignField> {
       );
     }
     final node = widget.focusNode;
-    final parts = DesignFieldParts(
+    final parts = RawInputDecoratorDetails(
       control: control,
       labelText: label,
       helperText: help,
@@ -321,7 +324,7 @@ class _DesignFieldState extends State<DesignField> {
 /// to the control.
 ///
 /// It validates and registers; it draws no label, help or error and adds
-/// nothing to the semantics tree. Build a [DesignField] in [builder] and
+/// nothing to the semantics tree. Build a [RawInputDecorator] in [builder] and
 /// pass it the field's `errorText`, so the error is shown and read as the
 /// control's hint.
 ///
@@ -417,7 +420,7 @@ class DesignForm extends StatefulWidget {
   final VoidCallback? onSubmit;
 
   /// What a screen reader hears when `count` fields are wrong; null:
-  /// [DesignLocalizations.formProblemsMessage].
+  /// [RawWidgetsLocalizations.formProblemsMessage].
   final String Function(int count)? problemsMessage;
 
   /// The nearest form's state, or null.
@@ -479,7 +482,8 @@ class DesignFormState extends State<DesignForm> {
       designAnnounce(
         context,
         (widget.problemsMessage ??
-            DesignLocalizations.of(context).formProblemsMessage)(wrong.length),
+            RawWidgetsLocalizations.of(context)
+                .formProblemsMessage)(wrong.length),
       );
     }
     return false;

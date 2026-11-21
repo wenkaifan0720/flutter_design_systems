@@ -16,15 +16,15 @@ import 'haptics.dart';
 import 'motion.dart';
 import 'pressable.dart';
 
-/// Opens and closes a [DesignSwipeActions] row from outside, and says
+/// Opens and closes a [RawSwipeActions] row from outside, and says
 /// whether it is open, as `flutter_slidable`'s controller does. The caller
 /// makes it, gives it to one row, and disposes it; with no row it does
 /// nothing.
 ///
 /// ```dart
-/// DesignSwipeActions(controller: controller, endActions: [DesignSwipeAction(label: 'Archive', onPressed: controller.close)], actionBuilder: (context, action, details) => Text(action.label), child: const Text('Message'))
+/// RawSwipeActions(controller: controller, endActions: [RawSwipeAction(label: 'Archive', onPressed: controller.close)], actionBuilder: (context, action, details) => Text(action.label), child: const Text('Message'))
 /// ```
-class DesignSwipeActionsController extends ChangeNotifier {
+class RawSwipeActionsController extends ChangeNotifier {
   _DesignSwipeActionsState? _row;
   bool _open = false;
 
@@ -49,14 +49,14 @@ class DesignSwipeActionsController extends ChangeNotifier {
 
 // The rows in one Scrollable: one open at a time.
 final Expando<Set<_DesignSwipeActionsState>> _groups = Expando(
-  'DesignSwipeActions groups',
+  'RawSwipeActions groups',
 );
 
 /// An action behind a row.
 @immutable
-class DesignSwipeAction {
+class RawSwipeAction {
   /// An action [label]led, that [onPressed] runs.
-  const DesignSwipeAction({
+  const RawSwipeAction({
     required this.label,
     required this.onPressed,
     this.destructive = false,
@@ -78,9 +78,9 @@ class DesignSwipeAction {
 
 /// What the look paints an action from.
 @immutable
-class DesignSwipeActionDetails {
+class RawSwipeActionDetails {
   /// The state; the row makes it.
-  const DesignSwipeActionDetails({
+  const RawSwipeActionDetails({
     required this.states,
     required this.reveal,
     required this.armed,
@@ -106,16 +106,16 @@ class DesignSwipeActionDetails {
   final int count;
 
   /// How far its slot runs on under the row, at its inner side: the side's
-  /// innermost action's runs [DesignSwipeActions.underlap], the others' none.
+  /// innermost action's runs [RawSwipeActions.underlap], the others' none.
   /// A look keeps the action's content to the rest of the slot.
   final double underlap;
 }
 
 /// Paints an action.
-typedef DesignSwipeActionBuilder = Widget Function(
+typedef RawSwipeActionBuilder = Widget Function(
   BuildContext context,
-  DesignSwipeAction action,
-  DesignSwipeActionDetails details,
+  RawSwipeAction action,
+  RawSwipeActionDetails details,
 );
 
 /// [child] with [startActions] behind its start edge and [endActions]
@@ -128,11 +128,11 @@ typedef DesignSwipeActionBuilder = Widget Function(
 /// strip on under it, so its corners show the strip, not what is behind.
 ///
 /// ```dart
-/// DesignSwipeActions(endActions: [DesignSwipeAction(label: 'Delete', onPressed: () {}, destructive: true)], actionBuilder: (context, action, details) => Text(action.label), child: const Text('Message'))
+/// RawSwipeActions(endActions: [RawSwipeAction(label: 'Delete', onPressed: () {}, destructive: true)], actionBuilder: (context, action, details) => Text(action.label), child: const Text('Message'))
 /// ```
-class DesignSwipeActions extends StatefulWidget {
+class RawSwipeActions extends StatefulWidget {
   /// A row of [child] with actions.
-  const DesignSwipeActions({
+  const RawSwipeActions({
     super.key,
     required this.child,
     required this.actionBuilder,
@@ -157,13 +157,13 @@ class DesignSwipeActions extends StatefulWidget {
   final Widget child;
 
   /// Paints an action.
-  final DesignSwipeActionBuilder actionBuilder;
+  final RawSwipeActionBuilder actionBuilder;
 
   /// The actions a swipe toward the end shows, the first at the edge.
-  final List<DesignSwipeAction> startActions;
+  final List<RawSwipeAction> startActions;
 
   /// The actions a swipe toward the start shows, the first at the edge.
-  final List<DesignSwipeAction> endActions;
+  final List<RawSwipeAction> endActions;
 
   /// Each action's resting width.
   final double actionExtent;
@@ -185,13 +185,13 @@ class DesignSwipeActions extends StatefulWidget {
 
   /// How far the actions' strip runs on under the row, past where it shows:
   /// the innermost action's slot is that much wider (see
-  /// [DesignSwipeActionDetails.underlap]). 0: the strip stops at the row.
+  /// [RawSwipeActionDetails.underlap]). 0: the strip stops at the row.
   final double underlap;
 
   // 0.3.0 routes
 
   /// Opens and closes it from outside; the caller's, never disposed here.
-  final DesignSwipeActionsController? controller;
+  final RawSwipeActionsController? controller;
 
   /// Whether the scroll view it is in scrolling closes it. Defaults to true.
   /// Rows in one scroll view open one at a time either way: opening one
@@ -207,30 +207,30 @@ class DesignSwipeActions extends StatefulWidget {
   // 0.3.0 routes end
 
   @override
-  State<DesignSwipeActions> createState() => _DesignSwipeActionsState();
+  State<RawSwipeActions> createState() => _DesignSwipeActionsState();
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
       ..add(
-        ObjectFlagProperty<DesignSwipeActionBuilder>.has(
+        ObjectFlagProperty<RawSwipeActionBuilder>.has(
           'actionBuilder',
           actionBuilder,
         ),
       )
       ..add(
-        IterableProperty<DesignSwipeAction>(
+        IterableProperty<RawSwipeAction>(
           'startActions',
           startActions,
-          defaultValue: const <DesignSwipeAction>[],
+          defaultValue: const <RawSwipeAction>[],
         ),
       )
       ..add(
-        IterableProperty<DesignSwipeAction>(
+        IterableProperty<RawSwipeAction>(
           'endActions',
           endActions,
-          defaultValue: const <DesignSwipeAction>[],
+          defaultValue: const <RawSwipeAction>[],
         ),
       )
       ..add(DoubleProperty('actionExtent', actionExtent, defaultValue: 80))
@@ -266,7 +266,7 @@ class DesignSwipeActions extends StatefulWidget {
       ..add(DoubleProperty('underlap', underlap, defaultValue: 0))
       // 0.3.0 routes
       ..add(
-        DiagnosticsProperty<DesignSwipeActionsController>(
+        DiagnosticsProperty<RawSwipeActionsController>(
           'controller',
           controller,
           defaultValue: null,
@@ -286,7 +286,7 @@ class DesignSwipeActions extends StatefulWidget {
   }
 }
 
-class _DesignSwipeActionsState extends State<DesignSwipeActions>
+class _DesignSwipeActionsState extends State<RawSwipeActions>
     with TickerProviderStateMixin {
   // Offset along the reading direction: positive shows the start actions.
   late final AnimationController _offset = AnimationController.unbounded(
@@ -297,12 +297,12 @@ class _DesignSwipeActionsState extends State<DesignSwipeActions>
   late final AnimationController _arm = AnimationController(vsync: this);
   bool _armedNow = false;
   final FocusNode _actionsScope = FocusNode(
-    debugLabel: 'DesignSwipeActions actions',
+    debugLabel: 'RawSwipeActions actions',
     canRequestFocus: false,
     skipTraversal: true,
   );
   final FocusNode _row = FocusNode(
-    debugLabel: 'DesignSwipeActions row',
+    debugLabel: 'RawSwipeActions row',
     canRequestFocus: false,
     skipTraversal: true,
   );
@@ -343,7 +343,7 @@ class _DesignSwipeActionsState extends State<DesignSwipeActions>
   }
 
   @override
-  void didUpdateWidget(DesignSwipeActions oldWidget) {
+  void didUpdateWidget(RawSwipeActions oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.controller != widget.controller) {
       if (oldWidget.controller?._row == this) oldWidget.controller!._row = null;
@@ -455,7 +455,7 @@ class _DesignSwipeActionsState extends State<DesignSwipeActions>
     });
   }
 
-  void _run(DesignSwipeAction action) {
+  void _run(RawSwipeAction action) {
     final returnFocus = _actionsScope.hasFocus;
     close();
     if (returnFocus) _focusRow();
@@ -574,14 +574,14 @@ class _DesignSwipeActionsState extends State<DesignSwipeActions>
     // The edge action widens to four shares as it arms; the innermost runs
     // on under the row by the underlap.
     final shares = n + 3 * _arm.value;
-    Widget slot(int i, DesignSwipeAction a) => DesignPressable(
+    Widget slot(int i, RawSwipeAction a) => RawButton(
       onPressed: () => _run(a),
       semanticLabel: a.label,
       excludeSemantics: true,
       builder: (context, states, _) => widget.actionBuilder(
         context,
         a,
-        DesignSwipeActionDetails(
+        RawSwipeActionDetails(
           states: states,
           reveal: reveal,
           armed: armed && i == 0,

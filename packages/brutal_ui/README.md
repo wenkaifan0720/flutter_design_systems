@@ -66,7 +66,7 @@ Pushed pages slide 24 logical pixels from the trailing edge and support the nati
 
 - Tab moves between controls. A tab bar or navigation menu is a single tab stop, with arrow keys to move between destinations. F6 switches focus between navigation and content.
 - Tooltips open on focus or hover and close with Escape. Dialogs keep focus inside and restore it to their opener when dismissed. Bottom sheets support drag-to-dismiss.
-- Add `DesignLocalizations.delegate` to the app’s localization delegates for shared control labels. A `LocalizationsDelegate<BrutalLocalizations>` can override package-specific text, including table row counts.
+- Add `RawWidgetsLocalizations.delegate` to the app’s localization delegates for shared control labels. A `LocalizationsDelegate<BrutalLocalizations>` can override package-specific text, including table row counts.
 - Controls follow platform density. The theme respects the system’s reduced-motion setting.
 
 Date pickers scroll within the space available around their field. Step progress stacks its cells when the names need more room. Line, bar and area charts scale their axes with the reader’s text settings and include the full data series in their screen-reader descriptions.

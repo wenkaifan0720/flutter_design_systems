@@ -15,24 +15,24 @@ import 'package:flutter/gestures.dart' show DragStartBehavior;
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 
-import 'internal/roving_focus.dart';
 import 'localizations.dart';
 import 'motion.dart';
 import 'pressable.dart';
+import 'internal/roving_group.dart';
 import 'tap_target.dart';
 
 /// Which tab is selected, and where a swipe or a change has got to: Material's
-/// `TabController` without Material. A [DesignTabBar] and a [DesignTabView]
+/// `TabController` without Material. A [RawTabBar] and a [RawTabBarView]
 /// given the same one follow each other. The caller makes it, with a
 /// [TickerProvider] ([TickerProviderStateMixin]), and disposes it.
 ///
 /// ```dart
-/// DesignTabController(length: 2, vsync: vsync)
+/// RawTabController(length: 2, vsync: vsync)
 /// ```
-class DesignTabController extends ChangeNotifier {
+class RawTabController extends ChangeNotifier {
   /// [length] tabs, [initialIndex] selected; a change runs on the spring
   /// [dampingRatio] and [stiffness].
-  DesignTabController({
+  RawTabController({
     required this.length,
     int initialIndex = 0,
     required TickerProvider vsync,
@@ -140,9 +140,9 @@ class DesignTabController extends ChangeNotifier {
 
 /// A tab: its name, and what a look paints it with.
 @immutable
-class DesignTab {
+class RawTab {
   /// A tab named [label].
-  const DesignTab({
+  const RawTab({
     required this.label,
     this.icon,
     this.enabled = true,
@@ -164,9 +164,9 @@ class DesignTab {
 
 /// What a look paints a tab from.
 @immutable
-class DesignTabDetails {
+class RawTabDetails {
   /// The state; the bar makes it.
-  const DesignTabDetails({
+  const RawTabDetails({
     required this.states,
     required this.index,
     required this.count,
@@ -174,7 +174,7 @@ class DesignTabDetails {
   });
 
   /// Its pressable states; [WidgetState.selected] while it is the
-  /// controller's [DesignTabController.index].
+  /// controller's [RawTabController.index].
   final Set<WidgetState> states;
 
   /// Its place: 0 first.
@@ -191,10 +191,10 @@ class DesignTabDetails {
 
 /// Where a look paints the indicator, and the selected tab's states.
 @immutable
-class DesignTabIndicatorDetails {
+class RawTabIndicatorDetails {
   /// The indicator's place; the bar makes it. [tabRect] is [rect] unless
   /// given.
-  const DesignTabIndicatorDetails({
+  const RawTabIndicatorDetails({
     required this.rect,
     required this.direction,
     Rect? tabRect,
@@ -203,7 +203,7 @@ class DesignTabIndicatorDetails {
 
   /// The selected tab's face in the bar, moved and resized between tabs as
   /// the selection moves; the indicator is laid out in it. A tab's face is
-  /// what a [DesignTapTarget] in it holds, when its target stands larger
+  /// what a [TapTargetPadding] in it holds, when its target stands larger
   /// than its face (the target the hit area, the face its own size in it);
   /// otherwise the whole tab.
   final Rect rect;
@@ -224,7 +224,7 @@ class DesignTabIndicatorDetails {
 
   @override
   bool operator ==(Object other) =>
-      other is DesignTabIndicatorDetails &&
+      other is RawTabIndicatorDetails &&
       other.rect == rect &&
       other.tabRect == tabRect &&
       other.direction == direction &&
@@ -236,22 +236,22 @@ class DesignTabIndicatorDetails {
 }
 
 /// Paints a tab.
-typedef DesignTabBuilder = Widget Function(
+typedef RawTabBuilder = Widget Function(
   BuildContext context,
-  DesignTab tab,
-  DesignTabDetails details,
+  RawTab tab,
+  RawTabDetails details,
 );
 
-/// Paints the indicator, laid out in [DesignTabIndicatorDetails.rect].
-typedef DesignTabIndicatorBuilder = Widget Function(
+/// Paints the indicator, laid out in [RawTabIndicatorDetails.rect].
+typedef RawTabIndicatorBuilder = Widget Function(
   BuildContext context,
-  DesignTabIndicatorDetails details,
+  RawTabIndicatorDetails details,
 );
 
 // The semantics identifier of [controller]'s page [index], which its tab
 // controls.
-String _panelId(DesignTabController controller, int index) =>
-    'DesignTabView ${shortHash(controller)} $index';
+String _panelId(RawTabController controller, int index) =>
+    'RawTabBarView ${shortHash(controller)} $index';
 
 /// A bar of [tabs], [controller] choosing among them; the look paints each
 /// tab ([tabBuilder]) and the indicator under them ([indicatorBuilder]), or
@@ -262,23 +262,25 @@ String _panelId(DesignTabController controller, int index) =>
 /// [direction] vertical stacks them (a settings sidebar), each its own
 /// height. Across the bar every tab's face stands as tall as the tallest
 /// (as wide as the widest, in a column). A tab's face is the whole tab, or
-/// what a touch target ([DesignTapTarget]) in it holds when the target
+/// what a touch target ([TapTargetPadding]) in it holds when the target
 /// stands larger: the target is the tab's hit area, the face keeps its own
 /// size in it, and the indicator keeps to the face
-/// ([DesignTabIndicatorDetails.rect]). A tab whose words grow where it
+/// ([RawTabIndicatorDetails.rect]). A tab whose words grow where it
 /// stands (a larger text size, a tab renamed) lays the bar out again.
 ///
 /// The bar is one tab stop, on the selected tab; the arrows along it move
 /// focus (mirrored right to left), wrapping, Home and End to the ends,
 /// disabled tabs skipped. With [selectionFollowsFocus] the focused tab is
-/// chosen as focus reaches it; otherwise Enter or Space chooses it.
+/// chosen as focus reaches it; otherwise Enter or Space chooses it. Each
+/// arrow, Home and End is a [RawRovingFocusIntent], which an [Actions]
+/// round the bar overrides.
 ///
 /// ```dart
-/// DesignTabBar(controller: controller, tabs: const [DesignTab(label: 'Inbox'), DesignTab(label: 'Sent')], tabBuilder: (context, tab, details) => Text(tab.label))
+/// RawTabBar(controller: controller, tabs: const [RawTab(label: 'Inbox'), RawTab(label: 'Sent')], tabBuilder: (context, tab, details) => Text(tab.label))
 /// ```
-class DesignTabBar extends StatefulWidget {
+class RawTabBar extends StatefulWidget {
   /// A bar of [tabs], one per [controller] tab.
-  const DesignTabBar({
+  const RawTabBar({
     super.key,
     required this.controller,
     required this.tabs,
@@ -292,17 +294,17 @@ class DesignTabBar extends StatefulWidget {
   });
 
   /// Which tab is selected; the caller's.
-  final DesignTabController controller;
+  final RawTabController controller;
 
-  /// The tabs, [DesignTabController.length] of them.
-  final List<DesignTab> tabs;
+  /// The tabs, [RawTabController.length] of them.
+  final List<RawTab> tabs;
 
   /// Paints a tab.
-  final DesignTabBuilder tabBuilder;
+  final RawTabBuilder tabBuilder;
 
   /// Paints the indicator, under the tabs ([indicatorPosition]); null:
   /// none.
-  final DesignTabIndicatorBuilder? indicatorBuilder;
+  final RawTabIndicatorBuilder? indicatorBuilder;
 
   /// Whether the indicator is painted under the tabs
   /// ([DecorationPosition.background], the default) or over them
@@ -326,17 +328,17 @@ class DesignTabBar extends StatefulWidget {
   final String? semanticLabel;
 
   @override
-  State<DesignTabBar> createState() => _DesignTabBarState();
+  State<RawTabBar> createState() => _DesignTabBarState();
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(DiagnosticsProperty<DesignTabController>('controller', controller))
+      ..add(DiagnosticsProperty<RawTabController>('controller', controller))
       ..add(IterableProperty<String>('tabs', [for (final t in tabs) t.label]))
-      ..add(ObjectFlagProperty<DesignTabBuilder>.has('tabBuilder', tabBuilder))
+      ..add(ObjectFlagProperty<RawTabBuilder>.has('tabBuilder', tabBuilder))
       ..add(
-        ObjectFlagProperty<DesignTabIndicatorBuilder>.has(
+        ObjectFlagProperty<RawTabIndicatorBuilder>.has(
           'indicatorBuilder',
           indicatorBuilder,
         ),
@@ -374,9 +376,10 @@ class DesignTabBar extends StatefulWidget {
   }
 }
 
-class _DesignTabBarState extends State<DesignTabBar>
+class _DesignTabBarState extends State<RawTabBar>
     with SingleTickerProviderStateMixin {
-  final RovingFocus _focus = RovingFocus('DesignTabBar');
+  // One node per tab, the bar's own.
+  final List<FocusNode> _nodes = [];
   // Each tab's states, which the indicator reads from the selected tab's.
   final List<WidgetStatesController> _states = [];
   final ScrollController _scroll = ScrollController();
@@ -386,7 +389,7 @@ class _DesignTabBarState extends State<DesignTabBar>
   // The index the bar last brought into view.
   int _shown = 0;
 
-  DesignTabController get _controller => widget.controller;
+  RawTabController get _controller => widget.controller;
 
   @override
   void initState() {
@@ -396,7 +399,7 @@ class _DesignTabBarState extends State<DesignTabBar>
   }
 
   @override
-  void didUpdateWidget(DesignTabBar oldWidget) {
+  void didUpdateWidget(RawTabBar oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.controller != widget.controller) {
       oldWidget.controller.removeListener(_changed);
@@ -408,7 +411,9 @@ class _DesignTabBarState extends State<DesignTabBar>
   @override
   void dispose() {
     _controller.removeListener(_changed);
-    _focus.dispose();
+    for (final node in _nodes) {
+      node.dispose();
+    }
     _scroll.dispose();
     _strip.dispose();
     for (final states in _states) {
@@ -444,34 +449,10 @@ class _DesignTabBarState extends State<DesignTabBar>
     });
   }
 
-  bool _enabled(int i) => widget.tabs[i].enabled;
-
-  // The tab stop: the selected tab, else the first enabled.
-  int? _stop() {
-    final n = widget.tabs.length;
-    if (_controller.index < n && _enabled(_controller.index)) {
-      return _controller.index;
-    }
-    for (var i = 0; i < n; i++) {
-      if (_enabled(i)) return i;
-    }
-    return null;
-  }
-
-  KeyEventResult _key(int i, KeyEvent event) {
-    final to = RovingFocus.target(
-      event,
-      from: i,
-      count: widget.tabs.length,
-      axis: widget.direction,
-      textDirection: Directionality.of(context),
-      enabled: _enabled,
-    );
-    if (to == null) return KeyEventResult.ignored;
-    _focus[to].requestFocus();
-    if (widget.selectionFollowsFocus) _controller.animateTo(to);
-    _reveal(to);
-    return KeyEventResult.handled;
+  // A key moved the focus to tab [i].
+  void _movedTo(int i) {
+    if (widget.selectionFollowsFocus) _controller.animateTo(i);
+    _reveal(i);
   }
 
   // Scrolls the strip, on the controller's spring, the least way that shows
@@ -479,7 +460,7 @@ class _DesignTabBarState extends State<DesignTabBar>
   void _reveal(int i) {
     if (!widget.isScrollable || !_scroll.hasClients) return;
     if (i >= widget.tabs.length) return;
-    final tab = _focus[i].context?.findRenderObject();
+    final tab = _nodes[i].context?.findRenderObject();
     if (tab == null || !tab.attached) return;
     final viewport = RenderAbstractViewport.maybeOf(tab);
     if (viewport == null) return;
@@ -515,15 +496,18 @@ class _DesignTabBarState extends State<DesignTabBar>
   Widget build(BuildContext context) {
     assert(
       widget.tabs.length == _controller.length,
-      'a DesignTabBar has one tab per controller tab',
+      'a RawTabBar has one tab per controller tab',
     );
     _controller._reduceMotion = designReduceMotionOf(context);
     final n = widget.tabs.length;
-    _focus
-      ..sync(n)
-      ..stopAt(_stop());
+    while (_nodes.length < n) {
+      _nodes.add(FocusNode(debugLabel: 'RawTabBar ${_nodes.length}'));
+    }
+    while (_nodes.length > n) {
+      _nodes.removeLast().dispose();
+    }
     _syncStates(n);
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     final indicator = widget.indicatorBuilder;
     final selected = _controller.index;
     Widget bar = _TabStrip(
@@ -548,7 +532,7 @@ class _DesignTabBarState extends State<DesignTabBar>
       container: true,
       explicitChildNodes: true,
       label: widget.semanticLabel,
-      child: bar,
+      child: RovingGroup(orientation: widget.direction, child: bar),
     );
     if (widget.isScrollable) {
       bar = SingleChildScrollView(
@@ -560,15 +544,27 @@ class _DesignTabBarState extends State<DesignTabBar>
     return bar;
   }
 
-  Widget _tab(int i, DesignLocalizations words) {
+  Widget _tab(int i, RawWidgetsLocalizations words) {
+    final tab = widget.tabs[i];
+    final controller = _controller;
+    return RovingItem(
+      focusNode: _nodes[i],
+      enabled: tab.enabled,
+      selected: i == controller.index,
+      order: i,
+      onMovedTo: () => _movedTo(i),
+      child: _pressable(i, words),
+    );
+  }
+
+  Widget _pressable(int i, RawWidgetsLocalizations words) {
     final tab = widget.tabs[i];
     final n = widget.tabs.length;
     final controller = _controller;
-    return DesignPressable(
-      focusNode: _focus[i],
+    return RawButton(
+      focusNode: _nodes[i],
       statesController: _states[i],
       onPressed: tab.enabled ? () => controller.animateTo(i) : null,
-      onKeyEvent: (node, event) => _key(i, event),
       selected: i == controller.index,
       tab: true,
       builder: (context, states, _) => Semantics(
@@ -581,7 +577,7 @@ class _DesignTabBarState extends State<DesignTabBar>
             builder: (context, _) => widget.tabBuilder(
               context,
               tab,
-              DesignTabDetails(
+              RawTabDetails(
                 states: states,
                 index: i,
                 count: n,
@@ -774,7 +770,7 @@ class _RenderTabStrip extends RenderBox
   List<Rect> _faces(List<RenderBox> tabs) {
     var faces = const <Rect>[];
     invokeLayoutCallback<BoxConstraints>((_) {
-      faces = [for (final t in tabs) RenderDesignTapTarget.faceRectOf(t)];
+      faces = [for (final t in tabs) RenderTapTargetPadding.faceRectOf(t)];
     });
     return faces;
   }
@@ -898,7 +894,7 @@ Rect _between(List<Rect> rects, double at) {
 // The indicator, built as the strip lays out, from where the selection
 // stands among the tabs' faces and the selected tab's [states]; it alone
 // lays out again as the selection moves or those states change.
-class _IndicatorLayer extends AbstractLayoutBuilder<DesignTabIndicatorDetails> {
+class _IndicatorLayer extends AbstractLayoutBuilder<RawTabIndicatorDetails> {
   const _IndicatorLayer({
     required this.animation,
     required this.direction,
@@ -911,7 +907,7 @@ class _IndicatorLayer extends AbstractLayoutBuilder<DesignTabIndicatorDetails> {
   final WidgetStatesController? states;
 
   @override
-  final Widget Function(BuildContext, DesignTabIndicatorDetails) builder;
+  final Widget Function(BuildContext, RawTabIndicatorDetails) builder;
 
   @override
   _RenderIndicatorLayer createRenderObject(BuildContext context) =>
@@ -933,7 +929,7 @@ class _RenderIndicatorLayer extends RenderBox
     with
         RenderObjectWithChildMixin<RenderBox>,
         RenderObjectWithLayoutCallbackMixin,
-        RenderAbstractLayoutBuilderMixin<DesignTabIndicatorDetails, RenderBox> {
+        RenderAbstractLayoutBuilderMixin<RawTabIndicatorDetails, RenderBox> {
   _RenderIndicatorLayer(this._animation, this._direction, this._states);
 
   Animation<double> get animation => _animation;
@@ -985,10 +981,10 @@ class _RenderIndicatorLayer extends RenderBox
   }
 
   @override
-  DesignTabIndicatorDetails get layoutInfo {
+  RawTabIndicatorDetails get layoutInfo {
     final strip = constraints as _IndicatorConstraints;
     final at = _animation.value;
-    return DesignTabIndicatorDetails(
+    return RawTabIndicatorDetails(
       rect: _between(strip.faces, at),
       tabRect: _between(strip.tabs, at),
       direction: _direction,
@@ -1032,18 +1028,18 @@ class _RenderIndicatorLayer extends RenderBox
 
 /// The pages of [controller]'s tabs, one per tab, swiped between: Material's
 /// `TabBarView` without Material. Swiping moves the controller's
-/// [DesignTabController.animation], so a bar's indicator follows the finger;
+/// [RawTabController.animation], so a bar's indicator follows the finger;
 /// let go, the pages spring to the nearer page (or the next, flung) on the
 /// controller's spring. A change from the bar springs the pages the same
 /// way. Each page is its tab's panel to a screen reader; pages off screen
 /// are not built, unless a page keeps itself alive.
 ///
 /// ```dart
-/// DesignTabView(controller: controller, children: const [Text('Inbox'), Text('Sent')])
+/// RawTabBarView(controller: controller, children: const [Text('Inbox'), Text('Sent')])
 /// ```
-class DesignTabView extends StatefulWidget {
+class RawTabBarView extends StatefulWidget {
   /// One page of [children] per [controller] tab.
-  const DesignTabView({
+  const RawTabBarView({
     super.key,
     required this.controller,
     required this.children,
@@ -1052,9 +1048,9 @@ class DesignTabView extends StatefulWidget {
   });
 
   /// Which tab is selected; the caller's.
-  final DesignTabController controller;
+  final RawTabController controller;
 
-  /// The pages, [DesignTabController.length] of them.
+  /// The pages, [RawTabController.length] of them.
   final List<Widget> children;
 
   /// How the pages respond to a swipe, under the paging;
@@ -1067,13 +1063,13 @@ class DesignTabView extends StatefulWidget {
   final DragStartBehavior dragStartBehavior;
 
   @override
-  State<DesignTabView> createState() => _DesignTabViewState();
+  State<RawTabBarView> createState() => _DesignTabViewState();
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(DiagnosticsProperty<DesignTabController>('controller', controller))
+      ..add(DiagnosticsProperty<RawTabController>('controller', controller))
       ..add(
         DiagnosticsProperty<ScrollPhysics>(
           'physics',
@@ -1091,7 +1087,7 @@ class DesignTabView extends StatefulWidget {
   }
 }
 
-class _DesignTabViewState extends State<DesignTabView> {
+class _DesignTabViewState extends State<RawTabBarView> {
   late final PageController _pages = PageController(
     initialPage: widget.controller.index,
   );
@@ -1108,7 +1104,7 @@ class _DesignTabViewState extends State<DesignTabView> {
 
   _Follow? _follow;
 
-  DesignTabController get _controller => widget.controller;
+  RawTabController get _controller => widget.controller;
 
   @override
   void initState() {
@@ -1116,18 +1112,18 @@ class _DesignTabViewState extends State<DesignTabView> {
     _listen(_controller);
   }
 
-  void _listen(DesignTabController controller) {
+  void _listen(RawTabController controller) {
     controller.addListener(_changed);
     controller.animation.addListener(_moved);
   }
 
-  void _unlisten(DesignTabController controller) {
+  void _unlisten(RawTabController controller) {
     controller.removeListener(_changed);
     controller.animation.removeListener(_moved);
   }
 
   @override
-  void didUpdateWidget(DesignTabView oldWidget) {
+  void didUpdateWidget(RawTabBarView oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.controller != widget.controller) {
       _unlisten(oldWidget.controller);
@@ -1226,7 +1222,7 @@ class _DesignTabViewState extends State<DesignTabView> {
   Widget build(BuildContext context) {
     assert(
       widget.children.length == _controller.length,
-      'a DesignTabView has one page per controller tab',
+      'a RawTabBarView has one page per controller tab',
     );
     final reduceMotion = designReduceMotionOf(context);
     _controller._reduceMotion = reduceMotion;

@@ -1,4 +1,4 @@
-/// A context menu, headless: a menu of [DesignMenuEntry]s over a region,
+/// A context menu, headless: a menu of [RawMenuEntry]s over a region,
 /// opened at the pointer by a right click (a secondary tap) or a long press,
 /// at the focused widget by Shift+F10 or the Menu key, and by a screen
 /// reader's "Show menu". Its rows are a menubar's: commands, submenus,
@@ -31,7 +31,7 @@ import 'menubar.dart';
 ///   picks one.
 /// - Shift+F10, or the Menu key, opens it at the focused widget's leading
 ///   bottom corner, while the focus is inside [child], its first row lit.
-/// - A screen reader finds "Show menu" ([DesignLocalizations.showMenuTooltip])
+/// - A screen reader finds "Show menu" ([RawWidgetsLocalizations.showMenuTooltip])
 ///   among the region's actions, and a long press (Android's double tap and
 ///   hold) says it.
 /// - On the web, the browser's own menu stays shut while a pointer is over
@@ -45,11 +45,11 @@ import 'menubar.dart';
 /// back to where it was. A command closes it, then runs.
 ///
 /// ```dart
-/// DesignContextMenu(menuChildren: [DesignMenuEntry(label: 'Copy', onPressed: () {})], itemBuilder: (context, entry, level, states) => Text(entry.label), surfaceBuilder: (context, info, items) => Column(mainAxisSize: MainAxisSize.min, children: items), child: const Text('Report.pdf'))
+/// RawContextMenu(menuChildren: [RawMenuEntry(label: 'Copy', onPressed: () {})], itemBuilder: (context, entry, level, states) => Text(entry.label), surfaceBuilder: (context, info, items) => Column(mainAxisSize: MainAxisSize.min, children: items), child: const Text('Report.pdf'))
 /// ```
-class DesignContextMenu extends StatefulWidget {
+class RawContextMenu extends StatefulWidget {
   /// A menu of [menuChildren] over [child].
-  const DesignContextMenu({
+  const RawContextMenu({
     super.key,
     required this.menuChildren,
     required this.itemBuilder,
@@ -68,15 +68,15 @@ class DesignContextMenu extends StatefulWidget {
 
   /// The menu's rows: commands, submenus and dividers. Empty: no menu, no
   /// action for a screen reader, and the browser's own menu on the web.
-  final List<DesignMenuEntry> menuChildren;
+  final List<RawMenuEntry> menuChildren;
 
-  /// Paints a row ([DesignMenuLevel.menu]).
-  final DesignMenuItemBuilder itemBuilder;
+  /// Paints a row ([RawMenuLevel.menu]).
+  final RawMenuItemBuilder itemBuilder;
 
   /// Paints the menu's panel round its rows (scroll them when
-  /// [DesignOverlayInfo.maxSize] is short). [DesignOverlayInfo.position] is
+  /// [RawPopoverInfo.maxSize] is short). [RawPopoverInfo.position] is
   /// the point it opened at.
-  final DesignMenuSurfaceBuilder surfaceBuilder;
+  final RawMenuBarOverlayBuilder surfaceBuilder;
 
   /// The region that opens it.
   final Widget child;
@@ -96,7 +96,7 @@ class DesignContextMenu extends StatefulWidget {
   final String? semanticLabel;
 
   /// Whether a pointer over a row moves the keys there; true by default, as
-  /// [DesignMenuBar.highlightFollowsPointer].
+  /// [RawMenuBar.highlightFollowsPointer].
   final bool highlightFollowsPointer;
 
   /// Whether a long press that opens it plays [DesignHaptics.longPress];
@@ -115,21 +115,18 @@ class DesignContextMenu extends StatefulWidget {
   final double stiffness;
 
   @override
-  State<DesignContextMenu> createState() => _DesignContextMenuState();
+  State<RawContextMenu> createState() => _DesignContextMenuState();
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(IterableProperty<DesignMenuEntry>('menuChildren', menuChildren))
+      ..add(IterableProperty<RawMenuEntry>('menuChildren', menuChildren))
       ..add(
-        ObjectFlagProperty<DesignMenuItemBuilder>.has(
-          'itemBuilder',
-          itemBuilder,
-        ),
+        ObjectFlagProperty<RawMenuItemBuilder>.has('itemBuilder', itemBuilder),
       )
       ..add(
-        ObjectFlagProperty<DesignMenuSurfaceBuilder>.has(
+        ObjectFlagProperty<RawMenuBarOverlayBuilder>.has(
           'surfaceBuilder',
           surfaceBuilder,
         ),
@@ -185,9 +182,9 @@ const Set<PointerDeviceKind> _touchKinds = {
   PointerDeviceKind.unknown,
 };
 
-class _DesignContextMenuState extends State<DesignContextMenu> {
+class _DesignContextMenuState extends State<RawContextMenu> {
   MenuController? _own;
-  final GlobalKey _region = GlobalKey(debugLabel: 'DesignContextMenu region');
+  final GlobalKey _region = GlobalKey(debugLabel: 'RawContextMenu region');
   final DesignBrowserMenuHold _browser = DesignBrowserMenuHold();
   bool _hovered = false;
   bool _pressed = false;
@@ -200,7 +197,7 @@ class _DesignContextMenuState extends State<DesignContextMenu> {
   bool get _enabled => widget.menuChildren.isNotEmpty;
 
   @override
-  void didUpdateWidget(DesignContextMenu oldWidget) {
+  void didUpdateWidget(RawContextMenu oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (!_enabled && _controller.isOpen) {
       // Its rows are gone: closed once this frame is built.
@@ -340,7 +337,7 @@ class _DesignContextMenuState extends State<DesignContextMenu> {
       },
       child: region,
     );
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     return Semantics(
       container: true,
       onLongPress: enabled ? _fromReader : null,
@@ -354,16 +351,16 @@ class _DesignContextMenuState extends State<DesignContextMenu> {
 
   @override
   Widget build(BuildContext context) {
-    return DesignAnchoredOverlay(
+    return RawPopover(
       // Its anchor is a region, not a control: focus goes back where it
       // was, never to the region's first control.
       key: const DesignRegionAnchorKey(),
       controller: _controller,
-      trigger: DesignOverlayTrigger.manual,
+      trigger: RawPopoverTrigger.manual,
       arrowKeyNavigation: true,
       semanticLabel: widget.semanticLabel,
       // 2 px off the point, so a pointer resting there lights no row.
-      placement: const DesignOverlayPlacement(gap: 2, matchAnchorWidth: false),
+      placement: const RawPopoverPlacement(gap: 2, matchAnchorWidth: false),
       onOpenChanged: _openChanged,
       useRootOverlay: widget.useRootOverlay,
       dampingRatio: widget.dampingRatio,

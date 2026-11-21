@@ -13,32 +13,30 @@ import 'behaviour_harness.dart';
 final List<String> _ran = [];
 final Map<String, Set<WidgetState>> _states = {};
 
-List<DesignMenuEntry> _menus() => [
-  DesignMenuEntry(
+List<RawMenuEntry> _menus() => [
+  RawMenuEntry(
     label: 'File',
     children: [
-      DesignMenuEntry(label: 'New', onPressed: () => _ran.add('new')),
-      DesignMenuEntry(
+      RawMenuEntry(label: 'New', onPressed: () => _ran.add('new')),
+      RawMenuEntry(
         label: 'Open recent',
         children: [
-          DesignMenuEntry(label: 'a.txt', onPressed: () => _ran.add('a')),
-          DesignMenuEntry(label: 'b.txt', onPressed: () => _ran.add('b')),
+          RawMenuEntry(label: 'a.txt', onPressed: () => _ran.add('a')),
+          RawMenuEntry(label: 'b.txt', onPressed: () => _ran.add('b')),
         ],
       ),
-      const DesignMenuEntry.divider(),
-      DesignMenuEntry(label: 'Quit', onPressed: () => _ran.add('quit')),
+      const RawMenuEntry.divider(),
+      RawMenuEntry(label: 'Quit', onPressed: () => _ran.add('quit')),
     ],
   ),
-  DesignMenuEntry(
+  RawMenuEntry(
     label: 'Edit',
-    children: [
-      DesignMenuEntry(label: 'Undo', onPressed: () => _ran.add('undo')),
-    ],
+    children: [RawMenuEntry(label: 'Undo', onPressed: () => _ran.add('undo'))],
   ),
-  DesignMenuEntry(
+  RawMenuEntry(
     label: 'View',
     children: [
-      DesignMenuEntry(
+      RawMenuEntry(
         label: 'Ruler',
         checked: true,
         onPressed: () => _ran.add('ruler'),
@@ -57,12 +55,12 @@ Widget _view() => Align(
     mainAxisSize: MainAxisSize.min,
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      DesignMenuBar(
+      RawMenuBar(
         menus: _menus(),
         itemBuilder: (context, entry, level, states) {
           _states[entry.label] = states;
           return SizedBox(
-            width: level == DesignMenuLevel.bar ? 60 : 160,
+            width: level == RawMenuLevel.bar ? 60 : 160,
             height: 44,
             child: Text(entry.label),
           );
@@ -105,12 +103,12 @@ void main() {
       t.getSemantics(find.text(label)).getSemanticsData();
 
   behaviourContract(
-    'DesignMenuBar',
+    'RawMenuBar',
     build: (c) => _view(),
     node: () => find.bySemanticsLabel('Menu bar'),
     semantics: isSemantics(label: 'Menu bar'),
     noDisabledState:
-        'a bar is never disabled; each entry is (DesignMenuEntry.enabled)',
+        'a bar is never disabled; each entry is (RawMenuEntry.enabled)',
     keyboard: (p) async {
       final t = p.tester;
       await p.tabInto(p.node);

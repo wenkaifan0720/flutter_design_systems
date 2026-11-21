@@ -29,7 +29,7 @@ class _HostState extends State<_Host> {
     return Column(
       children: [
         Focus(child: plainFace('before')),
-        DesignToggleGroup<String>(
+        RawSegmentedButton<String>(
           options: const ['day', 'week', 'month', 'year'],
           selected: selected,
           multiSelectionEnabled: widget.multiple,
@@ -63,11 +63,11 @@ void main() {
 
   var picked = <String>{};
   behaviourContract(
-    'DesignToggleGroup',
+    'RawSegmentedButton',
     build: (c) {
       picked = {'week'};
       return StatefulBuilder(
-        builder: (context, setState) => DesignToggleGroup<String>(
+        builder: (context, setState) => RawSegmentedButton<String>(
           options: const ['day', 'week', 'month'],
           selected: picked,
           semanticLabel: 'Range',
@@ -79,7 +79,7 @@ void main() {
       );
     },
     node: () => find.text('week'),
-    root: () => find.byType(DesignToggleGroup<String>),
+    root: () => find.byType(RawSegmentedButton<String>),
     // One choice: a radio group, the chosen item checked.
     semantics: isSemantics(
       label: 'week',
@@ -121,8 +121,10 @@ void main() {
     },
   );
 
-  testWidgets('one tab stop at the chosen item; arrows skip the disabled '
-      'item and wrap; a press chooses', (tester) async {
+  testWidgets('one choice: one tab stop at the chosen item; the arrows skip '
+      'the disabled item, wrap and choose, as a radio group\'s do', (
+    tester,
+  ) async {
     _keyboard();
     await tester.pumpWidget(harness(const _Host()));
     await tester.sendKeyEvent(LogicalKeyboardKey.tab);
@@ -136,21 +138,29 @@ void main() {
       contains(WidgetState.focused),
       reason: 'month skipped',
     );
-    await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
+    expect(_host.selected, {'year'}, reason: 'the arrows choose');
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
     await tester.pump();
     expect(_states['day'], contains(WidgetState.focused), reason: 'wrapped');
-    expect(_host.selected, {'week'}, reason: 'arrows only move');
-    await tester.sendKeyEvent(LogicalKeyboardKey.space);
+    expect(_host.selected, {'day'}, reason: 'Down moves on, as Right does');
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowUp);
     await tester.pump();
-    expect(_host.selected, {'day'});
+    expect(_host.selected, {'year'}, reason: 'Up goes back');
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowLeft);
+    await tester.pump();
+    expect(_host.selected, {'week'}, reason: 'Left goes back');
     await tester.sendKeyEvent(LogicalKeyboardKey.space);
     await tester.pump();
     expect(_host.selected, {
-      'day',
+      'week',
     }, reason: 'a one-choice group keeps its choice');
     await tester.sendKeyEvent(LogicalKeyboardKey.end);
     await tester.pump();
     expect(_states['year'], contains(WidgetState.focused));
+    expect(_host.selected, {'year'});
+    await tester.sendKeyEvent(LogicalKeyboardKey.home);
+    await tester.pump();
+    expect(_host.selected, {'day'});
     await tester.sendKeyEvent(LogicalKeyboardKey.tab);
     await tester.pump();
     expect(
@@ -158,6 +168,28 @@ void main() {
       isFalse,
       reason: 'Tab leaves the group',
     );
+  });
+
+  testWidgets('many: the arrows along the group only move; Space toggles', (
+    tester,
+  ) async {
+    _keyboard();
+    await tester.pumpWidget(harness(const _Host(multiple: true)));
+    await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+    await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+    await tester.pump();
+    expect(_states['week'], contains(WidgetState.focused));
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
+    await tester.pump();
+    expect(_states['year'], contains(WidgetState.focused));
+    expect(_host.selected, {'week'}, reason: 'arrows only move');
+    await tester.sendKeyEvent(LogicalKeyboardKey.space);
+    await tester.pump();
+    expect(_host.selected, {'week', 'year'});
+    await tester.sendKeyEvent(LogicalKeyboardKey.home);
+    await tester.pump();
+    expect(_states['day'], contains(WidgetState.focused));
+    expect(_host.selected, {'week', 'year'});
   });
 
   testWidgets('selectFollowsFocus chooses as the arrows move; right to left '
@@ -176,8 +208,9 @@ void main() {
     expect(_host.selected, {'week'});
   });
 
-  testWidgets('many: each toggles; a screen reader hears toggles, or a radio '
-      'group for one choice', (tester) async {
+  testWidgets('many: each toggles; a screen reader hears toggle buttons (a '
+      'button that is selected, as SegmentedButton says), or a radio group for '
+      'one choice', (tester) async {
     final semantics = tester.ensureSemantics();
     await tester.pumpWidget(harness(const _Host(multiple: true)));
     await tester.tap(find.text('day'));
@@ -187,7 +220,12 @@ void main() {
     expect(_host.selected, {'day'});
     expect(
       tester.getSemantics(find.text('day')),
-      isSemantics(hasToggledState: true, isToggled: true, isButton: false),
+      isSemantics(
+        isButton: true,
+        hasSelectedState: true,
+        isSelected: true,
+        hasToggledState: false,
+      ),
     );
     expect(
       tester.getSemantics(find.text('month')),
@@ -205,7 +243,7 @@ void main() {
       ),
     );
     expect(
-      tester.getSize(find.byType(DesignToggleGroup<String>)).height,
+      tester.getSize(find.byType(RawSegmentedButton<String>)).height,
       greaterThanOrEqualTo(44),
       reason: '44 px targets',
     );

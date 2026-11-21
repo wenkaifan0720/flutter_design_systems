@@ -13,7 +13,7 @@ import 'value_handle.dart';
 
 /// Builds a split view's divider for its [states] (focused while the
 /// keyboard is on it, hovered, pressed while dragged).
-typedef DesignDividerBuilder = Widget Function(
+typedef RawDividerBuilder = Widget Function(
   BuildContext context,
   Set<WidgetState> states,
   Axis axis,
@@ -23,11 +23,11 @@ typedef DesignDividerBuilder = Widget Function(
 /// at [fraction] of the room (the first pane's share).
 ///
 /// ```dart
-/// DesignSplitView(first: const SizedBox(), second: const SizedBox(), dividerBuilder: (context, states, axis) => const ColoredBox(color: Color(0xFFDDDDDD)))
+/// RawSplitView(first: const SizedBox(), second: const SizedBox(), dividerBuilder: (context, states, axis) => const ColoredBox(color: Color(0xFFDDDDDD)))
 /// ```
-class DesignSplitView extends StatefulWidget {
+class RawSplitView extends StatefulWidget {
   /// A split of [first] and [second].
-  const DesignSplitView({
+  const RawSplitView({
     super.key,
     required this.first,
     required this.second,
@@ -57,7 +57,7 @@ class DesignSplitView extends StatefulWidget {
   final Widget second;
 
   /// Paints the divider (its [dividerThickness] across the run).
-  final DesignDividerBuilder dividerBuilder;
+  final RawDividerBuilder dividerBuilder;
 
   /// Side by side ([Axis.horizontal]) or stacked.
   final Axis axis;
@@ -88,7 +88,7 @@ class DesignSplitView extends StatefulWidget {
   final double step;
 
   /// What a screen reader calls the divider; null:
-  /// [DesignLocalizations.splitViewHandleLabel].
+  /// [RawWidgetsLocalizations.splitViewHandleLabel].
   final String? semanticLabel;
 
   /// The divider's focus.
@@ -100,14 +100,14 @@ class DesignSplitView extends StatefulWidget {
   final bool autofocus;
 
   @override
-  State<DesignSplitView> createState() => _DesignSplitViewState();
+  State<RawSplitView> createState() => _DesignSplitViewState();
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
       ..add(
-        ObjectFlagProperty<DesignDividerBuilder>.has(
+        ObjectFlagProperty<RawDividerBuilder>.has(
           'dividerBuilder',
           dividerBuilder,
         ),
@@ -146,7 +146,7 @@ class DesignSplitView extends StatefulWidget {
   }
 }
 
-class _DesignSplitViewState extends State<DesignSplitView> {
+class _DesignSplitViewState extends State<RawSplitView> {
   late double _own = widget.initialFraction;
   double? _restore;
   bool _dragging = false;
@@ -221,7 +221,7 @@ class _DesignSplitViewState extends State<DesignSplitView> {
               : SystemMouseCursors.resizeUpDown,
           semanticLabel:
               widget.semanticLabel ??
-              DesignLocalizations.of(context).splitViewHandleLabel,
+              RawWidgetsLocalizations.of(context).splitViewHandleLabel,
           onChanged: (v) {
             _restore = null;
             _set(v);

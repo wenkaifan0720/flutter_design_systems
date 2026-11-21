@@ -8,32 +8,36 @@ import 'package:ui_core/ui_core.dart';
 import 'behaviour_contract.dart';
 import 'behaviour_harness.dart';
 
-final Map<DateTime, (DesignCalendarDay, Set<WidgetState>)> _seen = {};
+final Map<DateTime, (RawCalendarDayDetails, Set<WidgetState>)> _seen = {};
 
 // The bare reference painter: the day number in a 44 by 44 box.
 // A locale whose weeks start on Monday.
-class _Mondays extends DefaultDesignLocalizations {
+class _Mondays extends DefaultRawWidgetsLocalizations {
   const _Mondays();
 
   @override
   int get firstDayOfWeek => DateTime.monday;
 }
 
-class _MondaysDelegate extends LocalizationsDelegate<DesignLocalizations> {
+class _MondaysDelegate extends LocalizationsDelegate<RawWidgetsLocalizations> {
   const _MondaysDelegate();
 
   @override
   bool isSupported(Locale locale) => true;
 
   @override
-  Future<DesignLocalizations> load(Locale locale) =>
-      SynchronousFuture<DesignLocalizations>(const _Mondays());
+  Future<RawWidgetsLocalizations> load(Locale locale) =>
+      SynchronousFuture<RawWidgetsLocalizations>(const _Mondays());
 
   @override
   bool shouldReload(_MondaysDelegate old) => false;
 }
 
-Widget _day(BuildContext context, DesignCalendarDay day, Set<WidgetState> s) {
+Widget _day(
+  BuildContext context,
+  RawCalendarDayDetails day,
+  Set<WidgetState> s,
+) {
   if (day.inMonth) _seen[day.date] = (day, s);
   return SizedBox(
     key: day.inMonth ? ValueKey('day-${day.date.month}-${day.date.day}') : null,
@@ -42,11 +46,11 @@ Widget _day(BuildContext context, DesignCalendarDay day, Set<WidgetState> s) {
   );
 }
 
-DesignCalendarController _controller({
-  DesignCalendarMode mode = DesignCalendarMode.single,
+RawCalendarController _controller({
+  RawCalendarMode mode = RawCalendarMode.single,
   DateTime? month,
   bool Function(DateTime)? selectable,
-}) => DesignCalendarController(
+}) => RawCalendarController(
   firstDate: DateTime(2025),
   lastDate: DateTime(2027, 12, 31),
   mode: mode,
@@ -56,7 +60,7 @@ DesignCalendarController _controller({
 );
 
 Widget _calendar(
-  DesignCalendarController c, {
+  RawCalendarController c, {
   int months = 1,
   FocusNode? node,
   TextDirection direction = TextDirection.ltr,
@@ -65,12 +69,12 @@ Widget _calendar(
   textDirection: direction,
 );
 
-Widget _view(DesignCalendarController c, {int months = 1, FocusNode? node}) =>
+Widget _view(RawCalendarController c, {int months = 1, FocusNode? node}) =>
     Align(
       alignment: Alignment.topCenter,
       child: SizedBox(
         width: 340.0 * months,
-        child: DesignCalendar(
+        child: RawCalendarDatePicker(
           controller: c,
           months: months,
           focusNode: node,
@@ -86,7 +90,7 @@ Widget _view(DesignCalendarController c, {int months = 1, FocusNode? node}) =>
       ),
     );
 
-late DesignCalendarController _cal;
+late RawCalendarController _cal;
 
 bool _lit(int month, int day) =>
     _seen[DateTime(2026, month, day)]?.$2.contains(WidgetState.focused) ??
@@ -98,8 +102,8 @@ void main() {
   ];
 
   behaviourContract(
-    'DesignCalendar',
-    build: (c) => Owned<DesignCalendarController>(
+    'RawCalendarDatePicker',
+    build: (c) => Owned<RawCalendarController>(
       create: () =>
           _cal = _controller(selectable: c.enabled ? null : (d) => false),
       builder: (context, c) => _view(c),
@@ -124,7 +128,7 @@ void main() {
     keyboard: (p) async {
       final t = p.tester;
       t.takeAnnouncements();
-      await p.tabInto(find.byType(DesignCalendar));
+      await p.tabInto(find.byType(RawCalendarDatePicker));
       expect(
         said(t),
         contains('Wednesday, 28 January 2026'),
@@ -143,12 +147,12 @@ void main() {
       expect(said(t), anyElement(contains('February 2026')));
     },
     rtl: (p) async {
-      await p.tabInto(find.byType(DesignCalendar));
+      await p.tabInto(find.byType(RawCalendarDatePicker));
       await p.key(LogicalKeyboardKey.arrowLeft);
       expect(_cal.focusedDay, DateTime(2026, 1, 29), reason: 'Left is on');
     },
     motion: (p) async {
-      await p.tabInto(find.byType(DesignCalendar));
+      await p.tabInto(find.byType(RawCalendarDatePicker));
       await p.key(LogicalKeyboardKey.pageDown);
     },
   );
@@ -168,19 +172,19 @@ void main() {
   test('a range: start, then end; an earlier day starts again; it can span '
       'months; a day off the bounds or refused cannot be chosen', () {
     final c = _controller(
-      mode: DesignCalendarMode.range,
+      mode: RawCalendarMode.range,
       selectable: (d) => d.weekday != DateTime.sunday,
     );
     c.select(DateTime(2026, 1, 28));
-    expect(c.selectedRange, DesignDateRange(DateTime(2026, 1, 28)));
+    expect(c.selectedRange, RawDateRange(DateTime(2026, 1, 28)));
     c.hovered = DateTime(2026, 2, 2);
     expect(c.preview!.contains(DateTime(2026, 1, 31)), isTrue);
     c.select(DateTime(2026, 1, 20));
-    expect(c.selectedRange, DesignDateRange(DateTime(2026, 1, 20)));
+    expect(c.selectedRange, RawDateRange(DateTime(2026, 1, 20)));
     c.select(DateTime(2026, 2, 3));
     expect(
       c.selectedRange,
-      DesignDateRange(DateTime(2026, 1, 20), DateTime(2026, 2, 3)),
+      RawDateRange(DateTime(2026, 1, 20), DateTime(2026, 2, 3)),
     );
     expect(c.selectedRange!.dayCount, 15);
     expect(c.preview, isNull);
@@ -209,7 +213,7 @@ void main() {
 
   testWidgets('one tab stop; arrows and pages move the keyboard\'s day, the '
       'month turns with it, Enter takes a range across months', (tester) async {
-    final c = _controller(mode: DesignCalendarMode.range);
+    final c = _controller(mode: RawCalendarMode.range);
     final node = FocusNode();
     addTearDown(node.dispose);
     addTearDown(c.dispose);
@@ -237,7 +241,7 @@ void main() {
     await tester.pump();
     expect(
       c.selectedRange,
-      DesignDateRange(DateTime(2026, 1, 28), DateTime(2026, 2, 1)),
+      RawDateRange(DateTime(2026, 1, 28), DateTime(2026, 2, 1)),
     );
 
     await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
@@ -262,13 +266,13 @@ void main() {
       'keyboard\'s, across weeks; before the start it ends nowhere', (
     tester,
   ) async {
-    final c = _controller(mode: DesignCalendarMode.range);
+    final c = _controller(mode: RawCalendarMode.range);
     final node = FocusNode();
     addTearDown(node.dispose);
     addTearDown(c.dispose);
     await tester.pumpWidget(_calendar(c, node: node));
     // January's days, by what the look is told.
-    List<int> where(bool Function(DesignCalendarDay day) told) => [
+    List<int> where(bool Function(RawCalendarDayDetails day) told) => [
       for (final MapEntry(key: date, value: (day, _)) in _seen.entries)
         if (date.year == 2026 && date.month == 1 && told(day)) date.day,
     ]..sort();
@@ -339,7 +343,7 @@ void main() {
   testWidgets('a tap selects; a pointer previews a range; a screen reader '
       'hears whole dates and skips the neighbours\' days', (tester) async {
     final semantics = tester.ensureSemantics();
-    final c = _controller(mode: DesignCalendarMode.range);
+    final c = _controller(mode: RawCalendarMode.range);
     addTearDown(c.dispose);
     await tester.pumpWidget(_calendar(c));
     await tester.tap(find.byKey(const ValueKey('day-1-5')));
@@ -392,7 +396,7 @@ void main() {
         alignment: Alignment.topCenter,
         child: SizedBox(
           width: 7 * 46,
-          child: DesignCalendar(
+          child: RawCalendarDatePicker(
             controller: c,
             minDayWidth: min,
             dayBuilder: _day,
@@ -417,7 +421,7 @@ void main() {
 
   test('many days: each press toggles one, the days come back in order, and '
       'clear empties every selection', () {
-    final c = _controller(mode: DesignCalendarMode.multiple);
+    final c = _controller(mode: RawCalendarMode.multiple);
     addTearDown(c.dispose);
     var told = 0;
     c.addListener(() => told++);
@@ -440,10 +444,10 @@ void main() {
     expect(c.selectedRange, isNull);
     expect(told, 5);
 
-    final given = DesignCalendarController(
+    final given = RawCalendarController(
       firstDate: DateTime(2025),
       lastDate: DateTime(2027),
-      mode: DesignCalendarMode.multiple,
+      mode: RawCalendarMode.multiple,
       selectedDates: [DateTime(2026, 2, 3, 8), DateTime(2026, 2, 1)],
     );
     addTearDown(given.dispose);
@@ -453,7 +457,7 @@ void main() {
 
   test('turn: a month on or back, the keyboard\'s day kept in bounds, and '
       'never past the first or last month', () {
-    final c = DesignCalendarController(
+    final c = RawCalendarController(
       firstDate: DateTime(2026, 1, 10),
       lastDate: DateTime(2026, 3, 20),
       initialMonth: DateTime(2026, 1, 28),
@@ -481,7 +485,7 @@ void main() {
 
   test('a waiting start and a resting pointer preview a range; a pointer '
       'before the start previews nothing', () {
-    final c = _controller(mode: DesignCalendarMode.range);
+    final c = _controller(mode: RawCalendarMode.range);
     addTearDown(c.dispose);
     final jan = DateTime(2026);
     c.hovered = DateTime(2026, 1, 14);
@@ -491,7 +495,7 @@ void main() {
     expect(c.hovered, DateTime(2026, 1, 14));
     expect(
       c.preview,
-      DesignDateRange(DateTime(2026, 1, 10), DateTime(2026, 1, 14)),
+      RawDateRange(DateTime(2026, 1, 10), DateTime(2026, 1, 14)),
     );
     expect(c.dayOf(DateTime(2026, 1, 12), inMonth: jan).inPreview, isTrue);
     expect(c.dayOf(DateTime(2026, 1, 15), inMonth: jan).inPreview, isFalse);
@@ -510,7 +514,7 @@ void main() {
     expect(c.hovered, isNull, reason: 'a finished range drops the pointer');
     expect(
       c.selectedRange,
-      DesignDateRange(DateTime(2026, 1, 10), DateTime(2026, 1, 14)),
+      RawDateRange(DateTime(2026, 1, 10), DateTime(2026, 1, 14)),
     );
     expect(c.preview, isNull);
     final start = c.dayOf(DateTime(2026, 1, 10), inMonth: jan);
@@ -522,28 +526,28 @@ void main() {
 
   test('a date range: days only, equal by its ends, and counted across a '
       'daylight-saving change', () {
-    final a = DesignDateRange(
+    final a = RawDateRange(
       DateTime(2026, 3, 1, 23, 59),
       DateTime(2026, 3, 31, 1),
     );
-    final b = DesignDateRange(DateTime(2026, 3, 1), DateTime(2026, 3, 31));
+    final b = RawDateRange(DateTime(2026, 3, 1), DateTime(2026, 3, 31));
     expect(a, b);
     expect(a.hashCode, b.hashCode);
     expect(a.isComplete, isTrue);
     expect(a.dayCount, 31);
     expect(
-      DesignDateRange(DateTime(2026, 10, 1), DateTime(2026, 11, 30)).dayCount,
+      RawDateRange(DateTime(2026, 10, 1), DateTime(2026, 11, 30)).dayCount,
       61,
     );
-    expect(a, isNot(DesignDateRange(DateTime(2026, 3))));
-    final half = DesignDateRange(DateTime(2026, 3, 29));
+    expect(a, isNot(RawDateRange(DateTime(2026, 3))));
+    final half = RawDateRange(DateTime(2026, 3, 29));
     expect(half.isComplete, isFalse);
     expect(half.dayCount, 1);
     expect(half.contains(DateTime(2026, 3, 29, 12)), isTrue);
     expect(half.contains(DateTime(2026, 3, 30)), isFalse);
     expect(
       b.toString(),
-      'DesignDateRange(2026-03-01 00:00:00.000, 2026-03-31 00:00:00.000)',
+      'RawDateRange(2026-03-01 00:00:00.000, 2026-03-31 00:00:00.000)',
     );
   });
 
@@ -555,11 +559,11 @@ void main() {
     addTearDown(second.dispose);
     final node = FocusNode();
     addTearDown(node.dispose);
-    DesignCalendarHeader? header;
-    Widget calendar(DesignCalendarController c) => harness(
+    RawCalendarHeaderDetails? header;
+    Widget calendar(RawCalendarController c) => harness(
       SizedBox(
         width: 340,
-        child: DesignCalendar(
+        child: RawCalendarDatePicker(
           controller: c,
           focusNode: node,
           firstWeekday: DateTime.monday,
@@ -626,7 +630,7 @@ void main() {
             height: 200,
             child: SingleChildScrollView(
               controller: scroll,
-              child: DesignCalendar(
+              child: RawCalendarDatePicker(
                 controller: c,
                 focusNode: node,
                 firstWeekday: DateTime.sunday,
@@ -678,7 +682,7 @@ void main() {
     Widget calendar({bool mondays = false, int? firstWeekday}) {
       final grid = SizedBox(
         width: 340,
-        child: DesignCalendar(
+        child: RawCalendarDatePicker(
           controller: controller,
           focusNode: node,
           firstWeekday: firstWeekday,

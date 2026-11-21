@@ -1,3 +1,13 @@
+## 0.3.0
+
+- **Breaking:** stands on ui_core 0.4.0. Flutter 3.47 or later, as before.
+- **Renamed:** the ui_core types in this package's API take ui_core 0.4.0's `Raw` names. For example, `BrutalDataColumn` extends `RawDataColumn`, and `BrutalTableController` extends `RawDataTableController`. The old names still work as deprecated typedefs, and `dart fix --apply` renames them.
+- `BrutalRadio` is built on Flutter's `RawRadio`. Put a set in Flutter's `RadioGroup`, with ui_core's `RadioGroupKeyboardFix` round the radios. Inside a group, a radio takes the group's choice, and `enabled: false` turns it off. On its own, a radio still reads `groupValue` and calls `onChanged`.
+- `BrutalSegmentedButton`'s cells are the radios of a Flutter `RadioGroup`. The keys work as before, Home and End included.
+- As with Flutter's radios, a press, Enter or Space on the chosen radio or segment keeps it chosen and no longer calls `onChanged`. A radio shows hover and focus while focus highlights are traditional (on a desktop, or once a mouse or a key was used), so its focus also shows after a mouse click. On iOS and macOS an unchosen radio reads as not selected.
+- A selected `BrutalChip` reads to a screen reader as a selected button, as a filter chip does, rather than as a switch.
+- `BrutalTooltip` is built on Flutter's `RawTooltip`. It shows on hover after half a second, on keyboard focus and on a long press, and fades on the look's spring, as before. Run the pointer along a row of controls, and each tip waits its turn, as Flutter's do. Before, the next tip showed at once. A press hides a tip the pointer brought, as Flutter's do; before, the tip stayed while the control was held.
+
 ## 0.2.3
 
 - Stands on ui_core 0.3.4.

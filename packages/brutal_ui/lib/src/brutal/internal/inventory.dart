@@ -187,24 +187,18 @@ DesignInventory _registry() => DesignInventory(
       'RadioGroup',
       (_) => _Held<int>(
         1,
-        (chosen, change) => DesignRadioGroup<int>(
-          options: const [1, 2],
-          value: chosen,
-          onChanged: change,
-          itemBuilder: (context, value, node, select) => BrutalRadio<int>(
-            value: value,
-            groupValue: chosen,
-            focusNode: node,
-            onChanged: select == null ? null : (_) => select(),
-            semanticLabel: value == 1 ? 'One' : 'Two',
-          ),
-          layoutBuilder: (context, items) => Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              items[0],
-              const SizedBox(width: BrutalSpacing.regular),
-              items[1],
-            ],
+        (chosen, change) => RadioGroup<int>(
+          groupValue: chosen,
+          onChanged: (value) => change(value!),
+          child: const RadioGroupKeyboardFix<int>(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                BrutalRadio<int>(value: 1, semanticLabel: 'One'),
+                SizedBox(width: BrutalSpacing.regular),
+                BrutalRadio<int>(value: 2, semanticLabel: 'Two'),
+              ],
+            ),
           ),
         ),
       ),

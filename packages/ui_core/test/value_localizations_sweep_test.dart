@@ -9,8 +9,8 @@ import 'package:ui_core/ui_core.dart';
 
 void main() {
   test('every locale writes a number and reads it back', () {
-    for (final locale in DesignLocalizations.supportedLocales) {
-      final l = DesignLocalizations.forLocale(locale);
+    for (final locale in RawWidgetsLocalizations.supportedLocales) {
+      final l = RawWidgetsLocalizations.forLocale(locale);
       for (final v in [0.0, 7.0, -3.25, 1234.5, 1234567.125, -0.5]) {
         for (final digits in [null, 0, 2, 3]) {
           final text = l.formatDecimal(v, fractionDigits: digits);
@@ -26,9 +26,9 @@ void main() {
 
   test('every locale formats its date and time patterns, in its digits', () {
     final at = DateTime(2026, 11, 16, 15, 7, 9);
-    final time = DesignTimeOfDay.fromDateTime(at);
-    for (final locale in DesignLocalizations.supportedLocales) {
-      final l = DesignLocalizations.forLocale(locale);
+    final time = RawTimeOfDay.fromDateTime(at);
+    for (final locale in RawWidgetsLocalizations.supportedLocales) {
+      final l = RawWidgetsLocalizations.forLocale(locale);
       // The locale's digits for 2026, 07, 09: its own zero on.
       final zero = l.formatDecimal(0).runes.single;
       String digits(String ascii) =>

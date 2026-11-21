@@ -7,13 +7,13 @@ import 'package:ui_core/ui_core.dart';
 
 import 'behaviour_harness.dart';
 
-Widget _layout(BuildContext context, DesignFieldParts parts) => Column(
+Widget _layout(BuildContext context, RawInputDecoratorDetails parts) => Column(
   mainAxisSize: MainAxisSize.min,
   crossAxisAlignment: CrossAxisAlignment.start,
   children: [?parts.label, parts.control],
 );
 
-Widget _part(String label) => DesignPressable(
+Widget _part(String label) => RawButton(
   onPressed: () {},
   semanticLabel: label,
   excludeSemantics: true,
@@ -22,7 +22,7 @@ Widget _part(String label) => DesignPressable(
 
 Widget _field(String label, Widget child, {bool? merge}) => harness(
   Center(
-    child: DesignField(
+    child: RawInputDecorator(
       labelText: label,
       mergeSemantics: merge,
       builder: _layout,
@@ -33,7 +33,7 @@ Widget _field(String label, Widget child, {bool? merge}) => harness(
 
 // A stepper as a look builds one on ui_core's: its buttons take a pointer's
 // press, its node steps, and its entry stands in a node of its own.
-Widget _stepper() => DesignNumberField(
+Widget _stepper() => RawNumberField(
   value: 45,
   semanticLabel: 'Estimate',
   onChanged: (_) {},
@@ -70,7 +70,7 @@ Widget _stepper() => DesignNumberField(
 
 List<String> _problems(WidgetTester tester) =>
     const DesignFieldSemanticsCheck(look: 'Test')
-        .check(tester.element(find.byType(DesignField)))
+        .check(tester.element(find.byType(RawInputDecorator)))
         .problems;
 
 void main() {
@@ -154,12 +154,12 @@ void main() {
   testWidgets("a date's and a time's segments: each segment takes its own "
       'tap', (tester) async {
     final semantics = tester.ensureSemantics();
-    Widget segment(BuildContext context, DesignDateSegmentDetails d) =>
+    Widget segment(BuildContext context, RawDateSegmentDetails d) =>
         SizedBox(width: 40, height: 44, child: Center(child: Text(d.text)));
     await tester.pumpWidget(
       _field(
         'Due',
-        DesignDateField(
+        RawDateField(
           value: DateTime(2026, 11, 16),
           semanticLabel: 'Due',
           onChanged: (_) {},
@@ -171,8 +171,8 @@ void main() {
     await tester.pumpWidget(
       _field(
         'Starts',
-        DesignTimeField(
-          value: const DesignTimeOfDay(hour: 9, minute: 30),
+        RawTimeField(
+          value: const RawTimeOfDay(hour: 9, minute: 30),
           semanticLabel: 'Starts',
           onChanged: (_) {},
           segmentBuilder: segment,

@@ -34,7 +34,7 @@ Widget _pressables(String? chosen, ValueChanged<String?> choose) => Column(
   mainAxisSize: MainAxisSize.min,
   children: [
     for (final c in _choices)
-      DesignPressable(
+      RawButton(
         onPressed: () => choose(c),
         builder: (context, states, _) => Semantics(
           inMutuallyExclusiveGroup: true,
@@ -91,7 +91,60 @@ Future<DesignAlignmentReport> _check(
   );
 }
 
+// A one-choice toggle group (a segmented control): a radio group, every
+// arrow choosing (the 0.3.5 queue's fault: it answered its own axis alone).
+Widget _segments(
+  String? chosen,
+  ValueChanged<String?> choose, {
+  String? off,
+  Axis direction = Axis.horizontal,
+}) => RawSegmentedButton<String>(
+  options: _choices,
+  selected: {?chosen},
+  direction: direction,
+  emptySelectionAllowed: true,
+  isEnabled: (c) => c != off,
+  onSelectionChanged: (next) => choose(next.isEmpty ? null : next.first),
+  itemBuilder: (context, value, states) =>
+      SizedBox(width: 60, height: 44, child: Center(child: Text(value))),
+);
+
 void main() {
+  testWidgets('a one-choice RawSegmentedButton passes as a radio group, '
+      'either way it runs and reads', (tester) async {
+    final semantics = tester.ensureSemantics();
+    for (final direction in TextDirection.values) {
+      for (final axis in Axis.values) {
+        Widget group(String? chosen, ValueChanged<String?> choose) =>
+            _segments(chosen, choose, direction: axis);
+        expect(
+          (await _check(tester, group, direction: direction)).problems,
+          isEmpty,
+          reason: '${direction.name} ${axis.name}',
+        );
+        expect(
+          (await _check(
+            tester,
+            group,
+            chosen: null,
+            direction: direction,
+          )).problems,
+          isEmpty,
+        );
+        expect(
+          (await _check(
+            tester,
+            (chosen, choose) =>
+                _segments(chosen, choose, off: 'C', direction: axis),
+            direction: direction,
+          )).problems,
+          isEmpty,
+        );
+      }
+    }
+    semantics.dispose();
+  });
+
   testWidgets("Flutter's RadioGroup passes, chosen or not, a radio turned "
       'off passed over', (tester) async {
     final semantics = tester.ensureSemantics();

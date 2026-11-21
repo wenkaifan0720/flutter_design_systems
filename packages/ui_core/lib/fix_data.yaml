@@ -1,0 +1,1189 @@
+# ui_core's renames, which `dart fix` makes: each old name a deprecated typedef of its new one (deprecated.dart).
+# Generated from the 0.4.0 rename table. Do not edit by hand. Each lists ui_core.dart and the published looks'
+# libraries that re-export it, as dart fix renames a name only where it is imported through a listed library.
+version: 1
+transforms:
+  - title: "Rename to 'DefaultRawWidgetsLocalizations'"
+    date: 2026-11-20
+    element:
+      uris: &uris ['ui_core.dart', 'package:appliance_ui/appliance_parts.dart', 'package:appliance_ui/appliance_ui.dart', 'package:brutal_ui/brutal_parts.dart', 'package:brutal_ui/brutal_ui.dart', 'package:civic_ui/civic_parts.dart', 'package:civic_ui/civic_ui.dart', 'package:comic_ui/comic_parts.dart', 'package:comic_ui/comic_ui.dart', 'package:fluent2_design_ui/fluent2_design_parts.dart', 'package:fluent2_design_ui/fluent2_design_ui.dart', 'package:frosted_ui/frosted_parts.dart', 'package:frosted_ui/frosted_ui.dart', 'package:gloss_ui/gloss_parts.dart', 'package:gloss_ui/gloss_ui.dart', 'package:keycap_ui/keycap_parts.dart', 'package:keycap_ui/keycap_ui.dart', 'package:ledger_ui/ledger_parts.dart', 'package:ledger_ui/ledger_ui.dart', 'package:material_expressive_ui/material_expressive_parts.dart', 'package:material_expressive_ui/material_expressive_ui.dart', 'package:minimal_ui/minimal_parts.dart', 'package:minimal_ui/minimal_ui.dart', 'package:neumorphism_ui/neumorphism_parts.dart', 'package:neumorphism_ui/neumorphism_ui.dart', 'package:retro_desktop_ui/retro_desktop_parts.dart', 'package:retro_desktop_ui/retro_desktop_ui.dart', 'package:studio_ui/studio_parts.dart', 'package:studio_ui/studio_ui.dart', 'package:terminal_ui/terminal_parts.dart', 'package:terminal_ui/terminal_ui.dart']
+      typedef: 'DefaultDesignLocalizations'
+    changes:
+      - kind: 'rename'
+        newName: 'DefaultRawWidgetsLocalizations'
+  - title: "Rename to 'RawPopover'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignAnchoredOverlay'
+    changes:
+      - kind: 'rename'
+        newName: 'RawPopover'
+  - title: "Rename to 'RawBottomSheetBuilder'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignBottomSheetBuilder'
+    changes:
+      - kind: 'rename'
+        newName: 'RawBottomSheetBuilder'
+  - title: "Rename to 'RawBottomSheetController'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignBottomSheetController'
+    changes:
+      - kind: 'rename'
+        newName: 'RawBottomSheetController'
+  - title: "Rename to 'RawBottomSheetDetails'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignBottomSheetDetails'
+    changes:
+      - kind: 'rename'
+        newName: 'RawBottomSheetDetails'
+  - title: "Rename to 'RawBottomSheetDragHandle'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignBottomSheetDragHandle'
+    changes:
+      - kind: 'rename'
+        newName: 'RawBottomSheetDragHandle'
+  - title: "Rename to 'RawBottomSheetRoute'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignBottomSheetRoute'
+    changes:
+      - kind: 'rename'
+        newName: 'RawBottomSheetRoute'
+  - title: "Rename to 'RawCalendarDatePicker'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignCalendar'
+    changes:
+      - kind: 'rename'
+        newName: 'RawCalendarDatePicker'
+  - title: "Rename to 'RawCalendarController'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignCalendarController'
+    changes:
+      - kind: 'rename'
+        newName: 'RawCalendarController'
+  - title: "Rename to 'RawCalendarDayDetails'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignCalendarDay'
+    changes:
+      - kind: 'rename'
+        newName: 'RawCalendarDayDetails'
+  - title: "Rename to 'RawCalendarDayBuilder'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignCalendarDayBuilder'
+    changes:
+      - kind: 'rename'
+        newName: 'RawCalendarDayBuilder'
+  - title: "Rename to 'RawCalendarHeaderDetails'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignCalendarHeader'
+    changes:
+      - kind: 'rename'
+        newName: 'RawCalendarHeaderDetails'
+  - title: "Rename to 'RawCalendarMode'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignCalendarMode'
+    changes:
+      - kind: 'rename'
+        newName: 'RawCalendarMode'
+  - title: "Rename to 'RawCarousel'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignCarousel'
+    changes:
+      - kind: 'rename'
+        newName: 'RawCarousel'
+  - title: "Rename to 'RawCarouselDetails'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignCarouselControls'
+    changes:
+      - kind: 'rename'
+        newName: 'RawCarouselDetails'
+  - title: "Rename to 'RawColorArea'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignColorArea'
+    changes:
+      - kind: 'rename'
+        newName: 'RawColorArea'
+  - title: "Rename to 'RawColorAreaDetails'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignColorAreaDetails'
+    changes:
+      - kind: 'rename'
+        newName: 'RawColorAreaDetails'
+  - title: "Rename to 'RawColorChannel'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignColorChannel'
+    changes:
+      - kind: 'rename'
+        newName: 'RawColorChannel'
+  - title: "Rename to 'RawColorController'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignColorController'
+    changes:
+      - kind: 'rename'
+        newName: 'RawColorController'
+  - title: "Rename to 'RawColorPicker'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignColorPicker'
+    changes:
+      - kind: 'rename'
+        newName: 'RawColorPicker'
+  - title: "Rename to 'RawColorSlider'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignColorSlider'
+    changes:
+      - kind: 'rename'
+        newName: 'RawColorSlider'
+  - title: "Rename to 'RawCombobox'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignCombobox'
+    changes:
+      - kind: 'rename'
+        newName: 'RawCombobox'
+  - title: "Rename to 'RawCommand'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignCommand'
+    changes:
+      - kind: 'rename'
+        newName: 'RawCommand'
+  - title: "Rename to 'RawCommandPalette'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignCommandPalette'
+    changes:
+      - kind: 'rename'
+        newName: 'RawCommandPalette'
+  - title: "Rename to 'RawCommandShortcut'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignCommandShortcut'
+    changes:
+      - kind: 'rename'
+        newName: 'RawCommandShortcut'
+  - title: "Rename to 'RawContextMenu'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignContextMenu'
+    changes:
+      - kind: 'rename'
+        newName: 'RawContextMenu'
+  - title: "Rename to 'RawDataTable'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignDataTable'
+    changes:
+      - kind: 'rename'
+        newName: 'RawDataTable'
+  - title: "Rename to 'RawDateField'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignDateField'
+    changes:
+      - kind: 'rename'
+        newName: 'RawDateField'
+  - title: "Rename to 'RawDateFieldFrameBuilder'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignDateFieldFrameBuilder'
+    changes:
+      - kind: 'rename'
+        newName: 'RawDateFieldFrameBuilder'
+  - title: "Rename to 'RawDateLiteralBuilder'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignDateLiteralBuilder'
+    changes:
+      - kind: 'rename'
+        newName: 'RawDateLiteralBuilder'
+  - title: "Rename to 'RawDateRange'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignDateRange'
+    changes:
+      - kind: 'rename'
+        newName: 'RawDateRange'
+  - title: "Rename to 'RawDateSegmentBuilder'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignDateSegmentBuilder'
+    changes:
+      - kind: 'rename'
+        newName: 'RawDateSegmentBuilder'
+  - title: "Rename to 'RawDateSegmentDetails'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignDateSegmentDetails'
+    changes:
+      - kind: 'rename'
+        newName: 'RawDateSegmentDetails'
+  - title: "Rename to 'RawDateSegmentType'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignDateSegmentType'
+    changes:
+      - kind: 'rename'
+        newName: 'RawDateSegmentType'
+  - title: "Rename to 'RawAlertDialog'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignDialog'
+    changes:
+      - kind: 'rename'
+        newName: 'RawAlertDialog'
+  - title: "Rename to 'RawDialogAction'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignDialogAction'
+    changes:
+      - kind: 'rename'
+        newName: 'RawDialogAction'
+  - title: "Rename to 'RawDialogActionBuilder'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignDialogActionBuilder'
+    changes:
+      - kind: 'rename'
+        newName: 'RawDialogActionBuilder'
+  - title: "Rename to 'RawDialogActionDetails'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignDialogActionDetails'
+    changes:
+      - kind: 'rename'
+        newName: 'RawDialogActionDetails'
+  - title: "Rename to 'RawAlertDialogFrameDetails'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignDialogFrameDetails'
+    changes:
+      - kind: 'rename'
+        newName: 'RawAlertDialogFrameDetails'
+  - title: "Rename to 'RawAlertDialogPartBuilder'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignDialogPartBuilder'
+    changes:
+      - kind: 'rename'
+        newName: 'RawAlertDialogPartBuilder'
+  - title: "Rename to 'RawDividerBuilder'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignDividerBuilder'
+    changes:
+      - kind: 'rename'
+        newName: 'RawDividerBuilder'
+  - title: "Rename to 'RawInputDecorator'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignField'
+    changes:
+      - kind: 'rename'
+        newName: 'RawInputDecorator'
+  - title: "Rename to 'RawInputDecoratorBuilder'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignFieldBuilder'
+    changes:
+      - kind: 'rename'
+        newName: 'RawInputDecoratorBuilder'
+  - title: "Rename to 'RawInputDecoratorDetails'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignFieldParts'
+    changes:
+      - kind: 'rename'
+        newName: 'RawInputDecoratorDetails'
+  - title: "Rename to 'RawOptionsSurfaceBuilder'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignListSurfaceBuilder'
+    changes:
+      - kind: 'rename'
+        newName: 'RawOptionsSurfaceBuilder'
+  - title: "Rename to 'RawWidgetsLocalizations'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignLocalizations'
+    changes:
+      - kind: 'rename'
+        newName: 'RawWidgetsLocalizations'
+  - title: "Rename to 'RawMenuBar'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignMenuBar'
+    changes:
+      - kind: 'rename'
+        newName: 'RawMenuBar'
+  - title: "Rename to 'RawMenuEntry'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignMenuEntry'
+    changes:
+      - kind: 'rename'
+        newName: 'RawMenuEntry'
+  - title: "Rename to 'RawMenuItemBuilder'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignMenuItemBuilder'
+    changes:
+      - kind: 'rename'
+        newName: 'RawMenuItemBuilder'
+  - title: "Rename to 'RawMenuLevel'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignMenuLevel'
+    changes:
+      - kind: 'rename'
+        newName: 'RawMenuLevel'
+  - title: "Rename to 'RawMenuBarOverlayBuilder'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignMenuSurfaceBuilder'
+    changes:
+      - kind: 'rename'
+        newName: 'RawMenuBarOverlayBuilder'
+  - title: "Rename to 'RawNumberField'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignNumberField'
+    changes:
+      - kind: 'rename'
+        newName: 'RawNumberField'
+  - title: "Rename to 'RawNumberFieldBuilder'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignNumberFieldBuilder'
+    changes:
+      - kind: 'rename'
+        newName: 'RawNumberFieldBuilder'
+  - title: "Rename to 'RawNumberFieldButtonBuilder'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignNumberFieldButtonBuilder'
+    changes:
+      - kind: 'rename'
+        newName: 'RawNumberFieldButtonBuilder'
+  - title: "Rename to 'RawNumberFieldButtonDetails'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignNumberFieldButtonDetails'
+    changes:
+      - kind: 'rename'
+        newName: 'RawNumberFieldButtonDetails'
+  - title: "Rename to 'RawNumberFieldDetails'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignNumberFieldDetails'
+    changes:
+      - kind: 'rename'
+        newName: 'RawNumberFieldDetails'
+  - title: "Rename to 'RawNumberFieldLayoutBuilder'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignNumberFieldLayoutBuilder'
+    changes:
+      - kind: 'rename'
+        newName: 'RawNumberFieldLayoutBuilder'
+  - title: "Rename to 'RawOptionBuilder'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignOptionBuilder'
+    changes:
+      - kind: 'rename'
+        newName: 'RawOptionBuilder'
+  - title: "Rename to 'RawOtpContextMenuBuilder'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignOtpContextMenuBuilder'
+    changes:
+      - kind: 'rename'
+        newName: 'RawOtpContextMenuBuilder'
+  - title: "Rename to 'RawOtpController'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignOtpController'
+    changes:
+      - kind: 'rename'
+        newName: 'RawOtpController'
+  - title: "Rename to 'RawOtpField'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignOtpField'
+    changes:
+      - kind: 'rename'
+        newName: 'RawOtpField'
+  - title: "Rename to 'RawOtpLayoutBuilder'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignOtpLayoutBuilder'
+    changes:
+      - kind: 'rename'
+        newName: 'RawOtpLayoutBuilder'
+  - title: "Rename to 'RawOtpSlot'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignOtpSlot'
+    changes:
+      - kind: 'rename'
+        newName: 'RawOtpSlot'
+  - title: "Rename to 'RawOtpSlotBuilder'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignOtpSlotBuilder'
+    changes:
+      - kind: 'rename'
+        newName: 'RawOtpSlotBuilder'
+  - title: "Rename to 'RawPopoverAlign'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignOverlayAlign'
+    changes:
+      - kind: 'rename'
+        newName: 'RawPopoverAlign'
+  - title: "Rename to 'RawPopoverInfo'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignOverlayInfo'
+    changes:
+      - kind: 'rename'
+        newName: 'RawPopoverInfo'
+  - title: "Rename to 'RawPopoverPadding'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignOverlayPadding'
+    changes:
+      - kind: 'rename'
+        newName: 'RawPopoverPadding'
+  - title: "Rename to 'RawPopoverPlacement'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignOverlayPlacement'
+    changes:
+      - kind: 'rename'
+        newName: 'RawPopoverPlacement'
+  - title: "Rename to 'RawPopoverSide'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignOverlaySide'
+    changes:
+      - kind: 'rename'
+        newName: 'RawPopoverSide'
+  - title: "Rename to 'RawPopoverOverlayBuilder'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignOverlaySurfaceBuilder'
+    changes:
+      - kind: 'rename'
+        newName: 'RawPopoverOverlayBuilder'
+  - title: "Rename to 'RawPopoverTrigger'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignOverlayTrigger'
+    changes:
+      - kind: 'rename'
+        newName: 'RawPopoverTrigger'
+  - title: "Rename to 'RawPaletteLayoutBuilder'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignPaletteLayoutBuilder'
+    changes:
+      - kind: 'rename'
+        newName: 'RawPaletteLayoutBuilder'
+  - title: "Rename to 'RawPasswordController'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignPasswordController'
+    changes:
+      - kind: 'rename'
+        newName: 'RawPasswordController'
+  - title: "Rename to 'RawPasswordDetails'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignPasswordDetails'
+    changes:
+      - kind: 'rename'
+        newName: 'RawPasswordDetails'
+  - title: "Rename to 'RawPasswordReveal'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignPasswordReveal'
+    changes:
+      - kind: 'rename'
+        newName: 'RawPasswordReveal'
+  - title: "Rename to 'RawButton'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignPressable'
+    changes:
+      - kind: 'rename'
+        newName: 'RawButton'
+  - title: "Rename to 'RawButtonBuilder'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignPressableBuilder'
+    changes:
+      - kind: 'rename'
+        newName: 'RawButtonBuilder'
+  - title: "Rename to 'RawButtonState'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignPressableState'
+    changes:
+      - kind: 'rename'
+        newName: 'RawButtonState'
+  - title: "Rename to 'RawRefreshIndicator'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignPullToRefresh'
+    changes:
+      - kind: 'rename'
+        newName: 'RawRefreshIndicator'
+  - title: "Rename to 'RawRefreshIndicatorState'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignPullToRefreshState'
+    changes:
+      - kind: 'rename'
+        newName: 'RawRefreshIndicatorState'
+  - title: "Rename to 'RawRangeSlider'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignRangeSlider'
+    changes:
+      - kind: 'rename'
+        newName: 'RawRangeSlider'
+  - title: "Rename to 'RawRangeSliderTrackDetails'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignRangeTrack'
+    changes:
+      - kind: 'rename'
+        newName: 'RawRangeSliderTrackDetails'
+  - title: "Rename to 'RawRangeValues'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignRangeValues'
+    changes:
+      - kind: 'rename'
+        newName: 'RawRangeValues'
+  - title: "Rename to 'RawRating'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignRating'
+    changes:
+      - kind: 'rename'
+        newName: 'RawRating'
+  - title: "Rename to 'RawRatingItemBuilder'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignRatingItemBuilder'
+    changes:
+      - kind: 'rename'
+        newName: 'RawRatingItemBuilder'
+  - title: "Rename to 'RawRatingItemDetails'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignRatingItemDetails'
+    changes:
+      - kind: 'rename'
+        newName: 'RawRatingItemDetails'
+  - title: "Rename to 'RawRatingLayoutBuilder'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignRatingLayoutBuilder'
+    changes:
+      - kind: 'rename'
+        newName: 'RawRatingLayoutBuilder'
+  - title: "Rename to 'RawRefreshIndicatorDetails'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignRefreshDetails'
+    changes:
+      - kind: 'rename'
+        newName: 'RawRefreshIndicatorDetails'
+  - title: "Rename to 'RawRefreshIndicatorMode'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignRefreshMode'
+    changes:
+      - kind: 'rename'
+        newName: 'RawRefreshIndicatorMode'
+  - title: "Rename to 'RawReorderItemDetails'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignReorderItem'
+    changes:
+      - kind: 'rename'
+        newName: 'RawReorderItemDetails'
+  - title: "Rename to 'RawReorderableList'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignReorderableList'
+    changes:
+      - kind: 'rename'
+        newName: 'RawReorderableList'
+  - title: "Rename to 'RawScrollArea'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignScrollArea'
+    changes:
+      - kind: 'rename'
+        newName: 'RawScrollArea'
+  - title: "Rename to 'RawScrollbarThumbDetails'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignScrollThumb'
+    changes:
+      - kind: 'rename'
+        newName: 'RawScrollbarThumbDetails'
+  - title: "Rename to 'RawScrollbarThumbBuilder'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignScrollbarBuilder'
+    changes:
+      - kind: 'rename'
+        newName: 'RawScrollbarThumbBuilder'
+  - title: "Rename to 'RawSearchError'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignSearchError'
+    changes:
+      - kind: 'rename'
+        newName: 'RawSearchError'
+  - title: "Rename to 'RawSearchErrorBuilder'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignSearchErrorBuilder'
+    changes:
+      - kind: 'rename'
+        newName: 'RawSearchErrorBuilder'
+  - title: "Rename to 'RawDataTableSelection'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignSelection'
+    changes:
+      - kind: 'rename'
+        newName: 'RawDataTableSelection'
+  - title: "Rename to 'RawSheetEdge'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignSheetEdge'
+    changes:
+      - kind: 'rename'
+        newName: 'RawSheetEdge'
+  - title: "Rename to 'RawSideSheetDetails'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignSheetInfo'
+    changes:
+      - kind: 'rename'
+        newName: 'RawSideSheetDetails'
+  - title: "Rename to 'RawSheetRoute'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignSheetPageRoute'
+    changes:
+      - kind: 'rename'
+        newName: 'RawSheetRoute'
+  - title: "Rename to 'RawSideSheetRoute'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignSideSheetRoute'
+    changes:
+      - kind: 'rename'
+        newName: 'RawSideSheetRoute'
+  - title: "Rename to 'RawSortDirection'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignSortDirection'
+    changes:
+      - kind: 'rename'
+        newName: 'RawSortDirection'
+  - title: "Rename to 'RawSplitAction'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignSplitAction'
+    changes:
+      - kind: 'rename'
+        newName: 'RawSplitAction'
+  - title: "Rename to 'RawSplitButton'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignSplitButton'
+    changes:
+      - kind: 'rename'
+        newName: 'RawSplitButton'
+  - title: "Rename to 'RawSplitPart'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignSplitPart'
+    changes:
+      - kind: 'rename'
+        newName: 'RawSplitPart'
+  - title: "Rename to 'RawSplitView'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignSplitView'
+    changes:
+      - kind: 'rename'
+        newName: 'RawSplitView'
+  - title: "Rename to 'RawSwipeAction'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignSwipeAction'
+    changes:
+      - kind: 'rename'
+        newName: 'RawSwipeAction'
+  - title: "Rename to 'RawSwipeActionBuilder'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignSwipeActionBuilder'
+    changes:
+      - kind: 'rename'
+        newName: 'RawSwipeActionBuilder'
+  - title: "Rename to 'RawSwipeActionDetails'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignSwipeActionDetails'
+    changes:
+      - kind: 'rename'
+        newName: 'RawSwipeActionDetails'
+  - title: "Rename to 'RawSwipeActions'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignSwipeActions'
+    changes:
+      - kind: 'rename'
+        newName: 'RawSwipeActions'
+  - title: "Rename to 'RawSwipeActionsController'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignSwipeActionsController'
+    changes:
+      - kind: 'rename'
+        newName: 'RawSwipeActionsController'
+  - title: "Rename to 'SwipeBackPageTransitionsBuilder'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignSwipeBackPageTransitionsBuilder'
+    changes:
+      - kind: 'rename'
+        newName: 'SwipeBackPageTransitionsBuilder'
+  - title: "Rename to 'RawTab'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignTab'
+    changes:
+      - kind: 'rename'
+        newName: 'RawTab'
+  - title: "Rename to 'RawTabBar'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignTabBar'
+    changes:
+      - kind: 'rename'
+        newName: 'RawTabBar'
+  - title: "Rename to 'RawTabBuilder'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignTabBuilder'
+    changes:
+      - kind: 'rename'
+        newName: 'RawTabBuilder'
+  - title: "Rename to 'RawTabController'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignTabController'
+    changes:
+      - kind: 'rename'
+        newName: 'RawTabController'
+  - title: "Rename to 'RawTabDetails'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignTabDetails'
+    changes:
+      - kind: 'rename'
+        newName: 'RawTabDetails'
+  - title: "Rename to 'RawTabIndicatorBuilder'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignTabIndicatorBuilder'
+    changes:
+      - kind: 'rename'
+        newName: 'RawTabIndicatorBuilder'
+  - title: "Rename to 'RawTabIndicatorDetails'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignTabIndicatorDetails'
+    changes:
+      - kind: 'rename'
+        newName: 'RawTabIndicatorDetails'
+  - title: "Rename to 'RawTabBarView'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignTabView'
+    changes:
+      - kind: 'rename'
+        newName: 'RawTabBarView'
+  - title: "Rename to 'RawDataColumn'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignTableColumn'
+    changes:
+      - kind: 'rename'
+        newName: 'RawDataColumn'
+  - title: "Rename to 'RawDataTableController'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignTableController'
+    changes:
+      - kind: 'rename'
+        newName: 'RawDataTableController'
+  - title: "Rename to 'RawDataTableHeaderBuilder'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignTableHeaderBuilder'
+    changes:
+      - kind: 'rename'
+        newName: 'RawDataTableHeaderBuilder'
+  - title: "Rename to 'RawDataRowDetails'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignTableRow'
+    changes:
+      - kind: 'rename'
+        newName: 'RawDataRowDetails'
+  - title: "Rename to 'RawTagBuilder'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignTagBuilder'
+    changes:
+      - kind: 'rename'
+        newName: 'RawTagBuilder'
+  - title: "Rename to 'RawTagDetails'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignTagDetails'
+    changes:
+      - kind: 'rename'
+        newName: 'RawTagDetails'
+  - title: "Rename to 'RawTagInput'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignTagInput'
+    changes:
+      - kind: 'rename'
+        newName: 'RawTagInput'
+  - title: "Rename to 'RawTagLayoutBuilder'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignTagLayoutBuilder'
+    changes:
+      - kind: 'rename'
+        newName: 'RawTagLayoutBuilder'
+  - title: "Rename to 'TapTargetPadding'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignTapTarget'
+    changes:
+      - kind: 'rename'
+        newName: 'TapTargetPadding'
+  - title: "Rename to 'RawTimeField'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignTimeField'
+    changes:
+      - kind: 'rename'
+        newName: 'RawTimeField'
+  - title: "Rename to 'RawTimeOfDay'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignTimeOfDay'
+    changes:
+      - kind: 'rename'
+        newName: 'RawTimeOfDay'
+  - title: "Rename to 'RawToast'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignToast'
+    changes:
+      - kind: 'rename'
+        newName: 'RawToast'
+  - title: "Rename to 'RawToastBuilder'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignToastBuilder'
+    changes:
+      - kind: 'rename'
+        newName: 'RawToastBuilder'
+  - title: "Rename to 'RawToastClosedReason'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignToastClosedReason'
+    changes:
+      - kind: 'rename'
+        newName: 'RawToastClosedReason'
+  - title: "Rename to 'RawToastDetails'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignToastDetails'
+    changes:
+      - kind: 'rename'
+        newName: 'RawToastDetails'
+  - title: "Rename to 'RawToastController'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignToastHandle'
+    changes:
+      - kind: 'rename'
+        newName: 'RawToastController'
+  - title: "Rename to 'RawToastStackBuilder'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignToastStackBuilder'
+    changes:
+      - kind: 'rename'
+        newName: 'RawToastStackBuilder'
+  - title: "Rename to 'RawToaster'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignToaster'
+    changes:
+      - kind: 'rename'
+        newName: 'RawToaster'
+  - title: "Rename to 'RawToasterState'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignToasterState'
+    changes:
+      - kind: 'rename'
+        newName: 'RawToasterState'
+  - title: "Rename to 'RawSegmentedButton'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignToggleGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'RawSegmentedButton'
+  - title: "Rename to 'RawSegmentBuilder'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignToggleItemBuilder'
+    changes:
+      - kind: 'rename'
+        newName: 'RawSegmentBuilder'
+  - title: "Rename to 'RawPickerColumn'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignWheelColumn'
+    changes:
+      - kind: 'rename'
+        newName: 'RawPickerColumn'
+  - title: "Rename to 'RawPickerColumnBuilder'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignWheelColumnBuilder'
+    changes:
+      - kind: 'rename'
+        newName: 'RawPickerColumnBuilder'
+  - title: "Rename to 'RawPickerColumnDetails'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignWheelColumnDetails'
+    changes:
+      - kind: 'rename'
+        newName: 'RawPickerColumnDetails'
+  - title: "Rename to 'RawPickerItemBuilder'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignWheelItemBuilder'
+    changes:
+      - kind: 'rename'
+        newName: 'RawPickerItemBuilder'
+  - title: "Rename to 'RawPickerItemDetails'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignWheelItemDetails'
+    changes:
+      - kind: 'rename'
+        newName: 'RawPickerItemDetails'
+  - title: "Rename to 'RawPicker'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'DesignWheelPicker'
+    changes:
+      - kind: 'rename'
+        newName: 'RawPicker'
+  - title: "Rename to 'RenderTapTargetPadding'"
+    date: 2026-11-20
+    element:
+      uris: *uris
+      typedef: 'RenderDesignTapTarget'
+    changes:
+      - kind: 'rename'
+        newName: 'RenderTapTargetPadding'

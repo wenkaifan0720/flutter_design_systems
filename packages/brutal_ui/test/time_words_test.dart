@@ -1,5 +1,5 @@
 // A time picker's wheels are named in the reader's language: ui_core's
-// DesignLocalizations gives the hour and minute words, so German hears
+// RawWidgetsLocalizations gives the hour and minute words, so German hears
 // "Stunde" and Arabic "ساعة", where the wheels once said "Hour" and "Minute"
 // in English in every locale.
 import 'package:brutal_ui/brutal_ui.dart';
@@ -11,7 +11,7 @@ Widget _app(Locale locale) => WidgetsApp(
   color: const Color(0xFF000000),
   locale: locale,
   supportedLocales: const [Locale('en'), Locale('de'), Locale('ar')],
-  localizationsDelegates: const [DesignLocalizations.delegate],
+  localizationsDelegates: const [RawWidgetsLocalizations.delegate],
   builder: (context, _) => BrutalTheme(
     data: BrutalThemeData.light(),
     child: Align(

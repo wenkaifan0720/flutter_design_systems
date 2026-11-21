@@ -2,7 +2,7 @@
 /// ranked as the query is typed. Focus stays in the field: Up and Down move
 /// the highlight (and wrap), Enter runs it, Escape closes the palette and
 /// focus goes back where it was. [showDesignCommandPalette] opens it modal;
-/// [DesignCommandShortcut] opens it on Ctrl+K or Cmd+K.
+/// [RawCommandShortcut] opens it on Ctrl+K or Cmd+K.
 library;
 
 import 'package:flutter/foundation.dart';
@@ -20,9 +20,9 @@ import 'pressable.dart';
 
 /// A command in a palette.
 @immutable
-class DesignCommand {
+class RawCommand {
   /// A command [label]led, in [group], that [onPressed] runs.
-  const DesignCommand({
+  const RawCommand({
     required this.label,
     this.onPressed,
     this.group,
@@ -83,8 +83,8 @@ int? designMatchScore(String text, String query) {
 bool _isWordChar(int c) =>
     (c >= 0x30 && c <= 0x39) || (c >= 0x61 && c <= 0x7a) || c > 0x7f;
 
-/// A palette's list, as [DesignCommandPalette.layoutBuilder] lays it out.
-typedef DesignPaletteLayoutBuilder = Widget Function(
+/// A palette's list, as [RawCommandPalette.layoutBuilder] lays it out.
+typedef RawPaletteLayoutBuilder = Widget Function(
   BuildContext context,
   Widget field,
   Widget results,
@@ -94,11 +94,11 @@ typedef DesignPaletteLayoutBuilder = Widget Function(
 /// [showDesignCommandPalette], or anywhere (a sidebar's search).
 ///
 /// ```dart
-/// DesignCommandPalette(commands: const [DesignCommand(label: 'New file')], fieldBuilder: (context, field) => EditableText(controller: field.controller, focusNode: field.focusNode, style: const TextStyle(), cursorColor: const Color(0xFF000000), backgroundCursorColor: const Color(0xFF808080), onEditingComplete: field.submit), itemBuilder: (context, command, states) => Text(command.label))
+/// RawCommandPalette(commands: const [RawCommand(label: 'New file')], fieldBuilder: (context, field) => EditableText(controller: field.controller, focusNode: field.focusNode, style: const TextStyle(), cursorColor: const Color(0xFF000000), backgroundCursorColor: const Color(0xFF808080), onEditingComplete: field.submit), itemBuilder: (context, command, states) => Text(command.label))
 /// ```
-class DesignCommandPalette extends StatefulWidget {
+class RawCommandPalette extends StatefulWidget {
   /// A palette of [commands].
-  const DesignCommandPalette({
+  const RawCommandPalette({
     super.key,
     required this.commands,
     required this.fieldBuilder,
@@ -117,7 +117,7 @@ class DesignCommandPalette extends StatefulWidget {
   }) : assert(maxHeight > 0);
 
   /// The commands, in the order they list with no query.
-  final List<DesignCommand> commands;
+  final List<RawCommand> commands;
 
   /// Paints the search field ([DesignComboboxField.submit], its input's
   /// `onEditingComplete`, runs the highlighted command).
@@ -126,14 +126,14 @@ class DesignCommandPalette extends StatefulWidget {
   /// Paints a command; [WidgetState.focused] marks the highlighted one.
   final Widget Function(
     BuildContext context,
-    DesignCommand command,
+    RawCommand command,
     Set<WidgetState> states,
   )
   itemBuilder;
 
-  /// Takes a chosen command; null runs its own [DesignCommand.onPressed].
+  /// Takes a chosen command; null runs its own [RawCommand.onPressed].
   /// [showDesignCommandPalette] closes the route here.
-  final ValueChanged<DesignCommand>? onSelected;
+  final ValueChanged<RawCommand>? onSelected;
 
   /// Paints a group's heading.
   final Widget Function(BuildContext context, String group)? groupBuilder;
@@ -142,7 +142,7 @@ class DesignCommandPalette extends StatefulWidget {
   final WidgetBuilder? emptyBuilder;
 
   /// Lays out the field over the results; null: a column.
-  final DesignPaletteLayoutBuilder? layoutBuilder;
+  final RawPaletteLayoutBuilder? layoutBuilder;
 
   /// Ranks a command's words against the query.
   final int? Function(String text, String query) score;
@@ -151,11 +151,11 @@ class DesignCommandPalette extends StatefulWidget {
   final double maxHeight;
 
   /// What a screen reader calls the results; null:
-  /// [DesignLocalizations.commandPaletteLabel].
+  /// [RawWidgetsLocalizations.commandPaletteLabel].
   final String? semanticLabel;
 
   /// What a screen reader hears when the results change; null:
-  /// [DesignLocalizations.commandPaletteResultsMessage].
+  /// [RawWidgetsLocalizations.commandPaletteResultsMessage].
   final String Function(int count)? resultsMessage;
 
   /// The field's text. The caller's, who disposes it; null: the palette
@@ -172,13 +172,13 @@ class DesignCommandPalette extends StatefulWidget {
   final bool autofocus;
 
   @override
-  State<DesignCommandPalette> createState() => _DesignCommandPaletteState();
+  State<RawCommandPalette> createState() => _DesignCommandPaletteState();
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(IterableProperty<DesignCommand>('commands', commands))
+      ..add(IterableProperty<RawCommand>('commands', commands))
       ..add(
         ObjectFlagProperty<DesignComboboxFieldBuilder>.has(
           'fieldBuilder',
@@ -189,13 +189,13 @@ class DesignCommandPalette extends StatefulWidget {
         ObjectFlagProperty<
           Widget Function(
             BuildContext context,
-            DesignCommand command,
+            RawCommand command,
             Set<WidgetState> states,
           )
         >.has('itemBuilder', itemBuilder),
       )
       ..add(
-        ObjectFlagProperty<ValueChanged<DesignCommand>>.has(
+        ObjectFlagProperty<ValueChanged<RawCommand>>.has(
           'onSelected',
           onSelected,
         ),
@@ -207,7 +207,7 @@ class DesignCommandPalette extends StatefulWidget {
       )
       ..add(ObjectFlagProperty<WidgetBuilder>.has('emptyBuilder', emptyBuilder))
       ..add(
-        ObjectFlagProperty<DesignPaletteLayoutBuilder>.has(
+        ObjectFlagProperty<RawPaletteLayoutBuilder>.has(
           'layoutBuilder',
           layoutBuilder,
         ),
@@ -261,7 +261,7 @@ class _RunIntent extends Intent {
   const _RunIntent();
 }
 
-class _DesignCommandPaletteState extends State<DesignCommandPalette> {
+class _DesignCommandPaletteState extends State<RawCommandPalette> {
   TextEditingController? _ownText;
   FocusNode? _ownFocus;
   int _highlight = 0;
@@ -269,7 +269,7 @@ class _DesignCommandPaletteState extends State<DesignCommandPalette> {
   // The list row last brought into view for the highlight.
   int _shownRow = -1;
   String _query = '';
-  late List<DesignCommand> _shown = _filter('');
+  late List<RawCommand> _shown = _filter('');
   int? _announcedCount;
 
   TextEditingController get _text =>
@@ -277,7 +277,7 @@ class _DesignCommandPaletteState extends State<DesignCommandPalette> {
 
   FocusNode get _focus =>
       widget.focusNode ??
-      (_ownFocus ??= FocusNode(debugLabel: 'DesignCommandPalette'));
+      (_ownFocus ??= FocusNode(debugLabel: 'RawCommandPalette'));
 
   @override
   void initState() {
@@ -292,7 +292,7 @@ class _DesignCommandPaletteState extends State<DesignCommandPalette> {
   }
 
   @override
-  void didUpdateWidget(DesignCommandPalette oldWidget) {
+  void didUpdateWidget(RawCommandPalette oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.controller != widget.controller) {
       (oldWidget.controller ?? _ownText)?.removeListener(_changed);
@@ -312,7 +312,7 @@ class _DesignCommandPaletteState extends State<DesignCommandPalette> {
 
   // Groups keep their first appearance's order; with a query, each group's
   // commands rank by score and groups by their best.
-  List<DesignCommand> _filter(String query) {
+  List<RawCommand> _filter(String query) {
     if (query.trim().isEmpty) {
       final order = <String?>[];
       for (final c in widget.commands) {
@@ -322,7 +322,7 @@ class _DesignCommandPaletteState extends State<DesignCommandPalette> {
         for (final g in order) ...widget.commands.where((c) => c.group == g),
       ];
     }
-    final scored = <(DesignCommand, int)>[];
+    final scored = <(RawCommand, int)>[];
     for (final c in widget.commands) {
       int? best;
       for (final words in [c.label, ...c.keywords]) {
@@ -359,7 +359,7 @@ class _DesignCommandPaletteState extends State<DesignCommandPalette> {
       _announcedCount = n;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
-        final words = DesignLocalizations.of(context);
+        final words = RawWidgetsLocalizations.of(context);
         designAnnounce(
           context,
           (widget.resultsMessage ?? words.commandPaletteResultsMessage)(n),
@@ -385,7 +385,7 @@ class _DesignCommandPaletteState extends State<DesignCommandPalette> {
     designAnnounce(context, _shown[i].label);
   }
 
-  void _run([DesignCommand? command]) {
+  void _run([RawCommand? command]) {
     final c =
         command ?? (_highlight < _shown.length ? _shown[_highlight] : null);
     if (c == null || !c.enabled) return;
@@ -447,7 +447,7 @@ class _DesignCommandPaletteState extends State<DesignCommandPalette> {
             onHover: (_) {
               if (_highlight != i && c.enabled) setState(() => _highlight = i);
             },
-            child: DesignPressable(
+            child: RawButton(
               onPressed: c.enabled ? () => _run(c) : null,
               semanticSelected: lit,
               builder: (context, states, _) => widget.itemBuilder(context, c, {
@@ -482,7 +482,7 @@ class _DesignCommandPaletteState extends State<DesignCommandPalette> {
       explicitChildNodes: true,
       label:
           widget.semanticLabel ??
-          DesignLocalizations.of(context).commandPaletteLabel,
+          RawWidgetsLocalizations.of(context).commandPaletteLabel,
       child: results,
     );
     return widget.layoutBuilder?.call(context, field, list) ??
@@ -505,8 +505,7 @@ class _DesignCommandPaletteState extends State<DesignCommandPalette> {
 /// own screen, as its other modals wear) when given.
 Future<void> showDesignCommandPalette({
   required BuildContext context,
-  required DesignCommandPalette Function(ValueChanged<DesignCommand> run)
-  palette,
+  required RawCommandPalette Function(ValueChanged<RawCommand> run) palette,
   Widget Function(BuildContext context, Widget palette)? surfaceBuilder,
   Color barrierColor = const Color(0x66000000),
   DesignBarrierBuilder? barrierBuilder,
@@ -514,12 +513,12 @@ Future<void> showDesignCommandPalette({
   AlignmentGeometry alignment = const Alignment(0, -0.6),
 }) async {
   final chosen = await Navigator.of(context, rootNavigator: true).push(
-    _PaletteRoute<DesignCommand>(
+    _PaletteRoute<RawCommand>(
       barrierPaint: barrierBuilder,
       barrierDismissible: true,
       barrierLabel:
           barrierLabel ??
-          DesignLocalizations.of(context).commandPaletteBarrierLabel,
+          RawWidgetsLocalizations.of(context).commandPaletteBarrierLabel,
       barrierColor: barrierBuilder == null ? barrierColor : null,
       transitionDuration: designReduceMotionOf(context)
           ? Duration.zero
@@ -537,7 +536,7 @@ Future<void> showDesignCommandPalette({
               explicitChildNodes: true,
               label:
                   body.semanticLabel ??
-                  DesignLocalizations.of(context).commandPaletteLabel,
+                  RawWidgetsLocalizations.of(context).commandPaletteLabel,
               child: surfaceBuilder?.call(context, body) ?? body,
             ),
           ),
@@ -577,11 +576,11 @@ class _PaletteRoute<T> extends RawDialogRoute<T> {
 /// Cmd+K).
 ///
 /// ```dart
-/// DesignCommandShortcut(onOpen: () {}, child: const SizedBox())
+/// RawCommandShortcut(onOpen: () {}, child: const SizedBox())
 /// ```
-class DesignCommandShortcut extends StatelessWidget {
+class RawCommandShortcut extends StatelessWidget {
   /// [child], with [onOpen] on its keys.
-  const DesignCommandShortcut({
+  const RawCommandShortcut({
     super.key,
     required this.onOpen,
     required this.child,

@@ -17,7 +17,7 @@ import 'split_view.dart';
 /// Side by side ([sideBySide], or from [DesignWindowSizeClass.expanded]'s
 /// 840 up in its own width), the list [listWidth] wide at the start, the
 /// detail beside it (with nothing chosen, [emptyDetailBuilder]); given a
-/// [dividerBuilder], a [DesignSplitView] the reader can resize. Narrow, the
+/// [dividerBuilder], a [RawSplitView] the reader can resize. Narrow, the
 /// list alone: choosing an item pushes [detailRouteBuilder]'s route (the
 /// look's page route) with its detail, and that route's pop clears the
 /// choice. Narrow to wide, the pushed detail leaves and shows beside the
@@ -64,9 +64,9 @@ class DesignListDetail<T extends Object> extends StatefulWidget {
   /// Whether list and detail show side by side; null: from 840 wide up.
   final bool? sideBySide;
 
-  /// Side by side, the divider of a [DesignSplitView] the reader resizes;
+  /// Side by side, the divider of a [RawSplitView] the reader resizes;
   /// null: the list fixed at [listWidth].
-  final DesignDividerBuilder? dividerBuilder;
+  final RawDividerBuilder? dividerBuilder;
 
   /// The list pane's width side by side (its first width, resizable).
   final double listWidth;
@@ -113,7 +113,7 @@ class DesignListDetail<T extends Object> extends StatefulWidget {
         ),
       )
       ..add(
-        ObjectFlagProperty<DesignDividerBuilder>.has(
+        ObjectFlagProperty<RawDividerBuilder>.has(
           'dividerBuilder',
           dividerBuilder,
         ),
@@ -243,7 +243,7 @@ class _DesignListDetailState<T extends Object>
               Expanded(child: detail),
             ],
           )
-        : DesignSplitView(
+        : RawSplitView(
             first: list,
             second: detail,
             dividerBuilder: divider,

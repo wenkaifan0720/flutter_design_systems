@@ -47,11 +47,11 @@ Widget kitApp({required Brightness brightness, required Widget home}) =>
     MaterialApp(
       debugShowCheckedModeBanner: false,
       localizationsDelegates: const [
-        DesignLocalizations.delegate,
+        RawWidgetsLocalizations.delegate,
         DefaultMaterialLocalizations.delegate,
         DefaultWidgetsLocalizations.delegate,
       ],
-      supportedLocales: DesignLocalizations.supportedLocales,
+      supportedLocales: RawWidgetsLocalizations.supportedLocales,
       builder: (context, child) => BrutalTheme(
         data: kitTheme(brightness),
         child: BrutalToaster(child: child ?? const SizedBox.shrink()),
@@ -219,11 +219,11 @@ Widget kitSpecimenStage({
 }) => MaterialApp(
   debugShowCheckedModeBanner: false,
   localizationsDelegates: const [
-    DesignLocalizations.delegate,
+    RawWidgetsLocalizations.delegate,
     DefaultMaterialLocalizations.delegate,
     DefaultWidgetsLocalizations.delegate,
   ],
-  supportedLocales: DesignLocalizations.supportedLocales,
+  supportedLocales: RawWidgetsLocalizations.supportedLocales,
   builder: (context, home) => BrutalTheme(
     data: BrutalThemeData.preset(style, brightness),
     child: BrutalToaster(child: home ?? const SizedBox.shrink()),

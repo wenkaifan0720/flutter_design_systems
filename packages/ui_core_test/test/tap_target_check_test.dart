@@ -246,10 +246,10 @@ void main() {
     );
   });
 
-  testWidgets('a control laid out by DesignTapTarget passes', (tester) async {
+  testWidgets('a control laid out by TapTargetPadding passes', (tester) async {
     final report = await _check(
       tester,
-      DesignTapTarget(
+      TapTargetPadding(
         child: Semantics(
           button: true,
           label: 'Add',
@@ -279,7 +279,7 @@ void main() {
             child: Semantics(
               button: true,
               label: 'Paid',
-              child: DesignTapTarget(
+              child: TapTargetPadding(
                 alignment: alignment,
                 child: GestureDetector(
                   behavior: HitTestBehavior.opaque,
@@ -495,7 +495,7 @@ Widget _chipRow({required double face, double? tap}) => SizedBox(
 
 Widget _tapRound(double? tap, Widget chip) => tap == null
     ? chip
-    : DesignTapTarget(minSize: Size.square(tap), child: chip);
+    : TapTargetPadding(minSize: Size.square(tap), child: chip);
 
 // A link set as a widget: its own node, a tap on its words.
 Widget _widgetLink(String words) => Semantics(

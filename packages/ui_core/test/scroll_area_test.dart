@@ -9,7 +9,7 @@ import 'behaviour_contract.dart';
 import 'behaviour_harness.dart';
 
 const _thumbKey = ValueKey('thumb');
-DesignScrollThumb? _last;
+RawScrollbarThumbDetails? _last;
 
 // The bare reference painter: a grey bar, gone when hidden; a line when the
 // keyboard is on the area.
@@ -24,7 +24,7 @@ Widget _area(
     child: SizedBox(
       width: 300,
       height: 400,
-      child: DesignScrollArea(
+      child: RawScrollArea(
         controller: c,
         visibility: visibility,
         semanticLabel: 'Terms',
@@ -63,13 +63,13 @@ void main() {
   final areaController = ScrollController();
   tearDownAll(areaController.dispose);
   behaviourContract(
-    'DesignScrollArea',
+    'RawScrollArea',
     build: (c) => Align(
       alignment: Alignment.topLeft,
       child: SizedBox(
         width: 300,
         height: 400,
-        child: DesignScrollArea(
+        child: RawScrollArea(
           controller: areaController,
           semanticLabel: 'Terms',
           visibility: DesignScrollbarVisibility.always,
@@ -155,7 +155,7 @@ void main() {
             child: SizedBox(
               width: 300,
               height: 400,
-              child: DesignScrollArea(
+              child: RawScrollArea(
                 controller: c,
                 thumbLength: thumbLength,
                 visibility: DesignScrollbarVisibility.always,
@@ -201,7 +201,10 @@ void main() {
     await gesture.moveBy(const Offset(0, 20));
     await gesture.moveBy(const Offset(0, 80));
     await tester.pump();
-    expect(_last!.states, contains(WidgetState.pressed));
+    expect(
+      _last!.states,
+      containsAll([WidgetState.pressed, WidgetState.dragged]),
+    );
     await gesture.up();
     await tester.pump();
     // 80 px of a 320 px run is a quarter of 1600 px (give or take the slop).

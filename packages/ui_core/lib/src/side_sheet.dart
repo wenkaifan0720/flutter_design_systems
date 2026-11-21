@@ -8,14 +8,15 @@ library;
 import 'package:flutter/widgets.dart';
 
 import 'barrier.dart';
+import 'internal/barrier_clip.dart';
 import 'internal/gesture_focus.dart';
 import 'internal/painted_barrier.dart';
 import 'internal/route_spring.dart';
 import 'localizations.dart';
 import 'motion.dart';
 
-/// Which edge a [DesignSideSheetRoute] comes from.
-enum DesignSheetEdge {
+/// Which edge a [RawSideSheetRoute] comes from.
+enum RawSheetEdge {
   /// The reading start (left in English, right in Arabic).
   start,
 
@@ -25,9 +26,9 @@ enum DesignSheetEdge {
 
 /// What a side sheet's panel gets to paint with.
 @immutable
-class DesignSheetInfo {
+class RawSideSheetDetails {
   /// The sheet's info; the route makes it.
-  const DesignSheetInfo({
+  const RawSideSheetDetails({
     required this.side,
     required this.animation,
     required this.dragging,
@@ -60,13 +61,13 @@ class DesignSheetInfo {
 /// no frame jumps.
 ///
 /// ```dart
-/// DesignSideSheetRoute<void>(builder: (context, sheet) => const SizedBox(width: 320))
+/// RawSideSheetRoute<void>(builder: (context, sheet) => const SizedBox(width: 320))
 /// ```
-class DesignSideSheetRoute<T> extends PopupRoute<T> {
+class RawSideSheetRoute<T> extends PopupRoute<T> {
   /// A sheet whose panel [builder] paints.
-  DesignSideSheetRoute({
+  RawSideSheetRoute({
     required this.builder,
-    this.edge = DesignSheetEdge.end,
+    this.edge = RawSheetEdge.end,
     this.width = 360,
     this.minGap = 56,
     Color barrierColor = const Color(0x66000000),
@@ -102,10 +103,11 @@ class DesignSideSheetRoute<T> extends PopupRoute<T> {
   final double? closeStiffness;
 
   /// Paints the panel.
-  final Widget Function(BuildContext context, DesignSheetInfo sheet) builder;
+  final Widget Function(BuildContext context, RawSideSheetDetails sheet)
+  builder;
 
   /// The edge it comes from.
-  final DesignSheetEdge edge;
+  final RawSheetEdge edge;
 
   /// The panel's width.
   final double width;
@@ -137,23 +139,27 @@ class DesignSideSheetRoute<T> extends PopupRoute<T> {
   final String? _givenBarrierLabel;
 
   /// What a screen reader calls the barrier; null:
-  /// [DesignLocalizations.sideSheetBarrierLabel].
+  /// [RawWidgetsLocalizations.sideSheetBarrierLabel].
   @override
   String? get barrierLabel {
     final context = navigator?.context;
     return _givenBarrierLabel ??
         (context == null
             ? null
-            : DesignLocalizations.of(context).sideSheetBarrierLabel);
+            : RawWidgetsLocalizations.of(context).sideSheetBarrierLabel);
   }
 
   /// The barrier's colour; null while [barrierBuilder] paints it.
   @override
   Color? get barrierColor => barrierBuilder == null ? _scrim : null;
 
+  // What the panel covers of the barrier, from its side of the screen: a
+  // screen reader outlines the barrier beside it, where a tap reaches it.
+  final ValueNotifier<EdgeInsets> _barrierClip = ValueNotifier(EdgeInsets.zero);
+
   @override
   Widget buildModalBarrier() {
-    final barrier = super.buildModalBarrier();
+    final barrier = clippedModalBarrier(this, _barrierClip);
     final paint = barrierBuilder;
     return paint == null ? barrier : paintedBarrier(paint, animation!, barrier);
   }
@@ -180,6 +186,7 @@ class DesignSideSheetRoute<T> extends PopupRoute<T> {
   @override
   void dispose() {
     _drag.dispose();
+    _barrierClip.dispose();
     super.dispose();
   }
 
@@ -228,7 +235,7 @@ class DesignSideSheetRoute<T> extends PopupRoute<T> {
 
   AxisDirection _side(BuildContext context) {
     final rtl = Directionality.of(context) == TextDirection.rtl;
-    final left = (edge == DesignSheetEdge.start) != rtl;
+    final left = (edge == RawSheetEdge.start) != rtl;
     return left ? AxisDirection.left : AxisDirection.right;
   }
 
@@ -240,6 +247,9 @@ class DesignSideSheetRoute<T> extends PopupRoute<T> {
   ) {
     final side = _side(context);
     final w = _panelWidth(context);
+    _barrierClip.value = side == AxisDirection.left
+        ? EdgeInsets.only(left: w)
+        : EdgeInsets.only(right: w);
     return Align(
       alignment: side == AxisDirection.left
           ? Alignment.centerLeft
@@ -263,7 +273,7 @@ class DesignSideSheetRoute<T> extends PopupRoute<T> {
                 valueListenable: _drag,
                 builder: (context, drag, _) => builder(
                   context,
-                  DesignSheetInfo(
+                  RawSideSheetDetails(
                     side: side,
                     animation: animation,
                     dragging: drag != null,
@@ -315,7 +325,7 @@ class _DragToClose extends StatelessWidget {
     required this.child,
   });
 
-  final DesignSideSheetRoute<Object?> route;
+  final RawSideSheetRoute<Object?> route;
   final bool enabled;
   final AxisDirection side;
   final double width;

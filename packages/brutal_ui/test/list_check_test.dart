@@ -15,7 +15,7 @@ import 'package:brutal_ui/brutal_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:ui_core_test/ui_core_test.dart' show DesignWidthCheck;
+import 'package:ui_core_review/ui_core_review.dart' show DesignWidthCheck;
 
 import '../example/lib/everyday_screens.dart';
 import '../example/lib/gallery_pages.dart';

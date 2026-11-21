@@ -38,7 +38,7 @@ Widget _group({
     children: [
       const Text('kg', key: ValueKey('unit')),
       plainField(controller: text, focusNode: field, width: 100),
-      DesignPressable(
+      RawButton(
         focusNode: button,
         onPressed: onClear ?? text.clear,
         semanticLabel: 'Clear',
@@ -102,9 +102,9 @@ void main() {
     passwordText.dispose();
   });
   behaviourContract(
-    'DesignPasswordReveal',
+    'RawPasswordReveal',
     build: (c) => Center(
-      child: DesignPasswordReveal(
+      child: RawPasswordReveal(
         focusNode: passwordField,
         builder: (context, password) => Row(
           mainAxisSize: MainAxisSize.min,
@@ -114,7 +114,7 @@ void main() {
               focusNode: passwordField,
               obscureText: password.obscured,
             ),
-            DesignPressable(
+            RawButton(
               onPressed: password.toggle,
               semanticLabel: password.toggleLabel,
               excludeSemantics: true,
@@ -255,7 +255,7 @@ void main() {
     await tester.pumpWidget(
       harness(
         Center(
-          child: DesignPasswordReveal(
+          child: RawPasswordReveal(
             focusNode: field,
             builder: (context, password) => Row(
               mainAxisSize: MainAxisSize.min,
@@ -265,11 +265,11 @@ void main() {
                   focusNode: field,
                   obscureText: password.obscured,
                 ),
-                DesignPressable(
+                RawButton(
                   onPressed: password.toggle,
                   semanticLabel: password.toggleLabel,
                   excludeSemantics: true,
-                  toggled: !password.obscured,
+                  semanticSelected: !password.obscured,
                   minimumSize: const Size(48, 48),
                   builder: (context, states, _) => const Text('eye'),
                 ),
@@ -301,14 +301,14 @@ void main() {
   ) async {
     final field = FocusNode();
     final text = TextEditingController(text: 'secret');
-    final controller = DesignPasswordController(obscured: false);
+    final controller = RawPasswordController(obscured: false);
     addTearDown(field.dispose);
     addTearDown(text.dispose);
     addTearDown(controller.dispose);
     await tester.pumpWidget(
       harness(
         Center(
-          child: DesignPasswordReveal(
+          child: RawPasswordReveal(
             focusNode: field,
             controller: controller,
             hideOnBlur: true,
@@ -335,15 +335,15 @@ void main() {
     final first = FocusNode();
     final second = FocusNode();
     final text = TextEditingController(text: 'secret');
-    final controller = DesignPasswordController(obscured: false);
+    final controller = RawPasswordController(obscured: false);
     addTearDown(first.dispose);
     addTearDown(second.dispose);
     addTearDown(text.dispose);
     addTearDown(controller.dispose);
-    late DesignPasswordDetails shown;
-    Widget reveal(FocusNode node, DesignPasswordController? c) => harness(
+    late RawPasswordDetails shown;
+    Widget reveal(FocusNode node, RawPasswordController? c) => harness(
       Center(
-        child: DesignPasswordReveal(
+        child: RawPasswordReveal(
           focusNode: node,
           controller: c,
           hideOnBlur: true,

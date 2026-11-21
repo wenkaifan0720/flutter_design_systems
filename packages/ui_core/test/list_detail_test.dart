@@ -182,7 +182,7 @@ void main() {
     await tester.pumpWidget(
       harness(const _Host(sideBySide: true, divider: true)),
     );
-    expect(find.byType(DesignSplitView), findsOneWidget);
+    expect(find.byType(RawSplitView), findsOneWidget);
     expect(find.byKey(const ValueKey('divider')), findsOneWidget);
     await _width(tester, 1000);
     await tester.pumpWidget(harness(const _Host(sideBySide: false)));
