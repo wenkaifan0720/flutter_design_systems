@@ -51,7 +51,7 @@ if [ ! -f "$ex/lib/inventory.dart" ]; then
   gate G5 FAIL "example/lib/inventory.dart is missing"
 else
   example="$(sed -n 's/^name: *//p' "$ex/pubspec.yaml" | head -1)"
-  (cd "$ex" && flutter pub add 'dev:ui_core_test:^0.2.0') >>"$log/get.txt" 2>&1
+  (cd "$ex" && flutter pub add 'dev:ui_core_test:^0.2.1') >>"$log/get.txt" 2>&1
   (cd "$ex" && flutter pub add 'dev:flutter_test:{"sdk":"flutter"}') >>"$log/get.txt" 2>&1
   cp "$evals/sweep.dart" "$ex/test/score_sweep.dart" 2>/dev/null ||
     { mkdir -p "$ex/test" && cp "$evals/sweep.dart" "$ex/test/score_sweep.dart"; }

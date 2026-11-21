@@ -1,11 +1,18 @@
 # Examples from published looks
 
-Excerpts from three looks built on ui_core 0.4.0, each a different material:
-**brutal_ui** (hard blocks, hard shadows, no blur), **minimal_ui** (quiet
-neutral surfaces, a thin accent ring) and **neumorphism_ui** (soft surfaces
-extruded from their ground). Each excerpt is quoted from the package's
-source; `// ...` marks lines left out. The notes after each say what to take
-from it.
+Excerpts from three published looks on ui_core, each a different material.
+Open a package on pub.dev to read the rest of it, and see its pictures:
+
+- [brutal_ui](https://pub.dev/packages/brutal_ui): hard blocks, hard offset
+  shadows, no blur; focus is a solid block of colour.
+- [minimal_ui](https://pub.dev/packages/minimal_ui): quiet neutral
+  surfaces, hairline edges, a thin accent ring for focus.
+- [neumorphism_ui](https://pub.dev/packages/neumorphism_ui): soft surfaces
+  extruded from their ground, lit from the top left; focus raises a part.
+
+Each excerpt is quoted from the package's source (the path under it names
+the file); `// ...` marks lines left out. The notes after each say what to
+take from it.
 
 ## A button: behaviour from ui_core, face from the look (brutal_ui)
 

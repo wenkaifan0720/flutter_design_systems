@@ -8,6 +8,7 @@ import 'package:material_ui/material_ui.dart'
 import 'package:ui_core/ui_core.dart';
 
 import 'face.dart';
+import 'lists.dart';
 import 'theme.dart';
 
 /// A one-line text field with a label above, a hint inside, and help or an
@@ -153,15 +154,12 @@ class _LookTextFieldState extends State<LookTextField> {
               excludeFromSemantics: true,
               onTap: widget.enabled ? _focusNode.requestFocus : null,
               child: AnimatedLookSurface(
-                face: LookFace(
-                  fill: widget.enabled ? c.surface : c.ground,
-                  rule: parts.errorText != null
-                      ? c.danger
-                      : parts.focused
-                      ? c.accent
-                      : c.rule,
-                  ruleWidth: parts.focused || parts.errorText != null ? 2 : 1,
-                  foreground: c.ink,
+                // The face a select and a combobox stand on too.
+                face: lookFieldFace(
+                  theme,
+                  focused: parts.focused,
+                  error: parts.errorText != null,
+                  enabled: widget.enabled,
                 ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(theme.radius),

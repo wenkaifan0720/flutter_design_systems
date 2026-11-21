@@ -6,12 +6,18 @@ library;
 // registers for the look's built-in words: no more, so ui_core's surface
 // does not become the look's.
 export 'package:ui_core/ui_core.dart'
-    show DesignDensity, DesignStyle, RawDialogAction, RawWidgetsLocalizations;
+    show
+        DesignDensity,
+        DesignStyle,
+        RawDialogAction,
+        RawMenuEntry,
+        RawWidgetsLocalizations;
 
 export 'src/button.dart';
 export 'src/controls.dart';
 export 'src/face.dart';
 export 'src/field.dart';
+export 'src/lists.dart';
 export 'src/overlays.dart';
 export 'src/theme.dart';
 export 'src/transitions.dart';

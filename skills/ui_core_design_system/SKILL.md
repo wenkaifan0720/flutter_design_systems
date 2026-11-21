@@ -1,14 +1,14 @@
 ---
 name: ui_core_design_system
-description: Build a complete, production-grade Flutter design-system package (a "look", like material_ui or cupertino_ui) on ui_core ^0.4.0, where ui_core carries the behaviour (focus, keyboard, semantics, overlays, tap targets, motion policy) and the package paints. Use when asked to create a Flutter design system, UI kit or themed component library on ui_core, to add parts to one, or to review one for completeness, accessibility, motion, layout and API quality.
+description: Build a complete, production-grade Flutter design-system package (a "look", like material_ui or cupertino_ui) on the ui_core package, where ui_core carries the behaviour (focus, keyboard, semantics, overlays, tap targets, motion policy) and the package paints every part. Use when asked to create a Flutter design system, UI kit, component library or custom visual style that is neither Material nor Cupertino (in a named style, such as Swiss, neumorphic, brutalist or glass, or from a brand), to add parts or states to such a package, or to review one for completeness, accessibility, motion, layout and API quality. Not for styling a single app with Material's ThemeData.
 ---
 
 # Building a design system on ui_core
 
 This skill builds a Flutter package that is a whole design language: a
 theme, every part an ordinary app needs, in every state, on every screen size,
-for every reader. It targets **ui_core ^0.4.0** and **ui_core_test ^0.2.0** on
-**Flutter 3.47 or later**, and uses only their published API.
+for every reader. It targets **ui_core ^0.4.1** and **ui_core_test ^0.2.1** on
+**Flutter 3.47 or later**, and uses only their published API (pub.dev).
 
 A design system on ui_core splits the work in two:
 
@@ -30,11 +30,11 @@ press-inside-a-scroll rule and the tap-target floor that `RawButton` and
 
 | Page | Read it when |
 |---|---|
-| [references/contract.md](references/contract.md) | Wiring any part: each `Raw*` widget, the builder pattern, `DesignStyleOf` layering, tap targets, motion, the 0.4.0 shims. |
+| [references/contract.md](references/contract.md) | Wiring any part: each `Raw*` widget, the builder pattern, `DesignStyleOf` layering, tap targets, motion, lists and menus, the Flutter shims. |
 | [references/inventory.md](references/inventory.md) | Planning and tracking scope: every component an app expects, in build order. |
-| [references/taste.md](references/taste.md) | Designing any state, size or motion; deciding what to leave out. |
+| [references/taste.md](references/taste.md) | Designing any state, size or motion; making parts read as one family; deciding what to leave out. |
 | [references/checks.md](references/checks.md) | Proving a part: the ui_core_test checks, the analyzer, docs, publish, and the screenshot review. |
-| [references/examples.md](references/examples.md) | Seeing the pattern in published looks (minimal_ui, brutal_ui, neumorphism_ui). |
+| [references/examples.md](references/examples.md) | Seeing the pattern in three published looks on pub.dev: minimal_ui, brutal_ui, neumorphism_ui. |
 | [samples/](samples/) | A small look that compiles and passes every check. Every Dart block in these pages is taken from it. |
 
 ## Workflow
@@ -74,8 +74,8 @@ leave it plainer. See [taste.md](references/taste.md).
   README.md  CHANGELOG.md  LICENSE
 ```
 
-Depend on `ui_core: ^0.4.0` and, for the text editing and the localizations a
-look reuses, `material_ui`; dev-depend on `ui_core_test: ^0.2.0`,
+Depend on `ui_core: ^0.4.1` and, for the text editing and the localizations a
+look reuses, `material_ui`; dev-depend on `ui_core_test: ^0.2.1`,
 `leak_tracker_flutter_testing` and `flutter_lints`. Turn on `strict-casts`,
 `strict-inference`, `strict-raw-types` and `public_member_api_docs`, and leak
 tracking for every test. [checks.md](references/checks.md) has the files.
@@ -85,7 +85,12 @@ plus what an app needs to set it up:
 
 ```dart
 export 'package:ui_core/ui_core.dart'
-    show DesignDensity, DesignStyle, RawDialogAction, RawWidgetsLocalizations;
+    show
+        DesignDensity,
+        DesignStyle,
+        RawDialogAction,
+        RawMenuEntry,
+        RawWidgetsLocalizations;
 ```
 
 ### 3. Build the theme
@@ -197,7 +202,13 @@ navigation, containers, overlays, feedback and charts. For each part:
    `checked`, a switch `toggled`, a toggle button `semanticSelected` (still a
    button), a radio is a `RawRadio` in a `RadioGroup`.
 3. Draw every state it has, day and night, in the look's material.
-4. Write its test (step 7) before moving on.
+4. Reuse what an earlier part decided: a select and a combobox stand on the
+   text field's face and end in the same sign; every open list (a select's,
+   a combobox's, a menu's) is one surface with one kind of row; every raised
+   panel is one material. A part that looks like a cousin of its neighbour
+   reads as a fault. [taste.md](references/taste.md) section 8 has the
+   pairs that must match.
+5. Write its test (step 7) before moving on.
 
 ### 6. Raise things the look's way
 
@@ -224,6 +235,12 @@ const DesignFieldSemanticsCheck(look: 'Look').check(screen).verify();
 const DesignTapTargetCheck(look: 'Look').check(screen).verify();
 const DesignCursorCheck(look: 'Look').check(screen).verify();
 ```
+
+Parts with a tooltip, a text field or a list take one more check each:
+`DesignTooltipNodeCheck` (the tip is on the control's node),
+`DesignFieldNodesCheck` (a field keeps its nodes as its text changes) and
+`DesignListSideCheck` (an open list sits below its field while below holds
+it).
 
 Then look at it: shoot every part in every state at full size, day and
 night, at 390 and 1440 wide, left to right and right to left, and read every
@@ -271,6 +288,11 @@ const DesignInventoryEntry.absent(
       value, state.
 - [ ] Tap targets reach the floor; rows line up; labels sit on their faces'
       middles; nothing overflows at 390, 768, 1024, 1440 or at 2x text.
+- [ ] Parts of one kind read as one family: a select and a combobox share
+      a face and a sign; every open list is the field's own material, its
+      chosen row marked one way and filled edge to edge; a disabled part
+      looks unavailable; the error state is the empty state's sibling;
+      destructive actions in menus and dialogs take the danger tone.
 - [ ] Right to left mirrors; built-in words come from
       `RawWidgetsLocalizations`; dates and numbers follow the locale.
 - [ ] Under Reduce Motion nothing overshoots or travels far, and state
@@ -296,5 +318,20 @@ const DesignInventoryEntry.absent(
   delays of your own.
 - **Disposing a controller or focus node the caller handed in.** Own one
   only when none was given; swap it in `didUpdateWidget`.
+- **Two kinds of field for one kind of choice.** A select that is a raised
+  key beside a combobox that is a bare text box: a reader can't tell the
+  combobox opens a list. Same face, same height, same sign at the end.
+- **A list that is not its field's.** A hairline panel with a soft shadow
+  under a field drawn in a heavy rule; a see-through list over words; a
+  chosen row marked in the accent of the screen's main action.
+- **A selected row with a notch.** Its fill stops before its trailing
+  button. Fill the whole row; the trailing control stands on the fill.
+- **A disabled button that still looks pressable.** Full raised body, lit
+  face, only the words greyed. Take away what says "press me".
+- **A dialog that takes two actions.** A general dialog takes a list, as
+  Material's `AlertDialog` does, and stacks them, the confirming one on top,
+  all one width.
+- **A card in a card.** Never nest a container in another of the same look,
+  and never pad one on some sides only.
 - **Re-exporting all of ui_core.** Its surface and its versions then become
   the look's.

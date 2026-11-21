@@ -4,7 +4,7 @@ A loud look, where character must not cost usability.
 
 ## The brief, as given to the agent
 
-> Build `riso_ui`, a Flutter design-system package on ui_core ^0.4.0, in the
+> Build `riso_ui`, a Flutter design-system package on ui_core ^0.4.1, in the
 > language of two-colour risograph printing: fluorescent pink and teal spot
 > colours (and where they overprint, the colour they make), on off-white
 > paper by day and on black by night; thick rounded type; shapes cut as if

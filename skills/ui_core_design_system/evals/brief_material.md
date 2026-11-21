@@ -4,7 +4,7 @@ A look made of a physical material, where every state must stay true to it.
 
 ## The brief, as given to the agent
 
-> Build `porcelain_ui`, a Flutter design-system package on ui_core ^0.4.0,
+> Build `porcelain_ui`, a Flutter design-system package on ui_core ^0.4.1,
 > made of glazed porcelain: white bodies with a soft glaze highlight, cobalt
 > blue painted lines and fills, parts that sit slightly raised from a
 > matt bisque ground, gentle rounded edges. Light falls from the top left;

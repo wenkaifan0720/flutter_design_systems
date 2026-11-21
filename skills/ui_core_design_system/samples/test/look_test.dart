@@ -512,6 +512,221 @@ void main() {
     expect(find.text(words.cancelButtonLabel), findsOneWidget);
   });
 
+  testWidgets('a tooltip is read with the control it names', (tester) async {
+    await tester.pumpWidget(
+      lookApp(
+        home: Center(
+          child: LookTooltip(
+            message: 'Archive the thread',
+            child: LookButton('Archive', onPressed: () {}),
+          ),
+        ),
+      ),
+    );
+    final screen = tester.element(find.byType(LookTooltip));
+    const DesignTooltipNodeCheck(look: 'Look').check(screen).verify();
+    await expectLater(tester, meetsGuideline(tooltipNodeGuideline));
+  });
+
+  testWidgets('a field keeps its semantics nodes as its text changes', (
+    tester,
+  ) async {
+    await tester.pumpWidget(lookApp(home: const PartsScreen()));
+    final screen = tester.element(find.byType(PartsScreen));
+    const check = DesignFieldNodesCheck(look: 'Look');
+    final empty = check.read(screen);
+    await tester.enterText(find.byType(EditableText).first, 'A');
+    await tester.pump();
+    check.check(empty, screen).verify();
+  });
+
+  testWidgets('a button, a field, a select and a combobox in a row stand '
+      'at one height on one centre line', (tester) async {
+    await tester.pumpWidget(
+      lookApp(
+        home: Center(
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(width: 160, child: LookTextField(label: 'Name')),
+              const SizedBox(width: 12),
+              LookSelect<String>(
+                label: 'Plan',
+                options: const ['Day', 'Week'],
+                value: 'Day',
+                onChanged: (_) {},
+              ),
+              const SizedBox(width: 12),
+              const SizedBox(
+                width: 160,
+                child: LookCombobox<String>(
+                  label: 'Owner',
+                  options: ['Ada', 'Grace'],
+                ),
+              ),
+              const SizedBox(width: 12),
+              LookButton('Save', onPressed: () {}),
+            ],
+          ),
+        ),
+      ),
+    );
+    // The faces, not their tap targets: each part's painted surface.
+    Rect face(Finder part) => tester.getRect(
+      find.descendant(of: part, matching: find.byType(LookSurface)).first,
+    );
+    final faces = [
+      face(find.byType(LookTextField)),
+      face(find.byType(LookSelect<String>)),
+      face(find.byType(LookCombobox<String>)),
+      face(find.byType(LookButton)),
+    ];
+    for (final f in faces.skip(1)) {
+      expect(f.height, moreOrLessEquals(faces.first.height));
+    }
+    // The button has no label above it, so its face is compared with the
+    // fields' by height only; the fields share their centre line.
+    for (final f in faces.skip(1).take(2)) {
+      expect(f.center.dy, moreOrLessEquals(faces.first.center.dy));
+    }
+  });
+
+  testWidgets('from 600 px wide, a select and a button keep their '
+      'content\'s width', (tester) async {
+    tester.view.physicalSize = const Size(1440, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(
+      lookApp(
+        home: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              LookSelect<String>(
+                label: 'Plan',
+                options: const ['Day', 'Week'],
+                value: 'Week',
+                onChanged: (_) {},
+              ),
+              LookButton('Save', onPressed: () {}),
+            ],
+          ),
+        ),
+      ),
+    );
+    for (final part in [
+      find.byType(LookSelect<String>),
+      find.byType(LookButton),
+    ]) {
+      final face = find.descendant(
+        of: part,
+        matching: find.byType(LookSurface),
+      );
+      expect(tester.getSize(face.first).width, lessThan(240));
+    }
+  });
+
+  testWidgets('a select and a combobox open their lists below, as one kind '
+      'of field', (tester) async {
+    String? owner;
+    await tester.pumpWidget(
+      lookApp(
+        home: StatefulBuilder(
+          builder: (context, setState) => Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                LookSelect<String>(
+                  label: 'Plan',
+                  options: const ['Day', 'Week', 'Month'],
+                  value: 'Week',
+                  onChanged: (_) {},
+                ),
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: 240,
+                  child: LookCombobox<String>(
+                    label: 'Owner',
+                    options: const ['Ada', 'Grace', 'Katherine'],
+                    value: owner,
+                    onSelected: (next) => setState(() => owner = next),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+    final screen = tester.element(find.byType(StatefulBuilder));
+    // Both fields end in the same sign that they open a list.
+    expect(
+      find.descendant(
+        of: find.byType(LookSelect<String>),
+        matching: find.byType(LookListSign),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(
+        of: find.byType(LookCombobox<String>),
+        matching: find.byType(LookListSign),
+      ),
+      findsOneWidget,
+    );
+    await tester.tap(find.byType(LookSelect<String>));
+    await tester.pumpAndSettle();
+    expect(find.text('Month'), findsOneWidget);
+    const DesignListSideCheck(look: 'Look').check(screen).verify();
+    await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byType(EditableText));
+    await tester.pumpAndSettle();
+    expect(find.text('Katherine'), findsOneWidget);
+    expect(
+      tester.getTopLeft(find.text('Katherine')).dy,
+      greaterThan(tester.getBottomLeft(find.byType(EditableText)).dy),
+    );
+    const DesignListSideCheck(look: 'Look').check(screen).verify();
+    await tester.tap(find.text('Grace'));
+    await tester.pumpAndSettle();
+    expect(owner, 'Grace');
+  });
+
+  testWidgets('a destructive menu row takes the danger tone', (tester) async {
+    await tester.pumpWidget(
+      lookApp(
+        home: Center(
+          child: LookMenu(
+            entries: [
+              RawMenuEntry(label: 'Rename', onPressed: () {}),
+              RawMenuEntry(
+                label: 'Delete',
+                isDestructiveAction: true,
+                onPressed: () {},
+              ),
+            ],
+            child: const SizedBox(width: 200, height: 80),
+          ),
+        ),
+      ),
+    );
+    final gesture = await tester.startGesture(
+      tester.getCenter(find.byType(LookMenu)),
+      kind: PointerDeviceKind.mouse,
+      buttons: kSecondaryMouseButton,
+    );
+    await gesture.up();
+    await tester.pumpAndSettle();
+    final colors = LookThemeData.day().colors;
+    Color? ink(String label) =>
+        tester.widget<Text>(find.text(label)).style?.color;
+    expect(ink('Delete'), colors.danger);
+    expect(ink('Rename'), colors.ink);
+  });
+
   test('the inventory answers its rows; what it leaves are missing', () {
     final problems = lookInventory.problems;
     expect(problems, isNotEmpty);

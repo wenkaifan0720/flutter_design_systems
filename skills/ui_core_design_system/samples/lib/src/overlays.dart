@@ -27,29 +27,33 @@ class LookTooltip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = LookTheme.of(context);
-    return RawTooltipPlacement(
-      builder: (context, positionDelegate) => RawTooltip(
-        semanticsTooltip: message,
-        positionDelegate: positionDelegate,
-        hoverDelay: const Duration(milliseconds: 500),
-        tooltipBuilder: (context, animation) => FadeTransition(
-          opacity: animation,
-          child: LookSurface(
-            face: LookFace(
-              fill: theme.colors.ink,
-              rule: theme.colors.ink,
-              foreground: theme.colors.surface,
-            ),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(theme.radius / 2),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              child: Text(message, style: theme.label.copyWith(fontSize: 12)),
+    // One node: the control's, with the tip on it, as Flutter's Tooltip
+    // gives it. RawTooltip alone puts the tip on a node of its own.
+    return MergeSemantics(
+      child: RawTooltipPlacement(
+        builder: (context, positionDelegate) => RawTooltip(
+          semanticsTooltip: message,
+          positionDelegate: positionDelegate,
+          hoverDelay: const Duration(milliseconds: 500),
+          tooltipBuilder: (context, animation) => FadeTransition(
+            opacity: animation,
+            child: LookSurface(
+              face: LookFace(
+                fill: theme.colors.ink,
+                rule: theme.colors.ink,
+                foreground: theme.colors.surface,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(theme.radius / 2),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                child: Text(message, style: theme.label.copyWith(fontSize: 12)),
+              ),
             ),
           ),
+          child: RawTooltipFocusFix(child: child),
         ),
-        child: RawTooltipFocusFix(child: child),
       ),
     );
   }

@@ -71,7 +71,7 @@ The rest of what a person presses. A toggle group whose choice is single is the 
 
 ## Stage 3: inputs
 
-Each input stands at the control height, takes the field's rule and its focus treatment, and reads its words from the theme. Pickers (date, time, colour) open on the look's own popover or sheet. A chip that acts is a `RawButton`; a removable chip's remove key is its own target.
+Each input stands at the control height, takes the field's rule and its focus treatment, and reads its words from the theme. A select, a combobox and a multi-select stand on the text field's face and end in one sign that they open a list; their lists share one surface and one row (see [contract.md](contract.md), "Lists, selects and menus"). Pickers (date, time, colour) open on the look's own popover or sheet, where their whole height fits, and fit a 390-wide phone. A chip that acts is a `RawButton`; a removable chip's remove key is its own target.
 
 | Row id | What it is | In | Build on |
 |---|---|---|---|
@@ -148,7 +148,7 @@ Rows and cards that act are `RawButton`s with the row's whole face as the target
 
 ## Stage 6: overlays
 
-Each raised part has its own `show<Look>…` function or widget that owns its route or overlay, scrim, motion, dismissal and focus return. Android back closes the top overlay before it pops the page.
+Each raised part has its own `show<Look>…` function or widget that owns its route or overlay, scrim, motion, dismissal and focus return. Android back closes the top overlay before it pops the page. A menu's rows are the select's rows, its destructive items (`RawMenuEntry.isDestructiveAction`) in the look's destructive tone; a dialog takes a list of actions.
 
 | Row id | What it is | In | Build on |
 |---|---|---|---|
@@ -157,13 +157,13 @@ Each raised part has its own `show<Look>…` function or widget that owns its ro
 | `ActionSheet` | Action sheet | C | drawn by the look |
 | `Popover` | Popover | S | `RawPopover` |
 | `HoverCard` | Hover card | S | `RawPopover` |
-| `Menu` | Menu / context menu | MCS | `RawContextMenu` |
+| `Menu` | Menu / context menu | MCS | `RawContextMenu`, `RawPopover`, `RawMenuEntry` |
 | `SnackBar` | Toast / snackbar (stacking) | MS | `RawToaster` |
 | `Banner` | Banner / inline alert | MS | drawn by the look |
 
 ## Stage 7: feedback
 
-Progress and spinners stop moving under Reduce Motion (a static or pulsing state the look chooses). Status views (loading, error, success, empty) are pages a part can stand in.
+Progress and spinners stop moving under Reduce Motion (a static or pulsing state the look chooses). Status views (loading, error, success, empty) are pages a part can stand in, and siblings: one frame and layout, told apart by glyph, words and tone.
 
 | Row id | What it is | In | Build on |
 |---|---|---|---|
@@ -175,7 +175,7 @@ Progress and spinners stop moving under Reduce Motion (a static or pulsing state
 
 ## Stage 8: charts
 
-`DesignChart` and `DesignPieChart` carry scales, hit testing, keyboard inspection and semantics; the look paints marks, axes and the tooltip, and labels follow the locale's digits.
+`DesignChart` and `DesignPieChart` carry scales, hit testing, keyboard inspection and semantics; the look paints marks, axes and the tooltip, passes the app's `formatX` and `formatY` through (units, the locale's digits), and draws an all-zero series on ui_core's 0 to 4 scale.
 
 | Row id | What it is | In | Build on |
 |---|---|---|---|

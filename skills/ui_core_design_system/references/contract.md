@@ -1,17 +1,18 @@
 # The contract: ui_core behaves, the look paints
 
-ui_core 0.4.0 gives a look every behaviour a part needs and no paint. A look
+ui_core gives a look every behaviour a part needs and no paint. A look
 wraps each part's ui_core widget, reads the states it reports, and draws the
-look's face for them. This page lists what ui_core carries, how to wire each
-kind of part, and the three 0.4.0 shims a look puts in place until Flutter's
-own fixes reach its minimum version.
+look's face for them. This page lists what ui_core 0.4.1 carries, how to
+wire each kind of part, and the three shims a look puts in place until
+Flutter's own fixes reach its minimum version.
 
-Names: ui_core 0.4.0 renamed its behaviour widgets to Flutter's `Raw*` form
-(`RawButton`, `RawTabBar`, `RawAlertDialog`, `RawWidgetsLocalizations`) and
-kept `Design*` for what has no Flutter counterpart (`DesignStyle`,
-`DesignDialogRoute`, `DesignCapCenter`). The 0.3 names remain as deprecated
-typedefs; `dart fix --apply` moves a package to the new names. Write new code
-with the 0.4.0 names only.
+Names: ui_core names its behaviour widgets in Flutter's `Raw*` form
+(`RawButton`, `RawTabBar`, `RawAlertDialog`, `RawMenuEntry`,
+`RawWidgetsLocalizations`) and keeps `Design*` for what has no Flutter
+counterpart (`DesignStyle`, `DesignDialogRoute`, `DesignCapCenter`). Older
+`Design*` names for the behaviours (`DesignMenuEntry`, `DesignCombobox`)
+remain as deprecated typedefs that `dart fix --apply` renames. Write new code
+with the `Raw*` names only.
 
 ## What ui_core carries
 
@@ -25,6 +26,7 @@ with the 0.4.0 names only.
 | Style | `DesignStyle` (ten `WidgetStateProperty` slots), `DesignStyleOf` | A typedef, a slot per part in its theme, its defaults |
 | Motion | `designSpring`, `DesignMotionPolicy`, `springTo`, `designReduceMotionOf` | Its tokens |
 | Raised surfaces | `DesignDialogRoute`, `RawAlertDialog`, `RawBottomSheetRoute`, `RawSideSheetRoute`, `RawPopover`, `RawContextMenu`, `RawToaster`, Flutter's `RawTooltip` with `RawTooltipPlacement` | Scrim colour, frame, motion values |
+| Lists | `RawPopover` (a select's list, a menu), `RawCombobox`, `RawTagInput`, `RawMenuEntry` (with `isDestructiveAction`): placement below the field, keys, highlight, announcements | One list surface, one row, the destructive tone |
 | Navigation | `RawTabBar`, `RawMenuBar`, `RawCommandPalette`, `DesignAdaptiveShell`, `SwipeBackPageTransitionsBuilder` | Tabs, bars, rails, page motion |
 | Words | `RawWidgetsLocalizations` (30 languages) | Its own words, if any |
 | Checklist | `package:ui_core/inventory.dart`: `DesignInventoryRow`, `DesignInventory`, `DesignInventoryGallery` | Its answers |
@@ -248,6 +250,14 @@ everything round it.
 - **`DesignForm`** and **`DesignFormField`** validate and save a form.
 - `TextField` asks for a `Material` above it; a look on no Material adds a
   transparent one.
+- **A press anywhere on the face focuses the entry**, the side padding too.
+  Leave that tap out of the semantics tree, as Flutter's own text field
+  does: the entry then stays the field's one node while controls come and
+  go beside it (a clear key that shows with the first letter). A tap left
+  in the tree gives the entry a node of its own once a second control
+  joins; a screen reader loses its place, and on the web the browser's
+  input is replaced, losing the keys typed meanwhile.
+  `DesignFieldNodesCheck` catches it.
 
 ```dart
 if (Material.maybeOf(context) == null) {
@@ -270,6 +280,13 @@ child: Semantics(
     child: DesignTextEntryBox(
 ```
 
+```dart
+child: GestureDetector(
+  behavior: HitTestBehavior.opaque,
+  excludeFromSemantics: true,
+  onTap: widget.enabled ? _focusNode.requestFocus : null,
+```
+
 Own a controller and a focus node only when the caller gave none, dispose
 only those, and drop them when the caller hands one in later.
 
@@ -286,8 +303,12 @@ named for a screen reader. Its `builder` gets `DesignDialogDetails`
 `RawAlertDialog` lays out an alert: `title`, `content`, `actions` (a list of
 `RawDialogAction`: `label`, `onPressed`, `isDefaultAction`,
 `isDestructiveAction`, `data`), between 280 and 560 wide, actions in a row
-that stack (the confirming one on top) when they do not fit, and the focus on
-the safe action. The look draws it through `titleBuilder`, `frameBuilder`
+that stack (the confirming one on top, each as wide as the dialog) when they
+do not fit, and the focus on the safe action: while one action is
+destructive, the first enabled action that is not
+(`RawAlertDialog.safeActionIndex`). The look's own `show<Look>Dialog` takes a
+list of actions too, as Material's `AlertDialog` does, never a fixed two,
+and paints a destructive action in the look's destructive tone. The look draws it through `titleBuilder`, `frameBuilder`
 (`RawAlertDialogFrameDetails`: `scrolled`, `overflows`, `stacked`) and
 `actionBuilder` (`RawDialogActionDetails`: `states`, `stacked`, `index`,
 `count`):
@@ -308,20 +329,81 @@ opener's themes and wrap the dialog in them.
 A tooltip is Flutter's `RawTooltip`, with two ui_core pieces: a
 `RawTooltipPlacement` round it that places the tooltip (and tells its tail
 which side it is on, `RawTooltipPlacement.sideOf(context)`), and a
-`RawTooltipFocusFix` round the child that shows it on keyboard focus.
+`RawTooltipFocusFix` round the child that shows it on keyboard focus. Put the
+whole in a `MergeSemantics`: `RawTooltip` alone puts the tip on a node of its
+own, and a screen reader then reads the tip apart from its control.
+`DesignTooltipNodeCheck` catches it.
 
 ```dart
-return RawTooltipPlacement(
-  builder: (context, positionDelegate) => RawTooltip(
-    semanticsTooltip: message,
-    positionDelegate: positionDelegate,
-    hoverDelay: const Duration(milliseconds: 500),
-    tooltipBuilder: (context, animation) => FadeTransition(
-      opacity: animation,
+return MergeSemantics(
+  child: RawTooltipPlacement(
+    builder: (context, positionDelegate) => RawTooltip(
+      semanticsTooltip: message,
+      positionDelegate: positionDelegate,
+      hoverDelay: const Duration(milliseconds: 500),
+      tooltipBuilder: (context, animation) => FadeTransition(
+        opacity: animation,
 ```
 
 ```dart
 child: RawTooltipFocusFix(child: child),
+```
+
+## Lists, selects and menus
+
+Every list that opens from something (a select's options, a combobox's
+matches, a tag input's suggestions, a menu) is placed by ui_core and painted
+by the look. Paint them all with one surface and one row, so a choice is
+marked one way across the look:
+
+- **A select** is a `RawPopover` (`arrowKeyNavigation: true`) whose anchor
+  is a `RawButton` (`expanded: anchor.isOpen`, the chosen option as its
+  `semanticValue`) and whose options are `RawButton`s with `selected:`.
+- **A combobox** is a `RawCombobox`: the look paints its field
+  (`fieldBuilder`, wiring `controller`, `focusNode` and
+  `onEditingComplete: field.submit`), each option (`optionBuilder`, which
+  gets `focused` for the keys' highlight, `hovered`, `selected`, `disabled`)
+  and the list's panel (`surfaceBuilder`).
+- **A menu** is a list of `RawMenuEntry` (`label`, `onPressed`, `children`
+  for a submenu, `shortcut`, `checked`, `data`, `isDestructiveAction`) in a
+  `RawContextMenu`, a `RawMenuBar`, or the look's menu button on
+  `RawPopover`. The item builder gets the entry, so it reads
+  `entry.isDestructiveAction` and paints Delete in the destructive tone;
+  nothing else about the item changes.
+
+A list opens below its field while below holds it, or 200 px of a longer
+list, as Material's menus do; it takes the other side only when below can't
+and above has more room, and otherwise fills the room and scrolls.
+`RawCombobox` asks for below by default
+(`optionsViewOpenDirection: OptionsViewOpenDirection.down`);
+`OptionsViewOpenDirection.mostSpace` keeps Flutter's meaning, the larger
+side. A `RawPopover` measures its surface before it turns, so a short list
+under a low field stays below. `RawPopoverPlacement` sets the side, the
+alignment, `preferredExtent` (200) and `matchAnchorWidth` (a list as wide as
+its field, wider only for its widest row, up to `maxWidth`). A look that
+places a picker of its own (a calendar under a date field) follows the same
+rule: open where the whole of it fits, prefer below, flip only when the
+other side fits more, else shrink and scroll inside the screen.
+`DesignListSideCheck` catches a list on the wrong side.
+
+```dart
+// A destructive row is set apart by its tone, not by anything it
+// does: it is pressed, reached and read as any other.
+itemBuilder: (context, entry, level, states) => lookOptionRow(
+  theme,
+  states,
+  entry.label,
+  destructive: entry.isDestructiveAction,
+),
+```
+
+```dart
+fieldBuilder: (context, field) {
+  Widget entry = TextField(
+    controller: field.controller,
+    focusNode: field.focusNode,
+    onEditingComplete: field.submit,
+    decoration: null,
 ```
 
 ## Page transitions
@@ -417,7 +499,14 @@ Each row on the left is built on the API on the right, painted by the look.
 Read each API's own documentation before painting it: it says which states
 its builder gets, what it already announces, and which keys it takes.
 
-## The 0.4.0 shims, and when they go away
+Charts: `DesignChart` scales its axis with `DesignLinearScale.nice`, which
+counts an all-zero series (an empty week) 0 to 4 in whole steps, as a week
+with data counts; `yIncludesZero` is on by default. Pass the caller's
+`formatX` and `formatY` through, so an app can name its unit (hours, €) and
+the reader's digits show (Arabic-Indic digits in Arabic), and never force a
+chart left to right.
+
+## The shims, and when they go away
 
 Three ui_core widgets cover Flutter faults that are fixed, or being fixed, in
 Flutter itself. Use them now; remove each when the look's minimum Flutter
@@ -432,5 +521,5 @@ version includes the fix.
 Each shim adds no layout, semantics or focus of its own, so removing it
 changes nothing but the fault it fixed.
 
-`DesignRadioGroup` and `DesignTooltip`, the 0.3 wrappers these replace, are
-deprecated.
+`DesignRadioGroup` and `DesignTooltip`, the older wrappers these replace,
+are deprecated.
