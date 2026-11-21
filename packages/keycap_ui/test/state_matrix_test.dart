@@ -70,9 +70,7 @@ final _specs = <_Spec>[
       label: 'Export',
       onPressed: on ? _none : null,
       menuLabel: 'More ways to export',
-      actions: const [
-        DesignSplitAction(label: 'Export as PDF', onPressed: _none),
-      ],
+      actions: const [RawSplitAction(label: 'Export as PDF', onPressed: _none)],
     ),
   ),
   (

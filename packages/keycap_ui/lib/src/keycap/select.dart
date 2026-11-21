@@ -163,7 +163,7 @@ class _KeycapSelectState<T> extends State<KeycapSelect<T>> {
       final open = anchor?.isOpen ?? false;
       return Listener(
         onPointerDown: (_) => _byPointer = true,
-        child: DesignPressable(
+        child: RawButton(
           onPressed: anchor == null
               ? null
               : () {
@@ -225,7 +225,7 @@ class _KeycapSelectState<T> extends State<KeycapSelect<T>> {
                 : chosen == null
                 ? c.inkMuted
                 : face.legend;
-            return DesignTapTarget(
+            return TapTargetPadding(
               child: SizedBox(
                 height: height,
                 child: AnimatedKeycapCap(
@@ -274,10 +274,10 @@ class _KeycapSelectState<T> extends State<KeycapSelect<T>> {
 
     final Widget box = !enabled
         ? key(null)
-        : DesignAnchoredOverlay(
+        : RawPopover(
             arrowKeyNavigation: true,
             semanticLabel: widget.semanticLabel ?? label,
-            placement: const DesignOverlayPlacement(
+            placement: const RawPopoverPlacement(
               gap: KeycapSpacing.tight + 2,
               margin: KeycapSpacing.small,
             ),
@@ -286,7 +286,7 @@ class _KeycapSelectState<T> extends State<KeycapSelect<T>> {
             anchorBuilder: (context, anchor) => key(anchor),
             overlayBuilder: (context, info) => KeycapMenuReveal(
               animation: info.animation,
-              below: info.side != DesignOverlaySide.above,
+              below: info.side != RawPopoverSide.above,
               child: _SelectList<T>(
                 items: items,
                 value: value,
@@ -656,7 +656,7 @@ class _SelectListState<T> extends State<_SelectList<T>> {
                         _nodes[i].requestFocus();
                       }
                     : null,
-                child: DesignPressable(
+                child: RawButton(
                   onPressed: item.enabled
                       ? () => widget.onChosen(item.value)
                       : null,

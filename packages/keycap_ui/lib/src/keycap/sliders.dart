@@ -16,8 +16,8 @@ import 'internal/spring_value.dart';
 import 'theme.dart';
 
 // The ui_core types these parts' APIs take, through the look's barrel.
-export 'package:ui_core/ui_core.dart' show DesignRangeValues;
-export 'package:ui_core/ui_core.dart' show DesignWheelColumn;
+export 'package:ui_core/ui_core.dart' show RawRangeValues;
+export 'package:ui_core/ui_core.dart' show RawPickerColumn;
 
 /// The width a slider's cap takes to a finger.
 const double _reach = 44;
@@ -369,10 +369,10 @@ class _KeycapSliderState extends State<KeycapSlider> {
 
 /// A range: two small keys riding one slot, the stretch between them lit
 /// by a bar of accent plastic. Each key steps on its own; they keep
-/// [minGap] apart. Built on ui_core's `DesignRangeSlider`.
+/// [minGap] apart. Built on ui_core's `RawRangeSlider`.
 ///
 /// ```dart
-/// KeycapRangeSlider(values: const DesignRangeValues(200, 800), min: 0, max: 1000, onChanged: (v) => setState(() => words = v))
+/// KeycapRangeSlider(values: const RawRangeValues(200, 800), min: 0, max: 1000, onChanged: (v) => setState(() => words = v))
 /// ```
 class KeycapRangeSlider extends StatelessWidget {
   /// A range slider over [values].
@@ -393,10 +393,10 @@ class KeycapRangeSlider extends StatelessWidget {
   });
 
   /// The range.
-  final DesignRangeValues values;
+  final RawRangeValues values;
 
   /// Called as it changes; null turns it off.
-  final ValueChanged<DesignRangeValues>? onChanged;
+  final ValueChanged<RawRangeValues>? onChanged;
 
   /// The least value.
   final double min;
@@ -420,10 +420,10 @@ class KeycapRangeSlider extends StatelessWidget {
   final String Function(double value)? semanticFormatterCallback;
 
   /// Called as a drag starts.
-  final ValueChanged<DesignRangeValues>? onChangeStart;
+  final ValueChanged<RawRangeValues>? onChangeStart;
 
   /// Called as it ends.
-  final ValueChanged<DesignRangeValues>? onChangeEnd;
+  final ValueChanged<RawRangeValues>? onChangeEnd;
 
   /// Overrides, over [KeycapThemeData.sliderStyle].
   final KeycapStyle? style;
@@ -436,7 +436,7 @@ class KeycapRangeSlider extends StatelessWidget {
     final rtl = Directionality.of(context) == TextDirection.rtl;
     return SizedBox(
       height: theme.controlHeight,
-      child: DesignRangeSlider(
+      child: RawRangeSlider(
         values: values,
         onChanged: onChanged,
         min: min,
@@ -491,7 +491,7 @@ class KeycapRangeSlider extends StatelessWidget {
 /// accent's ink, the rest outlined. A tap sets the star tapped; a drag
 /// sweeps; the arrows step it; a pointer over them previews, in a lighter
 /// ink, what a tap would set. [readOnly] shows a rating that cannot be
-/// changed. Built on ui_core's `DesignRating`.
+/// changed. Built on ui_core's `RawRating`.
 ///
 /// ```dart
 /// KeycapRating(value: 4, onChanged: (v) => setState(() => stars = v), semanticLabel: 'Rate this template')
@@ -541,7 +541,7 @@ class KeycapRating extends StatelessWidget {
     final c = theme.colors;
     final layered = DesignStyleOf([style, theme.sliderStyle], const {});
     final on = layered.fill ?? c.accentInk;
-    return DesignRating(
+    return RawRating(
       value: value,
       onChanged: onChanged,
       itemCount: itemCount,
@@ -670,10 +670,10 @@ class _Part extends CustomClipper<Rect> {
 /// Columns of choices turning in a well (an hour and its minutes, a day of
 /// a month), the chosen row on a plate of modifier plastic across them. A
 /// fling settles on a row; Up and Down step; each column is one tab stop.
-/// Built on ui_core's `DesignWheelPicker`.
+/// Built on ui_core's `RawPicker`.
 ///
 /// ```dart
-/// KeycapWheelPicker(columns: (s) => [DesignWheelColumn(itemCount: 24, itemLabel: (i) => '$i'.padLeft(2, '0'), semanticLabel: 'Hour', looping: true)], selection: [hour], onChanged: (s) => setState(() => hour = s.first))
+/// KeycapWheelPicker(columns: (s) => [RawPickerColumn(itemCount: 24, itemLabel: (i) => '$i'.padLeft(2, '0'), semanticLabel: 'Hour', looping: true)], selection: [hour], onChanged: (s) => setState(() => hour = s.first))
 /// ```
 class KeycapWheelPicker extends StatelessWidget {
   /// A wheel picker.
@@ -689,7 +689,7 @@ class KeycapWheelPicker extends StatelessWidget {
   });
 
   /// The columns for a selection.
-  final List<DesignWheelColumn> Function(List<int> selection) columns;
+  final List<RawPickerColumn> Function(List<int> selection) columns;
 
   /// The row chosen in each column.
   final List<int> selection;
@@ -751,7 +751,7 @@ class KeycapWheelPicker extends StatelessWidget {
                 ),
               ),
             ),
-            DesignWheelPicker(
+            RawPicker(
               columns: columns,
               selection: selection,
               onChanged: onChanged,

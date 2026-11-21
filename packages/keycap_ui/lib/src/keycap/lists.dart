@@ -491,7 +491,7 @@ class KeycapListTile extends StatelessWidget {
         ),
       );
     }
-    return DesignPressable(
+    return RawButton(
       onPressed: onTap,
       selected: selected,
       semanticSelected: selected ? true : null,
@@ -597,7 +597,7 @@ class KeycapCard extends StatelessWidget {
     }
 
     if (onTap == null) return well(const {});
-    return DesignPressable(
+    return RawButton(
       onPressed: onTap,
       semanticLabel: semanticLabel,
       builder: (context, states, _) => well(states),

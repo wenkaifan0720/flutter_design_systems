@@ -82,7 +82,7 @@ void main() {
 
   // iOS's swipe back from the screen's leading edge lives in Cupertino's page
   // transition, which Keycap's push replaces; the map's iOS entry keeps it
-  // round the push (ui_core's DesignSwipeBackPageTransitionsBuilder).
+  // round the push (ui_core's SwipeBackPageTransitionsBuilder).
   group("iOS's swipe back", () {
     // A drag from the screen's left edge, [by] to the right, slow enough not
     // to be a fling, the finger still down at the end.

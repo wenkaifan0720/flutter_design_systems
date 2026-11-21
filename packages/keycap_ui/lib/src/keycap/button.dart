@@ -128,7 +128,7 @@ class KeycapButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = KeycapTheme.of(context);
     final backlit = !MediaQuery.highContrastOf(context);
-    return DesignPressable(
+    return RawButton(
       onPressed: onPressed,
       onLongPress: onLongPress,
       focusNode: focusNode,
@@ -180,7 +180,7 @@ class KeycapButton extends StatelessWidget {
         final padding =
             layered.padding(dir) ??
             EdgeInsets.symmetric(horizontal: 18 + theme.density.paddingDelta);
-        return DesignTapTarget(
+        return TapTargetPadding(
           child: ConstrainedBox(
             constraints: BoxConstraints(
               minHeight: height,
@@ -312,7 +312,7 @@ class _PrintedLegend extends StatelessWidget {
         ? rest
         : Color.lerp(rest, c.inkMuted, 0.7)!;
     final focused = states.contains(WidgetState.focused);
-    return DesignTapTarget(
+    return TapTargetPadding(
       child: KeycapSpringValue(
         value: focused ? 1 : 0,
         spring: KeycapMotion.colour,
@@ -425,12 +425,14 @@ class KeycapIconButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = KeycapTheme.of(context);
     final backlit = !MediaQuery.highContrastOf(context);
-    return DesignPressable(
+    return RawButton(
       onPressed: onPressed,
       focusNode: focusNode,
       autofocus: autofocus,
       semanticLabel: semanticLabel,
-      toggled: selected,
+      // A toggle button: a button, selected while on, as Flutter's
+      // `IconButton(isSelected:)` says it.
+      semanticSelected: selected,
       excludeSemantics: true,
       selected: selected ?? false,
       builder: (context, states, _) {
@@ -444,7 +446,7 @@ class KeycapIconButton extends StatelessWidget {
         );
         face = layered.on(face);
         final side = layered.minimumSize?.height ?? theme.controlHeight;
-        return DesignTapTarget(
+        return TapTargetPadding(
           child: SizedBox.square(
             dimension: side,
             child: AnimatedKeycapCap(
@@ -532,7 +534,7 @@ class KeycapLegendKey extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = KeycapTheme.of(context);
     final backlit = !MediaQuery.highContrastOf(context);
-    return DesignPressable(
+    return RawButton(
       onPressed: onPressed,
       focusNode: focusNode,
       semanticLabel:
@@ -555,7 +557,7 @@ class KeycapLegendKey extends StatelessWidget {
               theme.textTheme.label,
             ) +
             KeycapMetrics.grown(context, 0, theme.textTheme.figure);
-        return DesignTapTarget(
+        return TapTargetPadding(
           child: SizedBox(
             height: h,
             child: AnimatedKeycapCap(
@@ -735,7 +737,7 @@ class KeycapLink extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = KeycapTheme.of(context);
     final c = theme.colors;
-    return DesignPressable(
+    return RawButton(
       onPressed: onPressed,
       focusNode: focusNode,
       semanticLabel: semanticLabel,
@@ -750,7 +752,7 @@ class KeycapLink extends StatelessWidget {
         final down = Color.lerp(rest, c.inkMuted, 0.6)!;
         final focused = states.contains(WidgetState.focused);
         final pressed = states.contains(WidgetState.pressed);
-        return DesignTapTarget(
+        return TapTargetPadding(
           child: KeycapSpringValue(
             value: focused ? 1 : 0,
             spring: KeycapMotion.colour,

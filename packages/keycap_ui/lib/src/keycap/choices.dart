@@ -11,6 +11,7 @@ import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
 import 'cap.dart';
+import 'internal/group_radio.dart';
 import 'internal/row_toggle.dart';
 import 'internal/spring_value.dart';
 import 'lists.dart';
@@ -68,7 +69,7 @@ class KeycapCheckbox extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = KeycapTheme.of(context);
-    return DesignPressable(
+    return RawButton(
       onPressed: onChanged == null ? null : () => onChanged!(_next),
       focusNode: focusNode,
       autofocus: autofocus,
@@ -77,7 +78,7 @@ class KeycapCheckbox extends StatelessWidget {
       mixed: value == null,
       semanticLabel: semanticLabel,
       excludeSemantics: true,
-      builder: (context, states, _) => DesignTapTarget(
+      builder: (context, states, _) => TapTargetPadding(
         child: KeycapToggleKey(
           states: states,
           latched: value != false,
@@ -258,7 +259,7 @@ class KeycapRadio<T> extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = KeycapTheme.of(context);
     final chosen = value == groupValue;
-    return DesignPressable(
+    return RawButton(
       onPressed: onChanged == null ? null : () => onChanged!(value),
       focusNode: focusNode,
       button: false,
@@ -266,7 +267,7 @@ class KeycapRadio<T> extends StatelessWidget {
       inMutuallyExclusiveGroup: true,
       semanticLabel: semanticLabel,
       excludeSemantics: true,
-      builder: (context, states, _) => DesignTapTarget(
+      builder: (context, states, _) => TapTargetPadding(
         child: KeycapToggleKey(
           theme: theme,
           states: states,
@@ -310,8 +311,8 @@ class _Dot extends StatelessWidget {
 /// reaches the group once, at its choice (or its first open option); the
 /// arrows choose the next or the previous, wrap, pass over options that are
 /// off and run the other way right to left. A screen reader hears each row
-/// as a radio named by its words. Built on ui_core's `DesignRadioGroup`,
-/// over Flutter's `RadioGroup`.
+/// as a radio named by its words. Built on Flutter's `RadioGroup`, each row
+/// a `RawRadio`, with ui_core's `RadioGroupKeyboardFix` inside.
 ///
 /// ```dart
 /// KeycapRadioGroup<String>(options: const ['A4', 'Letter'], value: paper, labelOf: (p) => p, onChanged: setPaper)
@@ -358,65 +359,64 @@ class KeycapRadioGroup<T> extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = KeycapTheme.of(context);
     final c = theme.colors;
-    return DesignRadioGroup<T>(
-      options: options,
+    final change = onChanged;
+    final rows = [
+      // Each row is one radio named by its words: the key and the words take
+      // the press together.
+      for (final option in options)
+        KeycapGroupRadio<T>(
+          key: ObjectKey(option),
+          value: option,
+          enabled: change != null && (isEnabled?.call(option) ?? true),
+          label: labelOf(option),
+          builder: (context, states) {
+            final off = states.contains(WidgetState.disabled);
+            return ConstrainedBox(
+              constraints: BoxConstraints(minHeight: theme.controlHeight),
+              child: Row(
+                mainAxisSize: direction == Axis.vertical
+                    ? MainAxisSize.max
+                    : MainAxisSize.min,
+                children: [
+                  KeycapToggleKey(
+                    theme: theme,
+                    states: states,
+                    latched: states.contains(WidgetState.selected),
+                    style: style,
+                    shape: KeycapToggleShape.round,
+                    legend: (color, t) => _Dot(color: color, t: t),
+                  ),
+                  const SizedBox(width: KeycapSpacing.medium),
+                  Flexible(
+                    child: DesignCapCenter(
+                      capHeightFactor: theme.capHeightFactor,
+                      child: Text(
+                        labelOf(option),
+                        style: theme.textTheme.body.copyWith(
+                          color: off ? c.inkDisabled : c.ink,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+    ];
+    return KeycapGroupRadios<T>(
       value: value,
-      onChanged: onChanged,
-      isEnabled: isEnabled,
+      onChanged: (choice) {
+        if (choice != null) change?.call(choice);
+      },
       semanticLabel: semanticLabel,
-      direction: direction,
-      layoutBuilder: (context, rows) => direction == Axis.vertical
+      child: direction == Axis.vertical
           ? Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: rows,
             )
           : Wrap(spacing: KeycapSpacing.large, children: rows),
-      // Each row is one radio named by its words: the key and the words take
-      // the press together.
-      itemBuilder: (context, option, node, select) => DesignPressable(
-        focusNode: node,
-        onPressed: select,
-        selected: option == value,
-        checked: option == value,
-        inMutuallyExclusiveGroup: true,
-        minimumSize: Size.zero,
-        semanticLabel: labelOf(option),
-        excludeSemantics: true,
-        builder: (context, states, _) {
-          final off = states.contains(WidgetState.disabled);
-          return ConstrainedBox(
-            constraints: BoxConstraints(minHeight: theme.controlHeight),
-            child: Row(
-              mainAxisSize: direction == Axis.vertical
-                  ? MainAxisSize.max
-                  : MainAxisSize.min,
-              children: [
-                KeycapToggleKey(
-                  theme: theme,
-                  states: states,
-                  latched: states.contains(WidgetState.selected),
-                  style: style,
-                  shape: KeycapToggleShape.round,
-                  legend: (color, t) => _Dot(color: color, t: t),
-                ),
-                const SizedBox(width: KeycapSpacing.medium),
-                Flexible(
-                  child: DesignCapCenter(
-                    capHeightFactor: theme.capHeightFactor,
-                    child: Text(
-                      labelOf(option),
-                      style: theme.textTheme.body.copyWith(
-                        color: off ? c.inkDisabled : c.ink,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          );
-        },
-      ),
     );
   }
 
@@ -480,7 +480,7 @@ class KeycapSwitch extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = KeycapTheme.of(context);
     final c = theme.colors;
-    return DesignPressable(
+    return RawButton(
       onPressed: onChanged == null ? null : () => onChanged!(!value),
       focusNode: focusNode,
       autofocus: autofocus,
@@ -509,7 +509,7 @@ class KeycapSwitch extends StatelessWidget {
         const keySide = height - inset * 2;
         // A 1.25u key: a quarter wider than it is deep.
         const keyWidth = keySide * 1.25;
-        return DesignTapTarget(
+        return TapTargetPadding(
           child: SizedBox(
             width: width,
             height: height,
@@ -692,7 +692,7 @@ class KeycapSegmentedButton<T> extends StatelessWidget {
     );
     final options = [for (final s in segments) s.value];
     if (multiSelectionEnabled) {
-      return DesignToggleGroup<T>(
+      return RawSegmentedButton<T>(
         options: options,
         selected: selected,
         onSelectionChanged: onSelectionChanged,
@@ -710,26 +710,29 @@ class KeycapSegmentedButton<T> extends StatelessWidget {
     // makes them (one Tab stop, the arrows choose).
     final change = onSelectionChanged;
     final chosen = selected.isEmpty ? null : selected.first;
-    return DesignRadioGroup<T>(
-      options: options,
+    return KeycapGroupRadios<T>(
       value: chosen,
-      onChanged: change == null ? null : (v) => change({v}),
+      onChanged: (v) {
+        if (v != null) {
+          change?.call({v});
+        } else if (emptySelectionAllowed) {
+          change?.call(<T>{});
+        }
+      },
       semanticLabel: semanticLabel,
-      direction: Axis.horizontal,
-      layoutBuilder: layout,
-      itemBuilder: (context, v, node, select) => DesignPressable(
-        focusNode: node,
-        // The chosen key lets up when the row may be left empty.
-        onPressed: v == chosen && emptySelectionAllowed && select != null
-            ? () => change!(<T>{})
-            : select,
-        selected: v == chosen,
-        checked: v == chosen,
-        inMutuallyExclusiveGroup: true,
-        minimumSize: Size.zero,
-        semanticLabel: labelOf(v),
-        excludeSemantics: true,
-        builder: (context, states, _) => keyFor(v, states),
+      child: Builder(
+        builder: (context) => layout(context, [
+          for (final v in options)
+            KeycapGroupRadio<T>(
+              key: ObjectKey(v),
+              value: v,
+              enabled: change != null,
+              // The chosen key lets up when the row may be left empty.
+              toggleable: emptySelectionAllowed,
+              label: labelOf(v),
+              builder: (context, states) => keyFor(v, states),
+            ),
+        ]),
       ),
     );
   }
@@ -794,7 +797,7 @@ class KeycapRowKey extends StatelessWidget {
           color: face.legend,
           fontWeight: latched ? FontWeight.w600 : FontWeight.w500,
         );
-    return DesignTapTarget(
+    return TapTargetPadding(
       child: SizedBox(
         height: height,
         child: AnimatedKeycapCap(
@@ -871,7 +874,7 @@ double _rowKeyWidth(
 /// A tab bar: a row of keys, the current tab's latched. Below 600 wide the
 /// keys share the row; from 600 (or when a legend would not fit its share)
 /// each hugs its legend and the row scrolls. The arrows move
-/// between tabs and choose as they go. Built on ui_core's `DesignTabBar`.
+/// between tabs and choose as they go. Built on ui_core's `RawTabBar`.
 ///
 /// ```dart
 /// KeycapTabBar<String>(tabs: const [KeycapSegment(value: 'notes', label: 'Notes'), KeycapSegment(value: 'tags', label: 'Tags')], value: tab, onChanged: setTab)
@@ -947,9 +950,9 @@ class _TabStrip<T> extends StatefulWidget {
 
 class _TabStripState<T> extends State<_TabStrip<T>>
     with TickerProviderStateMixin {
-  late DesignTabController _controller = _make();
+  late RawTabController _controller = _make();
 
-  DesignTabController _make() => DesignTabController(
+  RawTabController _make() => RawTabController(
     length: widget.tabs.length,
     initialIndex: widget.index,
     vsync: this,
@@ -1000,13 +1003,13 @@ class _TabStripState<T> extends State<_TabStrip<T>>
 
   Widget _strip(BuildContext context, bool hug) {
     final theme = KeycapTheme.of(context);
-    final bar = DesignTabBar(
+    final bar = RawTabBar(
       controller: _controller,
       semanticLabel: widget.semanticLabel,
       isScrollable: hug,
       tabs: [
         for (final s in widget.tabs)
-          DesignTab(
+          RawTab(
             label: s.semanticLabel ?? s.label,
             enabled: widget.onChanged != null,
           ),

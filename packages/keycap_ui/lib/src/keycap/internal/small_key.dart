@@ -46,11 +46,12 @@ class KeycapSmallKey extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = KeycapTheme.of(context);
-    return DesignPressable(
+    return RawButton(
       onPressed: onPressed,
       focusNode: focusNode,
       semanticLabel: semanticLabel,
-      toggled: toggled,
+      // A button, selected while on, as `IconButton(isSelected:)`.
+      semanticSelected: toggled,
       excludeSemantics: true,
       builder: (context, states, _) {
         final face = keycapKeyFace(
@@ -59,7 +60,7 @@ class KeycapSmallKey extends StatelessWidget {
           states,
           radius: KeycapMetrics.smallKeyRadius,
         );
-        return DesignTapTarget(
+        return TapTargetPadding(
           child: SizedBox(
             height: side,
             width: width ?? side,

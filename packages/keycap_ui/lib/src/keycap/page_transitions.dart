@@ -51,7 +51,7 @@ class KeycapPageTransitionsBuilder extends PageTransitionsBuilder {
 }
 
 /// Keycap's page change for every platform, for a `PageTransitionsTheme`;
-/// on iOS wrapped in `DesignSwipeBackPageTransitionsBuilder`, so a swipe
+/// on iOS wrapped in `SwipeBackPageTransitionsBuilder`, so a swipe
 /// from the screen's edge goes back.
 ///
 /// ```dart
@@ -60,7 +60,7 @@ class KeycapPageTransitionsBuilder extends PageTransitionsBuilder {
 const Map<TargetPlatform, PageTransitionsBuilder> keycapPageTransitions = {
   TargetPlatform.android: KeycapPageTransitionsBuilder(),
   TargetPlatform.fuchsia: KeycapPageTransitionsBuilder(),
-  TargetPlatform.iOS: DesignSwipeBackPageTransitionsBuilder(
+  TargetPlatform.iOS: SwipeBackPageTransitionsBuilder(
     KeycapPageTransitionsBuilder(),
   ),
   TargetPlatform.linux: KeycapPageTransitionsBuilder(),

@@ -25,11 +25,11 @@ import 'wayfinding.dart';
 // The ui_core types these parts' APIs take, through the look's barrel.
 export 'package:ui_core/ui_core.dart'
     show
-        DesignSelection,
-        DesignSortDirection,
-        DesignTableColumn,
-        DesignTableController;
-export 'package:ui_core/ui_core.dart' show DesignSwipeAction;
+        RawDataTableSelection,
+        RawSortDirection,
+        RawDataColumn,
+        RawDataTableController;
+export 'package:ui_core/ui_core.dart' show RawSwipeAction;
 export 'package:ui_core/ui_core.dart' show DesignTreeController;
 
 /// A row's floor in a well (or a page, [KeycapWell.isPage]) for [states]:
@@ -161,7 +161,7 @@ class _KeycapDisclosureState extends State<KeycapDisclosure> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            DesignPressable(
+            RawButton(
               onPressed: _toggle,
               expanded: open,
               semanticLabel: widget.title,
@@ -415,7 +415,7 @@ class _SortPainter extends CustomPainter {
 /// key when [selectable], a pressed row's floor darkens, a chosen row
 /// stands on a plate of modifier plastic. The arrows move between rows;
 /// Space chooses, Enter opens ([onActivate]). Built on ui_core's
-/// `DesignDataTable`.
+/// `RawDataTable`.
 ///
 /// ```dart
 /// KeycapDataTable<String>(controller: table, cellText: (title, column) => column.id == 'title' ? title : '${title.length}')
@@ -433,10 +433,10 @@ class KeycapDataTable<R> extends StatelessWidget {
   });
 
   /// The columns, rows, sort and selection.
-  final DesignTableController<R> controller;
+  final RawDataTableController<R> controller;
 
   /// A cell's words.
-  final String Function(R row, DesignTableColumn<R> column) cellText;
+  final String Function(R row, RawDataColumn<R> column) cellText;
 
   /// Whether rows can be chosen.
   final bool selectable;
@@ -467,7 +467,7 @@ class KeycapDataTable<R> extends StatelessWidget {
       page: true,
       floor: layered.fill,
       padding: const EdgeInsets.all(KeycapSpacing.tight),
-      child: DesignDataTable<R>(
+      child: RawDataTable<R>(
         controller: controller,
         selectable: selectable,
         onActivate: onActivate,
@@ -485,9 +485,9 @@ class KeycapDataTable<R> extends StatelessWidget {
                 lead: Center(
                   child: KeycapCheckbox(
                     value: switch (page) {
-                      DesignSelection.none => false,
-                      DesignSelection.some => null,
-                      DesignSelection.all => true,
+                      RawDataTableSelection.none => false,
+                      RawDataTableSelection.some => null,
+                      RawDataTableSelection.all => true,
                     },
                     tristate: true,
                     semanticLabel: 'Select every row on the page',
@@ -519,10 +519,10 @@ class KeycapDataTable<R> extends StatelessWidget {
                   CustomPaint(
                     size: const Size(10, 14),
                     painter: _SortPainter(
-                      up: sort == DesignSortDirection.ascending
+                      up: sort == RawSortDirection.ascending
                           ? c.accentInk
                           : c.inkDisabled.withValues(alpha: 0.5),
-                      down: sort == DesignSortDirection.descending
+                      down: sort == RawSortDirection.descending
                           ? c.accentInk
                           : c.inkDisabled.withValues(alpha: 0.5),
                     ),
@@ -574,7 +574,7 @@ class KeycapDataTable<R> extends StatelessWidget {
 /// A scrolling region with a scrollbar of its own: a small cap riding in a
 /// slot cut along its end edge, shown while it scrolls or a pointer is
 /// near; the region takes focus and scrolls by the arrows. Built on
-/// ui_core's `DesignScrollArea`.
+/// ui_core's `RawScrollArea`.
 ///
 /// ```dart
 /// KeycapScrollArea(controller: scroll, child: SingleChildScrollView(controller: scroll, child: body))
@@ -605,7 +605,7 @@ class KeycapScrollArea extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = KeycapTheme.of(context);
     final c = theme.colors;
-    return DesignScrollArea(
+    return RawScrollArea(
       controller: controller,
       axis: axis,
       thickness: 10,
@@ -663,7 +663,7 @@ class KeycapScrollArea extends StatelessWidget {
 
 /// Two panes side by side (or stacked) with a seam between them that
 /// moves: a hairline with a small cap on it to drag, or to step with the
-/// arrows once focused. Built on ui_core's `DesignSplitView`.
+/// arrows once focused. Built on ui_core's `RawSplitView`.
 ///
 /// ```dart
 /// KeycapSplitView(first: notesList, second: editor, initialFraction: 0.36)
@@ -714,7 +714,7 @@ class KeycapSplitView extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = KeycapTheme.of(context);
     final c = theme.colors;
-    return DesignSplitView(
+    return RawSplitView(
       first: first,
       second: second,
       axis: axis,
@@ -726,7 +726,8 @@ class KeycapSplitView extends StatelessWidget {
       dividerThickness: 12,
       hitExtent: 16,
       semanticLabel:
-          semanticLabel ?? DesignLocalizations.of(context).splitViewHandleLabel,
+          semanticLabel ??
+          RawWidgetsLocalizations.of(context).splitViewHandleLabel,
       dividerBuilder: (context, states, axis) {
         final across = axis == Axis.horizontal;
         final held =
@@ -770,7 +771,7 @@ class KeycapSplitView extends StatelessWidget {
 
 /// Slides one at a time in a well, with keys to the slide before and after
 /// and dots for where it is. A swipe, the keys and a screen reader turn
-/// them. Built on ui_core's `DesignCarousel`.
+/// them. Built on ui_core's `RawCarousel`.
 ///
 /// ```dart
 /// KeycapCarousel(itemCount: 3, itemBuilder: (context, i) => KeycapMedia(slotId: 'tip.$i', semanticLabel: tips[i]))
@@ -810,7 +811,7 @@ class KeycapCarousel extends StatelessWidget {
     final c = KeycapTheme.of(context).colors;
     final rtl = Directionality.of(context) == TextDirection.rtl;
     const inset = KeycapSpacing.tight;
-    return DesignCarousel(
+    return RawCarousel(
       itemCount: itemCount,
       itemBuilder: itemBuilder,
       loop: loop,
@@ -892,7 +893,7 @@ class _Grip extends StatelessWidget {
 /// Rows in a well that can be put in order: drag a row by its grip (or
 /// long-press it); while carried it lifts out as a panel of keycap
 /// plastic. A screen reader's actions and the keys move a row up or down
-/// one. Built on ui_core's `DesignReorderableList`.
+/// one. Built on ui_core's `RawReorderableList`.
 ///
 /// ```dart
 /// KeycapReorderableList<String>(items: folders, title: (f) => f, onReorder: (from, to) => setState(() => move(from, to)))
@@ -925,7 +926,7 @@ class KeycapReorderableList<T extends Object> extends StatelessWidget {
     final c = theme.colors;
     return KeycapWell(
       page: true,
-      child: DesignReorderableList<T>(
+      child: RawReorderableList<T>(
         items: items,
         onReorder: onReorder,
         labelOf: title,
@@ -986,10 +987,10 @@ class KeycapReorderableList<T extends Object> extends StatelessWidget {
 /// A row with actions under it, uncovered by a swipe: each action a slab
 /// of key plastic as tall as the row (the danger plastic for one that
 /// destroys), its words printed on it; a full swipe runs the first. Built
-/// on ui_core's `DesignSwipeActions`.
+/// on ui_core's `RawSwipeActions`.
 ///
 /// ```dart
-/// KeycapSwipeActions(endActions: [DesignSwipeAction(label: 'Delete', destructive: true, onPressed: delete)], child: row)
+/// KeycapSwipeActions(endActions: [RawSwipeAction(label: 'Delete', destructive: true, onPressed: delete)], child: row)
 /// ```
 class KeycapSwipeActions extends StatelessWidget {
   /// [child] with actions under it.
@@ -1004,16 +1005,16 @@ class KeycapSwipeActions extends StatelessWidget {
   final Widget child;
 
   /// The actions under its start edge.
-  final List<DesignSwipeAction> startActions;
+  final List<RawSwipeAction> startActions;
 
   /// The actions under its end edge.
-  final List<DesignSwipeAction> endActions;
+  final List<RawSwipeAction> endActions;
 
   @override
   Widget build(BuildContext context) {
     final theme = KeycapTheme.of(context);
     final c = theme.colors;
-    return DesignSwipeActions(
+    return RawSwipeActions(
       startActions: startActions,
       endActions: endActions,
       actionExtent: 88,
@@ -1056,7 +1057,7 @@ class KeycapSwipeActions extends StatelessWidget {
 
 /// A list refreshed by a pull: a small key comes down with the pull, its
 /// arc filling, and turns while the refresh runs. Built on ui_core's
-/// `DesignPullToRefresh`.
+/// `RawRefreshIndicator`.
 ///
 /// ```dart
 /// KeycapRefresh(onRefresh: sync, child: ListView(children: rows))
@@ -1078,13 +1079,16 @@ class KeycapRefresh extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = KeycapTheme.of(context);
-    return DesignPullToRefresh(
+    return RawRefreshIndicator(
       onRefresh: onRefresh,
       indicatorBuilder: (context, details) {
         final mode = details.mode;
-        if (mode == DesignRefreshMode.inactive) return const SizedBox.shrink();
+        if (mode == RawRefreshIndicatorMode.inactive) {
+          return const SizedBox.shrink();
+        }
         final turning =
-            mode == DesignRefreshMode.refresh || mode == DesignRefreshMode.done;
+            mode == RawRefreshIndicatorMode.refresh ||
+            mode == RawRefreshIndicatorMode.done;
         final face = keycapKeyFace(theme, KeycapKind.alpha, const {});
         return Center(
           child: SizedBox.square(

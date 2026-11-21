@@ -167,7 +167,7 @@ class KeycapProgressBar extends StatelessWidget {
     final h = layered.minimumSize?.height ?? 8;
     final color = layered.fill ?? theme.colors.accent.top;
     final v = value;
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     return Semantics(
       label: semanticLabel,
       value: v == null ? words.loadingLabel : '${(v * 100).round()}%',
@@ -244,7 +244,7 @@ class KeycapSpinner extends StatelessWidget {
     final stroke = math.max(2.0, size / 8);
     final v = value;
     return Semantics(
-      label: semanticLabel ?? DesignLocalizations.of(context).loadingLabel,
+      label: semanticLabel ?? RawWidgetsLocalizations.of(context).loadingLabel,
       value: v == null ? null : '${(v * 100).round()}%',
       child: SizedBox.square(
         dimension: size,
@@ -621,7 +621,8 @@ class KeycapBanner extends StatelessWidget {
             if (onDismissed != null)
               KeycapIconButton(
                 icon: const Icon(LucideIcons.x),
-                semanticLabel: DesignLocalizations.of(context).closeButtonLabel,
+                semanticLabel: RawWidgetsLocalizations.of(context)
+                    .closeButtonLabel,
                 onPressed: onDismissed,
                 style: const KeycapStyle(
                   minimumSize: WidgetStatePropertyAll(Size.square(36)),

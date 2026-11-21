@@ -145,7 +145,7 @@ class _Crumb extends StatelessWidget {
         child: Padding(padding: pad, child: words(c.ink)),
       );
     }
-    return DesignPressable(
+    return RawButton(
       onPressed: onPressed,
       semanticLabel: label,
       button: false,
@@ -154,7 +154,7 @@ class _Crumb extends StatelessWidget {
       builder: (context, states, _) {
         final pressed = states.contains(WidgetState.pressed);
         final focused = states.contains(WidgetState.focused);
-        return DesignTapTarget(
+        return TapTargetPadding(
           child: DecoratedBox(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(KeycapMetrics.smallKeyRadius),
@@ -224,7 +224,7 @@ class KeycapPagination extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = KeycapTheme.of(context);
     final c = theme.colors;
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     final rtl = Directionality.of(context) == TextDirection.rtl;
     final narrow = MediaQuery.sizeOf(context).width < 600;
     final go = onChanged;
@@ -318,7 +318,7 @@ class _PageKey extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = KeycapTheme.of(context);
     const side = KeycapPagination.keySide;
-    return DesignPressable(
+    return RawButton(
       onPressed: onPressed,
       semanticLabel: '$page',
       selected: current,
@@ -332,7 +332,7 @@ class _PageKey extends StatelessWidget {
           latched: current,
           radius: KeycapMetrics.smallKeyRadius,
         );
-        return DesignTapTarget(
+        return TapTargetPadding(
           child: ConstrainedBox(
             constraints: const BoxConstraints(minWidth: side),
             child: SizedBox(
@@ -396,7 +396,7 @@ class KeycapStepProgress extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = KeycapTheme.of(context);
     final c = theme.colors;
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     assert(
       current >= 0 && current <= steps.length,
       'current is a step (or steps.length when all are done).',
@@ -551,7 +551,7 @@ class KeycapPageDots extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = KeycapTheme.of(context).colors;
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     Widget dot(int i) => KeycapSpringValue(
       value: i == index ? 1 : 0,
       spring: KeycapMotion.latch,
@@ -645,7 +645,7 @@ class _DotsStepperState extends State<_DotsStepper> {
   @override
   Widget build(BuildContext context) {
     final c = KeycapTheme.of(context).colors;
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     final rtl = Directionality.of(context) == TextDirection.rtl;
     final i = widget.index;
     final n = widget.count;

@@ -1,8 +1,7 @@
-// Keycap's parts between states (design6 O, "In motion"), read from the
-// pixels each frame paints, not from the widget tree: every move eases
-// toward where it ends and never past it (a calm spring, no bounce), shows
-// at least a frame between its ends (a move, not a cut), and is at rest
-// within half a second.
+// Keycap's parts between states, read from the pixels each frame paints, not
+// from the widget tree: every move eases toward where it ends and never past it
+// (a calm spring, no bounce), shows at least a frame between its ends (a move,
+// not a cut), and is at rest within half a second.
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 

@@ -7,14 +7,16 @@ library;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
+
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import 'cap.dart';
+import 'internal/group_radio.dart';
 import 'select.dart';
 import 'theme.dart';
 
 // The ui_core types this part's API takes, through the look's barrel.
-export 'package:ui_core/ui_core.dart' show DesignSplitAction;
+export 'package:ui_core/ui_core.dart' show RawSplitAction;
 
 /// A cluster of keys set side by side at the keyboard's key gap: an
 /// editor's formatting keys, a list's bulk actions. It names the cluster
@@ -118,8 +120,8 @@ class KeycapToggleOption<T> {
 /// default), or one at a time. The arrows move between keys; Space or
 /// Enter latches. One at a time, the keys are radios of one group: Tab
 /// reaches the group once, at the key that is down, and the arrows choose
-/// as they move. Built on ui_core's `DesignToggleGroup`, and on its
-/// `DesignRadioGroup` for one at a time.
+/// as they move. Built on ui_core's `RawSegmentedButton`, and on Flutter's
+/// `RadioGroup` for one at a time, with ui_core's `RadioGroupKeyboardFix`.
 ///
 /// ```dart
 /// KeycapToggleGroup<String>(options: const [KeycapToggleOption(value: 'bold', icon: LucideIcons.bold, semanticLabel: 'Bold')], selected: on, onSelectionChanged: setOn)
@@ -209,7 +211,7 @@ class KeycapToggleGroup<T> extends StatelessWidget {
                     ),
               ),
             );
-      return DesignTapTarget(
+      return TapTargetPadding(
         child: ConstrainedBox(
           constraints: BoxConstraints(minWidth: side),
           child: SizedBox(
@@ -242,7 +244,7 @@ class KeycapToggleGroup<T> extends StatelessWidget {
 
     final values = [for (final o in options) o.value];
     if (multiSelectionEnabled) {
-      return DesignToggleGroup<T>(
+      return RawSegmentedButton<T>(
         options: values,
         selected: selected,
         onSelectionChanged: onSelectionChanged,
@@ -260,27 +262,30 @@ class KeycapToggleGroup<T> extends StatelessWidget {
     // RadioGroup makes them (one Tab stop, the arrows choose).
     final change = onSelectionChanged;
     final down = selected.isEmpty ? null : selected.first;
-    return DesignRadioGroup<T>(
-      options: values,
+    return KeycapGroupRadios<T>(
       value: down,
-      onChanged: change == null ? null : (v) => change({v}),
-      isEnabled: (v) => of(v).enabled,
+      onChanged: (v) {
+        if (v != null) {
+          change?.call({v});
+        } else if (emptySelectionAllowed) {
+          change?.call(<T>{});
+        }
+      },
       semanticLabel: semanticLabel,
-      direction: Axis.horizontal,
-      layoutBuilder: layout,
-      itemBuilder: (context, v, node, select) => DesignPressable(
-        focusNode: node,
-        // The key that is down lets up when the group may be left empty.
-        onPressed: v == down && emptySelectionAllowed && select != null
-            ? () => change!(<T>{})
-            : select,
-        selected: v == down,
-        checked: v == down,
-        inMutuallyExclusiveGroup: true,
-        minimumSize: Size.zero,
-        semanticLabel: labelOf(v),
-        excludeSemantics: true,
-        builder: (context, states, _) => keyFor(context, v, states),
+      child: Builder(
+        builder: (context) => layout(context, [
+          for (final v in values)
+            KeycapGroupRadio<T>(
+              key: ObjectKey(v),
+              value: v,
+              enabled: change != null && of(v).enabled,
+              // The key that is down lets up when the group may be left
+              // empty.
+              toggleable: emptySelectionAllowed,
+              label: labelOf(v),
+              builder: (context, states) => keyFor(context, v, states),
+            ),
+        ]),
       ),
     );
   }
@@ -306,10 +311,10 @@ class KeycapToggleGroup<T> extends StatelessWidget {
 /// keyboard ("Export" and, behind its menu key, "Export as PDF"). The menu
 /// key latches down while its list is open. [accent] moulds both in the
 /// accent, for the screen's main action. Built on ui_core's
-/// `DesignSplitButton`.
+/// `RawSplitButton`.
 ///
 /// ```dart
-/// KeycapSplitButton(label: 'Export', onPressed: export, actions: [DesignSplitAction(label: 'Export as PDF', onPressed: exportPdf)])
+/// KeycapSplitButton(label: 'Export', onPressed: export, actions: [RawSplitAction(label: 'Export as PDF', onPressed: exportPdf)])
 /// ```
 class KeycapSplitButton extends StatelessWidget {
   /// A key and its menu key.
@@ -330,7 +335,7 @@ class KeycapSplitButton extends StatelessWidget {
   final VoidCallback? onPressed;
 
   /// The menu's actions.
-  final List<DesignSplitAction> actions;
+  final List<RawSplitAction> actions;
 
   /// What a screen reader calls the menu key.
   final String? menuLabel;
@@ -353,14 +358,14 @@ class KeycapSplitButton extends StatelessWidget {
     );
     final walls = KeycapMetrics.walls(h);
     final rowHeight = theme.controlHeight - KeycapSpacing.tight;
-    return DesignSplitButton(
+    return RawSplitButton(
       label: label,
       onPressed: onPressed,
       actions: actions,
       menuLabel: menuLabel,
       minimumSize: Size(h, h),
-      placement: const DesignOverlayPlacement(
-        align: DesignOverlayAlign.end,
+      placement: const RawPopoverPlacement(
+        align: RawPopoverAlign.end,
         matchAnchorWidth: false,
         maxWidth: 320,
       ),
@@ -373,7 +378,7 @@ class KeycapSplitButton extends StatelessWidget {
         ],
       ),
       buttonBuilder: (context, part, states, open) {
-        final isMain = part == DesignSplitPart.main;
+        final isMain = part == RawSplitPart.main;
         final layered = DesignStyleOf([
           style,
           accent ? theme.accentButtonStyle : theme.buttonStyle,
@@ -389,7 +394,7 @@ class KeycapSplitButton extends StatelessWidget {
           face = face.copyWith(travel: keycapLatchTravel);
         }
         face = layered.on(face);
-        return DesignTapTarget(
+        return TapTargetPadding(
           child: SizedBox(
             height: h,
             width: isMain ? null : h - KeycapSpacing.small,
@@ -439,7 +444,7 @@ class KeycapSplitButton extends StatelessWidget {
       ),
       surfaceBuilder: (context, info, items) => KeycapMenuReveal(
         animation: info.animation,
-        below: info.side != DesignOverlaySide.above,
+        below: info.side != RawPopoverSide.above,
         child: KeycapMenuPanel(
           maxHeight: info.maxSize.height,
           child: Column(

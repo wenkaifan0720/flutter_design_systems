@@ -15,7 +15,7 @@ import 'select.dart';
 import 'theme.dart';
 
 // The ui_core types these parts' APIs take, through the look's barrel.
-export 'package:ui_core/ui_core.dart' show DesignSheetEdge;
+export 'package:ui_core/ui_core.dart' show RawSheetEdge;
 
 /// A panel of keycap plastic sliding in from the screen's side (the end,
 /// by default): a [title] and a close key at its top, its [child]
@@ -59,7 +59,7 @@ class KeycapSideSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = KeycapTheme.of(context);
     final layered = DesignStyleOf([style, theme.dialogStyle], const {});
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     final media = MediaQuery.of(context);
     const r = Radius.circular(KeycapMetrics.panelRadius);
     final radius = side == AxisDirection.left
@@ -173,12 +173,12 @@ Future<T?> showKeycapSideSheet<T>({
   required WidgetBuilder builder,
   String? title,
   List<Widget> footer = const [],
-  DesignSheetEdge edge = DesignSheetEdge.end,
+  RawSheetEdge edge = RawSheetEdge.end,
   double width = 380,
 }) {
   final theme = KeycapTheme.of(context);
   return Navigator.of(context, rootNavigator: true).push<T>(
-    DesignSideSheetRoute<T>(
+    RawSideSheetRoute<T>(
       edge: edge,
       width: width,
       barrierColor: theme.colors.scrim,
@@ -266,7 +266,7 @@ class KeycapActionSheet extends StatelessWidget {
     final c = theme.colors;
     final layered = DesignStyleOf([style, theme.dialogStyle], const {});
     final media = MediaQuery.of(context);
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     const top = Radius.circular(KeycapMetrics.panelRadius);
     return ConstrainedBox(
       constraints: const BoxConstraints(maxWidth: KeycapSheet.maxWidth),
@@ -307,7 +307,7 @@ class KeycapActionSheet extends StatelessWidget {
                 if (title != null || message != null)
                   const SizedBox(height: KeycapSpacing.small),
                 for (final a in actions)
-                  DesignPressable(
+                  RawButton(
                     onPressed: a.onPressed,
                     semanticLabel: a.label,
                     excludeSemantics: true,

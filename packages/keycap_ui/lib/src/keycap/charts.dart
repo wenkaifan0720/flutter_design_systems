@@ -138,7 +138,7 @@ class _Idle extends StatelessWidget {
     return Center(
       child: loading
           ? KeycapSpinner(
-              semanticLabel: DesignLocalizations.of(context).loadingLabel,
+              semanticLabel: RawWidgetsLocalizations.of(context).loadingLabel,
             )
           : Text(
               emptyLabel,
@@ -235,7 +235,7 @@ class _SeriesChartState extends State<_SeriesChart> {
   Widget build(BuildContext context) {
     final theme = KeycapTheme.of(context);
     final c = theme.colors;
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     final inks = _inks(c);
     final colours = [
       for (final (i, s) in widget.series.indexed)
@@ -902,7 +902,7 @@ class _KeycapDonutChartState extends State<KeycapDonutChart> {
     final empty = widget.slices.isEmpty || _total <= 0;
     final at = empty ? null : _at;
     final emptyLabel =
-        widget.emptyLabel ?? DesignLocalizations.of(context).noResultsLabel;
+        widget.emptyLabel ?? RawWidgetsLocalizations.of(context).noResultsLabel;
     final colours = [
       for (var i = 0; i < widget.slices.length; i++) inks[i % inks.length],
     ];

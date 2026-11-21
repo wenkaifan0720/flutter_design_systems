@@ -20,8 +20,8 @@ import 'text_field.dart';
 import 'theme.dart';
 
 // The ui_core types these parts' APIs take, through the look's barrel.
-export 'package:ui_core/ui_core.dart' show DesignPasswordController;
-export 'package:ui_core/ui_core.dart' show DesignOtpController;
+export 'package:ui_core/ui_core.dart' show RawPasswordController;
+export 'package:ui_core/ui_core.dart' show RawOtpController;
 
 /// A search field: a well with a magnifier at its start and, once there are
 /// words in it, a small clear key at its end. A screen reader hears a
@@ -116,7 +116,7 @@ class _KeycapSearchFieldState extends State<KeycapSearchField> {
 
   @override
   Widget build(BuildContext context) {
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     final empty = _controller.text.isEmpty;
     return Semantics(
       textField: true,
@@ -149,7 +149,7 @@ class _KeycapSearchFieldState extends State<KeycapSearchField> {
 }
 
 /// A password field: its words hidden, and a small key at its end that
-/// shows them while it is latched. Built on ui_core's `DesignPasswordReveal`.
+/// shows them while it is latched. Built on ui_core's `RawPasswordReveal`.
 ///
 /// ```dart
 /// KeycapPasswordField(label: 'Password', onChanged: setPassword)
@@ -179,7 +179,7 @@ class KeycapPasswordField extends StatelessWidget {
   final FocusNode? focusNode;
 
   /// Whether the words show; the field keeps its own when null.
-  final DesignPasswordController? passwordController;
+  final RawPasswordController? passwordController;
 
   /// The words over the field.
   final String? label;
@@ -209,7 +209,7 @@ class KeycapPasswordField extends StatelessWidget {
   final KeycapStyle? style;
 
   @override
-  Widget build(BuildContext context) => DesignPasswordReveal(
+  Widget build(BuildContext context) => RawPasswordReveal(
     controller: passwordController,
     focusNode: focusNode,
     builder: (context, password) => KeycapTextField(
@@ -502,7 +502,7 @@ class _Hairline extends StatelessWidget {
 /// the next character goes in is ringed in the focus band, with a caret
 /// at its foot. Six wells stand in two threes. [onCompleted] runs when
 /// every well is full. To a screen reader it is one text field, and it
-/// takes a pasted code. Built on ui_core's `DesignOtpField`.
+/// takes a pasted code. Built on ui_core's `RawOtpField`.
 ///
 /// ```dart
 /// KeycapOtpField(onCompleted: verify)
@@ -528,7 +528,7 @@ class KeycapOtpField extends StatelessWidget {
   final int length;
 
   /// The code; the field keeps its own when null.
-  final DesignOtpController? controller;
+  final RawOtpController? controller;
 
   /// The field's focus node.
   final FocusNode? focusNode;
@@ -570,7 +570,7 @@ class KeycapOtpField extends StatelessWidget {
     // height: six still sit in a phone's row at 200%.
     final grows = MediaQuery.textScalerOf(context).scale(20) - 20;
     final w = (theme.controlHeight * 0.8 + grows * 0.6).ceilToDouble();
-    return DesignOtpField(
+    return RawOtpField(
       length: length,
       controller: controller,
       focusNode: focusNode,
@@ -657,7 +657,7 @@ class KeycapOtpField extends StatelessWidget {
 /// A number between two keys: a minus key, a small well holding the
 /// figure (typed into, or stepped), a plus key. Held, a key repeats; the
 /// arrows step it too; at [min] or [max] its key goes off. Built on
-/// ui_core's `DesignNumberField`.
+/// ui_core's `RawNumberField`.
 ///
 /// ```dart
 /// KeycapStepper(value: copies, min: 1, max: 20, onChanged: (v) => setState(() => copies = v), semanticLabel: 'Copies')
@@ -713,7 +713,7 @@ class KeycapStepper extends StatelessWidget {
     final theme = KeycapTheme.of(context);
     final c = theme.colors;
     final h = theme.controlHeight;
-    return DesignNumberField(
+    return RawNumberField(
       value: value,
       onChanged: onChanged,
       min: min,
@@ -764,7 +764,7 @@ class KeycapStepper extends StatelessWidget {
                         capHeightFactor: theme.capHeightFactor,
                         // Material's field keeps a node of its own; the
                         // stepper's node takes the value from here
-                        // (DesignNumberField's contract).
+                        // (RawNumberField's contract).
                         child: ListenableBuilder(
                           listenable: d.controller,
                           builder: (context, child) =>
@@ -812,7 +812,7 @@ class KeycapStepper extends StatelessWidget {
       },
       buttonBuilder: (context, d) {
         final face = keycapKeyFace(theme, KeycapKind.alpha, d.states);
-        return DesignTapTarget(
+        return TapTargetPadding(
           child: SizedBox.square(
             dimension: h,
             child: AnimatedKeycapCap(
@@ -846,7 +846,7 @@ class KeycapStepper extends StatelessWidget {
 /// [KeycapTextField] stands: a switch, a select, a row of radios, a
 /// stepper. One control takes the label as its name and the error and help
 /// as its hint; a group of controls keeps each its own node, the label
-/// naming the group ([mergeSemantics]). Built on ui_core's `DesignField`.
+/// naming the group ([mergeSemantics]). Built on ui_core's `RawInputDecorator`.
 ///
 /// ```dart
 /// KeycapField(labelText: 'Copies', helperText: 'Up to 20.', child: KeycapStepper(value: 1, onChanged: setCopies))
@@ -892,7 +892,7 @@ class KeycapField extends StatelessWidget {
   final bool? mergeSemantics;
 
   @override
-  Widget build(BuildContext context) => DesignField(
+  Widget build(BuildContext context) => RawInputDecorator(
     labelText: labelText,
     helperText: helperText,
     errorText: errorText,

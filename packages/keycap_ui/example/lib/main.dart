@@ -14,7 +14,7 @@
 import 'package:flutter/scheduler.dart' show timeDilation;
 import 'package:flutter/widgets.dart';
 import 'package:keycap_ui/keycap_ui.dart';
-import 'package:ui_core_test/ui_core_test.dart';
+import 'package:ui_core_review/ui_core_review.dart';
 
 import 'gallery_pages.dart';
 import 'kit_gallery/jotter/jotter.dart';

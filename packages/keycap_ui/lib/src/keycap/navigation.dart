@@ -67,7 +67,7 @@ class KeycapAppBar extends StatelessWidget {
           flipX: Directionality.of(context) == TextDirection.rtl,
           child: const Icon(LucideIcons.arrowLeft),
         ),
-        semanticLabel: DesignLocalizations.of(context).backButtonTooltip,
+        semanticLabel: RawWidgetsLocalizations.of(context).backButtonTooltip,
         onPressed: onBack,
         style: const DesignStyle(
           minimumSize: WidgetStatePropertyAll(Size.square(keySide)),
@@ -78,7 +78,7 @@ class KeycapAppBar extends StatelessWidget {
   static Widget closeKey(BuildContext context, VoidCallback onClose) =>
       KeycapIconButton(
         icon: const Icon(LucideIcons.x),
-        semanticLabel: DesignLocalizations.of(context).closeButtonLabel,
+        semanticLabel: RawWidgetsLocalizations.of(context).closeButtonLabel,
         onPressed: onClose,
         style: const DesignStyle(
           minimumSize: WidgetStatePropertyAll(Size.square(keySide)),
@@ -394,13 +394,13 @@ class KeycapNavigationBar extends StatelessWidget {
                     ),
                     child: KeyedSubtree(
                       key: d.key,
-                      child: DesignPressable(
+                      child: RawButton(
                         onPressed: () => onSelected(i),
                         selected: i == selectedIndex,
                         semanticSelected: i == selectedIndex,
                         semanticLabel: d.label,
                         excludeSemantics: true,
-                        builder: (context, states, _) => DesignTapTarget(
+                        builder: (context, states, _) => TapTargetPadding(
                           child: _placeKey(
                             context,
                             states,
@@ -488,7 +488,7 @@ class KeycapNavigationRail extends StatelessWidget {
           for (final (i, d) in destinations.indexed)
             KeyedSubtree(
               key: d.key,
-              child: DesignPressable(
+              child: RawButton(
                 onPressed: () => onSelected(i),
                 selected: i == selectedIndex,
                 semanticSelected: i == selectedIndex,
@@ -602,7 +602,7 @@ class KeycapSideNavigation extends StatelessWidget {
           for (final (i, d) in destinations.indexed)
             KeyedSubtree(
               key: d.key,
-              child: DesignPressable(
+              child: RawButton(
                 onPressed: () => onSelected(i),
                 selected: i == selectedIndex,
                 semanticSelected: i == selectedIndex,

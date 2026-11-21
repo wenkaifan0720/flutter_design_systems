@@ -1,3 +1,10 @@
+## 0.2.0
+
+- Needs ui_core 0.4.0 and Flutter 3.47. `keycap_ui` re-exports ui_core, whose types now take `Raw` names (`DesignPressable` is `RawButton`). The old names stay through ui_core 0.4 as deprecated typedefs, and `dart fix --apply` renames them.
+- `KeycapRadioGroup`, a one-choice `KeycapSegmentedButton` and a one-at-a-time `KeycapToggleGroup` are Flutter's `RadioGroup`, each key a `RawRadio`, with ui_core's `RadioGroupKeyboardFix` inside. They answer Tab and the arrows as before, and a row that may be left empty still lets its chosen key up on a press. A radio shows its focus and its press as Flutter's `Radio` does, and on iOS and macOS a key also reads as selected.
+- `KeycapTooltip` is Flutter's `RawTooltip`, with ui_core's `RawTooltipFocusFix` and `RawTooltipPlacement`. It fades on Flutter's tooltip timing, and each tooltip along a row of keys waits its half second.
+- A latching `KeycapIconButton`, a selectable `KeycapChip` and a password field's reveal key read as buttons, selected while on, as `IconButton(isSelected:)` does. Before, they read as switches.
+
 ## 0.1.0
 
 - First release: controls as keycaps on a mechanical keyboard, in day and night colourways on Rubik. Keys you press

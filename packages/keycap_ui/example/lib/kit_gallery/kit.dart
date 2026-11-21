@@ -44,11 +44,11 @@ Widget kitApp({required Brightness brightness, required Widget home}) =>
           ),
         ),
         localizationsDelegates: const [
-          DesignLocalizations.delegate,
+          RawWidgetsLocalizations.delegate,
           DefaultMaterialLocalizations.delegate,
           DefaultWidgetsLocalizations.delegate,
         ],
-        supportedLocales: DesignLocalizations.supportedLocales,
+        supportedLocales: RawWidgetsLocalizations.supportedLocales,
         builder: (context, child) => KeycapTheme(
           data: kitTheme(brightness),
           child: KeycapToaster(child: child ?? const SizedBox.shrink()),

@@ -21,8 +21,8 @@ import 'theme.dart';
 
 // The ui_core types these parts' APIs take, through the look's barrel.
 export 'package:ui_core/ui_core.dart' show DesignOverlayAnchor;
-export 'package:ui_core/ui_core.dart' show DesignCommand;
-export 'package:ui_core/ui_core.dart' show DesignMenuEntry;
+export 'package:ui_core/ui_core.dart' show RawCommand;
+export 'package:ui_core/ui_core.dart' show RawMenuEntry;
 
 double _rowHeight(BuildContext context) =>
     KeycapTheme.of(context).controlHeight - KeycapSpacing.tight;
@@ -36,7 +36,7 @@ bool _lit(Set<WidgetState> states) =>
 /// at the end, a tick when it is checked.
 Widget _entryRow(
   BuildContext context,
-  DesignMenuEntry entry,
+  RawMenuEntry entry,
   Set<WidgetState> states,
 ) {
   final enabled = entry.enabled && !states.contains(WidgetState.disabled);
@@ -68,9 +68,9 @@ Widget _divider(BuildContext context) {
 }
 
 /// The panel a menu's rows stand on, revealed as [info] runs.
-Widget _panel(DesignOverlayInfo info, List<Widget> items) => KeycapMenuReveal(
+Widget _panel(RawPopoverInfo info, List<Widget> items) => KeycapMenuReveal(
   animation: info.animation,
-  below: info.side != DesignOverlaySide.above,
+  below: info.side != RawPopoverSide.above,
   child: ConstrainedBox(
     constraints: const BoxConstraints(minWidth: 200),
     child: KeycapMenuPanel(
@@ -92,7 +92,7 @@ Widget _panel(DesignOverlayInfo info, List<Widget> items) => KeycapMenuReveal(
 /// runs it; Escape closes the menu and gives the key back its focus.
 ///
 /// ```dart
-/// KeycapMenu(entries: [DesignMenuEntry(label: 'Rename', onPressed: rename), const DesignMenuEntry.divider(), DesignMenuEntry(label: 'Delete', onPressed: delete)], builder: (context, anchor) => KeycapIconButton(icon: const Icon(LucideIcons.ellipsis), semanticLabel: 'More', onPressed: anchor.toggle))
+/// KeycapMenu(entries: [RawMenuEntry(label: 'Rename', onPressed: rename), const RawMenuEntry.divider(), RawMenuEntry(label: 'Delete', onPressed: delete)], builder: (context, anchor) => KeycapIconButton(icon: const Icon(LucideIcons.ellipsis), semanticLabel: 'More', onPressed: anchor.toggle))
 /// ```
 class KeycapMenu extends StatelessWidget {
   /// A menu of [entries].
@@ -105,7 +105,7 @@ class KeycapMenu extends StatelessWidget {
   });
 
   /// The rows.
-  final List<DesignMenuEntry> entries;
+  final List<RawMenuEntry> entries;
 
   /// Draws the key that opens it.
   final Widget Function(BuildContext context, DesignOverlayAnchor anchor)
@@ -119,10 +119,10 @@ class KeycapMenu extends StatelessWidget {
   final Set<String> destructive;
 
   @override
-  Widget build(BuildContext context) => DesignAnchoredOverlay(
+  Widget build(BuildContext context) => RawPopover(
     arrowKeyNavigation: true,
     semanticLabel: semanticLabel,
-    placement: const DesignOverlayPlacement(
+    placement: const RawPopoverPlacement(
       gap: KeycapSpacing.tight + 2,
       margin: KeycapSpacing.small,
       matchAnchorWidth: false,
@@ -136,7 +136,7 @@ class KeycapMenu extends StatelessWidget {
         if (entry.divider)
           _divider(context)
         else
-          DesignPressable(
+          RawButton(
             onPressed: entry.onPressed == null
                 ? null
                 : () {
@@ -168,10 +168,10 @@ class KeycapMenu extends StatelessWidget {
 
 /// A menu that opens where a secondary click or a long press lands on
 /// [child] (a note's row, a folder). Built on ui_core's
-/// `DesignContextMenu`.
+/// `RawContextMenu`.
 ///
 /// ```dart
-/// KeycapContextMenu(entries: [DesignMenuEntry(label: 'Pin', onPressed: pin)], child: row)
+/// KeycapContextMenu(entries: [RawMenuEntry(label: 'Pin', onPressed: pin)], child: row)
 /// ```
 class KeycapContextMenu extends StatelessWidget {
   /// A context menu over [child].
@@ -183,7 +183,7 @@ class KeycapContextMenu extends StatelessWidget {
   });
 
   /// The rows.
-  final List<DesignMenuEntry> entries;
+  final List<RawMenuEntry> entries;
 
   /// What it opens over.
   final Widget child;
@@ -192,7 +192,7 @@ class KeycapContextMenu extends StatelessWidget {
   final String? semanticLabel;
 
   @override
-  Widget build(BuildContext context) => DesignContextMenu(
+  Widget build(BuildContext context) => RawContextMenu(
     menuChildren: entries,
     semanticLabel: semanticLabel,
     dampingRatio: KeycapMotion.panel.dampingRatio,
@@ -218,17 +218,17 @@ class KeycapContextMenu extends StatelessWidget {
 /// A row of menus, as a keyboard's function row: small modifier keys set
 /// side by side, each opening its menu in a panel under it and staying part
 /// way down while it is open. The arrows move along the row and through a
-/// menu. Built on ui_core's `DesignMenuBar`.
+/// menu. Built on ui_core's `RawMenuBar`.
 ///
 /// ```dart
-/// KeycapMenuBar(menus: [DesignMenuEntry(label: 'File', children: [DesignMenuEntry(label: 'New note', shortcut: 'Ctrl+N', onPressed: newNote)])])
+/// KeycapMenuBar(menus: [RawMenuEntry(label: 'File', children: [RawMenuEntry(label: 'New note', shortcut: 'Ctrl+N', onPressed: newNote)])])
 /// ```
 class KeycapMenuBar extends StatelessWidget {
   /// A menubar of [menus].
   const KeycapMenuBar({super.key, required this.menus, this.semanticLabel});
 
   /// The menus, each with its rows as children.
-  final List<DesignMenuEntry> menus;
+  final List<RawMenuEntry> menus;
 
   /// The bar's name, for a screen reader.
   final String? semanticLabel;
@@ -239,7 +239,7 @@ class KeycapMenuBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = KeycapTheme.of(context);
-    return DesignMenuBar(
+    return RawMenuBar(
       menus: menus,
       semanticLabel: semanticLabel,
       barBuilder: (context, items) => Row(
@@ -254,7 +254,7 @@ class KeycapMenuBar extends StatelessWidget {
       dividerBuilder: _divider,
       surfaceBuilder: (context, info, items) => _panel(info, items),
       itemBuilder: (context, entry, level, states) {
-        if (level == DesignMenuLevel.menu) {
+        if (level == RawMenuLevel.menu) {
           return _entryRow(context, entry, states);
         }
         final open = states.contains(WidgetState.selected);
@@ -270,7 +270,7 @@ class KeycapMenuBar extends StatelessWidget {
           height,
           theme.textTheme.secondary,
         );
-        return DesignTapTarget(
+        return TapTargetPadding(
           child: SizedBox(
             height: tall,
             child: AnimatedKeycapCap(
@@ -370,14 +370,14 @@ class _PaletteWell extends StatelessWidget {
   }
 }
 
-DesignCommandPalette _palette({
-  required List<DesignCommand> commands,
-  required ValueChanged<DesignCommand>? onSelected,
+RawCommandPalette _palette({
+  required List<RawCommand> commands,
+  required ValueChanged<RawCommand>? onSelected,
   required String hint,
   required String emptyLabel,
   bool autofocus = true,
   double maxHeight = 360,
-}) => DesignCommandPalette(
+}) => RawCommandPalette(
   commands: commands,
   onSelected: onSelected,
   autofocus: autofocus,
@@ -433,10 +433,10 @@ DesignCommandPalette _palette({
 /// A search over every command: a well to type in over the commands that
 /// fit, grouped, the lit one run by Enter. Inline here; laid over the
 /// screen by [showKeycapCommandPalette]. Built on ui_core's
-/// `DesignCommandPalette`.
+/// `RawCommandPalette`.
 ///
 /// ```dart
-/// KeycapCommandPalette(commands: [DesignCommand(label: 'New note', group: 'Notes', shortcut: 'Ctrl+N', onPressed: newNote)])
+/// KeycapCommandPalette(commands: [RawCommand(label: 'New note', group: 'Notes', shortcut: 'Ctrl+N', onPressed: newNote)])
 /// ```
 class KeycapCommandPalette extends StatelessWidget {
   /// A palette of [commands].
@@ -451,10 +451,10 @@ class KeycapCommandPalette extends StatelessWidget {
   });
 
   /// What can be run.
-  final List<DesignCommand> commands;
+  final List<RawCommand> commands;
 
   /// Called with the command run.
-  final ValueChanged<DesignCommand>? onSelected;
+  final ValueChanged<RawCommand>? onSelected;
 
   /// What the empty well says; the kit's "Search" when null.
   final String? hint;
@@ -473,8 +473,9 @@ class KeycapCommandPalette extends StatelessWidget {
   Widget build(BuildContext context) => _palette(
     commands: commands,
     onSelected: onSelected,
-    hint: hint ?? DesignLocalizations.of(context).searchFieldLabel,
-    emptyLabel: emptyLabel ?? DesignLocalizations.of(context).noResultsLabel,
+    hint: hint ?? RawWidgetsLocalizations.of(context).searchFieldLabel,
+    emptyLabel:
+        emptyLabel ?? RawWidgetsLocalizations.of(context).noResultsLabel,
     autofocus: autofocus,
     maxHeight: maxHeight,
   );
@@ -494,12 +495,12 @@ class KeycapCommandPalette extends StatelessWidget {
 /// ```
 Future<void> showKeycapCommandPalette({
   required BuildContext context,
-  required List<DesignCommand> commands,
+  required List<RawCommand> commands,
   String? hint,
   String? emptyLabel,
 }) {
   final c = KeycapTheme.of(context).colors;
-  final words = DesignLocalizations.of(context);
+  final words = RawWidgetsLocalizations.of(context);
   return showDesignCommandPalette(
     context: context,
     barrierColor: c.scrim,
@@ -560,9 +561,9 @@ class KeycapPopover extends StatelessWidget {
   final KeycapStyle? style;
 
   @override
-  Widget build(BuildContext context) => DesignAnchoredOverlay(
+  Widget build(BuildContext context) => RawPopover(
     semanticLabel: semanticLabel,
-    placement: DesignOverlayPlacement(
+    placement: RawPopoverPlacement(
       gap: KeycapSpacing.small,
       margin: KeycapSpacing.small,
       matchAnchorWidth: false,
@@ -574,7 +575,7 @@ class KeycapPopover extends StatelessWidget {
     anchorBuilder: builder,
     overlayBuilder: (context, info) => KeycapMenuReveal(
       animation: info.animation,
-      below: info.side != DesignOverlaySide.above,
+      below: info.side != RawPopoverSide.above,
       child: SizedBox(
         width: width,
         child: _Card(
@@ -654,10 +655,10 @@ class KeycapHoverCard extends StatelessWidget {
   final KeycapStyle? style;
 
   @override
-  Widget build(BuildContext context) => DesignAnchoredOverlay(
-    trigger: DesignOverlayTrigger.hover,
+  Widget build(BuildContext context) => RawPopover(
+    trigger: RawPopoverTrigger.hover,
     focusOnOpen: false,
-    placement: DesignOverlayPlacement(
+    placement: RawPopoverPlacement(
       gap: KeycapSpacing.small,
       margin: KeycapSpacing.small,
       matchAnchorWidth: false,
@@ -668,7 +669,7 @@ class KeycapHoverCard extends StatelessWidget {
     anchorBuilder: (context, anchor) => child,
     overlayBuilder: (context, info) => KeycapMenuReveal(
       animation: info.animation,
-      below: info.side != DesignOverlaySide.above,
+      below: info.side != RawPopoverSide.above,
       child: SizedBox(
         width: width,
         child: _Card(
@@ -687,8 +688,9 @@ class KeycapHoverCard extends StatelessWidget {
 }
 
 /// A key's name in a few words, on a small dark tab over it while a
-/// pointer rests on it or a finger holds it. Built on ui_core's
-/// `DesignTooltip`.
+/// pointer rests on it, a finger holds it or the keyboard's focus is on
+/// it. Built on Flutter's `RawTooltip`, with ui_core's `RawTooltipFocusFix`
+/// and `RawTooltipPlacement`.
 ///
 /// ```dart
 /// KeycapTooltip(message: 'Bold', child: KeycapIconButton(icon: const Icon(LucideIcons.bold), semanticLabel: 'Bold', onPressed: bold))
@@ -717,43 +719,53 @@ class KeycapTooltip extends StatelessWidget {
     final theme = KeycapTheme.of(context);
     final c = theme.colors;
     final layered = DesignStyleOf([style, theme.tooltipStyle], const {});
-    return DesignTooltip(
-      message: message,
-      placement: const DesignOverlayPlacement(
-        side: DesignOverlaySide.above,
-        align: DesignOverlayAlign.center,
-        gap: KeycapSpacing.tight + 2,
-        matchAnchorWidth: false,
-        maxWidth: 260,
-        preferredExtent: 48,
-      ),
-      tooltipBuilder: (context, info) => FadeTransition(
-        opacity: info.animation,
-        child: Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: KeycapSpacing.small + 2,
-            vertical: KeycapSpacing.tight + 2,
-          ),
-          decoration: BoxDecoration(
-            color: layered.fill ?? c.toast,
-            borderRadius: BorderRadius.circular(KeycapMetrics.smallKeyRadius),
-            boxShadow: [
-              BoxShadow(
-                color: c.shadow.withValues(alpha: 0.2),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
+    // One node, the tooltip on its control, as the published look read.
+    return MergeSemantics(
+      child: RawTooltipPlacement(
+        placement: const RawPopoverPlacement(
+          side: RawPopoverSide.above,
+          align: RawPopoverAlign.center,
+          gap: KeycapSpacing.tight + 2,
+          matchAnchorWidth: false,
+          maxWidth: 260,
+          preferredExtent: 48,
+        ),
+        builder: (context, positionDelegate) => RawTooltip(
+          semanticsTooltip: message,
+          hoverDelay: const Duration(milliseconds: 500),
+          positionDelegate: positionDelegate,
+          tooltipBuilder: (context, animation) => FadeTransition(
+            opacity: animation,
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: KeycapSpacing.small + 2,
+                vertical: KeycapSpacing.tight + 2,
               ),
-            ],
-          ),
-          child: Text(
-            message,
-            style: theme.textTheme.secondary.copyWith(
-              color: layered.foreground ?? c.onToast,
+              decoration: BoxDecoration(
+                color: layered.fill ?? c.toast,
+                borderRadius: BorderRadius.circular(
+                  KeycapMetrics.smallKeyRadius,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: c.shadow.withValues(alpha: 0.2),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Text(
+                message,
+                style: theme.textTheme.secondary.copyWith(
+                  color: layered.foreground ?? c.onToast,
+                ),
+              ),
             ),
           ),
+          // It shows on the keyboard's focus as well.
+          child: RawTooltipFocusFix(child: child),
         ),
       ),
-      child: child,
     );
   }
 

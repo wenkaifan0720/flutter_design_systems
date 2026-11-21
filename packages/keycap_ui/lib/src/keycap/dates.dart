@@ -25,12 +25,12 @@ import 'theme.dart';
 
 // The ui_core types these parts' APIs take, through the look's barrel.
 export 'package:ui_core/ui_core.dart'
-    show DesignCalendarController, DesignCalendarMode, DesignDateRange;
-export 'package:ui_core/ui_core.dart' show DesignTimeOfDay;
+    show RawCalendarController, RawCalendarMode, RawDateRange;
+export 'package:ui_core/ui_core.dart' show RawTimeOfDay;
 
 /// A date as a picker key shows it: the short month and day with the year,
 /// in the locale's order.
-String _dateLabel(DesignLocalizations words, DateTime date) {
+String _dateLabel(RawWidgetsLocalizations words, DateTime date) {
   final monthDay = words.formatShortMonthDay(date);
   final full = words.formatFullDate(date);
   final separatedYear = '${words.listSeparator}${words.formatYear(date)}';
@@ -64,7 +64,7 @@ double _dayHeightOf(BuildContext context) {
 
 /// A month's header: its name, and small keys to the month before and
 /// after.
-Widget _header(BuildContext context, DesignCalendarHeader header) {
+Widget _header(BuildContext context, RawCalendarHeaderDetails header) {
   final theme = KeycapTheme.of(context);
   final rtl = Directionality.of(context) == TextDirection.rtl;
   return Padding(
@@ -73,7 +73,8 @@ Widget _header(BuildContext context, DesignCalendarHeader header) {
       children: [
         KeycapSmallKey(
           icon: rtl ? LucideIcons.chevronRight : LucideIcons.chevronLeft,
-          semanticLabel: DesignLocalizations.of(context).previousMonthTooltip,
+          semanticLabel: RawWidgetsLocalizations.of(context)
+              .previousMonthTooltip,
           onPressed: header.previous,
           side: 36,
         ),
@@ -86,7 +87,7 @@ Widget _header(BuildContext context, DesignCalendarHeader header) {
         ),
         KeycapSmallKey(
           icon: rtl ? LucideIcons.chevronLeft : LucideIcons.chevronRight,
-          semanticLabel: DesignLocalizations.of(context).nextMonthTooltip,
+          semanticLabel: RawWidgetsLocalizations.of(context).nextMonthTooltip,
           onPressed: header.next,
           side: 36,
         ),
@@ -116,7 +117,7 @@ Widget _weekday(BuildContext context, int weekday, String label) {
 /// press dims its figure.
 Widget _day(
   BuildContext context,
-  DesignCalendarDay day,
+  RawCalendarDayDetails day,
   Set<WidgetState> states, [
   KeycapStyle? style,
 ]) {
@@ -236,10 +237,10 @@ Widget _day(
 /// A month of days printed on the case, with keys to the months either
 /// side: the chosen day a small accent key, a range's days a well its two
 /// ends stand in, today underlined. The arrows move by day and week, Page
-/// Up and Page Down by month. Built on ui_core's `DesignCalendar`.
+/// Up and Page Down by month. Built on ui_core's `RawCalendarDatePicker`.
 ///
 /// ```dart
-/// KeycapCalendar(controller: DesignCalendarController(firstDate: DateTime(2026), lastDate: DateTime(2027)))
+/// KeycapCalendar(controller: RawCalendarController(firstDate: DateTime(2026), lastDate: DateTime(2027)))
 /// ```
 class KeycapCalendar extends StatelessWidget {
   /// A calendar over [controller].
@@ -254,7 +255,7 @@ class KeycapCalendar extends StatelessWidget {
   });
 
   /// What is chosen, and which month shows.
-  final DesignCalendarController controller;
+  final RawCalendarController controller;
 
   /// Called with each day chosen.
   final ValueChanged<DateTime>? onChanged;
@@ -279,7 +280,7 @@ class KeycapCalendar extends StatelessWidget {
   Widget build(BuildContext context) => MediaQuery.withClampedTextScaling(
     maxScaleFactor: 2,
     child: Builder(
-      builder: (context) => DesignCalendar(
+      builder: (context) => RawCalendarDatePicker(
         controller: controller,
         onChanged: onChanged,
         months: months,
@@ -342,7 +343,7 @@ class _PickerKey extends StatelessWidget {
     final h = theme.controlHeight;
     Widget key(DesignOverlayAnchor? anchor) {
       final open = anchor?.isOpen ?? false;
-      return DesignPressable(
+      return RawButton(
         onPressed: anchor?.toggle,
         expanded: anchor?.isOpen,
         semanticLabel: semanticLabel,
@@ -372,7 +373,7 @@ class _PickerKey extends StatelessWidget {
               : empty
               ? c.inkMuted
               : face.legend;
-          return DesignTapTarget(
+          return TapTargetPadding(
             child: ConstrainedBox(
               constraints: BoxConstraints(minHeight: h),
               child: AnimatedKeycapCap(
@@ -420,9 +421,9 @@ class _PickerKey extends StatelessWidget {
 
     final Widget box = !enabled
         ? key(null)
-        : DesignAnchoredOverlay(
+        : RawPopover(
             semanticLabel: semanticLabel,
-            placement: const DesignOverlayPlacement(
+            placement: const RawPopoverPlacement(
               gap: KeycapSpacing.tight + 2,
               margin: KeycapSpacing.small,
               preferredExtent: 380,
@@ -434,7 +435,7 @@ class _PickerKey extends StatelessWidget {
             anchorBuilder: (context, anchor) => key(anchor),
             overlayBuilder: (context, info) => KeycapMenuReveal(
               animation: info.animation,
-              below: info.side != DesignOverlaySide.above,
+              below: info.side != RawPopoverSide.above,
               child: KeycapMenuPanel(
                 maxHeight: info.maxSize.height,
                 child: Padding(
@@ -451,15 +452,15 @@ class _PickerKey extends StatelessWidget {
 class _CalendarPanel extends StatefulWidget {
   const _CalendarPanel({required this.make, required this.onChanged});
 
-  final DesignCalendarController Function() make;
-  final void Function(DesignCalendarController controller) onChanged;
+  final RawCalendarController Function() make;
+  final void Function(RawCalendarController controller) onChanged;
 
   @override
   State<_CalendarPanel> createState() => _CalendarPanelState();
 }
 
 class _CalendarPanelState extends State<_CalendarPanel> {
-  late final DesignCalendarController _controller = widget.make();
+  late final RawCalendarController _controller = widget.make();
 
   @override
   void dispose() {
@@ -542,7 +543,7 @@ class KeycapDatePicker extends StatelessWidget {
   Widget build(BuildContext context) {
     final enabled = onChanged != null;
     final chosen = value;
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -559,7 +560,7 @@ class KeycapDatePicker extends StatelessWidget {
           semanticValue: chosen == null ? null : words.formatFullDate(chosen),
           style: style,
           panel: (context, close) => _CalendarPanel(
-            make: () => DesignCalendarController(
+            make: () => RawCalendarController(
               firstDate: firstDate,
               lastDate: lastDate,
               selectedDate: chosen,
@@ -613,10 +614,10 @@ class KeycapDateRangePicker extends StatelessWidget {
   });
 
   /// The days chosen.
-  final DesignDateRange? value;
+  final RawDateRange? value;
 
   /// Called with a whole range; null turns it off.
-  final ValueChanged<DesignDateRange>? onChanged;
+  final ValueChanged<RawDateRange>? onChanged;
 
   /// The first day that can be chosen.
   final DateTime firstDate;
@@ -650,8 +651,8 @@ class KeycapDateRangePicker extends StatelessWidget {
     final enabled = onChanged != null;
     final range = value;
     final end = range?.end;
-    final words = DesignLocalizations.of(context);
-    String rangeText(DesignDateRange dates) {
+    final words = RawWidgetsLocalizations.of(context);
+    String rangeText(RawDateRange dates) {
       final last = dates.end;
       final start = last == null || dates.start.year == last.year
           ? words.formatShortMonthDay(dates.start)
@@ -682,10 +683,10 @@ class KeycapDateRangePicker extends StatelessWidget {
                 ),
           style: style,
           panel: (context, close) => _CalendarPanel(
-            make: () => DesignCalendarController(
+            make: () => RawCalendarController(
               firstDate: firstDate,
               lastDate: lastDate,
-              mode: DesignCalendarMode.range,
+              mode: RawCalendarMode.range,
               selectedRange: range,
               currentDate: currentDate,
             ),
@@ -714,7 +715,7 @@ class KeycapDateRangePicker extends StatelessWidget {
 /// a key that sets it. In the locale's 12 or 24 hour clock.
 ///
 /// ```dart
-/// KeycapTimePicker(label: 'Remind me at', value: const DesignTimeOfDay(hour: 9, minute: 0), onChanged: (t) => setState(() => at = t))
+/// KeycapTimePicker(label: 'Remind me at', value: const RawTimeOfDay(hour: 9, minute: 0), onChanged: (t) => setState(() => at = t))
 /// ```
 class KeycapTimePicker extends StatelessWidget {
   /// A time picker.
@@ -732,10 +733,10 @@ class KeycapTimePicker extends StatelessWidget {
   }) : assert(60 % minuteStep == 0);
 
   /// The time chosen.
-  final DesignTimeOfDay? value;
+  final RawTimeOfDay? value;
 
   /// Called with the time set; null turns it off.
-  final ValueChanged<DesignTimeOfDay>? onChanged;
+  final ValueChanged<RawTimeOfDay>? onChanged;
 
   /// The words over the key.
   final String? label;
@@ -764,8 +765,8 @@ class KeycapTimePicker extends StatelessWidget {
     final t = value;
     final h24 = MediaQuery.alwaysUse24HourFormatOf(context);
     String two(int n) => n.toString().padLeft(2, '0');
-    final local = DesignLocalizations.of(context);
-    String label12(DesignTimeOfDay v) {
+    final local = RawWidgetsLocalizations.of(context);
+    String label12(RawTimeOfDay v) {
       final h = v.hour % 12 == 0 ? 12 : v.hour % 12;
       final half = v.hour < 12
           ? local.anteMeridiemAbbreviation
@@ -773,7 +774,7 @@ class KeycapTimePicker extends StatelessWidget {
       return '$h:${two(v.minute)} $half';
     }
 
-    String words(DesignTimeOfDay v) =>
+    String words(RawTimeOfDay v) =>
         h24 ? '${two(v.hour)}:${two(v.minute)}' : label12(v);
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -791,7 +792,7 @@ class KeycapTimePicker extends StatelessWidget {
           semanticValue: t == null ? null : words(t),
           style: style,
           panel: (context, close) => _TimePanel(
-            initial: t ?? const DesignTimeOfDay(hour: 9, minute: 0),
+            initial: t ?? const RawTimeOfDay(hour: 9, minute: 0),
             minuteStep: minuteStep,
             h24: h24,
             onSet: (v) {
@@ -820,10 +821,10 @@ class _TimePanel extends StatefulWidget {
     required this.onSet,
   });
 
-  final DesignTimeOfDay initial;
+  final RawTimeOfDay initial;
   final int minuteStep;
   final bool h24;
-  final ValueChanged<DesignTimeOfDay> onSet;
+  final ValueChanged<RawTimeOfDay> onSet;
 
   @override
   State<_TimePanel> createState() => _TimePanelState();
@@ -837,17 +838,17 @@ class _TimePanelState extends State<_TimePanel> {
   @override
   Widget build(BuildContext context) {
     String two(int n) => n.toString().padLeft(2, '0');
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     final step = widget.minuteStep;
     final h24 = widget.h24;
-    final columns = <DesignWheelColumn>[
-      DesignWheelColumn(
+    final columns = <RawPickerColumn>[
+      RawPickerColumn(
         itemCount: h24 ? 24 : 12,
         itemLabel: (i) => h24 ? two(i) : '${i == 0 ? 12 : i}',
         semanticLabel: words.timePickerHourLabel,
         looping: true,
       ),
-      DesignWheelColumn(
+      RawPickerColumn(
         itemCount: 60 ~/ step,
         itemLabel: (i) => two(i * step),
         semanticLabel: words.timePickerMinuteLabel,
@@ -857,7 +858,7 @@ class _TimePanelState extends State<_TimePanel> {
     final selection = [if (h24) _hour else _hour % 12, _minute];
     final done = KeycapButton.accent(
       onPressed: () =>
-          widget.onSet(DesignTimeOfDay(hour: _hour, minute: _minute * step)),
+          widget.onSet(RawTimeOfDay(hour: _hour, minute: _minute * step)),
       child: Text(words.doneButtonLabel),
     );
     // Hours and minutes turn on wheels; the half of the day is a pair of

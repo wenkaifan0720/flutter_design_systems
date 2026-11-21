@@ -275,8 +275,8 @@ final DesignInventory keycapInventory = DesignInventory(
         onPressed: _none,
         menuLabel: 'More ways to export',
         actions: [
-          DesignSplitAction(label: 'Export as PDF', onPressed: _none),
-          DesignSplitAction(label: 'Export as text', onPressed: _none),
+          RawSplitAction(label: 'Export as PDF', onPressed: _none),
+          RawSplitAction(label: 'Export as text', onPressed: _none),
         ],
       ),
     ),
@@ -422,8 +422,8 @@ final DesignInventory keycapInventory = DesignInventory(
     ),
     DesignInventoryEntry.present(
       'RangeSlider',
-      (_) => _Held<DesignRangeValues>(
-        const DesignRangeValues(200, 800),
+      (_) => _Held<RawRangeValues>(
+        const RawRangeValues(200, 800),
         (context, v, set) => KeycapRangeSlider(
           values: v,
           onChanged: set,
@@ -494,8 +494,8 @@ final DesignInventory keycapInventory = DesignInventory(
     ),
     DesignInventoryEntry.present(
       'DateRangePicker',
-      (_) => _Held<DesignDateRange?>(
-        DesignDateRange(DateTime(2026, 12, 20), DateTime(2026, 12, 28)),
+      (_) => _Held<RawDateRange?>(
+        RawDateRange(DateTime(2026, 12, 20), DateTime(2026, 12, 28)),
         (context, v, set) => KeycapDateRangePicker(
           label: 'Trip',
           value: v,
@@ -508,16 +508,16 @@ final DesignInventory keycapInventory = DesignInventory(
     ),
     DesignInventoryEntry.present(
       'TimePicker',
-      (_) => _Held<DesignTimeOfDay?>(
-        const DesignTimeOfDay(hour: 9, minute: 30),
+      (_) => _Held<RawTimeOfDay?>(
+        const RawTimeOfDay(hour: 9, minute: 30),
         (context, v, set) =>
             KeycapTimePicker(label: 'At', value: v, onChanged: set),
       ),
     ),
     DesignInventoryEntry.present(
       'Calendar',
-      (_) => _Owned<DesignCalendarController>(
-        () => DesignCalendarController(
+      (_) => _Owned<RawCalendarController>(
+        () => RawCalendarController(
           firstDate: DateTime(2026, 11),
           lastDate: DateTime(2027, 3, 31),
           selectedDate: DateTime(2026, 11, 20),
@@ -538,7 +538,7 @@ final DesignInventory keycapInventory = DesignInventory(
           selection: v,
           onChanged: set,
           columns: (_) => [
-            DesignWheelColumn(
+            RawPickerColumn(
               itemCount: 5,
               itemLabel: (i) => const [
                 'At the time',
@@ -555,8 +555,8 @@ final DesignInventory keycapInventory = DesignInventory(
     ),
     DesignInventoryEntry.present(
       'ColorPicker',
-      (_) => _Owned<DesignColorController>(
-        () => DesignColorController(const Color(0xFF2F59CF)),
+      (_) => _Owned<RawColorController>(
+        () => RawColorController(const Color(0xFF2F59CF)),
         (context, c) =>
             SizedBox(width: 280, child: KeycapColorPicker(controller: c)),
       ),
@@ -659,21 +659,21 @@ final DesignInventory keycapInventory = DesignInventory(
       'MenuBar',
       (context) => KeycapMenuBar(
         menus: [
-          DesignMenuEntry(
+          RawMenuEntry(
             label: 'File',
             children: [
-              DesignMenuEntry(
+              RawMenuEntry(
                 label: 'New note',
                 shortcut: _label(context, LogicalKeyboardKey.keyN),
                 onPressed: _none,
               ),
-              const DesignMenuEntry(label: 'Export', onPressed: _none),
+              const RawMenuEntry(label: 'Export', onPressed: _none),
             ],
           ),
-          const DesignMenuEntry(
+          const RawMenuEntry(
             label: 'View',
             children: [
-              DesignMenuEntry(
+              RawMenuEntry(
                 label: 'Show word count',
                 checked: true,
                 onPressed: _none,
@@ -690,18 +690,18 @@ final DesignInventory keycapInventory = DesignInventory(
         child: KeycapCommandPalette(
           maxHeight: 200,
           commands: [
-            DesignCommand(
+            RawCommand(
               label: 'New note',
               group: 'Notes',
               shortcut: _label(context, LogicalKeyboardKey.keyN),
               onPressed: _none,
             ),
-            const DesignCommand(
+            const RawCommand(
               label: 'Open Folders',
               group: 'Go to',
               onPressed: _none,
             ),
-            const DesignCommand(
+            const RawCommand(
               label: 'Settings',
               group: 'Go to',
               onPressed: _none,
@@ -772,16 +772,16 @@ final DesignInventory keycapInventory = DesignInventory(
     ),
     DesignInventoryEntry.present(
       'DataTable',
-      (_) => _Owned<DesignTableController<_Note>>(
-        () => DesignTableController<_Note>(
+      (_) => _Owned<RawDataTableController<_Note>>(
+        () => RawDataTableController<_Note>(
           rows: _notes,
           columns: [
-            DesignTableColumn<_Note>(
+            RawDataColumn<_Note>(
               id: 'title',
               label: 'Note',
               sortKey: (n) => n.title,
             ),
-            DesignTableColumn<_Note>(
+            RawDataColumn<_Note>(
               id: 'words',
               label: 'Words',
               numeric: true,
@@ -839,11 +839,7 @@ final DesignInventory keycapInventory = DesignInventory(
       'SwipeActions',
       (_) => const KeycapSwipeActions(
         endActions: [
-          DesignSwipeAction(
-            label: 'Delete',
-            destructive: true,
-            onPressed: _none,
-          ),
+          RawSwipeAction(label: 'Delete', destructive: true, onPressed: _none),
         ],
         child: KeycapListTile(title: 'Train times', trailingText: '96 words'),
       ),
@@ -1025,10 +1021,10 @@ final DesignInventory keycapInventory = DesignInventory(
         semanticLabel: 'Note',
         destructive: const {'Delete'},
         entries: const [
-          DesignMenuEntry(label: 'Pin', onPressed: _none),
-          DesignMenuEntry(label: 'Move', onPressed: _none),
-          DesignMenuEntry.divider(),
-          DesignMenuEntry(label: 'Delete', onPressed: _none),
+          RawMenuEntry(label: 'Pin', onPressed: _none),
+          RawMenuEntry(label: 'Move', onPressed: _none),
+          RawMenuEntry.divider(),
+          RawMenuEntry(label: 'Delete', onPressed: _none),
         ],
         builder: (context, anchor) => KeycapIconButton(
           icon: const Icon(LucideIcons.ellipsis),

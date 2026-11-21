@@ -20,7 +20,7 @@ import 'text_field.dart';
 import 'theme.dart';
 
 // The ui_core types these parts' APIs take, through the look's barrel.
-export 'package:ui_core/ui_core.dart' show DesignColorController;
+export 'package:ui_core/ui_core.dart' show RawColorController;
 export 'package:ui_core/ui_core.dart' show DesignOptionSearch;
 
 /// A field's well, as [KeycapTextField] draws it, for [states].
@@ -171,7 +171,7 @@ Widget _looking(BuildContext context) {
           const ExcludeSemantics(child: KeycapSpinner(size: 16)),
           const SizedBox(width: KeycapSpacing.small),
           Text(
-            DesignLocalizations.of(context).loadingLabel,
+            RawWidgetsLocalizations.of(context).loadingLabel,
             style: theme.textTheme.body.copyWith(color: theme.colors.inkMuted),
           ),
         ],
@@ -182,9 +182,9 @@ Widget _looking(BuildContext context) {
 
 /// Says, in the list's panel, that a search failed, over a row to try
 /// again, lit while the keys are on it.
-Widget _failed(BuildContext context, DesignSearchError error) {
+Widget _failed(BuildContext context, RawSearchError error) {
   final theme = KeycapTheme.of(context);
-  final words = DesignLocalizations.of(context);
+  final words = RawWidgetsLocalizations.of(context);
   return Column(
     mainAxisSize: MainAxisSize.min,
     crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -208,7 +208,7 @@ Widget _failed(BuildContext context, DesignSearchError error) {
       ),
       // The keys reach it from the field (Down), never by Tab.
       ExcludeFocus(
-        child: DesignPressable(
+        child: RawButton(
           onPressed: error.retry,
           semanticLabel: words.retryButtonLabel,
           excludeSemantics: true,
@@ -230,7 +230,7 @@ Widget _failed(BuildContext context, DesignSearchError error) {
 /// A field that suggests as it is typed in: the [options] that fit the
 /// words (or what [search] finds) open in a panel under it, the lit row a
 /// plate inset in the panel, the chosen one ticked. The arrows move the lit
-/// row; Enter takes it. Built on ui_core's `DesignCombobox`.
+/// row; Enter takes it. Built on ui_core's `RawCombobox`.
 ///
 /// ```dart
 /// KeycapCombobox<String>(label: 'Folder', options: const ['Ideas', 'Work', 'Home'], onSelected: move)
@@ -369,7 +369,7 @@ class _KeycapComboboxState<T extends Object> extends State<KeycapCombobox<T>> {
           ExcludeSemantics(
             child: KeycapFieldLabel(widget.label!, enabled: widget.enabled),
           ),
-        DesignCombobox<T>(
+        RawCombobox<T>(
           options: widget.options,
           search: widget.search,
           debounceDuration: widget.debounceDuration,
@@ -386,7 +386,8 @@ class _KeycapComboboxState<T extends Object> extends State<KeycapCombobox<T>> {
           surfaceBuilder: _panel,
           emptyBuilder: (context) => _nothing(
             context,
-            widget.emptyLabel ?? DesignLocalizations.of(context).noResultsLabel,
+            widget.emptyLabel ??
+                RawWidgetsLocalizations.of(context).noResultsLabel,
           ),
           optionBuilder: (context, option, states) => _row(
             context,
@@ -448,7 +449,7 @@ class _KeycapComboboxState<T extends Object> extends State<KeycapCombobox<T>> {
 /// words typed after them. Suggestions open in a panel under it; Enter (or
 /// a comma) takes the lit one, or makes one of the words when [onCreate]
 /// does, and the field keeps the focus for the next. Backspace in an empty
-/// field removes the last. Built on ui_core's `DesignTagInput`.
+/// field removes the last. Built on ui_core's `RawTagInput`.
 ///
 /// ```dart
 /// KeycapTagInput<String>(label: 'Tags', values: tags, options: const ['draft', 'work', 'recipe'], onChanged: setTags)
@@ -553,7 +554,7 @@ class _KeycapTagInputState<T extends Object> extends State<KeycapTagInput<T>> {
     final theme = KeycapTheme.of(context);
     final remove =
         widget.deleteLabel ??
-        DesignLocalizations.of(context).deleteButtonTooltip;
+        RawWidgetsLocalizations.of(context).deleteButtonTooltip;
     final states = <WidgetState>{
       if (!widget.enabled) WidgetState.disabled,
       if (_within) WidgetState.focused,
@@ -571,7 +572,7 @@ class _KeycapTagInputState<T extends Object> extends State<KeycapTagInput<T>> {
           canRequestFocus: false,
           skipTraversal: true,
           onFocusChange: (inside) => setState(() => _within = inside),
-          child: DesignTagInput<T>(
+          child: RawTagInput<T>(
             values: widget.values,
             onChanged: widget.onChanged,
             options: widget.options,
@@ -685,7 +686,7 @@ class _TagCap extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = KeycapTheme.of(context);
     final h = KeycapMetrics.grown(context, 32, theme.textTheme.secondary);
-    return DesignPressable(
+    return RawButton(
       onPressed: onRemove,
       semanticLabel: removeLabel,
       excludeSemantics: true,
@@ -695,7 +696,7 @@ class _TagCap extends StatelessWidget {
           if (focused) WidgetState.focused,
           if (!enabled) WidgetState.disabled,
         }, radius: KeycapMetrics.smallKeyRadius);
-        return DesignTapTarget(
+        return TapTargetPadding(
           child: SizedBox(
             height: h,
             child: AnimatedKeycapCap(
@@ -789,7 +790,7 @@ class KeycapChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = KeycapTheme.of(context);
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     Widget cap(Set<WidgetState> states, {required bool latched}) {
       final layered = DesignStyleOf([style, theme.tagStyle], states);
       var face = keycapKeyFace(
@@ -867,22 +868,23 @@ class KeycapChip extends StatelessWidget {
       );
     }
     if (onSelected == null) {
-      return DesignPressable(
+      return RawButton(
         onPressed: enabled ? onDeleted : null,
         semanticLabel: '${deleteLabel ?? words.deleteButtonTooltip} $label',
         excludeSemantics: true,
         builder: (context, states, _) =>
-            DesignTapTarget(child: cap(states, latched: selected)),
+            TapTargetPadding(child: cap(states, latched: selected)),
       );
     }
-    final chip = DesignPressable(
+    final chip = RawButton(
       onPressed: enabled ? () => onSelected!(!selected) : null,
       semanticLabel: label,
-      toggled: selected,
+      // A button, selected while latched, as a selectable chip is.
+      semanticSelected: selected,
       selected: selected,
       excludeSemantics: true,
       builder: (context, states, _) =>
-          DesignTapTarget(child: cap(states, latched: selected)),
+          TapTargetPadding(child: cap(states, latched: selected)),
     );
     if (onDeleted == null) return chip;
     return Row(
@@ -1009,10 +1011,10 @@ class KeycapDropZone extends StatelessWidget {
 
 /// A colour picked by hand: a square of saturation and brightness in a
 /// well, a slot for the hue (and the alpha) under it, each with a small cap
-/// riding it. The arrows move each. Built on ui_core's `DesignColorPicker`.
+/// riding it. The arrows move each. Built on ui_core's `RawColorPicker`.
 ///
 /// ```dart
-/// KeycapColorPicker(controller: DesignColorController(const Color(0xFF2F59CF)))
+/// KeycapColorPicker(controller: RawColorController(const Color(0xFF2F59CF)))
 /// ```
 class KeycapColorPicker extends StatelessWidget {
   /// A colour picker over [controller].
@@ -1024,7 +1026,7 @@ class KeycapColorPicker extends StatelessWidget {
   });
 
   /// The colour.
-  final DesignColorController controller;
+  final RawColorController controller;
 
   /// Whether it has an alpha slot.
   final bool showAlpha;
@@ -1038,7 +1040,7 @@ class KeycapColorPicker extends StatelessWidget {
     final c = theme.colors;
     final rtl = Directionality.of(context) == TextDirection.rtl;
     const inset = KeycapSpacing.tight;
-    return DesignColorPicker(
+    return RawColorPicker(
       controller: controller,
       showAlpha: showAlpha,
       areaHeight: areaHeight,
@@ -1157,7 +1159,7 @@ class _AreaPainter extends CustomPainter {
 class _ChannelPainter extends CustomPainter {
   _ChannelPainter(this.channel, this.color, {required this.rtl});
 
-  final DesignColorChannel channel;
+  final RawColorChannel channel;
   final HSVColor color;
   final bool rtl;
 
@@ -1165,19 +1167,19 @@ class _ChannelPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final rect = Offset.zero & size;
     final colours = switch (channel) {
-      DesignColorChannel.hue => [
+      RawColorChannel.hue => [
         for (var h = 0; h <= 360; h += 60)
           HSVColor.fromAHSV(1, h.toDouble(), 1, 1).toColor(),
       ],
-      DesignColorChannel.saturation => [
+      RawColorChannel.saturation => [
         color.withSaturation(0).toColor(),
         color.withSaturation(1).toColor(),
       ],
-      DesignColorChannel.brightness => [
+      RawColorChannel.brightness => [
         color.withValue(0).toColor(),
         color.withValue(1).toColor(),
       ],
-      DesignColorChannel.alpha => [
+      RawColorChannel.alpha => [
         color.withAlpha(0).toColor(),
         color.withAlpha(1).toColor(),
       ],
