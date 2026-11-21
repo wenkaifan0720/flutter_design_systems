@@ -11,6 +11,8 @@ analyzer:
     - windows/**
     - macos/**
     - linux/**
+    # The skills' sample packages resolve on their own; analyze them from their folders.
+    - skills/**
   language:
     strict-casts: true
     strict-inference: true
