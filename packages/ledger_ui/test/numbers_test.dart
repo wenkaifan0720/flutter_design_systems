@@ -45,8 +45,8 @@ Future<void> _pump(
     WidgetsApp(
       color: const Color(0xFF000000),
       locale: locale,
-      supportedLocales: DesignLocalizations.supportedLocales,
-      localizationsDelegates: const [DesignLocalizations.delegate],
+      supportedLocales: RawWidgetsLocalizations.supportedLocales,
+      localizationsDelegates: const [RawWidgetsLocalizations.delegate],
       builder: (context, _) => MediaQuery(
         data: MediaQuery.of(context)
             .copyWith(textScaler: TextScaler.linear(scale)),
@@ -78,7 +78,7 @@ void main() {
   setUpAll(_loadFonts);
 
   for (final locale in const [Locale('en'), Locale('ar'), Locale('de')]) {
-    final words = DesignLocalizations.forLocale(locale);
+    final words = RawWidgetsLocalizations.forLocale(locale);
     final lang = locale.languageCode;
 
     testWidgets('a stepper shows a count, not money, in $lang', (t) async {
@@ -171,7 +171,7 @@ void main() {
   ]) {
     testWidgets('a pie chart in ${locale.languageCode} says the app\'s word '
         'for its whole', (t) async {
-      final words = DesignLocalizations.forLocale(locale);
+      final words = RawWidgetsLocalizations.forLocale(locale);
       await _pump(
         t,
         locale: locale,
@@ -228,15 +228,15 @@ void main() {
     testWidgets('a selectable table\'s amounts read whole at $at on a phone', (
       t,
     ) async {
-      final table = DesignTableController<(String, double)>(
+      final table = RawDataTableController<(String, double)>(
         rows: const [
           ('Corner Market', 64.18),
           ('Rent', 1150),
           ('Payroll', 3200),
         ],
         columns: [
-          DesignTableColumn(id: 'entry', label: 'Entry', sortKey: (r) => r.$1),
-          DesignTableColumn(
+          RawDataColumn(id: 'entry', label: 'Entry', sortKey: (r) => r.$1),
+          RawDataColumn(
             id: 'amount',
             label: 'Amount',
             numeric: true,

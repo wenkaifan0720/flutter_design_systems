@@ -25,17 +25,17 @@ class _Table extends StatefulWidget {
 
 class _TableState extends State<_Table> {
   late final _rows = [for (final d in kitDays) ...d.rows].take(8).toList();
-  late final _table = DesignTableController<KitTx>(
+  late final _table = RawDataTableController<KitTx>(
     rows: _rows,
     rowKey: (tx) => tx.id,
     columns: [
-      DesignTableColumn(id: 'title', label: 'Entry', sortKey: (tx) => tx.title),
-      DesignTableColumn(
+      RawDataColumn(id: 'title', label: 'Entry', sortKey: (tx) => tx.title),
+      RawDataColumn(
         id: 'account',
         label: 'Account',
         sortKey: (tx) => tx.account,
       ),
-      DesignTableColumn(
+      RawDataColumn(
         id: 'amount',
         label: 'Amount',
         numeric: true,

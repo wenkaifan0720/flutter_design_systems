@@ -6,10 +6,10 @@ import '../theme.dart';
 
 /// Takes taps over at least a [target] square round its child while laying
 /// out at the child's own size. Ledger's parts reach their floor through
-/// ui_core's [DesignTapTarget] since 0.2.0, whose screen-reader box is the
+/// ui_core's [TapTargetPadding] since 0.2.0, whose screen-reader box is the
 /// reach a tap has; this forwards to it, for a component copied from 0.1.
 @Deprecated(
-  'Use DesignTapTarget(minSize: Size.square(target), child: child). '
+  'Use TapTargetPadding(minSize: Size.square(target), child: child). '
   'This feature was deprecated after ledger_ui 0.2.0.',
 )
 class LedgerHitSlop extends StatelessWidget {
@@ -34,5 +34,5 @@ class LedgerHitSlop extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) =>
-      DesignTapTarget(minSize: Size.square(target), child: child);
+      TapTargetPadding(minSize: Size.square(target), child: child);
 }

@@ -351,7 +351,7 @@ class LedgerMoreLink extends StatelessWidget {
             ),
     );
     // A link standing alone is laid out at the tap floor round its words.
-    return box == null ? DesignTapTarget(child: link) : link;
+    return box == null ? TapTargetPadding(child: link) : link;
   }
 }
 

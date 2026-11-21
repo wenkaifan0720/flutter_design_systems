@@ -24,7 +24,7 @@ import 'pressable/pressable.dart';
 /// (Undo), and a new toast replaces the one still showing. Its time stops
 /// while a pointer rests on it or the keyboard is in it; F6 takes the
 /// keyboard to it, Escape dismisses it, and a screen reader hears it. The
-/// behaviour is ui_core's ([DesignToaster]), installed by [LedgerHost]
+/// behaviour is ui_core's ([RawToaster]), installed by [LedgerHost]
 /// ([LedgerToaster]); Ledger paints it.
 ///
 /// ```dart
@@ -48,7 +48,7 @@ abstract final class LedgerToast {
     // Where it stands is read here, at the caller: the toaster stands above
     // the navigator, where no page's tab bar is in sight.
     final place = _placeFor(context, toaster);
-    final toast = DesignToast(
+    final toast = RawToast(
       message: message,
       actionLabel: actionLabel,
       onAction: actionLabel == null ? null : (onActionPressed ?? () {}),
@@ -130,7 +130,7 @@ _LedgerToasterState? _rootToaster(BuildContext context) {
 /// app's navigator, so a page needs nothing of its own. One shows at a
 /// time, where [LedgerToast.show] says (over the tab bar on a phone, at the
 /// bottom right from desk width). The behaviour is ui_core's
-/// ([DesignToaster]); Ledger paints each toast as a [LedgerToastCard].
+/// ([RawToaster]); Ledger paints each toast as a [LedgerToastCard].
 ///
 /// ```dart
 /// LedgerToaster(child: app)
@@ -147,17 +147,17 @@ class LedgerToaster extends StatefulWidget {
 }
 
 class _LedgerToasterState extends State<LedgerToaster> {
-  final GlobalKey<DesignToasterState> _toaster = GlobalKey();
+  final GlobalKey<RawToasterState> _toaster = GlobalKey();
   _Place _place = const _Place(LedgerChromeMetrics.toastFoot, false);
 
-  void _show(DesignToast toast, _Place place) {
+  void _show(RawToast toast, _Place place) {
     if (place.bottom != _place.bottom || place.wide != _place.wide) {
       setState(() => _place = place);
     }
     _toaster.currentState?.show(toast);
   }
 
-  Widget _toast(BuildContext context, DesignToastDetails d) {
+  Widget _toast(BuildContext context, RawToastDetails d) {
     final t = context.ledgerTheme;
     final still = LedgerMotion.isReduced(context);
     final icon = d.toast.data;
@@ -207,7 +207,7 @@ class _LedgerToasterState extends State<LedgerToaster> {
     final bottom = math.max(_place.bottom - safe, 0.0);
     const side = LedgerChromeMetrics.toastSide;
     const edge = LedgerChromeMetrics.toastEdgeWide;
-    return DesignToaster(
+    return RawToaster(
       key: _toaster,
       maxVisible: 1,
       alignment: _place.wide
@@ -336,7 +336,7 @@ class LedgerToastCard extends StatelessWidget {
               // the toast's node.
               Semantics(
                 container: true,
-                child: DesignTapTarget(
+                child: TapTargetPadding(
                   child: LedgerPressable(
                     onTap: onActionPressed,
                     label: actionLabel,

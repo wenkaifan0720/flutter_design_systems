@@ -251,7 +251,7 @@ class _LedgerInputGroupState extends State<LedgerInputGroup> {
       ),
       child: typed,
     );
-    return DesignField(
+    return RawInputDecorator(
       labelText: widget.label,
       helperText: widget.helper,
       errorText: widget.error,

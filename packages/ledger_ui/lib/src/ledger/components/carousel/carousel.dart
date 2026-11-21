@@ -81,7 +81,7 @@ class LedgerCarousel extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.ledgerTheme;
     final rtl = Directionality.of(context) == TextDirection.rtl;
-    return DesignCarousel(
+    return RawCarousel(
       itemCount: itemCount,
       semanticLabel: semanticLabel,
       viewportFraction: viewportFraction,

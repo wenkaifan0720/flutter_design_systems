@@ -31,8 +31,8 @@ class LedgerFieldFrame extends StatelessWidget {
   /// rule its own parts (a code's slots, each on its own short rule).
   final bool ruled;
 
-  /// What [DesignField] made: the words, the state, the control's node.
-  final DesignFieldParts parts;
+  /// What [RawInputDecorator] made: the words, the state, the control's node.
+  final RawInputDecoratorDetails parts;
 
   /// The visible caption when the control supplies its own accessible name.
   final String? displayLabel;
@@ -57,7 +57,7 @@ class LedgerFieldFrame extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(FlagProperty('ruled', value: ruled, ifTrue: 'ruled'))
-      ..add(DiagnosticsProperty<DesignFieldParts>('parts', parts))
+      ..add(DiagnosticsProperty<RawInputDecoratorDetails>('parts', parts))
       ..add(StringProperty('displayLabel', displayLabel, defaultValue: null))
       ..add(
         DiagnosticsProperty<FocusNode>(

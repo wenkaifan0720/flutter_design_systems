@@ -663,22 +663,21 @@ final DesignInventory ledgerInventory = DesignInventory(
       // of their choice.
       (_) => _Held<String?>(
         'monthly',
-        (context, v, set) => DesignRadioGroup<String>(
-          options: const ['weekly', 'monthly'],
-          value: v,
+        (context, v, set) => RadioGroup<String>(
+          groupValue: v,
           onChanged: set,
-          semanticLabel: 'How often',
-          layoutBuilder: (context, radios) => Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: radios,
-          ),
-          itemBuilder: (context, value, node, select) => LedgerRadio<String>(
-            value: value,
-            groupValue: v,
-            label: value == 'weekly' ? 'Every week' : 'Every month',
-            focusNode: node,
-            onChanged: select == null ? null : (_) => select(),
+          child: RadioGroupKeyboardFix<String>(
+            child: Semantics(
+              label: 'How often',
+              child: const Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  LedgerRadio<String>(value: 'weekly', label: 'Every week'),
+                  LedgerRadio<String>(value: 'monthly', label: 'Every month'),
+                ],
+              ),
+            ),
           ),
         ),
       ),
@@ -1215,11 +1214,11 @@ class _InventoryTable extends StatefulWidget {
 }
 
 class _InventoryTableState extends State<_InventoryTable> {
-  final _table = DesignTableController<(String, double)>(
+  final _table = RawDataTableController<(String, double)>(
     rows: const [('Corner Market', 64.18), ('Rent', 1150), ('Payroll', 3200)],
     columns: [
-      DesignTableColumn(id: 'entry', label: 'Entry', sortKey: (r) => r.$1),
-      DesignTableColumn(
+      RawDataColumn(id: 'entry', label: 'Entry', sortKey: (r) => r.$1),
+      RawDataColumn(
         id: 'amount',
         label: 'Amount',
         numeric: true,

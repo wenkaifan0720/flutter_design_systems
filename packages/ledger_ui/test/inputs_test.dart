@@ -334,7 +334,8 @@ void main() {
       final chips = t.elementList(
         find.descendant(
           of: find.byWidgetPredicate((w) => w is LedgerSegmentedControl),
-          matching: find.byType(LedgerPressable),
+          // Each chip a radio.
+          matching: find.byWidgetPredicate((w) => w is RawRadio),
         ),
       );
       expect(chips, hasLength(_ranges.length));
@@ -384,7 +385,7 @@ void main() {
               in find
                   .descendant(
                     of: control,
-                    matching: find.byType(LedgerPressable),
+                    matching: find.byWidgetPredicate((w) => w is RawRadio),
                   )
                   .evaluate())
             t.getRect(find.byElementPredicate((x) => identical(x, e))),
@@ -415,10 +416,9 @@ void main() {
         expect(drawn, findsOneWidget, reason: where);
         final focused = find.ancestor(
           of: drawn,
-          matching: find.byType(LedgerPressable),
+          matching: find.byWidgetPredicate((w) => w is RawRadio),
         );
         // No corner kept clear: the rule runs the chip's whole width.
-        expect(t.widget<LedgerPressable>(focused).radius, 0, reason: where);
         final rule = t.getRect(drawn);
         final chip = t.getRect(focused);
         expect(rule.left, chip.left, reason: where);

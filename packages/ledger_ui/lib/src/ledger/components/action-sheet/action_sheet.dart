@@ -152,7 +152,7 @@ Future<T?> showLedgerActionSheet<T>(
   ],
   foot: (footContext) => [
     LedgerButton(
-      cancelLabel ?? DesignLocalizations.of(footContext).cancelButtonLabel,
+      cancelLabel ?? RawWidgetsLocalizations.of(footContext).cancelButtonLabel,
       onPressed: () => Navigator.of(footContext).pop(),
     ),
   ],

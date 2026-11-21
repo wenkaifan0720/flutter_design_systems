@@ -78,7 +78,7 @@ class LedgerBreadcrumb extends StatelessWidget {
                 ),
               )
             else
-              DesignTapTarget(
+              TapTargetPadding(
                 alignment: i == 0
                     ? AlignmentDirectional.centerStart
                     : AlignmentDirectional.center,

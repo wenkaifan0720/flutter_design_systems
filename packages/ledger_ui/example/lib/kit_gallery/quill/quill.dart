@@ -241,7 +241,7 @@ class _QuillAppState extends State<QuillApp> {
               ? const Locale('he')
               : const Locale('en'),
           localizationsDelegates: galleryDelegates,
-          supportedLocales: DesignLocalizations.supportedLocales,
+          supportedLocales: RawWidgetsLocalizations.supportedLocales,
           // The phone bar's wordmark reads it: Quill's name in its language.
           title: _prefs.direction == TextDirection.rtl
               ? quillHebrewWords['Quill']!

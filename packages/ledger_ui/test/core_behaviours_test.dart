@@ -230,7 +230,7 @@ void main() {
       );
       await t.enterText(find.byType(EditableText), 'Bl');
       await t.pumpAndSettle();
-      final words = DesignLocalizations.of(
+      final words = RawWidgetsLocalizations.of(
         t.element(find.byType(EditableText)),
       );
       expect(find.text(words.searchFailedMessage), findsOneWidget);

@@ -182,7 +182,7 @@ class LedgerBanner extends StatelessWidget {
                         if (close != null)
                           LedgerIconButton(
                             LucideIcons.x,
-                            semanticLabel: DesignLocalizations.of(context)
+                            semanticLabel: RawWidgetsLocalizations.of(context)
                                 .closeButtonLabel,
                             size: LedgerIconButtonSize.small,
                             tapAlignment: AlignmentDirectional.topEnd,

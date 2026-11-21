@@ -1,5 +1,5 @@
 /// A one-time code in Ledger's hand: its figures each written on a short
-/// rule, over ui_core's [DesignOtpField].
+/// rule, over ui_core's [RawOtpField].
 library;
 
 import 'package:flutter/foundation.dart';
@@ -57,7 +57,7 @@ class LedgerCodeField extends StatefulWidget {
   final String? error;
 
   /// The code; null: the field's own.
-  final DesignOtpController? controller;
+  final RawOtpController? controller;
 
   /// The field's focus; null: the field's own.
   final FocusNode? focusNode;
@@ -89,7 +89,7 @@ class LedgerCodeField extends StatefulWidget {
       ..add(StringProperty('helper', helper, defaultValue: null))
       ..add(StringProperty('error', error, defaultValue: null))
       ..add(
-        DiagnosticsProperty<DesignOtpController>(
+        DiagnosticsProperty<RawOtpController>(
           'controller',
           controller,
           defaultValue: null,
@@ -144,7 +144,7 @@ class _LedgerCodeFieldState extends State<LedgerCodeField> {
     final half = widget.length > 4 && widget.length.isEven
         ? widget.length ~/ 2
         : null;
-    final field = DesignOtpField(
+    final field = RawOtpField(
       length: widget.length,
       controller: widget.controller,
       focusNode: _focus,
@@ -222,7 +222,7 @@ class _LedgerCodeFieldState extends State<LedgerCodeField> {
         );
       },
     );
-    return DesignField(
+    return RawInputDecorator(
       helperText: widget.helper,
       errorText: widget.error,
       enabled: widget.enabled,

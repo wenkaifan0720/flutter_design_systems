@@ -15,8 +15,8 @@ import 'package:ledger_ui/ledger_host.dart';
 Widget _app(Locale locale, TextDirection direction, Widget page) => WidgetsApp(
   color: const Color(0xFF000000),
   locale: locale,
-  supportedLocales: DesignLocalizations.supportedLocales,
-  localizationsDelegates: const [DesignLocalizations.delegate],
+  supportedLocales: RawWidgetsLocalizations.supportedLocales,
+  localizationsDelegates: const [RawWidgetsLocalizations.delegate],
   builder: (context, _) => Directionality(
     textDirection: direction,
     child: LedgerHost(
@@ -160,7 +160,7 @@ void main() {
         ),
       );
       await t.pumpAndSettle();
-      final words = DesignLocalizations.forLocale(locale);
+      final words = RawWidgetsLocalizations.forLocale(locale);
       final range =
           '${words.formatDecimal(5)}\u2013${words.formatDecimal(480)}';
       await t.tap(find.byType(EditableText));
@@ -174,14 +174,14 @@ void main() {
     });
 
     testWidgets('ui_core\'s words are in ${locale.languageCode}', (t) async {
-      late DesignLocalizations words;
+      late RawWidgetsLocalizations words;
       await t.pumpWidget(
         _app(
           locale,
           direction,
           Builder(
             builder: (context) {
-              words = DesignLocalizations.of(context);
+              words = RawWidgetsLocalizations.of(context);
               return const LedgerTextField(label: 'Name');
             },
           ),
@@ -189,7 +189,7 @@ void main() {
       );
       await t.pumpAndSettle();
       expect(t.takeException(), isNull);
-      final shared = DesignLocalizations.forLocale(locale);
+      final shared = RawWidgetsLocalizations.forLocale(locale);
       expect(words.closeButtonLabel, shared.closeButtonLabel);
       expect(words.closeButtonLabel, isNot('Close'));
     });

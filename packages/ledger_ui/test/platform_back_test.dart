@@ -1,6 +1,6 @@
 // Going back on each platform: on iOS the edge swipe still pops a
 // page pushed in Ledger's own motion (Ledger's leaf drops Cupertino's slide, whose own the swipe is; ui_core's
-// DesignSwipeBackPageTransitionsBuilder puts it back round the leaf); on Android the system back closes what stands
+// SwipeBackPageTransitionsBuilder puts it back round the leaf); on Android the system back closes what stands
 // open over a page first (a select's list, a popover, a field's suggestions, a sheet, a dialog) and only then pops
 // the page. The host alone sets the motion: the app's theme says
 // nothing of it, and the platform is the ambient one, as on a device.

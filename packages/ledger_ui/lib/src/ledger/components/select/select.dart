@@ -156,7 +156,7 @@ class _LedgerSelectState<T> extends State<LedgerSelect<T>> {
     final hint = widget.hint ?? 'Choose one';
     return LedgerLayout.measured(
       context,
-      DesignField(
+      RawInputDecorator(
         labelText: widget.label,
         helperText: widget.helper,
         errorText: widget.error,
@@ -168,10 +168,10 @@ class _LedgerSelectState<T> extends State<LedgerSelect<T>> {
           focusNode: _focus,
           line: parts.control,
         ),
-        child: DesignAnchoredOverlay(
+        child: RawPopover(
           arrowKeyNavigation: true,
           semanticLabel: widget.label,
-          placement: const DesignOverlayPlacement(
+          placement: const RawPopoverPlacement(
             gap: 6,
             matchAnchorWidth: true,
             preferredExtent: 240,

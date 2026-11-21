@@ -112,7 +112,7 @@ Widget _kitApp({required Brightness brightness, required Widget home}) =>
                 theme: kitAppTheme,
                 // ui_core's words in the 30 languages it speaks.
                 localizationsDelegates: galleryDelegates,
-                supportedLocales: DesignLocalizations.supportedLocales,
+                supportedLocales: RawWidgetsLocalizations.supportedLocales,
                 builder: (context, child) => LedgerHost(
                   light: kitTheme(Brightness.light),
                   dark: kitTheme(Brightness.dark),
@@ -364,7 +364,7 @@ Widget kitSpecimenStage({
     theme: kitAppTheme,
     // ui_core's words in the 30 languages it speaks.
     localizationsDelegates: galleryDelegates,
-    supportedLocales: DesignLocalizations.supportedLocales,
+    supportedLocales: RawWidgetsLocalizations.supportedLocales,
     builder: (context, home) => LedgerHost(
       light: _atKitDensity(LedgerThemeData.preset(style, Brightness.light)),
       dark: _atKitDensity(LedgerThemeData.preset(style, Brightness.dark)),

@@ -16,7 +16,7 @@ import 'theme.dart';
 /// too, as the README's install does. On iOS it replaces Cupertino's slide,
 /// and with it the edge swipe back, which is that slide's own:
 /// [ledgerPageTransitions] puts the swipe back round it there (ui_core's
-/// `DesignSwipeBackPageTransitionsBuilder`).
+/// `SwipeBackPageTransitionsBuilder`).
 ///
 /// ```dart
 /// const PageTransitionsTheme(builders: {TargetPlatform.android: LedgerPageTransitions()})
@@ -44,7 +44,7 @@ class LedgerPageTransitions extends PageTransitionsBuilder {
 /// [LedgerPageTransitions] on every platform: one map for the
 /// `PageTransitionsTheme` of either Material, Flutter's own or the one
 /// Ledger is built on. On iOS a swipe from the screen's leading edge still
-/// takes a page back (ui_core's `DesignSwipeBackPageTransitionsBuilder`
+/// takes a page back (ui_core's `SwipeBackPageTransitionsBuilder`
 /// round the leaf): the page follows the finger as on every iOS screen, and
 /// a push or a pop is Ledger's leaf.
 ///
@@ -54,9 +54,7 @@ class LedgerPageTransitions extends PageTransitionsBuilder {
 const Map<TargetPlatform, PageTransitionsBuilder> ledgerPageTransitions = {
   TargetPlatform.android: LedgerPageTransitions(),
   TargetPlatform.fuchsia: LedgerPageTransitions(),
-  TargetPlatform.iOS: DesignSwipeBackPageTransitionsBuilder(
-    LedgerPageTransitions(),
-  ),
+  TargetPlatform.iOS: SwipeBackPageTransitionsBuilder(LedgerPageTransitions()),
   TargetPlatform.linux: LedgerPageTransitions(),
   TargetPlatform.macOS: LedgerPageTransitions(),
   TargetPlatform.windows: LedgerPageTransitions(),

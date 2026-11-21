@@ -530,7 +530,7 @@ class _Tab extends StatelessWidget {
         child: face,
       );
     }
-    return DesignPressable(
+    return RawButton(
       onPressed: onTap,
       semanticSelected: selected,
       semanticLabel: label,

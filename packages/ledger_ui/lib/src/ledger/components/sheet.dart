@@ -229,7 +229,7 @@ class LedgerSheetShell extends StatelessWidget {
                   ? LedgerIconButton.outlined(
                       LucideIcons.x,
                       key: closeKey,
-                      semanticLabel: DesignLocalizations.of(context)
+                      semanticLabel: RawWidgetsLocalizations.of(context)
                           .closeButtonLabel,
                       size: LedgerIconButtonSize.small,
                       tapAlignment: AlignmentDirectional.centerEnd,
@@ -304,7 +304,7 @@ class _OnCard extends InheritedWidget {
 /// whose bar becomes the sheet's head with its close.
 ///
 /// On a phone both rise off the bottom edge over the scrim, on ui_core's
-/// [DesignBottomSheetRoute]: a drag moves the sheet with the finger and a
+/// [RawBottomSheetRoute]: a drag moves the sheet with the finger and a
 /// drag down or a fling lets it go. At desktop width both stand centred as
 /// a dialog, on ui_core's [DesignDialogRoute], fading in. Both move on
 /// ui_core's springs (a short fade under Reduce Motion), keep the focus in
@@ -398,7 +398,7 @@ abstract final class LedgerSheet {
       );
     }
     return navigator.push(
-      DesignBottomSheetRoute<T>(
+      RawBottomSheetRoute<T>(
         barrierColor: t.overlay,
         semanticLabel: title,
         // The keyboard rides outside the card (ui_core stands the sheet on
@@ -449,7 +449,7 @@ abstract final class LedgerSheet {
         ),
       );
     }
-    return DesignBottomSheetRoute<T>(
+    return RawBottomSheetRoute<T>(
       settings: settings,
       barrierColor: t.overlay,
       builder: (sheetContext, details) => _SheetMeasure(

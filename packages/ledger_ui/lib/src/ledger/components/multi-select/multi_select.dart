@@ -1,4 +1,4 @@
-/// Values chosen as tags on a Ledger field, over ui_core's [DesignTagInput].
+/// Values chosen as tags on a Ledger field, over ui_core's [RawTagInput].
 library;
 
 import 'package:flutter/foundation.dart';
@@ -130,7 +130,7 @@ class _LedgerMultiSelectState<T extends Object>
     final t = context.ledgerTheme;
     final enabled = widget.enabled;
     final words = LedgerTextField.wordsOf(t);
-    final input = DesignTagInput<T>(
+    final input = RawTagInput<T>(
       values: widget.values,
       // The pointer's mark (an underline) and the keyboard's (the double
       // rule) differ on purpose, and only the chosen option stands on the
@@ -218,7 +218,7 @@ class _LedgerMultiSelectState<T extends Object>
         ),
       ),
     );
-    return DesignField(
+    return RawInputDecorator(
       mergeSemantics: false,
       helperText: widget.helper,
       errorText: widget.error,
@@ -259,7 +259,7 @@ class _Tag extends StatelessWidget {
     final t = context.ledgerTheme;
     final floor = DesignTapTargets.of(context).floorOn();
     final ink = enabled ? t.textPrimary : t.textTertiary;
-    final remove = DesignLocalizations.of(context).deleteButtonTooltip;
+    final remove = RawWidgetsLocalizations.of(context).deleteButtonTooltip;
     return SizedBox(
       height: floor.height < _pill ? _pill : floor.height,
       child: Stack(
@@ -288,7 +288,7 @@ class _Tag extends StatelessWidget {
                 maxLines: 1,
                 style: t.meta.medium.colored(ink),
               ),
-              DesignTapTarget(
+              TapTargetPadding(
                 minSize: Size(floor.height, floor.height),
                 child: LedgerPressable(
                   onTap: onDeleted,

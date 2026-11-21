@@ -446,7 +446,7 @@ class _Disc extends StatelessWidget {
           LedgerChromeMetrics.ringButton,
           floor: LedgerChromeMetrics.densityFloor,
         );
-    return DesignTapTarget(
+    return TapTargetPadding(
       child: LedgerPressable(
         onTap: onTap,
         label: label,

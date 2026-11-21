@@ -1,5 +1,5 @@
 /// Every act of the app found by typing, in Ledger's hand, over ui_core's
-/// [DesignCommandPalette].
+/// [RawCommandPalette].
 library;
 
 import 'package:flutter/foundation.dart';
@@ -14,9 +14,9 @@ import '../../theme.dart';
 import '../kbd/kbd.dart';
 import '../text-field/text_field.dart';
 
-/// One act a palette offers: ui_core's [DesignCommand] (its label, what it
+/// One act a palette offers: ui_core's [RawCommand] (its label, what it
 /// runs, its group, its shortcut's keys).
-typedef LedgerCommand = DesignCommand;
+typedef LedgerCommand = RawCommand;
 
 /// Every act of the app found by typing (New entry, Export October, Go to
 /// Budgets): a field on its rule with the search glyph, and under it the
@@ -70,9 +70,9 @@ class LedgerCommandPalette extends StatelessWidget {
   @override
   Widget build(BuildContext context) => toDesign();
 
-  /// The palette as ui_core's [DesignCommandPalette], drawn in Ledger's hand
+  /// The palette as ui_core's [RawCommandPalette], drawn in Ledger's hand
   /// (what [showLedgerCommandPalette] opens).
-  DesignCommandPalette toDesign() => DesignCommandPalette(
+  RawCommandPalette toDesign() => RawCommandPalette(
     commands: commands,
     onSelected: onSelected,
     autofocus: autofocus,
@@ -180,7 +180,7 @@ class LedgerCommandPalette extends StatelessWidget {
       ],
     ),
     emptyBuilder: (context) =>
-        LedgerNoOption(DesignLocalizations.of(context).noResultsLabel),
+        LedgerNoOption(RawWidgetsLocalizations.of(context).noResultsLabel),
   );
 
   static const double _paper = 6 * 48 + 8;

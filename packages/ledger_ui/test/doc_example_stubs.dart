@@ -302,12 +302,12 @@ TextEditingController get reply => _held(TextEditingController());
 ScrollController get scroll => _held(ScrollController());
 
 /// A table's rows and columns.
-DesignTableController<({String title, String amount})> get table => _held(
-  DesignTableController<({String title, String amount})>(
+RawDataTableController<({String title, String amount})> get table => _held(
+  RawDataTableController<({String title, String amount})>(
     rows: const [(title: 'Rent', amount: r'$1,150.00')],
     columns: const [
-      DesignTableColumn(id: 'title', label: 'Payee'),
-      DesignTableColumn(id: 'amount', label: 'Amount'),
+      RawDataColumn(id: 'title', label: 'Payee'),
+      RawDataColumn(id: 'amount', label: 'Amount'),
     ],
   ),
 );

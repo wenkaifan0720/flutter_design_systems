@@ -19,7 +19,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ledger_ui/ledger_ui.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
-import 'package:ui_core_test/ui_core_test.dart';
+import 'package:ui_core_review/ui_core_review.dart';
 
 import '../example/lib/kit_gallery/kit.dart';
 import '../example/lib/kit_gallery/quill/entry.dart';
@@ -599,7 +599,7 @@ void main() {
         _screens.firstWhere((s) => s.name == 'settings'),
         _desktop,
       );
-      final group = find.byType(DesignRadioGroup<QuillAppearance>);
+      final group = find.byType(RadioGroup<QuillAppearance>);
       expect(group, findsOneWidget);
       // The focusable just before the group: the one a Tab leaves to land in it.
       FocusNode? before;

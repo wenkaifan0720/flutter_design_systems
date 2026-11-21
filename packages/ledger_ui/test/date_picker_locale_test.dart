@@ -1,6 +1,6 @@
 // Ledger's date picker in another language: its pills, its calendar and its
 // wheels print and speak the reader's words, order and digits (ui_core's
-// DesignLocalizations), at the reader's size and at twice it, every word
+// RawWidgetsLocalizations), at the reader's size and at twice it, every word
 // whole.
 import 'dart:convert';
 
@@ -45,8 +45,8 @@ Future<void> _pump(
     WidgetsApp(
       color: const Color(0xFF000000),
       locale: locale,
-      supportedLocales: DesignLocalizations.supportedLocales,
-      localizationsDelegates: const [DesignLocalizations.delegate],
+      supportedLocales: RawWidgetsLocalizations.supportedLocales,
+      localizationsDelegates: const [RawWidgetsLocalizations.delegate],
       builder: (context, _) => MediaQuery(
         data: MediaQuery.of(context)
             .copyWith(textScaler: TextScaler.linear(scale)),
@@ -100,7 +100,7 @@ void main() {
 
     group('in Arabic at $at', () {
       const ar = Locale('ar');
-      final words = DesignLocalizations.forLocale(ar);
+      final words = RawWidgetsLocalizations.forLocale(ar);
 
       testWidgets('the compact line prints and names the day and the clock '
           'in Arabic, its label whole', (t) async {
@@ -222,7 +222,7 @@ void main() {
 
     group('in German at $at', () {
       const de = Locale('de');
-      final words = DesignLocalizations.forLocale(de);
+      final words = RawWidgetsLocalizations.forLocale(de);
 
       testWidgets('the compact line prints the day and the clock in German', (
         t,

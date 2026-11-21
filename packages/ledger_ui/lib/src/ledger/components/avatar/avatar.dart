@@ -99,7 +99,7 @@ class LedgerAvatar extends StatelessWidget {
         child: disc,
       );
     }
-    return DesignTapTarget(
+    return TapTargetPadding(
       alignment: tapAlignment,
       child: LedgerPressable(
         focusNode: focusNode,

@@ -395,7 +395,7 @@ class _LedgerTextFieldState extends State<LedgerTextField> {
         ?trailing,
       ],
     );
-    final field = DesignField(
+    final field = RawInputDecorator(
       labelText: widget.label,
       helperText: widget.helper,
       errorText: widget.error,

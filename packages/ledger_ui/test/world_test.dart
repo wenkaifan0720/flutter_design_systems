@@ -401,24 +401,26 @@ void main() {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Focus(focusNode: before, child: const Text('Before')),
-                      DesignRadioGroup<String>(
+                      RadioGroup<String>(
                         key: const ValueKey('radios'),
-                        options: periods,
-                        value: chosen,
-                        isEnabled: (p) => p != 'Month',
-                        focusNodeFor: (p) => nodes[p],
+                        groupValue: chosen,
                         onChanged: (p) => setState(() => chosen = p),
-                        itemBuilder: (context, p, node, select) =>
-                            LedgerRadio<String>(
-                              key: ValueKey(p),
-                              value: p,
-                              groupValue: chosen,
-                              label: p,
-                              focusNode: node,
-                              onChanged: select == null
-                                  ? null
-                                  : (_) => select(),
-                            ),
+                        child: RadioGroupKeyboardFix<String>(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              for (final p in periods)
+                                LedgerRadio<String>(
+                                  key: ValueKey(p),
+                                  value: p,
+                                  label: p,
+                                  focusNode: nodes[p],
+                                  enabled: p != 'Month',
+                                ),
+                            ],
+                          ),
+                        ),
                       ),
                       const Focus(child: Text('After')),
                     ],
@@ -484,14 +486,59 @@ void main() {
       });
     }
 
+    // A toggle group of one choice: a row of radio pills, Month turned off,
+    // chosen Quarter, nothing, Week and the turned-off Month, both ways.
+    for (final direction in TextDirection.values) {
+      for (final initial in <String?>['Quarter', null, 'Week', 'Month']) {
+        testWidgets('a toggle group of one choice, ${direction.name}, '
+            'chosen $initial', (t) async {
+          _size(t, _phone);
+          final before = FocusNode();
+          addTearDown(before.dispose);
+          var chosen = initial;
+          await t.pumpWidget(
+            _app(
+              direction,
+              StatefulBuilder(
+                builder: (context, setState) => Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Focus(focusNode: before, child: const Text('Before')),
+                    LedgerToggleGroup<String>(
+                      key: const ValueKey('radios'),
+                      label: 'Period',
+                      options: periods,
+                      labelOf: (p) => p,
+                      selected: {?chosen},
+                      isEnabled: (p) => p != 'Month',
+                      onChanged: (next) => setState(() => chosen = next.first),
+                    ),
+                    const Focus(child: Text('After')),
+                  ],
+                ),
+              ),
+            ),
+          );
+          await t.pumpAndSettle();
+          (await const DesignRadioGroupCheck(look: 'Ledger').check(
+            t.element(find.byKey(const ValueKey('radios'))),
+            before: before,
+            sendKeyEvent: t.sendKeyEvent,
+            pump: t.pump,
+          )).verify();
+        });
+      }
+    }
+
     // Every single choice the gallery draws, its radios and its segments,
     // from the focusable a Tab leaves to land in it.
     testWidgets('every single choice in the gallery', (t) async {
       final problems = <String>[];
       final seen = <String>[];
       bool single(Widget w) =>
-          w is DesignRadioGroup ||
-          (w is DesignToggleGroup && !w.multiSelectionEnabled);
+          w is RadioGroup ||
+          (w is RawSegmentedButton && !w.multiSelectionEnabled);
       for (final page in galleryPages) {
         Future<void> open() async {
           _size(t, const Size(1440, _tallest));

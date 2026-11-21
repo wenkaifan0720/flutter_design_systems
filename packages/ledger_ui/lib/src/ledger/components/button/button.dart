@@ -407,7 +407,7 @@ class LedgerButton extends StatelessWidget {
         );
       },
     );
-    final button = DesignTapTarget(
+    final button = TapTargetPadding(
       child: LedgerPressable(
         onTap: onPressed,
         label: semanticLabel ?? label,

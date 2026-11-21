@@ -297,19 +297,19 @@ void main() {
   testWidgets('large type leaves every transaction amount visible on a phone', (
     t,
   ) async {
-    final table = DesignTableController<(String, String, String)>(
+    final table = RawDataTableController<(String, String, String)>(
       rows: const [
         ('Harbour Books', 'Everyday checking', '−\$64.18'),
         ('Blue Bottle', 'Wren card', '−\$6.75'),
       ],
       columns: [
-        DesignTableColumn(id: 'name', label: 'Entry', sortKey: (row) => row.$1),
-        DesignTableColumn(
+        RawDataColumn(id: 'name', label: 'Entry', sortKey: (row) => row.$1),
+        RawDataColumn(
           id: 'account',
           label: 'Account',
           sortKey: (row) => row.$2,
         ),
-        DesignTableColumn(
+        RawDataColumn(
           id: 'amount',
           label: 'Amount',
           numeric: true,

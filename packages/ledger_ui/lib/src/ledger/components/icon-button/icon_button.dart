@@ -212,7 +212,7 @@ class LedgerIconButton extends StatelessWidget {
         ],
       ),
     );
-    return DesignTapTarget(
+    return TapTargetPadding(
       alignment: tapAlignment,
       child: LedgerPressable(
         onTap: onPressed,

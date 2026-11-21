@@ -19,7 +19,7 @@ enum LedgerPressRole {
 }
 
 /// The one press machine every Ledger control rides, on ui_core's
-/// [DesignPressable]: the tap, the pointer's click cursor, keyboard focus
+/// [RawButton]: the tap, the pointer's click cursor, keyboard focus
 /// with Enter and Space, and the semantics of the control it makes (a
 /// button or a link, enabled or not, selected, checked or toggled). Ledger
 /// says each state in its rules and its ink, never in light or depth: a
@@ -191,7 +191,7 @@ class LedgerPressable extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.ledgerTheme;
-    return DesignPressable(
+    return RawButton(
       onPressed: onTap,
       onLongPress: onLongPress,
       focusNode: focusNode,
@@ -211,38 +211,204 @@ class LedgerPressable extends StatelessWidget {
       expanded: expanded,
       excludeSemantics: excludeChild && label != null,
       child: child,
-      builder: (context, states, child) {
-        // One tree in every state, so a press or a focus never rebuilds
-        // the face from scratch.
-        final pressed = states.contains(WidgetState.pressed);
-        final face = LedgerPressStates(states: states, child: child!);
-        return LedgerFocusRing(
-          radius: radius,
-          insets: ringInsets,
-          color: t.textPrimary,
-          shown:
-              rulesFocus &&
-              states.contains(WidgetState.focused) &&
-              !LedgerFieldRuled.rules(context, focusNode),
-          child: pressedOpacity < 1
-              ? LedgerEase(
-                  value: pressed ? pressedOpacity : 1,
-                  builder: (context, o, face) =>
-                      Opacity(opacity: o, child: face),
-                  child: face,
-                )
-              : LedgerEase(
-                  value: pressed ? LedgerImpression.pressed : 0,
-                  builder: (context, depth, face) => LedgerImpression(
-                    ink: t.textPrimary,
-                    depth: depth,
-                    wash: radius,
-                    child: face,
-                  ),
-                  child: face,
-                ),
-        );
-      },
+      builder: (context, states, child) => _dress(
+        context,
+        t,
+        states,
+        child!,
+        radius: radius,
+        ringInsets: ringInsets,
+        rulesFocus: rulesFocus,
+        pressedOpacity: pressedOpacity,
+        focusNode: focusNode,
+      ),
+    );
+  }
+}
+
+// A pressable's dress in [states]: the impression (or [pressedOpacity]) of a
+// press, the double rule of the keyboard's focus, and the states for the
+// face under it ([LedgerPressStates]).
+Widget _dress(
+  BuildContext context,
+  LedgerThemeData t,
+  Set<WidgetState> states,
+  Widget child, {
+  required double radius,
+  required EdgeInsetsGeometry ringInsets,
+  required bool rulesFocus,
+  required double pressedOpacity,
+  required FocusNode? focusNode,
+}) {
+  // One tree in every state, so a press or a focus never rebuilds the face
+  // from scratch.
+  final pressed = states.contains(WidgetState.pressed);
+  final face = LedgerPressStates(states: states, child: child);
+  return LedgerFocusRing(
+    radius: radius,
+    insets: ringInsets,
+    color: t.textPrimary,
+    shown:
+        rulesFocus &&
+        states.contains(WidgetState.focused) &&
+        !LedgerFieldRuled.rules(context, focusNode),
+    child: pressedOpacity < 1
+        ? LedgerEase(
+            value: pressed ? pressedOpacity : 1,
+            builder: (context, o, face) => Opacity(opacity: o, child: face),
+            child: face,
+          )
+        : LedgerEase(
+            value: pressed ? LedgerImpression.pressed : 0,
+            builder: (context, depth, face) => LedgerImpression(
+              ink: t.textPrimary,
+              depth: depth,
+              wash: radius,
+              child: face,
+            ),
+            child: face,
+          ),
+  );
+}
+
+/// A radio in a [LedgerPressable]'s dress: Flutter's RawRadio, of the
+/// RadioGroup above it or of [registry], which takes the tap, the focus and
+/// the keys and says it is checked and one of a group; Ledger draws the
+/// press, the focus and the states over [child] as a pressable does. [label]
+/// names it in place of what [child] says. Plumbing of the radios; not
+/// exported.
+class LedgerRadioPress<T> extends StatefulWidget {
+  /// A radio for [value] over [child].
+  const LedgerRadioPress({
+    required this.value,
+    required this.enabled,
+    required this.child,
+    this.registry,
+    this.toggleable = false,
+    this.label,
+    this.radius = 0,
+    this.ringInsets = EdgeInsets.zero,
+    this.focusNode,
+    this.autofocus = false,
+    super.key,
+  });
+
+  /// What choosing it sets.
+  final T value;
+
+  /// Whether it can be chosen.
+  final bool enabled;
+
+  /// What it draws.
+  final Widget child;
+
+  /// Its group; null: the RadioGroup above it.
+  final RadioGroupRegistry<T>? registry;
+
+  /// Whether a press on the chosen one clears the choice.
+  final bool toggleable;
+
+  /// Its spoken name, in place of what [child] says.
+  final String? label;
+
+  /// As [LedgerPressable.radius].
+  final double radius;
+
+  /// As [LedgerPressable.ringInsets].
+  final EdgeInsetsGeometry ringInsets;
+
+  /// Its focus; never disposed when given.
+  final FocusNode? focusNode;
+
+  /// {@macro ledger.autofocus}
+  final bool autofocus;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<T>('value', value))
+      ..add(FlagProperty('enabled', value: enabled, ifFalse: 'disabled'))
+      ..add(
+        DiagnosticsProperty<RadioGroupRegistry<T>>(
+          'registry',
+          registry,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('toggleable', value: toggleable, ifTrue: 'toggleable'))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(DoubleProperty('radius', radius))
+      ..add(DiagnosticsProperty<EdgeInsetsGeometry>('ringInsets', ringInsets))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
+  }
+
+  @override
+  State<LedgerRadioPress<T>> createState() => _LedgerRadioPressState<T>();
+}
+
+class _LedgerRadioPressState<T> extends State<LedgerRadioPress<T>> {
+  FocusNode? _own;
+
+  FocusNode get _node =>
+      widget.focusNode ?? (_own ??= FocusNode(debugLabel: 'LedgerRadio'));
+
+  @override
+  void dispose() {
+    _own?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.ledgerTheme;
+    final node = _node;
+    final label = widget.label;
+    return MergeSemantics(
+      child: RawRadio<T>(
+        value: widget.value,
+        mouseCursor: WidgetStateMouseCursor.clickable,
+        toggleable: widget.toggleable,
+        focusNode: node,
+        autofocus: widget.autofocus,
+        groupRegistry: widget.registry ?? RadioGroup.maybeOf<T>(context),
+        enabled: widget.enabled,
+        builder: (context, radio) {
+          // All of its box takes a press, its gaps too: RawRadio's detector
+          // finds only what the face paints.
+          final face = Listener(
+            behavior: HitTestBehavior.opaque,
+            child: _dress(
+              context,
+              t,
+              // The radio's states, and pressed while a press is down on it.
+              {
+                ...radio.states,
+                if (radio.downPosition != null) WidgetState.pressed,
+              },
+              widget.child,
+              radius: widget.radius,
+              ringInsets: widget.ringInsets,
+              rulesFocus: true,
+              pressedOpacity: 1,
+              focusNode: node,
+            ),
+          );
+          return label == null
+              ? face
+              : Semantics(
+                  label: label,
+                  child: ExcludeSemantics(child: face),
+                );
+        },
+      ),
     );
   }
 }

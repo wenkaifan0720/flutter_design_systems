@@ -74,7 +74,7 @@ class LedgerPagination extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.ledgerTheme;
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     final change = onChanged;
     final back = LedgerIconButton.outlined(
       LucideIcons.chevronLeft,
@@ -157,7 +157,7 @@ class _Figure extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.ledgerTheme;
-    return DesignTapTarget(
+    return TapTargetPadding(
       child: LedgerPressable(
         onTap: onTap ?? (shown ? _stay : null),
         label: 'Page $page',

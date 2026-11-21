@@ -58,7 +58,7 @@ class LedgerSwipeAction {
 /// gesture. [initiallyOpen] starts it open on its trailing acts (its leading
 /// ones when it has none): a preview, or a hint that the row swipes. Right to
 /// left mirrors the edges. The drag, the snap and the actions are ui_core's
-/// [DesignSwipeActions]; the squares are Ledger's.
+/// [RawSwipeActions]; the squares are Ledger's.
 ///
 /// ```dart
 /// LedgerSwipeActions(trailing: [LedgerSwipeAction('Delete', icon: LucideIcons.trash2, tone: LedgerSwipeTone.destructive, onPressed: delete)], child: row)
@@ -90,7 +90,7 @@ class LedgerSwipeActions extends StatelessWidget {
   /// The minimum width of an action when there is room.
   static const double actionWidth = 76;
 
-  static DesignSwipeAction _design(LedgerSwipeAction a) => DesignSwipeAction(
+  static RawSwipeAction _design(LedgerSwipeAction a) => RawSwipeAction(
     label: a.label,
     onPressed: a.onPressed,
     destructive: a.tone == LedgerSwipeTone.destructive,
@@ -129,7 +129,7 @@ class LedgerSwipeActions extends StatelessWidget {
     painter.dispose();
     final count = math.max(1, math.max(leading.length, trailing.length));
     return LayoutBuilder(
-      builder: (context, box) => DesignSwipeActions(
+      builder: (context, box) => RawSwipeActions(
         startActions: [for (final a in leading) _design(a)],
         endActions: [for (final a in trailing) _design(a)],
         actionExtent: math.max(1.0, math.min(width, box.maxWidth / count)),

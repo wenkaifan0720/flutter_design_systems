@@ -259,7 +259,7 @@ class _LedgerTextAreaState extends State<LedgerTextArea> {
       onTap: enabled ? _focus.requestFocus : null,
       child: ruled,
     );
-    return DesignField(
+    return RawInputDecorator(
       labelText: widget.label,
       helperText: widget.helper,
       errorText: widget.error,

@@ -157,7 +157,7 @@ class LedgerChip extends StatelessWidget {
         );
       },
     );
-    return DesignTapTarget(
+    return TapTargetPadding(
       child: LedgerPressable(
         onTap: onTap,
         label: label,

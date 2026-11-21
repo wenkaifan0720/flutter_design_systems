@@ -25,6 +25,8 @@ class _Choice extends StatelessWidget {
     required this.focusNode,
     required this.autofocus,
     required this.radius,
+    this.live,
+    this.press,
   });
 
   final Widget mark;
@@ -39,10 +41,18 @@ class _Choice extends StatelessWidget {
   final bool autofocus;
   final double radius;
 
+  // Whether it can be pressed; null: while [onTap] is set.
+  final bool? live;
+
+  // Its control over the face, when not a [LedgerPressable] on [onTap] (a
+  // radio's [LedgerRadioPress]): given the face, the words for a screen
+  // reader and the corner of its press.
+  final Widget Function(Widget face, String? label, double radius)? press;
+
   @override
   Widget build(BuildContext context) {
     final t = context.ledgerTheme;
-    final live = onTap != null;
+    final live = this.live ?? onTap != null;
     final words = label;
     final Widget face;
     if (words == null) {
@@ -76,23 +86,26 @@ class _Choice extends StatelessWidget {
         ),
       );
     }
-    final control = LedgerPressable(
-      onTap: onTap,
-      label: semanticLabel ?? words,
-      checked: mixed ? null : checked,
-      mixed: mixed,
-      inMutuallyExclusiveGroup: radio,
-      isError: isError,
-      focusNode: focusNode,
-      autofocus: autofocus,
-      radius: words == null ? radius : t.smallRadius,
-      child: face,
-    );
+    final corner = words == null ? radius : t.smallRadius;
+    final control =
+        press?.call(face, semanticLabel ?? words, corner) ??
+        LedgerPressable(
+          onTap: onTap,
+          label: semanticLabel ?? words,
+          checked: mixed ? null : checked,
+          mixed: mixed,
+          inMutuallyExclusiveGroup: radio,
+          isError: isError,
+          focusNode: focusNode,
+          autofocus: autofocus,
+          radius: corner,
+          child: face,
+        );
     final drawn = Opacity(opacity: live ? 1 : _off, child: control);
     // A bare mark stands on its column's start keyline, its target growing
     // toward the end.
     return words == null
-        ? DesignTapTarget(
+        ? TapTargetPadding(
             alignment: AlignmentDirectional.centerStart,
             child: drawn,
           )
@@ -258,19 +271,29 @@ class LedgerCheckbox extends StatelessWidget {
 }
 
 /// A radio: a 20 ring in the ink, an ink dot in it when [value] is the
-/// [groupValue]. With a [label] the words stand after it on one line, and
-/// the line is the target. A null [onChanged] disables it; with
-/// [toggleable] a press on the chosen one clears the choice (null).
+/// group's choice. With a [label] the words stand after it on one line, and
+/// the line is the target; with [toggleable] a press on the chosen one
+/// clears the choice (null).
+///
+/// Under a RadioGroup it is one of the group's radios, as Flutter's Radio
+/// is: the group holds the choice and takes it, Tab reaches the group at its
+/// choice and the arrows move and choose (with ui_core's
+/// RadioGroupKeyboardFix inside the group). Alone, [groupValue] is the
+/// choice and [onChanged] takes it; a null [onChanged] disables it.
+///
+/// Built on Flutter's RawRadio.
 ///
 /// ```dart
 /// LedgerRadio<String>(value: 'monthly', groupValue: plan, label: 'Monthly', onChanged: (v) {})
 /// ```
 class LedgerRadio<T> extends StatelessWidget {
-  /// A radio for [value] of the set at [groupValue].
+  /// A radio for [value], of the RadioGroup above it or of the set at
+  /// [groupValue].
   const LedgerRadio({
     required this.value,
-    required this.groupValue,
-    required this.onChanged,
+    this.groupValue,
+    this.onChanged,
+    this.enabled,
     this.toggleable = false,
     this.label,
     this.semanticLabel,
@@ -282,11 +305,16 @@ class LedgerRadio<T> extends StatelessWidget {
   /// What choosing it sets.
   final T value;
 
-  /// The group's chosen value.
+  /// The set's chosen value, for a radio under no RadioGroup.
   final T? groupValue;
 
-  /// Called with [value] when it is chosen; null disables it.
+  /// Called with [value] when it is chosen, for a radio under no
+  /// RadioGroup; null disables it.
   final ValueChanged<T?>? onChanged;
+
+  /// Whether it can be chosen; null: under a RadioGroup it can, alone while
+  /// [onChanged] is set.
+  final bool? enabled;
 
   /// Whether a press on the chosen one clears the choice.
   final bool toggleable;
@@ -312,6 +340,7 @@ class LedgerRadio<T> extends StatelessWidget {
         DiagnosticsProperty<T>('groupValue', groupValue, defaultValue: null),
       )
       ..add(ObjectFlagProperty<ValueChanged<T?>>.has('onChanged', onChanged))
+      ..add(DiagnosticsProperty<bool>('enabled', enabled, defaultValue: null))
       ..add(FlagProperty('toggleable', value: toggleable, ifTrue: 'toggleable'))
       ..add(StringProperty('label', label, defaultValue: null))
       ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
@@ -328,7 +357,11 @@ class LedgerRadio<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.ledgerTheme;
-    final on = value == groupValue;
+    final group = RadioGroup.maybeOf<T>(context);
+    final RadioGroupRegistry<T> registry =
+        group ?? _Alone<T>(groupValue, onChanged ?? (_) {});
+    final live = enabled ?? (group != null || onChanged != null);
+    final on = value == registry.groupValue;
     final mark = Container(
       width: _size,
       height: _size,
@@ -352,18 +385,21 @@ class LedgerRadio<T> extends StatelessWidget {
         ),
       ),
     );
-    final change = onChanged;
     return _Choice(
       mark: mark,
-      onTap: change == null
-          ? null
-          : () {
-              if (!on) {
-                change(value);
-              } else if (toggleable) {
-                change(null);
-              }
-            },
+      onTap: null,
+      live: live,
+      press: (face, label, radius) => LedgerRadioPress<T>(
+        value: value,
+        enabled: live,
+        registry: registry,
+        toggleable: toggleable,
+        label: label,
+        radius: radius,
+        focusNode: focusNode,
+        autofocus: autofocus,
+        child: face,
+      ),
       label: label,
       semanticLabel: semanticLabel,
       checked: on,
@@ -378,4 +414,22 @@ class LedgerRadio<T> extends StatelessWidget {
 
   static const double _size = 20;
   static const double _dot = 10;
+}
+
+// The group of a radio under no RadioGroup: its own [groupValue] and
+// [onChanged].
+class _Alone<T> extends RadioGroupRegistry<T> {
+  _Alone(this.groupValue, this.onChanged);
+
+  @override
+  final T? groupValue;
+
+  @override
+  final ValueChanged<T?> onChanged;
+
+  @override
+  void registerClient(RadioClient<T> radio) {}
+
+  @override
+  void unregisterClient(RadioClient<T> radio) {}
 }

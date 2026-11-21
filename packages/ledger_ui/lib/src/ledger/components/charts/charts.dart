@@ -247,7 +247,7 @@ LedgerPlotLabel _markLabel(
 /// The day ruler's labels as `art.day_ruler` picks them: the 1st, the 8th,
 /// the 15th, the 22nd (unless today is within 4 of it), today and the
 /// last day; today read "Today" on the desktop (the shared words'
-/// [DesignLocalizations.currentDateLabel]).
+/// [RawWidgetsLocalizations.currentDateLabel]).
 List<LedgerRulerMark> _dayRuler(
   BuildContext context,
   double Function(int day) x,
@@ -260,7 +260,9 @@ List<LedgerRulerMark> _dayRuler(
     if (!(day == 22 && today - day < 4))
       (
         text: day == today
-            ? (wide ? DesignLocalizations.of(context).currentDateLabel : '$day')
+            ? (wide
+                  ? RawWidgetsLocalizations.of(context).currentDateLabel
+                  : '$day')
             : day == 1
             ? '$month 1'
             : '$day',

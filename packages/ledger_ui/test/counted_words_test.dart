@@ -10,8 +10,8 @@ import 'package:ledger_ui/ledger_host.dart';
 Widget _app(Locale locale, Widget page) => WidgetsApp(
   color: const Color(0xFF000000),
   locale: locale,
-  supportedLocales: DesignLocalizations.supportedLocales,
-  localizationsDelegates: const [DesignLocalizations.delegate],
+  supportedLocales: RawWidgetsLocalizations.supportedLocales,
+  localizationsDelegates: const [RawWidgetsLocalizations.delegate],
   builder: (context, _) => LedgerHost(
     brightness: Brightness.light,
     child: Navigator(

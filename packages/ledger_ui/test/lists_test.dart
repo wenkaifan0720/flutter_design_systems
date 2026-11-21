@@ -11,7 +11,7 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:ui_core_test/ui_core_test.dart';
+import 'package:ui_core_review/ui_core_review.dart';
 import 'package:ledger_ui/ledger_ui.dart';
 import 'package:ledger_ui/ledger_host.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -112,7 +112,7 @@ final List<_Case> _cases = [
       onSelected: (_) {},
     ),
     16,
-    () => _under((w) => w is DesignCombobox),
+    () => _under((w) => w is RawCombobox),
     (t) async {
       final entry = _under((w) => w is EditableText);
       await t.tap(entry);
@@ -132,7 +132,7 @@ final List<_Case> _cases = [
       onChanged: (_) {},
     ),
     16,
-    () => _under((w) => w is DesignTagInput),
+    () => _under((w) => w is RawTagInput),
     (t) => _tap(t, _under((w) => w is EditableText)),
   ),
 ];

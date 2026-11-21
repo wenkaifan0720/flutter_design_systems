@@ -59,7 +59,7 @@ class LedgerReorderableList<T extends Object> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.ledgerTheme;
-    return DesignReorderableList<T>(
+    return RawReorderableList<T>(
       items: items,
       onReorder: onReorder,
       labelOf: labelOf,
@@ -81,7 +81,7 @@ class LedgerReorderableList<T extends Object> extends StatelessWidget {
               ),
             ),
             reorder.handle(
-              DesignTapTarget(
+              TapTargetPadding(
                 alignment: AlignmentDirectional.centerEnd,
                 child: Icon(
                   LucideIcons.gripVertical,

@@ -109,7 +109,7 @@ class LedgerCheck extends StatelessWidget {
     // Laid out at the floor round its disc, so where a tap lands, what a
     // screen reader outlines and the room it takes are one; one node, a
     // checkbox (no button) whose press ticks it.
-    return DesignTapTarget(
+    return TapTargetPadding(
       alignment: tapAlignment,
       child: LedgerPressable(
         focusNode: focusNode,

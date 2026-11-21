@@ -54,7 +54,7 @@ class LedgerScrollArea extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.ledgerTheme;
     final motion = LedgerMotion.of(context, LedgerMotion.base);
-    return DesignScrollArea(
+    return RawScrollArea(
       controller: controller,
       axis: axis,
       semanticLabel: semanticLabel,

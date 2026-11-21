@@ -82,7 +82,7 @@ class LedgerDialog extends StatelessWidget {
   final String? confirmLabel;
 
   /// The words of the act that dismisses it; null is the shared words'
-  /// Cancel ([DesignLocalizations.cancelButtonLabel]).
+  /// Cancel ([RawWidgetsLocalizations.cancelButtonLabel]).
   final String? cancelLabel;
 
   /// What the confirming act does; null disables it.
@@ -168,7 +168,7 @@ class LedgerDialog extends StatelessWidget {
     final t = context.ledgerTheme;
     final destructive = type == LedgerDialogType.destructive;
     final acknowledge = type == LedgerDialogType.acknowledge;
-    final shared = DesignLocalizations.of(context);
+    final shared = RawWidgetsLocalizations.of(context);
     // "Got it" and "Confirm" stay English in 0.1.0: the shared words have
     // neither.
     final yes =
@@ -192,9 +192,9 @@ class LedgerDialog extends StatelessWidget {
         ? null
         : acknowledge
         ? 1
-        : DesignDialog.safeActionIndex([
-            DesignDialogAction(label: cancel, onPressed: onCancel),
-            DesignDialogAction(
+        : RawAlertDialog.safeActionIndex([
+            RawDialogAction(label: cancel, onPressed: onCancel),
+            RawDialogAction(
               label: yes,
               onPressed: onConfirmPressed,
               isDefaultAction: true,

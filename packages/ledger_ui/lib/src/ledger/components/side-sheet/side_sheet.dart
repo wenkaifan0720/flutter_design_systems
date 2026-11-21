@@ -13,7 +13,7 @@ import '../host.dart';
 import '../icon-button/icon_button.dart';
 import '../sheet.dart';
 
-export 'package:ui_core/ui_core.dart' show DesignSheetEdge;
+export 'package:ui_core/ui_core.dart' show RawSheetEdge;
 
 /// A side sheet's panel (a record's details beside its list, the filters of
 /// a register): the raised paper the screen's height, a hairline on its
@@ -91,7 +91,7 @@ class LedgerSideSheet extends StatelessWidget {
                 title: title,
                 close: LedgerIconButton.outlined(
                   LucideIcons.x,
-                  semanticLabel: DesignLocalizations.of(context)
+                  semanticLabel: RawWidgetsLocalizations.of(context)
                       .closeButtonLabel,
                   size: LedgerIconButtonSize.small,
                   tapAlignment: AlignmentDirectional.centerEnd,
@@ -137,13 +137,13 @@ Future<T?> showLedgerSideSheet<T>(
   required String title,
   required WidgetBuilder builder,
   List<Widget> Function(BuildContext context)? foot,
-  DesignSheetEdge edge = DesignSheetEdge.end,
+  RawSheetEdge edge = RawSheetEdge.end,
   double width = 400,
 }) {
   final navigator = LedgerHost.navigatorOf(context);
   final themes = InheritedTheme.capture(from: context, to: navigator.context);
   return navigator.push<T>(
-    DesignSideSheetRoute<T>(
+    RawSideSheetRoute<T>(
       edge: edge,
       width: width,
       semanticLabel: title,

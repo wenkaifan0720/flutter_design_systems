@@ -37,7 +37,7 @@ class LedgerPullToRefresh extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.ledgerTheme;
-    return DesignPullToRefresh(
+    return RawRefreshIndicator(
       onRefresh: onRefresh,
       restExtent: _rest,
       refreshLabel: 'Fetch again',
@@ -45,7 +45,7 @@ class LedgerPullToRefresh extends StatelessWidget {
       doneMessage: 'Fetched',
       indicatorBuilder: (context, details) {
         final at = details.progress.clamp(0.0, 1.0);
-        final fetching = details.mode == DesignRefreshMode.refresh;
+        final fetching = details.mode == RawRefreshIndicatorMode.refresh;
         final armed = details.progress >= 1;
         if (details.extent <= 0) return const SizedBox.shrink();
         return ClipRect(

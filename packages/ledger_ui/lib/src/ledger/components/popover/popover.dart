@@ -63,9 +63,9 @@ class LedgerPopover extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.ledgerTheme;
     final reduced = LedgerMotion.isReduced(context);
-    return DesignAnchoredOverlay(
+    return RawPopover(
       semanticLabel: semanticLabel,
-      placement: const DesignOverlayPlacement(
+      placement: const RawPopoverPlacement(
         gap: LedgerSpacing.s6,
         matchAnchorWidth: false,
       ),

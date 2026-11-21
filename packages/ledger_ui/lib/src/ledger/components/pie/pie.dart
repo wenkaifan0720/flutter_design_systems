@@ -62,7 +62,7 @@ class LedgerPieChart extends StatelessWidget {
   final String? totalLabel;
 
   String _print(BuildContext context, double v) =>
-      format?.call(v) ?? DesignLocalizations.of(context).formatDecimal(v);
+      format?.call(v) ?? RawWidgetsLocalizations.of(context).formatDecimal(v);
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -90,7 +90,7 @@ class LedgerPieChart extends StatelessWidget {
     ];
     final total = shares.fold<double>(0, (a, s) => a + s.value);
     String part(double v) =>
-        DesignLocalizations.of(context)
+        RawWidgetsLocalizations.of(context)
             .formatPercent(total == 0 ? 0 : v / total);
     final ring = SizedBox.square(
       dimension: _across,

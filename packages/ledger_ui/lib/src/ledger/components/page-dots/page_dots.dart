@@ -84,7 +84,7 @@ class LedgerPageDots extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           for (var i = 0; i < count; i++)
-            DesignTapTarget(
+            TapTargetPadding(
               child: LedgerPressable(
                 onTap: i == index ? _stay : () => change(i),
                 label: 'Page ${i + 1} of $count',

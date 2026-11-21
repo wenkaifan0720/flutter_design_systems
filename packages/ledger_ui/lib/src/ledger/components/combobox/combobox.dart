@@ -1,5 +1,5 @@
 /// A field that suggests as it is typed in, in Ledger's hand, over ui_core's
-/// [DesignCombobox].
+/// [RawCombobox].
 library;
 
 import 'package:flutter/foundation.dart';
@@ -147,7 +147,7 @@ class LedgerCombobox<T extends Object> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.ledgerTheme;
-    return DesignCombobox<T>(
+    return RawCombobox<T>(
       options: options,
       search: search,
       debounceDuration: debounceDuration,
@@ -193,15 +193,17 @@ class LedgerCombobox<T extends Object> extends StatelessWidget {
       // stand: a slip as wide as its words read as a different list.
       emptyBuilder: (context) => SizedBox(
         width: double.infinity,
-        child: LedgerNoOption(DesignLocalizations.of(context).noResultsLabel),
+        child: LedgerNoOption(
+          RawWidgetsLocalizations.of(context).noResultsLabel,
+        ),
       ),
       // Looking, and a failed look, on the same paper at the same width.
       loadingBuilder: (context) => SizedBox(
         width: double.infinity,
-        child: LedgerNoOption(DesignLocalizations.of(context).loadingLabel),
+        child: LedgerNoOption(RawWidgetsLocalizations.of(context).loadingLabel),
       ),
       errorBuilder: (context, failed) {
-        final words = DesignLocalizations.of(context);
+        final words = RawWidgetsLocalizations.of(context);
         return SizedBox(
           width: double.infinity,
           child: Column(
@@ -213,7 +215,7 @@ class LedgerCombobox<T extends Object> extends StatelessWidget {
               ),
               // "Try again" stands as an option: lit as the keys' line
               // while they are on it, underlined under the pointer.
-              DesignPressable(
+              RawButton(
                 onPressed: failed.retry,
                 semanticLabel: words.retryButtonLabel,
                 builder: (context, states, _) => LedgerOptionRow(

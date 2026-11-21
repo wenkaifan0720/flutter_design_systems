@@ -59,7 +59,7 @@ enum LedgerDatePickerPresentation {
 /// no press, and every change is kept inside them. Weeks start on Monday.
 /// In English it writes as above; in another language, the days, months,
 /// clock and figures are that language's, in its order and its digits, from
-/// ui_core's [DesignLocalizations] (`٢٠ نوفمبر ٢٠٢٦`, `٠٩:٣٠`, `20. Nov. 2026`).
+/// ui_core's [RawWidgetsLocalizations] (`٢٠ نوفمبر ٢٠٢٦`, `٠٩:٣٠`, `20. Nov. 2026`).
 /// Nothing here reads the clock: pass [today] to have it ringed. A null
 /// [onChanged] dims the whole picker and holds it. Each wheel is an adjustable
 /// value for a screen reader, and each day a button named by its full date.
@@ -197,7 +197,7 @@ class _LedgerDatePickerState extends State<LedgerDatePicker> {
       ],
       foot: (sheetContext) => [
         LedgerButton.filled(
-          DesignLocalizations.of(sheetContext).doneButtonLabel,
+          RawWidgetsLocalizations.of(sheetContext).doneButtonLabel,
           expand: true,
           onPressed: () => Navigator.of(sheetContext).pop(draft.value),
         ),
@@ -352,16 +352,16 @@ bool _same(DateTime a, DateTime b) =>
 /// The picker's days, months, clock and figures in the reader's language. In
 /// English, as Ledger writes them ([LedgerFormat]: "Nov 20, 2026", "Friday,
 /// November 20, 2026", "MO", "9:05 PM"); in another, from ui_core's
-/// [DesignLocalizations]: its month and day with its year (the year first
+/// [RawWidgetsLocalizations]: its month and day with its year (the year first
 /// where the language marks it, "2026年11月20日"), its full date, its weekday
 /// letters, its clock and its digits.
 class _Dates {
   _Dates.of(BuildContext context)
-    : _words = DesignLocalizations.of(context),
+    : _words = RawWidgetsLocalizations.of(context),
       _english =
           (Localizations.maybeLocaleOf(context)?.languageCode ?? 'en') == 'en';
 
-  final DesignLocalizations _words;
+  final RawWidgetsLocalizations _words;
   final bool _english;
 
   /// A day with its year, as a pill prints it: "Nov 20, 2026",
@@ -409,7 +409,7 @@ class _Dates {
   String clock(DateTime d, {required bool use24h}) {
     if (_english && !use24h) return LedgerFormat.time(d);
     return _words.formatTimeOfDay(
-      DesignTimeOfDay.fromDateTime(d),
+      RawTimeOfDay.fromDateTime(d),
       alwaysUse24HourFormat: use24h,
     );
   }
@@ -473,7 +473,7 @@ class _Pill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.ledgerTheme;
-    return DesignTapTarget(
+    return TapTargetPadding(
       child: LedgerPressable(
         onTap: onTap,
         label: label,
@@ -583,7 +583,7 @@ class _CalendarState extends State<_Calendar> {
             ),
             LedgerIconButton.outlined(
               LucideIcons.chevronLeft,
-              semanticLabel: DesignLocalizations.of(context)
+              semanticLabel: RawWidgetsLocalizations.of(context)
                   .previousMonthTooltip,
               size: LedgerIconButtonSize.small,
               // Both on the reading end, so the last stands on the keyline.
@@ -592,7 +592,8 @@ class _CalendarState extends State<_Calendar> {
             ),
             LedgerIconButton.outlined(
               LucideIcons.chevronRight,
-              semanticLabel: DesignLocalizations.of(context).nextMonthTooltip,
+              semanticLabel: RawWidgetsLocalizations.of(context)
+                  .nextMonthTooltip,
               size: LedgerIconButtonSize.small,
               tapAlignment: AlignmentDirectional.centerEnd,
               onPressed: canOn ? () => _step(1) : null,
@@ -662,7 +663,7 @@ class _CalendarState extends State<_Calendar> {
         return SizedBox(
           height: math.max(_cell44, mark + 4),
           child: Center(
-            child: DesignTapTarget(
+            child: TapTargetPadding(
               child: LedgerPressable(
                 onTap: open ? () => widget.onPick(d) : null,
                 label: dates.longDay(d),
@@ -857,7 +858,7 @@ class _DayWheel extends StatelessWidget {
 
 /// One scrolling column, flat on the paper: [count] items of [text] settling
 /// between two ink rules, the chosen one in the ink and the rest in the faint.
-/// The column is ui_core's [DesignWheelPicker]: a tab stop and one adjustable
+/// The column is ui_core's [RawPicker]: a tab stop and one adjustable
 /// value to a screen reader, the arrows, Page Up and Down, Home and End and
 /// typing turning it on ui_core's spring, a fling settling on a row; the
 /// keyboard's focus draws Ledger's double rule under it.
@@ -885,9 +886,9 @@ class _Wheel extends StatelessWidget {
     final t = context.ledgerTheme;
     return SizedBox(
       width: width,
-      child: DesignWheelPicker(
+      child: RawPicker(
         columns: (_) => [
-          DesignWheelColumn(
+          RawPickerColumn(
             itemCount: count,
             itemLabel: text,
             semanticLabel: label,

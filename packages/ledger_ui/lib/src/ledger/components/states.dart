@@ -24,7 +24,7 @@ class LedgerLoadingState extends StatelessWidget {
   const LedgerLoadingState({this.message, super.key});
 
   /// The words before the leader; null is the shared words' Loading
-  /// ([DesignLocalizations.loadingLabel]).
+  /// ([RawWidgetsLocalizations.loadingLabel]).
   final String? message;
 
   @override
@@ -37,7 +37,7 @@ class LedgerLoadingState extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.ledgerTheme;
     final message =
-        this.message ?? DesignLocalizations.of(context).loadingLabel;
+        this.message ?? RawWidgetsLocalizations.of(context).loadingLabel;
     return Semantics(
       label: message,
       liveRegion: true,
@@ -114,7 +114,7 @@ class LedgerErrorState extends StatelessWidget {
     act: onRetryPressed == null
         ? null
         : LedgerButton(
-            DesignLocalizations.of(context).retryButtonLabel,
+            RawWidgetsLocalizations.of(context).retryButtonLabel,
             icon: LucideIcons.rotateCw,
             onPressed: onRetryPressed,
           ),

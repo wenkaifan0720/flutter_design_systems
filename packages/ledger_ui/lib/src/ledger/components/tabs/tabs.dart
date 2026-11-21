@@ -13,7 +13,7 @@ import '../../theme.dart';
 /// [counts] figure after it in the mono, the chosen one in the ink under
 /// one ink rule and the rest in the second ink. A strip
 /// wider than its room scrolls sideways, keeping the chosen tab in view.
-/// The strip is ui_core's [DesignTabBar]: one tab stop, the arrow keys
+/// The strip is ui_core's [RawTabBar]: one tab stop, the arrow keys
 /// (mirrored right to left, wrapping) and Home and End move the choice and
 /// the focus with it, and the change runs on ui_core's spring, the old
 /// tab's rule drawn back out as the new one's is drawn in. [padding] insets
@@ -80,9 +80,9 @@ class LedgerTabs extends StatefulWidget {
 }
 
 class _LedgerTabsState extends State<LedgerTabs> with TickerProviderStateMixin {
-  late DesignTabController _controller = _make();
+  late RawTabController _controller = _make();
 
-  DesignTabController _make() => DesignTabController(
+  RawTabController _make() => RawTabController(
     length: widget.tabs.length,
     initialIndex: widget.tabs.isEmpty
         ? 0
@@ -130,12 +130,12 @@ class _LedgerTabsState extends State<LedgerTabs> with TickerProviderStateMixin {
       ),
       child: Padding(
         padding: EdgeInsets.only(top: inset.top, bottom: inset.bottom),
-        child: DesignTabBar(
+        child: RawTabBar(
           controller: _controller,
           isScrollable: true,
           tabs: [
             for (var i = 0; i < n; i++)
-              DesignTab(
+              RawTab(
                 label: switch (widget.counts?[i]) {
                   final count? => '${widget.tabs[i]}, $count',
                   null => widget.tabs[i],
@@ -164,7 +164,7 @@ class _LedgerTabsState extends State<LedgerTabs> with TickerProviderStateMixin {
       children: [
         strip,
         Expanded(
-          child: DesignTabView(
+          child: RawTabBarView(
             controller: _controller,
             physics: widget.onSelected == null
                 ? const NeverScrollableScrollPhysics()

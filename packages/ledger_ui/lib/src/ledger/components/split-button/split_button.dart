@@ -1,5 +1,5 @@
 /// A split button in Ledger's hand: a main act and the menu of the others
-/// beside it, over ui_core's [DesignSplitButton].
+/// beside it, over ui_core's [RawSplitButton].
 library;
 
 import 'dart:math' as math;
@@ -17,9 +17,9 @@ import '../../internal/side_inset.dart';
 import '../../internal/state_face.dart';
 import '../../theme.dart';
 
-/// One of a [LedgerSplitButton]'s other acts: its [DesignSplitAction.label]
+/// One of a [LedgerSplitButton]'s other acts: its [RawSplitAction.label]
 /// and what it runs (null disables it).
-typedef LedgerSplitAction = DesignSplitAction;
+typedef LedgerSplitAction = RawSplitAction;
 
 /// A main act with the menu of its siblings beside it (Export, and as CSV
 /// or as PDF): the two halves in one ring, parted by a rule, the
@@ -91,7 +91,7 @@ class LedgerSplitButton extends StatelessWidget {
         .copyWith(leadingDistribution: TextLeadingDistribution.even);
     // The halves' corners sit inside the ring's, one rule in.
     final inner = (t.controlRadius - _rule).clamp(0.0, t.controlRadius);
-    return DesignSplitButton(
+    return RawSplitButton(
       label: label,
       onPressed: onPressed,
       actions: actions,
@@ -128,7 +128,7 @@ class LedgerSplitButton extends StatelessWidget {
       buttonBuilder: (context, part, states, open) {
         final held = states.contains(WidgetState.pressed);
         final off = states.contains(WidgetState.disabled);
-        final main = part == DesignSplitPart.main;
+        final main = part == RawSplitPart.main;
         final corners = main
             ? BorderRadiusDirectional.horizontal(start: Radius.circular(inner))
             : BorderRadiusDirectional.horizontal(end: Radius.circular(inner));
@@ -286,14 +286,14 @@ class LedgerSplitButton extends StatelessWidget {
   /// (its margin past the side bar and the window's padding), beside a side
   /// bar and under or over the button; null elsewhere, or with less room
   /// than a menu's words need (the slip then keeps its width and moves).
-  static double? _endRoom(BuildContext context, DesignOverlayInfo info) {
+  static double? _endRoom(BuildContext context, RawPopoverInfo info) {
     if (!LedgerSideInset.besideOf(context) || !info.side.isVertical) {
       return null;
     }
-    const margin = DesignOverlayPlacement();
+    const margin = RawPopoverPlacement();
     final dir = Directionality.of(context);
     final pad = MediaQuery.paddingOf(context);
-    final clear = DesignOverlayPadding.of(context);
+    final clear = RawPopoverPadding.of(context);
     final start = pad.left + clear.left + margin.margin;
     final anchor = info.anchorRect;
     final room = switch (dir) {

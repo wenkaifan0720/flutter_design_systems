@@ -1,5 +1,5 @@
 /// A span along a ruled track, in Ledger's hand, over ui_core's
-/// [DesignRangeSlider].
+/// [RawRangeSlider].
 library;
 
 import 'package:flutter/foundation.dart';
@@ -10,8 +10,8 @@ import '../../chrome_metrics.dart';
 import '../../internal/face.dart';
 import '../../theme.dart';
 
-/// A span's two values, low and high: ui_core's [DesignRangeValues].
-typedef LedgerRangeValues = DesignRangeValues;
+/// A span's two values, low and high: ui_core's [RawRangeValues].
+typedef LedgerRangeValues = RawRangeValues;
 
 /// A span between two values (an amount from and to, a range of dates by
 /// day) set along the slider's ruled track: the ink rule between the two
@@ -168,7 +168,7 @@ class LedgerRangeSlider extends StatelessWidget {
           Semantics(
             label: label,
             container: true,
-            child: DesignRangeSlider(
+            child: RawRangeSlider(
               values: values,
               onChanged: onChanged,
               onChangeEnd: onChangeEnd,

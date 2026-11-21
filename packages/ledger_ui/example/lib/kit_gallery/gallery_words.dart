@@ -7,6 +7,6 @@ import 'package:ledger_ui/ledger_ui.dart';
 /// widgets ones (the widgets' give Hebrew its direction). Ledger's theme
 /// gives its own parts their Material and Cupertino words itself.
 const List<LocalizationsDelegate<Object?>> galleryDelegates = [
-  DesignLocalizations.delegate,
+  RawWidgetsLocalizations.delegate,
   ...GlobalMaterialLocalizations.delegates,
 ];

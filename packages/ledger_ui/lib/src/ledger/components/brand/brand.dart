@@ -160,7 +160,7 @@ class LedgerWordmark extends StatelessWidget {
     );
     // Laid out at the tap floor round the mark, so its height answers a
     // finger too.
-    return DesignTapTarget(
+    return TapTargetPadding(
       child: LedgerPressable(
         onTap: onTap,
         label: '$name, home',

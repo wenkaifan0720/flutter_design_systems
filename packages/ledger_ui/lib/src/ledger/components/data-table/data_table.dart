@@ -13,7 +13,7 @@ import '../../internal/cap_center.dart';
 import '../checkbox/checkbox.dart';
 
 export 'package:ui_core/ui_core.dart'
-    show DesignSortDirection, DesignTableColumn, DesignTableController;
+    show RawSortDirection, RawDataColumn, RawDataTableController;
 
 /// A ruled table of records (a month's entries, a statement): the headings
 /// in the small capitals over the ink rule, each a press that sorts by it
@@ -40,10 +40,10 @@ class LedgerDataTable<R> extends StatelessWidget {
   });
 
   /// The rows, the columns and the table's view of them; the caller's.
-  final DesignTableController<R> controller;
+  final RawDataTableController<R> controller;
 
   /// What a row says in a column.
-  final String Function(R row, DesignTableColumn<R> column) cellText;
+  final String Function(R row, RawDataColumn<R> column) cellText;
 
   /// Whether a press selects rows.
   final bool selectable;
@@ -57,7 +57,10 @@ class LedgerDataTable<R> extends StatelessWidget {
     properties.add(ObjectFlagProperty<Object?>.has('cellText', cellText));
     properties
       ..add(
-        DiagnosticsProperty<DesignTableController<R>>('controller', controller),
+        DiagnosticsProperty<RawDataTableController<R>>(
+          'controller',
+          controller,
+        ),
       )
       ..add(FlagProperty('selectable', value: selectable, ifTrue: 'selectable'))
       ..add(ObjectFlagProperty<ValueChanged<R>>.has('onActivate', onActivate));
@@ -161,12 +164,12 @@ class LedgerDataTable<R> extends StatelessWidget {
               ],
             ),
           );
-          final table = DesignDataTable<R>(
+          final table = RawDataTable<R>(
             controller: controller,
             selectable: selectable,
             onActivate: onActivate,
             sortedHint: (d) =>
-                d == DesignSortDirection.ascending ? 'ascending' : 'descending',
+                d == RawSortDirection.ascending ? 'ascending' : 'descending',
             headerBuilder: (context, column, sort, states) {
               final hot =
                   states.contains(WidgetState.hovered) ||
@@ -195,7 +198,7 @@ class LedgerDataTable<R> extends StatelessWidget {
                       ),
                       if (sort != null)
                         Icon(
-                          sort == DesignSortDirection.ascending
+                          sort == RawSortDirection.ascending
                               ? LucideIcons.arrowUp
                               : LucideIcons.arrowDown,
                           size: LedgerIconSize.i14,
@@ -216,12 +219,12 @@ class LedgerDataTable<R> extends StatelessWidget {
                 spacing: LedgerSpacing.s12,
                 children: [
                   if (selectable)
-                    DesignTapTarget(
+                    TapTargetPadding(
                       minSize: const Size.square(_box),
                       child: LedgerCheckbox(
                         value: switch (controller.pageSelection) {
-                          DesignSelection.all => true,
-                          DesignSelection.none => false,
+                          RawDataTableSelection.all => true,
+                          RawDataTableSelection.none => false,
                           _ => null,
                         },
                         tristate: true,

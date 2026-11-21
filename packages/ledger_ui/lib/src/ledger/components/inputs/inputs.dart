@@ -102,6 +102,75 @@ class LedgerSegmentedControl<T> extends StatelessWidget {
     final floor = DesignTapTargets.of(context).floorOn();
     final chip = math.max(height, floor.height - 2 * _pad);
     final innerRadius = math.max(0.0, t.controlRadius - _pad);
+    // A chip: a radio of the strip's group, in a pressable's dress. The
+    // chosen chip stays live (a screen reader must not call it dimmed);
+    // choosing it again changes nothing.
+    Widget chipOf(T o) => LedgerRadioPress<T>(
+      value: o,
+      enabled: onChanged != null,
+      label: _say(o),
+      // The focus rule runs the chip's whole width and stands on its foot:
+      // its face is 2 inside the target above, and the rule's own drop under
+      // a face is taken back.
+      radius: 0,
+      ringInsets: const EdgeInsets.only(
+        top: _pad,
+        bottom: _pad + 2 * LedgerChromeMetrics.focusGap,
+      ),
+      // The ink fill leaves the old choice and inks in under the new one in
+      // Ledger's one motion.
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: _pad),
+        child: Builder(
+          builder: (context) {
+            final so = LedgerStyleOf(
+              [style, t.components.segmentedControl],
+              {
+                ...LedgerPressStates.of(context),
+                if (o == value) WidgetState.selected,
+                if (onChanged == null) WidgetState.disabled,
+              },
+            );
+            return LedgerFace(
+              style: so.dress(
+                LedgerFaceStyle(
+                  ink: o == value ? t.surface : t.textSecondary,
+                  ground: BoxDecoration(
+                    color: o == value ? t.textPrimary : null,
+                    borderRadius: BorderRadius.circular(innerRadius),
+                  ),
+                ),
+              ),
+              builder: (context, s, _) => Container(
+                height: chip,
+                constraints: BoxConstraints(minWidth: floor.width),
+                padding:
+                    so.padding(Directionality.of(context)) ??
+                    const EdgeInsets.symmetric(horizontal: _chipPad),
+                decoration: s.ground,
+                // Its own width under a loose one: a Container's alignment
+                // would stretch it. A word longer than the strip's share
+                // is set smaller, never cut.
+                child: Center(
+                  widthFactor: 1,
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: ledgerCapCenter(
+                      words,
+                      Text(
+                        _say(o),
+                        softWrap: false,
+                        style: so.words(words, s.ink),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
     // The ring is drawn behind the strip, not padded round it: 3 inside its
     // outer edge (its 1 rule, then 2 of paper) at the ends, and the chips'
     // own 3 above and under them. A slot wider than the chips (a column
@@ -115,83 +184,18 @@ class LedgerSegmentedControl<T> extends StatelessWidget {
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: _pad),
-        child: DesignRadioGroup<T>(
-          options: options,
-          value: value,
-          onChanged: onChanged,
-          layoutBuilder: (context, chips) => Row(
-            mainAxisSize: MainAxisSize.min,
-            spacing: _gap,
-            children: [for (final chip in chips) Flexible(child: chip)],
-          ),
-          itemBuilder: (context, o, node, select) => LedgerPressable(
-            focusNode: node,
-            // The chosen chip stays live (a screen reader must not call it
-            // dimmed); choosing it again changes nothing.
-            onTap: select,
-            label: _say(o),
-            checked: o == value,
-            inMutuallyExclusiveGroup: true,
-            // The focus rule runs the chip's whole width and stands
-            // on its foot: its face is 2 inside the target above, and
-            // the rule's own drop under a face is taken back.
-            radius: 0,
-            ringInsets: const EdgeInsets.only(
-              top: _pad,
-              bottom: _pad + 2 * LedgerChromeMetrics.focusGap,
-            ),
-            // The ink fill leaves the old choice and inks in under the new
-            // one in Ledger's one motion.
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: _pad),
-              child: Builder(
-                builder: (context) {
-                  final so = LedgerStyleOf(
-                    [style, t.components.segmentedControl],
-                    {
-                      ...LedgerPressStates.of(context),
-                      if (o == value) WidgetState.selected,
-                      if (onChanged == null) WidgetState.disabled,
-                    },
-                  );
-                  return LedgerFace(
-                    style: so.dress(
-                      LedgerFaceStyle(
-                        ink: o == value ? t.surface : t.textSecondary,
-                        ground: BoxDecoration(
-                          color: o == value ? t.textPrimary : null,
-                          borderRadius: BorderRadius.circular(innerRadius),
-                        ),
-                      ),
-                    ),
-                    builder: (context, s, _) => Container(
-                      height: chip,
-                      constraints: BoxConstraints(minWidth: floor.width),
-                      padding:
-                          so.padding(Directionality.of(context)) ??
-                          const EdgeInsets.symmetric(horizontal: _chipPad),
-                      decoration: s.ground,
-                      // Its own width under a loose one: a Container's alignment
-                      // would stretch it. A word longer than the strip's share
-                      // is set smaller, never cut.
-                      child: Center(
-                        widthFactor: 1,
-                        child: FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: ledgerCapCenter(
-                            words,
-                            Text(
-                              _say(o),
-                              softWrap: false,
-                              style: so.words(words, s.ink),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              ),
+        // Flutter's radio group, with ui_core's keyboard fix inside it (the
+        // arrows follow the reading direction); each chip a radio.
+        child: RadioGroup<T>(
+          groupValue: value,
+          onChanged: (next) {
+            if (next is T && next != value) onChanged?.call(next);
+          },
+          child: RadioGroupKeyboardFix<T>(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              spacing: _gap,
+              children: [for (final o in options) Flexible(child: chipOf(o))],
             ),
           ),
         ),
@@ -300,7 +304,7 @@ class LedgerFilters<T> extends StatelessWidget {
         children: [
           for (final o in options)
             // Each filter laid out at the tap floor round its 32 face.
-            DesignTapTarget(
+            TapTargetPadding(
               key: optionKeys?[o],
               child: LedgerPressable(
                 onTap: onChanged == null
@@ -477,7 +481,7 @@ class LedgerSwitch extends StatelessWidget {
     );
     final change = onChanged;
     if (_drawn) return face;
-    return DesignTapTarget(
+    return TapTargetPadding(
       child: LedgerPressable(
         onTap: change == null ? null : () => change(!value),
         label: semanticLabel,
@@ -906,7 +910,7 @@ class LedgerSearchField extends StatelessWidget {
   });
 
   /// The words shown while it is empty; null is the shared words' Search
-  /// ([DesignLocalizations.searchFieldLabel]).
+  /// ([RawWidgetsLocalizations.searchFieldLabel]).
   final String? hint;
 
   /// What a screen reader says; null says the [hint].
@@ -929,7 +933,7 @@ class LedgerSearchField extends StatelessWidget {
   final VoidCallback? onCleared;
 
   /// What a screen reader says the round clear is; null is the shared
-  /// words' Clear ([DesignLocalizations.clearButtonTooltip]).
+  /// words' Clear ([RawWidgetsLocalizations.clearButtonTooltip]).
   final String? clearLabel;
 
   /// {@macro ledger.focusNode}
@@ -980,7 +984,7 @@ class LedgerSearchField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.ledgerTheme;
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     final hint = this.hint ?? words.searchFieldLabel;
     final live = onTap == null;
     final glyph = Icon(
@@ -1065,7 +1069,7 @@ class LedgerSearchField extends StatelessWidget {
         spacing: LedgerChromeMetrics.searchGap,
         children: [
           Expanded(
-            child: DesignTapTarget(
+            child: TapTargetPadding(
               minSize: const Size(0, LedgerChromeMetrics.searchHeight - 2),
               child: Center(child: field),
             ),
@@ -1077,7 +1081,7 @@ class LedgerSearchField extends StatelessWidget {
                   ? const SizedBox.shrink()
                   // The 24 disc laid out at the tap floor round it, on
                   // the field's end.
-                  : DesignTapTarget(
+                  : TapTargetPadding(
                       alignment: AlignmentDirectional.centerEnd,
                       child: LedgerPressable(
                         key: clearKey,
@@ -1519,7 +1523,7 @@ class LedgerPickLine extends StatelessWidget {
           if (onTap != null)
             // The 36 line laid out at the tap floor, 4 of room above and
             // below it.
-            DesignTapTarget(
+            TapTargetPadding(
               child: LedgerPressable(
                 focusNode: focusNode,
                 autofocus: autofocus,
@@ -1988,7 +1992,7 @@ class LedgerStepper extends StatelessWidget {
     // The plain number unless the caller formats it: money is opt-in.
     String display(num amount) =>
         format?.call(amount) ??
-        DesignLocalizations.of(context).formatDecimal(amount);
+        RawWidgetsLocalizations.of(context).formatDecimal(amount);
     final words = display(value);
     final canLower = onChanged != null && value - step >= min;
     final canRaise = onChanged != null && (max == null || value + step <= max!);
@@ -2150,7 +2154,7 @@ class _StepperFieldState extends State<_StepperField> {
 
   String? _wrongOf(String text) {
     if (!_focus.hasFocus || text.isEmpty) return null;
-    final l = DesignLocalizations.of(context);
+    final l = RawWidgetsLocalizations.of(context);
     final read = l.parseDecimal(text);
     final max = _s.max;
     if (read != null && read >= _s.min && (max == null || read <= max)) {
@@ -2174,7 +2178,7 @@ class _StepperFieldState extends State<_StepperField> {
   Widget build(BuildContext context) {
     final s = _s;
     final t = context.ledgerTheme;
-    final l = DesignLocalizations.of(context);
+    final l = RawWidgetsLocalizations.of(context);
     final enabled = s.onChanged != null;
     final whole = _whole;
     num taken(double v) => whole ? v.round() : v;
@@ -2192,7 +2196,7 @@ class _StepperFieldState extends State<_StepperField> {
     final words = LedgerTextField.wordsOf(t)
         .copyWith(fontFeatures: const [FontFeature.tabularFigures()]);
     final height = LedgerTextField.heightOf(t);
-    Widget ring(DesignNumberFieldButtonDetails button) {
+    Widget ring(RawNumberFieldButtonDetails button) {
       final off = button.states.contains(WidgetState.disabled);
       final pressed = button.states.contains(WidgetState.pressed);
       final hovered = button.states.contains(WidgetState.hovered);
@@ -2224,7 +2228,7 @@ class _StepperFieldState extends State<_StepperField> {
       );
     }
 
-    final number = DesignNumberField(
+    final number = RawNumberField(
       value: s.value.toDouble(),
       onChanged: enabled
           // The number field tells only of a change, and of none while
@@ -2293,7 +2297,7 @@ class _StepperFieldState extends State<_StepperField> {
         ],
       ),
     );
-    final framed = DesignField(
+    final framed = RawInputDecorator(
       // The number field names itself; the frame shows the label.
       mergeSemantics: false,
       helperText: s.helper,

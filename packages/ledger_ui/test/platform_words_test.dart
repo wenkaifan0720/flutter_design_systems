@@ -7,31 +7,33 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:ledger_ui/ledger_ui.dart';
 import 'package:ledger_ui/ledger_host.dart';
 
-Widget _app(
-  Locale locale,
-  TextDirection direction, {
-  bool design = true,
-}) => WidgetsApp(
-  color: const Color(0xFF000000),
-  locale: locale,
-  supportedLocales: design ? DesignLocalizations.supportedLocales : [locale],
-  localizationsDelegates: design
-      ? const [DesignLocalizations.delegate]
-      : const [],
-  builder: (context, _) => Directionality(
-    textDirection: direction,
-    child: LedgerHost(
-      brightness: Brightness.light,
-      child: Navigator(
-        onGenerateRoute: (_) => PageRouteBuilder<void>(
-          pageBuilder: (_, _, _) => const Center(
-            child: SizedBox(width: 340, child: LedgerTextField(label: 'Name')),
+Widget _app(Locale locale, TextDirection direction, {bool design = true}) =>
+    WidgetsApp(
+      color: const Color(0xFF000000),
+      locale: locale,
+      supportedLocales: design
+          ? RawWidgetsLocalizations.supportedLocales
+          : [locale],
+      localizationsDelegates: design
+          ? const [RawWidgetsLocalizations.delegate]
+          : const [],
+      builder: (context, _) => Directionality(
+        textDirection: direction,
+        child: LedgerHost(
+          brightness: Brightness.light,
+          child: Navigator(
+            onGenerateRoute: (_) => PageRouteBuilder<void>(
+              pageBuilder: (_, _, _) => const Center(
+                child: SizedBox(
+                  width: 340,
+                  child: LedgerTextField(label: 'Name'),
+                ),
+              ),
+            ),
           ),
         ),
       ),
-    ),
-  ),
-);
+    );
 
 Future<void> _openMenu(WidgetTester t) async {
   final field = find.byType(EditableText);

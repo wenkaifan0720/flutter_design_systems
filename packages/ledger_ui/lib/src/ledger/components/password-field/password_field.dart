@@ -1,5 +1,5 @@
 /// A password field in Ledger's hand: the field on its rule with the eye
-/// that shows what was typed, over ui_core's [DesignPasswordReveal].
+/// that shows what was typed, over ui_core's [RawPasswordReveal].
 library;
 
 import 'package:flutter/foundation.dart';
@@ -164,7 +164,7 @@ class _LedgerPasswordFieldState extends State<LedgerPasswordField> {
   }
 
   @override
-  Widget build(BuildContext context) => DesignPasswordReveal(
+  Widget build(BuildContext context) => RawPasswordReveal(
     focusNode: _focus,
     hideOnBlur: widget.hideOnBlur,
     builder: (context, password) => LedgerTextField(

@@ -323,7 +323,7 @@ class LedgerBack extends StatelessWidget {
     final t = context.ledgerTheme;
     final where = label ?? _BackLabel.of(context);
     final close = _close;
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     // "Back to Home" stays English in 0.1.0: the shared words have no
     // "back to" phrase.
     final spoken = close
@@ -373,7 +373,7 @@ class LedgerBack extends StatelessWidget {
       ],
     );
     const hang = LedgerChromeMetrics.crumbHang;
-    return DesignTapTarget(
+    return TapTargetPadding(
       // The words on the crumb's line at the top of its reach.
       alignment: AlignmentDirectional.topStart,
       child: LedgerPressable(
@@ -769,7 +769,7 @@ class LedgerTopBar extends StatelessWidget {
                 _SearchPill(
                   hint:
                       account.searchHint ??
-                      DesignLocalizations.of(context).searchFieldLabel,
+                      RawWidgetsLocalizations.of(context).searchFieldLabel,
                   onTap: () => search(context),
                 ),
               if (account != null)

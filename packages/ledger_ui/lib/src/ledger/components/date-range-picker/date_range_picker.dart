@@ -1,5 +1,5 @@
 /// A span of days chosen on Ledger's month grid, over ui_core's
-/// [DesignCalendar].
+/// [RawCalendarDatePicker].
 library;
 
 import 'package:flutter/foundation.dart';
@@ -14,8 +14,8 @@ import '../../theme.dart';
 import '../icon-button/icon_button.dart';
 
 /// A span of days, its end null while half chosen: ui_core's
-/// [DesignDateRange].
-typedef LedgerDateRange = DesignDateRange;
+/// [RawDateRange].
+typedef LedgerDateRange = RawDateRange;
 
 /// A span of days (a statement's period, a trip's nights) chosen on the
 /// month grid: over it the span read as a ledger heads a period, FROM and
@@ -96,12 +96,12 @@ class LedgerDateRangePicker extends StatefulWidget {
 }
 
 class _LedgerDateRangePickerState extends State<LedgerDateRangePicker> {
-  late DesignCalendarController _controller = _make();
+  late RawCalendarController _controller = _make();
 
-  DesignCalendarController _make() => DesignCalendarController(
+  RawCalendarController _make() => RawCalendarController(
     firstDate: widget.firstDate,
     lastDate: widget.lastDate,
-    mode: DesignCalendarMode.range,
+    mode: RawCalendarMode.range,
     selectedRange: widget.value,
     currentDate: widget.today,
   );
@@ -135,7 +135,7 @@ class _LedgerDateRangePickerState extends State<LedgerDateRangePicker> {
   @override
   Widget build(BuildContext context) {
     final t = context.ledgerTheme;
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     final range = _controller.selectedRange;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -143,7 +143,7 @@ class _LedgerDateRangePickerState extends State<LedgerDateRangePicker> {
       children: [
         _Span(range: range, unit: widget.unit),
         const SizedBox(height: LedgerSpacing.s16),
-        DesignCalendar(
+        RawCalendarDatePicker(
           controller: _controller,
           months: widget.months,
           minDayWidth: LedgerLayout.minHitTarget,
@@ -267,7 +267,7 @@ class _Span extends StatelessWidget {
 class _Day extends StatelessWidget {
   const _Day({required this.day, required this.states});
 
-  final DesignCalendarDay day;
+  final RawCalendarDayDetails day;
   final Set<WidgetState> states;
 
   @override

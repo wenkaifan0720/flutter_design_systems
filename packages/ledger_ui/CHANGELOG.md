@@ -1,3 +1,10 @@
+## 0.4.0
+
+- Needs ui_core 0.4.0 and Flutter 3.47. `ledger_ui` re-exports ui_core, whose types now take `Raw` names (`DesignPressable` is `RawButton`). The old names stay through ui_core 0.4 as deprecated typedefs, and `dart fix --apply` renames them.
+- `LedgerRadio` is a Flutter `RawRadio`. Under a `RadioGroup` it is one of the group's radios, as Flutter's `Radio` is: the group holds the choice, Tab reaches the group at its choice, and the arrows move and choose (with ui_core's `RadioGroupKeyboardFix` inside the group). Alone it takes `groupValue` and `onChanged` as before, both now optional, and a new `enabled` turns it off.
+- `LedgerSegmentedControl` and a `LedgerToggleGroup` of one choice are Flutter's `RadioGroup`, each chip or pill a `RawRadio`, with ui_core's `RadioGroupKeyboardFix` inside. They answer Tab, the arrows, Home and End as before. A chip reads as a radio, where it read as a button as well. A radio shows its focus as Flutter's `Radio` does.
+- `LedgerTooltip` is Flutter's `RawTooltip`, with ui_core's `RawTooltipFocusFix` and `RawTooltipPlacement`. It fades on Flutter's tooltip timing, and each tooltip along a row of controls waits its half second.
+
 ## 0.3.3
 
 - A pressed control stays where it is drawn; its ink deepens instead of moving, and the bare paper of its face takes the same ink. A press now shows over a hover on every control, by day and by night, including those it barely changed or left as they were: the tab bar's tabs and Move disc, tabs, the check, ringed, icon and text buttons, the back button, menu commands, disclosures, page dots and page numbers, the select, the side bar, breadcrumbs, a heading's link, the file picker and a multi-select's remove cross.

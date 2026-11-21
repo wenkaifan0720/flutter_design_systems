@@ -43,14 +43,14 @@ class LedgerSideInset extends InheritedWidget {
 /// Publishes the sidebar's [inset] over [child] ([LedgerSideInset]) and
 /// keeps every surface ui_core opens there (a split button's menu, a
 /// select's list, a popover, a tooltip) clear of the bar
-/// ([DesignOverlayPadding] at the reading start): a page's overlay runs
+/// ([RawPopoverPadding] at the reading start): a page's overlay runs
 /// under the sidebar, which stands over it. No padding at an [inset] of 0.
 Widget ledgerBesideSide({required double inset, required Widget child}) =>
     LedgerSideInset(
       inset: inset,
       child: inset == 0
           ? child
-          : DesignOverlayPadding(
+          : RawPopoverPadding(
               padding: EdgeInsetsDirectional.only(start: inset),
               child: child,
             ),
