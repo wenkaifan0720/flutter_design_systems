@@ -183,11 +183,8 @@ class _MoreKeysState extends State<_MoreKeys> {
                 onPressed: () {},
                 menuLabel: 'More ways to save',
                 actions: [
-                  DesignSplitAction(label: 'Save a copy', onPressed: () {}),
-                  DesignSplitAction(
-                    label: 'Save as a template',
-                    onPressed: () {},
-                  ),
+                  RawSplitAction(label: 'Save a copy', onPressed: () {}),
+                  RawSplitAction(label: 'Save as a template', onPressed: () {}),
                 ],
               ),
               ApplianceSplitButton(
@@ -196,10 +193,7 @@ class _MoreKeysState extends State<_MoreKeys> {
                 onPressed: () {},
                 menuLabel: 'More ways to order',
                 actions: [
-                  DesignSplitAction(
-                    label: 'Order every month',
-                    onPressed: () {},
-                  ),
+                  RawSplitAction(label: 'Order every month', onPressed: () {}),
                 ],
               ),
             ],

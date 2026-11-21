@@ -21,7 +21,7 @@ Future<void> _show(WidgetTester tester, Locale locale, Widget child) async {
       home: Localizations(
         locale: locale,
         delegates: const [
-          DesignLocalizations.delegate,
+          RawWidgetsLocalizations.delegate,
           DefaultWidgetsLocalizations.delegate,
         ],
         child: Directionality(

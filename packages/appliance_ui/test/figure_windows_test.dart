@@ -91,8 +91,8 @@ Rect _figure(WidgetTester tester, String text, {bool ink = false}) {
   return rect;
 }
 
-DesignCalendarController _calendar(WidgetTester tester) {
-  final controller = DesignCalendarController(
+RawCalendarController _calendar(WidgetTester tester) {
+  final controller = RawCalendarController(
     firstDate: DateTime(2026),
     lastDate: DateTime(2027),
     selectedDate: DateTime(2026, 11, 18),

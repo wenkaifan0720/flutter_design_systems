@@ -9,6 +9,7 @@ library;
 import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 import 'package:ui_core/host.dart';
@@ -24,8 +25,9 @@ Color _none(Color c) => c.withValues(alpha: 0);
 /// A dialog: a lid of smooth plastic raised over the dimmed housing, its
 /// [title], its [content] and its [actions] (keys: [ApplianceButton], the
 /// main one [ApplianceButton.filled]) at its foot, the main one last. On a
-/// phone the keys share the available width. Actions wrap onto separate rows
-/// when their labels need more room.
+/// phone the keys share the available width. When they do not fit side by
+/// side (long labels, large text), they stack, each as wide as the dialog,
+/// the main one on top.
 ///
 /// Reads [style]'s `fill`, `padding` and `textStyle` (the title), then
 /// [ApplianceThemeData.dialogStyle]'s.
@@ -73,7 +75,7 @@ class ApplianceDialog extends StatelessWidget {
         explicitChildNodes: true,
         namesRoute: title == null ? true : null,
         label: title == null
-            ? DesignLocalizations.of(context).dialogLabel
+            ? RawWidgetsLocalizations.of(context).dialogLabel
             : null,
         child: _Lid(
           fill: layered.fill,
@@ -121,13 +123,9 @@ class ApplianceDialog extends StatelessWidget {
                                   actions.length,
                             )
                           : 0.0;
-                      return OverflowBar(
-                        alignment: narrow
-                            ? MainAxisAlignment.spaceBetween
-                            : MainAxisAlignment.end,
-                        overflowAlignment: OverflowBarAlignment.end,
-                        spacing: gap,
-                        overflowSpacing: gap,
+                      return _DialogKeys(
+                        gap: gap,
+                        share: narrow,
                         children: [
                           for (final action in actions)
                             ConstrainedBox(
@@ -154,6 +152,169 @@ class ApplianceDialog extends StatelessWidget {
       ..add(StringProperty('title', title, defaultValue: null))
       ..add(IntProperty('actions', actions.length));
   }
+}
+
+/// A dialog's keys. Side by side when they fit, as an [OverflowBar] lays
+/// them: spread over the width on a phone ([share]), at the end elsewhere.
+/// When they do not fit, stacked, each as wide as the dialog, the main key
+/// (the last) on top, [gap] apart.
+class _DialogKeys extends MultiChildRenderObjectWidget {
+  const _DialogKeys({
+    required this.gap,
+    required this.share,
+    required super.children,
+  });
+
+  final double gap;
+  final bool share;
+
+  @override
+  _RenderDialogKeys createRenderObject(BuildContext context) =>
+      _RenderDialogKeys(gap, share, Directionality.of(context));
+
+  @override
+  void updateRenderObject(
+    BuildContext context,
+    _RenderDialogKeys renderObject,
+  ) => renderObject
+    ..gap = gap
+    ..share = share
+    ..textDirection = Directionality.of(context);
+}
+
+class _DialogKeysParentData extends ContainerBoxParentData<RenderBox> {}
+
+class _RenderDialogKeys extends RenderBox
+    with
+        ContainerRenderObjectMixin<RenderBox, _DialogKeysParentData>,
+        RenderBoxContainerDefaultsMixin<RenderBox, _DialogKeysParentData> {
+  _RenderDialogKeys(this._gap, this._share, this._textDirection);
+
+  double _gap;
+  set gap(double value) {
+    if (value == _gap) return;
+    _gap = value;
+    markNeedsLayout();
+  }
+
+  bool _share;
+  set share(bool value) {
+    if (value == _share) return;
+    _share = value;
+    markNeedsLayout();
+  }
+
+  TextDirection _textDirection;
+  set textDirection(TextDirection value) {
+    if (value == _textDirection) return;
+    _textDirection = value;
+    markNeedsLayout();
+  }
+
+  @override
+  void setupParentData(RenderBox child) {
+    if (child.parentData is! _DialogKeysParentData) {
+      child.parentData = _DialogKeysParentData();
+    }
+  }
+
+  List<RenderBox> get _keys => [
+    for (RenderBox? k = firstChild; k != null; k = childAfter(k)) k,
+  ];
+
+  double get _gaps => _gap * math.max(0, childCount - 1);
+
+  @override
+  double computeMinIntrinsicWidth(double height) => _keys.fold(
+    0,
+    (widest, k) => math.max(widest, k.getMinIntrinsicWidth(double.infinity)),
+  );
+
+  @override
+  double computeMaxIntrinsicWidth(double height) =>
+      _keys.fold(
+        0.0,
+        (sum, k) => sum + k.getMaxIntrinsicWidth(double.infinity),
+      ) +
+      _gaps;
+
+  @override
+  double computeMinIntrinsicHeight(double width) =>
+      _height(width, (k, w) => k.getMinIntrinsicHeight(w));
+
+  @override
+  double computeMaxIntrinsicHeight(double width) =>
+      _height(width, (k, w) => k.getMaxIntrinsicHeight(w));
+
+  double _height(double width, double Function(RenderBox, double) measure) {
+    if (computeMaxIntrinsicWidth(double.infinity) <= width) {
+      return _keys.fold(
+        0,
+        (tallest, k) => math.max(tallest, measure(k, double.infinity)),
+      );
+    }
+    return _keys.fold(0.0, (sum, k) => sum + measure(k, width)) + _gaps;
+  }
+
+  @override
+  Size computeDryLayout(BoxConstraints constraints) =>
+      _layout(constraints, (k, c) => k.getDryLayout(c), place: false);
+
+  @override
+  void performLayout() {
+    size = _layout(constraints, (k, c) {
+      k.layout(c, parentUsesSize: true);
+      return k.size;
+    }, place: true);
+  }
+
+  Size _layout(
+    BoxConstraints constraints,
+    Size Function(RenderBox, BoxConstraints) lay, {
+    required bool place,
+  }) {
+    final keys = _keys;
+    if (keys.isEmpty) return constraints.smallest;
+    final sizes = [for (final k in keys) lay(k, constraints.loosen())];
+    final row = sizes.fold(0.0, (sum, s) => sum + s.width) + _gaps;
+    final width = constraints.maxWidth;
+    if (row <= width) {
+      final tallest = sizes.fold(0.0, (h, s) => math.max(h, s.height));
+      final size = constraints.constrain(Size(width, tallest));
+      if (place) {
+        final rtl = _textDirection == TextDirection.rtl;
+        final spacing = _share && keys.length > 1
+            ? (size.width - (row - _gaps)) / (keys.length - 1)
+            : _gap;
+        // From the start edge: spread from it on a phone, else at the end.
+        var along = _share ? 0.0 : size.width - row;
+        for (final (i, k) in keys.indexed) {
+          final w = sizes[i].width;
+          (k.parentData! as _DialogKeysParentData).offset = Offset(
+            rtl ? size.width - along - w : along,
+            (tallest - sizes[i].height) / 2,
+          );
+          along += w + spacing;
+        }
+      }
+      return size;
+    }
+    var y = 0.0;
+    for (final k in keys.reversed) {
+      final s = lay(k, BoxConstraints.tightFor(width: width));
+      if (place) (k.parentData! as _DialogKeysParentData).offset = Offset(0, y);
+      y += s.height + _gap;
+    }
+    return constraints.constrain(Size(width, y - _gap));
+  }
+
+  @override
+  bool hitTestChildren(BoxHitTestResult result, {required Offset position}) =>
+      defaultHitTestChildren(result, position: position);
+
+  @override
+  void paint(PaintingContext context, Offset offset) =>
+      defaultPaint(context, offset);
 }
 
 /// A lid: a raised plate with a soft, wide shade under it, as a hinged lid
@@ -380,7 +541,7 @@ class ApplianceSheet extends StatelessWidget {
     final c = theme.colors;
     final layered = DesignStyleOf([style, theme.dialogStyle], const {});
     final media = MediaQuery.of(context);
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     return ConstrainedBox(
       constraints: BoxConstraints(
         maxWidth: maxWidth,
@@ -483,8 +644,8 @@ class ApplianceSheet extends StatelessWidget {
                   start: 0,
                   end: 0,
                   child: Center(
-                    child: DesignBottomSheetDragHandle(
-                      builder: (context, states) => DesignTapTarget(
+                    child: RawBottomSheetDragHandle(
+                      builder: (context, states) => TapTargetPadding(
                         alignment: AlignmentDirectional.topCenter,
                         child: SizedBox.square(
                           dimension: 44,
@@ -536,7 +697,7 @@ class ApplianceSheet extends StatelessWidget {
 }
 
 /// Raises [builder]'s sheet (an [ApplianceSheet]) from the screen's foot on
-/// ui_core's [DesignBottomSheetRoute], sliding up its track on
+/// ui_core's [RawBottomSheetRoute], sliding up its track on
 /// [ApplianceMotion.slide] (under Reduce Motion it fades). A drag takes it
 /// down with the finger (its content hands the drag over at its top); let
 /// go past half way, or flung, it closes. Tapping the scrim closes it when
@@ -556,7 +717,7 @@ Future<T?> showApplianceSheet<T>({
 }) {
   final theme = ApplianceTheme.of(context);
   return Navigator.of(context, rootNavigator: true).push<T>(
-    DesignBottomSheetRoute<T>(
+    RawBottomSheetRoute<T>(
       barrierColor: theme.colors.scrim,
       barrierDismissible: barrierDismissible,
       semanticLabel: semanticLabel,
@@ -622,7 +783,7 @@ class ApplianceToaster extends StatelessWidget {
   final ApplianceStyle? style;
 
   @override
-  Widget build(BuildContext context) => DesignToaster(
+  Widget build(BuildContext context) => RawToaster(
     dampingRatio: ApplianceMotion.lid.dampingRatio,
     stiffness: ApplianceMotion.lid.stiffness,
     constraints: const BoxConstraints(maxWidth: 440),
@@ -642,7 +803,7 @@ class ApplianceToaster extends StatelessWidget {
 class _Toast extends StatelessWidget {
   const _Toast(this.details, this.style);
 
-  final DesignToastDetails details;
+  final RawToastDetails details;
   final ApplianceStyle? style;
 
   @override
@@ -653,7 +814,7 @@ class _Toast extends StatelessWidget {
     final layered = DesignStyleOf([style, theme.toastStyle], const {});
     final glass = layered.fill ?? c.display;
     final legend = layered.foreground ?? c.onDisplay;
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     // The lamp and the action light in the signal: bright on the night's
     // glass, a deep ink on the day's LCD, walked toward the figures' ink
     // until the action's words read at 4.5:1.
@@ -670,7 +831,7 @@ class _Toast extends StatelessWidget {
       required String label,
       required VoidCallback onPressed,
       required Widget Function(Color ink) child,
-    }) => DesignPressable(
+    }) => RawButton(
       onPressed: onPressed,
       semanticLabel: label,
       excludeSemantics: true,
@@ -687,7 +848,7 @@ class _Toast extends StatelessWidget {
                 ? c.focus
                 : _none(c.focus),
           ),
-          child: DesignTapTarget(
+          child: TapTargetPadding(
             child: ConstrainedBox(
               constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
               child: Padding(
@@ -793,15 +954,15 @@ class _Toast extends StatelessWidget {
 /// ```dart
 /// showApplianceToast(context, 'Added to basket', actionLabel: 'Undo', onAction: () {})
 /// ```
-DesignToastHandle showApplianceToast(
+RawToastController showApplianceToast(
   BuildContext context,
   String message, {
   String? title,
   String? actionLabel,
   VoidCallback? onAction,
   Duration? duration = const Duration(seconds: 4),
-}) => DesignToaster.of(context).show(
-  DesignToast(
+}) => RawToaster.of(context).show(
+  RawToast(
     message: message,
     title: title,
     actionLabel: actionLabel,
@@ -852,7 +1013,7 @@ class ApplianceSideSheet extends StatelessWidget {
     final theme = ApplianceTheme.of(context);
     final c = theme.colors;
     final layered = DesignStyleOf([style, theme.dialogStyle], const {});
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     final media = MediaQuery.of(context);
     const r = Radius.circular(ApplianceMetrics.lidRadius);
     final radius = side == AxisDirection.left
@@ -982,12 +1143,12 @@ Future<T?> showApplianceSideSheet<T>({
   required WidgetBuilder builder,
   String? title,
   List<Widget> footer = const [],
-  DesignSheetEdge edge = DesignSheetEdge.end,
+  RawSheetEdge edge = RawSheetEdge.end,
   double width = 380,
 }) {
   final theme = ApplianceTheme.of(context);
   return Navigator.of(context, rootNavigator: true).push<T>(
-    DesignSideSheetRoute<T>(
+    RawSideSheetRoute<T>(
       edge: edge,
       width: width,
       barrierColor: theme.colors.scrim,
@@ -1114,7 +1275,7 @@ class ApplianceActionSheet extends StatelessWidget {
                 if (title != null || message != null)
                   const SizedBox(height: ApplianceSpacing.small),
                 for (final a in actions)
-                  DesignPressable(
+                  RawButton(
                     onPressed: a.onPressed,
                     semanticLabel: a.label,
                     excludeSemantics: true,
@@ -1209,7 +1370,7 @@ class ApplianceSheetPage<T> extends Page<T> {
   @override
   Route<T> createRoute(BuildContext context) {
     final theme = ApplianceTheme.of(context);
-    return DesignBottomSheetRoute<T>(
+    return RawBottomSheetRoute<T>(
       settings: this,
       snapSizes: [
         fullScreen

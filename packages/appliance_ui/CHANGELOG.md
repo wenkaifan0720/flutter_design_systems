@@ -1,3 +1,11 @@
+## 0.2.0
+
+- Needs ui_core 0.4.0 and Flutter 3.47. `appliance_ui` re-exports ui_core, whose types now take `Raw` names (`DesignPressable` is `RawButton`). The old names stay through ui_core 0.4 as deprecated typedefs, and `dart fix --apply` renames them.
+- `ApplianceRadioGroup` and `ApplianceSegmentedButton` are Flutter's `RadioGroup`, each radio a `RawRadio`, with ui_core's `RadioGroupKeyboardFix` inside. They answer Tab, the arrows, Home and End as before. A radio shows its focus as Flutter's `Radio` does.
+- `ApplianceTooltip` is Flutter's `RawTooltip`, with ui_core's `RawTooltipFocusFix` and `RawTooltipPlacement`. It fades on Flutter's tooltip timing, and each tooltip along a row of keys waits its half second.
+- When an `ApplianceDialog`'s keys do not fit side by side (long labels, large text), they stack, each as wide as the dialog, the main one on top. They stood in a staircase of their own widths at the end, the main one at the foot.
+- A latching `ApplianceIconButton`, an `ApplianceChip` and the password field's eye read as a button, selected while latched, as `IconButton(isSelected:)` does. They read as switches.
+
 ## 0.1.5
 
 - Hover and keyboard focus brighten the fitted pilot lamps, legends and bezels. The orange action key lights its legend. Menu commands depress only while held.

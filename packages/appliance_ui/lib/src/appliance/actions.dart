@@ -16,7 +16,7 @@ import 'select.dart';
 import 'theme.dart';
 
 // The ui_core types this part's API takes, through the look's barrel.
-export 'package:ui_core/ui_core.dart' show DesignSplitAction;
+export 'package:ui_core/ui_core.dart' show RawSplitAction;
 
 /// The trough a strip of keys is set in: sunk into the panel, the keys
 /// standing in it [ApplianceMetrics.capInset] from its rim, concentric.
@@ -199,7 +199,7 @@ class ApplianceToggleGroup<T> extends StatelessWidget {
         padding: const EdgeInsets.symmetric(
           horizontal: ApplianceMetrics.capInset,
         ),
-        child: DesignToggleGroup<T>(
+        child: RawSegmentedButton<T>(
           options: [for (final o in options) o.value],
           selected: selected,
           onSelectionChanged: onSelectionChanged,
@@ -316,7 +316,7 @@ class ApplianceToggleGroup<T> extends StatelessWidget {
 /// `onPressed` stands greyed in the menu.
 ///
 /// ```dart
-/// ApplianceSplitButton(label: 'Add to basket', onPressed: () {}, actions: [DesignSplitAction(label: 'Add to a list', onPressed: () {})])
+/// ApplianceSplitButton(label: 'Add to basket', onPressed: () {}, actions: [RawSplitAction(label: 'Add to a list', onPressed: () {})])
 /// ```
 class ApplianceSplitButton extends StatelessWidget {
   /// A split key: [label] and a menu of [actions].
@@ -337,7 +337,7 @@ class ApplianceSplitButton extends StatelessWidget {
   final VoidCallback? onPressed;
 
   /// The menu's actions.
-  final List<DesignSplitAction> actions;
+  final List<RawSplitAction> actions;
 
   /// Whether both halves are the signal key.
   final bool filled;
@@ -357,7 +357,7 @@ class ApplianceSplitButton extends StatelessWidget {
     final theme = ApplianceTheme.of(context);
     final c = theme.colors;
     const r = Radius.circular(ApplianceMetrics.keyRadius);
-    return DesignSplitButton(
+    return RawSplitButton(
       label: label,
       onPressed: onPressed,
       actions: actions,
@@ -375,7 +375,7 @@ class ApplianceSplitButton extends StatelessWidget {
         ),
       ),
       buttonBuilder: (context, part, states, open) {
-        final main = part == DesignSplitPart.main;
+        final main = part == RawSplitPart.main;
         final disabled = states.contains(WidgetState.disabled);
         final down = states.contains(WidgetState.pressed) || (!main && open);
         final radius = main
@@ -388,7 +388,7 @@ class ApplianceSplitButton extends StatelessWidget {
           disabled: disabled,
           focused: states.contains(WidgetState.focused),
         ).copyWith(radius: radius.resolve(Directionality.of(context)));
-        return DesignTapTarget(
+        return TapTargetPadding(
           child: SizedBox(
             height: theme.controlHeight,
             width: main ? null : theme.controlHeight - ApplianceSpacing.small,
@@ -437,7 +437,7 @@ class ApplianceSplitButton extends StatelessWidget {
       ),
       surfaceBuilder: (context, info, items) => ApplianceMenuReveal(
         animation: info.animation,
-        below: info.side != DesignOverlaySide.above,
+        below: info.side != RawPopoverSide.above,
         child: ApplianceMenuPlate(
           maxHeight: info.maxSize.height,
           child: Column(
@@ -530,7 +530,7 @@ class ApplianceLink extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = ApplianceTheme.of(context);
     final c = theme.colors;
-    return DesignPressable(
+    return RawButton(
       onPressed: onPressed,
       focusNode: focusNode,
       semanticLabel: label,
@@ -547,7 +547,7 @@ class ApplianceLink extends StatelessWidget {
                 : states.contains(WidgetState.pressed)
                 ? c.print
                 : c.signalInk);
-        return DesignTapTarget(
+        return TapTargetPadding(
           child: AnimatedApplianceSurface(
             control: false,
             face: ApplianceFace(

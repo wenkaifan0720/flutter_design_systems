@@ -111,7 +111,7 @@ class ApplianceButton extends StatelessWidget {
         _ButtonKind.text => theme.textButtonStyle,
       },
     ];
-    return DesignPressable(
+    return RawButton(
       onPressed: onPressed,
       focusNode: focusNode,
       autofocus: autofocus,
@@ -153,7 +153,7 @@ class ApplianceButton extends StatelessWidget {
             child: Text(label),
           ),
         );
-        return DesignTapTarget(
+        return TapTargetPadding(
           child: ConstrainedBox(
             constraints: BoxConstraints(
               minWidth: minimum.width,
@@ -322,12 +322,14 @@ class ApplianceIconButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = ApplianceTheme.of(context);
-    return DesignPressable(
+    return RawButton(
       onPressed: onPressed,
       focusNode: focusNode,
       autofocus: autofocus,
       semanticLabel: semanticLabel,
-      toggled: selected,
+      // A key that latches: a button that is selected while latched, as
+      // Flutter's IconButton(isSelected:) reads.
+      semanticSelected: selected,
       excludeSemantics: true,
       selected: selected ?? false,
       builder: (context, states, _) {
@@ -341,7 +343,7 @@ class ApplianceIconButton extends StatelessWidget {
         );
         face = layered.on(face);
         final side = layered.minimumSize?.height ?? theme.controlHeight;
-        return DesignTapTarget(
+        return TapTargetPadding(
           child: SizedBox.square(
             dimension: side,
             child: AnimatedApplianceSurface(

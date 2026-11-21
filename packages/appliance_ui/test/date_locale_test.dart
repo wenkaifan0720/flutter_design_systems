@@ -16,7 +16,7 @@ Future<void> _show(WidgetTester tester, Locale locale, Widget date) async {
       home: Localizations(
         locale: locale,
         delegates: const [
-          DesignLocalizations.delegate,
+          RawWidgetsLocalizations.delegate,
           DefaultWidgetsLocalizations.delegate,
         ],
         child: Directionality(
@@ -71,7 +71,7 @@ void main() {
 
       expect(centerOf('٢٠'), greaterThan(centerOf('نوفمبر')));
       expect(centerOf('نوفمبر'), greaterThan(centerOf('٢٠٢٦')));
-      final words = DesignLocalizations.of(tester.element(text));
+      final words = RawWidgetsLocalizations.of(tester.element(text));
       expect(
         tester.getSemantics(find.bySemanticsLabel('Due date')).value,
         words.formatFullDate(_due),
@@ -95,7 +95,7 @@ void main() {
   testWidgets(
     'Arabic ranges name both endpoints and keep each necessary year',
     (tester) async {
-      final words = DesignLocalizations.forLocale(const Locale('ar'));
+      final words = RawWidgetsLocalizations.forLocale(const Locale('ar'));
       final next = DateTime(2027, 1, 2);
       final sameYear = DateTime(2026, 11, 23);
       for (final (end, expected) in <(DateTime?, String)>[
@@ -108,7 +108,7 @@ void main() {
           const Locale('ar'),
           ApplianceDateRangePicker(
             label: 'Period',
-            value: DesignDateRange(_due, end),
+            value: RawDateRange(_due, end),
             firstDate: DateTime(2020),
             lastDate: DateTime(2040),
             onChanged: (_) {},

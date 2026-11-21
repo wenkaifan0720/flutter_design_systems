@@ -16,7 +16,7 @@ import 'material.dart';
 import 'theme.dart';
 
 // The ui_core types this part's API takes, through the look's barrel.
-export 'package:ui_core/ui_core.dart' show DesignRangeValues;
+export 'package:ui_core/ui_core.dart' show RawRangeValues;
 
 /// The width a fader cap's touch takes.
 const double _capReach = 44;
@@ -382,7 +382,7 @@ class _ApplianceSliderState extends State<ApplianceSlider> {
 /// is its own stop for the keys and the screen reader; they never pass.
 ///
 /// ```dart
-/// ApplianceRangeSlider(values: const DesignRangeValues(20, 60), max: 100, onChanged: (range) {})
+/// ApplianceRangeSlider(values: const RawRangeValues(20, 60), max: 100, onChanged: (range) {})
 /// ```
 class ApplianceRangeSlider extends StatelessWidget {
   /// A range of [values] between [min] and [max].
@@ -403,10 +403,10 @@ class ApplianceRangeSlider extends StatelessWidget {
   });
 
   /// The range.
-  final DesignRangeValues values;
+  final RawRangeValues values;
 
   /// Called with each new range; null disables it.
-  final ValueChanged<DesignRangeValues>? onChanged;
+  final ValueChanged<RawRangeValues>? onChanged;
 
   /// The least value.
   final double min;
@@ -431,10 +431,10 @@ class ApplianceRangeSlider extends StatelessWidget {
   final String Function(double value)? semanticFormatterCallback;
 
   /// Called as a drag starts.
-  final ValueChanged<DesignRangeValues>? onChangeStart;
+  final ValueChanged<RawRangeValues>? onChangeStart;
 
   /// Called as a drag ends.
-  final ValueChanged<DesignRangeValues>? onChangeEnd;
+  final ValueChanged<RawRangeValues>? onChangeEnd;
 
   /// The caps' style, over [ApplianceThemeData.sliderStyle].
   final ApplianceStyle? style;
@@ -445,7 +445,7 @@ class ApplianceRangeSlider extends StatelessWidget {
     final rtl = Directionality.of(context) == TextDirection.rtl;
     return SizedBox(
       height: theme.controlHeight,
-      child: DesignRangeSlider(
+      child: RawRangeSlider(
         values: values,
         onChanged: onChanged,
         min: min,
@@ -862,7 +862,7 @@ class _StarPainter extends CustomPainter {
 }
 
 /// A rating: five stars, lit in the signal colour up to [value], on
-/// ui_core's [DesignRating]. Under the pointer the stars light to the one
+/// ui_core's [RawRating]. Under the pointer the stars light to the one
 /// it is over, a preview of the press.
 ///
 /// A press or a drag across sets it; with the keys (one tab stop) the
@@ -933,7 +933,7 @@ class _ApplianceRatingState extends State<ApplianceRating> {
     final theme = ApplianceTheme.of(context);
     final c = theme.colors;
     final enabled = widget.onChanged != null;
-    final rating = DesignRating(
+    final rating = RawRating(
       value: widget.value.clamp(0, widget.count).toDouble(),
       onChanged: enabled ? (v) => widget.onChanged!(v.round()) : null,
       readOnly: !enabled,

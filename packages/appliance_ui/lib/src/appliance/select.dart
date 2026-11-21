@@ -179,7 +179,7 @@ class _ApplianceSelectState<T> extends State<ApplianceSelect<T>> {
       final open = anchor?.isOpen ?? false;
       return Listener(
         onPointerDown: (_) => _byPointer = true,
-        child: DesignPressable(
+        child: RawButton(
           onPressed: anchor == null
               ? null
               : () {
@@ -234,7 +234,7 @@ class _ApplianceSelectState<T> extends State<ApplianceSelect<T>> {
                     : c.focus.withValues(alpha: 0),
               ),
             );
-            return DesignTapTarget(
+            return TapTargetPadding(
               child: SizedBox(
                 height: height,
                 child: AnimatedApplianceSurface(
@@ -287,10 +287,10 @@ class _ApplianceSelectState<T> extends State<ApplianceSelect<T>> {
 
     final Widget box = !enabled
         ? face(null)
-        : DesignAnchoredOverlay(
+        : RawPopover(
             arrowKeyNavigation: true,
             semanticLabel: widget.semanticLabel ?? label,
-            placement: const DesignOverlayPlacement(
+            placement: const RawPopoverPlacement(
               gap: ApplianceSpacing.tight + 2,
               margin: ApplianceSpacing.small,
             ),
@@ -299,7 +299,7 @@ class _ApplianceSelectState<T> extends State<ApplianceSelect<T>> {
             anchorBuilder: (context, anchor) => face(anchor),
             overlayBuilder: (context, info) => ApplianceMenuReveal(
               animation: info.animation,
-              below: info.side != DesignOverlaySide.above,
+              below: info.side != RawPopoverSide.above,
               child: _SelectList<T>(
                 items: items,
                 value: value,
@@ -581,7 +581,7 @@ class _SelectListState<T> extends State<_SelectList<T>> {
                         _nodes[i].requestFocus();
                       }
                     : null,
-                child: DesignPressable(
+                child: RawButton(
                   onPressed: item.enabled
                       ? () => widget.onChosen(item.value)
                       : null,

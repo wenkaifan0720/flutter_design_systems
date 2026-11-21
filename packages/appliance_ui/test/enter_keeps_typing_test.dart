@@ -107,11 +107,11 @@ void main() {
           width: 360,
           child: ApplianceCommandPalette(
             commands: [
-              DesignCommand(
+              RawCommand(
                 label: 'Start the timer',
                 onPressed: () => ran.add('timer'),
               ),
-              DesignCommand(
+              RawCommand(
                 label: 'Descale the kettle',
                 onPressed: () => ran.add('descale'),
               ),

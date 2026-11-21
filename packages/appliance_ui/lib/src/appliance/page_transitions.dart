@@ -53,7 +53,7 @@ class AppliancePageTransitionsBuilder extends PageTransitionsBuilder {
 
 /// Appliance's page change on every platform, with iOS's swipe back from the
 /// screen's leading edge round it there (ui_core's
-/// [DesignSwipeBackPageTransitionsBuilder]). [ApplianceTheme] lays it in the
+/// [SwipeBackPageTransitionsBuilder]). [ApplianceTheme] lays it in the
 /// Material theme it builds; an app on Flutter's own `MaterialApp` puts it in
 /// its `ThemeData`, which its `MaterialPageRoute` reads.
 ///
@@ -64,7 +64,7 @@ const Map<TargetPlatform, PageTransitionsBuilder> appliancePageTransitions = {
   TargetPlatform.android: AppliancePageTransitionsBuilder(),
   TargetPlatform.fuchsia: AppliancePageTransitionsBuilder(),
   // iOS's swipe back from the screen's edge, round Appliance's slide.
-  TargetPlatform.iOS: DesignSwipeBackPageTransitionsBuilder(
+  TargetPlatform.iOS: SwipeBackPageTransitionsBuilder(
     AppliancePageTransitionsBuilder(),
   ),
   TargetPlatform.linux: AppliancePageTransitionsBuilder(),

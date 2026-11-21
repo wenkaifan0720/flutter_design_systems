@@ -84,7 +84,7 @@ class ApplianceLoadingState extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: ApplianceSpacing.huge),
       child: ApplianceStatusView(
         status: ApplianceStatus.working,
-        title: label ?? DesignLocalizations.of(context).loadingLabel,
+        title: label ?? RawWidgetsLocalizations.of(context).loadingLabel,
       ),
     ),
   );
@@ -133,7 +133,7 @@ class ApplianceErrorState extends StatelessWidget {
         actions: [
           if (onRetry != null)
             ApplianceButton(
-              DesignLocalizations.of(context).retryButtonLabel,
+              RawWidgetsLocalizations.of(context).retryButtonLabel,
               onPressed: onRetry,
             ),
         ],

@@ -21,11 +21,11 @@ import 'theme.dart';
 
 // The ui_core types this part's API takes, through the look's barrel.
 export 'package:ui_core/ui_core.dart'
-    show DesignCalendarController, DesignCalendarMode, DesignDateRange;
+    show RawCalendarController, RawCalendarMode, RawDateRange;
 
 // Keep ui_core’s compact month and day, and the year in the same position
 // and with the same punctuation as the reader’s named date.
-String _dateLabel(DesignLocalizations words, DateTime date) {
+String _dateLabel(RawWidgetsLocalizations words, DateTime date) {
   final monthDay = words.formatShortMonthDay(date);
   final full = words.formatFullDate(date);
   final separatedYear = '${words.listSeparator}${words.formatYear(date)}';
@@ -101,7 +101,7 @@ class _SmallKey extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = ApplianceTheme.of(context).colors;
-    return DesignPressable(
+    return RawButton(
       onPressed: onPressed,
       semanticLabel: semanticLabel,
       excludeSemantics: true,
@@ -113,7 +113,7 @@ class _SmallKey extends StatelessWidget {
           focused: states.contains(WidgetState.focused),
           radius: ApplianceMetrics.smallKeyRadius,
         );
-        return DesignTapTarget(
+        return TapTargetPadding(
           child: SizedBox.square(
             dimension: size,
             child: AnimatedApplianceSurface(
@@ -128,7 +128,7 @@ class _SmallKey extends StatelessWidget {
 }
 
 /// A month's header: its name, and keys to the month before and after.
-Widget _header(BuildContext context, DesignCalendarHeader header) {
+Widget _header(BuildContext context, RawCalendarHeaderDetails header) {
   final theme = ApplianceTheme.of(context);
   return Padding(
     padding: const EdgeInsets.only(bottom: ApplianceSpacing.small),
@@ -187,7 +187,7 @@ Widget _weekday(BuildContext context, int weekday, String label) {
 /// key into the panel.
 Widget _day(
   BuildContext context,
-  DesignCalendarDay day,
+  RawCalendarDayDetails day,
   Set<WidgetState> states, [
   ApplianceStyle? style,
 ]) {
@@ -342,7 +342,7 @@ class _DayKey extends StatelessWidget {
 /// range, several days).
 ///
 /// ```dart
-/// ApplianceCalendar(controller: DesignCalendarController(firstDate: DateTime(2026), lastDate: DateTime(2027)))
+/// ApplianceCalendar(controller: RawCalendarController(firstDate: DateTime(2026), lastDate: DateTime(2027)))
 /// ```
 class ApplianceCalendar extends StatelessWidget {
   /// A calendar over [controller].
@@ -357,7 +357,7 @@ class ApplianceCalendar extends StatelessWidget {
   });
 
   /// The month shown and the selection; yours to dispose.
-  final DesignCalendarController controller;
+  final RawCalendarController controller;
 
   /// Called with the day chosen, after [controller] took it.
   final ValueChanged<DateTime>? onChanged;
@@ -383,7 +383,7 @@ class ApplianceCalendar extends StatelessWidget {
   );
 
   Widget _month(BuildContext context) {
-    return DesignCalendar(
+    return RawCalendarDatePicker(
       controller: controller,
       onChanged: onChanged,
       months: months,
@@ -441,7 +441,7 @@ class _PickerKey extends StatelessWidget {
     final c = theme.colors;
     Widget face(DesignOverlayAnchor? anchor) {
       final open = anchor?.isOpen ?? false;
-      return DesignPressable(
+      return RawButton(
         onPressed: anchor?.toggle,
         expanded: anchor?.isOpen,
         semanticLabel: semanticLabel,
@@ -469,7 +469,7 @@ class _PickerKey extends StatelessWidget {
           );
           // The key's height, or taller as the text grows: the date wraps
           // before it is cut.
-          return DesignTapTarget(
+          return TapTargetPadding(
             child: ConstrainedBox(
               constraints: BoxConstraints(minHeight: theme.controlHeight),
               child: AnimatedApplianceSurface(
@@ -520,9 +520,9 @@ class _PickerKey extends StatelessWidget {
     }
 
     if (!enabled) return face(null);
-    return DesignAnchoredOverlay(
+    return RawPopover(
       semanticLabel: semanticLabel,
-      placement: const DesignOverlayPlacement(
+      placement: const RawPopoverPlacement(
         gap: ApplianceSpacing.tight + 2,
         margin: ApplianceSpacing.small,
         preferredExtent: 380,
@@ -534,7 +534,7 @@ class _PickerKey extends StatelessWidget {
       anchorBuilder: (context, anchor) => face(anchor),
       overlayBuilder: (context, info) => ApplianceMenuReveal(
         animation: info.animation,
-        below: info.side != DesignOverlaySide.above,
+        below: info.side != RawPopoverSide.above,
         child: ApplianceMenuPlate(
           maxHeight: info.maxSize.height,
           child: Padding(
@@ -585,15 +585,15 @@ class _CalendarGlyph extends CustomPainter {
 class _CalendarPlate extends StatefulWidget {
   const _CalendarPlate({required this.make, required this.onChanged});
 
-  final DesignCalendarController Function() make;
-  final void Function(DesignCalendarController controller) onChanged;
+  final RawCalendarController Function() make;
+  final void Function(RawCalendarController controller) onChanged;
 
   @override
   State<_CalendarPlate> createState() => _CalendarPlateState();
 }
 
 class _CalendarPlateState extends State<_CalendarPlate> {
-  late final DesignCalendarController _controller = widget.make();
+  late final RawCalendarController _controller = widget.make();
 
   @override
   void dispose() {
@@ -676,7 +676,7 @@ class ApplianceDatePicker extends StatelessWidget {
   Widget build(BuildContext context) {
     final enabled = onChanged != null;
     final chosen = value;
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -694,7 +694,7 @@ class ApplianceDatePicker extends StatelessWidget {
           semanticValue: chosen == null ? null : words.formatFullDate(chosen),
           style: style,
           plate: (context, close) => _CalendarPlate(
-            make: () => DesignCalendarController(
+            make: () => RawCalendarController(
               firstDate: firstDate,
               lastDate: lastDate,
               selectedDate: chosen,
@@ -729,7 +729,7 @@ class ApplianceDatePicker extends StatelessWidget {
 /// when both are chosen.
 ///
 /// ```dart
-/// ApplianceDateRangePicker(label: 'Away', value: DesignDateRange(DateTime(2026, 12, 20), DateTime(2026, 12, 28)), firstDate: DateTime(2026, 11, 16), lastDate: DateTime(2027), onChanged: (range) {})
+/// ApplianceDateRangePicker(label: 'Away', value: RawDateRange(DateTime(2026, 12, 20), DateTime(2026, 12, 28)), firstDate: DateTime(2026, 11, 16), lastDate: DateTime(2027), onChanged: (range) {})
 /// ```
 class ApplianceDateRangePicker extends StatelessWidget {
   /// A picker of two days between [firstDate] and [lastDate].
@@ -749,10 +749,10 @@ class ApplianceDateRangePicker extends StatelessWidget {
   });
 
   /// The days chosen.
-  final DesignDateRange? value;
+  final RawDateRange? value;
 
   /// Called with both days once the end is chosen; null disables it.
-  final ValueChanged<DesignDateRange>? onChanged;
+  final ValueChanged<RawDateRange>? onChanged;
 
   /// The earliest day it offers.
   final DateTime firstDate;
@@ -786,8 +786,8 @@ class ApplianceDateRangePicker extends StatelessWidget {
     final enabled = onChanged != null;
     final range = value;
     final end = range?.end;
-    final words = DesignLocalizations.of(context);
-    String rangeText(DesignDateRange dates) {
+    final words = RawWidgetsLocalizations.of(context);
+    String rangeText(RawDateRange dates) {
       final last = dates.end;
       final start = last == null || dates.start.year == last.year
           ? words.formatShortMonthDay(dates.start)
@@ -819,10 +819,10 @@ class ApplianceDateRangePicker extends StatelessWidget {
                 ),
           style: style,
           plate: (context, close) => _CalendarPlate(
-            make: () => DesignCalendarController(
+            make: () => RawCalendarController(
               firstDate: firstDate,
               lastDate: lastDate,
-              mode: DesignCalendarMode.range,
+              mode: RawCalendarMode.range,
               selectedRange: range,
               currentDate: currentDate,
             ),
@@ -845,11 +845,7 @@ class ApplianceDateRangePicker extends StatelessWidget {
     properties
       ..add(StringProperty('label', label, defaultValue: null))
       ..add(
-        DiagnosticsProperty<DesignDateRange>(
-          'value',
-          value,
-          defaultValue: null,
-        ),
+        DiagnosticsProperty<RawDateRange>('value', value, defaultValue: null),
       );
   }
 }
@@ -1074,7 +1070,7 @@ class ApplianceTimePicker extends StatelessWidget {
     // Each figure named in the reader's words ("Hour", "Minute") and set in
     // the reader's digits (Arabic-Indic in Arabic): the figures are text in
     // the window, as Material's time picker sets its hours.
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     String two(int n) => n < 10
         ? '${words.formatDecimal(0)}${words.formatDecimal(n)}'
         : words.formatDecimal(n);
@@ -1176,7 +1172,7 @@ class _Meridiem extends StatelessWidget {
     Widget key(String label, bool afternoon) {
       final on = pm == afternoon;
       final change = onChanged;
-      return DesignPressable(
+      return RawButton(
         onPressed: change == null ? null : () => change(afternoon),
         selected: on,
         semanticLabel: label,
@@ -1189,7 +1185,7 @@ class _Meridiem extends StatelessWidget {
             focused: states.contains(WidgetState.focused),
             radius: ApplianceMetrics.smallKeyRadius,
           );
-          return DesignTapTarget(
+          return TapTargetPadding(
             child: SizedBox(
               width: 56,
               height: 36,
@@ -1219,7 +1215,7 @@ class _Meridiem extends StatelessWidget {
     }
 
     // The halves of the day as the reader writes them.
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [

@@ -27,11 +27,11 @@ import 'wayfinding.dart';
 // The ui_core types this part's API takes, through the look's barrel.
 export 'package:ui_core/ui_core.dart'
     show
-        DesignSelection,
-        DesignSortDirection,
-        DesignTableColumn,
-        DesignTableController;
-export 'package:ui_core/ui_core.dart' show DesignSwipeAction;
+        RawDataTableSelection,
+        RawSortDirection,
+        RawDataColumn,
+        RawDataTableController;
+export 'package:ui_core/ui_core.dart' show RawSwipeAction;
 export 'package:ui_core/ui_core.dart' show DesignTreeController;
 
 /// A chevron that turns from pointing to the end ([turn] 0) to pointing
@@ -137,7 +137,7 @@ class _ApplianceDisclosureState extends State<ApplianceDisclosure> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          DesignPressable(
+          RawButton(
             onPressed: _toggle,
             expanded: open,
             semanticLabel: widget.title,
@@ -406,13 +406,13 @@ class _SortPainter extends CustomPainter {
 }
 
 /// A data table: [ApplianceTable]'s ruled rows over a
-/// [DesignTableController]. A sortable column's legend is a key that
+/// [RawDataTableController]. A sortable column's legend is a key that
 /// sorts it, its arrow lit; a selected row is lit as a key pressed into
 /// the panel, its box checked. One tab stop for the rows: the arrows walk
 /// them, Space selects, Enter opens.
 ///
 /// ```dart
-/// ApplianceDataTable<String>(controller: DesignTableController<String>(rows: const ['Kettle'], columns: [DesignTableColumn<String>(id: 'name', label: 'Name', sortKey: (row) => row)]), cellText: (row, column) => row)
+/// ApplianceDataTable<String>(controller: RawDataTableController<String>(rows: const ['Kettle'], columns: [RawDataColumn<String>(id: 'name', label: 'Name', sortKey: (row) => row)]), cellText: (row, column) => row)
 /// ```
 class ApplianceDataTable<R> extends StatelessWidget {
   /// The table of [controller], each cell's words from [cellText].
@@ -427,10 +427,10 @@ class ApplianceDataTable<R> extends StatelessWidget {
   });
 
   /// The rows, columns, sort, selection and page; yours to dispose.
-  final DesignTableController<R> controller;
+  final RawDataTableController<R> controller;
 
   /// A cell's words.
-  final String Function(R row, DesignTableColumn<R> column) cellText;
+  final String Function(R row, RawDataColumn<R> column) cellText;
 
   /// Whether rows are selected (a box at each row's start).
   final bool selectable;
@@ -456,7 +456,7 @@ class ApplianceDataTable<R> extends StatelessWidget {
         for (final cell in cells) Expanded(child: cell),
       ],
     );
-    return DesignDataTable<R>(
+    return RawDataTable<R>(
       controller: controller,
       selectable: selectable,
       onActivate: onActivate,
@@ -474,9 +474,9 @@ class ApplianceDataTable<R> extends StatelessWidget {
               lead: Center(
                 child: ApplianceCheckbox(
                   value: switch (page) {
-                    DesignSelection.none => false,
-                    DesignSelection.some => null,
-                    DesignSelection.all => true,
+                    RawDataTableSelection.none => false,
+                    RawDataTableSelection.some => null,
+                    RawDataTableSelection.all => true,
                   },
                   tristate: true,
                   semanticLabel: 'Select every row on the page',
@@ -520,10 +520,10 @@ class ApplianceDataTable<R> extends StatelessWidget {
                 CustomPaint(
                   size: const Size(10, 14),
                   painter: _SortPainter(
-                    up: sort == DesignSortDirection.ascending
+                    up: sort == RawSortDirection.ascending
                         ? c.signal
                         : c.printDisabled.withValues(alpha: 0.5),
-                    down: sort == DesignSortDirection.descending
+                    down: sort == RawSortDirection.descending
                         ? c.signal
                         : c.printDisabled.withValues(alpha: 0.5),
                   ),
@@ -615,7 +615,7 @@ class ApplianceScrollArea extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = ApplianceTheme.of(context).colors;
-    return DesignScrollArea(
+    return RawScrollArea(
       controller: controller,
       axis: axis,
       thickness: 10,
@@ -714,7 +714,7 @@ class ApplianceSplitView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = ApplianceTheme.of(context).colors;
-    return DesignSplitView(
+    return RawSplitView(
       first: first,
       second: second,
       axis: axis,
@@ -830,7 +830,7 @@ class ApplianceCarousel extends StatelessWidget {
       ApplianceTheme.of(context).displayStyle,
     ], const {});
     final c = ApplianceTheme.of(context).colors;
-    return DesignCarousel(
+    return RawCarousel(
       itemCount: itemCount,
       itemBuilder: itemBuilder,
       loop: loop,
@@ -990,7 +990,7 @@ class ApplianceReorderableList<T extends Object> extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = ApplianceTheme.of(context);
     final c = theme.colors;
-    return DesignReorderableList<T>(
+    return RawReorderableList<T>(
       items: items,
       onReorder: onReorder,
       labelOf: labelOf,
@@ -1058,7 +1058,7 @@ class ApplianceReorderableList<T extends Object> extends StatelessWidget {
 /// reader finds them among the row's actions.
 ///
 /// ```dart
-/// ApplianceSwipeActions(endActions: [DesignSwipeAction(label: 'Remove', destructive: true, onPressed: () {})], child: const ApplianceListTile(title: 'Kettle'))
+/// ApplianceSwipeActions(endActions: [RawSwipeAction(label: 'Remove', destructive: true, onPressed: () {})], child: const ApplianceListTile(title: 'Kettle'))
 /// ```
 class ApplianceSwipeActions extends StatelessWidget {
   /// [child], with [startActions] and [endActions] behind it.
@@ -1073,16 +1073,16 @@ class ApplianceSwipeActions extends StatelessWidget {
   final Widget child;
 
   /// The keys a swipe toward the end shows.
-  final List<DesignSwipeAction> startActions;
+  final List<RawSwipeAction> startActions;
 
   /// The keys a swipe toward the start shows.
-  final List<DesignSwipeAction> endActions;
+  final List<RawSwipeAction> endActions;
 
   @override
   Widget build(BuildContext context) {
     final theme = ApplianceTheme.of(context);
     final c = theme.colors;
-    return DesignSwipeActions(
+    return RawSwipeActions(
       startActions: startActions,
       endActions: endActions,
       actionExtent: 88,
@@ -1145,13 +1145,16 @@ class ApplianceRefresh extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = ApplianceTheme.of(context).colors;
-    return DesignPullToRefresh(
+    return RawRefreshIndicator(
       onRefresh: onRefresh,
       indicatorBuilder: (context, details) {
         final mode = details.mode;
-        if (mode == DesignRefreshMode.inactive) return const SizedBox.shrink();
+        if (mode == RawRefreshIndicatorMode.inactive) {
+          return const SizedBox.shrink();
+        }
         final turning =
-            mode == DesignRefreshMode.refresh || mode == DesignRefreshMode.done;
+            mode == RawRefreshIndicatorMode.refresh ||
+            mode == RawRefreshIndicatorMode.done;
         return Center(
           child: SizedBox.square(
             dimension: 40,
@@ -1167,7 +1170,7 @@ class ApplianceRefresh extends StatelessWidget {
                       stroke: 3,
                     ),
                     ApplianceLamp(
-                      lit: mode == DesignRefreshMode.armed || turning,
+                      lit: mode == RawRefreshIndicatorMode.armed || turning,
                       size: 6,
                     ),
                   ],

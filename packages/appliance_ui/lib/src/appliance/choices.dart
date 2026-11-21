@@ -78,7 +78,7 @@ class ApplianceCheckbox extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = ApplianceTheme.of(context);
     final c = theme.colors;
-    return DesignPressable(
+    return RawButton(
       onPressed: onChanged == null ? null : () => onChanged!(_next),
       focusNode: focusNode,
       // A checkbox, not a button, as Flutter's Checkbox reads.
@@ -103,7 +103,7 @@ class ApplianceCheckbox extends StatelessWidget {
             focus: c.signal.withValues(alpha: applianceControlLight(states)),
           ),
         );
-        return DesignTapTarget(
+        return TapTargetPadding(
           child: SizedBox.square(
             dimension: size,
             child: AnimatedApplianceSurface(
@@ -226,7 +226,7 @@ class ApplianceRadio<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final chosen = value == groupValue;
-    return DesignPressable(
+    return RawButton(
       onPressed: onChanged == null ? null : () => onChanged!(value),
       focusNode: focusNode,
       // A radio, not a button, as Flutter's Radio reads.
@@ -235,7 +235,7 @@ class ApplianceRadio<T> extends StatelessWidget {
       inMutuallyExclusiveGroup: true,
       semanticLabel: semanticLabel,
       excludeSemantics: true,
-      builder: (context, states, _) => DesignTapTarget(
+      builder: (context, states, _) => TapTargetPadding(
         child: _PresetKey(chosen: chosen, style: style, states: states),
       ),
     );
@@ -310,8 +310,9 @@ class _PresetKey extends StatelessWidget {
 /// screen reader hears a radio group of radios. A null [onChanged]
 /// disables it.
 ///
-/// Built on ui_core's DesignRadioGroup, over Flutter's RadioGroup. Reads
-/// [style] as [ApplianceRadio] does.
+/// Built on Flutter's RadioGroup, each row a RawRadio, with ui_core's
+/// RadioGroupKeyboardFix inside the group. Reads [style] as
+/// [ApplianceRadio] does.
 ///
 /// ```dart
 /// ApplianceRadioGroup<String>(options: const ['standard', 'next'], value: delivery, labelOf: (d) => d == 'standard' ? 'Standard delivery' : 'Next day', onChanged: (d) => setState(() => delivery = d))
@@ -423,8 +424,6 @@ class _ApplianceRadioGroupBodyState<T>
     final labelOf = group.labelOf;
     final direction = group.direction;
     final style = group.style;
-    final theme = ApplianceTheme.of(context);
-    final c = theme.colors;
     final current = options.toSet();
     final gone = [
       for (final option in _nodes.keys)
@@ -439,72 +438,136 @@ class _ApplianceRadioGroupBodyState<T>
         }
       });
     }
-    final radios = DesignRadioGroup<T>(
-      options: options,
-      value: value,
-      onChanged: group.onChanged,
-      isEnabled: group.isEnabled,
-      focusNodeFor: _nodeFor,
-      semanticLabel: group.semanticLabel,
-      direction: direction,
-      layoutBuilder: (context, rows) => direction == Axis.vertical
-          ? Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: rows,
-            )
-          : Wrap(spacing: ApplianceSpacing.large, children: rows),
-      // Each row is one radio, named by its words: the key and the words
-      // take the press together.
-      itemBuilder: (context, option, node, select) => DesignPressable(
-        focusNode: node,
-        onPressed: select,
-        semanticLabel: labelOf(option),
-        excludeSemantics: true,
-        checked: option == value,
-        selected: option == value,
-        inMutuallyExclusiveGroup: true,
-        builder: (context, states, _) {
-          final off = states.contains(WidgetState.disabled);
-          return ConstrainedBox(
-            constraints: BoxConstraints(minHeight: theme.controlHeight),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(
-                vertical: ApplianceSpacing.small,
-              ),
-              child: Row(
-                mainAxisSize: direction == Axis.vertical
-                    ? MainAxisSize.max
-                    : MainAxisSize.min,
-                children: [
-                  _PresetKey(
-                    chosen: states.contains(WidgetState.selected),
-                    style: style,
-                    states: states,
-                  ),
-                  const SizedBox(width: ApplianceSpacing.medium),
-                  Flexible(
-                    child: Text(
-                      labelOf(option),
-                      style: theme.textTheme.body.copyWith(
-                        color: off ? c.printDisabled : c.print,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
-      ),
-    );
+    final onChanged = group.onChanged;
+    final rows = [
+      for (final option in options)
+        _ApplianceRadioRow<T>(
+          key: ObjectKey(option),
+          value: option,
+          label: labelOf(option),
+          focusNode: _nodeFor(option),
+          enabled: onChanged != null && (group.isEnabled?.call(option) ?? true),
+          direction: direction,
+          style: style,
+        ),
+    ];
+    final layout = direction == Axis.vertical
+        ? Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: rows,
+          )
+        : Wrap(spacing: ApplianceSpacing.large, children: rows);
+    final label = group.semanticLabel;
     return CallbackShortcuts(
       bindings: {
         const SingleActivator(LogicalKeyboardKey.home): () =>
             _toEnd(last: false),
         const SingleActivator(LogicalKeyboardKey.end): () => _toEnd(last: true),
       },
-      child: radios,
+      // Flutter's radio group: one Tab stop, at the choice; the arrows move
+      // and choose. ui_core's keyboard fix inside it gives the group its Tab
+      // stop when the chosen radio is turned off, and swaps Left and Right
+      // right to left, until Flutter's own fixes do. RadioGroup takes no null
+      // onChanged: a group that takes no choice turns each radio off.
+      child: RadioGroup<T>(
+        groupValue: value,
+        onChanged: (next) {
+          if (next != null && next != value) onChanged?.call(next);
+        },
+        child: RadioGroupKeyboardFix<T>(
+          child: label == null
+              ? layout
+              : Semantics(label: label, child: layout),
+        ),
+      ),
+    );
+  }
+}
+
+// One row of an ApplianceRadioGroup: a RawRadio on the group, which says it
+// is checked and one of a group and takes the tap, the focus and the keys;
+// the row draws the key and the words, named by the words.
+class _ApplianceRadioRow<T> extends StatelessWidget {
+  const _ApplianceRadioRow({
+    super.key,
+    required this.value,
+    required this.label,
+    required this.focusNode,
+    required this.enabled,
+    required this.direction,
+    required this.style,
+  });
+
+  final T value;
+  final String label;
+  final FocusNode focusNode;
+  final bool enabled;
+  final Axis direction;
+  final ApplianceStyle? style;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = ApplianceTheme.of(context);
+    final c = theme.colors;
+    return MergeSemantics(
+      child: RawRadio<T>(
+        value: value,
+        mouseCursor: WidgetStateMouseCursor.clickable,
+        toggleable: false,
+        focusNode: focusNode,
+        autofocus: false,
+        groupRegistry: RadioGroup.maybeOf<T>(context),
+        enabled: enabled,
+        builder: (context, radio) {
+          // The radio's states, and pressed while a press is down on it.
+          final states = {
+            ...radio.states,
+            if (radio.downPosition != null) WidgetState.pressed,
+          };
+          final off = states.contains(WidgetState.disabled);
+          return Semantics(
+            label: label,
+            child: ExcludeSemantics(
+              // All of its box takes a press, its gaps too:
+              // RawRadio's detector finds only what the face
+              // paints.
+              child: Listener(
+                behavior: HitTestBehavior.opaque,
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: theme.controlHeight),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      vertical: ApplianceSpacing.small,
+                    ),
+                    child: Row(
+                      mainAxisSize: direction == Axis.vertical
+                          ? MainAxisSize.max
+                          : MainAxisSize.min,
+                      children: [
+                        _PresetKey(
+                          chosen: states.contains(WidgetState.selected),
+                          style: style,
+                          states: states,
+                        ),
+                        const SizedBox(width: ApplianceSpacing.medium),
+                        Flexible(
+                          child: Text(
+                            label,
+                            style: theme.textTheme.body.copyWith(
+                              color: off ? c.printDisabled : c.print,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
     );
   }
 }
@@ -559,7 +622,7 @@ class ApplianceSwitch extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = ApplianceTheme.of(context);
     final c = theme.colors;
-    return DesignPressable(
+    return RawButton(
       onPressed: onChanged == null ? null : () => onChanged!(!value),
       focusNode: focusNode,
       toggled: value,
@@ -586,7 +649,7 @@ class ApplianceSwitch extends StatelessWidget {
                 : c.print,
           ),
         );
-        return DesignTapTarget(
+        return TapTargetPadding(
           child: SizedBox.fromSize(
             size: size,
             child: AnimatedApplianceSurface(
@@ -906,17 +969,6 @@ class ApplianceSegmentedButton<T> extends StatelessWidget {
             painter.dispose();
           }
         }
-        // Each position's focus node, as the group hands it to the
-        // position's builder; Home and End move the focus with the choice.
-        final nodes = List<FocusNode?>.filled(segments.length, null);
-
-        void toEnd({required bool last}) {
-          if (onChanged == null) return;
-          final next = last ? segments.length - 1 : 0;
-          if (next != index) onChanged!(segments[next].value);
-          nodes[next]?.requestFocus();
-        }
-
         final trough = _troughFace(
           frame,
           ApplianceFace(
@@ -981,36 +1033,25 @@ class ApplianceSegmentedButton<T> extends StatelessWidget {
                               child: block,
                             ),
                           ),
-                          DesignRadioGroup<int>(
-                            options: [
-                              for (var i = 0; i < segments.length; i++) i,
-                            ],
-                            value: index,
+                          _SegmentRadios(
+                            count: segments.length,
+                            index: index,
+                            each: each,
                             onChanged: onChanged == null
                                 ? null
                                 : (i) => onChanged!(segments[i].value),
-                            layoutBuilder: (context, positions) => Row(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [
-                                for (final position in positions)
-                                  SizedBox(width: each, child: position),
-                              ],
+                            position: (context, i, node, enabled) => _position(
+                              context,
+                              theme,
+                              i,
+                              segments[i],
+                              i == index,
+                              words,
+                              layers,
+                              node,
+                              enabled,
+                              stacked,
                             ),
-                            itemBuilder: (context, i, node, select) {
-                              nodes[i] = node;
-                              return _position(
-                                context,
-                                theme,
-                                segments[i],
-                                i == index,
-                                words,
-                                layers,
-                                node,
-                                select,
-                                toEnd,
-                                stacked,
-                              );
-                            },
                           ),
                         ],
                       ),
@@ -1039,43 +1080,56 @@ class ApplianceSegmentedButton<T> extends StatelessWidget {
           edge: frame.side?.color ?? frame.edge,
         );
 
+  // A position: a radio of the selector's group, checked when chosen, not a
+  // button. The group's arrows choose the next position and wrap; Home and
+  // End choose the ends.
   Widget _position(
     BuildContext context,
     ApplianceThemeData theme,
+    int i,
     ApplianceSegment<T> s,
     bool chosen,
     TextStyle words,
     List<ApplianceStyle?> layers,
     FocusNode node,
-    VoidCallback? select,
-    void Function({required bool last}) toEnd,
+    bool enabled,
     bool stacked,
   ) {
-    return DesignPressable(
-      focusNode: node,
-      onPressed: select,
-      selected: chosen,
-      // A radio of the selector's group: checked when chosen, not a button.
-      checked: chosen,
-      inMutuallyExclusiveGroup: true,
-      semanticLabel: s.semanticLabel ?? s.label,
-      excludeSemantics: true,
-      // The group's arrows choose the next position and wrap; Home and End
-      // choose the ends.
-      shortcuts: const {
-        SingleActivator(LogicalKeyboardKey.home): _MoveIntent(-1),
-        SingleActivator(LogicalKeyboardKey.end): _MoveIntent(1),
-      },
-      actions: {
-        _MoveIntent: CallbackAction<_MoveIntent>(
-          onInvoke: (intent) {
-            toEnd(last: intent.by > 0);
-            return null;
-          },
+    final label = s.semanticLabel ?? s.label;
+    return MergeSemantics(
+      child: RawRadio<int>(
+        value: i,
+        mouseCursor: WidgetStateMouseCursor.clickable,
+        toggleable: false,
+        focusNode: node,
+        autofocus: false,
+        groupRegistry: RadioGroup.maybeOf<int>(context),
+        enabled: enabled,
+        builder: (context, radio) => Semantics(
+          label: label,
+          child: ExcludeSemantics(
+            // All of its box takes a press, its gaps too:
+            // RawRadio's detector finds only what the face
+            // paints.
+            child: Listener(
+              behavior: HitTestBehavior.opaque,
+              child: _legend(
+                context,
+                theme,
+                s,
+                chosen,
+                {
+                  ...radio.states,
+                  if (radio.downPosition != null) WidgetState.pressed,
+                },
+                words,
+                layers,
+                stacked,
+              ),
+            ),
+          ),
         ),
-      },
-      builder: (context, states, _) =>
-          _legend(context, theme, s, chosen, states, words, layers, stacked),
+      ),
     );
   }
 
@@ -1211,7 +1265,7 @@ class ApplianceSegmentedButton<T> extends StatelessWidget {
 }
 
 /// Tabs over a page's views, as a slide selector: the same object as
-/// [ApplianceSegmentedButton], on ui_core's [DesignTabBar]. It is one tab
+/// [ApplianceSegmentedButton], on ui_core's [RawTabBar]. It is one tab
 /// stop; the arrows move along it, choosing as they go (mirrored right to
 /// left), Home and End to the ends; a screen reader hears a tab bar of
 /// tabs, each with its place ("Tab 1 of 3"). The block slides on
@@ -1269,7 +1323,7 @@ class ApplianceTabBar<T> extends StatelessWidget {
   }
 }
 
-// ApplianceTabBar's positions on ui_core's DesignTabBar, its controller
+// ApplianceTabBar's positions on ui_core's RawTabBar, its controller
 // following [index] and telling [onChanged] of a tab chosen.
 class _TabStrip<T> extends StatefulWidget {
   const _TabStrip({
@@ -1299,9 +1353,9 @@ class _TabStrip<T> extends StatefulWidget {
 
 class _TabStripState<T> extends State<_TabStrip<T>>
     with TickerProviderStateMixin {
-  late DesignTabController _controller = _make();
+  late RawTabController _controller = _make();
 
-  DesignTabController _make() => DesignTabController(
+  RawTabController _make() => RawTabController(
     length: widget.segments.length,
     initialIndex: widget.index,
     vsync: this,
@@ -1334,12 +1388,12 @@ class _TabStripState<T> extends State<_TabStrip<T>>
   }
 
   @override
-  Widget build(BuildContext context) => DesignTabBar(
+  Widget build(BuildContext context) => RawTabBar(
     controller: _controller,
     semanticLabel: widget.semanticLabel,
     tabs: [
       for (final s in widget.segments)
-        DesignTab(
+        RawTab(
           label: s.semanticLabel ?? s.label,
           enabled: widget.onChanged != null,
         ),
@@ -1350,10 +1404,103 @@ class _TabStripState<T> extends State<_TabStrip<T>>
   );
 }
 
-class _MoveIntent extends Intent {
-  const _MoveIntent(this.by);
+// The positions of an ApplianceSegmentedButton, in a row of [each]-wide
+// cells: one group's radios (Flutter's RadioGroup, with ui_core's keyboard
+// fix inside it), each with a focus node of its own so that Home and End can
+// choose and focus an end.
+class _SegmentRadios extends StatefulWidget {
+  const _SegmentRadios({
+    required this.count,
+    required this.index,
+    required this.each,
+    required this.onChanged,
+    required this.position,
+  });
 
-  final int by;
+  final int count;
+  final int index;
+  final double each;
+  final ValueChanged<int>? onChanged;
+  final Widget Function(
+    BuildContext context,
+    int i,
+    FocusNode node,
+    bool enabled,
+  )
+  position;
+
+  @override
+  State<_SegmentRadios> createState() => _SegmentRadiosState();
+}
+
+class _SegmentRadiosState extends State<_SegmentRadios> {
+  final _nodes = <FocusNode>[];
+
+  void _fit() {
+    while (_nodes.length < widget.count) {
+      _nodes.add(FocusNode(debugLabel: 'ApplianceSegment ${_nodes.length}'));
+    }
+    if (_nodes.length > widget.count) {
+      final gone = _nodes.sublist(widget.count);
+      _nodes.removeRange(widget.count, _nodes.length);
+      // The radios that held them unmount in this frame; let them go first.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        for (final node in gone) {
+          node.dispose();
+        }
+      });
+    }
+  }
+
+  void _toEnd({required bool last}) {
+    final change = widget.onChanged;
+    if (change == null) return;
+    final next = last ? widget.count - 1 : 0;
+    if (next != widget.index) change(next);
+    _nodes[next].requestFocus();
+  }
+
+  @override
+  void dispose() {
+    for (final node in _nodes) {
+      node.dispose();
+    }
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    _fit();
+    final change = widget.onChanged;
+    return CallbackShortcuts(
+      bindings: {
+        const SingleActivator(LogicalKeyboardKey.home): () =>
+            _toEnd(last: false),
+        const SingleActivator(LogicalKeyboardKey.end): () => _toEnd(last: true),
+      },
+      child: RadioGroup<int>(
+        groupValue: widget.index,
+        onChanged: (i) {
+          if (i != null && i != widget.index) change?.call(i);
+        },
+        child: RadioGroupKeyboardFix<int>(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              for (var i = 0; i < widget.count; i++)
+                SizedBox(
+                  width: widget.each,
+                  child: Builder(
+                    builder: (context) =>
+                        widget.position(context, i, _nodes[i], change != null),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 /// A whole number stepped down and up by [step]: two keys round a sunken
@@ -1460,7 +1607,7 @@ class ApplianceStepper extends StatelessWidget {
     Widget stepKey(bool up, String label) {
       final to = (up ? value + step : value - step).clamp(min, max);
       final can = !off && to != value;
-      return DesignPressable(
+      return RawButton(
         onPressed: can ? () => onChanged!(to) : null,
         semanticLabel: label,
         excludeSemantics: true,
@@ -1479,7 +1626,7 @@ class ApplianceStepper extends StatelessWidget {
                         ? c.focus
                         : _none(c.focus),
                   );
-          return DesignTapTarget(
+          return TapTargetPadding(
             child: SizedBox.square(
               dimension: h,
               child: AnimatedApplianceSurface(

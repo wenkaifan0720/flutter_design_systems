@@ -118,15 +118,15 @@ class _WayfindingState extends State<_Wayfinding> {
   @override
   Widget build(BuildContext context) {
     final commands = [
-      DesignCommand(label: 'New list', group: 'Lists', onPressed: () {}),
-      DesignCommand(
+      RawCommand(label: 'New list', group: 'Lists', onPressed: () {}),
+      RawCommand(
         label: 'Open the basket',
         group: 'Go to',
         shortcut: kitShortcutLabel(context, LogicalKeyboardKey.keyB),
         onPressed: () {},
       ),
-      DesignCommand(label: 'Orders', group: 'Go to', onPressed: () {}),
-      DesignCommand(label: 'Settings', group: 'Go to', onPressed: () {}),
+      RawCommand(label: 'Orders', group: 'Go to', onPressed: () {}),
+      RawCommand(label: 'Settings', group: 'Go to', onPressed: () {}),
     ];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -167,11 +167,11 @@ class _WayfindingState extends State<_Wayfinding> {
               alignment: AlignmentDirectional.centerStart,
               child: ApplianceMenuBar(
                 menus: [
-                  DesignMenuEntry(
+                  RawMenuEntry(
                     label: 'List',
                     children: [
-                      DesignMenuEntry(label: 'New list', onPressed: () {}),
-                      DesignMenuEntry(
+                      RawMenuEntry(label: 'New list', onPressed: () {}),
+                      RawMenuEntry(
                         label: 'Print',
                         shortcut: kitShortcutLabel(
                           context,
@@ -179,14 +179,14 @@ class _WayfindingState extends State<_Wayfinding> {
                         ),
                         onPressed: () {},
                       ),
-                      const DesignMenuEntry.divider(),
-                      const DesignMenuEntry(label: 'Share (offline)'),
+                      const RawMenuEntry.divider(),
+                      const RawMenuEntry(label: 'Share (offline)'),
                     ],
                   ),
-                  DesignMenuEntry(
+                  RawMenuEntry(
                     label: 'View',
                     children: [
-                      DesignMenuEntry(
+                      RawMenuEntry(
                         label: 'Show prices',
                         checked: _prices,
                         onPressed: () => setState(() => _prices = !_prices),

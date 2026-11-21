@@ -1,6 +1,6 @@
 /// How Appliance paints a menu's rows, its plate and its seams: one
 /// painting for a menu bar's menus and a context menu, both ui_core's
-/// (DesignMenuBar, DesignContextMenu), so the two read as one menu.
+/// (RawMenuBar, RawContextMenu), so the two read as one menu.
 library;
 
 import 'package:flutter/widgets.dart';
@@ -12,11 +12,11 @@ import '../menus.dart';
 import '../select.dart';
 import '../theme.dart';
 
-/// A row of a menu ([DesignMenuLevel.menu]) for [states]: a submenu's
+/// A row of a menu ([RawMenuLevel.menu]) for [states]: a submenu's
 /// chevron or a command's shortcut in key caps at its end, a check's lamp.
 Widget applianceMenuEntryRow(
   BuildContext context,
-  DesignMenuEntry entry,
+  RawMenuEntry entry,
   Set<WidgetState> states, {
   ApplianceStyle? style,
 }) {
@@ -37,14 +37,14 @@ Widget applianceMenuEntryRow(
 
 /// A menu's plate round its [items], rising from its anchor on [info]'s
 /// animation; at least [minWidth] wide, its rows scrolling when the room
-/// ([DesignOverlayInfo.maxSize]) is short.
+/// ([RawPopoverInfo.maxSize]) is short.
 Widget applianceMenuPanel(
-  DesignOverlayInfo info,
+  RawPopoverInfo info,
   List<Widget> items, {
   double minWidth = 220,
 }) => ApplianceMenuReveal(
   animation: info.animation,
-  below: info.side != DesignOverlaySide.above,
+  below: info.side != RawPopoverSide.above,
   child: ConstrainedBox(
     constraints: BoxConstraints(minWidth: minWidth),
     child: ApplianceMenuPlate(

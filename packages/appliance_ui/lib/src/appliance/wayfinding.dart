@@ -19,8 +19,8 @@ import 'menus.dart';
 import 'theme.dart';
 
 // The ui_core types this part's API takes, through the look's barrel.
-export 'package:ui_core/ui_core.dart' show DesignCommand;
-export 'package:ui_core/ui_core.dart' show DesignMenuEntry;
+export 'package:ui_core/ui_core.dart' show RawCommand;
+export 'package:ui_core/ui_core.dart' show RawMenuEntry;
 // A menu's or a command's shortcut words, as the platform writes them.
 export 'package:ui_core/ui_core.dart'
     show designShortcutKeys, designShortcutLabel;
@@ -126,7 +126,7 @@ class ApplianceBreadcrumb extends StatelessWidget {
                 ),
               )
             else
-              DesignPressable(
+              RawButton(
                 onPressed: crumb.onPressed,
                 button: false,
                 link: true,
@@ -142,7 +142,7 @@ class ApplianceBreadcrumb extends StatelessWidget {
                       (states.contains(WidgetState.pressed)
                           ? c.print
                           : c.printMuted);
-                  return DesignTapTarget(
+                  return TapTargetPadding(
                     child: AnimatedApplianceSurface(
                       control: false,
                       face: ApplianceFace(
@@ -205,7 +205,7 @@ class _PageKey extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = ApplianceTheme.of(context);
     final c = theme.colors;
-    return DesignPressable(
+    return RawButton(
       onPressed: onPressed,
       selected: current,
       semanticLabel: semanticLabel,
@@ -221,7 +221,7 @@ class _PageKey extends StatelessWidget {
             radius: ApplianceMetrics.smallKeyRadius,
           ),
         );
-        return DesignTapTarget(
+        return TapTargetPadding(
           child: SizedBox(
             height: 36,
             child: ConstrainedBox(
@@ -598,14 +598,14 @@ class AppliancePageDots extends StatelessWidget {
               child: ApplianceLamp(lit: i == index, color: look.foreground),
             )
           else
-            DesignPressable(
+            RawButton(
               onPressed: () => change(i),
               selected: i == index,
               semanticLabel: 'Page ${i + 1} of $count',
               excludeSemantics: true,
               builder: (context, states, _) {
                 final c = ApplianceTheme.of(context).colors;
-                return DesignTapTarget(
+                return TapTargetPadding(
                   child: Container(
                     width: 24,
                     height: 24,
@@ -651,10 +651,10 @@ class AppliancePageDots extends StatelessWidget {
 /// Escape closes them.
 ///
 /// ```dart
-/// ApplianceMenuBar(menus: [DesignMenuEntry(label: 'List', children: [DesignMenuEntry(label: 'Print', shortcut: 'Ctrl+P', onPressed: () {})])])
+/// ApplianceMenuBar(menus: [RawMenuEntry(label: 'List', children: [RawMenuEntry(label: 'Print', shortcut: 'Ctrl+P', onPressed: () {})])])
 /// ```
 class ApplianceMenuBar extends StatelessWidget {
-  /// A menubar of [menus], each with its [DesignMenuEntry.children].
+  /// A menubar of [menus], each with its [RawMenuEntry.children].
   const ApplianceMenuBar({
     super.key,
     required this.menus,
@@ -663,7 +663,7 @@ class ApplianceMenuBar extends StatelessWidget {
   });
 
   /// The top menus.
-  final List<DesignMenuEntry> menus;
+  final List<RawMenuEntry> menus;
 
   /// The bar's name for a screen reader.
   final String? semanticLabel;
@@ -679,7 +679,7 @@ class ApplianceMenuBar extends StatelessWidget {
     ], const {});
     final theme = ApplianceTheme.of(context);
     final c = theme.colors;
-    return DesignMenuBar(
+    return RawMenuBar(
       menus: menus,
       semanticLabel: semanticLabel,
       barBuilder: (context, items) => ApplianceSurface(
@@ -707,7 +707,7 @@ class ApplianceMenuBar extends StatelessWidget {
       dividerBuilder: applianceMenuSeam,
       surfaceBuilder: (context, info, items) => applianceMenuPanel(info, items),
       itemBuilder: (context, entry, level, states) {
-        if (level == DesignMenuLevel.menu) {
+        if (level == RawMenuLevel.menu) {
           return applianceMenuEntryRow(context, entry, states, style: style);
         }
         final open = states.contains(WidgetState.selected);
@@ -760,7 +760,7 @@ class ApplianceMenuBar extends StatelessWidget {
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
-    properties.add(IterableProperty<DesignMenuEntry>('menus', menus));
+    properties.add(IterableProperty<RawMenuEntry>('menus', menus));
   }
 }
 
@@ -770,7 +770,7 @@ class ApplianceMenuBar extends StatelessWidget {
 /// [showApplianceCommandPalette] opens it on a plate over the page.
 ///
 /// ```dart
-/// ApplianceCommandPalette(commands: [DesignCommand(label: 'New list', group: 'Lists', onPressed: () {})])
+/// ApplianceCommandPalette(commands: [RawCommand(label: 'New list', group: 'Lists', onPressed: () {})])
 /// ```
 class ApplianceCommandPalette extends StatelessWidget {
   /// A palette over [commands].
@@ -786,10 +786,10 @@ class ApplianceCommandPalette extends StatelessWidget {
   });
 
   /// The commands.
-  final List<DesignCommand> commands;
+  final List<RawCommand> commands;
 
-  /// Takes the command chosen; null runs its own [DesignCommand.onPressed].
-  final ValueChanged<DesignCommand>? onSelected;
+  /// Takes the command chosen; null runs its own [RawCommand.onPressed].
+  final ValueChanged<RawCommand>? onSelected;
 
   /// What the well says while empty.
   final String hint;
@@ -810,7 +810,7 @@ class ApplianceCommandPalette extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = ApplianceTheme.of(context);
     final c = theme.colors;
-    return DesignCommandPalette(
+    return RawCommandPalette(
       commands: commands,
       onSelected: onSelected,
       autofocus: autofocus,
@@ -921,18 +921,18 @@ class _PaletteWell extends StatelessWidget {
 /// after it closed.
 ///
 /// ```dart
-/// showApplianceCommandPalette(context: context, commands: [DesignCommand(label: 'New list', onPressed: () {})])
+/// showApplianceCommandPalette(context: context, commands: [RawCommand(label: 'New list', onPressed: () {})])
 /// ```
 Future<void> showApplianceCommandPalette({
   required BuildContext context,
-  required List<DesignCommand> commands,
+  required List<RawCommand> commands,
   String hint = 'Type a command',
 }) {
   final c = ApplianceTheme.of(context).colors;
   return showDesignCommandPalette(
     context: context,
     barrierColor: c.scrim,
-    palette: (run) => DesignCommandPalette(
+    palette: (run) => RawCommandPalette(
       commands: commands,
       onSelected: run,
       fieldBuilder: (context, field) => ListenableBuilder(

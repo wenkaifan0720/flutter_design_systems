@@ -70,11 +70,11 @@ Widget kitApp({required Brightness brightness, required Widget home}) =>
           ),
         ),
         localizationsDelegates: const [
-          DesignLocalizations.delegate,
+          RawWidgetsLocalizations.delegate,
           DefaultMaterialLocalizations.delegate,
           DefaultWidgetsLocalizations.delegate,
         ],
-        supportedLocales: DesignLocalizations.supportedLocales,
+        supportedLocales: RawWidgetsLocalizations.supportedLocales,
         builder: (context, child) => ApplianceTheme(
           data: kitTheme(brightness),
           child: ApplianceToaster(child: child ?? const SizedBox.shrink()),

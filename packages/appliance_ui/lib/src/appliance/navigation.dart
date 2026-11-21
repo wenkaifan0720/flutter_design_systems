@@ -79,7 +79,7 @@ class ApplianceAppBar extends StatelessWidget {
           flipX: Directionality.of(context) == TextDirection.rtl,
           child: const Icon(LucideIcons.arrowLeft),
         ),
-        semanticLabel: DesignLocalizations.of(context).backButtonTooltip,
+        semanticLabel: RawWidgetsLocalizations.of(context).backButtonTooltip,
         onPressed: onBack,
         style: const DesignStyle(
           minimumSize: WidgetStatePropertyAll(Size.square(40)),
@@ -94,7 +94,7 @@ class ApplianceAppBar extends StatelessWidget {
   static Widget closeKey(BuildContext context, VoidCallback onClose) =>
       ApplianceIconButton(
         icon: const Icon(LucideIcons.x),
-        semanticLabel: DesignLocalizations.of(context).closeButtonLabel,
+        semanticLabel: RawWidgetsLocalizations.of(context).closeButtonLabel,
         onPressed: onClose,
         style: const DesignStyle(
           minimumSize: WidgetStatePropertyAll(Size.square(40)),
@@ -430,7 +430,7 @@ class _ActKey extends StatelessWidget {
     final theme = ApplianceTheme.of(context);
     return KeyedSubtree(
       key: action.key,
-      child: DesignPressable(
+      child: RawButton(
         onPressed: press,
         semanticLabel: label,
         excludeSemantics: true,
@@ -441,7 +441,7 @@ class _ActKey extends StatelessWidget {
             down: states.contains(WidgetState.pressed),
             focused: states.contains(WidgetState.focused),
           );
-          return DesignTapTarget(
+          return TapTargetPadding(
             child: SizedBox(
               width: 64,
               height: ApplianceNavigationBar.keyHeight,
@@ -485,7 +485,7 @@ class _NavKey extends StatelessWidget {
     final badge = destination.badge;
     return KeyedSubtree(
       key: destination.key,
-      child: DesignPressable(
+      child: RawButton(
         onPressed: onPressed,
         selected: current,
         semanticSelected: current,
@@ -517,7 +517,7 @@ Widget _navKeyPaint(
   final face = layered.on(
     _navFace(theme, states, current, ApplianceMetrics.keyRadius),
   );
-  return DesignTapTarget(
+  return TapTargetPadding(
     child: AnimatedApplianceSurface(
       face: face,
       child: content(context, face, layered),

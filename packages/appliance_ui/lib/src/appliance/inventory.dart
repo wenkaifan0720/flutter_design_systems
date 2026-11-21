@@ -242,8 +242,8 @@ final DesignInventory applianceInventory = DesignInventory(
         onPressed: _none,
         menuLabel: 'More ways to save',
         actions: [
-          DesignSplitAction(label: 'Save a copy', onPressed: _none),
-          DesignSplitAction(label: 'Save as a template', onPressed: _none),
+          RawSplitAction(label: 'Save a copy', onPressed: _none),
+          RawSplitAction(label: 'Save as a template', onPressed: _none),
         ],
       ),
     ),
@@ -388,8 +388,8 @@ final DesignInventory applianceInventory = DesignInventory(
     ),
     DesignInventoryEntry.present(
       'RangeSlider',
-      (_) => _Held<DesignRangeValues>(
-        const DesignRangeValues(20, 60),
+      (_) => _Held<RawRangeValues>(
+        const RawRangeValues(20, 60),
         (context, v, set) => ApplianceRangeSlider(
           values: v,
           onChanged: set,
@@ -460,8 +460,8 @@ final DesignInventory applianceInventory = DesignInventory(
     ),
     DesignInventoryEntry.present(
       'DateRangePicker',
-      (_) => _Held<DesignDateRange?>(
-        DesignDateRange(DateTime(2026, 12, 20), DateTime(2026, 12, 28)),
+      (_) => _Held<RawDateRange?>(
+        RawDateRange(DateTime(2026, 12, 20), DateTime(2026, 12, 28)),
         (context, v, set) => ApplianceDateRangePicker(
           label: 'Away',
           value: v,
@@ -481,8 +481,8 @@ final DesignInventory applianceInventory = DesignInventory(
     ),
     DesignInventoryEntry.present(
       'Calendar',
-      (_) => _Owned<DesignCalendarController>(
-        () => DesignCalendarController(
+      (_) => _Owned<RawCalendarController>(
+        () => RawCalendarController(
           firstDate: DateTime(2026, 11),
           lastDate: DateTime(2027, 3, 31),
           selectedDate: DateTime(2026, 11, 20),
@@ -510,8 +510,8 @@ final DesignInventory applianceInventory = DesignInventory(
     ),
     DesignInventoryEntry.present(
       'ColorPicker',
-      (_) => _Owned<DesignColorController>(
-        () => DesignColorController(const Color(0xFFEE6A26)),
+      (_) => _Owned<RawColorController>(
+        () => RawColorController(const Color(0xFFEE6A26)),
         (context, c) =>
             SizedBox(width: 280, child: ApplianceColorPicker(controller: c)),
       ),
@@ -617,21 +617,21 @@ final DesignInventory applianceInventory = DesignInventory(
       'MenuBar',
       (context) => ApplianceMenuBar(
         menus: [
-          DesignMenuEntry(
+          RawMenuEntry(
             label: 'List',
             children: [
-              const DesignMenuEntry(label: 'New list', onPressed: _none),
-              DesignMenuEntry(
+              const RawMenuEntry(label: 'New list', onPressed: _none),
+              RawMenuEntry(
                 label: 'Print',
                 shortcut: _label(context, LogicalKeyboardKey.keyP),
                 onPressed: _none,
               ),
             ],
           ),
-          const DesignMenuEntry(
+          const RawMenuEntry(
             label: 'View',
             children: [
-              DesignMenuEntry(
+              RawMenuEntry(
                 label: 'Show prices',
                 checked: true,
                 onPressed: _none,
@@ -648,18 +648,18 @@ final DesignInventory applianceInventory = DesignInventory(
         child: ApplianceCommandPalette(
           maxHeight: 200,
           commands: [
-            const DesignCommand(
+            const RawCommand(
               label: 'New list',
               group: 'Lists',
               onPressed: _none,
             ),
-            DesignCommand(
+            RawCommand(
               label: 'Open the basket',
               group: 'Go to',
               shortcut: _label(context, LogicalKeyboardKey.keyB),
               onPressed: _none,
             ),
-            const DesignCommand(
+            const RawCommand(
               label: 'Settings',
               group: 'Go to',
               onPressed: _none,
@@ -729,16 +729,16 @@ final DesignInventory applianceInventory = DesignInventory(
     ),
     DesignInventoryEntry.present(
       'DataTable',
-      (_) => _Owned<DesignTableController<_Line>>(
-        () => DesignTableController<_Line>(
+      (_) => _Owned<RawDataTableController<_Line>>(
+        () => RawDataTableController<_Line>(
           rows: _lines,
           columns: [
-            DesignTableColumn<_Line>(
+            RawDataColumn<_Line>(
               id: 'item',
               label: 'Item',
               sortKey: (l) => l.item,
             ),
-            DesignTableColumn<_Line>(
+            RawDataColumn<_Line>(
               id: 'price',
               label: 'Price',
               numeric: true,
@@ -796,11 +796,7 @@ final DesignInventory applianceInventory = DesignInventory(
       'SwipeActions',
       (_) => const ApplianceSwipeActions(
         endActions: [
-          DesignSwipeAction(
-            label: 'Remove',
-            destructive: true,
-            onPressed: _none,
-          ),
+          RawSwipeAction(label: 'Remove', destructive: true, onPressed: _none),
         ],
         child: ApplianceListTile(title: 'Kettle', trailingText: '£48'),
       ),
@@ -981,10 +977,10 @@ final DesignInventory applianceInventory = DesignInventory(
       (_) => ApplianceMenu(
         semanticLabel: 'Order',
         entries: [
-          const DesignMenuEntry(label: 'Track', onPressed: _none),
-          const DesignMenuEntry(label: 'Reorder', onPressed: _none),
-          const DesignMenuEntry.divider(),
-          const DesignMenuEntry(label: 'Cancel', onPressed: _none),
+          const RawMenuEntry(label: 'Track', onPressed: _none),
+          const RawMenuEntry(label: 'Reorder', onPressed: _none),
+          const RawMenuEntry.divider(),
+          const RawMenuEntry(label: 'Cancel', onPressed: _none),
         ],
         builder: (context, anchor) => ApplianceIconButton(
           icon: const Icon(LucideIcons.ellipsis),

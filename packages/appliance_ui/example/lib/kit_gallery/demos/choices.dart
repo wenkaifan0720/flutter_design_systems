@@ -172,7 +172,7 @@ class _Faders extends StatefulWidget {
 class _FadersState extends State<_Faders> {
   double _volume = 0.4;
   double _steps = 3;
-  DesignRangeValues _price = const DesignRangeValues(20, 60);
+  RawRangeValues _price = const RawRangeValues(20, 60);
   String _browning = 'medium';
   double _stars = 4;
 

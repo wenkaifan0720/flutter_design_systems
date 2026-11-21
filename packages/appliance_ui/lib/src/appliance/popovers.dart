@@ -96,9 +96,9 @@ class AppliancePopover extends StatelessWidget {
   final ApplianceStyle? style;
 
   @override
-  Widget build(BuildContext context) => DesignAnchoredOverlay(
+  Widget build(BuildContext context) => RawPopover(
     semanticLabel: semanticLabel,
-    placement: DesignOverlayPlacement(
+    placement: RawPopoverPlacement(
       gap: ApplianceSpacing.small,
       margin: ApplianceSpacing.small,
       matchAnchorWidth: false,
@@ -110,7 +110,7 @@ class AppliancePopover extends StatelessWidget {
     anchorBuilder: builder,
     overlayBuilder: (context, info) => ApplianceMenuReveal(
       animation: info.animation,
-      below: info.side != DesignOverlaySide.above,
+      below: info.side != RawPopoverSide.above,
       child: SizedBox(
         width: width,
         child: _Plate(
@@ -158,10 +158,10 @@ class ApplianceHoverCard extends StatelessWidget {
   final ApplianceStyle? style;
 
   @override
-  Widget build(BuildContext context) => DesignAnchoredOverlay(
-    trigger: DesignOverlayTrigger.hover,
+  Widget build(BuildContext context) => RawPopover(
+    trigger: RawPopoverTrigger.hover,
     focusOnOpen: false,
-    placement: DesignOverlayPlacement(
+    placement: RawPopoverPlacement(
       gap: ApplianceSpacing.small,
       margin: ApplianceSpacing.small,
       matchAnchorWidth: false,
@@ -172,7 +172,7 @@ class ApplianceHoverCard extends StatelessWidget {
     anchorBuilder: (context, anchor) => child,
     overlayBuilder: (context, info) => ApplianceMenuReveal(
       animation: info.animation,
-      below: info.side != DesignOverlaySide.above,
+      below: info.side != RawPopoverSide.above,
       child: SizedBox(
         width: width,
         child: _Plate(
@@ -187,8 +187,12 @@ class ApplianceHoverCard extends StatelessWidget {
 /// A tooltip: [message] lit in a small smoked window over [child] while
 /// the pointer rests on it, while the keyboard is on it, or after a long
 /// press. The pointer may move onto it; Escape hides it; one shows at a
-/// time, the next at once while one is lit. A screen reader hears
-/// [message] as [child]'s tooltip.
+/// time. A screen reader hears [message] as [child]'s tooltip.
+///
+/// Built on Flutter's RawTooltip, with ui_core's RawTooltipFocusFix (it
+/// shows on the keyboard's focus) and RawTooltipPlacement (above [child],
+/// below where there is no room); Appliance paints the window, fading it
+/// in and out with the tooltip.
 ///
 /// ```dart
 /// const ApplianceTooltip(message: 'Keeps warm for 30 minutes', child: Text('Keep warm'))
@@ -216,37 +220,50 @@ class ApplianceTooltip extends StatelessWidget {
     final theme = ApplianceTheme.of(context);
     final c = theme.colors;
     final layered = DesignStyleOf([style, theme.tooltipStyle], const {});
-    return DesignTooltip(
-      message: message,
-      placement: const DesignOverlayPlacement(
-        side: DesignOverlaySide.above,
-        align: DesignOverlayAlign.center,
+    return RawTooltipPlacement(
+      placement: const RawPopoverPlacement(
+        side: RawPopoverSide.above,
+        align: RawPopoverAlign.center,
         gap: ApplianceSpacing.tight + ApplianceSpacing.nudge,
         matchAnchorWidth: false,
         maxWidth: 260,
         preferredExtent: 48,
       ),
-      tooltipBuilder: (context, info) => FadeTransition(
-        opacity: info.animation,
-        child: Container(
-          padding:
-              layered.padding(Directionality.of(context)) ??
-              const EdgeInsets.symmetric(
-                horizontal: ApplianceSpacing.small + 2,
-                vertical: ApplianceSpacing.tight + 2,
-              ),
-          decoration: _tooltipGlass(c, layered.fill ?? c.display),
-          child: Text(
-            message,
-            style: layered.text(
-              theme.textTheme.secondary.copyWith(
-                color: layered.foreground ?? c.onDisplay,
+      builder: (context, positionDelegate) => MergeSemantics(
+        // One node for the control and its tip, as the published tooltip
+        // made: a screen reader hears the tip with the control. RawTooltip's
+        // own tooltip semantics do not merge, and went to the node above.
+        child: RawTooltip(
+          semanticsTooltip: message,
+          hoverDelay: const Duration(milliseconds: 500),
+          positionDelegate: positionDelegate,
+          tooltipBuilder: (context, animation) => FadeTransition(
+            opacity: animation,
+            // The window's widest; the placement keeps it on the screen.
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 260),
+              child: Container(
+                padding:
+                    layered.padding(Directionality.of(context)) ??
+                    const EdgeInsets.symmetric(
+                      horizontal: ApplianceSpacing.small + 2,
+                      vertical: ApplianceSpacing.tight + 2,
+                    ),
+                decoration: _tooltipGlass(c, layered.fill ?? c.display),
+                child: Text(
+                  message,
+                  style: layered.text(
+                    theme.textTheme.secondary.copyWith(
+                      color: layered.foreground ?? c.onDisplay,
+                    ),
+                  ),
+                ),
               ),
             ),
           ),
+          child: RawTooltipFocusFix(child: child),
         ),
       ),
-      child: child,
     );
   }
 
@@ -284,8 +301,8 @@ BoxDecoration _tooltipGlass(ApplianceColors c, Color glass) {
 class _MenuRows extends StatelessWidget {
   const _MenuRows({required this.entries, required this.info, this.style});
 
-  final List<DesignMenuEntry> entries;
-  final DesignOverlayInfo info;
+  final List<RawMenuEntry> entries;
+  final RawPopoverInfo info;
   final ApplianceStyle? style;
 
   @override
@@ -293,7 +310,7 @@ class _MenuRows extends StatelessWidget {
     final c = ApplianceTheme.of(context).colors;
     return ApplianceMenuReveal(
       animation: info.animation,
-      below: info.side != DesignOverlaySide.above,
+      below: info.side != RawPopoverSide.above,
       child: ConstrainedBox(
         constraints: const BoxConstraints(minWidth: 200),
         child: ApplianceMenuPlate(
@@ -314,7 +331,7 @@ class _MenuRows extends StatelessWidget {
                       color: c.seamShade,
                     )
                   else
-                    DesignPressable(
+                    RawButton(
                       onPressed: entry.onPressed == null
                           ? null
                           : () {
@@ -346,11 +363,11 @@ class _MenuRows extends StatelessWidget {
 
 /// A menu: a plate of rows opened from [builder]'s key (press it, or Down
 /// on it); the arrows walk the rows, Enter runs one, Escape closes it.
-/// Entries are [DesignMenuEntry]s: a command, a check (its lamp), or a
+/// Entries are [RawMenuEntry]s: a command, a check (its lamp), or a
 /// divider.
 ///
 /// ```dart
-/// ApplianceMenu(entries: [DesignMenuEntry(label: 'Rename', onPressed: () {})], builder: (context, anchor) => ApplianceIconButton(icon: const Icon(IconData(0x2026)), semanticLabel: 'More', onPressed: anchor.toggle))
+/// ApplianceMenu(entries: [RawMenuEntry(label: 'Rename', onPressed: () {})], builder: (context, anchor) => ApplianceIconButton(icon: const Icon(IconData(0x2026)), semanticLabel: 'More', onPressed: anchor.toggle))
 /// ```
 class ApplianceMenu extends StatelessWidget {
   /// A menu of [entries] opened from [builder]'s key.
@@ -363,7 +380,7 @@ class ApplianceMenu extends StatelessWidget {
   });
 
   /// The rows.
-  final List<DesignMenuEntry> entries;
+  final List<RawMenuEntry> entries;
 
   /// Builds the key that opens it; `anchor.toggle` opens and closes it.
   final Widget Function(BuildContext context, DesignOverlayAnchor anchor)
@@ -376,10 +393,10 @@ class ApplianceMenu extends StatelessWidget {
   final ApplianceStyle? style;
 
   @override
-  Widget build(BuildContext context) => DesignAnchoredOverlay(
+  Widget build(BuildContext context) => RawPopover(
     arrowKeyNavigation: true,
     semanticLabel: semanticLabel,
-    placement: const DesignOverlayPlacement(
+    placement: const RawPopoverPlacement(
       gap: ApplianceSpacing.tight + 2,
       margin: ApplianceSpacing.small,
       matchAnchorWidth: false,
@@ -407,7 +424,7 @@ class ApplianceMenu extends StatelessWidget {
 /// browser's own menu stays shut over [child].
 ///
 /// ```dart
-/// ApplianceContextMenu(entries: [DesignMenuEntry(label: 'Remove', onPressed: () {})], child: const Text('Kettle'))
+/// ApplianceContextMenu(entries: [RawMenuEntry(label: 'Remove', onPressed: () {})], child: const Text('Kettle'))
 /// ```
 class ApplianceContextMenu extends StatelessWidget {
   /// [child] with a context menu of [entries].
@@ -420,7 +437,7 @@ class ApplianceContextMenu extends StatelessWidget {
   });
 
   /// The rows.
-  final List<DesignMenuEntry> entries;
+  final List<RawMenuEntry> entries;
 
   /// What it is the menu of.
   final Widget child;
@@ -432,7 +449,7 @@ class ApplianceContextMenu extends StatelessWidget {
   final ApplianceStyle? style;
 
   @override
-  Widget build(BuildContext context) => DesignContextMenu(
+  Widget build(BuildContext context) => RawContextMenu(
     menuChildren: entries,
     semanticLabel: semanticLabel,
     dampingRatio: ApplianceMotion.lid.dampingRatio,
@@ -586,7 +603,7 @@ class ApplianceBanner extends StatelessWidget {
                 ),
               ),
               if (close != null)
-                DesignPressable(
+                RawButton(
                   onPressed: close,
                   semanticLabel: closeLabel,
                   excludeSemantics: true,
@@ -608,7 +625,7 @@ class ApplianceBanner extends StatelessWidget {
                             ? c.focus
                             : c.focus.withValues(alpha: 0),
                       ),
-                      child: DesignTapTarget(
+                      child: TapTargetPadding(
                         child: SizedBox.square(
                           dimension: 32,
                           child: Center(

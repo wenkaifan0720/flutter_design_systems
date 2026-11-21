@@ -44,7 +44,7 @@ void main() {
   });
 
   test('a chart counts one point and two, one slice and two', () {
-    const words = DefaultDesignLocalizations();
+    const words = DefaultRawWidgetsLocalizations();
     expect(words.chartPointCountLabel(1), '1 point');
     expect(words.chartPointCountLabel(2), '2 points');
     expect(words.chartSliceCountLabel(1), '1 slice');
@@ -103,7 +103,7 @@ void main() {
     tester,
   ) async {
     _phone(tester);
-    final ru = await DesignLocalizations.delegate.load(const Locale('ru'));
+    final ru = await RawWidgetsLocalizations.delegate.load(const Locale('ru'));
     final forms = {
       for (final n in const [1, 2, 5])
         ru.chartSliceCountLabel(n).replaceAll(RegExp(r'[0-9]'), '').trim(),
@@ -117,7 +117,7 @@ void main() {
             builder: (context) => Localizations.override(
               context: context,
               locale: const Locale('ru'),
-              delegates: const [DesignLocalizations.delegate],
+              delegates: const [RawWidgetsLocalizations.delegate],
               child: _donut(count),
             ),
           ),

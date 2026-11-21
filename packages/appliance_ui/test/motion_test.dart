@@ -102,11 +102,11 @@ void main() {
     tester,
   ) async {
     _phone(tester);
-    final controller = DesignCalendarController(
+    final controller = RawCalendarController(
       firstDate: DateTime(2026),
       lastDate: DateTime(2027, 12, 31),
       initialMonth: DateTime(2026, 11),
-      mode: DesignCalendarMode.range,
+      mode: RawCalendarMode.range,
     );
     addTearDown(controller.dispose);
     await tester.pumpWidget(_app(ApplianceCalendar(controller: controller)));
@@ -203,7 +203,7 @@ void main() {
     _phone(tester);
     var on = false;
     var level = 0.5;
-    var range = const DesignRangeValues(0.2, 0.8);
+    var range = const RawRangeValues(0.2, 0.8);
     await tester.pumpWidget(
       _app(
         StatefulBuilder(
@@ -267,7 +267,7 @@ void main() {
             children: [
               ApplianceSwipeActions(
                 endActions: [
-                  DesignSwipeAction(
+                  RawSwipeAction(
                     label: 'Remove',
                     destructive: true,
                     onPressed: () {},

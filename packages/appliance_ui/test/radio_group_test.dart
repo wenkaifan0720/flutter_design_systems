@@ -5,8 +5,9 @@
 // previous and wrap, mirrored right to left in a row; a screen reader hears
 // each row as a radio named by its words, in a form field too. A slide
 // selector is a radio group of its positions, and a radio keeps the focus
-// node its caller gives it. A selectable table row reads as a checkbox,
-// checked when selected, not as a button.
+// node its caller gives it. A press anywhere in a radio's box chooses it. A
+// selectable table row reads as a checkbox, checked when selected, not as a
+// button.
 import 'dart:ui' show CheckedState, SemanticsFlags, Tristate;
 
 import 'package:material_ui/material_ui.dart'
@@ -47,6 +48,42 @@ SemanticsFlags _flags(WidgetTester tester, String label) => tester
     .flagsCollection;
 
 const _group = ValueKey('group');
+
+/// Presses each of [radios] (a group's RawRadios, saying [values] in turn)
+/// at its start, its middle, its end, its top and its bottom, each time from
+/// another choice, and expects the press to choose it. RawRadio's own
+/// detector takes a press only where the face paints; a radio takes it
+/// anywhere in its box, as the published radios did, the gap between its
+/// mark and its words too.
+Future<void> _pressEverywhere<V>(
+  WidgetTester tester,
+  Finder radios,
+  ValueNotifier<V> choice,
+  List<V> values,
+) async {
+  expect(radios, findsNWidgets(values.length));
+  for (final (i, value) in values.indexed) {
+    final box = tester.getRect(radios.at(i));
+    for (final at in [
+      box.centerLeft + const Offset(2, 0),
+      box.center,
+      box.centerRight - const Offset(2, 0),
+      box.topCenter + const Offset(0, 2),
+      box.bottomCenter - const Offset(0, 2),
+    ]) {
+      choice.value = values[(i + 1) % values.length];
+      await tester.pumpAndSettle();
+      await tester.tapAt(at);
+      await tester.pumpAndSettle();
+      expect(choice.value, value, reason: '$value pressed at $at in $box');
+    }
+  }
+}
+
+Finder _radiosOf(Finder group) => find.descendant(
+  of: group,
+  matching: find.byWidgetPredicate((w) => w is RawRadio),
+);
 
 void main() {
   testWidgets('a radio and a checkbox read as Flutter\'s do, not as buttons', (
@@ -102,6 +139,66 @@ void main() {
     }
     semantics.dispose();
   });
+
+  for (final axis in Axis.values) {
+    testWidgets('a press anywhere in a radio\'s box chooses it, ${axis.name}', (
+      tester,
+    ) async {
+      final when = ValueNotifier('Today');
+      final span = ValueNotifier('Week');
+      addTearDown(when.dispose);
+      addTearDown(span.dispose);
+      await _show(
+        tester,
+        Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(
+              width: 360,
+              child: ValueListenableBuilder(
+                valueListenable: when,
+                builder: (context, value, _) => ApplianceRadioGroup<String>(
+                  options: const ['Today', 'Tomorrow', 'Later'],
+                  value: value,
+                  labelOf: (v) => v,
+                  direction: axis,
+                  onChanged: (v) => when.value = v,
+                ),
+              ),
+            ),
+            SizedBox(
+              width: 360,
+              child: ValueListenableBuilder(
+                valueListenable: span,
+                builder: (context, value, _) =>
+                    ApplianceSegmentedButton<String>(
+                      segments: const [
+                        ApplianceSegment(value: 'Day', label: 'Day'),
+                        ApplianceSegment(value: 'Week', label: 'Week'),
+                        ApplianceSegment(value: 'Month', label: 'Month'),
+                      ],
+                      value: value,
+                      onChanged: (v) => span.value = v,
+                    ),
+              ),
+            ),
+          ],
+        ),
+      );
+      await _pressEverywhere(
+        tester,
+        _radiosOf(find.byType(ApplianceRadioGroup<String>)),
+        when,
+        const ['Today', 'Tomorrow', 'Later'],
+      );
+      await _pressEverywhere(
+        tester,
+        _radiosOf(find.byType(ApplianceSegmentedButton<String>)),
+        span,
+        const ['Day', 'Week', 'Month'],
+      );
+    });
+  }
 
   testWidgets('in a form field, each radio keeps its own node and tap', (
     tester,
@@ -257,53 +354,63 @@ void main() {
   }
 
   // The shared keyboard check: options A to D with B turned off, chosen C,
-  // nothing, and the turned-off B, in both reading directions.
-  for (final direction in TextDirection.values) {
-    for (final initial in <String?>['C', null, 'B']) {
-      testWidgets('the shared radio group check, ${direction.name}, '
-          'chosen ${initial ?? 'nothing'}', (tester) async {
-        final semantics = tester.ensureSemantics();
-        final before = FocusNode(debugLabel: 'before');
-        addTearDown(before.dispose);
-        var chosen = initial;
-        await _show(
+  // nothing, A, and the turned-off B, down a column and along a row, in both
+  // reading directions.
+  for (final axis in Axis.values) {
+    for (final direction in TextDirection.values) {
+      for (final initial in <String?>['C', null, 'A', 'B']) {
+        testWidgets('the shared radio group check, ${axis.name}, '
+            '${direction.name}, chosen ${initial ?? 'nothing'}', (
           tester,
-          StatefulBuilder(
-            builder: (context, setState) => Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ApplianceButton('Before', focusNode: before, onPressed: () {}),
-                SizedBox(
-                  key: const ValueKey('radios'),
-                  width: 310,
-                  child: ApplianceRadioGroup<String>(
-                    options: const ['A', 'B', 'C', 'D'],
-                    value: chosen,
-                    isEnabled: (v) => v != 'B',
-                    labelOf: (v) => v,
-                    semanticLabel: 'Letters',
-                    onChanged: (v) => setState(() => chosen = v),
+        ) async {
+          final semantics = tester.ensureSemantics();
+          final before = FocusNode(debugLabel: 'before');
+          addTearDown(before.dispose);
+          var chosen = initial;
+          await _show(
+            tester,
+            StatefulBuilder(
+              builder: (context, setState) => Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ApplianceButton(
+                    'Before',
+                    focusNode: before,
+                    onPressed: () {},
                   ),
-                ),
-                ApplianceButton('After', onPressed: () {}),
-              ],
+                  SizedBox(
+                    key: const ValueKey('radios'),
+                    width: 310,
+                    child: ApplianceRadioGroup<String>(
+                      options: const ['A', 'B', 'C', 'D'],
+                      value: chosen,
+                      isEnabled: (v) => v != 'B',
+                      labelOf: (v) => v,
+                      direction: axis,
+                      semanticLabel: 'Letters',
+                      onChanged: (v) => setState(() => chosen = v),
+                    ),
+                  ),
+                  ApplianceButton('After', onPressed: () {}),
+                ],
+              ),
             ),
-          ),
-          direction: direction,
-        );
-        if (initial == 'B') {
-          // A turned-off choice still says it is the checked one.
-          expect(_flags(tester, 'B').isChecked, CheckedState.isTrue);
-          expect(_flags(tester, 'B').isEnabled, Tristate.isFalse);
-        }
-        (await const DesignRadioGroupCheck(look: 'Appliance').check(
-          tester.element(find.byKey(const ValueKey('radios'))),
-          before: before,
-          sendKeyEvent: tester.sendKeyEvent,
-          pump: tester.pump,
-        )).verify();
-        semantics.dispose();
-      });
+            direction: direction,
+          );
+          if (initial == 'B') {
+            // A turned-off choice still says it is the checked one.
+            expect(_flags(tester, 'B').isChecked, CheckedState.isTrue);
+            expect(_flags(tester, 'B').isEnabled, Tristate.isFalse);
+          }
+          (await const DesignRadioGroupCheck(look: 'Appliance').check(
+            tester.element(find.byKey(const ValueKey('radios'))),
+            before: before,
+            sendKeyEvent: tester.sendKeyEvent,
+            pump: tester.pump,
+          )).verify();
+          semantics.dispose();
+        });
+      }
     }
   }
 
@@ -552,7 +659,7 @@ void main() {
     final semantics = tester.ensureSemantics();
     final before = FocusNode(debugLabel: 'before');
     addTearDown(before.dispose);
-    final table = DesignTableController<(String, String, int)>(
+    final table = RawDataTableController<(String, String, int)>(
       rows: const [
         ('Kettle', 'Kitchen', 48),
         ('Toaster', 'Kitchen', 36),
@@ -560,9 +667,9 @@ void main() {
         ('Watering can', 'Garden', 24),
       ],
       columns: [
-        DesignTableColumn(id: 'item', label: 'Item', sortKey: (l) => l.$1),
-        DesignTableColumn(id: 'room', label: 'Room', sortKey: (l) => l.$2),
-        DesignTableColumn(
+        RawDataColumn(id: 'item', label: 'Item', sortKey: (l) => l.$1),
+        RawDataColumn(id: 'room', label: 'Room', sortKey: (l) => l.$2),
+        RawDataColumn(
           id: 'price',
           label: 'Price',
           numeric: true,

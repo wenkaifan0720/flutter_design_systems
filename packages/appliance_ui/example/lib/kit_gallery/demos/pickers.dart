@@ -41,21 +41,18 @@ class _PickersState extends State<_Pickers> {
   final Set<String> _filters = {'In stock'};
   final List<String> _picked = ['Kettles', 'Teapots'];
   DateTime? _day = DateTime(2026, 11, 20);
-  DesignDateRange? _away;
+  RawDateRange? _away;
   ApplianceTime _time = const ApplianceTime(18, 30);
   ApplianceTime _alarm = const ApplianceTime(7, 15);
   bool _over = false;
-  final _calendar = DesignCalendarController(
+  final _calendar = RawCalendarController(
     firstDate: DateTime(2026, 11),
     lastDate: DateTime(2027, 3, 31),
-    mode: DesignCalendarMode.range,
-    selectedRange: DesignDateRange(
-      DateTime(2026, 11, 18),
-      DateTime(2026, 11, 24),
-    ),
+    mode: RawCalendarMode.range,
+    selectedRange: RawDateRange(DateTime(2026, 11, 18), DateTime(2026, 11, 24)),
     currentDate: DateTime(2026, 11, 16),
   );
-  final _colour = DesignColorController(const Color(0xFFEE6A26));
+  final _colour = RawColorController(const Color(0xFFEE6A26));
 
   @override
   void dispose() {

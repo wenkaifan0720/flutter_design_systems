@@ -232,12 +232,12 @@ class _LarderAppState extends State<LarderApp> {
             ),
           ),
           localizationsDelegates: const [
-            DesignLocalizations.delegate,
+            RawWidgetsLocalizations.delegate,
             LarderWords.delegate,
             DefaultMaterialLocalizations.delegate,
             DefaultWidgetsLocalizations.delegate,
           ],
-          supportedLocales: DesignLocalizations.supportedLocales,
+          supportedLocales: RawWidgetsLocalizations.supportedLocales,
           onGenerateInitialRoutes: (_) => [
             MaterialPageRoute<void>(builder: (_) => frame),
           ],

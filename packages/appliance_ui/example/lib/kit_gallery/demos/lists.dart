@@ -100,7 +100,7 @@ class _Tables extends StatefulWidget {
 }
 
 class _TablesState extends State<_Tables> {
-  final _table = DesignTableController<_Line>(
+  final _table = RawDataTableController<_Line>(
     rows: const [
       (item: 'Kettle', room: 'Kitchen', price: 48),
       (item: 'Toaster', room: 'Kitchen', price: 36),
@@ -108,17 +108,9 @@ class _TablesState extends State<_Tables> {
       (item: 'Watering can', room: 'Garden', price: 24),
     ],
     columns: [
-      DesignTableColumn<_Line>(
-        id: 'item',
-        label: 'Item',
-        sortKey: (l) => l.item,
-      ),
-      DesignTableColumn<_Line>(
-        id: 'room',
-        label: 'Room',
-        sortKey: (l) => l.room,
-      ),
-      DesignTableColumn<_Line>(
+      RawDataColumn<_Line>(id: 'item', label: 'Item', sortKey: (l) => l.item),
+      RawDataColumn<_Line>(id: 'room', label: 'Room', sortKey: (l) => l.room),
+      RawDataColumn<_Line>(
         id: 'price',
         label: 'Price',
         numeric: true,
@@ -219,9 +211,9 @@ class _TablesState extends State<_Tables> {
             }),
           ),
           ApplianceSwipeActions(
-            startActions: [DesignSwipeAction(label: 'Save', onPressed: () {})],
+            startActions: [RawSwipeAction(label: 'Save', onPressed: () {})],
             endActions: [
-              DesignSwipeAction(
+              RawSwipeAction(
                 label: 'Remove',
                 destructive: true,
                 onPressed: () {},

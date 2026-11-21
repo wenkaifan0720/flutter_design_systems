@@ -36,11 +36,12 @@ class _WellKey extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = ApplianceTheme.of(context).colors;
-    return DesignPressable(
+    return RawButton(
       onPressed: onPressed,
       semanticLabel: semanticLabel,
       excludeSemantics: true,
-      toggled: latched ? true : null,
+      // A latched key (the eye, revealing) is a button that is selected.
+      semanticSelected: latched ? true : null,
       builder: (context, states, _) {
         final down = latched || states.contains(WidgetState.pressed);
         final disabled = states.contains(WidgetState.disabled);
@@ -61,7 +62,7 @@ class _WellKey extends StatelessWidget {
                       ? c.focus
                       : c.focus.withValues(alpha: 0),
                 );
-        return DesignTapTarget(
+        return TapTargetPadding(
           child: SizedBox.square(
             dimension: 28,
             child: AnimatedApplianceSurface(
@@ -314,7 +315,7 @@ class AppliancePasswordField extends StatelessWidget {
   final ApplianceStyle? style;
 
   @override
-  Widget build(BuildContext context) => DesignPasswordReveal(
+  Widget build(BuildContext context) => RawPasswordReveal(
     focusNode: focusNode,
     hideOnBlur: hideOnBlur,
     builder: (context, password) => ApplianceTextField(
@@ -617,7 +618,7 @@ class ApplianceOtpField extends StatelessWidget {
   final int length;
 
   /// The code's controller; one you give is yours to dispose.
-  final DesignOtpController? controller;
+  final RawOtpController? controller;
 
   /// {@macro design.focusNode}
   final FocusNode? focusNode;
@@ -651,7 +652,7 @@ class ApplianceOtpField extends StatelessWidget {
     final theme = ApplianceTheme.of(context);
     final c = theme.colors;
     final cell = theme.controlHeight;
-    return DesignOtpField(
+    return RawOtpField(
       length: length,
       controller: controller,
       focusNode: focusNode,
@@ -786,14 +787,14 @@ class ApplianceField extends StatelessWidget {
 
   /// Whether the control is one node that takes the label as its name
   /// (true) or a group the label names (false). Left null, ui_core's
-  /// DesignField reads what the child brings to the semantics tree: one
+  /// RawInputDecorator reads what the child brings to the semantics tree: one
   /// control is one node; several (a stepper's keys, a segmented choice,
   /// radios, chips) keep each its own node and tap, the label naming them;
   /// and a group that already names itself is not named again.
   final bool? mergeSemantics;
 
   @override
-  Widget build(BuildContext context) => DesignField(
+  Widget build(BuildContext context) => RawInputDecorator(
     labelText: labelText,
     helperText: helperText,
     errorText: errorText,

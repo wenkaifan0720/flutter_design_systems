@@ -249,16 +249,14 @@ void main() {
     await _show(
       tester,
       ApplianceRangeSlider(
-        values: const DesignRangeValues(25, 60),
+        values: const RawRangeValues(25, 60),
         max: 100,
         startLabel: 'Minimum price',
         onChanged: (_) {},
         semanticFormatterCallback: (v) => '\$${v.round()}',
       ),
     );
-    final slider = tester.widget<DesignRangeSlider>(
-      find.byType(DesignRangeSlider),
-    );
+    final slider = tester.widget<RawRangeSlider>(find.byType(RawRangeSlider));
     expect(slider.semanticFormatterCallback!(25), r'$25');
     expect(
       tester.getSemantics(find.bySemanticsLabel('Minimum price')).value,
@@ -318,7 +316,7 @@ void main() {
           find
               .descendant(
                 of: find.byWidget(picker),
-                matching: find.byType(DesignPressable),
+                matching: find.byType(RawButton),
               )
               .first,
         );

@@ -22,7 +22,7 @@ import 'text_field.dart';
 import 'theme.dart';
 
 // The ui_core types this part's API takes, through the look's barrel.
-export 'package:ui_core/ui_core.dart' show DesignColorController;
+export 'package:ui_core/ui_core.dart' show RawColorController;
 export 'package:ui_core/ui_core.dart' show DesignOptionSearch;
 
 /// A well's face in [states], as a text field draws it.
@@ -89,7 +89,7 @@ Widget _looking(BuildContext context) {
           ),
           const SizedBox(width: ApplianceSpacing.small),
           Text(
-            DesignLocalizations.of(context).loadingLabel,
+            RawWidgetsLocalizations.of(context).loadingLabel,
             style: theme.textTheme.body.copyWith(
               color: theme.colors.printMuted,
             ),
@@ -102,8 +102,8 @@ Widget _looking(BuildContext context) {
 
 /// Says, in the list's plate, that a search failed, over a row to try
 /// again: the list's one row, lit while the keys are on it.
-Widget _failed(BuildContext context, DesignSearchError error) {
-  final words = DesignLocalizations.of(context);
+Widget _failed(BuildContext context, RawSearchError error) {
+  final words = RawWidgetsLocalizations.of(context);
   return Column(
     mainAxisSize: MainAxisSize.min,
     crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -112,7 +112,7 @@ Widget _failed(BuildContext context, DesignSearchError error) {
       ExcludeSemantics(child: _nothing(context, words.searchFailedMessage)),
       // The keys reach it from the field (Down), never by Tab.
       ExcludeFocus(
-        child: DesignPressable(
+        child: RawButton(
           onPressed: error.retry,
           semanticLabel: words.retryButtonLabel,
           excludeSemantics: true,
@@ -274,7 +274,7 @@ class _ApplianceComboboxState<T extends Object>
           ExcludeSemantics(
             child: ApplianceFieldLabel(widget.label!, enabled: widget.enabled),
           ),
-        DesignCombobox<T>(
+        RawCombobox<T>(
           options: widget.options,
           search: widget.search,
           debounceDuration: widget.debounceDuration,
@@ -467,7 +467,7 @@ class _ApplianceTagInputState<T extends Object>
           canRequestFocus: false,
           skipTraversal: true,
           onFocusChange: (inside) => setState(() => _within = inside),
-          child: DesignTagInput<T>(
+          child: RawTagInput<T>(
             values: widget.values,
             onChanged: widget.onChanged,
             options: widget.options,
@@ -623,11 +623,11 @@ class _TagKey extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: ApplianceSpacing.tight),
-                DesignPressable(
+                RawButton(
                   onPressed: onRemove,
                   semanticLabel: removeLabel,
                   excludeSemantics: true,
-                  builder: (context, states, _) => DesignTapTarget(
+                  builder: (context, states, _) => TapTargetPadding(
                     child: SizedBox.square(
                       dimension: 24,
                       child: CustomPaint(
@@ -776,11 +776,11 @@ class ApplianceChip extends StatelessWidget {
             ),
             if (onDeleted != null) ...[
               const SizedBox(width: ApplianceSpacing.tight),
-              DesignPressable(
+              RawButton(
                 onPressed: onDeleted,
                 semanticLabel: deleteLabel ?? 'Remove $label',
                 excludeSemantics: true,
-                builder: (context, s, _) => DesignTapTarget(
+                builder: (context, s, _) => TapTargetPadding(
                   child: SizedBox.square(
                     dimension: 24,
                     child: CustomPaint(
@@ -839,13 +839,14 @@ class ApplianceChip extends StatelessWidget {
         ),
       );
     }
-    return DesignPressable(
+    return RawButton(
       onPressed: enabled ? () => onSelected!(!selected) : null,
       selected: selected,
-      toggled: selected,
+      // A button that is selected, as a Material filter chip reads.
+      semanticSelected: selected,
       semanticLabel: label,
       excludeSemantics: true,
-      builder: (context, states, _) => DesignTapTarget(child: body(states)),
+      builder: (context, states, _) => TapTargetPadding(child: body(states)),
     );
   }
 
@@ -964,7 +965,7 @@ class ApplianceDropZone extends StatelessWidget {
               ),
             ],
             const SizedBox(height: ApplianceSpacing.regular),
-            DesignPressable(
+            RawButton(
               onPressed: onPressed,
               semanticLabel: buttonLabel,
               excludeSemantics: true,
@@ -981,7 +982,7 @@ class ApplianceDropZone extends StatelessWidget {
                       ? c.focus
                       : c.focus.withValues(alpha: 0),
                 );
-                return DesignTapTarget(
+                return TapTargetPadding(
                   child: SizedBox(
                     height: theme.controlHeight,
                     child: AnimatedApplianceSurface(
@@ -1060,7 +1061,7 @@ class _AreaPainter extends CustomPainter {
 class _ChannelPainter extends CustomPainter {
   _ChannelPainter(this.channel, this.color, {required this.rtl});
 
-  final DesignColorChannel channel;
+  final RawColorChannel channel;
   final HSVColor color;
   final bool rtl;
 
@@ -1068,19 +1069,19 @@ class _ChannelPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final rect = Offset.zero & size;
     final colours = switch (channel) {
-      DesignColorChannel.hue => [
+      RawColorChannel.hue => [
         for (var h = 0; h <= 360; h += 60)
           HSVColor.fromAHSV(1, h.toDouble(), 1, 1).toColor(),
       ],
-      DesignColorChannel.saturation => [
+      RawColorChannel.saturation => [
         color.withSaturation(0).toColor(),
         color.withSaturation(1).toColor(),
       ],
-      DesignColorChannel.brightness => [
+      RawColorChannel.brightness => [
         color.withValue(0).toColor(),
         color.withValue(1).toColor(),
       ],
-      DesignColorChannel.alpha => [
+      RawColorChannel.alpha => [
         color.withAlpha(0).toColor(),
         color.withAlpha(1).toColor(),
       ],
@@ -1104,7 +1105,7 @@ class _ChannelPainter extends CustomPainter {
 /// hue (and, with [showAlpha], how solid it is) under it.
 ///
 /// ```dart
-/// ApplianceColorPicker(controller: DesignColorController(const Color(0xFFEE6A26)))
+/// ApplianceColorPicker(controller: RawColorController(const Color(0xFFEE6A26)))
 /// ```
 class ApplianceColorPicker extends StatelessWidget {
   /// A picker for [controller]'s colour.
@@ -1117,7 +1118,7 @@ class ApplianceColorPicker extends StatelessWidget {
   });
 
   /// The colour; yours to dispose.
-  final DesignColorController controller;
+  final RawColorController controller;
 
   /// Whether a fader sets how solid it is.
   final bool showAlpha;
@@ -1137,7 +1138,7 @@ class ApplianceColorPicker extends StatelessWidget {
     final theme = ApplianceTheme.of(context);
     final c = theme.colors;
     final rtl = Directionality.of(context) == TextDirection.rtl;
-    return DesignColorPicker(
+    return RawColorPicker(
       controller: controller,
       showAlpha: showAlpha,
       areaHeight: areaHeight,
