@@ -14,17 +14,15 @@ const _options = [Fluent2Option('a', 'First'), Fluent2Option('b', 'Second')];
 
 Widget _tall(Widget child) => SizedBox(height: 480, child: child);
 
-final _table = DesignTableController<String>(
+final _table = RawDataTableController<String>(
   rows: const ['One', 'Two'],
-  columns: [
-    DesignTableColumn<String>(id: 'n', label: 'Name', sortKey: (s) => s),
-  ],
+  columns: [RawDataColumn<String>(id: 'n', label: 'Name', sortKey: (s) => s)],
 );
 
-final _range = DesignCalendarController(
+final _range = RawCalendarController(
   firstDate: DateTime(2026, 6),
   lastDate: DateTime(2026, 7, 31),
-  mode: DesignCalendarMode.range,
+  mode: RawCalendarMode.range,
   currentDate: DateTime(2026, 6, 10),
 );
 
@@ -270,7 +268,7 @@ final behaviourParts = <String, LawPart>{
   'Fluent2RangeSlider': LawPart(
     (hit) => Fluent2RangeSlider(
       label: 'Pages',
-      values: const DesignRangeValues(20, 60),
+      values: const RawRangeValues(20, 60),
       onChanged: lawOn(hit),
     ),
     keys: false,

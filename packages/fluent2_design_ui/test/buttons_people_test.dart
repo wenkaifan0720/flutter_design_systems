@@ -425,11 +425,13 @@ void main() {
         ),
       );
       expect(find.byIcon(Fluent2Icons.starFilled), findsOneWidget);
-      final node = t.getSemantics(find.bySemanticsLabel('Favourite'));
-      expect(
-        node.getSemanticsData().flagsCollection.isToggled,
-        Tristate.isTrue,
-      );
+      // A button selected, as Flutter's IconButton(isSelected: true) is.
+      final flags = t
+          .getSemantics(find.bySemanticsLabel('Favourite'))
+          .getSemanticsData()
+          .flagsCollection;
+      expect(flags.isSelected, Tristate.isTrue);
+      expect(flags.isToggled, Tristate.none);
     });
 
     testWidgets('a toggle button asks for the other state', (t) async {

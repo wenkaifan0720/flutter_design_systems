@@ -1,4 +1,4 @@
-// The keys of Fluent 2's combobox and multi-select lists (ui_core's DesignCombobox and DesignTagInput under Fluent's
+// The keys of Fluent 2's combobox and multi-select lists (ui_core's RawCombobox and RawTagInput under Fluent's
 // faces): a combobox opened with its chosen value's own words lists every option, the chosen one marked, until the
 // words are edited; Down or Up on a closed list opens it without moving, on the chosen option, else the first in use;
 // the arrows go round the list, past an option out of use, which neither the keyboard nor a press takes; Escape

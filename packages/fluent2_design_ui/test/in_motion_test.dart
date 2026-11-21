@@ -21,12 +21,12 @@ final _c = _t.colors;
 void main() {
   group('a date range, after the first press', () {
     /// A range calendar's controller, disposed when the test ends.
-    DesignCalendarController range() {
-      final controller = DesignCalendarController(
+    RawCalendarController range() {
+      final controller = RawCalendarController(
         firstDate: DateTime(2026, 3, 1),
         lastDate: DateTime(2026, 3, 31),
         currentDate: DateTime(2026, 3, 1),
-        mode: DesignCalendarMode.range,
+        mode: RawCalendarMode.range,
       );
       addTearDown(controller.dispose);
       return controller;
@@ -139,13 +139,16 @@ void main() {
       await t.pump();
       for (var i = 0; i < 8; i++) {
         if (FocusManager.instance.primaryFocus?.debugLabel ==
-            'DesignCalendar') {
+            'RawCalendarDatePicker') {
           break;
         }
         await t.sendKeyEvent(LogicalKeyboardKey.tab);
         await t.pump();
       }
-      expect(FocusManager.instance.primaryFocus?.debugLabel, 'DesignCalendar');
+      expect(
+        FocusManager.instance.primaryFocus?.debugLabel,
+        'RawCalendarDatePicker',
+      );
       final from = c.focusedDay;
       for (var i = 0; i < 3; i++) {
         await t.sendKeyEvent(LogicalKeyboardKey.arrowRight);

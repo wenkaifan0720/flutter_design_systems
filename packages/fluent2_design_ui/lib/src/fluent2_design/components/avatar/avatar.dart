@@ -351,7 +351,7 @@ class Fluent2Avatar extends StatelessWidget {
         child: face,
       );
     }
-    return DesignTapTarget(
+    return TapTargetPadding(
       minSize: Fluent2Layout.tapFloorOf(context),
       child: Fluent2Pressable(
         focusNode: focusNode,

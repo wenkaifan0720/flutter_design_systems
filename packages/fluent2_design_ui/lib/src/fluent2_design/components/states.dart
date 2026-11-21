@@ -30,7 +30,7 @@ class Fluent2LoadingState extends StatelessWidget {
     child: Padding(
       padding: const EdgeInsets.all(Fluent2Spacing.xxl),
       child: Fluent2Spinner(
-        label: message ?? DesignLocalizations.of(context).loadingLabel,
+        label: message ?? RawWidgetsLocalizations.of(context).loadingLabel,
       ),
     ),
   );
@@ -257,7 +257,7 @@ class Fluent2StatusView extends StatelessWidget {
     switch (kind) {
       case Fluent2StatusKind.loading:
         return Fluent2LoadingState(
-          message: message ?? DesignLocalizations.of(context).loadingLabel,
+          message: message ?? RawWidgetsLocalizations.of(context).loadingLabel,
         );
       case Fluent2StatusKind.error:
         return Fluent2ErrorState(

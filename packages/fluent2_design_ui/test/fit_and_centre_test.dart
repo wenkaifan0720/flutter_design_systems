@@ -189,8 +189,7 @@ Future<double> _artOffset(
 /// target), never its face alone, so a face that shrinks to its words is
 /// caught.
 Finder _cellOf(Finder inside) {
-  bool press(Widget w) =>
-      w is Fluent2Pressable || w.runtimeType.toString() == 'DesignPressable';
+  bool press(Widget w) => w is Fluent2Pressable || w is RawButton;
   final joined = find.ancestor(
     of: inside,
     matching: find.byWidgetPredicate(
@@ -208,7 +207,7 @@ Finder _cellOf(Finder inside) {
       (w) => w is Fluent2Pressable || w is Fluent2ButtonBox,
     ),
   );
-  // A tab is ui_core's pressable (DesignTabBar's).
+  // A tab is ui_core's pressable (RawTabBar's).
   return own.evaluate().isNotEmpty
       ? own.first
       : find
@@ -221,17 +220,10 @@ Finder _pressOf(Finder inside) {
     of: inside,
     matching: find.byType(Fluent2Pressable),
   );
-  // A tab is ui_core's pressable (DesignTabBar's).
+  // A tab is ui_core's pressable (RawTabBar's).
   return own.evaluate().isNotEmpty
       ? own.first
-      : find
-            .ancestor(
-              of: inside,
-              matching: find.byWidgetPredicate(
-                (w) => w.runtimeType.toString() == 'DesignPressable',
-              ),
-            )
-            .first;
+      : find.ancestor(of: inside, matching: find.byType(RawButton)).first;
 }
 
 void main() {

@@ -769,7 +769,7 @@ class Fluent2Button extends StatelessWidget {
     final m = look.metrics;
     return fluent2OwnWidth(
       context,
-      DesignTapTarget(
+      TapTargetPadding(
         minSize: Fluent2Layout.tapFloorOf(context),
         child: Fluent2Pressable(
           focusNode: focusNode,
@@ -880,7 +880,8 @@ class Fluent2Button extends StatelessWidget {
 /// (24, 32, 40), on the [appearance]'s face (subtle by default, as a
 /// toolbar's and a bar's commands are), named by [label] for a screen
 /// reader. [filled] is the glyph worn while [selected] (a toggled
-/// command); its hit target reaches 44 where there is room. [style]
+/// command, read as a button selected or not, as Flutter's
+/// `IconButton(isSelected:)` is); its hit target reaches 44 where there is room. [style]
 /// restyles it over `Fluent2ThemeData.iconButtonTheme`, then its
 /// appearance's button theme and the theme's knobs.
 ///
@@ -960,14 +961,14 @@ class Fluent2IconButton extends StatelessWidget {
     final on = selected ?? false;
     return fluent2OwnWidth(
       context,
-      DesignTapTarget(
+      TapTargetPadding(
         minSize: Fluent2Layout.tapFloorOf(context),
         child: Fluent2Pressable(
           focusNode: focusNode,
           autofocus: autofocus,
           onPressed: onPressed,
           label: label,
-          toggled: selected,
+          selected: selected,
           radius: look.radius,
           shape: look.outlines,
           builder: (context, states) {
@@ -1059,8 +1060,9 @@ class Fluent2IconButton extends StatelessWidget {
 
 /// Fluent 2's ToggleButton: a [Fluent2Button] that stays pressed while
 /// [checked], on the appearance's selected face, its glyph turning to
-/// [checkedIcon]; a press asks [onChanged] for the other state. Read as a
-/// toggle named [label].
+/// [checkedIcon]; a press asks [onChanged] for the other state. Read as
+/// Flutter's `IconButton(isSelected:)` is: a button named [label], selected
+/// while [value].
 ///
 /// ```dart
 /// Fluent2ToggleButton('Bold', value: bold, icon: Fluent2Icons.edit, onChanged: (v) => setState(() => bold = v))
@@ -1134,14 +1136,14 @@ class Fluent2ToggleButton extends StatelessWidget {
     final change = onChanged;
     return fluent2OwnWidth(
       context,
-      DesignTapTarget(
+      TapTargetPadding(
         minSize: Fluent2Layout.tapFloorOf(context),
         child: Fluent2Pressable(
           focusNode: focusNode,
           autofocus: autofocus,
           onPressed: change == null ? null : () => change(!value),
           label: label,
-          toggled: value,
+          selected: value,
           radius: look.radius,
           shape: look.outlines,
           builder: (context, states) {
@@ -1453,7 +1455,7 @@ class Fluent2MenuButton extends StatelessWidget {
     final m = look.metrics;
     return fluent2OwnWidth(
       context,
-      DesignTapTarget(
+      TapTargetPadding(
         minSize: Fluent2Layout.tapFloorOf(context),
         child: Fluent2Pressable(
           focusNode: focusNode,
@@ -1577,7 +1579,7 @@ class Fluent2SplitAction {
 /// Escape closes it and gives focus back. One row of the open menu is
 /// current: opened by a key, its first in the focus ring; by a pointer,
 /// none until the pointer or a key moves. The behaviour is the shared
-/// DesignSplitButton; Fluent 2 paints both halves and the menu.
+/// RawSplitButton; Fluent 2 paints both halves and the menu.
 ///
 /// ```dart
 /// Fluent2SplitButton('Reply', icon: Fluent2Icons.arrowReply, appearance: Fluent2ButtonAppearance.primary, onPressed: reply, actions: [Fluent2SplitAction('Reply all', onPressed: replyAll), Fluent2SplitAction('Forward', onPressed: forward)])
@@ -1766,17 +1768,17 @@ class Fluent2SplitButton extends StatelessWidget {
 
     return fluent2OwnWidth(
       context,
-      DesignSplitButton(
+      RawSplitButton(
         label: label,
         onPressed: onPressed,
         menuLabel: menuLabel ?? words.moreOptionsFor(label),
         minimumSize: Size(0, least),
         actions: [
           for (final a in actions)
-            DesignSplitAction(label: a.label, onPressed: a.onPressed, data: a),
+            RawSplitAction(label: a.label, onPressed: a.onPressed, data: a),
         ],
         buttonBuilder: (context, part, states, open) =>
-            part == DesignSplitPart.main ? main(states) : toggle(states, open),
+            part == RawSplitPart.main ? main(states) : toggle(states, open),
         layoutBuilder: (context, main, toggle) => Row(
           mainAxisSize: MainAxisSize.min,
           children: [

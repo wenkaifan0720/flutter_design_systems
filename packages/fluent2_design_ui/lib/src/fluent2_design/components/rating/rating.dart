@@ -154,7 +154,7 @@ String _figure(double v) =>
 /// sets it (a step played at each star); arrows step it (mirrored right to
 /// left), End fills it, Home or 0 clears it, a digit sets that many. Null
 /// [onChanged] draws it disabled. Read as a slider named [label] saying
-/// "3 of 5". It is ui_core's `DesignRating` drawn in Fluent's stars.
+/// "3 of 5". It is ui_core's `RawRating` drawn in Fluent's stars.
 ///
 /// ```dart
 /// Fluent2Rating(label: 'Rate this meeting', value: score, onChanged: (v) => setState(() => score = v))
@@ -211,7 +211,7 @@ class Fluent2Rating extends StatelessWidget {
     final say = Fluent2Localizations.of(context);
     // The focus the stars report, for the ring round the row.
     var focused = false;
-    final rating = DesignRating(
+    final rating = RawRating(
       value: value,
       onChanged: change == null
           ? null
@@ -245,7 +245,7 @@ class Fluent2Rating extends StatelessWidget {
       alignment: AlignmentDirectional.centerStart,
       widthFactor: 1,
       heightFactor: 1,
-      child: DesignTapTarget(
+      child: TapTargetPadding(
         minSize: Fluent2Layout.tapFloorOf(context),
         alignment: AlignmentDirectional.centerStart,
         child: rating,

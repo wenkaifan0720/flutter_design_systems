@@ -162,7 +162,7 @@ class _GalleryAppState extends State<GalleryApp> {
       // shared words with it.
       locale: kitLocale,
       localizationsDelegates: kitLocalizations,
-      supportedLocales: DesignLocalizations.supportedLocales,
+      supportedLocales: RawWidgetsLocalizations.supportedLocales,
       // The link was read before the first frame; the app opens at its root.
       initialRoute: Navigator.defaultRouteName,
       // The snack bars queue in the toaster round the app, inside the theme.

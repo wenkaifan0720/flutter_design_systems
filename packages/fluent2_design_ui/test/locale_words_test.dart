@@ -17,7 +17,7 @@ Widget _app(Locale locale) => WidgetsApp(
   locale: locale,
   supportedLocales: [locale],
   localizationsDelegates: const [
-    DesignLocalizations.delegate,
+    RawWidgetsLocalizations.delegate,
     Fluent2Localizations.delegate,
   ],
   builder: (context, child) => Fluent2Host(child: child!),

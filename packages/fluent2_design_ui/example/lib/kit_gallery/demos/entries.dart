@@ -68,7 +68,7 @@ Widget kitSpecimenInputGroup() => const Column(
 );
 
 Widget kitSpecimenRangeSlider() {
-  var price = const DesignRangeValues(40, 160);
+  var price = const RawRangeValues(40, 160);
   return StatefulBuilder(
     builder: (context, set) => Fluent2RangeSlider(
       label: 'Price per night',
@@ -107,14 +107,11 @@ void _choose() {}
 void _typed(String _) {}
 
 Widget kitSpecimenDateRangePicker() => KitOwned(
-  () => DesignCalendarController(
+  () => RawCalendarController(
     firstDate: DateTime(2026, 6),
     lastDate: DateTime(2026, 9, 30),
-    mode: DesignCalendarMode.range,
-    selectedRange: DesignDateRange(
-      DateTime(2026, 6, 14),
-      DateTime(2026, 6, 18),
-    ),
+    mode: RawCalendarMode.range,
+    selectedRange: RawDateRange(DateTime(2026, 6, 14), DateTime(2026, 6, 18)),
     currentDate: DateTime(2026, 6, 10),
   ),
   (context, stay) => Fluent2DateRangePicker(controller: stay),
@@ -160,19 +157,19 @@ Widget kitSpecimenColorPicker() =>
 class _OwnColour extends StatefulWidget {
   const _OwnColour({required this.builder});
 
-  final Widget Function(DesignColorController colour) builder;
+  final Widget Function(RawColorController colour) builder;
 
   @override
   State<_OwnColour> createState() => _OwnColourState();
 }
 
 class _OwnColourState extends State<_OwnColour> {
-  DesignColorController? _colour;
+  RawColorController? _colour;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _colour ??= DesignColorController(
+    _colour ??= RawColorController(
       context.fluent2Theme.colors.compoundBrandForeground1,
     );
   }

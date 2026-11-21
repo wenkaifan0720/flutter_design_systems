@@ -283,7 +283,7 @@ abstract final class Fluent2Layout {
 
   /// The least target at [context]: [touchHitTarget] on a touch platform,
   /// [minHitTarget] elsewhere: the height of a row a finger or a pointer
-  /// picks. A control's own target is ui_core's `DesignTapTarget`, at the
+  /// picks. A control's own target is ui_core's `TapTargetPadding`, at the
   /// floors `Fluent2Host` declares.
   static double hitTargetOf(BuildContext context) =>
       padded(context) ? touchHitTarget : minHitTarget;

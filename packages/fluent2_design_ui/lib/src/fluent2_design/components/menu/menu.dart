@@ -146,7 +146,7 @@ class Fluent2Menu<T> extends StatefulWidget {
       _MenuRoute<T>(
         anchor: rect,
         keys: fluent2KeysLed(),
-        label: DesignLocalizations.of(context).modalBarrierDismissLabel,
+        label: RawWidgetsLocalizations.of(context).modalBarrierDismissLabel,
         builder: (menuContext) => themes.wrap(
           Fluent2Menu<T>(
             items: items,

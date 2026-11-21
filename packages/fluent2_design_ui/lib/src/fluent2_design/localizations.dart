@@ -1,5 +1,5 @@
 // The words only Fluent 2's parts say on their own: a retry, a send, a picker's hint, a page count. The words every
-// look shares (Cancel, Close, Today, Loading) come from ui_core's DesignLocalizations, and so do English's time words
+// look shares (Cancel, Close, Today, Loading) come from ui_core's RawWidgetsLocalizations, and so do English's time words
 // (a time picker's hour and minute, AM and PM), so they follow the app's locale in ui_core's 30 languages. A part takes the caller's words
 // when given and these otherwise, so an app in another language installs a delegate for each and every part speaks it.
 import 'package:flutter/foundation.dart' show SynchronousFuture;
@@ -7,7 +7,7 @@ import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
 /// The words only Fluent 2's parts say when the caller gives none; the words
-/// every look shares (Cancel, Close, Today) are `DesignLocalizations`'.
+/// every look shares (Cancel, Close, Today) are `RawWidgetsLocalizations`'.
 /// English ships ([Fluent2LocalizationsEn]); another language is a subclass
 /// and a delegate that loads it, listed before [delegate] (the first delegate
 /// for a locale wins). With no delegate installed, the parts speak English.
@@ -21,7 +21,7 @@ abstract class Fluent2Localizations {
 
   /// The words in force at [context]: the installed delegate's, else English.
   /// English's time words ([hour], [minute], [am], [pm]) are those of the
-  /// `DesignLocalizations` in force at [context], so a time picker speaks the
+  /// `RawWidgetsLocalizations` in force at [context], so a time picker speaks the
   /// app's language wherever ui_core has it.
   static Fluent2Localizations of(BuildContext context) {
     final words = Localizations.of<Fluent2Localizations>(
@@ -31,7 +31,7 @@ abstract class Fluent2Localizations {
     if (words != null && !identical(words, const Fluent2LocalizationsEn())) {
       return words;
     }
-    return Fluent2LocalizationsEn._time(DesignLocalizations.of(context));
+    return Fluent2LocalizationsEn._time(RawWidgetsLocalizations.of(context));
   }
 
   /// Loads Fluent 2's English words in any locale, so an app in another
@@ -315,8 +315,8 @@ abstract class Fluent2Localizations {
 
 /// Fluent 2's English words. As [Fluent2Localizations.of] gives them, their
 /// time words ([hour], [minute], [am], [pm]) are ui_core's
-/// `DesignLocalizations`', in the app's language. A subclass in another
-/// language gives its own time words, or `DesignLocalizations`'
+/// `RawWidgetsLocalizations`', in the app's language. A subclass in another
+/// language gives its own time words, or `RawWidgetsLocalizations`'
 /// (`timePickerHourLabel`, `timePickerMinuteLabel`,
 /// `anteMeridiemAbbreviation`, `postMeridiemAbbreviation`).
 class Fluent2LocalizationsEn extends Fluent2Localizations {
@@ -324,11 +324,11 @@ class Fluent2LocalizationsEn extends Fluent2Localizations {
   const Fluent2LocalizationsEn() : _shared = null;
 
   /// English with [shared]'s time words.
-  const Fluent2LocalizationsEn._time(DesignLocalizations shared)
+  const Fluent2LocalizationsEn._time(RawWidgetsLocalizations shared)
     : _shared = shared;
 
   /// The ui_core words the time words come from; English's own when null.
-  final DesignLocalizations? _shared;
+  final RawWidgetsLocalizations? _shared;
 
   @override
   String backTo(String where) => 'Back to $where';

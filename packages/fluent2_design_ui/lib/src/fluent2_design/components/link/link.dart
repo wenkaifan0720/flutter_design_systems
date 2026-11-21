@@ -128,7 +128,7 @@ class Fluent2Link extends StatelessWidget {
     // A disabled link takes no taps, so it lends no slop over a neighbour.
     return inline || !live
         ? link
-        : DesignTapTarget(
+        : TapTargetPadding(
             minSize: Fluent2Layout.tapFloorOf(context),
             child: link,
           );

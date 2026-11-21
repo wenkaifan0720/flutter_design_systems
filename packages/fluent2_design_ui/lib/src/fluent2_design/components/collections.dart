@@ -46,10 +46,10 @@ class Fluent2DataGrid<R> extends StatelessWidget {
   });
 
   /// The rows, columns, sort, page and selection.
-  final DesignTableController<R> controller;
+  final RawDataTableController<R> controller;
 
   /// Returns the displayed value for a cell.
-  final String Function(R row, DesignTableColumn<R> column) cell;
+  final String Function(R row, RawDataColumn<R> column) cell;
 
   /// The grid's accessibility label.
   final String? label;
@@ -66,8 +66,8 @@ class Fluent2DataGrid<R> extends StatelessWidget {
     final c = t.colors;
     final words = Fluent2Localizations.of(context);
     const space = EdgeInsets.symmetric(horizontal: Fluent2Spacing.m);
-    int flex(DesignTableColumn<R> column) => column.numeric ? 2 : 3;
-    Widget box(DesignTableColumn<R> column, Widget child) => Expanded(
+    int flex(RawDataColumn<R> column) => column.numeric ? 2 : 3;
+    Widget box(RawDataColumn<R> column, Widget child) => Expanded(
       flex: flex(column),
       child: Align(
         alignment: column.numeric
@@ -119,7 +119,7 @@ class Fluent2DataGrid<R> extends StatelessWidget {
           children: [
             LayoutBuilder(
               builder: (context, bounds) {
-                final grid = DesignDataTable<R>(
+                final grid = RawDataTable<R>(
                   controller: controller,
                   selectable: selectable,
                   onActivate: onActivate,
@@ -134,9 +134,9 @@ class Fluent2DataGrid<R> extends StatelessWidget {
                         if (selectable)
                           tick(
                             switch (controller.pageSelection) {
-                              DesignSelection.all => true,
-                              DesignSelection.none => false,
-                              DesignSelection.some => null,
+                              RawDataTableSelection.all => true,
+                              RawDataTableSelection.none => false,
+                              RawDataTableSelection.some => null,
                             },
                             controller.togglePage,
                             words.selectAllRows,
@@ -178,7 +178,7 @@ class Fluent2DataGrid<R> extends StatelessWidget {
                               ),
                               if (sort != null)
                                 Icon(
-                                  sort == DesignSortDirection.ascending
+                                  sort == RawSortDirection.ascending
                                       ? Fluent2Icons.arrowUp
                                       : Fluent2Icons.arrowDown,
                                   size: 12,
@@ -296,12 +296,16 @@ class Fluent2DataGrid<R> extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(
-        DiagnosticsProperty<DesignTableController<R>>('controller', controller),
+        DiagnosticsProperty<RawDataTableController<R>>(
+          'controller',
+          controller,
+        ),
       )
       ..add(
-        ObjectFlagProperty<
-          String Function(R row, DesignTableColumn<R> column)
-        >.has('cell', cell),
+        ObjectFlagProperty<String Function(R row, RawDataColumn<R> column)>.has(
+          'cell',
+          cell,
+        ),
       )
       ..add(StringProperty('label', label, defaultValue: null))
       ..add(
@@ -363,7 +367,7 @@ class Fluent2ScrollArea extends StatelessWidget {
     final t = context.fluent2Theme;
     final c = t.colors;
     final moves = Fluent2Motion.of(context, Fluent2Motion.normal);
-    return DesignScrollArea(
+    return RawScrollArea(
       focusNode: focusNode,
       autofocus: autofocus,
       controller: controller,
@@ -491,7 +495,7 @@ class Fluent2Resizable extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.fluent2Theme;
     final c = t.colors;
-    return DesignSplitView(
+    return RawSplitView(
       focusNode: focusNode,
       autofocus: autofocus,
       first: first,
@@ -502,7 +506,7 @@ class Fluent2Resizable extends StatelessWidget {
       minSecond: minSecond,
       onChanged: onChanged,
       hitExtent: 16,
-      semanticLabel: DesignLocalizations.of(context).splitViewHandleLabel,
+      semanticLabel: RawWidgetsLocalizations.of(context).splitViewHandleLabel,
       dividerBuilder: (context, states, axis) {
         final along = axis == Axis.horizontal;
         final held = states.pressed;
@@ -626,7 +630,7 @@ class Fluent2CarouselView extends StatelessWidget {
     final n = children.length;
     // The frame holds the corner, not each slide: a slide moving past the
     // frame's edge is cut by the frame's corners, never square.
-    return DesignCarousel(
+    return RawCarousel(
       focusNode: focusNode,
       autofocus: autofocus,
       itemCount: n,
@@ -637,7 +641,7 @@ class Fluent2CarouselView extends StatelessWidget {
       onPageChanged: onChanged,
       semanticLabel: label ?? '',
       slideLabel: (i, count) =>
-          DesignLocalizations.of(context).carouselSlideLabel(i, count),
+          RawWidgetsLocalizations.of(context).carouselSlideLabel(i, count),
       duration: Fluent2Motion.of(context, Fluent2Motion.slow),
       layoutBuilder: (context, viewport, controls) => Column(
         mainAxisSize: MainAxisSize.min,
@@ -679,7 +683,7 @@ class Fluent2CarouselView extends StatelessWidget {
                         count: n,
                         selectedIndex: controls.page,
                         position: position,
-                        label: DesignLocalizations.of(context)
+                        label: RawWidgetsLocalizations.of(context)
                             .carouselSlideLabel(controls.page, n),
                         onChanged: controls.goToPage,
                       ),
@@ -765,7 +769,7 @@ class Fluent2ReorderableListView<T extends Object> extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.fluent2Theme;
     final c = t.colors;
-    return DesignReorderableList<T>(
+    return RawReorderableList<T>(
       items: items,
       onReorder: onReorder,
       labelOf: labelOf,
@@ -888,11 +892,11 @@ class Fluent2RefreshIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.fluent2Theme;
-    return DesignPullToRefresh(
+    return RawRefreshIndicator(
       onRefresh: onRefresh,
-      refreshLabel: DesignLocalizations.of(context).refreshLabel,
-      refreshingMessage: DesignLocalizations.of(context).refreshingMessage,
-      doneMessage: DesignLocalizations.of(context).refreshedMessage,
+      refreshLabel: RawWidgetsLocalizations.of(context).refreshLabel,
+      refreshingMessage: RawWidgetsLocalizations.of(context).refreshingMessage,
+      doneMessage: RawWidgetsLocalizations.of(context).refreshedMessage,
       indicatorBuilder: (context, s) => DecoratedBox(
         decoration: BoxDecoration(
           color: Fluent2Layer.groundOf(context),
@@ -902,14 +906,14 @@ class Fluent2RefreshIndicator extends StatelessWidget {
         ),
         child: Center(
           child: Opacity(
-            opacity: s.mode == DesignRefreshMode.inactive
+            opacity: s.mode == RawRefreshIndicatorMode.inactive
                 ? 0
                 : s.progress.clamp(0.0, 1.0),
             child: Fluent2Spinner(
               size: Fluent2SpinnerSize.extraSmall,
               value: switch (s.mode) {
-                DesignRefreshMode.refresh => null,
-                DesignRefreshMode.done => 1,
+                RawRefreshIndicatorMode.refresh => null,
+                RawRefreshIndicatorMode.done => 1,
                 _ => s.progress.clamp(0.0, 1.0),
               },
             ),

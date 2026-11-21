@@ -86,17 +86,16 @@ export 'fluent2_design/theme.dart';
 // the inventory, iOS's swipe back round a page's push, and a window's size
 // class.
 export 'package:ui_core/ui_core.dart' show DesignWindowSizeClass;
+export 'package:ui_core/ui_core.dart' show RawPopoverSide, RawPopoverAlign;
 export 'package:ui_core/ui_core.dart'
-    show DesignOverlaySide, DesignOverlayAlign;
+    show RawCalendarController, RawCalendarMode, RawDateRange;
+export 'package:ui_core/ui_core.dart' show RawColorController;
 export 'package:ui_core/ui_core.dart'
-    show DesignCalendarController, DesignCalendarMode, DesignDateRange;
-export 'package:ui_core/ui_core.dart' show DesignColorController;
-export 'package:ui_core/ui_core.dart'
-    show DesignTableController, DesignTableColumn, DesignSortDirection;
+    show RawDataTableController, RawDataColumn, RawSortDirection;
 export 'package:ui_core/inventory.dart'
     show DesignInventory, DesignInventoryEntry, DesignInventoryRow;
 export 'package:ui_core/ui_core.dart'
-    show DesignSwipeBackPageTransitionsBuilder, designSwipeBack;
-export 'package:ui_core/ui_core.dart' show DesignRangeValues;
-export 'package:ui_core/ui_core.dart' show DesignSheetEdge;
-export 'package:ui_core/ui_core.dart' show DesignToastHandle;
+    show SwipeBackPageTransitionsBuilder, designSwipeBack;
+export 'package:ui_core/ui_core.dart' show RawRangeValues;
+export 'package:ui_core/ui_core.dart' show RawSheetEdge;
+export 'package:ui_core/ui_core.dart' show RawToastController;

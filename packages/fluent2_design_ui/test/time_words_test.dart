@@ -17,7 +17,7 @@ const _pick = ValueKey('pick');
 Widget _app(
   Locale locale, {
   List<LocalizationsDelegate<Object>> delegates = const [
-    DesignLocalizations.delegate,
+    RawWidgetsLocalizations.delegate,
     Fluent2Localizations.delegate,
   ],
 }) => WidgetsApp(
@@ -119,7 +119,10 @@ void main() {
   testWidgets("without Fluent 2's delegate, the time words still follow "
       "ui_core's", (tester) async {
     await tester.pumpWidget(
-      _app(const Locale('ar'), delegates: const [DesignLocalizations.delegate]),
+      _app(
+        const Locale('ar'),
+        delegates: const [RawWidgetsLocalizations.delegate],
+      ),
     );
     await tester.pumpAndSettle();
     final words = _words(tester);
@@ -130,7 +133,7 @@ void main() {
     await tester.pumpWidget(
       _app(
         const Locale('de'),
-        delegates: const [DesignLocalizations.delegate, _OwnDelegate()],
+        delegates: const [RawWidgetsLocalizations.delegate, _OwnDelegate()],
       ),
     );
     await tester.pumpAndSettle();

@@ -28,7 +28,7 @@ Widget _app(
 }) => WidgetsApp(
   color: const Color(0xFF000000),
   localizationsDelegates: const [
-    DesignLocalizations.delegate,
+    RawWidgetsLocalizations.delegate,
     Fluent2Localizations.delegate,
   ],
   builder: (context, child) => Fluent2Host(child: child!),
@@ -199,7 +199,7 @@ void main() {
     tester,
   ) async {
     final semantics = tester.ensureSemantics();
-    var values = const DesignRangeValues(20, 60);
+    var values = const RawRangeValues(20, 60);
     await pump(
       tester,
       (context, set) => SizedBox(
@@ -222,7 +222,7 @@ void main() {
     expect(steps, hasLength(2));
     _act(tester, steps.first.$1, SemanticsAction.increase);
     await tester.pumpAndSettle();
-    expect(values, isNot(const DesignRangeValues(20, 60)));
+    expect(values, isNot(const RawRangeValues(20, 60)));
     expect(_saidTimes(tester, _field), 1);
     _holds(tester);
     semantics.dispose();
@@ -367,7 +367,7 @@ void main() {
   testWidgets('mergeSemantics true makes one node of the child, false keeps '
       "each control's", (tester) async {
     final semantics = tester.ensureSemantics();
-    var values = const DesignRangeValues(20, 60);
+    var values = const RawRangeValues(20, 60);
     Widget range(BuildContext context, StateSetter set) => SizedBox(
       width: 300,
       child: Fluent2RangeSlider(

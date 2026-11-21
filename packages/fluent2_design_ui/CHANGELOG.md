@@ -1,3 +1,10 @@
+## 0.4.0
+
+- Stands on ui_core 0.4.0, on Flutter 3.47 or later as before. The ui_core types fluent2_design_ui's API names take their new names (`DesignOverlayPlacement` is `RawPopoverPlacement`, and so on); `dart fix --apply` moves your code.
+- `Fluent2RadioGroup` and a one-choice `Fluent2ToolbarToggleGroup` stand on Flutter's `RadioGroup`, each option a `RawRadio`, with ui_core's `RadioGroupKeyboardFix` round them, in place of ui_core's `DesignRadioGroup` (deprecated). Their API, their look and their keys are unchanged: Tab enters once, on the chosen option or else the first that can be chosen (also while the chosen one is turned off); the arrows choose in reading order, skip disabled options, wrap, and swap Left and Right right to left; Home and End still move along a toolbar group. On iOS and macOS a screen reader also hears an option as selected or not, as Flutter's `Radio` reads.
+- An on/off `Fluent2IconButton` (`selected` set) and a `Fluent2ToggleButton` read as Flutter's `IconButton(isSelected:)` does: a button, selected or not. They used to read as a button toggled on or off, as a switch does. A `Fluent2ToolbarToggleGroup` with `multiSelectionEnabled` reads its toggles the same way.
+- `Fluent2Tooltip` stands on Flutter's `RawTooltip`, with ui_core's `RawTooltipFocusFix` (the keyboard's focus shows it) and `RawTooltipPlacement` (where it goes), in place of ui_core's `DesignTooltip` (deprecated). It looks, moves and reads as before, its arrow aimed at the control. One difference: along a toolbar, each tip now waits its 250 ms; ui_core's tooltip showed the next one at once.
+
 ## 0.3.4
 
 - Stands on ui_core 0.3.4.

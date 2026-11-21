@@ -14,6 +14,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fluent2_design_ui/fluent2_design_ui.dart';
 import 'package:fluent2_design_ui/fluent2_design_host.dart';
+import 'package:fluent2_design_ui/src/fluent2_design/components/pressable/pressable.dart'
+    show Fluent2PressFace;
 
 import 'tiers.dart';
 
@@ -178,9 +180,29 @@ String _painters(WidgetTester tester) {
   return record;
 }
 
-List<DesignPressableState> _pressables(WidgetTester tester) => tester
-    .stateList<DesignPressableState>(find.byType(DesignPressable))
-    .toList();
+/// The part's presses: the design kit's pressables, and the radios on Flutter's `RawRadio`.
+Finder get _presses =>
+    find.byWidgetPredicate((w) => w is RawButton || w is RawRadio);
+
+/// The states [press] hands its face: a pressable's own, a radio's those it gives its [Fluent2PressFace].
+Set<WidgetState> _statesOf(WidgetTester tester, Finder press) {
+  if (tester.widget(press) is RawButton) {
+    return tester.state<RawButtonState>(press).states;
+  }
+  return tester
+      .widget<Fluent2PressFace>(
+        find
+            .descendant(of: press, matching: find.byType(Fluent2PressFace))
+            .first,
+      )
+      .states;
+}
+
+/// The states each of the part's presses hands its face.
+List<Set<WidgetState>> _pressables(WidgetTester tester) => [
+  for (var i = 0; i < _presses.evaluate().length; i++)
+    _statesOf(tester, _presses.at(i)),
+];
 
 /// The law over [parts], which names every part that takes a callback in the library files [reads] picks. A file
 /// runs one [slice] of [slices]: the parts whose place in [parts] leaves that remainder; the first slice also checks
@@ -237,8 +259,7 @@ void behaviourLaw(
             );
             if (part.pressable) {
               expect(
-                _pressables(tester)
-                    .any((s) => s.states.contains(WidgetState.focused)),
+                _pressables(tester).any((s) => s.contains(WidgetState.focused)),
                 isTrue,
                 reason: 'the focused press was not told to ring',
               );
@@ -283,7 +304,7 @@ void behaviourLaw(
             reason: 'a disabled $name took focus',
           );
           for (final s in _pressables(tester)) {
-            expect(s.states, contains(WidgetState.disabled));
+            expect(s, contains(WidgetState.disabled));
           }
         });
       }
@@ -293,7 +314,7 @@ void behaviourLaw(
           await _size(tester, 390);
           await tester.pumpWidget(_host(part.build(() {}), still: true));
           await tester.pump();
-          final first = find.byType(DesignPressable).first;
+          final first = _presses.first;
           final mouse = await tester.createGesture(
             kind: PointerDeviceKind.mouse,
           );
@@ -301,10 +322,7 @@ void behaviourLaw(
           addTearDown(mouse.removePointer);
           await mouse.moveTo(tester.getCenter(first));
           await tester.pump();
-          expect(
-            tester.state<DesignPressableState>(first).states,
-            contains(WidgetState.hovered),
-          );
+          expect(_statesOf(tester, first), contains(WidgetState.hovered));
         });
       }
 
@@ -315,10 +333,7 @@ void behaviourLaw(
         await tester.pumpWidget(_host(part.build(() {}), still: true));
         await tester.pump();
         if (part.pressable) {
-          await tester.tap(
-            find.byType(DesignPressable).first,
-            warnIfMissed: false,
-          );
+          await tester.tap(_presses.first, warnIfMissed: false);
         }
         await tester.pump();
         await tester.pump();

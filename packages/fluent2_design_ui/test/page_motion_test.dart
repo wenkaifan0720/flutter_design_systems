@@ -1,5 +1,5 @@
 // Fluent 2's page motion (Fluent2PageTransitionsBuilder), which its theme sets for every platform, on iOS inside
-// ui_core's swipe back (DesignSwipeBackPageTransitionsBuilder): a page pushed in comes over the page it leaves, which holds still, rising from transparent as it travels at
+// ui_core's swipe back (SwipeBackPageTransitionsBuilder): a page pushed in comes over the page it leaves, which holds still, rising from transparent as it travels at
 // most 20 from the reading end (up from below for a full-screen dialog) and settling in 250 ms; popped, it runs back
 // in 200 ms; with reduced motion asked for, each way is a cut. Nothing flies in from a window's width away, on a blank
 // ground, with the page it left already gone.
@@ -89,7 +89,7 @@ Future<void> _firstShown(WidgetTester t) async {
 
 // Fluent 2's push, on iOS with ui_core's swipe back round it.
 Matcher _fluent2(TargetPlatform platform) => platform == TargetPlatform.iOS
-    ? isA<DesignSwipeBackPageTransitionsBuilder>().having(
+    ? isA<SwipeBackPageTransitionsBuilder>().having(
         (b) => b.builder,
         'builder',
         isA<Fluent2PageTransitionsBuilder>(),

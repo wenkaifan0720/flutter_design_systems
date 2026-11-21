@@ -323,7 +323,7 @@ class _Crumb extends StatelessWidget {
         child: face(t.textSecondary, t.colors.transparentBackground),
       );
     }
-    return DesignTapTarget(
+    return TapTargetPadding(
       minSize: Fluent2Layout.tapFloorOf(context),
       child: Fluent2Pressable(
         onPressed: item.onPressed,

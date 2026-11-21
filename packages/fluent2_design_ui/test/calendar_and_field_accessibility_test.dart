@@ -152,14 +152,14 @@ void main() {
   testWidgets(
     'large-text data grid headings and cell values can be read in full',
     (t) async {
-      final controller = DesignTableController<List<String>>(
+      final controller = RawDataTableController<List<String>>(
         rows: const [
           ['Launch plan', 'Ana Ruiz', '21'],
         ],
         columns: [
-          DesignTableColumn(id: '0', label: 'Name', sortKey: (row) => row[0]),
-          DesignTableColumn(id: '1', label: 'Owner', sortKey: (row) => row[1]),
-          DesignTableColumn(
+          RawDataColumn(id: '0', label: 'Name', sortKey: (row) => row[0]),
+          RawDataColumn(id: '1', label: 'Owner', sortKey: (row) => row[1]),
+          RawDataColumn(
             id: '2',
             label: 'Pages',
             numeric: true,

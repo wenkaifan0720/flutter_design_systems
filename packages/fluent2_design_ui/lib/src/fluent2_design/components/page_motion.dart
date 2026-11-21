@@ -15,7 +15,7 @@ const Map<TargetPlatform, PageTransitionsBuilder> fluent2PageTransitions = {
   TargetPlatform.android: Fluent2PageTransitionsBuilder(),
   TargetPlatform.fuchsia: Fluent2PageTransitionsBuilder(),
   // iOS's swipe back from the screen's edge, round Fluent's push.
-  TargetPlatform.iOS: DesignSwipeBackPageTransitionsBuilder(
+  TargetPlatform.iOS: SwipeBackPageTransitionsBuilder(
     Fluent2PageTransitionsBuilder(),
   ),
   TargetPlatform.linux: Fluent2PageTransitionsBuilder(),
@@ -33,7 +33,7 @@ const Map<TargetPlatform, PageTransitionsBuilder> fluent2PageTransitions = {
 /// preserves the iOS swipe-back gesture.
 ///
 /// ```dart
-/// PageTransitionsTheme(builders: {TargetPlatform.android: Fluent2PageTransitionsBuilder(), TargetPlatform.iOS: DesignSwipeBackPageTransitionsBuilder(Fluent2PageTransitionsBuilder())})
+/// PageTransitionsTheme(builders: {TargetPlatform.android: Fluent2PageTransitionsBuilder(), TargetPlatform.iOS: SwipeBackPageTransitionsBuilder(Fluent2PageTransitionsBuilder())})
 /// ```
 class Fluent2PageTransitionsBuilder extends PageTransitionsBuilder {
   /// Fluent 2's page motion.

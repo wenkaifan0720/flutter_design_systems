@@ -93,7 +93,7 @@ class Fluent2Tab {
 /// to the ends, tabs out of use skipped), asks [onChanged] for its index;
 /// null draws the list disabled. [Fluent2TabList.items] takes tabs with
 /// glyphs, or one out of use. Read as a tab bar of tabs, "Files, Tab 2 of
-/// 3". It is ui_core's `DesignTabBar` in Fluent's faces.
+/// 3". It is ui_core's `RawTabBar` in Fluent's faces.
 ///
 /// ```dart
 /// Fluent2TabList(tabs: const ['Chat', 'Files', 'Notes'], selectedIndex: tab, onChanged: (i) => setState(() => tab = i))
@@ -195,7 +195,7 @@ class Fluent2TabList extends StatefulWidget {
 
 class _Fluent2TabListState extends State<Fluent2TabList>
     with TickerProviderStateMixin {
-  DesignTabController? _tabs;
+  RawTabController? _tabs;
 
   // The indicator's slide: Fluent's `durationSlow` (300 ms) on ui_core's
   // spring, ω = 6 / 0.3 s.
@@ -208,9 +208,9 @@ class _Fluent2TabListState extends State<Fluent2TabList>
   int get _at =>
       widget._count == 0 ? 0 : widget.selectedIndex.clamp(0, widget._count - 1);
 
-  DesignTabController? _controllerFor(int count) {
+  RawTabController? _controllerFor(int count) {
     if (count == 0) return null;
-    return DesignTabController(
+    return RawTabController(
       length: count,
       initialIndex: _at,
       vsync: this,
@@ -288,14 +288,14 @@ class _Fluent2TabListState extends State<Fluent2TabList>
     // so its tabs keep their own widths and the row its keyline outline. The
     // indicator stands over the tabs, as Fluent's does, so a focused tab's
     // ring never covers it.
-    final bar = DesignTabBar(
+    final bar = RawTabBar(
       controller: tabs,
       indicatorPosition: DecorationPosition.foreground,
       direction: widget.vertical ? Axis.vertical : Axis.horizontal,
       semanticLabel: widget.label,
       tabs: [
         for (final tab in all)
-          DesignTab(
+          RawTab(
             label: tab.label,
             icon: tab.icon,
             enabled: live && tab.enabled,
@@ -751,7 +751,7 @@ class _Tab extends StatelessWidget {
     final strong = large ? t.subtitle2 : t.body1Strong;
     // ui_core's bar presses the tab, moves the keys and names it to a screen
     // reader; the face paints its states and Fluent's focus ring.
-    return DesignTapTarget(
+    return TapTargetPadding(
       minSize: Fluent2Layout.tapFloorOf(context),
       child: Fluent2KeyRing(
         focused: states.contains(WidgetState.focused),

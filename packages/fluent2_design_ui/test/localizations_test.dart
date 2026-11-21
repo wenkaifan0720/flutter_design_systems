@@ -24,10 +24,10 @@ Widget _app(
 }) => WidgetsApp(
   color: const Color(0xFF000000),
   locale: locale,
-  supportedLocales: DesignLocalizations.supportedLocales,
+  supportedLocales: RawWidgetsLocalizations.supportedLocales,
   localizationsDelegates: [
     ...words,
-    DesignLocalizations.delegate,
+    RawWidgetsLocalizations.delegate,
     Fluent2Localizations.delegate,
   ],
   builder: (context, child) => Fluent2Host(child: child!),
@@ -95,11 +95,11 @@ void main() {
           expect(CupertinoLocalizations.of(context).copyButtonLabel, copy);
           // ui_core's shared words speak the app's language under the host.
           expect(
-            DesignLocalizations.of(context).closeButtonLabel,
-            DesignLocalizations.forLocale(locale).closeButtonLabel,
+            RawWidgetsLocalizations.of(context).closeButtonLabel,
+            RawWidgetsLocalizations.forLocale(locale).closeButtonLabel,
           );
           expect(
-            DesignLocalizations.of(context).closeButtonLabel,
+            RawWidgetsLocalizations.of(context).closeButtonLabel,
             isNot('Close'),
           );
         },

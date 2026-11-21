@@ -200,7 +200,8 @@ class Fluent2SheetShell extends StatelessWidget {
                   ? Fluent2IconButton(
                       Fluent2Icons.dismiss,
                       key: closeKey,
-                      label: DesignLocalizations.of(context).closeButtonLabel,
+                      label: RawWidgetsLocalizations.of(context)
+                          .closeButtonLabel,
                       onPressed:
                           onClose ?? () => Navigator.of(context).maybePop(),
                     )
@@ -394,7 +395,7 @@ class Fluent2Sheet extends StatelessWidget {
                 title: title,
                 close: Fluent2IconButton(
                   Fluent2Icons.dismiss,
-                  label: DesignLocalizations.of(context).closeButtonLabel,
+                  label: RawWidgetsLocalizations.of(context).closeButtonLabel,
                   onPressed: onClose ?? () => Navigator.of(context).maybePop(),
                 ),
               ),
@@ -440,7 +441,7 @@ class Fluent2Sheet extends StatelessWidget {
   /// [title], holding [builder]'s parts and [foot]'s acts. Completes with
   /// the value the sheet pops with: null when it is dismissed.
   ///
-  /// On a phone it is ui_core's bottom sheet (`DesignBottomSheetRoute`): it
+  /// On a phone it is ui_core's bottom sheet (`RawBottomSheetRoute`): it
   /// rises on a spring, rides above the keyboard, follows a drag (its parts,
   /// scrolled to their top, hand the drag on) and closes when let go low or
   /// flung down. On a wide window it is ui_core's dialog route, centred and
@@ -470,7 +471,7 @@ class Fluent2Sheet extends StatelessWidget {
       return navigator.push(
         DesignDialogRoute<T>(
           barrierDismissible: true,
-          barrierLabel: DesignLocalizations.of(context)
+          barrierLabel: RawWidgetsLocalizations.of(context)
               .modalBarrierDismissLabel,
           barrierColor: t.overlay,
           semanticLabel: title,
@@ -494,8 +495,9 @@ class Fluent2Sheet extends StatelessWidget {
       );
     }
     return navigator.push(
-      DesignBottomSheetRoute<T>(
-        barrierLabel: DesignLocalizations.of(context).modalBarrierDismissLabel,
+      RawBottomSheetRoute<T>(
+        barrierLabel: RawWidgetsLocalizations.of(context)
+            .modalBarrierDismissLabel,
         barrierColor: t.overlay,
         semanticLabel: title,
         dampingRatio: Fluent2Motion.springDamping,
@@ -534,10 +536,10 @@ class Fluent2Sheet extends StatelessWidget {
         );
     if (Fluent2Layout.isWide(context)) {
       if (drawer) {
-        return DesignSideSheetRoute<T>(
+        return RawSideSheetRoute<T>(
           settings: settings,
           width: Fluent2ChromeMetrics.drawerWidth,
-          barrierLabel: DesignLocalizations.of(context)
+          barrierLabel: RawWidgetsLocalizations.of(context)
               .modalBarrierDismissLabel,
           barrierColor: t.overlay,
           dampingRatio: Fluent2Motion.springDamping,
@@ -548,7 +550,8 @@ class Fluent2Sheet extends StatelessWidget {
       return DesignDialogRoute<T>(
         settings: settings,
         barrierDismissible: true,
-        barrierLabel: DesignLocalizations.of(context).modalBarrierDismissLabel,
+        barrierLabel: RawWidgetsLocalizations.of(context)
+            .modalBarrierDismissLabel,
         barrierColor: t.overlay,
         dampingRatio: Fluent2Motion.springDamping,
         stiffness: Fluent2Motion.springGentle,
@@ -568,10 +571,11 @@ class Fluent2Sheet extends StatelessWidget {
     }
     // A page sheet stands at the tallest a sheet stands (a share of the room
     // over the keyboard); a drawer as tall as its content.
-    return DesignBottomSheetRoute<T>(
+    return RawBottomSheetRoute<T>(
       settings: settings,
       barrierColor: t.overlay,
-      barrierLabel: DesignLocalizations.of(context).modalBarrierDismissLabel,
+      barrierLabel: RawWidgetsLocalizations.of(context)
+          .modalBarrierDismissLabel,
       snapSizes: drawer ? null : const [Fluent2ChromeMetrics.sheetMaxFraction],
       dampingRatio: Fluent2Motion.springDamping,
       stiffness: Fluent2Motion.springGentle,

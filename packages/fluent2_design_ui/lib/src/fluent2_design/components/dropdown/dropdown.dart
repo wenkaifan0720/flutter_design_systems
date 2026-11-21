@@ -391,7 +391,7 @@ class _Fluent2SelectState<T> extends State<Fluent2Select<T>> {
             ),
           ),
         ),
-        child: DesignTapTarget(
+        child: TapTargetPadding(
           minSize: Fluent2Layout.tapFloorOf(context),
           child: Fluent2FieldButton(
             autofocus: widget.autofocus,
@@ -530,7 +530,7 @@ class Fluent2Combobox<T> extends StatefulWidget {
   final bool invalid;
 
   /// What the list says when nothing matches the typed words; null is
-  /// [DesignLocalizations.noResultsLabel].
+  /// [RawWidgetsLocalizations.noResultsLabel].
   final String? empty;
 
   /// {@macro fluent2.focusNode}
@@ -683,7 +683,7 @@ class _Fluent2ComboboxState<T> extends State<Fluent2Combobox<T>> {
     return fluent2KeepsOwnWidth(
       context,
       content: content,
-      child: DesignCombobox<Fluent2Option<T>>(
+      child: RawCombobox<Fluent2Option<T>>(
         options: widget.options,
         value: _chosen,
         onSelected: _take,
@@ -707,7 +707,7 @@ class _Fluent2ComboboxState<T> extends State<Fluent2Combobox<T>> {
             vertical: Fluent2Spacing.sNudge,
           ),
           child: Text(
-            widget.empty ?? DesignLocalizations.of(context).noResultsLabel,
+            widget.empty ?? RawWidgetsLocalizations.of(context).noResultsLabel,
             style: t.body1.c(t.textTertiary),
           ),
         ),

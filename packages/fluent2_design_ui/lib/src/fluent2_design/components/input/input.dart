@@ -334,8 +334,8 @@ class _Fluent2TextFieldState extends State<Fluent2TextField>
         Fluent2IconButton(
           _revealed ? Fluent2Icons.eyeOff : Fluent2Icons.eye,
           label: _revealed
-              ? DesignLocalizations.of(context).hidePasswordLabel
-              : DesignLocalizations.of(context).showPasswordLabel,
+              ? RawWidgetsLocalizations.of(context).hidePasswordLabel
+              : RawWidgetsLocalizations.of(context).showPasswordLabel,
           appearance: Fluent2ButtonAppearance.transparent,
           size: widget.size == Fluent2InputSize.large
               ? Fluent2ButtonSize.medium
@@ -741,7 +741,7 @@ class _Fluent2SearchBoxState extends State<Fluent2SearchBox>
         : t.colors.neutralForegroundDisabled;
     final filled = fieldController.text.isNotEmpty;
     final hint =
-        widget.hint ?? DesignLocalizations.of(context).searchFieldLabel;
+        widget.hint ?? RawWidgetsLocalizations.of(context).searchFieldLabel;
     final frame = Fluent2FieldFrame(
       appearance: widget.appearance,
       style: widget.style,
@@ -781,7 +781,7 @@ class _Fluent2SearchBoxState extends State<Fluent2SearchBox>
               ),
               child: Fluent2Pressable(
                 onPressed: enabled ? _clear : null,
-                label: DesignLocalizations.of(context).clearButtonTooltip,
+                label: RawWidgetsLocalizations.of(context).clearButtonTooltip,
                 radius: Fluent2Radius.small,
                 builder: (context, states) => Icon(
                   Fluent2Icons.dismiss,
@@ -858,8 +858,9 @@ class Fluent2SearchEntry extends StatelessWidget {
     };
     final words = query;
     final own = Fluent2Localizations.of(context);
-    final hint = this.hint ?? DesignLocalizations.of(context).searchFieldLabel;
-    final entry = DesignTapTarget(
+    final hint =
+        this.hint ?? RawWidgetsLocalizations.of(context).searchFieldLabel;
+    final entry = TapTargetPadding(
       minSize: Fluent2Layout.tapFloorOf(context),
       child: Fluent2Pressable(
         onPressed: onPressed,

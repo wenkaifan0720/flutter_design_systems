@@ -130,7 +130,7 @@ class _Fluent2SkeletonState extends State<Fluent2Skeleton>
   }
 
   Widget _drawn(BuildContext context) => Semantics(
-    label: widget.label ?? DesignLocalizations.of(context).loadingLabel,
+    label: widget.label ?? RawWidgetsLocalizations.of(context).loadingLabel,
     role: SemanticsRole.loadingSpinner,
     excludeSemantics: true,
     child: _SkeletonScope(

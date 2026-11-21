@@ -24,7 +24,7 @@ import '../pressable/pressable.dart';
 /// value back. [format] says the value in the field while it rests (the
 /// number at [step]'s precision by default); editing, it shows the number.
 /// [onChanged] gets each value; null draws it disabled. Read as an
-/// adjustable field named [label]. It is ui_core's `DesignNumberField` in
+/// adjustable field named [label]. It is ui_core's `RawNumberField` in
 /// Fluent's field and steppers.
 ///
 /// ```dart
@@ -195,7 +195,7 @@ class _Fluent2SpinButtonState extends State<Fluent2SpinButton> {
     // The field's states, for the frame round it, and its words.
     var states = const <WidgetState>{};
     var words = '';
-    return DesignNumberField(
+    return RawNumberField(
       value: widget.value.toDouble(),
       onChanged: !live
           ? null

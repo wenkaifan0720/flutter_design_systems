@@ -183,7 +183,7 @@ void main() {
       find
           .ancestor(
             of: find.text('Section 0').last,
-            matching: find.byType(DesignPressable),
+            matching: find.byType(RawButton),
           )
           .first,
     );

@@ -182,8 +182,8 @@ class Fluent2Pagination extends StatelessWidget {
       return Fluent2IconButton(
         (back != rtl) ? Fluent2Icons.chevronLeft : Fluent2Icons.chevronRight,
         label: back
-            ? DesignLocalizations.of(context).previousPageTooltip
-            : DesignLocalizations.of(context).nextPageTooltip,
+            ? RawWidgetsLocalizations.of(context).previousPageTooltip
+            : RawWidgetsLocalizations.of(context).nextPageTooltip,
         onPressed: ok ? () => go(to) : null,
       );
     }

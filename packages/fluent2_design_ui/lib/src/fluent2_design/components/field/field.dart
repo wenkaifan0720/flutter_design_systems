@@ -435,7 +435,7 @@ class Fluent2FormField extends StatelessWidget {
   /// true always (one node for the whole child), false never (the label
   /// names the child as a group, each control keeping its node), null as
   /// the child's controls say: one control is one node with the label,
-  /// several keep their own (the shared [DesignField]).
+  /// several keep their own (the shared [RawInputDecorator]).
   final bool? mergeSemantics;
 
   @override
@@ -462,7 +462,7 @@ class Fluent2FormField extends StatelessWidget {
     final message = validationMessage;
     final error = state == Fluent2ValidationState.error;
     // The lines under the control are drawn for the eye; a screen reader
-    // hears them as the control's hint (the shared DesignField).
+    // hears them as the control's hint (the shared RawInputDecorator).
     final under = [
       if (message != null) ExcludeSemantics(child: _Validation(state, message)),
       if (helper != null)
@@ -479,13 +479,13 @@ class Fluent2FormField extends StatelessWidget {
     // A warning or a success is said as help; only an error marks the
     // control invalid.
     final help = [if (message != null && !error) message, ?helper];
-    return DesignField(
+    return RawInputDecorator(
       mergeSemantics: mergeSemantics,
       labelText: words,
       helperText: help.isEmpty ? null : help.join(' '),
       errorText: error ? message : null,
       required: required,
-      requiredHint: DesignLocalizations.of(context).requiredHint,
+      requiredHint: RawWidgetsLocalizations.of(context).requiredHint,
       // The control's own name comes from the field, so the scope gives it
       // none: the field's node says the label once.
       child: Fluent2FieldScope(

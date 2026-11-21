@@ -79,7 +79,7 @@ extension Fluent2PressStates on Set<WidgetState> {
 /// it; place one yourself only to make a row or a tile you composed one tap
 /// target.
 ///
-/// It stands on the shared `DesignPressable`: a tap and a long press,
+/// It stands on the shared `RawButton`: a tap and a long press,
 /// Enter and Space through the app's shortcuts, the pointer's hover and
 /// click cursor, keyboard focus, and one semantics node with the control's
 /// role and state ([role], [selected], [toggled], [checked], [mixed],
@@ -245,7 +245,7 @@ class Fluent2Pressable extends StatelessWidget {
     final on = (selected ?? false) || (checked ?? false) || (toggled ?? false);
     final drawn = builder;
     final face = child;
-    return DesignPressable(
+    return RawButton(
       onPressed: onPressed,
       onLongPress: onLongPress,
       selected: on,
@@ -269,41 +269,16 @@ class Fluent2Pressable extends StatelessWidget {
       excludeSemantics: !semantics || (excludeChild && label != null),
       // Fluent's controls answer a press with their own face, not a click.
       enableFeedback: false,
-      builder: (context, states, _) {
-        final shown = drawn != null ? drawn(context, states) : face!;
-        final ringAt = ringInsets.resolve(Directionality.maybeOf(context));
-        final ringed = !ring || !states.focused
-            ? shown
-            : Stack(
-                fit: StackFit.passthrough,
-                clipBehavior: Clip.none,
-                children: [
-                  shown,
-                  Positioned.fromRelativeRect(
-                    rect: RelativeRect.fromLTRB(
-                      ringAt.left,
-                      ringAt.top,
-                      ringAt.right,
-                      ringAt.bottom,
-                    ),
-                    child: IgnorePointer(
-                      child: Fluent2FocusRing(
-                        radius: radius,
-                        shape: shape?.resolve(states),
-                      ),
-                    ),
-                  ),
-                ],
-              );
-        if (!padded || !Fluent2Layout.padded(context)) return ringed;
-        // Centred, or a joined face against its partner (a split button's
-        // halves, a tag's two parts): the target grows away from the join.
-        return DesignTapTarget(
-          minSize: Fluent2Layout.tapFloorOf(context),
-          alignment: faceAlignment,
-          child: ringed,
-        );
-      },
+      builder: (context, states, _) => Fluent2PressFace(
+        states: states,
+        radius: radius,
+        shape: shape,
+        ringInsets: ringInsets,
+        ring: ring,
+        padded: padded,
+        faceAlignment: faceAlignment,
+        child: drawn != null ? drawn(context, states) : face!,
+      ),
     );
   }
 
@@ -394,6 +369,116 @@ class Fluent2Pressable extends StatelessWidget {
           defaultValue: null,
         ),
       )
+      ..add(FlagProperty('padded', value: padded, ifFalse: 'padded: false'))
+      ..add(
+        DiagnosticsProperty<AlignmentGeometry>(
+          'faceAlignment',
+          faceAlignment,
+          defaultValue: AlignmentDirectional.center,
+        ),
+      );
+  }
+}
+
+/// What a [Fluent2Pressable] draws round its face in [states]: Fluent's
+/// focus indicator while the keyboard holds it, and the tap target. A radio
+/// standing on Flutter's `RawRadio` draws it too, so both look alike.
+class Fluent2PressFace extends StatelessWidget {
+  /// [child] ringed and padded for [states].
+  const Fluent2PressFace({
+    super.key,
+    required this.states,
+    required this.child,
+    this.radius = 4,
+    this.shape,
+    this.ringInsets = EdgeInsets.zero,
+    this.ring = true,
+    this.padded = true,
+    this.faceAlignment = AlignmentDirectional.center,
+  });
+
+  /// The press's states: the ring shows while they hold
+  /// [WidgetState.focused].
+  final Set<WidgetState> states;
+
+  /// The face.
+  final Widget child;
+
+  /// See [Fluent2Pressable.radius].
+  final double radius;
+
+  /// See [Fluent2Pressable.shape].
+  final WidgetStateProperty<OutlinedBorder?>? shape;
+
+  /// See [Fluent2Pressable.ringInsets].
+  final EdgeInsetsGeometry ringInsets;
+
+  /// See [Fluent2Pressable.ring].
+  final bool ring;
+
+  /// See [Fluent2Pressable.padded].
+  final bool padded;
+
+  /// See [Fluent2Pressable.faceAlignment].
+  final AlignmentGeometry faceAlignment;
+
+  @override
+  Widget build(BuildContext context) {
+    final ringAt = ringInsets.resolve(Directionality.maybeOf(context));
+    final ringed = !ring || !states.focused
+        ? child
+        : Stack(
+            fit: StackFit.passthrough,
+            clipBehavior: Clip.none,
+            children: [
+              child,
+              Positioned.fromRelativeRect(
+                rect: RelativeRect.fromLTRB(
+                  ringAt.left,
+                  ringAt.top,
+                  ringAt.right,
+                  ringAt.bottom,
+                ),
+                child: IgnorePointer(
+                  child: Fluent2FocusRing(
+                    radius: radius,
+                    shape: shape?.resolve(states),
+                  ),
+                ),
+              ),
+            ],
+          );
+    if (!padded || !Fluent2Layout.padded(context)) return ringed;
+    // Centred, or a joined face against its partner (a split button's
+    // halves, a tag's two parts): the target grows away from the join.
+    return TapTargetPadding(
+      minSize: Fluent2Layout.tapFloorOf(context),
+      alignment: faceAlignment,
+      child: ringed,
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<WidgetState>('states', states))
+      ..add(DoubleProperty('radius', radius, defaultValue: 4))
+      ..add(
+        DiagnosticsProperty<WidgetStateProperty<OutlinedBorder?>>(
+          'shape',
+          shape,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<EdgeInsetsGeometry>(
+          'ringInsets',
+          ringInsets,
+          defaultValue: EdgeInsets.zero,
+        ),
+      )
+      ..add(FlagProperty('ring', value: ring, ifFalse: 'ring: false'))
       ..add(FlagProperty('padded', value: padded, ifFalse: 'padded: false'))
       ..add(
         DiagnosticsProperty<AlignmentGeometry>(

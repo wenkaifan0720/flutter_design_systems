@@ -1,5 +1,5 @@
 // The keys of Fluent 2's open lists: a select's popover (a desktop's) and its sheet (a phone's), a menu a control
-// opens. (A combobox's and a tag picker's lists take ui_core's keys, DesignCombobox's and DesignTagInput's.) Opened
+// opens. (A combobox's and a tag picker's lists take ui_core's keys, RawCombobox's and RawTagInput's.) Opened
 // from a key (Enter, Space or Down) the focus goes to the chosen option, else the first in use; Down and Up move at
 // once and wrap round, past an option out of use; Home and End go to the ends; a typed letter goes to the next option
 // it starts; Enter chooses and closes; Escape closes; either way the focus is back on the field. A list a pointer

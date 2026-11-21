@@ -445,9 +445,10 @@ Future<(Size, Uint8List)> _cell(
   await _frames(tester, 600);
   TestGesture? finger;
   if (press) {
+    // A press, or a radio (Flutter's RawRadio, which takes its own press).
     final pressable = find.descendant(
       of: find.byKey(_capture),
-      matching: find.byType(DesignPressable),
+      matching: find.byWidgetPredicate((w) => w is RawButton || w is RawRadio),
     );
     final at = pressable.evaluate().isEmpty
         ? tester.getCenter(find.byKey(_capture))

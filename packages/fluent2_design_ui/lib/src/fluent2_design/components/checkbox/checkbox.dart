@@ -253,7 +253,7 @@ class Fluent2Checkbox extends StatelessWidget {
     final before = labelPosition == Fluent2LabelPosition.before;
     // The press's node stands at the control's root, its one node.
     return MergeSemantics(
-      child: DesignTapTarget(
+      child: TapTargetPadding(
         minSize: Fluent2Layout.tapFloorOf(context),
         // On the start keyline by its drawn face, the target growing
         // toward the end.
@@ -449,7 +449,7 @@ class Fluent2CompletionCheck extends StatelessWidget {
       );
     }
     return MergeSemantics(
-      child: DesignTapTarget(
+      child: TapTargetPadding(
         minSize: Fluent2Layout.tapFloorOf(context),
         // On the start keyline by its drawn face, the target growing
         // toward the end.

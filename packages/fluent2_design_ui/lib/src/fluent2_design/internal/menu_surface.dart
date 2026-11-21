@@ -24,7 +24,7 @@ class Fluent2MenuSurface extends StatelessWidget {
   });
 
   /// Where the overlay stands and how much room it has.
-  final DesignOverlayInfo info;
+  final RawPopoverInfo info;
 
   /// The menu's rows, in order.
   final List<Widget> items;

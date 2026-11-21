@@ -110,7 +110,7 @@ class Fluent2Host extends StatelessWidget {
           value: systemBarsOf(t),
           // Fluent's tap targets: 48 where a finger reaches the controls
           // (Fluent2Layout.touchHitTarget), WCAG's 24 for a pointer; each
-          // control lays out at least that big (DesignTapTarget).
+          // control lays out at least that big (TapTargetPadding).
           child: DesignTapTargetScope(
             targets: DesignTapTargets(
               touch: const Size.square(Fluent2Layout.touchHitTarget),

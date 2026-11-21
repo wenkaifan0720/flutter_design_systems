@@ -86,10 +86,10 @@ class Fluent2PasswordField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DesignPasswordReveal(
+    return RawPasswordReveal(
       focusNode: focusNode,
-      showLabel: DesignLocalizations.of(context).showPasswordLabel,
-      hideLabel: DesignLocalizations.of(context).hidePasswordLabel,
+      showLabel: RawWidgetsLocalizations.of(context).showPasswordLabel,
+      hideLabel: RawWidgetsLocalizations.of(context).hidePasswordLabel,
       builder: (context, s) => Fluent2TextField(
         label: label,
         hint: hint,
@@ -370,7 +370,7 @@ class _Fluent2InputGroupState extends State<Fluent2InputGroup> {
 /// [onChanged] draws it out of use.
 ///
 /// ```dart
-/// Fluent2RangeSlider(label: 'Price', values: const DesignRangeValues(20, 80), onChanged: setPrice)
+/// Fluent2RangeSlider(label: 'Price', values: const RawRangeValues(20, 80), onChanged: setPrice)
 /// ```
 class Fluent2RangeSlider extends StatelessWidget {
   /// A slider over [values].
@@ -388,13 +388,13 @@ class Fluent2RangeSlider extends StatelessWidget {
   });
 
   /// The span.
-  final DesignRangeValues values;
+  final RawRangeValues values;
 
   /// Told each span as it moves; null draws it out of use.
-  final ValueChanged<DesignRangeValues>? onChanged;
+  final ValueChanged<RawRangeValues>? onChanged;
 
   /// Told the span let go at.
-  final ValueChanged<DesignRangeValues>? onChangeEnd;
+  final ValueChanged<RawRangeValues>? onChangeEnd;
 
   /// Its name; each thumb's is this with its end.
   final String? label;
@@ -424,7 +424,7 @@ class Fluent2RangeSlider extends StatelessWidget {
     String say(double v) =>
         valueLabel?.call(v) ??
         (v == v.roundToDouble() ? '${v.round()}' : v.toStringAsFixed(1));
-    return DesignRangeSlider(
+    return RawRangeSlider(
       values: values,
       onChanged: onChanged,
       onChangeEnd: onChangeEnd,
@@ -434,11 +434,11 @@ class Fluent2RangeSlider extends StatelessWidget {
       minGap: minGap,
       semanticFormatterCallback: say,
       startLabel: label == null
-          ? DesignLocalizations.of(context).rangeSliderStartLabel
-          : '$label, ${DesignLocalizations.of(context).rangeSliderStartLabel}',
+          ? RawWidgetsLocalizations.of(context).rangeSliderStartLabel
+          : '$label, ${RawWidgetsLocalizations.of(context).rangeSliderStartLabel}',
       endLabel: label == null
-          ? DesignLocalizations.of(context).rangeSliderEndLabel
-          : '$label, ${DesignLocalizations.of(context).rangeSliderEndLabel}',
+          ? RawWidgetsLocalizations.of(context).rangeSliderEndLabel
+          : '$label, ${RawWidgetsLocalizations.of(context).rangeSliderEndLabel}',
       trackBuilder: (context, track) => SizedBox(
         height: 32,
         child: CustomPaint(
@@ -508,15 +508,15 @@ class Fluent2RangeSlider extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(DiagnosticsProperty<DesignRangeValues>('values', values))
+      ..add(DiagnosticsProperty<RawRangeValues>('values', values))
       ..add(
-        ObjectFlagProperty<ValueChanged<DesignRangeValues>?>.has(
+        ObjectFlagProperty<ValueChanged<RawRangeValues>?>.has(
           'onChanged',
           onChanged,
         ),
       )
       ..add(
-        ObjectFlagProperty<ValueChanged<DesignRangeValues>?>.has(
+        ObjectFlagProperty<ValueChanged<RawRangeValues>?>.has(
           'onChangeEnd',
           onChangeEnd,
         ),
@@ -725,8 +725,8 @@ class Fluent2FileUpload extends StatelessWidget {
 /// A span of days on Fluent's calendar: two months side by side where there's
 /// room and one where there's not, the ends on the brand disc and the days
 /// between on its tint. Holds its range in [controller], the caller's own
-/// (made in range mode, `DesignCalendarController(firstDate: start,
-/// lastDate: end, mode: DesignCalendarMode.range)`, and disposed by the
+/// (made in range mode, `RawCalendarController(firstDate: start,
+/// lastDate: end, mode: RawCalendarMode.range)`, and disposed by the
 /// caller). [showFluent2DateRangePicker] raises one in a dialog.
 ///
 /// ```dart
@@ -743,16 +743,16 @@ class Fluent2DateRangePicker extends StatelessWidget {
   });
 
   /// The days and the range.
-  final DesignCalendarController controller;
+  final RawCalendarController controller;
 
   /// Told the range as it changes.
-  final ValueChanged<DesignDateRange?>? onChanged;
+  final ValueChanged<RawDateRange?>? onChanged;
 
   /// How many months show; null fits the room.
   final int? months;
 
   /// The week's first day ([DateTime.monday] … [DateTime.sunday]); null is
-  /// the app's localizations' (DesignLocalizations.firstDayOfWeek; English is
+  /// the app's localizations' (RawWidgetsLocalizations.firstDayOfWeek; English is
   /// Sunday). Pass it only to override the locale.
   final int? firstDayOfWeek;
 
@@ -784,7 +784,7 @@ class Fluent2DateRangePicker extends StatelessWidget {
               )
             : 32.0;
         final least = 7 * cell * count + Fluent2Spacing.xxl * (count - 1);
-        final grid = DesignCalendar(
+        final grid = RawCalendarDatePicker(
           controller: controller,
           months: count,
           firstWeekday: firstDayOfWeek,
@@ -825,7 +825,8 @@ class Fluent2DateRangePicker extends StatelessWidget {
                 first(
                   Fluent2IconButton(
                     Fluent2Icons.chevronLeft,
-                    label: DesignLocalizations.of(context).previousMonthTooltip,
+                    label: RawWidgetsLocalizations.of(context)
+                        .previousMonthTooltip,
                     size: Fluent2ButtonSize.small,
                     onPressed: h.previous,
                   ),
@@ -833,7 +834,7 @@ class Fluent2DateRangePicker extends StatelessWidget {
                 first(
                   Fluent2IconButton(
                     Fluent2Icons.chevronRight,
-                    label: DesignLocalizations.of(context).nextMonthTooltip,
+                    label: RawWidgetsLocalizations.of(context).nextMonthTooltip,
                     size: Fluent2ButtonSize.small,
                     onPressed: h.next,
                   ),
@@ -878,10 +879,10 @@ class Fluent2DateRangePicker extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(
-        DiagnosticsProperty<DesignCalendarController>('controller', controller),
+        DiagnosticsProperty<RawCalendarController>('controller', controller),
       )
       ..add(
-        ObjectFlagProperty<ValueChanged<DesignDateRange?>?>.has(
+        ObjectFlagProperty<ValueChanged<RawDateRange?>?>.has(
           'onChanged',
           onChanged,
         ),
@@ -900,7 +901,7 @@ class _RangeDay extends StatelessWidget {
     required this.tail,
   });
 
-  final DesignCalendarDay day;
+  final RawCalendarDayDetails day;
   final Set<WidgetState> states;
 
   /// The day's height: 32, or 48 under a finger (its disc and band 28,
@@ -1001,34 +1002,34 @@ class _RangeDay extends StatelessWidget {
 /// ```dart
 /// final stay = await showFluent2DateRangePicker(context, firstDate: today, lastDate: nextYear);
 /// ```
-Future<DesignDateRange?> showFluent2DateRangePicker(
+Future<RawDateRange?> showFluent2DateRangePicker(
   BuildContext context, {
   required DateTime firstDate,
   required DateTime lastDate,
-  DesignDateRange? initial,
+  RawDateRange? initial,
   String? title,
 }) {
-  final controller = DesignCalendarController(
+  final controller = RawCalendarController(
     firstDate: firstDate,
     lastDate: lastDate,
-    mode: DesignCalendarMode.range,
+    mode: RawCalendarMode.range,
     selectedRange: initial,
   );
   final words = Fluent2Localizations.of(context);
-  return showFluent2Dialog<DesignDateRange>(
+  return showFluent2Dialog<RawDateRange>(
     context,
     builder: (dialogContext) => Fluent2Dialog(
       title: title ?? words.chooseDates,
       content: Fluent2DateRangePicker(controller: controller),
       actions: [
         Fluent2Button(
-          DesignLocalizations.of(context).cancelButtonLabel,
+          RawWidgetsLocalizations.of(context).cancelButtonLabel,
           onPressed: () => Navigator.of(dialogContext).pop(),
         ),
         ListenableBuilder(
           listenable: controller,
           builder: (context, _) => Fluent2Button(
-            DesignLocalizations.of(context).okButtonLabel,
+            RawWidgetsLocalizations.of(context).okButtonLabel,
             appearance: Fluent2ButtonAppearance.primary,
             onPressed: controller.selectedRange?.isComplete ?? false
                 ? () =>
@@ -1071,7 +1072,7 @@ Future<DateTime?> showFluent2DatePicker(
       ),
       actions: [
         Fluent2Button(
-          DesignLocalizations.of(dialogContext).cancelButtonLabel,
+          RawWidgetsLocalizations.of(dialogContext).cancelButtonLabel,
           onPressed: () => Navigator.of(dialogContext).pop(),
         ),
       ],
@@ -1266,11 +1267,11 @@ Future<Fluent2Time?> showFluent2TimePicker(
       ),
       actions: [
         Fluent2Button(
-          DesignLocalizations.of(context).cancelButtonLabel,
+          RawWidgetsLocalizations.of(context).cancelButtonLabel,
           onPressed: () => Navigator.of(dialogContext).pop(),
         ),
         Fluent2Button(
-          DesignLocalizations.of(context).okButtonLabel,
+          RawWidgetsLocalizations.of(context).okButtonLabel,
           appearance: Fluent2ButtonAppearance.primary,
           onPressed: () =>
               Navigator.of(dialogContext).pop(Fluent2Time(hour, minute)),
@@ -1285,7 +1286,7 @@ Future<Fluent2Time?> showFluent2TimePicker(
 /// round the drum. Drag or fling it, or tap a line; the arrows step it (Page
 /// Up and Down by five, Home and End to the ends), typing a choice's first
 /// letters finds it, and a screen reader steps it as an adjustable. It is
-/// ui_core's `DesignWheelPicker`, one column, in Fluent's lines and band.
+/// ui_core's `RawPicker`, one column, in Fluent's lines and band.
 ///
 /// ```dart
 /// Fluent2WheelPicker<int>(label: 'Guests', items: const [1, 2, 3, 4], value: guests, onChanged: setGuests)
@@ -1358,9 +1359,9 @@ class _Fluent2WheelPickerState<T> extends State<Fluent2WheelPicker<T>> {
     final change = widget.onChanged;
     final live = change != null;
     final items = widget.items;
-    return DesignWheelPicker(
+    return RawPicker(
       columns: (_) => [
-        DesignWheelColumn(
+        RawPickerColumn(
           itemCount: items.length,
           itemLabel: (i) => _say(items[i]),
           semanticLabel: widget.label,
@@ -1417,7 +1418,7 @@ class _Fluent2WheelPickerState<T> extends State<Fluent2WheelPicker<T>> {
 /// Fluent's colour picker: the saturation and brightness area, the hue strip
 /// and with [showAlpha] the opacity strip, each thumb a white ring round its
 /// colour, then a swatch and the hex field. Holds its colour in
-/// [controller], the caller's own (`DesignColorController(const
+/// [controller], the caller's own (`RawColorController(const
 /// Color(0xFF0F6CBD))`, disposed by the caller).
 ///
 /// ```dart
@@ -1432,7 +1433,7 @@ class Fluent2ColorPicker extends StatelessWidget {
   });
 
   /// The colour.
-  final DesignColorController controller;
+  final RawColorController controller;
 
   /// Show the opacity strip.
   final bool showAlpha;
@@ -1469,7 +1470,7 @@ class Fluent2ColorPicker extends StatelessWidget {
         ],
       ),
     );
-    return DesignColorPicker(
+    return RawColorPicker(
       controller: controller,
       showAlpha: showAlpha,
       areaHeight: 160,
@@ -1509,7 +1510,7 @@ class Fluent2ColorPicker extends StatelessWidget {
             gradient: LinearGradient(
               begin: AlignmentDirectional.centerStart,
               end: AlignmentDirectional.centerEnd,
-              colors: channel == DesignColorChannel.alpha
+              colors: channel == RawColorChannel.alpha
                   ? [
                       colour.withAlpha(0).toColor(),
                       colour.withAlpha(1).toColor(),
@@ -1556,9 +1557,7 @@ class Fluent2ColorPicker extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(
-        DiagnosticsProperty<DesignColorController>('controller', controller),
-      )
+      ..add(DiagnosticsProperty<RawColorController>('controller', controller))
       ..add(FlagProperty('showAlpha', value: showAlpha, ifTrue: 'showAlpha'));
   }
 }
@@ -1566,7 +1565,7 @@ class Fluent2ColorPicker extends StatelessWidget {
 class _HexField extends StatefulWidget {
   const _HexField({required this.controller});
 
-  final DesignColorController controller;
+  final RawColorController controller;
 
   @override
   State<_HexField> createState() => _HexFieldState();

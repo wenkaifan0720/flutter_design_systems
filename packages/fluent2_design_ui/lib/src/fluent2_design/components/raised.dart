@@ -1,5 +1,5 @@
 // What rises over the page, by the names every look shares: the dialog, the side and bottom sheets, the action sheet,
-// the popover (on ui_core's DesignAnchoredOverlay and DesignSideSheetRoute), and the menu's opener.
+// the popover (on ui_core's RawPopover and RawSideSheetRoute), and the menu's opener.
 import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
@@ -45,18 +45,19 @@ Future<T?> showFluent2Dialog<T>(
 Future<T?> showFluent2Sheet<T>(
   BuildContext context, {
   required Widget Function(BuildContext context, VoidCallback close) builder,
-  DesignSheetEdge edge = DesignSheetEdge.end,
+  RawSheetEdge edge = RawSheetEdge.end,
   double width = Fluent2ChromeMetrics.drawerWidth,
 }) {
   final t = context.fluent2Theme;
   final navigator = Fluent2Host.navigatorOf(context);
   final themes = InheritedTheme.capture(from: context, to: navigator.context);
   return navigator.push<T>(
-    DesignSideSheetRoute<T>(
+    RawSideSheetRoute<T>(
       edge: edge,
       width: width,
       barrierColor: t.overlay,
-      barrierLabel: DesignLocalizations.of(context).modalBarrierDismissLabel,
+      barrierLabel: RawWidgetsLocalizations.of(context)
+          .modalBarrierDismissLabel,
       dampingRatio: Fluent2Motion.springDamping,
       stiffness: Fluent2Motion.springGentle,
       builder: (inner, sheet) => themes.wrap(
@@ -136,7 +137,7 @@ class Fluent2BottomSheet extends StatelessWidget {
                         ? null
                         : Fluent2IconButton(
                             Fluent2Icons.dismiss,
-                            label: DesignLocalizations.of(context)
+                            label: RawWidgetsLocalizations.of(context)
                                 .closeButtonLabel,
                             onPressed: close,
                           ),
@@ -188,7 +189,7 @@ Widget _sheetWidth(BuildContext context, double maxWidth, Widget sheet) =>
 /// Raises what [builder] makes (a [Fluent2BottomSheet], usually) off the
 /// bottom edge over the overlay, at most 600 wide; completes with what it pops
 /// with, null when it is dismissed. It is ui_core's bottom sheet
-/// (`DesignBottomSheetRoute`): it rises on a spring that settles in Fluent's
+/// (`RawBottomSheetRoute`): it rises on a spring that settles in Fluent's
 /// `durationGentle`, rides above the keyboard, follows a drag (a
 /// [Fluent2BottomSheet]'s words, scrolled to their top, hand the drag on) and
 /// closes when let go low or flung down; focus goes back to what raised it.
@@ -204,8 +205,9 @@ Future<T?> showFluent2BottomSheet<T>(
   final navigator = Fluent2Host.navigatorOf(context);
   final themes = InheritedTheme.capture(from: context, to: navigator.context);
   return navigator.push<T>(
-    DesignBottomSheetRoute<T>(
-      barrierLabel: DesignLocalizations.of(context).modalBarrierDismissLabel,
+    RawBottomSheetRoute<T>(
+      barrierLabel: RawWidgetsLocalizations.of(context)
+          .modalBarrierDismissLabel,
       barrierColor: t.overlay,
       dampingRatio: Fluent2Motion.springDamping,
       stiffness: Fluent2Motion.springGentle,
@@ -293,7 +295,7 @@ class Fluent2ActionSheet<T> extends StatelessWidget {
   /// The way out, under the acts; null leaves it out.
   final VoidCallback? onCancel;
 
-  /// The way out's words; null is [DesignLocalizations.cancelButtonLabel].
+  /// The way out's words; null is [RawWidgetsLocalizations.cancelButtonLabel].
   final String? cancelLabel;
 
   @override
@@ -387,7 +389,7 @@ class Fluent2ActionSheet<T> extends StatelessWidget {
                   ),
                   row(
                     cancelLabel ??
-                        DesignLocalizations.of(context).cancelButtonLabel,
+                        RawWidgetsLocalizations.of(context).cancelButtonLabel,
                     cancel,
                     emphasis: true,
                   ),
@@ -440,7 +442,7 @@ Future<T?> showFluent2ActionSheet<T>(
 
 /// The surface's rise: a fade and 8 of travel from the side it opens on, by
 /// the overlay's spring.
-Widget _rise(DesignOverlayInfo info, Widget child) => AnimatedBuilder(
+Widget _rise(RawPopoverInfo info, Widget child) => AnimatedBuilder(
   animation: info.animation,
   builder: (context, surface) {
     final p = info.animation.value.clamp(0.0, 1.0);
@@ -450,10 +452,10 @@ Widget _rise(DesignOverlayInfo info, Widget child) => AnimatedBuilder(
       opacity: p,
       child: Transform.translate(
         offset: switch (info.side) {
-          DesignOverlaySide.below => Offset(0, -d),
-          DesignOverlaySide.above => Offset(0, d),
-          DesignOverlaySide.start => Offset(rtl ? -d : d, 0),
-          DesignOverlaySide.end => Offset(rtl ? d : -d, 0),
+          RawPopoverSide.below => Offset(0, -d),
+          RawPopoverSide.above => Offset(0, d),
+          RawPopoverSide.start => Offset(rtl ? -d : d, 0),
+          RawPopoverSide.end => Offset(rtl ? d : -d, 0),
         },
         child: surface,
       ),
@@ -486,8 +488,8 @@ class Fluent2Popover extends StatelessWidget {
     required this.label,
     required this.trigger,
     required this.content,
-    this.side = DesignOverlaySide.below,
-    this.align = DesignOverlayAlign.start,
+    this.side = RawPopoverSide.below,
+    this.align = RawPopoverAlign.start,
     this.width = 288,
     this.appearance = Fluent2FlyoutAppearance.neutral,
     this.size = Fluent2FlyoutSize.medium,
@@ -508,10 +510,10 @@ class Fluent2Popover extends StatelessWidget {
   final Widget content;
 
   /// The side of the trigger it opens on; it flips where there's no room.
-  final DesignOverlaySide side;
+  final RawPopoverSide side;
 
   /// How it lines up with the trigger along that side.
-  final DesignOverlayAlign align;
+  final RawPopoverAlign align;
 
   /// Its width, never wider than the window leaves.
   final double width;
@@ -531,17 +533,15 @@ class Fluent2Popover extends StatelessWidget {
   final Duration mouseLeaveDelay;
 
   @override
-  Widget build(BuildContext context) => DesignAnchoredOverlay(
+  Widget build(BuildContext context) => RawPopover(
     semanticLabel: label,
-    trigger: openOnHover
-        ? DesignOverlayTrigger.hover
-        : DesignOverlayTrigger.press,
+    trigger: openOnHover ? RawPopoverTrigger.hover : RawPopoverTrigger.press,
     // A hover card leaves focus where it was.
     focusOnOpen: !openOnHover,
     hoverOpenDelay: hoverOpenDelay,
     hoverCloseDelay: mouseLeaveDelay,
     // Fluent's popover keeps its own width under a wide trigger.
-    placement: DesignOverlayPlacement(
+    placement: RawPopoverPlacement(
       side: side,
       align: align,
       gap: Fluent2Spacing.xs,
@@ -580,17 +580,17 @@ class Fluent2Popover extends StatelessWidget {
         >.has('trigger', trigger),
       )
       ..add(
-        DiagnosticsProperty<DesignOverlaySide>(
+        DiagnosticsProperty<RawPopoverSide>(
           'side',
           side,
-          defaultValue: DesignOverlaySide.below,
+          defaultValue: RawPopoverSide.below,
         ),
       )
       ..add(
-        DiagnosticsProperty<DesignOverlayAlign>(
+        DiagnosticsProperty<RawPopoverAlign>(
           'align',
           align,
-          defaultValue: DesignOverlayAlign.start,
+          defaultValue: RawPopoverAlign.start,
         ),
       )
       ..add(DoubleProperty('width', width, defaultValue: 288))

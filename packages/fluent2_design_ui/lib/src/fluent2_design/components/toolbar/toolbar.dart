@@ -7,6 +7,7 @@ import 'package:flutter/widgets.dart';
 import '../../icons.dart';
 import '../../internal/cap_label.dart';
 import '../../internal/icon_fill.dart';
+import '../../internal/keys_shown.dart';
 import '../../internal/well.dart';
 import '../../localizations.dart';
 import '../../styled.dart';
@@ -429,7 +430,9 @@ class Fluent2ToolbarToggle<T> {
 /// layout) or, with [multiSelectionEnabled], ToolbarToggleButtons that
 /// share a name (such as mail filters). A chosen toggle uses the selected
 /// face and filled glyph. Tab enters the group once. Arrows choose in a
-/// single-choice group and move focus among independent toggles.
+/// single-choice group (Flutter's [RadioGroup], each toggle a `RawRadio`,
+/// with ui_core's [RadioGroupKeyboardFix] round them) and move focus among
+/// independent toggles.
 /// Space and Enter activate the focused item. Read as a radio group or a group of toggles
 /// named [label]. It keeps to its toggles' width, and where they don't
 /// fit on one line (large text on a phone) they run on to the next. One
@@ -491,7 +494,7 @@ class Fluent2ToolbarToggleGroup<T> extends StatelessWidget {
 
     if (multiSelectionEnabled) {
       return _OwnWidth(
-        child: DesignToggleGroup<T>(
+        child: RawSegmentedButton<T>(
           options: values,
           selected: selected,
           onSelectionChanged: onSelectionChanged,
@@ -507,48 +510,15 @@ class Fluent2ToolbarToggleGroup<T> extends StatelessWidget {
       );
     }
 
-    final change = onSelectionChanged;
-    // Home and End still move to the first and last enabled toolbar items.
-    final enabled = toggles.where((toggle) => toggle.enabled);
-    final nodes = <T, FocusNode>{};
     return _OwnWidth(
-      child: Semantics(
-        container: true,
-        explicitChildNodes: true,
+      child: _ToolbarRadioGroup<T>(
+        toggles: toggles,
+        selected: selected,
+        onSelectionChanged: onSelectionChanged,
         label: label,
-        child: CallbackShortcuts(
-          bindings: {
-            if (enabled.isNotEmpty) ...{
-              const SingleActivator(LogicalKeyboardKey.home): () =>
-                  nodes[enabled.first.value]?.requestFocus(),
-              const SingleActivator(LogicalKeyboardKey.end): () =>
-                  nodes[enabled.last.value]?.requestFocus(),
-            },
-          },
-          child: DesignRadioGroup<T>(
-            options: values,
-            value: values.where(selected.contains).firstOrNull,
-            onChanged: change == null ? null : (value) => change({value}),
-            isEnabled: (value) => byValue[value]!.enabled,
-            layoutBuilder: layout,
-            itemBuilder: (context, value, node, select) {
-              nodes[value] = node;
-              final on = selected.contains(value);
-              return DesignPressable(
-                focusNode: node,
-                onPressed: select != null && on && emptySelectionAllowed
-                    ? () => change?.call(<T>{})
-                    : select,
-                selected: on,
-                checked: on,
-                inMutuallyExclusiveGroup: true,
-                semanticLabel: byValue[value]!.label,
-                excludeSemantics: true,
-                builder: (context, states, _) => face(value, states),
-              );
-            },
-          ),
-        ),
+        emptySelectionAllowed: emptySelectionAllowed,
+        layout: layout,
+        face: face,
       ),
     );
   }
@@ -582,6 +552,179 @@ class Fluent2ToolbarToggleGroup<T> extends StatelessWidget {
       )
       ..add(FlagProperty('vertical', value: vertical, ifTrue: 'vertical'));
   }
+}
+
+/// A one-choice toolbar group: Flutter's [RadioGroup] of `RawRadio`s, each
+/// drawn as a toolbar toggle. Home and End still move to the first and last
+/// enabled toggles.
+class _ToolbarRadioGroup<T> extends StatefulWidget {
+  const _ToolbarRadioGroup({
+    required this.toggles,
+    required this.selected,
+    required this.onSelectionChanged,
+    required this.label,
+    required this.emptySelectionAllowed,
+    required this.layout,
+    required this.face,
+  });
+
+  final List<Fluent2ToolbarToggle<T>> toggles;
+  final Set<T> selected;
+  final ValueChanged<Set<T>>? onSelectionChanged;
+  final String label;
+  final bool emptySelectionAllowed;
+  final Widget Function(BuildContext context, List<Widget> items) layout;
+  final Widget Function(T value, Set<WidgetState> states) face;
+
+  @override
+  State<_ToolbarRadioGroup<T>> createState() => _ToolbarRadioGroupState<T>();
+}
+
+class _ToolbarRadioGroupState<T> extends State<_ToolbarRadioGroup<T>> {
+  final Map<T, FocusNode> _nodes = {};
+
+  @override
+  void initState() {
+    super.initState();
+    Fluent2KeysShown.addListener(_changed);
+  }
+
+  @override
+  void dispose() {
+    Fluent2KeysShown.removeListener(_changed);
+    for (final node in _nodes.values) {
+      node.dispose();
+    }
+    super.dispose();
+  }
+
+  void _changed() {
+    if (mounted) setState(() {});
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final toggles = widget.toggles;
+    final change = widget.onSelectionChanged;
+    final values = [for (final toggle in toggles) toggle.value];
+    // A toggle no longer offered gives its node up.
+    for (final gone in _nodes.keys.where((v) => !values.contains(v)).toList()) {
+      _nodes.remove(gone)!.dispose();
+    }
+    final enabled = toggles.where((toggle) => toggle.enabled);
+    final chosen = values.where(widget.selected.contains).firstOrNull;
+    return Semantics(
+      container: true,
+      explicitChildNodes: true,
+      label: widget.label,
+      child: CallbackShortcuts(
+        bindings: {
+          if (enabled.isNotEmpty) ...{
+            const SingleActivator(LogicalKeyboardKey.home): () =>
+                _nodes[enabled.first.value]?.requestFocus(),
+            const SingleActivator(LogicalKeyboardKey.end): () =>
+                _nodes[enabled.last.value]?.requestFocus(),
+          },
+        },
+        child: RadioGroup<T>(
+          groupValue: chosen,
+          // RadioGroup takes no null: a group out of use gives a no-op, and
+          // turns each toggle off. Null is a press on the chosen toggle of a
+          // group that may be left with none.
+          onChanged: (value) {
+            if (change == null) return;
+            if (value == null) {
+              change(<T>{});
+            } else if (value != chosen) {
+              change({value});
+            }
+          },
+          child: RadioGroupKeyboardFix<T>(
+            child: Builder(
+              builder: (context) {
+                final registry = RadioGroup.maybeOf<T>(context);
+                return widget.layout(context, [
+                  for (final toggle in toggles)
+                    _toggle(toggle, registry, change != null && toggle.enabled),
+                ]);
+              },
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _toggle(
+    Fluent2ToolbarToggle<T> toggle,
+    RadioGroupRegistry<T>? registry,
+    bool enabled,
+  ) {
+    final value = toggle.value;
+    return _ToolbarRadio(
+      key: ValueKey<T>(value),
+      builder: (context, hovered, region) => MergeSemantics(
+        child: RawRadio<T>(
+          value: value,
+          mouseCursor: WidgetStateMouseCursor.clickable,
+          toggleable: widget.emptySelectionAllowed,
+          focusNode: _nodes.putIfAbsent(value, FocusNode.new),
+          autofocus: false,
+          groupRegistry: registry,
+          enabled: enabled,
+          builder: (context, radio) => Semantics(
+            label: toggle.label,
+            child: ExcludeSemantics(
+              child: region(
+                widget.face(value, {
+                  for (final state in radio.states)
+                    if (state != WidgetState.hovered &&
+                        (state != WidgetState.focused ||
+                            Fluent2KeysShown.shown))
+                      state,
+                  if (enabled && hovered) WidgetState.hovered,
+                  if (enabled && radio.downPosition != null)
+                    WidgetState.pressed,
+                }),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// A toolbar toggle's hover: the pointer over it whatever the last input
+/// was, as over a pressable. `region` wraps the face: it tracks the pointer,
+/// and the face's whole box, its gaps too, takes the press.
+class _ToolbarRadio extends StatefulWidget {
+  const _ToolbarRadio({super.key, required this.builder});
+
+  final Widget Function(
+    BuildContext context,
+    bool hovered,
+    Widget Function(Widget face) region,
+  )
+  builder;
+
+  @override
+  State<_ToolbarRadio> createState() => _ToolbarRadioState();
+}
+
+class _ToolbarRadioState extends State<_ToolbarRadio> {
+  bool _hover = false;
+
+  @override
+  Widget build(BuildContext context) => widget.builder(
+    context,
+    _hover,
+    (face) => MouseRegion(
+      onEnter: (_) => setState(() => _hover = true),
+      onExit: (_) => setState(() => _hover = false),
+      child: MetaData(behavior: HitTestBehavior.opaque, child: face),
+    ),
+  );
 }
 
 /// A toolbar toggle's face in its states: an icon button's, or a toggle
@@ -682,7 +825,7 @@ class _More extends StatelessWidget {
   Widget build(BuildContext context) => Builder(
     builder: (anchor) => Fluent2IconButton(
       Fluent2Icons.moreHorizontal,
-      label: DesignLocalizations.of(anchor).moreButtonTooltip,
+      label: RawWidgetsLocalizations.of(anchor).moreButtonTooltip,
       size: size,
       onPressed: () async {
         final menu = <Fluent2MenuItem<int>>[];

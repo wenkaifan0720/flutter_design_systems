@@ -455,7 +455,7 @@ void main() {
             find
                 .ancestor(
                   of: find.text(name).last,
-                  matching: find.byType(DesignPressable),
+                  matching: find.byType(RawButton),
                 )
                 .first,
           )

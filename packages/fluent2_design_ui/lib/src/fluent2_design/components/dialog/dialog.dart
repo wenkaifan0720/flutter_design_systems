@@ -69,7 +69,8 @@ class Fluent2Dialog extends StatelessWidget {
       DesignDialogRoute<T>(
         isAlert: isAlert,
         barrierDismissible: true,
-        barrierLabel: DesignLocalizations.of(context).modalBarrierDismissLabel,
+        barrierLabel: RawWidgetsLocalizations.of(context)
+            .modalBarrierDismissLabel,
         barrierColor: t.overlay,
         dampingRatio: Fluent2Motion.springDamping,
         stiffness: Fluent2Motion.springGentle,
@@ -100,11 +101,12 @@ class Fluent2Dialog extends StatelessWidget {
       actions: [
         Fluent2Button(
           cancelLabel ??
-              DesignLocalizations.of(dialogContext).cancelButtonLabel,
+              RawWidgetsLocalizations.of(dialogContext).cancelButtonLabel,
           onPressed: () => Navigator.of(dialogContext).pop(false),
         ),
         Fluent2Button(
-          confirmLabel ?? DesignLocalizations.of(dialogContext).okButtonLabel,
+          confirmLabel ??
+              RawWidgetsLocalizations.of(dialogContext).okButtonLabel,
           appearance: Fluent2ButtonAppearance.primary,
           onPressed: () => Navigator.of(dialogContext).pop(true),
         ),

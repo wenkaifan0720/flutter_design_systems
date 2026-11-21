@@ -1,6 +1,6 @@
 // What a field's list says while an app's search is on its way and after it
 // failed: the combobox's and the multi-select's `loadingBuilder` and
-// `errorBuilder` on ui_core's DesignCombobox and DesignTagInput.
+// `errorBuilder` on ui_core's RawCombobox and RawTagInput.
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
@@ -20,7 +20,7 @@ Widget fluent2SearchLoading(BuildContext context) => Padding(
     widthFactor: 1,
     child: Fluent2Spinner(
       size: Fluent2SpinnerSize.extraTiny,
-      label: DesignLocalizations.of(context).loadingLabel,
+      label: RawWidgetsLocalizations.of(context).loadingLabel,
       below: false,
     ),
   ),
@@ -28,11 +28,11 @@ Widget fluent2SearchLoading(BuildContext context) => Padding(
 
 /// The list after a search threw ([failure]): that it failed, in the
 /// secondary ink, and "Try again" as an option row, lit while the keys are on
-/// it ([DesignSearchError.focused]) and under the pointer. The focus stays in
+/// it ([RawSearchError.focused]) and under the pointer. The focus stays in
 /// the field: the row is no tab stop.
-Widget fluent2SearchFailed(BuildContext context, DesignSearchError failure) {
+Widget fluent2SearchFailed(BuildContext context, RawSearchError failure) {
   final t = context.fluent2Theme;
-  final words = DesignLocalizations.of(context);
+  final words = RawWidgetsLocalizations.of(context);
   return Column(
     mainAxisSize: MainAxisSize.min,
     crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -51,7 +51,7 @@ Widget fluent2SearchFailed(BuildContext context, DesignSearchError failure) {
         ),
       ),
       ExcludeFocus(
-        child: DesignPressable(
+        child: RawButton(
           onPressed: failure.retry,
           semanticLabel: words.retryButtonLabel,
           builder: (context, states, _) => Fluent2OptionFace(

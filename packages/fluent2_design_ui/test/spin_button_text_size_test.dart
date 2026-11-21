@@ -14,7 +14,7 @@ import 'gallery_support.dart' show loadFluent2TestFonts;
 Widget _app(double scale, TextDirection direction) => WidgetsApp(
   color: const Color(0xFF000000),
   localizationsDelegates: const [
-    DesignLocalizations.delegate,
+    RawWidgetsLocalizations.delegate,
     Fluent2Localizations.delegate,
   ],
   builder: (context, child) => MediaQuery(

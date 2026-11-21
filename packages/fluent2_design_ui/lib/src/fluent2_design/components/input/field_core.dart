@@ -1140,7 +1140,7 @@ class _Fluent2FieldButtonState extends State<Fluent2FieldButton> {
       skipTraversal: true,
       includeSemantics: false,
       onFocusChange: (f) => setState(() => _focused = f),
-      child: DesignPressable(
+      child: RawButton(
         onPressed: live
             ? () {
                 _node.requestFocus();
@@ -1807,7 +1807,7 @@ class Fluent2ListboxColumn extends StatelessWidget {
           vertical: Fluent2Spacing.sNudge,
         ),
         child: Text(
-          empty ?? DesignLocalizations.of(context).noResultsLabel,
+          empty ?? RawWidgetsLocalizations.of(context).noResultsLabel,
           style: t.body1.c(t.textTertiary),
         ),
       );

@@ -480,7 +480,7 @@ void main() {
           _opener('Filters', (context) {
             showFluent2Sheet<void>(
               context,
-              edge: DesignSheetEdge.start,
+              edge: RawSheetEdge.start,
               builder: (context, close) => Fluent2Sheet(
                 title: 'Filter files',
                 onClose: close,

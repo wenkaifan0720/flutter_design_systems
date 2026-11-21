@@ -116,10 +116,10 @@ List<LocalizationsDelegate<Object?>> kitFlutterLocalizations = const [
 ];
 
 /// The words the gallery's apps load: ui_core's in the app's language, one of
-/// 30 ([DesignLocalizations.supportedLocales]), Fluent 2's own (English where
+/// 30 ([RawWidgetsLocalizations.supportedLocales]), Fluent 2's own (English where
 /// the gallery gives none) and Flutter's ([kitFlutterLocalizations]).
 List<LocalizationsDelegate<Object?>> get kitLocalizations => [
-  DesignLocalizations.delegate,
+  RawWidgetsLocalizations.delegate,
   Fluent2Localizations.delegate,
   ...kitFlutterLocalizations,
 ];
@@ -177,7 +177,7 @@ Widget _kitMaterialApp(Brightness brightness, Widget home) => MaterialApp(
   theme: kitAppTheme,
   locale: kitLocale,
   localizationsDelegates: kitLocalizations,
-  supportedLocales: DesignLocalizations.supportedLocales,
+  supportedLocales: RawWidgetsLocalizations.supportedLocales,
   title: 'Northwind',
   builder: (context, child) => kitWordsScope(
     context,
@@ -295,7 +295,7 @@ Widget kitRouterApp({
   theme: kitAppTheme,
   locale: kitLocale,
   localizationsDelegates: kitLocalizations,
-  supportedLocales: DesignLocalizations.supportedLocales,
+  supportedLocales: RawWidgetsLocalizations.supportedLocales,
   title: 'Northwind',
   routerConfig: router,
   builder: (context, child) => kitWordsScope(
@@ -408,7 +408,7 @@ Widget kitSpecimenStage({
     theme: kitAppTheme,
     locale: kitLocale,
     localizationsDelegates: kitLocalizations,
-    supportedLocales: DesignLocalizations.supportedLocales,
+    supportedLocales: RawWidgetsLocalizations.supportedLocales,
     title: 'Northwind',
     builder: (context, home) => Directionality(
       textDirection: kitShownDirection,

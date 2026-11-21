@@ -258,7 +258,7 @@ final DesignInventory fluent2Inventory = DesignInventory(
       'RangeSlider',
       (_) => const Fluent2RangeSlider(
         label: 'Pages',
-        values: DesignRangeValues(20, 60),
+        values: RawRangeValues(20, 60),
         onChanged: _drop,
       ),
     ),
@@ -302,11 +302,11 @@ final DesignInventory fluent2Inventory = DesignInventory(
     DesignInventoryEntry.present(
       'DateRangePicker',
       (_) => _Owning(
-        (_) => DesignCalendarController(
+        (_) => RawCalendarController(
           firstDate: DateTime(2026, 6),
           lastDate: DateTime(2026, 9, 30),
-          mode: DesignCalendarMode.range,
-          selectedRange: DesignDateRange(
+          mode: RawCalendarMode.range,
+          selectedRange: RawDateRange(
             DateTime(2026, 6, 14),
             DateTime(2026, 6, 18),
           ),
@@ -345,7 +345,7 @@ final DesignInventory fluent2Inventory = DesignInventory(
       'ColorPicker',
       // It starts on the theme's brand.
       (_) => _Owning(
-        (context) => DesignColorController(
+        (context) => RawColorController(
           context.fluent2Theme.colors.compoundBrandForeground1,
         ),
         (_, colour) => Fluent2ColorPicker(controller: colour),
@@ -517,19 +517,19 @@ final DesignInventory fluent2Inventory = DesignInventory(
     DesignInventoryEntry.present(
       'DataTable',
       (_) => _Owning(
-        (_) => DesignTableController<_File>(
+        (_) => RawDataTableController<_File>(
           rows: const [
             _File('Budget', 12),
             _File('Roadmap', 8),
             _File('Handbook', 40),
           ],
           columns: [
-            DesignTableColumn<_File>(
+            RawDataColumn<_File>(
               id: 'name',
               label: 'Name',
               sortKey: (f) => f.name,
             ),
-            DesignTableColumn<_File>(
+            RawDataColumn<_File>(
               id: 'pages',
               label: 'Pages',
               numeric: true,

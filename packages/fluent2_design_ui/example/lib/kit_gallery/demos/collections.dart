@@ -31,7 +31,7 @@ class _File {
 }
 
 Widget kitSpecimenDataTable() => KitOwned(
-  () => DesignTableController<_File>(
+  () => RawDataTableController<_File>(
     rows: const [
       _File('Budget', 'Ana Ruiz', 12),
       _File('Roadmap', 'Kai Ito', 8),
@@ -39,17 +39,13 @@ Widget kitSpecimenDataTable() => KitOwned(
       _File('Launch plan', 'Ana Ruiz', 21),
     ],
     columns: [
-      DesignTableColumn<_File>(
-        id: 'name',
-        label: 'Name',
-        sortKey: (f) => f.name,
-      ),
-      DesignTableColumn<_File>(
+      RawDataColumn<_File>(id: 'name', label: 'Name', sortKey: (f) => f.name),
+      RawDataColumn<_File>(
         id: 'owner',
         label: 'Owner',
         sortKey: (f) => f.owner,
       ),
-      DesignTableColumn<_File>(
+      RawDataColumn<_File>(
         id: 'pages',
         label: 'Pages',
         numeric: true,

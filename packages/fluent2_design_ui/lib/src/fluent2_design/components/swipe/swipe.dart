@@ -47,7 +47,7 @@ class Fluent2SwipeAction {
 /// custom action on the row, so a screen reader or a pointer that cannot
 /// swipe reaches it. [initiallyOpen] stands an edge open on the first
 /// frame: the trailing one, the leading one when there is no trailing act.
-/// The behaviour is the shared DesignSwipeActions; Fluent 2 paints
+/// The behaviour is the shared RawSwipeActions; Fluent 2 paints
 /// the panes.
 ///
 /// ```dart
@@ -84,9 +84,9 @@ class Fluent2SwipeActions extends StatelessWidget {
   /// One pane's width.
   static const double paneWidth = 80;
 
-  static List<DesignSwipeAction> _kit(List<Fluent2SwipeAction> acts) => [
+  static List<RawSwipeAction> _kit(List<Fluent2SwipeAction> acts) => [
     for (final a in acts)
-      DesignSwipeAction(
+      RawSwipeAction(
         label: a.label,
         onPressed: a.onPressed,
         destructive: a.tone == Fluent2Tone.danger,
@@ -106,7 +106,7 @@ class Fluent2SwipeActions extends StatelessWidget {
       cursor: SystemMouseCursors.click,
       child: ClipRect(
         clipper: const _AlongTheRow(),
-        child: DesignSwipeActions(
+        child: RawSwipeActions(
           startActions: _kit(leading),
           endActions: _kit(trailing),
           actionExtent: paneWidth,

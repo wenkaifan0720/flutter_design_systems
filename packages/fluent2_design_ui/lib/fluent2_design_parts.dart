@@ -27,6 +27,7 @@ export 'src/fluent2_design/internal/hit_slop.dart';
 export 'src/fluent2_design/internal/icon_fill.dart';
 export 'src/fluent2_design/internal/in_row.dart';
 export 'src/fluent2_design/internal/key_focus.dart';
+export 'src/fluent2_design/internal/keys_shown.dart';
 export 'src/fluent2_design/internal/layer.dart';
 export 'src/fluent2_design/internal/list_keys.dart';
 export 'src/fluent2_design/internal/measure.dart';

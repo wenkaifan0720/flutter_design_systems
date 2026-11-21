@@ -181,7 +181,7 @@ class Fluent2Flyout extends StatelessWidget {
     return navigator.push(
       _PopoverRoute<T>(
         anchor: rect,
-        barrier: DesignLocalizations.of(context).modalBarrierDismissLabel,
+        barrier: RawWidgetsLocalizations.of(context).modalBarrierDismissLabel,
         placement: placement,
         gap: withArrow ? 0 : Fluent2Spacing.xs,
         preferBelow: preferBelow,
@@ -447,7 +447,7 @@ class _TeachButton extends StatelessWidget {
     final t = context.fluent2Theme;
     final c = t.colors;
     final radius = BorderRadius.circular(Fluent2Radius.medium);
-    return DesignTapTarget(
+    return TapTargetPadding(
       minSize: Fluent2Layout.tapFloorOf(context),
       child: Fluent2Pressable(
         onPressed: onTap,
@@ -671,7 +671,7 @@ class Fluent2TeachingPopover extends StatelessWidget {
     final words = Fluent2Localizations.of(context);
     // "2 of 3" in the app's words, so a right-to-left language orders it.
     final count = step != null && steps != null
-        ? DesignLocalizations.of(context).positionLabel(step!, steps!)
+        ? RawWidgetsLocalizations.of(context).positionLabel(step!, steps!)
         : null;
     final content = Column(
       mainAxisSize: MainAxisSize.min,

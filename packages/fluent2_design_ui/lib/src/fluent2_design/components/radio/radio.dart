@@ -4,6 +4,7 @@ import 'package:ui_core/ui_core.dart';
 
 import '../../internal/cap_label.dart';
 import '../../internal/hit_slop.dart';
+import '../../internal/keys_shown.dart';
 import '../../internal/well.dart';
 import '../../styled.dart';
 import '../../theme.dart';
@@ -27,17 +28,16 @@ enum Fluent2RadioLayout {
 
 class _RadioScope extends InheritedWidget {
   const _RadioScope({
+    super.key,
     required this.chosen,
-    required this.select,
+    required this.enabled,
     required this.stacked,
-    required this.focusNode,
     required super.child,
   });
 
   final bool chosen;
-  final VoidCallback? select;
+  final bool enabled;
   final bool stacked;
-  final FocusNode focusNode;
 
   static _RadioScope of(BuildContext context) {
     final scope = context.dependOnInheritedWidgetOfExactType<_RadioScope>();
@@ -47,10 +47,7 @@ class _RadioScope extends InheritedWidget {
 
   @override
   bool updateShouldNotify(_RadioScope old) =>
-      chosen != old.chosen ||
-      select != old.select ||
-      stacked != old.stacked ||
-      focusNode != old.focusNode;
+      chosen != old.chosen || enabled != old.enabled || stacked != old.stacked;
 }
 
 /// One choice of a [Fluent2RadioGroup], Fluent's Radio: the 16 circle 8 in
@@ -92,160 +89,167 @@ class Fluent2Radio<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final t = context.fluent2Theme;
-    final c = t.colors;
-    final layers = [style, t.radioTheme];
     final scope = _RadioScope.of(context);
     final chosen = scope.chosen;
     return MergeSemantics(
-      child: DesignTapTarget(
+      child: TapTargetPadding(
         minSize: Fluent2Layout.tapFloorOf(context),
         // On the start keyline by its drawn face, the target growing
         // toward the end.
         alignment: AlignmentDirectional.centerStart,
-        child: Fluent2Pressable(
-          onPressed: scope.select,
-          radius: Fluent2Radius.medium,
-          ring: scope.stacked,
+        child: _RadioPress<T>(
+          value: value,
+          enabled: scope.enabled,
           label: label,
-          checked: chosen,
-          inGroup: true,
-          focusNode: scope.focusNode,
-          builder: (context, states) {
-            final press = states.press;
-            final off = press == Fluent2Press.disabled;
-            final stroke = chosen
-                ? press.pick(
-                    c.compoundBrandStroke,
-                    c.compoundBrandStrokeHover,
-                    c.compoundBrandStrokePressed,
-                    fluent2Step(t, c.neutralStrokeDisabled),
-                  )
-                : press.pick(
-                    c.neutralStrokeAccessible,
-                    c.neutralStrokeAccessibleHover,
-                    c.neutralStrokeAccessiblePressed,
-                    fluent2Step(t, c.neutralStrokeDisabled),
-                  );
-            final dot = press.pick(
-              c.compoundBrandForeground1,
-              c.compoundBrandForeground1Hover,
-              c.compoundBrandForeground1Pressed,
-              c.neutralForegroundDisabled,
-            );
-            final ink = off
-                ? c.neutralForegroundDisabled
-                : chosen
-                ? c.neutralForeground1
-                : press.pick(
-                    c.neutralForeground3,
-                    c.neutralForeground2,
-                    c.neutralForeground1,
-                  );
-            return fluent2EasedInks([stroke, dot, ink], (context, inks) {
-              final [stroke, dot, ink] = inks;
-              final look = Fluent2StyleOf(layers, states);
-              final ring =
-                  look.side ??
-                  BorderSide(
-                    color: look.edge ?? stroke,
-                    width: Fluent2Stroke.thin,
-                  );
-              final outline = look.shape;
-              final side = look.minimumSize?.shortestSide ?? 16.0;
-              final fill = look.fill;
-              final mark = look.foreground ?? dot;
-              // The dot: the disc scaled to .625, in the ring's outline.
-              final inner = side * .625;
-              final circle = Padding(
-                padding: const EdgeInsets.all(Fluent2Spacing.s),
-                child: Container(
-                  width: side,
-                  height: side,
-                  alignment: Alignment.center,
-                  decoration: outline == null
-                      ? BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: fill,
-                          border: Border.all(
-                            color: ring.color,
-                            width: ring.width,
-                          ),
-                        )
-                      : ShapeDecoration(
-                          color: fill,
-                          shape: outline.copyWith(side: ring),
-                        ),
-                  // The dot grows from the middle as the radio is chosen
-                  // and shrinks away as another is (durationNormal,
-                  // decelerating; at once under Reduce Motion).
-                  child: AnimatedScale(
-                    scale: chosen ? 1 : 0,
-                    duration: Fluent2Motion.on(context)
-                        ? Fluent2Motion.normal
-                        : Duration.zero,
-                    curve: Fluent2Motion.decelerateMid,
-                    child: Container(
-                      width: inner,
-                      height: inner,
-                      decoration: outline == null
-                          ? BoxDecoration(shape: BoxShape.circle, color: mark)
-                          : ShapeDecoration(color: mark, shape: outline),
-                    ),
-                  ),
-                ),
-              );
-              final type = t.body1.merge(look.textStyle);
-              if (scope.stacked) {
-                return Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    circle,
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(
-                        Fluent2Spacing.s,
-                        0,
-                        Fluent2Spacing.s,
-                        Fluent2Spacing.s,
-                      ),
-                      child: Text(
-                        label,
-                        textAlign: TextAlign.center,
-                        style: type.c(ink),
-                      ),
-                    ),
-                  ],
-                );
-              }
-              // The circle's ink on the keyline, its room hanging outside.
-              return Fluent2HangRoom(
-                focused: states.focused,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    fluent2OnFirstLine(context, type, circle),
-                    Flexible(
-                      child: Padding(
-                        // 4 after the circle, 8 at the end; the 20 line drawn
-                        // 2 into the circle's room above and under.
-                        padding: const EdgeInsetsDirectional.fromSTEB(
-                          Fluent2Spacing.xs,
-                          Fluent2Spacing.sNudge,
-                          Fluent2Spacing.s,
-                          Fluent2Spacing.sNudge,
-                        ),
-                        child: Text(label, style: type.c(ink)),
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            });
-          },
+          builder: (context, states) => Fluent2PressFace(
+            states: states,
+            radius: Fluent2Radius.medium,
+            ring: scope.stacked,
+            child: _face(
+              context,
+              states,
+              chosen: chosen,
+              stacked: scope.stacked,
+            ),
+          ),
         ),
       ),
     );
+  }
+
+  Widget _face(
+    BuildContext context,
+    Set<WidgetState> states, {
+    required bool chosen,
+    required bool stacked,
+  }) {
+    final t = context.fluent2Theme;
+    final c = t.colors;
+    final layers = [style, t.radioTheme];
+    final press = states.press;
+    final off = press == Fluent2Press.disabled;
+    final stroke = chosen
+        ? press.pick(
+            c.compoundBrandStroke,
+            c.compoundBrandStrokeHover,
+            c.compoundBrandStrokePressed,
+            fluent2Step(t, c.neutralStrokeDisabled),
+          )
+        : press.pick(
+            c.neutralStrokeAccessible,
+            c.neutralStrokeAccessibleHover,
+            c.neutralStrokeAccessiblePressed,
+            fluent2Step(t, c.neutralStrokeDisabled),
+          );
+    final dot = press.pick(
+      c.compoundBrandForeground1,
+      c.compoundBrandForeground1Hover,
+      c.compoundBrandForeground1Pressed,
+      c.neutralForegroundDisabled,
+    );
+    final ink = off
+        ? c.neutralForegroundDisabled
+        : chosen
+        ? c.neutralForeground1
+        : press.pick(
+            c.neutralForeground3,
+            c.neutralForeground2,
+            c.neutralForeground1,
+          );
+    return fluent2EasedInks([stroke, dot, ink], (context, inks) {
+      final [stroke, dot, ink] = inks;
+      final look = Fluent2StyleOf(layers, states);
+      final ring =
+          look.side ??
+          BorderSide(color: look.edge ?? stroke, width: Fluent2Stroke.thin);
+      final outline = look.shape;
+      final side = look.minimumSize?.shortestSide ?? 16.0;
+      final fill = look.fill;
+      final mark = look.foreground ?? dot;
+      // The dot: the disc scaled to .625, in the ring's outline.
+      final inner = side * .625;
+      final circle = Padding(
+        padding: const EdgeInsets.all(Fluent2Spacing.s),
+        child: Container(
+          width: side,
+          height: side,
+          alignment: Alignment.center,
+          decoration: outline == null
+              ? BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: fill,
+                  border: Border.all(color: ring.color, width: ring.width),
+                )
+              : ShapeDecoration(
+                  color: fill,
+                  shape: outline.copyWith(side: ring),
+                ),
+          // The dot grows from the middle as the radio is chosen
+          // and shrinks away as another is (durationNormal,
+          // decelerating; at once under Reduce Motion).
+          child: AnimatedScale(
+            scale: chosen ? 1 : 0,
+            duration: Fluent2Motion.on(context)
+                ? Fluent2Motion.normal
+                : Duration.zero,
+            curve: Fluent2Motion.decelerateMid,
+            child: Container(
+              width: inner,
+              height: inner,
+              decoration: outline == null
+                  ? BoxDecoration(shape: BoxShape.circle, color: mark)
+                  : ShapeDecoration(color: mark, shape: outline),
+            ),
+          ),
+        ),
+      );
+      final type = t.body1.merge(look.textStyle);
+      if (stacked) {
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            circle,
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                Fluent2Spacing.s,
+                0,
+                Fluent2Spacing.s,
+                Fluent2Spacing.s,
+              ),
+              child: Text(
+                label,
+                textAlign: TextAlign.center,
+                style: type.c(ink),
+              ),
+            ),
+          ],
+        );
+      }
+      // The circle's ink on the keyline, its room hanging outside.
+      return Fluent2HangRoom(
+        focused: states.focused,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            fluent2OnFirstLine(context, type, circle),
+            Flexible(
+              child: Padding(
+                // 4 after the circle, 8 at the end; the 20 line drawn
+                // 2 into the circle's room above and under.
+                padding: const EdgeInsetsDirectional.fromSTEB(
+                  Fluent2Spacing.xs,
+                  Fluent2Spacing.sNudge,
+                  Fluent2Spacing.s,
+                  Fluent2Spacing.sNudge,
+                ),
+                child: Text(label, style: type.c(ink)),
+              ),
+            ),
+          ],
+        ),
+      );
+    });
   }
 
   @override
@@ -263,9 +267,11 @@ class Fluent2Radio<T> extends StatelessWidget {
 
 /// A group of [Fluent2Radio] options with one selected [value].
 ///
-/// Tab enters on the selected radio if it is enabled, or the first enabled
-/// radio in reading order. Arrow keys move focus and selection together,
-/// skipping disabled options and wrapping at either end. The group uses
+/// The group is Flutter's [RadioGroup], each option a `RawRadio`, with
+/// ui_core's [RadioGroupKeyboardFix] round them. Tab enters on the selected
+/// radio if it is enabled, or the first enabled radio in reading order.
+/// Arrow keys move focus and selection together, skipping disabled options
+/// and wrapping at either end, Left and Right swapped right to left. The group uses
 /// [label] or its enclosing field's label. A null [onChanged] disables it.
 ///
 /// ```dart
@@ -321,36 +327,122 @@ class Fluent2RadioGroup<T> extends StatefulWidget {
 class _Fluent2RadioGroupState<T> extends State<Fluent2RadioGroup<T>> {
   @override
   Widget build(BuildContext context) {
-    final options = widget.options;
-    final byValue = {for (final option in options) option.value: option};
     final layout = widget.layout;
+    final change = widget.onChanged;
+    final items = [
+      for (final option in widget.options)
+        _RadioScope(
+          key: ValueKey<T>(option.value),
+          chosen: option.value == widget.value,
+          enabled: change != null && option.enabled,
+          stacked: layout == Fluent2RadioLayout.horizontalStacked,
+          child: option,
+        ),
+    ];
     return Semantics(
       container: true,
       explicitChildNodes: true,
       label: widget.label ?? Fluent2FieldScope.maybeOf(context)?.label,
-      child: DesignRadioGroup<T>(
-        options: [for (final option in options) option.value],
-        value: widget.value,
-        onChanged: widget.onChanged,
-        isEnabled: (value) => byValue[value]!.enabled,
-        itemBuilder: (context, value, node, select) => _RadioScope(
-          chosen: value == widget.value,
-          select: select,
-          stacked: layout == Fluent2RadioLayout.horizontalStacked,
-          focusNode: node,
-          child: byValue[value]!,
-        ),
-        layoutBuilder: (context, items) => switch (layout) {
-          Fluent2RadioLayout.vertical => Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: items,
-          ),
-          _ => Wrap(
-            crossAxisAlignment: WrapCrossAlignment.start,
-            children: items,
-          ),
+      child: RadioGroup<T>(
+        groupValue: widget.value,
+        // RadioGroup takes no null: a group out of use gives a no-op, and
+        // turns each radio off.
+        onChanged: (value) {
+          if (change == null || value == null || value == widget.value) return;
+          change(value);
         },
+        child: RadioGroupKeyboardFix<T>(
+          child: switch (layout) {
+            Fluent2RadioLayout.vertical => Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: items,
+            ),
+            _ => Wrap(
+              crossAxisAlignment: WrapCrossAlignment.start,
+              children: items,
+            ),
+          },
+        ),
+      ),
+    );
+  }
+}
+
+/// A radio of the group round it, on Flutter's `RawRadio`: its states for
+/// [builder], the keys' focus shown after a key only, as a press shows it.
+class _RadioPress<T> extends StatefulWidget {
+  const _RadioPress({
+    required this.value,
+    required this.enabled,
+    required this.label,
+    required this.builder,
+  });
+
+  final T value;
+  final bool enabled;
+  final String label;
+  final Widget Function(BuildContext context, Set<WidgetState> states) builder;
+
+  @override
+  State<_RadioPress<T>> createState() => _RadioPressState<T>();
+}
+
+class _RadioPressState<T> extends State<_RadioPress<T>> {
+  final FocusNode _node = FocusNode();
+  // A pointer can hover even when touch was the last input, as over a
+  // pressable.
+  bool _hover = false;
+
+  @override
+  void initState() {
+    super.initState();
+    Fluent2KeysShown.addListener(_changed);
+  }
+
+  @override
+  void dispose() {
+    Fluent2KeysShown.removeListener(_changed);
+    _node.dispose();
+    super.dispose();
+  }
+
+  void _changed() {
+    if (mounted) setState(() {});
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final registry = RadioGroup.maybeOf<T>(context);
+    final enabled = widget.enabled && registry != null;
+    return RawRadio<T>(
+      value: widget.value,
+      mouseCursor: WidgetStateMouseCursor.clickable,
+      toggleable: false,
+      focusNode: _node,
+      autofocus: false,
+      groupRegistry: registry,
+      enabled: enabled,
+      builder: (context, radio) => Semantics(
+        label: widget.label,
+        child: ExcludeSemantics(
+          child: MouseRegion(
+            onEnter: (_) => setState(() => _hover = true),
+            onExit: (_) => setState(() => _hover = false),
+            // The whole radio takes the press, its gaps too.
+            child: MetaData(
+              behavior: HitTestBehavior.opaque,
+              child: widget.builder(context, {
+                for (final state in radio.states)
+                  if (state != WidgetState.hovered &&
+                      (state != WidgetState.focused || Fluent2KeysShown.shown))
+                    state,
+                if (enabled && _hover) WidgetState.hovered,
+                if (enabled && radio.downPosition != null) WidgetState.pressed,
+              }),
+            ),
+          ),
+        ),
       ),
     );
   }

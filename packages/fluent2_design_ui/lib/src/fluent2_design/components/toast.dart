@@ -44,7 +44,7 @@ abstract interface class Fluent2Raised {
 class _Queued implements Fluent2Raised {
   _Queued(this.handle);
 
-  final DesignToastHandle handle;
+  final RawToastController handle;
 
   @override
   void dismiss() => handle.dismiss();
@@ -90,11 +90,11 @@ Fluent2Raised showFluent2Toast(
   Duration? duration,
 }) {
   final stays = duration ?? Duration(seconds: actionLabel == null ? 3 : 6);
-  final toaster = DesignToaster.maybeOf(context);
+  final toaster = RawToaster.maybeOf(context);
   if (toaster != null) {
     return _Queued(
       toaster.show(
-        DesignToast(
+        RawToast(
           message: message,
           title: title,
           actionLabel: actionLabel,
@@ -235,7 +235,7 @@ class Fluent2Toaster extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final wide = Fluent2Layout.isWide(context);
-    return DesignToaster(
+    return RawToaster(
       maxVisible: maxVisible,
       regionLabel: Fluent2Localizations.of(context).notifications,
       alignment: wide

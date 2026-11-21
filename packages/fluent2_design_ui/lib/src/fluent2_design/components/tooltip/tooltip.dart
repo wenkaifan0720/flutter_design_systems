@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
@@ -105,7 +106,7 @@ class Fluent2TooltipBubble extends StatelessWidget {
         placement: p,
         fill: fill,
         height: arrow,
-        // A tooltip's aim moves as the tip lands (ui_core's surfaceRect).
+        // A placement that notifies repaints the arrow as it moves.
         repaint: p is Listenable ? p as Listenable : null,
       ),
       child: Padding(
@@ -174,12 +175,12 @@ class _ArrowPainter extends CustomPainter {
 /// [Fluent2TooltipPosition.below]) after the pointer rests on it for 250 ms, on
 /// a long press on a touch screen, and while the keyboard's focus is inside it;
 /// hidden 250 ms after the pointer leaves it and the bubble. The pointer may
-/// move onto the bubble, Escape hides it, and one shows at a time: along a
-/// toolbar the next shows at once. [withArrow] adds the 6 arrow pointing at the
+/// move onto the bubble, Escape hides it, and one shows at a time. [withArrow] adds the 6 arrow pointing at the
 /// control (Fluent draws none by default), aimed where the bubble landed. The
-/// message is the control's tooltip to a screen reader. It is ui_core's
-/// `DesignTooltip` in Fluent's bubble. Never put an act or the only copy of
-/// something needed inside one.
+/// message is the control's tooltip to a screen reader. It is Flutter's
+/// [RawTooltip] in Fluent's bubble, with ui_core's [RawTooltipFocusFix]
+/// (the keyboard's focus shows it) and [RawTooltipPlacement] (where it
+/// goes). Never put an act or the only copy of something needed inside one.
 ///
 /// ```dart
 /// Fluent2Tooltip(message: 'Share', child: Fluent2IconButton(Fluent2Icons.share, label: 'Share', onPressed: share))
@@ -217,13 +218,13 @@ class Fluent2Tooltip extends StatelessWidget {
 
   /// Fluent's 4 between the control and the bubble (with the arrow, its
   /// room is inside the bubble's box) and 8 from the window's edges.
-  DesignOverlayPlacement get _placement => DesignOverlayPlacement(
+  RawPopoverPlacement get _placement => RawPopoverPlacement(
     side: switch (position) {
-      Fluent2TooltipPosition.above => DesignOverlaySide.above,
-      Fluent2TooltipPosition.below => DesignOverlaySide.below,
-      Fluent2TooltipPosition.after => DesignOverlaySide.end,
+      Fluent2TooltipPosition.above => RawPopoverSide.above,
+      Fluent2TooltipPosition.below => RawPopoverSide.below,
+      Fluent2TooltipPosition.after => RawPopoverSide.end,
     },
-    align: DesignOverlayAlign.center,
+    align: RawPopoverAlign.center,
     gap: 4,
     margin: 8,
     preferredExtent: 48,
@@ -231,24 +232,63 @@ class Fluent2Tooltip extends StatelessWidget {
   );
 
   @override
-  Widget build(BuildContext context) => DesignTooltip(
-    message: message,
-    hoverDelay: const Duration(milliseconds: 250),
-    dismissDelay: const Duration(milliseconds: 250),
-    placement: _placement,
-    tooltipBuilder: (context, info) => FadeTransition(
-      opacity: info.animation,
-      child: Fluent2TooltipBubble(
-        message: message,
-        appearance: appearance,
-        style: style,
-        placement: withArrow && position != Fluent2TooltipPosition.after
-            ? _Aim(info)
-            : null,
+  Widget build(BuildContext context) {
+    if (message.isEmpty) return child;
+    final spring = DesignMotionPolicy.of(context)
+        .effects(dampingRatio: 1, stiffness: 1600);
+    // The bubble comes and goes on its own spring. RawTooltip's animation
+    // says only whether it shows: at once when it shows, and while it hides,
+    // as long as the spring takes to close from open, so the bubble stays
+    // until it has faded.
+    final closing = _settleTime(spring);
+    final aim = withArrow && position != Fluent2TooltipPosition.after
+        ? _Aim()
+        : null;
+    // The message joins the child's node: one control, one node.
+    return MergeSemantics(
+      child: RawTooltipPlacement(
+        placement: _placement,
+        builder: (context, positionDelegate) => RawTooltip(
+          semanticsTooltip: message,
+          hoverDelay: const Duration(milliseconds: 250),
+          dismissDelay: const Duration(milliseconds: 250),
+          animationStyle: AnimationStyle(
+            duration: Duration.zero,
+            reverseDuration: closing,
+          ),
+          positionDelegate: positionDelegate,
+          tooltipBuilder: (context, shown) => ExcludeSemantics(
+            child: _TipPresence(
+              shown: shown,
+              spring: spring,
+              builder: (context, presence) => FadeTransition(
+                opacity: presence,
+                child: Builder(
+                  builder: (context) {
+                    aim?.bubble = context;
+                    return Fluent2TooltipBubble(
+                      message: message,
+                      appearance: appearance,
+                      style: style,
+                      placement: aim,
+                    );
+                  },
+                ),
+              ),
+            ),
+          ),
+          child: RawTooltipFocusFix(
+            child: Builder(
+              builder: (context) {
+                aim?.anchor = context;
+                return child;
+              },
+            ),
+          ),
+        ),
       ),
-    ),
-    child: child,
-  );
+    );
+  }
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -276,27 +316,118 @@ class Fluent2Tooltip extends StatelessWidget {
   }
 }
 
-/// The arrow's place read from where ui_core landed the bubble: on the side
-/// it took, at the control's centre. It notifies as the bubble lands.
-class _Aim extends Fluent2ArrowPlacement implements Listenable {
-  _Aim(this.info);
+/// The arrow's place read from where the bubble landed, when it paints: on
+/// the side of the control it took, at the control's centre.
+class _Aim extends Fluent2ArrowPlacement {
+  /// Where the control and the bubble build.
+  BuildContext? anchor;
+  BuildContext? bubble;
 
-  final DesignOverlayInfo info;
-
-  @override
-  bool get isAbove => info.side == DesignOverlaySide.above;
-
-  @override
-  double get offset {
-    final landed = info.surfaceRect.value;
-    return landed == null ? 0 : info.anchorRect.center.dx - landed.left;
+  RenderBox? _box(BuildContext? context) {
+    final box = context != null && context.mounted
+        ? context.findRenderObject()
+        : null;
+    return box is RenderBox && box.attached && box.hasSize ? box : null;
   }
 
   @override
-  void addListener(VoidCallback listener) =>
-      info.surfaceRect.addListener(listener);
+  bool get isAbove {
+    final control = _box(anchor);
+    final tip = _box(bubble);
+    if (control == null || tip == null) return true;
+    return tip.localToGlobal(tip.size.center(Offset.zero)).dy <
+        control.localToGlobal(control.size.center(Offset.zero)).dy;
+  }
 
   @override
-  void removeListener(VoidCallback listener) =>
-      info.surfaceRect.removeListener(listener);
+  double get offset {
+    final control = _box(anchor);
+    final tip = _box(bubble);
+    if (control == null || tip == null) return 0;
+    return control.localToGlobal(control.size.center(Offset.zero)).dx -
+        tip.localToGlobal(Offset.zero).dx;
+  }
+}
+
+// A tip's presence, 0 to 1, on [spring]: toward 1 while [shown] runs forward or has completed, toward 0 while it runs
+// back.
+class _TipPresence extends StatefulWidget {
+  const _TipPresence({
+    required this.shown,
+    required this.spring,
+    required this.builder,
+  });
+
+  final Animation<double> shown;
+  final SpringDescription spring;
+  final Widget Function(BuildContext context, Animation<double> presence)
+  builder;
+
+  @override
+  State<_TipPresence> createState() => _TipPresenceState();
+}
+
+class _TipPresenceState extends State<_TipPresence>
+    with SingleTickerProviderStateMixin {
+  // Bounded: a tip's presence is an opacity, 0 to 1.
+  late final AnimationController _presence = AnimationController(vsync: this);
+
+  @override
+  void initState() {
+    super.initState();
+    _presence.addStatusListener(_settled);
+    widget.shown.addStatusListener(_follow);
+    _follow(widget.shown.status);
+  }
+
+  @override
+  void didUpdateWidget(_TipPresence oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.shown != widget.shown) {
+      oldWidget.shown.removeStatusListener(_follow);
+      widget.shown.addStatusListener(_follow);
+      _follow(widget.shown.status);
+    }
+  }
+
+  @override
+  void dispose() {
+    widget.shown.removeStatusListener(_follow);
+    _presence.dispose();
+    super.dispose();
+  }
+
+  void _follow(AnimationStatus status) {
+    final target = status.isForwardOrCompleted ? 1.0 : 0.0;
+    if (_presence.value == target && !_presence.isAnimating) return;
+    _presence.springTo(target, widget.spring);
+  }
+
+  // The spring started or came to rest: whether the tip is gone may change.
+  void _settled(AnimationStatus status) {
+    if (mounted) setState(() {});
+  }
+
+  // A hiding tip is gone once its spring has closed it, as ui_core's tooltip
+  // took it away then. RawTooltip's own animation can run on (it lasts as
+  // long as a close from fully open), and the tip would stay in place,
+  // unseen, where a pointer could bring it back.
+  bool get _gone =>
+      !widget.shown.isForwardOrCompleted &&
+      !_presence.isAnimating &&
+      _presence.value == 0;
+
+  @override
+  Widget build(BuildContext context) =>
+      _gone ? const SizedBox.shrink() : widget.builder(context, _presence);
+}
+
+// How long [spring] takes to close a tip from open: until its simulation is done, to the millisecond above.
+Duration _settleTime(SpringDescription spring) {
+  final closing = designSpringSimulation(spring, from: 1, to: 0);
+  var ms = 1;
+  while (ms < 5000 && !closing.isDone(ms / 1000)) {
+    ms++;
+  }
+  return Duration(milliseconds: ms);
 }

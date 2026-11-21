@@ -95,7 +95,7 @@ class Fluent2Switch extends StatelessWidget {
     final words = label;
     // The press's node stands at the switch's root, its one node.
     return MergeSemantics(
-      child: DesignTapTarget(
+      child: TapTargetPadding(
         minSize: Fluent2Layout.tapFloorOf(context),
         // On the start keyline by its drawn face, the target growing
         // toward the end.

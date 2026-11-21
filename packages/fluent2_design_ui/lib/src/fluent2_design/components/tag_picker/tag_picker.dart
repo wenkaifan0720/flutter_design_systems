@@ -44,7 +44,7 @@ enum Fluent2MultiSelectSize {
 /// "Loading" while it runs and offering "Try again" when it fails. Null
 /// [onChanged] draws it disabled. Read as a text field named
 /// [label], each tag a button "Remove …" with a Remove action. The
-/// behaviour is the shared DesignTagInput; Fluent 2 paints the
+/// behaviour is the shared RawTagInput; Fluent 2 paints the
 /// field, the tags and the list.
 ///
 /// ```dart
@@ -231,7 +231,7 @@ class _Fluent2MultiSelectState<T> extends State<Fluent2MultiSelect<T>> {
     final gap = large ? Fluent2Spacing.sNudge : Fluent2Spacing.xs;
     final name = widget.label ?? scope?.label;
     final words = Fluent2Localizations.of(context);
-    return DesignTagInput<Fluent2Option<T>>(
+    return RawTagInput<Fluent2Option<T>>(
       values: _chosen,
       options: widget.options,
       onChanged: _change,

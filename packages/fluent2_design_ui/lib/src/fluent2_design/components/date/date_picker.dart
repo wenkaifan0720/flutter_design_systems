@@ -120,12 +120,12 @@ class Fluent2Calendar extends StatefulWidget {
 }
 
 class _Fluent2CalendarState extends State<Fluent2Calendar> {
-  late DesignCalendarController _cal = _make();
+  late RawCalendarController _cal = _make();
 
   // A calendar with no onChanged only shows: nothing in it can be chosen.
   static bool _never(DateTime _) => false;
 
-  DesignCalendarController _make({DateTime? month}) => DesignCalendarController(
+  RawCalendarController _make({DateTime? month}) => RawCalendarController(
     firstDate: widget.firstDate ?? DateTime(1900),
     lastDate: widget.lastDate ?? DateTime(2199, 12, 31),
     initialMonth: month ?? widget.month,
@@ -215,11 +215,11 @@ class _Fluent2CalendarState extends State<Fluent2Calendar> {
             width: cell * 7,
             child: FocusTraversalOrder(
               order: const NumericFocusOrder(1),
-              child: DesignCalendar(
+              child: RawCalendarDatePicker(
                 controller: _cal,
                 focusNode: widget.focusNode,
                 // The week starts where the app's localizations say
-                // (DesignLocalizations.firstDayOfWeek; English is Sunday).
+                // (RawWidgetsLocalizations.firstDayOfWeek; English is Sunday).
                 showOutsideDays: widget.showAdjacent,
                 onChanged: change == null
                     ? null
@@ -242,7 +242,7 @@ class _Fluent2CalendarState extends State<Fluent2Calendar> {
                       first(
                         Fluent2IconButton(
                           Fluent2Icons.arrowUp,
-                          label: DesignLocalizations.of(context)
+                          label: RawWidgetsLocalizations.of(context)
                               .previousMonthTooltip,
                           size: Fluent2ButtonSize.small,
                           onPressed: h.previous,
@@ -252,7 +252,7 @@ class _Fluent2CalendarState extends State<Fluent2Calendar> {
                       first(
                         Fluent2IconButton(
                           Fluent2Icons.arrowDown,
-                          label: DesignLocalizations.of(context)
+                          label: RawWidgetsLocalizations.of(context)
                               .nextMonthTooltip,
                           size: Fluent2ButtonSize.small,
                           onPressed: h.next,
@@ -300,7 +300,7 @@ class _Day extends StatelessWidget {
     required this.shows,
   });
 
-  final DesignCalendarDay day;
+  final RawCalendarDayDetails day;
   final Set<WidgetState> states;
   final double cell;
   final double disc;
@@ -651,7 +651,7 @@ class _Fluent2DatePickerState extends State<Fluent2DatePicker> {
             ),
           ),
         ),
-        child: DesignTapTarget(
+        child: TapTargetPadding(
           minSize: Fluent2Layout.tapFloorOf(context),
           child: Fluent2FieldButton(
             autofocus: widget.autofocus,

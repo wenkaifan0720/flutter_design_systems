@@ -62,9 +62,9 @@ class Fluent2Back extends StatelessWidget {
     final where = label ?? _BackLabel.of(context);
     final words = Fluent2Localizations.of(context);
     final spoken = close
-        ? DesignLocalizations.of(context).closeButtonLabel
+        ? RawWidgetsLocalizations.of(context).closeButtonLabel
         : where == null
-        ? DesignLocalizations.of(context).backButtonTooltip
+        ? RawWidgetsLocalizations.of(context).backButtonTooltip
         : words.backTo(where);
     if (close ||
         !Fluent2Layout.isWide(context) ||
@@ -104,7 +104,8 @@ class Fluent2Back extends StatelessWidget {
               ),
               Flexible(
                 child: Text(
-                  where ?? DesignLocalizations.of(context).backButtonTooltip,
+                  where ??
+                      RawWidgetsLocalizations.of(context).backButtonTooltip,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: t.body1.c(ink),
@@ -470,7 +471,7 @@ class _MoreCommands extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Fluent2IconButton(
     Fluent2Icons.moreHorizontal,
-    label: DesignLocalizations.of(context).moreButtonTooltip,
+    label: RawWidgetsLocalizations.of(context).moreButtonTooltip,
     onPressed: () async {
       final picked = await Fluent2Menu.show<int>(
         context,

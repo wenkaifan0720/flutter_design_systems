@@ -13,7 +13,7 @@ Widget _app(Widget page, {Fluent2Localizations? words}) => WidgetsApp(
   supportedLocales: const [Locale('en'), Locale('pl')],
   localizationsDelegates: [
     if (words != null) _Words(words),
-    DesignLocalizations.delegate,
+    RawWidgetsLocalizations.delegate,
     Fluent2Localizations.delegate,
   ],
   builder: (context, child) => Fluent2Host(child: child!),

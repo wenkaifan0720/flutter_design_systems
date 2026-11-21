@@ -511,7 +511,7 @@ class Fluent2Tag extends StatelessWidget {
         child: face(enabled ? Fluent2Press.rest : Fluent2Press.disabled),
       );
     }
-    return DesignTapTarget(
+    return TapTargetPadding(
       minSize: Fluent2Layout.tapFloorOf(context),
       child: Fluent2Pressable(
         focusNode: focusNode,
@@ -789,7 +789,7 @@ class Fluent2InteractionTag extends StatelessWidget {
     );
     if (dismiss == null) {
       return own(
-        DesignTapTarget(
+        TapTargetPadding(
           minSize: Fluent2Layout.tapFloorOf(context),
           child: primary,
         ),
@@ -873,13 +873,13 @@ class Fluent2InteractionTag extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Flexible(
-            child: DesignTapTarget(
+            child: TapTargetPadding(
               minSize: Fluent2Layout.tapFloorOf(context),
               alignment: AlignmentDirectional.centerEnd,
               child: primary,
             ),
           ),
-          DesignTapTarget(
+          TapTargetPadding(
             minSize: Fluent2Layout.tapFloorOf(context),
             alignment: AlignmentDirectional.centerStart,
             child: secondaryPart,

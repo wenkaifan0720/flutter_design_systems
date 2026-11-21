@@ -210,7 +210,7 @@ class _Fluent2SliderState extends State<Fluent2Slider> {
     ], fluent2States(enabled: live, hovered: _over, pressed: _down));
     // The target stands outside the slider's node, so the node is the
     // target's size and the rail's taps and drags are the slider's own.
-    return DesignTapTarget(
+    return TapTargetPadding(
       minSize: Fluent2Layout.tapFloorOf(context),
       child: Semantics(
         container: true,

@@ -43,6 +43,8 @@ workspace:
   - packages/comic_ui/example
   - packages/minimal_ui
   - packages/minimal_ui/example
+  - packages/fluent2_design_ui
+  - packages/fluent2_design_ui/example
 
 dev_dependencies:
   flutter_lints: ^6.0.0

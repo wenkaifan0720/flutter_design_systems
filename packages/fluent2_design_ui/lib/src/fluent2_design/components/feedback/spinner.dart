@@ -192,7 +192,7 @@ class _Fluent2SpinnerState extends State<Fluent2Spinner>
       // Work under way is announced as it starts; a meter is read when
       // reached, its share as its value.
       liveRegion: value == null,
-      label: label ?? DesignLocalizations.of(context).loadingLabel,
+      label: label ?? RawWidgetsLocalizations.of(context).loadingLabel,
       value: value == null ? null : '${(value * 100).round()}%',
       excludeSemantics: true,
       child: words == null

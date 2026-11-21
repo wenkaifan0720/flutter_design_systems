@@ -8,7 +8,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fluent2_design_ui/fluent2_design_ui.dart';
 import 'package:fluent2_design_ui/src/fluent2_design/components/input/field_core.dart'
     show Fluent2FieldButton, Fluent2ListboxColumn;
-import 'package:ui_core_test/ui_core_test.dart';
+import 'package:ui_core_review/ui_core_review.dart';
 
 import 'gallery_support.dart';
 import 'ui_core_checks.dart';

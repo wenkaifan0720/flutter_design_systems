@@ -251,6 +251,63 @@ void main() {
       }
     }
 
+    for (final direction in TextDirection.values) {
+      for (final layout in [...Fluent2RadioLayout.values, null]) {
+        final variant = layout?.name ?? 'toolbar';
+        testWidgets(
+          "$variant radios in ${direction.name}: a press anywhere in a radio's box chooses it",
+          (tester) async {
+            String? value = 'C';
+            const options = ['A', 'B', 'C', 'D'];
+            await pump(
+              tester,
+              Directionality(
+                textDirection: direction,
+                child: StatefulBuilder(
+                  builder: (context, setState) {
+                    void choose(String next) => setState(() => value = next);
+                    return SizedBox(
+                      width: 310,
+                      child: layout == null
+                          ? Fluent2ToolbarToggleGroup<String>(
+                              label: 'Layout',
+                              toggles: [
+                                for (final option in options)
+                                  Fluent2ToolbarToggle(
+                                    option,
+                                    label: option,
+                                    icon: Fluent2Icons.grid,
+                                    enabled: option != 'B',
+                                  ),
+                              ],
+                              selected: {if (value != null) value!},
+                              onSelectionChanged: (next) => choose(next.single),
+                            )
+                          : Fluent2RadioGroup<String>(
+                              label: 'Size',
+                              layout: layout,
+                              options: [
+                                for (final option in options)
+                                  Fluent2Radio(
+                                    option,
+                                    option,
+                                    enabled: option != 'B',
+                                  ),
+                              ],
+                              value: value,
+                              onChanged: choose,
+                            ),
+                    );
+                  },
+                ),
+              ),
+            );
+            await _pressEverywhere(tester, () => value, const ['A', 'C', 'D']);
+          },
+        );
+      }
+    }
+
     for (final multiple in [false, true]) {
       testWidgets('a toolbar can clear its selection (multiple: $multiple)', (
         tester,
@@ -305,8 +362,14 @@ void main() {
         expect(selected, multiple ? {'List', 'Tiles'} : {'Tiles'});
         expect(
           tester.getSemantics(find.bySemanticsLabel('Tiles')),
+          // Many at once: toggle buttons, each a button that is selected or
+          // not, as IconButton(isSelected:). One at a time: radios.
           multiple
-              ? isSemantics(isToggled: true, isButton: false)
+              ? isSemantics(
+                  isButton: true,
+                  isSelected: true,
+                  hasToggledState: false,
+                )
               : isSemantics(isChecked: true, isButton: false),
         );
         await tester.tap(find.bySemanticsLabel('Tiles'));
@@ -1087,13 +1150,16 @@ void main() {
       );
       for (var i = 0; i < 4; i++) {
         if (FocusManager.instance.primaryFocus?.debugLabel ==
-            'DesignCalendar') {
+            'RawCalendarDatePicker') {
           break;
         }
         await tester.sendKeyEvent(LogicalKeyboardKey.tab);
         await tester.pump();
       }
-      expect(FocusManager.instance.primaryFocus?.debugLabel, 'DesignCalendar');
+      expect(
+        FocusManager.instance.primaryFocus?.debugLabel,
+        'RawCalendarDatePicker',
+      );
       await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
       await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
       await tester.sendKeyEvent(LogicalKeyboardKey.enter);
@@ -1388,4 +1454,38 @@ void main() {
     }
     expect(failures, isEmpty, reason: failures.join('\n'));
   });
+}
+
+/// Presses each of [values] at its box's start, middle, end, top and bottom,
+/// each time from another choice, and expects the press to choose it. The
+/// box is Flutter's RawRadio standing for the value. RawRadio's own detector
+/// takes a press only where the face paints; a Fluent 2 radio or one-choice
+/// toolbar toggle takes it anywhere in its box, the gap between its circle
+/// and its words too, as the published ones did.
+Future<void> _pressEverywhere(
+  WidgetTester tester,
+  String? Function() chosen,
+  List<String> values,
+) async {
+  Rect boxOf(String value) => tester.getRect(
+    find.byWidgetPredicate((w) => w is RawRadio<String> && w.value == value),
+  );
+  for (final (i, value) in values.indexed) {
+    final other = values[(i + 1) % values.length];
+    final box = boxOf(value);
+    for (final at in [
+      box.centerLeft + const Offset(2, 0),
+      box.center,
+      box.centerRight - const Offset(2, 0),
+      box.topCenter + const Offset(0, 2),
+      box.bottomCenter - const Offset(0, 2),
+    ]) {
+      await tester.tapAt(boxOf(other).center);
+      await tester.pumpAndSettle();
+      expect(chosen(), other);
+      await tester.tapAt(at);
+      await tester.pumpAndSettle();
+      expect(chosen(), value, reason: '$value pressed at $at in $box');
+    }
+  }
 }
