@@ -268,9 +268,8 @@ class _MinimalComposerState extends State<MinimalComposer> {
           const SingleActivator(LogicalKeyboardKey.enter, meta: true): _send,
           const SingleActivator(LogicalKeyboardKey.enter, control: true): _send,
         },
-        child: TextField(
+        child: MinimalBareTextField(
           controller: _controller,
-          selectionControls: minimalSelectionControls(context),
           focusNode: _draft,
           onChanged: widget.onChanged,
           enabled: enabled,
@@ -278,23 +277,17 @@ class _MinimalComposerState extends State<MinimalComposer> {
           minLines: assistant ? 3 : 1,
           maxLines: assistant ? 10 : 6,
           style: t.body.c(t.foreground),
-          cursorColor: t.primary,
-          cursorWidth: MinimalFieldMetrics.cursor,
           textCapitalization: TextCapitalization.sentences,
           keyboardType: TextInputType.multiline,
           textInputAction: TextInputAction.newline,
-          // Bare: the box below draws everything, so neither the platform's
-          // density nor an app's InputDecorationTheme moves the line.
-          decoration: minimalBareDecoration(
-            hint:
-                widget.hint ??
-                MinimalLocalizations.of(context)
-                    .composerHint(assistant: assistant),
-            hintStyle: t.body.c(t.mutedForeground),
-            // A chat's box starts one line tall, so its hint is one line, cut
-            // with an ellipsis: a wrapped hint would hold the box at two.
-            hintMaxLines: assistant ? null : 1,
-          ),
+          hint:
+              widget.hint ??
+              MinimalLocalizations.of(context)
+                  .composerHint(assistant: assistant),
+          hintStyle: t.body.c(t.mutedForeground),
+          // A chat's box starts one line tall, so its hint is one line, cut
+          // with an ellipsis: a wrapped hint would hold the box at two.
+          hintMaxLines: assistant ? null : 1,
         ),
       ),
     );

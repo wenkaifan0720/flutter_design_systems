@@ -34,7 +34,7 @@ import 'shell_frame.dart';
 /// reach in time is not reversible) and closes once it runs. Its time
 /// stops while a pointer rests on it or the keyboard is in it; F6 takes the
 /// keyboard to it and back, Escape or a swipe sideways dismisses it, and a
-/// screen reader hears it. The behaviour is ui_core's ([DesignToaster]),
+/// screen reader hears it. The behaviour is ui_core's ([RawToaster]),
 /// installed by [MinimalHost] ([MinimalToaster]); Minimal paints it.
 ///
 /// ```dart
@@ -60,7 +60,7 @@ void showMinimalSnackBar(
       context.findAncestorStateOfType<_MinimalToasterState>()?._show ??
       _rootToaster(context);
   show(
-    DesignToast(
+    RawToast(
       message: message,
       actionLabel: actionLabel,
       onAction: actionLabel == null ? null : (onAction ?? () {}),
@@ -90,9 +90,7 @@ class _ToastLook {
 /// [MinimalToaster] above it (a page composed without [MinimalHost]).
 final Expando<GlobalKey<_MinimalToasterState>> _fallbacks = Expando();
 
-void Function(DesignToast toast, double lift) _rootToaster(
-  BuildContext context,
-) {
+void Function(RawToast toast, double lift) _rootToaster(BuildContext context) {
   final overlay = Overlay.of(context, rootOverlay: true);
   var key = _fallbacks[overlay];
   if (key == null) {
@@ -125,7 +123,7 @@ void Function(DesignToast toast, double lift) _rootToaster(
 /// the app's navigator, so a page needs nothing of its own. The toasts
 /// stand at the foot, centred, at most 560 px wide, inset by the gutter and
 /// lifted over the shell's bar and the keyboard. The behaviour is ui_core's
-/// ([DesignToaster]); Minimal paints each toast as a [MinimalSnackBar].
+/// ([RawToaster]); Minimal paints each toast as a [MinimalSnackBar].
 ///
 /// ```dart
 /// MinimalToaster(child: app)
@@ -142,15 +140,15 @@ class MinimalToaster extends StatefulWidget {
 }
 
 class _MinimalToasterState extends State<MinimalToaster> {
-  final GlobalKey<DesignToasterState> _toaster = GlobalKey();
+  final GlobalKey<RawToasterState> _toaster = GlobalKey();
   double _lift = 0;
 
-  void _show(DesignToast toast, double lift) {
+  void _show(RawToast toast, double lift) {
     if (lift != _lift) setState(() => _lift = lift);
     _toaster.currentState?.show(toast);
   }
 
-  Widget _toast(BuildContext context, DesignToastDetails v) {
+  Widget _toast(BuildContext context, RawToastDetails v) {
     final t = context.minimalTheme;
     final data = v.toast.data;
     final look = data is _ToastLook ? data : const _ToastLook(null, null);
@@ -206,7 +204,7 @@ class _MinimalToasterState extends State<MinimalToaster> {
           0.0,
         ) +
         MinimalChromeMetrics.floatingGap;
-    return DesignToaster(
+    return RawToaster(
       key: _toaster,
       maxVisible: 1,
       padding: EdgeInsets.fromLTRB(

@@ -35,12 +35,12 @@ void main() {
           MinimalSlider(label: 'Volume', value: _(2.0)),
       'range slider min not below max': () => MinimalRangeSlider(
         label: 'Price',
-        values: const DesignRangeValues(0, 0),
+        values: const RawRangeValues(0, 0),
         max: _(0.0),
       ),
       'range slider without divisions': () => MinimalRangeSlider(
         label: 'Price',
-        values: const DesignRangeValues(0, 1),
+        values: const RawRangeValues(0, 1),
         divisions: _(0),
       ),
       'number field value past max': () =>
@@ -76,7 +76,7 @@ void main() {
       'heatmap level above 2': MinimalHeatmap(levels: _(const [0, 3])),
       'range slider values past max': MinimalRangeSlider(
         label: 'Price',
-        values: _(const DesignRangeValues(0.2, 1.5)),
+        values: _(const RawRangeValues(0.2, 1.5)),
       ),
     };
     for (final MapEntry(key: name, value: part) in cases.entries) {
@@ -93,10 +93,7 @@ void main() {
       MinimalRating(value: _(0.0)),
       MinimalStepProgress(steps: const ['Account', 'Plan'], current: _(2)),
       MinimalHeatmap(levels: const [0, 1, 2], today: _(2)),
-      MinimalRangeSlider(
-        label: 'Price',
-        values: _(const DesignRangeValues(0, 1)),
-      ),
+      MinimalRangeSlider(label: 'Price', values: _(const RawRangeValues(0, 1))),
       MinimalMeter(label: 'Storage', value: _(12.0), max: 10, warningAt: 1),
     ]) {
       await tester.pumpWidget(_app(part));

@@ -25,7 +25,7 @@ import 'button.dart';
 /// given), and a tap on the scrim or Escape answers null. Raised, focus
 /// opens on the safe answer: the cancel when the confirm is [destructive]
 /// (Enter then keeps), else the confirm (Enter confirms). The layout and
-/// the focus are ui_core's ([DesignDialog]); Minimal paints them.
+/// the focus are ui_core's ([RawAlertDialog]); Minimal paints them.
 ///
 /// The widget itself is the card, for a page that shows the question in
 /// place (a preview, an inline guard) rather than modally. In place it is
@@ -176,13 +176,13 @@ class MinimalDialog extends StatelessWidget {
       // answer as it opens, Tab kept inside, Enter or Space pressing the
       // focused answer. The words scroll between the title and the band
       // when they run long.
-      MinimalButtonTone toneOf(DesignDialogAction action) =>
+      MinimalButtonTone toneOf(RawDialogAction action) =>
           !action.isDefaultAction && !action.isDestructiveAction
           ? MinimalButtonTone.secondary
           : destructive
           ? MinimalButtonTone.destructive
           : MinimalButtonTone.primary;
-      return DesignDialog(
+      return RawAlertDialog(
         title: title,
         titleBuilder: (context, title) => Padding(
           padding: EdgeInsets.fromLTRB(
@@ -206,8 +206,8 @@ class MinimalDialog extends StatelessWidget {
               ),
         actions: [
           if (cancelLabel != null)
-            DesignDialogAction(label: cancelLabel, onPressed: cancel),
-          DesignDialogAction(
+            RawDialogAction(label: cancelLabel, onPressed: cancel),
+          RawDialogAction(
             label: confirmWords,
             onPressed: confirm,
             isDefaultAction: !destructive,
@@ -226,7 +226,7 @@ class MinimalDialog extends StatelessWidget {
           };
           // A button's face, its press wash and its ring as its pressable
           // lays them, in the target a finger reaches.
-          return DesignTapTarget(
+          return TapTargetPadding(
             child: Opacity(
               opacity: action.enabled ? 1 : 0.45,
               child: paint.face(

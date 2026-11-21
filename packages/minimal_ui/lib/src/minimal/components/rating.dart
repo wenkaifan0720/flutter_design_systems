@@ -28,7 +28,7 @@ import '../theme.dart';
 /// keyboard stop: the arrow keys step the score, a digit sets that many,
 /// Home (or 0) and End go to the ends, and a screen reader hears it as a
 /// slider ("3 of 5"). With [allowClear] off it never goes below one star.
-/// The behaviour is ui_core's ([DesignRating]); Minimal paints it, and adds
+/// The behaviour is ui_core's ([RawRating]); Minimal paints it, and adds
 /// the clearing tap and the preview under a finger.
 ///
 /// ```dart
@@ -187,7 +187,7 @@ class _MinimalRatingState extends State<MinimalRating> {
     final cell = widget.size + MinimalSpacing.s4;
     final l = MinimalLocalizations.of(context);
     final node = _node;
-    return DesignRating(
+    return RawRating(
       value: value,
       onChanged: live ? _changed : null,
       // No onChanged: a mark, read as a value rather than as disabled.

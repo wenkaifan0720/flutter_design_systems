@@ -83,7 +83,7 @@ double _rowStart(BuildContext context, double value, MinimalStyle? style) =>
 /// runs, and a failed one says so with a "Try again" row that Down reaches
 /// and Enter or a tap runs, the focus staying in the field; only the
 /// latest words' result shows. The behaviour is ui_core's
-/// ([DesignCombobox]); Minimal paints it.
+/// ([RawCombobox]); Minimal paints it.
 ///
 /// [fieldStyle] dresses the box over `components.textField`; [listStyle]
 /// the panel over `components.menu`.
@@ -199,7 +199,7 @@ class MinimalCombobox<T extends Object> extends StatelessWidget {
         ],
       ),
     );
-    return DesignCombobox<T>(
+    return RawCombobox<T>(
       options: options,
       search: search,
       debounceDuration: debounceDuration,
@@ -281,7 +281,7 @@ class MinimalCombobox<T extends Object> extends StatelessWidget {
               size: MinimalIconSize.i14,
               color: t.mutedForeground,
             ),
-            DesignLocalizations.of(context).searchFailedMessage,
+            RawWidgetsLocalizations.of(context).searchFailedMessage,
           ),
           MouseRegion(
             cursor: SystemMouseCursors.click,
@@ -376,7 +376,7 @@ class MinimalCombobox<T extends Object> extends StatelessWidget {
 ///
 /// Backspace on the empty field (or Left at its start) steps onto the tags;
 /// Backspace or Delete on a tag removes it, and a screen reader offers the
-/// same as an action. The behaviour is ui_core's ([DesignTagInput]);
+/// same as an action. The behaviour is ui_core's ([RawTagInput]);
 /// Minimal paints it. [fieldStyle] dresses the box over
 /// `components.textField`; [listStyle] the panel over `components.menu`.
 ///
@@ -562,7 +562,7 @@ class _MinimalMultiSelectState<T extends Object>
     final error = widget.error;
     final message = error ?? widget.helper;
 
-    Widget tag(T value, DesignTagDetails tag) {
+    Widget tag(T value, RawTagDetails tag) {
       final name = widget.displayString(value);
       final shape = MinimalShapes.inset(tagBox.shape ?? t.shapes.small, inset);
       return Container(
@@ -664,7 +664,7 @@ class _MinimalMultiSelectState<T extends Object>
       },
     );
 
-    final input = DesignTagInput<T>(
+    final input = RawTagInput<T>(
       values: widget.values,
       onChanged: widget.onChanged,
       // One place, as the combobox's.
@@ -677,9 +677,8 @@ class _MinimalMultiSelectState<T extends Object>
       semanticLabel: label,
       deleteLabel: words.remove,
       fieldBuilder: (context, field) {
-        Widget text = TextField(
+        Widget text = MinimalBareTextField(
           controller: field.controller,
-          selectionControls: minimalSelectionControls(context),
           focusNode: field.focusNode,
           autofocus: widget.autofocus,
           enabled: widget.enabled,
@@ -687,13 +686,9 @@ class _MinimalMultiSelectState<T extends Object>
           // focus, and Flutter restarts the text input of a field told of a submit
           // that still holds it, which in a browser then takes no typing.
           onEditingComplete: field.submit,
-          cursorColor: t.primary,
-          cursorWidth: MinimalFieldMetrics.cursor,
           style: t.body.c(t.foreground),
-          decoration: minimalBareDecoration(
-            hint: widget.values.isEmpty ? widget.hint : null,
-            hintStyle: t.body.c(t.mutedForeground),
-          ),
+          hint: widget.values.isEmpty ? widget.hint : null,
+          hintStyle: t.body.c(t.mutedForeground),
         );
         // The line by its capitals, level with the tags' words beside it.
         text = minimalCapLabel(text);

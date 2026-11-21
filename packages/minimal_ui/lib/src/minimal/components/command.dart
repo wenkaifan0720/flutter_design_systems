@@ -87,7 +87,7 @@ class MinimalCommandItem {
 
   /// What ui_core's palette lists: its words, and the group and detail as
   /// more words a search matches.
-  DesignCommand _design() => DesignCommand(
+  RawCommand _design() => RawCommand(
     label: label,
     onPressed: onSelected,
     group: group,
@@ -114,7 +114,7 @@ class MinimalCommandItem {
 /// once the card has closed and focus is back. Compose the widget directly
 /// for a palette that lives in a panel; [onSelected] then hears the choice
 /// (and the action's own `onSelected` is the caller's to run). The
-/// behaviour is ui_core's ([DesignCommandPalette]); Minimal paints it.
+/// behaviour is ui_core's ([RawCommandPalette]); Minimal paints it.
 ///
 /// [style] dresses this palette's result rows, `components.command` every
 /// palette's, resolved with [WidgetState.selected] on the highlighted one:
@@ -242,7 +242,7 @@ class MinimalCommand extends StatefulWidget {
 }
 
 /// ui_core's palette, Minimal's paint.
-DesignCommandPalette _palette(
+RawCommandPalette _palette(
   BuildContext context, {
   required List<MinimalCommandItem> actions,
   required String label,
@@ -250,7 +250,7 @@ DesignCommandPalette _palette(
   String? emptyTitle,
   MinimalStyle? style,
   TextEditingController? controller,
-  ValueChanged<DesignCommand>? onSelected,
+  ValueChanged<RawCommand>? onSelected,
   bool autofocus = true,
   FocusNode? focusNode,
 }) {
@@ -259,7 +259,7 @@ DesignCommandPalette _palette(
     _CommandMetrics.listMax,
     MediaQuery.sizeOf(context).height * _CommandMetrics.listShare,
   );
-  return DesignCommandPalette(
+  return RawCommandPalette(
     commands: [for (final a in actions) a._design()],
     controller: controller,
     onSelected: onSelected,

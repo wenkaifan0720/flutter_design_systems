@@ -256,9 +256,8 @@ class _MinimalSearchFieldState extends State<MinimalSearchField>
       ),
     );
 
-    Widget input = TextField(
+    Widget input = MinimalBareTextField(
       controller: controller,
-      selectionControls: minimalSelectionControls(context),
       focusNode: focusNode,
       enabled: widget.enabled,
       onChanged: widget.onChanged,
@@ -267,12 +266,8 @@ class _MinimalSearchFieldState extends State<MinimalSearchField>
       autofocus: widget.autofocus,
       textInputAction: TextInputAction.search,
       style: t.body,
-      cursorColor: t.primary,
-      cursorWidth: MinimalFieldMetrics.cursor,
-      decoration: minimalBareDecoration(
-        hint: widget.hint ?? MinimalLocalizations.of(context).search,
-        hintStyle: t.body.c(t.mutedForeground),
-      ),
+      hint: widget.hint ?? MinimalLocalizations.of(context).search,
+      hintStyle: t.body.c(t.mutedForeground),
     );
     // The line by its capitals, as every label beside it: caret, hint and
     // taps move with it.

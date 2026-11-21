@@ -1,7 +1,7 @@
 // The laid-out room a compact face of several targets stands in at a
 // finger (a field with its clear glyph, a strip of joined buttons, a row
-// of stars): [DesignTapTarget] for a part that is more than one control.
-// DesignTapTarget sends a tap in its room to the child's centre, which is
+// of stars): [TapTargetPadding] for a part that is more than one control.
+// TapTargetPadding sends a tap in its room to the child's centre, which is
 // right for one control; a band sends it to the nearest point of the face,
 // so a tap above a strip's third button presses the third. The room is in
 // the layout, so the area a tap reaches is the band's box. Not exported:

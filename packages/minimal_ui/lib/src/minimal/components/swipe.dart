@@ -75,7 +75,7 @@ class MinimalSwipeAction {
 /// (Escape closes it, focus back in the row); every action is also offered
 /// as a custom semantics action, so the row is fully usable without the
 /// gesture. Right-to-left layouts mirror the edges. The behaviour is
-/// ui_core's ([DesignSwipeActions]); Minimal paints it.
+/// ui_core's ([RawSwipeActions]); Minimal paints it.
 ///
 /// ```dart
 /// MinimalSwipeActions(trailing: [MinimalSwipeAction('Delete', destructive: true, icon: LucideIcons.trash2, onPressed: delete)], child: row)
@@ -140,7 +140,7 @@ class MinimalSwipeActions extends StatelessWidget {
     return extent;
   }
 
-  static DesignSwipeAction _design(MinimalSwipeAction a) => DesignSwipeAction(
+  static RawSwipeAction _design(MinimalSwipeAction a) => RawSwipeAction(
     label: a.label,
     onPressed: () {
       HapticFeedback.selectionClick();
@@ -156,7 +156,7 @@ class MinimalSwipeActions extends StatelessWidget {
     // The row slides within its own box: what moves past the list's edge
     // is cut there, never hanging past the hairlines or over a neighbour.
     return ClipRect(
-      child: DesignSwipeActions(
+      child: RawSwipeActions(
         startActions: [for (final a in leading) _design(a)],
         endActions: [for (final a in trailing) _design(a)],
         actionExtent: _extent(context),
@@ -206,7 +206,7 @@ class _ActionCell extends StatelessWidget {
   const _ActionCell({required this.action, required this.state});
 
   final MinimalSwipeAction action;
-  final DesignSwipeActionDetails state;
+  final RawSwipeActionDetails state;
 
   /// The cell's air above and below its content, and between the glyph and
   /// the label.
@@ -319,7 +319,7 @@ class _ActionCell extends StatelessWidget {
 /// The keyboard opens it with the arrow toward the leading edge and focuses
 /// the word (Escape closes it), and a screen reader gets the same act as a
 /// custom action named [label]. The behaviour is ui_core's
-/// ([DesignSwipeActions], a destructive edge); Minimal paints it.
+/// ([RawSwipeActions], a destructive edge); Minimal paints it.
 ///
 /// UNDO IS THE PAGE'S BUSINESS: this slides the row away and calls
 /// [onDismissed]; the page removes the record, keeps it in hand and offers
@@ -374,9 +374,9 @@ class MinimalDismissible extends StatelessWidget {
     word.dispose();
     // The row leaves through its list's edge, not over what stands beyond.
     return ClipRect(
-      child: DesignSwipeActions(
+      child: RawSwipeActions(
         endActions: [
-          DesignSwipeAction(
+          RawSwipeAction(
             label: words,
             onPressed: onDismissed,
             destructive: true,

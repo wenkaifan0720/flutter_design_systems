@@ -28,7 +28,7 @@ import 'pagination.dart';
 /// while the keyboard is there); a screen reader hears "Slide 2 of 5". With
 /// [autoplay] it turns every so long, pausing under a pointer or the
 /// keyboard, and never on its own under Reduce Motion. The behaviour is
-/// ui_core's ([DesignCarousel]); Minimal paints it.
+/// ui_core's ([RawCarousel]); Minimal paints it.
 ///
 /// ```dart
 /// MinimalCarouselView(height: 220, children: [for (final slot in photos) MinimalMedia.media(slot)])
@@ -89,7 +89,7 @@ class MinimalCarouselView extends StatelessWidget {
     final words = MinimalLocalizations.of(context);
     final shape = t.shapes.medium;
     final rtl = Directionality.of(context) == TextDirection.rtl;
-    return DesignCarousel(
+    return RawCarousel(
       itemCount: children.length,
       initialPage: initialPage,
       viewportFraction: viewportFraction,

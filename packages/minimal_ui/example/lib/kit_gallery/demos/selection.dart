@@ -36,7 +36,7 @@ Widget kitSelectionDemo(Brightness brightness) => kitScreen(
             ],
           ),
         ),
-        kitNote('Tab to an option; the arrow keys walk the group.'),
+        kitNote('Tab to the choice; the arrow keys choose.'),
       ],
     ),
     kitSection(

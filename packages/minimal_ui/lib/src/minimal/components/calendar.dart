@@ -24,7 +24,7 @@ import 'pressable.dart';
 
 // A range of days is ui_core's, exported with the picker so a screen names
 // it without a Material import.
-export 'package:ui_core/ui_core.dart' show DesignDateRange;
+export 'package:ui_core/ui_core.dart' show RawDateRange;
 
 /// A day's 44 px slot around its 32 px mark, and one month's width.
 const double _slot = MinimalLayout.minHitTarget;
@@ -49,7 +49,7 @@ class _Grid extends StatelessWidget {
     this.autofocus = false,
   });
 
-  final DesignCalendarController controller;
+  final RawCalendarController controller;
   final int months;
 
   /// Null: the locale's ([MinimalLocalizations.firstDayOfWeek]).
@@ -65,7 +65,7 @@ class _Grid extends StatelessWidget {
     final words = MinimalLocalizations.of(context);
     String month(DateTime m) => words.monthYear(m);
 
-    Widget day(DesignCalendarDay d, Set<WidgetState> states) {
+    Widget day(RawCalendarDayDetails d, Set<WidgetState> states) {
       final ends = d.isRangeStart || d.isRangeEnd;
       final banded = d.inRange || d.inPreview;
       final band = d.inRange ? t.primarySubtle : t.muted;
@@ -170,13 +170,13 @@ class _Grid extends StatelessWidget {
 
   Widget _calendar(
     BuildContext context,
-    Widget Function(DesignCalendarDay, Set<WidgetState>) day,
+    Widget Function(RawCalendarDayDetails, Set<WidgetState>) day,
     String Function(DateTime) month,
     MinimalLocalizations words,
     MinimalThemeData t, {
     required bool stacked,
   }) {
-    return DesignCalendar(
+    return RawCalendarDatePicker(
       controller: controller,
       months: months,
       firstWeekday: firstWeekday ?? words.firstDayOfWeek,
@@ -282,7 +282,7 @@ class _Grid extends StatelessWidget {
 /// One tab stop for the grid; the arrows move a day or a week, Page Up and
 /// Down a month, Home and End to the week's ends, Enter or Space chooses;
 /// the keyboard's day wears the focus ring and a screen reader hears each
-/// day by its full date. The behaviour is ui_core's ([DesignCalendar]);
+/// day by its full date. The behaviour is ui_core's ([RawCalendarDatePicker]);
 /// Minimal paints it. A form row that opens a calendar is
 /// [MinimalDatePicker]; a range, [MinimalDateRangePicker].
 ///
@@ -356,9 +356,9 @@ class MinimalCalendar extends StatefulWidget {
 }
 
 class _MinimalCalendarState extends State<MinimalCalendar> {
-  late DesignCalendarController _controller = _make();
+  late RawCalendarController _controller = _make();
 
-  DesignCalendarController _make() => DesignCalendarController(
+  RawCalendarController _make() => RawCalendarController(
     firstDate: widget.firstDate,
     lastDate: widget.lastDate,
     selectedDate: widget.value,
@@ -414,7 +414,7 @@ class _MinimalCalendarState extends State<MinimalCalendar> {
 ///
 /// The grid takes the keyboard as a [MinimalCalendar]'s; Escape closes the
 /// panel and focus goes back to the row. The behaviour is ui_core's
-/// ([DesignCalendar] in range mode, in a [DesignAnchoredOverlay]); Minimal
+/// ([RawCalendarDatePicker] in range mode, in a [RawPopover]); Minimal
 /// paints it.
 ///
 /// ```dart
@@ -441,11 +441,11 @@ class MinimalDateRangePicker extends StatefulWidget {
   /// The latest day it offers.
   final DateTime lastDate;
 
-  /// The chosen range: ui_core's [DesignDateRange], its first and last day.
-  final DesignDateRange? value;
+  /// The chosen range: ui_core's [RawDateRange], its first and last day.
+  final RawDateRange? value;
 
   /// Called with the range once its end is chosen; null disables the row.
-  final ValueChanged<DesignDateRange>? onChanged;
+  final ValueChanged<RawDateRange>? onChanged;
 
   /// The row's name, over the box; also its name for a screen reader.
   final String? label;
@@ -473,14 +473,10 @@ class MinimalDateRangePicker extends StatefulWidget {
       ..add(DiagnosticsProperty<DateTime>('firstDate', firstDate))
       ..add(DiagnosticsProperty<DateTime>('lastDate', lastDate))
       ..add(
-        DiagnosticsProperty<DesignDateRange>(
-          'value',
-          value,
-          defaultValue: null,
-        ),
+        DiagnosticsProperty<RawDateRange>('value', value, defaultValue: null),
       )
       ..add(
-        ObjectFlagProperty<ValueChanged<DesignDateRange>>.has(
+        ObjectFlagProperty<ValueChanged<RawDateRange>>.has(
           'onChanged',
           onChanged,
         ),
@@ -499,19 +495,19 @@ class MinimalDateRangePicker extends StatefulWidget {
 }
 
 class _MinimalDateRangePickerState extends State<MinimalDateRangePicker> {
-  DesignCalendarController _make() {
+  RawCalendarController _make() {
     final v = widget.value;
-    return DesignCalendarController(
+    return RawCalendarController(
       firstDate: widget.firstDate,
       lastDate: widget.lastDate,
-      mode: DesignCalendarMode.range,
+      mode: RawCalendarMode.range,
       selectedRange: v,
       currentDate: widget.today,
       selectable: widget.selectable,
     );
   }
 
-  DesignCalendarController? _open;
+  RawCalendarController? _open;
 
   @override
   void dispose() {
@@ -519,7 +515,7 @@ class _MinimalDateRangePickerState extends State<MinimalDateRangePicker> {
     super.dispose();
   }
 
-  String _range(MinimalLocalizations words, DesignDateRange r) {
+  String _range(MinimalLocalizations words, RawDateRange r) {
     String day(DateTime d, {required bool year}) =>
         '${words.digits(d.day)} ${words.monthsShort[d.month - 1]}'
         '${year ? ' ${words.digits(d.year)}' : ''}';
@@ -539,10 +535,10 @@ class _MinimalDateRangePickerState extends State<MinimalDateRangePicker> {
         ? (widget.hint ?? words.choose)
         : _range(words, value);
 
-    final overlay = DesignAnchoredOverlay(
+    final overlay = RawPopover(
       semanticLabel: label,
       // The calendar keeps its own width under a wide field.
-      placement: const DesignOverlayPlacement(
+      placement: const RawPopoverPlacement(
         gap: MinimalSpacing.s4,
         matchAnchorWidth: false,
       ),

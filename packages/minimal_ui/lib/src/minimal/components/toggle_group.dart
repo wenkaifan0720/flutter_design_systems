@@ -62,7 +62,7 @@ class MinimalToggleItem<T> {
 /// One tab stop for the group, at its chosen item (or its first); the arrows
 /// move along it, Home and End go to its ends, Space and Enter press. One
 /// choice announces a radio group; several, a set of toggle buttons. The
-/// behaviour is ui_core's ([DesignToggleGroup]); Minimal paints it. A
+/// behaviour is ui_core's ([RawSegmentedButton]); Minimal paints it. A
 /// segmented control that slides a thumb is [MinimalSegmentedButton].
 ///
 /// [style] dresses one group. Per toggle, resolved with
@@ -216,7 +216,7 @@ class MinimalToggleGroup<T> extends StatelessWidget {
       );
     }
 
-    final group = DesignToggleGroup<T>(
+    final group = RawSegmentedButton<T>(
       options: [for (final item in items) item.value],
       selected: selected,
       onSelectionChanged: onChanged,

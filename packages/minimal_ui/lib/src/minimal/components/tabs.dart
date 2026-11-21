@@ -24,7 +24,7 @@ import '../theme.dart';
 /// it into view — focus and choice never part, so a following Enter or
 /// Space changes nothing. A screen reader meets a tab bar of tabs, each
 /// selected or not and its place ("Tab 2 of 3"), its count with its name.
-/// The behaviour is ui_core's ([DesignTabBar]); Minimal paints it, and
+/// The behaviour is ui_core's ([RawTabBar]); Minimal paints it, and
 /// keeps its own scroll, its faded ends and the room its ring takes past
 /// the strip's ends. [padding] insets the
 /// labels (pass `MinimalInsets.gutter` on a full-bleed page: the first
@@ -89,10 +89,10 @@ const double _halo = MinimalSpacing.s8;
 
 class _MinimalTabBarState extends State<MinimalTabBar>
     with TickerProviderStateMixin {
-  late DesignTabController _controller = _make();
+  late RawTabController _controller = _make();
   List<GlobalKey> _keys = const [];
 
-  DesignTabController _make() => DesignTabController(
+  RawTabController _make() => RawTabController(
     length: widget.tabs.length,
     initialIndex: widget.selectedIndex,
     vsync: this,
@@ -170,7 +170,7 @@ class _MinimalTabBarState extends State<MinimalTabBar>
     final keys = _keysFor(tabs.length);
     final current = _controller.index;
 
-    Widget tab(DesignTab design, DesignTabDetails details) {
+    Widget tab(RawTab design, RawTabDetails details) {
       final i = details.index;
       final selected = i == current;
       final count = counts?[i];
@@ -271,7 +271,7 @@ class _MinimalTabBarState extends State<MinimalTabBar>
       );
       // The first tab's words start on the strip's inset, its target
       // reaching on past them.
-      face = DesignTapTarget(
+      face = TapTargetPadding(
         alignment: i == 0
             ? AlignmentDirectional.centerStart
             : AlignmentDirectional.center,
@@ -314,11 +314,11 @@ class _MinimalTabBarState extends State<MinimalTabBar>
               clipBehavior: Clip.none,
               // The tabs keep their own widths: in the scroll's unbounded
               // width, ui_core's bar shares none out.
-              child: DesignTabBar(
+              child: RawTabBar(
                 controller: _controller,
                 tabs: [
                   for (var i = 0; i < tabs.length; i++)
-                    DesignTab(
+                    RawTab(
                       // A count is heard with its name, as it is seen.
                       label: counts?[i] == null
                           ? tabs[i]
@@ -404,10 +404,10 @@ class _RenderTargetWash extends RenderBox {
     if (color == null || color.a == 0) return;
     var rect = Rect.fromLTRB(-_halo, 0, size.width + _halo, size.height);
     RenderObject? up = parent;
-    while (up != null && up is! RenderDesignTapTarget) {
+    while (up != null && up is! RenderTapTargetPadding) {
       up = up.parent;
     }
-    if (up is RenderDesignTapTarget && up.hasSize) {
+    if (up is RenderTapTargetPadding && up.hasSize) {
       final back = Matrix4.tryInvert(getTransformTo(up));
       if (back != null) {
         final target = MatrixUtils.transformRect(back, Offset.zero & up.size);

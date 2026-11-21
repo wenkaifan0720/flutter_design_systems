@@ -12,7 +12,7 @@ Widget _app(Widget child, {MinimalLocalizations? words}) => MaterialApp(
   debugShowCheckedModeBanner: false,
   localizationsDelegates: [
     if (words != null) MinimalLocalizations.delegateOf(words),
-    DesignLocalizations.delegate,
+    RawWidgetsLocalizations.delegate,
   ],
   builder: (context, navigator) => MinimalHost(
     light: MinimalThemeData.preset('standard', Brightness.light),
@@ -37,7 +37,7 @@ Future<String> _heard(
 /// ninety-nine, and the rest; a translation the package does not ship, so
 /// the test brings its own.
 class _Arabic extends MinimalLocalizationsEn {
-  _Arabic() : super(DesignLocalizations.forLocale(const Locale('ar')));
+  _Arabic() : super(RawWidgetsLocalizations.forLocale(const Locale('ar')));
 
   @override
   String daysKeptOf(int kept, int total) => 'أُنجز $kept من ${_days(total)}';

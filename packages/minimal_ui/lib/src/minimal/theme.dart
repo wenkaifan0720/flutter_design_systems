@@ -348,7 +348,7 @@ abstract final class MinimalLayout {
   static const double expanded = 960;
 
   /// The touch-target floor. At a finger every 28–32 px control is laid
-  /// out at least this square ([DesignTapTarget], Material's padded tap
+  /// out at least this square ([TapTargetPadding], Material's padded tap
   /// target), its face as it paints, centred in it.
   static const double minHitTarget = 44;
 

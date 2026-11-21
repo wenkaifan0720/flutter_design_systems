@@ -272,7 +272,7 @@ void main() {
           // Its cell runs half way to its neighbours' reach: the box a tap
           // lands in round each mark (its tap target), else the mark.
           final targets = find
-              .descendant(of: control, matching: find.byType(DesignTapTarget))
+              .descendant(of: control, matching: find.byType(TapTargetPadding))
               .evaluate()
               .map((e) => e.renderObject! as RenderBox)
               .map((b) => b.localToGlobal(Offset.zero) & b.size)

@@ -5,7 +5,7 @@ import 'package:ui_core/ui_core.dart';
 
 import '../component_themes.dart';
 import '../internal/kit_paint.dart';
-import '../internal/menu_keys.dart';
+import '../internal/press_feedback.dart';
 import '../internal/styled.dart';
 import '../internal/tap_band.dart';
 import '../theme.dart';
@@ -147,7 +147,7 @@ class MinimalPressable extends StatefulWidget {
   final Color? ink;
 
   /// Whether the control is laid out at least the tap-target floor
-  /// ([DesignTapTarget]); false for a part whose larger control lays the
+  /// ([TapTargetPadding]); false for a part whose larger control lays the
   /// target out round it.
   final bool tapTarget;
 
@@ -279,28 +279,6 @@ class _MinimalPressableState extends State<MinimalPressable> {
     );
     final child = widget.child ?? widget.builder!(context, states);
     if (widget.enabled && widget.onPressed == null) return child;
-    final t = context.minimalTheme;
-    final shape =
-        widget.style?.shape?.resolve(states) ??
-        widget.shape ??
-        (widget.radius == null
-            ? t.shapes.small
-            : RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(widget.radius!),
-              ));
-    final inside = widget.focusInside ?? widget.radius == 0;
-    // The ring, unless the row it presses paints the keyboard's place (an
-    // open menu's item, on the muted fill).
-    final ringed = _focus && enabled && !MinimalPaintsFocus.of(context);
-    // The look's wash: the ink at 8% while pressed. Hover leaves the face
-    // as it is; an app's overlay may say otherwise.
-    final wash =
-        widget.style?.overlay?.resolve(states) ??
-        minimalPressInk(
-          t,
-          face: widget.face,
-          faceInk: widget.ink,
-        ).withValues(alpha: enabled && _down ? 0.08 : 0.0);
     // The tap target is the outermost layer: laid out at the floor, so the
     // area a tap reaches is the box a screen reader outlines (the node
     // below spans it).
@@ -357,42 +335,19 @@ class _MinimalPressableState extends State<MinimalPressable> {
             onTapDown: enabled ? (_) => _setDown(true) : null,
             onTapUp: enabled ? (_) => _setDown(false) : null,
             onTapCancel: enabled ? () => _setDown(false) : null,
-            child: AnimatedOpacity(
-              opacity: enabled
-                  ? 1
-                  : minimalDisabledOpacity(
-                      ink: widget.ink,
-                      face: widget.face,
-                      ground: minimalGround(context),
-                    ),
-              duration: context.minimalStill
-                  ? Duration.zero
-                  : MinimalMotion.fast,
-              child: _reach(
-                context,
-                child,
-                // Outside the edge the ring stands past a gap of the
-                // ground, so it reads on a face filled in its own ink.
-                inside
-                    ? minimalFrame(
-                        shape,
-                        fill: wash,
-                        side: ringed
-                            ? BorderSide(
-                                color: t.ring,
-                                width: t.focusWidth,
-                                strokeAlign: BorderSide.strokeAlignInside,
-                              )
-                            : BorderSide.none,
-                      )
-                    : minimalRingFrame(
-                        shape,
-                        wash: wash,
-                        ring: ringed ? t.ring : null,
-                        ground: minimalGround(context),
-                        width: t.focusWidth,
-                      ),
-              ),
+            child: MinimalPressFeedback(
+              states: states,
+              enabled: enabled,
+              pressed: enabled && _down,
+              focused: _focus && enabled,
+              radius: widget.radius,
+              shape: widget.shape,
+              style: widget.style,
+              focusInside: widget.focusInside,
+              face: widget.face,
+              ink: widget.ink,
+              outset: widget.outset,
+              child: child,
             ),
           ),
         ),
@@ -401,7 +356,7 @@ class _MinimalPressableState extends State<MinimalPressable> {
     if (!widget.tapTarget) return control;
     return minimalInlineNode(
       context,
-      DesignTapTarget(
+      TapTargetPadding(
         alignment:
             widget.tapAlignment ??
             MinimalTapAlignment.maybeOf(context) ??
@@ -412,43 +367,6 @@ class _MinimalPressableState extends State<MinimalPressable> {
         // to the contrast of live ones.
         child: Semantics(enabled: enabled, child: control),
       ),
-    );
-  }
-
-  /// [child] wearing [feedback] (the wash and the ring): over its own box,
-  /// or with [MinimalPressable.outset] over that box grown by the outset,
-  /// the child laid out as it would be without it.
-  Widget _reach(BuildContext context, Widget child, Decoration feedback) {
-    final outset = widget.outset?.resolve(Directionality.of(context));
-    if (outset == null || outset == EdgeInsets.zero) {
-      return AnimatedContainer(
-        duration: context.minimalStill ? Duration.zero : MinimalMotion.fast,
-        curve: MinimalMotion.out,
-        foregroundDecoration: feedback,
-        child: child,
-      );
-    }
-    return Stack(
-      clipBehavior: Clip.none,
-      fit: StackFit.passthrough,
-      children: [
-        child,
-        Positioned(
-          left: -outset.left,
-          top: -outset.top,
-          right: -outset.right,
-          bottom: -outset.bottom,
-          child: IgnorePointer(
-            child: AnimatedContainer(
-              duration: context.minimalStill
-                  ? Duration.zero
-                  : MinimalMotion.fast,
-              curve: MinimalMotion.out,
-              foregroundDecoration: feedback,
-            ),
-          ),
-        ),
-      ],
     );
   }
 
@@ -480,7 +398,7 @@ class _MinimalPressableState extends State<MinimalPressable> {
 /// ```
 @Deprecated(
   'Not needed: since 0.2.0 each Minimal control lays its own tap target out '
-  '(ui_core\'s DesignTapTarget), whatever its parent. Remove the wrapper.',
+  '(ui_core\'s TapTargetPadding), whatever its parent. Remove the wrapper.',
 )
 class MinimalHitTarget extends SingleChildRenderObjectWidget {
   /// Pads [child]'s hit area to 44 px.

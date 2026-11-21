@@ -107,7 +107,7 @@ class MinimalDataColumn<R> {
 /// to the frame's edge. One tab
 /// stop for the rows: Up and Down move, Home and End to the ends, Enter
 /// opens a row ([onRowActivated]). The behaviour is ui_core's
-/// ([DesignDataTable], [DesignTableController]); Minimal paints it. A table
+/// ([RawDataTable], [RawDataTableController]); Minimal paints it. A table
 /// the page sorts and pages itself is [MinimalTable].
 ///
 /// ```dart
@@ -197,17 +197,17 @@ class MinimalDataTable<R> extends StatefulWidget {
 }
 
 class _MinimalDataTableState<R> extends State<MinimalDataTable<R>> {
-  late DesignTableController<R> _table = _make();
+  late RawDataTableController<R> _table = _make();
   int _selected = 0;
 
-  DesignTableController<R> _make() =>
-      DesignTableController<R>(
+  RawDataTableController<R> _make() =>
+      RawDataTableController<R>(
           rows: widget.rows,
           rowKey: widget.rowKey,
           pageSize: widget.pageSize,
           columns: [
             for (final (i, c) in widget.columns.indexed)
-              DesignTableColumn<R>(
+              RawDataColumn<R>(
                 id: '$i',
                 label: c.label,
                 numeric: c.numeric,
@@ -423,11 +423,11 @@ class _MinimalDataTableState<R> extends State<MinimalDataTable<R>> {
         ? minimalTapFloor(context)
         : 0.0;
 
-    Widget tableAt(MinimalColumnPlan layout) => DesignDataTable<R>(
+    Widget tableAt(MinimalColumnPlan layout) => RawDataTable<R>(
       controller: _table,
       selectable: widget.selectable,
       onActivate: widget.onRowActivated,
-      sortedHint: (d) => d == DesignSortDirection.ascending
+      sortedHint: (d) => d == RawSortDirection.ascending
           ? words.sortedAscending
           : words.sortedDescending,
       headerBuilder: (context, column, sort, states) {
@@ -460,7 +460,7 @@ class _MinimalDataTableState<R> extends State<MinimalDataTable<R>> {
               if (sort != null) ...[
                 const MinimalGap(2),
                 MinimalIcon(
-                  sort == DesignSortDirection.ascending
+                  sort == RawSortDirection.ascending
                       ? LucideIcons.arrowUp
                       : LucideIcons.arrowDown,
                   size: 12,
@@ -488,14 +488,15 @@ class _MinimalDataTableState<R> extends State<MinimalDataTable<R>> {
                   child: Center(
                     child: MinimalPressable(
                       onPressed: _table.togglePage,
-                      checked: _table.pageSelection == DesignSelection.all,
+                      checked:
+                          _table.pageSelection == RawDataTableSelection.all,
                       semanticLabel: words.selectAllRows,
                       shape: t.shapes.mark,
                       builder: (context, states) =>
                           box(switch (_table.pageSelection) {
-                            DesignSelection.none => false,
-                            DesignSelection.some => null,
-                            DesignSelection.all => true,
+                            RawDataTableSelection.none => false,
+                            RawDataTableSelection.some => null,
+                            RawDataTableSelection.all => true,
                           }, const {}),
                     ),
                   ),

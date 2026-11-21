@@ -101,7 +101,7 @@ enum MinimalMenuTrigger {
 /// opens it at the pointer, the content taking the press wash while held;
 /// from the keyboard the content is a focus stop that Shift+F10 or the
 /// context-menu key opens; a screen reader finds "Show menu" among its
-/// actions. The context menu is ui_core's ([DesignContextMenu]): its rows
+/// actions. The context menu is ui_core's ([RawContextMenu]): its rows
 /// are a menu bar's, one lit, which the pointer moves too; Minimal paints
 /// them as this card's items.
 ///
@@ -392,7 +392,7 @@ OutlinedBorder _pill(MinimalThemeData t) =>
     MinimalShapes.inset(t.shapes.small, 1);
 
 /// A context menu over [child] ([MinimalMenuTrigger.longPress]): ui_core's
-/// [DesignContextMenu] opens it (a long press or a right click at the
+/// [RawContextMenu] opens it (a long press or a right click at the
 /// pointer, Shift+F10 or the context-menu key at the focus, a screen
 /// reader's "Show menu"), and Minimal paints it as [MinimalMenu]'s card. The
 /// content is a focus stop that draws the kit's ring under keyboard focus,
@@ -443,10 +443,10 @@ class _MinimalContextMenuState extends State<_MinimalContextMenu> {
     _hold(false);
   }
 
-  List<DesignMenuEntry> _entries(BuildContext context) => [
+  List<RawMenuEntry> _entries(BuildContext context) => [
     for (final (i, item) in widget.items.indexed) ...[
-      if (i > 0 && item.startsGroup) const DesignMenuEntry.divider(),
-      DesignMenuEntry(
+      if (i > 0 && item.startsGroup) const RawMenuEntry.divider(),
+      RawMenuEntry(
         label: item.label,
         onPressed: item.onPressed,
         checked: item.selected ? true : null,
@@ -469,7 +469,7 @@ class _MinimalContextMenuState extends State<_MinimalContextMenu> {
     final t = context.minimalTheme;
     final enabled = widget.items.isNotEmpty;
     final choosing = widget.items.any((item) => item.selected);
-    return DesignContextMenu(
+    return RawContextMenu(
       menuChildren: enabled ? _entries(context) : const [],
       semanticLabel: widget.label,
       itemBuilder: (context, entry, level, states) {

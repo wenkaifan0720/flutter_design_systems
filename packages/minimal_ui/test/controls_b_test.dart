@@ -1227,30 +1227,41 @@ void main() {
       handle.dispose();
     });
 
-    testWidgets('the arrow keys walk a group', (tester) async {
+    testWidgets('a group is one Tab stop whose arrow keys choose', (
+      tester,
+    ) async {
       final chosen = <String>[];
+      var choice = 'Morning';
       await tester.pumpWidget(
         _host(
-          MinimalSelectionGroup(
-            children: [
-              for (final label in const ['Morning', 'Afternoon', 'Evening'])
-                MinimalChoiceRow(
-                  title: label,
-                  selected: label == 'Morning',
-                  onPressed: () => chosen.add(label),
-                ),
-            ],
+          StatefulBuilder(
+            builder: (context, setState) => MinimalSelectionGroup(
+              children: [
+                for (final label in const ['Morning', 'Afternoon', 'Evening'])
+                  MinimalChoiceRow(
+                    title: label,
+                    selected: label == choice,
+                    onPressed: () => setState(() {
+                      chosen.add(label);
+                      choice = label;
+                    }),
+                  ),
+              ],
+            ),
           ),
         ),
       );
       await tester.sendKeyEvent(LogicalKeyboardKey.tab);
       await tester.pump();
       await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
+      await tester.pump();
       await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
       await tester.pump();
-      await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+      expect(chosen, ['Afternoon', 'Evening']);
+      // Space on the choice presses it again, as its pressable did.
+      await tester.sendKeyEvent(LogicalKeyboardKey.space);
       await tester.pump();
-      expect(chosen, ['Evening']);
+      expect(chosen, ['Afternoon', 'Evening', 'Evening']);
     });
   });
 

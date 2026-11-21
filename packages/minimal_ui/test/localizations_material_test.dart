@@ -12,8 +12,8 @@ import 'package:minimal_ui/minimal_ui.dart';
 Widget _app(Locale locale, Widget part) => WidgetsApp(
   color: const Color(0xFF000000),
   locale: locale,
-  supportedLocales: DesignLocalizations.supportedLocales,
-  localizationsDelegates: const [DesignLocalizations.delegate],
+  supportedLocales: RawWidgetsLocalizations.supportedLocales,
+  localizationsDelegates: const [RawWidgetsLocalizations.delegate],
   builder: (context, _) => Directionality(
     textDirection: locale.languageCode == 'ar'
         ? TextDirection.rtl
@@ -129,7 +129,7 @@ void main() {
         ),
       ),
     );
-    final shared = DesignLocalizations.forLocale(const Locale('de'));
+    final shared = RawWidgetsLocalizations.forLocale(const Locale('de'));
     expect(words.cancel, shared.cancelButtonLabel);
     expect(words.cancel, isNot('Cancel'));
   });

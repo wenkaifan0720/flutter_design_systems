@@ -412,9 +412,8 @@ class _MinimalTextFieldState extends State<MinimalTextField>
         : t.body;
     final ink = widget.enabled ? t.foreground : t.mutedForeground;
 
-    Widget field = TextField(
+    Widget field = MinimalBareTextField(
       controller: controller,
-      selectionControls: minimalSelectionControls(context),
       focusNode: focusNode,
       enabled: widget.enabled,
       readOnly: widget.readOnly,
@@ -432,13 +431,9 @@ class _MinimalTextFieldState extends State<MinimalTextField>
       onChanged: widget.onChanged,
       maxLines: widget.maxLines,
       minLines: widget.minLines ?? widget.maxLines,
-      cursorColor: t.primary,
-      cursorWidth: MinimalFieldMetrics.cursor,
       style: valueStyle.c(ink),
-      decoration: minimalBareDecoration(
-        hint: widget.hint,
-        hintStyle: valueStyle.c(t.mutedForeground),
-      ),
+      hint: widget.hint,
+      hintStyle: valueStyle.c(t.mutedForeground),
     );
     // A one-line field's line by its capitals, as every label beside it:
     // caret, hint and taps move with it. A text area keeps its lines.

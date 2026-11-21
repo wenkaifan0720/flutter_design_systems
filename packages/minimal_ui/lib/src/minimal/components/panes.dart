@@ -25,7 +25,7 @@ import '../theme.dart';
 /// while the keyboard is there.
 ///
 /// [child] is the content; the area scrolls it on [controller] (its own
-/// unstated). The behaviour is ui_core's ([DesignScrollArea]); Minimal
+/// unstated). The behaviour is ui_core's ([RawScrollArea]); Minimal
 /// paints it. [shape] outlines the ring (and clips the content), else
 /// `shapes.small`.
 ///
@@ -142,7 +142,7 @@ class _MinimalScrollAreaState extends State<MinimalScrollArea> {
     final still = context.minimalStill;
     final shape = widget.shape ?? t.shapes.small;
     final vertical = widget.axis == Axis.vertical;
-    final area = DesignScrollArea(
+    final area = RawScrollArea(
       controller: _controller,
       axis: widget.axis,
       thickness: 12,
@@ -209,7 +209,7 @@ const double _barGutter = 16;
 /// A drag moves it, the arrows step it (and a screen reader hears a slider
 /// of the first pane's share), Enter collapses the first pane and brings it
 /// back; the panes keep [minFirst] and [minSecond]. Nest one in another for
-/// three panes. The behaviour is ui_core's ([DesignSplitView]); Minimal
+/// three panes. The behaviour is ui_core's ([RawSplitView]); Minimal
 /// paints it.
 ///
 /// ```dart
@@ -273,7 +273,7 @@ class MinimalResizable extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.minimalTheme;
     final across = axis == Axis.horizontal;
-    return DesignSplitView(
+    return RawSplitView(
       first: first,
       second: second,
       axis: axis,

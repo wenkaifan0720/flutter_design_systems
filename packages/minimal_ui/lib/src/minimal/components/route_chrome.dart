@@ -27,7 +27,7 @@ enum MinimalRouteChrome {
   /// root would make true of the root too.
   static MinimalRouteChrome of(BuildContext context) {
     final route = ModalRoute.of(context);
-    if (route is DesignBottomSheetRoute ||
+    if (route is RawBottomSheetRoute ||
         route is ModalBottomSheetRoute ||
         route is MinimalCentredSheetRoute) {
       return sheet;

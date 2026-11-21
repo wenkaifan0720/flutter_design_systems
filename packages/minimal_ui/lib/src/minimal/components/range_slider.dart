@@ -15,7 +15,7 @@ import '../theme.dart';
 
 // The two ends of a range are ui_core's, exported with the slider so a
 // screen names them without a Material import.
-export 'package:ui_core/ui_core.dart' show DesignRangeValues;
+export 'package:ui_core/ui_core.dart' show RawRangeValues;
 
 const double _thumb = 16;
 const double _track = 4;
@@ -31,7 +31,7 @@ const Size _target = Size(44, 44);
 /// slider for a screen reader (Minimum and Maximum, after [label]); the
 /// arrows step it, Page Up and Down take bigger steps, Home and End go to
 /// the ends. [divisions] snaps the values and ticks the track. The
-/// behaviour is ui_core's ([DesignRangeSlider]); Minimal paints it.
+/// behaviour is ui_core's ([RawRangeSlider]); Minimal paints it.
 ///
 /// [style] dresses one slider over `components.slider`, as a slider's does:
 /// fill (between the thumbs, and their rings), edge (the rest of the
@@ -39,7 +39,7 @@ const Size _target = Size(44, 44);
 /// and shape (the track's outline; a capsule unset).
 ///
 /// ```dart
-/// MinimalRangeSlider(label: 'Price', values: const DesignRangeValues(20, 80), min: 0, max: 200, format: (v) => '\$${v.round()}', onChanged: setPrice)
+/// MinimalRangeSlider(label: 'Price', values: const RawRangeValues(20, 80), min: 0, max: 200, format: (v) => '\$${v.round()}', onChanged: setPrice)
 /// ```
 class MinimalRangeSlider extends StatelessWidget {
   /// A range slider at [values].
@@ -65,8 +65,8 @@ class MinimalRangeSlider extends StatelessWidget {
   /// false, and the thumbs' names for a screen reader.
   final String label;
 
-  /// The range: ui_core's [DesignRangeValues], its two ends.
-  final DesignRangeValues values;
+  /// The range: ui_core's [RawRangeValues], its two ends.
+  final RawRangeValues values;
 
   /// The least value.
   final double min;
@@ -75,10 +75,10 @@ class MinimalRangeSlider extends StatelessWidget {
   final double max;
 
   /// A drag's, a key's or a screen reader's new range; null disables it.
-  final ValueChanged<DesignRangeValues>? onChanged;
+  final ValueChanged<RawRangeValues>? onChanged;
 
   /// Called when a drag ends, with the range it left.
-  final ValueChanged<DesignRangeValues>? onChangeEnd;
+  final ValueChanged<RawRangeValues>? onChangeEnd;
 
   /// How many steps the range snaps to; null: none.
   final int? divisions;
@@ -122,7 +122,7 @@ class MinimalRangeSlider extends StatelessWidget {
     final fill = so.fill ?? t.primary;
     final unitWords = unit;
 
-    final slider = DesignRangeSlider(
+    final slider = RawRangeSlider(
       values: values,
       min: min,
       max: max,
@@ -245,17 +245,17 @@ class MinimalRangeSlider extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(StringProperty('label', label))
-      ..add(DiagnosticsProperty<DesignRangeValues>('values', values))
+      ..add(DiagnosticsProperty<RawRangeValues>('values', values))
       ..add(DoubleProperty('min', min, defaultValue: 0))
       ..add(DoubleProperty('max', max, defaultValue: 1))
       ..add(
-        ObjectFlagProperty<ValueChanged<DesignRangeValues>>.has(
+        ObjectFlagProperty<ValueChanged<RawRangeValues>>.has(
           'onChanged',
           onChanged,
         ),
       )
       ..add(
-        ObjectFlagProperty<ValueChanged<DesignRangeValues>>.has(
+        ObjectFlagProperty<ValueChanged<RawRangeValues>>.has(
           'onChangeEnd',
           onChangeEnd,
         ),

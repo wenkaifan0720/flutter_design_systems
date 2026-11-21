@@ -8,17 +8,17 @@ import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
 // The words every look shares are ui_core's: an app translates them by
-// extending DefaultDesignLocalizations, so they are exported with the
+// extending DefaultRawWidgetsLocalizations, so they are exported with the
 // package.
 export 'package:ui_core/ui_core.dart'
-    show DefaultDesignLocalizations, DesignLocalizations;
+    show DefaultRawWidgetsLocalizations, RawWidgetsLocalizations;
 
 /// The words Minimal's parts say when the caller gives none.
 ///
 /// The words every look shares (Back, Close, Search, Today, Next month,
 /// the month and weekday names, the first day of the week) come from
-/// [DesignLocalizations.of]: an app in another language extends
-/// [DefaultDesignLocalizations], overrides the words it translates and adds
+/// [RawWidgetsLocalizations.of]: an app in another language extends
+/// [DefaultRawWidgetsLocalizations], overrides the words it translates and adds
 /// a delegate for it to `localizationsDelegates`, and every part speaks
 /// them. The words only Minimal says (Try again, Copy, the composer's
 /// buttons) are translated the same way: extend [MinimalLocalizationsEn],
@@ -33,7 +33,7 @@ abstract class MinimalLocalizations {
 
   /// The words in force at [context]: the app's own, when its
   /// `localizationsDelegates` load a [MinimalLocalizations]
-  /// ([delegateOf]); else the shared words of [DesignLocalizations.of], and
+  /// ([delegateOf]); else the shared words of [RawWidgetsLocalizations.of], and
   /// Minimal's own in English ([delegate], or no delegate at all).
   static MinimalLocalizations of(BuildContext context) {
     final words = Localizations.of<MinimalLocalizations>(
@@ -41,17 +41,17 @@ abstract class MinimalLocalizations {
       MinimalLocalizations,
     );
     return words == null || words is _SharedWords
-        ? MinimalLocalizationsEn(DesignLocalizations.of(context))
+        ? MinimalLocalizationsEn(RawWidgetsLocalizations.of(context))
         : words;
   }
 
   /// Loads Minimal's words for every locale: the words every look shares in
-  /// the locale's language, from the [DesignLocalizations] in force (ui_core's
+  /// the locale's language, from the [RawWidgetsLocalizations] in force (ui_core's
   /// translations, or an app's own), and Minimal's own in English. The
   /// same words [of] gives with no delegate registered.
   ///
   /// ```dart
-  /// MaterialApp(localizationsDelegates: const [MinimalLocalizations.delegate, DesignLocalizations.delegate])
+  /// MaterialApp(localizationsDelegates: const [MinimalLocalizations.delegate, RawWidgetsLocalizations.delegate])
   /// ```
   static const LocalizationsDelegate<MinimalLocalizations> delegate =
       _SharedWordsDelegate();
@@ -60,7 +60,7 @@ abstract class MinimalLocalizations {
   /// (every locale when null), for an app's `localizationsDelegates`.
   ///
   /// ```dart
-  /// MaterialApp(localizationsDelegates: [MinimalLocalizations.delegateOf(const MinimalLocalizationsEn(), isSupported: (l) => l.languageCode == 'en'), DesignLocalizations.delegate])
+  /// MaterialApp(localizationsDelegates: [MinimalLocalizations.delegateOf(const MinimalLocalizationsEn(), isSupported: (l) => l.languageCode == 'en'), RawWidgetsLocalizations.delegate])
   /// ```
   static LocalizationsDelegate<MinimalLocalizations> delegateOf(
     MinimalLocalizations words, {
@@ -447,11 +447,11 @@ abstract class MinimalLocalizations {
 class MinimalLocalizationsEn extends MinimalLocalizations {
   /// The words over [shared], English unless given.
   const MinimalLocalizationsEn([
-    this.shared = const DefaultDesignLocalizations(),
+    this.shared = const DefaultRawWidgetsLocalizations(),
   ]);
 
   /// The words every look shares, in the app's language.
-  final DesignLocalizations shared;
+  final RawWidgetsLocalizations shared;
 
   @override
   String monthYear(DateTime month) => shared.formatMonthYear(month);
@@ -658,10 +658,10 @@ class MinimalLocalizationsEn extends MinimalLocalizations {
   String get menuBar => shared.menuBarLabel;
   @override
   String get sortedAscending =>
-      shared.dataTableSortedHint(DesignSortDirection.ascending);
+      shared.dataTableSortedHint(RawSortDirection.ascending);
   @override
   String get sortedDescending =>
-      shared.dataTableSortedHint(DesignSortDirection.descending);
+      shared.dataTableSortedHint(RawSortDirection.descending);
   @override
   String get selectAllRows => 'Select all rows';
   @override

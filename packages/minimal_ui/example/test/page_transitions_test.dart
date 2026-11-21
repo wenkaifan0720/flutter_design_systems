@@ -11,7 +11,7 @@
 // place of its stand-in.
 //
 // Minimal's push replaces iOS's, and with it iOS's edge swipe back, so iOS's
-// entry wraps it in ui_core's DesignSwipeBackPageTransitionsBuilder: the last
+// entry wraps it in ui_core's SwipeBackPageTransitionsBuilder: the last
 // tests drag from the page's leading edge.
 import 'package:cupertino_ui/cupertino_ui.dart' show CupertinoPageTransition;
 import 'package:flutter/foundation.dart' show defaultTargetPlatform;

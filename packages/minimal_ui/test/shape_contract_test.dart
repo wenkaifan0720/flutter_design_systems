@@ -1309,7 +1309,7 @@ void main() {
           MinimalRangeSlider(
             label: 'Price',
             showLabel: false,
-            values: const DesignRangeValues(0.2, 0.7),
+            values: const RawRangeValues(0.2, 0.7),
             onChanged: enabled ? (_) {} : null,
           ),
         ),

@@ -10,7 +10,7 @@ Widget _app(Locale locale) => WidgetsApp(
   color: const Color(0xFF000000),
   locale: locale,
   supportedLocales: [locale],
-  localizationsDelegates: const [DesignLocalizations.delegate],
+  localizationsDelegates: const [RawWidgetsLocalizations.delegate],
   builder: (context, _) => Directionality(
     textDirection: locale.languageCode == 'ar'
         ? TextDirection.rtl

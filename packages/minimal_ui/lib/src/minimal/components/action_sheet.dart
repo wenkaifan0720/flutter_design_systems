@@ -86,7 +86,7 @@ class MinimalActionSheet extends StatelessWidget {
     final header = title != null || message != null;
     final cancel = onCancel;
     final count = actions.length + (header ? 1 : 0) + (cancel != null ? 1 : 0);
-    final modal = ModalRoute.of(context) is DesignBottomSheetRoute<void>;
+    final modal = ModalRoute.of(context) is RawBottomSheetRoute<void>;
     final firstEnabled = actions.indexWhere(
       (action) => action.onPressed != null,
     );
@@ -233,7 +233,7 @@ class _Row extends StatelessWidget {
 /// runs; a tap on the scrim, a drag down, Escape or Cancel closes it with
 /// nothing done, and focus goes back to the control that raised it. It
 /// rises on a spring with no overshoot; the route is ui_core's
-/// ([DesignBottomSheetRoute]). On a wide window it stands centred at a
+/// ([RawBottomSheetRoute]). On a wide window it stands centred at a
 /// bottom sheet's width ([MinimalBottomSheet.widthCap]); a phone sees it
 /// span the screen inside its margins.
 Future<void> showMinimalActionSheet(
@@ -246,7 +246,7 @@ Future<void> showMinimalActionSheet(
   final navigator = Navigator.of(context, rootNavigator: true);
   final themes = InheritedTheme.capture(from: context, to: navigator.context);
   return navigator.push<void>(
-    DesignBottomSheetRoute<void>(
+    RawBottomSheetRoute<void>(
       barrierColor: t.overlay,
       barrierLabel: MinimalLocalizations.of(context).dismiss,
       semanticLabel: title,

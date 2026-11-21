@@ -41,6 +41,8 @@ workspace:
   - packages/ledger_ui/example
   - packages/comic_ui
   - packages/comic_ui/example
+  - packages/minimal_ui
+  - packages/minimal_ui/example
 
 dev_dependencies:
   flutter_lints: ^6.0.0

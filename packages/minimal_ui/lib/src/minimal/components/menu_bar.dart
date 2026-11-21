@@ -71,9 +71,9 @@ class MinimalMenuEntry {
   /// Whether it is a hairline.
   final bool divider;
 
-  DesignMenuEntry _design(BuildContext context) => divider
-      ? const DesignMenuEntry.divider()
-      : DesignMenuEntry(
+  RawMenuEntry _design(BuildContext context) => divider
+      ? const RawMenuEntry.divider()
+      : RawMenuEntry(
           label: label,
           onPressed: onPressed,
           children: children == null
@@ -109,7 +109,7 @@ class MinimalMenuEntry {
 /// row also wears the accent focus ring, inside its edge. A menu the
 /// pointer opened starts on none (Down lands on the first row, Up on the
 /// last), one a key opened on its first row. The behaviour is ui_core's
-/// ([DesignMenuBar], its highlight following the pointer); Minimal paints
+/// ([RawMenuBar], its highlight following the pointer); Minimal paints
 /// it. A phone has no menu bar: a [MinimalMenu] under a button holds the
 /// same commands.
 ///
@@ -148,7 +148,7 @@ class MinimalMenuBar extends StatelessWidget {
     // A top item stands a finger wide at a finger; the band round the bar
     // gives it the floor's height.
     final across = minimalTapFloor(context);
-    Widget top(DesignMenuEntry entry, Set<WidgetState> states) => Container(
+    Widget top(RawMenuEntry entry, Set<WidgetState> states) => Container(
       height: t.density.height(MinimalChromeMetrics.controlSm),
       constraints: BoxConstraints(minWidth: across),
       padding: const EdgeInsets.symmetric(
@@ -167,7 +167,7 @@ class MinimalMenuBar extends StatelessWidget {
     // ui_core lights one row, the current one (hovered when the pointer
     // moved last, focused when a key did): the muted fill, and the keys'
     // row the accent ring inside its edge.
-    Widget row(DesignMenuEntry entry, Set<WidgetState> states) {
+    Widget row(RawMenuEntry entry, Set<WidgetState> states) {
       final source = entry.data;
       final keys = source is MinimalMenuEntry ? source.shortcut : null;
       return MinimalKitRow(
@@ -191,13 +191,11 @@ class MinimalMenuBar extends StatelessWidget {
     }
 
     return MinimalTapBand(
-      child: DesignMenuBar(
+      child: RawMenuBar(
         menus: [for (final m in menus) m._design(context)],
         semanticLabel: label ?? MinimalLocalizations.of(context).menuBar,
         itemBuilder: (context, entry, level, states) =>
-            level == DesignMenuLevel.bar
-            ? top(entry, states)
-            : row(entry, states),
+            level == RawMenuLevel.bar ? top(entry, states) : row(entry, states),
         dividerBuilder: (context) => Padding(
           padding: const EdgeInsets.symmetric(vertical: MinimalSpacing.s4),
           child: Container(height: t.hairline, color: t.border),

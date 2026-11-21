@@ -41,7 +41,7 @@ const double _band = _track + _gap;
 /// `#RRGGBB` or `#RRGGBBAA` as typed. It spans a phone's column; from a
 /// tablet up it stops at [MinimalLayout.controlMax], on its start, as every
 /// control that fills its column does. The behaviour is ui_core's
-/// ([DesignColorPicker]); Minimal paints it.
+/// ([RawColorPicker]); Minimal paints it.
 ///
 /// ```dart
 /// MinimalColorPicker(value: colour, onChanged: setColour, swatches: const [Color(0xFF2563EB), Color(0xFF16A34A)])
@@ -88,7 +88,7 @@ class MinimalColorPicker extends StatefulWidget {
 }
 
 class _MinimalColorPickerState extends State<MinimalColorPicker> {
-  late final DesignColorController _colour = DesignColorController(widget.value)
+  late final RawColorController _colour = RawColorController(widget.value)
     ..addListener(_changed);
   late final TextEditingController _hex = TextEditingController(
     text: _colour.hex,
@@ -177,7 +177,7 @@ class _MinimalColorPickerState extends State<MinimalColorPicker> {
       );
     }
 
-    final picker = DesignColorPicker(
+    final picker = RawColorPicker(
       controller: _colour,
       showAlpha: widget.showAlpha,
       areaHeight: widget.areaHeight,
@@ -380,7 +380,7 @@ class _ChannelTrack extends CustomPainter {
     required this.overhang,
   });
 
-  final DesignColorChannel channel;
+  final RawColorChannel channel;
   final HSVColor colour;
   final OutlinedBorder slot;
   final Color rim;
@@ -400,7 +400,7 @@ class _ChannelTrack extends CustomPainter {
     final path = slot.getOuterPath(whole, textDirection: TextDirection.ltr);
     canvas.save();
     canvas.clipPath(path);
-    if (channel == DesignColorChannel.alpha) {
+    if (channel == RawColorChannel.alpha) {
       const cell = 4.0;
       canvas.drawRect(whole, Paint()..color = checkerA);
       final dark = Paint()..color = checkerB;
@@ -413,19 +413,19 @@ class _ChannelTrack extends CustomPainter {
       }
     }
     final colours = switch (channel) {
-      DesignColorChannel.hue => [
+      RawColorChannel.hue => [
         for (var h = 0; h <= 360; h += 60)
           HSVColor.fromAHSV(1, h.toDouble(), 1, 1).toColor(),
       ],
-      DesignColorChannel.alpha => [
+      RawColorChannel.alpha => [
         colour.withAlpha(0).toColor(),
         colour.withAlpha(1).toColor(),
       ],
-      DesignColorChannel.saturation => [
+      RawColorChannel.saturation => [
         colour.withSaturation(0).withAlpha(1).toColor(),
         colour.withSaturation(1).withAlpha(1).toColor(),
       ],
-      DesignColorChannel.brightness => [
+      RawColorChannel.brightness => [
         colour.withValue(0).withAlpha(1).toColor(),
         colour.withValue(1).withAlpha(1).toColor(),
       ],

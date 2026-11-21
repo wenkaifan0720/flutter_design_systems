@@ -50,7 +50,8 @@ const List<String> _arWeekdays = <String>[
 /// The words only Minimal says, in Arabic, over ui_core's own Arabic.
 class KitArabicWords extends MinimalLocalizationsEn {
   /// Minimal's words in Arabic, ui_core's from its Arabic translation.
-  KitArabicWords() : super(DesignLocalizations.forLocale(const Locale('ar')));
+  KitArabicWords()
+    : super(RawWidgetsLocalizations.forLocale(const Locale('ar')));
 
   @override
   String get tryAgain => 'حاول مرة أخرى';

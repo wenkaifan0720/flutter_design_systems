@@ -3,6 +3,10 @@ import 'package:cupertino_ui/cupertino_ui.dart'
         cupertinoDesktopTextSelectionHandleControls,
         cupertinoTextSelectionHandleControls;
 import 'package:material_ui/material_ui.dart';
+import 'package:flutter/services.dart' show TextInputFormatter;
+
+import '../theme.dart';
+import 'field.dart';
 
 /// The one way Minimal uses Flutter's `TextField`: the look draws the box
 /// (its rim, fill, ring, side air and a minimum height from a control's
@@ -11,37 +15,153 @@ import 'package:material_ui/material_ui.dart';
 /// any configuration: the platform's density, Material 2 or 3, larger text,
 /// or an app's own `InputDecorationTheme` between the look and the field.
 ///
-/// A collapsed decoration with every field that could size or draw it set
-/// here, so no theme default reaches it: no padding, no borders, no fill,
+/// Its decoration is collapsed, with every field that could size or draw it
+/// set, so no theme default reaches it: no padding, no borders, no fill,
 /// standard density (a collapsed decorator nets the density's offset to zero
 /// only when it is negative) and no constraints (an unset one takes the
 /// theme's). Icons, buttons, add-ons, counters, help and error are the
-/// look's own widgets beside or under the box, never the decoration's.
-///
-/// [hintMaxLines] caps the hint's lines. A one-line box gives 1: Flutter keeps
-/// the box at the hint's height once text is typed, so a hint that wraps would
-/// hold the box at two lines and leave the typed line at its top.
-InputDecoration minimalBareDecoration({
-  String? hint,
-  TextStyle? hintStyle,
-  int? hintMaxLines,
-}) => InputDecoration(
-  isCollapsed: true,
-  isDense: false,
-  contentPadding: EdgeInsets.zero,
-  hintText: hint,
-  hintStyle: hintStyle,
-  hintMaxLines: hintMaxLines,
-  filled: false,
-  border: InputBorder.none,
-  enabledBorder: InputBorder.none,
-  focusedBorder: InputBorder.none,
-  disabledBorder: InputBorder.none,
-  errorBorder: InputBorder.none,
-  focusedErrorBorder: InputBorder.none,
-  visualDensity: VisualDensity.standard,
-  constraints: const BoxConstraints(),
-);
+/// look's own widgets beside or under the box, never the decoration's. The
+/// caret is the theme's primary, [MinimalFieldMetrics.cursor] wide, and the
+/// handles are [minimalSelectionControls]. The rest is `TextField`'s.
+class MinimalBareTextField extends StatelessWidget {
+  /// A bare field showing [hint] in [hintStyle] while empty.
+  const MinimalBareTextField({
+    super.key,
+    this.controller,
+    this.focusNode,
+    this.style,
+    this.hint,
+    this.hintStyle,
+    this.hintMaxLines,
+    this.enabled = true,
+    this.readOnly = false,
+    this.autofocus = false,
+    this.keyboardType,
+    this.textInputAction,
+    this.textCapitalization = TextCapitalization.none,
+    this.autocorrect = true,
+    this.enableSuggestions = true,
+    this.obscureText = false,
+    this.maxLines = 1,
+    this.minLines,
+    this.inputFormatters,
+    this.autofillHints = const <String>[],
+    this.onChanged,
+    this.onSubmitted,
+    this.onEditingComplete,
+  });
+
+  /// The text, as `TextField.controller`.
+  final TextEditingController? controller;
+
+  /// The focus, as `TextField.focusNode`.
+  final FocusNode? focusNode;
+
+  /// The typed text's style.
+  final TextStyle? style;
+
+  /// The words shown while the field is empty.
+  final String? hint;
+
+  /// The [hint]'s style.
+  final TextStyle? hintStyle;
+
+  /// Caps the hint's lines. A one-line box gives 1: Flutter keeps the box at
+  /// the hint's height once text is typed, so a hint that wraps would hold
+  /// the box at two lines and leave the typed line at its top.
+  final int? hintMaxLines;
+
+  /// As `TextField.enabled`.
+  final bool enabled;
+
+  /// As `TextField.readOnly`.
+  final bool readOnly;
+
+  /// As `TextField.autofocus`.
+  final bool autofocus;
+
+  /// As `TextField.keyboardType`.
+  final TextInputType? keyboardType;
+
+  /// As `TextField.textInputAction`.
+  final TextInputAction? textInputAction;
+
+  /// As `TextField.textCapitalization`.
+  final TextCapitalization textCapitalization;
+
+  /// As `TextField.autocorrect`.
+  final bool autocorrect;
+
+  /// As `TextField.enableSuggestions`.
+  final bool enableSuggestions;
+
+  /// As `TextField.obscureText`.
+  final bool obscureText;
+
+  /// As `TextField.maxLines`.
+  final int? maxLines;
+
+  /// As `TextField.minLines`.
+  final int? minLines;
+
+  /// As `TextField.inputFormatters`.
+  final List<TextInputFormatter>? inputFormatters;
+
+  /// As `TextField.autofillHints`.
+  final Iterable<String>? autofillHints;
+
+  /// As `TextField.onChanged`.
+  final ValueChanged<String>? onChanged;
+
+  /// As `TextField.onSubmitted`.
+  final ValueChanged<String>? onSubmitted;
+
+  /// As `TextField.onEditingComplete`.
+  final VoidCallback? onEditingComplete;
+
+  @override
+  Widget build(BuildContext context) => TextField(
+    controller: controller,
+    selectionControls: minimalSelectionControls(context),
+    focusNode: focusNode,
+    enabled: enabled,
+    readOnly: readOnly,
+    autofocus: autofocus,
+    keyboardType: keyboardType,
+    textInputAction: textInputAction,
+    textCapitalization: textCapitalization,
+    autocorrect: autocorrect,
+    enableSuggestions: enableSuggestions,
+    obscureText: obscureText,
+    maxLines: maxLines,
+    minLines: minLines,
+    inputFormatters: inputFormatters,
+    autofillHints: autofillHints,
+    onChanged: onChanged,
+    onSubmitted: onSubmitted,
+    onEditingComplete: onEditingComplete,
+    cursorColor: context.minimalTheme.primary,
+    cursorWidth: MinimalFieldMetrics.cursor,
+    style: style,
+    decoration: InputDecoration(
+      isCollapsed: true,
+      isDense: false,
+      contentPadding: EdgeInsets.zero,
+      hintText: hint,
+      hintStyle: hintStyle,
+      hintMaxLines: hintMaxLines,
+      filled: false,
+      border: InputBorder.none,
+      enabledBorder: InputBorder.none,
+      focusedBorder: InputBorder.none,
+      disabledBorder: InputBorder.none,
+      errorBorder: InputBorder.none,
+      focusedErrorBorder: InputBorder.none,
+      visualDensity: VisualDensity.standard,
+      constraints: const BoxConstraints(),
+    ),
+  );
+}
 
 /// The height one line of [style] takes at the text scale in [context]: the
 /// look's styles set a line height and even leading, so a line's box is its

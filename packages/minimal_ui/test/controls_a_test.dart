@@ -1046,7 +1046,7 @@ void main() {
         ),
       );
       expect(tracks, findsNWidgets(2));
-      final area = tester.getRect(find.byType(DesignColorArea));
+      final area = tester.getRect(find.byType(RawColorArea));
       final hue = tester.getRect(tracks.first);
       final alpha = tester.getRect(tracks.last);
       final hex = tester.getRect(

@@ -335,7 +335,7 @@ class MinimalBottomSheet extends StatelessWidget {
   /// [MinimalScaffold], whose derived bar
   /// prints the card's header and whose close pops this route. The card
   /// rides as low as the page is tall, up to [cap], and no wider than
-  /// [widthCap], centred. It is ui_core's route ([DesignBottomSheetRoute]):
+  /// [widthCap], centred. It is ui_core's route ([RawBottomSheetRoute]):
   /// it rises on a spring, a drag moves it with the finger and, let go low
   /// enough or flung down, closes it, and the keyboard lifts it.
   /// Model-authored code presents its own pickers with
@@ -350,7 +350,7 @@ class MinimalBottomSheet extends StatelessWidget {
     // Measured on the presenting screen, not inside the route.
     final gap = floating ? bottomGap(context) : 0.0;
     final maxHeight = cap(context, floating: floating);
-    return DesignBottomSheetRoute<T>(
+    return RawBottomSheetRoute<T>(
       settings: settings,
       barrierColor: t.overlay,
       barrierLabel: MinimalLocalizations.of(context).dismiss,
@@ -573,7 +573,7 @@ class MinimalBottomSheet extends StatelessWidget {
 /// low enough or flung down it closes; a tap on the scrim or Escape closes
 /// it too, and focus goes back to the control that raised it.
 /// `floating: false` presents the edge-attached drawer instead. The route
-/// is ui_core's ([DesignBottomSheetRoute]); Minimal paints the card.
+/// is ui_core's ([RawBottomSheetRoute]); Minimal paints the card.
 ///
 /// ```dart
 /// await showMinimalBottomSheet<void>(context, title: 'New habit', subtitle: 'Habits', trailing: MinimalSheetAction('Create habit', onPressed: create, isDefaultAction: true), builder: (context) => form);
@@ -596,7 +596,7 @@ Future<T?> showMinimalBottomSheet<T>(
   // travel with the sheet.
   final themes = InheritedTheme.capture(from: context, to: navigator.context);
   return navigator.push<T>(
-    DesignBottomSheetRoute<T>(
+    RawBottomSheetRoute<T>(
       barrierColor: t.overlay,
       barrierLabel: MinimalLocalizations.of(context).dismiss,
       semanticLabel: title,

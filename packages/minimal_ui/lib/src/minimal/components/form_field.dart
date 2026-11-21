@@ -23,7 +23,7 @@ import '../theme.dart';
 /// danger ink, as with an error of its own); a tap
 /// on the label focuses the control ([focusNode]). A group of controls
 /// (radios) sets `group: true`, and the label names the group instead. The
-/// behaviour is ui_core's ([DesignField]); Minimal paints it. A
+/// behaviour is ui_core's ([RawInputDecorator]); Minimal paints it. A
 /// [MinimalTextField] carries its own label and needs none of this.
 ///
 /// ```dart
@@ -73,7 +73,7 @@ class MinimalFormField extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.minimalTheme;
     final words = MinimalLocalizations.of(context);
-    final field = DesignField(
+    final field = RawInputDecorator(
       labelText: label,
       helperText: help,
       errorText: error,

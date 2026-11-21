@@ -28,7 +28,7 @@ Widget kitRangeColorDemo(Brightness brightness) => kitScreen(
       children: [
         MinimalRangeSlider(
           label: 'Hours',
-          values: const DesignRangeValues(9, 17),
+          values: const RawRangeValues(9, 17),
           min: 0,
           max: 24,
           divisions: 24,
@@ -37,7 +37,7 @@ Widget kitRangeColorDemo(Brightness brightness) => kitScreen(
         ),
         const MinimalRangeSlider(
           label: 'Locked',
-          values: DesignRangeValues(0.2, 0.6),
+          values: RawRangeValues(0.2, 0.6),
         ),
       ],
     ),
@@ -53,7 +53,7 @@ class _Price extends StatefulWidget {
 }
 
 class _PriceState extends State<_Price> {
-  DesignRangeValues _price = const DesignRangeValues(40, 220);
+  RawRangeValues _price = const RawRangeValues(40, 220);
 
   @override
   Widget build(BuildContext context) => MinimalRangeSlider(
@@ -105,7 +105,7 @@ Widget kitSpecimenRangeSlider() => Padding(
   padding: const EdgeInsets.all(MinimalSpacing.s16),
   child: MinimalRangeSlider(
     label: 'Price',
-    values: const DesignRangeValues(40, 220),
+    values: const RawRangeValues(40, 220),
     min: 0,
     max: 400,
     format: _dollars,

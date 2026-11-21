@@ -99,7 +99,7 @@ class MinimalLink extends StatelessWidget {
       outset: const EdgeInsets.symmetric(horizontal: MinimalSpacing.s2),
       child: words,
     );
-    return live ? link : DesignTapTarget(child: link);
+    return live ? link : TapTargetPadding(child: link);
   }
 
   @override

@@ -1,6 +1,6 @@
 // The words the parts say on their own: the words every look shares come
-// from ui_core's DesignLocalizations (English with nothing registered, an
-// app's language with a DefaultDesignLocalizations subclass registered),
+// from ui_core's RawWidgetsLocalizations (English with nothing registered, an
+// app's language with a DefaultRawWidgetsLocalizations subclass registered),
 // and Minimal's own words are English.
 import 'package:cupertino_ui/cupertino_ui.dart'
     show CupertinoLocalizations, DefaultCupertinoLocalizations;
@@ -10,7 +10,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:minimal_ui/minimal_ui.dart';
 import 'package:minimal_ui/minimal_host.dart';
 
-class _German extends DefaultDesignLocalizations {
+class _German extends DefaultRawWidgetsLocalizations {
   const _German();
 
   @override
@@ -28,15 +28,15 @@ class _German extends DefaultDesignLocalizations {
   int get firstDayOfWeek => DateTime.monday;
 }
 
-class _GermanDelegate extends LocalizationsDelegate<DesignLocalizations> {
+class _GermanDelegate extends LocalizationsDelegate<RawWidgetsLocalizations> {
   const _GermanDelegate();
 
   @override
   bool isSupported(Locale locale) => locale.languageCode == 'de';
 
   @override
-  Future<DesignLocalizations> load(Locale locale) =>
-      SynchronousFuture<DesignLocalizations>(const _German());
+  Future<RawWidgetsLocalizations> load(Locale locale) =>
+      SynchronousFuture<RawWidgetsLocalizations>(const _German());
 
   @override
   bool shouldReload(_GermanDelegate old) => false;
@@ -85,7 +85,7 @@ Widget _app(Widget child, {bool german = false}) => MaterialApp(
     if (german)
       const _GermanDelegate()
     else
-      DefaultDesignLocalizations.delegate,
+      DefaultRawWidgetsLocalizations.delegate,
     const _AnyMaterial(),
     const _AnyCupertino(),
     DefaultWidgetsLocalizations.delegate,

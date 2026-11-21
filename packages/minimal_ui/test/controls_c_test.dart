@@ -1056,7 +1056,7 @@ void main() {
       expect(await answer, isNull);
     });
 
-    // Focus opens on the safe answer (ui_core's DesignDialog): the keep of
+    // Focus opens on the safe answer (ui_core's RawAlertDialog): the keep of
     // a destructive question, the confirm of a plain one.
     testWidgets('Enter answers the safe action and Escape dismisses with '
         'null', (tester) async {

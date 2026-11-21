@@ -35,7 +35,7 @@ import 'menu.dart';
 ///
 /// Both halves are tab stops. Down on either opens the menu at its first
 /// item; Escape closes it and focus goes back to the half that opened it.
-/// The behaviour is ui_core's ([DesignSplitButton]); Minimal paints it.
+/// The behaviour is ui_core's ([RawSplitButton]); Minimal paints it.
 /// The chevron is announced as [menuLabel] (More actions, in the
 /// app's language, unstated).
 ///
@@ -131,11 +131,11 @@ class MinimalSplitButton extends StatelessWidget {
     final action = onPressed;
     final menu = actions;
 
-    Widget half(DesignSplitPart part, Set<WidgetState> states, bool open) {
+    Widget half(RawSplitPart part, Set<WidgetState> states, bool open) {
       final so = MinimalStyleOf(layers, states);
       final ink = so.foreground ?? fg;
       final whole = so.shape ?? t.shapes.small;
-      final main = part == DesignSplitPart.main;
+      final main = part == RawSplitPart.main;
       final cell = minimalCell(whole, index: main ? 0 : 1, count: 2);
       final glyph = icon;
       return Container(
@@ -191,14 +191,14 @@ class MinimalSplitButton extends StatelessWidget {
       );
     }
 
-    final split = DesignSplitButton(
+    final split = RawSplitButton(
       label: label,
       onPressed: action,
       menuLabel: menuLabel ?? MinimalLocalizations.of(context).moreActions,
       minimumSize: Size.zero,
       actions: [
         for (final a in menu)
-          DesignSplitAction(label: a.label, onPressed: a.onPressed),
+          RawSplitAction(label: a.label, onPressed: a.onPressed),
       ],
       layoutBuilder: (context, mainHalf, toggle) {
         final so = MinimalStyleOf(layers, const {});
@@ -332,7 +332,7 @@ class _HalvesState extends State<_Halves> {
     // Keyed, so reversing the row moves each half rather than rebuilding
     // one in the other's place.
     final main = KeyedSubtree(
-      key: const ValueKey(DesignSplitPart.main),
+      key: const ValueKey(RawSplitPart.main),
       child: Focus(
         canRequestFocus: false,
         skipTraversal: true,
@@ -345,7 +345,7 @@ class _HalvesState extends State<_Halves> {
     );
     final seam = KeyedSubtree(key: const ValueKey(#seam), child: widget.seam);
     final toggle = KeyedSubtree(
-      key: const ValueKey(DesignSplitPart.toggle),
+      key: const ValueKey(RawSplitPart.toggle),
       child: widget.toggle,
     );
     final direction = Directionality.of(context);

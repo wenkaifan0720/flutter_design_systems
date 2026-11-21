@@ -215,9 +215,8 @@ class _MinimalInputGroupState extends State<MinimalInputGroup>
     final valueStyle = widget.mono ? t.monoValue : t.body;
     final ink = widget.enabled ? t.foreground : t.mutedForeground;
 
-    Widget field = TextField(
+    Widget field = MinimalBareTextField(
       controller: controller,
-      selectionControls: minimalSelectionControls(context),
       focusNode: focusNode,
       autofocus: widget.autofocus,
       enabled: widget.enabled,
@@ -226,13 +225,9 @@ class _MinimalInputGroupState extends State<MinimalInputGroup>
       inputFormatters: widget.inputFormatters,
       onChanged: widget.onChanged,
       onSubmitted: widget.onSubmitted,
-      cursorColor: t.primary,
-      cursorWidth: MinimalFieldMetrics.cursor,
       style: valueStyle.c(ink),
-      decoration: minimalBareDecoration(
-        hint: widget.hint,
-        hintStyle: valueStyle.c(t.mutedForeground),
-      ),
+      hint: widget.hint,
+      hintStyle: valueStyle.c(t.mutedForeground),
     );
     // The line by its capitals: caret, hint and taps move with it.
     field = minimalCapLabel(field);
@@ -413,7 +408,7 @@ Widget _framed(
 /// flips; the keyboard never learns a shown password. With [hideOnBlur] a
 /// shown password hides again when focus leaves the field.
 ///
-/// The behaviour is ui_core's ([DesignPasswordReveal]); Minimal paints it.
+/// The behaviour is ui_core's ([RawPasswordReveal]); Minimal paints it.
 /// [fieldStyle] dresses the box over `components.textField`.
 ///
 /// ```dart
@@ -554,7 +549,7 @@ class _MinimalPasswordFieldState extends State<MinimalPasswordField> {
   @override
   Widget build(BuildContext context) {
     final words = MinimalLocalizations.of(context);
-    return DesignPasswordReveal(
+    return RawPasswordReveal(
       focusNode: _focus,
       hideOnBlur: widget.hideOnBlur,
       showLabel: words.showPassword,
@@ -602,7 +597,7 @@ class _MinimalPasswordFieldState extends State<MinimalPasswordField> {
 /// the boxes. A long press or a secondary click offers Paste, in Minimal's
 /// menu, while the clipboard holds text.
 ///
-/// The behaviour is ui_core's ([DesignOtpField]); Minimal paints it. The
+/// The behaviour is ui_core's ([RawOtpField]); Minimal paints it. The
 /// boxes read `components.textField` (fill, edge or side, shape).
 ///
 /// ```dart
@@ -697,7 +692,7 @@ class MinimalInputOtp extends StatelessWidget {
     final whole = frame.shape ?? t.shapes.small;
     final edge = frame.rim(error != null ? t.destructive : t.border, t.rim);
 
-    Widget slot(DesignOtpSlot s) {
+    Widget slot(RawOtpSlot s) {
       final so = MinimalStyleOf(
         [style, t.components.textField],
         minimalStates(
@@ -754,7 +749,7 @@ class MinimalInputOtp extends StatelessWidget {
       );
     }
 
-    final field = DesignOtpField(
+    final field = RawOtpField(
       length: length,
       focusNode: focusNode,
       onChanged: onChanged,

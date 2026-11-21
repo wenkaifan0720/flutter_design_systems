@@ -124,7 +124,7 @@ const bool another = false;
 const bool on = true;
 const bool dark = false;
 DateTime remindAt = DateTime(2026, 11, 14, 21, 30);
-final DesignDateRange stay = DesignDateRange(
+final RawDateRange stay = RawDateRange(
   DateTime(2026, 11, 14),
   DateTime(2026, 11, 18),
 );
@@ -883,7 +883,7 @@ final Map<String, DocExample> _examples = {
   ),
   'MinimalRangeSlider': (context) => MinimalRangeSlider(
     label: 'Price',
-    values: const DesignRangeValues(20, 80),
+    values: const RawRangeValues(20, 80),
     min: 0,
     max: 200,
     format: (v) => '\$${v.round()}',
@@ -1269,14 +1269,14 @@ final Map<String, DocExample> _examples = {
             const MinimalLocalizationsEn(),
             isSupported: (l) => l.languageCode == 'en',
           ),
-          DesignLocalizations.delegate,
+          RawWidgetsLocalizations.delegate,
         ],
       ),
   'MaterialApp 5': (context) =>
       () => const MaterialApp(
         localizationsDelegates: [
           MinimalLocalizations.delegate,
-          DesignLocalizations.delegate,
+          RawWidgetsLocalizations.delegate,
         ],
       ),
   'MinimalThemeData 4': (context) {

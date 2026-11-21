@@ -211,7 +211,7 @@ class MinimalSheet extends StatelessWidget {
 /// to the opener when it closes; Escape, a tap on the scrim, a drag toward
 /// its edge or its close button closes it. [width] is its width, at most
 /// the screen less 56 px. The behaviour is ui_core's
-/// ([DesignSideSheetRoute]); Minimal paints it.
+/// ([RawSideSheetRoute]); Minimal paints it.
 ///
 /// ```dart
 /// await showMinimalSheet<void>(context, title: 'Order #1042', builder: (context) => details, trailing: MinimalSheetAction('Refund', onPressed: refund));
@@ -234,10 +234,8 @@ Future<T?> showMinimalSheet<T>(
   final t = context.minimalTheme;
   final words = MinimalLocalizations.of(context);
   return Navigator.of(context, rootNavigator: true).push<T>(
-    DesignSideSheetRoute<T>(
-      edge: side == MinimalSide.start
-          ? DesignSheetEdge.start
-          : DesignSheetEdge.end,
+    RawSideSheetRoute<T>(
+      edge: side == MinimalSide.start ? RawSheetEdge.start : RawSheetEdge.end,
       width: width,
       barrierColor: t.overlay,
       barrierLabel: words.close,
@@ -274,11 +272,11 @@ enum MinimalSide {
   end,
 }
 
-DesignOverlaySide _side(MinimalSide side) => switch (side) {
-  MinimalSide.bottom => DesignOverlaySide.below,
-  MinimalSide.top => DesignOverlaySide.above,
-  MinimalSide.start => DesignOverlaySide.start,
-  MinimalSide.end => DesignOverlaySide.end,
+RawPopoverSide _side(MinimalSide side) => switch (side) {
+  MinimalSide.bottom => RawPopoverSide.below,
+  MinimalSide.top => RawPopoverSide.above,
+  MinimalSide.start => RawPopoverSide.start,
+  MinimalSide.end => RawPopoverSide.end,
 };
 
 /// A small card a button opens beside itself: a filter's options, a date
@@ -291,7 +289,7 @@ DesignOverlaySide _side(MinimalSide side) => switch (side) {
 /// whatever shows it open. Focus moves into the card and Tab stays there;
 /// Escape or a tap outside closes it and focus goes back to the button.
 /// [content] gets a `close` for a Done or Apply inside. The behaviour is
-/// ui_core's ([DesignAnchoredOverlay]); Minimal paints it.
+/// ui_core's ([RawPopover]); Minimal paints it.
 ///
 /// ```dart
 /// MinimalPopover(anchor: (context, toggle, open) => MinimalButton('Filters', variant: MinimalButtonVariant.secondary, onPressed: toggle), content: (context, close) => filters)
@@ -328,9 +326,9 @@ class MinimalPopover extends StatelessWidget {
   final MinimalStyle? style;
 
   @override
-  Widget build(BuildContext context) => DesignAnchoredOverlay(
+  Widget build(BuildContext context) => RawPopover(
     // The card keeps its own [width], whatever opens it.
-    placement: DesignOverlayPlacement(
+    placement: RawPopoverPlacement(
       side: _side(side),
       gap: 6,
       matchAnchorWidth: false,
@@ -382,7 +380,7 @@ class MinimalPopover extends StatelessWidget {
 ///
 /// It only previews: what it says must be reachable some other way (the
 /// link's own page), and focus stays on [child]. The behaviour is ui_core's
-/// ([DesignAnchoredOverlay], hover); Minimal paints it.
+/// ([RawPopover], hover); Minimal paints it.
 ///
 /// ```dart
 /// MinimalHoverCard(card: personCard, child: MinimalLink('@ana', onPressed: openProfile))
@@ -414,11 +412,11 @@ class MinimalHoverCard extends StatelessWidget {
   final MinimalStyle? style;
 
   @override
-  Widget build(BuildContext context) => DesignAnchoredOverlay(
-    trigger: DesignOverlayTrigger.hover,
+  Widget build(BuildContext context) => RawPopover(
+    trigger: RawPopoverTrigger.hover,
     focusOnOpen: false,
     // The card keeps its own [width], whatever opens it.
-    placement: DesignOverlayPlacement(
+    placement: RawPopoverPlacement(
       side: _side(side),
       gap: 6,
       matchAnchorWidth: false,

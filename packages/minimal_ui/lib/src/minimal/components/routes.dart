@@ -32,9 +32,7 @@ const Map<TargetPlatform, PageTransitionsBuilder> minimalPageTransitions = {
   TargetPlatform.android: MinimalPageTransitions(),
   TargetPlatform.fuchsia: MinimalPageTransitions(),
   // iOS's swipe back from the screen's leading edge, round Minimal's push.
-  TargetPlatform.iOS: DesignSwipeBackPageTransitionsBuilder(
-    MinimalPageTransitions(),
-  ),
+  TargetPlatform.iOS: SwipeBackPageTransitionsBuilder(MinimalPageTransitions()),
   TargetPlatform.linux: MinimalPageTransitions(),
   TargetPlatform.macOS: MinimalPageTransitions(),
   TargetPlatform.windows: MinimalPageTransitions(),
@@ -49,7 +47,7 @@ const Map<TargetPlatform, PageTransitionsBuilder> minimalPageTransitions = {
 ///
 /// Minimal's push replaces the platform's, and with it iOS's swipe back from
 /// the screen's edge: iOS's entry in [minimalPageTransitions] wraps it in
-/// ui_core's [DesignSwipeBackPageTransitionsBuilder], which puts the swipe
+/// ui_core's [SwipeBackPageTransitionsBuilder], which puts the swipe
 /// back round it.
 class MinimalPageTransitions extends PageTransitionsBuilder {
   /// Minimal's push and pop.

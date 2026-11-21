@@ -82,7 +82,7 @@ class _Range extends StatefulWidget {
 }
 
 class _RangeState extends State<_Range> {
-  DesignDateRange? _stay = DesignDateRange(
+  RawDateRange? _stay = RawDateRange(
     DateTime(2026, 8, 28),
     DateTime(2026, 9, 3),
   );
@@ -120,7 +120,7 @@ Widget kitSpecimenDateRangePicker() => Padding(
     firstDate: _first,
     lastDate: _last,
     today: _today,
-    value: DesignDateRange(DateTime(2026, 8, 28), DateTime(2026, 9, 3)),
+    value: RawDateRange(DateTime(2026, 8, 28), DateTime(2026, 9, 3)),
     onChanged: (_) {},
   ),
 );

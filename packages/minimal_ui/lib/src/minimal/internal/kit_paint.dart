@@ -414,7 +414,7 @@ class MinimalKitPanel extends StatelessWidget {
 /// (the spring is then critically damped and the slide nothing).
 Widget minimalKitPresence(
   BuildContext context,
-  DesignOverlayInfo info,
+  RawPopoverInfo info,
   Widget child,
 ) {
   final still = context.minimalStill;
@@ -426,10 +426,10 @@ Widget minimalKitPresence(
       final p = info.animation.value;
       final double shift = still ? 0.0 : (1.0 - math.min<double>(p, 1.0)) * 4.0;
       final offset = switch (info.side) {
-        DesignOverlaySide.below => Offset(0, -shift),
-        DesignOverlaySide.above => Offset(0, shift),
-        DesignOverlaySide.start => Offset(rtl ? -shift : shift, 0),
-        DesignOverlaySide.end => Offset(rtl ? shift : -shift, 0),
+        RawPopoverSide.below => Offset(0, -shift),
+        RawPopoverSide.above => Offset(0, shift),
+        RawPopoverSide.start => Offset(rtl ? -shift : shift, 0),
+        RawPopoverSide.end => Offset(rtl ? shift : -shift, 0),
       };
       return Opacity(
         opacity: p.clamp(0.0, 1.0),

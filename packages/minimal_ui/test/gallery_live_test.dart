@@ -15,7 +15,7 @@ import '../example/lib/main.dart';
 import 'flutter_test_config.dart' show longWalkLeakTesting;
 
 /// Exported for 0.1's callers, drawn by no part since ui_core's
-/// DesignTapTarget took its place.
+/// TapTargetPadding took its place.
 const _retired = {'MinimalHitTarget'};
 
 /// Every public widget class the package's library declares, outside its

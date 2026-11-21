@@ -345,10 +345,10 @@ class _GalleryAppState extends State<GalleryApp> {
       // opts in: ui_core's words and Flutter's own. Minimal gives its
       // Material and Cupertino words itself, in the app's language.
       localizationsDelegates: const [
-        DesignLocalizations.delegate,
+        RawWidgetsLocalizations.delegate,
         ...GlobalMaterialLocalizations.delegates,
       ],
-      supportedLocales: DesignLocalizations.supportedLocales,
+      supportedLocales: RawWidgetsLocalizations.supportedLocales,
       debugShowCheckedModeBanner: false,
       builder: (context, child) {
         Widget host = Directionality(
@@ -1094,20 +1094,20 @@ Widget _choices<T>(MinimalSegmentedButton<T> group) => _natural(
 
 /// ui_core's own Arabic, for the gallery's right-to-left mode, whatever
 /// the app's locale.
-const LocalizationsDelegate<DesignLocalizations> _arabicDesignWords =
+const LocalizationsDelegate<RawWidgetsLocalizations> _arabicDesignWords =
     _ArabicDesignWordsDelegate();
 
 class _ArabicDesignWordsDelegate
-    extends LocalizationsDelegate<DesignLocalizations> {
+    extends LocalizationsDelegate<RawWidgetsLocalizations> {
   const _ArabicDesignWordsDelegate();
 
   @override
   bool isSupported(Locale locale) => true;
 
   @override
-  Future<DesignLocalizations> load(Locale locale) =>
-      SynchronousFuture<DesignLocalizations>(
-        DesignLocalizations.forLocale(const Locale('ar')),
+  Future<RawWidgetsLocalizations> load(Locale locale) =>
+      SynchronousFuture<RawWidgetsLocalizations>(
+        RawWidgetsLocalizations.forLocale(const Locale('ar')),
       );
 
   @override

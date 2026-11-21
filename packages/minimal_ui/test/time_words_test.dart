@@ -1,6 +1,6 @@
 // A time picker's words in the reader's language: the hour and minute
 // columns are named, and a 12-hour clock marks its hours, from ui_core's
-// DesignLocalizations, so German hears "Stunde" and Arabic reads "7:30 م",
+// RawWidgetsLocalizations, so German hears "Stunde" and Arabic reads "7:30 م",
 // where Minimal once said "Hour", "Minute", "AM" and "PM" in English in every
 // locale. MinimalLocalizations.delegate gives every locale those shared words
 // with Minimal's own in English, as no delegate does. The figures of a time
@@ -14,22 +14,23 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:minimal_ui/minimal_ui.dart';
 
 /// An app's own German, over ui_core's.
-class _AppGerman extends DefaultDesignLocalizations {
+class _AppGerman extends DefaultRawWidgetsLocalizations {
   const _AppGerman();
 
   @override
   String get timePickerHourLabel => 'Std.';
 }
 
-class _AppGermanDelegate extends LocalizationsDelegate<DesignLocalizations> {
+class _AppGermanDelegate
+    extends LocalizationsDelegate<RawWidgetsLocalizations> {
   const _AppGermanDelegate();
 
   @override
   bool isSupported(Locale locale) => true;
 
   @override
-  Future<DesignLocalizations> load(Locale locale) =>
-      SynchronousFuture<DesignLocalizations>(const _AppGerman());
+  Future<RawWidgetsLocalizations> load(Locale locale) =>
+      SynchronousFuture<RawWidgetsLocalizations>(const _AppGerman());
 
   @override
   bool shouldReload(_AppGermanDelegate old) => false;
@@ -39,7 +40,7 @@ Widget _app(
   Locale locale,
   Widget child, {
   List<LocalizationsDelegate<Object?>> delegates = const [
-    DesignLocalizations.delegate,
+    RawWidgetsLocalizations.delegate,
   ],
 }) => WidgetsApp(
   color: const Color(0xFF000000),
@@ -153,7 +154,7 @@ void main() {
 
   for (final locale in const [Locale('en'), Locale('de'), Locale('ar')]) {
     final at = locale.languageCode;
-    final shared = DesignLocalizations.forLocale(locale);
+    final shared = RawWidgetsLocalizations.forLocale(locale);
     final month = shared.formatShortMonth(DateTime(2026, 11));
     final date = at == 'ar' ? '٢٠ $month ٢٠٢٦' : '20 $month 2026';
     testWidgets("$at: the compact row's date reads $date", (tester) async {
@@ -186,7 +187,7 @@ void main() {
     expect(MinimalFormat.dayMonth(at), '20 Nov');
     expect(MinimalFormat.stamp(at), '20 Nov 07:05');
     final arabic = MinimalLocalizationsEn(
-      DesignLocalizations.forLocale(const Locale('ar')),
+      RawWidgetsLocalizations.forLocale(const Locale('ar')),
     );
     expect(MinimalFormat.date(at, words: arabic), '٢٠ نوفمبر ٢٠٢٦');
     expect(MinimalFormat.stamp(at, words: arabic), '٢٠ نوفمبر ٠٧:٠٥');
@@ -207,7 +208,7 @@ void main() {
         probe(),
         delegates: const [
           MinimalLocalizations.delegate,
-          DesignLocalizations.delegate,
+          RawWidgetsLocalizations.delegate,
         ],
       ),
     );
@@ -233,7 +234,7 @@ void main() {
     expect(MinimalFormat.time12(morning), '9:41 AM');
     expect(MinimalFormat.time12(evening), '7:05 PM');
     final arabic = MinimalLocalizationsEn(
-      DesignLocalizations.forLocale(const Locale('ar')),
+      RawWidgetsLocalizations.forLocale(const Locale('ar')),
     );
     expect(MinimalFormat.time12(morning, words: arabic), '٩:٤١ ص');
     expect(MinimalFormat.time12(evening, words: arabic), '٧:٠٥ م');

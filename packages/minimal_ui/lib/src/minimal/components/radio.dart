@@ -10,6 +10,7 @@ import 'package:ui_core/ui_core.dart';
 
 import '../component_themes.dart';
 import '../internal/controls.dart';
+import '../internal/press_feedback.dart';
 import '../internal/styled.dart';
 import '../internal/tap_band.dart';
 import '../shapes.dart';
@@ -48,8 +49,9 @@ class MinimalRadioOption<T> {
 ///
 /// Stand radios in a [MinimalRadioGroup], which lays out their labels and
 /// walks them with the arrow keys; this alone is for a row that draws its
-/// own words. Such rows make one group in ui_core's `DesignRadioGroup`:
-/// give each radio the focus node the group hands its row. [style] dresses one radio, `components.radio` every one,
+/// own words. Such rows make one group in Flutter's [RadioGroup], with
+/// ui_core's [RadioGroupKeyboardFix] round them: each row a `RawRadio` that
+/// draws this radio, without [onPressed], as its mark. [style] dresses one radio, `components.radio` every one,
 /// resolved with [WidgetState.selected] when chosen: fill, foreground (the
 /// dot), edge or side, overlay and shape.
 ///
@@ -185,13 +187,14 @@ class MinimalRadio extends StatelessWidget {
 /// A single choice among a few options, all in view — a plan, a delivery
 /// speed, a theme: a column (or a row) of [MinimalRadio]s, each followed by
 /// its label in the body type and a quiet description. A tap anywhere on an
-/// option's words chooses it. From the keyboard the group is one Tab stop,
-/// as Flutter's `RadioGroup` is: Tab lands on the choice (the first option
-/// while there is none) and leaves the group next. The arrow keys choose the
-/// next or the previous option, skipping disabled ones and wrapping at the
-/// ends: Down and Right the next, Up and Left the previous (Left the next in
-/// a right-to-left layout). Space chooses the focused option. More than five
-/// or six options, or long ones, belong in a `MinimalSelect`.
+/// option's words chooses it. The group is Flutter's [RadioGroup], each
+/// option a `RawRadio`, with ui_core's [RadioGroupKeyboardFix] round them:
+/// Tab lands on the choice (the first option while there is none, or while
+/// the choice is disabled) and leaves the group next. The arrow keys choose
+/// the next or the previous option, skipping disabled ones and wrapping at
+/// the ends: Down and Right the next, Up and Left the previous (Left the next
+/// in a right-to-left layout). Space chooses the focused option. More than
+/// five or six options, or long ones, belong in a `MinimalSelect`.
 ///
 /// [style] dresses every radio of the group, over `components.radio`.
 ///
@@ -231,45 +234,53 @@ class MinimalRadioGroup<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.minimalTheme;
-    final byValue = {for (final option in options) option.value: option};
     // Options that carry a description run taller than an option's least
     // height; space between them keeps each description with its own
     // label rather than halfway to the next.
     final described = options.any((o) => o.description != null);
+    final onChanged = this.onChanged;
+    Widget layout(List<Widget> rows) => direction == Axis.vertical
+        ? Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            spacing: described ? MinimalSpacing.s12 : 0,
+            children: rows,
+          )
+        // Along a row the group is as wide as its options, on the start
+        // edge, as a segmented control keeps to its segments.
+        : Align(
+            alignment: AlignmentDirectional.centerStart,
+            widthFactor: 1,
+            child: Wrap(
+              spacing: MinimalSpacing.s20,
+              runSpacing: t.density.height(MinimalSpacing.s4),
+              children: rows,
+            ),
+          );
     return Semantics(
       container: true,
       label: label,
-      child: DesignRadioGroup<T>(
-        options: byValue.keys.toList(),
-        value: value,
-        onChanged: onChanged,
-        isEnabled: (option) => byValue[option]!.enabled,
-        direction: direction,
-        layoutBuilder: (context, rows) => direction == Axis.vertical
-            ? Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                spacing: described ? MinimalSpacing.s12 : 0,
-                children: rows,
-              )
-            // Along a row the group is as wide as its options, on the start
-            // edge, as a segmented control keeps to its segments.
-            : Align(
-                alignment: AlignmentDirectional.centerStart,
-                widthFactor: 1,
-                child: Wrap(
-                  spacing: MinimalSpacing.s20,
-                  runSpacing: t.density.height(MinimalSpacing.s4),
-                  children: rows,
-                ),
+      child: RadioGroup<T>(
+        groupValue: value,
+        // RadioGroup takes no null: a group that takes no choice gives a
+        // no-op, and its options show the choice without offering it.
+        onChanged: (next) {
+          if (onChanged == null || next == null || next == value) return;
+          HapticFeedback.selectionClick();
+          onChanged(next);
+        },
+        child: RadioGroupKeyboardFix<T>(
+          child: layout([
+            for (final option in options)
+              _Option<T>(
+                key: ValueKey<T>(option.value),
+                option: option,
+                selected: option.value == value,
+                offered: onChanged != null,
+                disabled: !option.enabled,
+                style: style,
               ),
-        itemBuilder: (context, option, node, select) => _Option<T>(
-          option: byValue[option]!,
-          selected: option == value,
-          onPressed: select,
-          disabled: !byValue[option]!.enabled,
-          style: style,
-          focusNode: node,
+          ]),
         ),
       ),
     );
@@ -292,28 +303,51 @@ class MinimalRadioGroup<T> extends StatelessWidget {
   }
 }
 
-class _Option<T> extends StatelessWidget {
+class _Option<T> extends StatefulWidget {
   const _Option({
+    super.key,
     required this.option,
     required this.selected,
-    required this.onPressed,
+    required this.offered,
     required this.disabled,
     required this.style,
-    required this.focusNode,
   });
 
   final MinimalRadioOption<T> option;
   final bool selected;
-  final VoidCallback? onPressed;
+  final bool offered;
   final bool disabled;
   final MinimalStyle? style;
-  final FocusNode focusNode;
+
+  @override
+  State<_Option<T>> createState() => _OptionState<T>();
+
+  /// How far the circle stands below the option's top: its centre on the
+  /// label's first line (a 20 px line, a 16 px circle, 2 px of leading
+  /// over the cap height).
+  static const double _markDrop = 3;
+}
+
+class _OptionState<T> extends State<_Option<T>> {
+  final FocusNode _node = FocusNode();
+  // A pointer can hover even when touch was the last input: the option's
+  // states say so whatever Flutter's highlight mode, as a pressable's do.
+  bool _hover = false;
+
+  @override
+  void dispose() {
+    _node.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
+    final option = widget.option;
+    final selected = widget.selected;
+    final disabled = widget.disabled;
+    final style = widget.style;
     final t = context.minimalTheme;
     final description = option.description;
-    final press = onPressed;
     // The whole option is the control, as a radio list tile is: a tap, the
     // click cursor and the press wash anywhere on its mark or its words,
     // one node for a screen reader that reads its label and description.
@@ -337,7 +371,7 @@ class _Option<T> extends StatelessWidget {
           children: [
             Padding(
               // The circle's centre on the label's first line.
-              padding: const EdgeInsets.only(top: _markDrop),
+              padding: const EdgeInsets.only(top: _Option._markDrop),
               child: ExcludeSemantics(
                 child: MinimalRadio(selected: selected, style: style),
               ),
@@ -359,7 +393,7 @@ class _Option<T> extends StatelessWidget {
         ),
       ),
     );
-    if (press == null && !disabled) {
+    if (!widget.offered && !disabled) {
       // A choice shown, not offered: still a radio to a screen reader.
       return Semantics(
         container: true,
@@ -368,27 +402,61 @@ class _Option<T> extends StatelessWidget {
         child: option_,
       );
     }
-    return MinimalPressable(
-      onPressed: press == null
-          ? null
-          : () {
-              HapticFeedback.selectionClick();
-              press();
-            },
-      enabled: !disabled,
-      checked: selected,
-      inMutuallyExclusiveGroup: true,
-      focusNode: focusNode,
-      // The wash and the ring stand clear of the mark and the words.
-      outset: const EdgeInsetsDirectional.symmetric(
-        horizontal: MinimalSpacing.s8,
+    final enabled = widget.offered && !disabled;
+    // The target is the outermost layer, as a pressable's: the area a tap
+    // reaches is the box a screen reader outlines.
+    return minimalInlineNode(
+      context,
+      TapTargetPadding(
+        alignment:
+            MinimalTapAlignment.maybeOf(context) ?? AlignmentDirectional.center,
+        child: Semantics(
+          enabled: enabled,
+          // One node: the radio, its label and its description.
+          child: MergeSemantics(
+            child: RawRadio<T>(
+              value: option.value,
+              mouseCursor: WidgetStateMouseCursor.clickable,
+              toggleable: false,
+              focusNode: _node,
+              autofocus: false,
+              groupRegistry: RadioGroup.maybeOf<T>(context),
+              enabled: enabled,
+              builder: (context, radio) {
+                final pressed = enabled && radio.downPosition != null;
+                final focused =
+                    enabled && radio.states.contains(WidgetState.focused);
+                return MouseRegion(
+                  onEnter: (_) => setState(() => _hover = true),
+                  onExit: (_) => setState(() => _hover = false),
+                  // The whole option takes the press, its gaps too.
+                  child: MetaData(
+                    behavior: HitTestBehavior.opaque,
+                    child: MinimalPressFeedback(
+                      states: minimalStates(
+                        enabled: enabled,
+                        pressed: pressed,
+                        hovered: enabled && _hover,
+                        focused: focused,
+                        selected: selected,
+                      ),
+                      enabled: enabled,
+                      pressed: pressed,
+                      focused: focused,
+                      // The wash and the ring stand clear of the mark and the
+                      // words.
+                      outset: const EdgeInsetsDirectional.symmetric(
+                        horizontal: MinimalSpacing.s8,
+                      ),
+                      child: option_,
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ),
       ),
-      child: option_,
     );
   }
-
-  /// How far the circle stands below the option's top: its centre on the
-  /// label's first line (a 20 px line, a 16 px circle, 2 px of leading
-  /// over the cap height).
-  static const double _markDrop = 3;
 }

@@ -338,7 +338,7 @@ final DesignInventory minimalInventory = DesignInventory(
       'RangeSlider',
       (_) => MinimalRangeSlider(
         label: 'Price',
-        values: const DesignRangeValues(40, 140),
+        values: const RawRangeValues(40, 140),
         max: 200,
         format: (v) => '\$${v.round()}',
         onChanged: (_) {},

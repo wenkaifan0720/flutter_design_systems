@@ -4,8 +4,9 @@
 // disabled ones and wrapping at the ends, Left and Right swapped in a
 // right-to-left layout. Minimal's group once kept Tab inside and moved
 // focus without choosing. Each radio, checkbox and switch reads as that
-// control and never as a button, and radios that draw their own rows group
-// in ui_core's DesignRadioGroup on their callers' own focus nodes.
+// control and never as a button. A selection group's rows are a radio group
+// too, and radios that draw their own rows group in Flutter's RadioGroup on
+// their callers' own focus nodes.
 import 'dart:ui' show CheckedState, SemanticsFlags, Tristate;
 
 import 'package:material_ui/material_ui.dart';
@@ -333,21 +334,163 @@ void main() {
     semantics.dispose();
   });
 
-  testWidgets('radios that draw their own rows keep their callers\' nodes in '
-      'a DesignRadioGroup', (tester) async {
+  // A, B, C and D with B turned off, chosen C, nothing or B, in each
+  // direction: a selection group's rows answer the keys as a radio group's.
+  for (final textDirection in TextDirection.values) {
+    for (final initial in <String?>['C', null, 'B']) {
+      testWidgets('a selection group is a radio group, ${textDirection.name}, '
+          'chosen ${initial ?? 'none'}', (tester) async {
+        final semantics = tester.ensureSemantics();
+        final before = FocusNode();
+        addTearDown(before.dispose);
+        var chosen = initial;
+        late StateSetter rebuild;
+        await tester.pumpWidget(
+          _app(
+            textDirection,
+            StatefulBuilder(
+              builder: (context, setState) {
+                rebuild = setState;
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Focus(focusNode: before, child: const Text('Before')),
+                    MinimalSelectionGroup(
+                      key: _group,
+                      children: [
+                        for (final v in const ['A', 'B', 'C', 'D'])
+                          MinimalChoiceRow(
+                            title: v,
+                            selected: v == chosen,
+                            onPressed: v == 'B'
+                                ? null
+                                : () => setState(() => chosen = v),
+                          ),
+                      ],
+                    ),
+                    const Focus(child: Text('After')),
+                  ],
+                );
+              },
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        (await const DesignRadioGroupCheck(look: 'Minimal').check(
+          tester.element(find.byKey(_group)),
+          before: before,
+          sendKeyEvent: tester.sendKeyEvent,
+          pump: tester.pump,
+        )).verify();
+
+        // Tab lands on the choice, or on A while the choice is B (turned
+        // off) or there is none; Down chooses the next row Tab can reach.
+        rebuild(() => chosen = initial);
+        before.requestFocus();
+        await tester.pumpAndSettle();
+        await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+        await tester.pumpAndSettle();
+        bool focused(String v) =>
+            tester
+                .getSemantics(find.bySemanticsLabel(v))
+                .getSemanticsData()
+                .flagsCollection
+                .isFocused ==
+            Tristate.isTrue;
+        final first = initial == 'C' ? 'C' : 'A';
+        expect(focused(first), isTrue, reason: 'Tab lands on $first');
+        await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
+        await tester.pumpAndSettle();
+        final next = first == 'C' ? 'D' : 'C';
+        expect(chosen, next);
+        expect(focused(next), isTrue);
+        // The reading side's arrow chooses the next row too.
+        await tester.sendKeyEvent(
+          textDirection == TextDirection.rtl
+              ? LogicalKeyboardKey.arrowLeft
+              : LogicalKeyboardKey.arrowRight,
+        );
+        await tester.pumpAndSettle();
+        expect(chosen, next == 'D' ? 'A' : 'D');
+        for (final v in const ['A', 'B', 'C', 'D']) {
+          final flags = tester
+              .getSemantics(find.bySemanticsLabel(v))
+              .getSemanticsData()
+              .flagsCollection;
+          expect(
+            flags.isChecked,
+            v == chosen ? CheckedState.isTrue : CheckedState.isFalse,
+            reason: v,
+          );
+          expect(flags.isInMutuallyExclusiveGroup, isTrue, reason: v);
+          expect(flags.isButton, isFalse, reason: v);
+        }
+        semantics.dispose();
+      });
+    }
+  }
+
+  for (final axis in Axis.values) {
+    for (final textDirection in TextDirection.values) {
+      testWidgets('a radio group in a ${axis.name} line, '
+          '${textDirection.name}: a press anywhere in a radio\'s box chooses '
+          'it', (tester) async {
+        final h = _Harness(tester);
+        await h.pump(value: 'A', direction: axis, textDirection: textDirection);
+        await _pressEverywhere(tester, () => h.chosen, const [
+          'A',
+          'B',
+          'C',
+        ], (v) => v);
+      });
+    }
+  }
+
+  for (final textDirection in TextDirection.values) {
+    testWidgets('a selection group, ${textDirection.name}: a press anywhere '
+        'in a row\'s box chooses it', (tester) async {
+      const rows = ['A', 'B', 'C', 'D'];
+      String? chosen = 'C';
+      await tester.pumpWidget(
+        _app(
+          textDirection,
+          StatefulBuilder(
+            builder: (context, setState) => MinimalSelectionGroup(
+              children: [
+                for (final v in rows)
+                  MinimalChoiceRow(
+                    title: v,
+                    subtitle: v == 'C' ? 'Every weekday' : null,
+                    selected: v == chosen,
+                    onPressed: v == 'B'
+                        ? null
+                        : () => setState(() => chosen = v),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await _pressEverywhere(tester, () => chosen, const [
+        'A',
+        'C',
+        'D',
+      ], rows.indexOf);
+    });
+  }
+
+  testWidgets('radios that draw their own rows group in a RadioGroup on '
+      'their callers\' nodes', (tester) async {
     final before = FocusNode();
     final after = FocusNode();
     final nodes = {
       for (final v in const ['A', 'B', 'C', 'D']) v: FocusNode(debugLabel: v),
     };
-    final second = FocusNode(debugLabel: 'C, second');
-    for (final node in [before, after, second, ...nodes.values]) {
+    for (final node in [before, after, ...nodes.values]) {
       addTearDown(node.dispose);
     }
-    var options = const ['A', 'B', 'C', 'D'];
     String? chosen = 'A';
-    var nodeOfC = nodes['C']!;
-    var grouped = true;
     late StateSetter rebuild;
     await tester.pumpWidget(
       _app(
@@ -359,37 +502,49 @@ void main() {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Focus(focusNode: before, child: const Text('Before')),
-                if (grouped)
-                  DesignRadioGroup<String>(
-                    key: _group,
-                    options: options,
-                    value: chosen,
-                    onChanged: (v) => setState(() => chosen = v),
-                    isEnabled: (v) => v != 'B',
-                    focusNodeFor: (v) => v == 'C' ? nodeOfC : nodes[v],
-                    itemBuilder: (context, v, node, select) => Row(
+                RadioGroup<String>(
+                  key: _group,
+                  groupValue: chosen,
+                  onChanged: (v) => setState(() => chosen = v),
+                  child: RadioGroupKeyboardFix<String>(
+                    child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        MinimalRadio(
-                          selected: v == chosen,
-                          label: v,
-                          enabled: select != null,
-                          onPressed: select,
-                          focusNode: node,
-                        ),
-                        Text(v),
+                        for (final v in const ['A', 'B', 'C', 'D'])
+                          Builder(
+                            builder: (context) => MergeSemantics(
+                              child: RawRadio<String>(
+                                value: v,
+                                mouseCursor: WidgetStateMouseCursor.clickable,
+                                toggleable: false,
+                                focusNode: nodes[v]!,
+                                autofocus: false,
+                                groupRegistry: RadioGroup.maybeOf<String>(
+                                  context,
+                                ),
+                                enabled: v != 'B',
+                                builder: (context, radio) => Semantics(
+                                  label: v,
+                                  child: ExcludeSemantics(
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        MinimalRadio(
+                                          selected: radio.value ?? false,
+                                          enabled: v != 'B',
+                                        ),
+                                        Text(v),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
                       ],
                     ),
-                  )
-                else
-                  // A focusable of its own: B's radio, turned off, had set
-                  // its node to take no focus.
-                  for (final node in [second, ...nodes.values])
-                    Focus(
-                      focusNode: node,
-                      canRequestFocus: true,
-                      child: Text('${node.debugLabel}'),
-                    ),
+                  ),
+                ),
                 Focus(focusNode: after, child: const Text('After')),
               ],
             );
@@ -398,13 +553,6 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    Future<void> key(LogicalKeyboardKey key) async {
-      await tester.sendKeyEvent(key);
-      await tester.pumpAndSettle();
-    }
-
-    FocusNode? focus() => FocusManager.instance.primaryFocus;
-
     (await const DesignRadioGroupCheck(look: 'Minimal').check(
       tester.element(find.byKey(_group)),
       before: before,
@@ -412,55 +560,57 @@ void main() {
       pump: tester.pump,
     )).verify();
 
-    // The caller focuses a radio through its own node, which a rebuild keeps.
-    chosen = 'A';
-    rebuild(() {});
-    await tester.pumpAndSettle();
-    nodes['A']!.requestFocus();
-    await tester.pumpAndSettle();
-    expect(focus(), same(nodes['A']));
-    rebuild(() {});
-    await tester.pumpAndSettle();
-    expect(focus(), same(nodes['A']));
-    await key(LogicalKeyboardKey.arrowDown);
-    expect(chosen, 'C');
-    expect(focus(), same(nodeOfC));
-
-    // A second node for C takes its place: focus, the arrows and the one
-    // Tab stop run on it.
-    nodeOfC = second;
-    rebuild(() {});
-    await tester.pumpAndSettle();
-    second.requestFocus();
-    await tester.pumpAndSettle();
-    expect(focus(), same(second));
-    await key(LogicalKeyboardKey.arrowDown);
-    expect(chosen, 'D');
-    expect(focus(), same(nodes['D']));
-    await key(LogicalKeyboardKey.arrowUp);
-    expect(chosen, 'C');
-    expect(focus(), same(second));
+    // The keys run on the callers' nodes, past B.
+    FocusNode? focus() => FocusManager.instance.primaryFocus;
+    rebuild(() => chosen = 'A');
     before.requestFocus();
     await tester.pumpAndSettle();
-    await key(LogicalKeyboardKey.tab);
-    expect(focus(), same(second));
-    await key(LogicalKeyboardKey.tab);
+    await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+    await tester.pumpAndSettle();
+    expect(focus(), same(nodes['A']));
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
+    await tester.pumpAndSettle();
+    expect(chosen, 'C');
+    expect(focus(), same(nodes['C']));
+    await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+    await tester.pumpAndSettle();
     expect(focus(), same(after));
-
-    // Without D, then without the group, every node is still the caller's:
-    // each takes the focus again on a focusable of its own.
-    options = const ['A', 'B', 'C'];
-    rebuild(() {});
-    await tester.pumpAndSettle();
-    expect(find.text('D'), findsNothing);
-    rebuild(() => grouped = false);
-    await tester.pumpAndSettle();
-    for (final node in [second, ...nodes.values]) {
-      node.requestFocus();
-      await tester.pumpAndSettle();
-      expect(focus(), same(node), reason: node.debugLabel);
-    }
   });
+}
+
+/// Presses each of [values] at its box's start, middle, end, top and bottom,
+/// each time from another choice, and expects the press to choose it. The
+/// box is Flutter's RawRadio, the one standing for the value [radioOf] gives.
+/// RawRadio's own detector takes a press only where the face paints; a
+/// Minimal radio or choice row takes it anywhere in its box, the gap between
+/// its dot and its words too, as the published ones did.
+Future<void> _pressEverywhere<V>(
+  WidgetTester tester,
+  Object? Function() chosen,
+  List<V> values,
+  Object Function(V value) radioOf,
+) async {
+  Rect boxOf(V value) => tester.getRect(
+    find.byWidgetPredicate((w) => w is RawRadio && w.value == radioOf(value)),
+  );
+  for (final (i, value) in values.indexed) {
+    final other = values[(i + 1) % values.length];
+    final box = boxOf(value);
+    for (final at in [
+      box.centerLeft + const Offset(2, 0),
+      box.center,
+      box.centerRight - const Offset(2, 0),
+      box.topCenter + const Offset(0, 2),
+      box.bottomCenter - const Offset(0, 2),
+    ]) {
+      await tester.tapAt(boxOf(other).center);
+      await tester.pumpAndSettle();
+      expect(chosen(), other);
+      await tester.tapAt(at);
+      await tester.pumpAndSettle();
+      expect(chosen(), value, reason: '$value pressed at $at in $box');
+    }
+  }
 }
 
 /// [child] in Minimal's light theme, read in [textDirection].

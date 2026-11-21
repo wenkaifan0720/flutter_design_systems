@@ -223,7 +223,7 @@ class _MinimalNumberFieldState extends State<MinimalNumberField> {
       if (!live) {
         // The key keeps its target's room, so a stepper switched off keeps
         // its size.
-        return DesignTapTarget(
+        return TapTargetPadding(
           child: Semantics(
             container: true,
             button: true,

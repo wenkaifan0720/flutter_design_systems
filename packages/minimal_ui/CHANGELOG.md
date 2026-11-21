@@ -1,3 +1,57 @@
+## 0.4.0
+
+- Stands on ui_core 0.4.0, on Flutter 3.47 or later as before. The ui_core types minimal_ui's API names take their new names (`DesignOverlayPlacement` is `RawPopoverPlacement`, and so on); `dart fix --apply` moves your code.
+- `MinimalRadioGroup` stands on Flutter's `RadioGroup`, each option a `RawRadio`, with ui_core's `RadioGroupKeyboardFix` round them, in place of ui_core's `DesignRadioGroup` (deprecated). Its API, its look and its keys are unchanged: one Tab stop, at the choice or else the first option that can be chosen (also while the chosen one is turned off), and arrows that choose as they move, wrap, pass an option that is off and swap Left and Right right to left. The selection click now sounds for a choice made from the keys too, not only for a tap. On iOS and macOS a screen reader also hears an option as selected or not, as Flutter's `Radio` reads.
+- `MinimalSelectionGroup` is a radio group too: its `MinimalChoiceRow`s stand in Flutter's `RadioGroup` as `RawRadio`s. The group is one Tab stop, on the chosen row (the first row Tab can reach while there is none), and the arrow keys choose the next or the previous row, as a radio group's do; a choice calls the row's `onPressed`, and a tap, Enter or Space on the chosen row still calls it again (a sheet that closes on a choice closes on the chosen row too). Previously each row was a Tab stop of its own, and Up and Down moved the focus without choosing. A `MinimalChoiceRow` outside a group is unchanged.
+- Radios that draw their own rows group in Flutter's `RadioGroup`: each row a `RawRadio` that draws a `MinimalRadio`, without `onPressed`, as its mark. `MinimalRadio`'s documentation shows how.
+
+  ```dart
+  // Before
+  DesignRadioGroup<String>(
+    options: const ['free', 'pro'],
+    value: plan,
+    onChanged: (value) => setState(() => plan = value),
+    itemBuilder: (context, value, node, select) => Row(
+      children: [
+        MinimalRadio(selected: value == plan, onPressed: select, focusNode: node),
+        Text(value),
+      ],
+    ),
+  )
+
+  // After
+  RadioGroup<String>(
+    groupValue: plan,
+    onChanged: (value) => setState(() => plan = value!),
+    child: RadioGroupKeyboardFix<String>(
+      child: Column(
+        children: [
+          for (final value in const ['free', 'pro'])
+            Builder(
+              builder: (context) => RawRadio<String>(
+                value: value,
+                mouseCursor: WidgetStateMouseCursor.clickable,
+                toggleable: false,
+                focusNode: nodes[value]!, // one FocusNode per value, the State's
+                autofocus: false,
+                groupRegistry: RadioGroup.maybeOf<String>(context),
+                enabled: true,
+                builder: (context, radio) => Row(
+                  children: [
+                    MinimalRadio(selected: radio.value ?? false),
+                    Text(value),
+                  ],
+                ),
+              ),
+            ),
+        ],
+      ),
+    ),
+  )
+  ```
+- `MinimalTooltip` stands on Flutter's `RawTooltip`, with ui_core's `RawTooltipFocusFix` (the keyboard's focus shows it) and `RawTooltipPlacement` (where it goes), in place of ui_core's `DesignTooltip` (deprecated). It looks, moves and reads as before. One difference: running the pointer along a toolbar, each tip now waits its `waitDuration`; ui_core's tooltip showed the next one at once.
+- In `minimal_parts`, `MinimalBareTextField`, the bare `TextField` that Minimal's text entries share, takes the place of `minimalBareDecoration`, so no Material type stands in the parts' API. It draws and behaves as before.
+
 ## 0.3.5
 
 - In a menu, the command the keyboard is on wears Minimal's thin accent focus ring, drawn inside its row so it fits between the rows above and below, as every other part shows the keyboard's focus. The pointer's row keeps the muted fill alone. Previously the keyboard's row showed only the fill, which by night read as the pointer's hover. This holds in every menu: `MinimalMenu`'s and the lists `MinimalSelect` and `MinimalProperty` open, `MinimalMenuBar`'s, a context menu (`MinimalMenuTrigger.longPress`) and `MinimalSplitButton`'s. `MinimalKitRow` gains `ring` (off by default) for a list of commands; a combobox's or a multi-select's list, whose keys stay in its text field, keeps the ring on the field.

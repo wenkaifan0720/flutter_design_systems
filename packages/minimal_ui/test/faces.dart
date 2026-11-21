@@ -1,5 +1,5 @@
 // The face of a control: the box it paints, inside the room its tap target
-// lays out round it (ui_core's DesignTapTarget, or the band a compact face of
+// lays out round it (ui_core's TapTargetPadding, or the band a compact face of
 // several controls stands in). A test that measures what a control draws
 // measures this; one that measures its layout measures the control.
 import 'package:flutter/widgets.dart';
@@ -14,7 +14,7 @@ Rect faceOf(WidgetTester tester, Finder control) {
     of: control,
     matching: find.byWidgetPredicate(
       (w) =>
-          w is DesignTapTarget || w.runtimeType.toString() == 'MinimalTapBand',
+          w is TapTargetPadding || w.runtimeType.toString() == 'MinimalTapBand',
     ),
     matchRoot: true,
   );

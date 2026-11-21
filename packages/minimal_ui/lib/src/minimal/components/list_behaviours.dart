@@ -28,7 +28,7 @@ import 'tag.dart';
 /// it); a screen reader gets Move up, Move down, Move to start and Move to
 /// end on each row and hears each move. [itemBuilder] paints a row's
 /// content after the grip. The behaviour is ui_core's
-/// ([DesignReorderableList]); Minimal paints it.
+/// ([RawReorderableList]); Minimal paints it.
 ///
 /// ```dart
 /// MinimalReorderableListView<String>(items: steps, labelOf: (s) => s, onReorder: move, itemBuilder: (context, s) => Text(s))
@@ -71,7 +71,7 @@ class MinimalReorderableListView<T extends Object> extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.minimalTheme;
     final words = MinimalLocalizations.of(context);
-    return DesignReorderableList<T>(
+    return RawReorderableList<T>(
       items: items,
       onReorder: onReorder,
       labelOf: labelOf,
@@ -226,7 +226,7 @@ class _ReorderGripState extends State<_ReorderGrip> {
 ///
 /// [child] is the scroll view. A screen reader gets a Refresh action on the
 /// list and hears when it starts and ends. The behaviour is ui_core's
-/// ([DesignPullToRefresh]); Minimal paints it.
+/// ([RawRefreshIndicator]); Minimal paints it.
 ///
 /// ```dart
 /// MinimalRefreshIndicator(onRefresh: reload, child: ListView(children: rows))
@@ -249,7 +249,7 @@ class MinimalRefreshIndicator extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.minimalTheme;
     final words = MinimalLocalizations.of(context);
-    return DesignPullToRefresh(
+    return RawRefreshIndicator(
       onRefresh: onRefresh,
       refreshLabel: words.refresh,
       refreshingMessage: words.refreshing,
@@ -257,11 +257,12 @@ class MinimalRefreshIndicator extends StatelessWidget {
       child: child,
       indicatorBuilder: (context, state) {
         final Widget mark = switch (state.mode) {
-          DesignRefreshMode.inactive => const SizedBox.shrink(),
-          DesignRefreshMode.drag || DesignRefreshMode.armed => Opacity(
+          RawRefreshIndicatorMode.inactive => const SizedBox.shrink(),
+          RawRefreshIndicatorMode.drag ||
+          RawRefreshIndicatorMode.armed => Opacity(
             opacity: state.progress.clamp(0.0, 1.0),
             child: AnimatedRotation(
-              turns: state.mode == DesignRefreshMode.armed ? 0.5 : 0,
+              turns: state.mode == RawRefreshIndicatorMode.armed ? 0.5 : 0,
               duration: context.minimalStill
                   ? Duration.zero
                   : MinimalMotion.base,
@@ -272,17 +273,18 @@ class MinimalRefreshIndicator extends StatelessWidget {
               ),
             ),
           ),
-          DesignRefreshMode.refresh => const MinimalCircularProgressIndicator(
-            size: 18,
-            tone: MinimalTone.neutral,
-          ),
-          DesignRefreshMode.done => MinimalIcon(
+          RawRefreshIndicatorMode.refresh =>
+            const MinimalCircularProgressIndicator(
+              size: 18,
+              tone: MinimalTone.neutral,
+            ),
+          RawRefreshIndicatorMode.done => MinimalIcon(
             LucideIcons.check,
             size: MinimalIconSize.i16,
             color: t.mutedForeground,
           ),
         };
-        if (state.mode == DesignRefreshMode.inactive) {
+        if (state.mode == RawRefreshIndicatorMode.inactive) {
           return const SizedBox.shrink();
         }
         // The bare mark, centred in a 32 px square of the opened band.
