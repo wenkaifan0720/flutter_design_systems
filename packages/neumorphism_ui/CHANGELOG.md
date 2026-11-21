@@ -1,3 +1,12 @@
+## 0.4.0
+
+- **Breaking:** stands on ui_core 0.4.0. Flutter 3.47 or later, as before.
+- **Renamed:** the ui_core types in this package's API take ui_core 0.4.0's `Raw` names. For example, `NeumorphicContextMenu.menuChildren` is a `List<RawMenuEntry>`, and `showNeumorphicToast` returns a `RawToastController`. The old names still work as deprecated typedefs, and `dart fix --apply` renames them.
+- `NeumorphicRadioGroup` is built on Flutter's `RadioGroup`, with a `RawRadio` for each option. The keys work as before. As with Flutter's `Radio`, a radio shows hover and focus while focus highlights are traditional (on a desktop, or once a mouse or a key was used), so its focus also shows after a mouse click. On iOS and macOS an unchosen radio reads as not selected.
+- `NeumorphicTooltip` is built on Flutter's `RawTooltip`. It shows on hover after its wait, on keyboard focus and on a long press, and fades in and out on the look's spring, as before. Run the pointer along a row of controls, and each tip waits its turn, as Flutter's do. Before, the next tip showed at once. A press hides a tip the pointer brought, as Flutter's do; before, the tip stayed while the control was held.
+- Keyboard focus on a field, a text area, a select or any other well deepens it softly again, as in 0.3.1: its inner shadow grows a little longer and darker, with no crisp shade and light along its rim. A checkbox's box, a radio's socket, a switch's slot and a slider's groove deepen the same soft way. Raised parts still rise for focus.
+- An empty checkbox prints no rim. It reads by its moulding alone, as every part does, and high contrast still prints its edge.
+
 ## 0.3.5
 
 - A focused checkbox, radio or switch now stays in the wall. The checkbox's box and the radio's socket go deeper, with a crisp shade inside the rim, and the switch's thumb rises inside its slot while the slot goes deeper. In 0.3.2 to 0.3.4, a raised plate grew round them on focus. A check row or switch row outside a grouped list shows focus the same way, in its box or its switch. A grouped row still rises as a band.

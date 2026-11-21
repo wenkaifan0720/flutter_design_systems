@@ -82,11 +82,11 @@ class NeumorphicTabBar extends StatefulWidget {
 class _NeumorphicTabBarState extends State<NeumorphicTabBar>
     with TickerProviderStateMixin {
   // Null with no tabs: the bar is empty.
-  late DesignTabController? _controller = _make();
+  late RawTabController? _controller = _make();
 
-  DesignTabController? _make() => widget.tabs.isEmpty
+  RawTabController? _make() => widget.tabs.isEmpty
       ? null
-      : (DesignTabController(
+      : (RawTabController(
           length: widget.tabs.length,
           initialIndex: widget.selectedIndex,
           vsync: this,
@@ -218,11 +218,11 @@ class _NeumorphicTabBarState extends State<NeumorphicTabBar>
       count: widget.tabs.length,
       // ui_core's bar lays the tabs in the bank's cells and drives them: one tab stop on the chosen tab, the arrows
       // along it (mirrored right to left, wrapping), Home and End, each tab heard as a tab with its place.
-      strip: (cell) => DesignTabBar(
+      strip: (cell) => RawTabBar(
         controller: controller,
         semanticLabel: label,
         tabs: [
-          for (final tab in widget.tabs) DesignTab(label: tab, enabled: !off),
+          for (final tab in widget.tabs) RawTab(label: tab, enabled: !off),
         ],
         tabBuilder: (context, tab, details) => cell(
           details.index,
@@ -1202,7 +1202,7 @@ class _NeumorphicCarouselState extends State<NeumorphicCarouselView> {
     final words = NeumorphicLocalizations.of(context);
     final count = widget.children.length;
     final region = t.shapes.corner(NeumorphicRadii.slab);
-    return DesignCarousel(
+    return RawCarousel(
       itemCount: count,
       // One slide in view at rest, its whole cast inside the frame. Slides beside it showing a share of themselves were
       // cut by the frame, cast and all, and the cut casts drew the frame's outline as a raised tray under the slides

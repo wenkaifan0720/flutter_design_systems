@@ -6,7 +6,7 @@
 
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:ui_core_test/ui_core_test.dart';
+import 'package:ui_core_review/ui_core_review.dart';
 import 'package:neumorphism_ui/neumorphism_ui.dart';
 import 'package:neumorphism_ui/neumorphism_host.dart';
 

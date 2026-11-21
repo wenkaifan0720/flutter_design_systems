@@ -598,10 +598,10 @@ class NeumorphicInputOtp extends StatefulWidget {
 class _NeumorphicCodeFieldState extends State<NeumorphicInputOtp> {
   // The code lives in the caller's controller when there is one: ui_core's
   // field reads and writes it, filters it, and leaves it the caller's.
-  late DesignOtpController _code = _make();
+  late RawOtpController _code = _make();
 
-  DesignOtpController _make() =>
-      DesignOtpController(length: widget.length, text: widget.controller);
+  RawOtpController _make() =>
+      RawOtpController(length: widget.length, text: widget.controller);
 
   @override
   void didUpdateWidget(NeumorphicInputOtp old) {
@@ -696,7 +696,7 @@ class _NeumorphicCodeFieldState extends State<NeumorphicInputOtp> {
         );
       },
     );
-    Widget cell(BuildContext context, DesignOtpSlot slot) {
+    Widget cell(BuildContext context, RawOtpSlot slot) {
       // The next cell to fill deepens while the code has focus, and the caret's place is that cell; a filled cell of a
       // hidden code shows a dot.
       final lit = slot.active && slot.focused;
@@ -723,7 +723,7 @@ class _NeumorphicCodeFieldState extends State<NeumorphicInputOtp> {
       );
     }
 
-    final field = DesignOtpField(
+    final field = RawOtpField(
       controller: _code,
       focusNode: widget.focusNode,
       autofocus: widget.autofocus,
@@ -1144,12 +1144,12 @@ class NeumorphicCheckbox extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = NeumorphicTheme.of(context);
     final mark = t.shapes.corner(6);
-    // Laid out at its target (DesignTapTarget), the mark on the start keyline unless its slot says otherwise: the
+    // Laid out at its target (TapTargetPadding), the mark on the start keyline unless its slot says otherwise: the
     // press, the one spoken node and the box are one. Handed a column's whole width, it stands at the start. Before 0.2.0 the mark stood on the box's edge with
     // its target's margins past it, and the words or key beside it took presses a screen reader said were its own.
     final place = NeumorphicFacePlace.of(context);
     return NeumorphicOwnRoot(
-      child: DesignTapTarget(
+      child: TapTargetPadding(
         minSize: const Size.square(NeumorphicChromeMetrics.touchTarget),
         alignment: place,
         child: NeumorphicTap(
@@ -1248,16 +1248,11 @@ class _CheckMark extends StatelessWidget {
     // still shows its value: its well stays bare and its edge and tick take the ink; the message goes under it.
     final pigmented = value != false && !error && look.fill == null;
     final needsEdge = look.edge == null && look.side == null;
-    final empty = value == false && enabled && look.fill == null;
+    // An empty box prints no rim: it reads by its moulding alone, as every part does (high contrast prints its edge).
     final filled = pigmented
         ? NeumorphicStyle(fill: WidgetStatePropertyAll(t.colors.pigment))
         : error && needsEdge
         ? NeumorphicStyle(edge: WidgetStatePropertyAll(t.colors.ink))
-        : empty && needsEdge && !t.highContrast
-        // With no tick or fill, the rim identifies the control against the wall.
-        ? NeumorphicStyle(
-            side: WidgetStatePropertyAll(BorderSide(color: t.colors.quiet)),
-          )
         : null;
     return NeumorphicOutOfUse(
       off: !enabled,
@@ -1539,135 +1534,40 @@ class NeumorphicRadioGroup<T> extends StatelessWidget {
   final ValueChanged<T>? onChanged;
   @override
   Widget build(BuildContext context) {
-    final t = NeumorphicTheme.of(context);
-    final byValue = {for (final option in options) option.value: option};
+    assert(
+      options.map((o) => o.value).toSet().length == options.length,
+      'Radio values must be distinct.',
+    );
+    final takesChoice = onChanged != null;
     return Semantics(
       container: true,
       label: label,
       explicitChildNodes: true,
-      // ui_core's group gives the keyboard: one Tab stop, on the chosen option or else the first enabled one, and
-      // arrows that choose as they move, wrapping and skipping options out of use.
-      child: DesignRadioGroup<T>(
-        options: byValue.keys.toList(),
-        value: value,
-        onChanged: onChanged,
-        isEnabled: (value) => byValue[value]!.enabled,
-        itemBuilder: (context, option, node, select) {
-          final o = byValue[option]!;
-          final selected = o.value == value;
-          return NeumorphicTap(
-            style: style,
-            themeStyle: t.radioTheme,
-            checked: selected,
-            inMutuallyExclusiveGroup: true,
-            // A row that holds a control passes its press to the control: the row stays flat and the control moves.
-            pressRelief: false,
-            // The row has no face to rise: keyboard focus deepens the option's socket, as it does a field's well.
-            showFocus: false,
-
-            button: false,
-            focusNode: node,
-            label: [
-              o.label,
-              if (o.trailingText != null) o.trailingText!,
-              if (o.note != null) o.note!,
-            ].join(', '),
-            onPressed: select,
-            child: Builder(
-              builder: (context) {
-                final states = {
-                  ...NeumorphicStatesScope.of(context),
-                  if (selected) WidgetState.selected,
-                  if (!o.enabled || onChanged == null) WidgetState.disabled,
-                };
-                final look = neumorphicStyleOf([style, t.radioTheme], states);
-                final diameter = math.max(
-                  24.0,
-                  math.max(
-                    look.minimumSize?.width ?? 0,
-                    look.minimumSize?.height ?? 0,
-                  ),
-                );
-                var shape = look.shape ?? t.shapes.circle();
-                if (shape is NeumorphicBorder) {
-                  shape = shape.fit(Size.square(diameter));
-                }
-                final words = t.textTheme.body
-                    .merge(look.textStyle)
-                    .copyWith(color: look.foreground);
-                return NeumorphicOutOfUse(
-                  off: !(o.enabled && onChanged != null),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    child: Row(
-                      children: [
-                        SizedBox.square(
-                          dimension: diameter,
-                          child: NeumorphicSurface(
-                            style: style,
-                            themeStyle: t.radioTheme,
-                            shape: shape,
-                            states: states,
-                            // Always a socket, as the checkbox is always a well: the dot carries the choice. A
-                            // raised disc cast its light past its own edge (3:1 a pixel left of the column in dark,
-                            // ~3 px of glow), so the column read as the shadow's, not the disc's.
-                            cast: NeumorphicSurfaceLevel.groove,
-                            round: true,
-                            outlined: true,
-                            boundary: true,
-                            child: Center(
-                              child: AnimatedContainer(
-                                duration: NeumorphicMotion.of(context).state,
-                                width: selected ? 10 : 0,
-                                height: selected ? 10 : 0,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: look.foreground ?? t.colors.pigment,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              if (o.trailingText == null)
-                                Text(o.label, style: words)
-                              else
-                                // The figure on the label's baseline; the label wraps before it moves the figure.
-                                Row(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.baseline,
-                                  textBaseline: TextBaseline.alphabetic,
-                                  children: [
-                                    Expanded(
-                                      child: Text(o.label, style: words),
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Text(o.trailingText!, style: words.tabular),
-                                  ],
-                                ),
-                              if (o.note != null)
-                                Text(
-                                  o.note!,
-                                  style: t.textTheme.caption
-                                      .merge(look.textStyle)
-                                      .copyWith(color: look.foreground),
-                                ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            ),
-          );
+      // Flutter's radio group: one Tab stop, on the chosen option or else the first one that can be chosen, and arrows
+      // that choose as they move, wrapping and passing over options out of use. ui_core's keyboard fix inside it keeps
+      // the Tab stop when the chosen option is out of use, and swaps Left and Right in right-to-left text.
+      child: RadioGroup<T>(
+        groupValue: value,
+        // RadioGroup takes no null: a group that takes no choice is given a change that does nothing, and each option
+        // is turned off.
+        onChanged: (next) {
+          if (next != null && next != value) onChanged?.call(next);
         },
+        child: RadioGroupKeyboardFix<T>(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              for (final option in options)
+                _NeumorphicRadioOption<T>(
+                  key: ObjectKey(option.value),
+                  option: option,
+                  chosen: option.value == value,
+                  enabled: option.enabled && takesChoice,
+                  style: style,
+                ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -1687,6 +1587,196 @@ class NeumorphicRadioGroup<T> extends StatelessWidget {
       ..add(IterableProperty<NeumorphicRadio<T>>('options', options))
       ..add(DiagnosticsProperty<T>('value', value, defaultValue: null))
       ..add(ObjectFlagProperty<ValueChanged<T>>.has('onChanged', onChanged));
+  }
+}
+
+/// One option of a [NeumorphicRadioGroup]: Flutter's [RawRadio] on the group's registry, which takes the focus, the tap
+/// and the keys and says the option is checked and one of a group, drawing the look's row: a socket whose dot carries
+/// the choice, the words beside it.
+class _NeumorphicRadioOption<T> extends StatefulWidget {
+  const _NeumorphicRadioOption({
+    super.key,
+    required this.option,
+    required this.chosen,
+    required this.enabled,
+    this.style,
+  });
+
+  final NeumorphicRadio<T> option;
+
+  /// Whether the group's value is this option's.
+  final bool chosen;
+
+  /// Whether the option can be chosen: its own [NeumorphicRadio.enabled], in a group that takes a choice.
+  final bool enabled;
+
+  final NeumorphicStyle? style;
+
+  @override
+  State<_NeumorphicRadioOption<T>> createState() =>
+      _NeumorphicRadioOptionState<T>();
+}
+
+class _NeumorphicRadioOptionState<T> extends State<_NeumorphicRadioOption<T>> {
+  final FocusNode _focusNode = FocusNode();
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final t = NeumorphicTheme.of(context);
+    final o = widget.option;
+    final style = widget.style;
+    // One node for the option: RawRadio's (checked, one of a group, its focus and its tap), with its words.
+    return MergeSemantics(
+      child: RawRadio<T>(
+        value: o.value,
+        mouseCursor: WidgetStateMouseCursor.clickable,
+        toggleable: false,
+        focusNode: _focusNode,
+        autofocus: false,
+        groupRegistry: RadioGroup.maybeOf<T>(context),
+        enabled: widget.enabled,
+        builder: (context, radio) {
+          final selected = radio.value ?? widget.chosen;
+          return Semantics(
+            label: [
+              o.label,
+              if (o.trailingText != null) o.trailingText!,
+              if (o.note != null) o.note!,
+            ].join(', '),
+            child: ExcludeSemantics(
+              // All of it takes a press, its gaps too, as RawRadio's
+              // detector finds only what the face paints.
+              child: Listener(
+                behavior: HitTestBehavior.opaque,
+                child: NeumorphicTapFace(
+                  // RawRadio's hover, focus and out of use, and pressed while a press is down on it. The row draws the
+                  // choice itself, in the socket's dot.
+                  states: {
+                    for (final state in radio.states)
+                      if (state != WidgetState.selected) state,
+                    if (radio.downPosition != null) WidgetState.pressed,
+                  },
+                  style: style,
+                  themeStyle: t.radioTheme,
+                  // A row that holds a control passes its press to the control: the row stays flat and the control
+                  // moves.
+                  pressRelief: false,
+                  // The row has no face to rise: keyboard focus deepens the option's socket, as it does a field's well.
+                  showFocus: false,
+                  child: Builder(
+                    builder: (context) {
+                      final states = {
+                        ...NeumorphicStatesScope.of(context),
+                        if (selected) WidgetState.selected,
+                        if (!widget.enabled) WidgetState.disabled,
+                      };
+                      final look = neumorphicStyleOf([
+                        style,
+                        t.radioTheme,
+                      ], states);
+                      final diameter = math.max(
+                        24.0,
+                        math.max(
+                          look.minimumSize?.width ?? 0,
+                          look.minimumSize?.height ?? 0,
+                        ),
+                      );
+                      var shape = look.shape ?? t.shapes.circle();
+                      if (shape is NeumorphicBorder) {
+                        shape = shape.fit(Size.square(diameter));
+                      }
+                      final words = t.textTheme.body
+                          .merge(look.textStyle)
+                          .copyWith(color: look.foreground);
+                      return NeumorphicOutOfUse(
+                        off: !widget.enabled,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          child: Row(
+                            children: [
+                              SizedBox.square(
+                                dimension: diameter,
+                                child: NeumorphicSurface(
+                                  style: style,
+                                  themeStyle: t.radioTheme,
+                                  shape: shape,
+                                  states: states,
+                                  // Always a socket, as the checkbox is always a well: the dot carries the choice. A
+                                  // raised disc cast its light past its own edge (3:1 a pixel left of the column in dark,
+                                  // ~3 px of glow), so the column read as the shadow's, not the disc's.
+                                  cast: NeumorphicSurfaceLevel.groove,
+                                  round: true,
+                                  outlined: true,
+                                  boundary: true,
+                                  child: Center(
+                                    child: AnimatedContainer(
+                                      duration: NeumorphicMotion.of(context)
+                                          .state,
+                                      width: selected ? 10 : 0,
+                                      height: selected ? 10 : 0,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color:
+                                            look.foreground ?? t.colors.pigment,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    if (o.trailingText == null)
+                                      Text(o.label, style: words)
+                                    else
+                                      // The figure on the label's baseline; the label wraps before it moves the figure.
+                                      Row(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.baseline,
+                                        textBaseline: TextBaseline.alphabetic,
+                                        children: [
+                                          Expanded(
+                                            child: Text(o.label, style: words),
+                                          ),
+                                          const SizedBox(width: 12),
+                                          Text(
+                                            o.trailingText!,
+                                            style: words.tabular,
+                                          ),
+                                        ],
+                                      ),
+                                    if (o.note != null)
+                                      Text(
+                                        o.note!,
+                                        style: t.textTheme.caption
+                                            .merge(look.textStyle)
+                                            .copyWith(color: look.foreground),
+                                      ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
   }
 }
 
@@ -2096,7 +2186,7 @@ class _ChoiceSetState extends State<_ChoiceSet> {
   }
 }
 
-/// A score out of [count] stars, on ui_core's [DesignRating]. With [onChanged] it is one control, one tab stop: a tap
+/// A score out of [count] stars, on ui_core's [RawRating]. With [onChanged] it is one control, one tab stop: a tap
 /// or a drag across the stars sets the score, hovering shows the score a tap would give, Right and Left (mirrored right
 /// to left) step it, Home clears it, End and a digit set it, and a screen reader hears a slider. The stars up to the
 /// score stand raised in the pigment; the rest are engraved outlines, and the star at the score wears the focus.
@@ -2167,7 +2257,7 @@ class NeumorphicRating extends StatelessWidget {
     );
     if (onChanged == null) {
       return own(
-        DesignRating(
+        RawRating(
           value: value,
           onChanged: null,
           readOnly: true,
@@ -2204,7 +2294,7 @@ class NeumorphicRating extends StatelessWidget {
           target: target,
           size: size,
           place: place,
-          builder: (lit) => DesignRating(
+          builder: (lit) => RawRating(
             value: chosen.toDouble(),
             onChanged: enabled ? (score) => onChanged!(score.round()) : null,
             itemCount: count,
@@ -2252,7 +2342,7 @@ class NeumorphicRating extends StatelessWidget {
 
 /// One star's target in a [NeumorphicRating]: the face's states for it. The star at the score ([wearer]) wears the
 /// rating's focus and a drag's press; a finger or a button held down on a star sinks that star, as each star's own
-/// press did before the rating moved onto [DesignRating] (which reports a press only once it drags).
+/// press did before the rating moved onto [RawRating] (which reports a press only once it drags).
 class _StarTarget extends StatefulWidget {
   const _StarTarget({
     required this.item,
@@ -2261,7 +2351,7 @@ class _StarTarget extends StatefulWidget {
     required this.builder,
   });
 
-  final DesignRatingItemDetails item;
+  final RawRatingItemDetails item;
   final int wearer;
 
   /// Whether the rating shows its focus, for [_RatingRise] to raise the row.

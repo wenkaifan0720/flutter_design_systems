@@ -34,7 +34,7 @@ void main() {
                 textScale: scale,
               ),
             );
-            for (final target in find.byType(DesignPressable).evaluate()) {
+            for (final target in find.byType(RawButton).evaluate()) {
               final size = tester.getSize(find.byWidget(target.widget));
               expect(size.width, greaterThanOrEqualTo(48));
               expect(size.height, greaterThanOrEqualTo(48));

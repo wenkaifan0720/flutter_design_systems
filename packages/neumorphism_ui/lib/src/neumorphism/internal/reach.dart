@@ -1,6 +1,6 @@
 // A face's reach: the platform's least target round a face the density draws shorter, as Material pads its inputs
 // (MaterialTapTargetSize.padded). The face keeps the density's height; the box, a press and the spoken node take the
-// target's. A control that stands at its target across too is laid out on ui_core's DesignTapTarget.
+// target's. A control that stands at its target across too is laid out on ui_core's TapTargetPadding.
 import 'dart:math' as math;
 
 import 'package:flutter/rendering.dart';
@@ -282,7 +282,7 @@ class _RenderOwnRoot extends RenderShiftedBox {
   }
 }
 
-/// Where a control laid out at its target stands its face (DesignTapTarget's alignment): on the start keyline unless
+/// Where a control laid out at its target stands its face (TapTargetPadding's alignment): on the start keyline unless
 /// set, since a control starts on the column's edge with its drawn face, never its target; a slot at a
 /// row's end ([AlignmentDirectional.centerEnd]: a page head's trailing key, a stepper's last key) or inside a box
 /// ([AlignmentDirectional.center]: a field's own keys) sets its own. The target grows away from the face.

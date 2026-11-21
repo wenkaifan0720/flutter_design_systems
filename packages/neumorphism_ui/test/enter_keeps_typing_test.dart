@@ -136,7 +136,7 @@ void main() {
             autofocus: true,
             commands: [
               for (final name in const ['Archive', 'Duplicate', 'Rename'])
-                DesignCommand(label: name, onPressed: () => ran.add(name)),
+                RawCommand(label: name, onPressed: () => ran.add(name)),
             ],
           ),
         ),
@@ -165,10 +165,7 @@ void main() {
                   context,
                   commands: [
                     for (final name in const ['Archive', 'Duplicate'])
-                      DesignCommand(
-                        label: name,
-                        onPressed: () => ran.add(name),
-                      ),
+                      RawCommand(label: name, onPressed: () => ran.add(name)),
                   ],
                 ),
               ),

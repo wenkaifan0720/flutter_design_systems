@@ -351,11 +351,11 @@ void main() {
           alignment: Alignment.topLeft,
           child: NeumorphicMenuBar(
             menus: [
-              DesignMenuEntry(
+              RawMenuEntry(
                 label: 'File',
                 children: [
                   for (final item in ['New', 'Open', 'Print', 'Quit'])
-                    DesignMenuEntry(label: item, onPressed: () {}),
+                    RawMenuEntry(label: item, onPressed: () {}),
                 ],
               ),
             ],

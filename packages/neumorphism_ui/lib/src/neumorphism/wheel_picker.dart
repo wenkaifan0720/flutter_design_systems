@@ -11,7 +11,7 @@ import 'theme.dart';
 import 'internal/out_of_use.dart';
 
 /// One value from a short ordered list, turned on a wheel in a well: the chosen row stands on a raised lens across
-/// the middle, in the ink and bold; the rest curve away in the quiet ink. On ui_core's [DesignWheelPicker]: drag or
+/// the middle, in the ink and bold; the rest curve away in the quiet ink. On ui_core's [RawPicker]: drag or
 /// flick it, tap a row, or focus it and use Up and Down, Page Up and Page Down, Home and End, or type a row's first
 /// letters; a screen reader adjusts it up and down. For a date or a time, use the date and time pickers.
 ///
@@ -122,9 +122,9 @@ class NeumorphicWheelPicker<T> extends StatelessWidget {
     return NeumorphicOutOfUse(
       off: !enabled,
       child: sized(
-        DesignWheelPicker(
+        RawPicker(
           columns: (_) => [
-            DesignWheelColumn(
+            RawPickerColumn(
               itemCount: n,
               itemLabel: (i) => _words(items[i]),
               semanticLabel: label,

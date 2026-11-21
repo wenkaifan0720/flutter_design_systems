@@ -225,7 +225,7 @@ class _NeumorphicPageRoute<T> extends PageRouteBuilder<T> {
 
 /// The router's page for a sheet, raised on the root navigator over the shell: from a phone's foot, as a slab in the middle of a desktop.
 /// [drawer] stands it as tall as its content. The screen inside derives its close.
-/// Its routes are ui_core's, on springs as long as the theme's move: on a phone a [DesignBottomSheetRoute] (a finger
+/// Its routes are ui_core's, on springs as long as the theme's move: on a phone a [RawBottomSheetRoute] (a finger
 /// drags it down and away, the screen's scroll view handing the drag over at its top), on a desktop a
 /// [DesignDialogRoute]; both close on Escape and back, and give the focus back as they close.
 class NeumorphicSheetPage<T> extends Page<T> {
@@ -333,7 +333,7 @@ class NeumorphicSheetPage<T> extends Page<T> {
         ),
       );
     }
-    return DesignBottomSheetRoute<T>(
+    return RawBottomSheetRoute<T>(
       settings: this,
       stiffness: stiffness,
       barrierColor: barrier,

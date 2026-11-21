@@ -171,10 +171,10 @@ Widget _menuBar() => Align(
   alignment: Alignment.topLeft,
   child: NeumorphicMenuBar(
     menus: [
-      DesignMenuEntry(
+      RawMenuEntry(
         label: 'Scene',
         children: [
-          for (final s in _scenes) DesignMenuEntry(label: s, onPressed: () {}),
+          for (final s in _scenes) RawMenuEntry(label: s, onPressed: () {}),
         ],
       ),
     ],

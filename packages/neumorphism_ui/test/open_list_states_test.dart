@@ -141,9 +141,9 @@ void main() {
                 width: 480,
                 child: NeumorphicCommand(
                   commands: [
-                    DesignCommand(label: 'New scene'),
-                    DesignCommand(label: 'Dim every room'),
-                    DesignCommand(label: 'Find a room'),
+                    RawCommand(label: 'New scene'),
+                    RawCommand(label: 'Dim every room'),
+                    RawCommand(label: 'Find a room'),
                   ],
                 ),
               ),
@@ -187,9 +187,7 @@ void main() {
               child: SizedBox(
                 width: 480,
                 child: NeumorphicCommand(
-                  commands: [
-                    DesignCommand(label: 'New scene', shortcut: '⌘ N'),
-                  ],
+                  commands: [RawCommand(label: 'New scene', shortcut: '⌘ N')],
                 ),
               ),
             ),

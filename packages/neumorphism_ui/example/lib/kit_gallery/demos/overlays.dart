@@ -42,37 +42,37 @@ Widget kitSpecimenMenuBar() => kitValue<bool>(
   (context, roomsShown, change) => NeumorphicMenuBar(
     label: 'Scenes',
     menus: [
-      DesignMenuEntry(
+      RawMenuEntry(
         label: 'Scene',
         children: [
-          DesignMenuEntry(
+          RawMenuEntry(
             label: 'New scene',
             shortcut: _primaryKeys(context, LogicalKeyboardKey.keyN),
             onPressed: () =>
                 showNeumorphicSnackBar(context, message: 'New scene'),
           ),
-          DesignMenuEntry(
+          RawMenuEntry(
             label: 'Export',
             children: [
-              DesignMenuEntry(
+              RawMenuEntry(
                 label: 'As a file',
                 onPressed: () =>
                     showNeumorphicSnackBar(context, message: 'Exported'),
               ),
             ],
           ),
-          const DesignMenuEntry(label: 'Print'),
+          const RawMenuEntry(label: 'Print'),
         ],
       ),
-      DesignMenuEntry(
+      RawMenuEntry(
         label: 'View',
         children: [
-          DesignMenuEntry(
+          RawMenuEntry(
             label: 'Rooms',
             checked: roomsShown,
             onPressed: () => change(!roomsShown),
           ),
-          DesignMenuEntry(
+          RawMenuEntry(
             label: 'Lamps',
             checked: !roomsShown,
             onPressed: () => change(!roomsShown),
@@ -113,14 +113,14 @@ Widget kitSpecimenHoverCard() => Align(
   ),
 );
 
-List<DesignCommand> _commands(BuildContext context) => [
-  DesignCommand(
+List<RawCommand> _commands(BuildContext context) => [
+  RawCommand(
     label: 'New scene',
     group: 'Scenes',
     shortcut: _primaryKeys(context, LogicalKeyboardKey.keyN),
   ),
-  const DesignCommand(label: 'Dim every room', group: 'Scenes'),
-  DesignCommand(
+  const RawCommand(label: 'Dim every room', group: 'Scenes'),
+  RawCommand(
     label: 'Find a room',
     group: 'Rooms',
     shortcut: _primaryKeys(context, LogicalKeyboardKey.keyK),
@@ -139,18 +139,14 @@ Widget kitSpecimenContextMenu() => kitValue<bool>(
     child: NeumorphicContextMenu(
       label: 'Hall lamp',
       menuChildren: [
-        DesignMenuEntry(
-          label: 'On',
-          checked: lit,
-          onPressed: () => change(!lit),
-        ),
-        DesignMenuEntry(
+        RawMenuEntry(label: 'On', checked: lit, onPressed: () => change(!lit)),
+        RawMenuEntry(
           label: 'Rename',
           shortcut: _primaryKeys(context, LogicalKeyboardKey.keyR),
           onPressed: () => showNeumorphicSnackBar(context, message: 'Rename'),
         ),
-        const DesignMenuEntry.divider(),
-        DesignMenuEntry(
+        const RawMenuEntry.divider(),
+        RawMenuEntry(
           label: 'Remove',
           onPressed: () => showNeumorphicSnackBar(context, message: 'Removed'),
         ),

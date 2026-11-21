@@ -316,16 +316,16 @@ final _parts = <String, _Build>{
   ),
   // The menu over a control: Shift+F10 from the control opens it, its first command lit.
   'NeumorphicContextMenu': (hit) => NeumorphicContextMenu(
-    menuChildren: [DesignMenuEntry(label: 'Rename', onPressed: hit)],
+    menuChildren: [RawMenuEntry(label: 'Rename', onPressed: hit)],
     child: NeumorphicButton('Hall lamp', onPressed: () {}),
   ),
   'NeumorphicCommand': (hit) => NeumorphicCommand(
-    commands: const [DesignCommand(label: 'New scene')],
+    commands: const [RawCommand(label: 'New scene')],
     onRun: hit == null ? null : (_) => hit(),
   ),
   'NeumorphicRangeSlider': (hit) => NeumorphicRangeSlider(
     label: 'Comfort',
-    values: const DesignRangeValues(.2, .8),
+    values: const RawRangeValues(.2, .8),
     onChanged: hit == null ? null : (_) => hit(),
   ),
   'NeumorphicWheelPicker': (hit) => NeumorphicWheelPicker<int>(
@@ -345,7 +345,7 @@ final _parts = <String, _Build>{
   ),
   'NeumorphicCalendar': (hit) => NeumorphicCalendar(
     controller: _own(
-      DesignCalendarController(
+      RawCalendarController(
         firstDate: DateTime(2026, 6),
         lastDate: DateTime(2026, 6, 30),
         currentDate: DateTime(2026, 6, 10),
@@ -355,10 +355,10 @@ final _parts = <String, _Build>{
   ),
   'NeumorphicDateRangePicker': (hit) => NeumorphicDateRangePicker(
     controller: _own(
-      DesignCalendarController(
+      RawCalendarController(
         firstDate: DateTime(2026, 6),
         lastDate: DateTime(2026, 6, 30),
-        mode: DesignCalendarMode.range,
+        mode: RawCalendarMode.range,
         currentDate: DateTime(2026, 6, 10),
       ),
     ),
@@ -367,9 +367,9 @@ final _parts = <String, _Build>{
   'NeumorphicDataTable': (hit) => NeumorphicDataTable<String>(
     label: 'Rooms',
     controller: _own(
-      DesignTableController<String>(
+      RawDataTableController<String>(
         rows: const ['Bedroom'],
-        columns: [const DesignTableColumn<String>(id: 'room', label: 'Room')],
+        columns: [const RawDataColumn<String>(id: 'room', label: 'Room')],
       ),
     ),
     cell: (row, column) => row,
@@ -539,7 +539,7 @@ void main() {
             // their enclosing NeumorphicTap still owns focus and keyboard input.
             : file.path.endsWith('/moves.dart')
             ? 1
-            // The sheet's drag; the tooltip's hold is ui_core's (DesignTooltip).
+            // The sheet's drag; the tooltip's hold is Flutter's (RawTooltip).
             : file.path.endsWith('/raised.dart')
             ? 1
             // A press on a field's padding, off its text, focuses the text, as a Material field's decorator does.
@@ -706,8 +706,8 @@ void main() {
         await tester.sendKeyEvent(LogicalKeyboardKey.tab);
         await tester.sendKeyEvent(LogicalKeyboardKey.enter);
         await tester.pump();
-        for (final press in tester.stateList<DesignPressableState>(
-          find.byType(DesignPressable),
+        for (final press in tester.stateList<RawButtonState>(
+          find.byType(RawButton),
         )) {
           expect(press.states.contains(WidgetState.focused), isFalse);
         }
@@ -732,10 +732,26 @@ void main() {
             }.contains(name)
             ? find
                   .byWidgetPredicate(
-                    (w) => w is DesignPressable && w.onPressed != null,
+                    (w) => w is RawButton && w.onPressed != null,
                   )
                   .first
-            : find.byType(DesignPressable).first;
+            // A radio group's options are radios.
+            : find
+                  .byWidgetPredicate((w) => w is RawButton || w is RawRadio)
+                  .first;
+        Set<WidgetState> states() => switch (tester.state(target)) {
+          final RawButtonState button => button.states,
+          final ToggleableStateMixin radio => radio.states,
+          final other => throw StateError('No states on $other'),
+        };
+        // A desktop's pointer: Flutter's radios show hover while focus
+        // highlights are traditional, as on a desktop.
+        FocusManager.instance.highlightStrategy =
+            FocusHighlightStrategy.alwaysTraditional;
+        addTearDown(
+          () => FocusManager.instance.highlightStrategy =
+              FocusHighlightStrategy.automatic,
+        );
         final rect = tester.getRect(target);
         expect(rect.width, greaterThanOrEqualTo(48));
         expect(rect.height, greaterThanOrEqualTo(48));
@@ -743,16 +759,10 @@ void main() {
         await mouse.addPointer(location: Offset.zero);
         await mouse.moveTo(rect.center);
         await tester.pumpAndSettle();
-        expect(
-          tester.state<DesignPressableState>(target).states,
-          contains(WidgetState.hovered),
-        );
+        expect(states(), contains(WidgetState.hovered));
         await mouse.removePointer();
         await tester.pumpAndSettle();
-        expect(
-          tester.state<DesignPressableState>(target).states,
-          isNot(contains(WidgetState.hovered)),
-        );
+        expect(states(), isNot(contains(WidgetState.hovered)));
         expect(tester.takeException(), isNull);
       });
     }

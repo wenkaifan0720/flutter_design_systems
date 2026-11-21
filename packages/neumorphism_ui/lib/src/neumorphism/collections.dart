@@ -75,10 +75,10 @@ class NeumorphicDataTable<R> extends StatelessWidget {
   });
 
   /// The rows, columns, sort, selection and page.
-  final DesignTableController<R> controller;
+  final RawDataTableController<R> controller;
 
   /// A cell's words.
-  final String Function(R row, DesignTableColumn<R> column) cell;
+  final String Function(R row, RawDataColumn<R> column) cell;
 
   /// Whether the rows have checks.
   final bool selectable;
@@ -94,7 +94,7 @@ class NeumorphicDataTable<R> extends StatelessWidget {
     final t = NeumorphicTheme.of(context);
     final c = t.colors;
     final words = NeumorphicLocalizations.of(context);
-    Widget box(DesignTableColumn<R> column, Widget child) => Expanded(
+    Widget box(RawDataColumn<R> column, Widget child) => Expanded(
       flex: column.numeric ? 2 : 3,
       child: Align(
         alignment: column.numeric
@@ -115,7 +115,7 @@ class NeumorphicDataTable<R> extends StatelessWidget {
           children: [
             _Sideways(
               least: _least(context, t),
-              child: DesignDataTable<R>(
+              child: RawDataTable<R>(
                 controller: controller,
                 selectable: selectable,
                 onActivate: onActivate,
@@ -130,9 +130,9 @@ class NeumorphicDataTable<R> extends StatelessWidget {
                           if (selectable)
                             NeumorphicCheckbox(
                               value: switch (controller.pageSelection) {
-                                DesignSelection.all => true,
-                                DesignSelection.none => false,
-                                DesignSelection.some => null,
+                                RawDataTableSelection.all => true,
+                                RawDataTableSelection.none => false,
+                                RawDataTableSelection.some => null,
                               },
                               tristate: true,
                               label: words.selectAllRows,
@@ -180,7 +180,7 @@ class NeumorphicDataTable<R> extends StatelessWidget {
                             if (sort != null) ...[
                               const SizedBox(width: 4),
                               Transform.rotate(
-                                angle: sort == DesignSortDirection.ascending
+                                angle: sort == RawSortDirection.ascending
                                     ? math.pi
                                     : 0,
                                 child: Icon(
@@ -295,12 +295,16 @@ class NeumorphicDataTable<R> extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(
-        DiagnosticsProperty<DesignTableController<R>>('controller', controller),
+        DiagnosticsProperty<RawDataTableController<R>>(
+          'controller',
+          controller,
+        ),
       )
       ..add(
-        ObjectFlagProperty<
-          String Function(R row, DesignTableColumn<R> column)
-        >.has('cell', cell),
+        ObjectFlagProperty<String Function(R row, RawDataColumn<R> column)>.has(
+          'cell',
+          cell,
+        ),
       )
       ..add(
         DiagnosticsProperty<bool>('selectable', selectable, defaultValue: true),
@@ -375,7 +379,7 @@ class NeumorphicScrollArea extends StatelessWidget {
     final t = NeumorphicTheme.of(context);
     final c = t.colors;
     final region = t.shapes.corner(NeumorphicRadii.well);
-    return DesignScrollArea(
+    return RawScrollArea(
       controller: controller,
       axis: axis,
       focusNode: focusNode,
@@ -484,7 +488,7 @@ class NeumorphicResizable extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = NeumorphicTheme.of(context);
-    return DesignSplitView(
+    return RawSplitView(
       first: first,
       second: second,
       axis: axis,
@@ -603,7 +607,7 @@ class NeumorphicReorderableListView<T extends Object> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = NeumorphicTheme.of(context);
-    return DesignReorderableList<T>(
+    return RawReorderableList<T>(
       items: items,
       onReorder: onReorder,
       labelOf: labelOf,
@@ -683,7 +687,7 @@ class NeumorphicReorderableListView<T extends Object> extends StatelessWidget {
 /// square and slides inside its own box: in a card, give the card 8 of padding so the rows clear its round corners.
 ///
 /// ```dart
-/// NeumorphicSwipeActions(endActions: [DesignSwipeAction(label: 'Delete', destructive: true, onPressed: remove)], child: row)
+/// NeumorphicSwipeActions(endActions: [RawSwipeAction(label: 'Delete', destructive: true, onPressed: remove)], child: row)
 /// ```
 class NeumorphicSwipeActions extends StatelessWidget {
   /// A row, [child], with actions behind it.
@@ -699,10 +703,10 @@ class NeumorphicSwipeActions extends StatelessWidget {
   final Widget child;
 
   /// Actions behind the row's start edge.
-  final List<DesignSwipeAction> startActions;
+  final List<RawSwipeAction> startActions;
 
   /// Actions behind its end edge.
-  final List<DesignSwipeAction> endActions;
+  final List<RawSwipeAction> endActions;
 
   /// Whether it starts with a side open (the end's, else the start's): a preview, or a one-time hint that the row
   /// swipes. It closes as any open row does.
@@ -728,7 +732,7 @@ class NeumorphicSwipeActions extends StatelessWidget {
     }
     // Held to its own box: slid open, the row's words went on past the card it stands in, over the wall.
     return _SwipeFrame(
-      child: DesignSwipeActions(
+      child: RawSwipeActions(
         initiallyOpen: initiallyOpen,
         startActions: startActions,
         endActions: endActions,
@@ -809,17 +813,17 @@ class NeumorphicSwipeActions extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(
-        IterableProperty<DesignSwipeAction>(
+        IterableProperty<RawSwipeAction>(
           'startActions',
           startActions,
-          defaultValue: const <DesignSwipeAction>[],
+          defaultValue: const <RawSwipeAction>[],
         ),
       )
       ..add(
-        IterableProperty<DesignSwipeAction>(
+        IterableProperty<RawSwipeAction>(
           'endActions',
           endActions,
-          defaultValue: const <DesignSwipeAction>[],
+          defaultValue: const <RawSwipeAction>[],
         ),
       )
       ..add(
@@ -1035,7 +1039,7 @@ class NeumorphicTreeView<T extends Object> extends StatelessWidget {
                       child: !item.hasChildren
                           ? null
                           : ExcludeFocus(
-                              child: DesignPressable(
+                              child: RawButton(
                                 onPressed: item.toggle,
                                 semanticLabel: item.expanded
                                     ? words.collapse

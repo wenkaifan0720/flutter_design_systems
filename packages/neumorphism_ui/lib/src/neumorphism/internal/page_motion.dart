@@ -137,7 +137,7 @@ Map<TargetPlatform, PageTransitionsBuilder> neumorphicPageTransitionBuilders({
 /// The look's page change for a route of its own on this device's platform: on iOS with the swipe back round it.
 PageTransitionsBuilder neumorphicPageMotionHere(NeumorphicMotion motion) =>
     defaultTargetPlatform == TargetPlatform.iOS
-    ? DesignSwipeBackPageTransitionsBuilder(NeumorphicPageMotion(motion))
+    ? SwipeBackPageTransitionsBuilder(NeumorphicPageMotion(motion))
     : NeumorphicPageMotion(motion);
 
 /// The stiffness (k) of a critically damped spring that comes within 2% of rest in [settle], as the look's timed move

@@ -34,8 +34,8 @@ class NeumorphicPopover extends StatelessWidget {
     required this.label,
     required this.trigger,
     required this.content,
-    this.side = DesignOverlaySide.below,
-    this.align = DesignOverlayAlign.start,
+    this.side = RawPopoverSide.below,
+    this.align = RawPopoverAlign.start,
     this.width = 288,
     this.style,
   }) : assert(width > 0);
@@ -50,10 +50,10 @@ class NeumorphicPopover extends StatelessWidget {
   final Widget content;
 
   /// The side of the trigger it opens on; it flips when there is no room.
-  final DesignOverlaySide side;
+  final RawPopoverSide side;
 
   /// How it lines up with the trigger along that side.
-  final DesignOverlayAlign align;
+  final RawPopoverAlign align;
 
   /// Its width, clamped to the screen.
   final double width;
@@ -62,10 +62,10 @@ class NeumorphicPopover extends StatelessWidget {
   final NeumorphicStyle? style;
 
   @override
-  Widget build(BuildContext context) => DesignAnchoredOverlay(
+  Widget build(BuildContext context) => RawPopover(
     semanticLabel: label,
     // Words or a small form keep their own width, whatever the trigger's: not a list opened from a field.
-    placement: DesignOverlayPlacement(
+    placement: RawPopoverPlacement(
       side: side,
       align: align,
       gap: 10,
@@ -97,17 +97,17 @@ class NeumorphicPopover extends StatelessWidget {
         >.has('trigger', trigger),
       )
       ..add(
-        EnumProperty<DesignOverlaySide>(
+        EnumProperty<RawPopoverSide>(
           'side',
           side,
-          defaultValue: DesignOverlaySide.below,
+          defaultValue: RawPopoverSide.below,
         ),
       )
       ..add(
-        EnumProperty<DesignOverlayAlign>(
+        EnumProperty<RawPopoverAlign>(
           'align',
           align,
-          defaultValue: DesignOverlayAlign.start,
+          defaultValue: RawPopoverAlign.start,
         ),
       )
       ..add(DoubleProperty('width', width, defaultValue: 288))
@@ -158,13 +158,13 @@ class NeumorphicHoverCard extends StatelessWidget {
   final NeumorphicStyle? style;
 
   @override
-  Widget build(BuildContext context) => DesignAnchoredOverlay(
-    trigger: DesignOverlayTrigger.hover,
+  Widget build(BuildContext context) => RawPopover(
+    trigger: RawPopoverTrigger.hover,
     focusOnOpen: false,
     hoverOpenDelay: openDelay,
     semanticLabel: label,
     // A person's card keeps its own width over a long name.
-    placement: const DesignOverlayPlacement(gap: 10, matchAnchorWidth: false),
+    placement: const RawPopoverPlacement(gap: 10, matchAnchorWidth: false),
     anchorBuilder: (context, anchor) => child,
     overlayBuilder: (context, info) => NeumorphicPanel(
       presence: info.animation,
@@ -215,7 +215,7 @@ class NeumorphicSheet extends StatelessWidget {
     required this.child,
     this.actions = const [],
     this.onClose,
-    this.edge = DesignSheetEdge.end,
+    this.edge = RawSheetEdge.end,
     this.style,
   });
 
@@ -232,7 +232,7 @@ class NeumorphicSheet extends StatelessWidget {
   final VoidCallback? onClose;
 
   /// The page side it stands on: only its inner corners are rounded.
-  final DesignSheetEdge edge;
+  final RawSheetEdge edge;
 
   /// The panel's own style, before the sheet theme.
   final NeumorphicStyle? style;
@@ -312,10 +312,10 @@ class NeumorphicSheet extends StatelessWidget {
       ..add(StringProperty('title', title))
       ..add(ObjectFlagProperty<VoidCallback>.has('onClose', onClose))
       ..add(
-        EnumProperty<DesignSheetEdge>(
+        EnumProperty<RawSheetEdge>(
           'edge',
           edge,
-          defaultValue: DesignSheetEdge.end,
+          defaultValue: RawSheetEdge.end,
         ),
       )
       ..add(
@@ -337,13 +337,13 @@ class NeumorphicSheet extends StatelessWidget {
 Future<T?> showNeumorphicSheet<T>(
   BuildContext context, {
   required Widget Function(BuildContext context, VoidCallback close) builder,
-  DesignSheetEdge edge = DesignSheetEdge.end,
+  RawSheetEdge edge = RawSheetEdge.end,
   double width = 380,
   bool useRootNavigator = true,
 }) {
   final t = NeumorphicTheme.of(context);
   return Navigator.of(context, rootNavigator: useRootNavigator).push<T>(
-    DesignSideSheetRoute<T>(
+    RawSideSheetRoute<T>(
       edge: edge,
       width: width,
       barrierColor: neumorphicVeil(t.colors),
@@ -358,7 +358,7 @@ Future<T?> showNeumorphicSheet<T>(
 /// shortcuts; arrows move the highlight, Enter runs it. [showNeumorphicCommand] opens one over the page.
 ///
 /// ```dart
-/// NeumorphicCommand(commands: [DesignCommand(label: 'New booking', group: 'Bookings', onPressed: book)])
+/// NeumorphicCommand(commands: [RawCommand(label: 'New booking', group: 'Bookings', onPressed: book)])
 /// ```
 class NeumorphicCommand extends StatelessWidget {
   /// A palette of [commands].
@@ -376,10 +376,10 @@ class NeumorphicCommand extends StatelessWidget {
   final FocusNode? focusNode;
 
   /// Every command, in the order they list before a search.
-  final List<DesignCommand> commands;
+  final List<RawCommand> commands;
 
   /// Called with the command run, after its own `onRun`.
-  final ValueChanged<DesignCommand>? onRun;
+  final ValueChanged<RawCommand>? onRun;
 
   /// The field's placeholder; null: the localized Search.
   final String? hint;
@@ -415,8 +415,8 @@ class NeumorphicCommand extends StatelessWidget {
           defaultValue: null,
         ),
       )
-      ..add(IterableProperty<DesignCommand>('commands', commands))
-      ..add(ObjectFlagProperty<ValueChanged<DesignCommand>>.has('onRun', onRun))
+      ..add(IterableProperty<RawCommand>('commands', commands))
+      ..add(ObjectFlagProperty<ValueChanged<RawCommand>>.has('onRun', onRun))
       ..add(StringProperty('hint', hint, defaultValue: null))
       ..add(DoubleProperty('maxHeight', maxHeight, defaultValue: 360))
       ..add(
@@ -425,14 +425,14 @@ class NeumorphicCommand extends StatelessWidget {
   }
 }
 
-DesignCommandPalette _palette({
-  required List<DesignCommand> commands,
+RawCommandPalette _palette({
+  required List<RawCommand> commands,
   required String hint,
-  ValueChanged<DesignCommand>? onRun,
+  ValueChanged<RawCommand>? onRun,
   double maxHeight = 360,
   bool autofocus = true,
   FocusNode? focusNode,
-}) => DesignCommandPalette(
+}) => RawCommandPalette(
   commands: commands,
   onSelected: onRun,
   maxHeight: maxHeight,
@@ -491,7 +491,7 @@ DesignCommandPalette _palette({
 /// ```
 Future<void> showNeumorphicCommand(
   BuildContext context, {
-  required List<DesignCommand> commands,
+  required List<RawCommand> commands,
   String? hint,
 }) {
   final t = NeumorphicTheme.of(context);
@@ -517,14 +517,14 @@ Future<void> showNeumorphicCommand(
 /// is held, is pressed in.
 ///
 /// ```dart
-/// NeumorphicMenuBar(menus: [DesignMenuEntry(label: 'File', children: [DesignMenuEntry(label: 'New', onPressed: create)])])
+/// NeumorphicMenuBar(menus: [RawMenuEntry(label: 'File', children: [RawMenuEntry(label: 'New', onPressed: create)])])
 /// ```
 class NeumorphicMenuBar extends StatelessWidget {
   /// A bar of [menus].
   const NeumorphicMenuBar({super.key, required this.menus, this.label});
 
   /// The bar's menus, each with its entries.
-  final List<DesignMenuEntry> menus;
+  final List<RawMenuEntry> menus;
 
   /// What a screen reader calls the bar; null: the localized Menu.
   final String? label;
@@ -535,7 +535,7 @@ class NeumorphicMenuBar extends StatelessWidget {
     final c = t.colors;
     final words = NeumorphicLocalizations.of(context);
     final shape = t.shapes.corner(NeumorphicRadii.control);
-    return DesignMenuBar(
+    return RawMenuBar(
       menus: menus,
       semanticLabel: label ?? words.menu,
       barBuilder: (context, items) => Padding(
@@ -546,7 +546,7 @@ class NeumorphicMenuBar extends StatelessWidget {
       dividerBuilder: _menuDivider,
       surfaceBuilder: _menuPanel,
       itemBuilder: (context, entry, level, states) {
-        if (level == DesignMenuLevel.menu) return _menuRow(entry, states);
+        if (level == RawMenuLevel.menu) return _menuRow(entry, states);
         final open = states.contains(WidgetState.selected);
         final sunk =
             entry.enabled && (open || states.contains(WidgetState.pressed));
@@ -587,7 +587,7 @@ class NeumorphicMenuBar extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(IterableProperty<DesignMenuEntry>('menus', menus))
+      ..add(IterableProperty<RawMenuEntry>('menus', menus))
       ..add(StringProperty('label', label, defaultValue: null));
   }
 }
@@ -602,7 +602,7 @@ Widget _menuDivider(BuildContext context) => const Padding(
 // panel, which keeps a tight even inset round its flat rows, inside the scroll.
 Widget _menuPanel(
   BuildContext context,
-  DesignOverlayInfo info,
+  RawPopoverInfo info,
   List<Widget> items,
 ) => NeumorphicPanel(
   presence: info.animation,
@@ -622,7 +622,7 @@ Widget _menuPanel(
 );
 
 // One row of a menu: its words, its keys at the end, its check or its submenu's chevron.
-Widget _menuRow(DesignMenuEntry entry, Set<WidgetState> states) =>
+Widget _menuRow(RawMenuEntry entry, Set<WidgetState> states) =>
     NeumorphicPanelRow(
       label: entry.label,
       states: {...states, if (!entry.enabled) WidgetState.disabled},
@@ -638,7 +638,7 @@ Widget _menuRow(DesignMenuEntry entry, Set<WidgetState> states) =>
 /// then runs. On the web the browser's own menu stays shut over [child].
 ///
 /// ```dart
-/// NeumorphicContextMenu(menuChildren: [DesignMenuEntry(label: 'Rename', onPressed: rename)], child: const Text('Hall lamp'))
+/// NeumorphicContextMenu(menuChildren: [RawMenuEntry(label: 'Rename', onPressed: rename)], child: const Text('Hall lamp'))
 /// ```
 class NeumorphicContextMenu extends StatelessWidget {
   /// A menu of [menuChildren] over [child].
@@ -652,7 +652,7 @@ class NeumorphicContextMenu extends StatelessWidget {
   });
 
   /// The menu's rows: commands, checks, submenus and dividers. Empty: no menu.
-  final List<DesignMenuEntry> menuChildren;
+  final List<RawMenuEntry> menuChildren;
 
   /// The region that opens it.
   final Widget child;
@@ -667,7 +667,7 @@ class NeumorphicContextMenu extends StatelessWidget {
   final ValueChanged<bool>? onOpenChanged;
 
   @override
-  Widget build(BuildContext context) => DesignContextMenu(
+  Widget build(BuildContext context) => RawContextMenu(
     menuChildren: menuChildren,
     semanticLabel: label,
     controller: controller,
@@ -682,7 +682,7 @@ class NeumorphicContextMenu extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(IterableProperty<DesignMenuEntry>('menuChildren', menuChildren))
+      ..add(IterableProperty<RawMenuEntry>('menuChildren', menuChildren))
       ..add(StringProperty('label', label, defaultValue: null))
       ..add(
         DiagnosticsProperty<MenuController>(
@@ -723,7 +723,7 @@ class NeumorphicToaster extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = NeumorphicTheme.of(context);
     final c = t.colors;
-    return DesignToaster(
+    return RawToaster(
       maxVisible: maxVisible,
       regionLabel: NeumorphicLocalizations.of(context).notifications,
       constraints: const BoxConstraints(maxWidth: 520),
@@ -797,7 +797,7 @@ class NeumorphicToaster extends StatelessWidget {
 /// ```dart
 /// showNeumorphicToast(context, message: 'Table held', actionLabel: 'Undo', onAction: release)
 /// ```
-DesignToastHandle showNeumorphicToast(
+RawToastController showNeumorphicToast(
   BuildContext context, {
   required String message,
   String? title,
@@ -805,8 +805,8 @@ DesignToastHandle showNeumorphicToast(
   String? actionLabel,
   VoidCallback? onAction,
   Duration duration = const Duration(seconds: 5),
-}) => DesignToaster.of(context).show(
-  DesignToast(
+}) => RawToaster.of(context).show(
+  RawToast(
     message: message,
     title: title,
     actionLabel: actionLabel,

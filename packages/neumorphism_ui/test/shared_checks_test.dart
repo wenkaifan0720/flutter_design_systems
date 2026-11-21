@@ -15,7 +15,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:neumorphism_ui/neumorphism_ui.dart';
 import 'package:neumorphism_ui/src/neumorphism/internal/panel.dart'
     show NeumorphicPanel, NeumorphicPanelRow;
-import 'package:ui_core_test/ui_core_test.dart'
+import 'package:ui_core_review/ui_core_review.dart'
     show
         DesignAlignmentReport,
         DesignRowCheck,

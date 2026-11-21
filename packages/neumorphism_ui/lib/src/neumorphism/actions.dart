@@ -1,5 +1,5 @@
 // The action parts: the floating act, a bank of related buttons, a keycap, a bank of toggles and a split button. The banks are the segmented control's bank of cells; the toggle group and the split
-// button stand on ui_core's behaviours (DesignToggleGroup, DesignSplitButton) and paint them in the look's relief.
+// button stand on ui_core's behaviours (RawSegmentedButton, RawSplitButton) and paint them in the look's relief.
 
 import 'dart:math' as math;
 
@@ -295,7 +295,7 @@ class NeumorphicToggleGroup<T> extends StatelessWidget {
     ]);
     NeumorphicButtonSegment<T> item(T value) =>
         items.firstWhere((i) => i.value == value);
-    return DesignToggleGroup<T>(
+    return RawSegmentedButton<T>(
       options: [for (final i in items) i.value],
       selected: selected,
       onSelectionChanged: onChanged,
@@ -437,19 +437,15 @@ class NeumorphicSplitButton extends StatelessWidget {
     final hasIcons = actions.any((action) => action.icon != null);
     // The button keeps its own width in a stretching column: its menu takes the button's width as its least, and a
     // column-wide button opened a column-wide menu for two short acts.
-    final button = DesignSplitButton(
-      placement: const DesignOverlayPlacement(align: DesignOverlayAlign.start),
+    final button = RawSplitButton(
+      placement: const RawPopoverPlacement(align: RawPopoverAlign.start),
       label: label,
       onPressed: onPressed,
       menuLabel: menuLabel ?? words.moreOptions,
       minimumSize: Size(NeumorphicChromeMetrics.targetSize, height),
       actions: [
         for (final a in actions)
-          DesignSplitAction(
-            label: a.label,
-            onPressed: a.onPressed,
-            data: a.icon,
-          ),
+          RawSplitAction(label: a.label, onPressed: a.onPressed, data: a.icon),
       ],
       // One moulded body: one light and one shadow round the whole capsule, each half only its face over it. The body
       // is as wide as its two halves: in a stretching column it filled the column, its words huddled at the start.
@@ -476,7 +472,7 @@ class NeumorphicSplitButton extends StatelessWidget {
         ),
       ),
       buttonBuilder: (context, part, states, open) {
-        final isMain = part == DesignSplitPart.main;
+        final isMain = part == RawSplitPart.main;
         final faceStates = {
           ...states,
           if (!isMain && open) WidgetState.pressed,

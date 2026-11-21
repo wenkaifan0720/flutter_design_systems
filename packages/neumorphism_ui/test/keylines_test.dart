@@ -15,7 +15,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:neumorphism_ui/neumorphism_ui.dart';
-import 'package:ui_core_test/ui_core_test.dart' show DesignKeylineCheck;
+import 'package:ui_core_review/ui_core_review.dart' show DesignKeylineCheck;
 
 // ignore: avoid_relative_lib_imports
 import '../example/lib/main.dart';
@@ -165,7 +165,7 @@ List<_Container> _measure(WidgetTester tester) {
       }
       if (_parts.contains(_type(a.widget))) part = a;
       if (a.widget is NeumorphicSurface) faces.add(a);
-      if (a.widget is DesignPressable || a.widget is EditableText) {
+      if (a.widget is RawButton || a.widget is EditableText) {
         control = true;
       }
       return true;

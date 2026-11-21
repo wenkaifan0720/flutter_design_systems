@@ -42,22 +42,18 @@ const _rooms = [
   _Room('Study', 'Upstairs', 21),
 ];
 
-Widget kitSpecimenDataTable() => kitHeld<DesignTableController<_Room>>(
-  () => DesignTableController<_Room>(
+Widget kitSpecimenDataTable() => kitHeld<RawDataTableController<_Room>>(
+  () => RawDataTableController<_Room>(
     rows: _rooms,
     pageSize: 5,
     columns: [
-      DesignTableColumn<_Room>(
-        id: 'room',
-        label: 'Room',
-        sortKey: (r) => r.name,
-      ),
-      DesignTableColumn<_Room>(
+      RawDataColumn<_Room>(id: 'room', label: 'Room', sortKey: (r) => r.name),
+      RawDataColumn<_Room>(
         id: 'floor',
         label: 'Floor',
         sortKey: (r) => r.floor,
       ),
-      DesignTableColumn<_Room>(
+      RawDataColumn<_Room>(
         id: 'heat',
         label: 'Heat',
         numeric: true,
@@ -128,14 +124,10 @@ Widget kitSpecimenSwipeActions() => NeumorphicSlab(
     gap: 0,
     children: [
       NeumorphicSwipeActions(
-        startActions: [DesignSwipeAction(label: 'Pin', onPressed: () {})],
+        startActions: [RawSwipeAction(label: 'Pin', onPressed: () {})],
         endActions: [
-          DesignSwipeAction(label: 'Archive', onPressed: () {}),
-          DesignSwipeAction(
-            label: 'Delete',
-            destructive: true,
-            onPressed: () {},
-          ),
+          RawSwipeAction(label: 'Archive', onPressed: () {}),
+          RawSwipeAction(label: 'Delete', destructive: true, onPressed: () {}),
         ],
         child: const NeumorphicListTile(
           title: 'Bedroom',
@@ -146,14 +138,10 @@ Widget kitSpecimenSwipeActions() => NeumorphicSlab(
       ),
       NeumorphicSwipeActions(
         initiallyOpen: true,
-        startActions: [DesignSwipeAction(label: 'Pin', onPressed: () {})],
+        startActions: [RawSwipeAction(label: 'Pin', onPressed: () {})],
         endActions: [
-          DesignSwipeAction(label: 'Archive', onPressed: () {}),
-          DesignSwipeAction(
-            label: 'Delete',
-            destructive: true,
-            onPressed: () {},
-          ),
+          RawSwipeAction(label: 'Archive', onPressed: () {}),
+          RawSwipeAction(label: 'Delete', destructive: true, onPressed: () {}),
         ],
         child: const NeumorphicListTile(
           title: 'Kitchen',

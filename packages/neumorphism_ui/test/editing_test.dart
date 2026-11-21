@@ -364,7 +364,7 @@ void main() {
     expect(
       find.descendant(
         of: find.byType(NeumorphicTextContextMenu),
-        matching: find.byType(DesignPressable),
+        matching: find.byType(RawButton),
       ),
       findsNothing,
     );

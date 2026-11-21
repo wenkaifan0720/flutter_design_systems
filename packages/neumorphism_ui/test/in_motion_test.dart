@@ -174,12 +174,12 @@ void main() {
           padding: const EdgeInsets.all(16),
           child: NeumorphicSwipeActions(
             endActions: [
-              DesignSwipeAction(
+              RawSwipeAction(
                 label: 'Delete',
                 destructive: true,
                 onPressed: () {},
               ),
-              DesignSwipeAction(label: 'Archive', onPressed: () {}),
+              RawSwipeAction(label: 'Archive', onPressed: () {}),
             ],
             child: const SizedBox(height: 56, child: Text('Lit')),
           ),
@@ -245,7 +245,7 @@ void main() {
                 key: ValueKey((open, dir)),
                 initiallyOpen: open,
                 endActions: [
-                  DesignSwipeAction(label: 'Archive', onPressed: () {}),
+                  RawSwipeAction(label: 'Archive', onPressed: () {}),
                 ],
                 child: const SizedBox(
                   height: 56,
@@ -323,10 +323,10 @@ void main() {
   testWidgets('a range\'s preview ends on the day it points at', (
     tester,
   ) async {
-    final c = DesignCalendarController(
+    final c = RawCalendarController(
       firstDate: DateTime(2026),
       lastDate: DateTime(2026, 12, 31),
-      mode: DesignCalendarMode.range,
+      mode: RawCalendarMode.range,
       initialMonth: DateTime(2026, 6),
       currentDate: DateTime(2026, 6, 1),
     );
@@ -364,7 +364,7 @@ void main() {
       var i = 0;
       i < 8 &&
           !'${FocusManager.instance.primaryFocus?.debugLabel}'.contains(
-            'DesignCalendar',
+            'RawCalendar',
           );
       i++
     ) {
@@ -373,7 +373,7 @@ void main() {
     }
     expect(
       '${FocusManager.instance.primaryFocus?.debugLabel}',
-      contains('DesignCalendar'),
+      contains('RawCalendar'),
       reason: 'Tab reaches the calendar',
     );
     await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);

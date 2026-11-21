@@ -67,7 +67,7 @@ void main() {
     expect(words.copy, 'Copy from Widgets');
     expect(words.close, 'Close');
   });
-  testWidgets('the words every look shares come from DesignLocalizations', (
+  testWidgets('the words every look shares come from RawWidgetsLocalizations', (
     tester,
   ) async {
     late NeumorphicLocalizations words;
@@ -97,12 +97,12 @@ void main() {
     await tester.pumpWidget(
       _timeApp(const Locale('de'), const [
         NeumorphicLocalizations.delegate,
-        DesignLocalizations.delegate,
+        RawWidgetsLocalizations.delegate,
       ], (w) => words = w),
     );
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
-    final shared = DesignLocalizations.forLocale(const Locale('de'));
+    final shared = RawWidgetsLocalizations.forLocale(const Locale('de'));
     expect(shared.timePickerHourLabel, 'Stunde');
     expect(find.text('Stunde'), findsWidgets);
     expect(find.text(shared.timePickerMinuteLabel), findsWidgets);
@@ -119,7 +119,7 @@ void main() {
     await tester.pumpWidget(
       _timeApp(const Locale('de'), const [
         _EnglishOnly(),
-        DesignLocalizations.delegate,
+        RawWidgetsLocalizations.delegate,
       ], (_) {}),
     );
     await tester.pumpAndSettle();
@@ -135,7 +135,7 @@ void main() {
     await tester.pumpWidget(
       _timeApp(const Locale('en'), const [
         NeumorphicLocalizations.delegate,
-        DesignLocalizations.delegate,
+        RawWidgetsLocalizations.delegate,
       ], (w) => words = w),
     );
     await tester.pumpAndSettle();
@@ -164,8 +164,8 @@ void main() {
         WidgetsApp(
           color: const Color(0xFF000000),
           locale: locale,
-          supportedLocales: DesignLocalizations.supportedLocales,
-          localizationsDelegates: const [DesignLocalizations.delegate],
+          supportedLocales: RawWidgetsLocalizations.supportedLocales,
+          localizationsDelegates: const [RawWidgetsLocalizations.delegate],
           builder: (context, _) => Directionality(
             textDirection: direction,
             // The app's overlay under the theme, as a Navigator under an app's builder: is.
@@ -194,7 +194,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
       expect(find.byType(NeumorphicTextField), findsOneWidget);
-      final shared = DesignLocalizations.forLocale(locale);
+      final shared = RawWidgetsLocalizations.forLocale(locale);
       expect(words.close, shared.closeButtonLabel);
       expect(words.close, isNot('Close'));
     });
@@ -210,8 +210,8 @@ void main() {
         WidgetsApp(
           color: const Color(0xFF000000),
           locale: locale,
-          supportedLocales: DesignLocalizations.supportedLocales,
-          localizationsDelegates: const [DesignLocalizations.delegate],
+          supportedLocales: RawWidgetsLocalizations.supportedLocales,
+          localizationsDelegates: const [RawWidgetsLocalizations.delegate],
           builder: (context, _) => Directionality(
             textDirection: direction,
             child: NeumorphicTheme(
@@ -261,7 +261,7 @@ void main() {
   }
 }
 
-class _SharedFrench extends DefaultDesignLocalizations {
+class _SharedFrench extends DefaultRawWidgetsLocalizations {
   const _SharedFrench();
   @override
   String get closeButtonLabel => 'Fermer';
@@ -269,12 +269,12 @@ class _SharedFrench extends DefaultDesignLocalizations {
   String positionLabel(int position, int count) => '$position sur $count';
 }
 
-class _SharedDelegate extends LocalizationsDelegate<DesignLocalizations> {
+class _SharedDelegate extends LocalizationsDelegate<RawWidgetsLocalizations> {
   const _SharedDelegate();
   @override
   bool isSupported(Locale locale) => true;
   @override
-  Future<DesignLocalizations> load(Locale locale) async =>
+  Future<RawWidgetsLocalizations> load(Locale locale) async =>
       const _SharedFrench();
   @override
   bool shouldReload(_SharedDelegate old) => false;
@@ -312,7 +312,7 @@ Widget _timeApp(
 ) => WidgetsApp(
   color: const Color(0xFF000000),
   locale: locale,
-  supportedLocales: DesignLocalizations.supportedLocales,
+  supportedLocales: RawWidgetsLocalizations.supportedLocales,
   localizationsDelegates: delegates,
   builder: (context, _) => Directionality(
     textDirection: TextDirection.ltr,

@@ -460,7 +460,7 @@ void main() {
                 }
                 final room = width - part.size.width;
                 // A part whose target is wider than its face is laid out at its target, the face centred in it
-                // (ui_core's DesignTapTarget, 0.2.0): the target's box starts on the edge.
+                // (ui_core's TapTargetPadding, 0.2.0): the target's box starts on the edge.
                 final x = direction == TextDirection.ltr ? 0.0 : room;
                 final place = Offset(x, 0) & part.size;
                 final at = place;

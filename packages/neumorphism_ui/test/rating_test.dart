@@ -1,4 +1,4 @@
-// The rating on ui_core's DesignRating: one control and one tab stop, set by a tap, a drag, the keys or a screen reader,
+// The rating on ui_core's RawRating: one control and one tab stop, set by a tap, a drag, the keys or a screen reader,
 // a hover showing the score a tap would give; the look's stars keep their targets edge to edge, their faces, a sinking
 // star under a finger, and the focus on the star at the score.
 import 'package:flutter/gestures.dart';
@@ -156,7 +156,7 @@ void main() {
     final semantics = tester.ensureSemantics();
     final log = <int>[];
     await tester.pumpWidget(neumorphicApp(_Rated(log: log)));
-    final node = tester.getSemantics(find.byType(DesignRating));
+    final node = tester.getSemantics(find.byType(RawRating));
     expect(
       node,
       isSemantics(
@@ -192,7 +192,7 @@ void main() {
       ),
     );
     expect(
-      tester.getSemantics(find.byType(DesignRating)),
+      tester.getSemantics(find.byType(RawRating)),
       matchesSemantics(label: 'Average', value: '3.5 of 5'),
     );
     semantics.dispose();
@@ -222,7 +222,7 @@ void main() {
           ),
         ),
       );
-      final stars = tester.getRect(find.byType(DesignRating));
+      final stars = tester.getRect(find.byType(RawRating));
       expect(stars.width, lessThan(400), reason: 'the stars, not the column');
       await tester.tapAt(Offset(stars.right + 120, stars.center.dy));
       await tester.pump();

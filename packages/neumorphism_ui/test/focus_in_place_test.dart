@@ -336,8 +336,7 @@ void main() {
         final live = _relief(await stage.shot(), stage.ground);
         await stage.pump(build(false));
         final off = _relief(await stage.shot(), stage.ground);
-        // Out of use, an empty checkbox also drops the quiet rim that marks it at 3:1, so by night its share falls
-        // under half.
+        // Out of use, its colours move halfway toward the wall, so its light and shade come out about half as strong.
         expect(off, greaterThan(live * .15), reason: 'its relief stays');
         expect(off, lessThan(live * .75), reason: 'shallower than in use');
       });

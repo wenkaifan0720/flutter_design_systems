@@ -343,6 +343,27 @@ void main() {
     },
   );
 
+  // RawTooltip's Semantics(tooltip:) does not merge: without the tooltip's own MergeSemantics the words left the key's
+  // node for an ancestor, and a screen reader heard 'Save' where it had heard 'Save to your recipes, Save'.
+  testWidgets('a tipped key reads its tip in its own node', (tester) async {
+    final semantics = tester.ensureSemantics();
+    try {
+      await _mount(
+        tester,
+        child: NeumorphicTooltip(
+          message: 'Save to your recipes',
+          child: NeumorphicButton('Save', onPressed: () {}),
+        ),
+      );
+      final data = tester.getSemantics(find.text('Save')).getSemanticsData();
+      expect(data.label, 'Save');
+      expect(data.tooltip, 'Save to your recipes');
+      expect(data.flagsCollection.isButton, isTrue);
+    } finally {
+      semantics.dispose();
+    }
+  });
+
   testWidgets('Escape closes one layer, then the dialog, then nothing', (
     tester,
   ) async {

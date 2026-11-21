@@ -1117,7 +1117,7 @@ class NeumorphicMotion {
 /// pushed over another fades up with a 16 px step from the reading end while the page under it holds still, a pop runs
 /// it back, and Reduce Motion keeps it still. Flutter's `MaterialPageRoute` reads only the app's own theme, so without
 /// this a Mac plays the Cupertino slide. iOS keeps its swipe back from the screen's leading edge, round the look's
-/// change (ui_core's `DesignSwipeBackPageTransitionsBuilder`). Widgets-level builders, so the one map serves either
+/// change (ui_core's `SwipeBackPageTransitionsBuilder`). Widgets-level builders, so the one map serves either
 /// Material.
 ///
 /// ```dart
@@ -1127,9 +1127,7 @@ const Map<TargetPlatform, PageTransitionsBuilder> neumorphicPageTransitions = {
   TargetPlatform.android: NeumorphicPageMotion(),
   TargetPlatform.fuchsia: NeumorphicPageMotion(),
   // iOS's swipe back from the screen's edge, round the look's change.
-  TargetPlatform.iOS: DesignSwipeBackPageTransitionsBuilder(
-    NeumorphicPageMotion(),
-  ),
+  TargetPlatform.iOS: SwipeBackPageTransitionsBuilder(NeumorphicPageMotion()),
   TargetPlatform.linux: NeumorphicPageMotion(),
   TargetPlatform.macOS: NeumorphicPageMotion(),
   TargetPlatform.windows: NeumorphicPageMotion(),

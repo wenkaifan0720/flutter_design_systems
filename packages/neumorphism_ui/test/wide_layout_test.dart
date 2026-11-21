@@ -204,7 +204,7 @@ void main() {
   });
 
   // An example starts on the column's edge with its drawn face, never its target. Since 0.2.0 the
-  // target is laid out (ui_core's DesignTapTarget at centerStart): the face on the edge, the target growing toward the
+  // target is laid out (ui_core's TapTargetPadding at centerStart): the face on the edge, the target growing toward the
   // end, so the box, the press and the spoken node are one. (Before, the target's margins past the box were hit-tested
   // only, and a neighbour or the parent's edge took presses a screen reader said were the control's.)
   Rect faceIn(WidgetTester tester, Finder control, Type face) => tester.getRect(
@@ -302,7 +302,7 @@ void main() {
       // The number field keeps its keys within 200 of its start (the face the width check finds round them is the
       // card it stands in: shared_checks_test names that read).
       expect(tester.getRect(keys.last).right, lessThanOrEqualTo(48 + 200.5));
-      // Each star's target: the item DesignRating keys for its pointer.
+      // Each star's target: the item RawRating keys for its pointer.
       final stars = find.descendant(
         of: find.byType(NeumorphicRating),
         matching: find.byType(KeyedSubtree),
@@ -378,7 +378,7 @@ void main() {
             onChanged: (_) {},
           ),
           NeumorphicCalendar(
-            controller: DesignCalendarController(
+            controller: RawCalendarController(
               firstDate: DateTime(2026),
               lastDate: DateTime(2027),
               initialMonth: DateTime(2026, 11),
@@ -397,7 +397,7 @@ void main() {
     );
     expect(bar.left, 48, reason: "the bar starts on the column's edge");
     expect(bar.width, lessThanOrEqualTo(380), reason: 'three tabs, not a band');
-    final month = tester.getRect(find.byType(DesignCalendar));
+    final month = tester.getRect(find.byType(RawCalendarDatePicker));
     expect(month.left, 48);
     expect(month.width, lessThanOrEqualTo(7 * 48 + .5));
   });

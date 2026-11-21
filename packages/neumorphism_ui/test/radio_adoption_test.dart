@@ -1,7 +1,8 @@
-// NeumorphicRadioGroup keeps ui_core's keyboard contract for a radio group in both text directions: one Tab stop on the
-// chosen option (or the first enabled one), arrows that choose as they move, wrap at the ends and skip an option out of
-// use, Left advancing in right-to-left text, and a second Tab leaving the group. The gallery's selectable rooms, rows of
-// a data table, read as checkable rows rather than buttons.
+// NeumorphicRadioGroup is Flutter's RadioGroup over RawRadio, and keeps its keyboard contract in both text directions:
+// one Tab stop on the chosen option (or the first enabled one), arrows that choose as they move, wrap at the ends and skip
+// an option out of use, Left advancing in right-to-left text, and a second Tab leaving the group, a disabled option
+// chosen included. A toggle button reads as a button that is selected. The gallery's selectable rooms, rows of a data
+// table, read as checkable rows rather than buttons.
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:neumorphism_ui/neumorphism_ui.dart';
@@ -19,8 +20,8 @@ void main() {
   });
 
   for (final direction in TextDirection.values) {
-    // C chosen, nothing chosen, and the disabled B chosen.
-    for (final initial in <String?>['C', null, 'B']) {
+    // The third chosen, nothing chosen, the first chosen, and the disabled B chosen.
+    for (final initial in <String?>['C', null, 'A', 'B']) {
       testWidgets('radio group ${direction.name}, chosen $initial', (
         tester,
       ) async {
@@ -62,6 +63,54 @@ void main() {
       });
     }
   }
+
+  testWidgets('a selected icon button reads as a button that is selected', (
+    tester,
+  ) async {
+    final semantics = tester.ensureSemantics();
+    try {
+      await tester.pumpWidget(
+        neumorphicApp(
+          Center(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                NeumorphicIconButton(
+                  NeumorphicGlyphs.plus,
+                  label: 'Pin',
+                  selected: true,
+                  onPressed: () {},
+                ),
+                NeumorphicIconButton(
+                  NeumorphicGlyphs.plus,
+                  label: 'Mute',
+                  onPressed: () {},
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(
+        tester.getSemantics(find.bySemanticsLabel('Pin')),
+        isSemantics(
+          isButton: true,
+          hasSelectedState: true,
+          isSelected: true,
+          hasToggledState: false,
+          hasCheckedState: false,
+          hasTapAction: true,
+        ),
+      );
+      expect(
+        tester.getSemantics(find.bySemanticsLabel('Mute')),
+        isSemantics(isButton: true, isSelected: false, hasToggledState: false),
+      );
+    } finally {
+      semantics.dispose();
+    }
+  });
 
   testWidgets('the selectable rooms read as checkable rows, not buttons', (
     tester,

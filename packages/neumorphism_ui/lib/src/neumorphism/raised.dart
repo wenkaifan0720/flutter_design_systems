@@ -1846,10 +1846,9 @@ NeumorphicRaised showNeumorphicTooltip(
   return handle;
 }
 
-/// Shows help on pointer hover, keyboard focus or a long press, on ui_core's [DesignTooltip]: the pointer may move
-/// onto the tip and it stays, Escape hides it, one shows at a time, and running the pointer along a row of keys reads
-/// each one's tip at once. The tip is the look's raised face, faded in above the control (below where there is no
-/// room), its tail never drawn.
+/// Shows help on pointer hover, keyboard focus or a long press, on Flutter's [RawTooltip]: the pointer may move onto
+/// the tip and it stays, Escape hides it, and a screen reader hears the message as the control's tooltip. The tip is
+/// the look's raised face, faded in above the control (below where there is no room), its tail never drawn.
 ///
 /// ```dart
 /// NeumorphicTooltip(message: 'Share', child: NeumorphicRoundButton(NeumorphicGlyphs.info, label: 'Share', onPressed: share))
@@ -1876,20 +1875,35 @@ class NeumorphicTooltip extends StatelessWidget {
   /// The hover delay before showing the tooltip.
   final Duration wait;
   @override
-  Widget build(BuildContext context) => DesignTooltip(
-    message: message,
-    hoverDelay: wait,
-    tooltipBuilder: (context, tip) => FadeTransition(
-      opacity: tip.animation,
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 280),
-        child: NeumorphicTooltipFace(message: message, style: style),
+  Widget build(BuildContext context) => MergeSemantics(
+    // ui_core's placement: above the control, centred on it, below where there is no room.
+    child: RawTooltipPlacement(
+      builder: (context, positionDelegate) => RawTooltip(
+        semanticsTooltip: message,
+        hoverDelay: wait,
+        positionDelegate: positionDelegate,
+        // The tip fades on its own spring (_NeumorphicTipFade), from the way this animation runs; the tip stays in
+        // the overlay until the spring has faded it out.
+        animationStyle: _NeumorphicTipFade.life,
+        tooltipBuilder: (context, animation) => ExcludeSemantics(
+          child: _NeumorphicTipFade(
+            showing: animation,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 280),
+              child: NeumorphicTooltipFace(message: message, style: style),
+            ),
+          ),
+        ),
+        // Shows the tip while the control has the keys' focus, as a hover does.
+        child: RawTooltipFocusFix(
+          // The tip points at the child's middle: a round key under it stands its face there, not at its target's
+          // start.
+          child: NeumorphicFacePlace(
+            alignment: AlignmentDirectional.center,
+            child: child,
+          ),
+        ),
       ),
-    ),
-    // The tip points at the child's middle: a round key under it stands its face there, not at its target's start.
-    child: NeumorphicFacePlace(
-      alignment: AlignmentDirectional.center,
-      child: child,
     ),
   );
 
@@ -1913,6 +1927,74 @@ class NeumorphicTooltip extends StatelessWidget {
         ),
       );
   }
+}
+
+/// A tooltip's tip fading in and out on ui_core's effects spring (critically damped, k 1600; under Reduce Motion a
+/// short fade), driven by the way [showing], the [RawTooltip]'s animation, runs: forward fades it in, reverse out.
+class _NeumorphicTipFade extends StatefulWidget {
+  const _NeumorphicTipFade({required this.showing, required this.child});
+
+  /// How long the [RawTooltip] keeps a hidden tip in the overlay: longer than the spring takes to fade it out
+  /// (about 230 ms).
+  static const AnimationStyle life = AnimationStyle(
+    duration: Duration(milliseconds: 150),
+    reverseDuration: Duration(milliseconds: 300),
+  );
+
+  final Animation<double> showing;
+  final Widget child;
+
+  @override
+  State<_NeumorphicTipFade> createState() => _NeumorphicTipFadeState();
+}
+
+class _NeumorphicTipFadeState extends State<_NeumorphicTipFade>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _opacity = AnimationController(vsync: this);
+  bool? _shown;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.showing.addStatusListener(_follow);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _follow(widget.showing.status);
+  }
+
+  @override
+  void didUpdateWidget(_NeumorphicTipFade old) {
+    super.didUpdateWidget(old);
+    if (old.showing != widget.showing) {
+      old.showing.removeStatusListener(_follow);
+      widget.showing.addStatusListener(_follow);
+      _follow(widget.showing.status);
+    }
+  }
+
+  @override
+  void dispose() {
+    widget.showing.removeStatusListener(_follow);
+    _opacity.dispose();
+    super.dispose();
+  }
+
+  void _follow(AnimationStatus status) {
+    final shown = status.isForwardOrCompleted;
+    if (shown == _shown) return;
+    _shown = shown;
+    _opacity.springTo(
+      shown ? 1 : 0,
+      DesignMotionPolicy.of(context).effects(dampingRatio: 1, stiffness: 1600),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) =>
+      FadeTransition(opacity: _opacity, child: widget.child);
 }
 
 /// A soft notice with a tone glyph, an optional action and a dismiss button.
@@ -2112,12 +2194,12 @@ NeumorphicRaised showNeumorphicSnackBar(
   // Under a toaster it queues there, where snack bars stack and wait their turn; a call that sets its own placement or
   // style stands on its own in the overlay.
   final toaster = bottom == 0 && dismissLabel == null && style == null
-      ? DesignToaster.maybeOf(context)
+      ? RawToaster.maybeOf(context)
       : null;
   if (toaster != null) {
     return _Toasted(
       toaster.show(
-        DesignToast(
+        RawToast(
           message: message,
           title: title,
           actionLabel: actionLabel,
@@ -2182,7 +2264,7 @@ NeumorphicRaised showNeumorphicSnackBar(
 
 class _Toasted implements NeumorphicRaised {
   _Toasted(this.handle);
-  final DesignToastHandle handle;
+  final RawToastController handle;
 
   @override
   void dismiss() => handle.dismiss();

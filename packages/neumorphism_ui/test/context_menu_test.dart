@@ -1,4 +1,4 @@
-// The context menu on ui_core's DesignContextMenu, painted as the menu bar's menus: a right click or a long press opens
+// The context menu on ui_core's RawContextMenu, painted as the menu bar's menus: a right click or a long press opens
 // it at the pointer, Shift+F10 at the focused control, Escape closes it and the focus goes back, and a command closes it
 // and runs.
 import 'package:flutter/gestures.dart';
@@ -33,18 +33,18 @@ class _LampState extends State<_Lamp> {
       child: NeumorphicContextMenu(
         label: 'Hall lamp',
         menuChildren: [
-          DesignMenuEntry(
+          RawMenuEntry(
             label: 'On',
             checked: _on,
             onPressed: () => setState(() => _on = !_on),
           ),
-          DesignMenuEntry(
+          RawMenuEntry(
             label: 'Rename',
             shortcut: 'R',
             onPressed: () => widget.log.add('Rename'),
           ),
-          const DesignMenuEntry.divider(),
-          DesignMenuEntry(
+          const RawMenuEntry.divider(),
+          RawMenuEntry(
             label: 'Remove',
             onPressed: () => widget.log.add('Remove'),
           ),

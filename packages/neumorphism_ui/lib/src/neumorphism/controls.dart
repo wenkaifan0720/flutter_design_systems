@@ -164,7 +164,7 @@ class NeumorphicTap extends StatefulWidget {
   final Size? focusSize;
 
   /// Where the face ([focusSize], or the target moved in by [focusInset]) stands in the target: centred unless a
-  /// control stands its face on a keyline (DesignTapTarget's alignment), so the lift, a wash and the press follow it.
+  /// control stands its face on a keyline (TapTargetPadding's alignment), so the lift, a wash and the press follow it.
   final AlignmentGeometry faceAlignment;
 
   /// How far the face runs past the target, side by side, for a part whose face is wider than what it lays out: a
@@ -319,7 +319,7 @@ class _NeumorphicTapState extends State<NeumorphicTap> {
       math.max(0, outset.right),
       math.max(0, outset.bottom),
     );
-    final pressable = DesignPressable(
+    final pressable = RawButton(
       onPressed: widget.onPressed,
       semanticLabel: widget.label,
       semanticValue: widget.semanticValue,
@@ -3775,17 +3775,17 @@ class _NeumorphicTextFieldState extends State<NeumorphicTextField> {
   @override
   Widget build(BuildContext context) {
     if (!widget.obscureText) return _field(context, null);
-    // A password's show and hide is ui_core's (DesignPasswordReveal): the eye's state, its words and the field's
+    // A password's show and hide is ui_core's (RawPasswordReveal): the eye's state, its words and the field's
     // obscuring; the look draws the eye.
     final words = NeumorphicLocalizations.of(context);
-    return DesignPasswordReveal(
+    return RawPasswordReveal(
       showLabel: widget.revealLabels?.$1 ?? words.showPassword,
       hideLabel: widget.revealLabels?.$2 ?? words.hidePassword,
       builder: _field,
     );
   }
 
-  Widget _field(BuildContext context, DesignPasswordDetails? reveal) {
+  Widget _field(BuildContext context, RawPasswordDetails? reveal) {
     final t = NeumorphicTheme.of(context);
     final states = <WidgetState>{
       // While its own list is open the well rests: the list shows where the keys are.
@@ -3905,7 +3905,7 @@ class _NeumorphicTextFieldState extends State<NeumorphicTextField> {
     // ran into the groove's curved end. At 12 its relief stays on the groove's floor.
     final keySize = (control - 24).clamp(24.0, 28.0);
     final keyFloor = (control - keySize) / 2;
-    // The key stands at its target (DesignTapTarget), its face centred: the target's own air round the face stands in
+    // The key stands at its target (TapTargetPadding), its face centred: the target's own air round the face stands in
     // for as much of the box's end padding and the gap before the key, so the face keeps its place.
     final keyAir = reveal != null
         ? (_targetSize(keySize) - keySize) / 2
@@ -4725,7 +4725,7 @@ class NeumorphicChoices extends StatelessWidget {
 /// A number you type or step: two round keys and the figure between them in a groove as tall as their faces, the
 /// figure in the title's tabular figures and its unit after it.
 ///
-/// On ui_core's [DesignNumberField]. The figure is the one tab stop and takes typing, in the reader's digits and
+/// On ui_core's [RawNumberField]. The figure is the one tab stop and takes typing, in the reader's digits and
 /// separators, taken on Enter or as the focus leaves; Up and Down step it, Page Up and Page Down ten steps. A key steps
 /// once on a press and repeats while held, and goes out of use at its bound ([min], [max]). A screen reader hears one
 /// field with the next and previous values.
@@ -4808,7 +4808,7 @@ class NeumorphicNumberField extends StatelessWidget {
           neumorphicWidestWord(
             value == null
                 ? ''
-                : DesignLocalizations.of(context).formatDecimal(value!),
+                : RawWidgetsLocalizations.of(context).formatDecimal(value!),
             figure,
             textScaler: scaler,
           ) +
@@ -4822,7 +4822,7 @@ class NeumorphicNumberField extends StatelessWidget {
         Align(
           alignment: AlignmentDirectional.centerStart,
           heightFactor: 1,
-          child: DesignNumberField(
+          child: RawNumberField(
             value: value,
             onChanged: onChanged,
             min: min,
@@ -4926,7 +4926,7 @@ class _NumberFigure extends StatefulWidget {
     required this.off,
   });
 
-  final DesignNumberFieldDetails field;
+  final RawNumberFieldDetails field;
   final TextStyle style;
   final String? unit;
   final bool unitSpoken;
@@ -5094,7 +5094,7 @@ class _SwitchPainter extends CustomPainter {
       flat: flat,
       elevation: elevation,
     );
-    // Keyboard focus deepens the slot, as it does a field's well: a crisp shade and light inside its rim.
+    // Keyboard focus deepens the slot a little, as it does a field's well.
     if (!flat && focus > 0) {
       neumorphicPaintHollowFocus(canvas, shape, c, amount: focus);
     }
@@ -6227,8 +6227,8 @@ class NeumorphicRoundCheckbox extends StatelessWidget {
                                 ),
                               );
                             }
-                            // The check's own edge, printed: open or value, it reads with no shadow. At rest it is the
-                            // 3:1 boundary a person finds the control by.
+                            // The check's own edge, printed only where asked for (a style's edge or side) or in
+                            // high contrast: at rest the check reads by its moulding alone.
                             shapeBorder
                                 .copyWith(
                                   side:
@@ -6398,7 +6398,7 @@ class _RenderTapTarget extends RenderShiftedBox {
 
 /// [child], a control whose face is [face] across, laid out at its target (the platform's least however small the
 /// density draws the face, the same on every platform): its box, the area a press reaches and the box a screen reader
-/// outlines are one, as Material's padded tap target lays out (ui_core's DesignTapTarget). The face stands where
+/// outlines are one, as Material's padded tap target lays out (ui_core's TapTargetPadding). The face stands where
 /// [alignment] says, the control's [NeumorphicFacePlace]: on the start keyline unless its slot sets another.
 /// Before 0.2.0 the face stood on the box's edge and its target's margins reached past the box, hit-tested only: a
 /// neighbour within them, or the parent's edge, took the presses a screen reader said were the control's.
@@ -6406,7 +6406,7 @@ Widget _padded(
   double face,
   Widget child, {
   AlignmentDirectional alignment = AlignmentDirectional.center,
-}) => DesignTapTarget(
+}) => TapTargetPadding(
   minSize: Size.square(_targetSize(face)),
   alignment: alignment,
   child: child,

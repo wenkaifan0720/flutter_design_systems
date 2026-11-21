@@ -76,8 +76,8 @@ Widget kitSpecimenFormField() => const NeumorphicFormField(
   child: NeumorphicTextField(hint: 'name@example.com'),
 );
 
-Widget kitSpecimenRangeSlider() => kitValue<DesignRangeValues>(
-  const DesignRangeValues(18, 22),
+Widget kitSpecimenRangeSlider() => kitValue<RawRangeValues>(
+  const RawRangeValues(18, 22),
   (context, values, change) => NeumorphicRangeSlider(
     label: 'Comfort',
     values: values,
@@ -89,8 +89,8 @@ Widget kitSpecimenRangeSlider() => kitValue<DesignRangeValues>(
   ),
 );
 
-Widget kitSpecimenColorPicker() => kitHeld<DesignColorController>(
-  () => DesignColorController(const Color(0xFFB5624C)),
+Widget kitSpecimenColorPicker() => kitHeld<RawColorController>(
+  () => RawColorController(const Color(0xFFB5624C)),
   (context, controller) =>
       NeumorphicColorPicker(controller: controller, label: 'Lamp colour'),
 );

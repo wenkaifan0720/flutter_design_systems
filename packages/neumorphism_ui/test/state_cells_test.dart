@@ -276,7 +276,7 @@ final Map<String, _Stated> _parts = {
     ({enabled = true, error}) => _wide(
       NeumorphicRangeSlider(
         label: 'Comfort',
-        values: const DesignRangeValues(.2, .8),
+        values: const RawRangeValues(.2, .8),
         onChanged: enabled ? _drop : null,
       ),
     ),

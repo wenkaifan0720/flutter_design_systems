@@ -103,7 +103,7 @@ class NeumorphicPanel extends StatelessWidget {
     super.key,
     required this.child,
     this.presence,
-    this.side = DesignOverlaySide.below,
+    this.side = RawPopoverSide.below,
     this.width,
     this.maxHeight,
     this.padding = const EdgeInsets.all(12),
@@ -119,7 +119,7 @@ class NeumorphicPanel extends StatelessWidget {
   final Animation<double>? presence;
 
   /// Which side of its anchor it stands on: it settles from there.
-  final DesignOverlaySide side;
+  final RawPopoverSide side;
 
   /// Its width; null takes its content's.
   final double? width;
@@ -173,10 +173,10 @@ class NeumorphicPanel extends StatelessWidget {
     final p = presence;
     if (p == null) return panel;
     final from = switch (side) {
-      DesignOverlaySide.below => const Offset(0, -6),
-      DesignOverlaySide.above => const Offset(0, 6),
-      DesignOverlaySide.start => const Offset(6, 0),
-      DesignOverlaySide.end => const Offset(-6, 0),
+      RawPopoverSide.below => const Offset(0, -6),
+      RawPopoverSide.above => const Offset(0, 6),
+      RawPopoverSide.start => const Offset(6, 0),
+      RawPopoverSide.end => const Offset(-6, 0),
     };
     return AnimatedBuilder(
       animation: p,

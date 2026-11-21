@@ -415,10 +415,10 @@ class _GalleryAppState extends State<GalleryApp> {
       // the Material and Cupertino words its own parts read, in the same language.
       locale: custom.rightToLeft ? const Locale('ar') : null,
       localizationsDelegates: const [
-        DesignLocalizations.delegate,
+        RawWidgetsLocalizations.delegate,
         ...GlobalMaterialLocalizations.delegates,
       ],
-      supportedLocales: DesignLocalizations.supportedLocales,
+      supportedLocales: RawWidgetsLocalizations.supportedLocales,
       // The app's root, as an app's own is: the host sets the theme, the ground, the type and the icons; the animated
       // theme inside it eases each knob's change across the page.
       builder: (context, child) => Directionality(

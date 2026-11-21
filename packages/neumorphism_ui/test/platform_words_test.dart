@@ -31,9 +31,9 @@ void main() {
             locale: locale,
             // An app in a language nobody here speaks keeps it, rather than falling back to the first one listed.
             localeResolutionCallback: (wanted, _) => wanted,
-            supportedLocales: DesignLocalizations.supportedLocales,
+            supportedLocales: RawWidgetsLocalizations.supportedLocales,
             localizationsDelegates: [
-              DesignLocalizations.delegate,
+              RawWidgetsLocalizations.delegate,
               _widgetsWords,
             ],
             builder: (context, _) => Directionality(

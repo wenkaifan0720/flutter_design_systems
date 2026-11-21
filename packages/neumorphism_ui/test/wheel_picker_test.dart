@@ -1,4 +1,4 @@
-// The wheel picker on ui_core's DesignWheelPicker: one tab stop that the keys turn (Up and Down, Page keys, Home and
+// The wheel picker on ui_core's RawPicker: one tab stop that the keys turn (Up and Down, Page keys, Home and
 // End, typed letters), a tap on a row, a screen reader's steps, and the look's own: a press on the wheel gives it the
 // keys, and the well deepens round its lens with keyboard focus.
 import 'package:material_ui/material_ui.dart';

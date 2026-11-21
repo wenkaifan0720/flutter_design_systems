@@ -52,17 +52,15 @@ void main() {
           );
           await tester.sendKeyEvent(LogicalKeyboardKey.tab);
           await tester.pumpAndSettle();
-          final size = tester.getSize(find.byType(DesignPressable));
+          final size = tester.getSize(find.byType(RawButton));
           await tester.sendKeyEvent(LogicalKeyboardKey.enter);
           await tester.pumpAndSettle();
           expect(count, 1);
           update(() => busy = true);
           await tester.pumpAndSettle();
-          expect(tester.getSize(find.byType(DesignPressable)), size);
+          expect(tester.getSize(find.byType(RawButton)), size);
           expect(
-            tester
-                .state<DesignPressableState>(find.byType(DesignPressable))
-                .states,
+            tester.state<RawButtonState>(find.byType(RawButton)).states,
             contains(WidgetState.focused),
           );
           expect(
@@ -144,12 +142,12 @@ void main() {
         );
         node.requestFocus();
         await tester.pumpAndSettle();
-        final resting = tester.getSize(find.byType(DesignPressable));
+        final resting = tester.getSize(find.byType(RawButton));
         update(() => busy = true);
         await tester.pump(const Duration(milliseconds: 200));
         expect(node.hasFocus, isTrue);
         expect(find.byType(NeumorphicCircularProgressIndicator), findsNothing);
-        expect(tester.getSize(find.byType(DesignPressable)), resting);
+        expect(tester.getSize(find.byType(RawButton)), resting);
         expect(tester.hasRunningAnimations, isFalse);
         await tester.sendKeyEvent(LogicalKeyboardKey.enter);
         expect(calls, 0);
@@ -317,9 +315,9 @@ void main() {
       }
 
       await show(false);
-      final size = tester.getSize(find.byType(DesignPressable));
+      final size = tester.getSize(find.byType(RawButton));
       await show(true);
-      expect(tester.getSize(find.byType(DesignPressable)), size);
+      expect(tester.getSize(find.byType(RawButton)), size);
       expect(find.text('Uploading'), findsOneWidget);
       expect(
         find.ancestor(

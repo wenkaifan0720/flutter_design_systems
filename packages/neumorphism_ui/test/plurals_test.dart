@@ -39,11 +39,11 @@ Future<String> _span(
   LocalizationsDelegate<NeumorphicLocalizations>? words,
 }) async {
   final start = DateTime(2026, 3, 2);
-  final stay = DesignCalendarController(
+  final stay = RawCalendarController(
     firstDate: DateTime(2026, 3),
     lastDate: DateTime(2026, 4, 30),
-    mode: DesignCalendarMode.range,
-    selectedRange: DesignDateRange(start, start.add(Duration(days: nights))),
+    mode: RawCalendarMode.range,
+    selectedRange: RawDateRange(start, start.add(Duration(days: nights))),
   );
   addTearDown(stay.dispose);
   await tester.pumpWidget(

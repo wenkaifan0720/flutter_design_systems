@@ -60,44 +60,67 @@ Future<void> _pump(
 void main() {
   setUpAll(loadNeumorphicFonts);
   for (final mode in Brightness.values) {
-    testWidgets('the empty checkbox rim reaches 3:1 in ${mode.name}', (
-      tester,
-    ) async {
-      final stage = GlobalKey();
-      final theme = NeumorphicThemeData.porcelain(mode);
-      await _pump(
-        tester,
-        theme,
-        NeumorphicCheckbox(
-          value: false,
-          label: 'Include a receipt',
-          onChanged: (_) {},
-        ),
-        stage,
+    for (final highContrast in [false, true]) {
+      testWidgets(
+        highContrast
+            ? 'high contrast prints the empty checkbox\'s edge at 3:1 in '
+                  '${mode.name}'
+            : 'the empty checkbox prints no rim, its moulding alone, in '
+                  '${mode.name}',
+        (tester) async {
+          final stage = GlobalKey();
+          final theme = NeumorphicThemeData.porcelain(mode)
+              .copyWith(highContrast: highContrast);
+          await _pump(
+            tester,
+            theme,
+            NeumorphicCheckbox(
+              value: false,
+              label: 'Include a receipt',
+              onChanged: (_) {},
+            ),
+            stage,
+          );
+          final face = tester
+              .getRect(find.byType(NeumorphicSurface))
+              .shift(-tester.getTopLeft(find.byKey(stage)));
+          const scale = 2.0;
+          final (bytes, width, _) = await _shot(
+            tester,
+            stage,
+            pixelRatio: scale,
+          );
+          // Three points on each straight side of the empty mark, its outermost three pixels.
+          final rim = <double>[];
+          for (final fraction in [.25, .5, .75]) {
+            final y = ((face.top + face.height * fraction) * scale).floor();
+            for (final left in [true, false]) {
+              final x = left
+                  ? (face.left * scale).floor()
+                  : (face.right * scale).ceil() - 1;
+              rim.add(
+                [
+                  for (var i = 0; i < 3; i++)
+                    _contrast(
+                      _pixel(bytes, width, x + (left ? i : -i), y),
+                      theme.colors.ground,
+                    ),
+                ].reduce(math.max),
+              );
+            }
+          }
+          if (highContrast) {
+            expect(rim, everyElement(greaterThanOrEqualTo(3)));
+          } else {
+            expect(
+              rim,
+              everyElement(lessThan(3)),
+              reason: 'no printed line round an empty box',
+            );
+          }
+        },
       );
-      final face = tester
-          .getRect(find.byType(NeumorphicSurface))
-          .shift(-tester.getTopLeft(find.byKey(stage)));
-      const scale = 2.0;
-      final (bytes, width, _) = await _shot(tester, stage, pixelRatio: scale);
-      // Sample three points on each straight side of the empty mark itself.
-      for (final fraction in [.25, .5, .75]) {
-        final y = ((face.top + face.height * fraction) * scale).floor();
-        for (final left in [true, false]) {
-          final x = left
-              ? (face.left * scale).floor()
-              : (face.right * scale).ceil() - 1;
-          final contrast = [
-            for (var i = 0; i < 3; i++)
-              _contrast(
-                _pixel(bytes, width, x + (left ? i : -i), y),
-                theme.colors.ground,
-              ),
-          ].reduce(math.max);
-          expect(contrast, greaterThanOrEqualTo(3), reason: 'rim at ($x, $y)');
-        }
-      }
-    });
+    }
     testWidgets(
       'menu presses its chosen row in under the wash, the keys\' row a little deeper, in ${mode.name}',
       (tester) async {
@@ -483,7 +506,7 @@ void main() {
     'chosen day': (
       344,
       (on) => NeumorphicCalendar(
-        controller: DesignCalendarController(
+        controller: RawCalendarController(
           firstDate: DateTime(2026),
           lastDate: DateTime(2027),
           initialMonth: DateTime(2026, 11),

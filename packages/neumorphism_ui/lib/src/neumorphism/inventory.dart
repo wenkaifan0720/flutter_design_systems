@@ -53,36 +53,39 @@ const _sleep = NeumorphicNavItem(
 
 // The specimens' controllers, each made when its specimen shows and disposed when it goes (_Owns).
 ScrollController _scroll(BuildContext _) => ScrollController();
-DesignCalendarController _day(BuildContext _) => DesignCalendarController(
+RawCalendarController _day(BuildContext _) => RawCalendarController(
   firstDate: DateTime(2026, 6),
   lastDate: DateTime(2026, 9, 30),
   selectedDate: DateTime(2026, 6, 14),
   currentDate: DateTime(2026, 6, 10),
 );
-DesignCalendarController _stay(BuildContext _) => DesignCalendarController(
+RawCalendarController _stay(BuildContext _) => RawCalendarController(
   firstDate: DateTime(2026, 6),
   lastDate: DateTime(2026, 9, 30),
-  mode: DesignCalendarMode.range,
-  selectedRange: DesignDateRange(DateTime(2026, 6, 14), DateTime(2026, 6, 18)),
+  mode: RawCalendarMode.range,
+  selectedRange: RawDateRange(DateTime(2026, 6, 14), DateTime(2026, 6, 18)),
   currentDate: DateTime(2026, 6, 10),
 );
 // The colour picker starts on the theme's pigment.
-DesignColorController _colour(BuildContext context) =>
-    DesignColorController(NeumorphicTheme.of(context).colors.pigment);
-DesignTableController<_Room> _table(
-  BuildContext _,
-) => DesignTableController<_Room>(
-  rows: const [_Room('Bedroom', 19), _Room('Kitchen', 22), _Room('Study', 21)],
-  columns: [
-    DesignTableColumn<_Room>(id: 'room', label: 'Room', sortKey: (r) => r.name),
-    DesignTableColumn<_Room>(
-      id: 'heat',
-      label: 'Heat',
-      numeric: true,
-      sortKey: (r) => r.heat,
-    ),
-  ],
-);
+RawColorController _colour(BuildContext context) =>
+    RawColorController(NeumorphicTheme.of(context).colors.pigment);
+RawDataTableController<_Room> _table(BuildContext _) =>
+    RawDataTableController<_Room>(
+      rows: const [
+        _Room('Bedroom', 19),
+        _Room('Kitchen', 22),
+        _Room('Study', 21),
+      ],
+      columns: [
+        RawDataColumn<_Room>(id: 'room', label: 'Room', sortKey: (r) => r.name),
+        RawDataColumn<_Room>(
+          id: 'heat',
+          label: 'Heat',
+          numeric: true,
+          sortKey: (r) => r.heat,
+        ),
+      ],
+    );
 DesignTreeController<String> _places(BuildContext _) =>
     DesignTreeController<String>(
       roots: const ['Upstairs'],
@@ -322,7 +325,7 @@ final DesignInventory neumorphicInventory = DesignInventory(
       'RangeSlider',
       (_) => const NeumorphicRangeSlider(
         label: 'Comfort',
-        values: DesignRangeValues(18, 22),
+        values: RawRangeValues(18, 22),
         min: 12,
         max: 28,
         onChanged: _drop,
@@ -464,21 +467,21 @@ final DesignInventory neumorphicInventory = DesignInventory(
       'MenuBar',
       (context) => NeumorphicMenuBar(
         menus: [
-          DesignMenuEntry(
+          RawMenuEntry(
             label: 'Scene',
             children: [
-              DesignMenuEntry(
+              RawMenuEntry(
                 label: 'New scene',
                 shortcut: _primaryKeys(context, LogicalKeyboardKey.keyN),
                 onPressed: _none,
               ),
-              const DesignMenuEntry(label: 'Print', onPressed: _none),
+              const RawMenuEntry(label: 'Print', onPressed: _none),
             ],
           ),
-          const DesignMenuEntry(
+          const RawMenuEntry(
             label: 'View',
             children: [
-              DesignMenuEntry(label: 'Rooms', checked: true, onPressed: _none),
+              RawMenuEntry(label: 'Rooms', checked: true, onPressed: _none),
             ],
           ),
         ],
@@ -489,12 +492,12 @@ final DesignInventory neumorphicInventory = DesignInventory(
       (context) => NeumorphicCommand(
         maxHeight: 200,
         commands: [
-          DesignCommand(
+          RawCommand(
             label: 'New scene',
             group: 'Scenes',
             shortcut: _primaryKeys(context, LogicalKeyboardKey.keyN),
           ),
-          const DesignCommand(label: 'Find a room', group: 'Rooms'),
+          const RawCommand(label: 'Find a room', group: 'Rooms'),
         ],
       ),
     ),
@@ -632,7 +635,7 @@ final DesignInventory neumorphicInventory = DesignInventory(
     DesignInventoryEntry.present(
       'SwipeActions',
       (_) => const NeumorphicSwipeActions(
-        endActions: [DesignSwipeAction(label: 'Archive', onPressed: _none)],
+        endActions: [RawSwipeAction(label: 'Archive', onPressed: _none)],
         child: NeumorphicListTile(
           title: 'Bedroom',
           subtitle: 'Swipe for actions',

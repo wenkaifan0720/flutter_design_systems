@@ -135,7 +135,7 @@ void main() {
       },
       'NeumorphicCalendar': (context) {
         final dates = _own(
-          DesignCalendarController(
+          RawCalendarController(
             firstDate: DateTime(2026, 11),
             lastDate: DateTime(2027, 10, 31),
           ),
@@ -144,10 +144,10 @@ void main() {
       },
       'NeumorphicDateRangePicker': (context) {
         final stay = _own(
-          DesignCalendarController(
+          RawCalendarController(
             firstDate: DateTime(2026, 11),
             lastDate: DateTime(2027, 10, 31),
-            mode: DesignCalendarMode.range,
+            mode: RawCalendarMode.range,
           ),
         );
         return NeumorphicDateRangePicker(controller: stay);
@@ -318,13 +318,13 @@ void main() {
       },
       'NeumorphicDataTable': (context) {
         final bookings = _own(
-          DesignTableController<Map<String, String>>(
+          RawDataTableController<Map<String, String>>(
             rows: [
               {'name': 'Morgan', 'time': '09:00'},
             ],
             columns: const [
-              DesignTableColumn(id: 'name', label: 'Name'),
-              DesignTableColumn(id: 'time', label: 'Time'),
+              RawDataColumn(id: 'name', label: 'Name'),
+              RawDataColumn(id: 'time', label: 'Time'),
             ],
           ),
         );
@@ -368,7 +368,7 @@ void main() {
         const row = SizedBox(height: 64, child: Text('A row'));
         return NeumorphicSwipeActions(
           endActions: [
-            DesignSwipeAction(
+            RawSwipeAction(
               label: 'Delete',
               destructive: true,
               onPressed: remove,
@@ -660,16 +660,16 @@ void main() {
         );
       },
       'NeumorphicRangeSlider': (context) {
-        void setPrice(DesignRangeValues values) {}
+        void setPrice(RawRangeValues values) {}
         return NeumorphicRangeSlider(
           label: 'Price',
-          values: const DesignRangeValues(60, 140),
+          values: const RawRangeValues(60, 140),
           max: 300,
           onChanged: setPrice,
         );
       },
       'NeumorphicColorPicker': (context) {
-        final colour = _own(DesignColorController());
+        final colour = _own(RawColorController());
         return NeumorphicColorPicker(controller: colour);
       },
       'NeumorphicFlatScope': (context) => NeumorphicFlatScope(
@@ -926,7 +926,7 @@ void main() {
         void book() {}
         return NeumorphicCommand(
           commands: [
-            DesignCommand(
+            RawCommand(
               label: 'New booking',
               group: 'Bookings',
               onPressed: book,
@@ -935,9 +935,7 @@ void main() {
         );
       },
       'showNeumorphicCommand': (context) {
-        final commands = [
-          DesignCommand(label: 'New booking', onPressed: () {}),
-        ];
+        final commands = [RawCommand(label: 'New booking', onPressed: () {})];
         WidgetsBinding.instance.addPostFrameCallback((_) {
           showNeumorphicCommand(context, commands: commands);
         });
@@ -947,9 +945,9 @@ void main() {
         void create() {}
         return NeumorphicMenuBar(
           menus: [
-            DesignMenuEntry(
+            RawMenuEntry(
               label: 'File',
-              children: [DesignMenuEntry(label: 'New', onPressed: create)],
+              children: [RawMenuEntry(label: 'New', onPressed: create)],
             ),
           ],
         );
@@ -957,7 +955,7 @@ void main() {
       'NeumorphicContextMenu': (context) {
         void rename() {}
         return NeumorphicContextMenu(
-          menuChildren: [DesignMenuEntry(label: 'Rename', onPressed: rename)],
+          menuChildren: [RawMenuEntry(label: 'Rename', onPressed: rename)],
           child: const Text('Hall lamp'),
         );
       },

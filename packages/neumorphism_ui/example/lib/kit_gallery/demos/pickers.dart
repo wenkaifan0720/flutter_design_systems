@@ -72,8 +72,8 @@ Widget kitSpecimenTimePicker() {
 }
 
 // The gallery's one today, 12 November 2026, as its date picker's: two calendars with two todays disagreed on a page.
-Widget kitSpecimenCalendar() => kitHeld<DesignCalendarController>(
-  () => DesignCalendarController(
+Widget kitSpecimenCalendar() => kitHeld<RawCalendarController>(
+  () => RawCalendarController(
     firstDate: DateTime(2026, 1),
     lastDate: DateTime(2026, 12, 31),
     selectedDate: DateTime(2026, 11, 14),
@@ -82,15 +82,12 @@ Widget kitSpecimenCalendar() => kitHeld<DesignCalendarController>(
   (context, controller) => NeumorphicCalendar(controller: controller),
 );
 
-Widget kitSpecimenDateRangePicker() => kitHeld<DesignCalendarController>(
-  () => DesignCalendarController(
+Widget kitSpecimenDateRangePicker() => kitHeld<RawCalendarController>(
+  () => RawCalendarController(
     firstDate: DateTime(2026, 1),
     lastDate: DateTime(2026, 12, 31),
-    mode: DesignCalendarMode.range,
-    selectedRange: DesignDateRange(
-      DateTime(2026, 11, 14),
-      DateTime(2026, 11, 18),
-    ),
+    mode: RawCalendarMode.range,
+    selectedRange: RawDateRange(DateTime(2026, 11, 14), DateTime(2026, 11, 18)),
     currentDate: kitPickerToday,
   ),
   (context, controller) => NeumorphicDateRangePicker(controller: controller),

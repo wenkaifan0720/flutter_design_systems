@@ -728,7 +728,7 @@ class NeumorphicCombobox<T extends Object> extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             if (label != null) _Label(label!),
-            DesignCombobox<T>(
+            RawCombobox<T>(
               options: options,
               search: search,
               debounceDuration: debounceDuration,
@@ -993,7 +993,7 @@ class _NeumorphicMultiSelectState<T extends Object>
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             if (widget.label != null) _Label(widget.label!),
-            DesignTagInput<T>(
+            RawTagInput<T>(
               values: widget.values,
               onChanged: widget.onChanged,
               options: widget.options,
@@ -1101,12 +1101,12 @@ Widget _searching(BuildContext context) => Padding(
 );
 
 // A search that failed, in the list's panel: what happened, and Try again as the list's one row. The keys light it from
-// the field (ui_core's [DesignSearchError.focused]) and it never takes the focus itself, as an option row does not; the
+// the field (ui_core's [RawSearchError.focused]) and it never takes the focus itself, as an option row does not; the
 // pointer raises it and a press runs the search again.
 class _SearchFailed extends StatefulWidget {
   const _SearchFailed({required this.failure, required this.list});
 
-  final DesignSearchError failure;
+  final RawSearchError failure;
   final ({double panel, double row}) list;
 
   @override
@@ -1137,11 +1137,11 @@ class _SearchFailedState extends State<_SearchFailed> {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           child: Text(
-            DesignLocalizations.of(context).searchFailedMessage,
+            RawWidgetsLocalizations.of(context).searchFailedMessage,
             style: t.textTheme.caption,
           ),
         ),
-        DesignPressable(
+        RawButton(
           onPressed: widget.failure.retry,
           focusNode: _unfocusable,
           semanticLabel: label,
@@ -1247,7 +1247,7 @@ class NeumorphicFormField extends StatelessWidget {
     // it is read once, not "Priority, Priority" (ui_core 0.3.2's rule, which applies when a field decides for itself).
     final own = isGroup ? _ownName(child)?.trim().toLowerCase() : null;
     final heard = own != null && own == label?.trim().toLowerCase();
-    return DesignField(
+    return RawInputDecorator(
       mergeSemantics: !isGroup,
       labelText: heard ? null : label,
       helperText: help,
@@ -1401,7 +1401,7 @@ class _Handle extends StatelessWidget {
 /// with the pigment, and each handle takes the arrows on its own.
 ///
 /// ```dart
-/// NeumorphicRangeSlider(label: 'Price', values: const DesignRangeValues(60, 140), max: 300, onChanged: setPrice)
+/// NeumorphicRangeSlider(label: 'Price', values: const RawRangeValues(60, 140), max: 300, onChanged: setPrice)
 /// ```
 class NeumorphicRangeSlider extends StatelessWidget {
   /// Creates a [NeumorphicRangeSlider].
@@ -1420,10 +1420,10 @@ class NeumorphicRangeSlider extends StatelessWidget {
        assert(minGap >= 0);
 
   /// The span's two ends.
-  final DesignRangeValues values;
+  final RawRangeValues values;
 
   /// Receives the new span; null puts it out of use.
-  final ValueChanged<DesignRangeValues>? onChanged;
+  final ValueChanged<RawRangeValues>? onChanged;
 
   /// The words above it, with the span's ends beside them.
   final String? label;
@@ -1470,7 +1470,7 @@ class NeumorphicRangeSlider extends StatelessWidget {
                 ],
               ),
             ),
-          DesignRangeSlider(
+          RawRangeSlider(
             values: values,
             onChanged: onChanged,
             min: min,
@@ -1511,9 +1511,9 @@ class NeumorphicRangeSlider extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(DiagnosticsProperty<DesignRangeValues>('values', values))
+      ..add(DiagnosticsProperty<RawRangeValues>('values', values))
       ..add(
-        ObjectFlagProperty<ValueChanged<DesignRangeValues>>.has(
+        ObjectFlagProperty<ValueChanged<RawRangeValues>>.has(
           'onChanged',
           onChanged,
         ),
@@ -1629,7 +1629,7 @@ class NeumorphicColorPicker extends StatelessWidget {
   });
 
   /// The colour, with its hex.
-  final DesignColorController controller;
+  final RawColorController controller;
 
   /// Whether an opacity strip shows.
   final bool showAlpha;
@@ -1648,7 +1648,7 @@ class NeumorphicColorPicker extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         if (label != null) _Label(label!),
-        DesignColorPicker(
+        RawColorPicker(
           controller: controller,
           showAlpha: showAlpha,
           areaHeight: 180,
@@ -1716,7 +1716,7 @@ class NeumorphicColorPicker extends StatelessWidget {
                                   0.0,
                                   1.0,
                                 );
-                          final colours = channel == DesignColorChannel.alpha
+                          final colours = channel == RawColorChannel.alpha
                               ? [
                                   colour.withAlpha(0).toColor(),
                                   colour.withAlpha(1).toColor(),
@@ -1806,9 +1806,7 @@ class NeumorphicColorPicker extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(
-        DiagnosticsProperty<DesignColorController>('controller', controller),
-      )
+      ..add(DiagnosticsProperty<RawColorController>('controller', controller))
       ..add(
         DiagnosticsProperty<bool>('showAlpha', showAlpha, defaultValue: false),
       )

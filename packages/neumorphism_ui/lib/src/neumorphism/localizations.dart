@@ -2,14 +2,14 @@
 // the caller's words when given, and these otherwise, so an app in another language installs a delegate and every
 // part speaks it.
 import 'package:flutter/widgets.dart';
-import 'package:ui_core/ui_core.dart' show DesignSortDirection;
-import 'package:ui_core/ui_core.dart' show DesignLocalizations;
+import 'package:ui_core/ui_core.dart' show RawSortDirection;
+import 'package:ui_core/ui_core.dart' show RawWidgetsLocalizations;
 import 'package:intl/date_symbol_data_local.dart' show initializeDateFormatting;
 import 'package:intl/intl.dart';
 
 /// The words Neumorphism's parts say when the caller gives none. English ships ([NeumorphicLocalizationsEn]); another language is a
 /// subclass and a delegate that loads it. The shipped [delegate] serves every locale: its dates and numbers are the
-/// locale's, and the words every look shares (the time picker's among them) are ui_core's [DesignLocalizations] in the
+/// locale's, and the words every look shares (the time picker's among them) are ui_core's [RawWidgetsLocalizations] in the
 /// reader's language. With no delegate installed, the parts speak English.
 ///
 /// ```dart
@@ -20,7 +20,7 @@ abstract class NeumorphicLocalizations {
   const NeumorphicLocalizations();
 
   /// The words in force at [context]. The words every look shares (Cancel, Close, Today, "3 of 10" and the rest) come
-  /// from ui_core's [DesignLocalizations], which an app translates by extending `DefaultDesignLocalizations`; the
+  /// from ui_core's [RawWidgetsLocalizations], which an app translates by extending `DefaultRawWidgetsLocalizations`; the
   /// shipped delegate adds only intl's dates and numbers in its locale. An app's own subclass speaks for itself.
   static NeumorphicLocalizations of(BuildContext context) {
     final installed = Localizations.of<NeumorphicLocalizations>(
@@ -33,7 +33,7 @@ abstract class NeumorphicLocalizations {
     }
     return _FallbackLocalizations(
       Localizations.of<WidgetsLocalizations>(context, WidgetsLocalizations),
-      DesignLocalizations.of(context),
+      RawWidgetsLocalizations.of(context),
       localeName: installed?.localeName ?? 'en_US',
       english:
           (Localizations.maybeLocaleOf(context)?.languageCode ?? 'en') == 'en',
@@ -260,8 +260,8 @@ abstract class NeumorphicLocalizations {
 
   /// Loads Neumorphism's English words, with dates and numbers in the app's
   /// locale, for every locale: an app in any language installs it beside
-  /// `DesignLocalizations.delegate`, and the words the two share come from
-  /// `DesignLocalizations` in the reader's language.
+  /// `RawWidgetsLocalizations.delegate`, and the words the two share come from
+  /// `RawWidgetsLocalizations` in the reader's language.
   static const LocalizationsDelegate<NeumorphicLocalizations> delegate =
       _NeumorphicLocalizationsDelegate();
 
@@ -485,7 +485,7 @@ class _NeumorphicLocalizationsDelegate
     extends LocalizationsDelegate<NeumorphicLocalizations> {
   const _NeumorphicLocalizationsDelegate();
 
-  // Every locale: the shared words come from DesignLocalizations, and an
+  // Every locale: the shared words come from RawWidgetsLocalizations, and an
   // app missing a delegate for its locale is warned at startup.
   @override
   bool isSupported(Locale locale) => true;
@@ -507,8 +507,8 @@ class _NeumorphicLocalizationsDelegate
   bool shouldReload(_NeumorphicLocalizationsDelegate old) => false;
 }
 
-/// The shipped English, with the words every look shares read from ui_core's [DesignLocalizations] (an app translates
-/// them by extending `DefaultDesignLocalizations`) and the editing words from the app's [WidgetsLocalizations].
+/// The shipped English, with the words every look shares read from ui_core's [RawWidgetsLocalizations] (an app translates
+/// them by extending `DefaultRawWidgetsLocalizations`) and the editing words from the app's [WidgetsLocalizations].
 class _FallbackLocalizations extends NeumorphicLocalizationsEn {
   const _FallbackLocalizations(
     this.widgets,
@@ -517,7 +517,7 @@ class _FallbackLocalizations extends NeumorphicLocalizationsEn {
     super.localeName,
   });
   final WidgetsLocalizations? widgets;
-  final DesignLocalizations design;
+  final RawWidgetsLocalizations design;
 
   /// Whether the app reads English: then the time picker and the words below
   /// it are Neumorphism's own ("Morning or evening" over the day's halves),
@@ -543,11 +543,11 @@ class _FallbackLocalizations extends NeumorphicLocalizationsEn {
   @override
   String get sortedAscending => english
       ? super.sortedAscending
-      : design.dataTableSortedHint(DesignSortDirection.ascending);
+      : design.dataTableSortedHint(RawSortDirection.ascending);
   @override
   String get sortedDescending => english
       ? super.sortedDescending
-      : design.dataTableSortedHint(DesignSortDirection.descending);
+      : design.dataTableSortedHint(RawSortDirection.descending);
   @override
   String get cancel => design.cancelButtonLabel;
   @override

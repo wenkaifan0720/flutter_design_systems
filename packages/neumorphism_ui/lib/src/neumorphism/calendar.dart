@@ -1,4 +1,4 @@
-// The inline calendar and the date range picker on ui_core's DesignCalendar: each day is the date picker's cap, raised
+// The inline calendar and the date range picker on ui_core's RawCalendarDatePicker: each day is the date picker's cap, raised
 // out of the wall; a chosen day is pressed in with the pigment's dash under its figure; a range is a groove running
 // between its two pressed ends.
 
@@ -33,7 +33,7 @@ bool _sameMonth(DateTime a, DateTime b) =>
 /// forward arrow, each name centred over its days.
 Widget _header(
   BuildContext context,
-  DesignCalendarHeader h, {
+  RawCalendarHeaderDetails h, {
   required bool first,
   required bool last,
 }) {
@@ -89,10 +89,10 @@ Widget _weekday(BuildContext context, int weekday, String label) {
 
 Widget _day(
   BuildContext context,
-  DesignCalendarDay day,
+  RawCalendarDayDetails day,
   Set<WidgetState> states,
   NeumorphicStyle? style,
-  DesignCalendarController controller,
+  RawCalendarController controller,
   int firstWeekday,
 ) {
   final t = NeumorphicTheme.of(context);
@@ -166,8 +166,8 @@ const double _wellInset = 3;
 /// Where [day] stands in the chosen run of its week: its place, the run's length, and whether the run's first and last
 /// days are the range's own ends (their figures in the pigment) or the week's edge. Null when [day] is not chosen.
 ({int index, int count, bool deepFirst, bool deepLast})? _runOf(
-  DesignCalendarDay day,
-  DesignCalendarController controller,
+  RawCalendarDayDetails day,
+  RawCalendarController controller,
   int firstWeekday,
 ) {
   final range = day.inRange
@@ -282,7 +282,7 @@ class _Channel extends CustomPainter {
 
 TextStyle _figureStyle(
   NeumorphicThemeData t,
-  DesignCalendarDay day, {
+  RawCalendarDayDetails day, {
   required bool end,
   required NeumorphicStyleOf look,
 }) => t.textTheme.body.tabular
@@ -300,7 +300,7 @@ TextStyle _figureStyle(
 
 Widget _figure(
   NeumorphicThemeData t,
-  DesignCalendarDay day, {
+  RawCalendarDayDetails day, {
   required bool end,
   required NeumorphicStyleOf look,
 }) {
@@ -346,7 +346,7 @@ Widget _figure(
 /// A month (or [months] side by side) laid open on the page, for picking a day, a range or several days as the
 /// [controller]'s mode says. Arrows move the keyboard's day, Page Up and Down the month, Enter picks; a range shows its
 /// preview under the pointer or the keyboard before its second end is picked. The [controller] is the caller's, made
-/// once (in a State's initState, as `DesignCalendarController(firstDate: start, lastDate: end)`) and disposed with it.
+/// once (in a State's initState, as `RawCalendarController(firstDate: start, lastDate: end)`) and disposed with it.
 ///
 /// ```dart
 /// NeumorphicCalendar(controller: dates)
@@ -364,7 +364,7 @@ class NeumorphicCalendar extends StatelessWidget {
        assert((firstWeekday ?? 1) >= 1 && (firstWeekday ?? 7) <= 7);
 
   /// The days, the mode and the choice.
-  final DesignCalendarController controller;
+  final RawCalendarController controller;
 
   /// How many months show side by side.
   final int months;
@@ -388,7 +388,7 @@ class NeumorphicCalendar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final words = NeumorphicLocalizations.of(context);
-    final calendar = DesignCalendar(
+    final calendar = RawCalendarDatePicker(
       controller: controller,
       months: months,
       onChanged: onChanged,
@@ -461,7 +461,7 @@ class NeumorphicCalendar extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(
-        DiagnosticsProperty<DesignCalendarController>('controller', controller),
+        DiagnosticsProperty<RawCalendarController>('controller', controller),
       )
       ..add(IntProperty('months', months, defaultValue: 1))
       ..add(
@@ -481,7 +481,7 @@ class NeumorphicCalendar extends StatelessWidget {
 /// A range of days picked on the calendar, first end then second, with the span written above it ("14 June – 18 June,
 /// 4 nights"). Two months side by side when there is room, one when there is not.
 /// [showNeumorphicDateRangePicker] raises one in a dialog. The [controller] is the caller's, made once (in a State's
-/// initState, as `DesignCalendarController(firstDate: start, lastDate: end, mode: DesignCalendarMode.range)`) and
+/// initState, as `RawCalendarController(firstDate: start, lastDate: end, mode: RawCalendarMode.range)`) and
 /// disposed with it.
 ///
 /// ```dart
@@ -498,10 +498,10 @@ class NeumorphicDateRangePicker extends StatelessWidget {
   });
 
   /// The days and the range.
-  final DesignCalendarController controller;
+  final RawCalendarController controller;
 
   /// Called when the range changes.
-  final ValueChanged<DesignDateRange?>? onChanged;
+  final ValueChanged<RawDateRange?>? onChanged;
 
   /// The span's words after its dates; null: the look's words, [NeumorphicLocalizations.nights].
   final String Function(int nights)? nightsLabel;
@@ -552,10 +552,10 @@ class NeumorphicDateRangePicker extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(
-        DiagnosticsProperty<DesignCalendarController>('controller', controller),
+        DiagnosticsProperty<RawCalendarController>('controller', controller),
       )
       ..add(
-        ObjectFlagProperty<ValueChanged<DesignDateRange?>>.has(
+        ObjectFlagProperty<ValueChanged<RawDateRange?>>.has(
           'onChanged',
           onChanged,
         ),
@@ -581,22 +581,22 @@ class NeumorphicDateRangePicker extends StatelessWidget {
 /// ```dart
 /// final stay = await showNeumorphicDateRangePicker(context, firstDate: today, lastDate: nextYear);
 /// ```
-Future<DesignDateRange?> showNeumorphicDateRangePicker(
+Future<RawDateRange?> showNeumorphicDateRangePicker(
   BuildContext context, {
   required DateTime firstDate,
   required DateTime lastDate,
-  DesignDateRange? initialDateRange,
+  RawDateRange? initialDateRange,
   String? title,
   String? doneLabel,
 }) {
-  final controller = DesignCalendarController(
+  final controller = RawCalendarController(
     firstDate: firstDate,
     lastDate: lastDate,
-    mode: DesignCalendarMode.range,
+    mode: RawCalendarMode.range,
     selectedRange: initialDateRange,
   );
   final words = NeumorphicLocalizations.of(context);
-  return showNeumorphicDialog<DesignDateRange>(
+  return showNeumorphicDialog<RawDateRange>(
     context,
     builder: (context) => NeumorphicDialog(
       title: title ?? words.chooseDate,

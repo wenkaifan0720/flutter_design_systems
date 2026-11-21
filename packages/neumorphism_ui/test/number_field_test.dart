@@ -1,4 +1,4 @@
-// The number field on ui_core's DesignNumberField: one tab stop that takes typing and the arrows, two round keys that
+// The number field on ui_core's RawNumberField: one tab stop that takes typing and the arrows, two round keys that
 // step on a press and repeat while held and go out of use at their bounds, and one node a screen reader steps.
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';

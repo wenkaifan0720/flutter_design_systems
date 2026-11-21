@@ -3,7 +3,7 @@
 // material_ui's: Flutter's MaterialPageRoute never reads it, and on a Mac plays the Cupertino slide. The look exposes
 // its transitions as a map of widgets-level PageTransitionsBuilders instead, `neumorphicPageTransitions`, and the app
 // puts it in its own ThemeData. On iOS the map keeps the swipe back from the screen's leading edge round the look's
-// push (ui_core's DesignSwipeBackPageTransitionsBuilder). ui_core's example/test/page_transitions_test.dart, with the
+// push (ui_core's SwipeBackPageTransitionsBuilder). ui_core's example/test/page_transitions_test.dart, with the
 // look's map.
 import 'package:cupertino_ui/cupertino_ui.dart' show CupertinoPageTransition;
 import 'package:material_ui/material_ui.dart';

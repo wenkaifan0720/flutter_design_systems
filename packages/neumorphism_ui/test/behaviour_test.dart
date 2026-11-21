@@ -135,7 +135,7 @@ void main() {
           ),
         );
         var data = tester
-            .getSemantics(find.byType(DesignPressable))
+            .getSemantics(find.byType(RawButton))
             .getSemanticsData();
         expect(
           data.flagsCollection.isToggled,
@@ -150,9 +150,7 @@ void main() {
             ),
           ),
         );
-        data = tester
-            .getSemantics(find.byType(DesignPressable))
-            .getSemanticsData();
+        data = tester.getSemantics(find.byType(RawButton)).getSemanticsData();
         expect(
           data.flagsCollection.isChecked,
           value ? ui.CheckedState.isTrue : ui.CheckedState.isFalse,
@@ -212,10 +210,7 @@ void main() {
           ),
         ),
       );
-      expect(
-        tester.getSize(find.byType(DesignPressable)),
-        const Size.square(48),
-      );
+      expect(tester.getSize(find.byType(RawButton)), const Size.square(48));
     },
   );
 
@@ -232,7 +227,7 @@ void main() {
         ),
       ),
     );
-    final box = tester.getRect(find.byType(DesignPressable));
+    final box = tester.getRect(find.byType(RawButton));
     expect(box.size, const Size.square(48));
     await tester.tapAt(box.centerLeft + const Offset(1, 0));
     await tester.pumpAndSettle();
@@ -263,12 +258,12 @@ void main() {
         ),
       );
       // The number field's keys are ui_core's step keys, no pressables: their targets are the look's.
-      final target = find.byType(DesignPressable).evaluate().isNotEmpty
-          ? find.byType(DesignPressable).first
+      final target = find.byType(RawButton).evaluate().isNotEmpty
+          ? find.byType(RawButton).first
           : find
                 .ancestor(
                   of: find.byIcon(NeumorphicGlyphs.minus),
-                  matching: find.byType(DesignTapTarget),
+                  matching: find.byType(TapTargetPadding),
                 )
                 .first;
       final box = tester.getRect(target);
@@ -320,7 +315,7 @@ void main() {
         await tester.pumpWidget(
           neumorphicApp(Center(child: make(() => pressed++))),
         );
-        final target = find.byType(DesignPressable).first;
+        final target = find.byType(RawButton).first;
         final mouse = await tester.createGesture(
           kind: ui.PointerDeviceKind.mouse,
         );
@@ -328,13 +323,13 @@ void main() {
         await mouse.moveTo(tester.getCenter(target));
         await tester.pumpAndSettle();
         expect(
-          tester.state<DesignPressableState>(target).states,
+          tester.state<RawButtonState>(target).states,
           contains(WidgetState.hovered),
         );
         await mouse.removePointer();
         await tester.pumpAndSettle();
         expect(
-          tester.state<DesignPressableState>(target).states,
+          tester.state<RawButtonState>(target).states,
           isNot(contains(WidgetState.hovered)),
         );
         final touch = await tester.startGesture(
@@ -343,7 +338,7 @@ void main() {
         );
         await tester.pump();
         expect(
-          tester.state<DesignPressableState>(target).states,
+          tester.state<RawButtonState>(target).states,
           contains(WidgetState.pressed),
         );
         await touch.up();
@@ -392,7 +387,7 @@ void main() {
           await tester.pump();
           expect(tester.takeException(), isNull);
           final data = tester
-              .getSemantics(find.byType(DesignPressable).first)
+              .getSemantics(find.byType(RawButton).first)
               .getSemanticsData();
           expect(data.hasAction(SemanticsAction.tap), isFalse);
         } finally {
@@ -405,7 +400,7 @@ void main() {
         try {
           await tester.pumpWidget(neumorphicApp(Center(child: make(() {}))));
           final data = tester
-              .getSemantics(find.byType(DesignPressable).first)
+              .getSemantics(find.byType(RawButton).first)
               .getSemanticsData();
           expect(data.flagsCollection.isButton, isTrue);
           expect(data.label, name == 'round button' ? 'Add' : 'Book');
