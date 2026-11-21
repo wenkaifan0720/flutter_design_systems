@@ -89,7 +89,13 @@ jobs:
           fi
       - name: Dry-run publish
         if: matrix.shard == 0
-        run: dart pub publish --dry-run --directory packages/${{ matrix.package }}
+        # A package marked publish_to: none (ui_core_review) is never published, so it has nothing to dry-run.
+        run: |
+          if grep -q '^publish_to: none' packages/${{ matrix.package }}/pubspec.yaml; then
+            echo "packages/${{ matrix.package }} is not published (publish_to: none)"
+          else
+            dart pub publish --dry-run --directory packages/${{ matrix.package }}
+          fi
 
   goldens:
     # The pixel goldens were recorded on macOS, so they run there, and only by hand.
