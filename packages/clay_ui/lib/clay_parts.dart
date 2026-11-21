@@ -18,5 +18,7 @@ export 'src/clay/internal/entry_parts.dart';
 export 'src/clay/internal/inventory.dart';
 export 'src/clay/internal/menu.dart';
 export 'src/clay/internal/platform_words.dart';
+export 'src/clay/internal/slices.dart';
 export 'src/clay/internal/spring.dart';
 export 'src/clay/internal/sprites.dart';
+export 'src/clay/internal/volume.dart';

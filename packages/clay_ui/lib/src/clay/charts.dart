@@ -1,9 +1,14 @@
 /// Clay's charts on ui_core's headless charts: lines rolled like coils of
-/// clay, areas washed under them, bars standing as raised pills, a donut of
-/// clay segments and a sparkline. ui_core picks points (pointer, finger,
-/// keys, screen reader) and says them; Clay draws every mark.
+/// clay, areas laid under them as slabs of pastel clay, bars standing as
+/// raised pills, a donut of pastel clay pieces round a pressed well, and a
+/// sparkline. Every mark keeps Clay's three moves: inflated volume (light
+/// inside its top-leading edge, shade inside its bottom-trailing edge),
+/// one soft shadow straight down in its own hue, continuous corners and no
+/// stroke. ui_core picks points (pointer, finger, keys, screen reader) and
+/// says them; Clay draws every mark.
 library;
 
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
@@ -12,7 +17,9 @@ import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
 import 'fonts.dart';
-import 'internal/sprites.dart' show clayDrawShape;
+import 'internal/slices.dart';
+import 'internal/sprites.dart' show clayAddShape, clayDrawShape;
+import 'internal/volume.dart';
 import 'surface.dart';
 import 'theme.dart';
 
@@ -28,30 +35,124 @@ typedef ClayChartXAxis = DesignChartXAxis;
 /// A slice of a [ClayPieChart].
 typedef ClayPieSlice = DesignPieSlice;
 
-/// The colour of the [i]th series: the accent first, then the pastels
-/// deepened until a line of them stands 3:1 from the clay.
-Color claySeriesColor(ClayColors c, int i) {
+/// The pastels after the accent, in the order a chart takes them: each one
+/// a hue away from the one before it.
+const _pastels = [
+  ClayTint.sky,
+  ClayTint.mint,
+  ClayTint.lilac,
+  ClayTint.butter,
+  ClayTint.rose,
+  ClayTint.peach,
+];
+
+/// The colour of the [i]th piece of a donut or the [i]th series of bars:
+/// the accent first, then Clay's pastels' hues, all at one weight, so no
+/// series says it matters more than another and each is told from its
+/// neighbours by its hue. By day the accent as it is, then each pastel's hue
+/// at the accent's lightness and chroma (as much of it as sRGB holds at that
+/// hue); legends, labels and values carry the data, not contrast. By night
+/// the accent, then the pastels chalky.
+Color claySliceColor(ClayColors c, int i) {
+  if (c.brightness != Brightness.dark) return _dayColor(c, i);
   if (i == 0) return c.accent;
-  const order = [
-    ClayTint.sky,
-    ClayTint.mint,
-    ClayTint.lilac,
-    ClayTint.butter,
-    ClayTint.rose,
-    ClayTint.peach,
-  ];
-  final night = c.brightness == Brightness.dark;
-  final hsl = HSLColor.fromColor(c.tint(order[(i - 1) % order.length]));
-  return hsl
-      .withSaturation(math.max(hsl.saturation, 0.55))
-      .withLightness(night ? 0.68 : 0.46)
-      .toColor();
+  final hsl = HSLColor.fromColor(c.tint(_pastels[(i - 1) % _pastels.length]));
+  return hsl.withSaturation(0.5).withLightness(0.70).toColor();
 }
 
-/// The first colours of a chart: [style]'s fill, then the series colours.
-List<Color> _palette(ClayColors c, DesignStyleOf layered, int count) => [
+/// The colour of the [i]th line. By day it is [claySliceColor]'s, so a line,
+/// its area and its legend's ball share one colour and every line weighs as
+/// the accent does. By night the accent first, then the pastel kept matte
+/// (never saturated) and lifted only as far as a line of it needs to stand
+/// 3:1 from the clay.
+Color claySeriesColor(ClayColors c, int i) {
+  if (c.brightness != Brightness.dark) return _dayColor(c, i);
+  if (i == 0) return c.accent;
+  final pastel = HSLColor.fromColor(claySliceColor(c, i));
+  var hsl = pastel.withSaturation(math.min(pastel.saturation, 0.42));
+  for (var step = 0; step < 160; step++) {
+    if (clayContrast(hsl.toColor(), c.clay) >= 3) break;
+    final l = hsl.lightness + 0.005;
+    if (l >= 1) break;
+    hsl = hsl.withLightness(l);
+  }
+  return hsl.toColor();
+}
+
+/// By day, the [i]th series: the accent itself first, then each pastel's hue
+/// at the accent's OKLCH lightness and chroma, so every series weighs as the
+/// accent does.
+Color _dayColor(ClayColors c, int i) {
+  if (i == 0) return c.accent;
+  final accent = _okLch(c.accent);
+  final hue = _okLch(c.tint(_pastels[(i - 1) % _pastels.length])).hue;
+  return _oklch(accent.lightness, accent.chroma, hue);
+}
+
+double _toLinear(double v) =>
+    v <= 0.04045 ? v / 12.92 : math.pow((v + 0.055) / 1.055, 2.4).toDouble();
+
+double _fromLinear(double v) => v <= 0.0031308
+    ? 12.92 * v
+    : 1.055 * math.pow(v, 1 / 2.4).toDouble() - 0.055;
+
+double _cbrt(double v) =>
+    v < 0 ? -math.pow(-v, 1 / 3).toDouble() : math.pow(v, 1 / 3).toDouble();
+
+/// [color] in OKLCH: its lightness, its chroma and its hue (in radians).
+({double lightness, double chroma, double hue}) _okLch(Color color) {
+  final r = _toLinear(color.r);
+  final g = _toLinear(color.g);
+  final b = _toLinear(color.b);
+  final l = _cbrt(0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b);
+  final m = _cbrt(0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b);
+  final s = _cbrt(0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b);
+  final ok = (
+    l: 0.2104542553 * l + 0.7936177850 * m - 0.0040720468 * s,
+    a: 1.9779984951 * l - 2.4285922050 * m + 0.4505937099 * s,
+    b: 0.0259040371 * l + 0.7827717662 * m - 0.8086757660 * s,
+  );
+  return (
+    lightness: ok.l,
+    chroma: math.sqrt(ok.a * ok.a + ok.b * ok.b),
+    hue: math.atan2(ok.b, ok.a),
+  );
+}
+
+/// The colour at OKLCH [lightness], [chroma] and [hue], its chroma lowered
+/// until it lies in sRGB, to the 8 bits it is painted in.
+Color _oklch(double lightness, double chroma, double hue) {
+  for (var k = chroma; ; k = math.max(0, k - 0.002)) {
+    final a = k * math.cos(hue);
+    final b = k * math.sin(hue);
+    final l = math.pow(lightness + 0.3963377774 * a + 0.2158037573 * b, 3);
+    final m = math.pow(lightness - 0.1055613458 * a - 0.0638541728 * b, 3);
+    final s = math.pow(lightness - 0.0894841775 * a - 1.2914855480 * b, 3);
+    final rgb = [
+      4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s,
+      -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s,
+      -0.0041960863 * l - 0.7034186147 * m + 1.7076147010 * s,
+    ];
+    if (k == 0 || rgb.every((v) => v >= -1e-4 && v <= 1 + 1e-4)) {
+      int byte(double v) => (_fromLinear(v.clamp(0.0, 1.0)) * 255).round();
+      return Color.fromARGB(255, byte(rgb[0]), byte(rgb[1]), byte(rgb[2]));
+    }
+  }
+}
+
+/// The first colours of a chart: [layered]'s fill, then the lines' colours
+/// ([claySeriesColor]), or the pieces' and bars' pastels ([claySliceColor])
+/// when [pastel].
+List<Color> _palette(
+  ClayColors c,
+  DesignStyleOf layered,
+  int count, {
+  bool pastel = false,
+}) => [
   for (var i = 0; i < count; i++)
-    i == 0 ? (layered.fill ?? claySeriesColor(c, 0)) : claySeriesColor(c, i),
+    i == 0 && layered.fill != null
+        ? layered.fill!
+        : (pastel ? claySliceColor(c, i) : claySeriesColor(c, i)),
 ];
 
 /// A monotone curve through [p]: soft, but never overshooting a value.
@@ -117,8 +218,11 @@ List<List<Offset>> _runs(DesignChartDetails d, DesignChartSeries s) {
   return runs;
 }
 
-/// A coil of clay along [path]: its shadow, its body and a lit ridge.
-void _coil(Canvas canvas, Path path, Color color, Color shade, double width) {
+/// A coil of clay along [path]: its shadow straight down in its own hue,
+/// its body, a lit ridge along its top and a shaded one along its foot.
+void _coil(Canvas canvas, ClayColors c, Path path, Color color, double width) {
+  final shade = c.shadeOf(color);
+  final night = c.brightness == Brightness.dark;
   canvas
     ..drawPath(
       path.shift(Offset(0, width * 0.7)),
@@ -151,6 +255,15 @@ void _coil(Canvas canvas, Path path, Color color, Color shade, double width) {
           const Color(0xFFFFFFFF),
           0.55,
         )!.withValues(alpha: 0.6),
+    )
+    ..drawPath(
+      path.shift(Offset(0, width * 0.24)),
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = width * 0.3
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round
+        ..color = shade.withValues(alpha: night ? 0.5 : 0.32),
     );
 }
 
@@ -293,32 +406,56 @@ class _LinePainter extends _AxesPainter {
           ..strokeCap = StrokeCap.round,
       );
     }
+    if (filled) {
+      // Under each line a slab of its pastel clay laid on the floor, its
+      // feet rounded: lit inside its top-leading edge, shaded inside its
+      // bottom-trailing one. By night the clay lifted toward the light and
+      // barely warmed (the line's colour mixed into night clay turns to
+      // brick). Every series' slab first, so every line lies over them.
+      final night = c.brightness == Brightness.dark;
+      for (final (i, s) in d.series.indexed) {
+        final slab = night
+            ? Color.lerp(c.risen, palette[i], 0.16)!
+            : Color.lerp(palette[i], c.clay, 0.6)!;
+        for (final run in _runs(d, s)) {
+          if (run.length < 2) continue;
+          final first = run.first;
+          final last = run.last;
+          final foot = math.max(
+            0.0,
+            [
+              12.0,
+              (base - first.dy).abs() / 2,
+              (base - last.dy).abs() / 2,
+              (last.dx - first.dx).abs() / 4,
+            ].reduce(math.min),
+          );
+          final way = last.dx >= first.dx ? 1.0 : -1.0;
+          final up = base >= first.dy ? 1.0 : -1.0;
+          final area = _smooth(run)
+            ..lineTo(last.dx, base - up * foot)
+            ..quadraticBezierTo(last.dx, base, last.dx - way * foot, base)
+            ..lineTo(first.dx + way * foot, base)
+            ..quadraticBezierTo(first.dx, base, first.dx, base - up * foot)
+            ..close();
+          clayPaintVolume(
+            canvas,
+            area,
+            colors: c,
+            color: slab,
+            side: 48,
+            mirrored: direction == TextDirection.rtl,
+          );
+        }
+      }
+    }
     for (final (i, s) in d.series.indexed) {
       final color = palette[i];
       for (final run in _runs(d, s)) {
-        final line = _smooth(run);
-        if (filled && run.length > 1) {
-          final area = Path.from(line)
-            ..lineTo(run.last.dx, base)
-            ..lineTo(run.first.dx, base)
-            ..close();
-          canvas.drawPath(
-            area,
-            Paint()
-              ..shader = LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  color.withValues(alpha: 0.34),
-                  color.withValues(alpha: 0.04),
-                ],
-              ).createShader(plot),
-          );
-        }
         if (run.length == 1) {
           _ball(canvas, c, run.first, color, 4);
         } else {
-          _coil(canvas, line, color, c.shadeOf(color), 4);
+          _coil(canvas, c, _smooth(run), color, 4);
         }
       }
     }
@@ -396,7 +533,8 @@ class _BarPainter extends _AxesPainter {
     final plot = d.plotArea;
     final a = d.active;
     if (a != null) {
-      // The picked band: a soft dent the bars stand in.
+      // The picked band: a soft dent pressed into the ground, the bars
+      // standing in it.
       final x = band.map(a.index.toDouble());
       final r = math.min(12.0, band.step.abs() / 2);
       final dent = Rect.fromLTRB(
@@ -405,11 +543,14 @@ class _BarPainter extends _AxesPainter {
         x + band.step.abs() / 2 - 2,
         plot.bottom,
       );
-      clayDrawShape(
+      final shape = Path();
+      clayAddShape(shape, dent, r);
+      clayPaintWell(
         canvas,
-        dent,
-        r,
-        Paint()..color = c.shadeOf(c.clay).withValues(alpha: 0.10),
+        shape,
+        colors: c,
+        side: dent.shortestSide,
+        mirrored: direction == TextDirection.rtl,
       );
     }
     paintAxes(canvas);
@@ -900,7 +1041,7 @@ class ClayBarChart extends StatelessWidget {
     final theme = ClayTheme.of(context);
     final c = theme.colors;
     final layered = DesignStyleOf([style, theme.barChartStyle], const {});
-    final palette = _palette(c, layered, series.length);
+    final palette = _palette(c, layered, series.length, pastel: true);
     return _Cartesian(
       series: series,
       semanticLabel: semanticLabel,
@@ -957,8 +1098,122 @@ class ClayBarChart extends StatelessWidget {
   }
 }
 
+/// How far the picked piece eases out of the ring.
+const double _donutPush = 5;
+
+/// A donut's pieces: each a piece of pastel clay ([claySliceShapes]: a gap
+/// of the ground between each, round ends, each piece's area its share),
+/// casting one soft shadow straight down in its own hue, round a hole
+/// pressed into the ground. The picked piece eases out and rises by [lift].
 class _DonutPainter extends CustomPainter {
   _DonutPainter({
+    required this.details,
+    required this.colors,
+    required this.palette,
+    required this.lift,
+    required this.mirrored,
+  });
+
+  final DesignPieChartDetails details;
+  final ClayColors colors;
+  final List<Color> palette;
+
+  /// How far each piece has risen, 0 to 1.
+  final List<double> lift;
+  final bool mirrored;
+
+  /// The ring's outer edge, inside the chart's radius: room for a piece to
+  /// ease out and for its shadow.
+  static double outerOf(DesignPieChartDetails d) => math.max(0, d.radius - 8);
+
+  /// The ring's inner edge: the hole's, or for a pie a small hub of the
+  /// ground the pieces part round.
+  static double innerOf(DesignPieChartDetails d) => d.holeRadius > 0
+      ? math.min(d.holeRadius, outerOf(d) - 1)
+      : math.min(6, outerOf(d) / 8);
+
+  /// The well pressed into the hole, a ring of the ground inside the
+  /// pieces; null when the hole is too small for one.
+  static double? wellOf(DesignPieChartDetails d) {
+    if (d.holeRadius <= 0) return null;
+    final r = innerOf(d) - 7;
+    return r >= 8 ? r : null;
+  }
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final d = details;
+    final c = colors;
+    final outer = outerOf(d);
+    final inner = innerOf(d);
+    final band = outer - inner;
+    if (band <= 0) return;
+    final well = wellOf(d);
+    if (well != null) {
+      clayPaintWell(
+        canvas,
+        Path()..addOval(Rect.fromCircle(center: d.centre, radius: well)),
+        colors: c,
+        side: well * 2,
+        mirrored: mirrored,
+      );
+    }
+    final shapes = claySliceShapes(
+      [for (final s in d.slices) s.value],
+      outer: outer,
+      inner: inner,
+      mirrored: mirrored,
+    );
+    final pieces = <(Path, Color, double)>[];
+    for (final (i, shape) in shapes.indexed) {
+      if (shape == null) continue;
+      final up = i < lift.length ? lift[i] : 0.0;
+      final at =
+          d.centre +
+          Offset(math.cos(shape.mid), math.sin(shape.mid)) * _donutPush * up;
+      pieces.add((
+        shape.path(at, outer, inner),
+        palette[i % palette.length],
+        up,
+      ));
+    }
+    // Every shadow first, so none lies over a neighbouring piece.
+    for (final (path, color, up) in pieces) {
+      clayPaintDrop(
+        canvas,
+        path,
+        colors: c,
+        color: color,
+        side: band,
+        lift: up,
+      );
+    }
+    for (final (path, color, _) in pieces) {
+      clayPaintVolume(
+        canvas,
+        path,
+        colors: c,
+        color: color,
+        side: band,
+        mirrored: mirrored,
+      );
+    }
+    if (d.states.contains(WidgetState.focused)) _focusRim(canvas, c, size);
+  }
+
+  @override
+  bool shouldRepaint(_DonutPainter old) =>
+      old.details != details ||
+      old.colors != colors ||
+      old.mirrored != mirrored ||
+      !listEquals(old.palette, palette) ||
+      !listEquals(old.lift, lift);
+}
+
+/// A donut drawn from its details, the picked piece rising on Clay's lift
+/// spring as it is picked and settling back as it is let go.
+class _Donut extends StatefulWidget {
+  const _Donut({
     required this.details,
     required this.colors,
     required this.palette,
@@ -969,80 +1224,78 @@ class _DonutPainter extends CustomPainter {
   final List<Color> palette;
 
   @override
-  void paint(Canvas canvas, Size size) {
-    final d = details;
-    final c = colors;
-    final r = d.radius - 6;
-    final hole = d.holeRadius;
-    // The well the donut sits in.
-    canvas.drawCircle(
-      d.centre,
-      r + 4,
-      Paint()..color = c.shadeOf(c.clay).withValues(alpha: 0.10),
-    );
-    for (final (i, s) in d.slices.indexed) {
-      if (s.sweepAngle.abs() < 0.001) continue;
-      final picked = d.active == i;
-      final push = picked ? 5.0 : 0.0;
-      final mid = s.midAngle;
-      final at = d.centre + Offset(math.cos(mid), math.sin(mid)) * push;
-      final outer = Rect.fromCircle(center: at, radius: r);
-      final inner = Rect.fromCircle(center: at, radius: math.max(hole, 0.0));
-      final path = Path()..arcTo(outer, s.startAngle, s.sweepAngle, true);
-      if (hole > 0) {
-        path.arcTo(inner, s.startAngle + s.sweepAngle, -s.sweepAngle, false);
-      } else {
-        path.lineTo(at.dx, at.dy);
-      }
-      path.close();
-      final color = palette[i % palette.length];
-      final shade = c.shadeOf(color);
-      canvas
-        ..drawPath(
-          path.shift(const Offset(0, 3)),
-          Paint()
-            ..color = shade.withValues(alpha: picked ? 0.42 : 0.3)
-            ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4),
-        )
-        ..drawPath(path, Paint()..color = color)
-        ..drawPath(
-          path,
-          Paint()
-            ..shader = RadialGradient(
-              center: const Alignment(-0.35, -0.45),
-              radius: 1.1,
-              colors: [
-                const Color(0xFFFFFFFF).withValues(alpha: 0.3),
-                const Color(0x00FFFFFF),
-                shade.withValues(alpha: 0.22),
-              ],
-              stops: const [0, 0.55, 1],
-            ).createShader(outer),
-        )
-        // A seam of the card between slices.
-        ..drawPath(
-          path,
-          Paint()
-            ..style = PaintingStyle.stroke
-            ..strokeWidth = 2.5
-            ..strokeJoin = StrokeJoin.round
-            ..color = c.clay,
-        );
-    }
-    if (d.states.contains(WidgetState.focused)) _focusRim(canvas, c, size);
+  State<_Donut> createState() => _DonutState();
+}
+
+class _DonutState extends State<_Donut> with SingleTickerProviderStateMixin {
+  late final AnimationController _t = AnimationController(vsync: this, value: 1)
+    ..addListener(() => setState(() {}));
+  late int? _active = widget.details.active;
+  List<double> _from = const [];
+
+  double _lift(int i) {
+    final to = i == _active ? 1.0 : 0.0;
+    if (_t.value >= 1) return to;
+    final from = i < _from.length ? _from[i] : 0.0;
+    return from + (to - from) * _t.value;
   }
 
   @override
-  bool shouldRepaint(_DonutPainter old) =>
-      old.details != details ||
-      old.colors != colors ||
-      !listEquals(old.palette, palette);
+  void didUpdateWidget(_Donut old) {
+    super.didUpdateWidget(old);
+    final a = widget.details.active;
+    if (a == _active) return;
+    _from = [for (var i = 0; i < widget.details.slices.length; i++) _lift(i)];
+    _active = a;
+    _t.value = 0;
+    final policy = DesignMotionPolicy.of(context);
+    unawaited(
+      _t.springTo(
+        1,
+        policy.reduceMotion
+            ? policy.effects(
+                dampingRatio: 1,
+                stiffness: ClayMotion.liftStiffness,
+              )
+            : policy.spatial(
+                dampingRatio: ClayMotion.liftDamping,
+                stiffness: ClayMotion.liftStiffness,
+              ),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _t.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => CustomPaint(
+    size: widget.details.size,
+    painter: _DonutPainter(
+      details: widget.details,
+      colors: widget.colors,
+      palette: widget.palette,
+      lift: [for (var i = 0; i < widget.details.slices.length; i++) _lift(i)],
+      mirrored: Directionality.of(context) == TextDirection.rtl,
+    ),
+  );
 }
 
-/// A donut of clay segments, a seam of the card between each; the picked
-/// one (hover, a finger, the arrow keys) eases out of the ring and its
-/// share is read in the hole. A legend under it names each slice, its value
-/// and share.
+/// A donut of pastel clay: each slice its own piece, a small gap of the
+/// ground between each, its ends rounded, lit inside its top-leading edge
+/// and shaded inside its bottom-trailing one, casting one soft shadow
+/// straight down in its own hue, round a hole pressed into the ground that
+/// holds the total. The picked slice (hover, a finger, the arrow keys) eases
+/// out of the ring and rises, and its share is read in the hole. A legend
+/// of clay balls under it names each slice, its value and share.
+///
+/// The pieces stay honest: each piece's area is its share of all the clay,
+/// so the gaps and round ends never change how big a share looks. A piece
+/// too small to round keeps square ends. When a value changes the pieces
+/// spring to their new shares, never jumping.
 ///
 /// ```dart
 /// ClayPieChart(semanticLabel: 'Time by habit', slices: const [ClayPieSlice(label: 'Walk', value: 40), ClayPieSlice(label: 'Read', value: 25)])
@@ -1100,7 +1353,7 @@ class ClayPieChart extends StatelessWidget {
     final c = theme.colors;
     final l = DesignLocalizations.of(context);
     final layered = DesignStyleOf([style, theme.pieChartStyle], const {});
-    final palette = _palette(c, layered, slices.length);
+    final palette = _palette(c, layered, slices.length, pastel: true);
     final total = slices.fold<double>(0, (a, s) => a + s.value);
     String value(double v) => formatValue?.call(v) ?? l.formatDecimal(v);
     String share(double v) => total <= 0 ? '' : '${(v / total * 100).round()}%';
@@ -1123,21 +1376,17 @@ class ClayPieChart extends StatelessWidget {
                 final a = d.active;
                 final big = a == null ? centerLabel : share(slices[a].value);
                 final small = a == null ? centerCaption : slices[a].label;
+                final well = _DonutPainter.wellOf(d);
                 return Stack(
                   children: [
-                    CustomPaint(
-                      size: d.size,
-                      painter: _DonutPainter(
-                        details: d,
-                        colors: c,
-                        palette: palette,
-                      ),
-                    ),
-                    if (holeRadius > 0.3 && (big != null || small != null))
+                    _Donut(details: d, colors: c, palette: palette),
+                    if (holeRadius > 0.3 &&
+                        well != null &&
+                        (big != null || small != null))
                       Positioned.fromRect(
                         rect: Rect.fromCircle(
                           center: d.centre,
-                          radius: d.holeRadius * 0.86,
+                          radius: well * 0.9,
                         ),
                         child: ExcludeSemantics(
                           child: FittedBox(
@@ -1206,7 +1455,7 @@ class _SparkPainter extends CustomPainter {
     if (d.series.isEmpty) return;
     for (final run in _runs(d, d.series.first)) {
       if (run.length > 1) {
-        _coil(canvas, _smooth(run), color, c.shadeOf(color), 2.5);
+        _coil(canvas, c, _smooth(run), color, 2.5);
       }
     }
     final points = d.series.first.points;

@@ -9,7 +9,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
+import 'internal/slices.dart';
 import 'internal/spring.dart';
+import 'internal/volume.dart';
 import 'surface.dart';
 import 'theme.dart';
 
@@ -100,8 +102,11 @@ class ClayProgressBar extends StatelessWidget {
 }
 
 /// A Clay progress ring: a round groove pressed into the ground that fills
-/// with a coral band as [value] grows, [child] (a count, a glyph) in its
-/// middle.
+/// with a coral band of clay as [value] grows, [child] (a count, a glyph) in
+/// its middle. The band is lit inside its top-leading edge and shaded inside
+/// its bottom-trailing one; its round ends stand exactly at 0 and at
+/// [value], so they never make it look further round than it is, and they
+/// close into a whole ring at 1.
 ///
 /// ```dart
 /// const ClayProgressRing(value: 0.6, child: Text('3/5'))
@@ -163,12 +168,8 @@ class ClayProgressRing extends StatelessWidget {
             stiffness: ClayMotion.liftStiffness,
             builder: (context, t) => CustomPaint(
               painter: _RingPainter(
-                groove: c.well,
-                grooveShade: c.groundShade,
-                light: c.light,
+                colors: c,
                 band: fill,
-                bandShade: c.shadeOf(fill),
-                night: c.brightness == Brightness.dark,
                 value: t.clamp(0.0, 1.0),
                 thickness: thickness,
                 rtl: Directionality.of(context) == TextDirection.rtl,
@@ -190,36 +191,30 @@ class ClayProgressRing extends StatelessWidget {
   }
 }
 
-// A ring's groove and band. Both are strokes on a circle, so their soft
-// shading is a pair of thin offset strokes, no blur.
+// A ring's groove and band. The groove is a stroke on a circle, its soft
+// shading a pair of thin offset strokes, no blur; the band is a piece of
+// clay with round ends, its light and shade Clay's volume.
 class _RingPainter extends CustomPainter {
   _RingPainter({
-    required this.groove,
-    required this.grooveShade,
-    required this.light,
+    required this.colors,
     required this.band,
-    required this.bandShade,
-    required this.night,
     required this.value,
     required this.thickness,
     required this.rtl,
   });
 
-  final Color groove;
-  final Color grooveShade;
-  final Color light;
+  final ClayColors colors;
   final Color band;
-  final Color bandShade;
-  final bool night;
   final double value;
   final double thickness;
   final bool rtl;
 
   @override
   void paint(Canvas canvas, Size size) {
+    final c = colors;
+    final night = c.brightness == Brightness.dark;
     final center = size.center(Offset.zero);
     final r = (math.min(size.width, size.height) - thickness) / 2;
-    final ring = Rect.fromCircle(center: center, radius: r);
     Paint stroke(Color color, double width) => Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = width
@@ -227,7 +222,7 @@ class _RingPainter extends CustomPainter {
       ..color = color;
     // The groove, its rim shaded at the top-leading inside and lit at the
     // bottom-trailing, as a well is.
-    canvas.drawCircle(center, r, stroke(groove, thickness));
+    canvas.drawCircle(center, r, stroke(c.well, thickness));
     canvas
       ..save()
       ..clipPath(
@@ -239,35 +234,41 @@ class _RingPainter extends CustomPainter {
     canvas.drawCircle(
       center.translate(1.5, 1.5),
       r,
-      stroke(grooveShade.withValues(alpha: night ? 0.5 : 0.12), thickness + 1)
+      stroke(c.groundShade.withValues(alpha: night ? 0.5 : 0.12), thickness + 1)
         ..maskFilter = null,
     );
     canvas.drawCircle(
       center.translate(-0.5, -0.5),
       r,
-      stroke(groove, thickness - 3),
+      stroke(c.well, thickness - 3),
     );
     canvas.restore();
     if (value <= 0.001) return;
-    final sweep = 2 * math.pi * value * (rtl ? -1 : 1);
-    const start = -math.pi / 2;
-    final inset = thickness - 4;
-    canvas.drawArc(ring, start, sweep, false, stroke(band, inset));
-    // The band's own volume: a lit line along its outer top, a shade line
-    // along its inner foot.
-    canvas.drawArc(
-      ring.inflate(inset / 4),
-      start,
-      sweep,
-      false,
-      stroke(light.withValues(alpha: night ? 0.10 : 0.45), 1.5),
+    final width = thickness - 4;
+    final outer = r + width / 2;
+    final inner = r - width / 2;
+    final sweep = 2 * math.pi * value;
+    // Round ends whose tips stand at 0 and at the value; they square off
+    // as the two ends meet, closing into a whole ring at 1.
+    final half = math.sin(math.min(sweep / 2, math.pi / 2));
+    final closing = ((1 - value) * 2 * math.pi * r / width).clamp(0.0, 1.0);
+    var corner = width / 2 * 0.999 * closing;
+    corner = math.min(corner, outer * half / (1 + half));
+    if (half < 1) corner = math.min(corner, inner * half / (1 - half));
+    var shape = ClaySliceShape(
+      start: -math.pi / 2,
+      sweep: sweep,
+      outerCorner: corner,
+      innerCorner: corner,
     );
-    canvas.drawArc(
-      ring.deflate(inset / 4),
-      start,
-      sweep,
-      false,
-      stroke(bandShade.withValues(alpha: night ? 0.45 : 0.28), 1.5),
+    if (rtl) shape = shape.mirrored();
+    clayPaintVolume(
+      canvas,
+      shape.path(center, outer, inner),
+      colors: c,
+      color: band,
+      side: width,
+      mirrored: rtl,
     );
   }
 
@@ -275,8 +276,7 @@ class _RingPainter extends CustomPainter {
   bool shouldRepaint(_RingPainter old) =>
       old.value != value ||
       old.band != band ||
-      old.groove != groove ||
-      old.night != night ||
+      old.colors != colors ||
       old.thickness != thickness ||
       old.rtl != rtl;
 }
