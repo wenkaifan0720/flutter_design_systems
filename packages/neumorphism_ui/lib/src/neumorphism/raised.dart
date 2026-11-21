@@ -23,6 +23,7 @@ import 'theme.dart';
 import 'internal/reach.dart' show NeumorphicFacePlace, neumorphicAtEnd;
 import 'internal/cap_label.dart';
 import 'internal/whole_words.dart';
+import 'internal/actions.dart';
 import 'internal/text_entry.dart' show neumorphicLineHeight;
 import 'chrome_metrics.dart';
 import 'internal/panel.dart';
@@ -379,7 +380,9 @@ class NeumorphicDialog extends StatelessWidget {
   /// The message-body widgets, in reading order.
   final List<Widget> content;
 
-  /// The actions presented below the content.
+  /// The actions presented below the content, in reading order, the main one last: side by side at the end while
+  /// they fit; when they don't (long words on a phone, large text), stacked, each as wide as the slab, the main one on
+  /// top.
   final List<Widget> actions;
 
   /// Optional artwork or an icon above the message.
@@ -524,18 +527,13 @@ class _SafeFocusState extends State<_SafeFocus> {
       Focus(focusNode: _bar, includeSemantics: false, child: widget.child);
 }
 
+// A slab's keys: side by side at the end while they fit; else stacked, each as wide as the slab, the main key (the
+// last) on top.
 class _Actions extends StatelessWidget {
   const _Actions({required this.children});
   final List<Widget> children;
   @override
-  Widget build(BuildContext context) => OverflowBar(
-    alignment: MainAxisAlignment.end,
-    spacing: 12,
-    overflowSpacing: 8,
-    overflowAlignment: OverflowBarAlignment.end,
-    overflowDirection: VerticalDirection.up,
-    children: children,
-  );
+  Widget build(BuildContext context) => NeumorphicActionBar(children: children);
 }
 
 class _SheetDrag extends InheritedWidget {
@@ -681,7 +679,7 @@ class NeumorphicBottomSheet extends StatelessWidget {
   /// An optional externally owned sheet scroll controller.
   final ScrollController? controller;
 
-  /// The actions presented in the sheet footer.
+  /// The actions presented in the sheet footer, laid out as a [NeumorphicDialog]'s.
   final List<Widget> actions;
 
   /// Called when the close action is activated.

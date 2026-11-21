@@ -34,6 +34,7 @@ import 'internal/out_of_use.dart';
 import 'internal/field_list.dart' show NeumorphicFieldListOpen;
 import 'internal/moulded.dart';
 import 'internal/group_rows.dart' show NeumorphicGroupRowScope;
+import 'internal/actions.dart' show neumorphicInActionBar;
 
 /// Makes a face a control: the design kit's pressable under it, so Tab reaches it, Enter and Space press it, and one
 /// semantics node names it. Keyboard focus lifts the face off the wall and warms its lit side with the pigment; a
@@ -1502,6 +1503,8 @@ class _ActButtonState extends State<_ActButton> {
         ),
       );
     }
+    // In a slab's keys the bar sizes the face: its own size side by side, the slab's width when it stacks.
+    if (neumorphicInActionBar(context)) return button;
     return Align(
       alignment: widget.alignment,
       widthFactor: 1,
@@ -1671,7 +1674,8 @@ class _LineButton extends StatelessWidget {
             ),
           ),
         );
-        if (wide) return button;
+        // In a slab's keys the bar sizes the face: its own size side by side, the slab's width when it stacks.
+        if (wide || neumorphicInActionBar(context)) return button;
         return Align(
           alignment: alignment,
           widthFactor: 1,
@@ -1833,24 +1837,27 @@ class _QuietButton extends StatelessWidget {
         },
       ),
     );
-    return wide
-        ? neumorphicWideRoom(
-            alignment,
-            LayoutBuilder(
-              builder: (context, box) => ConstrainedBox(
-                constraints: BoxConstraints(
-                  minWidth: box.hasBoundedWidth ? box.maxWidth : 0,
-                ),
-                child: button,
-              ),
+    if (wide) {
+      return neumorphicWideRoom(
+        alignment,
+        LayoutBuilder(
+          builder: (context, box) => ConstrainedBox(
+            constraints: BoxConstraints(
+              minWidth: box.hasBoundedWidth ? box.maxWidth : 0,
             ),
-          )
-        : Align(
-            alignment: alignment,
-            widthFactor: 1,
-            heightFactor: 1,
             child: button,
-          );
+          ),
+        ),
+      );
+    }
+    // In a slab's keys the bar sizes the face: its own size side by side, the slab's width when it stacks.
+    if (neumorphicInActionBar(context)) return button;
+    return Align(
+      alignment: alignment,
+      widthFactor: 1,
+      heightFactor: 1,
+      child: button,
+    );
   }
 }
 

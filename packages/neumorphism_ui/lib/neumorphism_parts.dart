@@ -17,6 +17,7 @@ export 'neumorphism_host.dart';
 export 'src/neumorphism/chart.dart';
 export 'src/neumorphism/controls.dart';
 export 'src/neumorphism/frames.dart';
+export 'src/neumorphism/internal/actions.dart';
 export 'src/neumorphism/internal/beside.dart';
 export 'src/neumorphism/internal/cap_label.dart';
 export 'src/neumorphism/internal/cell_bank.dart';

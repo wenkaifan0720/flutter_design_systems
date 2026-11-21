@@ -1,3 +1,7 @@
+## 0.4.1
+
+- When a `NeumorphicDialog`'s or a `NeumorphicBottomSheet`'s keys don't fit side by side (long labels on a phone, large text), they stack, each as wide as the slab, the main one on top. Before, they stacked at their own widths at the end, a staircase.
+
 ## 0.4.0
 
 - **Breaking:** stands on ui_core 0.4.0. Flutter 3.47 or later, as before.
