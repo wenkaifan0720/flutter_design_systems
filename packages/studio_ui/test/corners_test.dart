@@ -322,7 +322,7 @@ Widget _part(int i, [Brightness brightness = Brightness.light]) => RoomtoneApp(
 Widget _room(Brightness brightness, Widget child) => MaterialApp(
   localizationsDelegates: const [
     StudioLocalizations.delegate,
-    DesignLocalizations.delegate,
+    RawWidgetsLocalizations.delegate,
   ],
   builder: (context, page) => StudioTheme(
     data: brightness == Brightness.dark

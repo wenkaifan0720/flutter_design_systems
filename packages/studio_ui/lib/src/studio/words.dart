@@ -1,4 +1,4 @@
-/// The words Studio's own parts say beyond ui_core's ([DesignLocalizations]):
+/// The words Studio's own parts say beyond ui_core's ([RawWidgetsLocalizations]):
 /// [StudioLocalizations], every count a real plural in the app's language.
 library;
 

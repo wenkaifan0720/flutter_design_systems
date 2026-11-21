@@ -1,5 +1,5 @@
 // Enter on the web. Flutter's web shortcuts map Enter to ButtonActivateIntent (not ActivateIntent), and Space to
-// ActivateIntent: every Studio part a press acts on stands on ui_core's DesignPressable, which takes both. Under the
+// ActivateIntent: every Studio part a press acts on stands on ui_core's RawButton, which takes both. Under the
 // web's map (a copy of WidgetsApp's, which a test on the VM never reads), Enter and Space press each kind of part,
 // a select's window opens its list on Enter and Enter chooses the row the keyboard is on.
 import 'package:material_ui/material_ui.dart';

@@ -51,7 +51,8 @@ Color _lightOf(StudioColors c, int i, Color? own) =>
 const double _labelGap = StudioSpacing.small;
 
 // A figure in the reader's digits: whole, or to one place.
-String _figure(DesignLocalizations words, double v) => v == v.roundToDouble()
+String _figure(RawWidgetsLocalizations words, double v) =>
+    v == v.roundToDouble()
     ? words.formatDecimal(v.toInt())
     : words.formatDecimal(v, fractionDigits: 1);
 
@@ -145,7 +146,7 @@ abstract class _AxesPainter extends CustomPainter {
 
   /// The reader's words, whose digits the scale's figures are set in; the
   /// chart gives them before the painter paints.
-  late final DesignLocalizations words;
+  late final RawWidgetsLocalizations words;
 
   /// ui_core's scale up the start, from 0 to a whole step over the most:
   /// each step a round figure (1, 2 or 5 times a power of ten), so a
@@ -479,7 +480,7 @@ abstract class _AxesChart extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = StudioTheme.of(context);
     final c = theme.colors;
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     final text = theme.textTheme.caption.copyWith(
       locale: Localizations.maybeLocaleOf(context),
       fontSize: MediaQuery.textScalerOf(context).scale(11),
@@ -641,7 +642,7 @@ class StudioPieChart extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = StudioTheme.of(context);
     final c = theme.colors;
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     final total = slices.fold<double>(0, (a, s) => a + s.value);
     final readOut = [
       for (final s in slices)

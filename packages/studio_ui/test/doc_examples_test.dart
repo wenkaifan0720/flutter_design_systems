@@ -1095,7 +1095,7 @@ final Map<String, DocExample> _examples = {
 Widget _app(Widget child) => MaterialApp(
   localizationsDelegates: const [
     StudioLocalizations.delegate,
-    DesignLocalizations.delegate,
+    RawWidgetsLocalizations.delegate,
   ],
   builder: (context, page) => MediaQuery(
     data: MediaQuery.of(context).copyWith(disableAnimations: true),

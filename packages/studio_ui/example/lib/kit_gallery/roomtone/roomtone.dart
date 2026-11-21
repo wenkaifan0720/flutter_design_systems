@@ -211,11 +211,11 @@ class _RoomtoneAppState extends State<RoomtoneApp> {
         localizationsDelegates: const [
           StudioLocalizations.delegate,
           RoomtoneWords.delegate,
-          DesignLocalizations.delegate,
+          RawWidgetsLocalizations.delegate,
           DefaultMaterialLocalizations.delegate,
           DefaultWidgetsLocalizations.delegate,
         ],
-        supportedLocales: DesignLocalizations.supportedLocales,
+        supportedLocales: RawWidgetsLocalizations.supportedLocales,
         onGenerateInitialRoutes: (_) => [
           MaterialPageRoute<void>(builder: (_) => frame),
         ],

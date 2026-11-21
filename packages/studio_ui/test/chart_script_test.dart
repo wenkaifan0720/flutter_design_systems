@@ -69,7 +69,7 @@ void main() {
       Localizations(
         locale: const Locale('ar'),
         delegates: const [
-          DesignLocalizations.delegate,
+          RawWidgetsLocalizations.delegate,
           DefaultWidgetsLocalizations.delegate,
         ],
         child: const Directionality(

@@ -154,7 +154,7 @@ class _StudioSelectState<T> extends State<StudioSelect<T>> {
 
     Widget window(DesignOverlayAnchor? anchor) {
       final open = anchor?.isOpen ?? false;
-      return DesignPressable(
+      return RawButton(
         onPressed: anchor == null
             ? null
             : () {
@@ -262,10 +262,10 @@ class _StudioSelectState<T> extends State<StudioSelect<T>> {
 
     final Widget box = !enabled
         ? window(null)
-        : DesignAnchoredOverlay(
+        : RawPopover(
             arrowKeyNavigation: true,
             semanticLabel: label,
-            placement: const DesignOverlayPlacement(
+            placement: const RawPopoverPlacement(
               gap: StudioSpacing.tight,
               margin: StudioSpacing.small,
             ),
@@ -451,7 +451,7 @@ class _StudioMenuListState<T> extends State<StudioMenuList<T>> {
 
   Widget _row(int i, StudioMenuEntry<T> item, double rowHeight) {
     final isChosen = item.value == widget.value && widget.value != null;
-    return DesignPressable(
+    return RawButton(
       onPressed: item.enabled ? () => widget.onChosen(item.value) : null,
       focusNode: _nodes[i],
       selected: isChosen,

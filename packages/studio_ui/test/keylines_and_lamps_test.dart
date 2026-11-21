@@ -361,7 +361,7 @@ void main() {
           final shot = await shoot(tester);
           final lenses = find.descendant(
             of: find.byType(StudioRating),
-            matching: find.byType(DesignTapTarget),
+            matching: find.byType(TapTargetPadding),
           );
           expect(lenses, findsNWidgets(5));
           // A lens's star: the one sized paint in it.

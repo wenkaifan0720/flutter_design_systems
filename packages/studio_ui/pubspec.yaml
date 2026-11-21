@@ -1,7 +1,7 @@
 name: studio_ui
 description: >-
   Flutter controls for audio and media apps, with brushed studio panels, dimmable readouts, faders, transport keys, and coordinated light and dark themes.
-version: 0.1.5
+version: 0.2.0
 homepage: https://wenkaifan0720.github.io/flutter_design_systems/studio/
 documentation: https://wenkaifan0720.github.io/flutter_design_systems/docs/looks/studio/
 repository: https://github.com/wenkaifan0720/flutter_design_systems/tree/main/packages/studio_ui
@@ -32,7 +32,7 @@ resolution: workspace
 dependencies:
   flutter:
     sdk: flutter
-  ui_core: ^0.3.4
+  ui_core: ^0.4.0
   material_ui: ^1.9.0
   cupertino_ui: ^1.0.0
   lucide_icons_flutter: ">=3.1.25 <5.0.0"
@@ -42,7 +42,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   leak_tracker_flutter_testing: any
-  ui_core_test: ^0.1.4
+  ui_core_test: ^0.2.0
 
 flutter:
   fonts:

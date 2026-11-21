@@ -134,7 +134,7 @@ class StudioFloatingKey extends StatelessWidget {
     final theme = StudioTheme.of(context);
     final c = theme.colors;
     final night = c.brightness == Brightness.dark;
-    return DesignPressable(
+    return RawButton(
       onPressed: onPressed,
       focusNode: focusNode,
       semanticLabel: tooltip,
@@ -311,7 +311,7 @@ class StudioKeyRow extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   for (final item in items)
-                    DesignPressable(
+                    RawButton(
                       onPressed: item.onPressed,
                       semanticLabel: item.label,
                       excludeSemantics: true,
@@ -401,7 +401,7 @@ class StudioKeyRow extends StatelessWidget {
 /// radio group. Given [iconOf], each key shows its glyph and [labelOf]
 /// names it to a screen reader.
 ///
-/// Built on ui_core's DesignToggleGroup: the arrows move along the bank,
+/// Built on ui_core's RawSegmentedButton: the arrows move along the bank,
 /// Space and Enter press. A null [onSelectionChanged] disables it.
 ///
 /// Reads [style]'s `fill`, `foreground`, `minimumSize` and `textStyle` for
@@ -470,7 +470,7 @@ class StudioToggleBank<T> extends StatelessWidget {
         face: c.recessFace,
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: StudioSpacing.hair),
-          child: DesignToggleGroup<T>(
+          child: RawSegmentedButton<T>(
             options: options,
             selected: selected,
             onSelectionChanged: onSelectionChanged,
@@ -579,7 +579,7 @@ class StudioToggleBank<T> extends StatelessWidget {
 /// narrow key stays down while its list is open; Down on the main key opens
 /// it too. [lit] makes both halves the graphite main key.
 ///
-/// Built on ui_core's DesignSplitButton. A null [onPressed] disables the
+/// Built on ui_core's RawSplitButton. A null [onPressed] disables the
 /// main half; the list stays.
 ///
 /// Reads [style] for both halves, then the main key's theme slot
@@ -623,12 +623,12 @@ class StudioSplitKey extends StatelessWidget {
     final theme = StudioTheme.of(context);
     final c = theme.colors;
     final layers = [style, lit ? theme.litButtonStyle : theme.buttonStyle];
-    return DesignSplitButton(
+    return RawSplitButton(
       label: label,
       onPressed: onPressed,
       actions: [
         for (final a in actions)
-          DesignSplitAction(label: a.label, onPressed: a.onPressed, data: a),
+          RawSplitAction(label: a.label, onPressed: a.onPressed, data: a),
       ],
       menuLabel: menuLabel,
       minimumSize: Size.zero,
@@ -643,7 +643,7 @@ class StudioSplitKey extends StatelessWidget {
       buttonBuilder: (context, part, states, open) {
         final now = {
           ...states,
-          if (open && part == DesignSplitPart.toggle) WidgetState.pressed,
+          if (open && part == RawSplitPart.toggle) WidgetState.pressed,
         };
         final layered = DesignStyleOf(layers, now);
         final height = layered.minimumSize?.height ?? theme.controlHeight;
@@ -652,13 +652,13 @@ class StudioSplitKey extends StatelessWidget {
         );
         final ink = face.foreground ?? c.onKey;
         final glowing = lit && !now.contains(WidgetState.disabled);
-        return DesignTapTarget(
+        return TapTargetPadding(
           child: SizedBox(
             height: height,
-            width: part == DesignSplitPart.toggle ? height * 0.8 : null,
+            width: part == RawSplitPart.toggle ? height * 0.8 : null,
             child: AnimatedStudioSurface(
               face: face,
-              child: part == DesignSplitPart.main
+              child: part == RawSplitPart.main
                   ? Padding(
                       padding: const EdgeInsets.symmetric(
                         horizontal: StudioSpacing.regular + 2,
@@ -778,7 +778,7 @@ class StudioLink extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = StudioTheme.of(context);
     final c = theme.colors;
-    return DesignPressable(
+    return RawButton(
       onPressed: onPressed,
       semanticLabel: label,
       excludeSemantics: true,
@@ -795,7 +795,7 @@ class StudioLink extends StatelessWidget {
               decorationColor: disabled ? c.disabled : c.legendMuted,
             )
             .merge(layered.textStyle);
-        return DesignTapTarget(
+        return TapTargetPadding(
           child: AnimatedStudioSurface(
             face: c.recessFace.copyWith(
               radius: StudioRadii.small,

@@ -53,11 +53,11 @@ Widget kitApp({required Brightness brightness, required Widget home}) =>
       ),
       localizationsDelegates: const [
         StudioLocalizations.delegate,
-        DesignLocalizations.delegate,
+        RawWidgetsLocalizations.delegate,
         DefaultMaterialLocalizations.delegate,
         DefaultWidgetsLocalizations.delegate,
       ],
-      supportedLocales: DesignLocalizations.supportedLocales,
+      supportedLocales: RawWidgetsLocalizations.supportedLocales,
       builder: (context, child) => StudioTheme(
         data: kitTheme(brightness),
         child: StudioToaster(child: child ?? const SizedBox.shrink()),

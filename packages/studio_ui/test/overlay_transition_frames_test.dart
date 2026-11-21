@@ -193,7 +193,7 @@ Widget _app(Brightness brightness, TextDirection direction) => MaterialApp(
   debugShowCheckedModeBanner: false,
   localizationsDelegates: const [
     StudioLocalizations.delegate,
-    DesignLocalizations.delegate,
+    RawWidgetsLocalizations.delegate,
   ],
   builder: (context, page) => Directionality(
     textDirection: direction,

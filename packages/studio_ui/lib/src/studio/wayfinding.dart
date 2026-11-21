@@ -100,7 +100,7 @@ class StudioBreadcrumb extends StatelessWidget {
                 ),
               )
             else
-              DesignPressable(
+              RawButton(
                 onPressed: crumb.onPressed,
                 semanticLabel: crumb.label,
                 excludeSemantics: true,
@@ -110,7 +110,7 @@ class StudioBreadcrumb extends StatelessWidget {
                     style,
                     theme.breadcrumbStyle,
                   ], states);
-                  return DesignTapTarget(
+                  return TapTargetPadding(
                     child: AnimatedStudioSurface(
                       face: c.recessFace.copyWith(
                         radius: StudioRadii.small,
@@ -182,7 +182,7 @@ class StudioPagination extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     final change = onChanged;
     final width = '$pageCount'.length.clamp(2, 4);
     // Zero-padded figures in the reader's digits, ungrouped.
@@ -405,7 +405,7 @@ class StudioPageDots extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     final change = onChanged;
     return Semantics(
       container: true,
@@ -420,14 +420,14 @@ class StudioPageDots extends StatelessWidget {
                     padding: const EdgeInsets.all(StudioSpacing.tight + 2),
                     child: StudioLamp(on: i == index, size: 8),
                   )
-                : DesignPressable(
+                : RawButton(
                     onPressed: () => change(i),
                     semanticLabel: words.positionLabel(i + 1, count),
                     selected: i == index,
                     semanticSelected: i == index,
                     builder: (context, states, _) {
                       final c = StudioTheme.of(context).colors;
-                      return DesignTapTarget(
+                      return TapTargetPadding(
                         child: Container(
                           padding: const EdgeInsets.all(StudioSpacing.tight),
                           decoration: BoxDecoration(

@@ -322,7 +322,7 @@ class _StudioPageRoute<T> extends PageRoute<T> {
   static const _change = StudioPageTransitionsBuilder();
 
   // On iOS, the swipe back from the leading edge round it.
-  static const _swipe = DesignSwipeBackPageTransitionsBuilder(_change);
+  static const _swipe = SwipeBackPageTransitionsBuilder(_change);
 
   @override
   Duration get transitionDuration => _change.transitionDuration;
@@ -457,7 +457,7 @@ class StudioPreview extends StatelessWidget {
           key: ValueKey<Object>((presentation, drawer)),
           debugShowCheckedModeBanner: false,
           localizationsDelegates: const [
-            DesignLocalizations.delegate,
+            RawWidgetsLocalizations.delegate,
             DefaultMaterialLocalizations.delegate,
             DefaultWidgetsLocalizations.delegate,
           ],
@@ -747,7 +747,7 @@ class StudioLoadingState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = StudioTheme.of(context);
-    final words = label ?? DesignLocalizations.of(context).loadingLabel;
+    final words = label ?? RawWidgetsLocalizations.of(context).loadingLabel;
     return Center(
       child: Semantics(
         liveRegion: true,
@@ -832,7 +832,7 @@ class StudioErrorState extends StatelessWidget {
                 message: message,
                 actionLabel: own == null && retry != null
                     ? retryLabel ??
-                          DesignLocalizations.of(context).retryButtonLabel
+                          RawWidgetsLocalizations.of(context).retryButtonLabel
                     : null,
                 onAction: own == null ? retry : null,
               ),

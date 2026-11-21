@@ -3,7 +3,7 @@
 /// [showStudioBottomSheet], or by the router's [StudioSheetPage]; and
 /// [StudioToaster] with [showStudioToast], a strip of readout glass with
 /// its lamp lit. The dialog and the sheets ride ui_core's routes
-/// (DesignDialogRoute, DesignBottomSheetRoute); Studio paints them.
+/// (DesignDialogRoute, RawBottomSheetRoute); Studio paints them.
 library;
 
 import 'dart:math' as math;
@@ -435,7 +435,7 @@ class _RenderDialogActions extends RenderBox
 }
 
 /// Raises [builder]'s content in a [StudioSheet] from the bottom edge on
-/// ui_core's DesignBottomSheetRoute: a drawer of metal sliding out on its
+/// ui_core's RawBottomSheetRoute: a drawer of metal sliding out on its
 /// runners, the room's lights lowering; under Reduce Motion it fades. A drag
 /// takes it down with the finger; let go past half way, or flung, it closes.
 /// Tapping the scrim (when [barrierDismissible]), Escape or Back close it;
@@ -454,7 +454,7 @@ Future<T?> showStudioBottomSheet<T>({
 }) {
   final theme = StudioTheme.of(context);
   return Navigator.of(context, rootNavigator: true).push<T>(
-    DesignBottomSheetRoute<T>(
+    RawBottomSheetRoute<T>(
       barrierColor: theme.colors.scrim,
       barrierDismissible: barrierDismissible,
       semanticLabel: title,
@@ -513,7 +513,7 @@ class _AtTheFoot extends StatelessWidget {
 /// The router's page for a route raised as a sheet: its screen (a
 /// `StudioScreen`, whose bar then carries the close key) in a [StudioSheet]
 /// drawn out from the bottom edge as [showStudioBottomSheet] draws one (on
-/// ui_core's DesignBottomSheetRoute: a drag takes it down, focus moves in
+/// ui_core's RawBottomSheetRoute: a drag takes it down, focus moves in
 /// and back), 90% of the screen tall, or as tall as its content when
 /// [drawer]; with [fullScreen] it rises as a whole page of metal instead (a
 /// page route). Its screen reads [RoutePresentation.sheet]. A go_router
@@ -594,7 +594,7 @@ class StudioSheetPage<T> extends Page<T> {
         transitionsBuilder: rise,
       );
     }
-    return DesignBottomSheetRoute<T>(
+    return RawBottomSheetRoute<T>(
       settings: this,
       // A drawer rests at its content's height; a sheet at nine tenths of
       // the screen.
@@ -650,7 +650,7 @@ class StudioSheet extends StatelessWidget {
     final theme = StudioTheme.of(context);
     final c = theme.colors;
     final layered = DesignStyleOf([style, theme.bottomSheetStyle], const {});
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     final size = MediaQuery.sizeOf(context);
     final night = c.brightness == Brightness.dark;
     final side = size.width < StudioMetrics.tablet
@@ -747,7 +747,7 @@ class StudioSheet extends StatelessWidget {
                       start: 0,
                       end: 0,
                       child: Center(
-                        child: DesignBottomSheetDragHandle(
+                        child: RawBottomSheetDragHandle(
                           builder: (context, states) => SizedBox.square(
                             dimension: 44,
                             child: Align(
@@ -808,7 +808,7 @@ class _CloseKey extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = StudioTheme.of(context);
     final c = theme.colors;
-    return DesignPressable(
+    return RawButton(
       onPressed: onPressed,
       semanticLabel: label,
       builder: (context, states, _) => SizedBox.square(
@@ -854,7 +854,7 @@ class StudioToaster extends StatelessWidget {
   final StudioStyle? style;
 
   @override
-  Widget build(BuildContext context) => DesignToaster(
+  Widget build(BuildContext context) => RawToaster(
     dampingRatio: StudioMotion.dampingRatio,
     stiffness: StudioMotion.overlayStiffness,
     constraints: const BoxConstraints(maxWidth: 480),
@@ -874,7 +874,7 @@ class StudioToaster extends StatelessWidget {
 class _Toast extends StatelessWidget {
   const _Toast(this.details, this.style);
 
-  final DesignToastDetails details;
+  final RawToastDetails details;
   final StudioStyle? style;
 
   @override
@@ -884,7 +884,7 @@ class _Toast extends StatelessWidget {
     final t = details.toast;
     final layered = DesignStyleOf([style, theme.toastStyle], const {});
     final ink = layered.foreground ?? c.onReadout;
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     final opacity = details.animation.drive(
       Animatable<double>.fromCallback((v) => v.clamp(0.0, 1.0)),
     );
@@ -999,7 +999,7 @@ class _ToastKey extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = StudioTheme.of(context).colors;
-    return DesignPressable(
+    return RawButton(
       onPressed: onPressed,
       semanticLabel: label,
       excludeSemantics: true,
@@ -1042,15 +1042,15 @@ class _ToastKey extends StatelessWidget {
 /// ```dart
 /// showStudioToast(context, 'Marker added at 12:04', actionLabel: 'Undo', onAction: () {})
 /// ```
-DesignToastHandle showStudioToast(
+RawToastController showStudioToast(
   BuildContext context,
   String message, {
   String? title,
   String? actionLabel,
   VoidCallback? onAction,
   Duration? duration = const Duration(seconds: 4),
-}) => DesignToaster.of(context).show(
-  DesignToast(
+}) => RawToaster.of(context).show(
+  RawToast(
     message: message,
     title: title,
     actionLabel: actionLabel,

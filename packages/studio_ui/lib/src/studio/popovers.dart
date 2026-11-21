@@ -62,7 +62,7 @@ Widget _panel(
 /// and whether it is `open`), and [content] stands in a raised panel under
 /// it, with the keyboard inside it; Escape or a press outside closes it.
 ///
-/// Built on ui_core's DesignAnchoredOverlay.
+/// Built on ui_core's RawPopover.
 ///
 /// Reads [style]'s `fill` and `padding`, then
 /// [StudioThemeData.popoverStyle].
@@ -98,9 +98,9 @@ class StudioPopover extends StatelessWidget {
   final StudioStyle? style;
 
   @override
-  Widget build(BuildContext context) => DesignAnchoredOverlay(
+  Widget build(BuildContext context) => RawPopover(
     semanticLabel: semanticLabel,
-    placement: const DesignOverlayPlacement(
+    placement: const RawPopoverPlacement(
       gap: StudioSpacing.small,
       margin: StudioSpacing.small,
       matchAnchorWidth: false,
@@ -126,7 +126,7 @@ class StudioPopover extends StatelessWidget {
 /// raised panel beside it; move away and it goes. It adds to the pointer's
 /// view only; what it shows must be reachable another way.
 ///
-/// Built on ui_core's DesignAnchoredOverlay.
+/// Built on ui_core's RawPopover.
 ///
 /// ```dart
 /// StudioHoverCard(content: (context) => hostDetails, child: StudioLink('Noor Haddad', onPressed: openHost))
@@ -154,10 +154,10 @@ class StudioHoverCard extends StatelessWidget {
   final StudioStyle? style;
 
   @override
-  Widget build(BuildContext context) => DesignAnchoredOverlay(
-    trigger: DesignOverlayTrigger.hover,
+  Widget build(BuildContext context) => RawPopover(
+    trigger: RawPopoverTrigger.hover,
     focusOnOpen: false,
-    placement: const DesignOverlayPlacement(
+    placement: const RawPopoverPlacement(
       gap: StudioSpacing.small,
       margin: StudioSpacing.small,
       matchAnchorWidth: false,
@@ -183,11 +183,13 @@ class StudioHoverCard extends StatelessWidget {
 /// A thing's name in a small dark readout over it, shown after the pointer
 /// rests on it for half a second, at once while it has the keyboard, or
 /// after a long press of a finger. The pointer may move onto the readout and
-/// it stays; Escape hides it; one shows at a time, and along a row of keys
-/// the next shows at once. A screen reader hears [message] as the thing's
-/// tooltip.
+/// it stays; Escape hides it; one shows at a time. A screen reader hears
+/// [message] as the thing's tooltip.
 ///
-/// Built on ui_core's DesignTooltip; Studio paints the readout.
+/// Built on Flutter's RawTooltip, with ui_core's RawTooltipFocusFix (it
+/// shows on the keyboard's focus) and RawTooltipPlacement (above the thing,
+/// below where there is no room); Studio paints the readout, fading it in
+/// and out with the tooltip.
 ///
 /// Reads [style]'s `fill`, `foreground` and `textStyle`, then
 /// [StudioThemeData.tooltipStyle].
@@ -218,50 +220,59 @@ class StudioTooltip extends StatelessWidget {
     final theme = StudioTheme.of(context);
     final c = theme.colors;
     final layered = DesignStyleOf([style, theme.tooltipStyle], const {});
-    return DesignTooltip(
-      message: message,
-      placement: const DesignOverlayPlacement(
-        side: DesignOverlaySide.above,
-        align: DesignOverlayAlign.center,
+    return RawTooltipPlacement(
+      placement: const RawPopoverPlacement(
+        side: RawPopoverSide.above,
+        align: RawPopoverAlign.center,
         gap: 6,
         margin: StudioSpacing.small,
         preferredExtent: 48,
         matchAnchorWidth: false,
       ),
-      child: child,
-      tooltipBuilder: (context, info) => FadeTransition(
-        opacity: info.animation,
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 240),
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              color: layered.fill ?? c.readout,
-              borderRadius: BorderRadius.circular(StudioRadii.small),
-              boxShadow: [
-                BoxShadow(
-                  color: c.shadow.withValues(alpha: 0.3),
-                  blurRadius: 8,
-                  offset: const Offset(0, 3),
+      builder: (context, positionDelegate) => MergeSemantics(
+        // One node for the control and its tip, as the published tooltip
+        // made: a screen reader hears the tip with the control. RawTooltip's
+        // own tooltip semantics do not merge, and went to the node above.
+        child: RawTooltip(
+          semanticsTooltip: message,
+          hoverDelay: const Duration(milliseconds: 500),
+          positionDelegate: positionDelegate,
+          tooltipBuilder: (context, animation) => FadeTransition(
+            opacity: animation,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 240),
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: layered.fill ?? c.readout,
+                  borderRadius: BorderRadius.circular(StudioRadii.small),
+                  boxShadow: [
+                    BoxShadow(
+                      color: c.shadow.withValues(alpha: 0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-            child: Padding(
-              padding:
-                  layered.padding(Directionality.of(context)) ??
-                  const EdgeInsets.symmetric(
-                    horizontal: StudioSpacing.small,
-                    vertical: 6,
-                  ),
-              child: Text(
-                message,
-                style: layered.text(
-                  theme.textTheme.caption.copyWith(
-                    color: layered.foreground ?? c.onReadout,
+                child: Padding(
+                  padding:
+                      layered.padding(Directionality.of(context)) ??
+                      const EdgeInsets.symmetric(
+                        horizontal: StudioSpacing.small,
+                        vertical: 6,
+                      ),
+                  child: Text(
+                    message,
+                    style: layered.text(
+                      theme.textTheme.caption.copyWith(
+                        color: layered.foreground ?? c.onReadout,
+                      ),
+                    ),
                   ),
                 ),
               ),
             ),
           ),
+          child: RawTooltipFocusFix(child: child),
         ),
       ),
     );
@@ -279,7 +290,7 @@ class StudioTooltip extends StatelessWidget {
 /// [builder] makes under it. A press on the dimmed page, Escape or a drag
 /// back closes it.
 ///
-/// Built on ui_core's DesignSideSheetRoute.
+/// Built on ui_core's RawSideSheetRoute.
 ///
 /// ```dart
 /// showStudioSideSheet<void>(context: context, title: 'Filters', builder: (context) => filters)
@@ -293,10 +304,10 @@ Future<T?> showStudioSideSheet<T>({
   StudioStyle? style,
 }) {
   final theme = StudioTheme.of(context);
-  final words = DesignLocalizations.of(context);
+  final words = RawWidgetsLocalizations.of(context);
   return Navigator.of(context, rootNavigator: true).push<T>(
-    DesignSideSheetRoute<T>(
-      edge: fromStart ? DesignSheetEdge.start : DesignSheetEdge.end,
+    RawSideSheetRoute<T>(
+      edge: fromStart ? RawSheetEdge.start : RawSheetEdge.end,
       width: width,
       barrierColor: theme.colors.scrim,
       barrierLabel: words.modalBarrierDismissLabel,
@@ -325,7 +336,7 @@ class _SidePanel extends StatelessWidget {
   });
 
   final String title;
-  final DesignSheetInfo sheet;
+  final RawSideSheetDetails sheet;
   final WidgetBuilder builder;
   final StudioStyle? style;
 
@@ -334,7 +345,7 @@ class _SidePanel extends StatelessWidget {
     final theme = StudioTheme.of(context);
     final c = theme.colors;
     final pad = MediaQuery.paddingOf(context);
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     final layered = DesignStyleOf([style, theme.sideSheetStyle], const {});
     final night = c.brightness == Brightness.dark;
     final body =

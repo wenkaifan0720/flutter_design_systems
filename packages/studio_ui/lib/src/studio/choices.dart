@@ -72,7 +72,7 @@ class StudioCheckbox extends StatelessWidget {
   static const double size = 24;
 
   @override
-  Widget build(BuildContext context) => DesignPressable(
+  Widget build(BuildContext context) => RawButton(
     onPressed: onChanged == null ? null : () => onChanged!(!value),
     focusNode: focusNode,
     autofocus: autofocus,
@@ -81,7 +81,7 @@ class StudioCheckbox extends StatelessWidget {
     checked: value,
     isError: isError,
     semanticLabel: semanticLabel,
-    builder: (context, states, _) => DesignTapTarget(
+    builder: (context, states, _) => TapTargetPadding(
       child: _CheckKey(
         value: value,
         isError: isError,
@@ -220,7 +220,7 @@ class StudioCheckRow extends StatelessWidget {
     final theme = StudioTheme.of(context);
     final c = theme.colors;
     final off = onChanged == null;
-    return DesignPressable(
+    return RawButton(
       onPressed: off ? null : () => onChanged!(!value),
       focusNode: focusNode,
       autofocus: autofocus,
@@ -418,7 +418,7 @@ class StudioRadio<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final chosen = value == groupValue;
-    return DesignPressable(
+    return RawButton(
       onPressed: onChanged == null ? null : () => onChanged!(value),
       focusNode: focusNode,
       autofocus: autofocus,
@@ -427,7 +427,7 @@ class StudioRadio<T> extends StatelessWidget {
       checked: chosen,
       inMutuallyExclusiveGroup: true,
       semanticLabel: semanticLabel,
-      builder: (context, states, _) => DesignTapTarget(
+      builder: (context, states, _) => TapTargetPadding(
         child: _RadioKey(chosen: chosen, style: style, states: states),
       ),
     );
@@ -489,13 +489,16 @@ class _RadioKey extends StatelessWidget {
 
 /// Radios and their words, one choice of [options]: each row a round key
 /// that latches in when chosen, its lamp lit, beside its words, the whole
-/// row one target. Tab reaches the group once, at its choice; the arrows
-/// choose the next or the previous (mirrored right to left) and wrap, Home
-/// and End its ends, as Flutter's RadioGroup does; a screen reader hears a
-/// radio group of radios. A null [onChanged] disables it.
+/// row one target. Tab reaches the group once, at its choice (the first
+/// choice that can be made, while none is or the chosen one is turned off);
+/// the arrows choose the next or the previous (mirrored right to left) and
+/// wrap, as Flutter's RadioGroup does, and Home and End choose its ends; a
+/// screen reader hears a radio group of radios. A null [onChanged] disables
+/// it.
 ///
-/// Built on ui_core's DesignRadioGroup, over Flutter's RadioGroup. Reads
-/// [style] as [StudioRadio] does.
+/// Built on Flutter's RadioGroup, each row a RawRadio, with ui_core's
+/// RadioGroupKeyboardFix inside the group. Reads [style] as [StudioRadio]
+/// does.
 ///
 /// ```dart
 /// StudioRadioGroup<String>(options: const ['mp3', 'aac', 'wav'], value: format, labelOf: (f) => f.toUpperCase(), onChanged: (f) => setState(() => format = f))
@@ -605,8 +608,6 @@ class _StudioRadioGroupBodyState<T> extends State<_StudioRadioGroupBody<T>> {
     final labelOf = group.labelOf;
     final direction = group.direction;
     final style = group.style;
-    final theme = StudioTheme.of(context);
-    final c = theme.colors;
     final current = options.toSet();
     final gone = [
       for (final option in _nodes.keys)
@@ -621,72 +622,135 @@ class _StudioRadioGroupBodyState<T> extends State<_StudioRadioGroupBody<T>> {
         }
       });
     }
-    final radios = DesignRadioGroup<T>(
-      options: options,
-      value: value,
-      onChanged: group.onChanged,
-      isEnabled: group.isEnabled,
-      focusNodeFor: _nodeFor,
-      semanticLabel: group.semanticLabel,
-      direction: direction,
-      layoutBuilder: (context, rows) => direction == Axis.vertical
-          ? Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: rows,
-            )
-          : Wrap(spacing: StudioSpacing.large, children: rows),
-      // Each row is one radio, named by its words: the key and the words
-      // take the press together.
-      itemBuilder: (context, option, node, select) => DesignPressable(
-        focusNode: node,
-        onPressed: select,
-        semanticLabel: labelOf(option),
-        excludeSemantics: true,
-        checked: option == value,
-        selected: option == value,
-        inMutuallyExclusiveGroup: true,
-        builder: (context, states, _) {
-          final off = states.contains(WidgetState.disabled);
-          return ConstrainedBox(
-            constraints: BoxConstraints(minHeight: theme.controlHeight),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(
-                vertical: StudioSpacing.small,
-              ),
-              child: Row(
-                mainAxisSize: direction == Axis.vertical
-                    ? MainAxisSize.max
-                    : MainAxisSize.min,
-                children: [
-                  _RadioKey(
-                    chosen: states.contains(WidgetState.selected),
-                    style: style,
-                    states: states,
-                  ),
-                  const SizedBox(width: StudioSpacing.medium),
-                  Flexible(
-                    child: Text(
-                      labelOf(option),
-                      style: theme.textTheme.label.copyWith(
-                        color: off ? c.disabled : c.legend,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
-      ),
-    );
+    final onChanged = group.onChanged;
+    final rows = [
+      for (final option in options)
+        _StudioRadioRow<T>(
+          key: ObjectKey(option),
+          value: option,
+          label: labelOf(option),
+          focusNode: _nodeFor(option),
+          enabled: onChanged != null && (group.isEnabled?.call(option) ?? true),
+          direction: direction,
+          style: style,
+        ),
+    ];
+    final layout = direction == Axis.vertical
+        ? Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: rows,
+          )
+        : Wrap(spacing: StudioSpacing.large, children: rows);
+    final label = group.semanticLabel;
     return CallbackShortcuts(
       bindings: {
         const SingleActivator(LogicalKeyboardKey.home): () =>
             _toEnd(last: false),
         const SingleActivator(LogicalKeyboardKey.end): () => _toEnd(last: true),
       },
-      child: radios,
+      // Flutter's radio group: one Tab stop, at the choice; the arrows move
+      // and choose. ui_core's keyboard fix inside it gives the group its Tab
+      // stop when the chosen radio is turned off, and swaps Left and Right
+      // right to left, until Flutter's own fixes do. RadioGroup takes no null
+      // onChanged: a group that takes no choice turns each radio off.
+      child: RadioGroup<T>(
+        groupValue: value,
+        onChanged: (next) {
+          if (next != null && next != value) onChanged?.call(next);
+        },
+        child: RadioGroupKeyboardFix<T>(
+          child: label == null
+              ? layout
+              : Semantics(label: label, child: layout),
+        ),
+      ),
+    );
+  }
+}
+
+// One row of a StudioRadioGroup: a RawRadio on the group, which says it is
+// checked and one of a group and takes the tap, the focus and the keys; the
+// row draws the key and the words, named by the words.
+class _StudioRadioRow<T> extends StatelessWidget {
+  const _StudioRadioRow({
+    super.key,
+    required this.value,
+    required this.label,
+    required this.focusNode,
+    required this.enabled,
+    required this.direction,
+    required this.style,
+  });
+
+  final T value;
+  final String label;
+  final FocusNode focusNode;
+  final bool enabled;
+  final Axis direction;
+  final StudioStyle? style;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = StudioTheme.of(context);
+    final c = theme.colors;
+    return MergeSemantics(
+      child: RawRadio<T>(
+        value: value,
+        mouseCursor: WidgetStateMouseCursor.clickable,
+        toggleable: false,
+        focusNode: focusNode,
+        autofocus: false,
+        groupRegistry: RadioGroup.maybeOf<T>(context),
+        enabled: enabled,
+        builder: (context, radio) {
+          // The radio's states, and pressed while a press is down on it.
+          final states = {
+            ...radio.states,
+            if (radio.downPosition != null) WidgetState.pressed,
+          };
+          final off = states.contains(WidgetState.disabled);
+          return Semantics(
+            label: label,
+            child: ExcludeSemantics(
+              // All of the row takes a press, its gaps too: RawRadio's
+              // detector finds only what the face paints.
+              child: Listener(
+                behavior: HitTestBehavior.opaque,
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: theme.controlHeight),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      vertical: StudioSpacing.small,
+                    ),
+                    child: Row(
+                      mainAxisSize: direction == Axis.vertical
+                          ? MainAxisSize.max
+                          : MainAxisSize.min,
+                      children: [
+                        _RadioKey(
+                          chosen: states.contains(WidgetState.selected),
+                          style: style,
+                          states: states,
+                        ),
+                        const SizedBox(width: StudioSpacing.medium),
+                        Flexible(
+                          child: Text(
+                            label,
+                            style: theme.textTheme.label.copyWith(
+                              color: off ? c.disabled : c.legend,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
     );
   }
 }
@@ -798,7 +862,7 @@ class _StudioSwitchState extends State<StudioSwitch>
     final enabled = widget.onChanged != null;
     final rtl = Directionality.of(context) == TextDirection.rtl;
     final light = StudioLight.of(context);
-    return DesignPressable(
+    return RawButton(
       onPressed: enabled ? () => widget.onChanged!(!widget.value) : null,
       focusNode: widget.focusNode,
       autofocus: widget.autofocus,
@@ -811,7 +875,7 @@ class _StudioSwitchState extends State<StudioSwitch>
         );
         final cue = studioControlLight(states);
         final pressed = states.contains(WidgetState.pressed);
-        return DesignTapTarget(
+        return TapTargetPadding(
           child: GestureDetector(
             onHorizontalDragStart: enabled
                 ? (_) => setState(() => _dragging = true)
@@ -1205,25 +1269,42 @@ class _StudioSegmentedButtonState<T> extends State<StudioSegmentedButton<T>> {
                 padding: const EdgeInsets.symmetric(
                   horizontal: StudioSpacing.hair,
                 ),
-                child: DesignRadioGroup<int>(
-                  options: [for (var i = 0; i < segments.length; i++) i],
-                  value: index < 0 ? null : index,
-                  onChanged: widget.onChanged == null
-                      ? null
-                      : (i) => widget.onChanged!(segments[i].value),
-                  focusNodeFor: (i) => _nodes[i],
-                  layoutBuilder: (context, keys) => Wrap(children: keys),
-                  itemBuilder: (context, i, node, select) => _key(
-                    context,
-                    theme,
-                    i,
-                    segments[i],
-                    layers,
-                    words,
-                    equalFits ? equal : math.min(available, widths[i] + extra),
-                    height,
-                    move,
-                    select,
+                // The bank's keys are one group's radios: Flutter's radio
+                // group, with ui_core's keyboard fix inside it (as in
+                // StudioRadioGroup). The arrows choose the next key and
+                // wrap; Home and End latch the first and the last.
+                child: CallbackShortcuts(
+                  bindings: {
+                    const SingleActivator(LogicalKeyboardKey.home): () =>
+                        move(-segments.length),
+                    const SingleActivator(LogicalKeyboardKey.end): () =>
+                        move(segments.length),
+                  },
+                  child: RadioGroup<int>(
+                    groupValue: index < 0 ? null : index,
+                    onChanged: (i) {
+                      if (i != null && i != index) {
+                        widget.onChanged?.call(segments[i].value);
+                      }
+                    },
+                    child: RadioGroupKeyboardFix<int>(
+                      child: Wrap(
+                        children: [
+                          for (var i = 0; i < segments.length; i++)
+                            _key(
+                              theme,
+                              i,
+                              segments[i],
+                              layers,
+                              words,
+                              equalFits
+                                  ? equal
+                                  : math.min(available, widths[i] + extra),
+                              height,
+                            ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -1242,7 +1323,6 @@ class _StudioSegmentedButtonState<T> extends State<StudioSegmentedButton<T>> {
   }
 
   Widget _key(
-    BuildContext context,
     StudioThemeData theme,
     int i,
     StudioSegment<T> s,
@@ -1250,8 +1330,6 @@ class _StudioSegmentedButtonState<T> extends State<StudioSegmentedButton<T>> {
     TextStyle words,
     double width,
     double height,
-    void Function(int by) move,
-    VoidCallback? select,
   ) {
     final c = theme.colors;
     final chosen = s.value == widget.value;
@@ -1259,113 +1337,113 @@ class _StudioSegmentedButtonState<T> extends State<StudioSegmentedButton<T>> {
     // Half the gap each side (the recess's inset is two hairs); the bank
     // adds the other half at its ends.
     const start = StudioSpacing.hair, end = StudioSpacing.hair;
-    final child = DesignPressable(
-      onPressed: select,
-      focusNode: _nodes[i],
-      selected: chosen,
-      // A radio of the bank's group: checked when latched, not a button.
-      checked: chosen,
-      inMutuallyExclusiveGroup: true,
-      semanticLabel: s.semanticLabel ?? s.label,
-      excludeSemantics: true,
-      // The group's arrows choose the next key and wrap; Home and End
-      // latch the first and the last.
-      shortcuts: {
-        const SingleActivator(LogicalKeyboardKey.home): _MoveIntent(
-          -widget.segments.length,
+    Widget drawKey(BuildContext context, Set<WidgetState> states) {
+      final layered = DesignStyleOf(layers, {
+        ...states,
+        if (chosen) WidgetState.selected,
+      });
+      final disabled = states.contains(WidgetState.disabled);
+      final pressed = states.contains(WidgetState.pressed);
+      final ink =
+          layered.foreground ??
+          (disabled
+              ? c.disabled
+              : chosen
+              ? c.litLegend
+              : c.onKey);
+      final face = layered.on(
+        c.keyFace
+            .copyWith(
+              radius: StudioRadii.bank - StudioMetrics.recessInset,
+              travel: chosen || pressed ? 1 : 0,
+              fill: disabled ? Color.lerp(c.key, c.panelLow, 0.5) : null,
+              foreground: ink,
+              focus: states.contains(WidgetState.focused)
+                  ? c.focusRing
+                  : c.focusRing.withValues(alpha: 0),
+            )
+            .backlitIf(
+              c,
+              chosen && !disabled,
+              focused: states.contains(WidgetState.focused),
+            ),
+      );
+      return Padding(
+        padding: const EdgeInsetsDirectional.only(
+          start: start,
+          end: end,
+          top: inset,
+          bottom: inset,
         ),
-        const SingleActivator(LogicalKeyboardKey.end): _MoveIntent(
-          widget.segments.length,
-        ),
-      },
-      actions: {
-        _MoveIntent: CallbackAction<_MoveIntent>(
-          onInvoke: (intent) {
-            move(intent.by);
-            return null;
-          },
-        ),
-      },
-      builder: (context, states, _) {
-        final layered = DesignStyleOf(layers, {
-          ...states,
-          if (chosen) WidgetState.selected,
-        });
-        final disabled = states.contains(WidgetState.disabled);
-        final pressed = states.contains(WidgetState.pressed);
-        final ink =
-            layered.foreground ??
-            (disabled
-                ? c.disabled
-                : chosen
-                ? c.litLegend
-                : c.onKey);
-        final face = layered.on(
-          c.keyFace
-              .copyWith(
-                radius: StudioRadii.bank - StudioMetrics.recessInset,
-                travel: chosen || pressed ? 1 : 0,
-                fill: disabled ? Color.lerp(c.key, c.panelLow, 0.5) : null,
-                foreground: ink,
-                focus: states.contains(WidgetState.focused)
-                    ? c.focusRing
-                    : c.focusRing.withValues(alpha: 0),
-              )
-              .backlitIf(
-                c,
-                chosen && !disabled,
-                focused: states.contains(WidgetState.focused),
-              ),
-        );
-        return Padding(
-          padding: const EdgeInsetsDirectional.only(
-            start: start,
-            end: end,
-            top: inset,
-            bottom: inset,
-          ),
-          child: AnimatedStudioSurface.inBank(
-            face: face,
-            child: Padding(
-              padding:
-                  layered.padding(Directionality.of(context)) ??
-                  const EdgeInsets.symmetric(horizontal: StudioSpacing.small),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  StudioLamp(on: chosen && !disabled, size: 6),
-                  const SizedBox(width: StudioSpacing.small),
-                  if (s.icon != null) ...[
-                    IconTheme.merge(
-                      data: IconThemeData(
-                        size: layered.iconSize ?? 18,
-                        color: ink,
-                      ),
-                      child: s.icon!,
+        child: AnimatedStudioSurface.inBank(
+          face: face,
+          child: Padding(
+            padding:
+                layered.padding(Directionality.of(context)) ??
+                const EdgeInsets.symmetric(horizontal: StudioSpacing.small),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                StudioLamp(on: chosen && !disabled, size: 6),
+                const SizedBox(width: StudioSpacing.small),
+                if (s.icon != null) ...[
+                  IconTheme.merge(
+                    data: IconThemeData(
+                      size: layered.iconSize ?? 18,
+                      color: ink,
                     ),
-                    const SizedBox(width: StudioSpacing.tight),
-                  ],
-                  Flexible(
-                    child: DesignCapCenter(
-                      capHeightFactor: theme.capHeightFactor,
-                      child: Text(
-                        s.label,
-                        textAlign: TextAlign.center,
-                        style: words.copyWith(
-                          color: ink,
-                          fontWeight: chosen
-                              ? FontWeight.w600
-                              : FontWeight.w500,
-                        ),
+                    child: s.icon!,
+                  ),
+                  const SizedBox(width: StudioSpacing.tight),
+                ],
+                Flexible(
+                  child: DesignCapCenter(
+                    capHeightFactor: theme.capHeightFactor,
+                    child: Text(
+                      s.label,
+                      textAlign: TextAlign.center,
+                      style: words.copyWith(
+                        color: ink,
+                        fontWeight: chosen ? FontWeight.w600 : FontWeight.w500,
                       ),
                     ),
                   ),
-                ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    final label = s.semanticLabel ?? s.label;
+    // A radio of the bank's group: checked when latched, not a button.
+    final child = Builder(
+      builder: (context) => MergeSemantics(
+        child: RawRadio<int>(
+          value: i,
+          mouseCursor: WidgetStateMouseCursor.clickable,
+          toggleable: false,
+          focusNode: _nodes[i],
+          autofocus: false,
+          groupRegistry: RadioGroup.maybeOf<int>(context),
+          enabled: widget.onChanged != null,
+          builder: (context, radio) => Semantics(
+            label: label,
+            child: ExcludeSemantics(
+              // All of the key takes a press, as the face's box: RawRadio's
+              // detector finds only what the face paints.
+              child: Listener(
+                behavior: HitTestBehavior.opaque,
+                child: drawKey(context, {
+                  ...radio.states,
+                  if (radio.downPosition != null) WidgetState.pressed,
+                }),
               ),
             ),
           ),
-        );
-      },
+        ),
+      ),
     );
     return ConstrainedBox(
       constraints: BoxConstraints(
@@ -1376,10 +1454,4 @@ class _StudioSegmentedButtonState<T> extends State<StudioSegmentedButton<T>> {
       child: child,
     );
   }
-}
-
-class _MoveIntent extends Intent {
-  const _MoveIntent(this.by);
-
-  final int by;
 }

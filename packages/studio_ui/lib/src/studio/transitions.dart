@@ -117,7 +117,7 @@ class _StudioPageChange extends StatelessWidget {
 
 /// Studio's page change on every platform, with iOS's swipe back from the
 /// screen's leading edge round it there (ui_core's
-/// [DesignSwipeBackPageTransitionsBuilder]): the builders for a
+/// [SwipeBackPageTransitionsBuilder]): the builders for a
 /// `PageTransitionsTheme`, Flutter's material library's or the one Studio is
 /// built on.
 ///
@@ -128,7 +128,7 @@ const Map<TargetPlatform, PageTransitionsBuilder> studioPageTransitions = {
   TargetPlatform.android: StudioPageTransitionsBuilder(),
   TargetPlatform.fuchsia: StudioPageTransitionsBuilder(),
   // iOS's swipe back from the screen's edge, round Studio's push.
-  TargetPlatform.iOS: DesignSwipeBackPageTransitionsBuilder(
+  TargetPlatform.iOS: SwipeBackPageTransitionsBuilder(
     StudioPageTransitionsBuilder(),
   ),
   TargetPlatform.linux: StudioPageTransitionsBuilder(),

@@ -38,7 +38,7 @@ StudioFace _slot(StudioColors c, {required bool shown, Color? focus}) =>
     );
 
 /// A column of a [StudioDataTable]: [flex] shares the width out.
-class StudioDataColumn<R> extends DesignTableColumn<R> {
+class StudioDataColumn<R> extends RawDataColumn<R> {
   /// A column [label]led, sortable by [sortKey].
   const StudioDataColumn({
     required super.id,
@@ -53,7 +53,7 @@ class StudioDataColumn<R> extends DesignTableColumn<R> {
 }
 
 /// Holds a [StudioDataTable]'s rows, sort, selection and page.
-class StudioTableController<R> extends DesignTableController<R> {
+class StudioTableController<R> extends RawDataTableController<R> {
   /// A controller over [rows] in [columns].
   StudioTableController({
     required super.rows,
@@ -70,7 +70,7 @@ class StudioTableController<R> extends DesignTableController<R> {
 /// column; the header's lamp chooses the page. With a page size, the page
 /// readout stands under it.
 ///
-/// Built on ui_core's DesignDataTable: the arrows walk the rows, Space
+/// Built on ui_core's RawDataTable: the arrows walk the rows, Space
 /// chooses one, Enter opens it ([onActivate]).
 ///
 /// Reads [style]'s `fill` (the glass) and `padding` (a cell's), then
@@ -118,7 +118,7 @@ class StudioDataTable<R> extends StatelessWidget {
     final t = theme.textTheme;
     final layers = [style, theme.dataTableStyle];
     final frame = DesignStyleOf(layers, const {});
-    StudioDataColumn<R> col(DesignTableColumn<R> column) =>
+    StudioDataColumn<R> col(RawDataColumn<R> column) =>
         column as StudioDataColumn<R>;
     final pad =
         frame.padding(Directionality.of(context)) ??
@@ -135,7 +135,7 @@ class StudioDataTable<R> extends StatelessWidget {
             : StudioLamp(on: on, size: 8),
       ),
     );
-    final table = DesignDataTable<R>(
+    final table = RawDataTable<R>(
       controller: controller,
       selectable: selectable,
       onActivate: onActivate,
@@ -169,8 +169,8 @@ class StudioDataTable<R> extends StatelessWidget {
                   const SizedBox(width: StudioSpacing.tight),
                   Icon(
                     switch (sort) {
-                      DesignSortDirection.ascending => LucideIcons.arrowUp,
-                      DesignSortDirection.descending => LucideIcons.arrowDown,
+                      RawSortDirection.ascending => LucideIcons.arrowUp,
+                      RawSortDirection.descending => LucideIcons.arrowDown,
                       null => LucideIcons.arrowUpDown,
                     },
                     size: StudioIconSizes.small,
@@ -189,18 +189,18 @@ class StudioDataTable<R> extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               if (selectable)
-                DesignPressable(
+                RawButton(
                   onPressed: controller.pageRows.isEmpty
                       ? null
                       : controller.togglePage,
                   semanticLabel: 'Choose the page',
-                  checked: page == DesignSelection.all,
-                  mixed: page == DesignSelection.some,
+                  checked: page == RawDataTableSelection.all,
+                  mixed: page == RawDataTableSelection.some,
                   builder: (context, states, _) => AnimatedStudioSurface(
                     face: _slot(c, shown: false, focus: _ring(c, states)),
                     child: lamp(
-                      page == DesignSelection.all,
-                      some: page == DesignSelection.some,
+                      page == RawDataTableSelection.all,
+                      some: page == RawDataTableSelection.some,
                     ),
                   ),
                 ),
@@ -336,7 +336,7 @@ class StudioDataTable<R> extends StatelessWidget {
                   child: Text(
                     // Counts are plurals in the app's language.
                     selectable && controller.selectedCount > 0
-                        ? DesignLocalizations.of(context)
+                        ? RawWidgetsLocalizations.of(context)
                               .selectedRowCountTitle(controller.selectedCount)
                         : StudioLocalizations.of(context)
                               .rowCount(controller.filteredRows.length),
@@ -370,7 +370,7 @@ class StudioDataTable<R> extends StatelessWidget {
 /// scroll. Drag the cap, press the slot to page; with the keyboard, the
 /// arrows and Page keys scroll it.
 ///
-/// Built on ui_core's DesignScrollArea. [child] must scroll on
+/// Built on ui_core's RawScrollArea. [child] must scroll on
 /// [controller].
 ///
 /// ```dart
@@ -401,7 +401,7 @@ class StudioScrollArea extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = StudioTheme.of(context).colors;
-    return DesignScrollArea(
+    return RawScrollArea(
       controller: controller,
       axis: axis,
       semanticLabel: semanticLabel,
@@ -470,7 +470,7 @@ class StudioScrollArea extends StatelessWidget {
 /// Two panes and a groove between them with a small brushed grip: drag
 /// the grip to share the room out; with the keyboard, the arrows move it.
 ///
-/// Built on ui_core's DesignSplitView.
+/// Built on ui_core's RawSplitView.
 ///
 /// ```dart
 /// StudioSplitView(first: episodes, second: notes, initialFraction: 0.4)
@@ -516,7 +516,7 @@ class StudioSplitView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = StudioTheme.of(context).colors;
-    return DesignSplitView(
+    return RawSplitView(
       first: first,
       second: second,
       axis: axis,
@@ -594,7 +594,7 @@ class StudioSplitView extends StatelessWidget {
 /// Slides in a glass window, one at a time: a key back, the page lamps, a
 /// key on under it. Swipe or press to turn; with the keyboard, the arrows.
 ///
-/// Built on ui_core's DesignCarousel.
+/// Built on ui_core's RawCarousel.
 ///
 /// ```dart
 /// StudioCarousel(itemCount: covers.length, itemBuilder: (context, i) => covers[i], semanticLabel: 'Featured shows')
@@ -629,7 +629,7 @@ class StudioCarousel extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = StudioTheme.of(context).colors;
     final rtl = Directionality.of(context) == TextDirection.rtl;
-    return DesignCarousel(
+    return RawCarousel(
       itemCount: itemCount,
       itemBuilder: itemBuilder,
       semanticLabel: semanticLabel,
@@ -725,7 +725,7 @@ class _Grip extends StatelessWidget {
 /// shadow under it; with the keyboard, the row's actions move it up or
 /// down, and a screen reader hears where it went.
 ///
-/// Built on ui_core's DesignReorderableList.
+/// Built on ui_core's RawReorderableList.
 ///
 /// ```dart
 /// StudioReorderableList<String>(items: queue, labelOf: (s) => s, onReorder: (from, to) => setState(() => queue.insert(to, queue.removeAt(from))), itemBuilder: (context, s) => Text(s))
@@ -766,7 +766,7 @@ class StudioReorderableList<T extends Object> extends StatelessWidget {
       face: c.displayFace.copyWith(radius: StudioRadii.display),
       child: Padding(
         padding: const EdgeInsets.all(StudioMetrics.recessInset),
-        child: DesignReorderableList<T>(
+        child: RawReorderableList<T>(
           items: items,
           onReorder: onReorder,
           labelOf: labelOf,
@@ -878,7 +878,7 @@ const double _swipeRadius = StudioRadii.display - StudioMetrics.recessInset;
 /// in a [StudioDisplay] with [StudioMetrics.recessInset] round it, and its
 /// corners follow the well's at rest and as it slides.
 ///
-/// Built on ui_core's DesignSwipeActions.
+/// Built on ui_core's RawSwipeActions.
 ///
 /// ```dart
 /// StudioSwipeRow(endActions: [StudioSwipeAction(label: 'Delete', icon: const Icon(LucideIcons.trash2), destructive: true, onPressed: delete)], child: row)
@@ -905,7 +905,7 @@ class StudioSwipeRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = StudioTheme.of(context);
     final c = theme.colors;
-    DesignSwipeAction wrap(StudioSwipeAction a) => DesignSwipeAction(
+    RawSwipeAction wrap(StudioSwipeAction a) => RawSwipeAction(
       label: a.label,
       onPressed: a.onPressed,
       destructive: a.destructive,
@@ -916,7 +916,7 @@ class StudioSwipeRow extends StatelessWidget {
     // its own round corners as it slides, the metal running on under them.
     return ClipRRect(
       borderRadius: corners,
-      child: DesignSwipeActions(
+      child: RawSwipeActions(
         startActions: [for (final a in startActions) wrap(a)],
         endActions: [for (final a in endActions) wrap(a)],
         actionExtent: _swipeKeyExtent,
@@ -1029,7 +1029,7 @@ class _Lifted extends InheritedWidget {
 /// lights one by one; at the top it is armed (all lit), let go and the
 /// lamps chase round while [onRefresh] runs, then a lit check.
 ///
-/// Built on ui_core's DesignPullToRefresh; a screen reader has its own
+/// Built on ui_core's RawRefreshIndicator; a screen reader has its own
 /// refresh action.
 ///
 /// ```dart
@@ -1052,18 +1052,18 @@ class StudioPullToRefresh extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = StudioTheme.of(context).colors;
-    return DesignPullToRefresh(
+    return RawRefreshIndicator(
       onRefresh: onRefresh,
       indicatorBuilder: (context, details) {
         final Widget mark = switch (details.mode) {
-          DesignRefreshMode.refresh => const StudioSpinner(size: 24),
-          DesignRefreshMode.done => Icon(
+          RawRefreshIndicatorMode.refresh => const StudioSpinner(size: 24),
+          RawRefreshIndicatorMode.done => Icon(
             LucideIcons.check,
             size: StudioIconSizes.regular,
             color: c.readoutLit,
           ),
           _ => StudioLampRing(
-            lit: details.mode == DesignRefreshMode.armed
+            lit: details.mode == RawRefreshIndicatorMode.armed
                 ? 1
                 : details.progress.clamp(0.0, 1.0),
             size: 24,

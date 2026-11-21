@@ -102,7 +102,7 @@ DateTime _day(DateTime d) => DateTime(d.year, d.month, d.day);
 /// has a small lamp under its figure. [StudioCalendar.range] takes a first
 /// and a last day, the days between lit dimmer on one band.
 ///
-/// Built on ui_core's DesignCalendar: the arrows walk the days, Page Up and
+/// Built on ui_core's RawCalendarDatePicker: the arrows walk the days, Page Up and
 /// Page Down the months, Enter takes a day. A null callback disables it.
 ///
 /// Reads [style]'s `fill` (the glass), then [StudioThemeData.calendarStyle].
@@ -202,23 +202,20 @@ double _dayHeight(BuildContext context) => math.max(
 );
 
 class _StudioCalendarState extends State<StudioCalendar> {
-  late DesignCalendarController _controller = _make();
+  late RawCalendarController _controller = _make();
 
   bool get _enabled => widget._range
       ? widget.onRangeChanged != null
       : widget.onDateChanged != null;
 
-  DesignCalendarController _make() => DesignCalendarController(
+  RawCalendarController _make() => RawCalendarController(
     firstDate: widget.firstDate,
     lastDate: widget.lastDate,
-    mode: widget._range ? DesignCalendarMode.range : DesignCalendarMode.single,
+    mode: widget._range ? RawCalendarMode.range : RawCalendarMode.single,
     selectedDate: widget.selectedDate,
     selectedRange: widget.selectedRange == null
         ? null
-        : DesignDateRange(
-            widget.selectedRange!.start,
-            widget.selectedRange!.end,
-          ),
+        : RawDateRange(widget.selectedRange!.start, widget.selectedRange!.end),
     currentDate: widget.currentDate,
     selectable: (d) =>
         _enabled && (widget.selectableDayPredicate?.call(d) ?? true),
@@ -266,7 +263,7 @@ class _StudioCalendarState extends State<StudioCalendar> {
     final theme = StudioTheme.of(context);
     final c = theme.colors;
     final t = theme.textTheme;
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     final rtl = Directionality.of(context) == TextDirection.rtl;
     final layers = [widget.style, theme.calendarStyle];
     final frame = DesignStyleOf(layers, const {});
@@ -283,7 +280,7 @@ class _StudioCalendarState extends State<StudioCalendar> {
         );
     final body = Padding(
       padding: const EdgeInsets.all(StudioSpacing.small),
-      child: DesignCalendar(
+      child: RawCalendarDatePicker(
         controller: _controller,
         months: widget.months,
         autofocus: widget.autofocus,
@@ -529,7 +526,7 @@ class _PickerWindow extends StatelessWidget {
     final theme = StudioTheme.of(context);
     final c = theme.colors;
     final open = anchor?.isOpen ?? false;
-    return DesignPressable(
+    return RawButton(
       onPressed: anchor?.toggle,
       expanded: anchor?.isOpen,
       semanticLabel: semanticLabel,
@@ -638,8 +635,8 @@ Widget _labelled(
 // A calendar's popover under its field. It opens on the side with room for
 // a whole month (its header, weekdays and six weeks at the reader's text
 // size) and scrolls when neither side has that much.
-DesignOverlayPlacement _calendarPlacement(BuildContext context) =>
-    DesignOverlayPlacement(
+RawPopoverPlacement _calendarPlacement(BuildContext context) =>
+    RawPopoverPlacement(
       gap: StudioSpacing.tight,
       margin: StudioSpacing.small,
       matchAnchorWidth: false,
@@ -665,7 +662,7 @@ double _calendarCap(BuildContext context) =>
 // comfortable width; under a narrower field it keeps a month's width, and
 // under a wider one the comfortable width, from the field's leading edge.
 // Never wider than the screen allows.
-Widget _panel(BuildContext context, DesignOverlayInfo info, Widget child) =>
+Widget _panel(BuildContext context, RawPopoverInfo info, Widget child) =>
     FadeTransition(
       opacity: info.animation,
       child: SizedBox(
@@ -736,7 +733,7 @@ class StudioDatePicker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     final enabled = onChanged != null;
     final text = value == null ? null : words.formatFullDate(value!);
     return _labelled(
@@ -750,7 +747,7 @@ class StudioDatePicker extends StatelessWidget {
               error: error != null,
               semanticLabel: label,
             )
-          : DesignAnchoredOverlay(
+          : RawPopover(
               semanticLabel: label,
               placement: _calendarPlacement(context),
               dampingRatio: StudioMotion.dampingRatio,
@@ -854,7 +851,7 @@ class StudioDateRangePicker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     final enabled = onChanged != null;
     final text = value == null
         ? null
@@ -871,7 +868,7 @@ class StudioDateRangePicker extends StatelessWidget {
               error: error != null,
               semanticLabel: label,
             )
-          : DesignAnchoredOverlay(
+          : RawPopover(
               semanticLabel: label,
               placement: _calendarPlacement(context),
               dampingRatio: StudioMotion.dampingRatio,
@@ -934,7 +931,7 @@ const int _drumRows = 5;
 // the keyboard lights its window's rim.
 Widget _drums(
   BuildContext context, {
-  required List<DesignWheelColumn> columns,
+  required List<RawPickerColumn> columns,
   required List<int> selection,
   required ValueChanged<List<int>>? onChanged,
   required double width,
@@ -944,7 +941,7 @@ Widget _drums(
   final theme = StudioTheme.of(context);
   final c = theme.colors;
   final enabled = onChanged != null;
-  return DesignWheelPicker(
+  return RawPicker(
     columns: (_) => columns,
     selection: selection,
     onChanged: onChanged,
@@ -1099,7 +1096,7 @@ class StudioWheelPicker<T> extends StatelessWidget {
       _drums(
         context,
         columns: [
-          DesignWheelColumn(
+          RawPickerColumn(
             itemCount: items.length,
             itemLabel: (i) => labelOf(items[i]),
             semanticLabel: semanticLabel,
@@ -1163,7 +1160,7 @@ class StudioTimePicker extends StatelessWidget {
     // Two figures in the reader's digits (Arabic-Indic in Arabic), and each
     // drum named in the reader's words: "Hour", "Minute", after the
     // picker's own name when it has one.
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     String named(String drum) => semanticLabel == null
         ? drum
         : '$semanticLabel${words.listSeparator}$drum';
@@ -1180,12 +1177,12 @@ class StudioTimePicker extends StatelessWidget {
           context,
           semanticLabel: semanticLabel,
           columns: [
-            DesignWheelColumn(
+            RawPickerColumn(
               itemCount: 24,
               itemLabel: two,
               semanticLabel: named(words.timePickerHourLabel),
             ),
-            DesignWheelColumn(
+            RawPickerColumn(
               itemCount: minutes.length,
               itemLabel: (i) => two(minutes[i]),
               semanticLabel: named(words.timePickerMinuteLabel),
@@ -1233,7 +1230,7 @@ class StudioTimePicker extends StatelessWidget {
 /// of the colour beside its code in a readout. Each thumb is a small metal
 /// ring. The arrows move the thumbs.
 ///
-/// Built on ui_core's DesignColorPicker.
+/// Built on ui_core's RawColorPicker.
 ///
 /// ```dart
 /// StudioColorPicker(value: tint, onChanged: (c) => setState(() => tint = c))
@@ -1267,9 +1264,8 @@ class StudioColorPicker extends StatefulWidget {
 }
 
 class _StudioColorPickerState extends State<StudioColorPicker> {
-  late final DesignColorController _controller = DesignColorController(
-    widget.value,
-  )..addListener(_changed);
+  late final RawColorController _controller = RawColorController(widget.value)
+    ..addListener(_changed);
 
   void _changed() {
     if (_controller.color != widget.value) widget.onChanged(_controller.color);
@@ -1330,7 +1326,7 @@ class _StudioColorPickerState extends State<StudioColorPicker> {
         ),
       ),
     );
-    return DesignColorPicker(
+    return RawColorPicker(
       controller: _controller,
       showAlpha: widget.showAlpha,
       areaHeight: 180,
@@ -1440,7 +1436,7 @@ class _AreaPainter extends CustomPainter {
 class _TrackPainter extends CustomPainter {
   _TrackPainter(this.channel, this.color, this.check, this.checkLow);
 
-  final DesignColorChannel channel;
+  final RawColorChannel channel;
   final HSVColor color;
   final Color check;
   final Color checkLow;
@@ -1450,22 +1446,22 @@ class _TrackPainter extends CustomPainter {
     final rect = Offset.zero & size;
     final List<Color> colors;
     switch (channel) {
-      case DesignColorChannel.hue:
+      case RawColorChannel.hue:
         colors = [
           for (var h = 0; h <= 360; h += 60)
             HSVColor.fromAHSV(1, h.toDouble(), 1, 1).toColor(),
         ];
-      case DesignColorChannel.saturation:
+      case RawColorChannel.saturation:
         colors = [
           color.withSaturation(0).withAlpha(1).toColor(),
           color.withSaturation(1).withAlpha(1).toColor(),
         ];
-      case DesignColorChannel.brightness:
+      case RawColorChannel.brightness:
         colors = [
           const Color(0xFF000000),
           color.withValue(1).withAlpha(1).toColor(),
         ];
-      case DesignColorChannel.alpha:
+      case RawColorChannel.alpha:
         // A check under the opacity, so its fall reads.
         const cell = 4.0;
         for (var x = 0.0; x < size.width; x += cell) {
@@ -1525,7 +1521,7 @@ class StudioRangeValues {
 /// step the one with the keyboard. [startLabel] and [endLabel] name the
 /// caps to a screen reader.
 ///
-/// Built on ui_core's DesignRangeSlider. A null [onChanged] disables it.
+/// Built on ui_core's RawRangeSlider. A null [onChanged] disables it.
 ///
 /// ```dart
 /// StudioRangeFader(values: const StudioRangeValues(10, 40), max: 60, startLabel: 'Shortest', endLabel: 'Longest', onChanged: (v) => setState(() => lengths = v))
@@ -1580,8 +1576,8 @@ class StudioRangeFader extends StatelessWidget {
     final lit =
         DesignStyleOf([style, theme.faderStyle], const {}).fill ?? c.indicator;
     const cap = StudioFader.cap;
-    return DesignRangeSlider(
-      values: DesignRangeValues(values.start, values.end),
+    return RawRangeSlider(
+      values: RawRangeValues(values.start, values.end),
       onChanged: change == null
           ? null
           : (v) => change(StudioRangeValues(v.start, v.end)),
@@ -1872,14 +1868,14 @@ class StudioChip extends StatelessWidget {
     }
 
     final Widget chip = latching
-        ? DesignPressable(
+        ? RawButton(
             onPressed: enabled ? () => onSelected!(!selected) : null,
             semanticLabel: label,
             selected: selected,
             semanticSelected: selected,
             excludeSemantics: onDeleted == null,
             builder: (context, states, _) =>
-                DesignTapTarget(child: body(states)),
+                TapTargetPadding(child: body(states)),
           )
         : Semantics(
             label: label,
@@ -1909,7 +1905,7 @@ class StudioChip extends StatelessWidget {
             bottom: 0,
             end: 0,
             width: math.max(_cross, floor.width),
-            child: DesignPressable(
+            child: RawButton(
               onPressed: enabled ? onDeleted : null,
               semanticLabel: '$deleteLabel $label',
               builder: (context, cross, _) => Align(
@@ -2093,7 +2089,7 @@ class _StudioRatingState extends State<StudioRating> {
       );
     }
 
-    return DesignRating(
+    return RawRating(
       value: value.toDouble(),
       itemCount: widget.max,
       onChanged: dead ? null : _changed,
@@ -2105,7 +2101,7 @@ class _StudioRatingState extends State<StudioRating> {
       itemBuilder: (context, item) {
         // The same room for a dead lens as a live one: a rating that stops
         // taking a score keeps its place.
-        final cell = DesignTapTarget(
+        final cell = TapTargetPadding(
           child: Padding(
             padding: const EdgeInsets.all(StudioSpacing.hair),
             child: lens(item.index, item.states),
@@ -2311,7 +2307,7 @@ class _FileRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = StudioTheme.of(context);
     final c = theme.colors;
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     final progress = file.progress;
     return StudioSurface(
       face: c.displayFace.copyWith(radius: StudioRadii.key),

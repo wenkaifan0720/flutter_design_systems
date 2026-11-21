@@ -432,7 +432,7 @@ class StudioListTile extends StatelessWidget {
         ),
       );
     }
-    return DesignPressable(
+    return RawButton(
       onPressed: action,
       selected: selected,
       semanticSelected: selected ? true : null,

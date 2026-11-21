@@ -1,5 +1,5 @@
 // Every count Studio's parts say is a real plural through localizations
-// (StudioLocalizations, and ui_core's DesignLocalizations where it holds
+// (StudioLocalizations, and ui_core's RawWidgetsLocalizations where it holds
 // the word), never a number glued to a noun: a filter that leaves one row
 // reads "1 row", not "1 rows".
 import 'package:material_ui/material_ui.dart' show MaterialApp;
@@ -10,7 +10,7 @@ import 'package:studio_ui/studio_parts.dart';
 Widget _host(Widget child) => MaterialApp(
   localizationsDelegates: const [
     StudioLocalizations.delegate,
-    DesignLocalizations.delegate,
+    RawWidgetsLocalizations.delegate,
   ],
   builder: (context, page) =>
       StudioTheme(data: StudioThemeData.light(), child: page!),

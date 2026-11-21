@@ -23,7 +23,7 @@ Future<void> _show(
       home: Localizations(
         locale: locale,
         delegates: const [
-          DesignLocalizations.delegate,
+          RawWidgetsLocalizations.delegate,
           DefaultWidgetsLocalizations.delegate,
         ],
         child: Directionality(

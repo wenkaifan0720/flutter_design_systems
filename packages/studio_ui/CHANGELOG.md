@@ -1,3 +1,10 @@
+## 0.2.0
+
+- Needs ui_core 0.4.0 and Flutter 3.47. `studio_ui` re-exports ui_core, whose types now take `Raw` names (`DesignPressable` is `RawButton`). The old names stay through ui_core 0.4 as deprecated typedefs, and `dart fix --apply` renames them.
+- `StudioRadioGroup` and `StudioSegmentedButton` are Flutter's `RadioGroup`, each radio a `RawRadio`, with ui_core's `RadioGroupKeyboardFix` inside. They answer Tab, the arrows, Home and End as before. A radio shows its focus as Flutter's `Radio` does.
+- `StudioTooltip` is Flutter's `RawTooltip`, with ui_core's `RawTooltipFocusFix` and `RawTooltipPlacement`. It fades on Flutter's tooltip timing, and each tooltip along a row of keys waits its half second.
+- The record key reads as a button, selected while it records, as `IconButton(isSelected:)` does. It read as a switch.
+
 ## 0.1.5
 
 - Keyboard focus and hover brighten existing lamps, fader marks and tab indicators. Text fields and displays light their inner lip. A menu command lights its legend on focus and depresses while held.

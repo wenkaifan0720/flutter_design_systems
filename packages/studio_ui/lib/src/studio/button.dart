@@ -111,7 +111,7 @@ class StudioButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = StudioTheme.of(context);
-    return DesignPressable(
+    return RawButton(
       onPressed: onPressed,
       onLongPress: onLongPress,
       focusNode: focusNode,
@@ -157,7 +157,7 @@ class StudioButton extends StatelessWidget {
             child: Text(label),
           ),
         );
-        return DesignTapTarget(
+        return TapTargetPadding(
           child: ConstrainedBox(
             constraints: BoxConstraints(
               minWidth: minimum.width,
@@ -341,7 +341,7 @@ class StudioIconButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = StudioTheme.of(context);
     final c = theme.colors;
-    return DesignPressable(
+    return RawButton(
       onPressed: onPressed,
       focusNode: focusNode,
       autofocus: autofocus,
@@ -374,7 +374,7 @@ class StudioIconButton extends StatelessWidget {
               ),
         );
         final side = layered.minimumSize?.height ?? theme.controlHeight;
-        return DesignTapTarget(
+        return TapTargetPadding(
           child: SizedBox.square(
             dimension: side,
             child: AnimatedStudioSurface(
@@ -461,12 +461,14 @@ class StudioTransportKey extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = StudioTheme.of(context);
     final c = theme.colors;
-    return DesignPressable(
+    return RawButton(
       onPressed: onPressed,
       focusNode: focusNode,
       autofocus: autofocus,
       semanticLabel: tooltip,
-      toggled: record ? lit : null,
+      // The record key latches: a button that is selected while it records,
+      // as Flutter's IconButton(isSelected:) reads.
+      semanticSelected: record ? lit : null,
       builder: (context, states, _) {
         final disabled = states.contains(WidgetState.disabled);
         final pressed = states.contains(WidgetState.pressed);
@@ -489,7 +491,7 @@ class StudioTransportKey extends StatelessWidget {
           // lights its rim as well.
           rim: studioLitFocus(c, states, lit: lit),
         );
-        return DesignTapTarget(
+        return TapTargetPadding(
           child: SizedBox.square(
             dimension: size,
             child: AnimatedStudioSurface(

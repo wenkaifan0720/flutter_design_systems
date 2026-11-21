@@ -83,11 +83,11 @@ class StudioMenu extends StatelessWidget {
   final bool alignEnd;
 
   @override
-  Widget build(BuildContext context) => DesignAnchoredOverlay(
+  Widget build(BuildContext context) => RawPopover(
     arrowKeyNavigation: true,
     semanticLabel: semanticLabel,
-    placement: DesignOverlayPlacement(
-      align: alignEnd ? DesignOverlayAlign.end : DesignOverlayAlign.start,
+    placement: RawPopoverPlacement(
+      align: alignEnd ? RawPopoverAlign.end : RawPopoverAlign.start,
       gap: StudioSpacing.tight,
       margin: StudioSpacing.small,
       matchAnchorWidth: false,
@@ -167,7 +167,7 @@ class StudioMenuBarMenu {
 /// faceplate; the open menu's title sits in a slot with its words lit, its
 /// list hanging below it. The arrows cross the bar and walk the lists.
 ///
-/// Built on ui_core's DesignMenuBar.
+/// Built on ui_core's RawMenuBar.
 ///
 /// Reads [style]'s `fill` (the plate), `minimumSize` (its height) and
 /// `textStyle`, then [StudioThemeData.menuBarStyle].
@@ -198,14 +198,14 @@ class StudioMenuBar extends StatelessWidget {
       DesignTapTargets.of(context).floorOn().height +
           2 * StudioMetrics.recessInset,
     );
-    return DesignMenuBar(
+    return RawMenuBar(
       menus: [
         for (final menu in menus)
-          DesignMenuEntry(
+          RawMenuEntry(
             label: menu.label,
             children: [
               for (final item in menu.items)
-                DesignMenuEntry(
+                RawMenuEntry(
                   label: item.label,
                   onPressed: item.onPressed,
                   shortcut: item.shortcut,
@@ -237,7 +237,7 @@ class StudioMenuBar extends StatelessWidget {
         ),
       ),
       itemBuilder: (context, entry, level, states) {
-        if (level == DesignMenuLevel.menu) {
+        if (level == RawMenuLevel.menu) {
           final item = entry.data as StudioMenuItem?;
           return StudioMenuRow(
             label: entry.label,
@@ -357,7 +357,7 @@ class StudioCommand {
 /// keyboard throughout (Enter is taken in its editing-complete, never its
 /// submit, so on the web typing carries on).
 ///
-/// Built on ui_core's DesignCommandPalette. Show it over a page with
+/// Built on ui_core's RawCommandPalette. Show it over a page with
 /// [showStudioCommandPalette].
 ///
 /// Reads [style]'s `fill` (the panel), then
@@ -396,87 +396,86 @@ class StudioCommandPalette extends StatelessWidget {
   /// Its style, over [StudioThemeData.commandPaletteStyle].
   final StudioStyle? style;
 
-  DesignCommandPalette _body(ValueChanged<DesignCommand>? run) =>
-      DesignCommandPalette(
-        commands: [
-          for (final c in commands)
-            DesignCommand(
-              label: c.label,
-              onPressed: c.onPressed,
-              group: c.group,
-              keywords: c.keywords,
-              shortcut: c.shortcut,
-              enabled: c.onPressed != null,
-              data: c,
-            ),
-        ],
-        autofocus: autofocus,
-        onSelected: run,
-        fieldBuilder: (context, field) => StudioTextField(
-          controller: field.controller,
-          focusNode: field.focusNode,
-          hint: hint,
-          semanticLabel: hint,
-          textCapitalization: TextCapitalization.none,
-          prefixIcon: const Icon(LucideIcons.search),
-          // Enter runs the lit command and the search keeps the keyboard.
-          onEditingComplete: field.submit,
+  RawCommandPalette _body(ValueChanged<RawCommand>? run) => RawCommandPalette(
+    commands: [
+      for (final c in commands)
+        RawCommand(
+          label: c.label,
+          onPressed: c.onPressed,
+          group: c.group,
+          keywords: c.keywords,
+          shortcut: c.shortcut,
+          enabled: c.onPressed != null,
+          data: c,
         ),
-        itemBuilder: (context, command, states) {
-          final c = command.data! as StudioCommand;
-          return StudioMenuRow(
-            label: c.label,
-            icon: c.icon,
-            states: states,
-            trailing: c.shortcut == null ? null : Text(c.shortcut!),
-          );
-        },
-        groupBuilder: (context, group) {
-          final theme = StudioTheme.of(context);
-          return Padding(
-            padding: const EdgeInsetsDirectional.fromSTEB(
-              StudioSpacing.medium,
-              StudioSpacing.medium,
-              StudioSpacing.medium,
-              StudioSpacing.tight,
-            ),
-            child: StudioLegend(group, color: theme.colors.onDisplayMuted),
-          );
-        },
-        emptyBuilder: (context) {
-          final theme = StudioTheme.of(context);
-          return Padding(
-            padding: const EdgeInsets.all(StudioSpacing.medium),
-            child: Text(
-              emptyText,
-              style: theme.textTheme.secondary.copyWith(
-                color: theme.colors.onDisplayMuted,
-              ),
-            ),
-          );
-        },
-        layoutBuilder: (context, field, results) => Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            field,
-            const SizedBox(height: StudioSpacing.small),
-            Flexible(
-              child: StudioSurface(
-                face: StudioTheme.of(context).colors.displayFace
-                    .copyWith(radius: StudioRadii.bank),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(StudioRadii.bank),
-                  child: Padding(
-                    padding: const EdgeInsets.all(StudioMetrics.recessInset),
-                    child: results,
-                  ),
-                ),
-              ),
-            ),
-          ],
+    ],
+    autofocus: autofocus,
+    onSelected: run,
+    fieldBuilder: (context, field) => StudioTextField(
+      controller: field.controller,
+      focusNode: field.focusNode,
+      hint: hint,
+      semanticLabel: hint,
+      textCapitalization: TextCapitalization.none,
+      prefixIcon: const Icon(LucideIcons.search),
+      // Enter runs the lit command and the search keeps the keyboard.
+      onEditingComplete: field.submit,
+    ),
+    itemBuilder: (context, command, states) {
+      final c = command.data! as StudioCommand;
+      return StudioMenuRow(
+        label: c.label,
+        icon: c.icon,
+        states: states,
+        trailing: c.shortcut == null ? null : Text(c.shortcut!),
+      );
+    },
+    groupBuilder: (context, group) {
+      final theme = StudioTheme.of(context);
+      return Padding(
+        padding: const EdgeInsetsDirectional.fromSTEB(
+          StudioSpacing.medium,
+          StudioSpacing.medium,
+          StudioSpacing.medium,
+          StudioSpacing.tight,
+        ),
+        child: StudioLegend(group, color: theme.colors.onDisplayMuted),
+      );
+    },
+    emptyBuilder: (context) {
+      final theme = StudioTheme.of(context);
+      return Padding(
+        padding: const EdgeInsets.all(StudioSpacing.medium),
+        child: Text(
+          emptyText,
+          style: theme.textTheme.secondary.copyWith(
+            color: theme.colors.onDisplayMuted,
+          ),
         ),
       );
+    },
+    layoutBuilder: (context, field, results) => Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        field,
+        const SizedBox(height: StudioSpacing.small),
+        Flexible(
+          child: StudioSurface(
+            face: StudioTheme.of(context).colors.displayFace
+                .copyWith(radius: StudioRadii.bank),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(StudioRadii.bank),
+              child: Padding(
+                padding: const EdgeInsets.all(StudioMetrics.recessInset),
+                child: results,
+              ),
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
 
   @override
   Widget build(BuildContext context) => _panel(

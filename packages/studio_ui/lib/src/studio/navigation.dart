@@ -103,7 +103,7 @@ class StudioAppBar extends StatelessWidget {
   /// StudioAppBar(title: 'Episode', leading: StudioAppBar.autoLeading(context))
   /// ```
   static Widget? autoLeading(BuildContext context, {Key? key}) {
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     final rtl = Directionality.of(context) == TextDirection.rtl;
     return switch (RoutePresentation.of(context)) {
       RoutePresentation.root => null,
@@ -247,7 +247,7 @@ class _BankKey extends StatelessWidget {
   final StudioStyle? style;
 
   @override
-  Widget build(BuildContext context) => DesignPressable(
+  Widget build(BuildContext context) => RawButton(
     onPressed: onPressed,
     selected: selected,
     semanticSelected: selected,
@@ -788,7 +788,7 @@ class _SideRow extends StatelessWidget {
   final StudioStyle? style;
 
   @override
-  Widget build(BuildContext context) => DesignPressable(
+  Widget build(BuildContext context) => RawButton(
     onPressed: onPressed,
     selected: selected,
     semanticSelected: selected,
@@ -937,11 +937,11 @@ class StudioTabBar extends StatefulWidget {
 
 class _StudioTabBarState extends State<StudioTabBar>
     with TickerProviderStateMixin {
-  late DesignTabController _controller = _make();
+  late RawTabController _controller = _make();
   final List<GlobalKey> _keys = [];
   final GlobalKey _row = GlobalKey();
 
-  DesignTabController _make() => DesignTabController(
+  RawTabController _make() => RawTabController(
     length: widget.tabs.length,
     initialIndex: widget.selectedIndex,
     vsync: this,
@@ -1024,10 +1024,10 @@ class _StudioTabBarState extends State<StudioTabBar>
             ),
             // The tabs stand in the content column: the first legend's words
             // start on its edge, with room for the indicator beneath them.
-            DesignTabBar(
+            RawTabBar(
               key: _row,
               controller: _controller,
-              tabs: [for (final name in widget.tabs) DesignTab(label: name)],
+              tabs: [for (final name in widget.tabs) RawTab(label: name)],
               tabBuilder: (context, tab, details) {
                 final i = details.index;
                 final chosen = i == widget.selectedIndex;
@@ -1045,7 +1045,7 @@ class _StudioTabBarState extends State<StudioTabBar>
                       ? c.legend
                       : layered.foreground ?? c.legendMuted;
                 }
-                return DesignTapTarget(
+                return TapTargetPadding(
                   child: SizedBox(
                     height: height,
                     child: Padding(

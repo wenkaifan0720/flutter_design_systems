@@ -130,10 +130,10 @@ class _WindowKey extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = StudioTheme.of(context).colors;
-    return DesignPressable(
+    return RawButton(
       onPressed: onPressed,
       semanticLabel: label,
-      builder: (context, states, _) => DesignTapTarget(
+      builder: (context, states, _) => TapTargetPadding(
         child: SizedBox.square(
           dimension: 28,
           child: AnimatedStudioSurface(
@@ -293,7 +293,7 @@ class _StudioSearchFieldState extends State<StudioSearchField> {
 /// shows them while it is pressed in, and hides them again when the field
 /// loses the keyboard.
 ///
-/// Built on ui_core's DesignPasswordReveal; reads [style] as
+/// Built on ui_core's RawPasswordReveal; reads [style] as
 /// [StudioTextField] does.
 ///
 /// ```dart
@@ -354,7 +354,7 @@ class StudioPasswordField extends StatelessWidget {
   final StudioStyle? style;
 
   @override
-  Widget build(BuildContext context) => DesignPasswordReveal(
+  Widget build(BuildContext context) => RawPasswordReveal(
     focusNode: focusNode,
     hideOnBlur: true,
     showLabel: showLabel,
@@ -586,7 +586,7 @@ class _StudioInputGroupState extends State<StudioInputGroup> {
 /// in the indicator; the window the next figure goes in has its rim lit.
 /// Paste fills them all; Backspace walks back.
 ///
-/// Built on ui_core's DesignOtpField (one input under the windows, so a
+/// Built on ui_core's RawOtpField (one input under the windows, so a
 /// screen reader and autofill meet one field).
 ///
 /// ```dart
@@ -613,7 +613,7 @@ class StudioCodeField extends StatelessWidget {
   final int length;
 
   /// The code; yours to dispose.
-  final DesignOtpController? controller;
+  final RawOtpController? controller;
 
   /// {@macro design.focusNode}
   final FocusNode? focusNode;
@@ -652,7 +652,7 @@ class StudioCodeField extends StatelessWidget {
       children: [
         if (label != null)
           ExcludeSemantics(child: StudioFieldLabel(label!, enabled: enabled)),
-        DesignOtpField(
+        RawOtpField(
           length: length,
           controller: controller,
           focusNode: focusNode,
@@ -783,7 +783,7 @@ class StudioStepper extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = StudioTheme.of(context);
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     String text(int v) => format?.call(v) ?? words.formatDecimal(v);
     final c = theme.colors;
     final change = onChanged;
@@ -914,7 +914,7 @@ class StudioStepper extends StatelessWidget {
 /// control's own node and tap, and the label names the group
 /// ([mergeSemantics]).
 ///
-/// Built on ui_core's DesignField; a [StudioTextField] carries its own label
+/// Built on ui_core's RawInputDecorator; a [StudioTextField] carries its own label
 /// and needs none.
 ///
 /// ```dart
@@ -953,14 +953,14 @@ class StudioFormField extends StatelessWidget {
 
   /// Whether the control is one node that takes the label as its name
   /// (true) or a group the label names (false). Left null, ui_core's
-  /// DesignField reads what the child brings to the semantics tree: one
+  /// RawInputDecorator reads what the child brings to the semantics tree: one
   /// control is one node; several (a stepper's keys, a segmented choice,
   /// radios, chips) keep each its own node and tap, the label naming them;
   /// and a group that already names itself is not named again.
   final bool? mergeSemantics;
 
   @override
-  Widget build(BuildContext context) => DesignField(
+  Widget build(BuildContext context) => RawInputDecorator(
     labelText: label,
     helperText: helper,
     errorText: error,
@@ -1073,7 +1073,7 @@ Widget _searching(BuildContext context) {
           const SizedBox(width: StudioSpacing.small),
           Flexible(
             child: Text(
-              DesignLocalizations.of(context).loadingLabel,
+              RawWidgetsLocalizations.of(context).loadingLabel,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: theme.textTheme.body.copyWith(
@@ -1089,8 +1089,8 @@ Widget _searching(BuildContext context) {
 
 // A search that failed: what happened, and Try again as an option row, lit
 // while the keys are on it (the keyboard stays in the field).
-Widget _failed(BuildContext context, DesignSearchError error) {
-  final words = DesignLocalizations.of(context);
+Widget _failed(BuildContext context, RawSearchError error) {
+  final words = RawWidgetsLocalizations.of(context);
   return Column(
     mainAxisSize: MainAxisSize.min,
     crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -1124,7 +1124,7 @@ Widget _failed(BuildContext context, DesignSearchError error) {
 /// as the typing rests ([debounceDuration]): while it looks the list says so,
 /// and when the search fails the list says that and offers Try again.
 ///
-/// Built on ui_core's DesignCombobox. Enter is taken in the entry's
+/// Built on ui_core's RawCombobox. Enter is taken in the entry's
 /// editing-complete (never its submit), so on the web the keyboard keeps
 /// typing after it.
 ///
@@ -1207,7 +1207,7 @@ class StudioCombobox<T extends Object> extends StatelessWidget {
       children: [
         if (label != null)
           ExcludeSemantics(child: StudioFieldLabel(label!, enabled: enabled)),
-        DesignCombobox<T>(
+        RawCombobox<T>(
           options: options,
           search: search,
           debounceDuration: debounceDuration,
@@ -1273,7 +1273,7 @@ class StudioCombobox<T extends Object> extends StatelessWidget {
 /// suggestions as the typing rests ([debounceDuration]), the list saying
 /// while it looks and offering Try again when the search fails.
 ///
-/// Built on ui_core's DesignTagInput; Enter is taken in the entry's
+/// Built on ui_core's RawTagInput; Enter is taken in the entry's
 /// editing-complete (never its submit), so on the web typing carries on.
 ///
 /// ```dart
@@ -1399,7 +1399,7 @@ class _StudioTagInputState<T extends Object> extends State<StudioTagInput<T>> {
           ExcludeSemantics(
             child: StudioFieldLabel(widget.label!, enabled: widget.enabled),
           ),
-        DesignTagInput<T>(
+        RawTagInput<T>(
           values: widget.values,
           onChanged: widget.onChanged,
           options: widget.options,
@@ -1557,7 +1557,7 @@ class _Plate extends StatelessWidget {
             bottom: 0,
             end: 0,
             width: math.max(_cross, floor.width),
-            child: DesignPressable(
+            child: RawButton(
               onPressed: enabled ? onDeleted : null,
               semanticLabel: removeLabel,
               builder: (context, states, _) => Align(

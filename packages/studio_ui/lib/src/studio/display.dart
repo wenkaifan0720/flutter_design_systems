@@ -77,7 +77,7 @@ class _StudioDisclosureState extends State<StudioDisclosure> {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        DesignPressable(
+        RawButton(
           onPressed: _toggle,
           expanded: _open,
           semanticLabel: widget.title,
@@ -719,7 +719,7 @@ class StudioBadge extends StatelessWidget {
     if (!show) return child;
     final n = count;
     // The count in the reader's digits.
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     final label = n == null
         ? ''
         : n > 99

@@ -5,8 +5,9 @@
 // previous and wrap, mirrored right to left in a row; a screen reader hears
 // each row as a radio named by its words, in a form field too. A bank of
 // latching keys is a radio group of its keys, a radio keeps the focus node
-// its caller gives it, and a selectable table row reads as a checkbox,
-// checked when selected, not as a button.
+// its caller gives it, a press anywhere in a radio's box chooses it, and a
+// selectable table row reads as a checkbox, checked when selected, not as a
+// button.
 import 'dart:ui' show CheckedState, SemanticsFlags, Tristate;
 
 import 'package:material_ui/material_ui.dart'
@@ -47,6 +48,42 @@ SemanticsFlags _flags(WidgetTester tester, String label) => tester
     .flagsCollection;
 
 const _group = ValueKey('group');
+
+/// Presses each of [radios] (a group's RawRadios, saying [values] in turn)
+/// at its start, its middle, its end, its top and its bottom, each time from
+/// another choice, and expects the press to choose it. RawRadio's own
+/// detector takes a press only where the face paints; a radio takes it
+/// anywhere in its box, as the published radios did, the gap between its key
+/// and its words too.
+Future<void> _pressEverywhere<V>(
+  WidgetTester tester,
+  Finder radios,
+  ValueNotifier<V> choice,
+  List<V> values,
+) async {
+  expect(radios, findsNWidgets(values.length));
+  for (final (i, value) in values.indexed) {
+    final box = tester.getRect(radios.at(i));
+    for (final at in [
+      box.centerLeft + const Offset(2, 0),
+      box.center,
+      box.centerRight - const Offset(2, 0),
+      box.topCenter + const Offset(0, 2),
+      box.bottomCenter - const Offset(0, 2),
+    ]) {
+      choice.value = values[(i + 1) % values.length];
+      await tester.pumpAndSettle();
+      await tester.tapAt(at);
+      await tester.pumpAndSettle();
+      expect(choice.value, value, reason: '$value pressed at $at in $box');
+    }
+  }
+}
+
+Finder _radiosOf(Finder group) => find.descendant(
+  of: group,
+  matching: find.byWidgetPredicate((w) => w is RawRadio),
+);
 
 void main() {
   setUpAll(studioLoadFonts);
@@ -113,6 +150,65 @@ void main() {
     }
     semantics.dispose();
   });
+
+  for (final axis in Axis.values) {
+    testWidgets('a press anywhere in a radio\'s box chooses it, ${axis.name}', (
+      tester,
+    ) async {
+      final format = ValueNotifier('MP3');
+      final rate = ValueNotifier(1.0);
+      addTearDown(format.dispose);
+      addTearDown(rate.dispose);
+      await _show(
+        tester,
+        Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(
+              width: 360,
+              child: ValueListenableBuilder(
+                valueListenable: format,
+                builder: (context, value, _) => StudioRadioGroup<String>(
+                  options: const ['MP3', 'AAC', 'WAV'],
+                  value: value,
+                  labelOf: (f) => f,
+                  direction: axis,
+                  onChanged: (f) => format.value = f,
+                ),
+              ),
+            ),
+            SizedBox(
+              width: 360,
+              child: ValueListenableBuilder(
+                valueListenable: rate,
+                builder: (context, value, _) => StudioSegmentedButton<double>(
+                  segments: const [
+                    StudioSegment(value: 1.0, label: '1×'),
+                    StudioSegment(value: 1.5, label: '1.5×'),
+                    StudioSegment(value: 2.0, label: '2×'),
+                  ],
+                  value: value,
+                  onChanged: (r) => rate.value = r,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+      await _pressEverywhere(
+        tester,
+        _radiosOf(find.byType(StudioRadioGroup<String>)),
+        format,
+        const ['MP3', 'AAC', 'WAV'],
+      );
+      await _pressEverywhere(
+        tester,
+        _radiosOf(find.byType(StudioSegmentedButton<double>)),
+        rate,
+        const [1.0, 1.5, 2.0],
+      );
+    });
+  }
 
   testWidgets('in a form field, each radio keeps its own node and tap', (
     tester,
@@ -268,53 +364,59 @@ void main() {
   }
 
   // The shared keyboard check: options A to D with B turned off, chosen C,
-  // nothing, and the turned-off B, in both reading directions.
-  for (final direction in TextDirection.values) {
-    for (final initial in <String?>['C', null, 'B']) {
-      testWidgets('the shared radio group check, ${direction.name}, '
-          'chosen ${initial ?? 'nothing'}', (tester) async {
-        final semantics = tester.ensureSemantics();
-        final before = FocusNode(debugLabel: 'before');
-        addTearDown(before.dispose);
-        var chosen = initial;
-        await _show(
+  // nothing, A, and the turned-off B, down a column and along a row, in both
+  // reading directions.
+  for (final axis in Axis.values) {
+    for (final direction in TextDirection.values) {
+      for (final initial in <String?>['C', null, 'A', 'B']) {
+        testWidgets('the shared radio group check, ${axis.name}, '
+            '${direction.name}, chosen ${initial ?? 'nothing'}', (
           tester,
-          StatefulBuilder(
-            builder: (context, setState) => Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                StudioButton('Before', focusNode: before, onPressed: () {}),
-                SizedBox(
-                  key: const ValueKey('radios'),
-                  width: 310,
-                  child: StudioRadioGroup<String>(
-                    options: const ['A', 'B', 'C', 'D'],
-                    value: chosen,
-                    isEnabled: (v) => v != 'B',
-                    labelOf: (v) => v,
-                    semanticLabel: 'Letters',
-                    onChanged: (v) => setState(() => chosen = v),
+        ) async {
+          final semantics = tester.ensureSemantics();
+          final before = FocusNode(debugLabel: 'before');
+          addTearDown(before.dispose);
+          var chosen = initial;
+          await _show(
+            tester,
+            StatefulBuilder(
+              builder: (context, setState) => Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  StudioButton('Before', focusNode: before, onPressed: () {}),
+                  SizedBox(
+                    key: const ValueKey('radios'),
+                    width: 310,
+                    child: StudioRadioGroup<String>(
+                      options: const ['A', 'B', 'C', 'D'],
+                      value: chosen,
+                      isEnabled: (v) => v != 'B',
+                      labelOf: (v) => v,
+                      direction: axis,
+                      semanticLabel: 'Letters',
+                      onChanged: (v) => setState(() => chosen = v),
+                    ),
                   ),
-                ),
-                StudioButton('After', onPressed: () {}),
-              ],
+                  StudioButton('After', onPressed: () {}),
+                ],
+              ),
             ),
-          ),
-          direction: direction,
-        );
-        if (initial == 'B') {
-          // A turned-off choice still says it is the checked one.
-          expect(_flags(tester, 'B').isChecked, CheckedState.isTrue);
-          expect(_flags(tester, 'B').isEnabled, Tristate.isFalse);
-        }
-        (await const DesignRadioGroupCheck(look: 'Studio').check(
-          tester.element(find.byKey(const ValueKey('radios'))),
-          before: before,
-          sendKeyEvent: tester.sendKeyEvent,
-          pump: tester.pump,
-        )).verify();
-        semantics.dispose();
-      });
+            direction: direction,
+          );
+          if (initial == 'B') {
+            // A turned-off choice still says it is the checked one.
+            expect(_flags(tester, 'B').isChecked, CheckedState.isTrue);
+            expect(_flags(tester, 'B').isEnabled, Tristate.isFalse);
+          }
+          (await const DesignRadioGroupCheck(look: 'Studio').check(
+            tester.element(find.byKey(const ValueKey('radios'))),
+            before: before,
+            sendKeyEvent: tester.sendKeyEvent,
+            pump: tester.pump,
+          )).verify();
+          semantics.dispose();
+        });
+      }
     }
   }
 
