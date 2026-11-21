@@ -25,7 +25,7 @@ Future<String> _shown(
       color: const Color(0xff000000),
       locale: locale,
       supportedLocales: [locale],
-      localizationsDelegates: const [DesignLocalizations.delegate],
+      localizationsDelegates: const [RawWidgetsLocalizations.delegate],
       pageRouteBuilder: <T>(settings, builder) => PageRouteBuilder<T>(
         settings: settings,
         pageBuilder: (context, _, _) => builder(context),
@@ -64,7 +64,7 @@ void main() {
   });
 
   testWidgets('Arabic writes the day first, in its digits', (tester) async {
-    final arabic = DesignLocalizations.forLocale(const Locale('ar'));
+    final arabic = RawWidgetsLocalizations.forLocale(const Locale('ar'));
     final shown = await _shown(tester, const Locale('ar'));
     expect(shown, isNot(contains('/09/')));
     expect(

@@ -24,6 +24,7 @@ export 'src/material_expressive/internal/docked_band.dart';
 export 'src/material_expressive/internal/field_node.dart';
 export 'src/material_expressive/internal/focus_ring.dart';
 export 'src/material_expressive/internal/gesture_focus.dart';
+export 'src/material_expressive/internal/group_radio.dart';
 export 'src/material_expressive/internal/group_tap_target.dart';
 export 'src/material_expressive/internal/icons/symbols.g.dart';
 export 'src/material_expressive/internal/list_item_shapes.dart';

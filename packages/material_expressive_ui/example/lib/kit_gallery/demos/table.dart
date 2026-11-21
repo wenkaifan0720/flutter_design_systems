@@ -93,19 +93,19 @@ const List<_Order> _orders = <_Order>[
 String _money(int cents) =>
     'USD ${cents ~/ 100}.${(cents % 100).toString().padLeft(2, '0')}';
 
-DesignTableController<_Order> _orderTable() => DesignTableController<_Order>(
+RawDataTableController<_Order> _orderTable() => RawDataTableController<_Order>(
   rows: _orders,
   rowKey: (o) => o.id,
   pageSize: 5,
-  columns: <DesignTableColumn<_Order>>[
-    DesignTableColumn<_Order>(id: 'id', label: 'Order', sortKey: (o) => o.id),
-    DesignTableColumn<_Order>(
+  columns: <RawDataColumn<_Order>>[
+    RawDataColumn<_Order>(id: 'id', label: 'Order', sortKey: (o) => o.id),
+    RawDataColumn<_Order>(
       id: 'customer',
       label: 'Customer',
       sortKey: (o) => o.customer,
     ),
-    const DesignTableColumn<_Order>(id: 'state', label: 'State'),
-    DesignTableColumn<_Order>(
+    const RawDataColumn<_Order>(id: 'state', label: 'State'),
+    RawDataColumn<_Order>(
       id: 'total',
       label: 'Total',
       numeric: true,
@@ -119,7 +119,7 @@ const Map<String, int> _orderFlex = <String, int>{'customer': 2};
 Widget _orderCell(
   BuildContext context,
   _Order o,
-  DesignTableColumn<_Order> column,
+  RawDataColumn<_Order> column,
 ) => Text(switch (column.id) {
   'id' => o.id,
   'customer' => o.customer,
@@ -137,7 +137,7 @@ class _Data extends StatefulWidget {
 class _DataState extends State<_Data> {
   // Sorted by order from the start, so the sort arrow the caption names
   // shows (unsorted, a column only keeps its room).
-  late final DesignTableController<_Order> _table = _orderTable()..sort('id');
+  late final RawDataTableController<_Order> _table = _orderTable()..sort('id');
 
   @override
   void dispose() {
@@ -171,7 +171,7 @@ class _ChosenOrders extends StatefulWidget {
 }
 
 class _ChosenOrdersState extends State<_ChosenOrders> {
-  late final DesignTableController<_Order> _table = _orderTable()
+  late final RawDataTableController<_Order> _table = _orderTable()
     ..sort('total')
     ..toggle(_orders[0])
     ..toggle(_orders[3]);

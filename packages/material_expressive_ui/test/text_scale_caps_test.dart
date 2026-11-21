@@ -112,7 +112,7 @@ void _wordsWhole(RenderParagraph paragraph) {
 }
 
 /// A month whose name is one word wider than a date picker's label at 2x.
-class _LongMonth extends DefaultDesignLocalizations {
+class _LongMonth extends DefaultRawWidgetsLocalizations {
   const _LongMonth();
 
   static const month = 'Septemberseptember';
@@ -121,14 +121,15 @@ class _LongMonth extends DefaultDesignLocalizations {
   String formatMonthYear(DateTime date) => '$month ${date.year}';
 }
 
-class _LongMonthDelegate extends LocalizationsDelegate<DesignLocalizations> {
+class _LongMonthDelegate
+    extends LocalizationsDelegate<RawWidgetsLocalizations> {
   const _LongMonthDelegate();
 
   @override
   bool isSupported(Locale locale) => true;
 
   @override
-  Future<DesignLocalizations> load(Locale locale) =>
+  Future<RawWidgetsLocalizations> load(Locale locale) =>
       SynchronousFuture(const _LongMonth());
 
   @override

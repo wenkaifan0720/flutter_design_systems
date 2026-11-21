@@ -387,9 +387,9 @@ final Map<String, DocExample> _examples = {
   ),
   'ExpressiveDataTable': (context) {
     final orders = _own(
-      DesignTableController<String>(
+      RawDataTableController<String>(
         rows: ['#4821', '#4822'],
-        columns: const [DesignTableColumn(id: 'order', label: 'Order')],
+        columns: const [RawDataColumn(id: 'order', label: 'Order')],
       ),
     );
     return ExpressiveDataTable<String>(
@@ -1127,7 +1127,7 @@ class TripPage extends StatelessWidget {
 
 // ExpressiveLocalizations's: French words for a host's delegates (its file
 // is skipped above, its imports being the test's own).
-class FrenchWords extends DefaultDesignLocalizations {
+class FrenchWords extends DefaultRawWidgetsLocalizations {
   const FrenchWords();
 
   @override
@@ -1150,7 +1150,7 @@ class French<T> extends LocalizationsDelegate<T> {
 }
 
 const frenchDelegates = <LocalizationsDelegate<dynamic>>[
-  French<DesignLocalizations>(FrenchWords()),
+  French<RawWidgetsLocalizations>(FrenchWords()),
   French<ExpressiveLocalizations>(
     ExpressiveLocalizations(selectDate: 'Choisir une date'),
   ),
@@ -1184,7 +1184,7 @@ void main() {
         builder: (context, app) => ExpressiveHost(child: app!),
         home: Builder(
           builder: (context) =>
-              Text(DesignLocalizations.of(context).cancelButtonLabel),
+              Text(RawWidgetsLocalizations.of(context).cancelButtonLabel),
         ),
       ),
     );

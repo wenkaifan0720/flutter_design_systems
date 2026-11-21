@@ -51,7 +51,7 @@ class _Segment extends InheritedWidget {
 
   /// The item's index in its group; null when not segmented.
   final int? index;
-  final DesignReorderItem? reorder;
+  final RawReorderItemDetails? reorder;
 
   /// The group's size; null when not segmented.
   final int? count;
@@ -1524,7 +1524,7 @@ class ExpressiveReorderableListView extends StatelessWidget {
     return ScrollConfiguration(
       behavior: ScrollConfiguration.of(context)
           .copyWith(physics: const NeverScrollableScrollPhysics()),
-      child: DesignReorderableList<Widget>(
+      child: RawReorderableList<Widget>(
         items: items,
         keyOf: (item) => item.key!,
         labelOf: (item) {

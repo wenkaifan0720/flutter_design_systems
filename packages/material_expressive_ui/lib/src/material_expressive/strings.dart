@@ -4,9 +4,9 @@
 /// resolved per locale); here they are [ExpressiveLocalizations].
 ///
 /// The words every look shares (Back, Close, Cancel, OK, Today, Next month,
-/// "Slide 2 of 5", ...) come from ui_core's [DesignLocalizations], under
+/// "Slide 2 of 5", ...) come from ui_core's [RawWidgetsLocalizations], under
 /// `MaterialLocalizations`' names, so an app translates them once for every
-/// look by extending [DefaultDesignLocalizations]. The look's own words (the
+/// look by extending [DefaultRawWidgetsLocalizations]. The look's own words (the
 /// pickers' titles and modes, a chat bubble's status, ...) are
 /// [ExpressiveLocalizations]' parameters: English defaults, loaded through
 /// [ExpressiveLocalizations.delegate] or a delegate of the app's own, and
@@ -23,12 +23,12 @@ import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
 export 'package:ui_core/ui_core.dart'
-    show DefaultDesignLocalizations, DesignLocalizations;
+    show DefaultRawWidgetsLocalizations, RawWidgetsLocalizations;
 
 /// Every word a component says without being told.
 ///
 /// Another language gives both kinds of words: the shared ones in a
-/// [DefaultDesignLocalizations] of its own, the look's in an
+/// [DefaultRawWidgetsLocalizations] of its own, the look's in an
 /// [ExpressiveLocalizations] with its words given, each loaded by a
 /// delegate:
 ///
@@ -37,7 +37,7 @@ export 'package:ui_core/ui_core.dart'
 /// import 'package:flutter/widgets.dart';
 /// import 'package:material_expressive_ui/material_expressive_ui.dart';
 ///
-/// class FrenchWords extends DefaultDesignLocalizations {
+/// class FrenchWords extends DefaultRawWidgetsLocalizations {
 ///   const FrenchWords();
 ///
 ///   @override
@@ -60,7 +60,7 @@ export 'package:ui_core/ui_core.dart'
 /// }
 ///
 /// const frenchDelegates = <LocalizationsDelegate<dynamic>>[
-///   French<DesignLocalizations>(FrenchWords()),
+///   French<RawWidgetsLocalizations>(FrenchWords()),
 ///   French<ExpressiveLocalizations>(
 ///     ExpressiveLocalizations(selectDate: 'Choisir une date'),
 ///   ),
@@ -143,7 +143,7 @@ class ExpressiveLocalizations {
     this.selectPage = 'Select every row on this page',
     this.selectRow = 'Select row',
     this.colorHex = 'Hex',
-  }) : _shared = const DefaultDesignLocalizations(),
+  }) : _shared = const DefaultRawWidgetsLocalizations(),
        _time = null;
 
   /// [own]'s words, with [_shared] for the words every look shares and,
@@ -151,7 +151,7 @@ class ExpressiveLocalizations {
   ExpressiveLocalizations._bound(
     ExpressiveLocalizations own,
     this._shared, [
-    DesignLocalizations? time,
+    RawWidgetsLocalizations? time,
   ]) : _time = time,
        cancelSearch = own.cancelSearch,
        showSuggestions = own.showSuggestions,
@@ -234,7 +234,7 @@ class ExpressiveLocalizations {
   /// from a delegate of its own (see the class's example); with neither,
   /// [of] reads English. Where the words are [english] in another language,
   /// a time picker's ([hour], [minute], [period], [am], [pm]) are the app's
-  /// `DesignLocalizations`' (ui_core's in the app's language with this
+  /// `RawWidgetsLocalizations`' (ui_core's in the app's language with this
   /// delegate and none of those installed).
   static const LocalizationsDelegate<ExpressiveLocalizations> delegate =
       _ExpressiveLocalizationsDelegate();
@@ -242,15 +242,15 @@ class ExpressiveLocalizations {
   /// The words in force at [context]: the look's own from the nearest
   /// [ExpressiveLocalizationsScope], else the app's localizations for its
   /// locale (a delegate's), else [english]; the shared ones from
-  /// [DesignLocalizations.of] (English with none registered). Over
+  /// [RawWidgetsLocalizations.of] (English with none registered). Over
   /// [english], a time picker's words are the shared ones in the app's
   /// language (see [delegate]).
   static ExpressiveLocalizations of(BuildContext context) {
-    final installed = Localizations.of<DesignLocalizations>(
+    final installed = Localizations.of<RawWidgetsLocalizations>(
       context,
-      DesignLocalizations,
+      RawWidgetsLocalizations,
     );
-    final shared = installed ?? const DefaultDesignLocalizations();
+    final shared = installed ?? const DefaultRawWidgetsLocalizations();
     final loaded = Localizations.of<ExpressiveLocalizations>(
       context,
       ExpressiveLocalizations,
@@ -278,24 +278,24 @@ class ExpressiveLocalizations {
   }
 
   /// ui_core's words for [locale], one object a locale.
-  static DesignLocalizations _inLanguage(Locale locale) =>
+  static RawWidgetsLocalizations _inLanguage(Locale locale) =>
       _languages.putIfAbsent(
         locale.toLanguageTag(),
-        () => DesignLocalizations.forLocale(locale),
+        () => RawWidgetsLocalizations.forLocale(locale),
       );
 
-  static final Map<String, DesignLocalizations> _languages =
-      <String, DesignLocalizations>{};
+  static final Map<String, RawWidgetsLocalizations> _languages =
+      <String, RawWidgetsLocalizations>{};
 
   /// [words]' [word] where it says other than ui_core's English, else [own].
   static String _timeWord(
-    DesignLocalizations? words,
-    String Function(DesignLocalizations words) word,
+    RawWidgetsLocalizations? words,
+    String Function(RawWidgetsLocalizations words) word,
     String own,
   ) {
     if (words == null) return own;
     final said = word(words);
-    return said == word(const DefaultDesignLocalizations()) ? own : said;
+    return said == word(const DefaultRawWidgetsLocalizations()) ? own : said;
   }
 
   /// Each set of the look's own words, bound to the shared words last read
@@ -304,43 +304,43 @@ class ExpressiveLocalizations {
       Expando<ExpressiveLocalizations>('ExpressiveLocalizations');
 
   /// The words every look shares: ui_core's.
-  final DesignLocalizations _shared;
+  final RawWidgetsLocalizations _shared;
 
   /// The words a time picker says over [english]'s, where they are another
   /// language's.
-  final DesignLocalizations? _time;
+  final RawWidgetsLocalizations? _time;
 
   // Chrome.
 
   /// The back button, when no `MaterialLocalizations` are in scope
-  /// ([DesignLocalizations.backButtonTooltip]).
+  /// ([RawWidgetsLocalizations.backButtonTooltip]).
   String get back => _shared.backButtonTooltip;
 
   /// The close button, when no `MaterialLocalizations` are in scope
-  /// ([DesignLocalizations.closeButtonLabel]).
+  /// ([RawWidgetsLocalizations.closeButtonLabel]).
   String get close => _shared.closeButtonLabel;
 
   /// An overflow menu or a split button's menu half
-  /// ([DesignLocalizations.splitButtonMenuLabel]).
+  /// ([RawWidgetsLocalizations.splitButtonMenuLabel]).
   String get moreOptions => _shared.splitButtonMenuLabel;
 
   /// A search bar's placeholder and its field's label
-  /// ([DesignLocalizations.searchFieldLabel]).
+  /// ([RawWidgetsLocalizations.searchFieldLabel]).
   String get search => _shared.searchFieldLabel;
 
   /// The expanded search view's leading back button.
   final String cancelSearch;
 
   /// The expanded search view's clear button
-  /// ([DesignLocalizations.clearButtonTooltip]).
+  /// ([RawWidgetsLocalizations.clearButtonTooltip]).
   String get clearSearch => _shared.clearButtonTooltip;
 
   /// A password field's reveal toggle, while hidden
-  /// ([DesignLocalizations.showPasswordLabel]).
+  /// ([RawWidgetsLocalizations.showPasswordLabel]).
   String get showPassword => _shared.showPasswordLabel;
 
   /// A password field's reveal toggle, while shown
-  /// ([DesignLocalizations.hidePasswordLabel]).
+  /// ([RawWidgetsLocalizations.hidePasswordLabel]).
   String get hidePassword => _shared.hidePasswordLabel;
 
   /// A select field's menu toggle, while closed.
@@ -353,16 +353,16 @@ class ExpressiveLocalizations {
   final String sheetDragHandle;
 
   /// A sheet's dismiss action (Compose `Strings.BottomSheetDismissDescription`)
-  /// ([DesignLocalizations.modalBarrierDismissLabel]).
+  /// ([RawWidgetsLocalizations.modalBarrierDismissLabel]).
   String get sheetDismiss => _shared.modalBarrierDismissLabel;
 
   /// A sheet's expand action (Compose `Strings.BottomSheetExpandDescription`)
-  /// ([DesignLocalizations.collapsedIconTapHint]).
+  /// ([RawWidgetsLocalizations.collapsedIconTapHint]).
   String get sheetExpand => _shared.collapsedIconTapHint;
 
   /// A sheet's collapse action (Compose
   /// `Strings.BottomSheetPartialExpandDescription`)
-  /// ([DesignLocalizations.expandedIconTapHint]).
+  /// ([RawWidgetsLocalizations.expandedIconTapHint]).
   String get sheetCollapse => _shared.expandedIconTapHint;
 
   /// A floating toolbar's expand action.
@@ -380,11 +380,11 @@ class ExpressiveLocalizations {
   // Feedback and content.
 
   /// Pull-to-refresh while it refreshes
-  /// ([DesignLocalizations.refreshingMessage]).
+  /// ([RawWidgetsLocalizations.refreshingMessage]).
   String get refreshing => _shared.refreshingMessage;
 
   /// The loading screen state's message
-  /// ([DesignLocalizations.loadingLabel]).
+  /// ([RawWidgetsLocalizations.loadingLabel]).
   String get loading => _shared.loadingLabel;
 
   /// The error screen state's retry action.
@@ -394,15 +394,15 @@ class ExpressiveLocalizations {
   final String reorder;
 
   /// A swipe-to-dismiss row's action
-  /// ([DesignLocalizations.deleteButtonTooltip]).
+  /// ([RawWidgetsLocalizations.deleteButtonTooltip]).
   String get delete => _shared.deleteButtonTooltip;
 
   /// A range slider's start thumb
-  /// ([DesignLocalizations.rangeSliderStartLabel]).
+  /// ([RawWidgetsLocalizations.rangeSliderStartLabel]).
   String get rangeStart => _shared.rangeSliderStartLabel;
 
   /// A range slider's end thumb
-  /// ([DesignLocalizations.rangeSliderEndLabel]).
+  /// ([RawWidgetsLocalizations.rangeSliderEndLabel]).
   String get rangeEnd => _shared.rangeSliderEndLabel;
 
   /// A quantity stepper's value.
@@ -433,7 +433,7 @@ class ExpressiveLocalizations {
   final String Function(int index, int max) rate;
 
   /// A carousel's page indicator: page [page] (1-based) of [count]
-  /// ([DesignLocalizations.carouselSlideLabel]).
+  /// ([RawWidgetsLocalizations.carouselSlideLabel]).
   String carouselPage(int page, int count) =>
       _shared.carouselSlideLabel(page - 1, count);
 
@@ -480,7 +480,7 @@ class ExpressiveLocalizations {
   /// The day a week starts on in this locale ([DateTime.monday] …
   /// [DateTime.sunday]; English: Sunday), which the date pickers and the
   /// calendar show first unless given their own `firstDayOfWeek`
-  /// ([DesignLocalizations.firstDayOfWeek]).
+  /// ([RawWidgetsLocalizations.firstDayOfWeek]).
   int get firstDayOfWeek => _shared.firstDayOfWeek;
 
   /// A date field's label.
@@ -490,7 +490,7 @@ class ExpressiveLocalizations {
   final String datePattern;
 
   /// Today's cell
-  /// ([DesignLocalizations.currentDateLabel]).
+  /// ([RawWidgetsLocalizations.currentDateLabel]).
   String get today => _shared.currentDateLabel;
 
   /// A cell inside a picked range.
@@ -509,11 +509,11 @@ class ExpressiveLocalizations {
   final String toDays;
 
   /// The previous-month button
-  /// ([DesignLocalizations.previousMonthTooltip]).
+  /// ([RawWidgetsLocalizations.previousMonthTooltip]).
   String get previousMonth => _shared.previousMonthTooltip;
 
   /// The next-month button
-  /// ([DesignLocalizations.nextMonthTooltip]).
+  /// ([RawWidgetsLocalizations.nextMonthTooltip]).
   String get nextMonth => _shared.nextMonthTooltip;
 
   /// A typed date that does not parse.
@@ -532,11 +532,11 @@ class ExpressiveLocalizations {
   final String Function(int year) goToYear;
 
   /// A picker dialog's dismiss button
-  /// ([DesignLocalizations.cancelButtonLabel]).
+  /// ([RawWidgetsLocalizations.cancelButtonLabel]).
   String get cancel => _shared.cancelButtonLabel;
 
   /// A picker dialog's confirm button
-  /// ([DesignLocalizations.okButtonLabel]).
+  /// ([RawWidgetsLocalizations.okButtonLabel]).
   String get ok => _shared.okButtonLabel;
 
   // Time pickers.
@@ -606,11 +606,11 @@ class ExpressiveLocalizations {
   final String pagination;
 
   /// Pagination's previous-page button
-  /// ([DesignLocalizations.previousPageTooltip]).
+  /// ([RawWidgetsLocalizations.previousPageTooltip]).
   String get previousPage => _shared.previousPageTooltip;
 
   /// Pagination's next-page button
-  /// ([DesignLocalizations.nextPageTooltip]).
+  /// ([RawWidgetsLocalizations.nextPageTooltip]).
   String get nextPage => _shared.nextPageTooltip;
 
   /// Pagination's button for page [page] (1-based).
@@ -636,15 +636,15 @@ class ExpressiveLocalizations {
   // Behaviours from ui_core.
 
   /// A search with no match (the command palette's results)
-  /// ([DesignLocalizations.noResultsLabel]).
+  /// ([RawWidgetsLocalizations.noResultsLabel]).
   String get noResults => _shared.noResultsLabel;
 
   /// A split view's divider, to assistive technology
-  /// ([DesignLocalizations.splitViewHandleLabel]).
+  /// ([RawWidgetsLocalizations.splitViewHandleLabel]).
   String get resize => _shared.splitViewHandleLabel;
 
   /// A multi-select chip's remove action, before the chip's label
-  /// ([DesignLocalizations.tagInputDeleteLabel]).
+  /// ([RawWidgetsLocalizations.tagInputDeleteLabel]).
   String get removeTag => _shared.tagInputDeleteLabel;
 
   /// A data table's select-all checkbox.

@@ -554,7 +554,9 @@ void main() {
       );
     });
 
-    testWidgets('is a toggle to assistive technology', (tester) async {
+    testWidgets('is a toggle button to assistive technology: selected', (
+      tester,
+    ) async {
       final handle = tester.ensureSemantics();
       await tester.pumpWidget(
         _app(
@@ -571,8 +573,9 @@ void main() {
         isSemantics(
           label: 'Notify me',
           isButton: true,
-          hasToggledState: true,
-          isToggled: true,
+          hasSelectedState: true,
+          isSelected: true,
+          hasToggledState: false,
         ),
       );
       handle.dispose();

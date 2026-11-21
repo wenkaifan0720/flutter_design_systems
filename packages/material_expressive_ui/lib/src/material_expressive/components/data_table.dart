@@ -1,4 +1,4 @@
-/// The data table, painted on ui_core's `DesignDataTable`: sortable
+/// The data table, painted on ui_core's `RawDataTable`: sortable
 /// headers, selectable rows, a page at a time.
 library;
 
@@ -22,16 +22,16 @@ import 'wayfinding.dart' show ExpressivePagination;
 // barrel alone.
 export 'package:ui_core/ui_core.dart'
     show
-        DesignSelection,
-        DesignSortDirection,
-        DesignTableColumn,
-        DesignTableController,
-        DesignTableRow;
+        RawDataTableSelection,
+        RawSortDirection,
+        RawDataColumn,
+        RawDataTableController,
+        RawDataRowDetails;
 
 /// A sorted header's arrow: Material's small icon (a chip's 18dp).
 const double _arrow = AssistChipTokens.iconSize;
 
-/// The rows a [DesignTableController] holds, a page at a time, under a
+/// The rows a [RawDataTableController] holds, a page at a time, under a
 /// header that sorts (shadcn's `DataTable`; Material's data table): rows
 /// in the list item's grammar, as [ExpressiveTable]'s, at least 56dp tall,
 /// a hairline between each, a chosen row on the list's selected container
@@ -62,14 +62,10 @@ class ExpressiveDataTable<R> extends StatelessWidget {
   });
 
   /// The rows, columns, sort, filter, selection and page.
-  final DesignTableController<R> controller;
+  final RawDataTableController<R> controller;
 
   /// A cell: usually a `Text`, which takes the row's type and colour.
-  final Widget Function(
-    BuildContext context,
-    R row,
-    DesignTableColumn<R> column,
-  )
+  final Widget Function(BuildContext context, R row, RawDataColumn<R> column)
   cellBuilder;
 
   /// Whether rows are chosen, each with its checkbox.
@@ -94,7 +90,7 @@ class ExpressiveDataTable<R> extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            DesignDataTable<R>(
+            RawDataTable<R>(
               controller: controller,
               selectable: selectable,
               onActivate: onActivate,
@@ -107,9 +103,9 @@ class ExpressiveDataTable<R> extends StatelessWidget {
                     lead: selectable
                         ? ExpressiveCheckbox(
                             value: switch (controller.pageSelection) {
-                              DesignSelection.none => false,
-                              DesignSelection.some => null,
-                              DesignSelection.all => true,
+                              RawDataTableSelection.none => false,
+                              RawDataTableSelection.some => null,
+                              RawDataTableSelection.all => true,
                             },
                             tristate: true,
                             semanticLabel: strings.selectPage,
@@ -205,8 +201,8 @@ class ExpressiveDataTable<R> extends StatelessWidget {
 
   Widget _header(
     BuildContext context,
-    DesignTableColumn<R> column,
-    DesignSortDirection? sort,
+    RawDataColumn<R> column,
+    RawSortDirection? sort,
     Set<WidgetState> states,
   ) {
     final t = context.expressiveTheme;
@@ -255,7 +251,7 @@ class ExpressiveDataTable<R> extends StatelessWidget {
                   child: sort == null
                       ? null
                       : Icon(
-                          sort == DesignSortDirection.ascending
+                          sort == RawSortDirection.ascending
                               ? ExpressiveSymbols.arrowUpward
                               : ExpressiveSymbols.arrowDownward,
                           size: _arrow,
@@ -272,7 +268,11 @@ class ExpressiveDataTable<R> extends StatelessWidget {
     );
   }
 
-  Widget _row(BuildContext context, DesignTableRow<R> row, List<Widget> cells) {
+  Widget _row(
+    BuildContext context,
+    RawDataRowDetails<R> row,
+    List<Widget> cells,
+  ) {
     final t = context.expressiveTheme;
     final c = t.colors;
     final strings = ExpressiveLocalizations.of(context);
@@ -324,7 +324,10 @@ class ExpressiveDataTable<R> extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(
-        DiagnosticsProperty<DesignTableController<R>>('controller', controller),
+        DiagnosticsProperty<RawDataTableController<R>>(
+          'controller',
+          controller,
+        ),
       )
       ..add(
         DiagnosticsProperty<bool>('selectable', selectable, defaultValue: true),

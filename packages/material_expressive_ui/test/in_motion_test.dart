@@ -545,7 +545,7 @@ void main() {
       tester
           .widgetList<Focus>(find.byType(Focus))
           .map((f) => f.focusNode)
-          .firstWhere((n) => n?.debugLabel == 'DesignCalendar')!
+          .firstWhere((n) => n?.debugLabel == 'RawCalendarDatePicker')!
           .requestFocus();
       await tester.pump();
       for (var i = 0; i < 3; i++) {

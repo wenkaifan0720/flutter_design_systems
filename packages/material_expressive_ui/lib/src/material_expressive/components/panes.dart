@@ -1,8 +1,8 @@
 /// Panes ui_core's behaviours hold, painted in Material's hand: a scroll
-/// area's scrollbar ([ExpressiveScrollArea], on `DesignScrollArea`), two
+/// area's scrollbar ([ExpressiveScrollArea], on `RawScrollArea`), two
 /// panes and the handle between them ([ExpressiveResizable], on
-/// `DesignSplitView`) and the modal side sheet ([ExpressiveSheet], on
-/// `DesignSideSheetRoute`).
+/// `RawSplitView`) and the modal side sheet ([ExpressiveSheet], on
+/// `RawSideSheetRoute`).
 library;
 
 import 'package:flutter/foundation.dart';
@@ -38,7 +38,7 @@ const double _barMargin = ExpressiveSpacing.s2;
 /// bar, fading out after the scroll stops. Under the keyboard the area
 /// takes focus (its own tab stop) and wears the focus ring inside its
 /// edge; the arrows scroll by a step, Page Up and Down by a page, Home and
-/// End to the ends (ui_core's `DesignScrollArea`).
+/// End to the ends (ui_core's `RawScrollArea`).
 ///
 /// ```dart
 /// ExpressiveScrollArea(controller: scroll, child: ListView(controller: scroll, children: rows))
@@ -87,7 +87,7 @@ class ExpressiveScrollArea extends StatelessWidget {
     final c = t.colors;
     final dark = t.brightness == Brightness.dark;
     final vertical = axis == Axis.vertical;
-    return DesignScrollArea(
+    return RawScrollArea(
       controller: controller,
       axis: axis,
       thickness: _barThicknessHot + 2 * _barMargin,
@@ -326,7 +326,7 @@ class ExpressiveResizable extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.expressiveTheme;
     final c = t.colors;
-    return DesignSplitView(
+    return RawSplitView(
       first: first,
       second: second,
       axis: axis,
@@ -419,7 +419,7 @@ class ExpressiveResizable extends StatelessWidget {
 /// [ExpressiveSheet.show]: it slides in from the end edge (or the start)
 /// over the scrim at 32%, closes on the scrim, Escape, its close button or
 /// a fling toward its edge, and holds the keyboard inside while open
-/// (ui_core's `DesignSideSheetRoute`).
+/// (ui_core's `RawSideSheetRoute`).
 ///
 /// ```dart
 /// ExpressiveSheet.show<void>(context, title: 'Filters', builder: (context) => filters)
@@ -431,7 +431,7 @@ class ExpressiveSheet extends StatelessWidget {
     this.title,
     this.actions = const <Widget>[],
     this.onClose,
-    this.edge = DesignSheetEdge.end,
+    this.edge = RawSheetEdge.end,
     super.key,
   });
 
@@ -442,7 +442,7 @@ class ExpressiveSheet extends StatelessWidget {
     required WidgetBuilder builder,
     String? title,
     List<Widget> actions = const <Widget>[],
-    DesignSheetEdge edge = DesignSheetEdge.end,
+    RawSheetEdge edge = RawSheetEdge.end,
     double width = 360,
     bool useRootNavigator = true,
   }) {
@@ -450,7 +450,7 @@ class ExpressiveSheet extends StatelessWidget {
     final navigator = Navigator.of(context, rootNavigator: useRootNavigator);
     final themes = InheritedTheme.capture(from: context, to: navigator.context);
     return navigator.push<T>(
-      DesignSideSheetRoute<T>(
+      RawSideSheetRoute<T>(
         edge: edge,
         width: width,
         semanticLabel: title,
@@ -484,7 +484,7 @@ class ExpressiveSheet extends StatelessWidget {
   final VoidCallback? onClose;
 
   /// The edge it stands on: its inner corners are the large ones.
-  final DesignSheetEdge edge;
+  final RawSheetEdge edge;
 
   @override
   Widget build(BuildContext context) {
@@ -494,7 +494,7 @@ class ExpressiveSheet extends StatelessWidget {
     final title = this.title;
     return ExpressiveSurface(
       shape: t.shapes.of(
-        edge == DesignSheetEdge.end
+        edge == RawSheetEdge.end
             ? ExpressiveShapeKey.cornerLargeStart
             : ExpressiveShapeKey.cornerLargeEnd,
       ),
@@ -508,13 +508,13 @@ class ExpressiveSheet extends StatelessWidget {
         left:
             edge ==
             (Directionality.of(context) == TextDirection.rtl
-                ? DesignSheetEdge.end
-                : DesignSheetEdge.start),
+                ? RawSheetEdge.end
+                : RawSheetEdge.start),
         right:
             edge ==
             (Directionality.of(context) == TextDirection.rtl
-                ? DesignSheetEdge.start
-                : DesignSheetEdge.end),
+                ? RawSheetEdge.start
+                : RawSheetEdge.end),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
@@ -596,10 +596,10 @@ class ExpressiveSheet extends StatelessWidget {
       ..add(StringProperty('title', title, defaultValue: null))
       ..add(ObjectFlagProperty<VoidCallback?>.has('onClose', onClose))
       ..add(
-        DiagnosticsProperty<DesignSheetEdge>(
+        DiagnosticsProperty<RawSheetEdge>(
           'edge',
           edge,
-          defaultValue: DesignSheetEdge.end,
+          defaultValue: RawSheetEdge.end,
         ),
       );
   }

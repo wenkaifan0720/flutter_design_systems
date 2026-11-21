@@ -37,21 +37,21 @@ Widget _app(
 );
 
 /// ui_core's shared words in French, as an app translates every look.
-class _FrenchWords extends DefaultDesignLocalizations {
+class _FrenchWords extends DefaultRawWidgetsLocalizations {
   const _FrenchWords();
 
   @override
   String get backButtonTooltip => 'Retour';
 }
 
-class _French extends LocalizationsDelegate<DesignLocalizations> {
+class _French extends LocalizationsDelegate<RawWidgetsLocalizations> {
   const _French();
 
   @override
   bool isSupported(Locale locale) => locale.languageCode == 'fr';
 
   @override
-  Future<DesignLocalizations> load(Locale locale) =>
+  Future<RawWidgetsLocalizations> load(Locale locale) =>
       SynchronousFuture(const _FrenchWords());
 
   @override
@@ -347,7 +347,10 @@ void main() {
 
     testWidgets("ui_core's delegate loads English", (tester) async {
       expect(
-        await back(tester, delegates: [DefaultDesignLocalizations.delegate]),
+        await back(
+          tester,
+          delegates: [DefaultRawWidgetsLocalizations.delegate],
+        ),
         'Back',
       );
     });

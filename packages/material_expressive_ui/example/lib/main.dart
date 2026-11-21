@@ -406,14 +406,14 @@ class _GalleryAppState extends State<GalleryApp> {
       localizationsDelegates: [
         if (_custom.direction == 'rtl' && _arabicPages.contains(_page))
           ...tripArabicDelegates,
-        DesignLocalizations.delegate,
+        RawWidgetsLocalizations.delegate,
         ExpressiveLocalizations.delegate,
         // Flutter's own Material, Cupertino and Widgets words, in the
         // reader's language (the look loads its primitives' own itself).
         ...GlobalMaterialLocalizations.delegates,
       ],
       // The components speak the reader's language where ui_core does.
-      supportedLocales: DesignLocalizations.supportedLocales,
+      supportedLocales: RawWidgetsLocalizations.supportedLocales,
       // Day to night, a preset or a Customize choice springs from one theme
       // to the next.
       // Direction and text size wrap the navigator, so every page, preview

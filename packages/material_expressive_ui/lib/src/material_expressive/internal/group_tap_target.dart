@@ -2,12 +2,12 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
-/// [DesignTapTarget]'s layout and reach without a node of its own, for a
+/// [TapTargetPadding]'s layout and reach without a node of its own, for a
 /// target whose parts are nodes already: a pressable's
 /// `ExpressiveSemanticsGroup` spans its target, and a range slider's two
-/// handles are a slider each. [DesignTapTarget] merges what it holds into
+/// handles are a slider each. [TapTargetPadding] merges what it holds into
 /// one node, which would make those parts one.
-class ExpressiveGroupTapTarget extends DesignTapTarget {
+class ExpressiveGroupTapTarget extends TapTargetPadding {
   /// A target at least [minSize] round [child], [child] placed by
   /// [alignment].
   const ExpressiveGroupTapTarget({
@@ -30,7 +30,7 @@ class ExpressiveGroupTapTarget extends DesignTapTarget {
       );
 }
 
-class _RenderGroupTapTarget extends RenderDesignTapTarget {
+class _RenderGroupTapTarget extends RenderTapTargetPadding {
   _RenderGroupTapTarget(
     super.minSize, {
     super.alignment,

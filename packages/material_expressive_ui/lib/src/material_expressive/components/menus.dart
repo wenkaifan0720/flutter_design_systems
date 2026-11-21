@@ -1806,7 +1806,7 @@ Future<bool?> _showMenuRoute(
       from: context,
       to: navigator.context,
     ),
-    barrierLabel: DesignLocalizations.of(context).modalBarrierDismissLabel,
+    barrierLabel: RawWidgetsLocalizations.of(context).modalBarrierDismissLabel,
     builder: (context) => _MenuPopup(
       anchor: local,
       position: position,
@@ -3521,7 +3521,7 @@ Widget _entering(Animation<double> presence, Widget child) => AnimatedBuilder(
 // ---------------------------------------------------------------------------
 
 /// Several of [options] chosen as input chips in a field that suggests the
-/// rest as you type (shadcn's multi-select; ui_core's `DesignTagInput`):
+/// rest as you type (shadcn's multi-select; ui_core's `RawTagInput`):
 /// the outlined text field's container (2dp `primary` while anything in it
 /// has focus), each chosen value an input chip with its remove glyph, the
 /// keyboard's chip ringed, and the matching options on a menu's panel under
@@ -3566,7 +3566,7 @@ class ExpressiveMultiSelect<T extends Object> extends StatefulWidget {
   final List<ExpressiveSelectOption<T>> options;
 
   /// Finds the suggestions for what is typed, in place of filtering
-  /// [options] (ui_core's `DesignTagInput.search`).
+  /// [options] (ui_core's `RawTagInput.search`).
   final FutureOr<Iterable<ExpressiveSelectOption<T>>> Function(String query)?
   search;
 
@@ -3777,7 +3777,7 @@ class _ExpressiveMultiSelectState<T extends Object>
           padding: EdgeInsets.zero,
           child: child,
         ),
-        child: DesignTagInput<T>(
+        child: RawTagInput<T>(
           values: widget.values,
           onChanged: onChanged ?? (_) {},
           focusNode: _node,
@@ -3789,7 +3789,7 @@ class _ExpressiveMultiSelectState<T extends Object>
           loadingBuilder: (context) => _optionFace(
             context,
             states: const <WidgetState>{},
-            label: DesignLocalizations.of(context).loadingLabel,
+            label: RawWidgetsLocalizations.of(context).loadingLabel,
             selectable: false,
             trailing: const SizedBox.square(
               dimension: ExpressiveSpacing.s20,
@@ -3798,7 +3798,7 @@ class _ExpressiveMultiSelectState<T extends Object>
           ),
           // Pressed as the options above it are (ui_core's pressable), and
           // lit when the arrows reach it.
-          errorBuilder: (context, error) => DesignPressable(
+          errorBuilder: (context, error) => RawButton(
             onPressed: error.retry,
             builder: (context, states, _) => _optionFace(
               context,
@@ -3808,8 +3808,9 @@ class _ExpressiveMultiSelectState<T extends Object>
               },
               // What to do, over what went wrong: a two-line row, wrapping
               // as a narrow panel needs.
-              label: DesignLocalizations.of(context).retryButtonLabel,
-              supporting: DesignLocalizations.of(context).searchFailedMessage,
+              label: RawWidgetsLocalizations.of(context).retryButtonLabel,
+              supporting: RawWidgetsLocalizations.of(context)
+                  .searchFailedMessage,
               icon: ExpressiveSymbols.refresh,
               selectable: false,
             ),
@@ -3948,23 +3949,21 @@ class ExpressiveMenuBarEntry {
 
   final bool _divider;
 
-  DesignMenuEntry _design() => _divider
-      ? const DesignMenuEntry.divider()
-      : DesignMenuEntry(
+  RawMenuEntry _design() => _divider
+      ? const RawMenuEntry.divider()
+      : RawMenuEntry(
           label: label,
           onPressed: onPressed,
           children: children == null
               ? null
-              : <DesignMenuEntry>[
-                  for (final child in children!) child._design(),
-                ],
+              : <RawMenuEntry>[for (final child in children!) child._design()],
           shortcut: shortcut,
           checked: checked,
         );
 }
 
 /// A row of menus, a desktop app's File, Edit and View (shadcn's
-/// `Menubar`; ui_core's `DesignMenuBar`): each menu's title a text button
+/// `Menubar`; ui_core's `RawMenuBar`): each menu's title a text button
 /// in `labelLarge` on the full corner (40dp, in a 48dp target), its open
 /// menu's title on `secondaryContainer`; each menu a menu's panel of items with their
 /// shortcuts, check items checked by a leading check, submenus marked by
@@ -3985,9 +3984,9 @@ class ExpressiveMenuBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.expressiveTheme;
-    return DesignMenuBar(
-      menus: <DesignMenuEntry>[for (final menu in menus) menu._design()],
-      semanticLabel: DesignLocalizations.of(context).menuBarLabel,
+    return RawMenuBar(
+      menus: <RawMenuEntry>[for (final menu in menus) menu._design()],
+      semanticLabel: RawWidgetsLocalizations.of(context).menuBarLabel,
       // The titles stand on a bar of their own: the menus' container tone
       // on the full corner, so the row reads as one control.
       barBuilder: (context, items) => ExpressiveSurface(
@@ -4027,7 +4026,7 @@ class ExpressiveMenuBar extends StatelessWidget {
         ),
       ),
       itemBuilder: (context, entry, level, states) {
-        if (level == DesignMenuLevel.bar) {
+        if (level == RawMenuLevel.bar) {
           final open = states.contains(WidgetState.selected);
           final enabled = !states.contains(WidgetState.disabled);
           final content = !enabled

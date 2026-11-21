@@ -1,4 +1,4 @@
-/// The colour picker, painted on ui_core's `DesignColorPicker`.
+/// The colour picker, painted on ui_core's `RawColorPicker`.
 library;
 
 import 'package:flutter/foundation.dart';
@@ -68,7 +68,7 @@ class ExpressiveColorPicker extends StatefulWidget {
 }
 
 class _ExpressiveColorPickerState extends State<ExpressiveColorPicker> {
-  late final DesignColorController _color = DesignColorController(widget.value)
+  late final RawColorController _color = RawColorController(widget.value)
     ..addListener(_changed);
   late final TextEditingController _hex = TextEditingController(
     text: _color.hex,
@@ -162,7 +162,7 @@ class _ExpressiveColorPickerState extends State<ExpressiveColorPicker> {
     final c = t.colors;
     return IgnorePointer(
       ignoring: widget.onChanged == null,
-      child: DesignColorPicker(
+      child: RawColorPicker(
         controller: _color,
         showAlpha: widget.showAlpha,
         areaHeight: widget.areaHeight,
@@ -208,7 +208,7 @@ class _ExpressiveColorPickerState extends State<ExpressiveColorPicker> {
             height: ExpressiveSpacing.s12,
             child: ClipPath(
               clipper: ShapeBorderClipper(shape: t.shapes.full),
-              child: channel == DesignColorChannel.alpha
+              child: channel == RawColorChannel.alpha
                   ? CustomPaint(
                       painter: _Checker(c.surfaceContainerHighest, c.surface),
                       child: DecoratedBox(

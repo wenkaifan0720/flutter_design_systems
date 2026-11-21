@@ -15,6 +15,7 @@ import '../elevation.dart';
 import '../icons.dart';
 import '../internal/cap_label.dart';
 import '../internal/choice_width.dart';
+import '../internal/group_radio.dart';
 import '../internal/state_face.dart';
 import '../internal/tokens/behavior.g.dart';
 import '../internal/tokens/button_group_large_tokens.g.dart';
@@ -560,7 +561,8 @@ class ExpressiveToggleButton extends StatelessWidget {
     this.focusNode,
     super.key,
   }) : _role = ExpressivePressRole.toggle,
-       _inSegments = false;
+       _inSegments = false,
+       _focusTarget = null;
 
   const ExpressiveToggleButton._segment({
     required this.value,
@@ -572,8 +574,9 @@ class ExpressiveToggleButton extends StatelessWidget {
     required this.icon,
     required this.shapes,
     required this._role,
-    this.focusNode,
-  }) : shape = ExpressiveButtonShape.round,
+    this._focusTarget,
+  }) : focusNode = null,
+       shape = ExpressiveButtonShape.round,
        child = null,
        colors = null,
        expand = false,
@@ -626,6 +629,10 @@ class ExpressiveToggleButton extends StatelessWidget {
   final FocusNode? focusNode;
 
   final ExpressivePressRole _role;
+
+  // A segment of a single-choice group: the group's radio, which takes the
+  // focus over the segment ([ExpressivePressable.focusTarget]).
+  final Widget? _focusTarget;
 
   /// A segment of a segmented button: themed by
   /// [ExpressiveThemeData.segmentedButtonTheme], not the button theme.
@@ -733,6 +740,7 @@ class ExpressiveToggleButton extends StatelessWidget {
           onPressedChanged: groupHandler,
           semanticLabel: semanticLabel,
           focusNode: focusNode,
+          focusTarget: _focusTarget,
           // A segment stands 2dp from the next, which would paint over a
           // ring outside it: the ring stands inside, as the toggle group's.
           focusInward: _inSegments,
@@ -1300,9 +1308,14 @@ class _ConnectedSegments<T> extends StatelessWidget {
           children: items,
         );
 
-    Widget segment(int index, FocusNode? node, VoidCallback? activate) {
+    Widget segment(
+      int index,
+      VoidCallback? activate, {
+      Widget? focusTarget,
+      bool? chosen,
+    }) {
       final option = segments[index];
-      final selected = isSelected(option.value);
+      final selected = chosen ?? isSelected(option.value);
       final radio = role == ExpressivePressRole.radio;
       final button = ExpressiveToggleButton._segment(
         value: selected,
@@ -1314,32 +1327,52 @@ class _ConnectedSegments<T> extends StatelessWidget {
         size: size,
         shapes: connected.shapes(first: index == 0, last: index == count - 1),
         role: radio ? ExpressivePressRole.radio : ExpressivePressRole.none,
-        focusNode: node,
+        focusTarget: focusTarget,
       );
       return radio
           ? button
           : MergeSemantics(
-              child: Semantics(toggled: selected, child: button),
+              // A segment of a group that takes many choices is a toggle
+              // button: a button that is selected or not, as a segment of
+              // Flutter's multi-select SegmentedButton is.
+              child: Semantics(button: true, selected: selected, child: button),
             );
     }
 
     if (role == ExpressivePressRole.radio) {
-      final index = {for (var i = 0; i < count; i++) segments[i].value: i};
-      return DesignRadioGroup<T>(
-        options: [for (final option in segments) option.value],
-        value: radioValue,
-        onChanged: onToggle,
-        isEnabled: (value) => segments[index[value]!].enabled,
-        layoutBuilder: layout,
-        itemBuilder: (context, value, node, select) =>
-            segment(index[value]!, node, select),
+      // Flutter's radio group, each segment one of its radios: one Tab stop,
+      // the arrows moving and choosing, with ui_core's keyboard fix inside
+      // (the Tab stop when the chosen segment is off, Left and Right right
+      // to left) until Flutter's own fixes do.
+      return RadioGroup<T>(
+        groupValue: radioValue,
+        onChanged: (choice) {
+          if (choice != null) onToggle?.call(choice);
+        },
+        child: RadioGroupKeyboardFix<T>(
+          child: layout(context, [
+            for (var index = 0; index < count; index++)
+              ExpressiveGroupRadio<T>(
+                key: ObjectKey(segments[index].value),
+                value: segments[index].value,
+                enabled: onToggle != null && segments[index].enabled,
+                control: (context, target, chosen) => segment(
+                  index,
+                  onToggle == null || !segments[index].enabled
+                      ? null
+                      : () => onToggle(segments[index].value),
+                  focusTarget: target,
+                  chosen: chosen,
+                ),
+              ),
+          ]),
+        ),
       );
     }
     return layout(context, [
       for (var index = 0; index < count; index++)
         segment(
           index,
-          null,
           onToggle == null || !segments[index].enabled
               ? null
               : () => onToggle(segments[index].value),
@@ -2899,7 +2932,7 @@ class ExpressiveToggleGroup<T> extends StatelessWidget {
 
     const target = Size.square(HostBehavior.minimumInteractiveComponentSize);
     if (_multiple) {
-      return DesignToggleGroup<T>(
+      return RawSegmentedButton<T>(
         options: values,
         selected: _values!,
         multiSelectionEnabled: true,
@@ -2914,49 +2947,17 @@ class ExpressiveToggleGroup<T> extends StatelessWidget {
       );
     }
 
-    final nodes = <T, FocusNode>{};
-    final enabled = segments.where((segment) => segment.enabled);
-    void moveTo(T value) {
-      nodes[value]?.requestFocus();
-      if (selectFollowsFocus && _value != value) _onChanged?.call(value);
-    }
-
-    return Semantics(
-      container: true,
-      explicitChildNodes: true,
+    return _SingleChoiceToggles<T>(
+      values: values,
+      value: _value,
+      onChanged: _onChanged,
+      isEnabled: (value) => _segment(value).enabled,
+      labelOf: (value) => _segment(value).label,
       label: label,
-      child: CallbackShortcuts(
-        bindings: {
-          if (_onChanged != null && enabled.isNotEmpty) ...{
-            const SingleActivator(LogicalKeyboardKey.home): () =>
-                moveTo(enabled.first.value),
-            const SingleActivator(LogicalKeyboardKey.end): () =>
-                moveTo(enabled.last.value),
-          },
-        },
-        child: DesignRadioGroup<T>(
-          options: values,
-          value: _value,
-          onChanged: _onChanged,
-          isEnabled: (value) => _segment(value).enabled,
-          layoutBuilder: layout,
-          itemBuilder: (context, value, node, select) {
-            nodes[value] = node;
-            final chosen = value == _value;
-            return DesignPressable(
-              focusNode: node,
-              onPressed: select,
-              selected: chosen,
-              checked: chosen,
-              inMutuallyExclusiveGroup: true,
-              semanticLabel: _segment(value).label,
-              excludeSemantics: true,
-              minimumSize: target,
-              builder: (context, states, _) => face(context, value, states),
-            );
-          },
-        ),
-      ),
+      selectFollowsFocus: selectFollowsFocus,
+      minimumSize: target,
+      layout: layout,
+      face: face,
     );
   }
 
@@ -2990,5 +2991,110 @@ class ExpressiveToggleGroup<T> extends StatelessWidget {
           ifTrue: 'selectFollowsFocus',
         ),
       );
+  }
+}
+
+/// A single-choice [ExpressiveToggleGroup]: Flutter's radio group, each
+/// segment one of its radios, so the group is one Tab stop and the arrows
+/// move and choose; ui_core's keyboard fix inside it gives the group its Tab
+/// stop when the chosen segment is off, and swaps Left and Right right to
+/// left, until Flutter's own fixes do. Home and End focus the first and last
+/// enabled segments.
+class _SingleChoiceToggles<T> extends StatefulWidget {
+  const _SingleChoiceToggles({
+    required this.values,
+    required this.value,
+    required this.onChanged,
+    required this.isEnabled,
+    required this.labelOf,
+    required this.label,
+    required this.selectFollowsFocus,
+    required this.minimumSize,
+    required this.layout,
+    required this.face,
+  });
+
+  final List<T> values;
+  final T? value;
+  final ValueChanged<T>? onChanged;
+  final bool Function(T value) isEnabled;
+  final String Function(T value) labelOf;
+  final String? label;
+  final bool selectFollowsFocus;
+  final Size minimumSize;
+  final Widget Function(BuildContext context, List<Widget> items) layout;
+  final Widget Function(BuildContext context, T value, Set<WidgetState> states)
+  face;
+
+  @override
+  State<_SingleChoiceToggles<T>> createState() =>
+      _SingleChoiceTogglesState<T>();
+}
+
+class _SingleChoiceTogglesState<T> extends State<_SingleChoiceToggles<T>> {
+  // Each segment's focus node, kept while the segment stays.
+  final _nodes = <T, FocusNode>{};
+
+  @override
+  void dispose() {
+    for (final node in _nodes.values) {
+      node.dispose();
+    }
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final values = widget.values;
+    for (final gone in _nodes.keys.toSet().difference(values.toSet())) {
+      _nodes.remove(gone)!.dispose();
+    }
+    final onChanged = widget.onChanged;
+    final enabled = [if (onChanged != null) ...values.where(widget.isEnabled)];
+    void moveTo(T value) {
+      _nodes[value]?.requestFocus();
+      if (widget.selectFollowsFocus && widget.value != value) {
+        onChanged?.call(value);
+      }
+    }
+
+    return Semantics(
+      container: true,
+      explicitChildNodes: true,
+      label: widget.label,
+      child: CallbackShortcuts(
+        bindings: {
+          if (enabled.isNotEmpty) ...{
+            const SingleActivator(LogicalKeyboardKey.home): () =>
+                moveTo(enabled.first),
+            const SingleActivator(LogicalKeyboardKey.end): () =>
+                moveTo(enabled.last),
+          },
+        },
+        child: RadioGroup<T>(
+          groupValue: widget.value,
+          onChanged: (choice) {
+            if (choice != null && choice != widget.value) {
+              onChanged?.call(choice);
+            }
+          },
+          child: RadioGroupKeyboardFix<T>(
+            child: widget.layout(context, [
+              for (final value in values)
+                ExpressiveGroupRadio<T>.face(
+                  key: ObjectKey(value),
+                  value: value,
+                  enabled: onChanged != null && widget.isEnabled(value),
+                  focusNode: _nodes.putIfAbsent(value, FocusNode.new),
+                  semanticLabel: widget.labelOf(value),
+                  minimumSize: widget.minimumSize,
+                  face: (context, states) =>
+                      widget.face(context, value, states),
+                ),
+            ]),
+          ),
+        ),
+      ),
+    );
   }
 }

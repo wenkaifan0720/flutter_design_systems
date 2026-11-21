@@ -419,7 +419,14 @@ void main() {
       );
       expect(
         await nodeFor(ExpressivePressRole.toggle, selected: true),
-        isSemantics(isButton: true, hasToggledState: true, isToggled: true),
+        // A toggle button, as `IconButton(isSelected:)`: selected, not a
+        // switch.
+        isSemantics(
+          isButton: true,
+          hasSelectedState: true,
+          isSelected: true,
+          hasToggledState: false,
+        ),
       );
       expect(
         await nodeFor(ExpressivePressRole.tab, selected: true),

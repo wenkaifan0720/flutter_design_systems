@@ -63,18 +63,14 @@ const List<_Row> _rows = <_Row>[
   (name: 'Ben', amount: 20),
 ];
 
-DesignTableController<_Row> _table({int? pageSize}) =>
-    DesignTableController<_Row>(
+RawDataTableController<_Row> _table({int? pageSize}) =>
+    RawDataTableController<_Row>(
       rows: _rows,
       rowKey: (r) => r.name,
       pageSize: pageSize,
-      columns: <DesignTableColumn<_Row>>[
-        DesignTableColumn<_Row>(
-          id: 'name',
-          label: 'Name',
-          sortKey: (r) => r.name,
-        ),
-        DesignTableColumn<_Row>(
+      columns: <RawDataColumn<_Row>>[
+        RawDataColumn<_Row>(id: 'name', label: 'Name', sortKey: (r) => r.name),
+        RawDataColumn<_Row>(
           id: 'amount',
           label: 'Amount',
           numeric: true,
@@ -598,7 +594,7 @@ void main() {
       );
       await tester.tap(find.text('Amount'));
       await tester.pumpAndSettle();
-      expect(table.sortDirection, DesignSortDirection.ascending);
+      expect(table.sortDirection, RawSortDirection.ascending);
       expect(table.pageRows.first.name, 'Ada');
       final ada = tester.getTopLeft(find.text('Ada'));
       final cleo = tester.getTopLeft(find.text('Cleo'));

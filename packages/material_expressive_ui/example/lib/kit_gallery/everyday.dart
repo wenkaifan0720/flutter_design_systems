@@ -81,7 +81,7 @@ class _EverydayHost extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         theme: kitAppTheme,
         localizationsDelegates: const [
-          DesignLocalizations.delegate,
+          RawWidgetsLocalizations.delegate,
           DefaultMaterialLocalizations.delegate,
           DefaultWidgetsLocalizations.delegate,
         ],

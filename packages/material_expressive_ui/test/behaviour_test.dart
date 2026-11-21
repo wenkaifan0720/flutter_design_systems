@@ -774,20 +774,20 @@ class _OwnedBareFieldState extends State<_OwnedBareField> {
   );
 }
 
-DesignTableController<List<String>> _orders() =>
-    DesignTableController<List<String>>(
+RawDataTableController<List<String>> _orders() =>
+    RawDataTableController<List<String>>(
       rows: const [
         ['#4821', 'Ada Okafor', '128.40'],
         ['#4822', 'Ben Ito', '42.00'],
       ],
       rowKey: (row) => row.first,
       columns: [
-        DesignTableColumn<List<String>>(
+        RawDataColumn<List<String>>(
           id: '0',
           label: 'Order',
           sortKey: (row) => row[0],
         ),
-        const DesignTableColumn<List<String>>(id: '1', label: 'Customer'),
+        const RawDataColumn<List<String>>(id: '1', label: 'Customer'),
       ],
     );
 
@@ -827,7 +827,7 @@ Widget _host(
 }) => MaterialApp(
   debugShowCheckedModeBanner: false,
   localizationsDelegates: const [
-    DefaultDesignLocalizations.delegate,
+    DefaultRawWidgetsLocalizations.delegate,
     DefaultMaterialLocalizations.delegate,
     DefaultWidgetsLocalizations.delegate,
   ],

@@ -1,7 +1,7 @@
 /// Fields ui_core's form behaviours hold, painted in the outlined text
 /// field's hand: [ExpressiveInputGroup] (a field and its add-ons as one
 /// control, on `DesignInputGroup`) and [ExpressiveFormField] (any control
-/// with its label, help and error, on `DesignField`).
+/// with its label, help and error, on `RawInputDecorator`).
 library;
 
 import 'package:flutter/foundation.dart';
@@ -214,7 +214,7 @@ class _AddonText extends StatelessWidget {
 }
 
 /// A control with its label above it and its help or error under it
-/// (shadcn's `FormField`; ui_core's `DesignField`): the label in
+/// (shadcn's `FormField`; ui_core's `RawInputDecorator`): the label in
 /// `labelLarge` `onSurface` (`primary` while the control has focus, `error`
 /// with [error]), a required field's asterisk after it, the help in
 /// `bodySmall` `onSurfaceVariant` and the error in its place in `error`, as
@@ -268,14 +268,14 @@ class ExpressiveFormField extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.expressiveTheme;
     final c = t.colors;
-    return DesignField(
+    return RawInputDecorator(
       labelText: label,
       helperText: help,
       errorText: error,
       required: required,
       enabled: enabled,
       focusNode: focusNode,
-      // DesignField's default for one control or several (a stepper's
+      // RawInputDecorator's default for one control or several (a stepper's
       // buttons and entry keep their own nodes, and a child that names
       // itself is not named twice); a group is named as one.
       mergeSemantics: group ? false : null,

@@ -28,7 +28,7 @@ Widget _host(Widget child, {Locale? locale}) => MaterialApp(
         locale: locale,
         delegates: const <LocalizationsDelegate<Object?>>[
           _Arabic(),
-          DesignLocalizations.delegate,
+          RawWidgetsLocalizations.delegate,
         ],
         child: Directionality(textDirection: TextDirection.rtl, child: page),
       );

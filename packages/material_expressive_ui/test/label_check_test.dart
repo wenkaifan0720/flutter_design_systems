@@ -45,7 +45,7 @@ String? _misread(String what, String problem) {
   // on the page. Each is a button of its own face, 32dp at compact density
   // inside its 48dp touch target; the 48 is the target, not a cell drawn.
   if (RegExp(
-    r'^compact · a (checkbox|switch) "[^"]*": its chosen fill is [\d.]+ by '
+    r'^compact · a (checkbox|switch|button) "[^"]*": its chosen fill is [\d.]+ by '
     r'32 px in its cell of [\d.]+ by 48;',
   ).hasMatch(problem)) {
     return "a toggle group's button: its own 32dp face at compact density "

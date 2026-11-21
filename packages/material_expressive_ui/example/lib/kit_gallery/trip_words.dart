@@ -1094,7 +1094,7 @@ const Map<String, ({String title, String about})> _arabicDestinations = {
 /// The components' shared words in Arabic, where the trip planner reaches
 /// them (a dialog's buttons, a calendar's month and weekdays, a field's
 /// clear button); English elsewhere.
-class _ArabicDesignWords extends DefaultDesignLocalizations {
+class _ArabicDesignWords extends DefaultRawWidgetsLocalizations {
   const _ArabicDesignWords();
 
   @override
@@ -1208,6 +1208,6 @@ class _Words<T> extends LocalizationsDelegate<T> {
 /// The components' words in Arabic, for a host's `localizationsDelegates`
 /// (before Flutter's own) while the trip planner reads right to left.
 const List<LocalizationsDelegate<Object?>> tripArabicDelegates = [
-  _Words<DesignLocalizations>(_ArabicDesignWords()),
+  _Words<RawWidgetsLocalizations>(_ArabicDesignWords()),
   _Words<ExpressiveLocalizations>(_arabicExpressiveWords),
 ];

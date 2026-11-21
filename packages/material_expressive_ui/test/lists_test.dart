@@ -293,7 +293,9 @@ void main() {
         toggle,
         isSemantics(
           label: 'Give kudos',
-          hasToggledState: true,
+          isButton: true,
+          hasSelectedState: true,
+          hasToggledState: false,
           hasTapAction: true,
         ),
       );

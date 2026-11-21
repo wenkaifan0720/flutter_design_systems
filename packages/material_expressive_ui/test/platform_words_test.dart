@@ -24,7 +24,7 @@ void main() {
           MaterialApp(
             locale: locale,
             supportedLocales: [const Locale('en'), locale],
-            localizationsDelegates: const [DesignLocalizations.delegate],
+            localizationsDelegates: const [RawWidgetsLocalizations.delegate],
             builder: (context, child) =>
                 ExpressiveTheme(data: theme, child: child!),
             home: Center(

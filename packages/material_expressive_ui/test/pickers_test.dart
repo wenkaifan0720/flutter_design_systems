@@ -1322,7 +1322,7 @@ void main() {
 
 /// ui_core's shared words with the week starting on [day], as a locale
 /// that starts its weeks there gives them.
-class _WeekFrom extends LocalizationsDelegate<DesignLocalizations> {
+class _WeekFrom extends LocalizationsDelegate<RawWidgetsLocalizations> {
   const _WeekFrom(this.day);
 
   final int day;
@@ -1331,14 +1331,14 @@ class _WeekFrom extends LocalizationsDelegate<DesignLocalizations> {
   bool isSupported(Locale locale) => true;
 
   @override
-  Future<DesignLocalizations> load(Locale locale) =>
-      SynchronousFuture<DesignLocalizations>(_WeekWords(day));
+  Future<RawWidgetsLocalizations> load(Locale locale) =>
+      SynchronousFuture<RawWidgetsLocalizations>(_WeekWords(day));
 
   @override
   bool shouldReload(_WeekFrom old) => old.day != day;
 }
 
-class _WeekWords extends DefaultDesignLocalizations {
+class _WeekWords extends DefaultRawWidgetsLocalizations {
   const _WeekWords(this.day);
 
   final int day;

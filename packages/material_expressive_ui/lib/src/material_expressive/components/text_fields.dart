@@ -709,7 +709,7 @@ class ExpressiveFieldError extends StatelessWidget {
 
 /// Segmented entry for a short fixed-length code — a one-time code, a PIN
 /// (`code-input`, for the auth kit): one cell per character, each a text
-/// field container, painted on ui_core's `DesignOtpField`. It is one input
+/// field container, painted on ui_core's `RawOtpField`. It is one input
 /// under the cells, so a paste or the platform's one-time-code autofill
 /// fills every cell, backspace steps back a cell, and a long press or a
 /// secondary click offers Paste. The next cell to fill shows the focused
@@ -2685,11 +2685,11 @@ class _RenderField extends RenderBox
 // --- The code input ----------------------------------------------------------
 
 class _ExpressiveCodeInputState extends State<ExpressiveInputOtp> {
-  late DesignOtpController _code = _makeCode();
+  late RawOtpController _code = _makeCode();
 
   /// ui_core's code over the caller's controller, when there is one (a
   /// form's, the kit contract's), so the code is read and written there.
-  DesignOtpController _makeCode() => DesignOtpController(
+  RawOtpController _makeCode() => RawOtpController(
     length: widget.length,
     allowed: widget.numeric ? RegExp(r'\d') : RegExp(r'\S'),
     text: widget.controller,
@@ -2730,7 +2730,7 @@ class _ExpressiveCodeInputState extends State<ExpressiveInputOtp> {
     final outlined = widget.kind == ExpressiveTextFieldKind.outlined;
     final glyph = theme.type.headlineSmall;
 
-    Widget cell(DesignOtpSlot slot) {
+    Widget cell(RawOtpSlot slot) {
       final on = slot.focused && slot.active;
       final states = <WidgetState>{
         if (!enabled) WidgetState.disabled,
@@ -2817,7 +2817,7 @@ class _ExpressiveCodeInputState extends State<ExpressiveInputOtp> {
     // back, the caret stays at the end), its name, length and error on one
     // node, and Paste on a long press or a secondary click, in Material's
     // adaptive toolbar as Expressive's text fields offer it.
-    final field = DesignOtpField(
+    final field = RawOtpField(
       controller: _code,
       focusNode: widget.focusNode,
       autofocus: widget.autofocus,
@@ -2940,7 +2940,7 @@ class _CellPainter extends CustomPainter {
 /// A password field: [ExpressiveTextField] with its text hidden and the
 /// eye after it (the secure text field's own toggle, a 40dp round icon
 /// button in `onSurfaceVariant`, `error` in error) that shows and hides it.
-/// The reveal is ui_core's `DesignPasswordReveal`: the toggle is named
+/// The reveal is ui_core's `RawPasswordReveal`: the toggle is named
 /// "Show password" or "Hide password" and reads as a toggle, and with
 /// [hideOnBlur] the text hides again when the field loses focus. Autofill
 /// offers saved passwords.
@@ -3015,7 +3015,7 @@ class ExpressivePasswordField extends StatelessWidget {
     final t = context.expressiveTheme;
     final strings = ExpressiveLocalizations.of(context);
     final error = errorText != null;
-    return DesignPasswordReveal(
+    return RawPasswordReveal(
       focusNode: focusNode,
       hideOnBlur: hideOnBlur,
       showLabel: strings.showPassword,

@@ -1,3 +1,11 @@
+## 0.4.0
+
+- Needs ui_core 0.4.0 and Flutter 3.47. `material_expressive_ui` re-exports ui_core, whose types now take `Raw` names (`DesignPressable` is `RawButton`). The old names stay through ui_core 0.4 as deprecated typedefs, and `dart fix --apply` renames them.
+- `ExpressiveRadioGroup`, a one-choice `ExpressiveSegmentedButton` and a one-choice `ExpressiveToggleGroup` are Flutter's `RadioGroup`, each option a `RawRadio`, with ui_core's `RadioGroupKeyboardFix` inside. They answer Tab and the arrows as before, `ExpressiveToggleGroup` Home and End too, and `ExpressiveRadioGroup` still reports its checked option when it is pressed again. On iOS and macOS an option also reads as selected, as Flutter's `Radio` does.
+- A one-choice `ExpressiveToggleGroup` segment shows its press from Flutter's `RawRadio`, as Flutter's `Radio` does: a held press after the tap timeout, and no tap sound or haptic.
+- A toggle button reads as a button, selected while on, as `IconButton(isSelected:)` does: `ExpressiveToggleButton`, `ExpressiveIconToggleButton`, a checkable `ExpressiveSplitTrailingButton`, the `ExpressiveFabMenu` button and a text field's reveal button. A segment of a many-choice segmented button reads the same way. Before, they read as switches.
+- `ExpressivePressable.focusTarget` lays a widget that takes the keyboard focus over the pressable, as the radio groups lay their `RawRadio`. The pressable keeps its tap, ripple and state layers, and shows the focus while the target holds it.
+
 ## 0.3.4
 
 - Stands on ui_core 0.3.4.

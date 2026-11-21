@@ -16,6 +16,7 @@ import 'package:material_ui/material_ui.dart'
         RectCallback,
         Theme;
 import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
@@ -135,8 +136,9 @@ enum ExpressivePressRole {
   /// A button (Compose `Role.Button`).
   button,
 
-  /// A toggle button: a button that is on or off (Compose's toggleable
-  /// buttons, `Role.Checkbox` semantics; announced as toggled).
+  /// A toggle button: a button that is selected or not (Compose's
+  /// toggleable buttons). It is announced as a selected button, as Flutter's
+  /// `IconButton(isSelected:)` is, not as a switch.
   toggle,
 
   /// A tab: one of a set, selected or not (`Role.Tab`). Its node holds its
@@ -206,8 +208,12 @@ class ExpressivePressable extends StatefulWidget {
     this.focusInward = false,
     this.focusRing = true,
     this.markFace = false,
+    this.focusTarget,
     super.key,
-  });
+  }) : assert(
+         focusTarget == null || (focusNode == null && !autofocus),
+         'The focus target takes the focus: give it the node.',
+       );
 
   /// Per-widget visual overrides, ahead of [componentStyle].
   final ExpressiveComponentThemeData? style;
@@ -248,7 +254,7 @@ class ExpressivePressable extends StatefulWidget {
   final bool busy;
 
   /// Whether the pressable is selected (checked): the selected shape, and
-  /// the role's selected or toggled semantics.
+  /// the role's selected or checked semantics.
   final bool selected;
 
   /// Whether the pressable is being dragged: the dragged state layer.
@@ -365,6 +371,17 @@ class ExpressivePressable extends StatefulWidget {
   /// faint on its page to read by its pixels (an unchosen tonal segment) is
   /// then read by the face's own box, never by the target around it.
   final bool markFace;
+
+  /// What takes the keyboard focus in the pressable's place, laid over it:
+  /// a radio's `RawRadio`, which keeps the focus, its group's keys and the
+  /// radio's semantics, as Flutter's radios do. The pressable keeps the
+  /// tap, the ripple and the state layers, and shows the focus (its state
+  /// layer and ring) while the target holds it; Enter on the target presses
+  /// the pressable as Enter on the pressable itself would. Its own
+  /// [focusNode] and [autofocus] then go unused: the target takes them.
+  ///
+  /// The target should draw nothing and take no pointer of its own.
+  final Widget? focusTarget;
 
   @override
   State<ExpressivePressable> createState() => _ExpressivePressableState();
@@ -524,7 +541,14 @@ class ExpressivePressable extends StatefulWidget {
       ..add(
         FlagProperty('focusRing', value: focusRing, ifFalse: 'no focus ring'),
       )
-      ..add(FlagProperty('markFace', value: markFace, ifTrue: 'markFace'));
+      ..add(FlagProperty('markFace', value: markFace, ifTrue: 'markFace'))
+      ..add(
+        DiagnosticsProperty<Widget?>(
+          'focusTarget',
+          focusTarget,
+          defaultValue: null,
+        ),
+      );
   }
 }
 
@@ -752,10 +776,9 @@ class _ExpressivePressableState extends State<ExpressivePressable> {
         button:
             widget.role == ExpressivePressRole.button ||
             widget.role == ExpressivePressRole.toggle,
-        toggled: widget.role == ExpressivePressRole.toggle
-            ? widget.selected
-            : null,
-        selected: widget.role == ExpressivePressRole.tab
+        selected:
+            widget.role == ExpressivePressRole.tab ||
+                widget.role == ExpressivePressRole.toggle
             ? widget.selected
             : null,
         checked:
@@ -841,7 +864,7 @@ class _ExpressivePressableState extends State<ExpressivePressable> {
           onLongPress: widget.busy ? null : widget.onLongPress,
           focusNode: widget.focusNode,
           autofocus: widget.autofocus,
-          canRequestFocus: enabled,
+          canRequestFocus: enabled && widget.focusTarget == null,
           statesController: _controller,
           mouseCursor: widget.mouseCursor,
           containedInkWell: true,
@@ -849,6 +872,7 @@ class _ExpressivePressableState extends State<ExpressivePressable> {
           splashFactory: NoSplash.splashFactory,
           highlightColor: none,
           overlayColor: WidgetStatePropertyAll<Color>(none),
+          child: _focusTarget,
         ),
       );
     }
@@ -884,7 +908,7 @@ class _ExpressivePressableState extends State<ExpressivePressable> {
           onLongPress: widget.busy ? null : widget.onLongPress,
           focusNode: widget.focusNode,
           autofocus: widget.autofocus,
-          canRequestFocus: enabled,
+          canRequestFocus: enabled && widget.focusTarget == null,
           statesController: _controller,
           mouseCursor: widget.mouseCursor,
           highlightShape: halo == null ? BoxShape.circle : BoxShape.rectangle,
@@ -895,6 +919,7 @@ class _ExpressivePressableState extends State<ExpressivePressable> {
           splashFactory: splash,
           highlightColor: content.withValues(alpha: 0),
           overlayColor: overlay,
+          child: _focusTarget,
         ),
       );
     }
@@ -905,7 +930,7 @@ class _ExpressivePressableState extends State<ExpressivePressable> {
         onLongPress: widget.busy ? null : widget.onLongPress,
         focusNode: widget.focusNode,
         autofocus: widget.autofocus,
-        canRequestFocus: enabled,
+        canRequestFocus: enabled && widget.focusTarget == null,
         statesController: _controller,
         mouseCursor: widget.mouseCursor,
         customBorder: widget.bounded ? shape : null,
@@ -916,9 +941,50 @@ class _ExpressivePressableState extends State<ExpressivePressable> {
         splashFactory: splash,
         highlightColor: content.withValues(alpha: 0),
         overlayColor: overlay,
+        child: _focusTarget,
       ),
     );
   }
+
+  /// [ExpressivePressable.focusTarget] inside the ink: its focus is then
+  /// the ink's, which shows the focus layer, and the ring, while it lasts.
+  Widget? get _focusTarget {
+    final target = widget.focusTarget;
+    return target == null ? null : _InkFocusTarget(child: target);
+  }
+}
+
+/// Holds an [ExpressivePressable.focusTarget] inside the pressable's ink.
+/// Enter (and the numeric pad's) on the target goes to the ink's own
+/// activation, the ripple and press it shows from the keyboard, as on a
+/// pressable that holds its own focus; the target's activation is not run.
+class _InkFocusTarget extends StatelessWidget {
+  const _InkFocusTarget({required this.child});
+
+  final Widget child;
+
+  static const _keys = <ShortcutActivator, Intent>{
+    SingleActivator(LogicalKeyboardKey.enter): _InkActivateIntent(),
+    SingleActivator(LogicalKeyboardKey.numpadEnter): _InkActivateIntent(),
+  };
+
+  @override
+  Widget build(BuildContext context) => Shortcuts(
+    shortcuts: _keys,
+    child: Actions(
+      actions: <Type, Action<Intent>>{
+        // This widget's context is under the ink's own actions.
+        _InkActivateIntent: CallbackAction<_InkActivateIntent>(
+          onInvoke: (_) => Actions.maybeInvoke(context, const ActivateIntent()),
+        ),
+      },
+      child: child,
+    ),
+  );
+}
+
+class _InkActivateIntent extends Intent {
+  const _InkActivateIntent();
 }
 
 /// Dimensions of the keyboard focus ring, Material 3's focus indicator. The
@@ -1017,6 +1083,7 @@ class _CentredInkResponse extends InkResponse {
     super.splashFactory,
     super.highlightColor,
     super.overlayColor,
+    super.child,
   });
 
   final Rect Function(Size box) rect;
@@ -1336,7 +1403,7 @@ class _MergeSemanticsRegistry {
 }
 
 /// Compose's `Modifier.minimumInteractiveComponentSize()` on ui_core's
-/// padded tap target ([DesignTapTarget]): [child] keeps its size, centred in
+/// padded tap target ([TapTargetPadding]): [child] keeps its size, centred in
 /// at least [size] × [size] (`HostBehavior.minimumInteractiveComponentSize`,
 /// 48dp), and a tap anywhere in that area reaches it. The layout, the area a
 /// tap reaches and the box a screen reader outlines are one: the target is
@@ -1397,7 +1464,7 @@ class ExpressiveMinimumInteractiveSize extends StatelessWidget {
     final minSize = Size.square(enforcedAt(context) ? size : 0);
     final child = this.child ?? const SizedBox.shrink();
     if (_node) {
-      return DesignTapTarget(
+      return TapTargetPadding(
         minSize: minSize,
         alignment: alignment,
         child: child,

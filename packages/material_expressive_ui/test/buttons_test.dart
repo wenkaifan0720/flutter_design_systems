@@ -494,7 +494,12 @@ void main() {
       final handle = tester.ensureSemantics();
       expect(
         tester.getSemantics(find.byType(ExpressivePressable)),
-        isSemantics(isButton: true, hasToggledState: true, isToggled: true),
+        isSemantics(
+          isButton: true,
+          hasSelectedState: true,
+          isSelected: true,
+          hasToggledState: false,
+        ),
       );
       handle.dispose();
     });
@@ -535,7 +540,12 @@ void main() {
       final handle = tester.ensureSemantics();
       expect(
         tester.getSemantics(find.byType(ExpressivePressable)),
-        isSemantics(label: 'Play', isButton: true, hasToggledState: true),
+        isSemantics(
+          label: 'Play',
+          isButton: true,
+          hasSelectedState: true,
+          hasToggledState: false,
+        ),
       );
       handle.dispose();
       await tester.tap(button);

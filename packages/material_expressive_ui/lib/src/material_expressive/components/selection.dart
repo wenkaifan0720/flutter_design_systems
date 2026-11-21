@@ -10,6 +10,7 @@ import 'package:ui_core/ui_core.dart';
 
 import '../component_themes.dart';
 import '../internal/cap_label.dart';
+import '../internal/group_radio.dart';
 import '../internal/list_item_shapes.dart';
 import '../internal/reach.dart';
 import '../internal/styled_content.dart';
@@ -856,44 +857,63 @@ class ExpressiveRadioGroup<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final byValue = {for (final option in options) option.value: option};
+    final onChanged = this.onChanged;
     return Semantics(
       container: true,
       explicitChildNodes: true,
       label: semanticLabel,
-      child: DesignRadioGroup<T>(
-        options: [for (final option in options) option.value],
-        value: value,
-        onChanged: onChanged,
-        isEnabled: (value) => byValue[value]!.enabled,
-        layoutBuilder: (context, items) => Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: items,
-        ),
-        itemBuilder: (context, value, node, select) {
-          final option = byValue[value]!;
-          // A press on the checked row still reports its value to the
-          // caller, whether it comes from a tap, Enter or Space.
-          final again = select == null || value != this.value
-              ? null
-              : () => onChanged!(value);
-          return CallbackShortcuts(
-            // Flutter's RadioGroup takes Space and reports only a new
-            // choice, so the checked row binds Space itself.
-            bindings: {const SingleActivator(LogicalKeyboardKey.space): ?again},
-            child: ExpressiveRadioRow(
-              focusNode: node,
-              style: style,
-              contentPadding: contentPadding,
-              label: option.label,
-              supportingText: option.supportingText,
-              selected: value == this.value,
-              enabled: select != null,
-              onPressed: again ?? select,
-            ),
-          );
+      // Flutter's radio group: one Tab stop (the chosen option, else the
+      // first), the arrows moving and choosing. ui_core's keyboard fix inside
+      // it gives the group its Tab stop when the chosen option can't be
+      // chosen, and swaps Left and Right right to left, until Flutter's own
+      // fixes do.
+      child: RadioGroup<T>(
+        groupValue: value,
+        onChanged: (choice) {
+          if (choice != null) onChanged?.call(choice);
         },
+        child: RadioGroupKeyboardFix<T>(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              for (final option in options)
+                ExpressiveGroupRadio<T>(
+                  key: ObjectKey(option.value),
+                  value: option.value,
+                  enabled: onChanged != null && option.enabled,
+                  control: (context, target, chosen) {
+                    final enabled = onChanged != null && option.enabled;
+                    // A press on the checked row still reports its value to
+                    // the caller, whether it comes from a tap, Enter or
+                    // Space.
+                    final again = enabled && chosen
+                        ? () => onChanged(option.value)
+                        : null;
+                    return CallbackShortcuts(
+                      // Flutter's RadioGroup takes Space and reports only a
+                      // new choice, so the checked row binds Space itself.
+                      bindings: {
+                        const SingleActivator(LogicalKeyboardKey.space): ?again,
+                      },
+                      child: ExpressiveRadioRow._inGroup(
+                        focusTarget: target,
+                        style: style,
+                        contentPadding: contentPadding,
+                        label: option.label,
+                        supportingText: option.supportingText,
+                        selected: chosen,
+                        enabled: enabled,
+                        onPressed: enabled
+                            ? again ?? () => onChanged(option.value)
+                            : null,
+                      ),
+                    );
+                  },
+                ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -1544,11 +1564,15 @@ class _ControlRow extends StatelessWidget {
     this.style,
     required this.focusNode,
     required this.autofocus,
+    this.focusTarget,
   });
 
   final String label;
   final String? supportingText;
   final Widget control;
+
+  /// What takes the focus over the row ([ExpressivePressable.focusTarget]).
+  final Widget? focusTarget;
 
   /// The row's start and end space ([ExpressiveRadioRow.contentPadding]).
   final EdgeInsetsGeometry? contentPadding;
@@ -1659,6 +1683,7 @@ class _ControlRow extends StatelessWidget {
     return ExpressivePressable(
       focusNode: focusNode,
       autofocus: autofocus,
+      focusTarget: focusTarget,
       style: style,
       componentStyle: t.listTileTheme,
       // ListItemShapes.shapeForInteraction, as ExpressiveListTile: no
@@ -1851,7 +1876,23 @@ class ExpressiveRadioRow extends StatelessWidget {
     super.key,
     this.focusNode,
     this.autofocus = false,
-  });
+  }) : _focusTarget = null;
+
+  // A row of an [ExpressiveRadioGroup]: [focusTarget], the group's radio,
+  // takes the focus over the row.
+  const ExpressiveRadioRow._inGroup({
+    required this.label,
+    required this.selected,
+    required Widget this._focusTarget,
+    this.onPressed,
+    this.supportingText,
+    this.enabled = true,
+    this.contentPadding,
+    this.style,
+  }) : focusNode = null,
+       autofocus = false;
+
+  final Widget? _focusTarget;
 
   /// Stateful visual overrides for this control or labelled row.
   final ExpressiveComponentThemeData? style;
@@ -1891,6 +1932,7 @@ class ExpressiveRadioRow extends StatelessWidget {
   Widget build(BuildContext context) => _ControlRow(
     focusNode: focusNode,
     autofocus: autofocus,
+    focusTarget: _focusTarget,
     style: style,
     label: label,
     supportingText: supportingText,

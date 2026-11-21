@@ -515,20 +515,20 @@ Widget _table(BuildContext context) => const ExpressiveTable(
 );
 
 Widget _dataTable(BuildContext context) => Owned(
-  create: () => DesignTableController<List<String>>(
+  create: () => RawDataTableController<List<String>>(
     rows: const <List<String>>[
       <String>['#4821', 'Ada Okafor', '128.40'],
       <String>['#4822', 'Ben Ito', '42.00'],
     ],
     rowKey: (row) => row.first,
-    columns: <DesignTableColumn<List<String>>>[
-      DesignTableColumn<List<String>>(
+    columns: <RawDataColumn<List<String>>>[
+      RawDataColumn<List<String>>(
         id: '0',
         label: 'Order',
         sortKey: (row) => row[0],
       ),
-      const DesignTableColumn<List<String>>(id: '1', label: 'Customer'),
-      DesignTableColumn<List<String>>(
+      const RawDataColumn<List<String>>(id: '1', label: 'Customer'),
+      RawDataColumn<List<String>>(
         id: '2',
         label: 'Total',
         numeric: true,

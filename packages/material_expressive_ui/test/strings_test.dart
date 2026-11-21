@@ -1,6 +1,6 @@
 // ExpressiveLocalizations (strings.dart): the words components say on their
 // own come from two places. The shared ones from the app's
-// DesignLocalizations (ui_core's, one set for every look): a secure field's
+// RawWidgetsLocalizations (ui_core's, one set for every look): a secure field's
 // reveal toggle, a dialog's Cancel. The look's own from its
 // ExpressiveLocalizations (a delegate's, or a host's
 // ExpressiveLocalizationsScope): a chat bubble's sender and status, a
@@ -18,7 +18,7 @@ final ExpressiveThemeData _theme = ExpressiveThemeData.preset(
   Brightness.light,
 );
 
-class _FrenchWords extends DefaultDesignLocalizations {
+class _FrenchWords extends DefaultRawWidgetsLocalizations {
   const _FrenchWords();
 
   @override
@@ -63,7 +63,7 @@ Widget _app(
   ExpressiveLocalizations? scoped,
 }) => MaterialApp(
   localizationsDelegates: <LocalizationsDelegate<dynamic>>[
-    const _French<DesignLocalizations>(_FrenchWords()),
+    const _French<RawWidgetsLocalizations>(_FrenchWords()),
     if (own != null) _French<ExpressiveLocalizations>(own),
     DefaultMaterialLocalizations.delegate,
     DefaultWidgetsLocalizations.delegate,

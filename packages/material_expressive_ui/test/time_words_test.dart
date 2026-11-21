@@ -1,7 +1,7 @@
 /// A time picker's words (its hour and minute fields, its AM/PM pair and
 /// their names) in the app's language, and a delegate that takes every
 /// locale. The picker said "Hour", "Minute", "AM" and "PM" in every
-/// language, though ui_core's DesignLocalizations has them in 30, and
+/// language, though ui_core's RawWidgetsLocalizations has them in 30, and
 /// [ExpressiveLocalizations.delegate] said English only, so a German app
 /// that installed it had Flutter's warning that no delegate supports its
 /// locale, and the delegate was skipped.
@@ -73,7 +73,7 @@ Future<ExpressiveLocalizations> _words(
   return words;
 }
 
-void _says(ExpressiveLocalizations words, DesignLocalizations shared) {
+void _says(ExpressiveLocalizations words, RawWidgetsLocalizations shared) {
   expect(words.hour, shared.timePickerHourLabel);
   expect(words.minute, shared.timePickerMinuteLabel);
   expect(words.period, shared.timeFieldDayPeriodLabel);
@@ -92,7 +92,7 @@ void main() {
 
   testWidgets('a German app with the delegate has no warning and its time '
       'picker says ui_core\'s German words', (tester) async {
-    final german = DesignLocalizations.forLocale(const Locale('de'));
+    final german = RawWidgetsLocalizations.forLocale(const Locale('de'));
     expect(german.timePickerHourLabel, isNot('Hour'));
     final time = ExpressiveTimePickerController(hour: 9, minute: 30);
     addTearDown(time.dispose);
@@ -107,21 +107,21 @@ void main() {
     );
   });
 
-  testWidgets('an Arabic app\'s own DesignLocalizations name the fields', (
+  testWidgets('an Arabic app\'s own RawWidgetsLocalizations name the fields', (
     tester,
   ) async {
     _says(
       await _words(tester, const Locale('ar'), const [
-        DesignLocalizations.delegate,
+        RawWidgetsLocalizations.delegate,
       ]),
-      DesignLocalizations.forLocale(const Locale('ar')),
+      RawWidgetsLocalizations.forLocale(const Locale('ar')),
     );
   });
 
   testWidgets('an English app keeps the look\'s English', (tester) async {
     final words = await _words(tester, const Locale('en'), const [
       ExpressiveLocalizations.delegate,
-      DesignLocalizations.delegate,
+      RawWidgetsLocalizations.delegate,
     ]);
     const english = ExpressiveLocalizations.english;
     expect(
@@ -133,7 +133,7 @@ void main() {
   testWidgets('an app\'s own words win', (tester) async {
     final words = await _words(tester, const Locale('de'), const [
       _OwnDelegate(),
-      DesignLocalizations.delegate,
+      RawWidgetsLocalizations.delegate,
     ]);
     expect((words.hour, words.am, words.minute), ('Std.', 'vorm.', 'Minute'));
   });

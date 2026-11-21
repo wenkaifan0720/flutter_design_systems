@@ -66,14 +66,14 @@ int _leadingCells(int year, int month, int firstDayOfWeek) =>
     DateTime.daysPerWeek;
 
 /// "March 2031": the year menu button's and the range list's month, in the
-/// app's words ([DesignLocalizations.formatMonthYear]).
+/// app's words ([RawWidgetsLocalizations.formatMonthYear]).
 String _monthYear(BuildContext context, DateTime month) =>
-    DesignLocalizations.of(context).formatMonthYear(month);
+    RawWidgetsLocalizations.of(context).formatMonthYear(month);
 
 /// "Thursday, 12 March 2031": what a screen reader reads for a day, in the
-/// app's words ([DesignLocalizations.formatFullDate]).
+/// app's words ([RawWidgetsLocalizations.formatFullDate]).
 String _spokenDay(BuildContext context, DateTime d) =>
-    DesignLocalizations.of(context).formatFullDate(d);
+    RawWidgetsLocalizations.of(context).formatFullDate(d);
 
 /// "03/12/2031": a date as the input field holds it.
 String _inputText(DateTime d) =>
@@ -82,12 +82,12 @@ String _inputText(DateTime d) =>
 /// [d] as a docked field prints it: MM/DD/YYYY ([_inputText], Compose's
 /// sample) where the app's language writes a short date as English does
 /// (month, day, year, in Western digits), else that language's short date
-/// ([DesignLocalizations.dateFieldPattern]) in its digits, as Material's
+/// ([RawWidgetsLocalizations.dateFieldPattern]) in its digits, as Material's
 /// date field prints `formatCompactDate`.
 String _fieldDate(BuildContext context, DateTime d) {
-  final words = DesignLocalizations.of(context);
+  final words = RawWidgetsLocalizations.of(context);
   if (words.dateFieldPattern ==
-          const DefaultDesignLocalizations().dateFieldPattern &&
+          const DefaultRawWidgetsLocalizations().dateFieldPattern &&
       words.formatDecimal(0) == '0') {
     return _inputText(d);
   }
@@ -1413,7 +1413,7 @@ class _WeekDays extends StatelessWidget {
                   // The letter in the app's words; the name read aloud is
                   // the kit's (the shared words name a weekday only short).
                   final name = ExpressiveFormat.weekday(day, short: false);
-                  final letter = DesignLocalizations.of(context)
+                  final letter = RawWidgetsLocalizations.of(context)
                       .formatShortWeekday(day.weekday)
                       .characters
                       .first;
@@ -2560,7 +2560,7 @@ class ExpressiveDockedDatePicker extends StatefulWidget {
   /// first passes its own (`(d) => ExpressiveFormat.date(d)`, "3 Oct
   /// 2026"), so the field never reads as another day. When null, Compose's
   /// MM/DD/YYYY in English, and in another language the locale's short date
-  /// ([DesignLocalizations.dateFieldPattern]) in its digits, as Material's
+  /// ([RawWidgetsLocalizations.dateFieldPattern]) in its digits, as Material's
   /// date field.
   final String Function(DateTime day)? format;
 
@@ -6166,7 +6166,7 @@ double _timeSupportingHeight(BuildContext context) {
 /// 48dp cell (overhanging its seventh where seven do not fit) — the chosen
 /// day in `primary`, today ringed in `primary`, a range's days on its
 /// `secondaryContainer` band. The keyboard is ui_core's
-/// `DesignCalendar`: the arrows move a day or a week, Page Up and Down a
+/// `RawCalendarDatePicker`: the arrows move a day or a week, Page Up and Down a
 /// month, Home and End to the week's ends, Enter chooses; the keyboard's day
 /// shows the focus state layer and ring. A pointer resting on a day while a
 /// range has its start shows where the range would end.
@@ -6289,15 +6289,15 @@ class ExpressiveCalendar extends StatefulWidget {
 }
 
 class _ExpressiveCalendarState extends State<ExpressiveCalendar> {
-  late DesignCalendarController _controller = _make();
+  late RawCalendarController _controller = _make();
 
-  DesignCalendarController _make() => DesignCalendarController(
+  RawCalendarController _make() => RawCalendarController(
     firstDate: widget.firstDate,
     lastDate: widget.lastDate,
-    mode: widget._range ? DesignCalendarMode.range : DesignCalendarMode.single,
+    mode: widget._range ? RawCalendarMode.range : RawCalendarMode.single,
     selectedDate: widget._value,
     selectedRange: widget._range && widget.start != null
-        ? DesignDateRange(widget.start!, widget.end)
+        ? RawDateRange(widget.start!, widget.end)
         : null,
     selectable: widget.selectableDayPredicate,
     currentDate: widget.currentDate,
@@ -6345,7 +6345,7 @@ class _ExpressiveCalendarState extends State<ExpressiveCalendar> {
     final enabled = widget._range
         ? widget._onRange != null
         : widget._onChanged != null;
-    return DesignCalendar(
+    return RawCalendarDatePicker(
       controller: _controller,
       months: widget.months,
       firstWeekday: widget.firstDayOfWeek ?? strings.firstDayOfWeek,
