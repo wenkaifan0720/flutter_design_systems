@@ -8,6 +8,7 @@ import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
 import '../grid.dart';
+import '../internal/key_focus.dart';
 import '../internal/pointer.dart';
 import '../primitives/box.dart';
 import '../primitives/control.dart';
@@ -227,7 +228,7 @@ class TermCheckbox extends StatelessWidget {
     };
     return TermTapTarget(
       alignment: AlignmentDirectional.centerStart,
-      child: DesignPressable(
+      child: RawButton(
         onPressed: onChanged == null ? null : _toggle,
         focusNode: focusNode,
         autofocus: autofocus,
@@ -280,28 +281,45 @@ class TermCheckbox extends StatelessWidget {
   }
 }
 
-/// A radio button, `(•)`, one of a group sharing [groupValue], with its
-/// [label] after it on the same line when given. Under the pointer its
-/// brackets take the accent; the keyboard's focus is the cursor.
+/// A radio button, `(•)`, with its [label] after it on the same line when
+/// given. Under the pointer its brackets take the accent; the keyboard's
+/// focus is the cursor.
+///
+/// Radios of one choice stand in Flutter's [RadioGroup], which holds the
+/// choice, with ui_core's [RadioGroupKeyboardFix] round them: Tab stops
+/// once, on the chosen radio (the first that can be chosen while none is),
+/// and the arrows move and choose, round the ends and past a radio turned
+/// off, Left and Right swapped right to left.
 ///
 /// ```dart
-/// TermRadio<String>(
-///   value: 'production',
+/// RadioGroup<String>(
 ///   groupValue: environment,
-///   label: 'production',
-///   onChanged: (value) => setState(() => environment = value!),
+///   onChanged: (value) => setState(() => environment = value),
+///   child: RadioGroupKeyboardFix<String>(
+///     child: Column(
+///       crossAxisAlignment: CrossAxisAlignment.start,
+///       children: const [
+///         TermRadio<String>(value: 'staging', label: 'staging'),
+///         TermRadio<String>(value: 'production', label: 'production'),
+///       ],
+///     ),
+///   ),
 /// )
 /// ```
+///
+/// A radio given [groupValue] or [onChanged] holds its choice itself, a Tab
+/// stop of its own, as a radio outside a group does.
 ///
 /// Reads [TermStyle]'s `fill`, `foreground`, `edge` and `textStyle`, as
 /// [TermCheckbox] does.
 class TermRadio<T> extends StatelessWidget {
-  /// The radio for [value] in the group at [groupValue].
+  /// The radio for [value].
   const TermRadio({
     super.key,
     required this.value,
-    required this.groupValue,
-    required this.onChanged,
+    this.groupValue,
+    this.onChanged,
+    this.enabled,
     this.label,
     this.semanticLabel,
     this.focusNode,
@@ -312,11 +330,19 @@ class TermRadio<T> extends StatelessWidget {
   /// The value this radio stands for.
   final T value;
 
-  /// The group's value: this radio is chosen when it equals [value].
+  /// The chosen value, for a radio that holds its own choice: this radio is
+  /// chosen when it equals [value]. Leave it out inside a [RadioGroup],
+  /// which holds the choice.
   final T? groupValue;
 
-  /// Called with [value] when chosen; null disables it.
+  /// Called with [value] when chosen, for a radio that holds its own
+  /// choice; null disables it. Leave it out inside a [RadioGroup], which is
+  /// told instead.
   final ValueChanged<T?>? onChanged;
+
+  /// Whether it can be chosen. Null: inside a [RadioGroup] it can; holding
+  /// its own choice, while [onChanged] is set.
+  final bool? enabled;
 
   /// The words after the radio, or null.
   final String? label;
@@ -337,53 +363,147 @@ class TermRadio<T> extends StatelessWidget {
   final TermStyle? style;
 
   @override
-  Widget build(BuildContext context) {
-    final chosen = value == groupValue;
-    return TermTapTarget(
-      alignment: AlignmentDirectional.centerStart,
-      child: DesignPressable(
-        onPressed: onChanged == null ? null : () => onChanged!(value),
-        focusNode: focusNode,
-        autofocus: autofocus,
-        checked: chosen,
-        inMutuallyExclusiveGroup: true,
-        semanticLabel: semanticLabel ?? label,
-        button: false,
-        excludeSemantics: true,
-        mouseCursor: onChanged == null
-            ? SystemMouseCursors.basic
-            : SystemMouseCursors.click,
-        builder: (context, states, _) => _ChoiceFace(
-          shape: TermBracketShape.round,
-          states: states,
-          label: label,
-          style: style,
-          themed: TermTheme.of(context).radioStyle,
-          mark: (theme, grid, ink) => TermSpring(
-            target: chosen ? 1 : 0,
-            token: TermMotion.press,
-            builder: (context, t, _) => CustomPaint(
-              size: Size.square(grid.cellWidth),
-              painter: _Dot(color: ink, amount: t.clamp(0, 1)),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
+  Widget build(BuildContext context) => _TermRadioControl<T>(radio: this);
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
       ..add(DiagnosticsProperty<T>('value', value))
-      ..add(DiagnosticsProperty<T>('groupValue', groupValue))
+      ..add(
+        DiagnosticsProperty<T>('groupValue', groupValue, defaultValue: null),
+      )
       ..add(StringProperty('label', label, defaultValue: null))
       ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
-      ..add(
-        FlagProperty('enabled', value: onChanged != null, ifFalse: 'disabled'),
-      );
+      ..add(DiagnosticsProperty<bool>('enabled', enabled, defaultValue: null))
+      ..add(ObjectFlagProperty<ValueChanged<T?>>.has('onChanged', onChanged));
   }
+}
+
+// A TermRadio's control: a RawRadio, with the focus node it owns when the
+// caller gives none.
+class _TermRadioControl<T> extends StatefulWidget {
+  const _TermRadioControl({required this.radio});
+
+  final TermRadio<T> radio;
+
+  @override
+  State<_TermRadioControl<T>> createState() => _TermRadioControlState<T>();
+}
+
+class _TermRadioControlState<T> extends State<_TermRadioControl<T>> {
+  FocusNode? _ownNode;
+  late final _OwnChoice<T> _ownChoice = _OwnChoice<T>(this);
+
+  // The pointer over the face, in any highlight mode: RawRadio's own hover
+  // shows in the traditional mode only, and a mouse over a touch screen
+  // lights the brackets as it does a checkbox's.
+  bool _pointerOver = false;
+
+  @override
+  void initState() {
+    super.initState();
+    TermKeyFocus.addListener(_inputChanged);
+  }
+
+  @override
+  void dispose() {
+    TermKeyFocus.removeListener(_inputChanged);
+    _ownNode?.dispose();
+    super.dispose();
+  }
+
+  void _inputChanged() => setState(() {});
+
+  void _hover(bool over) {
+    if (over != _pointerOver) setState(() => _pointerOver = over);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final radio = widget.radio;
+    final group = RadioGroup.maybeOf<T>(context);
+    // The group above holds the choice, unless the radio was given its own.
+    final inGroup =
+        group != null && radio.groupValue == null && radio.onChanged == null;
+    final enabled = radio.enabled ?? (inGroup || radio.onChanged != null);
+    final label = radio.label;
+    return TermTapTarget(
+      alignment: AlignmentDirectional.centerStart,
+      // One node: RawRadio's (checked, one of a group, its focus and its
+      // tap) with the words.
+      child: MergeSemantics(
+        child: RawRadio<T>(
+          value: radio.value,
+          mouseCursor: WidgetStateMouseCursor.clickable,
+          toggleable: false,
+          focusNode: radio.focusNode ?? (_ownNode ??= FocusNode()),
+          autofocus: radio.autofocus,
+          groupRegistry: inGroup ? group : _ownChoice,
+          enabled: enabled,
+          builder: (context, state) {
+            final chosen = state.value ?? false;
+            return Semantics(
+              label: radio.semanticLabel ?? label,
+              child: ExcludeSemantics(
+                child: MouseRegion(
+                  onEnter: (_) => _hover(true),
+                  onExit: (_) => _hover(false),
+                  // The whole face takes the press, the space between the
+                  // brackets and the words too.
+                  child: MetaData(
+                    behavior: HitTestBehavior.opaque,
+                    child: _ChoiceFace(
+                      shape: TermBracketShape.round,
+                      states: {
+                        // The cursor after a key only, as a pressable's.
+                        for (final s in state.states)
+                          if (s != WidgetState.focused || TermKeyFocus.shown) s,
+                        if (_pointerOver && enabled) WidgetState.hovered,
+                        if (state.downPosition != null) WidgetState.pressed,
+                      },
+                      label: label,
+                      style: radio.style,
+                      themed: TermTheme.of(context).radioStyle,
+                      mark: (theme, grid, ink) => TermSpring(
+                        target: chosen ? 1 : 0,
+                        token: TermMotion.press,
+                        builder: (context, t, _) => CustomPaint(
+                          size: Size.square(grid.cellWidth),
+                          painter: _Dot(color: ink, amount: t.clamp(0, 1)),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+// The choice of a radio that holds its own: its groupValue and onChanged.
+class _OwnChoice<T> extends RadioGroupRegistry<T> {
+  _OwnChoice(this._state);
+
+  final _TermRadioControlState<T> _state;
+
+  @override
+  T? get groupValue => _state.widget.radio.groupValue;
+
+  @override
+  ValueChanged<T?> get onChanged => _state.widget.radio.onChanged ?? _none;
+
+  static void _none(Object? _) {}
+
+  @override
+  void registerClient(RadioClient<T> radio) {}
+
+  @override
+  void unregisterClient(RadioClient<T> radio) {}
 }
 
 class _Dot extends CustomPainter {
@@ -462,7 +582,7 @@ class TermSwitch extends StatelessWidget {
   Widget build(BuildContext context) {
     return TermTapTarget(
       alignment: AlignmentDirectional.centerStart,
-      child: DesignPressable(
+      child: RawButton(
         onPressed: onChanged == null ? null : () => onChanged!(!value),
         focusNode: focusNode,
         autofocus: autofocus,

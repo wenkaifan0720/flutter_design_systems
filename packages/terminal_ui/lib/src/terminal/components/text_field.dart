@@ -427,7 +427,7 @@ class _TermTextFieldState extends State<TermTextField> {
       );
     }
 
-    return DesignField(
+    return RawInputDecorator(
       labelText: widget.labelText,
       helperText: widget.helperText,
       errorText: widget.errorText,

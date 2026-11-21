@@ -233,7 +233,7 @@ class _TermSliderState extends State<TermSlider> {
 ///
 /// ```dart
 /// TermRangeSlider(
-///   values: const DesignRangeValues(200, 800),
+///   values: const RawRangeValues(200, 800),
 ///   max: 1000,
 ///   onChanged: (v) => setState(() => latency = v),
 /// )
@@ -259,10 +259,10 @@ class TermRangeSlider extends StatelessWidget {
   final TermStyle? style;
 
   /// The range.
-  final DesignRangeValues values;
+  final RawRangeValues values;
 
   /// Called as it moves; null disables it.
-  final ValueChanged<DesignRangeValues>? onChanged;
+  final ValueChanged<RawRangeValues>? onChanged;
 
   /// The least value.
   final double min;
@@ -292,7 +292,7 @@ class TermRangeSlider extends StatelessWidget {
     final floor = grid.ceil(DesignTapTargets.of(context).floorOn());
     // A thumb's target: the floor wide, its face one cell in the middle.
     final target = Size(math.max(floor.width, grid.cellWidth), floor.height);
-    return DesignRangeSlider(
+    return RawRangeSlider(
       values: values,
       onChanged: onChanged,
       min: min,
@@ -461,7 +461,7 @@ class TermMeter extends StatelessWidget {
 /// would give, the one hover a rating keeps. A screen reader hears a
 /// slider, "3 of 5".
 ///
-/// The behaviour is ui_core's [DesignRating]; Terminal draws the marks,
+/// The behaviour is ui_core's [RawRating]; Terminal draws the marks,
 /// the brackets and the count.
 ///
 /// ```dart
@@ -536,7 +536,7 @@ class _TermRatingState extends State<TermRating> {
     final per = touch ? 4 : 2;
     final change = widget.onChanged;
     final height = math.max(grid.lineHeight * (touch ? 2 : 1), floor.height);
-    final marks = DesignRating(
+    final marks = RawRating(
       value: widget.value.toDouble(),
       onChanged: change == null ? null : (v) => change(v.round()),
       itemCount: widget.max,

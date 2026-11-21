@@ -103,7 +103,7 @@ class _TermDisclosureState extends State<TermDisclosure> {
       mainAxisSize: MainAxisSize.min,
       children: [
         TermTapTarget(
-          child: DesignPressable(
+          child: RawButton(
             onPressed: _toggle,
             expanded: _open,
             semanticLabel: widget.title,
@@ -331,7 +331,7 @@ class TermTable extends StatelessWidget {
   }
 }
 
-/// A table you work in, on [DesignDataTable]: headings that sort when
+/// A table you work in, on [RawDataTable]: headings that sort when
 /// pressed (`↑` or `↓` after the one sorted), rows that select with a
 /// press or Space (`[x]` in the first column) and open with Enter, the
 /// arrows moving a `>` down the rows, one tab stop for them all. The
@@ -358,14 +358,10 @@ class TermDataTable<R> extends StatelessWidget {
 
   /// The rows, the columns and the view of them. The caller makes it,
   /// keeps it and disposes it.
-  final DesignTableController<R> controller;
+  final RawDataTableController<R> controller;
 
   /// A cell's words.
-  final Widget Function(
-    BuildContext context,
-    R row,
-    DesignTableColumn<R> column,
-  )
+  final Widget Function(BuildContext context, R row, RawDataColumn<R> column)
   cellBuilder;
 
   /// Columns' widths in cells, by column id; a column without one takes a
@@ -411,7 +407,7 @@ class TermDataTable<R> extends StatelessWidget {
       maxLines: 1,
       softWrap: false,
       overflow: TextOverflow.clip,
-      child: DesignDataTable<R>(
+      child: RawDataTable<R>(
         controller: controller,
         selectable: selectable,
         onActivate: onActivate,
@@ -420,8 +416,8 @@ class TermDataTable<R> extends StatelessWidget {
           final focused = !lit && states.contains(WidgetState.focused);
           final words =
               '${column.label}${switch (sort) {
-                DesignSortDirection.ascending => ' ↑',
-                DesignSortDirection.descending => ' ↓',
+                RawSortDirection.ascending => ' ↑',
+                RawSortDirection.descending => ' ↓',
                 null => '',
               }}';
           // A heading is one line; what a tap reaches is the floor (a
@@ -468,9 +464,9 @@ class TermDataTable<R> extends StatelessWidget {
             row[1] = SizedBox(
               width: grid.cols(6),
               height: height,
-              child: DesignPressable(
+              child: RawButton(
                 onPressed: controller.togglePage,
-                checked: page == DesignSelection.all,
+                checked: page == RawDataTableSelection.all,
                 semanticLabel: TermLocalizations.of(context).selectPageLabel,
                 excludeSemantics: true,
                 mouseCursor: SystemMouseCursors.click,
@@ -480,9 +476,9 @@ class TermDataTable<R> extends StatelessWidget {
                     alignment: AlignmentDirectional.centerStart,
                     child: mark(
                       switch (page) {
-                        DesignSelection.all => '[x]',
-                        DesignSelection.some => '[-]',
-                        DesignSelection.none => '[ ]',
+                        RawDataTableSelection.all => '[x]',
+                        RawDataTableSelection.some => '[-]',
+                        RawDataTableSelection.none => '[ ]',
                       },
                       states.contains(WidgetState.focused)
                           ? theme.onAccent
@@ -671,7 +667,7 @@ class TermScrollArea extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = TermTheme.of(context);
     final grid = context.termGrid;
-    return DesignScrollArea(
+    return RawScrollArea(
       controller: controller,
       axis: axis,
       visibility: visibility,
@@ -814,7 +810,7 @@ class TermSplitView extends StatelessWidget {
     final theme = TermTheme.of(context);
     final grid = context.termGrid;
     final across = axis == Axis.horizontal ? grid.cellWidth : grid.lineHeight;
-    return DesignSplitView(
+    return RawSplitView(
       first: first,
       second: second,
       axis: axis,
@@ -907,7 +903,7 @@ class TermReorderableList<T extends Object> extends StatelessWidget {
     final theme = TermTheme.of(context);
     final grid = context.termGrid;
     final own = TermStyleOf([style, theme.listTileStyle], const {});
-    return DesignReorderableList<T>(
+    return RawReorderableList<T>(
       items: items,
       onReorder: onReorder,
       labelOf: labelOf,
@@ -993,7 +989,7 @@ class TermPullToRefresh extends StatelessWidget {
     final ink =
         TermStyleOf([style, theme.spinnerStyle], const {}).foreground ??
         theme.accent;
-    return DesignPullToRefresh(
+    return RawRefreshIndicator(
       onRefresh: onRefresh,
       triggerDistance: grid.lines(3),
       restExtent: grid.lines(2),
@@ -1001,11 +997,23 @@ class TermPullToRefresh extends StatelessWidget {
       indicatorBuilder: (context, details) {
         final say = TermLocalizations.of(context);
         final words = switch (details.mode) {
-          DesignRefreshMode.inactive => null,
-          DesignRefreshMode.drag => ('↓', say.pullToRefreshLabel, theme.dim),
-          DesignRefreshMode.armed => ('↑', say.releaseToRefreshLabel, ink),
-          DesignRefreshMode.refresh => (null, say.refreshingLabel, ink),
-          DesignRefreshMode.done => ('✓', say.refreshedLabel, theme.success),
+          RawRefreshIndicatorMode.inactive => null,
+          RawRefreshIndicatorMode.drag => (
+            '↓',
+            say.pullToRefreshLabel,
+            theme.dim,
+          ),
+          RawRefreshIndicatorMode.armed => (
+            '↑',
+            say.releaseToRefreshLabel,
+            ink,
+          ),
+          RawRefreshIndicatorMode.refresh => (null, say.refreshingLabel, ink),
+          RawRefreshIndicatorMode.done => (
+            '✓',
+            say.refreshedLabel,
+            theme.success,
+          ),
         };
         if (words == null) return const SizedBox.shrink();
         return SizedBox(

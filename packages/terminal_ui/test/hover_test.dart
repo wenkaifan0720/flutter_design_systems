@@ -59,16 +59,25 @@ Widget _host(WidgetBuilder build, String row) => MaterialApp(
 );
 
 /// The pressables of the part on screen, by their centre.
-List<(DesignPressable, Offset)> _pressables(WidgetTester tester) => [
-  for (final e in find.byType(DesignPressable).hitTestable().evaluate())
-    (e.widget as DesignPressable, tester.getCenter(find.byWidget(e.widget))),
+List<(RawButton, Offset)> _pressables(WidgetTester tester) => [
+  for (final e in find.byType(RawButton).hitTestable().evaluate())
+    (e.widget as RawButton, tester.getCenter(find.byWidget(e.widget))),
 ];
 
-/// Where the pointer goes in the part on screen: its pressables' and its
-/// value handles' (a slider's) centres.
+/// The radios of the part on screen (Flutter's RawRadio under each), whether
+/// each can be chosen, by their centre.
+List<(bool, Offset)> _radios(WidgetTester tester) => [
+  for (final e
+      in find.byWidgetPredicate((w) => w is RawRadio).hitTestable().evaluate())
+    ((e.widget as RawRadio).enabled, tester.getCenter(find.byWidget(e.widget))),
+];
+
+/// Where the pointer goes in the part on screen: its pressables', its
+/// radios' and its value handles' (a slider's) centres.
 List<(String, Offset)> _targets(WidgetTester tester) => [
   for (final (p, centre) in _pressables(tester))
     (p.semanticLabel ?? '$centre', centre),
+  for (final (_, centre) in _radios(tester)) ('radio at $centre', centre),
   for (final e in find.byType(DesignValueHandle).hitTestable().evaluate())
     (
       (e.widget as DesignValueHandle).semanticLabel ?? 'handle',
@@ -90,7 +99,7 @@ int _ground(List<int> pixels) {
   return counts.entries.reduce((a, b) => a.value >= b.value ? a : b).key;
 }
 
-bool _presses(DesignPressable p) =>
+bool _presses(RawButton p) =>
     (p.enabled ?? true) && (p.onPressed != null || p.onLongPress != null);
 
 Future<List<int>> _pixels(WidgetTester tester) async {
@@ -150,6 +159,19 @@ void main() {
           reason:
               '${entry.row}: ${pressable.semanticLabel ?? centre} '
               'shows $cursor',
+        );
+        seen++;
+        await mouse.moveTo(const Offset(1279, 2399));
+      }
+      for (final (enabled, centre) in _radios(tester)) {
+        await mouse.moveTo(centre);
+        await tester.pump();
+        final cursor = RendererBinding.instance.mouseTracker
+            .debugDeviceActiveCursor(1);
+        expect(
+          cursor == SystemMouseCursors.click,
+          enabled,
+          reason: '${entry.row}: the radio at $centre shows $cursor',
         );
         seen++;
         await mouse.moveTo(const Offset(1279, 2399));

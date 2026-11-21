@@ -48,7 +48,7 @@ var regions = ['eu-west'];
 var tab = 0;
 var page = 5;
 var share = 0.2;
-var latency = const DesignRangeValues(200, 800);
+var latency = const RawRangeValues(200, 800);
 var stars = 3;
 String? environment = 'staging';
 var autoMerge = true;
@@ -56,14 +56,14 @@ var notify = false;
 var valid = true;
 var dark = true;
 DateTime? freeze;
-DesignDateRange? window;
+RawDateRange? window;
 TermTime? at;
 final picked = ['build.log'];
 const branches = ['main', 'release/2.4'];
 const allRegions = ['eu-west', 'us-east'];
 const url = 'https://example.com/deploy-graph.png';
 const steps = ['build', 'test', 'deploy'];
-const commands = [DesignCommand(label: 'deploy to staging')];
+const commands = [RawCommand(label: 'deploy to staging')];
 const Widget app = SizedBox();
 const Widget child = Text('slipway');
 const Widget files = Text('files');
@@ -126,9 +126,7 @@ final Map<String, DocExample> _examples = {
   "actions.dart:201": (context) => TermSplitButton(
     label: 'deploy',
     onPressed: deploy,
-    actions: [
-      DesignSplitAction(label: 'deploy without cache', onPressed: fresh),
-    ],
+    actions: [RawSplitAction(label: 'deploy without cache', onPressed: fresh)],
   ),
   "actions.dart:302": (context) =>
       TermLink(label: 'the docs', onPressed: () {}),
@@ -177,12 +175,12 @@ final Map<String, DocExample> _examples = {
   },
   "command_palette.dart:65": (context) => TermCommandPalette(
     commands: [
-      DesignCommand(
+      RawCommand(
         label: 'deploy to staging',
         group: 'deploy',
         onPressed: deploy,
       ),
-      DesignCommand(
+      RawCommand(
         label: 'open the runs',
         group: 'go',
         shortcut: 'M-2',
@@ -190,7 +188,7 @@ final Map<String, DocExample> _examples = {
       ),
     ],
   ),
-  "command_palette.dart:446": (context) => DesignCommandShortcut(
+  "command_palette.dart:446": (context) => RawCommandShortcut(
     onOpen: () => showTermCommandPalette(context: context, commands: commands),
     child: app,
   ),
@@ -208,13 +206,13 @@ final Map<String, DocExample> _examples = {
   ),
   "containers.dart:342": (context) {
     final table = _own(
-      DesignTableController<Map<String, String>>(
+      RawDataTableController<Map<String, String>>(
         rows: const [
           {'id': '1482', 'took': '2m 14s'},
         ],
         columns: const [
-          DesignTableColumn(id: 'id', label: 'run'),
-          DesignTableColumn(id: 'took', label: 'took'),
+          RawDataColumn(id: 'id', label: 'run'),
+          RawDataColumn(id: 'took', label: 'took'),
         ],
       ),
     );
@@ -469,7 +467,7 @@ final Map<String, DocExample> _examples = {
   ),
   "pickers.dart:43": (context) {
     final calendar = _own(
-      DesignCalendarController(
+      RawCalendarController(
         firstDate: DateTime(2026),
         lastDate: DateTime(2027),
       ),
@@ -499,7 +497,7 @@ final Map<String, DocExample> _examples = {
     onChanged: (t) => setState(() => at = t),
   ),
   "pickers.dart:705": (context) {
-    final colour = _own(DesignColorController());
+    final colour = _own(RawColorController());
     return TermColorPicker(controller: colour);
   },
   "range.dart:31": (context) => TermSlider(
@@ -508,7 +506,7 @@ final Map<String, DocExample> _examples = {
     onChanged: (v) => setState(() => share = v),
   ),
   "range.dart:236": (context) => TermRangeSlider(
-    values: const DesignRangeValues(200, 800),
+    values: const RawRangeValues(200, 800),
     max: 1000,
     onChanged: (v) => setState(() => latency = v),
   ),
@@ -552,11 +550,18 @@ final Map<String, DocExample> _examples = {
     label: 'merge when checks pass',
     onChanged: (value) => setState(() => autoMerge = value!),
   ),
-  "selection.dart:242": (context) => TermRadio<String>(
-    value: 'production',
+  "selection.dart:295": (context) => RadioGroup<String>(
     groupValue: environment,
-    label: 'production',
-    onChanged: (value) => setState(() => environment = value!),
+    onChanged: (value) => setState(() => environment = value),
+    child: RadioGroupKeyboardFix<String>(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: const [
+          TermRadio<String>(value: 'staging', label: 'staging'),
+          TermRadio<String>(value: 'production', label: 'production'),
+        ],
+      ),
+    ),
   ),
   "selection.dart:368": (context) => TermSwitch(
     value: notify,
@@ -613,18 +618,18 @@ final Map<String, DocExample> _examples = {
   ),
   "wayfinding.dart:502": (context) => TermMenuBar(
     menus: [
-      DesignMenuEntry(
+      RawMenuEntry(
         label: 'run',
         children: [
-          DesignMenuEntry(label: 'rerun', shortcut: 'R', onPressed: rerun),
+          RawMenuEntry(label: 'rerun', shortcut: 'R', onPressed: rerun),
         ],
       ),
     ],
   ),
   "wayfinding.dart:572": (context) => TermContextMenu(
     menuChildren: [
-      DesignMenuEntry(label: 'rerun', shortcut: 'r', onPressed: rerun),
-      DesignMenuEntry(label: 'copy link', onPressed: copy),
+      RawMenuEntry(label: 'rerun', shortcut: 'r', onPressed: rerun),
+      RawMenuEntry(label: 'copy link', onPressed: copy),
     ],
     child: const Text('run #1482'),
   ),

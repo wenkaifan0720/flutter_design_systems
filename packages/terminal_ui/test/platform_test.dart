@@ -1,6 +1,6 @@
 // The platforms' own ways back. iOS: a swipe from the screen's start edge
 // takes a page back under Terminal's own screen change (ui_core's
-// DesignSwipeBackPageTransitionsBuilder round it: a page transition of
+// SwipeBackPageTransitionsBuilder round it: a page transition of
 // one's own drops the platform's), a short slow one doesn't. Android: the
 // system's back takes a page back, and first closes what a press opened on
 // it (a menu, a select's list, a popover, a combobox's list, a dialog, a

@@ -19,7 +19,7 @@ import '../localizations.dart';
 /// [v] as a chart writes it, in the reader's digits and separators as the
 /// number field writes its value: whole where it is whole or ten and over,
 /// else to a tenth ("2.5", "1,482"; Arabic's "٢٫٥", German's "2,5").
-String _num(DesignLocalizations l, double v) => l.formatDecimal(
+String _num(RawWidgetsLocalizations l, double v) => l.formatDecimal(
   v,
   fractionDigits: v == v.roundToDouble() || v.abs() >= 10 ? 0 : 1,
 );
@@ -88,7 +88,7 @@ class TermSparkline extends StatelessWidget {
     final n = cols ?? values.length;
     final r = _range(values, min: 0);
     final words = TermLocalizations.of(context);
-    final l = DesignLocalizations.of(context);
+    final l = RawWidgetsLocalizations.of(context);
     final said = values.isEmpty
         ? words.noValuesLabel
         : words.sparklineLabel(
@@ -209,7 +209,7 @@ class TermBarChart extends StatelessWidget {
     final grid = context.termGrid;
     final own = TermStyleOf([style, theme.chartStyle], const {});
     final top = max ?? _range(bars.map((b) => b.$2), min: 0).max;
-    final l = DesignLocalizations.of(context);
+    final l = RawWidgetsLocalizations.of(context);
     String figure(double v) =>
         unit == null ? _num(l, v) : '${_num(l, v)} $unit';
     var labelCols = 0;
@@ -387,7 +387,7 @@ class TermLineChart extends StatelessWidget {
       min: min ?? (fill ? 0 : null),
       max: max,
     );
-    final l = DesignLocalizations.of(context);
+    final l = RawWidgetsLocalizations.of(context);
     int cells(double v) => grid.colsIn(grid.widthOf(_num(l, v)));
     final axisCols = math.max(cells(r0.max), cells(r0.min)) + 1;
     final axisWidth = grid.cols(axisCols);

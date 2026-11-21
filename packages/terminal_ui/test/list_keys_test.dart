@@ -355,16 +355,16 @@ void main() {
         _host(
           TermMenuBar(
             menus: [
-              DesignMenuEntry(
+              RawMenuEntry(
                 label: 'view',
                 children: [
-                  DesignMenuEntry(label: 'timestamps', onPressed: () {}),
-                  DesignMenuEntry(
+                  RawMenuEntry(label: 'timestamps', onPressed: () {}),
+                  RawMenuEntry(
                     label: 'wrap lines',
                     checked: true,
                     onPressed: () {},
                   ),
-                  DesignMenuEntry(label: 'follow', onPressed: () {}),
+                  RawMenuEntry(label: 'follow', onPressed: () {}),
                 ],
               ),
             ],

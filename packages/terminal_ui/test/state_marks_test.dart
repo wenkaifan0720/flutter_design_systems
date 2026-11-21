@@ -197,7 +197,10 @@ void main() {
           t,
         ) async {
           await t.pumpWidget(_host(theme, part));
-          final face = find.byType(DesignPressable).first;
+          // A radio stands on Flutter's RawRadio; the rest on pressables.
+          final face = find
+              .byWidgetPredicate((w) => w is RawButton || w is RawRadio)
+              .first;
           final rest = _painters<TermBracketPainter>(t, face).first;
           final mouse = await _mouse(t);
           await mouse.moveTo(t.getCenter(face));

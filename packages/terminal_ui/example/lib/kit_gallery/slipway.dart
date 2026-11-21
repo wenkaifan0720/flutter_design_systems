@@ -289,7 +289,7 @@ class _SlipwayShellState extends State<SlipwayShell> {
 
   // The palette: everything the keys and the panes do, by name.
   Future<void> _commands({String? query}) {
-    DesignCommand go(int i, String words) => DesignCommand(
+    RawCommand go(int i, String words) => RawCommand(
       label: words,
       group: 'go',
       shortcut: termKeyLabel(_destinations[i].shortcut!),
@@ -306,38 +306,38 @@ class _SlipwayShellState extends State<SlipwayShell> {
         go(2, 'new deploy'),
         go(3, 'open the config'),
         for (final r in _runs.take(4))
-          DesignCommand(
+          RawCommand(
             label: 'open run #${r.number} ${r.project}',
             group: 'runs',
             keywords: [r.branch, r.message],
             onPressed: () => _open(r.number),
           ),
         if (failed != null)
-          DesignCommand(
+          RawCommand(
             label: 'show the change in #1481',
             group: 'runs',
             keywords: const ['diff', 'fix/flaky-auth'],
             onPressed: () => _showDiff(1481),
           ),
         if (failed != null)
-          DesignCommand(
+          RawCommand(
             label: 'rerun #1481',
             group: 'runs',
             onPressed: () => _rerun(failed),
           ),
-        DesignCommand(
+        RawCommand(
           label: 'deploy $project to staging',
           group: 'deploy',
           keywords: const ['ship', 'release'],
           onPressed: () => _go(2),
         ),
-        DesignCommand(
+        RawCommand(
           label: 'deploy $project to production',
           group: 'deploy',
           keywords: const ['ship', 'release'],
           onPressed: () => _go(2, environment: 'production'),
         ),
-        const DesignCommand(
+        const RawCommand(
           label: 'roll back production',
           group: 'deploy',
           enabled: false,

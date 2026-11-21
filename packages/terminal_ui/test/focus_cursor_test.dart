@@ -121,16 +121,16 @@ List<_Part> _parts(List<VoidCallback> disposers) {
     // Radios grouped at their owner: one Tab stop, on the chosen one.
     part(
       'radio-group',
-      () => DesignRadioGroup<String>(
-        options: const ['staging', 'production'],
-        value: 'production',
+      () => RadioGroup<String>(
+        groupValue: 'production',
         onChanged: (_) {},
-        itemBuilder: (context, v, node, select) => TermRadio<String>(
-          value: v,
-          groupValue: 'production',
-          label: v,
-          focusNode: node,
-          onChanged: select == null ? null : (_) => select(),
+        child: const RadioGroupKeyboardFix<String>(
+          child: Column(
+            children: [
+              TermRadio<String>(value: 'staging', label: 'staging'),
+              TermRadio<String>(value: 'production', label: 'production'),
+            ],
+          ),
         ),
       ),
     ),
@@ -145,7 +145,7 @@ List<_Part> _parts(List<VoidCallback> disposers) {
     part(
       'range-slider',
       () => TermRangeSlider(
-        values: const DesignRangeValues(200, 800),
+        values: const RawRangeValues(200, 800),
         max: 1000,
         onChanged: (_) {},
       ),
@@ -172,7 +172,7 @@ List<_Part> _parts(List<VoidCallback> disposers) {
     ),
     part(
       'menu-row',
-      () => DesignPressable(
+      () => RawButton(
         onPressed: none,
         semanticLabel: 'rerun',
         excludeSemantics: true,
@@ -204,9 +204,9 @@ List<_Part> _parts(List<VoidCallback> disposers) {
       'menu-bar',
       () => TermMenuBar(
         menus: [
-          DesignMenuEntry(
+          RawMenuEntry(
             label: 'run',
-            children: [DesignMenuEntry(label: 'rerun', onPressed: none)],
+            children: [RawMenuEntry(label: 'rerun', onPressed: none)],
           ),
         ],
       ),
@@ -244,7 +244,7 @@ List<_Part> _parts(List<VoidCallback> disposers) {
     ),
     part('calendar', () {
       final calendar = own(
-        DesignCalendarController(
+        RawCalendarController(
           firstDate: DateTime(2026),
           lastDate: DateTime(2027),
           selectedDate: DateTime(2026, 11, 20),
@@ -254,19 +254,19 @@ List<_Part> _parts(List<VoidCallback> disposers) {
       return TermCalendar(controller: calendar);
     }, tabs: 3),
     part('color-picker', () {
-      final colour = own(DesignColorController());
+      final colour = own(RawColorController());
       return TermColorPicker(controller: colour);
     }),
     part('table-row', () {
       final table = own(
-        DesignTableController<Map<String, String>>(
+        RawDataTableController<Map<String, String>>(
           rows: const [
             {'id': '1482', 'took': '2m 14s'},
             {'id': '1481', 'took': '1m 58s'},
           ],
           columns: const [
-            DesignTableColumn(id: 'id', label: 'run'),
-            DesignTableColumn(id: 'took', label: 'took'),
+            RawDataColumn(id: 'id', label: 'run'),
+            RawDataColumn(id: 'took', label: 'took'),
           ],
         ),
       );

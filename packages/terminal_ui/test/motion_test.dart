@@ -320,7 +320,7 @@ void main() {
       );
       await tester.pump(const Duration(milliseconds: 300));
       final before = _panes();
-      await tester.tap(find.byType(DesignPressable).first);
+      await tester.tap(find.byType(RawButton).first);
       final seen = await _frames(tester);
       expect(_new(before, seen), isNotEmpty, reason: '$row opened nothing');
       _expectNoTravel(seen);
@@ -343,7 +343,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 300));
       // Close what is open, then open it again, looking at every frame.
       for (var i = 0; i < 2; i++) {
-        await tester.tap(find.byType(DesignPressable).first);
+        await tester.tap(find.byType(RawButton).first);
         await tester.pump();
         for (var f = 0; f < 30; f++) {
           await tester.pump(const Duration(milliseconds: 16));

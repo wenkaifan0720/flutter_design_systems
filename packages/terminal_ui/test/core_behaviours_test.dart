@@ -231,8 +231,8 @@ void main() {
         const TermContextMenu(
           semanticLabel: 'run #1482',
           menuChildren: [
-            DesignMenuEntry(label: 'rerun', shortcut: 'r', onPressed: _noop),
-            DesignMenuEntry(label: 'copy link', onPressed: _noop),
+            RawMenuEntry(label: 'rerun', shortcut: 'r', onPressed: _noop),
+            RawMenuEntry(label: 'copy link', onPressed: _noop),
           ],
           child: TermButton(label: 'run #1482', onPressed: _noop),
         ),

@@ -65,9 +65,9 @@ void main() {
       ),
     );
     final commands = [
-      DesignCommand(label: 'go home', onPressed: () => ran = 'home'),
-      DesignCommand(label: 'deploy to staging', onPressed: () => ran = 'stg'),
-      DesignCommand(label: 'deploy to production', onPressed: () => ran = 'p'),
+      RawCommand(label: 'go home', onPressed: () => ran = 'home'),
+      RawCommand(label: 'deploy to staging', onPressed: () => ran = 'stg'),
+      RawCommand(label: 'deploy to production', onPressed: () => ran = 'p'),
     ];
 
     unawaited(showTermCommandPalette(context: page, commands: commands));

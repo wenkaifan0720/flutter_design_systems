@@ -15,7 +15,7 @@ void main() {
         tester.view.devicePixelRatio = 1;
         tester.view.physicalSize = const Size(390, 844);
         addTearDown(tester.view.reset);
-        final selected = DesignDateRange(
+        final selected = RawDateRange(
           DateTime(2026, 11, 9),
           DateTime(2026, 11, 14),
         );

@@ -16,7 +16,7 @@ Widget _host(Widget child, Locale locale) => MaterialApp(
   locale: locale,
   supportedLocales: _locales,
   localizationsDelegates: const [
-    DesignLocalizations.delegate,
+    RawWidgetsLocalizations.delegate,
     ...GlobalMaterialLocalizations.delegates,
   ],
   home: TermTheme(

@@ -78,7 +78,7 @@ class TermBreadcrumb extends StatelessWidget {
                 )
               else
                 TermTapTarget(
-                  child: DesignPressable(
+                  child: RawButton(
                     onPressed: crumb.onPressed,
                     link: true,
                     button: false,
@@ -232,7 +232,7 @@ class TermPagination extends StatelessWidget {
                     )
                   else
                     TermTapTarget(
-                      child: DesignPressable(
+                      child: RawButton(
                         onPressed: go == null || p == page ? null : () => go(p),
                         selected: p == page,
                         semanticSelected: p == page,
@@ -365,7 +365,7 @@ class TermPageDots extends StatelessWidget {
               ExcludeSemantics(child: dot(i))
             else
               TermTapTarget(
-                child: DesignPressable(
+                child: RawButton(
                   onPressed: () => onChanged!(i),
                   selected: i == index,
                   semanticLabel: words.pageLabel(i + 1),
@@ -526,7 +526,7 @@ class TermSteps extends StatelessWidget {
 // marked `›`, its key dim at the end, a check before a checked one.
 Widget _menuRow(
   BuildContext context,
-  DesignMenuEntry entry,
+  RawMenuEntry entry,
   Set<WidgetState> states,
 ) => TermMenuRow(
   label: entry.isSubmenu ? '${entry.label} ›' : entry.label,
@@ -550,7 +550,7 @@ Widget _menuDivider(BuildContext context) {
 // A menu's raised pane, revealed from its top line.
 Widget _menuPlate(
   BuildContext context,
-  DesignOverlayInfo info,
+  RawPopoverInfo info,
   List<Widget> items,
 ) => TermMenuReveal(
   info: info,
@@ -584,7 +584,7 @@ Widget _menuPlate(
 /// [TermMenuBar] menu's: [menuChildren] are commands, submenus (`›`),
 /// checks and rules, each command's key dim at the end.
 ///
-/// The behaviour is ui_core's `DesignContextMenu`: the arrows walk the
+/// The behaviour is ui_core's `RawContextMenu`: the arrows walk the
 /// rows and into submenus, a letter goes to the next row it starts, Return
 /// picks, Escape closes; one is open at a time, and on the web the
 /// browser's own menu stays shut over [child]. Terminal paints the rows and
@@ -593,8 +593,8 @@ Widget _menuPlate(
 /// ```dart
 /// TermContextMenu(
 ///   menuChildren: [
-///     DesignMenuEntry(label: 'rerun', shortcut: 'r', onPressed: rerun),
-///     DesignMenuEntry(label: 'copy link', onPressed: copy),
+///     RawMenuEntry(label: 'rerun', shortcut: 'r', onPressed: rerun),
+///     RawMenuEntry(label: 'copy link', onPressed: copy),
 ///   ],
 ///   child: const Text('run #1482'),
 /// )
@@ -609,7 +609,7 @@ class TermContextMenu extends StatelessWidget {
   });
 
   /// The menu's rows.
-  final List<DesignMenuEntry> menuChildren;
+  final List<RawMenuEntry> menuChildren;
 
   /// The region it opens over.
   final Widget child;
@@ -620,7 +620,7 @@ class TermContextMenu extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     TermMenuMarks.watchInput();
-    return DesignContextMenu(
+    return RawContextMenu(
       menuChildren: menuChildren,
       semanticLabel: semanticLabel,
       dampingRatio: TermMotion.reveal.dampingRatio,
@@ -647,8 +647,8 @@ class TermContextMenu extends StatelessWidget {
 ///
 /// ```dart
 /// TermMenuBar(menus: [
-///   DesignMenuEntry(label: 'run', children: [
-///     DesignMenuEntry(label: 'rerun', shortcut: 'R', onPressed: rerun),
+///   RawMenuEntry(label: 'run', children: [
+///     RawMenuEntry(label: 'rerun', shortcut: 'R', onPressed: rerun),
 ///   ]),
 /// ])
 /// ```
@@ -657,7 +657,7 @@ class TermMenuBar extends StatelessWidget {
   const TermMenuBar({super.key, required this.menus, this.style});
 
   /// The menus, each with its items as children.
-  final List<DesignMenuEntry> menus;
+  final List<RawMenuEntry> menus;
 
   /// Overrides for the menus' names, over the theme's
   /// [TermThemeData.menuBarStyle]: `fill` (an open or lit name) and
@@ -670,10 +670,10 @@ class TermMenuBar extends StatelessWidget {
     final theme = TermTheme.of(context);
     final grid = context.termGrid;
     TermMenuMarks.watchInput();
-    return DesignMenuBar(
+    return RawMenuBar(
       menus: menus,
       itemBuilder: (context, entry, level, states) {
-        if (level == DesignMenuLevel.menu) {
+        if (level == RawMenuLevel.menu) {
           return _menuRow(context, entry, states);
         }
         final own = TermStyleOf([style, theme.menuBarStyle], states);
@@ -859,7 +859,7 @@ class TermNavigationRail extends StatelessWidget {
                     child: shell[i],
                   )
                 else
-                  DesignPressable(
+                  RawButton(
                     onPressed: onDestinationSelected == null
                         ? null
                         : () => onDestinationSelected!(i),

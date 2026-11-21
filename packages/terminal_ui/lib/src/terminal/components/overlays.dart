@@ -9,6 +9,7 @@ import 'package:ui_core/ui_core.dart';
 
 import '../internal/words.dart';
 import '../internal/menu_marks.dart';
+import '../internal/reveal.dart';
 import '../internal/type_ahead.dart';
 import '../primitives/menu.dart';
 import '../style.dart';
@@ -82,7 +83,7 @@ class TermSideSheet extends StatelessWidget {
   }
 }
 
-class _TermSideSheetRoute<T> extends DesignSideSheetRoute<T> {
+class _TermSideSheetRoute<T> extends RawSideSheetRoute<T> {
   _TermSideSheetRoute({
     required super.builder,
     super.edge,
@@ -121,7 +122,7 @@ class _TermSideSheetRoute<T> extends DesignSideSheetRoute<T> {
 Future<T?> showTermSideSheet<T>({
   required BuildContext context,
   required WidgetBuilder builder,
-  DesignSheetEdge edge = DesignSheetEdge.end,
+  RawSheetEdge edge = RawSheetEdge.end,
   int cols = 44,
   String? semanticLabel,
   bool useRootNavigator = true,
@@ -135,7 +136,8 @@ Future<T?> showTermSideSheet<T>({
       edge: edge,
       width: grid.cols(cols),
       barrierColor: theme.background.withValues(alpha: 0.72),
-      barrierLabel: DesignLocalizations.of(context).modalBarrierDismissLabel,
+      barrierLabel: RawWidgetsLocalizations.of(context)
+          .modalBarrierDismissLabel,
       semanticLabel: semanticLabel,
       builder: (context, info) =>
           themes.wrap(SafeArea(child: Builder(builder: builder))),
@@ -246,7 +248,7 @@ class TermActionSheet<T> extends StatelessWidget {
     }
 
     Widget row(String label, VoidCallback onPressed, {bool danger = false}) =>
-        DesignPressable(
+        RawButton(
           onPressed: onPressed,
           semanticLabel: label,
           excludeSemantics: true,
@@ -279,9 +281,9 @@ class TermActionSheet<T> extends StatelessWidget {
   }
 }
 
-DesignOverlayPlacement _placement(BuildContext context) {
+RawPopoverPlacement _placement(BuildContext context) {
   final grid = context.termGrid;
-  return DesignOverlayPlacement(
+  return RawPopoverPlacement(
     gap: 0,
     margin: grid.cellWidth,
     preferredExtent: grid.lines(6),
@@ -291,7 +293,7 @@ DesignOverlayPlacement _placement(BuildContext context) {
 
 Widget _surface(
   BuildContext context,
-  DesignOverlayInfo info, {
+  RawPopoverInfo info, {
   required Widget child,
   required int cols,
   String? title,
@@ -357,7 +359,7 @@ class TermPopover extends StatelessWidget {
   final TermStyle? style;
 
   @override
-  Widget build(BuildContext context) => DesignAnchoredOverlay(
+  Widget build(BuildContext context) => RawPopover(
     placement: _placement(context),
     dampingRatio: TermMotion.reveal.dampingRatio,
     stiffness: TermMotion.reveal.stiffness,
@@ -411,8 +413,8 @@ class TermHoverCard extends StatelessWidget {
   final TermStyle? style;
 
   @override
-  Widget build(BuildContext context) => DesignAnchoredOverlay(
-    trigger: DesignOverlayTrigger.hover,
+  Widget build(BuildContext context) => RawPopover(
+    trigger: RawPopoverTrigger.hover,
     focusOnOpen: false,
     placement: _placement(context),
     dampingRatio: TermMotion.reveal.dampingRatio,
@@ -434,9 +436,11 @@ class TermHoverCard extends StatelessWidget {
 /// pointer rests on [child] or the keyboard is on it, and after a long
 /// press; a screen reader hears [message] as [child]'s tooltip.
 ///
-/// The behaviour is ui_core's [DesignTooltip]: the pointer may rest on the
-/// tip, Escape hides it, one shows at a time, and the next shows at once
-/// within a moment of the last. Terminal paints the block and its reveal.
+/// The behaviour is Flutter's [RawTooltip]: the pointer may rest on the
+/// tip, Escape hides it, and one shows at a time. ui_core's
+/// [RawTooltipFocusFix] shows it on the keyboard's focus too, and
+/// [RawTooltipPlacement] sets it on the line above, or below where there is
+/// no line above. Terminal paints the block and its reveal.
 ///
 /// ```dart
 /// TermTooltip(message: 'rerun (r)', child: TermIconButton(glyph: 'r', semanticLabel: 'rerun', onPressed: rerun))
@@ -460,47 +464,88 @@ class TermTooltip extends StatelessWidget {
   /// ground) and `foreground` (the words).
   final TermStyle? style;
 
+  /// How long a pointer rests on [child] before the tip shows.
+  static const Duration _hoverDelay = Duration(milliseconds: 500);
+
   @override
   Widget build(BuildContext context) {
+    if (message.isEmpty) return child;
     final theme = TermTheme.of(context);
     final grid = context.termGrid;
     final own = TermStyleOf([style, theme.tooltipStyle], const {});
-    return DesignTooltip(
-      message: message,
-      // On the line above, the words a cell in from the screen's edges.
-      placement: DesignOverlayPlacement(
-        side: DesignOverlaySide.above,
-        gap: 0,
-        margin: grid.cellWidth,
-        preferredExtent: grid.lineHeight,
-        matchAnchorWidth: false,
-      ),
-      tooltipBuilder: (context, info) => ExcludeSemantics(
-        child: TermMenuReveal(
-          info: info,
-          child: ColoredBox(
-            color: own.fill ?? theme.foreground,
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: grid.cellWidth),
-              child: SizedBox(
-                height: grid.lineHeight,
-                child: Center(
-                  widthFactor: 1,
-                  child: Text(
-                    message,
-                    maxLines: 1,
-                    style: theme.textStyle.copyWith(
-                      color: own.foreground ?? theme.background,
+    final spring = DesignMotionPolicy.of(context)
+        .effects(dampingRatio: 1, stiffness: 1600);
+    // The tip comes and goes on its own spring. RawTooltip's animation says
+    // only whether it shows: at once when it shows, and while it hides, as
+    // long as the spring takes to close from open, so the tip stays until
+    // it has closed.
+    final closing = _settleTime(spring);
+    // The message joins the child's node: one control, one node.
+    return MergeSemantics(
+      child: RawTooltipPlacement(
+        // On the line above, the words a cell in from the screen's edges.
+        placement: RawPopoverPlacement(
+          side: RawPopoverSide.above,
+          gap: 0,
+          margin: grid.cellWidth,
+          preferredExtent: grid.lineHeight,
+          matchAnchorWidth: false,
+        ),
+        builder: (context, positionDelegate) => RawTooltip(
+          semanticsTooltip: message,
+          hoverDelay: _hoverDelay,
+          animationStyle: AnimationStyle(
+            duration: Duration.zero,
+            reverseDuration: closing,
+          ),
+          positionDelegate: positionDelegate,
+          tooltipBuilder: (context, shown) => ExcludeSemantics(
+            child: _TipPresence(
+              shown: shown,
+              spring: spring,
+              builder: (context, presence) => TermReveal(
+                presence: presence,
+                above:
+                    (RawTooltipPlacement.sideOf(context) ??
+                        RawPopoverSide.above) ==
+                    RawPopoverSide.above,
+                child: ColoredBox(
+                  color: own.fill ?? theme.foreground,
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: grid.cellWidth),
+                    child: SizedBox(
+                      height: grid.lineHeight,
+                      child: Center(
+                        widthFactor: 1,
+                        child: Text(
+                          message,
+                          maxLines: 1,
+                          style: theme.textStyle.copyWith(
+                            color: own.foreground ?? theme.background,
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                 ),
               ),
             ),
           ),
+          child: RawTooltipFocusFix(child: child),
         ),
       ),
-      child: child,
     );
+  }
+
+  // How long [spring] takes to close the tip from open: until its
+  // simulation is done, to the millisecond above.
+  static Duration _settleTime(SpringDescription spring) {
+    final closing = designSpringSimulation(spring, from: 1, to: 0);
+    var ms = 1;
+    while (ms < 5000 && !closing.isDone(ms / 1000)) {
+      ms++;
+    }
+    return Duration(milliseconds: ms);
   }
 
   @override
@@ -508,6 +553,79 @@ class TermTooltip extends StatelessWidget {
     super.debugFillProperties(properties);
     properties.add(StringProperty('message', message));
   }
+}
+
+// A tip's presence, 0 to 1, on [spring]: toward 1 while [shown] runs
+// forward or has completed, toward 0 while it runs back.
+class _TipPresence extends StatefulWidget {
+  const _TipPresence({
+    required this.shown,
+    required this.spring,
+    required this.builder,
+  });
+
+  final Animation<double> shown;
+  final SpringDescription spring;
+  final Widget Function(BuildContext context, Animation<double> presence)
+  builder;
+
+  @override
+  State<_TipPresence> createState() => _TipPresenceState();
+}
+
+class _TipPresenceState extends State<_TipPresence>
+    with SingleTickerProviderStateMixin {
+  // Bounded: a tip's presence is a reveal, 0 to 1.
+  late final AnimationController _presence = AnimationController(vsync: this);
+
+  @override
+  void initState() {
+    super.initState();
+    _presence.addStatusListener(_settled);
+    widget.shown.addStatusListener(_follow);
+    _follow(widget.shown.status);
+  }
+
+  @override
+  void didUpdateWidget(_TipPresence oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.shown != widget.shown) {
+      oldWidget.shown.removeStatusListener(_follow);
+      widget.shown.addStatusListener(_follow);
+      _follow(widget.shown.status);
+    }
+  }
+
+  @override
+  void dispose() {
+    widget.shown.removeStatusListener(_follow);
+    _presence.dispose();
+    super.dispose();
+  }
+
+  void _follow(AnimationStatus status) {
+    final target = status.isForwardOrCompleted ? 1.0 : 0.0;
+    if (_presence.value == target && !_presence.isAnimating) return;
+    _presence.springTo(target, widget.spring);
+  }
+
+  // The spring started or came to rest: whether the tip is gone may change.
+  void _settled(AnimationStatus status) {
+    if (mounted) setState(() {});
+  }
+
+  // A hiding tip is gone once its spring has closed it, as ui_core's tooltip
+  // took it away then. RawTooltip's own animation can run on (it lasts as
+  // long as a close from fully open), and the tip would stay in place,
+  // unseen, where a pointer could bring it back.
+  bool get _gone =>
+      !widget.shown.isForwardOrCompleted &&
+      !_presence.isAnimating &&
+      _presence.value == 0;
+
+  @override
+  Widget build(BuildContext context) =>
+      _gone ? const SizedBox.shrink() : widget.builder(context, _presence);
 }
 
 /// One item of a [TermMenu].
@@ -579,7 +697,7 @@ class TermMenu extends StatelessWidget {
   Widget build(BuildContext context) {
     final grid = context.termGrid;
     TermMenuMarks.watchInput();
-    return DesignAnchoredOverlay(
+    return RawPopover(
       placement: _placement(context),
       arrowKeyNavigation: true,
       dampingRatio: TermMotion.reveal.dampingRatio,
@@ -606,7 +724,7 @@ class TermMenu extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       for (final item in items)
-                        DesignPressable(
+                        RawButton(
                           onPressed: item.onPressed == null
                               ? null
                               : () {

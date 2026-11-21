@@ -355,7 +355,7 @@ class TermListTile extends StatelessWidget {
     final given = onTap == null ? TermFaceStates.maybeOf(context) : null;
     if (given != null) return row(given);
     final Widget tile = interactive
-        ? DesignPressable(
+        ? RawButton(
             onPressed: onTap,
             focusNode: focusNode,
             autofocus: autofocus,

@@ -117,9 +117,9 @@ final _menus = <({String name, Widget menu, Finder opener, List<String> rows})>[
       onPressed: _noop,
       menuLabel: 'deploy to',
       actions: [
-        DesignSplitAction(label: 'staging', onPressed: _noop),
-        DesignSplitAction(label: 'production', onPressed: _noop),
-        DesignSplitAction(label: 'preview', onPressed: _noop),
+        RawSplitAction(label: 'staging', onPressed: _noop),
+        RawSplitAction(label: 'production', onPressed: _noop),
+        RawSplitAction(label: 'preview', onPressed: _noop),
       ],
     ),
     opener: find.text('▾'),
@@ -129,16 +129,12 @@ final _menus = <({String name, Widget menu, Finder opener, List<String> rows})>[
     name: "a menubar's menu",
     menu: TermMenuBar(
       menus: [
-        DesignMenuEntry(
+        RawMenuEntry(
           label: 'view',
           children: [
-            DesignMenuEntry(label: 'timestamps', onPressed: () {}),
-            DesignMenuEntry(
-              label: 'wrap lines',
-              checked: true,
-              onPressed: () {},
-            ),
-            DesignMenuEntry(label: 'follow', onPressed: () {}),
+            RawMenuEntry(label: 'timestamps', onPressed: () {}),
+            RawMenuEntry(label: 'wrap lines', checked: true, onPressed: () {}),
+            RawMenuEntry(label: 'follow', onPressed: () {}),
           ],
         ),
       ],

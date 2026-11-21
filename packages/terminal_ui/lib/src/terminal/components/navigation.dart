@@ -140,7 +140,7 @@ class _FillFromFoot extends CustomPainter {
 /// (with Alt), and the app binds it. Under the pointer a tab's words take
 /// the accent; the cursor is the keyboard's alone.
 ///
-/// The behaviour is ui_core's [DesignTabBar]: the bar is one tab stop, on
+/// The behaviour is ui_core's [RawTabBar]: the bar is one tab stop, on
 /// the chosen tab, the arrows move along it (mirrored right to left), Home
 /// and End go to the ends, and a tab is chosen as the keys reach it; a
 /// screen reader hears each tab and its place ("Tab 2 of 3"). Terminal
@@ -196,9 +196,9 @@ class TermTabBar extends StatefulWidget {
 }
 
 class _TermTabBarState extends State<TermTabBar> with TickerProviderStateMixin {
-  late DesignTabController _controller = _make();
+  late RawTabController _controller = _make();
 
-  DesignTabController _make() => DesignTabController(
+  RawTabController _make() => RawTabController(
     length: widget.tabs.length,
     initialIndex: widget.selectedIndex,
     dampingRatio: TermMotion.move.dampingRatio,
@@ -247,12 +247,12 @@ class _TermTabBarState extends State<TermTabBar> with TickerProviderStateMixin {
     final enabled = widget.onTap != null;
     final style = widget.style;
     return _MarkedScroll(
-      child: DesignTabBar(
+      child: RawTabBar(
         controller: _controller,
         isScrollable: true,
         tabs: [
           for (final label in widget.tabs)
-            DesignTab(label: label, enabled: enabled),
+            RawTab(label: label, enabled: enabled),
         ],
         tabBuilder: (context, tab, details) {
           final i = details.index;
@@ -645,7 +645,7 @@ class TermNavigationBar extends StatelessWidget {
             face: (context, states) => face(i, text, states),
             child: shell[i],
           )
-        : DesignPressable(
+        : RawButton(
             onPressed: onDestinationSelected == null
                 ? null
                 : () => onDestinationSelected!(i),

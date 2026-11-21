@@ -185,7 +185,10 @@ void main() {
       final rolling = find.byWidgetPredicate(
         (w) => w is TermRadio<String> && w.value == 'rolling',
       );
-      expect(tester.widget<TermRadio<String>>(rolling).groupValue, 'rolling');
+      expect(
+        RadioGroup.maybeOf<String>(tester.element(rolling))?.groupValue,
+        'rolling',
+      );
       await tester.sendKeyEvent(LogicalKeyboardKey.escape);
       await _settle(tester);
       expect(find.byType(RunSummary), findsOneWidget);

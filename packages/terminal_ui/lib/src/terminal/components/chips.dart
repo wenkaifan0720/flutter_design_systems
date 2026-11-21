@@ -93,7 +93,7 @@ class TermTag extends StatelessWidget {
     // and below it, the tag itself one line in the middle.
     final remove = TermTapTarget(
       alignment: AlignmentDirectional.centerStart,
-      child: DesignPressable(
+      child: RawButton(
         onPressed: onDeleted,
         semanticLabel: TermLocalizations.of(context).removeLabel(label),
         mouseCursor: SystemMouseCursors.click,
@@ -190,7 +190,7 @@ class TermChip extends StatelessWidget {
     final grid = context.termGrid;
     final enabled = onSelected != null;
     return TermTapTarget(
-      child: DesignPressable(
+      child: RawButton(
         onPressed: enabled ? () => onSelected!(!selected) : null,
         selected: selected,
         checked: selected,

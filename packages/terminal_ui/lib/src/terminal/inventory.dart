@@ -267,8 +267,8 @@ Widget _splitButton(BuildContext context) => const TermSplitButton(
   filled: true,
   onPressed: _noop,
   actions: [
-    DesignSplitAction(label: 'deploy to staging', onPressed: _noop),
-    DesignSplitAction(label: 'deploy to production', onPressed: _noop),
+    RawSplitAction(label: 'deploy to staging', onPressed: _noop),
+    RawSplitAction(label: 'deploy to production', onPressed: _noop),
   ],
 );
 
@@ -357,22 +357,21 @@ Widget _checkbox(BuildContext context) => _Live<bool?>(
 // their choice.
 Widget _radioGroup(BuildContext context) => _Live<String?>(
   'rolling',
-  (context, v, set) => DesignRadioGroup<String>(
-    options: const ['rolling', 'blue-green', 'all at once'],
-    value: v,
+  (context, v, set) => RadioGroup<String>(
+    groupValue: v,
     onChanged: set,
-    semanticLabel: 'strategy',
-    layoutBuilder: (context, radios) => Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: radios,
-    ),
-    itemBuilder: (context, s, node, select) => TermRadio<String>(
-      value: s,
-      groupValue: v,
-      focusNode: node,
-      onChanged: select == null ? null : (_) => select(),
-      label: s,
+    child: RadioGroupKeyboardFix<String>(
+      child: Semantics(
+        label: 'strategy',
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            for (final s in const ['rolling', 'blue-green', 'all at once'])
+              TermRadio<String>(value: s, label: s),
+          ],
+        ),
+      ),
     ),
   ),
 );
@@ -393,8 +392,8 @@ Widget _slider(BuildContext context) => _Live<double>(
   ),
 );
 
-Widget _rangeSlider(BuildContext context) => _Live<DesignRangeValues>(
-  const DesignRangeValues(9, 17),
+Widget _rangeSlider(BuildContext context) => _Live<RawRangeValues>(
+  const RawRangeValues(9, 17),
   (context, v, set) => TermRangeSlider(
     values: v,
     onChanged: set,
@@ -473,8 +472,8 @@ Widget _datePicker(BuildContext context) => _Live<DateTime?>(
   ),
 );
 
-Widget _dateRangePicker(BuildContext context) => _Live<DesignDateRange?>(
-  DesignDateRange(DateTime(2026, 11, 9), DateTime(2026, 11, 14)),
+Widget _dateRangePicker(BuildContext context) => _Live<RawDateRange?>(
+  RawDateRange(DateTime(2026, 11, 9), DateTime(2026, 11, 14)),
   (context, v, set) => TermDateRangePicker(
     labelText: 'runs between',
     value: v,
@@ -490,8 +489,8 @@ Widget _timePicker(BuildContext context) => _Live<TermTime?>(
       TermTimeField(labelText: 'nightly build at', value: v, onChanged: set),
 );
 
-Widget _calendar(BuildContext context) => _Held<DesignCalendarController>(
-  () => DesignCalendarController(
+Widget _calendar(BuildContext context) => _Held<RawCalendarController>(
+  () => RawCalendarController(
     firstDate: DateTime(2026),
     lastDate: DateTime(2027, 12, 31),
     selectedDate: DateTime(2026, 11, 14),
@@ -500,8 +499,8 @@ Widget _calendar(BuildContext context) => _Held<DesignCalendarController>(
   (context, c) => TermCalendar(controller: c),
 );
 
-Widget _colorPicker(BuildContext context) => _Held<DesignColorController>(
-  () => DesignColorController(const Color(0xFF3FB8C9)),
+Widget _colorPicker(BuildContext context) => _Held<RawColorController>(
+  () => RawColorController(const Color(0xFF3FB8C9)),
   (context, c) => TermColorPicker(controller: c, lines: 6),
 );
 
@@ -593,20 +592,20 @@ Widget _pageDots(BuildContext context) => _Live<int>(
 
 Widget _menuBar(BuildContext context) => const TermMenuBar(
   menus: [
-    DesignMenuEntry(
+    RawMenuEntry(
       label: 'run',
       children: [
-        DesignMenuEntry(label: 'rerun', shortcut: 'R', onPressed: _noop),
-        DesignMenuEntry(label: 'cancel', shortcut: '^C', onPressed: _noop),
-        DesignMenuEntry.divider(),
-        DesignMenuEntry(label: 'delete logs', onPressed: _noop),
+        RawMenuEntry(label: 'rerun', shortcut: 'R', onPressed: _noop),
+        RawMenuEntry(label: 'cancel', shortcut: '^C', onPressed: _noop),
+        RawMenuEntry.divider(),
+        RawMenuEntry(label: 'delete logs', onPressed: _noop),
       ],
     ),
-    DesignMenuEntry(
+    RawMenuEntry(
       label: 'view',
       children: [
-        DesignMenuEntry(label: 'wrap lines', checked: true, onPressed: _noop),
-        DesignMenuEntry(label: 'timestamps', checked: false, onPressed: _noop),
+        RawMenuEntry(label: 'wrap lines', checked: true, onPressed: _noop),
+        RawMenuEntry(label: 'timestamps', checked: false, onPressed: _noop),
       ],
     ),
   ],
@@ -616,18 +615,14 @@ Widget _command(BuildContext context) => const SizedBox(
   height: 240,
   child: TermCommandPalette(
     commands: [
-      DesignCommand(
-        label: 'deploy to staging',
-        group: 'deploy',
-        onPressed: _noop,
-      ),
-      DesignCommand(
+      RawCommand(label: 'deploy to staging', group: 'deploy', onPressed: _noop),
+      RawCommand(
         label: 'open the runs',
         group: 'go',
         shortcut: 'M-2',
         onPressed: _noop,
       ),
-      DesignCommand(
+      RawCommand(
         label: 'rerun the last run',
         group: 'run',
         shortcut: 'R',
@@ -699,8 +694,8 @@ Widget _table(BuildContext context) => const TermTable(
 );
 
 Widget _dataTable(BuildContext context) =>
-    _Held<DesignTableController<List<String>>>(
-      () => DesignTableController<List<String>>(
+    _Held<RawDataTableController<List<String>>>(
+      () => RawDataTableController<List<String>>(
         rows: const [
           ['#1482', 'main', '134'],
           ['#1481', 'release/2.4', '182'],
@@ -708,13 +703,13 @@ Widget _dataTable(BuildContext context) =>
         ],
         rowKey: (r) => r.first,
         columns: [
-          DesignTableColumn<List<String>>(
+          RawDataColumn<List<String>>(
             id: '0',
             label: 'run',
             sortKey: (r) => r[0],
           ),
-          const DesignTableColumn<List<String>>(id: '1', label: 'branch'),
-          DesignTableColumn<List<String>>(
+          const RawDataColumn<List<String>>(id: '1', label: 'branch'),
+          RawDataColumn<List<String>>(
             id: '2',
             label: 'secs',
             numeric: true,
@@ -960,9 +955,9 @@ Widget _menu(BuildContext context) => Wrap(
     const TermContextMenu(
       semanticLabel: 'run #1482',
       menuChildren: [
-        DesignMenuEntry(label: 'rerun', shortcut: 'r', onPressed: _noop),
-        DesignMenuEntry(label: 'copy link', shortcut: 'y', onPressed: _noop),
-        DesignMenuEntry(label: 'delete logs', onPressed: _noop),
+        RawMenuEntry(label: 'rerun', shortcut: 'r', onPressed: _noop),
+        RawMenuEntry(label: 'copy link', shortcut: 'y', onPressed: _noop),
+        RawMenuEntry(label: 'delete logs', onPressed: _noop),
       ],
       child: TermButton(label: 'run #1482', onPressed: _noop),
     ),

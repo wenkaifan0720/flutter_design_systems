@@ -81,7 +81,7 @@ class TermPasswordField extends StatelessWidget {
   final bool autofocus;
 
   @override
-  Widget build(BuildContext context) => DesignPasswordReveal(
+  Widget build(BuildContext context) => RawPasswordReveal(
     focusNode: focusNode,
     builder: (context, password) => TermTextField(
       controller: controller,
@@ -98,9 +98,12 @@ class TermPasswordField extends StatelessWidget {
       keyboardType: TextInputType.visiblePassword,
       style: style,
       autofillHints: const [AutofillHints.password],
+      // The reveal is a toggle button: a button, selected while the
+      // password shows, as IconButton(isSelected:) is.
       suffix: Semantics(
         label: password.toggleLabel,
-        toggled: !password.obscured,
+        button: true,
+        selected: !password.obscured,
         excludeSemantics: true,
         child: TermButton(
           label: password.obscured
@@ -153,7 +156,7 @@ class TermOtpField extends StatelessWidget {
   final int length;
 
   /// The code; one given is the caller's to dispose.
-  final DesignOtpController? controller;
+  final RawOtpController? controller;
 
   /// {@macro term.focusNode}
   final FocusNode? focusNode;
@@ -206,7 +209,7 @@ class TermOtpField extends StatelessWidget {
     // lines under a finger), the cells in its middle.
     return TermTapTarget(
       alignment: AlignmentDirectional.centerStart,
-      child: DesignOtpField(
+      child: RawOtpField(
         length: length,
         controller: controller,
         focusNode: focusNode,
@@ -364,7 +367,7 @@ class TermNumberField extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = TermTheme.of(context);
     final grid = context.termGrid;
-    final l = DesignLocalizations.of(context);
+    final l = RawWidgetsLocalizations.of(context);
     final change = onChanged;
     final down = change != null && value > min
         ? () => change(math.max(min, value - step))
@@ -632,7 +635,7 @@ class TermCombobox<T extends Object> extends StatelessWidget {
     Widget Function(Widget list) mark,
     bool above,
     Widget Function(TextEditingController, FocusNode, Widget) watch,
-  ) => DesignCombobox<T>(
+  ) => RawCombobox<T>(
     optionsViewOpenDirection: above
         ? OptionsViewOpenDirection.up
         : OptionsViewOpenDirection.down,
@@ -771,7 +774,7 @@ class _SearchFailed extends StatelessWidget {
     required this.retryText,
   });
 
-  final DesignSearchError error;
+  final RawSearchError error;
   final String text;
   final String retryText;
 
@@ -797,7 +800,7 @@ class _SearchFailed extends StatelessWidget {
         ),
         // The keys reach it from the field, never by Tab.
         ExcludeFocus(
-          child: DesignPressable(
+          child: RawButton(
             onPressed: error.retry,
             semanticLabel: retryText,
             excludeSemantics: true,
@@ -929,7 +932,7 @@ class TermTagInput<T extends Object> extends StatelessWidget {
     TermGrid grid,
     String Function(T) show,
     Widget Function(Widget list) mark,
-  ) => DesignTagInput<T>(
+  ) => RawTagInput<T>(
     values: values,
     onChanged: onChanged,
     options: options,

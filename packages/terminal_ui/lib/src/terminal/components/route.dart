@@ -32,7 +32,7 @@ const Map<TargetPlatform, PageTransitionsBuilder> termPageTransitions = {
   TargetPlatform.android: TermPageTransitionsBuilder(),
   TargetPlatform.fuchsia: TermPageTransitionsBuilder(),
   // iOS's swipe back from the screen's edge, round Terminal's change.
-  TargetPlatform.iOS: DesignSwipeBackPageTransitionsBuilder(
+  TargetPlatform.iOS: SwipeBackPageTransitionsBuilder(
     TermPageTransitionsBuilder(),
   ),
   TargetPlatform.linux: TermPageTransitionsBuilder(),

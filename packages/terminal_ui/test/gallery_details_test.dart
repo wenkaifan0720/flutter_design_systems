@@ -451,13 +451,13 @@ void main() {
     }
 
     await row('NumberField', 'NumberField');
-    await row('Rating', 'on DesignRating');
+    await row('Rating', 'on RawRating');
     await row('TimePicker', 'TimePicker');
     await row('WheelPicker', 'WheelPicker');
-    await row('TabBar', 'on DesignTabBar');
+    await row('TabBar', 'on RawTabBar');
     // A part left out that ui_core has long had a behaviour for says so
     // still.
-    await row('CarouselView', 'on DesignCarousel');
+    await row('CarouselView', 'on RawCarousel');
     await row('BottomSheet', 'BottomSheet');
     await row('BarChart', 'BarChart');
     await row('LineChart', 'on DesignChart');

@@ -12,7 +12,7 @@ Widget _host(Widget child, {Locale locale = const Locale('en')}) => MaterialApp(
   locale: locale,
   supportedLocales: const [Locale('en'), Locale('ar')],
   localizationsDelegates: const [
-    DesignLocalizations.delegate,
+    RawWidgetsLocalizations.delegate,
     ...GlobalMaterialLocalizations.delegates,
   ],
   home: TermTheme(
@@ -120,7 +120,7 @@ void main() {
         locale: ar,
       ),
     );
-    final l = DesignLocalizations.forLocale(ar);
+    final l = RawWidgetsLocalizations.forLocale(ar);
     final form =
         '${l.dateFieldYearPlaceholder}-${l.dateFieldMonthPlaceholder}-'
         '${l.dateFieldDayPlaceholder}';
@@ -136,7 +136,7 @@ void main() {
   testWidgets('in Arabic the calendar numbers its days in Arabic digits', (
     tester,
   ) async {
-    final calendar = DesignCalendarController(
+    final calendar = RawCalendarController(
       firstDate: DateTime(2026),
       lastDate: DateTime(2027),
       selectedDate: DateTime(2026, 11, 20),
@@ -148,7 +148,7 @@ void main() {
     );
     expect(find.text('٢٠'), findsOneWidget);
     expect(find.text('20'), findsNothing);
-    final l = DesignLocalizations.forLocale(ar);
+    final l = RawWidgetsLocalizations.forLocale(ar);
     expect(
       find.bySemanticsLabel(l.previousMonthTooltip.toLowerCase()),
       findsOneWidget,

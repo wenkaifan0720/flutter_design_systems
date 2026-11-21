@@ -24,7 +24,7 @@ Widget _host(
   supportedLocales: _locales,
   localizationsDelegates: [
     ...extra,
-    DesignLocalizations.delegate,
+    RawWidgetsLocalizations.delegate,
     ...GlobalMaterialLocalizations.delegates,
   ],
   home: TermTheme(
@@ -308,7 +308,7 @@ List<_Case> _cases() {
     c(
       'a command palette',
       () => TermCommandPalette(
-        commands: [DesignCommand(label: 'rerun', onPressed: () {})],
+        commands: [RawCommand(label: 'rerun', onPressed: () {})],
       ),
       said: ['commands'],
       shows: ['commands', 'command hint', 'palette keys'],
@@ -329,13 +329,13 @@ class _Table extends StatefulWidget {
 }
 
 class _TableState extends State<_Table> {
-  final _table = DesignTableController<Map<String, String>>(
+  final _table = RawDataTableController<Map<String, String>>(
     rows: const [
       {'id': '1482', 'took': '2m 14s'},
     ],
     columns: const [
-      DesignTableColumn(id: 'id', label: 'run'),
-      DesignTableColumn(id: 'took', label: 'took'),
+      RawDataColumn(id: 'id', label: 'run'),
+      RawDataColumn(id: 'took', label: 'took'),
     ],
   );
 
@@ -382,7 +382,7 @@ class _Colours extends StatefulWidget {
 }
 
 class _ColoursState extends State<_Colours> {
-  final _colour = DesignColorController();
+  final _colour = RawColorController();
 
   @override
   void dispose() {
@@ -498,7 +498,7 @@ void main() {
           Column(
             children: [
               TermCommandPalette(
-                commands: [DesignCommand(label: 'rerun', onPressed: () {})],
+                commands: [RawCommand(label: 'rerun', onPressed: () {})],
               ),
               const TermCombobox<String>(options: ['staging', 'production']),
             ],

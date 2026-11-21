@@ -89,8 +89,8 @@ void main() {
         _size(tester, const Size(400, 120));
         await tester.pumpWidget(_host(b, Center(child: part)));
         await tester.pump();
-        final target = find.byType(DesignPressable).evaluate().isNotEmpty
-            ? find.byType(DesignPressable).first
+        final target = find.byType(RawButton).evaluate().isNotEmpty
+            ? find.byType(RawButton).first
             : find.byType(EditableText).first;
         if (name != 'text-field') {
           await atPressHalfway(tester, target, _golden('$name-${b.name}'));
@@ -177,10 +177,10 @@ void main() {
   testWidgets("a range's preview ends on its end's shape", (tester) async {
     if (!_recorded) return;
     _size(tester, const Size(400, 320));
-    final calendar = DesignCalendarController(
+    final calendar = RawCalendarController(
       firstDate: DateTime(2026),
       lastDate: DateTime(2027, 12, 31),
-      mode: DesignCalendarMode.range,
+      mode: RawCalendarMode.range,
       currentDate: DateTime(2026, 11, 14),
       initialMonth: DateTime(2026, 11),
     );
@@ -223,7 +223,7 @@ void main() {
       // Close what is open and hold it halfway shut, then open it again
       // and hold it halfway open.
       for (final moment in const ['halfway shut', 'halfway open']) {
-        await tester.tap(find.byType(DesignPressable).first);
+        await tester.tap(find.byType(RawButton).first);
         await tester.pump();
         await tester.pump(const Duration(milliseconds: 75));
         await _golden(row.toLowerCase())(moment);

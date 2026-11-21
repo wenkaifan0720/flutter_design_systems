@@ -51,22 +51,22 @@ List<(int, int)> termMatchRanges(String text, String query) {
 }
 
 /// A command palette standing on a page: `>` and a field, then [commands]
-/// ranked as the query is typed, grouped under their [DesignCommand.group],
-/// each with its matched letters lit and its [DesignCommand.shortcut] at
+/// ranked as the query is typed, grouped under their [RawCommand.group],
+/// each with its matched letters lit and its [RawCommand.shortcut] at
 /// the end. Up and Down move the highlight (the pointer moves it too),
 /// Return runs it. Open one over the screen with [showTermCommandPalette].
 ///
 /// ```dart
 /// TermCommandPalette(
 ///   commands: [
-///     DesignCommand(label: 'deploy to staging', group: 'deploy', onPressed: deploy),
-///     DesignCommand(label: 'open the runs', group: 'go', shortcut: 'M-2', onPressed: openRuns),
+///     RawCommand(label: 'deploy to staging', group: 'deploy', onPressed: deploy),
+///     RawCommand(label: 'open the runs', group: 'go', shortcut: 'M-2', onPressed: openRuns),
 ///   ],
 /// )
 /// ```
 ///
 /// The behaviour (ranking, keys, focus, what a screen reader hears) is
-/// ui_core's `DesignCommandPalette`.
+/// ui_core's `RawCommandPalette`.
 class TermCommandPalette extends StatefulWidget {
   /// A palette of [commands].
   const TermCommandPalette({
@@ -90,10 +90,10 @@ class TermCommandPalette extends StatefulWidget {
   final TermStyle? style;
 
   /// The commands, in the order they list with no query.
-  final List<DesignCommand> commands;
+  final List<RawCommand> commands;
 
-  /// Takes a chosen command; null runs its own [DesignCommand.onPressed].
-  final ValueChanged<DesignCommand>? onSelected;
+  /// Takes a chosen command; null runs its own [RawCommand.onPressed].
+  final ValueChanged<RawCommand>? onSelected;
 
   /// The dim words while nothing is typed.
   ///
@@ -209,7 +209,7 @@ class _TermCommandPaletteState extends State<TermCommandPalette> {
       focused: true,
       raised: widget.raised,
       padding: TermInset.zero,
-      child: DesignCommandPalette(
+      child: RawCommandPalette(
         commands: widget.commands,
         onSelected: widget.onSelected,
         controller: _text,
@@ -375,7 +375,7 @@ class _Item extends StatelessWidget {
   });
 
   final TermStyleOf own;
-  final DesignCommand command;
+  final RawCommand command;
   final String query;
   final double height;
   final bool lit;
@@ -471,17 +471,17 @@ class _Item extends StatelessWidget {
 /// behind dimmed, at most [cols] cells wide, a quarter of the way down. It
 /// comes up in place in a very short fade; a chosen command runs once the
 /// palette has closed and focus is back where it was. Escape or a tap
-/// outside closes it. Pair it with `DesignCommandShortcut` for `^K`.
+/// outside closes it. Pair it with `RawCommandShortcut` for `^K`.
 ///
 /// ```dart
-/// DesignCommandShortcut(
+/// RawCommandShortcut(
 ///   onOpen: () => showTermCommandPalette(context: context, commands: commands),
 ///   child: app,
 /// )
 /// ```
 Future<void> showTermCommandPalette({
   required BuildContext context,
-  required List<DesignCommand> commands,
+  required List<RawCommand> commands,
   String title = 'commands',
   String hintText = 'type a command',
   String emptyText = 'no command matches',
@@ -493,10 +493,11 @@ Future<void> showTermCommandPalette({
   final navigator = Navigator.of(context, rootNavigator: true);
   final themes = InheritedTheme.capture(from: context, to: navigator.context);
   final still = designReduceMotionOf(context);
-  final chosen = await navigator.push<DesignCommand>(
-    RawDialogRoute<DesignCommand>(
+  final chosen = await navigator.push<RawCommand>(
+    RawDialogRoute<RawCommand>(
       barrierDismissible: true,
-      barrierLabel: DesignLocalizations.of(context).commandPaletteBarrierLabel,
+      barrierLabel: RawWidgetsLocalizations.of(context)
+          .commandPaletteBarrierLabel,
       barrierColor: theme.background.withValues(alpha: 0.72),
       transitionDuration: still ? Duration.zero : TermMotion.screen,
       transitionBuilder: (context, animation, _, child) => FadeTransition(
@@ -552,8 +553,8 @@ class _RoutePalette extends StatefulWidget {
     required this.initialQuery,
   });
 
-  final List<DesignCommand> commands;
-  final ValueChanged<DesignCommand> onSelected;
+  final List<RawCommand> commands;
+  final ValueChanged<RawCommand> onSelected;
   final String title;
   final String hintText;
   final String emptyText;

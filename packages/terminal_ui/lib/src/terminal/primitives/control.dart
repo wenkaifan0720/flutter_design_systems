@@ -31,7 +31,7 @@ class TermTapTarget extends StatelessWidget {
   Widget build(BuildContext context) {
     final grid = context.termGrid;
     final floor = DesignTapTargets.of(context).floorOn();
-    return DesignTapTarget(
+    return TapTargetPadding(
       minSize: grid.ceil(floor),
       alignment: alignment,
       child: child,

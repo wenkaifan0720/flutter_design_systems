@@ -10,6 +10,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
+import '../internal/key_focus.dart';
 import '../internal/menu_marks.dart';
 import '../internal/type_ahead.dart';
 import '../primitives/control.dart';
@@ -215,7 +216,7 @@ class TermToggleGroup<T> extends StatelessWidget {
     if (!multiSelectionEnabled && !emptySelectionAllowed) {
       return _radios(context, minimumSize, face, layout);
     }
-    return DesignToggleGroup<T>(
+    return RawSegmentedButton<T>(
       options: options,
       selected: selected,
       onSelectionChanged: onSelectionChanged,
@@ -234,68 +235,19 @@ class TermToggleGroup<T> extends StatelessWidget {
   bool _enabled(T value) =>
       onSelectionChanged != null && (isEnabled?.call(value) ?? true);
 
-  // One choice that is never empty: radios over Flutter's RadioGroup, each
-  // cell the pressable DesignToggleGroup would give it.
+  // One choice that is never empty: Flutter's RadioGroup, each cell a
+  // RawRadio.
   Widget _radios(
     BuildContext context,
     Size minimumSize,
     Widget Function(BuildContext, T, Set<WidgetState>) face,
     Widget Function(BuildContext, List<Widget>) layout,
-  ) {
-    final chosen = selected.isEmpty ? null : selected.first;
-    final nodes = <T, FocusNode>{};
-    void choose(T value) {
-      if (value != chosen) onSelectionChanged?.call({value});
-    }
-
-    // Home and End choose the first and the last that can be chosen.
-    KeyEventResult ends(KeyEvent event) {
-      if (event is! KeyDownEvent && event is! KeyRepeatEvent) {
-        return KeyEventResult.ignored;
-      }
-      final key = event.logicalKey;
-      if (key != LogicalKeyboardKey.home && key != LogicalKeyboardKey.end) {
-        return KeyEventResult.ignored;
-      }
-      final order = key == LogicalKeyboardKey.home ? options : options.reversed;
-      for (final value in order) {
-        if (!_enabled(value)) continue;
-        choose(value);
-        nodes[value]?.requestFocus();
-        break;
-      }
-      return KeyEventResult.handled;
-    }
-
-    return Semantics(
-      container: true,
-      explicitChildNodes: true,
-      label: semanticLabel,
-      child: DesignRadioGroup<T>(
-        options: options,
-        value: chosen,
-        onChanged: onSelectionChanged == null ? null : choose,
-        isEnabled: isEnabled,
-        layoutBuilder: layout,
-        itemBuilder: (context, value, node, select) {
-          nodes[value] = node;
-          return DesignPressable(
-            focusNode: node,
-            onPressed: select,
-            onKeyEvent: (node, event) => ends(event),
-            selected: value == chosen,
-            minimumSize: minimumSize,
-            semanticLabel: labelOf(value),
-            excludeSemantics: true,
-            button: false,
-            checked: value == chosen,
-            inMutuallyExclusiveGroup: true,
-            builder: (context, states, _) => face(context, value, states),
-          );
-        },
-      ),
-    );
-  }
+  ) => _ToggleRadios<T>(
+    group: this,
+    minimumSize: minimumSize,
+    face: face,
+    layout: layout,
+  );
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -312,6 +264,178 @@ class TermToggleGroup<T> extends StatelessWidget {
   }
 }
 
+// A one-choice TermToggleGroup that is never empty: radios in Flutter's
+// RadioGroup, with ui_core's keyboard fix inside it. Tab stops once, on the
+// chosen cell; every arrow moves and chooses, round the ends and past a cell
+// turned off, Left and Right swapped right to left; Home and End choose the
+// first and the last that can be chosen.
+class _ToggleRadios<T> extends StatefulWidget {
+  const _ToggleRadios({
+    required this.group,
+    required this.minimumSize,
+    required this.face,
+    required this.layout,
+  });
+
+  final TermToggleGroup<T> group;
+  final Size minimumSize;
+  final Widget Function(BuildContext, T, Set<WidgetState>) face;
+  final Widget Function(BuildContext, List<Widget>) layout;
+
+  @override
+  State<_ToggleRadios<T>> createState() => _ToggleRadiosState<T>();
+}
+
+class _ToggleRadiosState<T> extends State<_ToggleRadios<T>> {
+  final _nodes = <T, FocusNode>{};
+
+  // The cell under the pointer, in any highlight mode, as a pressable shows
+  // it (RawRadio's own hover shows in the traditional mode only).
+  T? _pointerOver;
+
+  @override
+  void initState() {
+    super.initState();
+    TermKeyFocus.addListener(_inputChanged);
+  }
+
+  @override
+  void dispose() {
+    TermKeyFocus.removeListener(_inputChanged);
+    for (final node in _nodes.values) {
+      node.dispose();
+    }
+    super.dispose();
+  }
+
+  void _inputChanged() => setState(() {});
+
+  T? get _chosen {
+    final selected = widget.group.selected;
+    return selected.isEmpty ? null : selected.first;
+  }
+
+  void _choose(T? value) {
+    if (value != null && value != _chosen) {
+      widget.group.onSelectionChanged?.call({value});
+    }
+  }
+
+  // Home and End choose the first and the last that can be chosen.
+  KeyEventResult _ends(FocusNode _, KeyEvent event) {
+    if (event is! KeyDownEvent && event is! KeyRepeatEvent) {
+      return KeyEventResult.ignored;
+    }
+    final key = event.logicalKey;
+    if (key != LogicalKeyboardKey.home && key != LogicalKeyboardKey.end) {
+      return KeyEventResult.ignored;
+    }
+    final options = widget.group.options;
+    final order = key == LogicalKeyboardKey.home ? options : options.reversed;
+    for (final value in order) {
+      if (!widget.group._enabled(value)) continue;
+      _choose(value);
+      _nodes[value]?.requestFocus();
+      break;
+    }
+    return KeyEventResult.handled;
+  }
+
+  void _hover(T value, bool over) {
+    if (over) {
+      if (_pointerOver != value) setState(() => _pointerOver = value);
+    } else if (_pointerOver == value) {
+      setState(() => _pointerOver = null);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final group = widget.group;
+    final options = group.options;
+    for (final value in _nodes.keys.toSet().difference(options.toSet())) {
+      _nodes.remove(value)!.dispose();
+    }
+    final minimumSize = widget.minimumSize;
+    return Semantics(
+      container: true,
+      explicitChildNodes: true,
+      label: group.semanticLabel,
+      child: RadioGroup<T>(
+        groupValue: _chosen,
+        onChanged: _choose,
+        child: RadioGroupKeyboardFix<T>(
+          child: Focus(
+            canRequestFocus: false,
+            skipTraversal: true,
+            includeSemantics: false,
+            onKeyEvent: _ends,
+            child: Builder(
+              builder: (context) {
+                final registry = RadioGroup.maybeOf<T>(context);
+                return widget.layout(context, [
+                  for (final value in options)
+                    // One node a cell: RawRadio's (checked, one of a group,
+                    // its focus and its tap) with the words.
+                    MergeSemantics(
+                      key: ObjectKey(value),
+                      child: RawRadio<T>(
+                        value: value,
+                        mouseCursor: WidgetStateMouseCursor.clickable,
+                        toggleable: false,
+                        focusNode: _nodes[value] ??= FocusNode(),
+                        autofocus: false,
+                        groupRegistry: registry,
+                        enabled: group._enabled(value),
+                        builder: (context, radio) => Semantics(
+                          label: group.labelOf(value),
+                          child: ExcludeSemantics(
+                            child: MouseRegion(
+                              onEnter: (_) => _hover(value, true),
+                              onExit: (_) => _hover(value, false),
+                              // The whole cell, at least the floor, takes
+                              // the press.
+                              child: MetaData(
+                                behavior: HitTestBehavior.opaque,
+                                child: ConstrainedBox(
+                                  constraints: BoxConstraints(
+                                    minWidth: minimumSize.width,
+                                    minHeight: minimumSize.height,
+                                  ),
+                                  child: Center(
+                                    widthFactor: 1,
+                                    heightFactor: 1,
+                                    child: widget.face(context, value, {
+                                      // The cursor after a key only, as a
+                                      // pressable's.
+                                      for (final s in radio.states)
+                                        if (s != WidgetState.focused ||
+                                            TermKeyFocus.shown)
+                                          s,
+                                      if (_pointerOver == value &&
+                                          group._enabled(value))
+                                        WidgetState.hovered,
+                                      if (radio.downPosition != null)
+                                        WidgetState.pressed,
+                                    }),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                ]);
+              },
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 /// A button with a menu of the same action's other ways:
 /// `[ deploy ][▾]`. The label runs [onPressed]; the arrow opens [actions]
 /// under it, revealed in place.
@@ -320,7 +444,7 @@ class TermToggleGroup<T> extends StatelessWidget {
 /// TermSplitButton(
 ///   label: 'deploy',
 ///   onPressed: deploy,
-///   actions: [DesignSplitAction(label: 'deploy without cache', onPressed: fresh)],
+///   actions: [RawSplitAction(label: 'deploy without cache', onPressed: fresh)],
 /// )
 /// ```
 class TermSplitButton extends StatelessWidget {
@@ -348,7 +472,7 @@ class TermSplitButton extends StatelessWidget {
   final VoidCallback? onPressed;
 
   /// The menu's actions.
-  final List<DesignSplitAction> actions;
+  final List<RawSplitAction> actions;
 
   /// Whether it is the screen's primary action, filled in the accent.
   final bool filled;
@@ -366,7 +490,7 @@ class TermSplitButton extends StatelessWidget {
     // target: `[  ▾  ]` under a finger, `[ ▾ ]` under a pointer.
     final arrowPad = math.max(1, grid.colsIn(floor.width) ~/ 2);
     TermMenuMarks.watchInput();
-    return DesignSplitButton(
+    return RawSplitButton(
       label: label,
       onPressed: onPressed,
       actions: actions,
@@ -378,8 +502,8 @@ class TermSplitButton extends StatelessWidget {
           pressed: states.contains(WidgetState.pressed) || open,
           focused: states.contains(WidgetState.focused),
           builder: (context, press, focus) => TermBracketFace(
-            label: part == DesignSplitPart.main ? label : '▾',
-            padCols: part == DesignSplitPart.main ? 2 : arrowPad,
+            label: part == RawSplitPart.main ? label : '▾',
+            padCols: part == RawSplitPart.main ? 2 : arrowPad,
             filled: filled,
             enabled: !states.contains(WidgetState.disabled),
             press: press,
@@ -452,7 +576,7 @@ class TermLink extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = TermTheme.of(context);
     return TermTapTarget(
-      child: DesignPressable(
+      child: RawButton(
         onPressed: onPressed,
         link: true,
         button: false,

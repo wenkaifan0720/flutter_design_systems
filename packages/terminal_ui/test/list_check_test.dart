@@ -7,7 +7,7 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:terminal_ui/terminal_ui.dart';
-import 'package:ui_core_test/ui_core_test.dart' show DesignWidthCheck;
+import 'package:ui_core_review/ui_core_review.dart' show DesignWidthCheck;
 
 // The example's screens and pages are the ones under test.
 // ignore_for_file: avoid_relative_lib_imports

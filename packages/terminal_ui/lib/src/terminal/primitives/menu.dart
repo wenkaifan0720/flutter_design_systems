@@ -7,6 +7,7 @@ import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
 import '../internal/menu_marks.dart';
+import '../internal/reveal.dart';
 import '../style.dart';
 import '../theme.dart';
 import 'box.dart';
@@ -193,34 +194,17 @@ class TermMenuReveal extends StatelessWidget {
   const TermMenuReveal({super.key, required this.info, required this.child});
 
   /// The overlay's place and presence.
-  final DesignOverlayInfo info;
+  final RawPopoverInfo info;
 
   /// The menu.
   final Widget child;
 
   @override
-  Widget build(BuildContext context) => AnimatedBuilder(
-    animation: info.animation,
-    builder: (context, child) {
-      // A spring only nears 1: within a hair of it, the menu is open.
-      final v = info.animation.value;
-      final t = v >= 0.995 ? 1.0 : v.clamp(0.0, 1.0);
-      return ClipRect(
-        clipBehavior: t >= 1 ? Clip.none : Clip.hardEdge,
-        child: Align(
-          alignment: info.side == DesignOverlaySide.above
-              ? AlignmentDirectional.bottomStart
-              : AlignmentDirectional.topStart,
-          widthFactor: 1,
-          heightFactor: t,
-          child: child,
-        ),
-      );
-    },
-    child: ConstrainedBox(
-      constraints: BoxConstraints(maxHeight: info.maxSize.height),
-      child: child,
-    ),
+  Widget build(BuildContext context) => TermReveal(
+    presence: info.animation,
+    above: info.side == RawPopoverSide.above,
+    maxHeight: info.maxSize.height,
+    child: child,
   );
 }
 

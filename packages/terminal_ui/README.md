@@ -228,8 +228,8 @@ field's, a 1 px outline's beside its caret).
 Tab visits a tab bar or navigation group once. Use the arrow keys to move
 between destinations and F6 to switch between navigation and the page.
 Tab visits a set of radios once too, on the chosen one, and so a
-segmented control: the arrows move and choose (group sibling `TermRadio`s
-with `DesignRadioGroup`).
+segmented control: the arrows move and choose (put sibling `TermRadio`s in
+Flutter's `RadioGroup`, with ui_core's `RadioGroupKeyboardFix` round them).
 Dialogs and sheets keep focus inside and return it to the opener on close.
 On line and area charts, the arrows inspect data points. Ratings accept
 arrow and number keys. Screen readers announce shortcuts such as `^K` as

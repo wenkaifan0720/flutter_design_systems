@@ -106,7 +106,7 @@ class TermButton extends StatelessWidget {
         : termKeyLabel(shortcut!);
     final ink = isDestructiveAction ? theme.danger : theme.accent;
     return TermTapTarget(
-      child: DesignPressable(
+      child: RawButton(
         onPressed: onPressed,
         focusNode: focusNode,
         autofocus: autofocus,
@@ -308,12 +308,14 @@ class TermIconButton extends StatelessWidget {
     final stroke = termStroke(theme, grid);
     final on = selected ?? false;
     return TermTapTarget(
-      child: DesignPressable(
+      child: RawButton(
         onPressed: onPressed,
         focusNode: focusNode,
         autofocus: autofocus,
         selected: on,
-        toggled: selected,
+        // A toggle stays a button, read as selected or not, as
+        // IconButton(isSelected:) is.
+        semanticSelected: selected,
         semanticLabel: semanticLabel,
         mouseCursor: onPressed == null
             ? SystemMouseCursors.basic

@@ -1,3 +1,62 @@
+## 0.3.0
+
+- Stands on ui_core 0.4.0, on Flutter 3.47 or later as before. The ui_core
+  types terminal_ui's API names take their new names: `DesignSplitAction`
+  is `RawSplitAction`, `DesignOverlayInfo` is `RawPopoverInfo`,
+  `DesignLocalizations` is `RawWidgetsLocalizations`, and so on.
+  `dart fix --apply` moves your code.
+- Radios of one choice stand in Flutter's `RadioGroup`, with ui_core's
+  `RadioGroupKeyboardFix` round them, in place of ui_core's
+  `DesignRadioGroup` (deprecated). Tab stops once, on the chosen radio (on
+  the first that can be chosen while none is, or while the chosen one is
+  turned off), and the arrows move and choose, Left and Right swapped right
+  to left. A `TermRadio` in a group takes its `value` and `label`;
+  `enabled: false` turns it off. One given `groupValue` or `onChanged`
+  holds its choice itself, a Tab stop of its own, as before:
+
+  ```dart
+  // Before
+  DesignRadioGroup<String>(
+    options: const ['staging', 'production'],
+    value: environment,
+    onChanged: (value) => setState(() => environment = value),
+    itemBuilder: (context, value, node, select) => TermRadio<String>(
+      value: value,
+      groupValue: environment,
+      label: value,
+      focusNode: node,
+      onChanged: select == null ? null : (_) => select(),
+    ),
+  )
+
+  // After
+  RadioGroup<String>(
+    groupValue: environment,
+    onChanged: (value) => setState(() => environment = value),
+    child: RadioGroupKeyboardFix<String>(
+      child: Column(
+        children: const [
+          TermRadio<String>(value: 'staging', label: 'staging'),
+          TermRadio<String>(value: 'production', label: 'production'),
+        ],
+      ),
+    ),
+  )
+  ```
+- A one-choice `TermToggleGroup` that can't be emptied (a segmented
+  control) stands on `RadioGroup` too; Home and End still choose the first
+  and the last segment.
+- A radio is Flutter's `RawRadio` underneath, drawn as before. Its cursor
+  shows for the keys only, as every other part's does.
+- `TermTooltip` stands on Flutter's `RawTooltip`, drawn and moving as
+  before: it opens half a second after the pointer arrives, on focus, and
+  on a long press. A screen reader hears its message as the control's
+  tooltip. Moving from one tooltip straight to the next now waits the half
+  second again, as Flutter's `Tooltip` does.
+- A `TermIconButton` given `selected`, and a password field's show and
+  hide, read to a screen reader as a button that is selected or not, as
+  `IconButton(isSelected:)` does, no longer as a switch.
+
 ## 0.2.5
 
 - A text field's focus is its caret and its frame's one line, heavy in the

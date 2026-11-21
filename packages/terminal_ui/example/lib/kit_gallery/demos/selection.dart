@@ -65,22 +65,26 @@ class _LiveState extends State<_Live> {
       const TermSectionHeader(title: 'radios'),
       // One choice, one Tab stop: the arrows move and choose, past the one
       // turned off.
-      DesignRadioGroup<String>(
-        options: const ['rolling', 'blue-green', 'canary', 'recreate'],
-        value: _strategy,
-        isEnabled: (s) => s != 'recreate',
-        onChanged: (v) => setState(() => _strategy = v),
-        semanticLabel: 'strategy',
-        layoutBuilder: (context, radios) => Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: radios,
-        ),
-        itemBuilder: (context, s, node, select) => TermRadio<String>(
-          value: s,
-          groupValue: _strategy,
-          focusNode: node,
-          label: s == 'recreate' ? 'recreate (not here)' : s,
-          onChanged: select == null ? null : (_) => select(),
+      RadioGroup<String>(
+        groupValue: _strategy,
+        onChanged: (v) => setState(() => _strategy = v!),
+        child: RadioGroupKeyboardFix<String>(
+          child: Semantics(
+            label: 'strategy',
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: const [
+                TermRadio<String>(value: 'rolling', label: 'rolling'),
+                TermRadio<String>(value: 'blue-green', label: 'blue-green'),
+                TermRadio<String>(value: 'canary', label: 'canary'),
+                TermRadio<String>(
+                  value: 'recreate',
+                  label: 'recreate (not here)',
+                  enabled: false,
+                ),
+              ],
+            ),
+          ),
         ),
       ),
       const TermSectionHeader(title: 'switches'),

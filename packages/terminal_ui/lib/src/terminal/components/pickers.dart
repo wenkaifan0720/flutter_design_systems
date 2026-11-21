@@ -30,7 +30,7 @@ import 'text_field.dart';
 /// [date] as a terminal writes one, `2026-11-14`: year, month and day in
 /// that order, in [localizations]' digits when given (Arabic's
 /// `٢٠٢٦-١١-١٤`), else ASCII.
-String termDate(DateTime date, {DesignLocalizations? localizations}) {
+String termDate(DateTime date, {RawWidgetsLocalizations? localizations}) {
   final l = localizations;
   String figure(int n, int width) => l == null
       ? n.toString().padLeft(width, '0')
@@ -40,7 +40,7 @@ String termDate(DateTime date, {DesignLocalizations? localizations}) {
 }
 
 // The date's form in the reader's placeholders: `yyyy-mm-dd`.
-String _dateForm(DesignLocalizations l) =>
+String _dateForm(RawWidgetsLocalizations l) =>
     '${l.dateFieldYearPlaceholder}-${l.dateFieldMonthPlaceholder}-'
     '${l.dateFieldDayPlaceholder}';
 
@@ -70,7 +70,7 @@ class TermCalendar extends StatelessWidget {
 
   /// The shown month, the keyboard's day and the selection; the caller's
   /// to dispose.
-  final DesignCalendarController controller;
+  final RawCalendarController controller;
 
   /// Called with each day chosen.
   final ValueChanged<DateTime>? onChanged;
@@ -96,8 +96,8 @@ class TermCalendar extends StatelessWidget {
     final floor = grid.ceil(DesignTapTargets.of(context).floorOn());
     final touch = DesignTapTargets.of(context).inputOn() == DesignInput.touch;
     final rtl = Directionality.of(context) == TextDirection.rtl;
-    final l = DesignLocalizations.of(context);
-    return DesignCalendar(
+    final l = RawWidgetsLocalizations.of(context);
+    return RawCalendarDatePicker(
       controller: controller,
       onChanged: onChanged,
       months: months,
@@ -311,7 +311,7 @@ class TermDatePicker extends StatefulWidget {
 }
 
 class _TermDatePickerState extends State<TermDatePicker> {
-  late final DesignCalendarController _calendar = DesignCalendarController(
+  late final RawCalendarController _calendar = RawCalendarController(
     firstDate: widget.firstDate,
     lastDate: widget.lastDate,
     selectedDate: widget.value,
@@ -327,7 +327,7 @@ class _TermDatePickerState extends State<TermDatePicker> {
   @override
   Widget build(BuildContext context) {
     final value = widget.value;
-    final l = DesignLocalizations.of(context);
+    final l = RawWidgetsLocalizations.of(context);
     return _DateField(
       labelText: widget.labelText,
       helperText: widget.helperText,
@@ -385,10 +385,10 @@ class TermDateRangePicker extends StatefulWidget {
   });
 
   /// The range chosen, or null.
-  final DesignDateRange? value;
+  final RawDateRange? value;
 
   /// Called with the range once its end is chosen; null disables it.
-  final ValueChanged<DesignDateRange>? onChanged;
+  final ValueChanged<RawDateRange>? onChanged;
 
   /// The first day it offers.
   final DateTime firstDate;
@@ -426,10 +426,10 @@ class TermDateRangePicker extends StatefulWidget {
 }
 
 class _TermDateRangePickerState extends State<TermDateRangePicker> {
-  late final DesignCalendarController _calendar = DesignCalendarController(
+  late final RawCalendarController _calendar = RawCalendarController(
     firstDate: widget.firstDate,
     lastDate: widget.lastDate,
-    mode: DesignCalendarMode.range,
+    mode: RawCalendarMode.range,
     selectedRange: widget.value,
     currentDate: widget.currentDate,
   );
@@ -443,7 +443,7 @@ class _TermDateRangePickerState extends State<TermDateRangePicker> {
   @override
   Widget build(BuildContext context) {
     final value = widget.value;
-    final l = DesignLocalizations.of(context);
+    final l = RawWidgetsLocalizations.of(context);
     final end = value?.end;
     return _DateField(
       labelText: widget.labelText,
@@ -536,7 +536,7 @@ class _DateFieldState extends State<_DateField> {
     final theme = TermTheme.of(context);
     final grid = context.termGrid;
     final enabled = widget.enabled;
-    return DesignAnchoredOverlay(
+    return RawPopover(
       controller: _menu,
       dampingRatio: TermMotion.reveal.dampingRatio,
       stiffness: TermMotion.reveal.stiffness,
@@ -544,7 +544,7 @@ class _DateFieldState extends State<_DateField> {
       onOpenChanged: (open) {
         if (open) widget.onOpen?.call();
       },
-      placement: DesignOverlayPlacement(
+      placement: RawPopoverPlacement(
         gap: 0,
         margin: grid.cellWidth,
         preferredExtent: grid.lines(12),
@@ -568,14 +568,14 @@ class _DateFieldState extends State<_DateField> {
             lines = text.computeLineMetrics().length;
             text.dispose();
           }
-          return DesignField(
+          return RawInputDecorator(
             labelText: widget.labelText,
             helperText: widget.helperText,
             errorText: widget.errorText,
             enabled: enabled,
             focusNode: _focus,
             builder: (context, parts) => MergeSemantics(
-              child: DesignPressable(
+              child: RawButton(
                 onPressed: enabled ? termOpener(_focus, anchor) : null,
                 focusNode: _focus,
                 expanded: anchor.isOpen,
@@ -776,11 +776,11 @@ const String _timeHelp = '00:00–23:59 · ↑↓';
 
 class _TermTimeFieldState extends State<TermTimeField> {
   final _text = TextEditingController();
-  DesignLocalizations? _words;
+  RawWidgetsLocalizations? _words;
   String? _error;
 
   String _write(TermTime? t) {
-    final l = _words ?? const DefaultDesignLocalizations();
+    final l = _words ?? const DefaultRawWidgetsLocalizations();
     return t == null
         ? ''
         : '${termDigits(l, t.hour, width: 2)}:'
@@ -788,7 +788,7 @@ class _TermTimeFieldState extends State<TermTimeField> {
   }
 
   TermTime? _read(String text) {
-    final l = _words ?? const DefaultDesignLocalizations();
+    final l = _words ?? const DefaultRawWidgetsLocalizations();
     final m = RegExp(r'^(\d{1,2}):(\d{2})$')
         .firstMatch(termAsciiDigits(l, text.trim()));
     if (m == null) return null;
@@ -806,7 +806,7 @@ class _TermTimeFieldState extends State<TermTimeField> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final l = DesignLocalizations.of(context);
+    final l = RawWidgetsLocalizations.of(context);
     if (identical(l, _words)) return;
     final shown = _words == null ? widget.value : _read(_text.text);
     _words = l;
@@ -849,7 +849,7 @@ class _TermTimeFieldState extends State<TermTimeField> {
 
   @override
   Widget build(BuildContext context) {
-    final l = DesignLocalizations.of(context);
+    final l = RawWidgetsLocalizations.of(context);
     return CallbackShortcuts(
       bindings: {
         const SingleActivator(LogicalKeyboardKey.arrowUp): () =>
@@ -898,7 +898,7 @@ class TermColorPicker extends StatelessWidget {
   });
 
   /// The colour; the caller's to dispose.
-  final DesignColorController controller;
+  final RawColorController controller;
 
   /// The area's height in lines.
   final int lines;
@@ -932,7 +932,7 @@ class TermColorPicker extends StatelessWidget {
       p.brightCyan,
       p.brightWhite,
     ];
-    return DesignColorPicker(
+    return RawColorPicker(
       controller: controller,
       areaHeight: grid.lines(lines),
       // The keyboard's focus on the area: the cursor round it, hollow, its
@@ -1004,7 +1004,7 @@ class TermColorPicker extends StatelessWidget {
             children: [
               for (final (i, c) in swatches.indexed)
                 TermTapTarget(
-                  child: DesignPressable(
+                  child: RawButton(
                     onPressed: () => controller.color = c,
                     semanticLabel: TermLocalizations.of(context)
                         .paletteColorName(i),
@@ -1141,7 +1141,7 @@ class _HueCells extends CustomPainter {
 
   final TermGrid grid;
   final HSVColor color;
-  final DesignColorChannel channel;
+  final RawColorChannel channel;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -1152,7 +1152,7 @@ class _HueCells extends CustomPainter {
     final top = size.height * 0.2;
     for (var c = 0; c < cols; c++) {
       final t = cols == 1 ? 0.0 : c / (cols - 1);
-      paint.color = channel == DesignColorChannel.alpha
+      paint.color = channel == RawColorChannel.alpha
           ? color.withAlpha(t).toColor()
           : HSVColor.fromAHSV(1, t * 360, 1, 1).toColor();
       canvas.drawRect(

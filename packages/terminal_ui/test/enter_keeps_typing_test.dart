@@ -126,8 +126,8 @@ void main() {
       ),
     );
     final commands = [
-      DesignCommand(label: 'go home', onPressed: () => ran = 'home'),
-      DesignCommand(label: 'deploy to staging', onPressed: () => ran = 'stg'),
+      RawCommand(label: 'go home', onPressed: () => ran = 'home'),
+      RawCommand(label: 'deploy to staging', onPressed: () => ran = 'stg'),
     ];
     unawaited(showTermCommandPalette(context: page, commands: commands));
     await tester.pumpAndSettle();

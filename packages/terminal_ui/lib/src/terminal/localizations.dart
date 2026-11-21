@@ -1,5 +1,5 @@
 /// The words Terminal's own parts say, beyond ui_core's
-/// [DesignLocalizations]: what a screen reader hears for a pager, a path, a
+/// [RawWidgetsLocalizations]: what a screen reader hears for a pager, a path, a
 /// step or a group of people, and the few words its parts write themselves.
 library;
 
@@ -17,7 +17,7 @@ import 'package:ui_core/ui_core.dart';
 /// language Terminal does not speak, so nothing needs setting up. An app in
 /// another language extends [DefaultTermLocalizations], overriding the
 /// words it says, and adds a delegate for its subclass to its
-/// `localizationsDelegates`, as it does for [DesignLocalizations].
+/// `localizationsDelegates`, as it does for [RawWidgetsLocalizations].
 ///
 /// ```dart
 /// Text(TermLocalizations.of(context).avatarGroupLabel(const ['Ada Lovelace', 'Alan Turing']))

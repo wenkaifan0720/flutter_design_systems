@@ -66,7 +66,7 @@ void main() {
 
     testWidgets('at $name a calendar shows every day whole, the first week '
         'too, its days at most twice the size', (t) async {
-      final calendar = DesignCalendarController(
+      final calendar = RawCalendarController(
         firstDate: DateTime(2026),
         lastDate: DateTime(2027, 12, 31),
         selectedDate: DateTime(2026, 11, 14),

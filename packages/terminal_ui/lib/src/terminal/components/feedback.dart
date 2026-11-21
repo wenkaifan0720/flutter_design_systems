@@ -79,7 +79,7 @@ class TermSpinner extends StatelessWidget {
     final theme = TermTheme.of(context);
     final grid = context.termGrid;
     return Semantics(
-      label: semanticLabel ?? DesignLocalizations.of(context).loadingLabel,
+      label: semanticLabel ?? RawWidgetsLocalizations.of(context).loadingLabel,
       child: ExcludeSemantics(
         child: TermStepper(
           period: TermMotion.spinnerFrame,
@@ -360,7 +360,7 @@ class TermToaster extends StatelessWidget {
 
   /// Shows a toast reading [message] in [tone], with an action when
   /// [actionLabel] and [onAction] are given.
-  static DesignToastHandle show(
+  static RawToastController show(
     BuildContext context, {
     required String message,
     String? title,
@@ -368,8 +368,8 @@ class TermToaster extends StatelessWidget {
     String? actionLabel,
     VoidCallback? onAction,
     Duration? duration = const Duration(seconds: 4),
-  }) => DesignToaster.of(context).show(
-    DesignToast(
+  }) => RawToaster.of(context).show(
+    RawToast(
       message: message,
       title: title,
       actionLabel: actionLabel,
@@ -382,7 +382,7 @@ class TermToaster extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final grid = context.termGrid;
-    return DesignToaster(
+    return RawToaster(
       padding: EdgeInsets.fromLTRB(
         grid.cellWidth,
         grid.lineHeight,
@@ -406,7 +406,7 @@ class TermToast extends StatelessWidget {
   final TermStyle? style;
 
   /// What the toaster says about the toast.
-  final DesignToastDetails details;
+  final RawToastDetails details;
 
   @override
   Widget build(BuildContext context) {

@@ -36,8 +36,8 @@ class TermFieldFrame extends StatelessWidget {
     required this.child,
   });
 
-  /// The field's label, help and error, from a `DesignField`.
-  final DesignFieldParts parts;
+  /// The field's label, help and error, from a `RawInputDecorator`.
+  final RawInputDecoratorDetails parts;
 
   /// Whether the field is the one being worked: focused, or its menu open.
   final bool active;
@@ -197,7 +197,7 @@ class TermFieldFrame extends StatelessWidget {
 /// focus) comes.
 Color _edgeColor(
   TermThemeData theme,
-  DesignFieldParts parts,
+  RawInputDecoratorDetails parts,
   Color? edge,
   double t,
 ) =>
@@ -240,8 +240,8 @@ class TermFieldLine extends StatelessWidget {
   final Widget Function(Widget Function(bool active, Color? edge) brackets)?
   control;
 
-  /// The field's label, help and error, from a `DesignField`.
-  final DesignFieldParts parts;
+  /// The field's label, help and error, from a `RawInputDecorator`.
+  final RawInputDecoratorDetails parts;
 
   /// Whether the field is the one being worked: focused, or its menu open.
   final bool active;

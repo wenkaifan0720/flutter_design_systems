@@ -6,7 +6,7 @@ import 'package:ui_core/ui_core.dart';
 
 /// [value] in [l]'s digits, ungrouped and padded with zeros to [width]
 /// ("2026", "07"; Arabic's "٢٠٢٦", "٠٧").
-String termDigits(DesignLocalizations l, int value, {int width = 1}) {
+String termDigits(RawWidgetsLocalizations l, int value, {int width = 1}) {
   final zero = l.formatDecimal(0).runes.first;
   final ascii = value.abs().toString().padLeft(width, '0');
   final digits = zero == 0x30
@@ -17,7 +17,7 @@ String termDigits(DesignLocalizations l, int value, {int width = 1}) {
 
 /// [text] with [l]'s digits written as ASCII ones, so a figure typed in
 /// either reads the same.
-String termAsciiDigits(DesignLocalizations l, String text) {
+String termAsciiDigits(RawWidgetsLocalizations l, String text) {
   final zero = l.formatDecimal(0).runes.first;
   if (zero == 0x30) return text;
   return String.fromCharCodes(
@@ -27,7 +27,7 @@ String termAsciiDigits(DesignLocalizations l, String text) {
 
 /// The characters a figure in [l] is typed with: ASCII digits and the
 /// reader's, for an input's filter.
-String termDigitClass(DesignLocalizations l) {
+String termDigitClass(RawWidgetsLocalizations l) {
   final zero = l.formatDecimal(0).runes.first;
   return zero == 0x30
       ? '0-9'
