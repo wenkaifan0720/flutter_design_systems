@@ -118,8 +118,10 @@ typedef RawInputDecoratorBuilder = Widget Function(
 /// from anywhere on its line is left out of the semantics tree
 /// (`GestureDetector.excludeFromSemantics`), as the gesture detector of
 /// Flutter's own text field is. A press that stays in the tree gives the
-/// entry a node of its own beside it, which the field names from the node
-/// over it.
+/// entry a node of its own beside it. Alone, that entry is still merged
+/// with the field's label and hint, so it is read as a named text field;
+/// once a second control joins, it stands apart under the field's node,
+/// and on the web it is then a new input.
 ///
 /// ```dart
 /// RawInputDecorator(labelText: 'Email', builder: (context, parts) => Column(children: [?parts.label, parts.control]), child: const Text('field'))
@@ -528,11 +530,14 @@ class _DesignFormScope extends InheritedWidget {
 // node of its own and the others each have theirs: then the entry's node
 // is the field's (Material's text field with a suffix button), the others
 // in it. A text entry that stands in a node of its own (a press round it
-// besides its own, or a node between) is never merged: the field's node
-// names it as it would name it beside other controls, so a control that
-// comes or goes beside the entry (a clear key with the first letter) never
-// moves the entry to another node. On the web the entry's node is the
-// browser's input, and a new one loses the keys typed while it is made. A control of ui_core's that carries the field's words on its own
+// besides its own, or a node between) is merged alone, as any lone
+// control, so its node holds the label, the hint and the entry, as a text
+// field's must for a screen reader to name it. Beside other controls it
+// is never the field's node: it stands apart under a node that names the
+// group, so a control that comes beside it (a clear key with the first
+// letter) moves it to a node of its own, which on the web is a new input.
+// A look keeps the entry's node by leaving its line's tap out of the
+// semantics tree. A control of ui_core's that carries the field's words on its own
 // node (a number field's entry) leaves the field's node saying nothing.
 // The label is left out when a control already says it (a button's name
 // aside); a required field then says it is required first in its hint,
@@ -799,7 +804,10 @@ class _RenderFieldSemantics extends RenderProxyBox {
     visitChildrenForSemantics((c) => visit(c, false, 0));
     final (:said, :saidWhole) = hears(this);
     return (
-      single: controls <= 1 && !alone,
+      // A lone entry is merged even when it stands apart: its node must
+      // hold the field's name, which a screen reader reads with the entry
+      // only from the entry's own node.
+      single: controls <= 1,
       said: said,
       saidWhole: saidWhole,
       entry: controls > 1 && entries == 1 && joins && apart && !alone,

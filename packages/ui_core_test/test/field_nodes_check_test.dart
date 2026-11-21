@@ -110,17 +110,27 @@ Future<DesignAlignmentReport> _type(WidgetTester tester, _Search field) async {
 }
 
 void main() {
-  for (final tapped in [false, true]) {
-    testWidgets('a field whose clear key shows with the first letter keeps '
-        'its nodes${tapped ? ', its line\'s tap in the semantics tree' : ''}', (
-      tester,
-    ) async {
-      final semantics = tester.ensureSemantics();
-      final report = await _type(tester, _Search(tapped: tapped));
-      expect(report.problems, isEmpty);
-      semantics.dispose();
-    });
-  }
+  testWidgets('a field whose clear key shows with the first letter keeps '
+      'its nodes', (tester) async {
+    final semantics = tester.ensureSemantics();
+    final report = await _type(tester, const _Search());
+    expect(report.problems, isEmpty);
+    semantics.dispose();
+  });
+
+  // Its lone entry is merged with the field's name; the clear key then
+  // stands it apart.
+  testWidgets('a field whose line\'s tap is in the semantics tree is '
+      'reported', (tester) async {
+    final semantics = tester.ensureSemantics();
+    final report = await _type(tester, const _Search(tapped: true));
+    expect(report.problems, isNotEmpty);
+    expect(
+      report.problems.first,
+      startsWith('a field "Search tasks": its text entry moved from node #'),
+    );
+    semantics.dispose();
+  });
 
   testWidgets('an entry put in a node of its own with the first letter is '
       'reported', (tester) async {

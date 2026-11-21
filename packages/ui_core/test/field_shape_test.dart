@@ -6,10 +6,18 @@
 // new input, and the keys typed after it are lost while the field still
 // looks focused. A line whose tap is in the semantics tree (a look that
 // leaves its line's tap there) gives the entry a node of its own beside the
-// press: the field then names it from the node over it, as it does beside
-// other controls, from the first letter on as before it.
+// press. Alone, that entry is still read as one text field named by the
+// field: its label, its placeholder or help or error, and the entry on one
+// node, as published looks are read. A control that joins it then gives it
+// a node apart, so such a line keeps its node only with a second control
+// from the start.
 import 'package:material_ui/material_ui.dart'
-    show DefaultMaterialLocalizations, Material, MaterialType, TextField;
+    show
+        DefaultMaterialLocalizations,
+        InputDecoration,
+        Material,
+        MaterialType,
+        TextField;
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -147,8 +155,6 @@ void main() {
     ('a lone entry', null, false, false),
     ('an entry with help', 'Title or ID', false, false),
     ('an entry after a leading key', null, true, false),
-    ('an entry in a tapped line', null, false, true),
-    ('an entry with help in a tapped line', 'Title or ID', false, true),
     ('an entry after a leading key in a tapped line', null, true, true),
   ]) {
     testWidgets('$name keeps its node as a clear key comes and goes', (
@@ -197,5 +203,84 @@ void main() {
       expect(cleared.shape, empty.shape);
       semantics.dispose();
     });
+  }
+
+  // A lone entry under a look's own press (a line's tap left in the
+  // semantics tree), or behind a node between, as published looks have it.
+  for (final between in [false, true]) {
+    for (final (name, hint, helper, error, heard) in [
+      ('a placeholder', 'name@example.com', null, null, 'name@example.com'),
+      (
+        'help',
+        null,
+        'We send your sign-in link here.',
+        null,
+        'We send your sign-in link here.',
+      ),
+      (
+        'an error',
+        null,
+        null,
+        'Enter an email address',
+        'Enter an email address',
+      ),
+    ]) {
+      testWidgets(
+        'a lone entry ${between ? 'behind a node between' : 'in a tapped line'} '
+        'is one text field, named, with $name',
+        (tester) async {
+          final semantics = tester.ensureSemantics();
+          final node = FocusNode();
+          addTearDown(node.dispose);
+          Widget entry = SizedBox(
+            width: 200,
+            child: Material(
+              type: MaterialType.transparency,
+              child: TextField(
+                focusNode: node,
+                decoration: InputDecoration.collapsed(hintText: hint),
+              ),
+            ),
+          );
+          if (between) entry = Semantics(container: true, child: entry);
+          await tester.pumpWidget(
+            harness(
+              Localizations(
+                locale: const Locale('en'),
+                delegates: const [
+                  DefaultMaterialLocalizations.delegate,
+                  DefaultWidgetsLocalizations.delegate,
+                ],
+                child: Center(
+                  child: RawInputDecorator(
+                    labelText: 'Email',
+                    helperText: helper,
+                    errorText: error,
+                    focusNode: node,
+                    builder: _layout,
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      excludeFromSemantics: between,
+                      onTap: node.requestFocus,
+                      child: entry,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          );
+          // The node a screen reader lands on to type is the one that
+          // names the field and says its placeholder, help or error (a
+          // placeholder drawn in the entry is among its words).
+          final data = tester
+              .getSemantics(find.byType(EditableText))
+              .getSemanticsData();
+          expect(data.flagsCollection.isTextField, isTrue);
+          expect(data.label, startsWith('Email'));
+          expect('${data.label}\n${data.hint}', contains(heard));
+          semantics.dispose();
+        },
+      );
+    }
   }
 }
