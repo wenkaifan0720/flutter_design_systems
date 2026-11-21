@@ -46,8 +46,9 @@ await expectLater(tester, meetsGuideline(textFieldNameGuideline));
 ```
 
 `checkableRoleGuideline`, `fieldSemanticsGuideline`, `textFieldNameGuideline`, `tapTargetReachGuideline`,
-`cursorGuideline` and `labelPlacementGuideline`. The radio group check is not one: it presses keys, and a guideline
-reads a screen without changing it. The guidelines library imports `flutter_test`; the main library does not, so the
+`cursorGuideline`, `labelPlacementGuideline`, `tooltipNodeGuideline` and `listSideGuideline`. The radio group check
+and the field nodes check are not: one presses keys and the other types, and a guideline reads a screen without
+changing it. The guidelines library imports `flutter_test`; the main library does not, so the
 checks also run in an app (each takes the tester's `pump` and `runAsync` as functions).
 
 ## The checks
@@ -64,6 +65,12 @@ What a control says and does, from the semantics tree, layout boxes and hit test
   node that would take their tap, and the field's label is read once.
 - `DesignTextFieldNameCheck`: each text field says a name (a label, a hint or a tooltip) on its own node, so a
   screen reader does not read it as "text field" alone.
+- `DesignFieldNodesCheck`: a text field keeps its nodes as its text changes: its entry is the same node after the
+  first letter, and no node it had goes or changes role (on the web the entry's node is the browser's input, and a
+  new one loses the keys typed meanwhile). A test reads the fields, types, then checks them.
+- `DesignTooltipNodeCheck`: each tooltip is on the node of the control it tips, so a screen reader reads them as one.
+- `DesignListSideCheck`: each open list that asks for below opens below its field while the room below holds it, or
+  200 px of a longer one, as Material's menus and autocomplete do.
 - `DesignTapTargetCheck`: every control's tap target reaches the look's floor for the input (a phone's screen is
   read for a finger, a desk's for a pointer), and its target is where it is drawn; a text field's own keys (a clear
   or reveal key whose node lies in the field's) are part of the field's reach.
@@ -104,7 +111,7 @@ a screen repainted since its last frame stops a check with that reason.
 
 ## Versions
 
-Version 0.2.0 supports ui_core ^0.4.0 and requires Flutter 3.47 or later (Dart 3.13). 0.1.x's layout
+Version 0.2.1 supports ui_core ^0.4.0 and requires Flutter 3.47 or later (Dart 3.13). 0.1.x's layout
 review (the alignment matrix, the keyline, row, width, spacing and field-parts checks) holds a look's own grid and
 taste, and is no longer published.
 

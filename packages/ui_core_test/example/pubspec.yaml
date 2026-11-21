@@ -11,7 +11,7 @@ resolution: workspace
 dependencies:
   flutter:
     sdk: flutter
-  ui_core: ^0.4.0
+  ui_core: ^0.4.1
   ui_core_test:
     path: ../
 

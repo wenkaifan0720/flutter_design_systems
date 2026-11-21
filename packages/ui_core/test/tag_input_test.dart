@@ -135,9 +135,8 @@ bool _fieldFocused(WidgetTester tester) => tester
     .hasFocus;
 
 void main() {
-  testWidgets('suggestions open above the whole field near the bottom', (
-    tester,
-  ) async {
+  testWidgets('suggestions open above the whole field near the bottom, '
+      'when below can\'t hold them', (tester) async {
     await tester.pumpWidget(
       harness(
         const Align(
@@ -150,7 +149,8 @@ void main() {
       ),
     );
     await tester.tap(find.byKey(_fieldKey));
-    await tester.enterText(find.byKey(_fieldKey), 'blu');
+    // Blue and Black: 64 px of suggestions, 48 px below.
+    await tester.enterText(find.byKey(_fieldKey), 'bl');
     await tester.pumpAndSettle();
     final field = tester.getRect(find.byType(RawAutocomplete<Object>));
     expect(
@@ -161,7 +161,8 @@ void main() {
     await tester.pump();
     await tester.sendKeyEvent(LogicalKeyboardKey.enter);
     await tester.pumpAndSettle();
-    expect(_host.values, ['Red', 'Blue']);
+    // Down moves from Blue, lit as the list opens, to Black.
+    expect(_host.values, ['Red', 'Black']);
   });
 
   behaviourContract(

@@ -16,6 +16,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
+import 'internal/list_side.dart';
 import 'internal/option_list.dart';
 
 /// The field, as [RawCombobox.fieldBuilder] gets it: wire [controller]
@@ -159,7 +160,7 @@ class RawCombobox<T extends Object> extends StatefulWidget {
     this.requireSelection = false,
     this.controller,
     this.focusNode,
-    this.optionsViewOpenDirection = OptionsViewOpenDirection.mostSpace,
+    this.optionsViewOpenDirection = OptionsViewOpenDirection.down,
     this.optionsMaxHeight = 300,
     this.semanticLabel,
     this.emptyBuilder,
@@ -222,8 +223,18 @@ class RawCombobox<T extends Object> extends StatefulWidget {
   /// null: the combobox makes its own and disposes it.
   final FocusNode? focusNode;
 
-  /// Where the list opens. By default it uses the side of the field with
-  /// more available space, accounting for the on-screen keyboard.
+  /// Where the list opens: below the field by default, as Material's menus
+  /// open.
+  ///
+  /// [OptionsViewOpenDirection.down] and [OptionsViewOpenDirection.up] are
+  /// the side it asks for. It opens there while that side holds the list,
+  /// or 200 pixels of a longer one (which then shrinks to the room and
+  /// scrolls), and takes the other side only when that side has more room
+  /// and the asked side can't: a field at the foot of the screen, or over
+  /// the on-screen keyboard, opens it above. Each side's room runs from the
+  /// field to the overlay's edge, less the safe area and the keyboard.
+  /// [OptionsViewOpenDirection.mostSpace] opens it on the side with more
+  /// room, as Flutter's `RawAutocomplete` does.
   final OptionsViewOpenDirection optionsViewOpenDirection;
 
   /// The list's greatest height; past it, it scrolls.
@@ -332,7 +343,7 @@ class RawCombobox<T extends Object> extends StatefulWidget {
         EnumProperty<OptionsViewOpenDirection>(
           'optionsViewOpenDirection',
           optionsViewOpenDirection,
-          defaultValue: OptionsViewOpenDirection.mostSpace,
+          defaultValue: OptionsViewOpenDirection.down,
         ),
       )
       ..add(
@@ -371,6 +382,9 @@ class _DesignComboboxState<T extends Object> extends State<RawCombobox<T>> {
   List<T>? _all;
   // The search's states, when the list shows them.
   final DesignSearchRun<T> _run = DesignSearchRun<T>();
+  // Whether the list opens on the other side from the one it asks for:
+  // its own side can't hold it (DesignListSide).
+  bool _flipped = false;
 
   TextEditingController get _controller =>
       widget.controller ?? (_ownController ??= TextEditingController());
@@ -515,7 +529,10 @@ class _DesignComboboxState<T extends Object> extends State<RawCombobox<T>> {
           _controller.text,
         _ => widget.displayStringForOption(option as T),
       },
-      optionsViewOpenDirection: widget.optionsViewOpenDirection,
+      optionsViewOpenDirection: designListDirection(
+        widget.optionsViewOpenDirection,
+        flipped: _flipped,
+      ),
       onSelected: (option) {
         final taken = option is DesignPick ? option.option : option;
         if (!identical(taken, _noMatch) && !identical(taken, _searching)) {
@@ -547,16 +564,37 @@ class _DesignComboboxState<T extends Object> extends State<RawCombobox<T>> {
           ),
       optionsViewBuilder: (context, onSelected, options) {
         if (options.length == 1 && identical(options.single, _searching)) {
-          return DesignSearchScope(
-            run: _run,
-            child: ListenableBuilder(
-              listenable: _run,
-              builder: (context, _) => _searchView(context, onSelected),
+          return _onItsSide(
+            DesignSearchScope(
+              run: _run,
+              child: ListenableBuilder(
+                listenable: _run,
+                builder: (context, _) => _searchView(context, onSelected),
+              ),
             ),
           );
         }
-        return _list(context, onSelected, options);
+        return _onItsSide(_list(context, onSelected, options));
       },
+    );
+  }
+
+  // The list, on the side it asks for unless that side can't hold it.
+  Widget _onItsSide(Widget list) {
+    final asked = widget.optionsViewOpenDirection;
+    if (asked == OptionsViewOpenDirection.mostSpace) return list;
+    return DesignListSide(
+      field: context,
+      asked: asked,
+      opensUp:
+          designListDirection(asked, flipped: _flipped) ==
+          OptionsViewOpenDirection.up,
+      onFlip: (flipped) {
+        if (mounted && flipped != _flipped) {
+          setState(() => _flipped = flipped);
+        }
+      },
+      child: list,
     );
   }
 

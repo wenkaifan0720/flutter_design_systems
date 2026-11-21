@@ -41,15 +41,20 @@ Rect designOverlayBounds({
   );
 }
 
-/// The side a surface takes: [placement]'s own, unless it has less room
-/// than [RawPopoverPlacement.preferredExtent] and the opposite side has
-/// more. [bounds] is [designOverlayBounds].
+/// The side a surface takes: [placement]'s own, unless that side can't hold
+/// what the surface needs and the opposite side has more room. It needs its
+/// own [extent] along the side's axis (its height above or below), when
+/// known, or [RawPopoverPlacement.preferredExtent], whichever is less: a
+/// short list that fits under its field stays there, and a long one stays
+/// while its side holds the preferred extent, shrinking to the room and
+/// scrolling inside. [bounds] is [designOverlayBounds].
 RawPopoverSide designResolveSide(
   Rect anchor,
   Rect bounds,
   RawPopoverPlacement placement,
-  TextDirection textDirection,
-) {
+  TextDirection textDirection, {
+  double? extent,
+}) {
   final side = placement.side;
   if (!placement.flip) return side;
   final gap = placement.gap;
@@ -61,9 +66,30 @@ RawPopoverSide designResolveSide(
     gap,
     textDirection,
   );
-  return room < placement.preferredExtent && other > room
-      ? side.opposite
-      : side;
+  final needs = extent == null
+      ? placement.preferredExtent
+      : math.min(extent, placement.preferredExtent);
+  return room < needs && other > room ? side.opposite : side;
+}
+
+/// The side whose room is the larger: where a surface is measured, as it
+/// is laid out there when it flips.
+RawPopoverSide designRoomierSide(
+  Rect anchor,
+  Rect bounds,
+  RawPopoverSide side,
+  double gap,
+  TextDirection direction,
+) {
+  final room = designOverlayRoom(anchor, bounds, side, gap, direction);
+  final other = designOverlayRoom(
+    anchor,
+    bounds,
+    side.opposite,
+    gap,
+    direction,
+  );
+  return other > room ? side.opposite : side;
 }
 
 /// The room on [side] of [anchor] inside [bounds], along the side's axis.
@@ -274,6 +300,139 @@ class DesignOverlayLayout extends SingleChildLayoutDelegate {
       textDirection != oldDelegate.textDirection ||
       maxSize != oldDelegate.maxSize ||
       placed != oldDelegate.placed;
+}
+
+/// Told a surface's own extent along its side's axis, as measured in the
+/// larger of the rooms on its two sides, and whether [layout]'s side is
+/// wrong for it ([designResolveSide] with that extent picks the other).
+typedef DesignExtentCallback = void Function(double extent, bool wrongSide);
+
+/// Lays a surface out round its anchor by [layout], as a
+/// [CustomSingleChildLayout] would, measuring it first: laid out in the
+/// larger of the rooms on its two sides, its extent is what it needs, and
+/// [onExtent] is told it. A surface on the wrong side for that extent is not
+/// painted or hit until it is built again with it.
+class DesignOverlayPlace extends SingleChildRenderObjectWidget {
+  /// Places [child] by [layout].
+  const DesignOverlayPlace({
+    super.key,
+    required this.layout,
+    this.onExtent,
+    super.child,
+  });
+
+  /// Where the surface goes.
+  final DesignOverlayLayout layout;
+
+  /// Told the surface's extent at each layout.
+  final DesignExtentCallback? onExtent;
+
+  @override
+  RenderObject createRenderObject(BuildContext context) =>
+      _RenderOverlayPlace(layout, onExtent);
+
+  @override
+  void updateRenderObject(BuildContext context, RenderObject renderObject) {
+    (renderObject as _RenderOverlayPlace)
+      ..placement = layout
+      ..onExtent = onExtent;
+  }
+}
+
+class _RenderOverlayPlace extends RenderShiftedBox {
+  _RenderOverlayPlace(this._layout, this.onExtent) : super(null);
+
+  DesignOverlayLayout _layout;
+  set placement(DesignOverlayLayout value) {
+    if (identical(value, _layout)) return;
+    final relayout = value.shouldRelayout(_layout);
+    _layout = value;
+    if (relayout) markNeedsLayout();
+  }
+
+  DesignExtentCallback? onExtent;
+
+  // Laid out on the wrong side for its extent: built again next frame.
+  bool _wrongSide = false;
+
+  static double _extentOf(Size size, RawPopoverSide side) =>
+      side.isVertical ? size.height : size.width;
+
+  @override
+  void performLayout() {
+    size = constraints.biggest;
+    final child = this.child;
+    if (child == null) return;
+    final layout = _layout;
+    final placement = layout.placement;
+    double? extent;
+    if (placement.flip) {
+      final roomier = designRoomierSide(
+        layout.anchor,
+        layout.bounds,
+        layout.side,
+        placement.gap,
+        layout.textDirection,
+      );
+      if (roomier != layout.side) {
+        final measure = DesignOverlayLayout(
+          anchor: layout.anchor,
+          bounds: layout.bounds,
+          side: roomier,
+          placement: placement,
+          textDirection: layout.textDirection,
+          maxSize: designOverlayMaxSize(
+            layout.anchor,
+            layout.bounds,
+            roomier,
+            placement.gap,
+            layout.textDirection,
+          ),
+        );
+        child.layout(
+          measure.getConstraintsForChild(constraints),
+          parentUsesSize: true,
+        );
+        extent = _extentOf(child.size, roomier);
+      }
+    }
+    child.layout(
+      layout.getConstraintsForChild(constraints),
+      parentUsesSize: true,
+    );
+    if (placement.flip) {
+      // On the larger side, the layout itself measured it.
+      extent ??= _extentOf(child.size, layout.side);
+      final side = designResolveSide(
+        layout.anchor,
+        layout.bounds,
+        placement,
+        layout.textDirection,
+        extent: extent,
+      );
+      _wrongSide = side != layout.side;
+      onExtent?.call(extent, _wrongSide);
+    } else {
+      _wrongSide = false;
+    }
+    (child.parentData! as BoxParentData).offset = layout.getPositionForChild(
+      size,
+      child.size,
+    );
+  }
+
+  @override
+  Size computeDryLayout(covariant BoxConstraints constraints) =>
+      constraints.biggest;
+
+  @override
+  void paint(PaintingContext context, Offset offset) {
+    if (!_wrongSide) super.paint(context, offset);
+  }
+
+  @override
+  bool hitTestChildren(BoxHitTestResult result, {required Offset position}) =>
+      !_wrongSide && super.hitTestChildren(result, position: position);
 }
 
 /// Its child as wide as the child's widest line (its intrinsic width) within

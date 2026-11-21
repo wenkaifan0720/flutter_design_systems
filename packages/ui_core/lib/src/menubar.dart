@@ -36,6 +36,7 @@ class RawMenuEntry {
     this.shortcut,
     this.checked,
     this.data,
+    this.isDestructiveAction = false,
   }) : divider = false;
 
   /// A line between groups of items.
@@ -46,6 +47,7 @@ class RawMenuEntry {
       shortcut = null,
       checked = null,
       data = null,
+      isDestructiveAction = false,
       divider = true;
 
   /// Its name.
@@ -72,6 +74,12 @@ class RawMenuEntry {
 
   /// Anything the look needs to paint it (an icon).
   final Object? data;
+
+  /// Whether it destroys something (Delete, Remove): the look paints it in
+  /// its destructive tone, as Cupertino's context menu and dialog actions
+  /// paint theirs. Nothing else changes: it is pressed, reached and read as
+  /// any other item.
+  final bool isDestructiveAction;
 
   /// Whether it is a divider.
   final bool divider;

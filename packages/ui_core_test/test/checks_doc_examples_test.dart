@@ -21,6 +21,46 @@ class SettingsScreen extends StatelessWidget {
   Widget build(BuildContext context) => const SizedBox();
 }
 
+/// The form [DesignListSideCheck]'s example checks.
+class TaskForm extends StatelessWidget {
+  /// A form.
+  const TaskForm({super.key});
+
+  @override
+  Widget build(BuildContext context) => const SizedBox();
+}
+
+/// The list [DesignFieldNodesCheck]'s example types in.
+class TaskList extends StatelessWidget {
+  /// A list.
+  const TaskList({super.key});
+
+  @override
+  Widget build(BuildContext context) => const SizedBox();
+}
+
+/// [DesignTooltipNodeCheck]'s and [DesignListSideCheck]'s examples, run by
+/// their own tests' shapes (tooltip_node_check_test.dart and
+/// list_side_check_test.dart).
+void _nodeAndSideChecks(WidgetTester tester) {
+  const DesignTooltipNodeCheck(look: 'Comic')
+      .check(tester.element(find.byType(SettingsScreen)))
+      .verify();
+  const DesignListSideCheck(look: 'Comic')
+      .check(tester.element(find.byType(TaskForm)))
+      .verify();
+}
+
+/// [DesignFieldNodesCheck]'s example: it types, so field_nodes_check_test.dart
+/// runs it in its shape.
+Future<void> _fieldNodesCheck(WidgetTester tester) async {
+  const check = DesignFieldNodesCheck(look: 'Comic');
+  final empty = check.read(tester.element(find.byType(TaskList)));
+  await tester.enterText(find.byType(EditableText), 'p');
+  await tester.pump();
+  check.check(empty, tester.element(find.byType(TaskList))).verify();
+}
+
 /// [DesignLabelCheck]'s example: it takes a tester, so it is compiled
 /// here and run by label_check_test.dart.
 Future<void> _labelCheck(WidgetTester tester) async {
@@ -115,10 +155,13 @@ const Set<String> _checksFiles = {
   'alignment.dart',
   'checkable_check.dart',
   'cursor_check.dart',
+  'field_nodes_check.dart',
   'field_semantics_check.dart',
+  'list_side_check.dart',
   'radio_group_check.dart',
   'shadow_clip_check.dart',
   'tap_target_check.dart',
+  'tooltip_node_check.dart',
   'reading.dart',
   'shape.dart',
   'drawn_pixels.dart',
@@ -133,6 +176,8 @@ void main() {
     expect(_fitChecks, isNotNull);
     expect(_screenChecks, isNotNull);
     expect(_radioGroupCheck, isNotNull);
+    expect(_nodeAndSideChecks, isNotNull);
+    expect(_fieldNodesCheck, isNotNull);
   });
 
   testDocExamples(

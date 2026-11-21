@@ -10,7 +10,9 @@
 /// check's own lines. The check classes stay, for a test that checks one
 /// part of a screen or names its look in the messages. The radio group check
 /// is not one of them: it drives the keys over one group from the focusable
-/// before it, and a guideline reads a screen without changing it.
+/// before it, and a guideline reads a screen without changing it. Nor is the
+/// field nodes check, which compares a field before and after it is typed
+/// in.
 library;
 
 import 'dart:async';
@@ -118,6 +120,30 @@ const AccessibilityGuideline labelPlacementGuideline = DesignCheckGuideline(
       'are drawn.',
   run: _label,
 );
+
+/// Each tooltip is on the node of the control it tips
+/// (`DesignTooltipNodeCheck`).
+const AccessibilityGuideline tooltipNodeGuideline = DesignCheckGuideline(
+  description:
+      "Each tooltip is on its control's own node, so a screen reader reads "
+      'them as one.',
+  run: _tooltipNode,
+);
+
+/// Each open list opens below its field while below holds it
+/// (`DesignListSideCheck`). It reads layout boxes.
+const AccessibilityGuideline listSideGuideline = DesignCheckGuideline(
+  description:
+      'Each open list that asks for below opens below its field while the '
+      'room below holds it.',
+  run: _listSide,
+);
+
+DesignAlignmentReport _tooltipNode(WidgetTester tester, BuildContext screen) =>
+    const DesignTooltipNodeCheck(look: 'Screen').check(screen);
+
+DesignAlignmentReport _listSide(WidgetTester tester, BuildContext screen) =>
+    const DesignListSideCheck(look: 'Screen').check(screen);
 
 DesignAlignmentReport _checkable(WidgetTester tester, BuildContext screen) =>
     const DesignCheckableCheck(look: 'Screen').check(screen);

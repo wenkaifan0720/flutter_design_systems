@@ -69,6 +69,28 @@ void main() {
     await expectLater(tester, meetsGuideline(cursorGuideline));
     await expectLater(tester, meetsGuideline(fieldSemanticsGuideline));
     await expectLater(tester, meetsGuideline(labelPlacementGuideline));
+    await expectLater(tester, meetsGuideline(tooltipNodeGuideline));
+    await expectLater(tester, meetsGuideline(listSideGuideline));
+    semantics.dispose();
+  });
+
+  testWidgets('tooltipNodeGuideline: a tip over a button fails with the '
+      'check\'s line', (tester) async {
+    final semantics = tester.ensureSemantics();
+    await tester.pumpWidget(
+      harness(
+        Center(
+          // The switch keeps a node of its own under the tip's.
+          child: Semantics(
+            tooltip: 'Sounds',
+            child: Semantics(container: true, child: _switch(asButton: false)),
+          ),
+        ),
+      ),
+    );
+    final apart = await tooltipNodeGuideline.evaluate(tester);
+    expect(apart.passed, isFalse);
+    expect(apart.reason, startsWith('the tip "Sounds" at '));
     semantics.dispose();
   });
 
@@ -80,6 +102,8 @@ void main() {
       tapTargetReachGuideline,
       cursorGuideline,
       labelPlacementGuideline,
+      tooltipNodeGuideline,
+      listSideGuideline,
     ]) {
       expect(guideline.description, endsWith('.'));
     }

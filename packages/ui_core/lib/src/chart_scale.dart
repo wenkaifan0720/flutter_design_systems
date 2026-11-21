@@ -93,8 +93,11 @@ class DesignLinearScale extends DesignScale {
   /// A scale widened to whole ticks: [min] and [max] out to the nearest
   /// multiples of a 1, 2 or 5 × 10ⁿ step that gives about [tickCount]
   /// ticks, and to 0 when [includeZero]. A single value widens by one
-  /// each way. With [divisions], the scale covers the data in exactly that
-  /// many equal intervals, rounding the span up to 1, 2, 2.5 or 5 × 10ⁿ.
+  /// each way; zeros alone with [includeZero] (an empty week) run from 0 up
+  /// in whole steps, as a week with data counts (0 1 2 3 4 for about five
+  /// ticks, or one step per division), never below zero. With [divisions],
+  /// the scale covers the data in exactly that many equal intervals,
+  /// rounding the span up to 1, 2, 2.5 or 5 × 10ⁿ.
   factory DesignLinearScale.nice({
     required double min,
     required double max,
@@ -111,8 +114,23 @@ class DesignLinearScale extends DesignScale {
       lo = math.min(lo, 0);
       hi = math.max(hi, 0);
     }
+    if (lo == hi && includeZero && lo == 0) {
+      // Nothing to scale but zero: count up from it in ones.
+      var ones = divisions ?? math.max(1, tickCount - 1);
+      while (divisions == null &&
+          _tickStep(0, ones.toDouble(), tickCount) < 1) {
+        ones++;
+      }
+      return DesignLinearScale(
+        min: 0,
+        max: ones.toDouble(),
+        start: start,
+        end: end,
+        divisions: divisions,
+      );
+    }
     if (lo == hi) {
-      if (divisions == null || !includeZero || lo != 0) lo -= 1;
+      lo -= 1;
       hi += 1;
     }
     if (divisions != null) {

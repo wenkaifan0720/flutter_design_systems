@@ -456,6 +456,31 @@ void main() {
     handle.dispose();
   });
 
+  testWidgets('a week of zeros: its marks stand on the baseline at the '
+      'foot, the ticks count up in ones', (tester) async {
+    await tester.pumpWidget(
+      harness(
+        _Host(
+          xAxis: DesignChartXAxis.band,
+          categories: const ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
+          series: [
+            DesignChartSeries(
+              label: 'Hours',
+              points: [
+                for (var i = 0; i < 5; i++) DesignChartPoint(i.toDouble(), 0),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final d = _last!;
+    expect(d.y.min, 0, reason: 'nothing drawn below zero');
+    expect(d.y.map(0), d.plotArea.bottom);
+    expect(d.yTicks.map((t) => t.label), ['0', '1', '2', '3', '4']);
+  });
+
   testWidgets('a gap: no mark to pick, no step, no extreme', (tester) async {
     await tester.pumpWidget(
       harness(

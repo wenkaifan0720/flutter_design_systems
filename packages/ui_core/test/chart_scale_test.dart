@@ -99,6 +99,54 @@ void main() {
       expect(point.invert(7), 5);
     });
 
+    test('zeros alone from zero count up in ones, as a week with data '
+        'does, and never below zero', () {
+      final empty = DesignLinearScale.nice(
+        min: 0,
+        max: 0,
+        start: 0,
+        end: 1,
+        includeZero: true,
+      );
+      expect([empty.min, empty.max], [0, 4]);
+      expect(labels(empty), ['0', '1', '2', '3', '4']);
+      final week = DesignLinearScale.nice(
+        min: 0,
+        max: 3.6,
+        start: 0,
+        end: 1,
+        includeZero: true,
+      );
+      expect(labels(week), ['0', '1', '2', '3', '4']);
+      for (final count in [1, 2, 3, 4, 6, 10]) {
+        final s = DesignLinearScale.nice(
+          min: 0,
+          max: 0,
+          start: 0,
+          end: 1,
+          tickCount: count,
+          includeZero: true,
+        );
+        expect(s.min, 0, reason: '$count ticks');
+        final ticks = s.ticks(en, count: count);
+        expect(ticks.map((t) => t.value), [
+          for (var i = 0; i <= s.max; i++) i.toDouble(),
+        ], reason: '$count ticks');
+      }
+      final split = DesignLinearScale.nice(
+        min: 0,
+        max: 0,
+        start: 0,
+        end: 1,
+        includeZero: true,
+        divisions: 4,
+      );
+      expect(labels(split), ['0', '1', '2', '3', '4']);
+      // Without zero asked for, one value is still the middle of its scale.
+      final centred = DesignLinearScale.nice(min: 0, max: 0, start: 0, end: 1);
+      expect([centred.min, centred.max], [-1, 1]);
+    });
+
     test('ticks in the reader\'s numbers', () async {
       final ar = await RawWidgetsLocalizations.delegate.load(
         const Locale('ar'),

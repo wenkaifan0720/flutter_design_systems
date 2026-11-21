@@ -622,6 +622,22 @@ class _DesignAnchoredOverlayState extends State<RawPopover>
   );
   // Where the surface landed, for the look's tail.
   final DesignSurfaceRect _placed = DesignSurfaceRect();
+  // The surface's extent along its side's axis as last laid out, measured
+  // in the larger room round its anchor: what its side must hold.
+  double? _extent;
+
+  // Told the surface's extent as it is laid out. On the wrong side for it,
+  // the surface waits unpainted for the next frame, built with it.
+  void _onExtent(double extent, bool wrongSide) {
+    _extent = extent;
+    if (!wrongSide) return;
+    WidgetsBinding.instance
+      ..addPostFrameCallback((_) {
+        if (mounted) setState(() {});
+      }, debugLabel: 'RawPopover.side')
+      ..ensureVisualUpdate();
+  }
+
   // Whether the pointer moved last in the surface, else the keys.
   final ValueNotifier<bool> _byPointer = ValueNotifier(false);
   // The keys of a surface no item holds (a menu's typed letters).
@@ -1049,7 +1065,13 @@ class _DesignAnchoredOverlayState extends State<RawPopover>
             0,
           );
     final gap = widget.placement.gap;
-    final side = designResolveSide(anchor, bounds, widget.placement, direction);
+    final side = designResolveSide(
+      anchor,
+      bounds,
+      widget.placement,
+      direction,
+      extent: _extent,
+    );
     final maxSize = designOverlayMaxSize(anchor, bounds, side, gap, direction);
     final info = RawPopoverInfo(
       side: side,
@@ -1153,11 +1175,12 @@ class _DesignAnchoredOverlayState extends State<RawPopover>
     );
     return ConstrainedBox(
       constraints: BoxConstraints.loose(raw.overlaySize),
-      child: CustomSingleChildLayout(
-        delegate: layout,
+      child: DesignOverlayPlace(
+        layout: layout,
+        onExtent: _onExtent,
         // Its own layer: a surface over the page repaints on its own, and
         // the alignment checks read its pixels. A list from a field is as
-        // wide as its widest item within the delegate's least and most.
+        // wide as its widest item within the layout's least and most.
         child: layout.matchesAnchor
             ? DesignListWidth(child: RepaintBoundary(child: surface))
             : RepaintBoundary(child: surface),

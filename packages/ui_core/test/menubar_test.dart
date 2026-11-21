@@ -1,7 +1,7 @@
 import 'dart:ui' show Tristate;
 
 import 'package:flutter/gestures.dart';
-import 'package:flutter/semantics.dart' show SemanticsData;
+import 'package:flutter/semantics.dart' show SemanticsAction, SemanticsData;
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -149,6 +149,64 @@ void main() {
       expect(find.text('New'), findsOneWidget);
     },
   );
+
+  test('an entry is not destructive unless it says so; a divider never is', () {
+    expect(const RawMenuEntry(label: 'Rename').isDestructiveAction, isFalse);
+    expect(const RawMenuEntry.divider().isDestructiveAction, isFalse);
+    expect(
+      const RawMenuEntry(
+        label: 'Delete',
+        isDestructiveAction: true,
+      ).isDestructiveAction,
+      isTrue,
+    );
+  });
+
+  testWidgets('a destructive entry reaches the look to set in its tone, and is '
+      'pressed and read as any other', (tester) async {
+    final tones = <String, bool>{};
+    await tester.pumpWidget(
+      harness(
+        Align(
+          alignment: Alignment.topLeft,
+          child: RawMenuBar(
+            menus: [
+              RawMenuEntry(
+                label: 'Task',
+                children: [
+                  RawMenuEntry(
+                    label: 'Rename',
+                    onPressed: () => _ran.add('rename'),
+                  ),
+                  RawMenuEntry(
+                    label: 'Delete',
+                    isDestructiveAction: true,
+                    onPressed: () => _ran.add('delete'),
+                  ),
+                ],
+              ),
+            ],
+            itemBuilder: (context, entry, level, states) {
+              tones[entry.label] = entry.isDestructiveAction;
+              return SizedBox(width: 160, height: 44, child: Text(entry.label));
+            },
+            surfaceBuilder: (context, info, items) =>
+                Column(mainAxisSize: MainAxisSize.min, children: items),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('Task'));
+    await tester.pumpAndSettle();
+    expect(tones, {'Task': false, 'Rename': false, 'Delete': true});
+    final rename = item(tester, 'Rename');
+    final delete = item(tester, 'Delete');
+    expect(delete.flagsCollection, rename.flagsCollection);
+    expect(delete.hasAction(SemanticsAction.tap), isTrue);
+    await tester.tap(find.text('Delete'));
+    await tester.pumpAndSettle();
+    expect(_ran, ['delete']);
+  });
 
   testWidgets('one tab stop; Right moves along the bar; Down opens a menu at '
       'its first item; Escape closes it and focus is back on the bar', (

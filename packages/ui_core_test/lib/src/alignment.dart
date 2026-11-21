@@ -1,7 +1,9 @@
 /// Checks of what is wrong in any design, so they hold for every look:
 /// behaviour and accessibility (a checkable control's role, a radio group's
-/// keys, a field's semantics, a label on its face's middle, tap targets,
-/// cursors, a text field's name) and breakage (words clipped or broken
+/// keys, a field's semantics and the nodes it keeps as its text changes, a
+/// label on its face's middle, tap targets, cursors, a text field's name, a
+/// tooltip on its control's node, a list opening below while below holds
+/// it) and breakage (words clipped or broken
 /// mid-word, a shadow cut off by a clip, content overflowing its box).
 ///
 /// Test support, nothing an app runs. Each check reports what it finds as a
@@ -27,13 +29,16 @@ import 'internal/label_line.dart';
 
 part 'checks/checkable_check.dart';
 part 'checks/cursor_check.dart';
+part 'checks/field_nodes_check.dart';
 part 'checks/field_semantics_check.dart';
+part 'checks/list_side_check.dart';
 part 'checks/radio_group_check.dart';
 part 'checks/shadow_clip_check.dart';
 part 'checks/shared/reading.dart';
 part 'checks/shared/shape.dart';
 part 'checks/tap_target_check.dart';
 part 'checks/text_field_name_check.dart';
+part 'checks/tooltip_node_check.dart';
 
 /// Puts [child] where a look's page would have it: under the look's theme
 /// and, for a Material look, a `Material`.

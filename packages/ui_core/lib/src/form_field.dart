@@ -110,6 +110,17 @@ typedef RawInputDecoratorBuilder = Widget Function(
 /// names itself on its own node), the label is not added again, so it is
 /// read once.
 ///
+/// A text entry keeps its node as controls come and go beside it (a clear
+/// key that shows with the first letter): on the web that node is the
+/// browser's input, and a new one loses the keys typed meanwhile. The entry
+/// is the field's node, alone or beside controls with nodes of their own,
+/// while nothing between them makes a node: a tap that focuses the entry
+/// from anywhere on its line is left out of the semantics tree
+/// (`GestureDetector.excludeFromSemantics`), as the gesture detector of
+/// Flutter's own text field is. A press that stays in the tree gives the
+/// entry a node of its own beside it, which the field names from the node
+/// over it.
+///
 /// ```dart
 /// RawInputDecorator(labelText: 'Email', builder: (context, parts) => Column(children: [?parts.label, parts.control]), child: const Text('field'))
 /// ```
@@ -516,7 +527,12 @@ class _DesignFormScope extends InheritedWidget {
 // under a node that names them, unless one of them is a text entry with no
 // node of its own and the others each have theirs: then the entry's node
 // is the field's (Material's text field with a suffix button), the others
-// in it. A control of ui_core's that carries the field's words on its own
+// in it. A text entry that stands in a node of its own (a press round it
+// besides its own, or a node between) is never merged: the field's node
+// names it as it would name it beside other controls, so a control that
+// comes or goes beside the entry (a clear key with the first letter) never
+// moves the entry to another node. On the web the entry's node is the
+// browser's input, and a new one loses the keys typed while it is made. A control of ui_core's that carries the field's words on its own
 // node (a number field's entry) leaves the field's node saying nothing.
 // The label is left out when a control already says it (a button's name
 // aside); a required field then says it is required first in its hint,
@@ -665,6 +681,7 @@ class _RenderFieldSemantics extends RenderProxyBox {
     var entries = 0;
     var joins = false;
     var apart = true;
+    var alone = false;
     var carried = false;
     final words = _words?.trim().toLowerCase() ?? '';
     final name = _label?.trim().toLowerCase() ?? '';
@@ -740,31 +757,52 @@ class _RenderFieldSemantics extends RenderProxyBox {
       return found;
     }
 
-    void visit(RenderObject n, bool below) {
+    // The presses from [n] down to the text entry under it.
+    int pressesTo(RenderObject n) {
+      if (n is RenderEditable) return 0;
+      var below = 0;
+      n.visitChildrenForSemantics((c) {
+        if (below == 0 && holdsEntry(c)) below = pressesTo(c);
+      });
+      return below + (_pressOnly(n) ? 1 : 0);
+    }
+
+    // [presses]: the presses round [n] that hold a text entry and are not
+    // controls of their own (a line's tap that focuses its entry, as a text
+    // field's own is): the controls under one are counted one by one.
+    void visit(RenderObject n, bool below, int presses) {
       if (n is RenderExcludeSemantics && n.excluding) return;
       final bounded = below || _bounds(n);
+      if (_pressOnly(n) && holdsEntry(n)) {
+        carried = carried || _carries(n);
+        n.visitChildrenForSemantics((c) => visit(c, bounded, presses + 1));
+        return;
+      }
       if (n is RenderEditable || _acts(n)) {
         final count = math.max(1, leaves(n));
         controls += count;
         if (count == 1 && holdsEntry(n)) {
           entries++;
           joins = !bounded && reaches(n);
+          // Two presses on one entry are two nodes: its own stands apart,
+          // as one behind a node between does.
+          alone = alone || !joins || presses + pressesTo(n) > 1;
         } else if (!bounded) {
           apart = false;
         }
         carried = carried || _carries(n);
         return;
       }
-      n.visitChildrenForSemantics((c) => visit(c, bounded));
+      n.visitChildrenForSemantics((c) => visit(c, bounded, presses));
     }
 
-    visitChildrenForSemantics((c) => visit(c, false));
+    visitChildrenForSemantics((c) => visit(c, false, 0));
     final (:said, :saidWhole) = hears(this);
     return (
-      single: controls <= 1,
+      single: controls <= 1 && !alone,
       said: said,
       saidWhole: saidWhole,
-      entry: controls > 1 && entries == 1 && joins && apart,
+      entry: controls > 1 && entries == 1 && joins && apart && !alone,
       carried: carried,
     );
   }
@@ -777,6 +815,31 @@ class _RenderFieldSemantics extends RenderProxyBox {
     var found = false;
     n.visitChildrenForSemantics((c) => found = found || _carries(c));
     return found;
+  }
+
+  // Whether [n] is a press and nothing else: a tap or a long press, with no
+  // role, state or value of its own (a line's tap, a text field's own).
+  static bool _pressOnly(RenderObject n) {
+    if (n is RenderSemanticsGestureHandler) {
+      return (n.onTap != null || n.onLongPress != null) &&
+          n.onHorizontalDragUpdate == null &&
+          n.onVerticalDragUpdate == null;
+    }
+    if (n is RenderSemanticsAnnotations && !n.excludeSemantics) {
+      final p = n.properties;
+      return (p.onTap != null || p.onLongPress != null) &&
+          p.button != true &&
+          p.link != true &&
+          p.textField != true &&
+          p.slider != true &&
+          p.toggled == null &&
+          p.checked == null &&
+          p.inMutuallyExclusiveGroup != true &&
+          p.onIncrease == null &&
+          p.onDecrease == null &&
+          (p.value?.isEmpty ?? true);
+    }
+    return false;
   }
 
   // Whether [n] makes a node of its own, which nothing under it merges past.

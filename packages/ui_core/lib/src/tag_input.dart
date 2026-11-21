@@ -14,6 +14,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
 import 'combobox.dart';
+import 'internal/list_side.dart';
 import 'internal/option_list.dart';
 import 'localizations.dart';
 
@@ -310,6 +311,9 @@ class _DesignTagInputState<T extends Object> extends State<RawTagInput<T>> {
   bool _picked = false;
   // The search's states, when the list shows them.
   final DesignSearchRun<T> _run = DesignSearchRun<T>();
+  // Whether the suggestions open above, below having too little room for
+  // them (DesignListSide).
+  bool _above = false;
 
   TextEditingController get _controller =>
       widget.controller ?? (_ownController ??= TextEditingController());
@@ -582,7 +586,12 @@ class _DesignTagInputState<T extends Object> extends State<RawTagInput<T>> {
   @override
   Widget build(BuildContext context) {
     final field = RawAutocomplete<Object>(
-      optionsViewOpenDirection: OptionsViewOpenDirection.mostSpace,
+      // Below the tags and the field, as a combobox's list, unless only
+      // above has room for them.
+      optionsViewOpenDirection: designListDirection(
+        OptionsViewOpenDirection.down,
+        flipped: _above,
+      ),
       textEditingController: _controller,
       focusNode: _field,
       optionsBuilder: _find,
@@ -641,18 +650,23 @@ class _DesignTagInputState<T extends Object> extends State<RawTagInput<T>> {
               ),
         );
       },
-      optionsViewBuilder: (context, onSelected, options) {
-        if (options.length == 1 && identical(options.single, _searching)) {
-          return DesignSearchScope(
-            run: _run,
-            child: ListenableBuilder(
-              listenable: _run,
-              builder: (context, _) => _searchView(context, onSelected),
-            ),
-          );
-        }
-        return _list(options.cast<T>().toList(), onSelected);
-      },
+      optionsViewBuilder: (context, onSelected, options) => DesignListSide(
+        field: this.context,
+        asked: OptionsViewOpenDirection.down,
+        opensUp: _above,
+        onFlip: (above) {
+          if (mounted && above != _above) setState(() => _above = above);
+        },
+        child: options.length == 1 && identical(options.single, _searching)
+            ? DesignSearchScope(
+                run: _run,
+                child: ListenableBuilder(
+                  listenable: _run,
+                  builder: (context, _) => _searchView(context, onSelected),
+                ),
+              )
+            : _list(options.cast<T>().toList(), onSelected),
+      ),
     );
     return field;
   }

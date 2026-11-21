@@ -377,10 +377,16 @@ void main() {
     setUp(() => ctl = _controller());
 
     // An anchor in the middle of the screen: 278 to 322 down.
-    Widget middle({bool scaffoldLike = false, Widget? chrome}) => harness(
+    Widget middle({
+      bool scaffoldLike = false,
+      Widget? chrome,
+      Size surfaceSize = const Size(120, 90),
+    }) => harness(
       Builder(
         builder: (context) {
-          Widget page = Align(child: _menu(controller: ctl));
+          Widget page = Align(
+            child: _menu(controller: ctl, surfaceSize: surfaceSize),
+          );
           if (chrome != null) page = chrome;
           if (!scaffoldLike) return page;
           // As a scaffold does round its body: the keyboard's inset and the
@@ -426,7 +432,18 @@ void main() {
         await tester.pumpWidget(middle(scaffoldLike: scaffoldLike));
         ctl.open();
         await tester.pumpAndSettle();
-        // 166 below (600 - 100 - 8 - 322 - 4) is short of 200.
+        // 166 below (600 - 100 - 8 - 322 - 4) holds a 90 px surface, clear
+        // of the safe area.
+        expect(_info.side, RawPopoverSide.below);
+        expect(_surface(tester).bottom, lessThanOrEqualTo(600 - 100 - 8));
+        // A 180 px one it doesn't hold, short of 200: above.
+        ctl.close();
+        await tester.pumpAndSettle();
+        await tester.pumpWidget(
+          middle(scaffoldLike: scaffoldLike, surfaceSize: const Size(120, 180)),
+        );
+        ctl.open();
+        await tester.pumpAndSettle();
         expect(_info.side, RawPopoverSide.above);
       });
     }

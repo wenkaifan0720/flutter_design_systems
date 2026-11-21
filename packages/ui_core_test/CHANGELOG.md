@@ -1,3 +1,10 @@
+## 0.2.1
+
+- `DesignTooltipNodeCheck`: each tooltip is on the node of the control it tips, so a screen reader reads the tip with the control, as Flutter's `Tooltip` gives it. A `Semantics(tooltip:)` round a button that keeps its own node fails. It reads the semantics tree.
+- `DesignListSideCheck`: each open list that asks for below (a `RawPopover` placed below, an autocomplete that opens down or on the side with most space) opens below its field while the room below holds it, or 200 px of a longer one. It reads layout boxes.
+- `DesignFieldNodesCheck`: a text field keeps its semantics nodes as its text goes from empty to a letter: its text entry is the same node, and no node it had goes or changes role (a clear key that shows is a node added). A test reads the fields, types, then checks them. It reads the semantics tree.
+- `package:ui_core_test/guidelines.dart` adds `tooltipNodeGuideline` and `listSideGuideline`.
+
 ## 0.2.0
 
 - **Breaking:** needs ui_core 0.4.0. `DesignRadioGroupCheck` checks any group of radios,
