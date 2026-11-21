@@ -1,3 +1,11 @@
+## 0.2.0
+
+- On ui_core 0.4.0, on Flutter 3.47 or later as before. The ui_core names Clay's API uses are 0.4.0's: `dart fix` renames them in an app. Clay draws and moves as before.
+- Radio groups are Flutter's own. `ClayRadioGroup`, `ClaySegmentedButton` and a one-choice `ClayToggleGroup` are a `RadioGroup`, each choice a `RawRadio`, with ui_core's `RadioGroupKeyboardFix`. They take one Tab stop, on the choice, or on the first radio that can be chosen when the choice is turned off. Down and Right choose the next radio and Up and Left the previous one (Left and Right swap right to left), and Space chooses. A radio shows its focus rim after a click, as Flutter's radios do.
+- `ClayRadio` is a `RawRadio`. In an app's `RadioGroup` it takes the group's choice; `groupValue` and `onChanged` are now optional, for a radio outside a group. It takes `enabled`. `ClayGroupRadio`, in `clay_parts.dart`, is one choice of a group.
+- Toggle buttons read as buttons. A selected `ClayIconButton` and an on filter `ClayChip` say "button, selected", as Flutter's `IconButton(isSelected:)` does, not "switch, on".
+- `ClayTooltip` is Flutter's `RawTooltip`, with ui_core's `RawTooltipFocusFix` and `RawTooltipPlacement`. It shows when the pointer rests on the control, after a long press, or when the control takes the keys' focus. The tip springs in and out as before, and a screen reader still reads it with the control, on the control's own node.
+
 ## 0.1.1
 
 - Charts in clay. The donut is made of pieces of pastel clay: a small gap of the ground between slices instead of a white stroke, ends rounded with continuous corners, a soft light inside each piece's top-leading edge and a shade inside its bottom-trailing edge, one soft shadow straight down in its own hue, and a hole pressed into the ground that holds the total. Each piece's area is exactly its share of the clay, so the gaps and round ends never change how big a share looks; a piece too small to round keeps square ends. When a value changes the pieces spring to their new shares without a jump, and the picked piece rises.

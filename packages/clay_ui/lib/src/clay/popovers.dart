@@ -82,11 +82,11 @@ class ClayMenu extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = ClayTheme.of(context);
-    return DesignAnchoredOverlay(
+    return RawPopover(
       arrowKeyNavigation: true,
       semanticLabel: semanticLabel,
-      placement: DesignOverlayPlacement(
-        align: alignEnd ? DesignOverlayAlign.end : DesignOverlayAlign.start,
+      placement: RawPopoverPlacement(
+        align: alignEnd ? RawPopoverAlign.end : RawPopoverAlign.start,
         gap: ClaySpacing.small,
         margin: ClaySpacing.small,
         matchAnchorWidth: false,
@@ -172,13 +172,13 @@ class ClayContextMenu extends StatelessWidget {
   final ClayStyle? style;
 
   @override
-  Widget build(BuildContext context) => DesignContextMenu(
+  Widget build(BuildContext context) => RawContextMenu(
     semanticLabel: semanticLabel,
     dampingRatio: ClayMotion.panelDamping,
     stiffness: ClayMotion.panelStiffness,
     menuChildren: [
       for (final item in items)
-        DesignMenuEntry(
+        RawMenuEntry(
           label: item.label,
           onPressed: item.onPressed,
           shortcut: item.shortcut,
@@ -265,7 +265,7 @@ class ClayPopover extends StatelessWidget {
     super.key,
     required this.builder,
     required this.content,
-    this.side = DesignOverlaySide.below,
+    this.side = RawPopoverSide.below,
     this.width = 280,
     this.semanticLabel,
     this.style,
@@ -279,7 +279,7 @@ class ClayPopover extends StatelessWidget {
   final Widget Function(BuildContext context, VoidCallback close) content;
 
   /// Which side of the key it floats on.
-  final DesignOverlaySide side;
+  final RawPopoverSide side;
 
   /// Its width.
   final double width;
@@ -291,9 +291,9 @@ class ClayPopover extends StatelessWidget {
   final ClayStyle? style;
 
   @override
-  Widget build(BuildContext context) => DesignAnchoredOverlay(
+  Widget build(BuildContext context) => RawPopover(
     semanticLabel: semanticLabel,
-    placement: DesignOverlayPlacement(
+    placement: RawPopoverPlacement(
       side: side,
       gap: ClaySpacing.small,
       margin: ClaySpacing.small,
@@ -317,7 +317,7 @@ class ClayPopover extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(EnumProperty<DesignOverlaySide>('side', side))
+      ..add(EnumProperty<RawPopoverSide>('side', side))
       ..add(DoubleProperty('width', width));
   }
 }
@@ -355,11 +355,11 @@ class ClayHoverCard extends StatelessWidget {
   final ClayStyle? style;
 
   @override
-  Widget build(BuildContext context) => DesignAnchoredOverlay(
-    trigger: DesignOverlayTrigger.hover,
+  Widget build(BuildContext context) => RawPopover(
+    trigger: RawPopoverTrigger.hover,
     focusOnOpen: false,
     semanticLabel: semanticLabel,
-    placement: const DesignOverlayPlacement(
+    placement: const RawPopoverPlacement(
       gap: ClaySpacing.small,
       margin: ClaySpacing.small,
       matchAnchorWidth: false,
@@ -410,22 +410,43 @@ class ClayTooltip extends StatelessWidget {
   final ClayStyle? style;
 
   @override
-  Widget build(BuildContext context) => DesignTooltip(
-    message: message,
-    hoverDelay: const Duration(milliseconds: 500),
-    dismissDelay: const Duration(milliseconds: 80),
-    placement: const DesignOverlayPlacement(
-      side: DesignOverlaySide.above,
-      align: DesignOverlayAlign.center,
+  Widget build(BuildContext context) => RawTooltipPlacement(
+    placement: const RawPopoverPlacement(
+      side: RawPopoverSide.above,
+      align: RawPopoverAlign.center,
       gap: 6,
       margin: ClaySpacing.small,
       matchAnchorWidth: false,
     ),
-    tooltipBuilder: (context, info) => ClayMenuReveal(
-      info: info,
-      child: _Tip(message: message, style: style),
+    // One node with the control: RawTooltip's tooltip doesn't merge, so
+    // without this a screen reader hears the tip on an ancestor and the
+    // control alone ('Save' for 'Save to your recipes, Save').
+    builder: (context, positionDelegate) => MergeSemantics(
+      child: RawTooltip(
+        semanticsTooltip: message,
+        hoverDelay: const Duration(milliseconds: 500),
+        dismissDelay: const Duration(milliseconds: 80),
+        // The tip arrives and goes on a spring of its own (_TipPresence): the
+        // tooltip's animation says only whether it shows, at once, and keeps
+        // the tip up for as long as the spring takes it away (about 230 ms).
+        animationStyle: const AnimationStyle(
+          duration: Duration.zero,
+          reverseDuration: Duration(milliseconds: 300),
+        ),
+        positionDelegate: positionDelegate,
+        tooltipBuilder: (context, shown) => _TipPresence(
+          shown: shown,
+          builder: (context, presence) => _TipReveal(
+            presence: presence,
+            above:
+                (RawTooltipPlacement.sideOf(context) ?? RawPopoverSide.above) ==
+                RawPopoverSide.above,
+            child: _Tip(message: message, style: style),
+          ),
+        ),
+        child: RawTooltipFocusFix(child: child),
+      ),
     ),
-    child: child,
   );
 
   @override
@@ -433,6 +454,103 @@ class ClayTooltip extends StatelessWidget {
     super.debugFillProperties(properties);
     properties.add(StringProperty('message', message));
   }
+}
+
+/// The tip's presence: to 1 on an effects spring while [shown] says it
+/// shows, back to 0 as it goes (critically damped, stiffness 1600; Reduce
+/// Motion honoured), from wherever it was.
+class _TipPresence extends StatefulWidget {
+  const _TipPresence({required this.shown, required this.builder});
+
+  final Animation<double> shown;
+  final Widget Function(BuildContext context, Animation<double> presence)
+  builder;
+
+  @override
+  State<_TipPresence> createState() => _TipPresenceState();
+}
+
+class _TipPresenceState extends State<_TipPresence>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _presence = AnimationController(vsync: this);
+  bool? _showing;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.shown.addStatusListener(_follow);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_showing == null) _follow(widget.shown.status);
+  }
+
+  @override
+  void didUpdateWidget(_TipPresence old) {
+    super.didUpdateWidget(old);
+    if (old.shown != widget.shown) {
+      old.shown.removeStatusListener(_follow);
+      widget.shown.addStatusListener(_follow);
+      _follow(widget.shown.status);
+    }
+  }
+
+  void _follow(AnimationStatus status) {
+    final showing = status.isForwardOrCompleted;
+    if (showing == _showing) return;
+    _showing = showing;
+    _presence.springTo(
+      showing ? 1 : 0,
+      DesignMotionPolicy.of(context).effects(dampingRatio: 1, stiffness: 1600),
+    );
+  }
+
+  @override
+  void dispose() {
+    widget.shown.removeStatusListener(_follow);
+    _presence.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.builder(context, _presence);
+}
+
+/// The tip arriving as Clay's floating lists do ([ClayMenuReveal]): it fades
+/// in and grows from 96% of its size toward the control, on [presence]. A
+/// screen reader hears the words as the control's tooltip, so the tip itself
+/// is left out.
+class _TipReveal extends StatelessWidget {
+  const _TipReveal({
+    required this.presence,
+    required this.above,
+    required this.child,
+  });
+
+  final Animation<double> presence;
+  final bool above;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => AnimatedBuilder(
+    animation: presence,
+    child: ExcludeSemantics(child: child),
+    builder: (context, child) {
+      final t = presence.value.clamp(0.0, 1.0);
+      return Opacity(
+        opacity: Curves.easeOut.transform((t / 0.7).clamp(0.0, 1.0)),
+        child: Transform.scale(
+          scale: 0.96 + 0.04 * t,
+          alignment: above
+              ? AlignmentDirectional.bottomStart
+              : AlignmentDirectional.topStart,
+          child: child,
+        ),
+      );
+    },
+  );
 }
 
 class _Tip extends StatelessWidget {

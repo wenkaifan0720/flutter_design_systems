@@ -312,7 +312,7 @@ class _ClaySliderState extends State<ClaySlider> {
 }
 
 /// A range's two ends.
-typedef ClayRangeValues = DesignRangeValues;
+typedef ClayRangeValues = RawRangeValues;
 
 /// A range slider: two clay balls on one groove, the run between them
 /// raised in coral. They never cross; a press on the groove moves the
@@ -385,7 +385,7 @@ class ClayRangeSlider extends StatelessWidget {
       {if (!enabled) WidgetState.disabled},
     );
     final fill = layered.fill ?? c.accent;
-    return DesignRangeSlider(
+    return RawRangeSlider(
       values: values,
       onChanged: onChanged,
       min: min,
@@ -522,7 +522,7 @@ class _ClayRatingState extends State<ClayRating> {
     final c = theme.colors;
     final enabled = widget.onChanged != null || widget.readOnly;
     final slot = widget.size < 44 ? 44.0 : widget.size;
-    return DesignRating(
+    return RawRating(
       value: widget.value,
       onChanged: widget.onChanged,
       itemCount: widget.itemCount,
@@ -530,7 +530,8 @@ class _ClayRatingState extends State<ClayRating> {
       readOnly: widget.readOnly,
       focusNode: _focus,
       semanticLabel:
-          widget.semanticLabel ?? DesignLocalizations.of(context).ratingLabel,
+          widget.semanticLabel ??
+          RawWidgetsLocalizations.of(context).ratingLabel,
       layoutBuilder: (context, items) => ClayOnFocus(
         focusNode: _focus,
         // The focus rims the whole row, as one control.
@@ -749,7 +750,7 @@ class ClayFileDrop extends StatelessWidget {
       [style, theme.fileDropStyle],
       {if (!enabled) WidgetState.disabled},
     );
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,

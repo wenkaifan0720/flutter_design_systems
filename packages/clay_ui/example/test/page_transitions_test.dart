@@ -8,9 +8,9 @@ void main() {
     for (final platform in TargetPlatform.values) {
       final builder = clayPageTransitions[platform];
       if (platform == TargetPlatform.iOS) {
-        expect(builder, isA<DesignSwipeBackPageTransitionsBuilder>());
+        expect(builder, isA<SwipeBackPageTransitionsBuilder>());
         expect(
-          (builder! as DesignSwipeBackPageTransitionsBuilder).builder,
+          (builder! as SwipeBackPageTransitionsBuilder).builder,
           isA<ClayPageTransitionsBuilder>(),
         );
       } else {

@@ -106,7 +106,7 @@ class ClayButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DesignPressable(
+    return RawButton(
       onPressed: onPressed,
       onLongPress: onLongPress,
       focusNode: focusNode,
@@ -233,7 +233,7 @@ class ClayButtonFace extends StatelessWidget {
             vertical: ClaySpacing.small,
           ),
         );
-    return DesignTapTarget(
+    return TapTargetPadding(
       child: ConstrainedBox(
         constraints: BoxConstraints(
           minHeight: layered.minimumSize?.height ?? theme.controlHeight,
@@ -267,7 +267,7 @@ class ClayButtonFace extends StatelessWidget {
             : c.accentInk);
     final padding =
         layered.padding(Directionality.of(context)) ?? EdgeInsets.zero;
-    return DesignTapTarget(
+    return TapTargetPadding(
       child: ConstrainedBox(
         constraints: BoxConstraints(
           minHeight: layered.minimumSize?.height ?? theme.controlHeight,
@@ -537,12 +537,12 @@ class ClayIconButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = ClayTheme.of(context);
     final c = theme.colors;
-    return DesignPressable(
+    return RawButton(
       onPressed: onPressed,
       focusNode: focusNode,
       autofocus: autofocus,
       selected: selected ?? false,
-      toggled: selected,
+      semanticSelected: selected,
       semanticLabel: tooltip,
       excludeSemantics: true,
       builder: (context, states, _) {
@@ -561,7 +561,7 @@ class ClayIconButton extends StatelessWidget {
                   : on
                   ? c.accentInk
                   : c.ink);
-          return DesignTapTarget(
+          return TapTargetPadding(
             child: SizedBox.square(
               dimension: side,
               child: AnimatedClaySurface(
@@ -615,7 +615,7 @@ class ClayIconButton extends StatelessWidget {
                 : filled
                 ? c.onColor(fill)
                 : c.ink);
-        return DesignTapTarget(
+        return TapTargetPadding(
           child: SizedBox.square(
             dimension: side,
             child: AnimatedClaySurface(

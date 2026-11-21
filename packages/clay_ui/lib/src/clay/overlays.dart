@@ -77,7 +77,7 @@ class ClayDialog extends StatelessWidget {
     final c = theme.colors;
     final layered = DesignStyleOf([style, theme.dialogStyle], const {});
     final routed = ModalRoute.of(context) is DesignDialogRoute;
-    final dialog = DesignDialog(
+    final dialog = RawAlertDialog(
       title: title,
       content: content == null
           ? null
@@ -90,7 +90,7 @@ class ClayDialog extends StatelessWidget {
             ),
       actions: [
         for (final a in actions)
-          DesignDialogAction(
+          RawDialogAction(
             label: a.label,
             onPressed: a.onPressed,
             isDefaultAction: a.primary,
@@ -240,7 +240,8 @@ Future<T?> showClayDialog<T>({
     DesignDialogRoute<T>(
       isAlert: isAlert,
       barrierDismissible: barrierDismissible,
-      barrierLabel: DesignLocalizations.of(context).modalBarrierDismissLabel,
+      barrierLabel: RawWidgetsLocalizations.of(context)
+          .modalBarrierDismissLabel,
       barrierBuilder: _scrim(theme.colors.scrim),
       dampingRatio: ClayMotion.panelDamping,
       stiffness: ClayMotion.panelStiffness,
@@ -275,7 +276,7 @@ Future<T?> showClayBottomSheet<T>({
   ClayStyle? style,
 }) {
   final theme = ClayTheme.of(context);
-  final words = DesignLocalizations.of(context);
+  final words = RawWidgetsLocalizations.of(context);
   return Navigator.of(context, rootNavigator: true).push<T>(
     _SheetRoute<T>(
       barrierLabel: words.modalBarrierDismissLabel,
@@ -298,7 +299,7 @@ Future<T?> showClayBottomSheet<T>({
   );
 }
 
-class _SheetRoute<T> extends DesignBottomSheetRoute<T> {
+class _SheetRoute<T> extends RawBottomSheetRoute<T> {
   _SheetRoute({
     super.settings,
     required super.builder,
@@ -366,7 +367,7 @@ class _Sheet extends StatelessWidget {
     final side = framed
         ? ClaySpacing.large
         : ClaySpacing.pageMargin(size.width);
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     const radius = ClayRadius.extraLarge;
     final panel = Column(
       mainAxisSize: MainAxisSize.min,
@@ -560,7 +561,8 @@ class ClaySheetPage<T> extends Page<T> {
     // screen, its screen scrolling in it.
     return _SheetRoute<T>(
       settings: this,
-      barrierLabel: DesignLocalizations.of(context).modalBarrierDismissLabel,
+      barrierLabel: RawWidgetsLocalizations.of(context)
+          .modalBarrierDismissLabel,
       barrierBuilder: _scrim(theme.colors.scrim),
       snapSizes: drawer ? null : const [0.88],
       builder: (context, details) => scoped(
@@ -665,12 +667,12 @@ Future<T?> showClaySideSheet<T>({
   required WidgetBuilder builder,
   String? title,
   WidgetBuilder? footerBuilder,
-  DesignSheetEdge edge = DesignSheetEdge.end,
+  RawSheetEdge edge = RawSheetEdge.end,
   double width = 400,
   ClayStyle? style,
 }) {
   final theme = ClayTheme.of(context);
-  final words = DesignLocalizations.of(context);
+  final words = RawWidgetsLocalizations.of(context);
   // Over the whole window (a sidebar included), as a sheet and a dialog are.
   return Navigator.of(context, rootNavigator: true).push<T>(
     _SideSheetRoute<T>(
@@ -693,7 +695,7 @@ Future<T?> showClaySideSheet<T>({
   );
 }
 
-class _SideSheetRoute<T> extends DesignSideSheetRoute<T> {
+class _SideSheetRoute<T> extends RawSideSheetRoute<T> {
   _SideSheetRoute({
     required super.builder,
     super.edge,
@@ -721,7 +723,7 @@ class _SidePanel extends StatelessWidget {
     required this.style,
   });
 
-  final DesignSheetInfo info;
+  final RawSideSheetDetails info;
   final String? title;
   final WidgetBuilder builder;
   final WidgetBuilder? footer;
@@ -732,7 +734,7 @@ class _SidePanel extends StatelessWidget {
     final theme = ClayTheme.of(context);
     final c = theme.colors;
     final layered = DesignStyleOf([style, theme.sheetStyle], const {});
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     final pad = MediaQuery.paddingOf(context);
     // It floats a little in from the window's edges, as every Clay slab
     // floats over its ground, so its corners round whole.
@@ -869,7 +871,7 @@ Future<T?> showClayActionSheet<T>({
   String? cancelLabel,
 }) {
   final theme = ClayTheme.of(context);
-  final words = DesignLocalizations.of(context);
+  final words = RawWidgetsLocalizations.of(context);
   return Navigator.of(context, rootNavigator: true).push<T>(
     _SheetRoute<T>(
       barrierLabel: words.modalBarrierDismissLabel,
@@ -1010,7 +1012,7 @@ class ClayToaster extends StatelessWidget {
   final ClayStyle? style;
 
   @override
-  Widget build(BuildContext context) => DesignToaster(
+  Widget build(BuildContext context) => RawToaster(
     dampingRatio: ClayMotion.panelDamping,
     stiffness: ClayMotion.panelStiffness,
     constraints: const BoxConstraints(maxWidth: 480),
@@ -1034,7 +1036,7 @@ class ClayToaster extends StatelessWidget {
 class _Toast extends StatelessWidget {
   const _Toast(this.details, this.style);
 
-  final DesignToastDetails details;
+  final RawToastDetails details;
   final ClayStyle? style;
 
   @override
@@ -1042,7 +1044,7 @@ class _Toast extends StatelessWidget {
     final theme = ClayTheme.of(context);
     final c = theme.colors;
     final t = details.toast;
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     final layered = DesignStyleOf([style, theme.toastStyle], const {});
     final face = ClayFace.floating(
       c,
@@ -1126,15 +1128,15 @@ class _Toast extends StatelessWidget {
 /// ```dart
 /// showClayToast(context, 'Habit archived', actionLabel: 'Undo')
 /// ```
-DesignToastHandle showClayToast(
+RawToastController showClayToast(
   BuildContext context,
   String message, {
   String? title,
   String? actionLabel,
   VoidCallback? onAction,
   Duration? duration = const Duration(seconds: 4),
-}) => DesignToaster.of(context).show(
-  DesignToast(
+}) => RawToaster.of(context).show(
+  RawToast(
     message: message,
     title: title,
     actionLabel: actionLabel,

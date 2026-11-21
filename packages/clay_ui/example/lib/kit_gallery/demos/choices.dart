@@ -97,28 +97,29 @@ class _ChecksState extends State<_Checks> {
             onChanged: (_) {},
             semanticLabel: 'Required',
           ),
-          // Radios on their own, grouped where their choice is held: one
-          // Tab stop, and arrows that choose.
-          DesignRadioGroup<String>(
-            options: const ['morning', 'evening'],
-            value: _when,
-            onChanged: (v) => setState(() => _when = v),
-            semanticLabel: 'Time of day',
-            layoutBuilder: (context, radios) => Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                for (final (i, radio) in radios.indexed) ...[
-                  if (i > 0) const SizedBox(width: ClaySpacing.regular),
-                  radio,
-                ],
-              ],
-            ),
-            itemBuilder: (context, value, node, select) => ClayRadio<String>(
-              value: value,
-              groupValue: _when,
-              focusNode: node,
-              onChanged: select == null ? null : (_) => select(),
-              semanticLabel: value == 'morning' ? 'Morning' : 'Evening',
+          // Radios on their own, in Flutter's RadioGroup where their choice
+          // is held: one Tab stop, and arrows that choose.
+          RadioGroup<String>(
+            groupValue: _when,
+            onChanged: (v) => setState(() => _when = v ?? _when),
+            child: RadioGroupKeyboardFix<String>(
+              child: Semantics(
+                label: 'Time of day',
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ClayRadio<String>(
+                      value: 'morning',
+                      semanticLabel: 'Morning',
+                    ),
+                    SizedBox(width: ClaySpacing.regular),
+                    ClayRadio<String>(
+                      value: 'evening',
+                      semanticLabel: 'Evening',
+                    ),
+                  ],
+                ),
+              ),
             ),
           ),
         ],

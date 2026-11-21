@@ -10,6 +10,7 @@ import 'package:ui_core/ui_core.dart';
 import 'button.dart';
 import 'fonts.dart';
 import 'internal/menu.dart';
+import 'internal/radio.dart';
 import 'surface.dart';
 import 'theme.dart';
 
@@ -191,14 +192,14 @@ class _DentKey extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = ClayTheme.of(context);
     final c = theme.colors;
-    return DesignPressable(
+    return RawButton(
       onPressed: onPressed,
       semanticLabel: iconOnly ? label : null,
       builder: (context, states, _) {
         final layered = DesignStyleOf([style, themeStyle], states);
         final disabled = states.contains(WidgetState.disabled);
         final words = layered.foreground ?? (disabled ? c.inkDisabled : c.ink);
-        return DesignTapTarget(
+        return TapTargetPadding(
           child: _inSlab(
             AnimatedClaySurface(
               face: _dent(c, states, radius, layered.fill),
@@ -437,7 +438,7 @@ class ClayToggleGroup<T> extends StatelessWidget {
     final change = onSelectionChanged;
     final Widget group;
     if (multiSelectionEnabled) {
-      group = DesignToggleGroup<T>(
+      group = RawSegmentedButton<T>(
         options: values,
         selected: selected,
         onSelectionChanged: change,
@@ -450,36 +451,30 @@ class ClayToggleGroup<T> extends StatelessWidget {
         itemBuilder: (context, value, states) => toggleFace(value, states),
       );
     } else {
-      // One of several: a radio group. A press on the choice turns it off
-      // where none may be on.
+      // One of several: Flutter's radio group, each toggle a radio in it. A
+      // press on the choice turns it off where none may be on.
       final chosen = selected.isEmpty ? null : selected.first;
-      group = DesignRadioGroup<T>(
-        options: values,
-        value: chosen,
-        onChanged: change == null ? null : (v) => change({v}),
-        isEnabled: enabled,
-        semanticLabel: semanticLabel,
-        layoutBuilder: layout,
-        itemBuilder: (context, value, node, select) {
-          final on = value == chosen;
-          return DesignPressable(
-            focusNode: node,
-            onPressed: select == null
-                ? null
-                : on && emptySelectionAllowed
-                ? () => change!(<T>{})
-                : select,
-            semanticLabel: byValue[value]!.label,
-            excludeSemantics: true,
-            checked: on,
-            selected: on,
-            inMutuallyExclusiveGroup: true,
-            builder: (context, states, _) => ConstrainedBox(
+      final rows = [
+        for (final value in values)
+          ClayGroupRadio<T>(
+            value: value,
+            label: byValue[value]!.label,
+            enabled: enabled(value),
+            toggleable: emptySelectionAllowed,
+            builder: (context, states) => ConstrainedBox(
               constraints: BoxConstraints(minHeight: theme.controlHeight),
               child: toggleFace(value, states),
             ),
-          );
-        },
+          ),
+      ];
+      final laid = layout(context, rows);
+      final label = semanticLabel;
+      group = RadioGroup<T>(
+        groupValue: chosen,
+        onChanged: (v) => change?.call(v == null ? <T>{} : {v}),
+        child: RadioGroupKeyboardFix<T>(
+          child: label == null ? laid : Semantics(label: label, child: laid),
+        ),
       );
     }
     return SizedBox(
@@ -510,7 +505,7 @@ class ClayToggleGroup<T> extends StatelessWidget {
 }
 
 /// One action in a [ClaySplitButton]'s menu.
-typedef ClaySplitAction = DesignSplitAction;
+typedef ClaySplitAction = RawSplitAction;
 
 /// A key with its menu beside it, moulded as one slab: the main action, a
 /// groove, then a narrow part with a chevron that opens the others. Each
@@ -575,7 +570,7 @@ class ClaySplitButton extends StatelessWidget {
         face: ClayFace.raised(c, color: fill, radius: radius),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: _inset),
-          child: DesignSplitButton(
+          child: RawSplitButton(
             label: label,
             onPressed: onPressed,
             actions: actions,
@@ -588,9 +583,9 @@ class ClaySplitButton extends StatelessWidget {
             buttonBuilder: (context, part, states, open) {
               final disabled = states.contains(WidgetState.disabled);
               final colour = disabled ? c.inkDisabled : words;
-              final main = part == DesignSplitPart.main;
+              final main = part == RawSplitPart.main;
               final shown = {...states, if (!main && open) WidgetState.pressed};
-              return DesignTapTarget(
+              return TapTargetPadding(
                 child: _inSlab(
                   AnimatedClaySurface(
                     face: _dent(
@@ -681,7 +676,7 @@ class ClayLink extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = ClayTheme.of(context);
     final c = theme.colors;
-    return DesignPressable(
+    return RawButton(
       onPressed: onPressed,
       focusNode: focusNode,
       button: false,
@@ -698,7 +693,7 @@ class ClayLink extends StatelessWidget {
                 : pressed
                 ? Color.lerp(c.accentInk, c.ink, 0.35)!
                 : c.accentInk);
-        return DesignTapTarget(
+        return TapTargetPadding(
           child: AnimatedClaySurface(
             face: ClayFace.well(c, radius: 8).copyWith(
               color: c.well.withValues(alpha: 0),

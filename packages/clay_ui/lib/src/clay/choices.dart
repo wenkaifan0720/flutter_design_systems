@@ -13,6 +13,7 @@ import 'package:ui_core/ui_core.dart';
 import 'button.dart' show ClayPressDepth;
 import 'fonts.dart';
 import 'internal/menu.dart';
+import 'internal/radio.dart';
 import 'internal/spring.dart';
 import 'surface.dart';
 import 'theme.dart';
@@ -74,7 +75,7 @@ class ClayCheckbox extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = ClayTheme.of(context);
-    return DesignPressable(
+    return RawButton(
       onPressed: onChanged == null ? null : _next,
       focusNode: focusNode,
       autofocus: autofocus,
@@ -83,7 +84,7 @@ class ClayCheckbox extends StatelessWidget {
       mixed: value == null,
       isError: isError,
       semanticLabel: semanticLabel,
-      builder: (context, states, _) => DesignTapTarget(
+      builder: (context, states, _) => TapTargetPadding(
         child: ClayCheckMark(
           value: value,
           states: states,
@@ -259,16 +260,24 @@ class _DashPainter extends CustomPainter {
 /// A Clay radio: a round cup pressed into the ground; the chosen one holds a
 /// coral ball that swells into it.
 ///
+/// It is Flutter's [RawRadio]. Inside a [RadioGroup] (with ui_core's
+/// [RadioGroupKeyboardFix] round the radios), the group holds the choice:
+/// one Tab stop, the arrows choosing as they move. On its own, [groupValue]
+/// holds it and [onChanged] hears it. A screen reader hears a radio, checked
+/// or not, one of a group.
+///
 /// ```dart
-/// ClayRadio<String>(value: 'morning', groupValue: 'morning', onChanged: (v) {}, semanticLabel: 'Morning')
+/// RadioGroup<String>(groupValue: 'morning', onChanged: (v) {}, child: const Row(children: [ClayRadio<String>(value: 'morning', semanticLabel: 'Morning'), ClayRadio<String>(value: 'evening', semanticLabel: 'Evening')]))
 /// ```
-class ClayRadio<T> extends StatelessWidget {
-  /// The radio for [value] in a group whose choice is [groupValue].
+class ClayRadio<T> extends StatefulWidget {
+  /// The radio for [value], in the [RadioGroup] round it or in a group
+  /// whose choice is [groupValue].
   const ClayRadio({
     super.key,
     required this.value,
-    required this.groupValue,
-    required this.onChanged,
+    this.groupValue,
+    this.onChanged,
+    this.enabled,
     this.semanticLabel,
     this.style,
     this.focusNode,
@@ -278,11 +287,17 @@ class ClayRadio<T> extends StatelessWidget {
   /// The value this radio stands for.
   final T value;
 
-  /// The group's choice; this radio is chosen when it equals [value].
+  /// The group's choice, outside a [RadioGroup]; this radio is chosen when
+  /// it equals [value]. Inside one, the group's.
   final T? groupValue;
 
-  /// Called with [value] when chosen; null turns it off.
+  /// Called with [value] when chosen, outside a [RadioGroup]; inside one,
+  /// the group hears it.
   final ValueChanged<T>? onChanged;
+
+  /// Whether it can be chosen; null: when [onChanged] is set or a
+  /// [RadioGroup] is round it.
+  final bool? enabled;
 
   /// What a screen reader calls it, when no words beside it say.
   final String? semanticLabel;
@@ -298,21 +313,7 @@ class ClayRadio<T> extends StatelessWidget {
   final bool autofocus;
 
   @override
-  Widget build(BuildContext context) {
-    final chosen = value == groupValue;
-    return DesignPressable(
-      onPressed: onChanged == null ? null : () => onChanged!(value),
-      focusNode: focusNode,
-      autofocus: autofocus,
-      button: false,
-      checked: chosen,
-      inMutuallyExclusiveGroup: true,
-      semanticLabel: semanticLabel,
-      builder: (context, states, _) => DesignTapTarget(
-        child: ClayRadioMark(chosen: chosen, states: states, style: style),
-      ),
-    );
-  }
+  State<ClayRadio<T>> createState() => _ClayRadioState<T>();
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -320,10 +321,81 @@ class ClayRadio<T> extends StatelessWidget {
     properties
       ..add(DiagnosticsProperty<T>('value', value))
       ..add(DiagnosticsProperty<T>('groupValue', groupValue))
-      ..add(
-        FlagProperty('enabled', value: onChanged != null, ifFalse: 'disabled'),
-      );
+      ..add(FlagProperty('enabled', value: enabled, ifFalse: 'disabled'));
   }
+}
+
+class _ClayRadioState<T> extends State<ClayRadio<T>> {
+  FocusNode? _own;
+  FocusNode get _node => widget.focusNode ?? (_own ??= FocusNode());
+
+  // Its own registry, outside a RadioGroup: [ClayRadio.groupValue] and
+  // [ClayRadio.onChanged].
+  late final _OwnRegistry<T> _ownRegistry = _OwnRegistry<T>(this);
+
+  @override
+  void dispose() {
+    _own?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final group = RadioGroup.maybeOf<T>(context);
+    final enabled =
+        widget.enabled ?? (group != null || widget.onChanged != null);
+    return MergeSemantics(
+      child: RawRadio<T>(
+        value: widget.value,
+        mouseCursor: WidgetStateMouseCursor.clickable,
+        toggleable: false,
+        focusNode: _node,
+        autofocus: widget.autofocus,
+        groupRegistry: group ?? _ownRegistry,
+        enabled: enabled && (group != null || widget.onChanged != null),
+        // Hit all over, the tap target's margin too: RawRadio takes a press
+        // only where its face is hit.
+        builder: (context, radio) => Semantics(
+          label: widget.semanticLabel,
+          child: ExcludeSemantics(
+            child: Listener(
+              behavior: HitTestBehavior.opaque,
+              child: TapTargetPadding(
+                child: ClayRadioMark(
+                  chosen: radio.value ?? false,
+                  states: {
+                    ...radio.states,
+                    if (radio.downPosition != null) WidgetState.pressed,
+                  },
+                  style: widget.style,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _OwnRegistry<T> extends RadioGroupRegistry<T> {
+  _OwnRegistry(this.state);
+
+  final _ClayRadioState<T> state;
+
+  @override
+  T? get groupValue => state.widget.groupValue;
+
+  @override
+  ValueChanged<T?> get onChanged => (value) {
+    if (value != null) state.widget.onChanged?.call(value);
+  };
+
+  @override
+  void registerClient(RadioClient<T> radio) {}
+
+  @override
+  void unregisterClient(RadioClient<T> radio) {}
 }
 
 /// A radio's cup and ball alone, for a row that is itself the control.
@@ -413,11 +485,13 @@ class ClayRadioMark extends StatelessWidget {
 }
 
 /// Radios and their words, one choice of [options]: each row a cup beside
-/// its words, the whole row one target. Tab reaches the group once, at its
-/// choice (or its first that can be chosen); the arrows choose as they move,
-/// round its ends and past a choice turned off, Left onward right to left;
-/// Space chooses, as Flutter's RadioGroup does. A screen reader hears each
-/// row as a radio, checked or not. A null [onChanged] disables it.
+/// its words, the whole row one target. It is Flutter's [RadioGroup], each
+/// row a [RawRadio], with ui_core's [RadioGroupKeyboardFix]: Tab reaches the
+/// group once, at its choice (or its first that can be chosen, also when the
+/// choice is turned off); the arrows choose as they move, round its ends and
+/// past a choice turned off, Down and Right onward (Left right to left);
+/// Space chooses. A screen reader hears each row as a radio, checked or not.
+/// A null [onChanged] disables it.
 ///
 /// ```dart
 /// ClayRadioGroup<String>(options: const ['morning', 'evening'], value: 'morning', labelOf: (v) => v == 'morning' ? 'Morning' : 'Evening', onChanged: (v) {})
@@ -451,7 +525,7 @@ class ClayRadioGroup<T> extends StatelessWidget {
   /// Whether a choice can be made; null: all can.
   final bool Function(T value)? isEnabled;
 
-  /// Which way the rows run, and which arrows move along them.
+  /// Which way the rows run.
   final Axis direction;
 
   /// What a screen reader calls the group.
@@ -464,57 +538,59 @@ class ClayRadioGroup<T> extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = ClayTheme.of(context);
     final c = theme.colors;
-    return DesignRadioGroup<T>(
-      options: options,
-      value: value,
-      onChanged: onChanged,
-      isEnabled: isEnabled,
-      semanticLabel: semanticLabel,
-      direction: direction,
-      layoutBuilder: (context, rows) => direction == Axis.vertical
-          ? Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: rows,
-            )
-          : Wrap(spacing: ClaySpacing.large, children: rows),
-      // Each row one radio: the cup and its words read as one, checked or
-      // not, on the node the group gives it.
-      itemBuilder: (context, option, node, select) => DesignPressable(
-        focusNode: node,
-        onPressed: select,
-        semanticLabel: labelOf(option),
-        excludeSemantics: true,
-        checked: option == value,
-        selected: option == value,
-        inMutuallyExclusiveGroup: true,
-        builder: (context, states, _) {
-          final off = states.contains(WidgetState.disabled);
-          return ConstrainedBox(
-            constraints: BoxConstraints(minHeight: theme.controlHeight),
-            child: Row(
-              mainAxisSize: direction == Axis.vertical
-                  ? MainAxisSize.max
-                  : MainAxisSize.min,
-              children: [
-                ClayRadioMark(
-                  chosen: states.contains(WidgetState.selected),
-                  states: states,
-                  style: style,
-                ),
-                const SizedBox(width: ClaySpacing.medium),
-                Flexible(
-                  child: Text(
-                    labelOf(option),
-                    style: theme.textTheme.body.copyWith(
-                      color: off ? c.inkDisabled : c.ink,
+    final change = onChanged;
+    // Each row one radio: the cup and its words read as one, checked or not.
+    final rows = [
+      for (final option in options)
+        ClayGroupRadio<T>(
+          value: option,
+          label: labelOf(option),
+          enabled: change != null && (isEnabled?.call(option) ?? true),
+          builder: (context, states) {
+            final off = states.contains(WidgetState.disabled);
+            return ConstrainedBox(
+              constraints: BoxConstraints(minHeight: theme.controlHeight),
+              child: Row(
+                mainAxisSize: direction == Axis.vertical
+                    ? MainAxisSize.max
+                    : MainAxisSize.min,
+                children: [
+                  ClayRadioMark(
+                    chosen: states.contains(WidgetState.selected),
+                    states: states,
+                    style: style,
+                  ),
+                  const SizedBox(width: ClaySpacing.medium),
+                  Flexible(
+                    child: Text(
+                      labelOf(option),
+                      style: theme.textTheme.body.copyWith(
+                        color: off ? c.inkDisabled : c.ink,
+                      ),
                     ),
                   ),
-                ),
-              ],
-            ),
-          );
-        },
+                ],
+              ),
+            );
+          },
+        ),
+    ];
+    final Widget layout = direction == Axis.vertical
+        ? Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: rows,
+          )
+        : Wrap(spacing: ClaySpacing.large, children: rows);
+    final label = semanticLabel;
+    return RadioGroup<T>(
+      groupValue: value,
+      // A group that takes no choice turns each radio off.
+      onChanged: (v) {
+        if (v != null) change?.call(v);
+      },
+      child: RadioGroupKeyboardFix<T>(
+        child: label == null ? layout : Semantics(label: label, child: layout),
       ),
     );
   }
@@ -642,7 +718,7 @@ class _ClaySwitchState extends State<ClaySwitch>
     final theme = ClayTheme.of(context);
     final c = theme.colors;
     final enabled = widget.onChanged != null;
-    return DesignPressable(
+    return RawButton(
       onPressed: enabled ? () => widget.onChanged!(!widget.value) : null,
       focusNode: widget.focusNode,
       autofocus: widget.autofocus,
@@ -657,7 +733,7 @@ class _ClaySwitchState extends State<ClaySwitch>
         final pressed = states.contains(WidgetState.pressed) || _dragging;
         final focused = states.contains(WidgetState.focused);
         final onFill = layered.fill ?? c.accent;
-        return DesignTapTarget(
+        return TapTargetPadding(
           child: GestureDetector(
             excludeFromSemantics: true,
             onHorizontalDragStart: enabled
@@ -905,26 +981,33 @@ class ClaySegmentedButton<T> extends StatelessWidget {
                   right: inset,
                   top: stacked ? inset : 0,
                   bottom: stacked ? inset : 0,
-                  child: DesignRadioGroup<T>(
-                    options: [for (final s in segments) s.value],
-                    value: selected,
-                    onChanged: onChanged,
-                    layoutBuilder: (context, items) => Flex(
-                      direction: stacked ? Axis.vertical : Axis.horizontal,
-                      children: [
-                        for (final item in items) Expanded(child: item),
-                      ],
-                    ),
-                    itemBuilder: (context, value, node, select) {
-                      final i = segments.indexWhere((s) => s.value == value);
-                      return _Segment<T>(
-                        segment: segments[i],
-                        chosen: i == index,
-                        focusNode: node,
-                        onPressed: select,
-                        style: style,
-                      );
+                  // Flutter's radio group, each segment a radio in it.
+                  child: RadioGroup<T>(
+                    groupValue: selected,
+                    onChanged: (v) {
+                      if (v != null) onChanged?.call(v);
                     },
+                    child: RadioGroupKeyboardFix<T>(
+                      child: Flex(
+                        direction: stacked ? Axis.vertical : Axis.horizontal,
+                        children: [
+                          for (final (i, s) in segments.indexed)
+                            Expanded(
+                              child: ClayGroupRadio<T>(
+                                value: s.value,
+                                label: s.label,
+                                enabled: enabled,
+                                builder: (context, states) => _Segment<T>(
+                                  segment: s,
+                                  chosen: i == index,
+                                  states: states,
+                                  style: style,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
               ],
@@ -948,98 +1031,84 @@ class ClaySegmentedButton<T> extends StatelessWidget {
   }
 }
 
+// A segment's face: its words and, focused, its rim; the radio round it
+// takes the press and the focus.
 class _Segment<T> extends StatelessWidget {
   const _Segment({
     required this.segment,
     required this.chosen,
-    required this.focusNode,
-    required this.onPressed,
+    required this.states,
     required this.style,
   });
 
   final ClaySegment<T> segment;
   final bool chosen;
-  final FocusNode focusNode;
-  final VoidCallback? onPressed;
+  final Set<WidgetState> states;
   final ClayStyle? style;
 
   @override
   Widget build(BuildContext context) {
     final theme = ClayTheme.of(context);
     final c = theme.colors;
-    return DesignPressable(
-      focusNode: focusNode,
-      onPressed: onPressed,
-      selected: chosen,
-      checked: chosen,
-      inMutuallyExclusiveGroup: true,
-      semanticLabel: segment.label,
-      excludeSemantics: true,
-      builder: (context, states, _) {
-        final layered = DesignStyleOf([
-          style,
-          theme.segmentedButtonStyle,
-        ], states);
-        final disabled = states.contains(WidgetState.disabled);
-        final words = disabled
-            ? c.inkDisabled
-            : chosen
-            ? (layered.foreground ?? c.ink)
-            : c.inkSecondary;
-        final weight = chosen ? FontWeight.w600 : FontWeight.w500;
-        final focused = states.contains(WidgetState.focused);
-        return DesignTapTarget(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: ClaySpacing.tight),
-            child: ClayPressDepth(
-              pressed: states.contains(WidgetState.pressed),
-              builder: (depth) => CustomPaint(
-                foregroundPainter: focused
-                    ? _SegmentRim(c.focus, ClayRadius.control - 4)
-                    : null,
-                child: Transform.translate(
-                  offset: Offset(0, depth),
-                  child: Center(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: ClaySpacing.small,
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          if (segment.icon != null &&
-                              _glyphsBesideWords(context)) ...[
-                            IconTheme.merge(
-                              data: IconThemeData(size: 18, color: words),
-                              child: segment.icon!,
-                            ),
-                            const SizedBox(width: ClaySpacing.small),
-                          ],
-                          Flexible(
-                            child: DesignCapCenter(
-                              capHeightFactor: clayCapHeightFactor,
-                              child: Text(
-                                segment.label,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: theme.textTheme.label.copyWith(
-                                  color: words,
-                                  fontWeight: weight,
-                                  fontVariations: clayWeight(weight),
-                                ),
-                              ),
+    final layered = DesignStyleOf([style, theme.segmentedButtonStyle], states);
+    final disabled = states.contains(WidgetState.disabled);
+    final words = disabled
+        ? c.inkDisabled
+        : chosen
+        ? (layered.foreground ?? c.ink)
+        : c.inkSecondary;
+    final weight = chosen ? FontWeight.w600 : FontWeight.w500;
+    final focused = states.contains(WidgetState.focused);
+    return TapTargetPadding(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: ClaySpacing.tight),
+        child: ClayPressDepth(
+          pressed: states.contains(WidgetState.pressed),
+          builder: (depth) => CustomPaint(
+            foregroundPainter: focused
+                ? _SegmentRim(c.focus, ClayRadius.control - 4)
+                : null,
+            child: Transform.translate(
+              offset: Offset(0, depth),
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: ClaySpacing.small,
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (segment.icon != null &&
+                          _glyphsBesideWords(context)) ...[
+                        IconTheme.merge(
+                          data: IconThemeData(size: 18, color: words),
+                          child: segment.icon!,
+                        ),
+                        const SizedBox(width: ClaySpacing.small),
+                      ],
+                      Flexible(
+                        child: DesignCapCenter(
+                          capHeightFactor: clayCapHeightFactor,
+                          child: Text(
+                            segment.label,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: theme.textTheme.label.copyWith(
+                              color: words,
+                              fontWeight: weight,
+                              fontVariations: clayWeight(weight),
                             ),
                           ),
-                        ],
+                        ),
                       ),
-                    ),
+                    ],
                   ),
                 ),
               ),
             ),
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 }
@@ -1123,11 +1192,11 @@ class ClayChip extends StatelessWidget {
     final filter = onSelected != null;
     final action = filter ? () => onSelected!(!selected) : onPressed;
     const height = 36.0;
-    return DesignPressable(
+    return RawButton(
       onPressed: action,
       focusNode: focusNode,
       selected: filter && selected,
-      toggled: filter ? selected : null,
+      semanticSelected: filter ? selected : null,
       semanticLabel: label,
       excludeSemantics: true,
       builder: (context, states, _) {
@@ -1151,7 +1220,7 @@ class ClayChip extends StatelessWidget {
                 child: CustomPaint(painter: ClayCheckPainter(words)),
               )
             : icon;
-        return DesignTapTarget(
+        return TapTargetPadding(
           child: SizedBox(
             height: layered.minimumSize?.height ?? height,
             child: AnimatedClaySurface(
@@ -1228,11 +1297,11 @@ class _ChipRemove extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final words = DesignLocalizations.of(context);
-    return DesignPressable(
+    final words = RawWidgetsLocalizations.of(context);
+    return RawButton(
       onPressed: onPressed,
       semanticLabel: '${words.deleteButtonTooltip} $label',
-      builder: (context, states, _) => DesignTapTarget(
+      builder: (context, states, _) => TapTargetPadding(
         child: SizedBox.square(
           dimension: 28,
           child: Center(

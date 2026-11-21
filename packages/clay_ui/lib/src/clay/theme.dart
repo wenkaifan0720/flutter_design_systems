@@ -1831,7 +1831,7 @@ extension ClayThemeContext on BuildContext {
 const Map<TargetPlatform, PageTransitionsBuilder> clayPageTransitions = {
   TargetPlatform.android: ClayPageTransitionsBuilder(),
   TargetPlatform.fuchsia: ClayPageTransitionsBuilder(),
-  TargetPlatform.iOS: DesignSwipeBackPageTransitionsBuilder(
+  TargetPlatform.iOS: SwipeBackPageTransitionsBuilder(
     ClayPageTransitionsBuilder(),
   ),
   TargetPlatform.linux: ClayPageTransitionsBuilder(),

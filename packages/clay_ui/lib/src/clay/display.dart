@@ -97,7 +97,7 @@ class _ClayDisclosureState extends State<ClayDisclosure> {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        DesignPressable(
+        RawButton(
           onPressed: _toggle,
           expanded: open,
           semanticLabel: widget.title,

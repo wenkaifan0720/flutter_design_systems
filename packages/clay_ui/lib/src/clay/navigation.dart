@@ -50,7 +50,7 @@ class ClayTopBar extends StatelessWidget {
     final presentation = RoutePresentation.of(context);
     if (presentation == RoutePresentation.root) return null;
     final close = presentation == RoutePresentation.sheet;
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     return _way(
       context,
       key: key,
@@ -125,7 +125,7 @@ class ClayTopBar extends StatelessWidget {
             : _way(
                 context,
                 onPressed: onBack,
-                tooltip: DesignLocalizations.of(context).backButtonTooltip,
+                tooltip: RawWidgetsLocalizations.of(context).backButtonTooltip,
               ));
     final row = SizedBox(
       height: height,
@@ -266,7 +266,7 @@ class _Place extends StatelessWidget {
   @override
   Widget build(BuildContext context) => KeyedSubtree(
     key: destination.key,
-    child: DesignPressable(
+    child: RawButton(
       onPressed: onPressed,
       selected: chosen,
       semanticSelected: chosen,
@@ -298,7 +298,7 @@ class _DockFace extends StatelessWidget {
     final ink = chosen ? (layered.foreground ?? c.ink) : c.inkSecondary;
     final weight = chosen ? FontWeight.w600 : FontWeight.w500;
     final pill = layered.fill ?? clayChosenFill(c);
-    return DesignTapTarget(
+    return TapTargetPadding(
       child: Padding(
         padding: const EdgeInsets.all(ClaySpacing.tight),
         child: AnimatedClaySurface(
@@ -385,7 +385,7 @@ class _RailFace extends StatelessWidget {
               press: chosen && states.contains(WidgetState.pressed) ? 1 : 0,
               focus: states.contains(WidgetState.focused) ? 1 : 0,
             );
-    return DesignTapTarget(
+    return TapTargetPadding(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -464,7 +464,7 @@ class _SideFace extends StatelessWidget {
               press: chosen && states.contains(WidgetState.pressed) ? 1 : 0,
               focus: states.contains(WidgetState.focused) ? 1 : 0,
             );
-    return DesignTapTarget(
+    return TapTargetPadding(
       child: SizedBox(
         height: theme.density.height(44),
         child: AnimatedClaySurface(
@@ -1096,10 +1096,10 @@ class ClayTabBar extends StatefulWidget {
 }
 
 class _ClayTabBarState extends State<ClayTabBar> with TickerProviderStateMixin {
-  late DesignTabController _tabs = _controller();
+  late RawTabController _tabs = _controller();
   late int _reported = widget.selectedIndex;
 
-  DesignTabController _controller() => DesignTabController(
+  RawTabController _controller() => RawTabController(
     length: widget.tabs.length,
     initialIndex: widget.selectedIndex,
     vsync: this,
@@ -1179,9 +1179,9 @@ class _ClayTabBarState extends State<ClayTabBar> with TickerProviderStateMixin {
           child: SizedBox(
             width: width,
             height: height,
-            child: DesignTabBar(
+            child: RawTabBar(
               controller: _tabs,
-              tabs: [for (final t in tabs) DesignTab(label: t)],
+              tabs: [for (final t in tabs) RawTab(label: t)],
               indicatorBuilder: (context, details) => ClaySurface(
                 face: ClayFace.raised(
                   c,
@@ -1200,8 +1200,8 @@ class _ClayTabBarState extends State<ClayTabBar> with TickerProviderStateMixin {
 
   Widget _tab(
     BuildContext context,
-    DesignTab tab,
-    DesignTabDetails details,
+    RawTab tab,
+    RawTabDetails details,
     double height,
   ) {
     final theme = ClayTheme.of(context);
@@ -1214,7 +1214,7 @@ class _ClayTabBarState extends State<ClayTabBar> with TickerProviderStateMixin {
     final weight = chosen ? FontWeight.w600 : FontWeight.w500;
     final focused = details.states.contains(WidgetState.focused);
     final hovered = details.states.contains(WidgetState.hovered);
-    return DesignTapTarget(
+    return TapTargetPadding(
       child: SizedBox(
         height: height,
         child: CustomPaint(

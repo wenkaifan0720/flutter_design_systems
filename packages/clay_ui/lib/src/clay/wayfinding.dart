@@ -160,7 +160,7 @@ class ClayPagination extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = ClayTheme.of(context);
     final c = theme.colors;
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     final rtl = Directionality.of(context) == TextDirection.rtl;
     final side = theme.controlHeight - 8;
     Widget arrow(bool next) {
@@ -281,7 +281,7 @@ class _PageKey extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = ClayTheme.of(context);
     final c = theme.colors;
-    return DesignPressable(
+    return RawButton(
       onPressed: onPressed,
       semanticLabel: semanticLabel,
       semanticSelected: current,
@@ -581,7 +581,7 @@ class ClayPageDots extends StatelessWidget {
       );
     }
 
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     return Semantics(
       container: true,
       label:
@@ -599,13 +599,13 @@ class ClayPageDots extends StatelessWidget {
                     ),
                     child: ExcludeSemantics(child: dot(i, const {})),
                   )
-                : DesignPressable(
+                : RawButton(
                     onPressed: i == index ? null : () => onChanged!(i),
                     enabled: true,
                     semanticLabel: 'Page ${words.formatDecimal(i + 1)}',
                     semanticSelected: i == index,
                     // The platform's floor: a finger's 44, a pointer's 24.
-                    builder: (context, states, _) => DesignTapTarget(
+                    builder: (context, states, _) => TapTargetPadding(
                       child: Padding(
                         padding: const EdgeInsets.symmetric(
                           horizontal: ClaySpacing.tight,
@@ -669,14 +669,14 @@ class ClayMenuBar extends StatelessWidget {
     final layers = [style, theme.menuBarStyle];
     final bar = DesignStyleOf(layers, const {});
     const inset = 4.0;
-    return DesignMenuBar(
+    return RawMenuBar(
       menus: [
         for (final menu in menus)
-          DesignMenuEntry(
+          RawMenuEntry(
             label: menu.label,
             children: [
               for (final item in menu.items)
-                DesignMenuEntry(
+                RawMenuEntry(
                   label: item.label,
                   onPressed: item.onPressed,
                   shortcut: item.shortcut,
@@ -707,7 +707,7 @@ class ClayMenuBar extends StatelessWidget {
         ),
       ),
       itemBuilder: (context, entry, level, states) {
-        if (level == DesignMenuLevel.menu) {
+        if (level == RawMenuLevel.menu) {
           final item = entry.data as ClayMenuItem?;
           return ClayMenuRow(
             label: entry.label,
@@ -838,18 +838,15 @@ class ClayCommandPalette extends StatelessWidget {
   /// This palette's own style, over [ClayThemeData.commandPaletteStyle].
   final ClayStyle? style;
 
-  DesignCommandPalette _body(
-    BuildContext context,
-    ValueChanged<DesignCommand>? run,
-  ) {
+  RawCommandPalette _body(BuildContext context, ValueChanged<RawCommand>? run) {
     final theme = ClayTheme.of(context);
     final c = theme.colors;
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     final said = hint ?? words.searchFieldLabel;
-    return DesignCommandPalette(
+    return RawCommandPalette(
       commands: [
         for (final command in commands)
-          DesignCommand(
+          RawCommand(
             label: command.label,
             onPressed: command.onPressed,
             group: command.group,

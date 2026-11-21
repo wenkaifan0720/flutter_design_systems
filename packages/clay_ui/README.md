@@ -89,15 +89,17 @@ Clay supports Android, iOS, web, macOS, Windows and Linux.
 
 Text meets WCAG AA contrast on every surface by day and by night. Keyboard focus brings a 2 px rim of the focus colour
 up inside a part's own edge. Tab reaches each control; the arrow keys move within tabs and open lists. A radio group,
-a segmented button and a one-choice toggle group are one Tab stop, on the choice, whose arrows choose as they move, as
-Flutter's `RadioGroup` does. A screen reader hears each checkbox, radio and switch as one, with its state, and never as
-a button. Dialogs, sheets, tabs and toasts respect reduced motion.
+a segmented button and a one-choice toggle group are Flutter's `RadioGroup`, each choice a `RawRadio`: one Tab stop, on
+the choice, whose arrows choose as they move. A screen reader hears each checkbox, radio and switch as one, with its
+state, and never as a button; a toggle button (a selected icon button, a filter chip) is a button that is selected, as
+Flutter's `IconButton(isSelected:)` is. A tooltip shows on the keys' focus as on a pointer's rest. Dialogs, sheets, tabs
+and toasts respect reduced motion.
 
 ## Right to left and languages
 
 Controls follow the ambient `Directionality`, and the light falls from the top-leading corner in either direction.
-Add `DesignLocalizations.delegate` to your app for localized control labels. Use `clayPlural` for phrases that depend
-on a count.
+Add `RawWidgetsLocalizations.delegate` to your app for localized control labels. Use `clayPlural` for phrases that
+depend on a count.
 
 ## Licence
 

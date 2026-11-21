@@ -100,7 +100,7 @@ class ClaySelect<T> extends StatelessWidget {
     // words even with none chosen, so its words stand over the list's.
     final glyphs = items.any((i) => i.leading != null);
     final height = theme.controlHeight;
-    Widget anchorKey(VoidCallback? toggle, bool open) => DesignPressable(
+    Widget anchorKey(VoidCallback? toggle, bool open) => RawButton(
       onPressed: toggle,
       focusNode: focusNode,
       expanded: enabled ? open : null,
@@ -200,10 +200,10 @@ class ClaySelect<T> extends StatelessWidget {
     );
     final box = !enabled
         ? anchorKey(null, false)
-        : DesignAnchoredOverlay(
+        : RawPopover(
             arrowKeyNavigation: true,
             semanticLabel: label,
-            placement: const DesignOverlayPlacement(
+            placement: const RawPopoverPlacement(
               gap: ClaySpacing.small,
               margin: ClaySpacing.small,
             ),
@@ -270,14 +270,14 @@ class ClayMenuReveal extends StatelessWidget {
   const ClayMenuReveal({super.key, required this.info, required this.child});
 
   /// The anchored surface's placement and presence.
-  final DesignOverlayInfo info;
+  final RawPopoverInfo info;
 
   /// The list.
   final Widget child;
 
   @override
   Widget build(BuildContext context) {
-    final above = info.side == DesignOverlaySide.above;
+    final above = info.side == RawPopoverSide.above;
     return AnimatedBuilder(
       animation: info.animation,
       child: child,
@@ -300,6 +300,6 @@ class ClayMenuReveal extends StatelessWidget {
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
-    properties.add(EnumProperty<DesignOverlaySide>('side', info.side));
+    properties.add(EnumProperty<RawPopoverSide>('side', info.side));
   }
 }

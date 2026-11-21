@@ -50,7 +50,7 @@ ClayFace _rowFace(
 }
 
 /// A column of a [ClayDataTable]: its share of the width in [flex].
-class ClayDataColumn<R> extends DesignTableColumn<R> {
+class ClayDataColumn<R> extends RawDataColumn<R> {
   /// A column [id] headed [label].
   const ClayDataColumn({
     required super.id,
@@ -66,7 +66,7 @@ class ClayDataColumn<R> extends DesignTableColumn<R> {
 
 /// The rows, sort, filter, page and selection of a [ClayDataTable]; the
 /// caller makes it and disposes it.
-class ClayTableController<R> extends DesignTableController<R> {
+class ClayTableController<R> extends RawDataTableController<R> {
   /// A controller over [rows] in [columns].
   ClayTableController({
     required super.rows,
@@ -122,10 +122,10 @@ class ClayDataTable<R> extends StatelessWidget {
     final theme = ClayTheme.of(context);
     final c = theme.colors;
     final t = theme.textTheme;
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     final layers = [style, theme.dataTableStyle];
     final frame = DesignStyleOf(layers, const {});
-    int flex(DesignTableColumn<R> col) => (col as ClayDataColumn<R>).flex;
+    int flex(RawDataColumn<R> col) => (col as ClayDataColumn<R>).flex;
     const pad = EdgeInsets.symmetric(
       horizontal: ClaySpacing.medium,
       vertical: ClaySpacing.medium,
@@ -136,7 +136,7 @@ class ClayDataTable<R> extends StatelessWidget {
         child: ClayCheckMark(value: value, states: const {}),
       ),
     );
-    final table = DesignDataTable<R>(
+    final table = RawDataTable<R>(
       controller: controller,
       selectable: selectable,
       onActivate: onActivate,
@@ -172,8 +172,8 @@ class ClayDataTable<R> extends StatelessWidget {
                   const SizedBox(width: ClaySpacing.tight),
                   Icon(
                     switch (sort) {
-                      DesignSortDirection.ascending => LucideIcons.arrowUp,
-                      DesignSortDirection.descending => LucideIcons.arrowDown,
+                      RawSortDirection.ascending => LucideIcons.arrowUp,
+                      RawSortDirection.descending => LucideIcons.arrowDown,
                     },
                     size: 14,
                     color: c.accentInk,
@@ -191,23 +191,23 @@ class ClayDataTable<R> extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               if (selectable)
-                DesignPressable(
+                RawButton(
                   onPressed: controller.pageRows.isEmpty
                       ? null
                       : controller.togglePage,
                   semanticLabel: words.selectedLabel,
                   // A checkbox, not a button, as Flutter's Checkbox reads.
                   button: false,
-                  checked: page == DesignSelection.all,
+                  checked: page == RawDataTableSelection.all,
                   builder: (context, states, _) => AnimatedClaySurface(
                     face: _rowFace(c, states, chosen: false, radius: 10),
                     child: SizedBox(
                       width: _box,
                       child: Center(
                         child: mark(switch (page) {
-                          DesignSelection.all => true,
-                          DesignSelection.some => null,
-                          DesignSelection.none => false,
+                          RawDataTableSelection.all => true,
+                          RawDataTableSelection.some => null,
+                          RawDataTableSelection.none => false,
                         }),
                       ),
                     ),
@@ -406,7 +406,7 @@ class ClayScrollArea extends StatelessWidget {
     final theme = ClayTheme.of(context);
     final c = theme.colors;
     final layers = [style, theme.scrollAreaStyle];
-    return DesignScrollArea(
+    return RawScrollArea(
       controller: controller,
       axis: axis,
       semanticLabel: semanticLabel,
@@ -526,7 +526,7 @@ class ClaySplitView extends StatelessWidget {
     // Nothing a tap reaches sits under the groove's reach.
     const clear = (_reach - _line) / 2;
     final across = axis == Axis.horizontal;
-    return DesignSplitView(
+    return RawSplitView(
       first: Padding(
         padding: across
             ? const EdgeInsetsDirectional.only(end: clear)
@@ -545,7 +545,8 @@ class ClaySplitView extends StatelessWidget {
       minSecond: minSecond,
       onChanged: onChanged,
       semanticLabel:
-          semanticLabel ?? DesignLocalizations.of(context).splitViewHandleLabel,
+          semanticLabel ??
+          RawWidgetsLocalizations.of(context).splitViewHandleLabel,
       dividerThickness: _line,
       hitExtent: _reach,
       dividerBuilder: (context, states, axis) {
@@ -649,11 +650,11 @@ class ClayCarousel extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = ClayTheme.of(context);
     final c = theme.colors;
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     final rtl = Directionality.of(context) == TextDirection.rtl;
     final layered = DesignStyleOf([style, theme.carouselStyle], const {});
     final radius = clayRadiusOf(layered.shape, ClayRadius.large);
-    return DesignCarousel(
+    return RawCarousel(
       itemCount: itemCount,
       itemBuilder: itemBuilder,
       semanticLabel: semanticLabel,
@@ -774,7 +775,7 @@ class ClayReorderableList<T extends Object> extends StatelessWidget {
       face: ClayFace.raised(c, color: layered.fill, radius: radius),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(radius),
-        child: DesignReorderableList<T>(
+        child: RawReorderableList<T>(
           items: items,
           onReorder: onReorder,
           labelOf: labelOf,
@@ -900,14 +901,14 @@ class ClaySwipeRow extends StatelessWidget {
     final theme = ClayTheme.of(context);
     final c = theme.colors;
     final layered = DesignStyleOf([style, theme.swipeRowStyle], const {});
-    DesignSwipeAction wrap(ClaySwipeAction a) => DesignSwipeAction(
+    RawSwipeAction wrap(ClaySwipeAction a) => RawSwipeAction(
       label: a.label,
       onPressed: a.onPressed,
       destructive: a.isDestructiveAction,
       data: a,
     );
     return ClipRect(
-      child: DesignSwipeActions(
+      child: RawSwipeActions(
         startActions: [for (final a in startActions) wrap(a)],
         endActions: [for (final a in endActions) wrap(a)],
         actionExtent: 88,
@@ -997,12 +998,12 @@ class ClayPullToRefresh extends StatelessWidget {
     final c = theme.colors;
     final layered = DesignStyleOf([style, theme.pullToRefreshStyle], const {});
     final warm = layered.fill ?? c.accent;
-    return DesignPullToRefresh(
+    return RawRefreshIndicator(
       onRefresh: onRefresh,
       indicatorBuilder: (context, details) {
-        final armed = details.mode == DesignRefreshMode.armed;
-        final done = details.mode == DesignRefreshMode.done;
-        final turning = details.mode == DesignRefreshMode.refresh;
+        final armed = details.mode == RawRefreshIndicatorMode.armed;
+        final done = details.mode == RawRefreshIndicatorMode.done;
+        final turning = details.mode == RawRefreshIndicatorMode.refresh;
         final coral = armed || done;
         final ink = coral
             ? layered.foreground ?? c.onColor(warm)

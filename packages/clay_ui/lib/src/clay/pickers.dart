@@ -53,11 +53,11 @@ class ClayDateRange {
 }
 
 /// A time of day (hour 0 to 23, minute); the reader's clock writes it with
-/// `DesignLocalizations.of(context).formatTimeOfDay(time)`.
-typedef ClayTime = DesignTimeOfDay;
+/// `RawWidgetsLocalizations.of(context).formatTimeOfDay(time)`.
+typedef ClayTime = RawTimeOfDay;
 
 // [n] (0 to 99) as two figures in the reader's digits.
-String _twoDigits(DesignLocalizations words, int n) => n < 10
+String _twoDigits(RawWidgetsLocalizations words, int n) => n < 10
     ? '${words.formatDecimal(0)}${words.formatDecimal(n)}'
     : words.formatDecimal(n);
 
@@ -186,23 +186,20 @@ class ClayCalendar extends StatefulWidget {
 }
 
 class _ClayCalendarState extends State<ClayCalendar> {
-  late DesignCalendarController _controller = _make();
+  late RawCalendarController _controller = _make();
 
   bool get _enabled => widget._range
       ? widget.onRangeChanged != null
       : widget.onDateChanged != null;
 
-  DesignCalendarController _make() => DesignCalendarController(
+  RawCalendarController _make() => RawCalendarController(
     firstDate: widget.firstDate,
     lastDate: widget.lastDate,
-    mode: widget._range ? DesignCalendarMode.range : DesignCalendarMode.single,
+    mode: widget._range ? RawCalendarMode.range : RawCalendarMode.single,
     selectedDate: widget.selectedDate,
     selectedRange: widget.selectedRange == null
         ? null
-        : DesignDateRange(
-            widget.selectedRange!.start,
-            widget.selectedRange!.end,
-          ),
+        : RawDateRange(widget.selectedRange!.start, widget.selectedRange!.end),
     currentDate: widget.currentDate,
     selectable: (d) =>
         _enabled && (widget.selectableDayPredicate?.call(d) ?? true),
@@ -247,7 +244,7 @@ class _ClayCalendarState extends State<ClayCalendar> {
   Widget build(BuildContext context) {
     final theme = ClayTheme.of(context);
     final c = theme.colors;
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     final rtl = Directionality.of(context) == TextDirection.rtl;
     final layers = [widget.style, theme.calendarStyle];
     // A day is a finger's height at least (its ball a little less).
@@ -266,7 +263,7 @@ class _ClayCalendarState extends State<ClayCalendar> {
         maxWidth:
             widget.months * 420.0 + (widget.months - 1) * ClaySpacing.large,
       ),
-      child: DesignCalendar(
+      child: RawCalendarDatePicker(
         controller: _controller,
         months: widget.months,
         autofocus: widget.autofocus,
@@ -460,7 +457,7 @@ class _PickerField extends StatelessWidget {
     final theme = ClayTheme.of(context);
     final c = theme.colors;
     final height = theme.controlHeight;
-    return DesignPressable(
+    return RawButton(
       onPressed: enabled ? anchor.toggle : null,
       semanticLabel: semanticLabel,
       semanticValue: text,
@@ -635,7 +632,7 @@ class ClayDatePicker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     final enabled = onChanged != null;
     final theme = ClayTheme.of(context);
     return _fieldColumn(
@@ -643,9 +640,9 @@ class ClayDatePicker extends StatelessWidget {
       enabled: enabled,
       helper: helper,
       error: error,
-      box: DesignAnchoredOverlay(
+      box: RawPopover(
         semanticLabel: label,
-        placement: const DesignOverlayPlacement(
+        placement: const RawPopoverPlacement(
           gap: ClaySpacing.small,
           margin: ClaySpacing.small,
           matchAnchorWidth: false,
@@ -749,7 +746,7 @@ class ClayDateRangePicker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     final enabled = onChanged != null;
     final theme = ClayTheme.of(context);
     final wide = MediaQuery.sizeOf(context).width >= 760;
@@ -758,9 +755,9 @@ class ClayDateRangePicker extends StatelessWidget {
       enabled: enabled,
       helper: helper,
       error: error,
-      box: DesignAnchoredOverlay(
+      box: RawPopover(
         semanticLabel: label,
-        placement: const DesignOverlayPlacement(
+        placement: const RawPopoverPlacement(
           gap: ClaySpacing.small,
           margin: ClaySpacing.small,
           matchAnchorWidth: false,
@@ -816,7 +813,7 @@ const double _rowHeight = 40;
 /// pill under every column of a [shared] wheel, read as one row).
 Widget _drums(
   BuildContext context, {
-  required List<DesignWheelColumn> columns,
+  required List<RawPickerColumn> columns,
   required List<int> selection,
   required ValueChanged<List<int>>? onChanged,
   required int rows,
@@ -828,7 +825,7 @@ Widget _drums(
 }) {
   final theme = ClayTheme.of(context);
   final c = theme.colors;
-  return DesignWheelPicker(
+  return RawPicker(
     columns: (_) => columns,
     selection: selection,
     onChanged: onChanged,
@@ -904,7 +901,7 @@ ClayFace _pill(ClayColors c, Set<WidgetState> states, [Color? fill]) =>
 // holiday, so a week fits a phone's well; the year beside each end only when
 // the range leaves this year.
 String _rangeWords(
-  DesignLocalizations words,
+  RawWidgetsLocalizations words,
   ClayDateRange range,
   DateTime today,
 ) {
@@ -991,7 +988,7 @@ class ClayWheelPicker<T> extends StatelessWidget {
       _drums(
         context,
         columns: [
-          DesignWheelColumn(
+          RawPickerColumn(
             itemCount: items.length,
             itemLabel: (i) => labelOf(items[i]),
             semanticLabel: semanticLabel,
@@ -1064,27 +1061,27 @@ class ClayTimePicker extends StatelessWidget {
       ':',
       style: theme.textTheme.title.copyWith(color: c.inkSecondary),
     );
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     final columns = [
       if (h24)
-        DesignWheelColumn(
+        RawPickerColumn(
           itemCount: 24,
           itemLabel: (h) => _twoDigits(words, h),
           semanticLabel: words.timePickerHourLabel,
         )
       else
-        DesignWheelColumn(
+        RawPickerColumn(
           itemCount: 12,
           itemLabel: (i) => words.formatDecimal(i + 1),
           semanticLabel: words.timePickerHourLabel,
         ),
-      DesignWheelColumn(
+      RawPickerColumn(
         itemCount: minutes.length,
         itemLabel: (i) => _twoDigits(words, minutes[i]),
         semanticLabel: words.timePickerMinuteLabel,
       ),
       if (!h24)
-        DesignWheelColumn(
+        RawPickerColumn(
           itemCount: 2,
           itemLabel: (i) => i == 0
               ? words.anteMeridiemAbbreviation
@@ -1217,7 +1214,7 @@ class ClayTimeField extends StatelessWidget {
       error: error,
       // The well fills its column as every field's does; the time sits at
       // its start and the clock at its end.
-      box: DesignTimeField(
+      box: RawTimeField(
         value: value,
         onChanged: onChanged,
         showSeconds: showSeconds,
@@ -1368,9 +1365,8 @@ class ClayColorPicker extends StatefulWidget {
 }
 
 class _ClayColorPickerState extends State<ClayColorPicker> {
-  late final DesignColorController _controller = DesignColorController(
-    widget.value,
-  )..addListener(_changed);
+  late final RawColorController _controller = RawColorController(widget.value)
+    ..addListener(_changed);
 
   void _changed() {
     if (_controller.color != widget.value) widget.onChanged(_controller.color);
@@ -1427,7 +1423,7 @@ class _ClayColorPickerState extends State<ClayColorPicker> {
       widget.style,
       theme.colorPickerStyle,
     ], const {});
-    return DesignColorPicker(
+    return RawColorPicker(
       controller: _controller,
       showAlpha: widget.showAlpha,
       areaHeight: 180,
@@ -1547,31 +1543,31 @@ class _AreaPainter extends CustomPainter {
 class _TrackPainter extends CustomPainter {
   _TrackPainter(this.channel, this.color);
 
-  final DesignColorChannel channel;
+  final RawColorChannel channel;
   final HSVColor color;
 
   @override
   void paint(Canvas canvas, Size size) {
     final rect = Offset.zero & size;
     final colors = switch (channel) {
-      DesignColorChannel.hue => [
+      RawColorChannel.hue => [
         for (var h = 0; h <= 360; h += 60)
           HSVColor.fromAHSV(1, h.toDouble(), 1, 1).toColor(),
       ],
-      DesignColorChannel.saturation => [
+      RawColorChannel.saturation => [
         color.withSaturation(0).withAlpha(1).toColor(),
         color.withSaturation(1).withAlpha(1).toColor(),
       ],
-      DesignColorChannel.brightness => [
+      RawColorChannel.brightness => [
         const Color(0xFF000000),
         color.withValue(1).withAlpha(1).toColor(),
       ],
-      DesignColorChannel.alpha => [
+      RawColorChannel.alpha => [
         color.withAlpha(0).toColor(),
         color.withAlpha(1).toColor(),
       ],
     };
-    if (channel == DesignColorChannel.alpha) {
+    if (channel == RawColorChannel.alpha) {
       // A chequer under the opacity, so clear reads as clear.
       const s = 6.0;
       final paint = Paint()..color = const Color(0xFFCCCCCC);

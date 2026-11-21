@@ -194,7 +194,7 @@ class _ClayMenuListState<T> extends State<ClayMenuList<T>> {
     return MouseRegion(
       onEnter: (_) => _point(i),
       onHover: (_) => _point(i),
-      child: DesignPressable(
+      child: RawButton(
         key: isChosen ? _chosenKey : null,
         focusNode: _nodes[i],
         onPressed: e.enabled ? () => widget.onChosen(e.value) : null,

@@ -704,7 +704,7 @@ class _Legend extends StatelessWidget {
 
 /// The x of [index] in words, as the chart's axis would say it.
 String _xWords(
-  DesignLocalizations l,
+  RawWidgetsLocalizations l,
   ClayChartXAxis axis,
   double x,
   List<String>? categories,
@@ -768,7 +768,7 @@ class _Cartesian extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = ClayTheme.of(context);
     final c = theme.colors;
-    final l = DesignLocalizations.of(context);
+    final l = RawWidgetsLocalizations.of(context);
     final direction = Directionality.of(context);
     final labels = theme.textTheme.caption.copyWith(
       color: labelColor ?? c.inkSecondary,
@@ -1351,7 +1351,7 @@ class ClayPieChart extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = ClayTheme.of(context);
     final c = theme.colors;
-    final l = DesignLocalizations.of(context);
+    final l = RawWidgetsLocalizations.of(context);
     final layered = DesignStyleOf([style, theme.pieChartStyle], const {});
     final palette = _palette(c, layered, slices.length, pastel: true);
     final total = slices.fold<double>(0, (a, s) => a + s.value);

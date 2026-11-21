@@ -530,7 +530,7 @@ class ClayListTile extends StatelessWidget {
         child: body({if (!enabled) WidgetState.disabled}),
       );
     }
-    return DesignPressable(
+    return RawButton(
       onPressed: enabled ? onTap : null,
       selected: selected,
       semanticSelected: selected ? true : null,
@@ -712,7 +712,7 @@ class ClayCard extends StatelessWidget {
     }
 
     if (onTap == null) return face(const {});
-    return DesignPressable(
+    return RawButton(
       onPressed: onTap,
       semanticLabel: semanticLabel,
       builder: (context, states, _) => face(states),

@@ -42,11 +42,11 @@ Widget kitApp({required Brightness brightness, required Widget home}) =>
         ),
       ),
       localizationsDelegates: const [
-        DesignLocalizations.delegate,
+        RawWidgetsLocalizations.delegate,
         DefaultMaterialLocalizations.delegate,
         DefaultWidgetsLocalizations.delegate,
       ],
-      supportedLocales: DesignLocalizations.supportedLocales,
+      supportedLocales: RawWidgetsLocalizations.supportedLocales,
       builder: (context, child) => ClayTheme(
         data: kitTheme(brightness),
         child: ClayToaster(child: child ?? const SizedBox.shrink()),
