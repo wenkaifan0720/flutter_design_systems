@@ -291,7 +291,7 @@ class _GlossPageRoute<T> extends PageRoute<T> {
   static const _change = GlossPageTransitionsBuilder();
 
   // On iOS, the swipe back from the leading edge round it.
-  static const _swipe = DesignSwipeBackPageTransitionsBuilder(_change);
+  static const _swipe = SwipeBackPageTransitionsBuilder(_change);
 
   @override
   Duration get transitionDuration => _change.transitionDuration;
@@ -425,7 +425,7 @@ class GlossPreview extends StatelessWidget {
           key: ValueKey<Object>((presentation, drawer)),
           debugShowCheckedModeBanner: false,
           localizationsDelegates: const [
-            DesignLocalizations.delegate,
+            RawWidgetsLocalizations.delegate,
             DefaultMaterialLocalizations.delegate,
             DefaultWidgetsLocalizations.delegate,
           ],
@@ -694,7 +694,7 @@ class GlossLoadingState extends StatelessWidget {
       padding: const EdgeInsets.all(GlossSpacing.extraLarge),
       child: GlossStateView(
         state: GlossState.loading,
-        title: label ?? DesignLocalizations.of(context).loadingLabel,
+        title: label ?? RawWidgetsLocalizations.of(context).loadingLabel,
       ),
     ),
   );
@@ -746,7 +746,8 @@ class GlossErrorState extends StatelessWidget {
         (retry == null
             ? null
             : GlossButton(
-                retryLabel ?? DesignLocalizations.of(context).retryButtonLabel,
+                retryLabel ??
+                    RawWidgetsLocalizations.of(context).retryButtonLabel,
                 onPressed: retry,
               ));
     return Center(

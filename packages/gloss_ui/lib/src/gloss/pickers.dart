@@ -52,7 +52,7 @@ class GlossDateRange {
 }
 
 // [n] (0 to 99) as two figures in the reader's digits: 05, or ٠٥ in Arabic.
-String _twoDigits(DesignLocalizations words, int n) => n < 10
+String _twoDigits(RawWidgetsLocalizations words, int n) => n < 10
     ? '${words.formatDecimal(0)}${words.formatDecimal(n)}'
     : words.formatDecimal(n);
 
@@ -74,7 +74,7 @@ class GlossTime {
   /// reader's digits and words for the half of the day (٦:٣٠ م in Arabic).
   String format(BuildContext context) {
     final h24 = MediaQuery.maybeAlwaysUse24HourFormatOf(context) ?? false;
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     final mm = _twoDigits(words, minute);
     if (h24) return '${_twoDigits(words, hour)}:$mm';
     final h = words.formatDecimal(hour % 12 == 0 ? 12 : hour % 12);
@@ -186,23 +186,20 @@ class GlossCalendar extends StatefulWidget {
 }
 
 class _GlossCalendarState extends State<GlossCalendar> {
-  late DesignCalendarController _controller = _make();
+  late RawCalendarController _controller = _make();
 
   bool get _enabled => widget._range
       ? widget.onRangeChanged != null
       : widget.onDateChanged != null;
 
-  DesignCalendarController _make() => DesignCalendarController(
+  RawCalendarController _make() => RawCalendarController(
     firstDate: widget.firstDate,
     lastDate: widget.lastDate,
-    mode: widget._range ? DesignCalendarMode.range : DesignCalendarMode.single,
+    mode: widget._range ? RawCalendarMode.range : RawCalendarMode.single,
     selectedDate: widget.selectedDate,
     selectedRange: widget.selectedRange == null
         ? null
-        : DesignDateRange(
-            widget.selectedRange!.start,
-            widget.selectedRange!.end,
-          ),
+        : RawDateRange(widget.selectedRange!.start, widget.selectedRange!.end),
     currentDate: widget.currentDate,
     selectable: (d) =>
         _enabled && (widget.selectableDayPredicate?.call(d) ?? true),
@@ -247,7 +244,7 @@ class _GlossCalendarState extends State<GlossCalendar> {
   Widget build(BuildContext context) {
     final theme = GlossTheme.of(context);
     final c = theme.colors;
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     final rtl = Directionality.of(context) == TextDirection.rtl;
     final layers = [widget.style, theme.calendarStyle];
     // A day is a finger's height at least (its bead a little less).
@@ -266,7 +263,7 @@ class _GlossCalendarState extends State<GlossCalendar> {
         maxWidth:
             widget.months * 420.0 + (widget.months - 1) * GlossSpacing.large,
       ),
-      child: DesignCalendar(
+      child: RawCalendarDatePicker(
         controller: _controller,
         months: widget.months,
         autofocus: widget.autofocus,
@@ -483,7 +480,7 @@ class _PickerField extends StatelessWidget {
     final theme = GlossTheme.of(context);
     final c = theme.colors;
     final height = theme.controlHeight;
-    return DesignPressable(
+    return RawButton(
       onPressed: enabled ? anchor.toggle : null,
       semanticLabel: semanticLabel,
       semanticValue: text,
@@ -639,16 +636,16 @@ class GlossDatePicker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     final enabled = onChanged != null;
     return _fieldColumn(
       label: label,
       enabled: enabled,
       helper: helper,
       error: error,
-      box: DesignAnchoredOverlay(
+      box: RawPopover(
         semanticLabel: label,
-        placement: const DesignOverlayPlacement(
+        placement: const RawPopoverPlacement(
           gap: GlossSpacing.small,
           margin: GlossSpacing.small,
           matchAnchorWidth: false,
@@ -744,7 +741,7 @@ class GlossDateRangePicker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     final enabled = onChanged != null;
     final wide = MediaQuery.sizeOf(context).width >= 760;
     return _fieldColumn(
@@ -752,9 +749,9 @@ class GlossDateRangePicker extends StatelessWidget {
       enabled: enabled,
       helper: helper,
       error: error,
-      box: DesignAnchoredOverlay(
+      box: RawPopover(
         semanticLabel: label,
-        placement: const DesignOverlayPlacement(
+        placement: const RawPopoverPlacement(
           gap: GlossSpacing.small,
           margin: GlossSpacing.small,
           matchAnchorWidth: false,
@@ -829,7 +826,7 @@ const double _rowHeight = 40;
 /// one row) and each column catches the light independently.
 Widget _drums(
   BuildContext context, {
-  required List<DesignWheelColumn> columns,
+  required List<RawPickerColumn> columns,
   required List<int> selection,
   required ValueChanged<List<int>>? onChanged,
   required int rows,
@@ -840,7 +837,7 @@ Widget _drums(
 }) {
   final theme = GlossTheme.of(context);
   final c = theme.colors;
-  return DesignWheelPicker(
+  return RawPicker(
     columns: (_) => columns,
     selection: selection,
     onChanged: onChanged,
@@ -971,7 +968,7 @@ class GlossWheelPicker<T> extends StatelessWidget {
       _drums(
         context,
         columns: [
-          DesignWheelColumn(
+          RawPickerColumn(
             itemCount: items.length,
             itemLabel: (i) => labelOf(items[i]),
             semanticLabel: semanticLabel,
@@ -1041,27 +1038,27 @@ class GlossTimePicker extends StatelessWidget {
     // Each drum named in the reader's words ("Hour", "Minute", "AM/PM"),
     // its figures in the reader's digits (Arabic-Indic in Arabic), as
     // Material's time picker sets its hours.
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     final columns = [
       if (h24)
-        DesignWheelColumn(
+        RawPickerColumn(
           itemCount: 24,
           itemLabel: (h) => _twoDigits(words, h),
           semanticLabel: words.timePickerHourLabel,
         )
       else
-        DesignWheelColumn(
+        RawPickerColumn(
           itemCount: 12,
           itemLabel: (i) => words.formatDecimal(i + 1),
           semanticLabel: words.timePickerHourLabel,
         ),
-      DesignWheelColumn(
+      RawPickerColumn(
         itemCount: minutes.length,
         itemLabel: (i) => _twoDigits(words, minutes[i]),
         semanticLabel: words.timePickerMinuteLabel,
       ),
       if (!h24)
-        DesignWheelColumn(
+        RawPickerColumn(
           itemCount: 2,
           itemLabel: (i) => i == 0
               ? words.anteMeridiemAbbreviation
@@ -1179,9 +1176,8 @@ class GlossColorPicker extends StatefulWidget {
 }
 
 class _GlossColorPickerState extends State<GlossColorPicker> {
-  late final DesignColorController _controller = DesignColorController(
-    widget.value,
-  )..addListener(_changed);
+  late final RawColorController _controller = RawColorController(widget.value)
+    ..addListener(_changed);
 
   void _changed() {
     if (_controller.color != widget.value) widget.onChanged(_controller.color);
@@ -1231,7 +1227,7 @@ class _GlossColorPickerState extends State<GlossColorPicker> {
   Widget build(BuildContext context) {
     final theme = GlossTheme.of(context);
     final c = theme.colors;
-    return DesignColorPicker(
+    return RawColorPicker(
       controller: _controller,
       showAlpha: widget.showAlpha,
       areaHeight: 180,
@@ -1351,31 +1347,31 @@ class _AreaPainter extends CustomPainter {
 class _TrackPainter extends CustomPainter {
   _TrackPainter(this.channel, this.color);
 
-  final DesignColorChannel channel;
+  final RawColorChannel channel;
   final HSVColor color;
 
   @override
   void paint(Canvas canvas, Size size) {
     final rect = Offset.zero & size;
     final colors = switch (channel) {
-      DesignColorChannel.hue => [
+      RawColorChannel.hue => [
         for (var h = 0; h <= 360; h += 60)
           HSVColor.fromAHSV(1, h.toDouble(), 1, 1).toColor(),
       ],
-      DesignColorChannel.saturation => [
+      RawColorChannel.saturation => [
         color.withSaturation(0).withAlpha(1).toColor(),
         color.withSaturation(1).withAlpha(1).toColor(),
       ],
-      DesignColorChannel.brightness => [
+      RawColorChannel.brightness => [
         const Color(0xFF000000),
         color.withValue(1).withAlpha(1).toColor(),
       ],
-      DesignColorChannel.alpha => [
+      RawColorChannel.alpha => [
         color.withAlpha(0).toColor(),
         color.withAlpha(1).toColor(),
       ],
     };
-    if (channel == DesignColorChannel.alpha) {
+    if (channel == RawColorChannel.alpha) {
       // A chequer under the opacity, so clear reads as clear.
       const s = 6.0;
       final paint = Paint()..color = const Color(0xFFCCCCCC);

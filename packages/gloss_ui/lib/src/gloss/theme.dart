@@ -1648,7 +1648,7 @@ extension GlossThemeContext on BuildContext {
 const Map<TargetPlatform, PageTransitionsBuilder> glossPageTransitions = {
   TargetPlatform.android: GlossPageTransitionsBuilder(),
   TargetPlatform.fuchsia: GlossPageTransitionsBuilder(),
-  TargetPlatform.iOS: DesignSwipeBackPageTransitionsBuilder(
+  TargetPlatform.iOS: SwipeBackPageTransitionsBuilder(
     GlossPageTransitionsBuilder(),
   ),
   TargetPlatform.linux: GlossPageTransitionsBuilder(),

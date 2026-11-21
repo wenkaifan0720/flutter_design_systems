@@ -83,7 +83,7 @@ class GlossDialog extends StatelessWidget {
     final routed = ModalRoute.of(context) is DesignDialogRoute;
     // ui_core's dialog lays it out, focuses its safe key and stacks its
     // keys; Gloss paints the panel, the words and the keys.
-    final dialog = DesignDialog(
+    final dialog = RawAlertDialog(
       title: title,
       content: content == null
           ? null
@@ -96,7 +96,7 @@ class GlossDialog extends StatelessWidget {
             ),
       actions: [
         for (final a in actions)
-          DesignDialogAction(
+          RawDialogAction(
             label: a.label,
             onPressed: a.onPressed,
             isDefaultAction: a.primary,
@@ -195,7 +195,8 @@ Future<T?> showGlossDialog<T>({
     DesignDialogRoute<T>(
       isAlert: isAlert,
       barrierDismissible: barrierDismissible,
-      barrierLabel: DesignLocalizations.of(context).modalBarrierDismissLabel,
+      barrierLabel: RawWidgetsLocalizations.of(context)
+          .modalBarrierDismissLabel,
       barrierBuilder: _scrim(theme.colors.scrim, 320),
       dampingRatio: GlossMotion.panelDamping,
       stiffness: _riseStiffness(320),
@@ -453,7 +454,7 @@ Future<T?> showGlossSheet<T>({
   WidgetBuilder? footerBuilder,
 }) {
   final theme = GlossTheme.of(context);
-  final words = DesignLocalizations.of(context);
+  final words = RawWidgetsLocalizations.of(context);
   return Navigator.of(context, rootNavigator: true).push<T>(
     _SheetRoute<T>(
       barrierLabel: words.modalBarrierDismissLabel,
@@ -591,7 +592,7 @@ class _ArrivalState extends State<_Arrival>
 /// with its close bead, Escape or Back (and the sheet's own dismiss), so the
 /// scrim, which runs on under the sheet, is not a node of its own that would
 /// outline the sheet's controls too.
-class _SheetRoute<T> extends DesignBottomSheetRoute<T> {
+class _SheetRoute<T> extends RawBottomSheetRoute<T> {
   _SheetRoute({
     super.settings,
     required super.builder,
@@ -663,7 +664,7 @@ class _Sheet extends StatelessWidget {
     final side = framed
         ? GlossSpacing.large
         : GlossSpacing.pageMargin(size.width);
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     final panel = Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -858,7 +859,8 @@ class GlossSheetPage<T> extends Page<T> {
     // the screen, its screen scrolling in it.
     return _SheetRoute<T>(
       settings: this,
-      barrierLabel: DesignLocalizations.of(context).modalBarrierDismissLabel,
+      barrierLabel: RawWidgetsLocalizations.of(context)
+          .modalBarrierDismissLabel,
       barrierBuilder: _scrim(theme.colors.scrim, 300),
       snapSizes: drawer ? null : const [0.88],
       ms: 300,
@@ -962,11 +964,11 @@ Future<T?> showGlossSideSheet<T>({
   required WidgetBuilder builder,
   String? title,
   WidgetBuilder? footerBuilder,
-  DesignSheetEdge edge = DesignSheetEdge.end,
+  RawSheetEdge edge = RawSheetEdge.end,
   double width = 380,
 }) {
   final theme = GlossTheme.of(context);
-  final words = DesignLocalizations.of(context);
+  final words = RawWidgetsLocalizations.of(context);
   // Over the whole window (a sidebar included), as a sheet and a dialog are.
   return Navigator.of(context, rootNavigator: true).push<T>(
     _SideSheetRoute<T>(
@@ -996,7 +998,7 @@ Future<T?> showGlossSideSheet<T>({
 /// The side sheet's route: as the sheet's, its barrier is no node of its own
 /// for a screen reader (it would outline the whole window, past what a tap
 /// reaches); the panel's close bead and Escape close it.
-class _SideSheetRoute<T> extends DesignSideSheetRoute<T> {
+class _SideSheetRoute<T> extends RawSideSheetRoute<T> {
   _SideSheetRoute({
     required super.builder,
     super.edge,
@@ -1022,7 +1024,7 @@ class _SidePanel extends StatelessWidget {
     required this.footer,
   });
 
-  final DesignSheetInfo info;
+  final RawSideSheetDetails info;
   final String? title;
   final WidgetBuilder builder;
   final WidgetBuilder? footer;
@@ -1031,7 +1033,7 @@ class _SidePanel extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = GlossTheme.of(context);
     final c = theme.colors;
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     final pad = MediaQuery.paddingOf(context);
     // It runs the window's whole height, so its corners are square: a
     // rounded one would show the window's own top bar through it.
@@ -1159,7 +1161,7 @@ Future<T?> showGlossActionSheet<T>({
   String? cancelLabel,
 }) {
   final theme = GlossTheme.of(context);
-  final words = DesignLocalizations.of(context);
+  final words = RawWidgetsLocalizations.of(context);
   return Navigator.of(context, rootNavigator: true).push<T>(
     _SheetRoute<T>(
       barrierLabel: words.modalBarrierDismissLabel,
@@ -1298,7 +1300,7 @@ class GlossToaster extends StatelessWidget {
   final Widget child;
 
   @override
-  Widget build(BuildContext context) => DesignToaster(
+  Widget build(BuildContext context) => RawToaster(
     dampingRatio: GlossMotion.panelDamping,
     stiffness: GlossMotion.panelStiffness,
     constraints: const BoxConstraints(maxWidth: 480),
@@ -1316,14 +1318,14 @@ class GlossToaster extends StatelessWidget {
 class _Toast extends StatelessWidget {
   const _Toast(this.details);
 
-  final DesignToastDetails details;
+  final RawToastDetails details;
 
   @override
   Widget build(BuildContext context) {
     final theme = GlossTheme.of(context);
     final c = theme.colors;
     final t = details.toast;
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     final opacity = details.animation.drive(
       Animatable<double>.fromCallback((v) => v.clamp(0.0, 1.0)),
     );
@@ -1407,15 +1409,15 @@ class _Toast extends StatelessWidget {
 /// ```dart
 /// showGlossToast(context, 'Added to Thursday', actionLabel: 'Undo')
 /// ```
-DesignToastHandle showGlossToast(
+RawToastController showGlossToast(
   BuildContext context,
   String message, {
   String? title,
   String? actionLabel,
   VoidCallback? onAction,
   Duration? duration = const Duration(seconds: 4),
-}) => DesignToaster.of(context).show(
-  DesignToast(
+}) => RawToaster.of(context).show(
+  RawToast(
     message: message,
     title: title,
     actionLabel: actionLabel,

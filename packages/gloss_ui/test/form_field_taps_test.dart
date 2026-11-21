@@ -167,7 +167,7 @@ void main() {
   Finder increase() => find
       .descendant(
         of: find.byType(GlossStepper),
-        matching: find.byType(DesignPressable),
+        matching: find.byType(RawButton),
       )
       .last;
 

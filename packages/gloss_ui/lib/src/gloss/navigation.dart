@@ -50,7 +50,7 @@ class GlossTopBar extends StatelessWidget {
     if (presentation == RoutePresentation.root) return null;
     final close = presentation == RoutePresentation.sheet;
     final rtl = Directionality.of(context) == TextDirection.rtl;
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     return _backBead(
       key: key,
       onPressed: () => Navigator.of(context).maybePop(),
@@ -119,7 +119,7 @@ class GlossTopBar extends StatelessWidget {
             ? null
             : _backBead(
                 onPressed: onBack,
-                tooltip: DesignLocalizations.of(context).backButtonTooltip,
+                tooltip: RawWidgetsLocalizations.of(context).backButtonTooltip,
                 glyph: rtl ? LucideIcons.chevronRight : LucideIcons.chevronLeft,
               ));
     final row = SizedBox(
@@ -284,7 +284,7 @@ class _PocketFace extends StatelessWidget {
       foreground: words,
       focus: glossGlazeOf(c, states),
     );
-    return DesignTapTarget(
+    return TapTargetPadding(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -378,7 +378,7 @@ class _SideFace extends StatelessWidget {
       );
     }
     final words = layered.foreground ?? c.ink;
-    return DesignTapTarget(
+    return TapTargetPadding(
       child: SizedBox(
         height: math.max(40, theme.controlHeight - 4),
         child: AnimatedGlossSurface(
@@ -446,7 +446,7 @@ class _Place extends StatelessWidget {
   @override
   Widget build(BuildContext context) => KeyedSubtree(
     key: destination.key,
-    child: DesignPressable(
+    child: RawButton(
       onPressed: onPressed,
       selected: chosen,
       semanticSelected: chosen,
@@ -1035,14 +1035,14 @@ class GlossTabBar extends StatefulWidget {
 
 class _GlossTabBarState extends State<GlossTabBar>
     with TickerProviderStateMixin {
-  late DesignTabController _tabs = _controller();
+  late RawTabController _tabs = _controller();
 
   // The tab last reported (or given): a choice is reported once, even while
   // the thumb's spring runs on and the parent has not chosen it yet.
   late int _reported = widget.selectedIndex;
 
   // The thumb's spring is Gloss's (a little give as it lands).
-  DesignTabController _controller() => DesignTabController(
+  RawTabController _controller() => RawTabController(
     length: widget.tabs.length,
     initialIndex: widget.selectedIndex,
     vsync: this,
@@ -1123,9 +1123,9 @@ class _GlossTabBarState extends State<GlossTabBar>
                 Positioned.fill(
                   child: Padding(
                     padding: const EdgeInsets.all(inset),
-                    child: DesignTabBar(
+                    child: RawTabBar(
                       controller: _tabs,
-                      tabs: [for (final t in tabs) DesignTab(label: t)],
+                      tabs: [for (final t in tabs) RawTab(label: t)],
                       indicatorBuilder: (context, details) => GlossSurface(
                         face: GlossFace.pearl(c).copyWith(lift: 0.75),
                       ),
@@ -1144,8 +1144,8 @@ class _GlossTabBarState extends State<GlossTabBar>
 
   Widget _tab(
     BuildContext context,
-    DesignTab tab,
-    DesignTabDetails details,
+    RawTab tab,
+    RawTabDetails details,
     double height,
   ) {
     final theme = GlossTheme.of(context);
@@ -1157,7 +1157,7 @@ class _GlossTabBarState extends State<GlossTabBar>
       {...details.states, if (chosen) WidgetState.selected},
     );
     final weight = chosen ? FontWeight.w700 : FontWeight.w600;
-    return DesignTapTarget(
+    return TapTargetPadding(
       child: SizedBox(
         height: height,
         child: GlossGlazeHighlight(

@@ -88,7 +88,7 @@ class _GlossDisclosureState extends State<GlossDisclosure> {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        DesignPressable(
+        RawButton(
           onPressed: _toggle,
           expanded: _open,
           semanticLabel: widget.title,

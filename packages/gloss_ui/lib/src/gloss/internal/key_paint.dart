@@ -145,7 +145,7 @@ Widget glossKeyPaint(
       ),
     ),
   );
-  return DesignTapTarget(
+  return TapTargetPadding(
     child: ConstrainedBox(
       constraints: BoxConstraints(
         minWidth: minimum.width,

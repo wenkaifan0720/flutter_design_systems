@@ -103,8 +103,8 @@ class GlossRangeSlider extends StatelessWidget {
     final fill = DesignStyleOf([style, theme.sliderStyle], const {}).fill;
     final high = MediaQuery.maybeHighContrastOf(context) ?? false;
     final rtl = Directionality.of(context) == TextDirection.rtl;
-    return DesignRangeSlider(
-      values: DesignRangeValues(values.start, values.end),
+    return RawRangeSlider(
+      values: RawRangeValues(values.start, values.end),
       onChanged: onChanged == null
           ? null
           : (v) => onChanged!(GlossRangeValues(v.start, v.end)),
@@ -263,7 +263,7 @@ class GlossRating extends StatelessWidget {
     final c = GlossTheme.of(context).colors;
     final change = onChanged;
     final enabled = change != null;
-    return DesignRating(
+    return RawRating(
       value: value.toDouble(),
       itemCount: max,
       readOnly: !enabled,
@@ -300,7 +300,7 @@ class GlossRating extends StatelessWidget {
         if (!enabled) return painted;
         // Gloss's own: a press on the last star given takes it back (the
         // pointer's way to none), which ui_core's rating leaves alone.
-        return DesignTapTarget(
+        return TapTargetPadding(
           child: n == value
               ? GestureDetector(
                   behavior: HitTestBehavior.opaque,
@@ -512,7 +512,7 @@ class GlossFileDrop extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = GlossTheme.of(context);
     final c = theme.colors;
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     final enabled = onChoose != null;
     return Column(
       mainAxisSize: MainAxisSize.min,

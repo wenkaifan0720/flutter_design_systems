@@ -101,7 +101,7 @@ class GlossButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = GlossTheme.of(context);
     if (_kind == GlossKeyKind.text) return _buildText(context, theme);
-    return DesignPressable(
+    return RawButton(
       onPressed: onPressed,
       onLongPress: onLongPress,
       focusNode: focusNode,
@@ -120,7 +120,7 @@ class GlossButton extends StatelessWidget {
 
   Widget _buildText(BuildContext context, GlossThemeData theme) {
     final c = theme.colors;
-    return DesignPressable(
+    return RawButton(
       onPressed: onPressed,
       onLongPress: onLongPress,
       focusNode: focusNode,
@@ -140,7 +140,7 @@ class GlossButton extends StatelessWidget {
         final padding =
             layered.padding(Directionality.of(context)) ?? EdgeInsets.zero;
         final large = MediaQuery.textScalerOf(context).scale(10) >= 15;
-        return DesignTapTarget(
+        return TapTargetPadding(
           child: ConstrainedBox(
             constraints: BoxConstraints(
               minHeight: layered.minimumSize?.height ?? theme.controlHeight,
@@ -348,12 +348,14 @@ class GlossIconButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = GlossTheme.of(context);
     final c = theme.colors;
-    return DesignPressable(
+    return RawButton(
       onPressed: onPressed,
       focusNode: focusNode,
       autofocus: autofocus,
       selected: selected ?? false,
-      toggled: selected,
+      // A key that latches: a button that is selected while latched, as
+      // Flutter's IconButton(isSelected:) reads.
+      semanticSelected: selected,
       semanticLabel: tooltip,
       builder: (context, states, _) {
         final layered = DesignStyleOf([style, theme.iconButtonStyle], states);
@@ -371,7 +373,7 @@ class GlossIconButton extends StatelessWidget {
                   : on
                   ? c.jadeInk
                   : c.ink);
-          return DesignTapTarget(
+          return TapTargetPadding(
             child: SizedBox.square(
               dimension: side,
               child: _Pressed(
@@ -420,7 +422,7 @@ class GlossIconButton extends StatelessWidget {
         }
         if (layered.fill != null) face = face.glazed(layered.fill!);
         face = face.copyWith(foreground: layered.foreground, focus: focus);
-        return DesignTapTarget(
+        return TapTargetPadding(
           child: SizedBox.square(
             dimension: side,
             child: AnimatedGlossSurface(

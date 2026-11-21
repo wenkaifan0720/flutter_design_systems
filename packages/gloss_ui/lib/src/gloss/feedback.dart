@@ -417,7 +417,7 @@ class GlossSpinner extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = GlossTheme.of(context).colors;
     return Semantics(
-      label: semanticLabel ?? DesignLocalizations.of(context).loadingLabel,
+      label: semanticLabel ?? RawWidgetsLocalizations.of(context).loadingLabel,
       excludeSemantics: true,
       child: SizedBox.square(
         dimension: size,
@@ -539,7 +539,7 @@ class GlossProgressBar extends StatelessWidget {
     if (layered.fill != null) gel = gel.glazed(layered.fill!);
     final known = value?.clamp(0.0, 1.0);
     return Semantics(
-      label: semanticLabel ?? DesignLocalizations.of(context).loadingLabel,
+      label: semanticLabel ?? RawWidgetsLocalizations.of(context).loadingLabel,
       value: known == null ? null : '${(known * 100).round()}%',
       excludeSemantics: true,
       child: SizedBox(

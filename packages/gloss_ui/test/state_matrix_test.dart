@@ -333,6 +333,10 @@ void main() {
           tester.view.devicePixelRatio = 2;
           tester.view.physicalSize = const Size(480 * 2, 260 * 2);
           addTearDown(tester.view.reset);
+          addTearDown(
+            () => FocusManager.instance.highlightStrategy =
+                FocusHighlightStrategy.automatic,
+          );
           for (final state in _all.where(part.states.contains)) {
             final specimen = part.build(
               state == 'selected',
@@ -387,6 +391,11 @@ void main() {
             TestGesture? mouse;
             switch (state) {
               case 'hovered':
+                // A pointer that hovers is a mouse, which a desktop shows
+                // hover for; the test's default platform starts in touch
+                // mode, where Flutter's radios show none.
+                FocusManager.instance.highlightStrategy =
+                    FocusHighlightStrategy.alwaysTraditional;
                 mouse = await tester.createGesture(
                   kind: PointerDeviceKind.mouse,
                 );
@@ -415,7 +424,11 @@ void main() {
               await held.moveTo(const Offset(470, 250));
               await held.up();
             }
-            if (mouse != null) await mouse.removePointer();
+            if (mouse != null) {
+              await mouse.removePointer();
+              FocusManager.instance.highlightStrategy =
+                  FocusHighlightStrategy.automatic;
+            }
             await tester.pumpAndSettle();
           }
           // Leave nothing running: a tooltip's timer.

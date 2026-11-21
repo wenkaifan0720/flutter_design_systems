@@ -19,7 +19,7 @@ import 'theme.dart';
 import 'wayfinding.dart';
 
 /// A column of a [GlossDataTable].
-class GlossDataColumn<R> extends DesignTableColumn<R> {
+class GlossDataColumn<R> extends RawDataColumn<R> {
   /// A column [id] headed [label].
   const GlossDataColumn({
     required super.id,
@@ -35,7 +35,7 @@ class GlossDataColumn<R> extends DesignTableColumn<R> {
 
 /// The rows, sorting, filtering, paging and selection of a
 /// [GlossDataTable]: make it in a State, dispose it there.
-class GlossTableController<R> extends DesignTableController<R> {
+class GlossTableController<R> extends RawDataTableController<R> {
   /// A controller over [rows] in [columns].
   GlossTableController({
     required super.rows,
@@ -113,17 +113,17 @@ class GlossDataTable<R> extends StatelessWidget {
     final theme = GlossTheme.of(context);
     final c = theme.colors;
     final t = theme.textTheme;
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     final layers = [style, theme.dataTableStyle];
     final frame = DesignStyleOf(layers, const {});
-    int flex(DesignTableColumn<R> col) => (col as GlossDataColumn<R>).flex;
+    int flex(RawDataColumn<R> col) => (col as GlossDataColumn<R>).flex;
     const pad = EdgeInsets.symmetric(
       horizontal: GlossSpacing.medium,
       vertical: GlossSpacing.medium,
     );
     final light = c.brightness == Brightness.light;
     final glaze = light ? const Color(0xFFDDF2EA) : const Color(0xFF1F3F35);
-    final table = DesignDataTable<R>(
+    final table = RawDataTable<R>(
       controller: controller,
       selectable: selectable,
       onActivate: onActivate,
@@ -170,8 +170,8 @@ class GlossDataTable<R> extends StatelessWidget {
                     const SizedBox(width: GlossSpacing.tight),
                     Icon(
                       switch (sort) {
-                        DesignSortDirection.ascending => LucideIcons.arrowUp,
-                        DesignSortDirection.descending => LucideIcons.arrowDown,
+                        RawSortDirection.ascending => LucideIcons.arrowUp,
+                        RawSortDirection.descending => LucideIcons.arrowDown,
                       },
                       size: 14,
                       color: c.jadeInk,
@@ -190,14 +190,14 @@ class GlossDataTable<R> extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               if (selectable)
-                DesignPressable(
+                RawButton(
                   onPressed: controller.pageRows.isEmpty
                       ? null
                       : controller.togglePage,
                   semanticLabel: words.selectedLabel,
                   // A checkbox, not a button, as Flutter's Checkbox reads.
                   button: false,
-                  checked: page == DesignSelection.all,
+                  checked: page == RawDataTableSelection.all,
                   builder: (context, states, _) => GlossGlazeHighlight(
                     focused: states.contains(WidgetState.focused),
                     hovered: states.contains(WidgetState.hovered),
@@ -210,8 +210,8 @@ class GlossDataTable<R> extends StatelessWidget {
                       child: Center(
                         child: _tick(
                           c,
-                          on: page == DesignSelection.all,
-                          some: page == DesignSelection.some,
+                          on: page == RawDataTableSelection.all,
+                          some: page == RawDataTableSelection.some,
                         ),
                       ),
                     ),
@@ -424,7 +424,7 @@ class GlossScrollArea extends StatelessWidget {
     final theme = GlossTheme.of(context);
     final c = theme.colors;
     final layers = [style, theme.scrollAreaStyle];
-    return DesignScrollArea(
+    return RawScrollArea(
       controller: controller,
       axis: axis,
       semanticLabel: semanticLabel,
@@ -539,7 +539,7 @@ class GlossSplitView extends StatelessWidget {
     // clear of the line by what the reach adds to it.
     const clear = (_reach - _line) / 2;
     final across = axis == Axis.horizontal;
-    return DesignSplitView(
+    return RawSplitView(
       first: Padding(
         padding: across
             ? const EdgeInsetsDirectional.only(end: clear)
@@ -558,7 +558,8 @@ class GlossSplitView extends StatelessWidget {
       minSecond: minSecond,
       onChanged: onChanged,
       semanticLabel:
-          semanticLabel ?? DesignLocalizations.of(context).splitViewHandleLabel,
+          semanticLabel ??
+          RawWidgetsLocalizations.of(context).splitViewHandleLabel,
       dividerThickness: _line,
       hitExtent: _reach,
       dividerBuilder: (context, states, axis) {
@@ -651,9 +652,9 @@ class GlossCarousel extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = GlossTheme.of(context);
     final c = theme.colors;
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     final rtl = Directionality.of(context) == TextDirection.rtl;
-    return DesignCarousel(
+    return RawCarousel(
       itemCount: itemCount,
       itemBuilder: itemBuilder,
       semanticLabel: semanticLabel,
@@ -766,7 +767,7 @@ class GlossReorderableList<T extends Object> extends StatelessWidget {
       face: GlossFace.well(c, radius: GlossMetrics.wellRadius),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(GlossMetrics.wellRadius),
-        child: DesignReorderableList<T>(
+        child: RawReorderableList<T>(
           items: items,
           onReorder: onReorder,
           labelOf: labelOf,
@@ -888,14 +889,14 @@ class GlossSwipeRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = GlossTheme.of(context);
     final c = theme.colors;
-    DesignSwipeAction wrap(GlossSwipeAction a) => DesignSwipeAction(
+    RawSwipeAction wrap(GlossSwipeAction a) => RawSwipeAction(
       label: a.label,
       onPressed: a.onPressed,
       destructive: a.isDestructiveAction,
       data: a,
     );
     return ClipRect(
-      child: DesignSwipeActions(
+      child: RawSwipeActions(
         startActions: [for (final a in startActions) wrap(a)],
         endActions: [for (final a in endActions) wrap(a)],
         actionExtent: 88,
@@ -976,12 +977,12 @@ class GlossPullToRefresh extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = GlossTheme.of(context).colors;
-    return DesignPullToRefresh(
+    return RawRefreshIndicator(
       onRefresh: onRefresh,
       indicatorBuilder: (context, details) {
-        final armed = details.mode == DesignRefreshMode.armed;
-        final done = details.mode == DesignRefreshMode.done;
-        final turning = details.mode == DesignRefreshMode.refresh;
+        final armed = details.mode == RawRefreshIndicatorMode.armed;
+        final done = details.mode == RawRefreshIndicatorMode.done;
+        final turning = details.mode == RawRefreshIndicatorMode.refresh;
         final face = armed || done
             ? GlossFace.gel(c).copyWith(foreground: c.onJade)
             : GlossFace.pearl(c).copyWith(foreground: c.inkSecondary);

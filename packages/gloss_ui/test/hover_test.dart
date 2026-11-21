@@ -81,14 +81,14 @@ void main() {
           // A skeleton breathes and a spinner turns for ever: pump a fixed time.
           await tester.pump(const Duration(milliseconds: 600));
           final compare = !pointerFollowing.containsKey(entry.row);
-          final count = find.byType(DesignPressable).evaluate().length;
+          final count = find.byType(RawButton).evaluate().length;
           for (var i = 0; i < count; i++) {
-            final press = find.byType(DesignPressable).at(i);
+            final press = find.byType(RawButton).at(i);
             if (!tester.any(press)) break;
             final box = tester.getRect(press);
             if (box.isEmpty || box.bottom < 0 || box.top > 1200) continue;
             if (box.right < 0 || box.left > 390) continue;
-            final widget = tester.widget<DesignPressable>(press);
+            final widget = tester.widget<RawButton>(press);
             final presses =
                 widget.onPressed != null || widget.onLongPress != null;
             final enabled = (widget.enabled ?? presses) && presses;
@@ -104,7 +104,7 @@ void main() {
             // The innermost part under the pointer speaks: a part inside a
             // part may show its own.
             final inner = find
-                .descendant(of: press, matching: find.byType(DesignPressable))
+                .descendant(of: press, matching: find.byType(RawButton))
                 .evaluate()
                 .any(
                   (e) => tester

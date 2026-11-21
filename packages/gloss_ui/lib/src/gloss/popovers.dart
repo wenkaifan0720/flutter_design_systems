@@ -254,22 +254,30 @@ class GlossMenuPanel extends StatelessWidget {
 
 /// A panel's way in and out: it fades, and settles 6 px toward its anchor
 /// as it opens.
-Widget glossPanelArrival(DesignOverlayInfo info, Widget child) {
-  final shown = info.animation.drive(
+Widget glossPanelArrival(RawPopoverInfo info, Widget child) =>
+    _arrival(info.animation, info.side, child);
+
+// A panel's or a tip's arrival, by [animation], from [side] of its anchor.
+Widget _arrival(
+  Animation<double> animation,
+  RawPopoverSide side,
+  Widget child,
+) {
+  final shown = animation.drive(
     Animatable<double>.fromCallback((v) => v.clamp(0.0, 1.0)),
   );
-  final toward = switch (info.side) {
-    DesignOverlaySide.below => const Offset(0, -6),
-    DesignOverlaySide.above => const Offset(0, 6),
-    DesignOverlaySide.start => const Offset(6, 0),
-    DesignOverlaySide.end => const Offset(-6, 0),
+  final toward = switch (side) {
+    RawPopoverSide.below => const Offset(0, -6),
+    RawPopoverSide.above => const Offset(0, 6),
+    RawPopoverSide.start => const Offset(6, 0),
+    RawPopoverSide.end => const Offset(-6, 0),
   };
   return FadeTransition(
     opacity: shown,
     child: AnimatedBuilder(
-      animation: info.animation,
+      animation: animation,
       builder: (context, child) => Transform.translate(
-        offset: toward * (1 - info.animation.value),
+        offset: toward * (1 - animation.value),
         child: child,
       ),
       child: child,
@@ -341,7 +349,7 @@ class _GlossMenuListState extends State<GlossMenuList> {
           onEnter: item.onPressed == null
               ? null
               : (_) => _nodes[i].requestFocus(),
-          child: DesignPressable(
+          child: RawButton(
             focusNode: _nodes[i],
             onPressed: item.onPressed == null
                 ? null
@@ -402,11 +410,11 @@ class GlossMenu extends StatelessWidget {
   final GlossStyle? style;
 
   @override
-  Widget build(BuildContext context) => DesignAnchoredOverlay(
+  Widget build(BuildContext context) => RawPopover(
     arrowKeyNavigation: true,
     semanticLabel: semanticLabel,
-    placement: DesignOverlayPlacement(
-      align: alignEnd ? DesignOverlayAlign.end : DesignOverlayAlign.start,
+    placement: RawPopoverPlacement(
+      align: alignEnd ? RawPopoverAlign.end : RawPopoverAlign.start,
       gap: GlossSpacing.small,
       margin: GlossSpacing.small,
       matchAnchorWidth: false,
@@ -462,7 +470,7 @@ class GlossPopover extends StatelessWidget {
     super.key,
     required this.builder,
     required this.content,
-    this.side = DesignOverlaySide.below,
+    this.side = RawPopoverSide.below,
     this.width = 280,
     this.semanticLabel,
     this.style,
@@ -476,7 +484,7 @@ class GlossPopover extends StatelessWidget {
   final Widget Function(BuildContext context, VoidCallback close) content;
 
   /// The side it prefers.
-  final DesignOverlaySide side;
+  final RawPopoverSide side;
 
   /// Its width.
   final double width;
@@ -488,9 +496,9 @@ class GlossPopover extends StatelessWidget {
   final GlossStyle? style;
 
   @override
-  Widget build(BuildContext context) => DesignAnchoredOverlay(
+  Widget build(BuildContext context) => RawPopover(
     semanticLabel: semanticLabel,
-    placement: DesignOverlayPlacement(
+    placement: RawPopoverPlacement(
       side: side,
       gap: GlossSpacing.small,
       margin: GlossSpacing.small,
@@ -515,7 +523,7 @@ class GlossPopover extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(EnumProperty<DesignOverlaySide>('side', side))
+      ..add(EnumProperty<RawPopoverSide>('side', side))
       ..add(DoubleProperty('width', width));
   }
 }
@@ -555,11 +563,11 @@ class GlossHoverCard extends StatelessWidget {
   final GlossStyle? style;
 
   @override
-  Widget build(BuildContext context) => DesignAnchoredOverlay(
-    trigger: DesignOverlayTrigger.hover,
+  Widget build(BuildContext context) => RawPopover(
+    trigger: RawPopoverTrigger.hover,
     focusOnOpen: false,
     semanticLabel: semanticLabel,
-    placement: const DesignOverlayPlacement(
+    placement: const RawPopoverPlacement(
       gap: GlossSpacing.small,
       margin: GlossSpacing.small,
       matchAnchorWidth: false,
@@ -627,6 +635,10 @@ class _Card extends StatelessWidget {
 /// long press shows [message] on a small smoke-gel capsule over it. Escape
 /// hides it; the pointer may move onto it and it stays.
 ///
+/// Built on Flutter's RawTooltip, with ui_core's RawTooltipFocusFix (it
+/// shows on the keyboard's focus) and RawTooltipPlacement (above [child],
+/// below where there is no room); the capsule arrives as Gloss's panels do.
+///
 /// ```dart
 /// GlossTooltip(message: 'Add to week', child: Icon(LucideIcons.calendarPlus))
 /// ```
@@ -648,23 +660,34 @@ class GlossTooltip extends StatelessWidget {
   /// Its own style, over [GlossThemeData.tooltipStyle].
   final GlossStyle? style;
 
-  // ui_core's tooltip runs it: one at a time, the next at once along a
-  // toolbar, Escape hides it, the pointer may rest on the tip.
   @override
-  Widget build(BuildContext context) => DesignTooltip(
-    message: message,
-    hoverDelay: const Duration(milliseconds: 500),
-    dismissDelay: const Duration(milliseconds: 80),
-    placement: const DesignOverlayPlacement(
-      side: DesignOverlaySide.above,
-      align: DesignOverlayAlign.center,
+  Widget build(BuildContext context) => RawTooltipPlacement(
+    placement: const RawPopoverPlacement(
+      side: RawPopoverSide.above,
+      align: RawPopoverAlign.center,
       gap: 6,
       margin: GlossSpacing.small,
       matchAnchorWidth: false,
     ),
-    tooltipBuilder: (context, info) =>
-        glossPanelArrival(info, _Smoke(message: message, style: style)),
-    child: child,
+    builder: (context, positionDelegate) => MergeSemantics(
+      // One node for the control and its tip, as the published tooltip
+      // made: a screen reader hears the tip with the control. RawTooltip's
+      // own tooltip semantics do not merge, and went to the node above.
+      child: RawTooltip(
+        semanticsTooltip: message,
+        hoverDelay: const Duration(milliseconds: 500),
+        dismissDelay: const Duration(milliseconds: 80),
+        positionDelegate: positionDelegate,
+        // The capsule settles toward the side it took: above, until it has
+        // been laid out once.
+        tooltipBuilder: (context, animation) => _arrival(
+          animation,
+          RawTooltipPlacement.sideOf(context) ?? RawPopoverSide.above,
+          _Smoke(message: message, style: style),
+        ),
+        child: RawTooltipFocusFix(child: child),
+      ),
+    ),
   );
 
   @override

@@ -203,7 +203,7 @@ abstract class _AxesPainter extends CustomPainter {
   final double t;
 
   /// The reader's words, for ui_core's ticks.
-  final DesignLocalizations words;
+  final RawWidgetsLocalizations words;
 
   /// ui_core's scale up the start, from 0 to a whole tick over the most:
   /// each step a round figure (1, 2 or 5 times a power of ten), never 1.3
@@ -593,7 +593,7 @@ class GlossLineChart extends StatelessWidget {
           series: series,
           direction: Directionality.of(context),
           textScaler: MediaQuery.textScalerOf(context),
-          words: DesignLocalizations.of(context),
+          words: RawWidgetsLocalizations.of(context),
           t: t,
           area: area,
         ),
@@ -683,7 +683,7 @@ class GlossBarChart extends StatelessWidget {
           series: series,
           direction: Directionality.of(context),
           textScaler: MediaQuery.textScalerOf(context),
-          words: DesignLocalizations.of(context),
+          words: RawWidgetsLocalizations.of(context),
           t: t,
         ),
       ),

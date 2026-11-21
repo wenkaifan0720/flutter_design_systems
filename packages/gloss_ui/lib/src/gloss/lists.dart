@@ -404,7 +404,7 @@ class GlossListTile extends StatelessWidget {
         child: body({if (!enabled) WidgetState.disabled}),
       );
     }
-    return DesignPressable(
+    return RawButton(
       onPressed: enabled ? onTap : null,
       selected: selected,
       semanticSelected: selected ? true : null,
@@ -572,7 +572,7 @@ class GlossCard extends StatelessWidget {
     }
 
     if (onTap == null) return tile(const {});
-    return DesignPressable(
+    return RawButton(
       onPressed: onTap,
       semanticLabel: semanticLabel,
       builder: (context, states, _) => tile(states),

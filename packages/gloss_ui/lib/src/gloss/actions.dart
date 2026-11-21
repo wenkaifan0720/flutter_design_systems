@@ -131,7 +131,7 @@ class _GroupKey extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = GlossTheme.of(context);
     final c = theme.colors;
-    return DesignPressable(
+    return RawButton(
       onPressed: item.onPressed,
       semanticLabel: iconOnly ? item.label : null,
       builder: (context, states, _) {
@@ -149,7 +149,7 @@ class _GroupKey extends StatelessWidget {
         final glyph = item.icon == null
             ? null
             : Icon(item.icon, size: layered.iconSize ?? 20);
-        return DesignTapTarget(
+        return TapTargetPadding(
           child: AnimatedGlossSurface(
             face: face,
             child: SizedBox(
@@ -281,7 +281,7 @@ class GlossToggleGroup<T> extends StatelessWidget {
         face: GlossFace.well(c, radius: corner),
         child: Padding(
           padding: const EdgeInsets.all(_troughInset),
-          child: DesignToggleGroup<T>(
+          child: RawSegmentedButton<T>(
             options: [for (final t in toggles) t.value],
             selected: selected,
             onSelectionChanged: onSelectionChanged,
@@ -405,7 +405,7 @@ class GlossToggleGroup<T> extends StatelessWidget {
 }
 
 /// One action in a [GlossSplitButton]'s menu.
-typedef GlossSplitAction = DesignSplitAction;
+typedef GlossSplitAction = RawSplitAction;
 
 /// A key with its menu beside it: the main action on the left, a narrow
 /// key with a chevron that opens the others, moulded as one piece with a
@@ -462,7 +462,7 @@ class GlossSplitButton extends StatelessWidget {
     final corner = height / 2;
     return SizedBox(
       height: height,
-      child: DesignSplitButton(
+      child: RawSplitButton(
         label: label,
         onPressed: onPressed,
         actions: actions,
@@ -476,7 +476,7 @@ class GlossSplitButton extends StatelessWidget {
             theme.splitButtonStyle,
           ], states);
           final disabled = states.contains(WidgetState.disabled);
-          final main = part == DesignSplitPart.main;
+          final main = part == RawSplitPart.main;
           var face = filled && !disabled
               ? GlossFace.gel(c)
               : GlossFace.pearl(c);
@@ -543,7 +543,7 @@ class GlossSplitButton extends StatelessWidget {
             padding: EdgeInsetsDirectional.only(
               start: main ? 0 : GlossMetrics.seam,
             ),
-            child: DesignTapTarget(
+            child: TapTargetPadding(
               child: AnimatedGlossSurface(
                 face: face.copyWith(corners: shape),
                 child: SizedBox(height: height, child: child),
@@ -613,7 +613,7 @@ class GlossLink extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = GlossTheme.of(context);
     final c = theme.colors;
-    return DesignPressable(
+    return RawButton(
       onPressed: onPressed,
       focusNode: focusNode,
       button: false,
@@ -631,7 +631,7 @@ class GlossLink extends StatelessWidget {
                 : c.jadeInk);
         final clear = c.page.withValues(alpha: 0);
         // The reflected light lies on the surface beneath the letters.
-        return DesignTapTarget(
+        return TapTargetPadding(
           child: GlossGlazeHighlight(
             focused: states.contains(WidgetState.focused),
             hovered: states.contains(WidgetState.hovered),

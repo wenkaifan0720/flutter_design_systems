@@ -126,7 +126,7 @@ class GlossCheckbox extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = GlossTheme.of(context);
     final c = theme.colors;
-    return DesignPressable(
+    return RawButton(
       onPressed: onChanged == null ? null : _next,
       focusNode: focusNode,
       autofocus: autofocus,
@@ -165,7 +165,7 @@ class GlossCheckbox extends StatelessWidget {
             ),
           ),
         );
-        return DesignTapTarget(
+        return TapTargetPadding(
           child: isError
               ? FittedBox(
                   fit: BoxFit.scaleDown,
@@ -238,7 +238,7 @@ class GlossRadio<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final chosen = value == groupValue;
-    return DesignPressable(
+    return RawButton(
       onPressed: onChanged == null ? null : () => onChanged!(value),
       focusNode: focusNode,
       autofocus: autofocus,
@@ -247,7 +247,7 @@ class GlossRadio<T> extends StatelessWidget {
       checked: chosen,
       inMutuallyExclusiveGroup: true,
       semanticLabel: semanticLabel,
-      builder: (context, states, _) => DesignTapTarget(
+      builder: (context, states, _) => TapTargetPadding(
         child: _RadioSocket(chosen: chosen, style: style, states: states),
       ),
     );
@@ -316,8 +316,9 @@ class _RadioSocket extends StatelessWidget {
 /// screen reader hears a radio group of radios. A null [onChanged]
 /// disables it.
 ///
-/// Built on ui_core's DesignRadioGroup, over Flutter's RadioGroup. Reads
-/// [style] as [GlossRadio] does.
+/// Built on Flutter's RadioGroup, each row a RawRadio, with ui_core's
+/// RadioGroupKeyboardFix inside the group. Reads [style] as [GlossRadio]
+/// does.
 ///
 /// ```dart
 /// GlossRadioGroup<String>(options: const ['metric', 'imperial'], value: units, labelOf: (u) => u == 'metric' ? 'Metric' : 'Imperial', onChanged: (u) {})
@@ -427,8 +428,6 @@ class _GlossRadioGroupBodyState<T> extends State<_GlossRadioGroupBody<T>> {
     final labelOf = group.labelOf;
     final direction = group.direction;
     final style = group.style;
-    final theme = GlossTheme.of(context);
-    final c = theme.colors;
     final current = options.toSet();
     final gone = [
       for (final option in _nodes.keys)
@@ -443,70 +442,136 @@ class _GlossRadioGroupBodyState<T> extends State<_GlossRadioGroupBody<T>> {
         }
       });
     }
-    final radios = DesignRadioGroup<T>(
-      options: options,
-      value: value,
-      onChanged: group.onChanged,
-      isEnabled: group.isEnabled,
-      focusNodeFor: _nodeFor,
-      semanticLabel: group.semanticLabel,
-      direction: direction,
-      layoutBuilder: (context, rows) => direction == Axis.vertical
-          ? Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: rows,
-            )
-          : Wrap(spacing: GlossSpacing.regular, children: rows),
-      // Each row is one radio, named by its words: the socket and the words
-      // take the press together.
-      itemBuilder: (context, option, node, select) => DesignPressable(
-        focusNode: node,
-        onPressed: select,
-        semanticLabel: labelOf(option),
-        excludeSemantics: true,
-        checked: option == value,
-        selected: option == value,
-        inMutuallyExclusiveGroup: true,
-        builder: (context, states, _) {
-          final off = states.contains(WidgetState.disabled);
-          return ConstrainedBox(
-            constraints: BoxConstraints(minHeight: theme.controlHeight),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: GlossSpacing.small),
-              child: Row(
-                mainAxisSize: direction == Axis.vertical
-                    ? MainAxisSize.max
-                    : MainAxisSize.min,
-                children: [
-                  _RadioSocket(
-                    chosen: states.contains(WidgetState.selected),
-                    style: style,
-                    states: states,
-                  ),
-                  const SizedBox(width: GlossSpacing.medium),
-                  Flexible(
-                    child: Text(
-                      labelOf(option),
-                      style: theme.textTheme.body.copyWith(
-                        color: off ? c.inkDisabled : c.ink,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
-      ),
-    );
+    final onChanged = group.onChanged;
+    final rows = [
+      for (final option in options)
+        _GlossRadioRow<T>(
+          key: ObjectKey(option),
+          value: option,
+          label: labelOf(option),
+          focusNode: _nodeFor(option),
+          enabled: onChanged != null && (group.isEnabled?.call(option) ?? true),
+          direction: direction,
+          style: style,
+        ),
+    ];
+    final layout = direction == Axis.vertical
+        ? Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: rows,
+          )
+        : Wrap(spacing: GlossSpacing.regular, children: rows);
+    final label = group.semanticLabel;
     return CallbackShortcuts(
       bindings: {
         const SingleActivator(LogicalKeyboardKey.home): () =>
             _toEnd(last: false),
         const SingleActivator(LogicalKeyboardKey.end): () => _toEnd(last: true),
       },
-      child: radios,
+      // Flutter's radio group: one Tab stop, at the choice; the arrows move
+      // and choose. ui_core's keyboard fix inside it gives the group its Tab
+      // stop when the chosen radio is turned off, and swaps Left and Right
+      // right to left, until Flutter's own fixes do. RadioGroup takes no null
+      // onChanged: a group that takes no choice turns each radio off.
+      child: RadioGroup<T>(
+        groupValue: value,
+        onChanged: (next) {
+          if (next != null && next != value) onChanged?.call(next);
+        },
+        child: RadioGroupKeyboardFix<T>(
+          child: label == null
+              ? layout
+              : Semantics(label: label, child: layout),
+        ),
+      ),
+    );
+  }
+}
+
+// One row of a GlossRadioGroup: a RawRadio on the group, which says it is
+// checked and one of a group and takes the tap, the focus and the keys; the
+// row draws the socket and the words, named by the words.
+class _GlossRadioRow<T> extends StatelessWidget {
+  const _GlossRadioRow({
+    super.key,
+    required this.value,
+    required this.label,
+    required this.focusNode,
+    required this.enabled,
+    required this.direction,
+    required this.style,
+  });
+
+  final T value;
+  final String label;
+  final FocusNode focusNode;
+  final bool enabled;
+  final Axis direction;
+  final GlossStyle? style;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = GlossTheme.of(context);
+    final c = theme.colors;
+    return MergeSemantics(
+      child: RawRadio<T>(
+        value: value,
+        mouseCursor: WidgetStateMouseCursor.clickable,
+        toggleable: false,
+        focusNode: focusNode,
+        autofocus: false,
+        groupRegistry: RadioGroup.maybeOf<T>(context),
+        enabled: enabled,
+        builder: (context, radio) {
+          // The radio's states, and pressed while a press is down on it.
+          final states = {
+            ...radio.states,
+            if (radio.downPosition != null) WidgetState.pressed,
+          };
+          final off = states.contains(WidgetState.disabled);
+          return Semantics(
+            label: label,
+            child: ExcludeSemantics(
+              // All of its box takes a press, its gaps too:
+              // RawRadio's detector finds only what the face
+              // paints.
+              child: Listener(
+                behavior: HitTestBehavior.opaque,
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: theme.controlHeight),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      vertical: GlossSpacing.small,
+                    ),
+                    child: Row(
+                      mainAxisSize: direction == Axis.vertical
+                          ? MainAxisSize.max
+                          : MainAxisSize.min,
+                      children: [
+                        _RadioSocket(
+                          chosen: states.contains(WidgetState.selected),
+                          style: style,
+                          states: states,
+                        ),
+                        const SizedBox(width: GlossSpacing.medium),
+                        Flexible(
+                          child: Text(
+                            label,
+                            style: theme.textTheme.body.copyWith(
+                              color: off ? c.inkDisabled : c.ink,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
     );
   }
 }
@@ -745,7 +810,7 @@ class _GlossSwitchState extends State<GlossSwitch>
     final theme = GlossTheme.of(context);
     final c = theme.colors;
     final enabled = widget.onChanged != null;
-    return DesignPressable(
+    return RawButton(
       onPressed: enabled ? () => widget.onChanged!(!widget.value) : null,
       focusNode: widget.focusNode,
       autofocus: widget.autofocus,
@@ -758,7 +823,7 @@ class _GlossSwitchState extends State<GlossSwitch>
         ], states);
         final disabled = states.contains(WidgetState.disabled);
         final pressed = states.contains(WidgetState.pressed);
-        return DesignTapTarget(
+        return TapTargetPadding(
           child: GestureDetector(
             excludeFromSemantics: true,
             onHorizontalDragStart: enabled
@@ -1052,25 +1117,33 @@ class GlossSegmentedButton<T> extends StatelessWidget {
                 Positioned.fill(
                   left: inset,
                   right: inset,
-                  child: DesignRadioGroup<int>(
-                    options: [for (var i = 0; i < segments.length; i++) i],
-                    value: index,
-                    onChanged: onChanged == null
-                        ? null
-                        : (i) => onChanged!(segments[i].value),
-                    layoutBuilder: (context, slots) => Row(
-                      children: [
-                        for (final slot in slots) Expanded(child: slot),
-                      ],
-                    ),
-                    itemBuilder: (context, i, node, select) => _Segment<T>(
-                      segment: segments[i],
-                      chosen: i == index,
-                      focusNode: node,
-                      onPressed: select,
-                      style: label,
-                      height: height - inset * 2,
-                      layered: style,
+                  // Flutter's radio group, with ui_core's keyboard fix inside
+                  // it (the arrows follow the reading direction); each slot
+                  // a RawRadio.
+                  child: RadioGroup<int>(
+                    groupValue: index < 0 ? null : index,
+                    onChanged: (i) {
+                      if (i != null && i != index) {
+                        onChanged?.call(segments[i].value);
+                      }
+                    },
+                    child: RadioGroupKeyboardFix<int>(
+                      child: Row(
+                        children: [
+                          for (var i = 0; i < segments.length; i++)
+                            Expanded(
+                              child: _Segment<T>(
+                                index: i,
+                                segment: segments[i],
+                                chosen: i == index,
+                                enabled: onChanged != null,
+                                style: label,
+                                height: height - inset * 2,
+                                layered: style,
+                              ),
+                            ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -1095,114 +1168,157 @@ class GlossSegmentedButton<T> extends StatelessWidget {
   }
 }
 
-class _Segment<T> extends StatelessWidget {
+// A slot of a GlossSegmentedButton: a radio of the control's group, checked
+// when chosen, not a button. The chosen slot keeps its focus; a press on it
+// changes nothing, as it is already the choice.
+class _Segment<T> extends StatefulWidget {
   const _Segment({
+    required this.index,
     required this.segment,
     required this.chosen,
-    required this.focusNode,
-    required this.onPressed,
+    required this.enabled,
     required this.style,
     required this.height,
     required this.layered,
   });
 
+  final int index;
   final GlossSegment<T> segment;
   final bool chosen;
-  final FocusNode focusNode;
-  final VoidCallback? onPressed;
+  final bool enabled;
   final TextStyle style;
   final double height;
   final GlossStyle? layered;
 
   @override
-  Widget build(BuildContext context) {
+  State<_Segment<T>> createState() => _SegmentState<T>();
+}
+
+class _SegmentState<T> extends State<_Segment<T>> {
+  late final _node = FocusNode(debugLabel: 'GlossSegment ${widget.index}');
+
+  @override
+  void dispose() {
+    _node.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => MergeSemantics(
+    child: RawRadio<int>(
+      value: widget.index,
+      // The pointer over the chosen slot, or a turned-off control, shows no
+      // press to make.
+      mouseCursor: WidgetStateMouseCursor.resolveWith(
+        (states) =>
+            states.contains(WidgetState.selected) ||
+                states.contains(WidgetState.disabled)
+            ? SystemMouseCursors.basic
+            : SystemMouseCursors.click,
+      ),
+      toggleable: false,
+      focusNode: _node,
+      autofocus: false,
+      groupRegistry: RadioGroup.maybeOf<int>(context),
+      enabled: widget.enabled,
+      builder: (context, radio) => Semantics(
+        label: widget.segment.label,
+        child: ExcludeSemantics(
+          // All of its box takes a press, its gaps too:
+          // RawRadio's detector finds only what the face
+          // paints.
+          child: Listener(
+            behavior: HitTestBehavior.opaque,
+            child: _face(context, {
+              ...radio.states,
+              // A press on the chosen slot changes nothing, so it shows none.
+              if (radio.downPosition != null && !widget.chosen)
+                WidgetState.pressed,
+            }),
+          ),
+        ),
+      ),
+    ),
+  );
+
+  Widget _face(BuildContext context, Set<WidgetState> states) {
+    final segment = widget.segment;
+    final chosen = widget.chosen;
+    final style = widget.style;
+    final height = widget.height;
+    final layered = widget.layered;
     final theme = GlossTheme.of(context);
     final c = theme.colors;
-    return DesignPressable(
-      focusNode: focusNode,
-      // The chosen slot keeps its focus but takes no press: it is already
-      // the choice.
-      onPressed: chosen ? null : onPressed,
-      enabled: onPressed != null,
-      // A radio of the control's group: checked when chosen, not a button.
-      checked: chosen,
-      inMutuallyExclusiveGroup: true,
-      mouseCursor: chosen || onPressed == null
-          ? SystemMouseCursors.basic
-          : SystemMouseCursors.click,
-      builder: (context, states, _) {
-        final styles = DesignStyleOf(
-          [layered, theme.segmentedButtonStyle],
-          {...states, if (chosen) WidgetState.selected},
-        );
-        final disabled = onPressed == null;
-        final colour =
-            styles.foreground ??
-            (disabled
-                ? c.inkDisabled
-                : chosen
-                ? c.onJade
-                : c.ink);
-        final focused = states.contains(WidgetState.focused);
-        final pressed = states.contains(WidgetState.pressed);
-        return DesignTapTarget(
-          child: GlossGlazeHighlight(
-            focused: focused,
-            hovered: states.contains(WidgetState.hovered),
-            pressed: states.contains(WidgetState.pressed),
-            inside: true,
-            // On the chosen position's jade, the light of its words.
-            color: chosen && !disabled ? c.onJade : null,
-            child: SizedBox(
-              height: height,
-              child: Transform.translate(
-                offset: Offset(0, pressed ? 1 : 0),
-                child: Center(
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      if (segment.icon != null) ...[
-                        Icon(segment.icon, size: 18, color: colour),
-                        const SizedBox(width: GlossSpacing.tight + 2),
-                      ],
-                      // A word too long for its segment at a large text
-                      // size is drawn a little smaller, never cut.
-                      Flexible(
-                        child: FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: DesignCapCenter(
-                            capHeightFactor: glossCapHeightFactor,
-                            child: Text(
-                              segment.label,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: style
-                                  .copyWith(
-                                    color: colour,
-                                    shadows: chosen
-                                        ? [
-                                            Shadow(
-                                              color: c.jadeEdge.withValues(
-                                                alpha: 0.45,
-                                              ),
-                                              offset: const Offset(0, -1),
-                                            ),
-                                          ]
-                                        : null,
-                                  )
-                                  .merge(styles.textStyle),
-                            ),
-                          ),
+    final styles = DesignStyleOf(
+      [layered, theme.segmentedButtonStyle],
+      {...states, if (chosen) WidgetState.selected},
+    );
+    final disabled = !widget.enabled;
+    final colour =
+        styles.foreground ??
+        (disabled
+            ? c.inkDisabled
+            : chosen
+            ? c.onJade
+            : c.ink);
+    final focused = states.contains(WidgetState.focused);
+    final pressed = states.contains(WidgetState.pressed);
+    return TapTargetPadding(
+      child: GlossGlazeHighlight(
+        focused: focused,
+        hovered: states.contains(WidgetState.hovered),
+        pressed: states.contains(WidgetState.pressed),
+        inside: true,
+        // On the chosen position's jade, the light of its words.
+        color: chosen && !disabled ? c.onJade : null,
+        child: SizedBox(
+          height: height,
+          child: Transform.translate(
+            offset: Offset(0, pressed ? 1 : 0),
+            child: Center(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (segment.icon != null) ...[
+                    Icon(segment.icon, size: 18, color: colour),
+                    const SizedBox(width: GlossSpacing.tight + 2),
+                  ],
+                  // A word too long for its segment at a large text
+                  // size is drawn a little smaller, never cut.
+                  Flexible(
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: DesignCapCenter(
+                        capHeightFactor: glossCapHeightFactor,
+                        child: Text(
+                          segment.label,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: style
+                              .copyWith(
+                                color: colour,
+                                shadows: chosen
+                                    ? [
+                                        Shadow(
+                                          color: c.jadeEdge.withValues(
+                                            alpha: 0.45,
+                                          ),
+                                          offset: const Offset(0, -1),
+                                        ),
+                                      ]
+                                    : null,
+                              )
+                              .merge(styles.textStyle),
                         ),
                       ),
-                    ],
+                    ),
                   ),
-                ),
+                ],
               ),
             ),
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 }
@@ -1290,9 +1406,9 @@ class GlossStepper extends StatelessWidget {
       // reader step the count through the readout.
       return ExcludeSemantics(
         child: ExcludeFocus(
-          child: DesignPressable(
+          child: RawButton(
             onPressed: can ? () => set(value + by) : null,
-            builder: (context, states, _) => DesignTapTarget(
+            builder: (context, states, _) => TapTargetPadding(
               child: SizedBox.square(
                 dimension: height,
                 child: AnimatedGlossSurface(
@@ -1744,7 +1860,7 @@ class GlossChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = GlossTheme.of(context);
     final c = theme.colors;
-    return DesignPressable(
+    return RawButton(
       onPressed: onSelected == null ? null : () => onSelected!(!selected),
       focusNode: focusNode,
       selected: selected,
@@ -1777,7 +1893,7 @@ class GlossChip extends StatelessWidget {
         final height = math.max(32.0, theme.controlHeight - 12);
         // Its height is a floor: large words make the capsule taller, never
         // clipped.
-        return DesignTapTarget(
+        return TapTargetPadding(
           child: ConstrainedBox(
             constraints: BoxConstraints(minHeight: height),
             child: AnimatedGlossSurface(

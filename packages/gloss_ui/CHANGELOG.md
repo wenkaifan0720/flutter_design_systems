@@ -1,3 +1,10 @@
+## 0.2.0
+
+- Needs ui_core 0.4.0 and Flutter 3.47. `gloss_ui` re-exports ui_core, whose types now take `Raw` names (`DesignPressable` is `RawButton`). The old names stay through ui_core 0.4 as deprecated typedefs, and `dart fix --apply` renames them.
+- `GlossRadioGroup` and `GlossSegmentedButton` are Flutter's `RadioGroup`, each radio a `RawRadio`, with ui_core's `RadioGroupKeyboardFix` inside. They answer Tab and the arrows as before, and `GlossRadioGroup` Home and End. A radio shows its focus as Flutter's `Radio` does.
+- `GlossTooltip` is Flutter's `RawTooltip`, with ui_core's `RawTooltipFocusFix` and `RawTooltipPlacement`. It fades on Flutter's tooltip timing, and each tooltip along a toolbar waits its half second.
+- A latching `GlossIconButton` reads as a button, selected while latched, as `IconButton(isSelected:)` does. It read as a switch.
+
 ## 0.1.5
 
 - Invalid text fields keep their recessed glaze and display the error below. Invalid checkboxes show a warning symbol beside the socket.

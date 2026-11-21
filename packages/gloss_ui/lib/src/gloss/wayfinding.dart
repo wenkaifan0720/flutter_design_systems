@@ -130,7 +130,7 @@ class _CrumbLink extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = GlossTheme.of(context);
     final c = theme.colors;
-    return DesignPressable(
+    return RawButton(
       onPressed: crumb.onPressed,
       button: false,
       link: true,
@@ -142,7 +142,7 @@ class _CrumbLink extends StatelessWidget {
             layered.foreground ??
             (pressed ? Color.lerp(c.jadeInk, c.ink, 0.45)! : c.jadeInk);
         final clear = c.page.withValues(alpha: 0);
-        return DesignTapTarget(
+        return TapTargetPadding(
           child: AnimatedGlossSurface(
             face: GlossFace(
               top: clear,
@@ -247,7 +247,7 @@ class GlossPagination extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = GlossTheme.of(context);
     final c = theme.colors;
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     final narrow = MediaQuery.sizeOf(context).width < 420;
     final window = _pageWindow(page, pageCount, around: narrow ? 0 : 1);
     // The current page is a plate inset 4 in the trough, its corners 4
@@ -261,7 +261,7 @@ class GlossPagination extends StatelessWidget {
       required VoidCallback? onPressed,
       required Widget child,
       bool current = false,
-    }) => DesignPressable(
+    }) => RawButton(
       onPressed: onChanged == null ? null : onPressed,
       semanticLabel: semanticLabel,
       selected: current,
@@ -285,7 +285,7 @@ class GlossPagination extends StatelessWidget {
         if (current && layered.fill != null) face = face.glazed(layered.fill!);
         // A page's tap is the trough's whole height (a finger's 48); its
         // plate stands inset 4 in it.
-        return DesignTapTarget(
+        return TapTargetPadding(
           child: SizedBox(
             height: theme.controlHeight,
             child: Padding(
@@ -430,7 +430,7 @@ class GlossStepProgress extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = GlossTheme.of(context);
     final c = theme.colors;
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     final layered = DesignStyleOf([style, theme.stepProgressStyle], const {});
     const bead = 28.0;
     final narrow = MediaQuery.sizeOf(context).width < 420;
@@ -621,7 +621,7 @@ class GlossPageDots extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = GlossTheme.of(context);
     final c = theme.colors;
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     final layered = DesignStyleOf([style, theme.pageDotsStyle], const {});
     Widget dot(int i, [Set<WidgetState> states = const {}]) {
       final on = i == index;
@@ -652,12 +652,12 @@ class GlossPageDots extends StatelessWidget {
                   ),
                   child: dot(i),
                 )
-              : DesignPressable(
+              : RawButton(
                   onPressed: () => onChanged!(i),
                   semanticLabel: words.positionLabel(i + 1, count),
                   selected: i == index,
                   semanticSelected: i == index,
-                  builder: (context, states, _) => DesignTapTarget(
+                  builder: (context, states, _) => TapTargetPadding(
                     child: SizedBox(
                       width: 24,
                       height: 24,
@@ -730,14 +730,14 @@ class GlossMenuBar extends StatelessWidget {
       radius: 12,
     );
     if (bar.fill != null) strip = strip.glazed(bar.fill!);
-    return DesignMenuBar(
+    return RawMenuBar(
       menus: [
         for (final menu in menus)
-          DesignMenuEntry(
+          RawMenuEntry(
             label: menu.label,
             children: [
               for (final item in menu.items)
-                DesignMenuEntry(
+                RawMenuEntry(
                   label: item.label,
                   onPressed: item.onPressed,
                   shortcut: item.shortcut,
@@ -766,7 +766,7 @@ class GlossMenuBar extends StatelessWidget {
         ),
       ),
       itemBuilder: (context, entry, level, states) {
-        if (level == DesignMenuLevel.menu) {
+        if (level == RawMenuLevel.menu) {
           final item = entry.data as GlossMenuItem?;
           return GlossMenuRow(
             label: entry.label,
@@ -899,18 +899,15 @@ class GlossCommandPalette extends StatelessWidget {
   /// Its own style, over [GlossThemeData.commandPaletteStyle].
   final GlossStyle? style;
 
-  DesignCommandPalette _body(
-    BuildContext context,
-    ValueChanged<DesignCommand>? run,
-  ) {
+  RawCommandPalette _body(BuildContext context, ValueChanged<RawCommand>? run) {
     final theme = GlossTheme.of(context);
     final c = theme.colors;
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     final said = hint ?? words.searchFieldLabel;
-    return DesignCommandPalette(
+    return RawCommandPalette(
       commands: [
         for (final command in commands)
-          DesignCommand(
+          RawCommand(
             label: command.label,
             onPressed: command.onPressed,
             group: command.group,

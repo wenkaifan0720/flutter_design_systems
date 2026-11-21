@@ -224,7 +224,7 @@ class _GlossSearchFieldState extends State<GlossSearchField>
   @override
   Widget build(BuildContext context) {
     final theme = GlossTheme.of(context);
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     final hint = widget.hint ?? words.searchFieldLabel;
     return _OnFocus(
       focusNode: focusNode,
@@ -357,7 +357,7 @@ class _GlossPasswordFieldState extends State<GlossPasswordField>
           ExcludeSemantics(
             child: GlossFieldLabel(widget.label!, enabled: widget.enabled),
           ),
-        DesignPasswordReveal(
+        RawPasswordReveal(
           focusNode: focusNode,
           builder: (context, password) => _OnFocus(
             focusNode: focusNode,
@@ -657,7 +657,7 @@ class GlossOtpField extends StatelessWidget {
   final int length;
 
   /// The code, for a caller that reads or sets it.
-  final DesignOtpController? controller;
+  final RawOtpController? controller;
 
   /// The focus, when the caller moves it; null: the field keeps its own.
   final FocusNode? focusNode;
@@ -695,7 +695,7 @@ class GlossOtpField extends StatelessWidget {
     return Align(
       alignment: AlignmentDirectional.centerStart,
       widthFactor: 1,
-      child: DesignOtpField(
+      child: RawOtpField(
         length: length,
         controller: controller,
         focusNode: focusNode,
@@ -836,7 +836,7 @@ Widget _nothing(BuildContext context) {
       vertical: GlossSpacing.medium,
     ),
     child: Text(
-      DesignLocalizations.of(context).noResultsLabel,
+      RawWidgetsLocalizations.of(context).noResultsLabel,
       style: theme.textTheme.secondary,
     ),
   );
@@ -853,7 +853,7 @@ Widget _searching(BuildContext context) {
         const SizedBox(width: GlossSpacing.small),
         Flexible(
           child: Text(
-            DesignLocalizations.of(context).loadingLabel,
+            RawWidgetsLocalizations.of(context).loadingLabel,
             style: theme.textTheme.secondary,
           ),
         ),
@@ -864,9 +864,9 @@ Widget _searching(BuildContext context) {
 
 // A search that failed: what happened, and Try again as an option row, lit
 // while the keys are on it (the focus stays in the field).
-Widget _failed(BuildContext context, DesignSearchError error) {
+Widget _failed(BuildContext context, RawSearchError error) {
   final theme = GlossTheme.of(context);
-  final words = DesignLocalizations.of(context);
+  final words = RawWidgetsLocalizations.of(context);
   return Column(
     mainAxisSize: MainAxisSize.min,
     crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -1001,7 +1001,7 @@ class GlossCombobox<T extends Object> extends StatelessWidget {
       children: [
         if (label != null)
           ExcludeSemantics(child: GlossFieldLabel(label!, enabled: enabled)),
-        DesignCombobox<T>(
+        RawCombobox<T>(
           options: options,
           search: search,
           value: value,
@@ -1168,7 +1168,7 @@ class GlossTagInput<T extends Object> extends StatelessWidget {
     final theme = GlossTheme.of(context);
     final c = theme.colors;
     final words = displayStringForOption ?? _words;
-    final input = DesignTagInput<T>(
+    final input = RawTagInput<T>(
       values: values,
       onChanged: enabled ? onChanged : (_) {},
       options: options,
@@ -1336,14 +1336,14 @@ class _Tag extends StatelessWidget {
   const _Tag({required this.label, required this.tag, required this.enabled});
 
   final String label;
-  final DesignTagDetails tag;
+  final RawTagDetails tag;
   final bool enabled;
 
   @override
   Widget build(BuildContext context) {
     final theme = GlossTheme.of(context);
     final c = theme.colors;
-    final words = DesignLocalizations.of(context);
+    final words = RawWidgetsLocalizations.of(context);
     // The capsule stands in a slot a finger's height; the bead that removes
     // it is the slot's whole square at the capsule's end, over the end of
     // its words' cell.
@@ -1389,7 +1389,7 @@ class _Tag extends StatelessWidget {
             top: 0,
             bottom: 0,
             width: _tagSlot,
-            child: DesignPressable(
+            child: RawButton(
               onPressed: enabled ? tag.onDeleted : null,
               semanticLabel: '${words.tagInputDeleteLabel} $label',
               builder: (context, states, _) => Center(
@@ -1467,7 +1467,7 @@ class GlossFormField extends StatelessWidget {
 
   /// Whether the control is one node that takes the label as its name
   /// (true) or a group the label names (false). Left null, ui_core's
-  /// DesignField reads what the child brings to the semantics tree: one
+  /// RawInputDecorator reads what the child brings to the semantics tree: one
   /// control is one node; several (a stepper's keys, a segmented choice,
   /// radios, chips) keep each its own node and tap, the label naming them;
   /// and a group that already names itself is not named again.
@@ -1477,7 +1477,7 @@ class GlossFormField extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = GlossTheme.of(context);
     final c = theme.colors;
-    return DesignField(
+    return RawInputDecorator(
       labelText: labelText,
       helperText: helperText,
       errorText: errorText,

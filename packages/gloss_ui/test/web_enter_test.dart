@@ -1,5 +1,5 @@
 // On the web Flutter maps Enter to ButtonActivateIntent, not ActivateIntent. Every part of Gloss a key presses is
-// built on ui_core's DesignPressable, which takes both; this holds each of them to it under the web's own Enter.
+// built on ui_core's RawButton, which takes both; this holds each of them to it under the web's own Enter.
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
