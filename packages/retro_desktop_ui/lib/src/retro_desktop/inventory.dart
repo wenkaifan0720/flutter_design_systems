@@ -793,45 +793,45 @@ final DesignInventory retroDesktopInventory = DesignInventory(
     // Charts
     DesignInventoryEntry.present(
       'LineChart',
-      (_) => RetroDesktopLineChart(
+      (_) => const RetroDesktopLineChart(
         label: 'Visits',
         height: 140,
-        labels: const ['Mon', 'Tue', 'Wed', 'Thu'],
+        labels: ['Mon', 'Tue', 'Wed', 'Thu'],
         series: [
-          RetroDesktopChartSeries('Visits', const [9, 15, 22, 12]),
+          RetroDesktopChartSeries('Visits', [9, 15, 22, 12]),
         ],
       ),
     ),
     DesignInventoryEntry.present(
       'BarChart',
-      (_) => RetroDesktopBarChart(
+      (_) => const RetroDesktopBarChart(
         label: 'Files',
         height: 140,
-        labels: const ['Mon', 'Tue', 'Wed', 'Thu'],
+        labels: ['Mon', 'Tue', 'Wed', 'Thu'],
         series: [
-          RetroDesktopChartSeries('Documents', const [4, 8, 6, 12]),
+          RetroDesktopChartSeries('Documents', [4, 8, 6, 12]),
         ],
       ),
     ),
     DesignInventoryEntry.present(
       'AreaChart',
-      (_) => RetroDesktopAreaChart(
+      (_) => const RetroDesktopAreaChart(
         label: 'Disk used',
         height: 140,
-        labels: const ['Jan', 'Feb', 'Mar', 'Apr'],
+        labels: ['Jan', 'Feb', 'Mar', 'Apr'],
         series: [
-          RetroDesktopChartSeries('Disk used', const [12, 15, 21, 24]),
+          RetroDesktopChartSeries('Disk used', [12, 15, 21, 24]),
         ],
       ),
     ),
     DesignInventoryEntry.present(
       'PieChart',
-      (_) => RetroDesktopPieChart(
+      (_) => const RetroDesktopPieChart(
         label: 'Storage',
         height: 140,
-        labels: const ['Documents', 'Pictures', 'Other'],
+        labels: ['Documents', 'Pictures', 'Other'],
         series: [
-          RetroDesktopChartSeries('Storage', const [52, 28, 20]),
+          RetroDesktopChartSeries('Storage', [52, 28, 20]),
         ],
       ),
     ),

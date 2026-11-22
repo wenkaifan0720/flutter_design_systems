@@ -16,6 +16,8 @@ import 'tokens.dart';
 import 'internal/parts.dart' show retroDesktopOutdent;
 import 'internal/modal.dart';
 import 'internal/actions.dart' show retroDesktopInActionBar;
+import 'internal/marks.dart' show retroDesktopAlertArt;
+import 'tone.dart';
 import 'frames.dart' show retroDesktopActiveHere;
 
 const _clear = Color(0x00000000);
@@ -35,8 +37,9 @@ enum RetroDesktopButtonSize {
 /// A button, in Cupertino's pattern. The plain one has a raised grey face. [isDefaultAction] is THE default button:
 /// the highlight's face in a ringed frame, the one thing Return would press, one a window, on the action that matters.
 /// [RetroDesktopButton.text] has no face at rest (its words stand on the column's edge) and shows its edge on keyboard
-/// focus and while pressed. [isDestructiveAction] marks an action that destroys with an alert glyph; with
-/// [isDefaultAction] too, the face is drawn in desktop ink.
+/// focus and while pressed. [isDestructiveAction] marks an action that destroys with the stop sign before its words,
+/// the period's own picture for a loss (its alerts' stop sign, small), on the face it would have anyway: the language
+/// had no red button. An [icon] or [mark] given takes its place.
 ///
 /// It keeps to its words; [wide] fills its column below 600 wide (a phone's block button), and from 600 up a room at
 /// most 320 wide. With [iconOnPhone] and an [icon], a raised button on a phone shows the icon alone.
@@ -96,7 +99,7 @@ class RetroDesktopButton extends StatelessWidget {
   /// Whether this is the window's default action, the one Return presses (CupertinoDialogAction's flag).
   final bool isDefaultAction;
 
-  /// Whether the action destroys something (CupertinoDialogAction's flag).
+  /// Whether the action destroys something (CupertinoDialogAction's flag): the stop sign stands before its words.
   final bool isDestructiveAction;
 
   /// The size of the visible face; minimum interactive reach is retained.
@@ -140,8 +143,18 @@ class RetroDesktopButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // A default destructive button is the default face with the caution mark before its words, as an alert's
-    // default "Erase" stood: no black slab, which reads as held or chosen (the state law).
+    // A destructive button keeps the face it would have and carries the stop sign before its words; a default one is
+    // the default face, as an alert's default "Erase" stood: no black slab, which reads as held or chosen (the state
+    // law), and no red face, which the language never had.
+    final mark =
+        this.mark ??
+        (isDestructiveAction && icon == null
+            ? retroDesktopAlertArt(
+                RetroDesktopTheme.of(context),
+                RetroDesktopTone.danger,
+                size: 16,
+              )
+            : null);
     if (_text) {
       return _ExtraButton(
         label,
@@ -154,7 +167,6 @@ class RetroDesktopButton extends StatelessWidget {
         showBusy: showBusy,
         focusNode: focusNode,
         autofocus: autofocus,
-        isDestructiveAction: isDestructiveAction,
         isDefaultAction: !_text,
         style: style,
       );
@@ -172,12 +184,12 @@ class RetroDesktopButton extends StatelessWidget {
           showBusy: showBusy,
           focusNode: focusNode,
           autofocus: autofocus,
-          icon:
-              icon ??
-              (isDestructiveAction ? RetroDesktopGlyphs.triangleAlert : null),
+          icon: icon,
           mark: mark,
           iconOnPhone: iconOnPhone,
-          quiet: !retroDesktopActiveHere(context),
+          // Out of use it lays the highlight down, as it does in a window behind: a plain face in its grey ring,
+          // its words half strength, the one look a button out of use has.
+          quiet: !retroDesktopActiveHere(context) || onPressed == null,
           style: style,
         ),
       );
@@ -193,7 +205,6 @@ class RetroDesktopButton extends StatelessWidget {
       autofocus: autofocus,
       icon: icon,
       mark: mark,
-      isDestructiveAction: isDestructiveAction,
       iconOnPhone: iconOnPhone,
       style: style,
     );
@@ -359,10 +370,10 @@ class _DefaultButton extends StatelessWidget {
           // and the one default Return presses is the front window's.
           ringColor: quiet ? c.textTertiary : null,
           // The blue runs to the outline, which stands on the keyline: a grey
-          // shade line inside it read as the face stopping short.
-          // Lit at the top left, in shade at the bottom right, by day and by night (law 2), so a press turns the bevel in
-          // and does not only darken the face: mixed with the greys, both edges stood paler than the blue, and by night
-          // both darker.
+          // shade line inside it would read as the face stopping short.
+          // Lit at the top left, in shade at the bottom right, by day and by night (the light law), so a press turns
+          // the bevel in and does not only darken the face: mixed with the greys, both edges would stand paler than
+          // the blue, and by night both darker.
           bevelTint: quiet
               ? null
               : (
@@ -460,7 +471,6 @@ class _PlainButton extends StatelessWidget {
     this.icon,
     this.mark,
     this.iconOnPhone = false,
-    this.isDestructiveAction = false,
     this.style,
   });
 
@@ -493,9 +503,6 @@ class _PlainButton extends StatelessWidget {
   /// An identifying glyph or caller-supplied widget.
   final Widget? mark;
 
-  /// Whether the content identifies a destructive action.
-  final bool isDestructiveAction;
-
   /// Whether compact layouts show the glyph instead of the full label.
   final bool iconOnPhone;
 
@@ -513,10 +520,7 @@ class _PlainButton extends StatelessWidget {
     final c = t.colors;
     final compact = size == RetroDesktopButtonSize.small;
     final words = iconOnPhone && icon != null && !t.desk ? '' : label;
-    final glyph = (showBusy ?? busy)
-        ? RetroDesktopGlyphs.hourglass
-        : (icon ??
-              (isDestructiveAction ? RetroDesktopGlyphs.triangleAlert : null));
+    final glyph = (showBusy ?? busy) ? RetroDesktopGlyphs.hourglass : icon;
     final leading = (showBusy ?? busy) ? null : mark;
     return RetroDesktopPressable(
       onPressed: onPressed,
@@ -605,7 +609,6 @@ class _ExtraButton extends StatelessWidget {
     this.showBusy,
     this.focusNode,
     this.autofocus = false,
-    this.isDestructiveAction = false,
     this.isDefaultAction = false,
     this.style,
   });
@@ -614,7 +617,7 @@ class _ExtraButton extends StatelessWidget {
   final IconData? icon;
   final Widget? mark;
   final RetroDesktopButtonSize size;
-  final bool wide, busy, isDestructiveAction, isDefaultAction;
+  final bool wide, busy, isDefaultAction;
   final bool? showBusy;
   final FocusNode? focusNode;
 
@@ -624,11 +627,7 @@ class _ExtraButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = RetroDesktopTheme.of(context);
-    final glyph =
-        icon ??
-        (isDestructiveAction && !isDefaultAction
-            ? RetroDesktopGlyphs.triangleAlert
-            : null);
+    final glyph = icon;
     final face = RetroDesktopPressable(
       label: label,
       busy: busy,

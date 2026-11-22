@@ -6,6 +6,7 @@ menus, forms and tables, with five color presets and light and dark themes.
 ![Papers by day at 1440 wide: a document list and an open note in windows on the desktop, under the menu bar](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/retro_desktop_ui/screenshots/desktop_day.png)
 
 **[Live gallery](https://wenkaifan0720.github.io/flutter_design_systems/retro_desktop/)** ·
+[Docs](https://wenkaifan0720.github.io/flutter_design_systems/docs/looks/retro_desktop/) ·
 [API reference](https://pub.dev/documentation/retro_desktop_ui/latest/) ·
 [All the looks](https://wenkaifan0720.github.io/flutter_design_systems/)
 
@@ -460,6 +461,10 @@ gauges and calendars). Its Customize panel changes the preset, light or dark, th
 colours. The All components page answers every row of the shared component list; three rows are absent by design: the
 floating action button (the toolbar's default button is the desktop's), the command palette (the period ran commands
 from its menu bar and their keys) and the wheel picker (the period chose from a pop-up button).
+
+## Requirements
+
+Flutter 3.47.0 or later (Dart 3.13), on Android, iOS, web, macOS, Windows and Linux.
 
 ## Licences
 

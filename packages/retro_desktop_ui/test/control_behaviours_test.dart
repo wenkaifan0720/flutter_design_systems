@@ -1,3 +1,7 @@
+// The controls' own behaviours, each held once: a search field's clear button, the code editor's paste and autofill,
+// the select's keyboard menu, the switch's one node and Space, the radio group's arrows, the segments, the slider's
+// snapping, the calendar's keys across months, time values, the date dialog's result, the page marks' roving focus,
+// and these controls laid out together at 2x type, in both directions, at four widths.
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -336,7 +340,7 @@ void main() {
   });
   for (final width in [390.0, 768.0, 1024.0, 1440.0]) {
     for (final direction in TextDirection.values) {
-      testWidgets('new controls fit 2x at $width $direction', (tester) async {
+      testWidgets('the controls fit 2x at $width $direction', (tester) async {
         tester.view.physicalSize = Size(width, 2000);
         tester.view.devicePixelRatio = 1;
         addTearDown(tester.view.reset);

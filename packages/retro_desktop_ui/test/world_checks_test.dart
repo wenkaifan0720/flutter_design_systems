@@ -5,8 +5,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:retro_desktop_ui/retro_desktop_ui.dart';
 
-// The gallery is the example app; a test reads its default preset from there.
-// ignore_for_file: avoid_relative_lib_imports
+// ignore_for_file: avoid_relative_lib_imports — the example app's pages are what this test checks; example/ is not a dependency of the package.
 import '../example/lib/kit_gallery/theme.dart' show kitPreset;
 import 'gallery_support.dart';
 import 'support.dart';

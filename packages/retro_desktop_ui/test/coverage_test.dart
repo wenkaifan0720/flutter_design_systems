@@ -1,8 +1,7 @@
 // The example's new parts work, not only lay out: a menu opens, a palette
 // filters, a table sorts, toasts queue, a wheel and a range take their keys, a
 // combo box filters. In both appearances.
-// The package emitter relocates these public example imports to example/lib.
-// ignore_for_file: avoid_relative_lib_imports
+// ignore_for_file: avoid_relative_lib_imports — the example app's pages are what this test checks; example/ is not a dependency of the package.
 
 import 'package:flutter/gestures.dart';
 import 'package:material_ui/material_ui.dart';

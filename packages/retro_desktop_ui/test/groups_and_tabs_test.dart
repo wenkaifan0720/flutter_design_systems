@@ -1,4 +1,4 @@
-// ignore_for_file: avoid_relative_lib_imports
+// ignore_for_file: avoid_relative_lib_imports — the example app's pages are what this test checks; example/ is not a dependency of the package.
 import 'dart:ui' as ui;
 
 import 'package:material_ui/material_ui.dart';

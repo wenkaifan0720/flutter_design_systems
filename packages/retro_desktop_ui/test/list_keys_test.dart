@@ -1,4 +1,4 @@
-// ui_core 0.2.0's list keys, through the look's own wrappers: a combobox's list opens on every option with the chosen
+// ui_core's list keys, through the look's own wrappers: a combobox's list opens on every option with the chosen
 // one lit, its arrows go round, Down on a closed list only opens it, edited words filter, the pointer moves the one lit
 // row (highlightFollowsPointer), a long list opens on its choice and keeps the lit row in view; a menu bar's menu goes to
 // the item a typed letter starts. A row is lit when it stands on the look's highlight bar. The look's combobox takes no

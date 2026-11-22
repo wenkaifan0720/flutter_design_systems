@@ -147,7 +147,7 @@ void main() {
     tester,
   ) async {
     final theme = RetroDesktopThemeData.classic().copyWith(
-      // ignore: deprecated_member_use_from_same_package
+      // ignore: deprecated_member_use_from_same_package — the deprecated motion setting still works until it is removed, and this test holds it.
       motion: const RetroDesktopMotion(state: Duration(milliseconds: 200)),
     );
     const snapshot = ValueKey('overlay-snapshot');

@@ -2,7 +2,7 @@
 // own can drop the swipe Flutter's Cupertino slide carries); on Android, system back closes what is open over a page
 // (a dialog, a sheet, a select's list, a menu bar's menu) before it pops the page; on a desk, Tab reaches every button
 // and field of Papers, the look's own application, in each of its windows.
-// ignore_for_file: avoid_relative_lib_imports
+// ignore_for_file: avoid_relative_lib_imports — the example app's pages are what this test checks; example/ is not a dependency of the package.
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';

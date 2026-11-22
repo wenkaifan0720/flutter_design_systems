@@ -1,12 +1,11 @@
-// ignore_for_file: avoid_relative_lib_imports
+// ignore_for_file: avoid_relative_lib_imports — the example app's pages are what this test checks; example/ is not a dependency of the package.
 // Highlights take the part's shape: every pressable part in every specimen,
 // in both appearances, focused and hovered, draws exactly one ring and
 // one tint, and they follow the part's own face when it has one (the face
 // claims them and draws them from its resolved outline); a part with no face
 // draws them in the family's control step. The ring sits outside the outline
 // at the theme's gap, concentric (inside it for parts joined to neighbours).
-// The look's painters are private, so these checks read their fields dynamically.
-// ignore_for_file: avoid_dynamic_calls
+// ignore_for_file: avoid_dynamic_calls — the look's painters are private, so this test reads their fields dynamically.
 import 'package:flutter/gestures.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';

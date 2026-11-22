@@ -1,4 +1,4 @@
-// Round 4's containers: a data table, a scroll area, resizable panes, a reorderable list, swipe actions, pull to
+// More containers: a data table, a scroll area, resizable panes, a reorderable list, swipe actions, pull to
 // refresh, a tree, a timeline, a tag and a status view. The first seven stand on ui_core's behaviour (sorting, paging,
 // selection, the scroll bar, the divider's drag, reordering, the swipe, the pull, the tree's keys); the last three are
 // paint. This file draws them in Retro Desktop's hand: lists in white wells, the machine's grey for headers and grips.

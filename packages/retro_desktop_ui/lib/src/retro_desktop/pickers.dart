@@ -39,11 +39,16 @@ class RetroDesktopDatePicker extends StatefulWidget {
     this.onChanged,
     this.first,
     this.last,
+    this.today,
     this.style,
   });
 
   /// The selected calendar day, without its time-of-day fields.
   final DateTime? value;
+
+  /// The day outlined as today, and shown when there is no [value]; null: the device's date. Pass the app's own
+  /// today where it keeps one, as Material's `currentDate`.
+  final DateTime? today;
 
   /// The earliest selectable day, inclusive; defaults to January 1, 1900.
   final DateTime? first;
@@ -66,6 +71,7 @@ class RetroDesktopDatePicker extends StatefulWidget {
       ..add(DiagnosticsProperty<DateTime>('value', value, defaultValue: null))
       ..add(DiagnosticsProperty<DateTime>('first', first, defaultValue: null))
       ..add(DiagnosticsProperty<DateTime>('last', last, defaultValue: null))
+      ..add(DiagnosticsProperty<DateTime>('today', today, defaultValue: null))
       ..add(
         ObjectFlagProperty<ValueChanged<DateTime>>.has('onChanged', onChanged),
       )
@@ -91,7 +97,8 @@ class _DatePickerState extends State<RetroDesktopDatePicker> {
       : date.isAfter(_last)
       ? _last
       : date;
-  DateTime get _value => _clamp(_day(widget.value ?? DateTime.now()));
+  DateTime get _today => _day(widget.today ?? DateTime.now());
+  DateTime get _value => _clamp(_day(widget.value ?? _today));
   @override
   void initState() {
     super.initState();
@@ -213,7 +220,7 @@ class _DatePickerState extends State<RetroDesktopDatePicker> {
     // A slot a little short of the box takes the shortfall from the box's side
     // padding, so its face stays on the column's edges and every day keeps its
     // whole target; narrower slots share out the week. Nothing overhangs the
-    // column: a day past its edge was drawn where no tap reached it. From 600
+    // column: a day past its edge would be drawn where no tap reaches it. From 600
     // up a month keeps its own width at its column's start, not the column's.
     final pad = RetroDesktopReach.least(context) >= 44 ? 4.0 : 8.0;
     final h = t.density.horizontal;
@@ -329,7 +336,7 @@ class _DatePickerState extends State<RetroDesktopDatePicker> {
     double week,
     String title,
   ) {
-    final today = _day(DateTime.now());
+    final today = _today;
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -609,19 +616,21 @@ class _DatePickerState extends State<RetroDesktopDatePicker> {
   }
 }
 
-/// Opens a date dialog; Cancel, Escape and the barrier return null.
+/// Opens a date dialog; Cancel, Escape and the barrier return null. [today] is the day outlined as today and the one
+/// shown when there is no [value]; null: the device's date.
 Future<DateTime?> showRetroDesktopDatePicker(
   BuildContext context, {
   DateTime? value,
   DateTime? first,
   DateTime? last,
+  DateTime? today,
   String? title,
 }) {
   final words = RetroDesktopLocalizations.of(context);
   final begin = _day(first ?? DateTime(1900));
   final end = _day(last ?? DateTime(2100, 12, 31));
   assert(!end.isBefore(begin));
-  final initial = _day(value ?? DateTime.now());
+  final initial = _day(value ?? today ?? DateTime.now());
   var selected = initial.isBefore(begin)
       ? begin
       : initial.isAfter(end)
@@ -637,6 +646,7 @@ Future<DateTime?> showRetroDesktopDatePicker(
             value: selected,
             first: first,
             last: last,
+            today: today,
             onChanged: (date) => change(() => selected = date),
           ),
         ],

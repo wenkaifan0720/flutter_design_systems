@@ -37,7 +37,7 @@ void main() {
         defaultButtonTheme: const RetroDesktopStyle(
           fill: WidgetStatePropertyAll(Color(0xff333333)),
         ),
-        // ignore: deprecated_member_use_from_same_package
+        // ignore: deprecated_member_use_from_same_package — the deprecated motion setting still works until it is removed, and this test holds it.
         motion: const RetroDesktopMotion(state: Duration(milliseconds: 200)),
       );
       final direct = base.copyWith(
@@ -441,7 +441,7 @@ void main() {
       await tester.pumpWidget(
         app(
           RetroDesktopThemeData.berry().copyWith(
-            // ignore: deprecated_member_use_from_same_package
+            // ignore: deprecated_member_use_from_same_package — the deprecated motion setting still works until it is removed, and this test holds it.
             motion: const RetroDesktopMotion(state: Duration(seconds: 1)),
           ),
         ),

@@ -1,5 +1,5 @@
-// ui_core's shared checks for the two faults the user caught on 11-11 (buttons in one row showing different heights,
-// dropdowns spanning a wide page), over every page of the example app, in Platinum and Chisel:
+// ui_core's shared checks for buttons in one row showing different heights and dropdowns spanning a wide page, over
+// every page of the example app, in Platinum and Chisel:
 // - DesignRowCheck: controls sharing a row show one top and one bottom by their drawn outlines, at 390 and 1440, under
 //   each density, by day and by night;
 // - DesignWidthCheck: from 600 up a select, a button, a stepper and a segmented control keep to their content and
@@ -7,7 +7,7 @@
 // - checkList: every select opened at 390 and 1440, its list at least its field's width, on its leading edge, its words
 //   on the field's.
 // What a check misreads on these screens is named by kind, with its reason, in misreads.dart; the rest must be empty.
-// ignore_for_file: avoid_relative_lib_imports
+// ignore_for_file: avoid_relative_lib_imports — the example app's pages are what this test checks; example/ is not a dependency of the package.
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -160,9 +160,8 @@ void main() {
 
   for (final appearance in RetroDesktopAppearance.values) {
     for (final brightness in Brightness.values) {
-      // One test a width: ui_core_test 0.1.0's row check reads a page four or five times as long as ui_core 0.2.1's
-      // did (Pickers at 1440, 54 s; 0.2.1's own library is read as slowly), and both widths in one test ran past half
-      // an hour on a busy machine.
+      // One test a width: the row check reads a long page slowly (Pickers at 1440 takes near a minute), and both
+      // widths in one test can run past half an hour on a busy machine.
       for (final width in const [390.0, 1440.0]) {
         testWidgets(
           'rows: ${appearance.name} ${brightness.name} at ${width.toInt()}, '

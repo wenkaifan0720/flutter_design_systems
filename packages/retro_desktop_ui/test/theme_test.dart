@@ -1,6 +1,6 @@
 // The presets: one list, each a value, and each appearance reads. The bars are WCAG's, by Flutter's own luminance: words
-// 4.5:1 on every ground they stand on; edges of controls and marks with no words 3:1. No preset is exempt, the concept's
-// own included, and a pair under its bar moves a token rather than the bar.
+// 4.5:1 on every ground they stand on; edges of controls and marks with no words 3:1. No preset is exempt, the classic
+// one included, and a pair under its bar moves a token rather than the bar.
 import 'dart:io';
 
 import 'package:material_ui/material_ui.dart';

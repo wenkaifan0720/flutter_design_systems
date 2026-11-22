@@ -362,7 +362,7 @@ void main() {
         const RetroDesktopTextField(hint: 'Drag words'),
         reduceMotion: true,
         look: RetroDesktopThemeData.classic().copyWith(
-          // ignore: deprecated_member_use_from_same_package
+          // ignore: deprecated_member_use_from_same_package — the deprecated motion setting still works until it is removed, and this test holds it.
           motion: const RetroDesktopMotion(move: Duration(milliseconds: 200)),
         ),
       ),

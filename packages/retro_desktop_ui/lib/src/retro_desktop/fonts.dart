@@ -5,7 +5,7 @@ library;
 import 'package:flutter/services.dart';
 
 /// The package that bundles Retro Desktop's faces, or null when the app does. The typeface resolves bundled families to Flutter's package-qualified font names; app fonts remain unqualified.
-// ignore: unnecessary_nullable_for_final_variable_declarations, the package's build names it.
+// ignore: unnecessary_nullable_for_final_variable_declarations — nullable by design: null where an app bundles the faces itself.
 const String? retroDesktopFontPackage = 'retro_desktop_ui';
 
 /// [family] under the name Flutter registers it by: `AtkinsonNext` when the app bundles it, `packages/retro_desktop_ui/AtkinsonNext` from the

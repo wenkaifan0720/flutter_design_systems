@@ -1,4 +1,4 @@
-// Round 4's raised parts: a menu bar, a side sheet, an action sheet, a popover, a hover card and the toaster that
+// More raised parts: a menu bar, a side sheet, an action sheet, a popover, a hover card and the toaster that
 // stacks snack bars. All but the action sheet stand on ui_core's behaviour (menus and their keys, the sheet's route,
 // the anchored overlay, the toast queue); this file paints them as the period's
 // desktop raised things: the machine's grey, an outline, the hard shadow, the highlight for the keyboard's row.
@@ -95,10 +95,10 @@ class RetroDesktopMenuBar extends StatelessWidget {
   ) {
     return RawMenuBar(
       menus: menus,
-      // One row lit, the keys' or the pointer's, whichever moved last, as 0.2.1 drew it (retroDesktopMenuRowLit,
+      // One row lit, the keys' or the pointer's, whichever moved last (retroDesktopMenuRowLit,
       // RetroDesktopPointerFocus): ui_core's own highlight also hands the keys to a row that comes to stand under a
-      // resting pointer, so a menu opened from the keys lit the row under the mouse, not its first; the period's menus
-      // (and a Mac's today) wait for the pointer to move.
+      // resting pointer, so a menu opened from the keys would light the row under the mouse, not its first; the
+      // period's menus (and a Mac's today) wait for the pointer to move.
       highlightFollowsPointer: false,
       semanticLabel: label ?? RawWidgetsLocalizations.of(context).menuBarLabel,
       // An alert stands below the bar, however many rows it wraps to.
@@ -502,7 +502,7 @@ class RetroDesktopActionSheet extends StatelessWidget {
         for (final a in actions)
           Padding(
             padding: const EdgeInsets.only(bottom: RetroDesktopSpacing.s6),
-            // A destructive action is never the sheet's default: a plain button with the caution mark.
+            // A destructive action is never the sheet's default: a plain button with the stop sign.
             child: a.destructive
                 ? RetroDesktopButton(
                     a.label,

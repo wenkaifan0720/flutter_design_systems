@@ -1,5 +1,5 @@
-// Rows: what fills a well. Each is drawn from the concept's `.task`, `.lk`, `.pl`, `.kv` and `.stats`. A rule goes between rows,
-// a selected row takes the highlight, and everything in it reads there by itself.
+// Rows: what fills a well: tasks, links, places, key-value pairs and stats. A rule goes between rows, a selected row
+// takes the highlight, and everything in it reads there by itself.
 import 'package:flutter/foundation.dart';
 
 import 'dart:math' as math;

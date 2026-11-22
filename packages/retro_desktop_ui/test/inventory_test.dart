@@ -14,7 +14,7 @@ void main() {
   test('every row is answered once, and every gap has a reason', () {
     expect(retroDesktopInventory.problems, isEmpty);
     expect(retroDesktopInventory.entries.length, DesignInventoryRow.all.length);
-    // Rows the period had no honest form for (the look's laws, DECISIONS.md):
+    // Rows the period had no honest form for:
     // each says why and what to use instead.
     const absent = [
       'FloatingActionButton',

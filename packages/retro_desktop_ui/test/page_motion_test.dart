@@ -130,7 +130,7 @@ void main() {
   testWidgets('with a travel set, a page fades in its place; Reduce Motion '
       'makes it instant', (tester) async {
     final look = RetroDesktopThemeData.classic().copyWith(
-      // ignore: deprecated_member_use_from_same_package
+      // ignore: deprecated_member_use_from_same_package — the deprecated motion setting still works until it is removed, and this test holds it.
       motion: const RetroDesktopMotion(
         travel: Duration(milliseconds: 200),
         leave: Duration(milliseconds: 200),
@@ -175,7 +175,7 @@ void main() {
   });
 
   // iOS's Reduce Motion reaches dart:ui's accessibility features alone, not MediaQuery.disableAnimations (Flutter 3.47
-  // sets only the first on iOS): the look reads both through ui_core 0.2.1's designReduceMotionOf.
+  // sets only the first on iOS): the look reads both through ui_core's designReduceMotionOf.
   testWidgets('iOS\'s Reduce Motion alone stills the look\'s motion: a page '
       'set to fade stands in place, every timing is zero', (tester) async {
     const timed = RetroDesktopMotion(
@@ -187,7 +187,7 @@ void main() {
       leave: Duration(milliseconds: 200),
     );
     final look = RetroDesktopThemeData.classic().copyWith(
-      // ignore: deprecated_member_use_from_same_package
+      // ignore: deprecated_member_use_from_same_package — the deprecated motion setting still works until it is removed, and this test holds it.
       motion: timed,
     );
     tester.platformDispatcher.accessibilityFeaturesTestValue =
@@ -306,7 +306,7 @@ void main() {
 
     // An app's own motion: the panel fades in and out on ui_core's spring.
     final look = RetroDesktopThemeData.classic().copyWith(
-      // ignore: deprecated_member_use_from_same_package
+      // ignore: deprecated_member_use_from_same_package — the deprecated motion setting still works until it is removed, and this test holds it.
       motion: const RetroDesktopMotion(
         raise: Duration(milliseconds: 150),
         leave: Duration(milliseconds: 150),

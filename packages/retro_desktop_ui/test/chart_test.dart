@@ -88,7 +88,7 @@ void main() {
               RetroDesktopChart(
                 label: 'Observations',
                 kind: kind,
-                series: [
+                series: const [
                   RetroDesktopChartSeries('Reading', [
                     null,
                     double.nan,
@@ -116,10 +116,10 @@ void main() {
     );
   }
 
-  // On the web an Arabic reader's digits and words come from a fallback face that arrives after the first frame. The
-  // chart measured its axes once, against the face it had then, so the wider face cut its values to "…٤" and clipped
-  // the day letters. Here the axes' family stands in a narrow face for the first frame, and the reader's wider face
-  // joins it after (a face added to a family later takes its glyphs over).
+  // On the web an Arabic reader's digits and words come from a fallback face that arrives after the first frame. A
+  // chart that measured its axes once, against the face it had then, would cut its values to "…٤" in the wider face
+  // and clip the day letters. Here the axes' family stands in a narrow face for the first frame, and the reader's
+  // wider face joins it after (a face added to a family later takes its glyphs over).
   testWidgets('an Arabic chart names every value and day whole once its face '
       'arrives', (tester) async {
     Future<void> load(String file) async {
@@ -148,7 +148,7 @@ void main() {
                   width: 358,
                   child: RetroDesktopChart(
                     label: 'الساعات',
-                    series: [
+                    series: const [
                       RetroDesktopChartSeries('الساعات', [
                         0,
                         3,

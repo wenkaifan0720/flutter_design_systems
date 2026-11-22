@@ -8,7 +8,7 @@
 // neither is held to the edge. The end is not judged: a column hands
 // every child its whole width, so an example's box always spans it and its last pixel says nothing about whether it
 // should.
-// ignore_for_file: avoid_relative_lib_imports
+// ignore_for_file: avoid_relative_lib_imports — the example app's pages are what this test checks; example/ is not a dependency of the package.
 import 'dart:ui' as ui;
 
 import 'package:flutter/foundation.dart';

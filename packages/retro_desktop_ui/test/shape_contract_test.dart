@@ -1,5 +1,4 @@
-// The look's painters are private, so these checks read their fields dynamically.
-// ignore_for_file: avoid_dynamic_calls
+// ignore_for_file: avoid_dynamic_calls — the look's painters are private, so this test reads their fields dynamically.
 import 'dart:io';
 
 import 'package:material_ui/material_ui.dart';
@@ -7,8 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:retro_desktop_ui/retro_desktop_ui.dart';
 import 'package:retro_desktop_ui/retro_desktop_host.dart';
 
-// The package reads the gallery from its example (a relative import); the demo art's import gets its own ignore.
-// ignore: avoid_relative_lib_imports
+// ignore: avoid_relative_lib_imports — the example app's gallery is what this test checks; example/ is not a dependency of the package.
 import '../example/lib/kit_gallery/kit.dart';
 
 import 'shape_fit_test.dart' show shapeSpecimens;
@@ -190,30 +188,30 @@ int checkPainter(Object? painter, RetroDesktopShapes shapes, String why) {
 final helpers = <String, Widget Function(BuildContext)>{
   'inventory': (context) =>
       const SizedBox(height: 800, child: RetroDesktopInventoryGallery()),
-  'stem charts': (context) => RetroDesktopColumn(
+  'stem charts': (context) => const RetroDesktopColumn(
     children: [
       RetroDesktopLineChart(
         label: 'Visits',
         series: [
-          RetroDesktopChartSeries('Visits', const [1, 2, 3]),
+          RetroDesktopChartSeries('Visits', [1, 2, 3]),
         ],
       ),
       RetroDesktopBarChart(
         label: 'Visits',
         series: [
-          RetroDesktopChartSeries('Visits', const [1, 2, 3]),
+          RetroDesktopChartSeries('Visits', [1, 2, 3]),
         ],
       ),
       RetroDesktopAreaChart(
         label: 'Visits',
         series: [
-          RetroDesktopChartSeries('Visits', const [1, 2, 3]),
+          RetroDesktopChartSeries('Visits', [1, 2, 3]),
         ],
       ),
       RetroDesktopPieChart(
         label: 'Visits',
         series: [
-          RetroDesktopChartSeries('Visits', const [1, 2, 3]),
+          RetroDesktopChartSeries('Visits', [1, 2, 3]),
         ],
       ),
     ],

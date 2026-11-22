@@ -1,5 +1,5 @@
 // The frame's laws: one window is active on any page, whatever is asked of it; the columns of a desktop end on one line; an
-// alert laid over a neighbour can't hide a word on other data. A model gets these for nothing and can't get them wrong.
+// alert laid over a neighbour can't hide a word on other data. An app gets these for nothing and can't get them wrong.
 import 'dart:io';
 
 import 'package:material_ui/material_ui.dart';

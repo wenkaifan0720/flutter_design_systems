@@ -146,7 +146,7 @@ class _BoxPainter extends RetroDesktopPixelPainter {
         )
         .paint(canvas, r.deflate(w));
     if (pressed) {
-      // The shade falls inside the top and the start, as a pressed plate's does (law 4).
+      // The shade falls inside the top and the start, as a pressed plate's does (the light law).
       final inner = r.deflate(w);
       px.fillExact(inner.left, inner.top, inner.right, inner.top + h, line);
       px.fillExact(inner.left, inner.top, inner.left + w, inner.bottom, line);
@@ -406,8 +406,11 @@ class _TitleBar extends StatelessWidget {
         ),
       ),
     );
-    // The drawing stays 13 pixels; its action has the platform's padded target.
+    // The drawing stays 13 pixels; its action has the platform's padded target. Only a finger's reach grows the bar:
+    // on a desk the press spans the bar as it stands, so a window that closes stands its title, stripes and boxes
+    // level with one that does not, and the bar holds still as a closable window opens beside it.
     final reach = onClose != null;
+    final grows = reach && RetroDesktopReach.padsAcross(context);
     // The title's height at a width, and whether it keeps to one line beside its stripes (101 is the boxes, 12 px
     // stripes and their margins).
     (double, bool) titleFit(double width) {
@@ -424,7 +427,7 @@ class _TitleBar extends StatelessWidget {
       final height = words.height;
       words.dispose();
       return (
-        math.max(reach ? RetroDesktopReach.least(context) : 24, height + 8),
+        math.max(grows ? RetroDesktopReach.least(context) : 24, height + 8),
         striped,
       );
     }
@@ -546,6 +549,8 @@ extension _ChiselTitleBar on _TitleBar {
   ) {
     final c = t.colors;
     final reach = onClose != null;
+    // Only a finger's reach grows the bar; on a desk the press spans the bar as it stands (as the classic bar's).
+    final grows = reach && RetroDesktopReach.padsAcross(context);
     final fill =
         RetroDesktopStyle.first(
           [style, t.windowTheme],
@@ -565,7 +570,7 @@ extension _ChiselTitleBar on _TitleBar {
       textScaler: MediaQuery.textScalerOf(context),
     )..layout();
     final height = math.max(
-      reach ? RetroDesktopReach.least(context) : 22.0,
+      grows ? RetroDesktopReach.least(context) : 22.0,
       words.height + 6,
     );
     words.dispose();
@@ -761,7 +766,7 @@ class _GrowBox extends RetroDesktopPixelPainter {
   bool shouldRepaint(_GrowBox o) => o.c != c;
 }
 
-/// `*words*` in a string go to full ink and bold, as the concept's status lines set their figures.
+/// `*words*` in a string go to full ink and bold, as a status line sets its figures.
 List<InlineSpan> _starred(String text, TextStyle strong) {
   final out = <InlineSpan>[];
   final parts = text.split('*');
@@ -839,7 +844,7 @@ class RetroDesktopWindow extends StatelessWidget {
     final t = RetroDesktopTheme.of(context);
     final c = t.colors;
     // A window inside a window is drawn inactive: a page can't get a second hero by nesting one. So is one under an
-    // alert, a dialog or a sheet: the window in front is the active one (law 3).
+    // alert, a dialog or a sheet: the window in front is the active one (the stacking law).
     final active =
         (RetroDesktopWindowScope.maybeOf(context)?.active ?? false) &&
         context.getInheritedWidgetOfExactType<_InsideWindow>() == null &&
@@ -2225,7 +2230,7 @@ class _Tiles extends MultiChildRenderObjectWidget {
 
 class _TileData extends ContainerBoxParentData<RenderBox> {}
 
-/// How an alert hangs over its neighbour: the concept's two.
+/// How an alert hangs over its neighbour: beside it ([_overSide]) or above it ([_overAbove]).
 class _Hang {
   const _Hang(this.top, this.start, this.end);
 

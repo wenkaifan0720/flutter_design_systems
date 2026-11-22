@@ -1,5 +1,5 @@
-// Controls, each drawn on the device's grid from the concept's `.btn`, `.field`, `.chk`, `.chip`, `.prog`, `.tab` and `.group`.
-// Jersey chrome and reading text sit in square or pixel-bevelled faces.
+// Controls, each drawn on the device's grid: buttons, fields, checkboxes, chips, progress, tabs and group boxes. Jersey
+// chrome and reading text sit in square or pixel-bevelled faces.
 import 'package:flutter/foundation.dart';
 
 import 'dart:math' as math;
@@ -166,7 +166,7 @@ class RetroDesktopIconButton extends StatelessWidget {
   }
 }
 
-/// The concept's small triangle: a tree's disclosure, a popup's arrows, a scroll bar's.
+/// The look's small triangle: a tree's disclosure, a popup's arrows, a scroll bar's.
 ///
 /// ```dart
 /// RetroDesktopTriangleMark(AxisDirection.right)
@@ -2646,7 +2646,7 @@ class _GroupPainter extends RetroDesktopPixelPainter {
   final Color? fill;
   @override
   void paint(RetroDesktopPixelGrid px, Size s) {
-    // `.group`: 1 lp of shade, 1 of light inside it and outside it, broken where its name stands, on any ground.
+    // A group box: 1 lp of shade, 1 of light inside it and outside it, broken where its name stands, on any ground.
     final r = px.snap(Rect.fromLTRB(0, top, s.width, s.height));
     if (fill != null) {
       px.canvas.drawPath(shape.getOuterPath(r), Paint()..color = fill!);

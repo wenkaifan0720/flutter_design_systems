@@ -218,17 +218,17 @@ Widget kitSpecimenAmount() =>
     const RetroDesktopAmount('1,024', label: 'Storage used', unit: 'MB');
 Widget kitSpecimenMeter() =>
     const RetroDesktopMeter(label: 'Storage', value: 64, max: 100);
-Widget kitSpecimenChart() => RetroDesktopBarChart(
+Widget kitSpecimenChart() => const RetroDesktopBarChart(
   label: 'Files copied each day',
-  labels: const ['Mon', 'Tue', 'Wed', 'Thu'],
+  labels: ['Mon', 'Tue', 'Wed', 'Thu'],
   series: [
     RetroDesktopChartSeries('Documents', [4, 8, 6, 12]),
     RetroDesktopChartSeries('Pictures', [2, 5, 7, 9]),
   ],
 );
-Widget kitSpecimenLineChart() => RetroDesktopLineChart(
+Widget kitSpecimenLineChart() => const RetroDesktopLineChart(
   label: 'Visits this week',
-  labels: const ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
+  labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
   series: [
     RetroDesktopChartSeries('This week', [12, 18, 9, 22, 17]),
     RetroDesktopChartSeries('Last week', [10, 11, 14, 13, 19]),
@@ -238,14 +238,14 @@ Widget kitSpecimenAreaChart() => RetroDesktopAreaChart(
   label: 'Disk used',
   labels: const ['Jan', 'Feb', 'Mar', 'Apr', 'May'],
   format: (v) => '${v.round()} GB',
-  series: [
+  series: const [
     RetroDesktopChartSeries('Disk used', [12, 15, 21, 24, 30]),
   ],
 );
-Widget kitSpecimenDonutChart() => RetroDesktopPieChart(
+Widget kitSpecimenDonutChart() => const RetroDesktopPieChart(
   label: 'What fills the disk',
   height: 200,
-  labels: const ['Documents', 'Pictures', 'Music', 'Other'],
+  labels: ['Documents', 'Pictures', 'Music', 'Other'],
   series: [
     RetroDesktopChartSeries('Space', [42, 30, 18, 10]),
   ],
@@ -259,16 +259,16 @@ Widget kitSpecimenSparkline() => const Row(
     ),
   ],
 );
-Widget kitSpecimenChartEmpty() => RetroDesktopChart(
+Widget kitSpecimenChartEmpty() => const RetroDesktopChart(
   label: 'Files shared',
   height: 120,
-  series: [RetroDesktopChartSeries('Shared', const [])],
+  series: [RetroDesktopChartSeries('Shared', [])],
 );
-Widget kitSpecimenChartLoading() => RetroDesktopChart(
+Widget kitSpecimenChartLoading() => const RetroDesktopChart(
   label: 'Files shared',
   height: 120,
   loading: true,
-  series: [RetroDesktopChartSeries('Shared', const [])],
+  series: [RetroDesktopChartSeries('Shared', [])],
 );
 Widget kitSpecimenBreadcrumbs() => kitAction(
   'Opened a folder',

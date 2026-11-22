@@ -1,5 +1,5 @@
-// Retro Desktop's tokens, every one from the concept's style.css. `RetroDesktopTheme.of(context)` is the only way in. Greys are the
-// machine, white wells are your content, the highlight means the act and now, and nothing else is coloured.
+// Retro Desktop's tokens: colours, type, motion and the theme. `RetroDesktopTheme.of(context)` is the only way in. Greys
+// are the machine, white wells are your content, the highlight means the act and now, and nothing else is coloured.
 import 'dart:ui' show lerpDouble;
 
 import 'package:flutter/foundation.dart';
@@ -45,7 +45,9 @@ class RetroDesktopColors {
   );
 
   /// Creates a [RetroDesktopColors].
-  RetroDesktopColors({
+  ///
+  /// [tones] is kept as given, not copied: it must not be changed afterwards.
+  const RetroDesktopColors({
     required this.dark,
     required this.desktop,
     required this.desktopThreadLight,
@@ -88,9 +90,9 @@ class RetroDesktopColors {
     required this.binderRingLight,
     required this.binderRingDark,
     required this.pixelOutline,
-    required List<Color> tones,
+    required this.tones,
     required this.illustration,
-  }) : tones = List.unmodifiable(tones);
+  });
 
   /// Whether these are the night colours.
   final bool dark;
@@ -99,7 +101,9 @@ class RetroDesktopColors {
   /// place on the desk (the look's own desk is flat: nothing glows).
   final Color desktop, desktopThreadLight, desktopThreadDark, desktopGlow;
 
-  /// The machine: [platinum] for window bodies, [platinumLight] for raised faces, [platinumDark] for pressed ones.
+  /// The machine's greys, named for Mac OS 8's Platinum appearance, whose grey plates they are (Chisel draws its
+  /// plates in them too): [platinum] for window bodies, [platinumLight] for raised faces, [platinumDark] for pressed
+  /// ones.
   final Color platinum, platinumLight, platinumDark;
 
   /// Bevels: [bevelLight] on the top and left, [bevelDark] on the bottom and right, [bevelDarker] the deeper shade of
@@ -148,6 +152,7 @@ class RetroDesktopColors {
   final Color pixelOutline;
 
   /// Flat illustration tones, from dry to wet; [chartTones] supplies data inks.
+  /// Not to be changed once given.
   final List<Color> tones;
 
   /// Five data inks derived from the highlight, readable on plot and panel grounds.
@@ -212,7 +217,7 @@ class RetroDesktopColors {
   /// The inks the pixel sky, its weather and what stands under it draw with.
   final RetroDesktopIllustrationColors illustration;
 
-  /// The same palette with named colours replaced.
+  /// The same palette with named colours replaced; a [tones] given here is copied.
   RetroDesktopColors copyWith({
     bool? dark,
     Color? desktop,
@@ -301,7 +306,7 @@ class RetroDesktopColors {
     binderRingLight: binderRingLight ?? this.binderRingLight,
     binderRingDark: binderRingDark ?? this.binderRingDark,
     pixelOutline: pixelOutline ?? this.pixelOutline,
-    tones: tones ?? this.tones,
+    tones: tones == null ? this.tones : List.unmodifiable(tones),
     illustration: illustration ?? this.illustration,
   );
 
@@ -313,10 +318,10 @@ class RetroDesktopColors {
   ) {
     if (t == 0) return a;
     if (t == 1) return b;
-    List<Color> mix(List<Color> x, List<Color> y) => [
+    List<Color> mix(List<Color> x, List<Color> y) => List.unmodifiable([
       for (var i = 0; i < (x.length > y.length ? x.length : y.length); i++)
         Color.lerp(i < x.length ? x[i] : null, i < y.length ? y[i] : null, t)!,
-    ];
+    ]);
     return RetroDesktopColors(
       dark: t < .5 ? a.dark : b.dark,
       desktop: Color.lerp(a.desktop, b.desktop, t)!,
@@ -492,8 +497,10 @@ class RetroDesktopColors {
 @immutable
 class RetroDesktopIllustrationColors {
   /// Creates a [RetroDesktopIllustrationColors].
-  RetroDesktopIllustrationColors({
-    required List<Color> sky,
+  ///
+  /// [sky] is kept as given, not copied: it must not be changed afterwards.
+  const RetroDesktopIllustrationColors({
+    required this.sky,
     required this.cloud,
     required this.cloudLow,
     required this.cloudLit,
@@ -511,9 +518,10 @@ class RetroDesktopIllustrationColors {
     this.caution = const Color(0xffffcc33),
     this.stop = const Color(0xffdd2222),
     this.note = const Color(0xff3333aa),
-  }) : sky = List.unmodifiable(sky);
+  });
 
-  /// The thirteen tones of a pixel sky, from its top down.
+  /// The thirteen tones of a pixel sky, from its top down. Not to be changed
+  /// once given.
   final List<Color> sky;
 
   /// A day cloud and its shaded foot.
@@ -535,7 +543,7 @@ class RetroDesktopIllustrationColors {
   /// balloon's mark and the tick.
   final Color caution, stop, note;
 
-  /// The same inks with the named ones replaced.
+  /// The same inks with the named ones replaced; a [sky] given here is copied.
   RetroDesktopIllustrationColors copyWith({
     List<Color>? sky,
     Color? cloud,
@@ -556,7 +564,7 @@ class RetroDesktopIllustrationColors {
     Color? stop,
     Color? note,
   }) => RetroDesktopIllustrationColors(
-    sky: sky ?? this.sky,
+    sky: sky == null ? this.sky : List.unmodifiable(sky),
     cloud: cloud ?? this.cloud,
     cloudLow: cloudLow ?? this.cloudLow,
     cloudLit: cloudLit ?? this.cloudLit,
@@ -587,14 +595,14 @@ class RetroDesktopIllustrationColors {
     Color mix(Color x, Color y) => Color.lerp(x, y, t)!;
     final n = a.sky.length > b.sky.length ? a.sky.length : b.sky.length;
     return RetroDesktopIllustrationColors(
-      sky: [
+      sky: List.unmodifiable([
         for (var i = 0; i < n; i++)
           Color.lerp(
             i < a.sky.length ? a.sky[i] : null,
             i < b.sky.length ? b.sky[i] : null,
             t,
           )!,
-      ],
+      ]),
       cloud: mix(a.cloud, b.cloud),
       cloudLow: mix(a.cloudLow, b.cloudLow),
       cloudLit: mix(a.cloudLit, b.cloudLit),
@@ -709,12 +717,12 @@ class _Seed {
   final Color thumbTop, thumbBot, shade, markLabel, outline;
   final List<Color> tones, sky, art;
 
-  /// The art's tones, turned to this hue and scaled by [saturation]. The concept's own preset leaves it alone.
+  /// The art's tones, turned to this hue and scaled by [saturation]. The classic preset leaves it alone.
   final double? hue;
   final double saturation;
 }
 
-// The concept's two pixel pictures, by day and by night. A preset turns them to its hue.
+// The two pixel pictures' inks, by day and by night. A preset turns them to its hue.
 const List<Color> _dayTones = [
   Color(0xFFE9E8FB),
   Color(0xFFBDBCE0),
@@ -813,9 +821,8 @@ class _Palette {
 
   /// The one place the colour rules live.
   static RetroDesktopColors _colors(_Seed s, bool dark) {
-    List<Color> art(List<Color> xs) => [
-      for (final x in xs) _turn(x, s.hue, s.saturation),
-    ];
+    List<Color> art(List<Color> xs) =>
+        List.unmodifiable([for (final x in xs) _turn(x, s.hue, s.saturation)]);
     final a = art(s.art);
     return RetroDesktopColors(
       dark: dark,
@@ -885,7 +892,7 @@ class _Palette {
 const _plumShade = Color(0xFF0C0A32);
 const _black = Color(0xFF000000);
 
-// The concept's own: desktop greys and a confident indigo by day, graphite with the indigo lit as a lamp by night.
+// The classic preset: desktop greys and a confident indigo by day, graphite with the indigo lit as a lamp by night.
 final _Palette _classic = _Palette(
   const _Seed(
     desk: Color(0xFF5E62A3),
@@ -2460,7 +2467,9 @@ RetroDesktopColors _retroDesktopColorsFrom({
     binderRingLight: mix(machine, paper, .7),
     binderRingDark: mix(machine, ink, .45),
     pixelOutline: edge,
-    tones: [for (final tone in base.tones) readable(tone, minimum: 3)],
+    tones: List.unmodifiable([
+      for (final tone in base.tones) readable(tone, minimum: 3),
+    ]),
   );
 }
 

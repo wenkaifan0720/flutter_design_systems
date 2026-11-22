@@ -4,8 +4,7 @@
 // radio group, a disclosure, a document) starts on one leading keyline and ends on one trailing keyline; a row of
 // buttons ends on the trailing one; the buttons of a row share a height and a centre line. At 390 and 1440, day and
 // night, Platinum and Chisel.
-// The package emitter carries the example's own app into example/lib.
-// ignore_for_file: avoid_relative_lib_imports
+// ignore_for_file: avoid_relative_lib_imports — the example app's pages are what this test checks; example/ is not a dependency of the package.
 import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
@@ -212,8 +211,8 @@ void main() {
     },
   );
 
-  // Design6, 11-12: on the desk the "Project notes" window showed the top half
-  // of its title above the Settings and "Your details" title bars. A window
+  // On the desk, the "Project notes" window must not show the top half of its
+  // title above the Settings and "Your details" title bars. A window
   // behind shows its title bar whole, or hides its title wholly under the
   // window in front: never words cut by another bar.
   for (final appearance in RetroDesktopAppearance.values) {
@@ -330,8 +329,7 @@ void main() {
     expect(y('Reading list'), lessThan(y('Team handbook')));
   });
 
-  // What the gate's captures showed (11-11): a band over the heads, a grow box beside the words, a field taller than the
-  // popup under it.
+  // No band over the heads, no grow box beside the words, no field taller than the popup under it.
   testWidgets('the heads stand flush on the list; sizes line up at their end', (
     tester,
   ) async {

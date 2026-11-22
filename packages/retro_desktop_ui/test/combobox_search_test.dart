@@ -1,4 +1,4 @@
-// A combobox over a search (ui_core 0.3.0's loadingBuilder and errorBuilder, in the look's rows): while the search
+// A combobox over a search (ui_core's loadingBuilder and errorBuilder, in the look's rows): while the search
 // runs the list says it is loading; a failure says so with a "Try again" row the arrows light and Enter or a press
 // runs; the options found then stand in the list.
 import 'dart:async';

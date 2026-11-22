@@ -9,8 +9,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:retro_desktop_ui/retro_desktop_ui.dart';
 
-// The panel is the example app's; a test reads its settings from there.
-// ignore_for_file: avoid_relative_lib_imports
+// ignore_for_file: avoid_relative_lib_imports — the example app's pages are what this test checks; example/ is not a dependency of the package.
 import '../example/lib/kit_gallery/kit.dart';
 import '../example/lib/main.dart';
 import 'gallery_support.dart';
@@ -140,7 +139,7 @@ void main() {
       RetroDesktopTheme(
         data: RetroDesktopThemeData.preset('classic', Brightness.light)
             .copyWith(
-              // ignore: deprecated_member_use_from_same_package
+              // ignore: deprecated_member_use_from_same_package — the deprecated motion setting still works until it is removed, and this test holds it.
               motion: const RetroDesktopMotion(
                 state: Duration(milliseconds: 120),
               ),

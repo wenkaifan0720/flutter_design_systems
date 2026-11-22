@@ -422,6 +422,29 @@ Future<T?> showRetroDesktopDialog<T>(
   label: closeLabel,
 );
 
+/// The one destructive action among [actions] that is not the default, which stands apart at the row's start; null
+/// when there is none, more than one, or no other action.
+int? _apartAction(List<Widget> actions) {
+  int? found;
+  for (final (i, action) in actions.indexed) {
+    final destroys = switch (action) {
+      RetroDesktopDialogAction(
+        :final isDestructiveAction,
+        :final isDefaultAction,
+      ) ||
+      RetroDesktopButton(
+        :final isDestructiveAction,
+        :final isDefaultAction,
+      ) => isDestructiveAction && !isDefaultAction,
+      _ => false,
+    };
+    if (!destroys) continue;
+    if (found != null) return null;
+    found = i;
+  }
+  return actions.length > 1 ? found : null;
+}
+
 /// A dialog window in the family's window shape with a title, message, arbitrary content and actions.
 ///
 /// ```dart
@@ -454,7 +477,8 @@ class RetroDesktopDialog extends StatelessWidget {
 
   /// The actions displayed after the content, in reading order, the default one last. They stand in one row at the
   /// trailing end; when they don't fit (long words on a phone, large text), in one column at the trailing end, each as
-  /// wide as the widest, the default one on top.
+  /// wide as the widest, the default one on top. One destructive action that is not the default (Discard, Don't Save)
+  /// stands apart at the row's start, as the period's alerts set Don't Save.
   final List<Widget> actions;
 
   /// {@macro retro_desktop.style}
@@ -579,6 +603,7 @@ class RetroDesktopDialog extends StatelessWidget {
                           ),
                           child: RetroDesktopActionBar(
                             spacing: RetroDesktopSpacing.s8,
+                            apart: _apartAction(actions),
                             children: actions,
                           ),
                         ),
@@ -705,6 +730,7 @@ class RetroDesktopBottomSheet extends StatelessWidget {
       padding: const EdgeInsets.only(top: RetroDesktopSpacing.s16),
       child: RetroDesktopActionBar(
         spacing: RetroDesktopSpacing.s8,
+        apart: _apartAction(actions),
         children: actions,
       ),
     );
@@ -1594,10 +1620,22 @@ Future<T?> showRetroDesktopMenu<T>(
 }) {
   final navigator = Navigator.of(context, rootNavigator: useRootNavigator);
   final origin = navigator.context.findRenderObject() as RenderBox?;
-  final local = origin == null
+  var local = origin == null
       ? anchor
       : anchor.shift(-origin.localToGlobal(Offset.zero));
   final direction = Directionality.of(context);
+  // A field's list hangs from the field, touching it; while the field holds the focus, it hangs past the field's
+  // focus ring instead, so the ring closes round the field (a list on the ring's foot left it a three-sided bracket).
+  final ring = RetroDesktopTheme.of(context).focus;
+  if (matchWidth && !ring.inside && _holdsFocus(context)) {
+    final clear = ring.gap + ring.width;
+    local = Rect.fromLTRB(
+      local.left,
+      local.top - clear,
+      local.right,
+      local.bottom + clear,
+    );
+  }
   return _show<T>(
     context,
     (context) {
@@ -1635,6 +1673,19 @@ Future<T?> showRetroDesktopMenu<T>(
     modal: false,
     label: closeLabel,
   );
+}
+
+/// Whether the focus is on [context]'s part or inside it.
+bool _holdsFocus(BuildContext context) {
+  final focused = FocusManager.instance.primaryFocus?.context;
+  if (focused == null) return false;
+  if (identical(focused, context)) return true;
+  var inside = false;
+  focused.visitAncestorElements((element) {
+    inside = identical(element, context);
+    return !inside;
+  });
+  return inside;
 }
 
 /// A handle to a tooltip or notice; dismissal is safe to call more than once.
@@ -2394,6 +2445,7 @@ class RetroDesktopDialogAction<T> extends StatelessWidget {
     this.onPressed,
     this.enabled = true,
     this.isDefaultAction = false,
+    this.isDestructiveAction = false,
   });
 
   /// The visible or accessible name of this part.
@@ -2410,6 +2462,11 @@ class RetroDesktopDialogAction<T> extends StatelessWidget {
 
   /// Whether this action receives the primary emphasis.
   final bool isDefaultAction;
+
+  /// Whether the action destroys something (Discard, Don't Save): it carries the stop sign before its words, as a
+  /// destructive [RetroDesktopButton] does, and stands apart at the row's start, as the period's alerts set Don't
+  /// Save, so it never reads as Cancel beside it. Word it with the loss itself, never OK.
+  final bool isDestructiveAction;
   @override
   Widget build(BuildContext context) {
     final action = enabled
@@ -2418,9 +2475,12 @@ class RetroDesktopDialogAction<T> extends StatelessWidget {
             onPressed?.call();
           }
         : null;
-    return isDefaultAction
-        ? RetroDesktopButton(label, isDefaultAction: true, onPressed: action)
-        : RetroDesktopButton(label, onPressed: action);
+    return RetroDesktopButton(
+      label,
+      isDefaultAction: isDefaultAction,
+      isDestructiveAction: isDestructiveAction,
+      onPressed: action,
+    );
   }
 
   @override
@@ -2436,6 +2496,13 @@ class RetroDesktopDialogAction<T> extends StatelessWidget {
           'isDefaultAction',
           value: isDefaultAction,
           ifTrue: 'isDefaultAction',
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'isDestructiveAction',
+          value: isDestructiveAction,
+          ifTrue: 'isDestructiveAction',
         ),
       );
   }

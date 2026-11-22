@@ -35,11 +35,11 @@ List<String> withoutMisreads(
       continue;
     }
     counts[kind.kind] = counts[kind.kind]! + 1;
-    // ignore: avoid_print
+    // ignore: avoid_print — a misread a check excuses is printed to the test log.
     print('MISREAD $check ${kind.kind}: $line');
   }
   for (final MapEntry(:key, :value) in counts.entries) {
-    // ignore: avoid_print
+    // ignore: avoid_print — a misread a check excuses is printed to the test log.
     if (value > 0) print('MISREADS $check $key: $value');
   }
   return left;
@@ -92,9 +92,9 @@ final _tabs = Misread(
       r'All components: a button "(General|Sharing)" beside a button '
       r'"(General|Sharing)"|'
       // The label check: the chosen tab's words stay on the row of tabs' line,
-      // not on the middle of its taller face. Since 0.3.0 a tab is ui_core's
-      // RawTab, named "Today 3, Tab 1 of 3" with no button role: the same
-      // pixels as 0.2.1's, read under the new name.
+      // not on the middle of its taller face. A tab is ui_core's RawTab,
+      // named "Today 3, Tab 1 of 3" with no button role, so the check reads
+      // it as a control of that name.
       r'(controls|everyday|tabs): a (button "(Today|Recent)"|control '
       r'"(Today|Recent)( \d+)?\nTab \d+ of \d+"): the capitals of '
       r'"(Today|Recent|\d+)" are drawn \d+(\.\d+)? device px below)',
@@ -102,8 +102,8 @@ final _tabs = Misread(
 
 // A held toggle sinks its words a pixel down and right inside its turned-in bevel, as the period's pressed toggles did
 // (the segment keeps its size); the check reads them a pixel under the row's line. Both appearances sink them;
-// a held segment that only darkened would read as unpressed. A held toggle reads as a selected button (ui_core 0.4.0's
-// semanticSelected), a switch before.
+// a held segment that only darkened would read as unpressed. A held toggle reads as a selected button (ui_core's
+// semanticSelected).
 final _heldSinks = Misread(
   'held toggle',
   'a held toggle sinks its words a pixel down and right, as the period\'s '
@@ -114,7 +114,7 @@ final _heldSinks = Misread(
 
 // A row that spans its container and presses as a whole (a table's column head, a sheet's or a palette's row, a
 // selectable card, a chart's surface) is a list row, not a button: it spans by design. A table's sortable heads (a
-// phone's Name and Changed) read as one group of choices since ui_core 0e25289dfd.
+// phone's Name and Changed) read as one group of choices.
 final _fullWidthRow = Misread(
   'full-width row',
   'a table head, a sheet or palette row, a selectable card or a chart\'s '
@@ -169,8 +169,8 @@ final _callerContent = Misread(
 );
 
 // A select under its label in Papers' details window (from 600 up, as wide as its widest option): its value's line
-// stands on its face's middle as laid out (probe 11-12 at 1440 standard: face 474-516, line 484-506; compact 474-512,
-// 482-504), and the check reads the drawn face lower than its box (13.5 device px at standard, 3.0 at compact).
+// stands on its face's middle as laid out (at 1440 standard: face 474-516, line 484-506; compact 474-512, 482-504),
+// and the check reads the drawn face lower than its box (13.5 device px at standard, 3.0 at compact).
 final _labelledSelect = Misread(
   'select under its label',
   'a select under its label stands its value on its face\'s middle as laid '
@@ -192,8 +192,7 @@ final _ruledRow = Misread(
 /// The row check's misreads ([DesignRowCheck]).
 // The gallery's desk at 1024: the documents window stands in front of the document window and reaches past its foot,
 // so the document's "Order copies…" (531 to 579 down) is covered and no tap reaches it; the documents window's own
-// Open (475 to 523) is the one in sight. The row check reads every box, covered or not, and pairs the two (ui_core_test
-// 0.1.0 too).
+// Open (475 to 523) is the one in sight. The row check reads every box, covered or not, and pairs the two.
 final _coveredWindow = Misread(
   'covered window',
   'a window behind another: the row check reads the button the front window '
@@ -214,10 +213,8 @@ final rowMisreads = [
 ];
 
 // A phone's table head: its sort heads Name and Changed. ui_core_test 0.1.0 reads them in Chisel by night as two
-// buttons, Changed's bottom 1 px above Name's (ui_core 0.2.1's check read them as one group of choices). Probe
-// 2026-11-17 (Overview and List at 390): both heads are laid out on the same rows in each appearance by day and by
-// night (Chisel 213 to 261, their capitals 226 to 248), and 0.2.1's own library on ui_core_test 0.1.0 is read the
-// same, to the pixel.
+// buttons, Changed's bottom 1 px above Name's. On Overview and List at 390 both heads are laid out on the same rows
+// in each appearance by day and by night (Chisel 213 to 261, their capitals 226 to 248).
 final _sortHeads = Misread(
   'Chisel sort heads by night',
   'a phone table\'s two sort heads stand on the same rows; the check reads '
@@ -229,14 +226,12 @@ final _sortHeads = Misread(
 /// The row check's misreads in Chisel alone, after [rowMisreads].
 final chiselRowMisreads = <Misread>[_sortHeads];
 
-// Platinum by night (since 6fdc3279aa) lights a button's top and left with a pale rim and keeps its bottom and right
+// Platinum by night lights a button's top and left with a pale rim and keeps its bottom and right
 // black: two tones round one face, against a dark ground. The check reads a button's drawn bottom short (and so its
-// centre line high), by night only. Probe 2026-11-14 (probe_night_rows_test, Buttons, Checkout and Save changes at
-// 390): every probed button is drawn on the same device rows by night as by day (Small and Add 24 to 119 from the box
-// top, the others 12 to 131, Cancel level with Place order), and ui_core's own DrawnPixels.outline reads the same
-// outline by night as by day against every surface round the row. A row's layout does not change with the time of
-// day, and the same rows by day hold. ui_core_test 0.1.0's contrast reading still reads it so (rows run 2026-11-17:
-// by day 0, by night 24 pairs, all this pattern, on Overview, List, Pickers, Gauges and calendars and All components).
+// centre line high), by night only. On Buttons, Checkout and Save changes at 390 every button is drawn on the same
+// device rows by night as by day (Small and Add 24 to 119 from the box top, the others 12 to 131, Cancel level with
+// Place order), and ui_core's own DrawnPixels.outline reads the same outline by night as by day against every surface
+// round the row. A row's layout does not change with the time of day, and the same rows by day hold.
 final _nightRim = Misread(
   'Platinum night rim',
   'by night Platinum lights a button\'s top and left and keeps its bottom and '
@@ -251,7 +246,7 @@ final platinumNightRowMisreads = [_nightRim];
 
 // Chisel's sunken box on the current check row's tint: its white fill and light lower bevel stand within the check's
 // ink threshold of the pale tint, so the box is read by its dark upper bevel alone, a third of its height (drawn, its
-// middle is on the capitals as on every other row: probe shot 2026-11-13).
+// middle is on the capitals as on every other row).
 final _tintedCheckBox = Misread(
   'sunken box on a tint',
   'a sunken box on the current row\'s pale tint is read by its dark upper bevel',

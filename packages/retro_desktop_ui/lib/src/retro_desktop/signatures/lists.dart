@@ -721,7 +721,7 @@ class _RetroDesktopListTableState extends State<RetroDesktopListTable> {
     final total = widget.total;
     final rtl = Directionality.of(context) == TextDirection.rtl;
     // In a window behind, or under an alert, the chosen row stays chosen in a grey band, its words in ink: the lit
-    // band is the front window's (law 3).
+    // band is the front window's (the stacking law).
     final front = retroDesktopActiveHere(context);
     final bar = t.desk && total != null && total > rows.length;
     // A set column grows with the reader's text (at twice the size, 80 lp held "Ed…" and "09:…"); the table scrolls

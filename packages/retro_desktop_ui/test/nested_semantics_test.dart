@@ -5,7 +5,7 @@
 // round each nested app the side navigation (painted before the page) went silent, and so would a section's heading
 // over a preview. Here: on each page the side navigation's entry for it and every section heading are heard, and on
 // the app the gallery opens on (Overview) the menu bar's way back to the gallery.
-// ignore_for_file: avoid_relative_lib_imports
+// ignore_for_file: avoid_relative_lib_imports — the example app's pages are what this test checks; example/ is not a dependency of the package.
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';

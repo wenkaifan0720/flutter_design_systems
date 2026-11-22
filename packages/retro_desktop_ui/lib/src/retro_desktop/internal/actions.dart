@@ -1,7 +1,8 @@
 // A window's buttons (an alert's, a sheet's): in one row at the trailing end while they fit, as the period's alert
 // boxes stood them. When they don't (long words on a phone, the reader's large text), one column at the trailing end,
 // each button as wide as the widest, the default one (the last, in reading order) on top: never a row and a stray
-// below it, never a staircase of different widths.
+// below it, never a staircase of different widths. A destructive action that is not the default stands apart at the
+// row's start, as the period's alerts set Don't Save: at least 24 from the others, never a press away from Cancel.
 import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart' show precisionErrorTolerance;
@@ -16,10 +17,14 @@ class RetroDesktopActionBar extends StatelessWidget {
     super.key,
     required this.spacing,
     required this.children,
+    this.apart,
   });
 
   /// The room between two buttons, across a row and down a column.
   final double spacing;
+
+  /// The index of the button that stands apart at the row's start (the destructive one), or null.
+  final int? apart;
 
   /// The buttons, in reading order, the default one last.
   final List<Widget> children;
@@ -28,6 +33,7 @@ class RetroDesktopActionBar extends StatelessWidget {
   Widget build(BuildContext context) => _InActionBar(
     child: _ActionBar(
       spacing: spacing,
+      apart: apart,
       textDirection: Directionality.of(context),
       children: children,
     ),
@@ -49,16 +55,18 @@ class _InActionBar extends InheritedWidget {
 class _ActionBar extends MultiChildRenderObjectWidget {
   const _ActionBar({
     required this.spacing,
+    required this.apart,
     required this.textDirection,
     required super.children,
   });
 
   final double spacing;
+  final int? apart;
   final TextDirection textDirection;
 
   @override
   _RenderActionBar createRenderObject(BuildContext context) =>
-      _RenderActionBar(spacing, textDirection);
+      _RenderActionBar(spacing, apart, textDirection);
 
   @override
   void updateRenderObject(
@@ -66,6 +74,7 @@ class _ActionBar extends MultiChildRenderObjectWidget {
     _RenderActionBar renderObject,
   ) => renderObject
     ..spacing = spacing
+    ..apart = apart
     ..textDirection = textDirection;
 }
 
@@ -75,13 +84,31 @@ class _RenderActionBar extends RenderBox
     with
         ContainerRenderObjectMixin<RenderBox, _ActionBarParentData>,
         RenderBoxContainerDefaultsMixin<RenderBox, _ActionBarParentData> {
-  _RenderActionBar(this._spacing, this._textDirection);
+  _RenderActionBar(this._spacing, this._apart, this._textDirection);
+
+  // The least room between the button apart and the others (the period's alerts kept Don't Save 24 away).
+  static const _apartGap = 24.0;
 
   double _spacing;
   set spacing(double value) {
     if (value == _spacing) return;
     _spacing = value;
     markNeedsLayout();
+  }
+
+  int? _apart;
+  set apart(int? value) {
+    if (value == _apart) return;
+    _apart = value;
+    markNeedsLayout();
+  }
+
+  // The room a button apart adds to the row, when one stands apart among others.
+  double _apartExtra(int count) {
+    final a = _apart;
+    return a != null && a >= 0 && a < count && count > 1
+        ? math.max(0.0, _apartGap - _spacing)
+        : 0.0;
   }
 
   TextDirection _textDirection;
@@ -118,8 +145,11 @@ class _RenderActionBar extends RenderBox
   );
 
   @override
-  double computeMaxIntrinsicWidth(double height) =>
-      _row(_buttons.map((b) => b.getMaxIntrinsicWidth(double.infinity)));
+  double computeMaxIntrinsicWidth(double height) {
+    final buttons = _buttons;
+    return _row(buttons.map((b) => b.getMaxIntrinsicWidth(double.infinity))) +
+        _apartExtra(buttons.length);
+  }
 
   @override
   double computeMinIntrinsicHeight(double width) =>
@@ -176,15 +206,33 @@ class _RenderActionBar extends RenderBox
     final row = _row(own.map((s) => s.width));
     if (row - constraints.maxWidth <= precisionErrorTolerance) {
       // One row at the trailing end, the buttons' tops on one line: where the Wrap stood them, to the same sums
-      // (right to left, from the last at the left edge).
+      // (right to left, from the last at the left edge). The button apart, when the row has room for its gap, stands
+      // at the start.
+      final extra = _apartExtra(buttons.length);
+      final split =
+          extra > 0 &&
+          row + extra - constraints.maxWidth <= precisionErrorTolerance;
       final tallest = own.fold(0.0, (h, s) => math.max(h, s.height));
-      final size = constraints.constrain(Size(row, tallest));
+      final size = constraints.constrain(
+        Size(split ? row + extra : row, tallest),
+      );
       if (place) {
-        var x = rtl ? 0.0 : math.max(0.0, size.width - row);
-        final placed = buttons.indexed.toList();
-        for (final (i, b) in rtl ? placed.reversed : placed) {
+        final rest = [
+          for (final (i, b) in buttons.indexed)
+            if (!split || i != _apart) (i, b),
+        ];
+        final restRow = _row(rest.map((e) => own[e.$1].width));
+        var x = rtl ? 0.0 : math.max(0.0, size.width - restRow);
+        for (final (i, b) in rtl ? rest.reversed : rest) {
           (b.parentData! as _ActionBarParentData).offset = Offset(x, 0);
           x += own[i].width + _spacing;
+        }
+        if (split) {
+          final a = _apart!;
+          (buttons[a].parentData! as _ActionBarParentData).offset = Offset(
+            rtl ? size.width - own[a].width : 0,
+            0,
+          );
         }
       }
       return size;

@@ -1,7 +1,7 @@
 // Every example in the look's docs, compiled and run: an example that stops compiling fails analysis, one missing
-// from here fails the first test, and each one builds in a Retro Desktop app without an exception. Written out by the
-// look's tooling from its lib (shapes-tools/gen_doc_examples.py); an example changed in the docs changes here too.
-// ignore_for_file: unused_local_variable
+// from here fails the first test, and each one builds in a Retro Desktop app without an exception. Written out from
+// the examples in lib; an example changed in the docs changes here too.
+// ignore_for_file: unused_local_variable — an example names values it shows, not all of which it uses.
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:retro_desktop_ui/retro_desktop_parts.dart';
@@ -71,44 +71,44 @@ void main() {
       'RetroDesktopPageRoute': (context) => RetroDesktopPageRoute<void>(
         builder: (context) => const Text('Project notes'),
       ),
-      'RetroDesktopChart': (context) => RetroDesktopChart(
+      'RetroDesktopChart': (context) => const RetroDesktopChart(
         label: 'Weekly activity',
         series: [
-          RetroDesktopChartSeries('Visits', const [12, 18, 9]),
+          RetroDesktopChartSeries('Visits', [12, 18, 9]),
         ],
-        labels: const ['Mon', 'Tue', 'Wed'],
+        labels: ['Mon', 'Tue', 'Wed'],
       ),
       'RetroDesktopSparkline': (context) => const RetroDesktopSparkline(
         label: 'Visits this week',
         values: [3, 5, 4, 8, 6, 9, 7],
       ),
-      'RetroDesktopLineChart': (context) => RetroDesktopLineChart(
+      'RetroDesktopLineChart': (context) => const RetroDesktopLineChart(
         label: 'Visits',
         series: [
-          RetroDesktopChartSeries('Visits', const [9, 15, 22, 12]),
+          RetroDesktopChartSeries('Visits', [9, 15, 22, 12]),
         ],
-        labels: const ['Mon', 'Tue', 'Wed', 'Thu'],
+        labels: ['Mon', 'Tue', 'Wed', 'Thu'],
       ),
-      'RetroDesktopBarChart': (context) => RetroDesktopBarChart(
+      'RetroDesktopBarChart': (context) => const RetroDesktopBarChart(
         label: 'Files',
         series: [
-          RetroDesktopChartSeries('Documents', const [4, 8, 6, 12]),
+          RetroDesktopChartSeries('Documents', [4, 8, 6, 12]),
         ],
-        labels: const ['Mon', 'Tue', 'Wed', 'Thu'],
+        labels: ['Mon', 'Tue', 'Wed', 'Thu'],
       ),
-      'RetroDesktopAreaChart': (context) => RetroDesktopAreaChart(
+      'RetroDesktopAreaChart': (context) => const RetroDesktopAreaChart(
         label: 'Disk used',
         series: [
-          RetroDesktopChartSeries('Disk used', const [12, 15, 21, 24, 30]),
+          RetroDesktopChartSeries('Disk used', [12, 15, 21, 24, 30]),
         ],
-        labels: const ['Jan', 'Feb', 'Mar', 'Apr', 'May'],
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May'],
       ),
-      'RetroDesktopPieChart': (context) => RetroDesktopPieChart(
+      'RetroDesktopPieChart': (context) => const RetroDesktopPieChart(
         label: 'Storage',
         series: [
-          RetroDesktopChartSeries('Storage', const [52, 28, 20]),
+          RetroDesktopChartSeries('Storage', [52, 28, 20]),
         ],
-        labels: const ['Documents', 'Pictures', 'Other'],
+        labels: ['Documents', 'Pictures', 'Other'],
       ),
       'RetroDesktopSystemMark': (context) =>
           const RetroDesktopSystemMark(size: 24),

@@ -1,4 +1,3 @@
-// ignore_for_file: avoid_relative_lib_imports
 // A pointer over a part changes nothing it paints: every pressable part in
 // every specimen, in both appearances, paints the same pixels hovered as idle.
 // What the pointer does show is the cursor: a click over what presses, a grab

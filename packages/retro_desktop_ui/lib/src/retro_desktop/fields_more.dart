@@ -1,4 +1,4 @@
-// Round 4's fields: a text area, a password field, an input group, a combobox, a multi-select and a form field. The
+// More fields: a text area, a password field, an input group, a combobox, a multi-select and a form field. The
 // last five stand on ui_core's behaviour (reveal, focus-within, the option list, tags, the field's semantics); this
 // file paints them in Retro Desktop's hand: white boxes sunk into the machine, the highlight for the keyboard's row.
 import 'package:flutter/foundation.dart';
@@ -1033,14 +1033,13 @@ class RetroDesktopFormField extends StatelessWidget {
   final FocusNode? focusNode;
 
   /// Whether the label, help and error join [child]'s one node. Null, the
-  /// default, decides by what [child] brings to the semantics tree, as ui_core
-  /// 0.3.2's field does: one control (a text field, a select, a switch) is one
-  /// node with the label as its name and the help and error as its hint;
-  /// several (radios, segments, chips, a number field's value and its steps, a
-  /// password and its Show button) keep their own nodes, which the label names
-  /// as a group; and the label is left out where a control already says it.
-  /// True and false keep ui_core 0.3.1's field: one node, or a group named by
-  /// the label.
+  /// default, decides by what [child] brings to the semantics tree, as ui_core's
+  /// field does: one control (a text field, a select, a switch) is one node
+  /// with the label as its name and the help and error as its hint; several
+  /// (radios, segments, chips, a number field's value and its steps, a password
+  /// and its Show button) keep their own nodes, which the label names as a
+  /// group; and the label is left out where a control already says it. True
+  /// makes one node of them all; false a group named by the label.
   final bool? mergeSemantics;
 
   @override
@@ -1053,7 +1052,7 @@ class RetroDesktopFormField extends StatelessWidget {
     final hint = [?error, ?help].join('. ');
     return RawInputDecorator(
       // Left to Retro (null), the field is told to merge, which adds no node round the field, and the builder places
-      // the look's own node in place of the merged control: ui_core 0.3.1's field merges whatever it holds.
+      // the look's own node in place of the merged control: ui_core's field told to merge merges whatever it holds.
       mergeSemantics: mergeSemantics ?? true,
       labelText: label,
       helperText: help,
@@ -1148,11 +1147,11 @@ class RetroDesktopFormField extends StatelessWidget {
   }
 }
 
-// The field's own node, shaped by the controls under it, as ui_core 0.3.2's field shapes it: one control is merged
-// with the name, hint and validity; several keep their own nodes under a node that names them; the name is left out
-// when a control already says it. Merged into one node, a group's controls gave a tap through the semantics tree on
-// any of them to the first (a form's priority segments and its label chips), a password's Show button stood under its
-// entry, and a field named as its number field read its name twice.
+// The field's own node, shaped by the controls under it, as ui_core's field shapes it: one control is merged with
+// the name, hint and validity; several keep their own nodes under a node that names them; the name is left out when a
+// control already says it. Merged into one node, a group's controls would give a tap through the semantics tree on any
+// of them to the first (a form's priority segments and its label chips), a password's Show button would stand under
+// its entry, and a field named as its number field would read its name twice.
 class _FieldNode extends SingleChildRenderObjectWidget {
   const _FieldNode({
     required this.label,

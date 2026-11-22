@@ -29,8 +29,8 @@ final _parts = {
     sample.key: () => sample.value(_tap),
 };
 
-/// The parts a finger drives through ui_core's detectors, not a press (the rating's stars since ui_core 0.3.0's
-/// `RawRating`: a tap or a sweep along the row); and the list table, one focus stop whose rows take a finger as the
+/// The parts a finger drives through ui_core's detectors, not a press (the rating's stars, ui_core's `RawRating`:
+/// a tap or a sweep along the row); and the list table, one focus stop whose rows take a finger as the
 /// period's lists did.
 const _byPointer = {
   'RetroDesktopRangeSlider',

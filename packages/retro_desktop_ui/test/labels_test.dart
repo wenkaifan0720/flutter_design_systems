@@ -1,9 +1,8 @@
-// Labels (ui_core's DesignLabelCheck, 11-11): every labelled control's words and glyph on the middle of its face, as
+// Labels (ui_core's DesignLabelCheck): every labelled control's words and glyph on the middle of its face, as
 // laid out and as drawn, under each density the look ships by default (standard on a phone, compact on a desktop), on
 // every gallery page, the ordinary screens and Papers' windows, at 390 and 1440, in Platinum and Chisel. What the
 // check misreads here is named by kind, with its reason, in misreads.dart; the rest must be empty.
-// The package emitter carries the example's own app into example/lib.
-// ignore_for_file: avoid_relative_lib_imports
+// ignore_for_file: avoid_relative_lib_imports — the example app's pages are what this test checks; example/ is not a dependency of the package.
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ui_core_test/ui_core_test.dart';

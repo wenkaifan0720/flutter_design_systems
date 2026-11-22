@@ -263,7 +263,7 @@ final List<ExamplePage> examplePages = [
   ),
   (
     name: 'All components',
-    // Every part on one page: the kit's hammer, not Selection's checklist.
+    // Every part on one page.
     icon: RetroDesktopGlyphs.hammer,
     build: (brightness) => kitFilledScreen(
       brightness: brightness,
@@ -651,35 +651,29 @@ class _GalleryAppState extends State<GalleryApp> {
 
   // A link may open a page, by day or by night, in either appearance, right to
   // left, at a text size in percent, and slow what moves N times to be seen
-  // mid-move. The looks share one form, /#/text-fields?theme=dark&dir=rtl&text=200
-  // (the page is its name in lower case, words joined by hyphens); the older
-  // ?page=Text%20fields&night=1&appearance=chisel&slow=10 still opens.
+  // mid-move: /#/text-fields?theme=dark&appearance=chisel&dir=rtl&text=200&slow=10
+  // (the page is its name in lower case, words joined by hyphens).
   @override
   void initState() {
     super.initState();
-    final query = {...Uri.base.queryParameters};
-    var pageName = query['page'];
     final hash = Uri.base.fragment;
-    if (hash.startsWith('/')) {
-      final link = Uri.parse(hash);
-      query.addAll(link.queryParameters);
-      final slug = link.pathSegments.firstOrNull;
-      if (slug != null && slug.isNotEmpty) pageName = slug;
-    }
+    final link = Uri.parse(hash.startsWith('/') ? hash : '/');
+    final query = link.queryParameters;
+    final pageName = link.pathSegments.firstOrNull;
     final slow = double.tryParse(query['slow'] ?? '');
     if (slow != null && slow >= 1) timeDilation = slow;
     String slugOf(String name) =>
         name.toLowerCase().replaceAll(RegExp('[^a-z0-9]+'), '-');
-    final page = examplePages.indexWhere(
-      (p) => p.name == pageName || slugOf(p.name) == pageName,
-    );
+    final page = pageName == null || pageName.isEmpty
+        ? -1
+        : examplePages.indexWhere((p) => slugOf(p.name) == pageName);
     if (page >= 0) {
       _page = page;
       if (!galleryAppPages.contains(examplePages[page].name)) {
         _galleryPage = page;
       }
     }
-    if (query['night'] == '1' || query['theme'] == 'dark') {
+    if (query['theme'] == 'dark') {
       _brightness = Brightness.dark;
     }
     final look = RetroDesktopAppearance.values

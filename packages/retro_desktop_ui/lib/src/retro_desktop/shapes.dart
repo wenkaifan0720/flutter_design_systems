@@ -122,7 +122,8 @@ class RetroDesktopBorder extends OutlinedBorder {
 /// its edge, how it presses and how it shows keyboard focus.
 ///
 /// Pick one with `RetroDesktopThemeData.copyWith(appearance: ...)`; the theme's
-/// [RetroDesktopShapes] follow it unless an app supplies its own.
+/// [RetroDesktopShapes] follow it. An app does not supply shapes of its own: a
+/// component theme or a part's `style:` sets one part's shape.
 enum RetroDesktopAppearance {
   /// The 95-era PC: square corners everywhere, a hard two-step bevel (light
   /// above and left, dark below and right; fields sunk the other way), a
@@ -131,12 +132,12 @@ enum RetroDesktopAppearance {
   /// title at its start and square caption buttons at its end.
   chisel,
 
-  /// The late-90s Mac, the default: a one-pixel dark outline round a soft
-  /// one-step bevel, push buttons and popups in a small rounded rectangle,
-  /// windows and fields square, a pressed face that darkens without moving,
-  /// a two-pixel focus ring outside the part in the accent, and a pinstriped
-  /// title bar with the title centred, a close box at its start and zoom and
-  /// collapse boxes at its end.
+  /// Mac OS 8's Platinum appearance, the default: grey plates in a one-pixel
+  /// dark outline round a soft one-step bevel, push buttons and popups in a
+  /// small rounded rectangle, windows and fields square, a pressed face that
+  /// darkens without moving, a two-pixel focus ring outside the part in the
+  /// accent, and a pinstriped title bar with the title centred, a close box at
+  /// its start and zoom and collapse boxes at its end.
   platinum,
 }
 

@@ -1810,8 +1810,8 @@ bool retroDesktopHugs(BuildContext context) =>
 /// room at most [retroDesktopHugMost] wide; in a wider room from
 /// [retroDesktopHugFrom] up, and in an unbounded row, the face takes its
 /// content's width at the room's leading edge, and a press anywhere in the
-/// room still reaches it (a walkthrough presses a button's box at its
-/// middle). With [always] the face takes its content's width at every width
+/// room still reaches it (a test that presses a button's box at its middle
+/// reaches it). With [always] the face takes its content's width at every width
 /// and in any room (a quiet button, whose words stand on the column's edge).
 /// Internal button layout; hidden from the public barrel.
 Widget retroDesktopButtonFill({required Widget child, bool always = false}) =>

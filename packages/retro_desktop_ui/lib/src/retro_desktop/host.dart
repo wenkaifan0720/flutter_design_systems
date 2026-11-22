@@ -39,8 +39,7 @@ class RetroDesktopUtility {
 /// when [accent] is on.
 class RetroDesktopShellAction extends ShellAction {
   /// Creates a [RetroDesktopShellAction].
-  // ignore: prefer_const_constructors_in_immutables, not every build of ShellAction has a const constructor.
-  RetroDesktopShellAction({
+  const RetroDesktopShellAction({
     required super.icon,
     required super.onPressed,
     super.label,

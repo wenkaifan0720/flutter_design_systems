@@ -1,5 +1,6 @@
 // The look's modal windows (an alert, a dialog, a sheet) and what stands under them: only the front window is active
-// (law 3), so a window under one draws its title bar inactive and its default button goes quiet, as the period's did.
+// (the stacking law), so a window under one draws its title bar inactive and its default button goes quiet, as the
+// period's did.
 import 'dart:async';
 import 'dart:math' as math;
 

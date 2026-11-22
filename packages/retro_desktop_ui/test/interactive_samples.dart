@@ -1,4 +1,4 @@
-// Shared inventory for the source-enumerated reach and keyboard laws.
+// Every interactive part, each built with a press callback: the inventory the reach and keyboard tests walk.
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:retro_desktop_ui/retro_desktop_ui.dart';
@@ -404,7 +404,7 @@ final retroDesktopInteractiveSamples = <String, Widget Function(VoidCallback?)>{
     onPressed: hit,
     child: const Text('Contents'),
   ),
-  // Round 4's parts.
+  // Grouped actions, pickers, containers and raised parts.
   'RetroDesktopButtonGroupItem': (hit) => RetroDesktopButtonGroup(
     label: 'Steps',
     items: [RetroDesktopButtonGroupItem(label: 'Next', onPressed: hit)],

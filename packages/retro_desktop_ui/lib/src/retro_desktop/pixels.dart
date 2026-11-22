@@ -290,7 +290,7 @@ class RetroDesktopPixelGrid {
   }
 }
 
-/// The inset of a well: 1 lp of light and shade outside, 1 lp of dark and body inside, as the concept's `.well` draws it.
+/// The inset of a well: 1 lp of light and shade outside, 1 lp of dark and body inside.
 void retroDesktopInset(
   RetroDesktopPixelGrid px,
   Size size, {
@@ -414,7 +414,7 @@ void retroDesktopPaintTriangle(
   Color fill,
   Color line,
 ) {
-  // The concept's own 12-unit polygons.
+  // Each direction's triangle on a 12-unit grid.
   const shapes = {
     AxisDirection.down: [Offset(1.5, 3.5), Offset(10.5, 3.5), Offset(6, 9.5)],
     AxisDirection.right: [Offset(3.5, 1.5), Offset(9.5, 6), Offset(3.5, 10.5)],

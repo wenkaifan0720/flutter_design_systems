@@ -3,8 +3,7 @@
 // what ends one on one trailing keyline; a row of controls has one height and one centre line. Over Papers' windows and
 // the ordinary screens at 390 and 1440, in Platinum and Chisel. papers_test's own keyline check stays for what this does
 // not cover: a row of buttons ending on the window's trailing keyline.
-// The package emitter carries the example's own app into example/lib.
-// ignore_for_file: avoid_relative_lib_imports
+// ignore_for_file: avoid_relative_lib_imports — the example app's pages are what this test checks; example/ is not a dependency of the package.
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ui_core_review/ui_core_review.dart';

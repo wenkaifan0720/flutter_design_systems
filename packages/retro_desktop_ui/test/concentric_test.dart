@@ -1,4 +1,3 @@
-// ignore_for_file: avoid_relative_lib_imports
 // A focus ring is its part's outline moved by one distance, measured on what
 // is painted. Every focusable part in every specimen (fields, buttons, chips,
 // checks, radios, switches, the slider, segments, tabs, steppers, pages, menu
@@ -8,8 +7,7 @@
 // middle of each edge and along each corner's diagonal. A rounded or round
 // corner keeps the gap; a square one keeps square, so its diagonal is the gap
 // times the square root of two. Within half a pixel.
-// The look's painters are private, so these checks read their fields dynamically.
-// ignore_for_file: avoid_dynamic_calls
+// ignore_for_file: avoid_dynamic_calls — the look's painters are private, so this test reads their fields dynamically.
 import 'dart:math' as math;
 
 import 'package:material_ui/material_ui.dart';

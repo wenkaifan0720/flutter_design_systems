@@ -478,7 +478,7 @@ class RetroDesktopHeroHeader extends StatelessWidget {
       ],
     );
     final figures = stats.isEmpty ? null : RetroDesktopStats(stats);
-    // The tile holds its sheets and rings in its own box: 6 lp of the concept's gaps are inside it.
+    // The tile holds its sheets and rings in its own box, with 6 lp of the gap round them inside it.
     final gap = t.desk ? 16.0 : 12.0;
     final Widget body;
     if (t.desk) {

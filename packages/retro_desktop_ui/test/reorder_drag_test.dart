@@ -1,4 +1,4 @@
-// The period's drag (the look's laws, 2026-11-12): a row dragged by its grip
+// The period's drag: a row dragged by its grip
 // leaves a dotted outline under the pointer and a line where it will land; no
 // row moves until the drop; the drop reports the move; a drop off the list
 // changes nothing.

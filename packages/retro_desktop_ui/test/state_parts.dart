@@ -1,7 +1,7 @@
-// Every part and its states, in one table: design review's sheets draw it and
-// state_cells_test holds it to a law. A null cell means the state does not
+// Every part and its states, in one table: state_cells_test holds it to a
+// law. A null cell means the state does not
 // apply: a field or a slider has no pressed look of its own, and a part with
-// no disabled or error state leaves that cell blank (DECISIONS says why).
+// no disabled or error state leaves that cell blank.
 import 'package:flutter/gestures.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
@@ -547,8 +547,8 @@ Widget _chart(
     label: 'Visits',
     labels: const ['Mon', 'Tue', 'Wed', 'Thu'],
     height: 140,
-    series: [
-      RetroDesktopChartSeries('Visits', const [9, 15, 22, 12]),
+    series: const [
+      RetroDesktopChartSeries('Visits', [9, 15, 22, 12]),
     ],
   ),
 );

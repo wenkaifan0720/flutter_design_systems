@@ -2566,8 +2566,8 @@ class RetroDesktopHatchBars extends StatelessWidget
                                     ),
                                   ),
                                 ),
-                              // A note starts at its bar's reading start and runs on in reading order (in
-                              // right-to-left it ran rightward off the plot into the figures: "1.4.5").
+                              // A note starts at its bar's reading start and runs on in reading order: in
+                              // right-to-left it runs leftward, on the plot and clear of the figures.
                               for (final note in notes)
                                 if (note.index < n)
                                   PositionedDirectional(

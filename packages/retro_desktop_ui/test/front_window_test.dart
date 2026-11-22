@@ -1,8 +1,7 @@
-// Only the front window is active (law 3): under an alert the window behind draws its title bar inactive and its
+// Only the front window is active (the stacking law): under an alert the window behind draws its title bar inactive and its
 // default button quiet, a window behind shows its chosen row in grey, and nothing the look raises covers the menu bar.
 // A held close box turns in. Papers, the look's own application, as the example opens it.
-// The package emitter carries the example's own app into example/lib.
-// ignore_for_file: avoid_relative_lib_imports
+// ignore_for_file: avoid_relative_lib_imports — the example app's pages are what this test checks; example/ is not a dependency of the package.
 import 'dart:async';
 
 import 'package:material_ui/material_ui.dart';

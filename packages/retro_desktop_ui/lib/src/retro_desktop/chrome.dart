@@ -53,7 +53,7 @@ class RetroDesktopNavItem {
   /// {@macro retro_desktop.onPressed}
   final VoidCallback? onPressed;
 
-  /// The walkthrough key on its hit target.
+  /// A key on its hit target, for a test to find and press it.
   final Key? key;
 }
 
@@ -682,9 +682,9 @@ class RetroDesktopDeskStrip extends StatelessWidget {
   }
 }
 
-// --- What the generator's routes, previews and page stubs stand on. ---
+// --- An app's tabs, page and shell. ---
 
-/// One tab as a generated app declares it: its glyph, its label and the walkthrough key on its hit target.
+/// One tab as an app declares it: its glyph, its label and a key on its hit target, for a test to find and press it.
 ///
 /// ```dart
 /// RetroDesktopTab(RetroDesktopGlyphs.calendarDays, 'Today', ValueKey('open-today'))

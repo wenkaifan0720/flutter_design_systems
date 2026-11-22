@@ -1,7 +1,6 @@
 // Bevels land on the pixel. A browser snaps a box's edges when it paints and Flutter doesn't, so a 1 px bevel at a fractional
 // position blurs into two faint lines. Here a window's frame and pinstripes, the scroll thumb and the gauge are drawn at
-// fractional positions, on device scales 1, 2, 3 and a phone's 2.625, and read back a device pixel at a time. Eyes checked the
-// same crops, in entry_review.html.
+// fractional positions, on device scales 1, 2, 3 and a phone's 2.625, and read back a device pixel at a time.
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
@@ -114,7 +113,7 @@ Future<_Shot> _shoot(
   final theme = RetroDesktopThemeData.preset(
     'classic',
     dark ? Brightness.dark : Brightness.light,
-    // ignore: deprecated_member_use_from_same_package
+    // ignore: deprecated_member_use_from_same_package — the deprecated motion setting still works until it is removed, and this test holds it.
   ).copyWith(motion: motion).atWidth(view.width);
   final placed = SizedBox(
     key: _part,

@@ -1,4 +1,4 @@
-// Pieces the round-4 parts share: a raised panel, a lit row, a held segment, a bare editor and a sunken box. Not part
+// Pieces several parts share: a raised panel, a lit row, a held segment, a bare editor and a sunken box. Not part
 // of the public API (the barrel does not export internal/).
 import 'dart:math' as math;
 

@@ -1,7 +1,8 @@
 // The same source-enumerated inventory as reach_test: every interactive part
 // must be keyboard reachable, expose state, and stop when disabled. The parts
-// run in three files (behaviour_a/b/c_test.dart), a third each, so no test
-// process runs all 3,000 cases (one that did grew to 7.4 GB on Linux). Every
+// run in three files (interactive_parts_1_of_3_test.dart and its two
+// siblings), a third each, so no test process runs all 3,000 cases (one
+// process running them all grows past 7 GB on Linux). Every
 // day each case runs on a desk platform and a phone one, and each part's 2x type
 // and RTL check at one width, the parts taking the four in turn; the rest of the
 // matrix is tagged sweep.
@@ -54,7 +55,7 @@ void _size(WidgetTester tester, double width) {
   addTearDown(tester.view.reset);
 }
 
-/// Round 4's parts whose keys are not a press's Enter and Space: ui_core's
+/// Parts whose keys are not a press's Enter and Space: ui_core's
 /// behaviours and the wheel. Tab reaches them here and they lay out everywhere;
 /// their keys and what they do are held by ui_core's tests and coverage_test.
 const _onCore = {

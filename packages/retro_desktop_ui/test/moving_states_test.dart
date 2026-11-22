@@ -3,7 +3,7 @@
 // what moved, so no shadow, rim or ring is cut by a clip round it. On a phone (iOS, a finger) at 390 and on a desk
 // (macOS, a pointer) at 1440. Retro Desktop's own motion is instant, as the period's was, so a moment is the frame its
 // state lands on. None of the ten screens swipes (the look has no carousel), so there is no swipe to hold.
-// ignore_for_file: avoid_relative_lib_imports
+// ignore_for_file: avoid_relative_lib_imports — the example app's pages are what this test checks; example/ is not a dependency of the package.
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:retro_desktop_ui/retro_desktop_ui.dart';

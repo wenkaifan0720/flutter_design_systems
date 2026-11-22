@@ -1,4 +1,4 @@
-// Round 4's pickers: a range slider, a colour picker, an inline calendar and a date range picker. They stand on
+// More pickers: a range slider, a colour picker, an inline calendar and a date range picker. They stand on
 // ui_core's behaviour (two handles that never cross, the colour's channels, the month's keys and ranges); this file
 // draws them in Retro Desktop's hand.
 import 'dart:math' as math;
@@ -297,99 +297,112 @@ class RetroDesktopColorPicker extends StatelessWidget {
       ),
       child: child,
     );
+    // On a phone a strip reaches a finger, 48 high with its 14 drawn in the
+    // middle, as the range slider's grips do; on a desk 44.
+    final reach = math.max(44.0, RetroDesktopReach.least(context));
     final picker = Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        RawColorPicker(
-          controller: controller,
-          showAlpha: showAlpha,
-          areaHeight: areaHeight,
-          areaBuilder: (context, area) => well(
-            DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    const Color(0xFFFFFFFF),
-                    HSVColor.fromAHSV(1, area.color.hue, 1, 1).toColor(),
-                  ],
-                ),
-              ),
-              child: const DecoratedBox(
+        SizedBox(
+          height: areaHeight,
+          child: RawColorArea(
+            controller: controller,
+            builder: (context, area) => well(
+              DecoratedBox(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [Color(0x00000000), Color(0xFF000000)],
+                    colors: [
+                      const Color(0xFFFFFFFF),
+                      HSVColor.fromAHSV(1, area.color.hue, 1, 1).toColor(),
+                    ],
                   ),
                 ),
-                child: SizedBox.expand(),
+                child: const DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [Color(0x00000000), Color(0xFF000000)],
+                    ),
+                  ),
+                  child: SizedBox.expand(),
+                ),
               ),
             ),
-          ),
-          areaThumbBuilder: (context, area) => RetroDesktopHighlight(
-            shape: const RoundedRectangleBorder(),
-            focused: area.states.contains(WidgetState.focused),
-            // The mark stays whole inside the field: at an edge it steps in by
-            // its half (at full brightness, centred on the field's top, half
-            // of it hung over the frame).
-            child: Transform.translate(
-              offset: Offset(
-                (1 - 2 * area.color.saturation) * 7,
-                (2 * area.color.value - 1) * 7,
-              ),
-              child: Center(
-                child: SizedBox.square(
-                  dimension: 12,
-                  child: DecoratedBox(
-                    decoration: ShapeDecoration(
-                      color: area.color.toColor(),
-                      shape: t.shapes.small.copyWith(
-                        side: const BorderSide(
-                          color: Color(0xFFFFFFFF),
-                          width: 2,
+            thumbBuilder: (context, area) => RetroDesktopHighlight(
+              shape: const RoundedRectangleBorder(),
+              focused: area.states.contains(WidgetState.focused),
+              // The mark stays whole inside the field: at an edge it steps in
+              // by its half (at full brightness, centred on the field's top,
+              // half of it hung over the frame).
+              child: Transform.translate(
+                offset: Offset(
+                  (1 - 2 * area.color.saturation) * 7,
+                  (2 * area.color.value - 1) * 7,
+                ),
+                child: Center(
+                  child: SizedBox.square(
+                    dimension: 12,
+                    child: DecoratedBox(
+                      decoration: ShapeDecoration(
+                        color: area.color.toColor(),
+                        shape: t.shapes.small.copyWith(
+                          side: const BorderSide(
+                            color: Color(0xFFFFFFFF),
+                            width: 2,
+                          ),
                         ),
+                        shadows: const [
+                          BoxShadow(color: Color(0xFF000000), spreadRadius: 1),
+                        ],
                       ),
-                      shadows: const [
-                        BoxShadow(color: Color(0xFF000000), spreadRadius: 1),
-                      ],
                     ),
                   ),
                 ),
               ),
             ),
           ),
-          trackBuilder: (context, channel, color) => SizedBox(
-            height: 14,
-            child: well(
-              DecoratedBox(
-                decoration: BoxDecoration(
-                  // From the start edge, as the thumb runs: right to left, the rainbow mirrors with it.
-                  gradient: LinearGradient(
-                    begin: AlignmentDirectional.centerStart,
-                    end: AlignmentDirectional.centerEnd,
-                    colors: channel == RawColorChannel.alpha
-                        ? [
-                            color.toColor().withAlpha(0),
-                            color.toColor().withAlpha(255),
-                          ]
-                        : [
-                            for (var h = 0; h <= 360; h += 60)
-                              HSVColor.fromAHSV(
-                                1,
-                                h.toDouble(),
-                                1,
-                                1,
-                              ).toColor(),
-                          ],
+        ),
+        for (final strip in [
+          RawColorChannel.hue,
+          if (showAlpha) RawColorChannel.alpha,
+        ])
+          RawColorSlider(
+            controller: controller,
+            channel: strip,
+            thumbSize: Size.square(reach),
+            trackBuilder: (context, channel, color) => SizedBox(
+              height: 14,
+              child: well(
+                DecoratedBox(
+                  decoration: BoxDecoration(
+                    // From the start edge, as the thumb runs: right to left, the rainbow mirrors with it.
+                    gradient: LinearGradient(
+                      begin: AlignmentDirectional.centerStart,
+                      end: AlignmentDirectional.centerEnd,
+                      colors: channel == RawColorChannel.alpha
+                          ? [
+                              color.toColor().withAlpha(0),
+                              color.toColor().withAlpha(255),
+                            ]
+                          : [
+                              for (var h = 0; h <= 360; h += 60)
+                                HSVColor.fromAHSV(
+                                  1,
+                                  h.toDouble(),
+                                  1,
+                                  1,
+                                ).toColor(),
+                            ],
+                    ),
                   ),
+                  child: const SizedBox.expand(),
                 ),
-                child: const SizedBox.expand(),
               ),
             ),
+            thumbBuilder: (context, states) => _gripWithRing(t, states),
           ),
-          thumbBuilder: (context, states) => _gripWithRing(t, states),
-        ),
         const SizedBox(height: RetroDesktopSpacing.s8),
         ListenableBuilder(
           listenable: controller,
@@ -694,7 +707,7 @@ class RetroDesktopCalendar extends StatelessWidget {
     // Seven days reach a finger's width on a phone only with a narrow margin.
     final pad = RetroDesktopReach.least(context) >= 44 ? 4.0 : 8.0;
     // Under a finger a day is at least the touch floor wide, and no wider than its seventh where seven of them fit
-    // (a day overhanging its seventh was outlined past where a tap reached it, the next day's taking its edge).
+    // (a day overhanging its seventh would be outlined past where a tap reaches it, over the next day's edge).
     final day = math.max(
       minDayWidth,
       RetroDesktopReach.padsAcross(context)

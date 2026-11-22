@@ -25,8 +25,8 @@ class _DeskArtPainter extends RetroDesktopPixelPainter {
   final RetroDesktopDeskMark mark;
   @override
   void paint(RetroDesktopPixelGrid px, Size s) {
-    // The marks keep their own inks by night (law 6): light bodies, a near-black edge. In the night's greys they stood
-    // as dark shapes on the dark desk, the bin almost gone.
+    // The marks keep their own inks by night (the pictures law): light bodies, a near-black edge. In the night's greys
+    // they would stand as dark shapes on the dark desk, the bin almost gone.
     final c = this.c.dark
         ? this.c.copyWith(
             platinum: const Color(0xFFCCCCCC),
@@ -253,7 +253,7 @@ class _FolderPainter extends RetroDesktopPixelPainter {
         Offset(3.5, 40.5),
       ], true);
     canvas.drawPath(tab, Paint()..color = back);
-    // A pixel wide, as the body's frame: a hairline stayed one device pixel when the art was drawn large.
+    // A pixel wide, as the body's frame: a hairline would stay one device pixel when the art is drawn large.
     canvas.drawPath(
       tab,
       Paint()

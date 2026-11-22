@@ -1,3 +1,17 @@
+## 0.4.1
+
+- A default `RetroDesktopButton` with no `onPressed` lays its highlight down and stands as a plain button out of use in its grey ring, as it does in a window behind. Before, it kept a washed-out highlight face, so a button out of use looked two ways.
+- A destructive `RetroDesktopButton` carries the alerts' stop sign before its words, the look's own pixel picture, on the face it would have anyway. Before, it carried a line caution glyph.
+- `RetroDesktopDialogAction` takes `isDestructiveAction`. In the button row of a `RetroDesktopDialog` or `RetroDesktopBottomSheet`, one destructive action that isn't the default stands apart at the row's start, at least 24 from the others, as the period's alerts set Don't Save. When the buttons stack, they keep their order.
+- On a desk, a `RetroDesktopWindow` with `onClose` has a title bar as tall as one without, so two windows side by side keep their titles level and the bar holds still as a closable window opens. Before, the close box's padded target made the bar 7 taller. A finger's reach still grows the bar.
+- `RetroDesktopGlyphs.signOut` turns with the text: in right-to-left text its arrow points out of the words, to the left. It is now Lucide's `logOutDir`.
+- `RetroDesktopDatePicker` and `showRetroDesktopDatePicker` take a `today`, as Material's `currentDate` does. The calendar outlines that day. Before, it outlined the device's date, which could stand beside the chosen day and read as a span.
+- A list that opens under a focused `RetroDesktopSelect` hangs clear of the field's focus ring, so the ring stays whole. Before, the list sat on the ring's foot.
+- A `RetroDesktopChart` whose values are all zero stands on a scale from 0 to 1. Before, its scale ran from −1 to 1.
+- On a phone, a `RetroDesktopColorPicker`'s hue and alpha strips reach 48 high, as every control does there, each still drawn 14 high in the middle. Before, they reached 44. On a desk they keep 44.
+- `RetroDesktopColors`, `RetroDesktopIllustrationColors`, `RetroDesktopChartSeries`, `RetroDesktopChart` and `RetroDesktopShellAction` have const constructors. The lists they take (`tones`, `sky`, `values`, `series`, `labels`) are kept as given, not copied, as Flutter's widgets keep theirs: don't change a list after handing it in.
+- The example app opens a page from the shared link form only, `/#/text-fields?theme=dark&dir=rtl`. The older `?page=…&night=1` form is gone.
+
 ## 0.4.0
 
 - **Breaking:** stands on ui_core 0.4.0. Flutter 3.47 or later, as before.

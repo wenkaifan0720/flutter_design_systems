@@ -5,13 +5,19 @@
 // And at 390 and 1440: a select's, a combobox's and a
 // menu's open list, opened from a card, floats over it in
 // the window's overlay, whole on the screen; a field's options start their
-// words on one x, the field's value's.
+// words on one x, the field's value's. And at 640 a select hugs its widest option, at most 320; at 390 it spans its
+// column.
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:retro_desktop_ui/retro_desktop_ui.dart';
 
 import 'support.dart';
+
+const appearances = <String, RetroDesktopAppearance>{
+  'chisel': RetroDesktopAppearance.chisel,
+  'platinum': RetroDesktopAppearance.platinum,
+};
 
 const _options = [
   RetroDesktopOption('here', 'This computer'),
@@ -276,6 +282,53 @@ void main() {
         await open('menu', find.text('More'), ['Open', 'Rename']);
       }
       expect(faults, isEmpty, reason: faults.join('\n'));
+    });
+  }
+
+  for (final appearance in appearances.entries) {
+    testWidgets('${appearance.key}: from 600 up a select hugs its widest '
+        'option, at most 320; below 600 it spans its column', (tester) async {
+      for (final (view, hugs) in const [(640.0, true), (390.0, false)]) {
+        tester.view.physicalSize = Size(view, 600);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.reset);
+        await tester.pumpWidget(
+          retroDesktopApp(
+            Align(
+              alignment: Alignment.topLeft,
+              child: SizedBox(
+                width: 340,
+                child: RetroDesktopTheme(
+                  data: RetroDesktopThemeData.preset(
+                    'classic',
+                    Brightness.light,
+                  ).copyWith(appearance: appearance.value).atWidth(view),
+                  child: RetroDesktopSelect<String>(
+                    label: 'Save new documents to',
+                    value: 'here',
+                    options: const [
+                      RetroDesktopOption('here', 'This computer'),
+                      RetroDesktopOption('cloud', 'A shared folder online'),
+                    ],
+                    onChanged: (_) {},
+                  ),
+                ),
+              ),
+            ),
+            width: view,
+          ),
+        );
+        final face = tester.getRect(find.byType(RetroDesktopPressable).first);
+        final widest = tester.getSize(find.text('This computer')).width;
+        if (hugs) {
+          expect(face.width, lessThan(320.5));
+          expect(face.width, lessThan(330), reason: 'stretched to 340');
+          expect(face.left, 0);
+          expect(widest, greaterThan(0));
+        } else {
+          expect(face.width, 340);
+        }
+      }
     });
   }
 }

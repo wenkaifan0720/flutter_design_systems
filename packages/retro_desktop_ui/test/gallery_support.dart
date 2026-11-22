@@ -9,8 +9,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:retro_desktop_ui/retro_desktop_ui.dart';
 
-// The gallery is the example app; a test reads its pages from there.
-// ignore_for_file: avoid_relative_lib_imports
+// ignore_for_file: avoid_relative_lib_imports — the example app's pages are what this test checks; example/ is not a dependency of the package.
 import '../example/lib/gallery_pages.dart';
 import '../example/lib/kit_gallery/kit.dart';
 import '../example/lib/kit_gallery/theme.dart';

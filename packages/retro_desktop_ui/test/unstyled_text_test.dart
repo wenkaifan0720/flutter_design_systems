@@ -1,4 +1,4 @@
-// ignore_for_file: avoid_relative_lib_imports
+// ignore_for_file: avoid_relative_lib_imports — the example app's pages are what this test checks; example/ is not a dependency of the package.
 // No unstyled text: under a bare WidgetsApp, with nothing but the package's
 // theme above it (no Material, no host text style), every paragraph and every
 // editable line in every specimen, and in every overlay a part opens (menus,
@@ -81,7 +81,7 @@ void checkStyled(WidgetTester tester, Set<String> allowed, String why) {
 void main() {
   setUpAll(loadRetroDesktopFonts);
   for (final brightness in Brightness.values) {
-    // By day every run; by night in the sweep (the night's own faces and inks are the goldens' and complete_test's).
+    // By day every run; by night in the sweep (the night's own faces and inks are the goldens' and complete_gallery_test's).
     testWidgets(
       '$brightness: every line wears the look, overlays too',
       tags: sweepUnless(brightness == Brightness.light),

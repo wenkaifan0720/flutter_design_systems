@@ -6,7 +6,7 @@
 // - The way back's ◂ stood in its face's top corner. DesignLabelCheck holds a control's words and icon glyph on its face's
 //   middle; a mark the look paints itself (a triangle, a chevron) is neither, so it is not read. Held by the mark's
 //   middle against its press's.
-// ignore_for_file: avoid_relative_lib_imports
+// ignore_for_file: avoid_relative_lib_imports — the example app's pages are what this test checks; example/ is not a dependency of the package.
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:retro_desktop_ui/retro_desktop_ui.dart';

@@ -212,8 +212,8 @@ void main() {
   }
 
   // An open list shows its choice at a glance: one highlight bar, on the chosen row at rest and on the pointer's row
-  // once it moves, and the chosen row keeps its check and, unlit, stands in the held well. In 0.1.0 the pointer's bar
-  // took the only mark the choice had.
+  // once it moves, and the chosen row keeps its check and, unlit, stands in the held well: the pointer's bar never
+  // takes the only mark the choice has.
   testWidgets('a menu keeps its choice marked while another row is lit', (
     tester,
   ) async {
@@ -752,7 +752,7 @@ void main() {
                         locale: const Locale('en', 'GB'),
                         child: RetroDesktopTheme(
                           data: RetroDesktopThemeData.berry().copyWith(
-                            // ignore: deprecated_member_use_from_same_package
+                            // ignore: deprecated_member_use_from_same_package — the deprecated motion setting still works until it is removed, and this test holds it.
                             motion: const RetroDesktopMotion(
                               raise: Duration(seconds: 1),
                               leave: Duration(seconds: 1),

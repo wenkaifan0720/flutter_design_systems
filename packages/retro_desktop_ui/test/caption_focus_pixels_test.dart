@@ -530,7 +530,7 @@ void main() {
                             : theme.colors.outline)
                         .toARGB32();
                 // Every glyph on its box's middle, measured on the painted pixels: within half a device pixel across
-                // and down. Inside the box's frame and bevel, two of its lines (11-18: the zoom glyph hugged a corner).
+                // and down. Inside the box's frame and bevel, two of its lines (a glyph hugging a corner fails).
                 final ring = 2 * (dpr.round() < 1 ? 1 : dpr.round()).toDouble();
                 for (final (i, box) in painted.indexed) {
                   final glyph = frame.bounds(box.deflate(ring), ink);

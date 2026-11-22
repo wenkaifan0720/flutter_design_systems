@@ -85,7 +85,7 @@ final _fixed = <String, _Fixed>{
     () => const RetroDesktopTriangleMark(AxisDirection.down),
     centred: true,
   ),
-  // Off: its tick breaks out of the box on purpose, as the concept's does.
+  // Off: its tick breaks out of the box on purpose, as the period's did.
   'RetroDesktopCheckbox': _Fixed(
     const Size(18, 18),
     () => const RetroDesktopCheckbox(value: false, label: 'Option'),
@@ -429,8 +429,8 @@ void main() {
     expect(found, isEmpty);
   });
 
-  // No fixed size, but no bar across a column either: Gilt's first review passed every gate with a part ballooned by a
-  // section's stretch, because no page put it there.
+  // No fixed size, but no bar across a column either: a part a section's stretch balloons passes every page that never
+  // puts it in a stretched section, so each one is put there here.
   group('a part that hugs its words', () {
     final hugs = <String, Widget>{
       'RetroDesktopButton (isDefaultAction)': RetroDesktopButton(

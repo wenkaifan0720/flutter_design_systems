@@ -8,7 +8,7 @@ import '../kit.dart';
 import 'papers.dart';
 import 'papers_words.dart';
 
-/// The six product layouts reviewed in the package's design contact sheet.
+/// The ordinary task pages: a form, a dialog, a list, tabs, cards, settings and a checkout.
 const kitOrdinaryScreens = [
   'form',
   'dialog',
@@ -19,7 +19,7 @@ const kitOrdinaryScreens = [
   'checkout',
 ];
 
-/// A complete page for one ordinary task, used by the design review and tests.
+/// A complete page for one ordinary task.
 Widget kitOrdinaryScreen(String screen, Brightness brightness) => kitScreen(
   brightness: brightness,
   title: _title(screen),

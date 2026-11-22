@@ -1,4 +1,4 @@
-// Round 4's actions: a button group, a toggle group and a split button. The toggle group and the split button stand
+// More actions: a button group, a toggle group and a split button. The toggle group and the split button stand
 // on ui_core's behaviour (keys, focus, semantics, the menu); this file only paints them.
 import 'package:flutter/foundation.dart';
 

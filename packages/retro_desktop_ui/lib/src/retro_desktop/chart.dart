@@ -18,13 +18,14 @@ import 'raised.dart' show RetroDesktopTooltipFace;
 @immutable
 class RetroDesktopChartSeries {
   /// Creates a [RetroDesktopChartSeries].
-  RetroDesktopChartSeries(this.label, List<double?> values)
-    : values = List.unmodifiable(values);
+  ///
+  /// [values] is kept as given, not copied: it must not be changed afterwards.
+  const RetroDesktopChartSeries(this.label, this.values);
 
   /// The visible or accessible name of this part.
   final String label;
 
-  /// The values plotted in their supplied order.
+  /// The values plotted in their supplied order. Not to be changed once given.
   final List<double?> values;
   @override
   bool operator ==(Object other) =>
@@ -57,15 +58,18 @@ enum RetroDesktopChartType {
 /// values it says so in the well; [loading] holds the well while data comes.
 ///
 /// ```dart
-/// RetroDesktopChart(label: 'Weekly activity', series: [RetroDesktopChartSeries('Visits', [12, 18, 9])], labels: const ['Mon', 'Tue', 'Wed'])
+/// const RetroDesktopChart(label: 'Weekly activity', series: [RetroDesktopChartSeries('Visits', [12, 18, 9])], labels: ['Mon', 'Tue', 'Wed'])
 /// ```
 class RetroDesktopChart extends StatefulWidget {
   /// Creates a [RetroDesktopChart].
-  RetroDesktopChart({
+  ///
+  /// [series] and [labels] are kept as given, not copied: they must not be
+  /// changed afterwards (build a new list to change the data).
+  const RetroDesktopChart({
     super.key,
     required this.label,
-    required List<RetroDesktopChartSeries> series,
-    List<String> labels = const [],
+    required this.series,
+    this.labels = const [],
     this.kind = RetroDesktopChartType.line,
     this.height = 180,
     this.format,
@@ -74,9 +78,7 @@ class RetroDesktopChart extends StatefulWidget {
     this.bandHigh,
     this.loading = false,
     this.style,
-  }) : series = List.unmodifiable(series),
-       labels = List.unmodifiable(labels),
-       assert(height > 0),
+  }) : assert(height > 0),
        assert((bandLow == null) == (bandHigh == null));
 
   /// {@macro retro_desktop.style}
@@ -220,7 +222,10 @@ class _ChartState extends State<RetroDesktopChart> {
     if (widget.bandHigh?.isFinite ?? false) {
       high = math.max(high, widget.bandHigh!);
     }
-    if (low == high) {
+    if (low == high && low == 0) {
+      // Every value at zero stands on 0 to 1: no negative half under data that has none.
+      high = 1;
+    } else if (low == high) {
       low -= 1;
       high += 1;
     }

@@ -1,5 +1,4 @@
-// The package emitter moves these gallery demos into the example app.
-// ignore_for_file: avoid_relative_lib_imports
+// ignore_for_file: avoid_relative_lib_imports — the example app's pages are what this test checks; example/ is not a dependency of the package.
 // A shipped shape set must leave content inside its outline at each supported density.
 // The specimens cover the same public components as the gallery, including raised faces.
 import 'dart:io';

@@ -189,8 +189,8 @@ abstract final class RetroDesktopGlyphs {
   /// show glyph.
   static const IconData show = LucideIcons.eye;
 
-  /// sign out glyph.
-  static const IconData signOut = LucideIcons.logOut;
+  /// sign out glyph: its arrow points out of the page's reading direction, and turns with the text right to left.
+  static const IconData signOut = LucideIcons.logOutDir;
 
   /// success glyph.
   static const IconData success = LucideIcons.circleCheck;

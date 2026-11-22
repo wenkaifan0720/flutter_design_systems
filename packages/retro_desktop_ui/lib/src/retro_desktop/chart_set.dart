@@ -10,7 +10,7 @@ import 'component_themes.dart';
 /// at a round value; a press or the arrows read a point.
 ///
 /// ```dart
-/// RetroDesktopLineChart(label: 'Visits', series: [RetroDesktopChartSeries('Visits', [9, 15, 22, 12])], labels: const ['Mon', 'Tue', 'Wed', 'Thu'])
+/// const RetroDesktopLineChart(label: 'Visits', series: [RetroDesktopChartSeries('Visits', [9, 15, 22, 12])], labels: ['Mon', 'Tue', 'Wed', 'Thu'])
 /// ```
 class RetroDesktopLineChart extends StatelessWidget {
   /// Creates a [RetroDesktopLineChart].
@@ -88,7 +88,7 @@ class RetroDesktopLineChart extends StatelessWidget {
 /// named at a round value.
 ///
 /// ```dart
-/// RetroDesktopBarChart(label: 'Files', series: [RetroDesktopChartSeries('Documents', [4, 8, 6, 12])], labels: const ['Mon', 'Tue', 'Wed', 'Thu'])
+/// const RetroDesktopBarChart(label: 'Files', series: [RetroDesktopChartSeries('Documents', [4, 8, 6, 12])], labels: ['Mon', 'Tue', 'Wed', 'Thu'])
 /// ```
 class RetroDesktopBarChart extends StatelessWidget {
   /// Creates a [RetroDesktopBarChart].
@@ -166,7 +166,7 @@ class RetroDesktopBarChart extends StatelessWidget {
 /// a balance.
 ///
 /// ```dart
-/// RetroDesktopAreaChart(label: 'Disk used', series: [RetroDesktopChartSeries('Disk used', [12, 15, 21, 24, 30])], labels: const ['Jan', 'Feb', 'Mar', 'Apr', 'May'])
+/// const RetroDesktopAreaChart(label: 'Disk used', series: [RetroDesktopChartSeries('Disk used', [12, 15, 21, 24, 30])], labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May'])
 /// ```
 class RetroDesktopAreaChart extends StatelessWidget {
   /// Creates a [RetroDesktopAreaChart].
@@ -244,7 +244,7 @@ class RetroDesktopAreaChart extends StatelessWidget {
 /// hole.
 ///
 /// ```dart
-/// RetroDesktopPieChart(label: 'Storage', series: [RetroDesktopChartSeries('Storage', [52, 28, 20])], labels: const ['Documents', 'Pictures', 'Other'])
+/// const RetroDesktopPieChart(label: 'Storage', series: [RetroDesktopChartSeries('Storage', [52, 28, 20])], labels: ['Documents', 'Pictures', 'Other'])
 /// ```
 class RetroDesktopPieChart extends StatelessWidget {
   /// Creates a [RetroDesktopPieChart].
