@@ -53,9 +53,12 @@ class FrostedLoadingState extends StatelessWidget {
   }
 }
 
-/// What a page shows when its content could not be reached: the over mark
-/// on its tint, what went wrong in [title] (the h1 type) and one sentence
-/// of help in [message], and the glass Try again when [onRetry] is given.
+/// What a page shows when its content could not be reached, as the empty
+/// state's sibling: the same glass tile, a band of the over hue along its top
+/// edge in place of the spectrum, and in it the over mark on its tint, what went
+/// wrong in [title] (the empty state's name type), one sentence of help in
+/// [message], and the glass Try again when [onRetry] is given. Centred where
+/// the content will stand, and announced as it appears.
 ///
 /// ```dart
 /// FrostedErrorState(title: "Couldn't load your accounts", message: 'Check your connection, then try again.', onRetry: reload)
@@ -81,36 +84,54 @@ class FrostedErrorState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.frostedTheme;
-    const d = FrostedChromeMetrics.stateMark;
-    return _Centred(
-      mark: SizedBox.square(
-        dimension: d,
-        child: FrostedFace(
-          material: FrostedMaterial.paint,
-          radius: BorderRadius.circular(d / 2),
-          color: t.colorScheme.overTint,
-          child: Center(
-            child: Icon(
-              FrostedGlyphs.warning,
-              size: FrostedChromeMetrics.stateMarkGlyph,
-              color: t.colorScheme.over,
-            ),
+    final wide = FrostedBreakpoints.isWide(context);
+    final gap = wide
+        ? FrostedChromeMetrics.emptyGapWide
+        : FrostedChromeMetrics.emptyGap;
+    final words = message;
+    return Semantics(
+      container: true,
+      liveRegion: true,
+      child: Center(
+        child: _StateTile(
+          rim: BoxDecoration(gradient: _overRim(t)),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _errorMark(t),
+              const SizedBox(height: FrostedSpacing.s16),
+              Text(
+                title,
+                textAlign: TextAlign.center,
+                style: t.textTheme.headlineMedium.tracked(-0.025),
+              ),
+              if (words != null) ...[
+                SizedBox(height: gap),
+                ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxWidth: wide
+                        ? FrostedChromeMetrics.emptyWordsWidthWide
+                        : FrostedChromeMetrics.emptyWordsWidth,
+                  ),
+                  child: Text(
+                    words,
+                    textAlign: TextAlign.center,
+                    style: t.textTheme.bodyMedium,
+                  ),
+                ),
+              ],
+              if (onRetry != null) ...[
+                SizedBox(height: gap + FrostedChromeMetrics.emptyWordsGap),
+                FrostedButton.glass(
+                  FrostedSharedWords.of(context).tryAgain,
+                  icon: FrostedGlyphs.rotateCw,
+                  onPressed: onRetry,
+                ),
+              ],
+            ],
           ),
         ),
       ),
-      title: Text(
-        title,
-        textAlign: TextAlign.center,
-        style: t.textTheme.headlineSmall,
-      ),
-      message: message,
-      action: onRetry == null
-          ? null
-          : FrostedButton.glass(
-              FrostedSharedWords.of(context).tryAgain,
-              icon: FrostedGlyphs.rotateCw,
-              onPressed: onRetry,
-            ),
     );
   }
 
@@ -163,8 +184,9 @@ class FrostedStatusView extends StatelessWidget {
       onRetry = null,
       action = null;
 
-  /// The content out of reach: [title], one sentence of help in
-  /// [message], and Try again when [onRetry] is given.
+  /// The content out of reach: the over mark, [title], one sentence of help
+  /// in [message], and Try again when [onRetry] is given, bare beside the
+  /// loading and success states ([FrostedErrorState] is the list's tile).
   const FrostedStatusView.error({
     required String this.title,
     this.message,
@@ -205,10 +227,21 @@ class FrostedStatusView extends StatelessWidget {
       case FrostedStatus.loading:
         return FrostedLoadingState(message: message);
       case FrostedStatus.error:
-        return FrostedErrorState(
-          title: title!,
+        return _Centred(
+          mark: _errorMark(t),
+          title: Text(
+            title!,
+            textAlign: TextAlign.center,
+            style: t.textTheme.headlineSmall,
+          ),
           message: message,
-          onRetry: onRetry,
+          action: onRetry == null
+              ? null
+              : FrostedButton.glass(
+                  FrostedSharedWords.of(context).tryAgain,
+                  icon: FrostedGlyphs.rotateCw,
+                  onPressed: onRetry,
+                ),
         );
       case FrostedStatus.success:
         const d = FrostedChromeMetrics.stateMark;
@@ -296,101 +329,62 @@ class FrostedEmptyState extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.frostedTheme;
     final wide = FrostedBreakpoints.isWide(context);
-    final radius = BorderRadius.circular(
-      FrostedBreakpoints.tileRadius(context),
-    );
     return Semantics(
       container: true,
       label: RawWidgetsLocalizations.of(context).noResultsLabel,
       explicitChildNodes: true,
-      // .glass-tile { box-shadow: var(--edge), var(--lift) }: the edge a
-      // ring just outside the glass, as a tile's, taking no room (a face's
-      // edge stood the tile 2 taller, its words 1 low).
-      child: FrostedFace(
-        material: FrostedMaterial.pane,
-        radius: radius,
-        shadows: [
-          frostedShadow(
-            color: t.glass.edge,
-            spread: FrostedChromeMetrics.outline,
-          ),
-          ...t.shadows.tile,
-        ],
-        clipChild: true,
-        child: Stack(
-          // The column takes the tile's width, so its parts stand centred
-          // in it (`.empty { text-align: center }`), not at its start.
-          fit: StackFit.passthrough,
+      child: _StateTile(
+        rim: BoxDecoration(gradient: t.glass.spectrumRim),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            // The spectrum along the tile's top edge (`.glass-tile`).
-            Positioned(
-              left: 0,
-              right: 0,
-              top: 0,
-              height: FrostedChromeMetrics.heroRim,
-              child: IgnorePointer(
-                child: DecoratedBox(
-                  decoration: BoxDecoration(gradient: t.glass.spectrumRim),
+            FrostedSpectrumArt(wide: wide),
+            SizedBox(
+              height: wide
+                  ? FrostedChromeMetrics.emptyGapWide +
+                        FrostedChromeMetrics.emptyArtGapWide
+                  : FrostedChromeMetrics.emptyGap +
+                        FrostedChromeMetrics.emptyArtGap,
+            ),
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: t.textTheme.headlineMedium.tracked(-0.025),
+            ),
+            if (body != null) ...[
+              SizedBox(
+                height: wide
+                    ? FrostedChromeMetrics.emptyGapWide
+                    : FrostedChromeMetrics.emptyGap,
+              ),
+              ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxWidth: wide
+                      ? FrostedChromeMetrics.emptyWordsWidthWide
+                      : FrostedChromeMetrics.emptyWordsWidth,
+                ),
+                child: Text(
+                  body!,
+                  textAlign: TextAlign.center,
+                  style: t.textTheme.bodyMedium,
                 ),
               ),
-            ),
-            Padding(
-              padding: wide
-                  ? FrostedChromeMetrics.emptyInsetWide
-                  : FrostedChromeMetrics.emptyInset,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  FrostedSpectrumArt(wide: wide),
-                  SizedBox(
-                    height: wide
-                        ? FrostedChromeMetrics.emptyGapWide +
-                              FrostedChromeMetrics.emptyArtGapWide
-                        : FrostedChromeMetrics.emptyGap +
-                              FrostedChromeMetrics.emptyArtGap,
-                  ),
-                  Text(
-                    title,
-                    textAlign: TextAlign.center,
-                    style: t.textTheme.headlineMedium.tracked(-0.025),
-                  ),
-                  if (body != null) ...[
-                    SizedBox(
-                      height: wide
-                          ? FrostedChromeMetrics.emptyGapWide
-                          : FrostedChromeMetrics.emptyGap,
-                    ),
-                    ConstrainedBox(
-                      constraints: BoxConstraints(
-                        maxWidth: wide
-                            ? FrostedChromeMetrics.emptyWordsWidthWide
-                            : FrostedChromeMetrics.emptyWordsWidth,
-                      ),
-                      child: Text(
-                        body!,
-                        textAlign: TextAlign.center,
-                        style: t.textTheme.bodyMedium,
-                      ),
-                    ),
-                  ],
-                  if (actionLabel != null) ...[
-                    SizedBox(
-                      height:
-                          (wide
-                              ? FrostedChromeMetrics.emptyGapWide
-                              : FrostedChromeMetrics.emptyGap) +
-                          FrostedChromeMetrics.emptyWordsGap,
-                    ),
-                    FrostedButton(
-                      actionLabel!,
-                      key: actionKey,
-                      icon: actionIcon,
-                      onPressed: onAction,
-                    ),
-                  ],
-                ],
+            ],
+            if (actionLabel != null) ...[
+              SizedBox(
+                height:
+                    (wide
+                        ? FrostedChromeMetrics.emptyGapWide
+                        : FrostedChromeMetrics.emptyGap) +
+                    FrostedChromeMetrics.emptyWordsGap,
               ),
-            ),
+              FrostedButton(
+                actionLabel!,
+                key: actionKey,
+                icon: actionIcon,
+                onPressed: onAction,
+              ),
+            ],
           ],
         ),
       ),
@@ -610,6 +604,93 @@ class _FrostedPainter extends CustomPainter {
       old.glassTo != glassTo ||
       old.fan != fan ||
       old.spectrum != spectrum;
+}
+
+/// The failed tile's rim: the spectrum's band in the over hue, fading in and
+/// out at the same stops. Its colour is the over tint's own, opaque: the
+/// light red the tint is made of, lighter than the over ink, so the edge
+/// reads as light caught in red glass (law 2: by day no edge is a dark
+/// line), not as a line of ink.
+LinearGradient _overRim(FrostedThemeData t) {
+  final band = t.colorScheme.overTint.withValues(alpha: 1);
+  return LinearGradient(
+    colors: [band.withValues(alpha: 0), band, band, band.withValues(alpha: 0)],
+    stops: const [0.04, 0.18, 0.82, 0.96],
+  );
+}
+
+/// The over mark a failed state stands under: the warning glyph in the over
+/// ink on its tint, round.
+Widget _errorMark(FrostedThemeData t) {
+  const d = FrostedChromeMetrics.stateMark;
+  return SizedBox.square(
+    dimension: d,
+    child: FrostedFace(
+      material: FrostedMaterial.paint,
+      radius: BorderRadius.circular(d / 2),
+      color: t.colorScheme.overTint,
+      child: Center(
+        child: Icon(
+          FrostedGlyphs.warning,
+          size: FrostedChromeMetrics.stateMarkGlyph,
+          color: t.colorScheme.over,
+        ),
+      ),
+    ),
+  );
+}
+
+/// The glass tile an empty or a failed list stands in, as the source's
+/// empty search does (`.tile.glass-tile`): a pane with the tile's edge as a
+/// ring just outside it and the tile's lift, [rim] along its top edge (the
+/// spectrum for an empty list, the over hue for a failed one) and [child]
+/// centred in it.
+class _StateTile extends StatelessWidget {
+  const _StateTile({required this.rim, required this.child});
+
+  final Decoration rim;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.frostedTheme;
+    final wide = FrostedBreakpoints.isWide(context);
+    // .glass-tile { box-shadow: var(--edge), var(--lift) }: the edge a ring
+    // just outside the glass, as a tile's, taking no room (a face's edge
+    // stood the tile 2 taller, its words 1 low).
+    return FrostedFace(
+      material: FrostedMaterial.pane,
+      radius: BorderRadius.circular(FrostedBreakpoints.tileRadius(context)),
+      shadows: [
+        frostedShadow(
+          color: t.glass.edge,
+          spread: FrostedChromeMetrics.outline,
+        ),
+        ...t.shadows.tile,
+      ],
+      clipChild: true,
+      child: Stack(
+        // The column takes the tile's width, so its parts stand centred in
+        // it (`.empty { text-align: center }`), not at its start.
+        fit: StackFit.passthrough,
+        children: [
+          Positioned(
+            left: 0,
+            right: 0,
+            top: 0,
+            height: FrostedChromeMetrics.heroRim,
+            child: IgnorePointer(child: DecoratedBox(decoration: rim)),
+          ),
+          Padding(
+            padding: wide
+                ? FrostedChromeMetrics.emptyInsetWide
+                : FrostedChromeMetrics.emptyInset,
+            child: child,
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 /// A state's mark over its words and its act, centred where the content

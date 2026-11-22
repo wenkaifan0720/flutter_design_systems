@@ -1,5 +1,5 @@
-// What says a control is there, and what says it is off (design round,
-// faults 2 and 3; in 0.3.4, glass with no dark edge):
+// What says a control is there, and what says it is off (glass with no
+// dark edge):
 // - An unchosen part at rest (an empty check, round or square, an unchosen
 //   radio, an empty star, an off switch, an unchosen menu option, a
 //   segmented strip) is glass in a field's language: no pixel of it is

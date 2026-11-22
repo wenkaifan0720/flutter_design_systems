@@ -188,6 +188,7 @@ Widget _menuRow(
     child: FrostedPanelRow(
       label: entry.label,
       followsPointer: true,
+      destructive: entry.isDestructiveAction,
       states: {...states, if (entry.checked ?? false) WidgetState.selected},
       checkable: entry.checked != null,
       trailing: entry.isSubmenu
@@ -481,6 +482,7 @@ class FrostedCommand extends StatelessWidget {
   Widget build(BuildContext context) => FrostedPanel(
     width: width,
     padding: EdgeInsets.zero,
+    inPlace: true,
     child: _palette(
       context,
       commands: commands,

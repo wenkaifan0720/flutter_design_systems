@@ -202,9 +202,6 @@ class FrostedCombobox<T extends Object> extends StatelessWidget {
         // The pointer's row and the keys' row are the same wash in Frosted:
         // one place, so the list never shows two held rows.
         highlightFollowsPointer: true,
-        // Under the field, or above it when there is more room there (a
-        // field at the foot of a phone's screen had room for one row).
-        optionsViewOpenDirection: OptionsViewOpenDirection.mostSpace,
         displayStringForOption: displayString,
         requireSelection: requireSelection,
         controller: controller,

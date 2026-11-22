@@ -18,7 +18,11 @@ import 'styled.dart';
 /// 6 in. Every part ui_core raises over the page (a popover, a hover
 /// card, a combobox's list, a split button's or a menubar's menu, the
 /// command palette) stands on it, so they read as one family with
-/// [FrostedMenu]. Plumbing of the components.
+/// [FrostedMenu]. Raised over the page, it is a slab of its own wherever its
+/// part stands: a list dropping from a field on a card still frosts the card
+/// and the words under it, rather than taking the card's glass as its own.
+/// Built in place ([inPlace], a command palette set in a page) it stands on
+/// the glass it is set in. Plumbing of the components.
 class FrostedPanel extends StatelessWidget {
   /// A panel round [child], [width] wide (null: as wide as [child]).
   const FrostedPanel({
@@ -26,8 +30,12 @@ class FrostedPanel extends StatelessWidget {
     this.width,
     this.padding = const EdgeInsets.all(FrostedChromeMetrics.menuInset),
     this.presence,
+    this.inPlace = false,
     super.key,
   });
+
+  /// Whether the panel is set in the page rather than raised over it.
+  final bool inPlace;
 
   /// What the panel holds.
   final Widget child;
@@ -68,7 +76,18 @@ class FrostedPanel extends StatelessWidget {
       padding: s.padding?.resolve(Directionality.of(context)) ?? padding,
       child: child,
     );
-    final sized = width == null ? face : SizedBox(width: width, child: face);
+    // Raised, it reads the page behind it whatever glass its part stands on
+    // (an overlay inherits from the field that opened it), and no focus of
+    // that part clears it.
+    final raised = inPlace
+        ? face
+        : FrostedOnGlass(
+            on: false,
+            child: FrostedClearing(level: 0, child: face),
+          );
+    final sized = width == null
+        ? raised
+        : SizedBox(width: width, child: raised);
     final grow = presence;
     if (grow == null) return sized;
     return AnimatedBuilder(
@@ -147,7 +166,9 @@ class _RenderDrawn extends RenderProxyBox {
 /// reads as a second choice and a resting pointer never lights a second
 /// row. With [followsPointer] a pointer moving over the row gives it the
 /// focus, for the lists whose highlight is the focus (a menu bar's or a
-/// split button's menu). A disabled row fades. Plumbing of the components.
+/// split button's menu). A [destructive] row sets its words in the over
+/// tone, as a `FrostedMenuItem`'s loss is. A disabled row fades. Plumbing
+/// of the components.
 class FrostedPanelRow extends StatelessWidget {
   /// A row saying [label] in [states].
   const FrostedPanelRow({
@@ -158,8 +179,13 @@ class FrostedPanelRow extends StatelessWidget {
     this.checkable = true,
     this.height = FrostedChromeMetrics.menuItem,
     this.followsPointer = false,
+    this.destructive = false,
     super.key,
   });
+
+  /// Whether the row destroys something (Delete): its words in the over
+  /// tone.
+  final bool destructive;
 
   /// Whether a pointer moving over the row gives it the focus (the row's
   /// own [Focus], above it), so the list's one lit row follows the pointer.
@@ -225,9 +251,15 @@ class FrostedPanelRow extends StatelessWidget {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: chosen
-                ? t.textTheme.link.semibold.c(t.colorScheme.textPrimary)
+                ? t.textTheme.link.semibold.c(
+                    destructive
+                        ? t.colorScheme.over
+                        : t.colorScheme.textPrimary,
+                  )
                 : t.textTheme.link.c(
-                    lit
+                    destructive
+                        ? t.colorScheme.over
+                        : lit
                         ? t.colorScheme.textPrimary
                         : t.colorScheme.textSecondary,
                   ),

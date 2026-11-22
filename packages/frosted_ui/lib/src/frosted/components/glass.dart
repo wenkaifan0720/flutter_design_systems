@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../internal/face.dart';
+import '../internal/light_frame.dart';
 import '../materials.dart';
 import '../theme.dart';
 
@@ -77,7 +78,10 @@ class FrostedSurface extends StatelessWidget {
 }
 
 /// Paints [backdrop] (the theme's when null) over the box it is given. It is
-/// decoration: it takes no taps and says nothing.
+/// decoration: it takes no taps and says nothing. Under a [FrostedHost] the
+/// light is laid over the whole app and each backdrop paints its own part of
+/// it, so pages side by side (a list beside its detail, a page beside the
+/// sidebar) stand on one light, with no seam where they meet.
 ///
 /// ```dart
 /// Positioned.fill(child: FrostedBackdropView())
@@ -94,17 +98,17 @@ class FrostedBackdropView extends StatelessWidget {
     final t = context.frostedTheme;
     final b = backdrop ?? t.backdrop;
     final Widget painted = switch (b.kind) {
-      FrostedBackdropKind.dawn => CustomPaint(
+      FrostedBackdropKind.dawn => FrostedAnchoredLight(
         painter: _LightBackdropPainter(
           ground: t.colorScheme.background,
           lights: t.lights,
           dark: t.isDark,
         ),
       ),
-      FrostedBackdropKind.night => const CustomPaint(
+      FrostedBackdropKind.night => const FrostedAnchoredLight(
         painter: _NightBackdropPainter(),
       ),
-      FrostedBackdropKind.image => DecoratedBox(
+      FrostedBackdropKind.image => FrostedAnchoredLight(
         decoration: BoxDecoration(
           color: t.colorScheme.background,
           image: DecorationImage(image: b.image!, fit: BoxFit.cover),
@@ -292,17 +296,30 @@ class _NightBackdropPainter extends CustomPainter {
 }
 
 /// Marks a subtree that stands on glass: a glass face inside it is raised a
-/// step rather than blurring a second time.
+/// step rather than blurring a second time. With [on] false it marks a
+/// subtree that stands off the glass around it (a panel raised over the
+/// page from a field on a card): its glass reads what is behind it itself.
 class FrostedOnGlass extends InheritedWidget {
   /// Creates a [FrostedOnGlass].
-  const FrostedOnGlass({required super.child, super.key});
+  const FrostedOnGlass({required super.child, this.on = true, super.key});
+
+  /// Whether the subtree stands on glass.
+  final bool on;
 
   /// Whether [context] stands on glass.
   static bool of(BuildContext context) =>
-      context.getInheritedWidgetOfExactType<FrostedOnGlass>() != null;
+      context.getInheritedWidgetOfExactType<FrostedOnGlass>()?.on ?? false;
 
   @override
   bool updateShouldNotify(FrostedOnGlass oldWidget) => false;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(
+      FlagProperty('on', value: on, ifFalse: 'off the glass', showName: true),
+    );
+  }
 }
 
 /// Whether [context]'s glass draws its opaque form: the theme asks for it

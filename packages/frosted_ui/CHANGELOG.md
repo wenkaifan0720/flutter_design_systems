@@ -1,3 +1,16 @@
+## 0.4.1
+
+- Needs ui_core 0.4.1.
+- A menu bar's or a context menu's entry with `isDestructiveAction` sets its words in the over tone, as a destructive `FrostedMenuItem` does.
+- `FrostedCombobox` opens its list where ui_core's combobox opens it: under the field, or above it when the room below can't hold the list and there is more room above.
+- An app's leak-tracked test that opens a Frosted menu stays leak free. Before, the menus' app-wide key count, a `ValueNotifier` that is never disposed, was reported as a leak by the first such test.
+- A combobox's open list is its own glass: it frosts the card, and the words on it, under it, by day and by night. Before, a list dropping over a card showed the card through it.
+- `showFrostedDialog` dims and softens the page under its dialog, as `FrostedDialog.show` does.
+- `FrostedMenuItem` takes `destructive`: its words are set in the over ink, as the action sheet sets a loss.
+- `FrostedErrorState` stands on the empty state's glass tile, with a band of the over hue along its top edge where the empty state has the spectrum, and its warning on an over disc.
+- Pages standing side by side under a `FrostedHost` (a list beside its detail) stand on one light, with no seam where they meet.
+- `FrostedListTile` takes `action`, a control after the row's end (its menu button). It stands on the chosen row's plate and stays its own target, apart from the row's press and its words.
+
 ## 0.4.0
 
 - Needs ui_core 0.4.0 and Flutter 3.47. `frosted_ui` re-exports ui_core, whose types now take `Raw` names (`DesignPressable` is `RawButton`). The old names stay through ui_core 0.4 as deprecated typedefs, and `dart fix --apply` renames them.

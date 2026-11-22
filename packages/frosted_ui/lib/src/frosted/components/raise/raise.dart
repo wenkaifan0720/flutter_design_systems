@@ -13,6 +13,7 @@ import '../../internal/face.dart';
 import '../../internal/soft_routes.dart';
 import '../../internal/styled.dart';
 import '../../theme.dart';
+import '../glass.dart';
 import '../host.dart';
 import '../menu/menu.dart';
 import '../pressable/pressable.dart';
@@ -25,7 +26,8 @@ import '../toast.dart';
 /// [barrierDismissible]), the system back or Escape dismisses it, and focus
 /// returns to what opened it. Completes with the value the dialog pops
 /// with: null when dismissed. Grows in on ui_core's dialog spring (a cut
-/// under Reduce Motion), as [FrostedDialog.show]'s does.
+/// under Reduce Motion) while the page under it dims and softens, as
+/// [FrostedDialog.show]'s does.
 ///
 /// ```dart
 /// final ok = await showFrostedDialog<bool>(context, builder: (context) => FrostedDialog(title: 'Delete this note?', confirmLabel: 'Delete', cancelLabel: 'Cancel', destructive: true, onConfirm: () => Navigator.pop(context, true), onCancel: () => Navigator.pop(context, false)));
@@ -40,10 +42,10 @@ Future<T?> showFrostedDialog<T>(
   final themes = InheritedTheme.capture(from: context, to: navigator.context);
   return navigator.push(
     FrostedSoftDialogRoute<T>(
-      soften: 0,
+      soften: frostedOpaqueAt(context) ? 0 : t.materials.soften,
       barrierDismissible: barrierDismissible,
       barrierLabel: MaterialLocalizations.of(context).scrimLabel,
-      barrierColor: t.colorScheme.overlay,
+      barrierColor: t.materials.scrim,
       builder: (dialogContext) => themes.wrap(
         RoutePresentationScope(
           presentation: RoutePresentation.sheet,

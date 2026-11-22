@@ -41,6 +41,7 @@ export 'src/frosted/internal/hit_slop.dart';
 export 'src/frosted/internal/ink_on.dart';
 export 'src/frosted/internal/key_focus.dart';
 export 'src/frosted/internal/keys.dart';
+export 'src/frosted/internal/light_frame.dart';
 export 'src/frosted/internal/measure.dart';
 export 'src/frosted/internal/menu_wake.dart';
 export 'src/frosted/internal/own_size.dart';

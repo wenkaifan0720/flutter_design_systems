@@ -71,6 +71,7 @@ List<FrostedUploadFile> files = [const FrostedUploadFile('receipt.pdf')];
 
 // Its callbacks: each takes what its control gives, or nothing.
 void open([Object? _]) {}
+void menu([Object? _]) {}
 void undo([Object? _]) {}
 void redo([Object? _]) {}
 void transfer([Object? _]) {}

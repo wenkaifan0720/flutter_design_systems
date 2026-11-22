@@ -29,7 +29,7 @@ final Map<String, GalleryCustom> settings = {
 /// The settings every section has a golden in.
 const goldenSettings = ['compact'];
 
-/// The goldens are kept beside the catalog and laid here by the package build; a published copy compares nothing.
+/// The goldens live in the repository, not in the published package; a copy without them compares nothing.
 final bool _recorded =
     autoUpdateGoldenFiles || Directory('test/goldens').existsSync();
 

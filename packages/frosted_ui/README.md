@@ -4,7 +4,7 @@ Frosted is a Flutter component library for translucent forms, transaction lists,
 
 ![Harbor, the gallery's sample app, on its Activity page at 1440 wide and on a phone, by day](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/frosted_ui/screenshots/hero.webp)
 
-**[Live gallery](https://wenkaifan0720.github.io/flutter_design_systems/frosted/)** · [API reference](https://pub.dev/documentation/frosted_ui/latest/) · [All the looks](https://wenkaifan0720.github.io/flutter_design_systems/)
+**[Live gallery](https://wenkaifan0720.github.io/flutter_design_systems/frosted/)** · [Docs](https://wenkaifan0720.github.io/flutter_design_systems/docs/looks/frosted/) · [API reference](https://pub.dev/documentation/frosted_ui/latest/) · [All the looks](https://wenkaifan0720.github.io/flutter_design_systems/)
 
 ## Install
 
@@ -291,7 +291,7 @@ costs no blur at all. The canvas's washes are painted once and cached.
   out of its reach: give that theme `pageTransitionsTheme: const PageTransitionsTheme(builders:
   frostedPageTransitions)`, and its `MaterialPageRoute`s and go_router's pages match (a `CupertinoPageRoute` keeps iOS's own slide). On iOS a drag
   from the leading edge still takes a page back: the map's iOS entry stands Frosted's motion inside ui_core's
-  `DesignSwipeBackPageTransitionsBuilder`. Tabs and sidebar destinations change the page in place.
+  `SwipeBackPageTransitionsBuilder`. Tabs and sidebar destinations change the page in place.
 - **Large text.** Pages lay out up to 200% text (the host caps a larger size there); controls grow taller rather than
   cut their words.
 - **Right to left.** Under a right-to-left `Directionality` every part mirrors: the glyphs that point a way turn round,
@@ -313,6 +313,11 @@ Pass a string for a button label and an `IconData` for its optional icon, for ex
 
 `example/` is the gallery: every component on its page, in every preset, by day and by night, and its Customize panel
 (preset, your own accent, density, backdrop, direction, text size).
+
+## Requirements
+
+Flutter 3.47 or later (Dart 3.13). The package depends on ui_core ^0.4.1 and re-exports it, so `RawWidgetsLocalizations`
+and the `Raw*` parts come with the one import.
 
 ## Licences
 

@@ -797,6 +797,7 @@ class FrostedListTile extends StatelessWidget {
     this.meta,
     this.trailing,
     this.mid,
+    this.action,
     this.onPressed,
     this.enabled = true,
     this.selected = false,
@@ -821,6 +822,20 @@ class FrostedListTile extends StatelessWidget {
 
   /// A column between the words and the end (the desktop's account).
   final Widget? mid;
+
+  /// A control after the row's end (a row's menu button): it stands on the
+  /// chosen row's plate, but is its own target and its own node, apart from
+  /// the row's press and the words read with it.
+  ///
+  /// ```dart
+  /// FrostedListTile(
+  ///   title: 'Write the brief',
+  ///   selected: true,
+  ///   onPressed: open,
+  ///   action: FrostedIconButton(FrostedGlyphs.more, label: 'Actions', onPressed: menu),
+  /// )
+  /// ```
+  final Widget? action;
 
   /// What a press does; null leaves the row still.
   final VoidCallback? onPressed;
@@ -862,7 +877,6 @@ class FrostedListTile extends StatelessWidget {
     final meta = this.meta;
     final mid = this.mid;
     final trailing = this.trailing;
-    final onPressed = this.onPressed;
     final s = FrostedStyleLayers(style, t.components.listTile, {
       if (selected) WidgetState.selected,
       if (!enabled) WidgetState.disabled,
@@ -913,38 +927,70 @@ class FrostedListTile extends StatelessWidget {
         ),
       ),
     );
-    if (selected) {
-      // .rows--mark .row.this { margin: 0 -10px; padding: 0 10px;
-      // border-radius: 12px; background: rgba(255,255,255,.7); box-shadow:
-      // inset 0 0 0 1px var(--line) }
-      row = Stack(
-        clipBehavior: Clip.none,
-        children: [
-          PositionedDirectional(
-            start: -FrostedChromeMetrics.rowMarkBleed,
-            end: -FrostedChromeMetrics.rowMarkBleed,
-            top: 0,
-            bottom: 0,
-            child: FrostedFace(
-              material: FrostedMaterial.paint,
-              radius: BorderRadius.circular(
-                FrostedStyleLayers.radiusOf(
-                  s.shape,
-                  0,
-                  FrostedChromeMetrics.rowMarkRadius,
-                ),
+    final action = this.action;
+    if (action == null) return _pressable(t, s, _marked(t, s, row));
+    // The control stands beside the pressed row, on the one plate under
+    // both: never inside the row's merged node.
+    return FrostedDim(
+      off: !enabled,
+      child: _marked(
+        t,
+        s,
+        Row(
+          spacing: FrostedChromeMetrics.rowGap,
+          children: [
+            Expanded(child: _pressable(t, s, row, dim: false)),
+            action,
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// [row] over the chosen row's plate, while [selected].
+  Widget _marked(FrostedThemeData t, FrostedStyleLayers s, Widget row) {
+    if (!selected) return row;
+    // .rows--mark .row.this { margin: 0 -10px; padding: 0 10px;
+    // border-radius: 12px; background: rgba(255,255,255,.7); box-shadow:
+    // inset 0 0 0 1px var(--line) }
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        PositionedDirectional(
+          start: -FrostedChromeMetrics.rowMarkBleed,
+          end: -FrostedChromeMetrics.rowMarkBleed,
+          top: 0,
+          bottom: 0,
+          child: FrostedFace(
+            material: FrostedMaterial.paint,
+            radius: BorderRadius.circular(
+              FrostedStyleLayers.radiusOf(
+                s.shape,
+                0,
+                FrostedChromeMetrics.rowMarkRadius,
               ),
-              shape: s.shape,
-              color: s.fill ?? t.glass.plane.withValues(alpha: _markFill),
-              wash: s.overlay,
-              ring: s.edge ?? frostedLitEdge(t, t.colorScheme.border),
             ),
+            shape: s.shape,
+            color: s.fill ?? t.glass.plane.withValues(alpha: _markFill),
+            wash: s.overlay,
+            ring: s.edge ?? frostedLitEdge(t, t.colorScheme.border),
           ),
-          row,
-        ],
-      );
-    }
-    row = FrostedDim(off: !enabled, child: row);
+        ),
+        row,
+      ],
+    );
+  }
+
+  /// [row] as one node, pressed as one (dimmed when disabled, unless
+  /// [dim] is false because the caller dims it with its action).
+  Widget _pressable(
+    FrostedThemeData t,
+    FrostedStyleLayers s,
+    Widget row, {
+    bool dim = true,
+  }) {
+    if (dim) row = FrostedDim(off: !enabled, child: row);
+    final onPressed = this.onPressed;
     return MergeSemantics(
       child: onPressed == null && enabled
           ? row
@@ -976,6 +1022,7 @@ class FrostedListTile extends StatelessWidget {
     properties
       ..add(StringProperty('title', title))
       ..add(StringProperty('meta', meta, defaultValue: null))
+      ..add(DiagnosticsProperty<Widget>('action', action, defaultValue: null))
       ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
       ..add(
         DiagnosticsProperty<FocusNode>(

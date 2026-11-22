@@ -406,6 +406,7 @@ void main() {
               await tester.tap(find.text('Keep it'));
               await _settle(tester);
             }
+            // Lists what the check read, for the log.
             // ignore: avoid_print
             print('CHECK rows harbor $device $look ${problems.length}');
             expect(problems, isEmpty, reason: problems.join('\n'));
@@ -449,6 +450,7 @@ void main() {
               }
             }
           }
+          // Lists what the check read, for the log.
           // ignore: avoid_print
           print('CHECK widths harbor ${problems.length}');
           expect(problems, isEmpty, reason: problems.join('\n'));

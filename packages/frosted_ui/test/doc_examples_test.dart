@@ -1684,6 +1684,16 @@ void main() {
           padding: WidgetStatePropertyAll(EdgeInsets.symmetric(vertical: 10)),
         ),
       ),
+      'FrostedListTile 3': (context) => FrostedListTile(
+        title: 'Write the brief',
+        selected: true,
+        onPressed: open,
+        action: FrostedIconButton(
+          FrostedGlyphs.more,
+          label: 'Actions',
+          onPressed: menu,
+        ),
+      ),
       'FrostedRowEnd': (context) => FrostedRowEnd(
         amount: const FrostedAmount(-6.75),
         note: 'Pending',

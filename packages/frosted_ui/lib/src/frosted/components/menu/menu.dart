@@ -233,8 +233,9 @@ class FrostedHueDot extends StatelessWidget {
 
 /// One choice of a [FrostedMenu]: its [value], its [label], an optional
 /// [hue] swatch and quiet [trailing] note, the check when [checked], whether
-/// it can be chosen ([enabled]; a disabled one stands faded and inert), and
-/// the walkthrough [key] set on its row.
+/// it can be chosen ([enabled]; a disabled one stands faded and inert),
+/// whether it is a loss ([destructive], its words in the over ink, as the
+/// action sheet sets one), and the walkthrough [key] set on its row.
 @immutable
 class FrostedMenuItem<T> {
   /// Creates a [FrostedMenuItem].
@@ -245,6 +246,7 @@ class FrostedMenuItem<T> {
     this.trailing,
     this.checked = false,
     this.enabled = true,
+    this.destructive = false,
     this.key,
   });
 
@@ -265,6 +267,10 @@ class FrostedMenuItem<T> {
 
   /// Whether it can be chosen.
   final bool enabled;
+
+  /// Whether choosing it loses something (Delete): its words stand in the
+  /// over ink.
+  final bool destructive;
 
   /// The walkthrough key set on its row.
   final Key? key;
@@ -490,6 +496,7 @@ class FrostedMenu<T> extends StatelessWidget {
                     hue: item.hue,
                     end: item.trailing,
                     checked: item.checked,
+                    destructive: item.destructive,
                     onTap: item.enabled ? () => onSelected(item.value) : null,
                   ),
               ],
@@ -514,7 +521,8 @@ class FrostedMenu<T> extends StatelessWidget {
 
 /// A menu's row (`.menu-i`): 40 tall, 10 in, corners 10; the check's
 /// column 16 wide, then the label in the link type, then the end note; the
-/// chosen one on the chosen plate, its label in the ink and semibold. The
+/// chosen one on the chosen plate, its label in the ink and semibold; a loss
+/// sets its label in the over ink, lit or not. The
 /// row the keys or a moving pointer last went to lights with the quieter
 /// wash (law 7: the row a press would pick), never the plate, so it never
 /// reads as a second choice; one row at a time. The keyboard's ring stands
@@ -524,6 +532,7 @@ class _MenuRow extends StatelessWidget {
     required this.label,
     required this.onTap,
     required this.checked,
+    this.destructive = false,
     this.index = 0,
     this.place,
     this.hue,
@@ -532,6 +541,7 @@ class _MenuRow extends StatelessWidget {
     super.key,
   });
 
+  final bool destructive;
   final int index;
   final _MenuPlace? place;
   final FocusNode? focusNode;
@@ -578,9 +588,15 @@ class _MenuRow extends StatelessWidget {
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: checked
-                  ? t.textTheme.link.semibold.c(t.colorScheme.textPrimary)
+                  ? t.textTheme.link.semibold.c(
+                      destructive
+                          ? t.colorScheme.over
+                          : t.colorScheme.textPrimary,
+                    )
                   : t.textTheme.link.c(
-                      lit
+                      destructive
+                          ? t.colorScheme.over
+                          : lit
                           ? t.colorScheme.textPrimary
                           : t.colorScheme.textSecondary,
                     ),

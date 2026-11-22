@@ -1,9 +1,9 @@
-# frosted_ui's analysis options: ui_core's (its package/analysis_options.yaml), which look:package writes for the
-# package. pana and pub.dev read a package's own options, never a workspace root's, so they repeat the strict modes.
+# frosted_ui's analysis options: strict modes and documented public API. pana and pub.dev read a package's own
+# options, so they are set here.
 include: package:flutter_lints/flutter.yaml
 
-# The excludes `flutter pub get` writes into a Flutter package's options that lack them: written here, pub get leaves
-# the file as the build wrote it (look:check --repo compares it file for file).
+# The excludes `flutter pub get` writes into a Flutter package's options that lack them, so pub get leaves the file
+# as it is.
 analyzer:
   exclude:
     - example/build/**

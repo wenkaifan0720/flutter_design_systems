@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter/services.dart';
 import 'package:ui_core/host.dart';
 
+import '../internal/light_frame.dart';
 import '../internal/toaster.dart';
 import '../theme.dart';
 import 'toast.dart';
@@ -102,7 +103,10 @@ class FrostedHost extends StatelessWidget {
                 Brightness.light,
               );
     final motion = FrostedMotion.of(context);
-    final app = FrostedToaster(child: _HostMark(child: child));
+    // One light under the whole app: every page's backdrop paints its part.
+    final app = FrostedLightFrame(
+      child: FrostedToaster(child: _HostMark(child: child)),
+    );
     // Day to night (or one theme to another) eases through
     // FrostedThemeData.lerp over the look's base timing; a cut under Reduce
     // Motion.

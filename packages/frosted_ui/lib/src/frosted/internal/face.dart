@@ -51,6 +51,7 @@ Color frostedFocusInk(FrostedThemeData t) {
   'This will be removed in 0.4.0.',
 )
 Color frostedFocusLight(FrostedThemeData t) {
+  // Honours the deprecated member until it is removed.
   // ignore: deprecated_member_use_from_same_package
   final ink = HSLColor.fromColor(frostedFocusInk(t).withValues(alpha: 1));
   final hue = ink.withSaturation(

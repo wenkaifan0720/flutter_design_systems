@@ -1,8 +1,12 @@
+// Harbor's flows hold at large text and in Arabic: a split saves only on confirmation, a limit edits, cancels and
+// saves, and the week strip, the When choices, a revealed Delete and the overview title keep their words at 2x.
+
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frosted_ui/frosted_ui.dart';
 
+// The gallery is the example app; a test reads its pages from there.
 // ignore: avoid_relative_lib_imports
 import '../example/lib/main.dart';
 // ignore: avoid_relative_lib_imports
