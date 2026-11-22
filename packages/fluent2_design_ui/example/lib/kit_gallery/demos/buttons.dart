@@ -2,7 +2,8 @@
 /// primary, outline, subtle, transparent) at its three sizes, the shapes,
 /// a glyph before or after, the icon button (with a selected and a badged
 /// cut), the toggle button, the compound button with its second line, the
-/// menu button with its chevron and the split button, each disabled too.
+/// menu button with its chevron and the split button, each disabled too,
+/// and the danger button for an act that loses something.
 library;
 
 import 'package:material_ui/material_ui.dart';
@@ -51,6 +52,27 @@ Widget kitButtonsDemo(Brightness brightness) => kitScreen(
       ],
     ),
     kitSection('Disabled', children: [kitSpecimenButtonDisabled()]),
+    kitSection(
+      'Danger',
+      children: [
+        kitRow([
+          Fluent2Button(
+            'Delete',
+            icon: Fluent2Icons.delete,
+            appearance: Fluent2ButtonAppearance.primary,
+            danger: true,
+            onPressed: () {},
+          ),
+          Fluent2Button('Discard', danger: true, onPressed: () {}),
+          Fluent2Button(
+            'Remove',
+            appearance: Fluent2ButtonAppearance.subtle,
+            danger: true,
+            onPressed: () {},
+          ),
+        ]),
+      ],
+    ),
     kitSection('Icon buttons', children: [kitSpecimenIconButtons()]),
     kitSection('Toggle buttons', children: [const _Toggles()]),
     kitSection('Compound', children: [kitSpecimenCompoundButton()]),

@@ -1,7 +1,7 @@
 /// Fluent 2's list: rows with a glyph, an avatar or a check before their
 /// words and a value, a control or a chevron after them, grouped on a
-/// card under a section header or laid on the ground, a selected row and
-/// a disabled one.
+/// card under a section header or laid on the ground, a selected row with
+/// its menu button and a disabled one.
 library;
 
 import 'package:material_ui/material_ui.dart';
@@ -119,6 +119,11 @@ Widget kitSpecimenListGroupGround() => Fluent2ListGroup(
       subtitle: 'Kai: the new cards look great',
       selected: true,
       onTap: () {},
+      action: Fluent2IconButton(
+        Fluent2Icons.moreHorizontal,
+        label: 'More options',
+        onPressed: () {},
+      ),
     ),
     Fluent2ListItem(
       icon: Fluent2Icons.chat,

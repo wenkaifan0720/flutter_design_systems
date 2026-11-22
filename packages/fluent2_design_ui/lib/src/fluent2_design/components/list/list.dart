@@ -21,7 +21,8 @@ import 'check_indicator.dart';
 /// marks the page's own row in the selected fill. With [checked] set it is
 /// a row of a multiple selection: Fluent's checkbox at its start, a press
 /// asking [onChanged] for the other state. [enabled] false draws it
-/// in the disabled ink and makes it inert. Read as one: its words, then
+/// in the disabled ink and makes it inert. An [action] (the row's menu
+/// button) stands after its end, on its fill. Read as one: its words, then
 /// its parts.
 ///
 /// ```dart
@@ -37,6 +38,7 @@ class Fluent2ListItem extends StatelessWidget {
     this.value,
     this.trailing,
     this.chevron = false,
+    this.action,
     this.onTap,
     this.onLongPress,
     this.selected = false,
@@ -77,6 +79,16 @@ class Fluent2ListItem extends StatelessWidget {
 
   /// The chevron of a row that opens a page.
   final bool chevron;
+
+  /// A control after the row's end (its menu button). It stands on the
+  /// row's fill (the chosen row's selected fill, the row's hover and press)
+  /// out to the row's end, but is its own target and its own node, apart
+  /// from the row's press and the words read with it.
+  ///
+  /// ```dart
+  /// Fluent2ListItem(title: 'Q3 plan.docx', selected: true, onTap: open, action: Fluent2IconButton(Fluent2Icons.moreHorizontal, label: 'More options', onPressed: openMenu))
+  /// ```
+  final Widget? action;
 
   /// What a press on the row does.
   final VoidCallback? onTap;
@@ -134,14 +146,36 @@ class Fluent2ListItem extends StatelessWidget {
     // out of the reading: merged in too, each was heard twice.
     final speaks = press != null || onTap != null || check != null;
 
+    final inert = !enabled || (check != null && change == null);
+    Fluent2StyleOf lookOf(Fluent2Press state) => Fluent2StyleOf(layers, {
+      if (inert || state == Fluent2Press.disabled) WidgetState.disabled,
+      if (state == Fluent2Press.hover) WidgetState.hovered,
+      if (state == Fluent2Press.pressed) WidgetState.pressed,
+      if (selected || (check ?? false)) WidgetState.selected,
+    });
+    // The row's ground in [state]: its fill, under the style's wash.
+    Color groundOf(Fluent2Press state) {
+      final look = lookOf(state);
+      final own = state == Fluent2Press.disabled
+          ? t.colors.subtleBackground
+          : selected
+          ? fluent2Step(t, t.colors.subtleBackgroundSelected)
+          : state.pick(
+              t.colors.subtleBackground,
+              fluent2Step(t, t.colors.subtleBackgroundHover),
+              fluent2Step(t, t.colors.subtleBackgroundPressed),
+            );
+      final fill = look.fill ?? own;
+      final wash = look.overlay?.resolve(look.states);
+      return wash == null ? fill : Color.alphaBlend(wash, fill);
+    }
+
+    // With an action the row and its action stand on one ground
+    // (_ActionRow), so the row's own face is clear.
+    final control = action;
+
     Widget face(Fluent2Press state) {
-      final inert = !enabled || (check != null && change == null);
-      final look = Fluent2StyleOf(layers, {
-        if (inert || state == Fluent2Press.disabled) WidgetState.disabled,
-        if (state == Fluent2Press.hover) WidgetState.hovered,
-        if (state == Fluent2Press.pressed) WidgetState.pressed,
-        if (selected || (check ?? false)) WidgetState.selected,
-      });
+      final look = lookOf(state);
       final ink = look.foreground ?? (inert ? t.textDisabled : t.textPrimary);
       final quiet = inert ? t.textDisabled : t.textSecondary;
       final glyph = inert ? t.textDisabled : t.textSecondary;
@@ -153,6 +187,11 @@ class Fluent2ListItem extends StatelessWidget {
           MediaQuery.textScalerOf(context).scale(14) > 14 * _largeText;
       final value = large ? null : this.value;
       final under = large ? this.value : null;
+      final int? subtitleLines = subtitle == null || !subtitle.contains(' ')
+          ? 1
+          : large
+          ? null
+          : 2;
       final head = Text(
         title,
         maxLines: large ? 3 : 1,
@@ -169,12 +208,18 @@ class Fluent2ListItem extends StatelessWidget {
           else
             head,
           // A subtitle of one word (an address, a path) keeps to one line,
-          // cut at its end, rather than broken inside the word.
+          // cut at its end, rather than broken inside the word. Of more
+          // words it keeps to two, and at a large text size it runs on, as
+          // the title does: the words come first. (An ellipsis with no line
+          // cap would still cut the first line too wide, so a subtitle that
+          // runs on clips, which it never needs.)
           if (subtitle != null)
             Text(
               subtitle,
-              maxLines: subtitle.contains(' ') ? 2 : 1,
-              overflow: TextOverflow.ellipsis,
+              maxLines: subtitleLines,
+              overflow: subtitleLines == null
+                  ? TextOverflow.clip
+                  : TextOverflow.ellipsis,
               style: t.caption1.c(quiet),
             ),
           if (under != null) Text(under, style: t.body1.c(quiet)),
@@ -189,19 +234,11 @@ class Fluent2ListItem extends StatelessWidget {
                   size: wide ? Fluent2IconSize.i20 : Fluent2IconSize.i24,
                   color: glyph,
                 ));
-      final own = state == Fluent2Press.disabled
-          ? t.colors.subtleBackground
-          : selected
-          ? fluent2Step(t, t.colors.subtleBackgroundSelected)
-          : state.pick(
-              t.colors.subtleBackground,
-              fluent2Step(t, t.colors.subtleBackgroundHover),
-              fluent2Step(t, t.colors.subtleBackgroundPressed),
-            );
-      final fill = look.fill ?? own;
-      return fluent2EasedInks([fill], (context, inks) {
-        final [fill] = inks;
-        final wash = look.overlay?.resolve(look.states);
+      final ground = control == null
+          ? groundOf(state)
+          : const Color(0x00000000);
+      return fluent2EasedInks([ground], (context, inks) {
+        final [ground] = inks;
         // The density moves the desktop row; a phone's row keeps its 44.
         final least =
             look.minimumSize?.height ??
@@ -220,7 +257,7 @@ class Fluent2ListItem extends StatelessWidget {
         // switch's 48 touch target) stands in the row's height, centred,
         // and never makes it taller than its neighbours.
         return ColoredBox(
-          color: wash == null ? fill : Color.alphaBlend(wash, fill),
+          color: ground,
           child: ConstrainedBox(
             constraints: BoxConstraints(minHeight: least),
             child: Padding(
@@ -275,30 +312,37 @@ class Fluent2ListItem extends StatelessWidget {
     }
 
     final spoken = semanticLabel ?? [title, ?subtitle].join(', ');
-    if (!speaks) {
-      return Semantics(
-        container: true,
-        selected: selected ? true : null,
-        child: face(enabled ? Fluent2Press.rest : Fluent2Press.disabled),
-      );
-    }
+    final still = enabled ? Fluent2Press.rest : Fluent2Press.disabled;
     // The state goes on the node that speaks, as a check box's does: on a
     // container round it, a reader heard an empty "checked" and then the row.
-    return Semantics(
-      container: true,
-      child: Fluent2Pressable(
-        focusNode: focusNode,
-        autofocus: autofocus,
-        onPressed: press,
-        onLongPress: onLongPress,
-        label: spoken,
-        value: value,
-        checked: check,
-        selected: check == null && selected ? true : null,
-        excludeChild: false,
-        radius: 0,
-        builder: (context, states) => face(states.press),
-      ),
+    Widget row(WidgetStatesController? states) => !speaks
+        ? Semantics(
+            container: true,
+            selected: selected ? true : null,
+            child: face(still),
+          )
+        : Semantics(
+            container: true,
+            child: Fluent2Pressable(
+              focusNode: focusNode,
+              autofocus: autofocus,
+              onPressed: press,
+              onLongPress: onLongPress,
+              label: spoken,
+              value: value,
+              checked: check,
+              selected: check == null && selected ? true : null,
+              excludeChild: false,
+              radius: 0,
+              statesController: states,
+              builder: (context, states) => face(states.press),
+            ),
+          );
+    if (control == null) return row(null);
+    return _ActionRow(
+      row: row,
+      action: control,
+      ground: (states) => groundOf(speaks ? states.press : still),
     );
   }
 
@@ -314,6 +358,7 @@ class Fluent2ListItem extends StatelessWidget {
       ..add(DiagnosticsProperty<IconData>('icon', icon, defaultValue: null))
       ..add(StringProperty('value', value, defaultValue: null))
       ..add(FlagProperty('chevron', value: chevron, ifTrue: 'chevron'))
+      ..add(DiagnosticsProperty<Widget>('action', action, defaultValue: null))
       ..add(ObjectFlagProperty<VoidCallback?>.has('onTap', onTap))
       ..add(ObjectFlagProperty<VoidCallback?>.has('onLongPress', onLongPress))
       ..add(FlagProperty('selected', value: selected, ifTrue: 'selected'))
@@ -330,6 +375,53 @@ class Fluent2ListItem extends StatelessWidget {
       )
       ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
   }
+}
+
+// A row and the control after its end on the row's one ground: the control
+// stands beside the row's press and its node, never inside them, and the
+// row's fill (selected, hovered, pressed) runs under it to the row's end.
+class _ActionRow extends StatefulWidget {
+  const _ActionRow({
+    required this.row,
+    required this.action,
+    required this.ground,
+  });
+
+  final Widget Function(WidgetStatesController states) row;
+  final Widget action;
+  final Color Function(Set<WidgetState> states) ground;
+
+  @override
+  State<_ActionRow> createState() => _ActionRowState();
+}
+
+class _ActionRowState extends State<_ActionRow> {
+  final _states = WidgetStatesController();
+
+  @override
+  void dispose() {
+    _states.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => ListenableBuilder(
+    listenable: _states,
+    builder: (context, _) =>
+        fluent2EasedInks([widget.ground(_states.value)], (context, inks) {
+          final [ground] = inks;
+          return ColoredBox(
+            color: ground,
+            child: Row(
+              children: [
+                Expanded(child: widget.row(_states)),
+                widget.action,
+                const SizedBox(width: Fluent2Spacing.s),
+              ],
+            ),
+          );
+        }),
+  );
 }
 
 /// Fluent 2's list as a grouped list: its rows ([Fluent2ListItem]s) on a

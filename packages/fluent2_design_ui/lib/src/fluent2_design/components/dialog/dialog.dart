@@ -16,10 +16,13 @@ import 'package:ui_core/ui_core.dart';
 /// the [title] in subtitle1, the [message] and [content] 8 under it in body1,
 /// the [actions] 24 under that at the end, 8 apart, the primary last (on a
 /// narrow phone they stack, the primary on top). An alert dialog: no dismiss in
-/// its head, closed by its own acts. Raise one with [show] or [confirm].
+/// its head, closed by its own acts. Raise one with [show] or [confirm]. An
+/// act that loses something is a [Fluent2Button.danger]: the primary on
+/// danger's solid when the loss is what the dialog asks for (Delete), a
+/// secondary in danger's ink beside another primary (Discard by Save).
 ///
 /// ```dart
-/// Fluent2Dialog(title: 'Delete Q3 plan.docx?', content: const Text('It moves to the recycle bin for 30 days.'), actions: [Fluent2Button('Cancel', onPressed: cancel), Fluent2Button('Delete', appearance: Fluent2ButtonAppearance.primary, onPressed: delete)])
+/// Fluent2Dialog(title: 'Delete Q3 plan.docx?', content: const Text('It moves to the recycle bin for 30 days.'), actions: [Fluent2Button('Cancel', onPressed: cancel), Fluent2Button('Delete', appearance: Fluent2ButtonAppearance.primary, danger: true, onPressed: delete)])
 /// ```
 class Fluent2Dialog extends StatelessWidget {
   /// A dialog titled [title].
@@ -83,15 +86,16 @@ class Fluent2Dialog extends StatelessWidget {
 
   /// Asks [title] (with [message]), an alert dialog to a screen reader, and
   /// completes true on [confirmLabel], false on [cancelLabel], null when
-  /// dismissed. Fluent 2 has no danger
-  /// button: a loss is the primary act whose words say it ('Delete'). The
-  /// labels default to "OK" and "Cancel" in the app's language.
+  /// dismissed. With [danger] the confirming act is a loss ('Delete'), on
+  /// danger's solid. The labels default to "OK" and "Cancel" in the app's
+  /// language.
   static Future<bool?> confirm(
     BuildContext context, {
     required String title,
     String? message,
     String? confirmLabel,
     String? cancelLabel,
+    bool danger = false,
   }) => show<bool>(
     context,
     isAlert: true,
@@ -108,6 +112,7 @@ class Fluent2Dialog extends StatelessWidget {
           confirmLabel ??
               RawWidgetsLocalizations.of(dialogContext).okButtonLabel,
           appearance: Fluent2ButtonAppearance.primary,
+          danger: danger,
           onPressed: () => Navigator.of(dialogContext).pop(true),
         ),
       ],

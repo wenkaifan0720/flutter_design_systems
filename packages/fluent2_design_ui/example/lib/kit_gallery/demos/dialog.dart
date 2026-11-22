@@ -25,6 +25,7 @@ Widget kitDialogDemo(Brightness brightness) => kitScreen(
                 title: kitW('Delete Launch plan.docx?'),
                 message: kitW('It moves to the recycle bin for 30 days.'),
                 confirmLabel: kitW('Delete'),
+                danger: true,
               ),
             ),
             Fluent2Button(
@@ -51,7 +52,7 @@ Widget kitDialogDemo(Brightness brightness) => kitScreen(
 // One builder per specimen in metadata.yaml. The stage (kitSpecimenStage)
 // styles them; a builder never names a style.
 
-/// Delete a file: Cancel beside Delete in the brand.
+/// Delete a file: Cancel beside Delete, a loss, on danger's solid.
 Widget kitSpecimenDialogConfirm() => Fluent2Dialog(
   title: kitW('Delete Launch plan.docx?'),
   content: Text(kitW('It moves to the recycle bin for 30 days.')),
@@ -60,6 +61,7 @@ Widget kitSpecimenDialogConfirm() => Fluent2Dialog(
     Fluent2Button(
       kitW('Delete'),
       appearance: Fluent2ButtonAppearance.primary,
+      danger: true,
       onPressed: () {},
     ),
   ],

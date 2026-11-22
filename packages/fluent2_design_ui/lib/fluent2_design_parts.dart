@@ -22,6 +22,7 @@ export 'src/fluent2_design/components/pressable/pressable.dart';
 export 'src/fluent2_design/internal/arrow.dart';
 export 'src/fluent2_design/internal/cap_label.dart';
 export 'src/fluent2_design/internal/chosen.dart';
+export 'src/fluent2_design/internal/figure.dart';
 export 'src/fluent2_design/internal/footer_band.dart';
 export 'src/fluent2_design/internal/hit_slop.dart';
 export 'src/fluent2_design/internal/icon_fill.dart';

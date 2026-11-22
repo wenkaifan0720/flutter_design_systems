@@ -1,6 +1,5 @@
-// Generated from @fluentui/tokens 1.0.0-alpha.24 (MIT, npm) and the Fluent theme
-// designer's palette code (MIT, microsoft/fluentui) by the Fluent 2 token script
-// (looks/fluent/tools, gen_dart.ts over data/presets.json); never edit by hand.
+// Fluent 2's colour tokens, from @fluentui/tokens 1.0.0-alpha.24 (MIT, npm) and the Fluent theme
+// designer's palette code (MIT, microsoft/fluentui).
 // The classes: one field per Fluent colour token, named as Fluent names it without its `color`.
 
 import 'package:flutter/foundation.dart';
@@ -1340,6 +1339,1507 @@ final class Fluent2Colors {
     statusDangerBackground3Hover: map['statusDangerBackground3Hover']!,
     statusDangerBackground3Pressed: map['statusDangerBackground3Pressed']!,
   );
+
+  /// Each colour of [a] blended toward [b]'s at [t], as `ColorScheme.lerp` blends
+  /// Material's.
+  static Fluent2Colors lerp(Fluent2Colors a, Fluent2Colors b, double t) {
+    if (identical(a, b)) return a;
+    return Fluent2Colors(
+      neutralForeground1: Color.lerp(
+        a.neutralForeground1,
+        b.neutralForeground1,
+        t,
+      )!,
+      neutralForeground1Hover: Color.lerp(
+        a.neutralForeground1Hover,
+        b.neutralForeground1Hover,
+        t,
+      )!,
+      neutralForeground1Pressed: Color.lerp(
+        a.neutralForeground1Pressed,
+        b.neutralForeground1Pressed,
+        t,
+      )!,
+      neutralForeground1Selected: Color.lerp(
+        a.neutralForeground1Selected,
+        b.neutralForeground1Selected,
+        t,
+      )!,
+      neutralForeground2: Color.lerp(
+        a.neutralForeground2,
+        b.neutralForeground2,
+        t,
+      )!,
+      neutralForeground2Hover: Color.lerp(
+        a.neutralForeground2Hover,
+        b.neutralForeground2Hover,
+        t,
+      )!,
+      neutralForeground2Pressed: Color.lerp(
+        a.neutralForeground2Pressed,
+        b.neutralForeground2Pressed,
+        t,
+      )!,
+      neutralForeground2Selected: Color.lerp(
+        a.neutralForeground2Selected,
+        b.neutralForeground2Selected,
+        t,
+      )!,
+      neutralForeground2BrandHover: Color.lerp(
+        a.neutralForeground2BrandHover,
+        b.neutralForeground2BrandHover,
+        t,
+      )!,
+      neutralForeground2BrandPressed: Color.lerp(
+        a.neutralForeground2BrandPressed,
+        b.neutralForeground2BrandPressed,
+        t,
+      )!,
+      neutralForeground2BrandSelected: Color.lerp(
+        a.neutralForeground2BrandSelected,
+        b.neutralForeground2BrandSelected,
+        t,
+      )!,
+      neutralForeground3: Color.lerp(
+        a.neutralForeground3,
+        b.neutralForeground3,
+        t,
+      )!,
+      neutralForeground3Hover: Color.lerp(
+        a.neutralForeground3Hover,
+        b.neutralForeground3Hover,
+        t,
+      )!,
+      neutralForeground3Pressed: Color.lerp(
+        a.neutralForeground3Pressed,
+        b.neutralForeground3Pressed,
+        t,
+      )!,
+      neutralForeground3Selected: Color.lerp(
+        a.neutralForeground3Selected,
+        b.neutralForeground3Selected,
+        t,
+      )!,
+      neutralForeground3BrandHover: Color.lerp(
+        a.neutralForeground3BrandHover,
+        b.neutralForeground3BrandHover,
+        t,
+      )!,
+      neutralForeground3BrandPressed: Color.lerp(
+        a.neutralForeground3BrandPressed,
+        b.neutralForeground3BrandPressed,
+        t,
+      )!,
+      neutralForeground3BrandSelected: Color.lerp(
+        a.neutralForeground3BrandSelected,
+        b.neutralForeground3BrandSelected,
+        t,
+      )!,
+      neutralForeground4: Color.lerp(
+        a.neutralForeground4,
+        b.neutralForeground4,
+        t,
+      )!,
+      neutralForeground5: Color.lerp(
+        a.neutralForeground5,
+        b.neutralForeground5,
+        t,
+      )!,
+      neutralForeground5Hover: Color.lerp(
+        a.neutralForeground5Hover,
+        b.neutralForeground5Hover,
+        t,
+      )!,
+      neutralForeground5Pressed: Color.lerp(
+        a.neutralForeground5Pressed,
+        b.neutralForeground5Pressed,
+        t,
+      )!,
+      neutralForeground5Selected: Color.lerp(
+        a.neutralForeground5Selected,
+        b.neutralForeground5Selected,
+        t,
+      )!,
+      neutralForegroundDisabled: Color.lerp(
+        a.neutralForegroundDisabled,
+        b.neutralForegroundDisabled,
+        t,
+      )!,
+      neutralForegroundInvertedDisabled: Color.lerp(
+        a.neutralForegroundInvertedDisabled,
+        b.neutralForegroundInvertedDisabled,
+        t,
+      )!,
+      brandForegroundLink: Color.lerp(
+        a.brandForegroundLink,
+        b.brandForegroundLink,
+        t,
+      )!,
+      brandForegroundLinkHover: Color.lerp(
+        a.brandForegroundLinkHover,
+        b.brandForegroundLinkHover,
+        t,
+      )!,
+      brandForegroundLinkPressed: Color.lerp(
+        a.brandForegroundLinkPressed,
+        b.brandForegroundLinkPressed,
+        t,
+      )!,
+      brandForegroundLinkSelected: Color.lerp(
+        a.brandForegroundLinkSelected,
+        b.brandForegroundLinkSelected,
+        t,
+      )!,
+      neutralForeground2Link: Color.lerp(
+        a.neutralForeground2Link,
+        b.neutralForeground2Link,
+        t,
+      )!,
+      neutralForeground2LinkHover: Color.lerp(
+        a.neutralForeground2LinkHover,
+        b.neutralForeground2LinkHover,
+        t,
+      )!,
+      neutralForeground2LinkPressed: Color.lerp(
+        a.neutralForeground2LinkPressed,
+        b.neutralForeground2LinkPressed,
+        t,
+      )!,
+      neutralForeground2LinkSelected: Color.lerp(
+        a.neutralForeground2LinkSelected,
+        b.neutralForeground2LinkSelected,
+        t,
+      )!,
+      compoundBrandForeground1: Color.lerp(
+        a.compoundBrandForeground1,
+        b.compoundBrandForeground1,
+        t,
+      )!,
+      compoundBrandForeground1Hover: Color.lerp(
+        a.compoundBrandForeground1Hover,
+        b.compoundBrandForeground1Hover,
+        t,
+      )!,
+      compoundBrandForeground1Pressed: Color.lerp(
+        a.compoundBrandForeground1Pressed,
+        b.compoundBrandForeground1Pressed,
+        t,
+      )!,
+      brandForeground1: Color.lerp(a.brandForeground1, b.brandForeground1, t)!,
+      brandForeground2: Color.lerp(a.brandForeground2, b.brandForeground2, t)!,
+      brandForeground2Hover: Color.lerp(
+        a.brandForeground2Hover,
+        b.brandForeground2Hover,
+        t,
+      )!,
+      brandForeground2Pressed: Color.lerp(
+        a.brandForeground2Pressed,
+        b.brandForeground2Pressed,
+        t,
+      )!,
+      neutralForeground1Static: Color.lerp(
+        a.neutralForeground1Static,
+        b.neutralForeground1Static,
+        t,
+      )!,
+      neutralForegroundStaticInverted: Color.lerp(
+        a.neutralForegroundStaticInverted,
+        b.neutralForegroundStaticInverted,
+        t,
+      )!,
+      neutralForegroundInverted: Color.lerp(
+        a.neutralForegroundInverted,
+        b.neutralForegroundInverted,
+        t,
+      )!,
+      neutralForegroundInvertedHover: Color.lerp(
+        a.neutralForegroundInvertedHover,
+        b.neutralForegroundInvertedHover,
+        t,
+      )!,
+      neutralForegroundInvertedPressed: Color.lerp(
+        a.neutralForegroundInvertedPressed,
+        b.neutralForegroundInvertedPressed,
+        t,
+      )!,
+      neutralForegroundInvertedSelected: Color.lerp(
+        a.neutralForegroundInvertedSelected,
+        b.neutralForegroundInvertedSelected,
+        t,
+      )!,
+      neutralForegroundInverted2: Color.lerp(
+        a.neutralForegroundInverted2,
+        b.neutralForegroundInverted2,
+        t,
+      )!,
+      neutralForegroundOnBrand: Color.lerp(
+        a.neutralForegroundOnBrand,
+        b.neutralForegroundOnBrand,
+        t,
+      )!,
+      neutralForegroundInvertedLink: Color.lerp(
+        a.neutralForegroundInvertedLink,
+        b.neutralForegroundInvertedLink,
+        t,
+      )!,
+      neutralForegroundInvertedLinkHover: Color.lerp(
+        a.neutralForegroundInvertedLinkHover,
+        b.neutralForegroundInvertedLinkHover,
+        t,
+      )!,
+      neutralForegroundInvertedLinkPressed: Color.lerp(
+        a.neutralForegroundInvertedLinkPressed,
+        b.neutralForegroundInvertedLinkPressed,
+        t,
+      )!,
+      neutralForegroundInvertedLinkSelected: Color.lerp(
+        a.neutralForegroundInvertedLinkSelected,
+        b.neutralForegroundInvertedLinkSelected,
+        t,
+      )!,
+      brandForegroundInverted: Color.lerp(
+        a.brandForegroundInverted,
+        b.brandForegroundInverted,
+        t,
+      )!,
+      brandForegroundInvertedHover: Color.lerp(
+        a.brandForegroundInvertedHover,
+        b.brandForegroundInvertedHover,
+        t,
+      )!,
+      brandForegroundInvertedPressed: Color.lerp(
+        a.brandForegroundInvertedPressed,
+        b.brandForegroundInvertedPressed,
+        t,
+      )!,
+      brandForegroundOnLight: Color.lerp(
+        a.brandForegroundOnLight,
+        b.brandForegroundOnLight,
+        t,
+      )!,
+      brandForegroundOnLightHover: Color.lerp(
+        a.brandForegroundOnLightHover,
+        b.brandForegroundOnLightHover,
+        t,
+      )!,
+      brandForegroundOnLightPressed: Color.lerp(
+        a.brandForegroundOnLightPressed,
+        b.brandForegroundOnLightPressed,
+        t,
+      )!,
+      brandForegroundOnLightSelected: Color.lerp(
+        a.brandForegroundOnLightSelected,
+        b.brandForegroundOnLightSelected,
+        t,
+      )!,
+      neutralBackground1: Color.lerp(
+        a.neutralBackground1,
+        b.neutralBackground1,
+        t,
+      )!,
+      neutralBackground1Hover: Color.lerp(
+        a.neutralBackground1Hover,
+        b.neutralBackground1Hover,
+        t,
+      )!,
+      neutralBackground1Pressed: Color.lerp(
+        a.neutralBackground1Pressed,
+        b.neutralBackground1Pressed,
+        t,
+      )!,
+      neutralBackground1Selected: Color.lerp(
+        a.neutralBackground1Selected,
+        b.neutralBackground1Selected,
+        t,
+      )!,
+      neutralBackground2: Color.lerp(
+        a.neutralBackground2,
+        b.neutralBackground2,
+        t,
+      )!,
+      neutralBackground2Hover: Color.lerp(
+        a.neutralBackground2Hover,
+        b.neutralBackground2Hover,
+        t,
+      )!,
+      neutralBackground2Pressed: Color.lerp(
+        a.neutralBackground2Pressed,
+        b.neutralBackground2Pressed,
+        t,
+      )!,
+      neutralBackground2Selected: Color.lerp(
+        a.neutralBackground2Selected,
+        b.neutralBackground2Selected,
+        t,
+      )!,
+      neutralBackground3: Color.lerp(
+        a.neutralBackground3,
+        b.neutralBackground3,
+        t,
+      )!,
+      neutralBackground3Hover: Color.lerp(
+        a.neutralBackground3Hover,
+        b.neutralBackground3Hover,
+        t,
+      )!,
+      neutralBackground3Pressed: Color.lerp(
+        a.neutralBackground3Pressed,
+        b.neutralBackground3Pressed,
+        t,
+      )!,
+      neutralBackground3Selected: Color.lerp(
+        a.neutralBackground3Selected,
+        b.neutralBackground3Selected,
+        t,
+      )!,
+      neutralBackground4: Color.lerp(
+        a.neutralBackground4,
+        b.neutralBackground4,
+        t,
+      )!,
+      neutralBackground4Hover: Color.lerp(
+        a.neutralBackground4Hover,
+        b.neutralBackground4Hover,
+        t,
+      )!,
+      neutralBackground4Pressed: Color.lerp(
+        a.neutralBackground4Pressed,
+        b.neutralBackground4Pressed,
+        t,
+      )!,
+      neutralBackground4Selected: Color.lerp(
+        a.neutralBackground4Selected,
+        b.neutralBackground4Selected,
+        t,
+      )!,
+      neutralBackground5: Color.lerp(
+        a.neutralBackground5,
+        b.neutralBackground5,
+        t,
+      )!,
+      neutralBackground5Hover: Color.lerp(
+        a.neutralBackground5Hover,
+        b.neutralBackground5Hover,
+        t,
+      )!,
+      neutralBackground5Pressed: Color.lerp(
+        a.neutralBackground5Pressed,
+        b.neutralBackground5Pressed,
+        t,
+      )!,
+      neutralBackground5Selected: Color.lerp(
+        a.neutralBackground5Selected,
+        b.neutralBackground5Selected,
+        t,
+      )!,
+      neutralBackground6: Color.lerp(
+        a.neutralBackground6,
+        b.neutralBackground6,
+        t,
+      )!,
+      neutralBackground7: Color.lerp(
+        a.neutralBackground7,
+        b.neutralBackground7,
+        t,
+      )!,
+      neutralBackground7Hover: Color.lerp(
+        a.neutralBackground7Hover,
+        b.neutralBackground7Hover,
+        t,
+      )!,
+      neutralBackground7Pressed: Color.lerp(
+        a.neutralBackground7Pressed,
+        b.neutralBackground7Pressed,
+        t,
+      )!,
+      neutralBackground7Selected: Color.lerp(
+        a.neutralBackground7Selected,
+        b.neutralBackground7Selected,
+        t,
+      )!,
+      neutralBackground8: Color.lerp(
+        a.neutralBackground8,
+        b.neutralBackground8,
+        t,
+      )!,
+      neutralBackgroundInverted: Color.lerp(
+        a.neutralBackgroundInverted,
+        b.neutralBackgroundInverted,
+        t,
+      )!,
+      neutralBackgroundInvertedHover: Color.lerp(
+        a.neutralBackgroundInvertedHover,
+        b.neutralBackgroundInvertedHover,
+        t,
+      )!,
+      neutralBackgroundInvertedPressed: Color.lerp(
+        a.neutralBackgroundInvertedPressed,
+        b.neutralBackgroundInvertedPressed,
+        t,
+      )!,
+      neutralBackgroundInvertedSelected: Color.lerp(
+        a.neutralBackgroundInvertedSelected,
+        b.neutralBackgroundInvertedSelected,
+        t,
+      )!,
+      neutralBackgroundStatic: Color.lerp(
+        a.neutralBackgroundStatic,
+        b.neutralBackgroundStatic,
+        t,
+      )!,
+      neutralBackgroundAlpha: Color.lerp(
+        a.neutralBackgroundAlpha,
+        b.neutralBackgroundAlpha,
+        t,
+      )!,
+      neutralBackgroundAlpha2: Color.lerp(
+        a.neutralBackgroundAlpha2,
+        b.neutralBackgroundAlpha2,
+        t,
+      )!,
+      subtleBackground: Color.lerp(a.subtleBackground, b.subtleBackground, t)!,
+      subtleBackgroundHover: Color.lerp(
+        a.subtleBackgroundHover,
+        b.subtleBackgroundHover,
+        t,
+      )!,
+      subtleBackgroundPressed: Color.lerp(
+        a.subtleBackgroundPressed,
+        b.subtleBackgroundPressed,
+        t,
+      )!,
+      subtleBackgroundSelected: Color.lerp(
+        a.subtleBackgroundSelected,
+        b.subtleBackgroundSelected,
+        t,
+      )!,
+      subtleBackgroundLightAlphaHover: Color.lerp(
+        a.subtleBackgroundLightAlphaHover,
+        b.subtleBackgroundLightAlphaHover,
+        t,
+      )!,
+      subtleBackgroundLightAlphaPressed: Color.lerp(
+        a.subtleBackgroundLightAlphaPressed,
+        b.subtleBackgroundLightAlphaPressed,
+        t,
+      )!,
+      subtleBackgroundLightAlphaSelected: Color.lerp(
+        a.subtleBackgroundLightAlphaSelected,
+        b.subtleBackgroundLightAlphaSelected,
+        t,
+      )!,
+      subtleBackgroundInverted: Color.lerp(
+        a.subtleBackgroundInverted,
+        b.subtleBackgroundInverted,
+        t,
+      )!,
+      subtleBackgroundInvertedHover: Color.lerp(
+        a.subtleBackgroundInvertedHover,
+        b.subtleBackgroundInvertedHover,
+        t,
+      )!,
+      subtleBackgroundInvertedPressed: Color.lerp(
+        a.subtleBackgroundInvertedPressed,
+        b.subtleBackgroundInvertedPressed,
+        t,
+      )!,
+      subtleBackgroundInvertedSelected: Color.lerp(
+        a.subtleBackgroundInvertedSelected,
+        b.subtleBackgroundInvertedSelected,
+        t,
+      )!,
+      transparentBackground: Color.lerp(
+        a.transparentBackground,
+        b.transparentBackground,
+        t,
+      )!,
+      transparentBackgroundHover: Color.lerp(
+        a.transparentBackgroundHover,
+        b.transparentBackgroundHover,
+        t,
+      )!,
+      transparentBackgroundPressed: Color.lerp(
+        a.transparentBackgroundPressed,
+        b.transparentBackgroundPressed,
+        t,
+      )!,
+      transparentBackgroundSelected: Color.lerp(
+        a.transparentBackgroundSelected,
+        b.transparentBackgroundSelected,
+        t,
+      )!,
+      neutralBackgroundDisabled: Color.lerp(
+        a.neutralBackgroundDisabled,
+        b.neutralBackgroundDisabled,
+        t,
+      )!,
+      neutralBackgroundDisabled2: Color.lerp(
+        a.neutralBackgroundDisabled2,
+        b.neutralBackgroundDisabled2,
+        t,
+      )!,
+      neutralBackgroundInvertedDisabled: Color.lerp(
+        a.neutralBackgroundInvertedDisabled,
+        b.neutralBackgroundInvertedDisabled,
+        t,
+      )!,
+      neutralStencil1: Color.lerp(a.neutralStencil1, b.neutralStencil1, t)!,
+      neutralStencil2: Color.lerp(a.neutralStencil2, b.neutralStencil2, t)!,
+      neutralStencil1Alpha: Color.lerp(
+        a.neutralStencil1Alpha,
+        b.neutralStencil1Alpha,
+        t,
+      )!,
+      neutralStencil2Alpha: Color.lerp(
+        a.neutralStencil2Alpha,
+        b.neutralStencil2Alpha,
+        t,
+      )!,
+      backgroundOverlay: Color.lerp(
+        a.backgroundOverlay,
+        b.backgroundOverlay,
+        t,
+      )!,
+      scrollbarOverlay: Color.lerp(a.scrollbarOverlay, b.scrollbarOverlay, t)!,
+      brandBackground: Color.lerp(a.brandBackground, b.brandBackground, t)!,
+      brandBackgroundHover: Color.lerp(
+        a.brandBackgroundHover,
+        b.brandBackgroundHover,
+        t,
+      )!,
+      brandBackgroundPressed: Color.lerp(
+        a.brandBackgroundPressed,
+        b.brandBackgroundPressed,
+        t,
+      )!,
+      brandBackgroundSelected: Color.lerp(
+        a.brandBackgroundSelected,
+        b.brandBackgroundSelected,
+        t,
+      )!,
+      compoundBrandBackground: Color.lerp(
+        a.compoundBrandBackground,
+        b.compoundBrandBackground,
+        t,
+      )!,
+      compoundBrandBackgroundHover: Color.lerp(
+        a.compoundBrandBackgroundHover,
+        b.compoundBrandBackgroundHover,
+        t,
+      )!,
+      compoundBrandBackgroundPressed: Color.lerp(
+        a.compoundBrandBackgroundPressed,
+        b.compoundBrandBackgroundPressed,
+        t,
+      )!,
+      brandBackgroundStatic: Color.lerp(
+        a.brandBackgroundStatic,
+        b.brandBackgroundStatic,
+        t,
+      )!,
+      brandBackground2: Color.lerp(a.brandBackground2, b.brandBackground2, t)!,
+      brandBackground2Hover: Color.lerp(
+        a.brandBackground2Hover,
+        b.brandBackground2Hover,
+        t,
+      )!,
+      brandBackground2Pressed: Color.lerp(
+        a.brandBackground2Pressed,
+        b.brandBackground2Pressed,
+        t,
+      )!,
+      brandBackground3Static: Color.lerp(
+        a.brandBackground3Static,
+        b.brandBackground3Static,
+        t,
+      )!,
+      brandBackground4Static: Color.lerp(
+        a.brandBackground4Static,
+        b.brandBackground4Static,
+        t,
+      )!,
+      brandBackgroundInverted: Color.lerp(
+        a.brandBackgroundInverted,
+        b.brandBackgroundInverted,
+        t,
+      )!,
+      brandBackgroundInvertedHover: Color.lerp(
+        a.brandBackgroundInvertedHover,
+        b.brandBackgroundInvertedHover,
+        t,
+      )!,
+      brandBackgroundInvertedPressed: Color.lerp(
+        a.brandBackgroundInvertedPressed,
+        b.brandBackgroundInvertedPressed,
+        t,
+      )!,
+      brandBackgroundInvertedSelected: Color.lerp(
+        a.brandBackgroundInvertedSelected,
+        b.brandBackgroundInvertedSelected,
+        t,
+      )!,
+      neutralCardBackground: Color.lerp(
+        a.neutralCardBackground,
+        b.neutralCardBackground,
+        t,
+      )!,
+      neutralCardBackgroundHover: Color.lerp(
+        a.neutralCardBackgroundHover,
+        b.neutralCardBackgroundHover,
+        t,
+      )!,
+      neutralCardBackgroundPressed: Color.lerp(
+        a.neutralCardBackgroundPressed,
+        b.neutralCardBackgroundPressed,
+        t,
+      )!,
+      neutralCardBackgroundSelected: Color.lerp(
+        a.neutralCardBackgroundSelected,
+        b.neutralCardBackgroundSelected,
+        t,
+      )!,
+      neutralCardBackgroundDisabled: Color.lerp(
+        a.neutralCardBackgroundDisabled,
+        b.neutralCardBackgroundDisabled,
+        t,
+      )!,
+      neutralStrokeAccessible: Color.lerp(
+        a.neutralStrokeAccessible,
+        b.neutralStrokeAccessible,
+        t,
+      )!,
+      neutralStrokeAccessibleHover: Color.lerp(
+        a.neutralStrokeAccessibleHover,
+        b.neutralStrokeAccessibleHover,
+        t,
+      )!,
+      neutralStrokeAccessiblePressed: Color.lerp(
+        a.neutralStrokeAccessiblePressed,
+        b.neutralStrokeAccessiblePressed,
+        t,
+      )!,
+      neutralStrokeAccessibleSelected: Color.lerp(
+        a.neutralStrokeAccessibleSelected,
+        b.neutralStrokeAccessibleSelected,
+        t,
+      )!,
+      neutralStroke1: Color.lerp(a.neutralStroke1, b.neutralStroke1, t)!,
+      neutralStroke1Hover: Color.lerp(
+        a.neutralStroke1Hover,
+        b.neutralStroke1Hover,
+        t,
+      )!,
+      neutralStroke1Pressed: Color.lerp(
+        a.neutralStroke1Pressed,
+        b.neutralStroke1Pressed,
+        t,
+      )!,
+      neutralStroke1Selected: Color.lerp(
+        a.neutralStroke1Selected,
+        b.neutralStroke1Selected,
+        t,
+      )!,
+      neutralStroke2: Color.lerp(a.neutralStroke2, b.neutralStroke2, t)!,
+      neutralStroke3: Color.lerp(a.neutralStroke3, b.neutralStroke3, t)!,
+      neutralStroke4: Color.lerp(a.neutralStroke4, b.neutralStroke4, t)!,
+      neutralStroke4Hover: Color.lerp(
+        a.neutralStroke4Hover,
+        b.neutralStroke4Hover,
+        t,
+      )!,
+      neutralStroke4Pressed: Color.lerp(
+        a.neutralStroke4Pressed,
+        b.neutralStroke4Pressed,
+        t,
+      )!,
+      neutralStroke4Selected: Color.lerp(
+        a.neutralStroke4Selected,
+        b.neutralStroke4Selected,
+        t,
+      )!,
+      neutralStrokeSubtle: Color.lerp(
+        a.neutralStrokeSubtle,
+        b.neutralStrokeSubtle,
+        t,
+      )!,
+      neutralStrokeOnBrand: Color.lerp(
+        a.neutralStrokeOnBrand,
+        b.neutralStrokeOnBrand,
+        t,
+      )!,
+      neutralStrokeOnBrand2: Color.lerp(
+        a.neutralStrokeOnBrand2,
+        b.neutralStrokeOnBrand2,
+        t,
+      )!,
+      neutralStrokeOnBrand2Hover: Color.lerp(
+        a.neutralStrokeOnBrand2Hover,
+        b.neutralStrokeOnBrand2Hover,
+        t,
+      )!,
+      neutralStrokeOnBrand2Pressed: Color.lerp(
+        a.neutralStrokeOnBrand2Pressed,
+        b.neutralStrokeOnBrand2Pressed,
+        t,
+      )!,
+      neutralStrokeOnBrand2Selected: Color.lerp(
+        a.neutralStrokeOnBrand2Selected,
+        b.neutralStrokeOnBrand2Selected,
+        t,
+      )!,
+      brandStroke1: Color.lerp(a.brandStroke1, b.brandStroke1, t)!,
+      brandStroke2: Color.lerp(a.brandStroke2, b.brandStroke2, t)!,
+      brandStroke2Hover: Color.lerp(
+        a.brandStroke2Hover,
+        b.brandStroke2Hover,
+        t,
+      )!,
+      brandStroke2Pressed: Color.lerp(
+        a.brandStroke2Pressed,
+        b.brandStroke2Pressed,
+        t,
+      )!,
+      brandStroke2Contrast: Color.lerp(
+        a.brandStroke2Contrast,
+        b.brandStroke2Contrast,
+        t,
+      )!,
+      compoundBrandStroke: Color.lerp(
+        a.compoundBrandStroke,
+        b.compoundBrandStroke,
+        t,
+      )!,
+      compoundBrandStrokeHover: Color.lerp(
+        a.compoundBrandStrokeHover,
+        b.compoundBrandStrokeHover,
+        t,
+      )!,
+      compoundBrandStrokePressed: Color.lerp(
+        a.compoundBrandStrokePressed,
+        b.compoundBrandStrokePressed,
+        t,
+      )!,
+      neutralStrokeDisabled: Color.lerp(
+        a.neutralStrokeDisabled,
+        b.neutralStrokeDisabled,
+        t,
+      )!,
+      neutralStrokeDisabled2: Color.lerp(
+        a.neutralStrokeDisabled2,
+        b.neutralStrokeDisabled2,
+        t,
+      )!,
+      neutralStrokeInvertedDisabled: Color.lerp(
+        a.neutralStrokeInvertedDisabled,
+        b.neutralStrokeInvertedDisabled,
+        t,
+      )!,
+      transparentStroke: Color.lerp(
+        a.transparentStroke,
+        b.transparentStroke,
+        t,
+      )!,
+      transparentStrokeInteractive: Color.lerp(
+        a.transparentStrokeInteractive,
+        b.transparentStrokeInteractive,
+        t,
+      )!,
+      transparentStrokeDisabled: Color.lerp(
+        a.transparentStrokeDisabled,
+        b.transparentStrokeDisabled,
+        t,
+      )!,
+      neutralStrokeAlpha: Color.lerp(
+        a.neutralStrokeAlpha,
+        b.neutralStrokeAlpha,
+        t,
+      )!,
+      neutralStrokeAlpha2: Color.lerp(
+        a.neutralStrokeAlpha2,
+        b.neutralStrokeAlpha2,
+        t,
+      )!,
+      strokeFocus1: Color.lerp(a.strokeFocus1, b.strokeFocus1, t)!,
+      strokeFocus2: Color.lerp(a.strokeFocus2, b.strokeFocus2, t)!,
+      neutralShadowAmbient: Color.lerp(
+        a.neutralShadowAmbient,
+        b.neutralShadowAmbient,
+        t,
+      )!,
+      neutralShadowKey: Color.lerp(a.neutralShadowKey, b.neutralShadowKey, t)!,
+      neutralShadowAmbientLighter: Color.lerp(
+        a.neutralShadowAmbientLighter,
+        b.neutralShadowAmbientLighter,
+        t,
+      )!,
+      neutralShadowKeyLighter: Color.lerp(
+        a.neutralShadowKeyLighter,
+        b.neutralShadowKeyLighter,
+        t,
+      )!,
+      neutralShadowAmbientDarker: Color.lerp(
+        a.neutralShadowAmbientDarker,
+        b.neutralShadowAmbientDarker,
+        t,
+      )!,
+      neutralShadowKeyDarker: Color.lerp(
+        a.neutralShadowKeyDarker,
+        b.neutralShadowKeyDarker,
+        t,
+      )!,
+      brandShadowAmbient: Color.lerp(
+        a.brandShadowAmbient,
+        b.brandShadowAmbient,
+        t,
+      )!,
+      brandShadowKey: Color.lerp(a.brandShadowKey, b.brandShadowKey, t)!,
+      statusSuccessBackground1: Color.lerp(
+        a.statusSuccessBackground1,
+        b.statusSuccessBackground1,
+        t,
+      )!,
+      statusSuccessBackground2: Color.lerp(
+        a.statusSuccessBackground2,
+        b.statusSuccessBackground2,
+        t,
+      )!,
+      statusSuccessBackground3: Color.lerp(
+        a.statusSuccessBackground3,
+        b.statusSuccessBackground3,
+        t,
+      )!,
+      statusSuccessForeground1: Color.lerp(
+        a.statusSuccessForeground1,
+        b.statusSuccessForeground1,
+        t,
+      )!,
+      statusSuccessForeground2: Color.lerp(
+        a.statusSuccessForeground2,
+        b.statusSuccessForeground2,
+        t,
+      )!,
+      statusSuccessForeground3: Color.lerp(
+        a.statusSuccessForeground3,
+        b.statusSuccessForeground3,
+        t,
+      )!,
+      statusSuccessForegroundInverted: Color.lerp(
+        a.statusSuccessForegroundInverted,
+        b.statusSuccessForegroundInverted,
+        t,
+      )!,
+      statusSuccessBorderActive: Color.lerp(
+        a.statusSuccessBorderActive,
+        b.statusSuccessBorderActive,
+        t,
+      )!,
+      statusSuccessBorder1: Color.lerp(
+        a.statusSuccessBorder1,
+        b.statusSuccessBorder1,
+        t,
+      )!,
+      statusSuccessBorder2: Color.lerp(
+        a.statusSuccessBorder2,
+        b.statusSuccessBorder2,
+        t,
+      )!,
+      statusWarningBackground1: Color.lerp(
+        a.statusWarningBackground1,
+        b.statusWarningBackground1,
+        t,
+      )!,
+      statusWarningBackground2: Color.lerp(
+        a.statusWarningBackground2,
+        b.statusWarningBackground2,
+        t,
+      )!,
+      statusWarningBackground3: Color.lerp(
+        a.statusWarningBackground3,
+        b.statusWarningBackground3,
+        t,
+      )!,
+      statusWarningForeground1: Color.lerp(
+        a.statusWarningForeground1,
+        b.statusWarningForeground1,
+        t,
+      )!,
+      statusWarningForeground2: Color.lerp(
+        a.statusWarningForeground2,
+        b.statusWarningForeground2,
+        t,
+      )!,
+      statusWarningForeground3: Color.lerp(
+        a.statusWarningForeground3,
+        b.statusWarningForeground3,
+        t,
+      )!,
+      statusWarningForegroundInverted: Color.lerp(
+        a.statusWarningForegroundInverted,
+        b.statusWarningForegroundInverted,
+        t,
+      )!,
+      statusWarningBorderActive: Color.lerp(
+        a.statusWarningBorderActive,
+        b.statusWarningBorderActive,
+        t,
+      )!,
+      statusWarningBorder1: Color.lerp(
+        a.statusWarningBorder1,
+        b.statusWarningBorder1,
+        t,
+      )!,
+      statusWarningBorder2: Color.lerp(
+        a.statusWarningBorder2,
+        b.statusWarningBorder2,
+        t,
+      )!,
+      statusDangerBackground1: Color.lerp(
+        a.statusDangerBackground1,
+        b.statusDangerBackground1,
+        t,
+      )!,
+      statusDangerBackground2: Color.lerp(
+        a.statusDangerBackground2,
+        b.statusDangerBackground2,
+        t,
+      )!,
+      statusDangerBackground3: Color.lerp(
+        a.statusDangerBackground3,
+        b.statusDangerBackground3,
+        t,
+      )!,
+      statusDangerForeground1: Color.lerp(
+        a.statusDangerForeground1,
+        b.statusDangerForeground1,
+        t,
+      )!,
+      statusDangerForeground2: Color.lerp(
+        a.statusDangerForeground2,
+        b.statusDangerForeground2,
+        t,
+      )!,
+      statusDangerForeground3: Color.lerp(
+        a.statusDangerForeground3,
+        b.statusDangerForeground3,
+        t,
+      )!,
+      statusDangerForegroundInverted: Color.lerp(
+        a.statusDangerForegroundInverted,
+        b.statusDangerForegroundInverted,
+        t,
+      )!,
+      statusDangerBorderActive: Color.lerp(
+        a.statusDangerBorderActive,
+        b.statusDangerBorderActive,
+        t,
+      )!,
+      statusDangerBorder1: Color.lerp(
+        a.statusDangerBorder1,
+        b.statusDangerBorder1,
+        t,
+      )!,
+      statusDangerBorder2: Color.lerp(
+        a.statusDangerBorder2,
+        b.statusDangerBorder2,
+        t,
+      )!,
+      statusDangerBackground3Hover: Color.lerp(
+        a.statusDangerBackground3Hover,
+        b.statusDangerBackground3Hover,
+        t,
+      )!,
+      statusDangerBackground3Pressed: Color.lerp(
+        a.statusDangerBackground3Pressed,
+        b.statusDangerBackground3Pressed,
+        t,
+      )!,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is Fluent2Colors &&
+          other.neutralForeground1 == neutralForeground1 &&
+          other.neutralForeground1Hover == neutralForeground1Hover &&
+          other.neutralForeground1Pressed == neutralForeground1Pressed &&
+          other.neutralForeground1Selected == neutralForeground1Selected &&
+          other.neutralForeground2 == neutralForeground2 &&
+          other.neutralForeground2Hover == neutralForeground2Hover &&
+          other.neutralForeground2Pressed == neutralForeground2Pressed &&
+          other.neutralForeground2Selected == neutralForeground2Selected &&
+          other.neutralForeground2BrandHover == neutralForeground2BrandHover &&
+          other.neutralForeground2BrandPressed ==
+              neutralForeground2BrandPressed &&
+          other.neutralForeground2BrandSelected ==
+              neutralForeground2BrandSelected &&
+          other.neutralForeground3 == neutralForeground3 &&
+          other.neutralForeground3Hover == neutralForeground3Hover &&
+          other.neutralForeground3Pressed == neutralForeground3Pressed &&
+          other.neutralForeground3Selected == neutralForeground3Selected &&
+          other.neutralForeground3BrandHover == neutralForeground3BrandHover &&
+          other.neutralForeground3BrandPressed ==
+              neutralForeground3BrandPressed &&
+          other.neutralForeground3BrandSelected ==
+              neutralForeground3BrandSelected &&
+          other.neutralForeground4 == neutralForeground4 &&
+          other.neutralForeground5 == neutralForeground5 &&
+          other.neutralForeground5Hover == neutralForeground5Hover &&
+          other.neutralForeground5Pressed == neutralForeground5Pressed &&
+          other.neutralForeground5Selected == neutralForeground5Selected &&
+          other.neutralForegroundDisabled == neutralForegroundDisabled &&
+          other.neutralForegroundInvertedDisabled ==
+              neutralForegroundInvertedDisabled &&
+          other.brandForegroundLink == brandForegroundLink &&
+          other.brandForegroundLinkHover == brandForegroundLinkHover &&
+          other.brandForegroundLinkPressed == brandForegroundLinkPressed &&
+          other.brandForegroundLinkSelected == brandForegroundLinkSelected &&
+          other.neutralForeground2Link == neutralForeground2Link &&
+          other.neutralForeground2LinkHover == neutralForeground2LinkHover &&
+          other.neutralForeground2LinkPressed ==
+              neutralForeground2LinkPressed &&
+          other.neutralForeground2LinkSelected ==
+              neutralForeground2LinkSelected &&
+          other.compoundBrandForeground1 == compoundBrandForeground1 &&
+          other.compoundBrandForeground1Hover ==
+              compoundBrandForeground1Hover &&
+          other.compoundBrandForeground1Pressed ==
+              compoundBrandForeground1Pressed &&
+          other.brandForeground1 == brandForeground1 &&
+          other.brandForeground2 == brandForeground2 &&
+          other.brandForeground2Hover == brandForeground2Hover &&
+          other.brandForeground2Pressed == brandForeground2Pressed &&
+          other.neutralForeground1Static == neutralForeground1Static &&
+          other.neutralForegroundStaticInverted ==
+              neutralForegroundStaticInverted &&
+          other.neutralForegroundInverted == neutralForegroundInverted &&
+          other.neutralForegroundInvertedHover ==
+              neutralForegroundInvertedHover &&
+          other.neutralForegroundInvertedPressed ==
+              neutralForegroundInvertedPressed &&
+          other.neutralForegroundInvertedSelected ==
+              neutralForegroundInvertedSelected &&
+          other.neutralForegroundInverted2 == neutralForegroundInverted2 &&
+          other.neutralForegroundOnBrand == neutralForegroundOnBrand &&
+          other.neutralForegroundInvertedLink ==
+              neutralForegroundInvertedLink &&
+          other.neutralForegroundInvertedLinkHover ==
+              neutralForegroundInvertedLinkHover &&
+          other.neutralForegroundInvertedLinkPressed ==
+              neutralForegroundInvertedLinkPressed &&
+          other.neutralForegroundInvertedLinkSelected ==
+              neutralForegroundInvertedLinkSelected &&
+          other.brandForegroundInverted == brandForegroundInverted &&
+          other.brandForegroundInvertedHover == brandForegroundInvertedHover &&
+          other.brandForegroundInvertedPressed ==
+              brandForegroundInvertedPressed &&
+          other.brandForegroundOnLight == brandForegroundOnLight &&
+          other.brandForegroundOnLightHover == brandForegroundOnLightHover &&
+          other.brandForegroundOnLightPressed ==
+              brandForegroundOnLightPressed &&
+          other.brandForegroundOnLightSelected ==
+              brandForegroundOnLightSelected &&
+          other.neutralBackground1 == neutralBackground1 &&
+          other.neutralBackground1Hover == neutralBackground1Hover &&
+          other.neutralBackground1Pressed == neutralBackground1Pressed &&
+          other.neutralBackground1Selected == neutralBackground1Selected &&
+          other.neutralBackground2 == neutralBackground2 &&
+          other.neutralBackground2Hover == neutralBackground2Hover &&
+          other.neutralBackground2Pressed == neutralBackground2Pressed &&
+          other.neutralBackground2Selected == neutralBackground2Selected &&
+          other.neutralBackground3 == neutralBackground3 &&
+          other.neutralBackground3Hover == neutralBackground3Hover &&
+          other.neutralBackground3Pressed == neutralBackground3Pressed &&
+          other.neutralBackground3Selected == neutralBackground3Selected &&
+          other.neutralBackground4 == neutralBackground4 &&
+          other.neutralBackground4Hover == neutralBackground4Hover &&
+          other.neutralBackground4Pressed == neutralBackground4Pressed &&
+          other.neutralBackground4Selected == neutralBackground4Selected &&
+          other.neutralBackground5 == neutralBackground5 &&
+          other.neutralBackground5Hover == neutralBackground5Hover &&
+          other.neutralBackground5Pressed == neutralBackground5Pressed &&
+          other.neutralBackground5Selected == neutralBackground5Selected &&
+          other.neutralBackground6 == neutralBackground6 &&
+          other.neutralBackground7 == neutralBackground7 &&
+          other.neutralBackground7Hover == neutralBackground7Hover &&
+          other.neutralBackground7Pressed == neutralBackground7Pressed &&
+          other.neutralBackground7Selected == neutralBackground7Selected &&
+          other.neutralBackground8 == neutralBackground8 &&
+          other.neutralBackgroundInverted == neutralBackgroundInverted &&
+          other.neutralBackgroundInvertedHover ==
+              neutralBackgroundInvertedHover &&
+          other.neutralBackgroundInvertedPressed ==
+              neutralBackgroundInvertedPressed &&
+          other.neutralBackgroundInvertedSelected ==
+              neutralBackgroundInvertedSelected &&
+          other.neutralBackgroundStatic == neutralBackgroundStatic &&
+          other.neutralBackgroundAlpha == neutralBackgroundAlpha &&
+          other.neutralBackgroundAlpha2 == neutralBackgroundAlpha2 &&
+          other.subtleBackground == subtleBackground &&
+          other.subtleBackgroundHover == subtleBackgroundHover &&
+          other.subtleBackgroundPressed == subtleBackgroundPressed &&
+          other.subtleBackgroundSelected == subtleBackgroundSelected &&
+          other.subtleBackgroundLightAlphaHover ==
+              subtleBackgroundLightAlphaHover &&
+          other.subtleBackgroundLightAlphaPressed ==
+              subtleBackgroundLightAlphaPressed &&
+          other.subtleBackgroundLightAlphaSelected ==
+              subtleBackgroundLightAlphaSelected &&
+          other.subtleBackgroundInverted == subtleBackgroundInverted &&
+          other.subtleBackgroundInvertedHover ==
+              subtleBackgroundInvertedHover &&
+          other.subtleBackgroundInvertedPressed ==
+              subtleBackgroundInvertedPressed &&
+          other.subtleBackgroundInvertedSelected ==
+              subtleBackgroundInvertedSelected &&
+          other.transparentBackground == transparentBackground &&
+          other.transparentBackgroundHover == transparentBackgroundHover &&
+          other.transparentBackgroundPressed == transparentBackgroundPressed &&
+          other.transparentBackgroundSelected ==
+              transparentBackgroundSelected &&
+          other.neutralBackgroundDisabled == neutralBackgroundDisabled &&
+          other.neutralBackgroundDisabled2 == neutralBackgroundDisabled2 &&
+          other.neutralBackgroundInvertedDisabled ==
+              neutralBackgroundInvertedDisabled &&
+          other.neutralStencil1 == neutralStencil1 &&
+          other.neutralStencil2 == neutralStencil2 &&
+          other.neutralStencil1Alpha == neutralStencil1Alpha &&
+          other.neutralStencil2Alpha == neutralStencil2Alpha &&
+          other.backgroundOverlay == backgroundOverlay &&
+          other.scrollbarOverlay == scrollbarOverlay &&
+          other.brandBackground == brandBackground &&
+          other.brandBackgroundHover == brandBackgroundHover &&
+          other.brandBackgroundPressed == brandBackgroundPressed &&
+          other.brandBackgroundSelected == brandBackgroundSelected &&
+          other.compoundBrandBackground == compoundBrandBackground &&
+          other.compoundBrandBackgroundHover == compoundBrandBackgroundHover &&
+          other.compoundBrandBackgroundPressed ==
+              compoundBrandBackgroundPressed &&
+          other.brandBackgroundStatic == brandBackgroundStatic &&
+          other.brandBackground2 == brandBackground2 &&
+          other.brandBackground2Hover == brandBackground2Hover &&
+          other.brandBackground2Pressed == brandBackground2Pressed &&
+          other.brandBackground3Static == brandBackground3Static &&
+          other.brandBackground4Static == brandBackground4Static &&
+          other.brandBackgroundInverted == brandBackgroundInverted &&
+          other.brandBackgroundInvertedHover == brandBackgroundInvertedHover &&
+          other.brandBackgroundInvertedPressed ==
+              brandBackgroundInvertedPressed &&
+          other.brandBackgroundInvertedSelected ==
+              brandBackgroundInvertedSelected &&
+          other.neutralCardBackground == neutralCardBackground &&
+          other.neutralCardBackgroundHover == neutralCardBackgroundHover &&
+          other.neutralCardBackgroundPressed == neutralCardBackgroundPressed &&
+          other.neutralCardBackgroundSelected ==
+              neutralCardBackgroundSelected &&
+          other.neutralCardBackgroundDisabled ==
+              neutralCardBackgroundDisabled &&
+          other.neutralStrokeAccessible == neutralStrokeAccessible &&
+          other.neutralStrokeAccessibleHover == neutralStrokeAccessibleHover &&
+          other.neutralStrokeAccessiblePressed ==
+              neutralStrokeAccessiblePressed &&
+          other.neutralStrokeAccessibleSelected ==
+              neutralStrokeAccessibleSelected &&
+          other.neutralStroke1 == neutralStroke1 &&
+          other.neutralStroke1Hover == neutralStroke1Hover &&
+          other.neutralStroke1Pressed == neutralStroke1Pressed &&
+          other.neutralStroke1Selected == neutralStroke1Selected &&
+          other.neutralStroke2 == neutralStroke2 &&
+          other.neutralStroke3 == neutralStroke3 &&
+          other.neutralStroke4 == neutralStroke4 &&
+          other.neutralStroke4Hover == neutralStroke4Hover &&
+          other.neutralStroke4Pressed == neutralStroke4Pressed &&
+          other.neutralStroke4Selected == neutralStroke4Selected &&
+          other.neutralStrokeSubtle == neutralStrokeSubtle &&
+          other.neutralStrokeOnBrand == neutralStrokeOnBrand &&
+          other.neutralStrokeOnBrand2 == neutralStrokeOnBrand2 &&
+          other.neutralStrokeOnBrand2Hover == neutralStrokeOnBrand2Hover &&
+          other.neutralStrokeOnBrand2Pressed == neutralStrokeOnBrand2Pressed &&
+          other.neutralStrokeOnBrand2Selected ==
+              neutralStrokeOnBrand2Selected &&
+          other.brandStroke1 == brandStroke1 &&
+          other.brandStroke2 == brandStroke2 &&
+          other.brandStroke2Hover == brandStroke2Hover &&
+          other.brandStroke2Pressed == brandStroke2Pressed &&
+          other.brandStroke2Contrast == brandStroke2Contrast &&
+          other.compoundBrandStroke == compoundBrandStroke &&
+          other.compoundBrandStrokeHover == compoundBrandStrokeHover &&
+          other.compoundBrandStrokePressed == compoundBrandStrokePressed &&
+          other.neutralStrokeDisabled == neutralStrokeDisabled &&
+          other.neutralStrokeDisabled2 == neutralStrokeDisabled2 &&
+          other.neutralStrokeInvertedDisabled ==
+              neutralStrokeInvertedDisabled &&
+          other.transparentStroke == transparentStroke &&
+          other.transparentStrokeInteractive == transparentStrokeInteractive &&
+          other.transparentStrokeDisabled == transparentStrokeDisabled &&
+          other.neutralStrokeAlpha == neutralStrokeAlpha &&
+          other.neutralStrokeAlpha2 == neutralStrokeAlpha2 &&
+          other.strokeFocus1 == strokeFocus1 &&
+          other.strokeFocus2 == strokeFocus2 &&
+          other.neutralShadowAmbient == neutralShadowAmbient &&
+          other.neutralShadowKey == neutralShadowKey &&
+          other.neutralShadowAmbientLighter == neutralShadowAmbientLighter &&
+          other.neutralShadowKeyLighter == neutralShadowKeyLighter &&
+          other.neutralShadowAmbientDarker == neutralShadowAmbientDarker &&
+          other.neutralShadowKeyDarker == neutralShadowKeyDarker &&
+          other.brandShadowAmbient == brandShadowAmbient &&
+          other.brandShadowKey == brandShadowKey &&
+          other.statusSuccessBackground1 == statusSuccessBackground1 &&
+          other.statusSuccessBackground2 == statusSuccessBackground2 &&
+          other.statusSuccessBackground3 == statusSuccessBackground3 &&
+          other.statusSuccessForeground1 == statusSuccessForeground1 &&
+          other.statusSuccessForeground2 == statusSuccessForeground2 &&
+          other.statusSuccessForeground3 == statusSuccessForeground3 &&
+          other.statusSuccessForegroundInverted ==
+              statusSuccessForegroundInverted &&
+          other.statusSuccessBorderActive == statusSuccessBorderActive &&
+          other.statusSuccessBorder1 == statusSuccessBorder1 &&
+          other.statusSuccessBorder2 == statusSuccessBorder2 &&
+          other.statusWarningBackground1 == statusWarningBackground1 &&
+          other.statusWarningBackground2 == statusWarningBackground2 &&
+          other.statusWarningBackground3 == statusWarningBackground3 &&
+          other.statusWarningForeground1 == statusWarningForeground1 &&
+          other.statusWarningForeground2 == statusWarningForeground2 &&
+          other.statusWarningForeground3 == statusWarningForeground3 &&
+          other.statusWarningForegroundInverted ==
+              statusWarningForegroundInverted &&
+          other.statusWarningBorderActive == statusWarningBorderActive &&
+          other.statusWarningBorder1 == statusWarningBorder1 &&
+          other.statusWarningBorder2 == statusWarningBorder2 &&
+          other.statusDangerBackground1 == statusDangerBackground1 &&
+          other.statusDangerBackground2 == statusDangerBackground2 &&
+          other.statusDangerBackground3 == statusDangerBackground3 &&
+          other.statusDangerForeground1 == statusDangerForeground1 &&
+          other.statusDangerForeground2 == statusDangerForeground2 &&
+          other.statusDangerForeground3 == statusDangerForeground3 &&
+          other.statusDangerForegroundInverted ==
+              statusDangerForegroundInverted &&
+          other.statusDangerBorderActive == statusDangerBorderActive &&
+          other.statusDangerBorder1 == statusDangerBorder1 &&
+          other.statusDangerBorder2 == statusDangerBorder2 &&
+          other.statusDangerBackground3Hover == statusDangerBackground3Hover &&
+          other.statusDangerBackground3Pressed ==
+              statusDangerBackground3Pressed;
+
+  @override
+  int get hashCode => Object.hashAll([
+    neutralForeground1,
+    neutralForeground1Hover,
+    neutralForeground1Pressed,
+    neutralForeground1Selected,
+    neutralForeground2,
+    neutralForeground2Hover,
+    neutralForeground2Pressed,
+    neutralForeground2Selected,
+    neutralForeground2BrandHover,
+    neutralForeground2BrandPressed,
+    neutralForeground2BrandSelected,
+    neutralForeground3,
+    neutralForeground3Hover,
+    neutralForeground3Pressed,
+    neutralForeground3Selected,
+    neutralForeground3BrandHover,
+    neutralForeground3BrandPressed,
+    neutralForeground3BrandSelected,
+    neutralForeground4,
+    neutralForeground5,
+    neutralForeground5Hover,
+    neutralForeground5Pressed,
+    neutralForeground5Selected,
+    neutralForegroundDisabled,
+    neutralForegroundInvertedDisabled,
+    brandForegroundLink,
+    brandForegroundLinkHover,
+    brandForegroundLinkPressed,
+    brandForegroundLinkSelected,
+    neutralForeground2Link,
+    neutralForeground2LinkHover,
+    neutralForeground2LinkPressed,
+    neutralForeground2LinkSelected,
+    compoundBrandForeground1,
+    compoundBrandForeground1Hover,
+    compoundBrandForeground1Pressed,
+    brandForeground1,
+    brandForeground2,
+    brandForeground2Hover,
+    brandForeground2Pressed,
+    neutralForeground1Static,
+    neutralForegroundStaticInverted,
+    neutralForegroundInverted,
+    neutralForegroundInvertedHover,
+    neutralForegroundInvertedPressed,
+    neutralForegroundInvertedSelected,
+    neutralForegroundInverted2,
+    neutralForegroundOnBrand,
+    neutralForegroundInvertedLink,
+    neutralForegroundInvertedLinkHover,
+    neutralForegroundInvertedLinkPressed,
+    neutralForegroundInvertedLinkSelected,
+    brandForegroundInverted,
+    brandForegroundInvertedHover,
+    brandForegroundInvertedPressed,
+    brandForegroundOnLight,
+    brandForegroundOnLightHover,
+    brandForegroundOnLightPressed,
+    brandForegroundOnLightSelected,
+    neutralBackground1,
+    neutralBackground1Hover,
+    neutralBackground1Pressed,
+    neutralBackground1Selected,
+    neutralBackground2,
+    neutralBackground2Hover,
+    neutralBackground2Pressed,
+    neutralBackground2Selected,
+    neutralBackground3,
+    neutralBackground3Hover,
+    neutralBackground3Pressed,
+    neutralBackground3Selected,
+    neutralBackground4,
+    neutralBackground4Hover,
+    neutralBackground4Pressed,
+    neutralBackground4Selected,
+    neutralBackground5,
+    neutralBackground5Hover,
+    neutralBackground5Pressed,
+    neutralBackground5Selected,
+    neutralBackground6,
+    neutralBackground7,
+    neutralBackground7Hover,
+    neutralBackground7Pressed,
+    neutralBackground7Selected,
+    neutralBackground8,
+    neutralBackgroundInverted,
+    neutralBackgroundInvertedHover,
+    neutralBackgroundInvertedPressed,
+    neutralBackgroundInvertedSelected,
+    neutralBackgroundStatic,
+    neutralBackgroundAlpha,
+    neutralBackgroundAlpha2,
+    subtleBackground,
+    subtleBackgroundHover,
+    subtleBackgroundPressed,
+    subtleBackgroundSelected,
+    subtleBackgroundLightAlphaHover,
+    subtleBackgroundLightAlphaPressed,
+    subtleBackgroundLightAlphaSelected,
+    subtleBackgroundInverted,
+    subtleBackgroundInvertedHover,
+    subtleBackgroundInvertedPressed,
+    subtleBackgroundInvertedSelected,
+    transparentBackground,
+    transparentBackgroundHover,
+    transparentBackgroundPressed,
+    transparentBackgroundSelected,
+    neutralBackgroundDisabled,
+    neutralBackgroundDisabled2,
+    neutralBackgroundInvertedDisabled,
+    neutralStencil1,
+    neutralStencil2,
+    neutralStencil1Alpha,
+    neutralStencil2Alpha,
+    backgroundOverlay,
+    scrollbarOverlay,
+    brandBackground,
+    brandBackgroundHover,
+    brandBackgroundPressed,
+    brandBackgroundSelected,
+    compoundBrandBackground,
+    compoundBrandBackgroundHover,
+    compoundBrandBackgroundPressed,
+    brandBackgroundStatic,
+    brandBackground2,
+    brandBackground2Hover,
+    brandBackground2Pressed,
+    brandBackground3Static,
+    brandBackground4Static,
+    brandBackgroundInverted,
+    brandBackgroundInvertedHover,
+    brandBackgroundInvertedPressed,
+    brandBackgroundInvertedSelected,
+    neutralCardBackground,
+    neutralCardBackgroundHover,
+    neutralCardBackgroundPressed,
+    neutralCardBackgroundSelected,
+    neutralCardBackgroundDisabled,
+    neutralStrokeAccessible,
+    neutralStrokeAccessibleHover,
+    neutralStrokeAccessiblePressed,
+    neutralStrokeAccessibleSelected,
+    neutralStroke1,
+    neutralStroke1Hover,
+    neutralStroke1Pressed,
+    neutralStroke1Selected,
+    neutralStroke2,
+    neutralStroke3,
+    neutralStroke4,
+    neutralStroke4Hover,
+    neutralStroke4Pressed,
+    neutralStroke4Selected,
+    neutralStrokeSubtle,
+    neutralStrokeOnBrand,
+    neutralStrokeOnBrand2,
+    neutralStrokeOnBrand2Hover,
+    neutralStrokeOnBrand2Pressed,
+    neutralStrokeOnBrand2Selected,
+    brandStroke1,
+    brandStroke2,
+    brandStroke2Hover,
+    brandStroke2Pressed,
+    brandStroke2Contrast,
+    compoundBrandStroke,
+    compoundBrandStrokeHover,
+    compoundBrandStrokePressed,
+    neutralStrokeDisabled,
+    neutralStrokeDisabled2,
+    neutralStrokeInvertedDisabled,
+    transparentStroke,
+    transparentStrokeInteractive,
+    transparentStrokeDisabled,
+    neutralStrokeAlpha,
+    neutralStrokeAlpha2,
+    strokeFocus1,
+    strokeFocus2,
+    neutralShadowAmbient,
+    neutralShadowKey,
+    neutralShadowAmbientLighter,
+    neutralShadowKeyLighter,
+    neutralShadowAmbientDarker,
+    neutralShadowKeyDarker,
+    brandShadowAmbient,
+    brandShadowKey,
+    statusSuccessBackground1,
+    statusSuccessBackground2,
+    statusSuccessBackground3,
+    statusSuccessForeground1,
+    statusSuccessForeground2,
+    statusSuccessForeground3,
+    statusSuccessForegroundInverted,
+    statusSuccessBorderActive,
+    statusSuccessBorder1,
+    statusSuccessBorder2,
+    statusWarningBackground1,
+    statusWarningBackground2,
+    statusWarningBackground3,
+    statusWarningForeground1,
+    statusWarningForeground2,
+    statusWarningForeground3,
+    statusWarningForegroundInverted,
+    statusWarningBorderActive,
+    statusWarningBorder1,
+    statusWarningBorder2,
+    statusDangerBackground1,
+    statusDangerBackground2,
+    statusDangerBackground3,
+    statusDangerForeground1,
+    statusDangerForeground2,
+    statusDangerForeground3,
+    statusDangerForegroundInverted,
+    statusDangerBorderActive,
+    statusDangerBorder1,
+    statusDangerBorder2,
+    statusDangerBackground3Hover,
+    statusDangerBackground3Pressed,
+  ]);
 }
 
 /// Fluent 2's shared colour palette in one appearance: thirty-odd named
@@ -2336,4 +3836,1080 @@ final class Fluent2SharedColors with Diagnosticable {
         ColorProperty('paletteAnchorBorderActive', paletteAnchorBorderActive),
       );
   }
+
+  /// Each colour of [a] blended toward [b]'s at [t], as `ColorScheme.lerp` blends
+  /// Material's.
+  static Fluent2SharedColors lerp(
+    Fluent2SharedColors a,
+    Fluent2SharedColors b,
+    double t,
+  ) {
+    if (identical(a, b)) return a;
+    return Fluent2SharedColors(
+      paletteRedBackground1: Color.lerp(
+        a.paletteRedBackground1,
+        b.paletteRedBackground1,
+        t,
+      )!,
+      paletteRedBackground2: Color.lerp(
+        a.paletteRedBackground2,
+        b.paletteRedBackground2,
+        t,
+      )!,
+      paletteRedBackground3: Color.lerp(
+        a.paletteRedBackground3,
+        b.paletteRedBackground3,
+        t,
+      )!,
+      paletteRedForeground1: Color.lerp(
+        a.paletteRedForeground1,
+        b.paletteRedForeground1,
+        t,
+      )!,
+      paletteRedForeground2: Color.lerp(
+        a.paletteRedForeground2,
+        b.paletteRedForeground2,
+        t,
+      )!,
+      paletteRedForeground3: Color.lerp(
+        a.paletteRedForeground3,
+        b.paletteRedForeground3,
+        t,
+      )!,
+      paletteRedBorderActive: Color.lerp(
+        a.paletteRedBorderActive,
+        b.paletteRedBorderActive,
+        t,
+      )!,
+      paletteRedBorder1: Color.lerp(
+        a.paletteRedBorder1,
+        b.paletteRedBorder1,
+        t,
+      )!,
+      paletteRedBorder2: Color.lerp(
+        a.paletteRedBorder2,
+        b.paletteRedBorder2,
+        t,
+      )!,
+      paletteGreenBackground1: Color.lerp(
+        a.paletteGreenBackground1,
+        b.paletteGreenBackground1,
+        t,
+      )!,
+      paletteGreenBackground2: Color.lerp(
+        a.paletteGreenBackground2,
+        b.paletteGreenBackground2,
+        t,
+      )!,
+      paletteGreenBackground3: Color.lerp(
+        a.paletteGreenBackground3,
+        b.paletteGreenBackground3,
+        t,
+      )!,
+      paletteGreenForeground1: Color.lerp(
+        a.paletteGreenForeground1,
+        b.paletteGreenForeground1,
+        t,
+      )!,
+      paletteGreenForeground2: Color.lerp(
+        a.paletteGreenForeground2,
+        b.paletteGreenForeground2,
+        t,
+      )!,
+      paletteGreenForeground3: Color.lerp(
+        a.paletteGreenForeground3,
+        b.paletteGreenForeground3,
+        t,
+      )!,
+      paletteGreenBorderActive: Color.lerp(
+        a.paletteGreenBorderActive,
+        b.paletteGreenBorderActive,
+        t,
+      )!,
+      paletteGreenBorder1: Color.lerp(
+        a.paletteGreenBorder1,
+        b.paletteGreenBorder1,
+        t,
+      )!,
+      paletteGreenBorder2: Color.lerp(
+        a.paletteGreenBorder2,
+        b.paletteGreenBorder2,
+        t,
+      )!,
+      paletteDarkOrangeBackground1: Color.lerp(
+        a.paletteDarkOrangeBackground1,
+        b.paletteDarkOrangeBackground1,
+        t,
+      )!,
+      paletteDarkOrangeBackground2: Color.lerp(
+        a.paletteDarkOrangeBackground2,
+        b.paletteDarkOrangeBackground2,
+        t,
+      )!,
+      paletteDarkOrangeBackground3: Color.lerp(
+        a.paletteDarkOrangeBackground3,
+        b.paletteDarkOrangeBackground3,
+        t,
+      )!,
+      paletteDarkOrangeForeground1: Color.lerp(
+        a.paletteDarkOrangeForeground1,
+        b.paletteDarkOrangeForeground1,
+        t,
+      )!,
+      paletteDarkOrangeForeground2: Color.lerp(
+        a.paletteDarkOrangeForeground2,
+        b.paletteDarkOrangeForeground2,
+        t,
+      )!,
+      paletteDarkOrangeForeground3: Color.lerp(
+        a.paletteDarkOrangeForeground3,
+        b.paletteDarkOrangeForeground3,
+        t,
+      )!,
+      paletteDarkOrangeBorderActive: Color.lerp(
+        a.paletteDarkOrangeBorderActive,
+        b.paletteDarkOrangeBorderActive,
+        t,
+      )!,
+      paletteDarkOrangeBorder1: Color.lerp(
+        a.paletteDarkOrangeBorder1,
+        b.paletteDarkOrangeBorder1,
+        t,
+      )!,
+      paletteDarkOrangeBorder2: Color.lerp(
+        a.paletteDarkOrangeBorder2,
+        b.paletteDarkOrangeBorder2,
+        t,
+      )!,
+      paletteYellowBackground1: Color.lerp(
+        a.paletteYellowBackground1,
+        b.paletteYellowBackground1,
+        t,
+      )!,
+      paletteYellowBackground2: Color.lerp(
+        a.paletteYellowBackground2,
+        b.paletteYellowBackground2,
+        t,
+      )!,
+      paletteYellowBackground3: Color.lerp(
+        a.paletteYellowBackground3,
+        b.paletteYellowBackground3,
+        t,
+      )!,
+      paletteYellowForeground1: Color.lerp(
+        a.paletteYellowForeground1,
+        b.paletteYellowForeground1,
+        t,
+      )!,
+      paletteYellowForeground2: Color.lerp(
+        a.paletteYellowForeground2,
+        b.paletteYellowForeground2,
+        t,
+      )!,
+      paletteYellowForeground3: Color.lerp(
+        a.paletteYellowForeground3,
+        b.paletteYellowForeground3,
+        t,
+      )!,
+      paletteYellowBorderActive: Color.lerp(
+        a.paletteYellowBorderActive,
+        b.paletteYellowBorderActive,
+        t,
+      )!,
+      paletteYellowBorder1: Color.lerp(
+        a.paletteYellowBorder1,
+        b.paletteYellowBorder1,
+        t,
+      )!,
+      paletteYellowBorder2: Color.lerp(
+        a.paletteYellowBorder2,
+        b.paletteYellowBorder2,
+        t,
+      )!,
+      paletteBerryBackground1: Color.lerp(
+        a.paletteBerryBackground1,
+        b.paletteBerryBackground1,
+        t,
+      )!,
+      paletteBerryBackground2: Color.lerp(
+        a.paletteBerryBackground2,
+        b.paletteBerryBackground2,
+        t,
+      )!,
+      paletteBerryBackground3: Color.lerp(
+        a.paletteBerryBackground3,
+        b.paletteBerryBackground3,
+        t,
+      )!,
+      paletteBerryForeground1: Color.lerp(
+        a.paletteBerryForeground1,
+        b.paletteBerryForeground1,
+        t,
+      )!,
+      paletteBerryForeground2: Color.lerp(
+        a.paletteBerryForeground2,
+        b.paletteBerryForeground2,
+        t,
+      )!,
+      paletteBerryForeground3: Color.lerp(
+        a.paletteBerryForeground3,
+        b.paletteBerryForeground3,
+        t,
+      )!,
+      paletteBerryBorderActive: Color.lerp(
+        a.paletteBerryBorderActive,
+        b.paletteBerryBorderActive,
+        t,
+      )!,
+      paletteBerryBorder1: Color.lerp(
+        a.paletteBerryBorder1,
+        b.paletteBerryBorder1,
+        t,
+      )!,
+      paletteBerryBorder2: Color.lerp(
+        a.paletteBerryBorder2,
+        b.paletteBerryBorder2,
+        t,
+      )!,
+      paletteLightGreenBackground1: Color.lerp(
+        a.paletteLightGreenBackground1,
+        b.paletteLightGreenBackground1,
+        t,
+      )!,
+      paletteLightGreenBackground2: Color.lerp(
+        a.paletteLightGreenBackground2,
+        b.paletteLightGreenBackground2,
+        t,
+      )!,
+      paletteLightGreenBackground3: Color.lerp(
+        a.paletteLightGreenBackground3,
+        b.paletteLightGreenBackground3,
+        t,
+      )!,
+      paletteLightGreenForeground1: Color.lerp(
+        a.paletteLightGreenForeground1,
+        b.paletteLightGreenForeground1,
+        t,
+      )!,
+      paletteLightGreenForeground2: Color.lerp(
+        a.paletteLightGreenForeground2,
+        b.paletteLightGreenForeground2,
+        t,
+      )!,
+      paletteLightGreenForeground3: Color.lerp(
+        a.paletteLightGreenForeground3,
+        b.paletteLightGreenForeground3,
+        t,
+      )!,
+      paletteLightGreenBorderActive: Color.lerp(
+        a.paletteLightGreenBorderActive,
+        b.paletteLightGreenBorderActive,
+        t,
+      )!,
+      paletteLightGreenBorder1: Color.lerp(
+        a.paletteLightGreenBorder1,
+        b.paletteLightGreenBorder1,
+        t,
+      )!,
+      paletteLightGreenBorder2: Color.lerp(
+        a.paletteLightGreenBorder2,
+        b.paletteLightGreenBorder2,
+        t,
+      )!,
+      paletteMarigoldBackground1: Color.lerp(
+        a.paletteMarigoldBackground1,
+        b.paletteMarigoldBackground1,
+        t,
+      )!,
+      paletteMarigoldBackground2: Color.lerp(
+        a.paletteMarigoldBackground2,
+        b.paletteMarigoldBackground2,
+        t,
+      )!,
+      paletteMarigoldBackground3: Color.lerp(
+        a.paletteMarigoldBackground3,
+        b.paletteMarigoldBackground3,
+        t,
+      )!,
+      paletteMarigoldForeground1: Color.lerp(
+        a.paletteMarigoldForeground1,
+        b.paletteMarigoldForeground1,
+        t,
+      )!,
+      paletteMarigoldForeground2: Color.lerp(
+        a.paletteMarigoldForeground2,
+        b.paletteMarigoldForeground2,
+        t,
+      )!,
+      paletteMarigoldForeground3: Color.lerp(
+        a.paletteMarigoldForeground3,
+        b.paletteMarigoldForeground3,
+        t,
+      )!,
+      paletteMarigoldBorderActive: Color.lerp(
+        a.paletteMarigoldBorderActive,
+        b.paletteMarigoldBorderActive,
+        t,
+      )!,
+      paletteMarigoldBorder1: Color.lerp(
+        a.paletteMarigoldBorder1,
+        b.paletteMarigoldBorder1,
+        t,
+      )!,
+      paletteMarigoldBorder2: Color.lerp(
+        a.paletteMarigoldBorder2,
+        b.paletteMarigoldBorder2,
+        t,
+      )!,
+      paletteRedForegroundInverted: Color.lerp(
+        a.paletteRedForegroundInverted,
+        b.paletteRedForegroundInverted,
+        t,
+      )!,
+      paletteGreenForegroundInverted: Color.lerp(
+        a.paletteGreenForegroundInverted,
+        b.paletteGreenForegroundInverted,
+        t,
+      )!,
+      paletteYellowForegroundInverted: Color.lerp(
+        a.paletteYellowForegroundInverted,
+        b.paletteYellowForegroundInverted,
+        t,
+      )!,
+      paletteDarkRedBackground2: Color.lerp(
+        a.paletteDarkRedBackground2,
+        b.paletteDarkRedBackground2,
+        t,
+      )!,
+      paletteDarkRedForeground2: Color.lerp(
+        a.paletteDarkRedForeground2,
+        b.paletteDarkRedForeground2,
+        t,
+      )!,
+      paletteDarkRedBorderActive: Color.lerp(
+        a.paletteDarkRedBorderActive,
+        b.paletteDarkRedBorderActive,
+        t,
+      )!,
+      paletteCranberryBackground2: Color.lerp(
+        a.paletteCranberryBackground2,
+        b.paletteCranberryBackground2,
+        t,
+      )!,
+      paletteCranberryForeground2: Color.lerp(
+        a.paletteCranberryForeground2,
+        b.paletteCranberryForeground2,
+        t,
+      )!,
+      paletteCranberryBorderActive: Color.lerp(
+        a.paletteCranberryBorderActive,
+        b.paletteCranberryBorderActive,
+        t,
+      )!,
+      palettePumpkinBackground2: Color.lerp(
+        a.palettePumpkinBackground2,
+        b.palettePumpkinBackground2,
+        t,
+      )!,
+      palettePumpkinForeground2: Color.lerp(
+        a.palettePumpkinForeground2,
+        b.palettePumpkinForeground2,
+        t,
+      )!,
+      palettePumpkinBorderActive: Color.lerp(
+        a.palettePumpkinBorderActive,
+        b.palettePumpkinBorderActive,
+        t,
+      )!,
+      palettePeachBackground2: Color.lerp(
+        a.palettePeachBackground2,
+        b.palettePeachBackground2,
+        t,
+      )!,
+      palettePeachForeground2: Color.lerp(
+        a.palettePeachForeground2,
+        b.palettePeachForeground2,
+        t,
+      )!,
+      palettePeachBorderActive: Color.lerp(
+        a.palettePeachBorderActive,
+        b.palettePeachBorderActive,
+        t,
+      )!,
+      paletteGoldBackground2: Color.lerp(
+        a.paletteGoldBackground2,
+        b.paletteGoldBackground2,
+        t,
+      )!,
+      paletteGoldForeground2: Color.lerp(
+        a.paletteGoldForeground2,
+        b.paletteGoldForeground2,
+        t,
+      )!,
+      paletteGoldBorderActive: Color.lerp(
+        a.paletteGoldBorderActive,
+        b.paletteGoldBorderActive,
+        t,
+      )!,
+      paletteBrassBackground2: Color.lerp(
+        a.paletteBrassBackground2,
+        b.paletteBrassBackground2,
+        t,
+      )!,
+      paletteBrassForeground2: Color.lerp(
+        a.paletteBrassForeground2,
+        b.paletteBrassForeground2,
+        t,
+      )!,
+      paletteBrassBorderActive: Color.lerp(
+        a.paletteBrassBorderActive,
+        b.paletteBrassBorderActive,
+        t,
+      )!,
+      paletteBrownBackground2: Color.lerp(
+        a.paletteBrownBackground2,
+        b.paletteBrownBackground2,
+        t,
+      )!,
+      paletteBrownForeground2: Color.lerp(
+        a.paletteBrownForeground2,
+        b.paletteBrownForeground2,
+        t,
+      )!,
+      paletteBrownBorderActive: Color.lerp(
+        a.paletteBrownBorderActive,
+        b.paletteBrownBorderActive,
+        t,
+      )!,
+      paletteForestBackground2: Color.lerp(
+        a.paletteForestBackground2,
+        b.paletteForestBackground2,
+        t,
+      )!,
+      paletteForestForeground2: Color.lerp(
+        a.paletteForestForeground2,
+        b.paletteForestForeground2,
+        t,
+      )!,
+      paletteForestBorderActive: Color.lerp(
+        a.paletteForestBorderActive,
+        b.paletteForestBorderActive,
+        t,
+      )!,
+      paletteSeafoamBackground2: Color.lerp(
+        a.paletteSeafoamBackground2,
+        b.paletteSeafoamBackground2,
+        t,
+      )!,
+      paletteSeafoamForeground2: Color.lerp(
+        a.paletteSeafoamForeground2,
+        b.paletteSeafoamForeground2,
+        t,
+      )!,
+      paletteSeafoamBorderActive: Color.lerp(
+        a.paletteSeafoamBorderActive,
+        b.paletteSeafoamBorderActive,
+        t,
+      )!,
+      paletteDarkGreenBackground2: Color.lerp(
+        a.paletteDarkGreenBackground2,
+        b.paletteDarkGreenBackground2,
+        t,
+      )!,
+      paletteDarkGreenForeground2: Color.lerp(
+        a.paletteDarkGreenForeground2,
+        b.paletteDarkGreenForeground2,
+        t,
+      )!,
+      paletteDarkGreenBorderActive: Color.lerp(
+        a.paletteDarkGreenBorderActive,
+        b.paletteDarkGreenBorderActive,
+        t,
+      )!,
+      paletteLightTealBackground2: Color.lerp(
+        a.paletteLightTealBackground2,
+        b.paletteLightTealBackground2,
+        t,
+      )!,
+      paletteLightTealForeground2: Color.lerp(
+        a.paletteLightTealForeground2,
+        b.paletteLightTealForeground2,
+        t,
+      )!,
+      paletteLightTealBorderActive: Color.lerp(
+        a.paletteLightTealBorderActive,
+        b.paletteLightTealBorderActive,
+        t,
+      )!,
+      paletteTealBackground2: Color.lerp(
+        a.paletteTealBackground2,
+        b.paletteTealBackground2,
+        t,
+      )!,
+      paletteTealForeground2: Color.lerp(
+        a.paletteTealForeground2,
+        b.paletteTealForeground2,
+        t,
+      )!,
+      paletteTealBorderActive: Color.lerp(
+        a.paletteTealBorderActive,
+        b.paletteTealBorderActive,
+        t,
+      )!,
+      paletteSteelBackground2: Color.lerp(
+        a.paletteSteelBackground2,
+        b.paletteSteelBackground2,
+        t,
+      )!,
+      paletteSteelForeground2: Color.lerp(
+        a.paletteSteelForeground2,
+        b.paletteSteelForeground2,
+        t,
+      )!,
+      paletteSteelBorderActive: Color.lerp(
+        a.paletteSteelBorderActive,
+        b.paletteSteelBorderActive,
+        t,
+      )!,
+      paletteBlueBackground2: Color.lerp(
+        a.paletteBlueBackground2,
+        b.paletteBlueBackground2,
+        t,
+      )!,
+      paletteBlueForeground2: Color.lerp(
+        a.paletteBlueForeground2,
+        b.paletteBlueForeground2,
+        t,
+      )!,
+      paletteBlueBorderActive: Color.lerp(
+        a.paletteBlueBorderActive,
+        b.paletteBlueBorderActive,
+        t,
+      )!,
+      paletteRoyalBlueBackground2: Color.lerp(
+        a.paletteRoyalBlueBackground2,
+        b.paletteRoyalBlueBackground2,
+        t,
+      )!,
+      paletteRoyalBlueForeground2: Color.lerp(
+        a.paletteRoyalBlueForeground2,
+        b.paletteRoyalBlueForeground2,
+        t,
+      )!,
+      paletteRoyalBlueBorderActive: Color.lerp(
+        a.paletteRoyalBlueBorderActive,
+        b.paletteRoyalBlueBorderActive,
+        t,
+      )!,
+      paletteCornflowerBackground2: Color.lerp(
+        a.paletteCornflowerBackground2,
+        b.paletteCornflowerBackground2,
+        t,
+      )!,
+      paletteCornflowerForeground2: Color.lerp(
+        a.paletteCornflowerForeground2,
+        b.paletteCornflowerForeground2,
+        t,
+      )!,
+      paletteCornflowerBorderActive: Color.lerp(
+        a.paletteCornflowerBorderActive,
+        b.paletteCornflowerBorderActive,
+        t,
+      )!,
+      paletteNavyBackground2: Color.lerp(
+        a.paletteNavyBackground2,
+        b.paletteNavyBackground2,
+        t,
+      )!,
+      paletteNavyForeground2: Color.lerp(
+        a.paletteNavyForeground2,
+        b.paletteNavyForeground2,
+        t,
+      )!,
+      paletteNavyBorderActive: Color.lerp(
+        a.paletteNavyBorderActive,
+        b.paletteNavyBorderActive,
+        t,
+      )!,
+      paletteLavenderBackground2: Color.lerp(
+        a.paletteLavenderBackground2,
+        b.paletteLavenderBackground2,
+        t,
+      )!,
+      paletteLavenderForeground2: Color.lerp(
+        a.paletteLavenderForeground2,
+        b.paletteLavenderForeground2,
+        t,
+      )!,
+      paletteLavenderBorderActive: Color.lerp(
+        a.paletteLavenderBorderActive,
+        b.paletteLavenderBorderActive,
+        t,
+      )!,
+      palettePurpleBackground2: Color.lerp(
+        a.palettePurpleBackground2,
+        b.palettePurpleBackground2,
+        t,
+      )!,
+      palettePurpleForeground2: Color.lerp(
+        a.palettePurpleForeground2,
+        b.palettePurpleForeground2,
+        t,
+      )!,
+      palettePurpleBorderActive: Color.lerp(
+        a.palettePurpleBorderActive,
+        b.palettePurpleBorderActive,
+        t,
+      )!,
+      paletteGrapeBackground2: Color.lerp(
+        a.paletteGrapeBackground2,
+        b.paletteGrapeBackground2,
+        t,
+      )!,
+      paletteGrapeForeground2: Color.lerp(
+        a.paletteGrapeForeground2,
+        b.paletteGrapeForeground2,
+        t,
+      )!,
+      paletteGrapeBorderActive: Color.lerp(
+        a.paletteGrapeBorderActive,
+        b.paletteGrapeBorderActive,
+        t,
+      )!,
+      paletteLilacBackground2: Color.lerp(
+        a.paletteLilacBackground2,
+        b.paletteLilacBackground2,
+        t,
+      )!,
+      paletteLilacForeground2: Color.lerp(
+        a.paletteLilacForeground2,
+        b.paletteLilacForeground2,
+        t,
+      )!,
+      paletteLilacBorderActive: Color.lerp(
+        a.paletteLilacBorderActive,
+        b.paletteLilacBorderActive,
+        t,
+      )!,
+      palettePinkBackground2: Color.lerp(
+        a.palettePinkBackground2,
+        b.palettePinkBackground2,
+        t,
+      )!,
+      palettePinkForeground2: Color.lerp(
+        a.palettePinkForeground2,
+        b.palettePinkForeground2,
+        t,
+      )!,
+      palettePinkBorderActive: Color.lerp(
+        a.palettePinkBorderActive,
+        b.palettePinkBorderActive,
+        t,
+      )!,
+      paletteMagentaBackground2: Color.lerp(
+        a.paletteMagentaBackground2,
+        b.paletteMagentaBackground2,
+        t,
+      )!,
+      paletteMagentaForeground2: Color.lerp(
+        a.paletteMagentaForeground2,
+        b.paletteMagentaForeground2,
+        t,
+      )!,
+      paletteMagentaBorderActive: Color.lerp(
+        a.paletteMagentaBorderActive,
+        b.paletteMagentaBorderActive,
+        t,
+      )!,
+      palettePlumBackground2: Color.lerp(
+        a.palettePlumBackground2,
+        b.palettePlumBackground2,
+        t,
+      )!,
+      palettePlumForeground2: Color.lerp(
+        a.palettePlumForeground2,
+        b.palettePlumForeground2,
+        t,
+      )!,
+      palettePlumBorderActive: Color.lerp(
+        a.palettePlumBorderActive,
+        b.palettePlumBorderActive,
+        t,
+      )!,
+      paletteBeigeBackground2: Color.lerp(
+        a.paletteBeigeBackground2,
+        b.paletteBeigeBackground2,
+        t,
+      )!,
+      paletteBeigeForeground2: Color.lerp(
+        a.paletteBeigeForeground2,
+        b.paletteBeigeForeground2,
+        t,
+      )!,
+      paletteBeigeBorderActive: Color.lerp(
+        a.paletteBeigeBorderActive,
+        b.paletteBeigeBorderActive,
+        t,
+      )!,
+      paletteMinkBackground2: Color.lerp(
+        a.paletteMinkBackground2,
+        b.paletteMinkBackground2,
+        t,
+      )!,
+      paletteMinkForeground2: Color.lerp(
+        a.paletteMinkForeground2,
+        b.paletteMinkForeground2,
+        t,
+      )!,
+      paletteMinkBorderActive: Color.lerp(
+        a.paletteMinkBorderActive,
+        b.paletteMinkBorderActive,
+        t,
+      )!,
+      palettePlatinumBackground2: Color.lerp(
+        a.palettePlatinumBackground2,
+        b.palettePlatinumBackground2,
+        t,
+      )!,
+      palettePlatinumForeground2: Color.lerp(
+        a.palettePlatinumForeground2,
+        b.palettePlatinumForeground2,
+        t,
+      )!,
+      palettePlatinumBorderActive: Color.lerp(
+        a.palettePlatinumBorderActive,
+        b.palettePlatinumBorderActive,
+        t,
+      )!,
+      paletteAnchorBackground2: Color.lerp(
+        a.paletteAnchorBackground2,
+        b.paletteAnchorBackground2,
+        t,
+      )!,
+      paletteAnchorForeground2: Color.lerp(
+        a.paletteAnchorForeground2,
+        b.paletteAnchorForeground2,
+        t,
+      )!,
+      paletteAnchorBorderActive: Color.lerp(
+        a.paletteAnchorBorderActive,
+        b.paletteAnchorBorderActive,
+        t,
+      )!,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is Fluent2SharedColors &&
+          other.paletteRedBackground1 == paletteRedBackground1 &&
+          other.paletteRedBackground2 == paletteRedBackground2 &&
+          other.paletteRedBackground3 == paletteRedBackground3 &&
+          other.paletteRedForeground1 == paletteRedForeground1 &&
+          other.paletteRedForeground2 == paletteRedForeground2 &&
+          other.paletteRedForeground3 == paletteRedForeground3 &&
+          other.paletteRedBorderActive == paletteRedBorderActive &&
+          other.paletteRedBorder1 == paletteRedBorder1 &&
+          other.paletteRedBorder2 == paletteRedBorder2 &&
+          other.paletteGreenBackground1 == paletteGreenBackground1 &&
+          other.paletteGreenBackground2 == paletteGreenBackground2 &&
+          other.paletteGreenBackground3 == paletteGreenBackground3 &&
+          other.paletteGreenForeground1 == paletteGreenForeground1 &&
+          other.paletteGreenForeground2 == paletteGreenForeground2 &&
+          other.paletteGreenForeground3 == paletteGreenForeground3 &&
+          other.paletteGreenBorderActive == paletteGreenBorderActive &&
+          other.paletteGreenBorder1 == paletteGreenBorder1 &&
+          other.paletteGreenBorder2 == paletteGreenBorder2 &&
+          other.paletteDarkOrangeBackground1 == paletteDarkOrangeBackground1 &&
+          other.paletteDarkOrangeBackground2 == paletteDarkOrangeBackground2 &&
+          other.paletteDarkOrangeBackground3 == paletteDarkOrangeBackground3 &&
+          other.paletteDarkOrangeForeground1 == paletteDarkOrangeForeground1 &&
+          other.paletteDarkOrangeForeground2 == paletteDarkOrangeForeground2 &&
+          other.paletteDarkOrangeForeground3 == paletteDarkOrangeForeground3 &&
+          other.paletteDarkOrangeBorderActive ==
+              paletteDarkOrangeBorderActive &&
+          other.paletteDarkOrangeBorder1 == paletteDarkOrangeBorder1 &&
+          other.paletteDarkOrangeBorder2 == paletteDarkOrangeBorder2 &&
+          other.paletteYellowBackground1 == paletteYellowBackground1 &&
+          other.paletteYellowBackground2 == paletteYellowBackground2 &&
+          other.paletteYellowBackground3 == paletteYellowBackground3 &&
+          other.paletteYellowForeground1 == paletteYellowForeground1 &&
+          other.paletteYellowForeground2 == paletteYellowForeground2 &&
+          other.paletteYellowForeground3 == paletteYellowForeground3 &&
+          other.paletteYellowBorderActive == paletteYellowBorderActive &&
+          other.paletteYellowBorder1 == paletteYellowBorder1 &&
+          other.paletteYellowBorder2 == paletteYellowBorder2 &&
+          other.paletteBerryBackground1 == paletteBerryBackground1 &&
+          other.paletteBerryBackground2 == paletteBerryBackground2 &&
+          other.paletteBerryBackground3 == paletteBerryBackground3 &&
+          other.paletteBerryForeground1 == paletteBerryForeground1 &&
+          other.paletteBerryForeground2 == paletteBerryForeground2 &&
+          other.paletteBerryForeground3 == paletteBerryForeground3 &&
+          other.paletteBerryBorderActive == paletteBerryBorderActive &&
+          other.paletteBerryBorder1 == paletteBerryBorder1 &&
+          other.paletteBerryBorder2 == paletteBerryBorder2 &&
+          other.paletteLightGreenBackground1 == paletteLightGreenBackground1 &&
+          other.paletteLightGreenBackground2 == paletteLightGreenBackground2 &&
+          other.paletteLightGreenBackground3 == paletteLightGreenBackground3 &&
+          other.paletteLightGreenForeground1 == paletteLightGreenForeground1 &&
+          other.paletteLightGreenForeground2 == paletteLightGreenForeground2 &&
+          other.paletteLightGreenForeground3 == paletteLightGreenForeground3 &&
+          other.paletteLightGreenBorderActive ==
+              paletteLightGreenBorderActive &&
+          other.paletteLightGreenBorder1 == paletteLightGreenBorder1 &&
+          other.paletteLightGreenBorder2 == paletteLightGreenBorder2 &&
+          other.paletteMarigoldBackground1 == paletteMarigoldBackground1 &&
+          other.paletteMarigoldBackground2 == paletteMarigoldBackground2 &&
+          other.paletteMarigoldBackground3 == paletteMarigoldBackground3 &&
+          other.paletteMarigoldForeground1 == paletteMarigoldForeground1 &&
+          other.paletteMarigoldForeground2 == paletteMarigoldForeground2 &&
+          other.paletteMarigoldForeground3 == paletteMarigoldForeground3 &&
+          other.paletteMarigoldBorderActive == paletteMarigoldBorderActive &&
+          other.paletteMarigoldBorder1 == paletteMarigoldBorder1 &&
+          other.paletteMarigoldBorder2 == paletteMarigoldBorder2 &&
+          other.paletteRedForegroundInverted == paletteRedForegroundInverted &&
+          other.paletteGreenForegroundInverted ==
+              paletteGreenForegroundInverted &&
+          other.paletteYellowForegroundInverted ==
+              paletteYellowForegroundInverted &&
+          other.paletteDarkRedBackground2 == paletteDarkRedBackground2 &&
+          other.paletteDarkRedForeground2 == paletteDarkRedForeground2 &&
+          other.paletteDarkRedBorderActive == paletteDarkRedBorderActive &&
+          other.paletteCranberryBackground2 == paletteCranberryBackground2 &&
+          other.paletteCranberryForeground2 == paletteCranberryForeground2 &&
+          other.paletteCranberryBorderActive == paletteCranberryBorderActive &&
+          other.palettePumpkinBackground2 == palettePumpkinBackground2 &&
+          other.palettePumpkinForeground2 == palettePumpkinForeground2 &&
+          other.palettePumpkinBorderActive == palettePumpkinBorderActive &&
+          other.palettePeachBackground2 == palettePeachBackground2 &&
+          other.palettePeachForeground2 == palettePeachForeground2 &&
+          other.palettePeachBorderActive == palettePeachBorderActive &&
+          other.paletteGoldBackground2 == paletteGoldBackground2 &&
+          other.paletteGoldForeground2 == paletteGoldForeground2 &&
+          other.paletteGoldBorderActive == paletteGoldBorderActive &&
+          other.paletteBrassBackground2 == paletteBrassBackground2 &&
+          other.paletteBrassForeground2 == paletteBrassForeground2 &&
+          other.paletteBrassBorderActive == paletteBrassBorderActive &&
+          other.paletteBrownBackground2 == paletteBrownBackground2 &&
+          other.paletteBrownForeground2 == paletteBrownForeground2 &&
+          other.paletteBrownBorderActive == paletteBrownBorderActive &&
+          other.paletteForestBackground2 == paletteForestBackground2 &&
+          other.paletteForestForeground2 == paletteForestForeground2 &&
+          other.paletteForestBorderActive == paletteForestBorderActive &&
+          other.paletteSeafoamBackground2 == paletteSeafoamBackground2 &&
+          other.paletteSeafoamForeground2 == paletteSeafoamForeground2 &&
+          other.paletteSeafoamBorderActive == paletteSeafoamBorderActive &&
+          other.paletteDarkGreenBackground2 == paletteDarkGreenBackground2 &&
+          other.paletteDarkGreenForeground2 == paletteDarkGreenForeground2 &&
+          other.paletteDarkGreenBorderActive == paletteDarkGreenBorderActive &&
+          other.paletteLightTealBackground2 == paletteLightTealBackground2 &&
+          other.paletteLightTealForeground2 == paletteLightTealForeground2 &&
+          other.paletteLightTealBorderActive == paletteLightTealBorderActive &&
+          other.paletteTealBackground2 == paletteTealBackground2 &&
+          other.paletteTealForeground2 == paletteTealForeground2 &&
+          other.paletteTealBorderActive == paletteTealBorderActive &&
+          other.paletteSteelBackground2 == paletteSteelBackground2 &&
+          other.paletteSteelForeground2 == paletteSteelForeground2 &&
+          other.paletteSteelBorderActive == paletteSteelBorderActive &&
+          other.paletteBlueBackground2 == paletteBlueBackground2 &&
+          other.paletteBlueForeground2 == paletteBlueForeground2 &&
+          other.paletteBlueBorderActive == paletteBlueBorderActive &&
+          other.paletteRoyalBlueBackground2 == paletteRoyalBlueBackground2 &&
+          other.paletteRoyalBlueForeground2 == paletteRoyalBlueForeground2 &&
+          other.paletteRoyalBlueBorderActive == paletteRoyalBlueBorderActive &&
+          other.paletteCornflowerBackground2 == paletteCornflowerBackground2 &&
+          other.paletteCornflowerForeground2 == paletteCornflowerForeground2 &&
+          other.paletteCornflowerBorderActive ==
+              paletteCornflowerBorderActive &&
+          other.paletteNavyBackground2 == paletteNavyBackground2 &&
+          other.paletteNavyForeground2 == paletteNavyForeground2 &&
+          other.paletteNavyBorderActive == paletteNavyBorderActive &&
+          other.paletteLavenderBackground2 == paletteLavenderBackground2 &&
+          other.paletteLavenderForeground2 == paletteLavenderForeground2 &&
+          other.paletteLavenderBorderActive == paletteLavenderBorderActive &&
+          other.palettePurpleBackground2 == palettePurpleBackground2 &&
+          other.palettePurpleForeground2 == palettePurpleForeground2 &&
+          other.palettePurpleBorderActive == palettePurpleBorderActive &&
+          other.paletteGrapeBackground2 == paletteGrapeBackground2 &&
+          other.paletteGrapeForeground2 == paletteGrapeForeground2 &&
+          other.paletteGrapeBorderActive == paletteGrapeBorderActive &&
+          other.paletteLilacBackground2 == paletteLilacBackground2 &&
+          other.paletteLilacForeground2 == paletteLilacForeground2 &&
+          other.paletteLilacBorderActive == paletteLilacBorderActive &&
+          other.palettePinkBackground2 == palettePinkBackground2 &&
+          other.palettePinkForeground2 == palettePinkForeground2 &&
+          other.palettePinkBorderActive == palettePinkBorderActive &&
+          other.paletteMagentaBackground2 == paletteMagentaBackground2 &&
+          other.paletteMagentaForeground2 == paletteMagentaForeground2 &&
+          other.paletteMagentaBorderActive == paletteMagentaBorderActive &&
+          other.palettePlumBackground2 == palettePlumBackground2 &&
+          other.palettePlumForeground2 == palettePlumForeground2 &&
+          other.palettePlumBorderActive == palettePlumBorderActive &&
+          other.paletteBeigeBackground2 == paletteBeigeBackground2 &&
+          other.paletteBeigeForeground2 == paletteBeigeForeground2 &&
+          other.paletteBeigeBorderActive == paletteBeigeBorderActive &&
+          other.paletteMinkBackground2 == paletteMinkBackground2 &&
+          other.paletteMinkForeground2 == paletteMinkForeground2 &&
+          other.paletteMinkBorderActive == paletteMinkBorderActive &&
+          other.palettePlatinumBackground2 == palettePlatinumBackground2 &&
+          other.palettePlatinumForeground2 == palettePlatinumForeground2 &&
+          other.palettePlatinumBorderActive == palettePlatinumBorderActive &&
+          other.paletteAnchorBackground2 == paletteAnchorBackground2 &&
+          other.paletteAnchorForeground2 == paletteAnchorForeground2 &&
+          other.paletteAnchorBorderActive == paletteAnchorBorderActive;
+
+  @override
+  int get hashCode => Object.hashAll([
+    paletteRedBackground1,
+    paletteRedBackground2,
+    paletteRedBackground3,
+    paletteRedForeground1,
+    paletteRedForeground2,
+    paletteRedForeground3,
+    paletteRedBorderActive,
+    paletteRedBorder1,
+    paletteRedBorder2,
+    paletteGreenBackground1,
+    paletteGreenBackground2,
+    paletteGreenBackground3,
+    paletteGreenForeground1,
+    paletteGreenForeground2,
+    paletteGreenForeground3,
+    paletteGreenBorderActive,
+    paletteGreenBorder1,
+    paletteGreenBorder2,
+    paletteDarkOrangeBackground1,
+    paletteDarkOrangeBackground2,
+    paletteDarkOrangeBackground3,
+    paletteDarkOrangeForeground1,
+    paletteDarkOrangeForeground2,
+    paletteDarkOrangeForeground3,
+    paletteDarkOrangeBorderActive,
+    paletteDarkOrangeBorder1,
+    paletteDarkOrangeBorder2,
+    paletteYellowBackground1,
+    paletteYellowBackground2,
+    paletteYellowBackground3,
+    paletteYellowForeground1,
+    paletteYellowForeground2,
+    paletteYellowForeground3,
+    paletteYellowBorderActive,
+    paletteYellowBorder1,
+    paletteYellowBorder2,
+    paletteBerryBackground1,
+    paletteBerryBackground2,
+    paletteBerryBackground3,
+    paletteBerryForeground1,
+    paletteBerryForeground2,
+    paletteBerryForeground3,
+    paletteBerryBorderActive,
+    paletteBerryBorder1,
+    paletteBerryBorder2,
+    paletteLightGreenBackground1,
+    paletteLightGreenBackground2,
+    paletteLightGreenBackground3,
+    paletteLightGreenForeground1,
+    paletteLightGreenForeground2,
+    paletteLightGreenForeground3,
+    paletteLightGreenBorderActive,
+    paletteLightGreenBorder1,
+    paletteLightGreenBorder2,
+    paletteMarigoldBackground1,
+    paletteMarigoldBackground2,
+    paletteMarigoldBackground3,
+    paletteMarigoldForeground1,
+    paletteMarigoldForeground2,
+    paletteMarigoldForeground3,
+    paletteMarigoldBorderActive,
+    paletteMarigoldBorder1,
+    paletteMarigoldBorder2,
+    paletteRedForegroundInverted,
+    paletteGreenForegroundInverted,
+    paletteYellowForegroundInverted,
+    paletteDarkRedBackground2,
+    paletteDarkRedForeground2,
+    paletteDarkRedBorderActive,
+    paletteCranberryBackground2,
+    paletteCranberryForeground2,
+    paletteCranberryBorderActive,
+    palettePumpkinBackground2,
+    palettePumpkinForeground2,
+    palettePumpkinBorderActive,
+    palettePeachBackground2,
+    palettePeachForeground2,
+    palettePeachBorderActive,
+    paletteGoldBackground2,
+    paletteGoldForeground2,
+    paletteGoldBorderActive,
+    paletteBrassBackground2,
+    paletteBrassForeground2,
+    paletteBrassBorderActive,
+    paletteBrownBackground2,
+    paletteBrownForeground2,
+    paletteBrownBorderActive,
+    paletteForestBackground2,
+    paletteForestForeground2,
+    paletteForestBorderActive,
+    paletteSeafoamBackground2,
+    paletteSeafoamForeground2,
+    paletteSeafoamBorderActive,
+    paletteDarkGreenBackground2,
+    paletteDarkGreenForeground2,
+    paletteDarkGreenBorderActive,
+    paletteLightTealBackground2,
+    paletteLightTealForeground2,
+    paletteLightTealBorderActive,
+    paletteTealBackground2,
+    paletteTealForeground2,
+    paletteTealBorderActive,
+    paletteSteelBackground2,
+    paletteSteelForeground2,
+    paletteSteelBorderActive,
+    paletteBlueBackground2,
+    paletteBlueForeground2,
+    paletteBlueBorderActive,
+    paletteRoyalBlueBackground2,
+    paletteRoyalBlueForeground2,
+    paletteRoyalBlueBorderActive,
+    paletteCornflowerBackground2,
+    paletteCornflowerForeground2,
+    paletteCornflowerBorderActive,
+    paletteNavyBackground2,
+    paletteNavyForeground2,
+    paletteNavyBorderActive,
+    paletteLavenderBackground2,
+    paletteLavenderForeground2,
+    paletteLavenderBorderActive,
+    palettePurpleBackground2,
+    palettePurpleForeground2,
+    palettePurpleBorderActive,
+    paletteGrapeBackground2,
+    paletteGrapeForeground2,
+    paletteGrapeBorderActive,
+    paletteLilacBackground2,
+    paletteLilacForeground2,
+    paletteLilacBorderActive,
+    palettePinkBackground2,
+    palettePinkForeground2,
+    palettePinkBorderActive,
+    paletteMagentaBackground2,
+    paletteMagentaForeground2,
+    paletteMagentaBorderActive,
+    palettePlumBackground2,
+    palettePlumForeground2,
+    palettePlumBorderActive,
+    paletteBeigeBackground2,
+    paletteBeigeForeground2,
+    paletteBeigeBorderActive,
+    paletteMinkBackground2,
+    paletteMinkForeground2,
+    paletteMinkBorderActive,
+    palettePlatinumBackground2,
+    palettePlatinumForeground2,
+    palettePlatinumBorderActive,
+    paletteAnchorBackground2,
+    paletteAnchorForeground2,
+    paletteAnchorBorderActive,
+  ]);
 }

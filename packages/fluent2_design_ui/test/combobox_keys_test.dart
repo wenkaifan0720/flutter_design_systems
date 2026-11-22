@@ -107,7 +107,9 @@ Future<void> _focusClosed(WidgetTester t, FocusNode field) async {
 
 void main() {
   testWidgets('a combobox with a chosen value opens onto every option, '
-      'the chosen one marked and active', (t) async {
+      'the chosen one marked and active, ringed only once a key is used', (
+    t,
+  ) async {
     await _combobox(t, value: 'access');
     await t.tap(find.byIcon(Fluent2Icons.chevronDown));
     await t.pumpAndSettle();
@@ -119,7 +121,15 @@ void main() {
       ],
       ['Access'],
     );
-    expect(_lit(t), 'Access');
+    expect(
+      [
+        for (final f in _faces(t))
+          if (f.states.contains(WidgetState.focused)) f.label,
+      ],
+      ['Access'],
+      reason: 'the active option, the one Enter takes',
+    );
+    expect(_lit(t), isNull, reason: 'opened by a pointer: no ring');
     expect(
       [
         for (final f in _faces(t))
@@ -128,6 +138,8 @@ void main() {
       ['Archive'],
       reason: 'drawn out of use',
     );
+    await _key(t, LogicalKeyboardKey.arrowDown);
+    expect(_lit(t), 'Room booking', reason: 'a key shows the ring');
   }, variant: TargetPlatformVariant.only(TargetPlatform.macOS));
 
   testWidgets("a combobox's closed list: Down opens it on the chosen option "

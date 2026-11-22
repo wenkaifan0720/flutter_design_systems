@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
+import '../../internal/figure.dart';
 import '../../internal/presets.g.dart' show sharedDark, sharedLight;
 import '../../internal/well.dart';
 import '../../localizations.dart';
@@ -142,17 +143,14 @@ class Fluent2Sparkline extends StatelessWidget {
   /// What it shows ("Files shared this week").
   final String? label;
 
-  static String _num(double v) =>
-      v == v.roundToDouble() ? '${v.round()}' : v.toStringAsFixed(1);
-
   @override
   Widget build(BuildContext context) {
     final t = context.fluent2Theme;
     final name = label ?? Fluent2Localizations.of(context).trend;
     final spoken = values.isEmpty
         ? name
-        : '$name, from ${_num(values.first)} to '
-              '${_num(values.last)}';
+        : '$name, from ${fluent2Figure(context, values.first)} to '
+              '${fluent2Figure(context, values.last)}';
     return Semantics(
       label: spoken,
       image: true,
@@ -331,11 +329,8 @@ class Fluent2BarChart extends StatelessWidget {
   /// What it shows ("Meeting hours this week").
   final String? label;
 
-  static String _text(Fluent2Bar b) =>
-      b.valueText ??
-      (b.value == b.value.roundToDouble()
-          ? '${b.value.round()}'
-          : b.value.toStringAsFixed(1));
+  static String _text(BuildContext context, Fluent2Bar b) =>
+      b.valueText ?? fluent2Figure(context, b.value);
 
   @override
   Widget build(BuildContext context) {
@@ -348,7 +343,7 @@ class Fluent2BarChart extends StatelessWidget {
     final pick = onHighlight;
     final spoken = [
       ?label,
-      for (final b in bars) '${b.label} ${_text(b)}',
+      for (final b in bars) '${b.label} ${_text(context, b)}',
     ].join(', ');
     Widget column(int i) {
       final b = bars[i];
@@ -362,7 +357,7 @@ class Fluent2BarChart extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
               Text(
-                _text(b),
+                _text(context, b),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: lit
@@ -412,7 +407,7 @@ class Fluent2BarChart extends StatelessWidget {
                 : Fluent2Pressable(
                     onPressed: () => pick(i),
                     label: bars[i].label,
-                    value: _text(bars[i]),
+                    value: _text(context, bars[i]),
                     selected: highlight == i,
                     radius: Fluent2Radius.medium,
                     child: column(i),

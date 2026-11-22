@@ -6,7 +6,7 @@ implementation of Microsoft's Fluent 2 design system.
 
 ![Fluent 2's sample app at 1440 px by day, beside the same app on a 390 px phone by night](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/fluent2_design_ui/screenshots/hero.png)
 
-**[Live gallery](https://wenkaifan0720.github.io/flutter_design_systems/fluent2/)** · [API reference](https://pub.dev/documentation/fluent2_design_ui/latest/) · [All the looks](https://wenkaifan0720.github.io/flutter_design_systems/)
+**[Live gallery](https://wenkaifan0720.github.io/flutter_design_systems/fluent2/)** · [Docs](https://wenkaifan0720.github.io/flutter_design_systems/docs/looks/fluent2/) · [API reference](https://pub.dev/documentation/fluent2_design_ui/latest/) · [All the looks](https://wenkaifan0720.github.io/flutter_design_systems/)
 
 ## Install
 
@@ -78,6 +78,23 @@ CupertinoApp(
   builder: (context, child) => Fluent2Theme(
     data: Fluent2ThemeData.iris(MediaQuery.platformBrightnessOf(context)),
     child: child!,
+  ),
+  home: const InboxPage(),
+);
+```
+
+`WidgetsApp` has no page route of its own; give it one:
+
+```dart
+WidgetsApp(
+  color: const Color(0xFF0F6CBD),
+  builder: (context, child) => Fluent2Theme(
+    data: Fluent2ThemeData.iris(MediaQuery.platformBrightnessOf(context)),
+    child: child!,
+  ),
+  pageRouteBuilder: <T>(settings, builder) => PageRouteBuilder<T>(
+    settings: settings,
+    pageBuilder: (context, _, _) => builder(context),
   ),
   home: const InboxPage(),
 );
@@ -204,6 +221,10 @@ The standalone `Fluent2Format` helpers use US English.
 
 The bundled text font is Selawik. Other scripts use platform fallback fonts.
 `Fluent2Icons` includes Fluent UI System Icons.
+
+## Requirements
+
+Flutter 3.47.0 or later. The package runs on Android, iOS, the web, macOS, Windows and Linux.
 
 ## Example
 

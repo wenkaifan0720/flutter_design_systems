@@ -17,9 +17,7 @@ import 'nav_bar.dart';
 /// ```
 class Fluent2ShellAction extends ShellAction {
   /// The act: [icon], [label] when extended, [onPressed] with the context.
-  // Not const: ui_core's ShellAction still carries its old name's fallback, so its constructor is not.
-  // ignore: prefer_const_constructors_in_immutables
-  Fluent2ShellAction({
+  const Fluent2ShellAction({
     required super.icon,
     required super.onPressed,
     super.label,

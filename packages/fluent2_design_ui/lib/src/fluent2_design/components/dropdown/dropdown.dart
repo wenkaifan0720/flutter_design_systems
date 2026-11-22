@@ -6,6 +6,7 @@ import 'package:ui_core/ui_core.dart';
 
 import '../../icons.dart';
 import '../../internal/cap_label.dart';
+import '../../internal/keys_shown.dart';
 import '../../internal/search_states.dart';
 import '../../internal/list_keys.dart';
 import '../../internal/measure.dart';
@@ -626,6 +627,7 @@ class _Fluent2ComboboxState<T> extends State<Fluent2Combobox<T>> {
   void initState() {
     super.initState();
     _focus.addListener(_refresh);
+    Fluent2KeysShown.addListener(_refresh);
   }
 
   @override
@@ -640,6 +642,7 @@ class _Fluent2ComboboxState<T> extends State<Fluent2Combobox<T>> {
   @override
   void dispose() {
     _focus.removeListener(_refresh);
+    Fluent2KeysShown.removeListener(_refresh);
     _ownFocus?.dispose();
     _text.dispose();
     super.dispose();
@@ -715,12 +718,15 @@ class _Fluent2ComboboxState<T> extends State<Fluent2Combobox<T>> {
           padding: const EdgeInsets.only(top: Fluent2Spacing.xs),
           child: Fluent2PopoverSurface(child: list),
         ),
+        // The keys' ring shows after a key, as a select's option's does:
+        // a list a press opened marks its chosen option alone.
         optionBuilder: (context, o, states) => Fluent2OptionFace(
           label: o.label,
           icon: o.icon,
           secondary: o.secondary,
           selected: states.contains(WidgetState.selected),
-          highlighted: states.contains(WidgetState.focused),
+          highlighted:
+              states.contains(WidgetState.focused) && Fluent2KeysShown.shown,
           states: states,
         ),
         fieldBuilder: (context, field) => Fluent2FieldFrame(

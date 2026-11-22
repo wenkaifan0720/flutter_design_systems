@@ -1467,18 +1467,22 @@ final class Fluent2ThemeData with Diagnosticable {
     );
   }
 
-  /// Between this and [other], as `ThemeData.lerp`: the colours, the ramp,
-  /// the material, the elevations, the component themes and
-  /// the density blend; the preset id, the appearance, the shared palette
-  /// and [solidAcrylic] change at the middle. [AnimatedFluent2Theme] animates with it.
+  /// Between this and [other], as `ThemeData.lerp`: the colours, the shared
+  /// palette, the ramp, the material, the elevations, the component themes
+  /// and the density blend; the preset id, the appearance and
+  /// [solidAcrylic] change at the middle. [AnimatedFluent2Theme] animates with it.
   Fluent2ThemeData lerp(Fluent2ThemeData? other, double t) {
     if (other == null || identical(this, other)) return this;
     final near = t < .5 ? this : other;
     return Fluent2ThemeData._(
       id: near.id,
       brightness: near.brightness,
-      colors: _lerpColors(colors, other.colors, t),
-      sharedColors: near.sharedColors,
+      colors: Fluent2Colors.lerp(colors, other.colors, t),
+      sharedColors: Fluent2SharedColors.lerp(
+        sharedColors,
+        other.sharedColors,
+        t,
+      ),
       brandVariants: [
         for (var i = 0; i < brandVariants.length; i++)
           Color.lerp(brandVariants[i], other.brandVariants[i], t)!,
@@ -1494,26 +1498,14 @@ final class Fluent2ThemeData with Diagnosticable {
     );
   }
 
-  static Fluent2Colors _lerpColors(Fluent2Colors a, Fluent2Colors b, double t) {
-    if (identical(a, b)) return a;
-    final x = a.toMap(), y = b.toMap();
-    return Fluent2Colors.fromMap({
-      for (final MapEntry(:key, :value) in x.entries)
-        key: Color.lerp(value, y[key], t)!,
-    });
-  }
-
-  static bool _sameColors(Fluent2Colors a, Fluent2Colors b) =>
-      identical(a, b) || mapEquals(a.toMap(), b.toMap());
-
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       other is Fluent2ThemeData &&
           other.id == id &&
           other.brightness == brightness &&
-          _sameColors(other.colors, colors) &&
-          identical(other.sharedColors, sharedColors) &&
+          other.colors == colors &&
+          other.sharedColors == sharedColors &&
           listEquals(other.brandVariants, brandVariants) &&
           other.background == background &&
           other.acrylic == acrylic &&
@@ -1528,8 +1520,8 @@ final class Fluent2ThemeData with Diagnosticable {
   int get hashCode => Object.hash(
     id,
     brightness,
-    Object.hashAll(colors.toMap().values),
-    identityHashCode(sharedColors),
+    colors,
+    sharedColors,
     Object.hashAll(brandVariants),
     background,
     acrylic,

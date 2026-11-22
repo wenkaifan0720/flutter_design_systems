@@ -130,14 +130,39 @@ final class Fluent2ButtonFace with Diagnosticable {
   @override
   int get hashCode => Object.hash(fill, stroke, ink, glyph);
 
-  /// The face of [appearance] in [press], checked or not (a toggle).
+  /// The face of [appearance] in [press], checked or not (a toggle); with
+  /// [danger] a loss's: a primary on danger's solid (Fluent's
+  /// `colorStatusDangerBackground3` and its hover and pressed steps), the
+  /// others in danger's ink on their own face.
   static Fluent2ButtonFace of(
     Fluent2ThemeData t,
     Fluent2ButtonAppearance appearance,
     Fluent2Press press, {
     bool checked = false,
+    bool danger = false,
   }) {
     final c = t.colors;
+    if (danger && press != Fluent2Press.disabled) {
+      if (appearance == Fluent2ButtonAppearance.primary) {
+        return Fluent2ButtonFace(
+          fill: press.pick(
+            c.statusDangerBackground3,
+            c.statusDangerBackground3Hover,
+            c.statusDangerBackground3Pressed,
+          ),
+          stroke: c.transparentStroke,
+          ink: t.onDanger,
+          glyph: t.onDanger,
+        );
+      }
+      final own = of(t, appearance, press, checked: checked);
+      return Fluent2ButtonFace(
+        fill: own.fill,
+        stroke: own.stroke,
+        ink: t.danger,
+        glyph: t.danger,
+      );
+    }
     if (press == Fluent2Press.disabled) {
       final quiet =
           appearance == Fluent2ButtonAppearance.subtle ||
@@ -480,6 +505,7 @@ final class Fluent2ButtonLook {
     this.shape,
     this.icon = false,
     this.touch = false,
+    this.danger = false,
   });
 
   /// The theme it reads.
@@ -505,6 +531,9 @@ final class Fluent2ButtonLook {
   /// 48 target, as a field's and a strip's do, so controls that
   /// share a row show one top and one bottom.
   final bool touch;
+
+  /// A loss's button: danger's colours ([Fluent2ButtonFace.of]).
+  final bool danger;
 
   /// Fluent's measures at [size].
   Fluent2ButtonMetrics get metrics => Fluent2ButtonMetrics.of(size);
@@ -560,6 +589,7 @@ final class Fluent2ButtonLook {
       appearance,
       states.press,
       checked: checked,
+      danger: danger,
     );
     final look = Fluent2StyleOf(layers, states);
     final wash = Fluent2Style.first(layers, (s) => s.overlay, states);
@@ -689,7 +719,9 @@ class _RenderOwnWidth extends RenderPositionedBox {
 /// [appearance]'s face at the [shape]'s corner, stepping through its rest,
 /// hover and pressed colours. [expand] stretches it across its parent (a
 /// sheet's one act). Read as a button named [label]; null [onPressed] draws it
-/// disabled. Use one [Fluent2ButtonAppearance.primary] per view.
+/// disabled. Use one [Fluent2ButtonAppearance.primary] per view. [danger]
+/// marks a loss (Delete, Discard): a primary on danger's solid, any other
+/// appearance in danger's ink.
 ///
 /// [style] restyles it slot by slot (fill, foreground, edge, overlay, side,
 /// shape, padding, minimumSize, textStyle, iconSize) over its appearance's
@@ -710,6 +742,7 @@ class Fluent2Button extends StatelessWidget {
     this.icon,
     this.iconPosition = Fluent2IconPosition.before,
     this.expand = false,
+    this.danger = false,
     this.semanticLabel,
     this.style,
     this.focusNode,
@@ -744,6 +777,15 @@ class Fluent2Button extends StatelessWidget {
   /// Stretch across the parent's width.
   final bool expand;
 
+  /// Whether it loses something (Delete, Discard): a primary on danger's
+  /// solid, any other appearance in danger's ink. Out of use it wears the
+  /// disabled greys as any button does.
+  ///
+  /// ```dart
+  /// Fluent2Button('Discard', danger: true, onPressed: discard)
+  /// ```
+  final bool danger;
+
   /// What a screen reader says; null says [label].
   final String? semanticLabel;
 
@@ -765,6 +807,7 @@ class Fluent2Button extends StatelessWidget {
       size: size,
       style: style,
       shape: shape,
+      danger: danger,
     );
     final m = look.metrics;
     return fluent2OwnWidth(
@@ -861,6 +904,7 @@ class Fluent2Button extends StatelessWidget {
         ),
       )
       ..add(FlagProperty('expand', value: expand, ifTrue: 'expand'))
+      ..add(FlagProperty('danger', value: danger, ifTrue: 'danger'))
       ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(
         DiagnosticsProperty<Fluent2Style>('style', style, defaultValue: null),

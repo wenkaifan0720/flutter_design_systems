@@ -1,6 +1,5 @@
 // Generated from @fluentui/tokens 1.0.0-alpha.24 (MIT, npm) and the Fluent theme
-// designer's palette code (MIT, microsoft/fluentui) by the Fluent 2 token script
-// (looks/fluent/tools, gen_dart.ts over data/presets.json); never edit by hand.
+// designer's palette code (MIT, microsoft/fluentui).
 // The values: each kept preset's brand ramp and its light and dark alias colours, then the shared palette.
 
 import 'package:flutter/painting.dart' show Color;

@@ -8,6 +8,7 @@ import 'package:flutter/widgets.dart';
 
 import 'package:ui_core/ui_core.dart';
 
+import '../../internal/figure.dart';
 import '../../internal/key_focus.dart';
 import '../../internal/measure.dart';
 import '../../localizations.dart';
@@ -34,9 +35,6 @@ class Fluent2ChartSeries {
   /// stands alone.
   final Fluent2ChartHue? hue;
 }
-
-String _plain(double v) =>
-    v == v.roundToDouble() ? '${v.round()}' : v.toStringAsFixed(1);
 
 /// The round number at or over [v].
 double _niceTop(double v) {
@@ -89,7 +87,8 @@ class _Plot extends StatelessWidget {
   final String Function(double value)? valueLabel;
   final Color? ground;
 
-  String _say(double v) => valueLabel?.call(v) ?? _plain(v);
+  String _say(BuildContext context, double v) =>
+      valueLabel?.call(v) ?? fluent2Figure(context, v);
 
   @override
   Widget build(BuildContext context) {
@@ -120,14 +119,15 @@ class _Plot extends StatelessWidget {
       return w;
     }
 
-    final ticks = [top, top / 2, 0.0].map(_say).toList();
+    final ticks = [top, top / 2, 0.0].map((v) => _say(context, v)).toList();
     final left =
         ticks.map((w) => widthOf(w, tick)).reduce(math.max) + Fluent2Spacing.s;
     final direct = series.length >= 2 && series.length <= 4;
     final summary = [
       for (final s in series)
         if (s.values.isNotEmpty)
-          '${s.name}, from ${_say(s.values.first)} to ${_say(s.values.last)}',
+          '${s.name}, from ${_say(context, s.values.first)} to '
+              '${_say(context, s.values.last)}',
     ].join('. ');
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -189,9 +189,11 @@ class _Plot extends StatelessWidget {
                 ],
                 formatX: (x) {
                   final i = x.round();
-                  return i >= 0 && i < labels.length ? labels[i] : _plain(x);
+                  return i >= 0 && i < labels.length
+                      ? labels[i]
+                      : fluent2Figure(context, x);
                 },
-                formatY: _say,
+                formatY: (v) => _say(context, v),
                 padding: EdgeInsetsDirectional.only(start: left, end: room),
                 builder: (context, chart) {
                   final at = chart.active?.index;
@@ -238,7 +240,11 @@ class _Plot extends StatelessWidget {
                             lines: [
                               for (final (i, s) in series.indexed)
                                 if (at < s.values.length)
-                                  (colors[i], s.name, _say(s.values[at])),
+                                  (
+                                    colors[i],
+                                    s.name,
+                                    _say(context, s.values[at]),
+                                  ),
                             ],
                           ),
                       ],
@@ -764,7 +770,8 @@ class Fluent2PieChart extends StatefulWidget {
 }
 
 class _Fluent2PieChartState extends State<Fluent2PieChart> {
-  static String _text(Fluent2PieSlice s) => s.valueText ?? _plain(s.value);
+  String _text(Fluent2PieSlice s) =>
+      s.valueText ?? fluent2Figure(context, s.value);
 
   List<Fluent2PieSlice> _parts(String other) {
     final all = widget.slices;
@@ -804,7 +811,7 @@ class _Fluent2PieChartState extends State<Fluent2PieChart> {
           for (final s in parts) {
             if (s.value == v) return _text(s);
           }
-          return _plain(v);
+          return fluent2Figure(context, v);
         },
         builder: (context, pie) {
           final at = pie.active;

@@ -1,3 +1,16 @@
+## 0.4.1
+
+- Needs ui_core 0.4.1.
+- Adds `Fluent2ListItem.action`, a control after the row's end; the row's fill runs under it.
+- `Fluent2Combobox` and `Fluent2MultiSelect` ring an option only after a key, as `Fluent2Select` does.
+- Adds `Fluent2Button.danger`, for an act that loses something (Delete, Discard), and `danger` on
+  `Fluent2Dialog.confirm`.
+- Charts write and announce their figures in the reader's digits, Arabic-Indic in Arabic.
+- At a large text size a `Fluent2ListItem`'s subtitle shows all its words; it was cut after two lines.
+- `Fluent2ShellAction` has a const constructor.
+- Adds `lerp`, `==` and `hashCode` to `Fluent2Colors` and `Fluent2SharedColors`; `Fluent2ThemeData` compares its
+  shared palette by value and blends it in `lerp`.
+
 ## 0.4.0
 
 - Stands on ui_core 0.4.0, on Flutter 3.47 or later as before. The ui_core types fluent2_design_ui's API names take their new names (`DesignOverlayPlacement` is `RawPopoverPlacement`, and so on); `dart fix --apply` moves your code.

@@ -6,6 +6,7 @@ import 'package:ui_core/ui_core.dart';
 
 import '../../icons.dart';
 import '../../internal/cap_label.dart';
+import '../../internal/keys_shown.dart';
 import '../../internal/search_states.dart';
 import '../../internal/well.dart';
 import '../../localizations.dart';
@@ -184,7 +185,18 @@ class _Fluent2MultiSelectState<T> extends State<Fluent2MultiSelect<T>> {
   bool get _live => widget.onChanged != null;
 
   @override
+  void initState() {
+    super.initState();
+    Fluent2KeysShown.addListener(_keysShown);
+  }
+
+  void _keysShown() {
+    if (mounted) setState(() {});
+  }
+
+  @override
   void dispose() {
+    Fluent2KeysShown.removeListener(_keysShown);
     _ownFocus?.dispose();
     _text.dispose();
     super.dispose();
@@ -278,7 +290,9 @@ class _Fluent2MultiSelectState<T> extends State<Fluent2MultiSelect<T>> {
         icon: o.icon,
         secondary: o.secondary,
         selected: false,
-        highlighted: states.contains(WidgetState.focused),
+        // The keys' ring shows after a key, not on a list a press opened.
+        highlighted:
+            states.contains(WidgetState.focused) && Fluent2KeysShown.shown,
         states: states,
       ),
       surfaceBuilder: (context, list) => Padding(
