@@ -699,8 +699,16 @@ class BrutalSegmentedButton<T> extends StatelessWidget {
   /// What a screen reader calls the group.
   final String? semanticLabel;
 
+  // It measures its words as it builds: it builds again when the
+  // platform's fonts change (a face or a script's fallback arriving on
+  // the web), so its widths follow the words drawn.
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => ListenableBuilder(
+    listenable: PaintingBinding.instance.systemFonts,
+    builder: (context, _) => _measured(context),
+  );
+
+  Widget _measured(BuildContext context) {
     final theme = BrutalTheme.of(context);
     final c = theme.colors;
     final layers = [this.style, theme.segmentedButtonStyle];
@@ -726,7 +734,9 @@ class BrutalSegmentedButton<T> extends StatelessWidget {
       widest = math.max(widest, painter.width + (s.icon == null ? 0 : 28));
       painter.dispose();
     }
-    final cell = widest + 2 * BrutalSpacing.regular;
+    // Whole pixels: on a fraction the rules between the cells and round them
+    // fall between pixels, a grey seam inside a chosen cell's rules.
+    final cell = (widest + 2 * BrutalSpacing.regular).ceilToDouble();
     // Hugging its words only while they fit the room it has; else it fills.
     final hugged =
         segments.length * cell + (segments.length + 1) * theme.borderWidth;
@@ -1089,8 +1099,16 @@ class BrutalStepper extends StatelessWidget {
   /// Its style, over [BrutalThemeData.stepperStyle].
   final BrutalStyle? style;
 
+  // It measures its words as it builds: it builds again when the
+  // platform's fonts change (a face or a script's fallback arriving on
+  // the web), so its widths follow the words drawn.
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => ListenableBuilder(
+    listenable: PaintingBinding.instance.systemFonts,
+    builder: (context, _) => _measured(context),
+  );
+
+  Widget _measured(BuildContext context) {
     final theme = BrutalTheme.of(context);
     final c = theme.colors;
     final off = onChanged == null;

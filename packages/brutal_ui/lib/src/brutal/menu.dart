@@ -1,7 +1,7 @@
 /// Brutal's menus: [BrutalMenu], a list of [BrutalMenuItem]s that drops
 /// from whatever opens it, drawn on [BrutalMenuPanel] (a raised ruled box)
-/// in [BrutalMenuRow]s (ink when chosen or pressed, a solid bar inside the
-/// row where the pointer or the keyboard is). The split button, the menu
+/// in [BrutalMenuRow]s (ink when chosen or pressed, a rule round the row,
+/// inside its edges, where the pointer or the keyboard is). The split button, the menu
 /// bar, the palette, the combobox and the tag input draw their lists with
 /// them. In a menu the pointer and the keyboard are one: the pointer's move
 /// takes the keyboard to its row, so one row is lit; a menu a pointer opened
@@ -15,8 +15,8 @@ import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
 import 'internal/keep_in_view.dart';
+import 'internal/keyed_row.dart';
 import 'internal/type_ahead.dart';
-import 'internal/focus_ink.dart';
 import 'surface.dart';
 import 'theme.dart';
 
@@ -174,9 +174,9 @@ class _OnPanel extends InheritedWidget {
 /// A menu row with a label, an optional [icon] and a [trailing] widget.
 ///
 /// A selected or pressed row fills with ink. A destructive row uses the
-/// danger colour and a disabled row uses muted ink. A narrow accent bar
-/// marks the focused row. Moving the pointer inside a [BrutalMenuPanel]
-/// transfers keyboard focus to that row.
+/// danger colour and a disabled row uses muted ink. A narrow bar in the
+/// row's own ink marks the focused row (paper on a filled row). Moving the
+/// pointer inside a [BrutalMenuPanel] transfers keyboard focus to that row.
 ///
 /// Reads [style]'s `fill` and `foreground` in its states, `padding`,
 /// `minimumSize` (its height), `textStyle` and `iconSize`, then
@@ -223,7 +223,7 @@ class BrutalMenuRow extends StatelessWidget {
     final layered = DesignStyleOf([style, theme.menuStyle], states);
     final disabled = states.contains(WidgetState.disabled);
     // Ink is the chosen row, or the one pressed on the way to choosing it;
-    // where the pointer or the keyboard is, a bar along its lower edge.
+    // where the pointer or the keyboard is, a rule round it.
     final lit =
         !disabled &&
         (states.contains(WidgetState.selected) ||
@@ -252,10 +252,11 @@ class BrutalMenuRow extends StatelessWidget {
           layered.minimumSize?.height ??
           theme.controlHeight - theme.borderWidth,
       child: CustomPaint(
+        // The keyboard's row is ruled round in the row's own ink, as a
+        // select's list marks it: the signal stays the screen's one main
+        // action.
         foregroundPainter: here
-            ? BrutalInsetFocusPainter(
-                brutalFocusInk(c, layered.fill ?? (lit ? bar : c.surface)),
-              )
+            ? BrutalKeyedRowPainter(lit || layered.fill != null ? words : bar)
             : null,
         child: AnimatedBrutalSurface(
           stiffness: BrutalMotion.colorStiffness,

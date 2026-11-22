@@ -958,12 +958,14 @@ class BrutalScaffold extends StatelessWidget {
     final under = places && width < 600 && showNavigation;
     // The body is a semantics container of its own, so a navigator in it (a
     // router's shell) hides only what lies under its page, never the places
-    // beside it or the bar over it.
+    // beside it or the bar over it. Its children keep nodes of their own: a
+    // route's node there forms only when a list opens over it otherwise, and
+    // on the web that moves the field's input and blurs the tap's focus.
     final content0 = MediaQuery.removePadding(
       context: context,
       removeTop: appBar != null,
       removeBottom: under,
-      child: Semantics(container: true, child: body),
+      child: Semantics(container: true, explicitChildNodes: true, child: body),
     );
     final fab = floatingButton;
     final margin = BrutalSpacing.pageMargin(width);
@@ -1192,8 +1194,16 @@ class _BrutalTabBarState extends State<BrutalTabBar>
     super.dispose();
   }
 
+  // It measures its words as it builds: it builds again when the
+  // platform's fonts change (a face or a script's fallback arriving on
+  // the web), so its widths follow the words drawn.
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => ListenableBuilder(
+    listenable: PaintingBinding.instance.systemFonts,
+    builder: (context, _) => _measured(context),
+  );
+
+  Widget _measured(BuildContext context) {
     final theme = BrutalTheme.of(context);
     final c = theme.colors;
     final tabs = widget.tabs;
@@ -1245,6 +1255,9 @@ class _BrutalTabBarState extends State<BrutalTabBar>
           theme.borderWidth +
           (BrutalTabBar.barHeight - theme.borderWidth) *
               details.selection.clamp(0.0, 1.0);
+      final padding =
+          layered.padding(Directionality.of(context)) ??
+          const EdgeInsets.symmetric(horizontal: BrutalSpacing.regular);
       final face = AnimatedBrutalSurface(
         stiffness: BrutalMotion.colorStiffness,
         face: BrutalFace(
@@ -1264,11 +1277,7 @@ class _BrutalTabBarState extends State<BrutalTabBar>
             children: [
               Expanded(
                 child: Padding(
-                  padding:
-                      layered.padding(Directionality.of(context)) ??
-                      const EdgeInsets.symmetric(
-                        horizontal: BrutalSpacing.regular,
-                      ),
+                  padding: padding,
                   child: Center(
                     widthFactor: 1,
                     // Every tab keeps the room of its words in bold, so
@@ -1319,9 +1328,13 @@ class _BrutalTabBarState extends State<BrutalTabBar>
           ),
         ),
       );
-      // A tab that hugs its words is as wide as they are (a scrolling bar
-      // gives it no width of its own).
-      final sized = wide ? face : IntrinsicWidth(child: face);
+      // A tab that hugs its words is as wide as they are in bold (a
+      // scrolling bar gives it no width of its own). Measured here, not read
+      // from the words' intrinsic width, which Flutter keeps from the face
+      // they were first set in after another face arrives.
+      final sized = wide
+          ? face
+          : SizedBox(width: boldRoom(i) + padding.horizontal, child: face);
       if (i == 0) return sized;
       // The rule it shares with the tab before, on its start side. Not a
       // row: ui_core sizes a tab to its words to the fraction of a pixel.

@@ -4,7 +4,7 @@ A neo-brutalist Flutter design system with square controls, a 4-pixel grid, 2-pi
 
 ![Admit, a ticketing app on Brutal, at 1440 px by day beside the same app on a 390 px phone by night](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/brutal_ui/screenshots/hero_admit.png)
 
-**[Live gallery](https://wenkaifan0720.github.io/flutter_design_systems/brutal/)** · [API reference](https://pub.dev/documentation/brutal_ui/latest/) · [All the looks](https://wenkaifan0720.github.io/flutter_design_systems/)
+**[Live gallery](https://wenkaifan0720.github.io/flutter_design_systems/brutal/)** · [Docs](https://wenkaifan0720.github.io/flutter_design_systems/docs/looks/brutal/) · [API reference](https://pub.dev/documentation/brutal_ui/latest/) · [All the looks](https://wenkaifan0720.github.io/flutter_design_systems/)
 
 The gallery includes Admit, a ticketing demo. Try checkout with the saved demo card and any three-digit security code. Bookings, cancellations and account edits last for the current gallery session.
 
@@ -45,6 +45,29 @@ Future<void> main() async {
 
 `brutalLoadFonts()` loads the face before the first frame, so the web never shows a fallback.
 
+Under a `CupertinoApp` (from `cupertino_ui`, which an app adds itself) or a bare `WidgetsApp`, the theme goes in the
+same place:
+
+```dart
+import 'package:cupertino_ui/cupertino_ui.dart';
+
+CupertinoApp(
+  builder: (context, child) => BrutalTheme(
+    data: BrutalThemeData.light(),
+    child: BrutalToaster(child: child!),
+  ),
+  home: const HomePage(),
+);
+
+WidgetsApp(
+  color: const Color(0xFF000000),
+  builder: (context, _) => BrutalTheme(
+    data: BrutalThemeData.dark(),
+    child: const BrutalToaster(child: HomePage()),
+  ),
+);
+```
+
 For a multi-page app, use `BrutalHost` in the app builder, `BrutalAppShell` for top-level destinations, and `BrutalScreen` for a page’s content, app bar and optional footer.
 
 ```dart
@@ -70,6 +93,14 @@ Pushed pages slide 24 logical pixels from the trailing edge and support the nati
 - Controls follow platform density. The theme respects the system’s reduced-motion setting.
 
 Date pickers scroll within the space available around their field. Step progress stacks its cells when the names need more room. Line, bar and area charts scale their axes with the reader’s text settings and include the full data series in their screen-reader descriptions.
+
+## Right to left and languages
+
+Every part lays out from the ambient `Directionality`: under a right-to-left locale, rows, fields, menus, charts and
+navigation mirror, and parameters say start and end. `RawWidgetsLocalizations.delegate` gives the shared control
+labels in ui_core's 30 languages. Brutal's own words (a table's row count) come from `BrutalLocalizations`, which an
+app subclasses for another language. Space Grotesk covers Latin scripts; other scripts fall back to the platform's
+fonts.
 
 ## Controls
 
@@ -116,11 +147,15 @@ BrutalStyle(
 ```
 
 In an open list the pointer and the keyboard are one place. A menu (`BrutalMenu`, a menu bar's, a split button's), a
-select's list and the combobox's and tag input's options light one row with a narrow bar along its lower edge: the pointer's
-move takes the keyboard to its row, and the keys move on from there. A menu opened by a click lights no row until the
-pointer moves onto one or a key is pressed (the first Down lights the first row); one opened by Enter, Space or Down
-lights its first row. A list opened by a touch lights a row once a mouse or trackpad moves onto one, though the
-platform shows no keyboard focus after a touch.
+select's list and the combobox's and tag input's options light one row with a narrow rule round it, inside its edges:
+the pointer's move takes the keyboard to its row, and the keys move on from there. A menu opened by a click lights no
+row until the pointer moves onto one or a key is pressed (the first Down lights the first row); one opened by Enter,
+Space or Down lights its first row. A list opened by a touch lights a row once a mouse or trackpad moves onto one,
+though the platform shows no keyboard focus after a touch.
+
+## Requirements
+
+Flutter 3.47.0 or later (Dart 3.13), on Android, iOS, web, macOS, Windows and Linux.
 
 ## Licence
 

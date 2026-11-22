@@ -252,7 +252,8 @@ void main() {
         ),
       ),
     );
-    // The rows a square line is drawn in.
+    // The rows a square line is drawn in (the row's foreground painter; the
+    // app's debug banner paints over everything and is not a row's).
     List<String> lit() => [
       for (final r in rows)
         if (find.text(r).evaluate().isNotEmpty &&
@@ -263,7 +264,11 @@ void main() {
                     matching: find.byType(CustomPaint),
                   ),
                 )
-                .any((p) => p.foregroundPainter is BrutalInsetFocusPainter))
+                .any(
+                  (p) =>
+                      p.foregroundPainter != null &&
+                      p.foregroundPainter is! BannerPainter,
+                ))
           r,
     ];
     await tester.tap(find.text('Stalls'));

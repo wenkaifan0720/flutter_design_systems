@@ -748,10 +748,14 @@ class BrutalDatePicker extends StatelessWidget {
     return _labelled(
       RawPopover(
         semanticLabel: label,
+        // The calendar opens where its whole month fits: below while below
+        // holds it, else above; it shrinks and scrolls only where neither
+        // side does.
         placement: const RawPopoverPlacement(
           gap: BrutalSpacing.small,
           margin: BrutalSpacing.small,
           matchAnchorWidth: false,
+          preferredExtent: double.infinity,
         ),
         dampingRatio: BrutalMotion.dampingRatio,
         stiffness: BrutalMotion.overlayStiffness,
@@ -895,10 +899,14 @@ class BrutalDateRangePicker extends StatelessWidget {
     return _labelled(
       RawPopover(
         semanticLabel: label,
+        // The calendar opens where its whole month fits: below while below
+        // holds it, else above; it shrinks and scrolls only where neither
+        // side does.
         placement: const RawPopoverPlacement(
           gap: BrutalSpacing.small,
           margin: BrutalSpacing.small,
           matchAnchorWidth: false,
+          preferredExtent: double.infinity,
         ),
         dampingRatio: BrutalMotion.dampingRatio,
         stiffness: BrutalMotion.overlayStiffness,

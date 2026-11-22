@@ -421,8 +421,15 @@ class BrutalStepProgress extends StatelessWidget {
   /// The step being done, from 0; [steps]' length once all are done.
   final int current;
 
+  // It measures its step names as it builds: it builds again when the
+  // platform's fonts change, so whether they stack follows the words drawn.
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => ListenableBuilder(
+    listenable: PaintingBinding.instance.systemFonts,
+    builder: (context, _) => _measured(context),
+  );
+
+  Widget _measured(BuildContext context) {
     final theme = BrutalTheme.of(context);
     final c = theme.colors;
     final layered = DesignStyleOf([style, theme.stepProgressStyle], const {});
@@ -749,6 +756,7 @@ class BrutalMenuBar extends StatelessWidget {
                   onPressed: item.onPressed,
                   shortcut: item.shortcutLabel(context),
                   data: item,
+                  isDestructiveAction: item.isDestructiveAction,
                 ),
             ],
           ),
@@ -781,7 +789,7 @@ class BrutalMenuBar extends StatelessWidget {
           return BrutalMenuRow(
             label: entry.label,
             icon: item?.icon,
-            isDestructiveAction: item?.isDestructiveAction ?? false,
+            isDestructiveAction: entry.isDestructiveAction,
             states: states,
             trailing: entry.shortcut == null ? null : Text(entry.shortcut!),
           );

@@ -10,7 +10,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
+import 'internal/drop_mark.dart';
 import 'internal/keep_in_view.dart';
+import 'internal/keyed_row.dart';
 import 'internal/type_ahead.dart';
 import 'surface.dart';
 import 'text_field.dart';
@@ -41,7 +43,7 @@ class BrutalSelectItem<T> {
 /// square cell at the box's end, on a rule of its own; the open list hangs
 /// from the box, its top rule the box's bottom one, as wide as the box: the
 /// chosen item ink, bold, with a square mark; where the pointer or the
-/// keyboard is, a bar inside the lower edge of the row.
+/// keyboard is, a rule round the row, inside its edges.
 /// Held down, the chevron's cell turns over (ink for paper).
 ///
 /// Below 600 px it spans its column; wider, it stands at most
@@ -266,7 +268,7 @@ class _BrutalSelectState<T> extends State<BrutalSelect<T>> {
                     child: ColoredBox(
                       color: held ? rule : rule.withValues(alpha: 0),
                       child: Center(
-                        child: _Chevron(
+                        child: BrutalDropMark(
                           open: open,
                           color: held ? layered.fill ?? c.surface : ink,
                         ),
@@ -328,49 +330,6 @@ class _BrutalSelectState<T> extends State<BrutalSelect<T>> {
       ),
     );
   }
-}
-
-class _Chevron extends StatelessWidget {
-  const _Chevron({required this.open, required this.color});
-
-  final bool open;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) => TweenAnimationBuilder<double>(
-    tween: Tween(end: open ? 0.5 : 0),
-    duration: designReduceMotionOf(context)
-        ? Duration.zero
-        : const Duration(milliseconds: 140),
-    builder: (context, turns, _) => Transform.rotate(
-      angle: turns * 6.283185307179586,
-      child: CustomPaint(
-        size: const Size(12, 8),
-        painter: _ChevronPainter(color),
-      ),
-    ),
-  );
-}
-
-class _ChevronPainter extends CustomPainter {
-  _ChevronPainter(this.color);
-
-  final Color color;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    canvas.drawPath(
-      Path()
-        ..moveTo(0, 0)
-        ..lineTo(size.width / 2, size.height)
-        ..lineTo(size.width, 0)
-        ..close(),
-      Paint()..color = color,
-    );
-  }
-
-  @override
-  bool shouldRepaint(_ChevronPainter old) => old.color != color;
 }
 
 class _SelectList<T> extends StatefulWidget {
@@ -523,7 +482,7 @@ class _SelectListState<T> extends State<_SelectList<T>> {
                             height: rowHeight - theme.borderWidth,
                             child: CustomPaint(
                               foregroundPainter: here
-                                  ? BrutalInsetFocusPainter(
+                                  ? BrutalKeyedRowPainter(
                                       lit || row.fill != null ? words : c.ink,
                                     )
                                   : null,

@@ -133,8 +133,9 @@ class BrutalDialogAction extends StatelessWidget {
 
 /// A square panel in the rule, raised on the hard shadow: an [icon], a
 /// [title], a [content], and its [actions] as cells across its foot, on a
-/// rule they share, the main one filled with colour; at large text the
-/// cells stack. Show it with [showBrutalDialog].
+/// rule they share, the main one filled with colour; at large text, or
+/// where one's words don't fit its cell, the cells stack, the main one on
+/// top. Show it with [showBrutalDialog].
 ///
 /// Reads [style]'s `fill` (the panel), `edge` (its rules), `foreground`
 /// (its words), `padding` (round the title and content) and `textStyle`
@@ -165,7 +166,7 @@ class BrutalDialog extends StatelessWidget {
   final Widget? content;
 
   /// The foot's cells, in order, the main one last: [BrutalDialogAction]s,
-  /// or any widget that fills a cell.
+  /// or any widget that fills a cell. Stacked, the main one stands on top.
   final List<Widget> actions;
 
   /// The widest a dialog stands.
@@ -244,7 +245,7 @@ class BrutalDialog extends StatelessWidget {
                 if (actions.isNotEmpty) ...[
                   BrutalRule(color: face.border),
                   // Side by side while every action's words fit its cell,
-                  // else one above another.
+                  // else one above another, the main one on top.
                   BrutalDialogFoot(
                     cellHeight: 56,
                     ruleWidth: theme.borderWidth,

@@ -344,8 +344,16 @@ class BrutalTable extends StatelessWidget {
   /// Its style, over [BrutalThemeData.dataTableStyle].
   final BrutalStyle? style;
 
+  // It measures its words as it builds: it builds again when the
+  // platform's fonts change (a face or a script's fallback arriving on
+  // the web), so its widths follow the words drawn.
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => ListenableBuilder(
+    listenable: PaintingBinding.instance.systemFonts,
+    builder: (context, _) => _measured(context),
+  );
+
+  Widget _measured(BuildContext context) {
     final theme = BrutalTheme.of(context);
     final c = theme.colors;
     final t = theme.textTheme;

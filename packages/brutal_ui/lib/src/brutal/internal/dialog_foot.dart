@@ -5,7 +5,8 @@ import 'package:flutter/widgets.dart';
 
 /// A dialog's foot: its actions side by side in equal cells, a rule between
 /// them; when one's words would not fit its cell (or [stacked] asks), one
-/// above another, full width, a rule between, the last at the foot.
+/// above another, full width, a rule between, the last (the main one) on
+/// top, as Material's dialog's actions overflow.
 class BrutalDialogFoot extends MultiChildRenderObjectWidget {
   /// A foot of [children], each [cellHeight] tall.
   const BrutalDialogFoot({
@@ -165,7 +166,7 @@ class RenderBrutalDialogFoot extends RenderBox
     _laidStacked = stacks;
     if (stacks) {
       var y = 0.0;
-      for (final cell in cells) {
+      for (final cell in cells.reversed) {
         cell.layout(
           BoxConstraints.tightFor(width: width, height: _cell),
           parentUsesSize: true,
@@ -228,9 +229,12 @@ class RenderBrutalDialogFoot extends RenderBox
       final at = (cells[i].parentData! as BrutalDialogFootParentData).offset;
       final Rect line;
       if (_laidStacked) {
+        // Over each cell but the top one, the first of them at the foot.
+        final under =
+            (cells[i - 1].parentData! as BrutalDialogFootParentData).offset;
         line = Rect.fromLTWH(
           offset.dx,
-          offset.dy + at.dy - _weight,
+          offset.dy + under.dy - _weight,
           size.width,
           _weight,
         );

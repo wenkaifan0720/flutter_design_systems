@@ -14,6 +14,7 @@ import 'package:ui_core/ui_core.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import 'feedback.dart';
+import 'internal/drop_mark.dart';
 import 'lists.dart';
 import 'menu.dart';
 import 'surface.dart';
@@ -1362,13 +1363,16 @@ class BrutalCombobox<T extends Object> extends StatelessWidget {
           // with no onSubmitted Flutter does not restart its text input (a
           // browser's restarted input takes no typing).
           onEditingComplete: field.submit,
-          suffix: ExcludeSemantics(
-            child: Icon(
-              LucideIcons.chevronsUpDown,
-              size: 20,
-              color: enabled
-                  ? BrutalTheme.of(context).colors.ink
-                  : BrutalTheme.of(context).colors.disabled,
+          // The select's mark, at the select's place, so the two read as
+          // one kind of field.
+          suffix: SizedBox(
+            width: 20,
+            child: Center(
+              child: BrutalDropMark(
+                color: enabled
+                    ? BrutalTheme.of(context).colors.ink
+                    : BrutalTheme.of(context).colors.disabled,
+              ),
             ),
           ),
         ),

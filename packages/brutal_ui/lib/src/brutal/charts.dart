@@ -58,9 +58,10 @@ String _readOut(
   List<String> labels,
   List<BrutalSeries> series,
   RawWidgetsLocalizations numbers,
+  String Function(double value)? valueLabel,
 ) => [
   for (final s in series)
-    '${s.label}: ${[for (final (i, v) in s.values.indexed) '${i < labels.length ? labels[i] : i + 1} ${_number(numbers, v)}'].join(', ')}',
+    '${s.label}: ${[for (final (i, v) in s.values.indexed) '${i < labels.length ? labels[i] : i + 1} ${valueLabel?.call(v) ?? _number(numbers, v)}'].join(', ')}',
 ].join('; ');
 
 /// The chart and its legend under it.
@@ -153,7 +154,8 @@ abstract class _AxesPainter extends CustomPainter {
     required this.words,
     required this.numbers,
     required this.textScaler,
-  });
+    this.valueLabel,
+  }) : super(repaint: PaintingBinding.instance.systemFonts);
 
   final BrutalColors colors;
   final TextStyle text;
@@ -174,6 +176,9 @@ abstract class _AxesPainter extends CustomPainter {
   /// The reader's numbers, for the ticks' labels.
   final RawWidgetsLocalizations numbers;
 
+  /// The value axis's words for a value, in place of the reader's number.
+  final String Function(double value)? valueLabel;
+
   // The value axis: from 0 to a whole tick over the largest value, about
   // four steps of 1, 2 or 5 × 10ⁿ (ui_core's nice scale), mapped 0 to 1;
   // 0 to 1 when nothing is above 0.
@@ -191,6 +196,10 @@ abstract class _AxesPainter extends CustomPainter {
 
   /// The value axis's top.
   double get top => scale.max;
+
+  // Whether no value is above 0.
+  bool get _empty =>
+      series.expand((s) => s.values).fold<double>(0, math.max) <= 0;
 
   /// Right to left: the chart mirrored, as the text reads (the categories
   /// and time from the right, the value axis and its numbers on the right).
@@ -223,9 +232,13 @@ abstract class _AxesPainter extends CustomPainter {
   /// right (draw it through [flip]).
   Rect paintAxes(Canvas canvas, Size size) {
     _width = size.width;
-    final scaled = scale.ticks(numbers, count: 4);
+    // Nothing above 0: the axis counts 0 and 1, whole, not tenths of a
+    // scale no value reaches.
+    final scaled = scale.ticks(numbers, count: _empty ? 1 : 4);
     final ticks = [for (final t in scaled) t.value];
-    final tickLabels = [for (final t in scaled) _label(t.label)];
+    final tickLabels = [
+      for (final t in scaled) _label(valueLabel?.call(t.value) ?? t.label),
+    ];
     final gutter = tickLabels.map((p) => p.width).fold<double>(0, math.max) + 8;
     final zero = _label('0');
     final xHeight = labels.isEmpty ? 0.0 : zero.height + 8;
@@ -313,6 +326,7 @@ abstract class _AxesPainter extends CustomPainter {
       old.numbers != numbers ||
       old.direction != direction ||
       old.textScaler != textScaler ||
+      old.valueLabel != valueLabel ||
       old.text != text;
 }
 
@@ -328,6 +342,7 @@ class _LinePainter extends _AxesPainter {
     required super.words,
     required super.numbers,
     required super.textScaler,
+    super.valueLabel,
     required this.area,
   });
 
@@ -403,6 +418,7 @@ class _BarPainter extends _AxesPainter {
     required super.words,
     required super.numbers,
     required super.textScaler,
+    super.valueLabel,
   });
 
   @override
@@ -443,6 +459,7 @@ abstract class _AxesChart extends StatelessWidget {
     required this.series,
     required this.semanticLabel,
     required this.height,
+    this.valueLabel,
     this.style,
   });
 
@@ -450,6 +467,11 @@ abstract class _AxesChart extends StatelessWidget {
   final List<BrutalSeries> series;
   final String semanticLabel;
   final double height;
+
+  /// The words for a value on the value axis and in what a screen reader
+  /// hears, with its unit (`(v) => '${v.round()} h'`); null: the reader's
+  /// number, whole or to one decimal.
+  final String Function(double value)? valueLabel;
 
   /// Its style, over [BrutalThemeData.chartStyle].
   final BrutalStyle? style;
@@ -469,7 +491,12 @@ abstract class _AxesChart extends StatelessWidget {
     return _Framed(
       layered: layered,
       semanticLabel: semanticLabel,
-      readOut: _readOut(labels, series, RawWidgetsLocalizations.of(context)),
+      readOut: _readOut(
+        labels,
+        series,
+        RawWidgetsLocalizations.of(context),
+        valueLabel,
+      ),
       legend: [
         for (final (i, s) in series.indexed)
           (s.label, _colorOf(theme.colors, series, i)),
@@ -512,6 +539,7 @@ class BrutalLineChart extends _AxesChart {
     required super.series,
     required super.semanticLabel,
     super.height = 220,
+    super.valueLabel,
     super.style,
   });
 
@@ -533,6 +561,7 @@ class BrutalLineChart extends _AxesChart {
     words: layered.foreground ?? theme.colors.inkMuted,
     numbers: numbers,
     textScaler: textScaler,
+    valueLabel: valueLabel,
     area: false,
   );
 }
@@ -550,6 +579,7 @@ class BrutalAreaChart extends _AxesChart {
     required super.series,
     required super.semanticLabel,
     super.height = 220,
+    super.valueLabel,
     super.style,
   });
 
@@ -571,6 +601,7 @@ class BrutalAreaChart extends _AxesChart {
     words: layered.foreground ?? theme.colors.inkMuted,
     numbers: numbers,
     textScaler: textScaler,
+    valueLabel: valueLabel,
     area: true,
   );
 }
@@ -588,6 +619,7 @@ class BrutalBarChart extends _AxesChart {
     required super.series,
     required super.semanticLabel,
     super.height = 220,
+    super.valueLabel,
     super.style,
   });
 
@@ -609,6 +641,7 @@ class BrutalBarChart extends _AxesChart {
     words: layered.foreground ?? theme.colors.inkMuted,
     numbers: numbers,
     textScaler: textScaler,
+    valueLabel: valueLabel,
   );
 }
 

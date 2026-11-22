@@ -410,7 +410,17 @@ class BrutalListTile extends StatelessWidget {
                   ],
                   if (trailing != null) ...[
                     const SizedBox(width: BrutalSpacing.medium),
-                    trailing!,
+                    // On the ink of a chosen or pressed row, the control at
+                    // its end stands in the look turned over (paper for ink),
+                    // so a plain glyph button, a value or a checkbox reads
+                    // there as it does on the page, and the row's fill runs
+                    // under it to the row's end.
+                    AnimatedBrutalTheme(
+                      data: lit && !disabled && layered.fill == null
+                          ? _turnedOver(theme)
+                          : theme,
+                      child: trailing!,
+                    ),
                   ],
                   if (chevron) ...[
                     const SizedBox(width: BrutalSpacing.small),
@@ -460,6 +470,39 @@ class BrutalListTile extends StatelessWidget {
       ..add(FlagProperty('selected', value: selected, ifTrue: 'selected'))
       ..add(FlagProperty('enabled', value: enabled, ifFalse: 'disabled'));
   }
+}
+
+/// [theme] turned over for a control on an inked row: its ink is the
+/// page's paper, its paper and faces the ink, its supporting words a step
+/// toward the ink, and its type recoloured to match.
+BrutalThemeData _turnedOver(BrutalThemeData theme) {
+  final c = theme.colors;
+  final over = c.copyWith(
+    brightness: c.brightness == Brightness.light
+        ? Brightness.dark
+        : Brightness.light,
+    paper: c.ink,
+    surface: c.ink,
+    ink: c.paper,
+    inkMuted: Color.lerp(c.paper, c.ink, 0.3),
+    disabled: Color.lerp(c.paper, c.ink, 0.45),
+  );
+  TextStyle recolour(TextStyle style) => style.copyWith(
+    color: style.color == c.inkMuted ? over.inkMuted : over.ink,
+  );
+  final t = theme.textTheme;
+  return theme.copyWith(
+    colors: over,
+    textTheme: t.copyWith(
+      display: recolour(t.display),
+      headline: recolour(t.headline),
+      title: recolour(t.title),
+      body: recolour(t.body),
+      label: recolour(t.label),
+      secondary: recolour(t.secondary),
+      caption: recolour(t.caption),
+    ),
+  );
 }
 
 /// A plain arrow pointing to the end side: the row opens something. Drawn

@@ -1,3 +1,18 @@
+## 0.3.1
+
+- Needs ui_core 0.4.1.
+- `BrutalDatePicker` and `BrutalDateRangePicker` open their calendar where the whole month fits: below while below holds it, else above. Before, a field low on a phone opened it below in the room left, the month cut off at its second week.
+- `BrutalScaffold`'s body keeps its children's semantics nodes apart, so a navigator in it (a router's shell) keeps its page's node when a list opens over the page. On the web a combobox on such a page lost the focus its first tap gave it, and took a second tap.
+- `BrutalCombobox` ends in `BrutalSelect`'s mark, the solid triangle, at the same place, instead of two chevrons, so the two read as one kind of field.
+- In a combobox's list, a menu, a menu bar, a command palette, a tag input's list and a split button's menu, the row the keys are on is marked in the row's own ink, rather than in the signal orange that marks a screen's main action.
+- In those lists and a select's, the row the keys or the pointer are on is ruled round inside its edges. Before, a bar along its foot alone read, on a list's last row, as the panel's bottom rule doubled.
+- A control in the `trailing` of a selected or pressed `BrutalListTile` (a ⋯ button, say) turns over with the row: paper on the inked row. Before, it drew in ink on ink.
+- A `BrutalSegmentedButton` that hugs its words stands on whole pixels, so its rules are crisp. Before, a chosen cell could show a grey seam inside its rules, and the end rule was soft.
+- `BrutalSegmentedButton`, `BrutalStepper`, `BrutalTabBar`, `BrutalStepProgress` and `BrutalTable` measure their words again when a face arrives after the first frame (on the web, Space Grotesk, or the face for Arabic). Before, they kept widths measured in the stand-in face, so a segment or a tab could clip its words or leave a gap. A chart's axes are redrawn then too.
+- `BrutalLineChart`, `BrutalAreaChart` and `BrutalBarChart` take a `valueLabel`: the words for a value with its unit (`(v) => '${v.round()} h'`), on the value axis and in what a screen reader hears.
+- A chart whose values are all 0 counts its axis 0 and 1, rather than 0.0, 0.2 … 1.0.
+- When a `BrutalDialog`'s actions stack (at large text, or where one's words don't fit its cell), the main action, the last, stands on top and the others under it, as Material's dialog's actions overflow. Before, the main action stood at the foot.
+
 ## 0.3.0
 
 - **Breaking:** stands on ui_core 0.4.0. Flutter 3.47 or later, as before.
