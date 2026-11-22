@@ -249,7 +249,7 @@ void main() {
 
   for (final brightness in Brightness.values) {
     testWidgets(
-      'the enlarged deletion warning opens at the start and its disabled action is legible on ${brightness.name}',
+      'the enlarged deletion warning opens at the start and its disabled action is an ordinary key, still read, on ${brightness.name}',
       (tester) async {
         await _open(
           tester,
@@ -285,12 +285,13 @@ void main() {
                     .painter
                 as TermBracketPainter;
         final theme = TermTheme.of(tester.element(action));
+        // An ordinary key on the dialog's ground, its words in the ink of
+        // every key that can't be pressed: fainter than a live key's, and
+        // still read.
+        expect(painter.fill, isNull);
         expect(
-          termContrast(
-            tex.style!.color!,
-            Color.alphaBlend(painter.fill!, theme.surface),
-          ),
-          greaterThanOrEqualTo(4.5),
+          termContrast(tex.style!.color!, theme.surface),
+          greaterThanOrEqualTo(3),
         );
       },
     );

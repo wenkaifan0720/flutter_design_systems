@@ -11,6 +11,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/rendering.dart';
 
 import '../grid.dart';
+import '../internal/frame_edge.dart';
 
 /// A gap cut into a frame's top or bottom line, where its title or its
 /// note stands: from `start` to `end`, in pixels from the frame's left.
@@ -38,6 +39,7 @@ class TermFramePainter extends CustomPainter {
     this.bottomGapsEndInset,
     this.bottomEndGaps = const [],
     this.fill,
+    this.wordGround,
     this.shadow,
     this.textDirection = TextDirection.ltr,
   });
@@ -78,8 +80,16 @@ class TermFramePainter extends CustomPainter {
   /// end edge.
   final List<TermGap> bottomEndGaps;
 
-  /// The inside of the frame, filled before the line, or null.
+  /// The inside of the frame, out to its outer line, and the cells of the
+  /// words in its borders, filled before the line, or null.
   final Color? fill;
+
+  /// The ground beside the frame (the page's), under the words' cells past
+  /// the frame's outer line, or null: [fill] stands under the whole cell.
+  ///
+  /// With it, the words blank what is under them as a terminal's cells do,
+  /// and no tab of [fill] stands out past the line.
+  final Color? wordGround;
 
   /// A shade one cell right and half a line down, as a raised window casts
   /// in a text-mode program, or null.
@@ -95,33 +105,19 @@ class TermFramePainter extends CustomPainter {
       size.width - cw / 2,
       size.height - lh / 2,
     );
-    if (shadow != null) {
-      final s = Paint()..color = shadow!;
-      canvas
-        ..drawRect(
-          Rect.fromLTRB(
-            size.width,
-            cw * 0 + lh / 2,
-            size.width + cw,
-            size.height + lh / 2,
-          ),
-          s,
-        )
-        ..drawRect(
-          Rect.fromLTRB(cw, size.height, size.width, size.height + lh / 2),
-          s,
-        );
-    }
-    if (fill != null) {
-      canvas.drawRect(Offset.zero & size, Paint()..color = fill!);
-    }
-    final paint = Paint()
-      ..color = color
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = stroke
-      ..strokeCap = StrokeCap.butt
-      ..strokeJoin = StrokeJoin.miter;
     final half = termDoubleGap(grid, stroke) / 2 * doubled.clamp(0, 1);
+    // Each line of the pair on whole pixels, each way.
+    final dx = termFrameStep(mid.left, half, stroke);
+    final dy = termFrameStep(mid.top, half, stroke);
+    // The frame's outer edge: the fill and the shade stop at the line, so
+    // the frame never stands on a slab wider than itself, over the lines
+    // and words beside it.
+    final outer = Rect.fromLTRB(
+      mid.left - dx - stroke / 2,
+      mid.top - dy - stroke / 2,
+      mid.right + dx + stroke / 2,
+      mid.bottom + dy + stroke / 2,
+    );
     final w = size.width;
     List<TermGap> placed(List<TermGap> gaps) => [
       for (final g in gaps)
@@ -156,21 +152,70 @@ class TermFramePainter extends CustomPainter {
         else
           (start: w - g.end, end: w - g.start),
     ];
+    if (fill != null && wordGround != null) {
+      // Past the line, the words' cells stand on the ground beside the
+      // frame: they blank what is under them, with no tab of the pane's
+      // own ground standing out past its line.
+      final beside = Paint()..color = wordGround!;
+      for (final g in top) {
+        canvas.drawRect(Rect.fromLTRB(g.start, 0, g.end, outer.top), beside);
+      }
+      for (final g in bottom) {
+        canvas.drawRect(
+          Rect.fromLTRB(g.start, outer.bottom, g.end, size.height),
+          beside,
+        );
+      }
+    }
+    if (shadow != null) {
+      final s = Paint()..color = shadow!;
+      canvas
+        ..drawRect(
+          Rect.fromLTRB(
+            outer.right,
+            outer.top + lh / 2,
+            outer.right + cw,
+            outer.bottom + lh / 2,
+          ),
+          s,
+        )
+        ..drawRect(
+          Rect.fromLTRB(
+            outer.left + cw,
+            outer.bottom,
+            outer.right,
+            outer.bottom + lh / 2,
+          ),
+          s,
+        );
+    }
+    if (fill != null) {
+      canvas.drawRect(outer, Paint()..color = fill!);
+    }
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = stroke
+      ..strokeCap = StrokeCap.butt
+      ..strokeJoin = StrokeJoin.miter;
+    if (fill != null && wordGround == null) {
+      // The words cut into the line stand on the ground a whole cell tall,
+      // as a terminal's cells do, over whatever is under their half past
+      // the line.
+      final ground = Paint()..color = fill!;
+      for (final g in top) {
+        canvas.drawRect(Rect.fromLTRB(g.start, 0, g.end, lh), ground);
+      }
+      for (final g in bottom) {
+        canvas.drawRect(
+          Rect.fromLTRB(g.start, size.height - lh, g.end, size.height),
+          ground,
+        );
+      }
+    }
     if (half < 0.01) {
       _rect(canvas, mid, paint, top, bottom);
     } else {
-      // Each line of the pair on whole pixels: a cell's middle is a pixel's
-      // middle across and a pixel's edge down (9 by 24), so the same step
-      // out from it would leave the sides astride two pixels, at half
-      // strength beside a crisp top and bottom. The step is taken to the
-      // nearest that lands a line's edge on a pixel's, each way.
-      double whole(double centre) {
-        final off = (centre - stroke / 2) % 1;
-        return math.max(0, (half - off).roundToDouble() + off);
-      }
-
-      final dx = whole(mid.left);
-      final dy = whole(mid.top);
       _rect(
         canvas,
         Rect.fromLTRB(
@@ -249,6 +294,7 @@ class TermFramePainter extends CustomPainter {
       old.stroke != stroke ||
       old.doubled != doubled ||
       old.fill != fill ||
+      old.wordGround != wordGround ||
       old.shadow != shadow ||
       old.textDirection != textDirection ||
       !_sameGaps(old.topGaps, topGaps) ||

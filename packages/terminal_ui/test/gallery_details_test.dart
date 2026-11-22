@@ -190,15 +190,17 @@ void main() {
       );
     }
 
-    Rect? block(WidgetTester tester) {
+    // The first rectangle in the accent painted in [style]: the caret's
+    // block (filled) or, in the other half of its blink, its outline.
+    Rect? caretIn(WidgetTester tester, PaintingStyle style) {
       final paint = tester.renderObject<RenderBox>(_caretPaint);
       final accent = TermThemeData.dark().accent;
       Rect? found;
-      // The first rectangle in the accent is the caret's.
       final matcher = paints
         ..something((method, arguments) {
           if (method != #drawRect) return false;
-          if ((arguments[1] as Paint).color.toARGB32() != accent.toARGB32()) {
+          final ink = arguments[1] as Paint;
+          if (ink.color.toARGB32() != accent.toARGB32() || ink.style != style) {
             return false;
           }
           found = arguments[0] as Rect;
@@ -207,6 +209,9 @@ void main() {
       (matcher as Matcher).matches(paint, <dynamic, dynamic>{});
       return found;
     }
+
+    Rect? block(WidgetTester tester) => caretIn(tester, PaintingStyle.fill);
+    Rect? outline(WidgetTester tester) => caretIn(tester, PaintingStyle.stroke);
 
     for (final platform in [TargetPlatform.android, TargetPlatform.macOS]) {
       testWidgets('is a block on the cell after the words on '
@@ -256,14 +261,19 @@ void main() {
       debugDefaultTargetPlatformOverride = null;
     });
 
-    testWidgets('blinks, and holds still under Reduce Motion', (tester) async {
+    testWidgets('blinks between solid and hollow, and holds still under '
+        'Reduce Motion', (tester) async {
       await type(tester);
-      expect(block(tester), isNotNull);
+      final solid = block(tester)!;
       await tester.pump(const Duration(milliseconds: 500));
       expect(block(tester), isNull);
+      // Hollow, it still stands on the cell the next key lands on.
+      final hollow = outline(tester)!;
+      expect(hollow.center.dx, closeTo(solid.center.dx, 0.01));
+      expect(hollow.center.dy, closeTo(solid.center.dy, 0.01));
       await tester.pump(const Duration(milliseconds: 500));
       expect(block(tester), isNotNull);
-      // An edit shows it again from the start.
+      // An edit shows it solid again from the start.
       await tester.pump(const Duration(milliseconds: 500));
       expect(block(tester), isNull);
       await tester.enterText(find.byType(EditableText), 'm');

@@ -39,6 +39,8 @@ void copy() {}
 void pickFiles() {}
 void goHome() {}
 void openProject() {}
+void open() {}
+void menu() {}
 Future<void> reload() async {}
 var view = 'list';
 var onlyFailed = false;
@@ -284,6 +286,21 @@ final Map<String, DocExample> _examples = {
       TermButton.filled(label: 'discard', onPressed: () {}),
     ],
   ),
+  "dialog.dart:410": (context) {
+    return TermButton(
+      label: 'open',
+      onPressed: () async {
+        final sure = await showTermConfirmDialog(
+          context: context,
+          title: 'delete logs',
+          message: "run #1482's logs go for good",
+          confirmLabel: 'delete',
+          isDestructiveAction: true,
+        );
+        sure?.toString();
+      },
+    );
+  },
   "dialog.dart:417": (context) {
     return TermButton(
       label: 'open',
@@ -356,6 +373,16 @@ final Map<String, DocExample> _examples = {
     trailing: const Text('4m'),
     selected: true,
     onTap: () {},
+  ),
+  "list_tile.dart:88": (context) => TermListTile(
+    title: const Text('atlas-api'),
+    selected: true,
+    onTap: open,
+    action: TermIconButton(
+      glyph: '⋯',
+      semanticLabel: 'actions',
+      onPressed: menu,
+    ),
   ),
   "list_tile.dart:385": (context) =>
       const TermSectionHeader(title: 'recent runs', trailing: '12'),

@@ -544,10 +544,13 @@ class _DateFieldState extends State<_DateField> {
       onOpenChanged: (open) {
         if (open) widget.onOpen?.call();
       },
+      // The calendar wants its whole month before it picks a side: it
+      // opens above a field low on a phone rather than running off the
+      // screen's foot, and scrolls only when neither side holds the month.
       placement: RawPopoverPlacement(
         gap: 0,
         margin: grid.cellWidth,
-        preferredExtent: grid.lines(12),
+        preferredExtent: double.infinity,
       ),
       anchorBuilder: (context, anchor) => LayoutBuilder(
         builder: (context, constraints) {

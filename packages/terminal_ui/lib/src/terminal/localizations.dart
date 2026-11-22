@@ -118,8 +118,12 @@ abstract class TermLocalizations {
   /// type ("confirm").
   String get typedConfirmationFieldLabel;
 
-  /// The keys a `TermConfirmDialog` takes, shown under it
+  /// The keys a `TermConfirmDialog` took, shown under it
   /// ("y yes · n no · esc").
+  @Deprecated(
+    'TermConfirmDialog names its keys in its [y/N] and shows cancelKeyHint '
+    'under it. This is no longer shown.',
+  )
   String get confirmKeysHint;
 
   /// The key that cancels a dialog or a sheet, shown under it

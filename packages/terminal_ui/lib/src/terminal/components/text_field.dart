@@ -11,6 +11,7 @@ import 'package:flutter/rendering.dart' show RenderEditable;
 import 'package:flutter/services.dart';
 import 'package:ui_core/ui_core.dart';
 
+import '../primitives/control.dart';
 import '../primitives/field_frame.dart';
 import '../style.dart';
 import '../theme.dart';
@@ -23,7 +24,8 @@ import '../theme.dart';
 /// The frame doubles in the accent while the field has focus, and draws in
 /// the danger ink while it has an error. The caret is a block on the cell
 /// after the words (before them, right to left), behind the character it
-/// is on; under Reduce Motion it holds still.
+/// is on, blinking between solid and hollow so it always shows where the
+/// next key lands; under Reduce Motion it holds still.
 /// A note too long for the frame's line drops under the frame, wrapped.
 ///
 /// It takes Flutter's [TextField] arguments by their names; [controller]
@@ -252,8 +254,9 @@ class _TermTextFieldState extends State<TermTextField> {
       widget.controller ?? (_ownController ??= TextEditingController());
   final _input = GlobalKey();
 
-  // The caret's blink: shown for half a second, gone for half, and shown
-  // again from the start at every edit and move, as a terminal's is.
+  // The caret's blink: solid for half a second, hollow for half, and solid
+  // again from the start at every edit and move, as a terminal's is. Hollow,
+  // it still marks the cell the next key lands on.
   final _caretOn = ValueNotifier<bool>(true);
   Timer? _blink;
   FocusNode? _heardFocus;
@@ -421,6 +424,7 @@ class _TermTextFieldState extends State<TermTextField> {
           color: caret,
           width: grid.cellWidth,
           height: grid.fontSize * 1.25,
+          stroke: termStroke(theme, grid),
           rtl: rtl,
         ),
         child: KeyedSubtree(key: _input, child: control),
@@ -554,7 +558,8 @@ class _TermTextFieldState extends State<TermTextField> {
 
 // The caret: a block on the cell the field's caret is at (after the
 // words; before them, right to left), behind the words, while the field has
-// the focus, nothing is selected and the blink [on] shows it.
+// the focus and nothing is selected: solid while the blink [on] shows it,
+// else its outline in [stroke], as a terminal draws its cursor.
 class _Caret extends CustomPainter {
   _Caret({
     required this.field,
@@ -564,6 +569,7 @@ class _Caret extends CustomPainter {
     required this.color,
     required this.width,
     required this.height,
+    required this.stroke,
     required this.rtl,
   }) : super(repaint: Listenable.merge([focus, controller, on]));
 
@@ -574,6 +580,7 @@ class _Caret extends CustomPainter {
   final Color color;
   final double width;
   final double height;
+  final double stroke;
   final bool rtl;
 
   static RenderEditable? _editable(RenderObject? node) {
@@ -611,14 +618,25 @@ class _Caret extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    if (!focus.hasFocus || !on.value) return;
+    if (!focus.hasFocus) return;
     final rect = place(
       field.currentContext?.findRenderObject(),
       width: width,
       height: height,
       rtl: rtl,
     );
-    if (rect != null) canvas.drawRect(rect, Paint()..color = color);
+    if (rect == null) return;
+    if (on.value) {
+      canvas.drawRect(rect, Paint()..color = color);
+    } else {
+      canvas.drawRect(
+        rect.deflate(stroke / 2),
+        Paint()
+          ..color = color
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = stroke,
+      );
+    }
   }
 
   @override
@@ -630,6 +648,7 @@ class _Caret extends CustomPainter {
       old.field != field ||
       old.width != width ||
       old.height != height ||
+      old.stroke != stroke ||
       old.rtl != rtl;
 }
 

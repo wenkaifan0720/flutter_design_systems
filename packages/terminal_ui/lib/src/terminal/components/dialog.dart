@@ -158,6 +158,9 @@ Future<T?> _pushSurface<T>(
 
 /// The terminal's question as a dialog: [message], then `proceed? [y/N]`,
 /// answered with `y` or `n` (Return takes the capital: no) or the buttons.
+/// The no is the default, so nothing outshines it: it has the focus, and
+/// the yes is an ordinary key. The question states the keys once, and the
+/// line under it says what `esc` does.
 ///
 /// With [typedConfirmation], the yes waits until that exact text is typed
 /// in the field under the message: the guard before destroying something.
@@ -271,11 +274,7 @@ class _TermConfirmDialogState extends State<TermConfirmDialog> {
     // before its first line can be read.
     final focusField = typed != null && !widget.sheet;
     final yes = _ready ? widget.onConfirm : null;
-    final footer = !termKeysShown(context)
-        ? null
-        : typed == null
-        ? words.confirmKeysHint
-        : words.cancelKeyHint;
+    final footer = termKeysShown(context) ? words.cancelKeyHint : null;
     // What to type, and the field it goes in, stand with the buttons, out
     // of the message's scroll: however long the message runs (twice the
     // text on a phone, a long name), only the message scrolls, and the
@@ -346,20 +345,15 @@ class _TermConfirmDialogState extends State<TermConfirmDialog> {
               ),
             ],
           );
+    // The question's `[y/N]` names the keys; the buttons don't again.
     final actions = [
       TermButton(
         label: termWords(context, widget.cancelLabel, 'no', (w) => w.noLabel),
-        shortcut: typed == null
-            ? const SingleActivator(LogicalKeyboardKey.keyN)
-            : null,
         autofocus: !focusField,
         onPressed: widget.onCancel,
       ),
-      TermButton.filled(
+      TermButton(
         label: widget.confirmLabel,
-        shortcut: typed == null
-            ? const SingleActivator(LogicalKeyboardKey.keyY)
-            : null,
         isDestructiveAction: widget.isDestructiveAction,
         onPressed: yes,
       ),
@@ -412,6 +406,16 @@ class _ModalFixed extends InheritedWidget {
 /// for no and null when dismissed. See [TermConfirmDialog]. Under 600 wide
 /// it stands as a sheet at the foot of the screen, where a thumb reaches;
 /// [sheet] decides it instead when given.
+///
+/// ```dart
+/// final sure = await showTermConfirmDialog(
+///   context: context,
+///   title: 'delete logs',
+///   message: "run #1482's logs go for good",
+///   confirmLabel: 'delete',
+///   isDestructiveAction: true,
+/// );
+/// ```
 Future<bool?> showTermConfirmDialog({
   required BuildContext context,
   required String title,
@@ -659,13 +663,17 @@ class _ModalPaneState extends State<_ModalPane> {
                         cue
                       else
                         SizedBox(height: grid.lineHeight),
-                      Wrap(
-                        alignment: WrapAlignment.end,
+                      // One row at the end when they fit, else one to a
+                      // line, each at the end, as Material's AlertDialog
+                      // stacks them: never two on a line and one alone
+                      // under them. Each button already stands on a whole
+                      // tap target, so stacked buttons need no blank line
+                      // between them: at large text that line cut the body
+                      // short of a field's last line.
+                      OverflowBar(
+                        alignment: MainAxisAlignment.end,
                         spacing: grid.cellWidth,
-                        // Each button already stands on a whole tap target,
-                        // so buttons stacked on a narrow sheet need no blank
-                        // line between them: at large text that line cut
-                        // the body short of a field's last line.
+                        overflowAlignment: OverflowBarAlignment.end,
                         children: actions,
                       ),
                     ],

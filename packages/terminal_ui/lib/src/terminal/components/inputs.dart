@@ -12,6 +12,7 @@ import 'package:ui_core/ui_core.dart';
 
 import '../internal/words.dart';
 import '../grid.dart';
+import '../internal/frame_edge.dart';
 import '../internal/list_open.dart';
 import '../primitives/box.dart';
 import '../primitives/control.dart';
@@ -1106,19 +1107,34 @@ class _TagFrameState extends State<_TagFrame> {
             target: _focused ? 1 : 0,
             token: TermMotion.move,
             focus: true,
-            builder: (context, t, child) => CustomPaint(
-              painter: TermFramePainter(
-                grid: grid,
-                color:
-                    widget.edge ??
-                    Color.lerp(theme.rule, theme.accent, t.clamp(0, 1))!,
-                stroke: termStroke(theme, grid) * (1 + t.clamp(0.0, 1.0)),
-                fill: TermListOpen.of(context) ? theme.surface : null,
-                topGaps: [if (label != null) gap(label)],
-                bottomGaps: [if (inLine != null) gap(inLine)],
-                textDirection: Directionality.of(context),
-              ),
-              child: child,
+            builder: (context, t, child) => Stack(
+              children: [
+                // While the list is up, the field stands on its ground out
+                // to where the list's frame has its outer edge, so the two
+                // read as one block, edge on edge; its frame stays drawn on
+                // it.
+                if (TermListOpen.of(context))
+                  Positioned(
+                    left: termRaisedEdge(grid, termStroke(theme, grid)),
+                    right: termRaisedEdge(grid, termStroke(theme, grid)),
+                    top: lh / 2,
+                    bottom: lh / 2,
+                    child: ColoredBox(color: theme.surface),
+                  ),
+                CustomPaint(
+                  painter: TermFramePainter(
+                    grid: grid,
+                    color:
+                        widget.edge ??
+                        Color.lerp(theme.rule, theme.accent, t.clamp(0, 1))!,
+                    stroke: termStroke(theme, grid) * (1 + t.clamp(0.0, 1.0)),
+                    topGaps: [if (label != null) gap(label)],
+                    bottomGaps: [if (inLine != null) gap(inLine)],
+                    textDirection: Directionality.of(context),
+                  ),
+                  child: child,
+                ),
+              ],
             ),
             child: SizedBox(
               width: width,

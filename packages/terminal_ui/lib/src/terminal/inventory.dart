@@ -598,7 +598,11 @@ Widget _menuBar(BuildContext context) => const TermMenuBar(
         RawMenuEntry(label: 'rerun', shortcut: 'R', onPressed: _noop),
         RawMenuEntry(label: 'cancel', shortcut: '^C', onPressed: _noop),
         RawMenuEntry.divider(),
-        RawMenuEntry(label: 'delete logs', onPressed: _noop),
+        RawMenuEntry(
+          label: 'delete logs',
+          isDestructiveAction: true,
+          onPressed: _noop,
+        ),
       ],
     ),
     RawMenuEntry(
@@ -957,7 +961,11 @@ Widget _menu(BuildContext context) => Wrap(
       menuChildren: [
         RawMenuEntry(label: 'rerun', shortcut: 'r', onPressed: _noop),
         RawMenuEntry(label: 'copy link', shortcut: 'y', onPressed: _noop),
-        RawMenuEntry(label: 'delete logs', onPressed: _noop),
+        RawMenuEntry(
+          label: 'delete logs',
+          isDestructiveAction: true,
+          onPressed: _noop,
+        ),
       ],
       child: TermButton(label: 'run #1482', onPressed: _noop),
     ),

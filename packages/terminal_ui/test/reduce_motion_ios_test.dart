@@ -140,12 +140,13 @@ void main() {
     );
     await tester.tap(find.byType(TermTextField));
     await tester.pump();
-    // The field's own block (its painter, `_Caret`): whether it is gone
-    // half a second on, as a blinking caret is.
+    // The field's own block (its painter, `_Caret`): whether it has gone
+    // hollow half a second on, as a blinking caret does.
     final caret = find.byWidgetPredicate(
       (w) => w is CustomPaint && w.painter.runtimeType.toString() == '_Caret',
     );
-    final block = paints..rect(color: TermThemeData.dark().accent);
+    final block = paints
+      ..rect(color: TermThemeData.dark().accent, style: PaintingStyle.fill);
     Future<bool> blinks() async {
       await tester.pump();
       expect(tester.renderObject(caret), block);

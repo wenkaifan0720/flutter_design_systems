@@ -308,7 +308,7 @@ class _TermPaneState extends State<TermPane> {
       ],
     );
 
-    return Focus(
+    final pane = Focus(
       canRequestFocus: false,
       skipTraversal: true,
       includeSemantics: false,
@@ -339,6 +339,8 @@ class _TermPaneState extends State<TermPane> {
               bottomGapsEndInset: wordsAt + (moved ? trailingRoom : 0) - half,
               bottomEndGaps: [if (moved) gapFor(trailing!)],
               fill: fill,
+              // Past the line, a border word's cell is the page's.
+              wordGround: fill == null ? null : theme.background,
               textDirection: direction,
             );
             return CustomPaint(
@@ -356,6 +358,9 @@ class _TermPaneState extends State<TermPane> {
         ),
       ),
     );
+    // A raised pane (a list, a palette, a dialog) stands over the page: it
+    // repaints on its own, as its rows light, not with the page under it.
+    return widget.raised ? RepaintBoundary(child: pane) : pane;
   }
 }
 

@@ -533,6 +533,7 @@ Widget _menuRow(
   states: states,
   trailing: termKeysShown(context) ? entry.shortcut : null,
   checked: entry.checked,
+  danger: entry.isDestructiveAction,
 );
 
 // A rule across a menu, on a line of its own.

@@ -1,3 +1,27 @@
+## 0.3.1
+
+- Needs ui_core 0.4.1.
+- `TermMenuBar` and `TermContextMenu` draw an entry marked `isDestructiveAction` in the danger ink.
+- A raised pane (the command palette, a dialog, a sheet, an open list) stands on its ground out to its frame's outer
+  line, no longer on a wider slab over the lines and words beside it. Words in its border blank what is under them,
+  their cells past the line in the page's ground.
+- `TermFramePainter.fill` covers the frame's inside out to its outer line and the cells of its border words; with
+  `wordGround`, the words' cells past the line take that ground instead. `shadow` falls from the line.
+- An open select or combobox keeps its field's frame or brackets on the list's ground.
+- A focused text field's cursor blinks between a solid and a hollow block, so it always shows; under Reduce Motion it
+  holds solid.
+- `TermConfirmDialog` focuses its no as the default; its yes is an ordinary key, in the danger ink when it destroys.
+  The question names its keys once, in `[y/N]`.
+- Deprecates `TermLocalizations.confirmKeysHint`, which `TermConfirmDialog` no longer shows.
+- A dialog's or a sheet's keys stand in one row when they fit, else one to a line at its end, as Material's
+  `AlertDialog` stacks them.
+- Adds `TermListTile.action`, a control after the row's end; the chosen row's bar runs under it.
+- `TermLineChart`, `TermAreaChart` and `TermSparkline` read from the right in a right-to-left locale.
+- `TermDatePicker` and `TermDateRangePicker` open their calendar above a field low on a phone when the month doesn't
+  fit below, and scroll it when neither side holds it; it ran off the screen's foot.
+- `TermSelect`'s list and the menus open above their field or button when the room under it is short of what they
+  want; they kept to a sliver under it, as the look's own height cap hid their full height from the side choice.
+
 ## 0.3.0
 
 - Stands on ui_core 0.4.0, on Flutter 3.47 or later as before. The ui_core

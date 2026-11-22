@@ -23,6 +23,10 @@ class TermReveal extends StatelessWidget {
   final bool above;
 
   /// The most it may take of the screen's height.
+  ///
+  /// Leave it unset on a menu or popover's surface: the overlay keeps the
+  /// surface to the room on its side, and measures it in the larger room to
+  /// pick that side, which a cap here would hide.
   final double maxHeight;
 
   /// What it reveals.

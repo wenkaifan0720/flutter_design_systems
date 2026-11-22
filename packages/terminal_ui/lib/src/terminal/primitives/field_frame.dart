@@ -9,6 +9,7 @@ import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
 import '../grid.dart';
+import '../internal/frame_edge.dart';
 import '../internal/list_open.dart';
 import '../theme.dart';
 import 'box.dart';
@@ -116,17 +117,31 @@ class TermFieldFrame extends StatelessWidget {
           target: active ? 1 : 0,
           token: TermMotion.move,
           focus: true,
-          builder: (context, t, child) => CustomPaint(
-            painter: TermFramePainter(
-              grid: grid,
-              color: _edgeColor(theme, parts, edge, t),
-              stroke: stroke * (1 + t.clamp(0.0, 1.0)),
-              fill: raised ? theme.surface : null,
-              topGaps: [if (label != null) gap(label)],
-              bottomGaps: [if (noteFits) gap(note)],
-              textDirection: direction,
-            ),
-            child: child,
+          builder: (context, t, child) => Stack(
+            children: [
+              // While the list is up, the field stands on its ground out to
+              // where the list's frame has its outer edge, so the two read
+              // as one block, edge on edge; its frame stays drawn on it.
+              if (raised)
+                Positioned(
+                  left: termRaisedEdge(grid, stroke),
+                  right: termRaisedEdge(grid, stroke),
+                  top: lh / 2,
+                  bottom: lh / 2,
+                  child: ColoredBox(color: theme.surface),
+                ),
+              CustomPaint(
+                painter: TermFramePainter(
+                  grid: grid,
+                  color: _edgeColor(theme, parts, edge, t),
+                  stroke: stroke * (1 + t.clamp(0.0, 1.0)),
+                  topGaps: [if (label != null) gap(label)],
+                  bottomGaps: [if (noteFits) gap(note)],
+                  textDirection: direction,
+                ),
+                child: child,
+              ),
+            ],
           ),
           child: SizedBox(
             width: width,
@@ -311,27 +326,39 @@ class TermFieldLine extends StatelessWidget {
           );
         }
 
+        // While the list is up, the field stands on its ground out to where
+        // the list's frame (a raised pane's double line) has its outer edge,
+        // so the two read as one block, and its brackets stay drawn on it.
+        final groundInset = termRaisedEdge(grid, stroke);
         Widget brackets(bool active, Color? edge) => TermSpring(
           target: active ? 1 : 0,
           token: TermMotion.move,
           focus: true,
           builder: (context, t, child) => CustomPaint(
-            painter: TermBracketPainter(
+            foregroundPainter: TermBracketPainter(
               grid: grid,
               color: _edgeColor(theme, parts, edge, t),
               stroke: stroke * (1 + t.clamp(0.0, 1.0)),
             ),
             child: child,
           ),
-          child: ColoredBox(
-            color: raised ? theme.surface : const Color(0x00000000),
-            child: SizedBox(
-              width: boxWidth,
-              height: height,
-              child: Padding(
-                padding: EdgeInsetsDirectional.symmetric(horizontal: cw * 2),
-                child: child,
-              ),
+          child: SizedBox(
+            width: boxWidth,
+            height: height,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                if (raised)
+                  Positioned.fill(
+                    left: groundInset,
+                    right: groundInset,
+                    child: ColoredBox(color: theme.surface),
+                  ),
+                Padding(
+                  padding: EdgeInsetsDirectional.symmetric(horizontal: cw * 2),
+                  child: child,
+                ),
+              ],
             ),
           ),
         );

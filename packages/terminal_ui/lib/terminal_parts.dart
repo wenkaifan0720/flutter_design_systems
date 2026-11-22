@@ -16,6 +16,7 @@ export 'terminal_ui.dart';
 export 'terminal_host.dart';
 export 'src/terminal/internal/digits.dart';
 export 'src/terminal/internal/field_cursor.dart';
+export 'src/terminal/internal/frame_edge.dart';
 export 'src/terminal/internal/key_focus.dart';
 export 'src/terminal/internal/list_open.dart';
 export 'src/terminal/internal/menu_marks.dart';

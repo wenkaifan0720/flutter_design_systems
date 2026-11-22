@@ -357,47 +357,44 @@ class _TermSelectState<T> extends State<TermSelect<T>> {
             ),
           );
         },
-        child: ConstrainedBox(
-          constraints: BoxConstraints(maxHeight: info.maxSize.height),
-          child: TermPane(
-            raised: true,
-            focused: true,
-            // A cell inside the frame each side, as a menu's: the keys'
-            // block and the chosen bar stand as far from the frame's sides
-            // as from its top and bottom lines.
-            padding: const TermInset(),
-            // The keys: the focus on the chosen one (or the first that
-            // takes it) as the menu comes up, a letter to the next it starts.
-            // Opened by the pointer, the keys' block waits for a key: with
-            // nothing chosen, no row reads current until then.
-            child: TermTypeAhead(
-              initial: chosenAt >= 0 ? chosenAt : 0,
-              child: TermMenuMarks(
-                quietFirst: chosenAt < 0,
-                child: SingleChildScrollView(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      for (final item in widget.items)
-                        TermListTile(
-                          title: Text(item.label),
-                          subtitle: item.detail == null
-                              ? null
-                              : Text(item.detail!),
-                          selected: item.value == widget.value,
-                          enabled: item.enabled,
-                          option: true,
-                          style: theme.menuStyle,
-                          onTap: item.enabled
-                              ? () {
-                                  info.close();
-                                  widget.onChanged?.call(item.value);
-                                }
-                              : null,
-                        ),
-                    ],
-                  ),
+        child: TermPane(
+          raised: true,
+          focused: true,
+          // A cell inside the frame each side, as a menu's: the keys'
+          // block and the chosen bar stand as far from the frame's sides
+          // as from its top and bottom lines.
+          padding: const TermInset(),
+          // The keys: the focus on the chosen one (or the first that
+          // takes it) as the menu comes up, a letter to the next it starts.
+          // Opened by the pointer, the keys' block waits for a key: with
+          // nothing chosen, no row reads current until then.
+          child: TermTypeAhead(
+            initial: chosenAt >= 0 ? chosenAt : 0,
+            child: TermMenuMarks(
+              quietFirst: chosenAt < 0,
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    for (final item in widget.items)
+                      TermListTile(
+                        title: Text(item.label),
+                        subtitle: item.detail == null
+                            ? null
+                            : Text(item.detail!),
+                        selected: item.value == widget.value,
+                        enabled: item.enabled,
+                        option: true,
+                        style: theme.menuStyle,
+                        onTap: item.enabled
+                            ? () {
+                                info.close();
+                                widget.onChanged?.call(item.value);
+                              }
+                            : null,
+                      ),
+                  ],
                 ),
               ),
             ),

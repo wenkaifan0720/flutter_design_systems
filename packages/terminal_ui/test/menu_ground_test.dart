@@ -1,23 +1,24 @@
-// A select's open menu stands on its field's full width, on paper: on the
-// painted pixels of the screen, the menu's ground runs from the field's one
-// edge to the other and stops there, and its doubled frame sits inside that
-// ground, the same distance in from either edge. The menus are the settings
-// screen's environment select, the settings page's and the fields page's,
-// at a phone's width either way round and at a desk's.
+// Every list a field opens on slipway's screens and the gallery pages that
+// have one hangs from its field on paper, at a phone's width either way
+// round and at a desk's: on the painted pixels of the screen, its doubled
+// frame sits the same distance in from its either edge, and its ground stops
+// at the frame's outer line, so the list never stands on a slab wider than
+// itself over the lines and words beside it. The field it hangs from stands
+// on the same ground, out to the same edges. (By night ui_core's checkList
+// reads these lists in list_check_test.dart; see there for paper.)
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
-import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:terminal_ui/terminal_ui.dart';
 
-// The example's screens and pages are the ones under test.
+// The example's pages set the gallery's direction.
 // ignore_for_file: avoid_relative_lib_imports
-import '../example/lib/everyday_screens.dart';
-import '../example/lib/gallery_pages.dart';
 import '../example/lib/kit_gallery/kit.dart';
 import 'faces.dart';
+import 'field_lists.dart';
 
 /// Device pixels a point in the pictures read here.
 const _scale = 4.0;
@@ -54,135 +55,121 @@ String _hex(int rgba) => rgba.toRadixString(16).padLeft(8, '0');
 void main() {
   setUpAll(loadFaces);
 
-  final pages = {for (final p in galleryPages) p.id: p};
-  final screens = {for (final s in everydayScreens) s.id: s};
-  final menus =
-      <
-        ({
-          String id,
-          Widget Function(Brightness, TextDirection) app,
-          int opener,
-        })
-      >[
-        (id: 'everyday-settings', app: screens['settings']!.app, opener: 0),
-        for (final (id, opener) in const [('settings', 0), ('fields', 1)])
-          (
-            id: id,
-            app: (Brightness b, TextDirection d) {
-              kitShownDirection = d;
-              return pages[id]!.build(b);
-            },
-            opener: opener,
-          ),
-      ];
-
   const configs = [
     (390.0, TextDirection.ltr),
     (390.0, TextDirection.rtl),
     (1440.0, TextDirection.ltr),
   ];
 
-  for (final menu in menus) {
+  for (final t in fieldListPages) {
     for (final (width, dir) in configs) {
       final where = '${width.toInt()}${dir == TextDirection.rtl ? ' rtl' : ''}';
-      testWidgets("${menu.id} at $where: the open menu's ground spans its field", (
-        tester,
-      ) async {
-        tester.view.devicePixelRatio = 1;
-        tester.view.physicalSize = Size(width, width < 600 ? 844 : 900);
-        addTearDown(tester.view.reset);
-        addTearDown(() => kitShownDirection = TextDirection.ltr);
-        await tester.pumpWidget(menu.app(Brightness.light, dir));
-        Future<void> settle() async {
-          for (var i = 0; i < 16; i++) {
-            await tester.pump(const Duration(milliseconds: 50));
-          }
-        }
+      testWidgets(
+        "${t.id} at $where on paper: each open list's ground stops at its frame",
+        (tester) async {
+          tester.view.devicePixelRatio = 1;
+          tester.view.physicalSize = Size(width, width < 600 ? 844 : 900);
+          addTearDown(tester.view.reset);
+          addTearDown(() => kitShownDirection = TextDirection.ltr);
 
-        await settle();
-        final field = find
-            .byWidgetPredicate(
-              (w) =>
-                  w is Semantics &&
-                  w.properties.expanded == false &&
-                  w.properties.enabled != false,
-            )
-            .at(menu.opener);
-        if (field.hitTestable().evaluate().isEmpty) {
-          await tester.ensureVisible(field);
-          await settle();
-        }
-        final face = tester.getRect(field);
-        final before = find.byType(TermPane).evaluate().toSet();
-        await tester.tapAt(face.center);
-        await settle();
-        final opened = find
-            .byType(TermPane)
-            .evaluate()
-            .where((e) => !before.contains(e))
-            .toList();
-        expect(opened, hasLength(1), reason: 'one menu opens');
-        final pane = find.byElementPredicate(
-          (e) => identical(e, opened.single),
-        );
-        final list = tester.getRect(pane);
-        final theme = TermTheme.of(opened.single);
+          final problems = <String>[];
+          await openEachFieldList(tester, () => t.app(Brightness.light, dir), (
+            key,
+            field,
+            pane,
+          ) async {
+            final face = field.renderObject! as RenderBox;
+            final faceRect = face.localToGlobal(Offset.zero) & face.size;
+            final listBox = pane.renderObject! as RenderBox;
+            final list = listBox.localToGlobal(Offset.zero) & listBox.size;
+            final ground = _rgba(TermTheme.of(pane).surface);
+            void fault(String what) =>
+                problems.add('${t.id} $where $key: $what');
 
-        // As laid out: the menu's sides are the field's.
-        expect(list.left, face.left, reason: 'menu $list, field $face');
-        expect(list.right, face.right, reason: 'menu $list, field $face');
+            // The screen round the field and its list, a point of page past
+            // either side.
+            final crop = faceRect.expandToInclude(list).inflate(1);
+            final layer = tester.binding.renderViews.first.debugLayer!;
+            final image = (await tester.runAsync(
+              () => (layer as OffsetLayer).toImage(crop, pixelRatio: _scale),
+            ))!;
+            final rgba = (await tester.runAsync(
+              () => image.toByteData(format: ui.ImageByteFormat.rawRgba),
+            ))!;
+            final w = image.width;
+            image.dispose();
+            int px(double x) => ((x - crop.left) * _scale).round();
+            int py(double y) => ((y - crop.top) * _scale).round();
+            int at(int x, int y) => rgba.getUint32((y * w + x) * 4);
+            String runs(List<_Run> r) =>
+                [for (final x in r) '${_hex(x.rgba)} x ${x.length}'].join(', ');
 
-        // As drawn: the screen round the field and its menu, a point of
-        // page past either side.
-        final crop = face.expandToInclude(list).inflate(1);
-        final layer = tester.binding.renderViews.first.debugLayer!;
-        final image = (await tester.runAsync(
-          () => (layer as OffsetLayer).toImage(crop, pixelRatio: _scale),
-        ))!;
-        final rgba = (await tester.runAsync(
-          () => image.toByteData(format: ui.ImageByteFormat.rawRgba),
-        ))!;
-        final w = image.width;
-        image.dispose();
-        final ground = _rgba(theme.surface);
-        final start = ((face.left - crop.left) * _scale).round();
-        final end = ((face.right - crop.left) * _scale).round() - 1;
-        int at(int x, int y) => rgba.getUint32((y * w + x) * 4);
+            // No row of the list has its ground at the list's two edges: the
+            // page shows there, past the frame.
+            final start = px(list.left);
+            final end = px(list.right) - 1;
+            for (var y = py(list.top); y < py(list.bottom); y++) {
+              if (at(start, y) == ground || at(end, y) == ground) {
+                fault(
+                  'ground at an edge of the list, row ${y / _scale + crop.top}',
+                );
+                return;
+              }
+            }
 
-        // Every row of the menu is its ground at the field's two edges.
-        final top = ((list.top - crop.top) * _scale).round();
-        final bottom = ((list.bottom - crop.top) * _scale).round();
-        for (var y = top; y < bottom; y++) {
-          for (final x in [start, end]) {
-            expect(
-              _hex(at(x, y)),
-              _hex(ground),
-              reason:
-                  'row ${y / _scale + crop.top}, x ${x / _scale + crop.left}',
-            );
-          }
-        }
+            // Across its middle, from either edge in: the page, the frame's
+            // outer line, the ground between the two lines, the inner line,
+            // the same widths each side.
+            final y = ((list.center.dy - crop.top) * _scale).floor();
+            final fromStart = _runs(rgba, w, y, start, 1, 4);
+            final fromEnd = _runs(rgba, w, y, end, -1, 4);
+            final across =
+                'from the left ${runs(fromStart)}; from the right ${runs(fromEnd)}';
+            if (fromStart.length != 4 ||
+                fromStart.toString() != fromEnd.toString()) {
+              fault('its frame is not the same each side: $across');
+              return;
+            }
+            final [page, outer, between, inner] = fromStart;
+            if (page.rgba == ground ||
+                outer.rgba == ground ||
+                outer.rgba == page.rgba ||
+                between.rgba != ground ||
+                inner.rgba != outer.rgba) {
+              fault('not page, line, ground, line: $across');
+              return;
+            }
 
-        // Across its middle, the ground stops at the field's edges, and
-        // from either edge in: the ground, the frame's outer line, the
-        // ground between the two lines, the inner line, the same widths
-        // each side.
-        final y = ((list.center.dy - crop.top) * _scale).floor();
-        expect(_hex(at(start - 1, y)), isNot(_hex(ground)));
-        expect(_hex(at(end + 1, y)), isNot(_hex(ground)));
-        final fromStart = _runs(rgba, w, y, start, 1, 4);
-        final fromEnd = _runs(rgba, w, y, end, -1, 4);
-        final reason =
-            'from the left ${[for (final r in fromStart) '${_hex(r.rgba)} x ${r.length}']}, '
-            'from the right ${[for (final r in fromEnd) '${_hex(r.rgba)} x ${r.length}']}';
-        expect(fromStart, fromEnd, reason: reason);
-        expect(fromStart, hasLength(4), reason: reason);
-        final [outerGap, outer, innerGap, inner] = fromStart;
-        expect(outerGap.rgba, ground, reason: reason);
-        expect(innerGap.rgba, ground, reason: reason);
-        expect(outer.rgba, isNot(ground), reason: reason);
-        expect(inner.rgba, outer.rgba, reason: reason);
-      });
+            // A field as wide as its list stands on the same ground, out to
+            // the same edges: across its middle, the same page from either
+            // edge, then its ground.
+            if ((faceRect.left - list.left).abs() < 0.5 &&
+                (faceRect.right - list.right).abs() < 0.5) {
+              final fy = ((faceRect.center.dy - crop.top) * _scale).floor();
+              final fieldStart = _runs(rgba, w, fy, start, 1, 2);
+              final fieldEnd = _runs(rgba, w, fy, end, -1, 2);
+              for (final side in [fieldStart, fieldEnd]) {
+                if (side.length < 2 ||
+                    side[0].rgba != page.rgba ||
+                    side[0].length != page.length ||
+                    side[1].rgba != ground) {
+                  fault(
+                    'the field does not stand on the list\'s ground: from '
+                    'the left ${runs(fieldStart)}; from the right '
+                    '${runs(fieldEnd)}; the list $across',
+                  );
+                  return;
+                }
+              }
+            }
+          });
+
+          expect(problems, isEmpty, reason: problems.join('\n'));
+        },
+        // The check reads drawn pixels, which depend on the rasterizer as a
+        // golden does.
+        tags: const ['goldens'],
+      );
     }
   }
 }

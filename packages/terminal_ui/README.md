@@ -6,6 +6,7 @@ selection and keys beside every action.
 ![slipway, the example deploy console: home at a desk by night beside a new deploy on a phone on paper](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/terminal_ui/screenshots/hero.png)
 
 **[Live gallery](https://wenkaifan0720.github.io/flutter_design_systems/terminal/)** ·
+[Docs](https://wenkaifan0720.github.io/flutter_design_systems/docs/looks/terminal/) ·
 [API reference](https://pub.dev/documentation/terminal_ui/latest/) ·
 [All the looks](https://wenkaifan0720.github.io/flutter_design_systems/)
 
@@ -50,6 +51,32 @@ class Deploy extends StatelessWidget {
     child: TermButton.filled(label: 'deploy', onPressed: () {}),
   );
 }
+```
+
+### CupertinoApp and WidgetsApp
+
+`TermTheme` goes in the builder of any app widget. With `CupertinoApp`
+from `cupertino_ui`:
+
+```dart
+CupertinoApp(
+  builder: (context, child) =>
+      TermTheme(data: TermThemeData.dark(), child: child!),
+  home: const Deploy(),
+)
+```
+
+With Flutter's `WidgetsApp`, give it Terminal's page route:
+
+```dart
+WidgetsApp(
+  color: const Color(0xFF000000),
+  builder: (context, child) =>
+      TermTheme(data: TermThemeData.dark(), child: child!),
+  pageRouteBuilder: <T>(settings, builder) =>
+      TermPageRoute<T>(settings: settings, builder: builder),
+  home: const Deploy(),
+)
 ```
 
 ### Page motion
@@ -252,10 +279,19 @@ English defaults, they follow the locale too. For another language, extend
 `DefaultTermLocalizations` and add a delegate for it to
 `localizationsDelegates`.
 
+In a right-to-left locale the layout mirrors: panes, keys, menus and
+charts read from the right, and Hebrew draws in Liberation Mono on the
+same grid.
+
 Figures follow the locale as well, through `DesignLocalizations`: dates,
 times, the number field and the charts (a bar's value, a chart's scale and
 readout, a sparkline's reading) write the reader's digits and separators,
 Arabic-Indic digits in Arabic and `2,5` in German.
+
+## Requirements
+
+Flutter 3.47.0 or later. Terminal runs on Android, iOS, the web, macOS,
+Windows and Linux.
 
 ## Fonts
 

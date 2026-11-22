@@ -110,6 +110,7 @@ class TermSparkline extends StatelessWidget {
           max: r.max,
           color: own.foreground ?? theme.dim,
           last: theme.accent,
+          rtl: Directionality.of(context) == TextDirection.rtl,
         ),
       ),
     );
@@ -125,6 +126,7 @@ class _SparkPainter extends CustomPainter {
     required this.max,
     required this.color,
     required this.last,
+    required this.rtl,
   });
 
   final TermGrid grid;
@@ -134,6 +136,9 @@ class _SparkPainter extends CustomPainter {
   final double max;
   final Color color;
   final Color last;
+
+  // Whether the trend runs from the right, the last value at the left.
+  final bool rtl;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -146,8 +151,9 @@ class _SparkPainter extends CustomPainter {
       final v = (_at(values, t) - min) / (max - min);
       final eighths = math.max(1, (v * 8).round());
       final h = band * eighths / 8;
+      final x = (rtl ? cells - 1 - i : i) * cw;
       canvas.drawRect(
-        Rect.fromLTWH(i * cw + cw * 0.08, bottom - h, cw * 0.84, h),
+        Rect.fromLTWH(x + cw * 0.08, bottom - h, cw * 0.84, h),
         Paint()..color = i == cells - 1 ? last : color,
       );
     }
@@ -158,6 +164,7 @@ class _SparkPainter extends CustomPainter {
       !listEquals(old.values, values) ||
       old.cells != cells ||
       old.color != color ||
+      old.rtl != rtl ||
       old.grid != grid;
 }
 
@@ -391,6 +398,9 @@ class TermLineChart extends StatelessWidget {
     int cells(double v) => grid.colsIn(grid.widthOf(_num(l, v)));
     final axisCols = math.max(cells(r0.max), cells(r0.min)) + 1;
     final axisWidth = grid.cols(axisCols);
+    // The chart reads in the page's direction: right to left, its points
+    // run from the right and its scale stands at the right.
+    final rtl = Directionality.of(context) == TextDirection.rtl;
     final plot = SizedBox(
       height: grid.lines(lines),
       child: LayoutBuilder(
@@ -398,7 +408,7 @@ class TermLineChart extends StatelessWidget {
           final cols = grid.colsIn(c.maxWidth - axisWidth);
           final plotWidth = grid.cols(cols);
           return Align(
-            alignment: Alignment.centerLeft,
+            alignment: AlignmentDirectional.centerStart,
             child: SizedBox(
               width: axisWidth + plotWidth,
               child: DesignChart(
@@ -420,9 +430,9 @@ class TermLineChart extends StatelessWidget {
                 formatY: (y) => _num(l, y),
                 // ui_core's x runs between the first and last dot columns'
                 // middles, a quarter cell in from the plot's sides.
-                padding: EdgeInsets.only(
-                  left: axisWidth + cw / 4,
-                  right: cw / 4,
+                padding: EdgeInsetsDirectional.only(
+                  start: axisWidth + cw / 4,
+                  end: cw / 4,
                 ),
                 builder: (context, chart) {
                   final drawn = [
@@ -440,7 +450,8 @@ class TermLineChart extends StatelessWidget {
                   int? cell;
                   String? readout;
                   if (active != null) {
-                    final at = chart.positionOf(active).dx - axisWidth;
+                    final at =
+                        chart.positionOf(active).dx - (rtl ? 0 : axisWidth);
                     cell = (at / cw).floor().clamp(0, math.max(0, cols - 1));
                     final v = drawn[active.series][active.index];
                     readout =
@@ -468,11 +479,15 @@ class TermLineChart extends StatelessWidget {
                                     MainAxisAlignment.spaceBetween,
                                 children: [
                                   Padding(
-                                    padding: EdgeInsets.only(right: cw),
+                                    padding: EdgeInsetsDirectional.only(
+                                      end: cw,
+                                    ),
                                     child: Text(_num(l, r.max), style: scale),
                                   ),
                                   Padding(
-                                    padding: EdgeInsets.only(right: cw),
+                                    padding: EdgeInsetsDirectional.only(
+                                      end: cw,
+                                    ),
                                     child: Text(_num(l, r.min), style: scale),
                                   ),
                                 ],
@@ -485,8 +500,8 @@ class TermLineChart extends StatelessWidget {
                         width: plotWidth,
                         child: DecoratedBox(
                           decoration: BoxDecoration(
-                            border: Border(
-                              left: BorderSide(color: rule, width: stroke),
+                            border: BorderDirectional(
+                              start: BorderSide(color: rule, width: stroke),
                               bottom: BorderSide(color: rule, width: stroke),
                             ),
                           ),
@@ -512,6 +527,7 @@ class TermLineChart extends StatelessWidget {
                                   min: r.min,
                                   max: r.max,
                                   fill: fill,
+                                  rtl: rtl,
                                 ),
                               ),
                               // Its value, on the top line, beside the
@@ -550,59 +566,53 @@ class TermLineChart extends StatelessWidget {
         },
       ),
     );
-    return Directionality(
-      // A time axis runs left to right in any app, as a terminal's does.
-      textDirection: TextDirection.ltr,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          plot,
-          ExcludeSemantics(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                if (xLabels != null)
-                  Padding(
-                    padding: EdgeInsets.only(left: axisWidth),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(xLabels!.$1, style: theme.dimStyle),
-                        Text(xLabels!.$2, style: theme.dimStyle),
-                      ],
-                    ),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        plot,
+        ExcludeSemantics(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              if (xLabels != null)
+                Padding(
+                  padding: EdgeInsetsDirectional.only(start: axisWidth),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(xLabels!.$1, style: theme.dimStyle),
+                      Text(xLabels!.$2, style: theme.dimStyle),
+                    ],
                   ),
-                if (series.length > 1 ||
-                    series.isNotEmpty && semanticLabel == null)
-                  Padding(
-                    padding: EdgeInsets.only(left: axisWidth),
-                    child: Wrap(
-                      spacing: grid.cols(2),
-                      children: [
-                        for (final (i, s) in series.indexed)
-                          Text.rich(
-                            TextSpan(
-                              children: [
-                                TextSpan(
-                                  text: '● ',
-                                  style: theme.textStyle.copyWith(
-                                    color: inks[i],
-                                  ),
-                                ),
-                                TextSpan(text: s.label, style: theme.dimStyle),
-                              ],
-                            ),
+                ),
+              if (series.length > 1 ||
+                  series.isNotEmpty && semanticLabel == null)
+                Padding(
+                  padding: EdgeInsetsDirectional.only(start: axisWidth),
+                  child: Wrap(
+                    spacing: grid.cols(2),
+                    children: [
+                      for (final (i, s) in series.indexed)
+                        Text.rich(
+                          TextSpan(
+                            children: [
+                              TextSpan(
+                                text: '● ',
+                                style: theme.textStyle.copyWith(color: inks[i]),
+                              ),
+                              TextSpan(text: s.label, style: theme.dimStyle),
+                            ],
                           ),
-                      ],
-                    ),
+                        ),
+                    ],
                   ),
-              ],
-            ),
+                ),
+            ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
@@ -669,6 +679,7 @@ class _PlotPainter extends CustomPainter {
     required this.min,
     required this.max,
     required this.fill,
+    required this.rtl,
   });
 
   final TermGrid grid;
@@ -678,6 +689,9 @@ class _PlotPainter extends CustomPainter {
   final double max;
   final bool fill;
 
+  // Whether the points run from the right.
+  final bool rtl;
+
   @override
   void paint(Canvas canvas, Size size) {
     final cw = grid.cellWidth;
@@ -686,7 +700,8 @@ class _PlotPainter extends CustomPainter {
     final down = (size.height / lh).round() * 4;
     if (across < 2 || down < 2) return;
     final r = math.max(1.0, cw * 0.11);
-    Offset dot(int x, int y) => Offset((x + 0.5) * cw / 2, (y + 0.5) * lh / 4);
+    Offset dot(int x, int y) =>
+        Offset(((rtl ? across - 1 - x : x) + 0.5) * cw / 2, (y + 0.5) * lh / 4);
     for (final (k, values) in series.indexed) {
       if (values.isEmpty) continue;
       final line = Paint()..color = inks[k];
@@ -716,6 +731,7 @@ class _PlotPainter extends CustomPainter {
       old.min != min ||
       old.max != max ||
       old.fill != fill ||
+      old.rtl != rtl ||
       !listEquals(old.inks, inks) ||
       old.series.length != series.length ||
       [

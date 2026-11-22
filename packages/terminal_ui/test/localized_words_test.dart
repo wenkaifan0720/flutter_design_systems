@@ -81,7 +81,6 @@ const _words = <String, Map<String, String>>{
     'proceed': 'proceed?',
     'proceed said': 'proceed? yes or no, no by default',
     'typed': 'type atlas-api to confirm',
-    'keys': 'y yes · n no · esc',
     'cancel': 'esc cancel',
     'sparkline': 'from 3 to 9, least 3, most 9',
     'no values': 'no values',
@@ -116,7 +115,6 @@ const _words = <String, Map<String, String>>{
     'proceed': 'متابعة؟',
     'proceed said': 'متابعة؟ نعم أو لا، لا افتراضيًا',
     'typed': 'اكتب atlas-api للتأكيد',
-    'keys': 'y نعم · n لا · esc',
     'cancel': 'esc إلغاء',
     'sparkline': 'من ٣ إلى ٩، الأدنى ٣، الأعلى ٩',
     'no values': 'لا قيم',
@@ -151,7 +149,6 @@ const _words = <String, Map<String, String>>{
     'proceed': 'fortfahren?',
     'proceed said': 'fortfahren? ja oder nein, standardmäßig nein',
     'typed': 'atlas-api eingeben, um zu bestätigen',
-    'keys': 'y ja · n nein · esc',
     'cancel': 'esc abbrechen',
     'sparkline': 'von 3 bis 9, Minimum 3, Maximum 9',
     'no values': 'keine Werte',
@@ -268,8 +265,8 @@ List<_Case> _cases() {
         onConfirm: () {},
         onCancel: () {},
       ),
-      said: ['proceed said', 'keys', 'no'],
-      shows: ['proceed', 'keys', 'no'],
+      said: ['proceed said', 'cancel', 'no'],
+      shows: ['proceed', 'cancel', 'no'],
     ),
     c(
       'a typed confirmation',
@@ -525,7 +522,7 @@ void main() {
     });
   }
 
-  testWidgets('an Arabic line of keys reads right to left: each key to the '
+  testWidgets('an Arabic line of keys reads right to left: the key to the '
       'right of its word', (tester) async {
     await tester.pumpWidget(
       _host(
@@ -541,7 +538,7 @@ void main() {
     );
     await tester.pumpAndSettle();
     final keys = find.byWidgetPredicate(
-      (w) => w is RichText && w.text.toPlainText().contains('نعم ·'),
+      (w) => w is RichText && w.text.toPlainText().contains('esc إلغاء'),
     );
     expect(keys, findsOneWidget);
     final line = tester.renderObject<RenderParagraph>(keys);
@@ -555,8 +552,7 @@ void main() {
         )
         .first
         .left;
-    expect(leftOf('y'), greaterThan(leftOf('نعم')));
-    expect(leftOf('نعم'), greaterThan(leftOf('esc')));
+    expect(leftOf('esc'), greaterThan(leftOf('إلغاء')));
   }, variant: TargetPlatformVariant.only(TargetPlatform.macOS));
 
   test('Terminal speaks English, Arabic and German, and English else', () {

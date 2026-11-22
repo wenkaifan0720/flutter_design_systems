@@ -6,7 +6,8 @@
 // cursor. Opened by the pointer it lights no row until the pointer moves
 // onto one or a key is pressed (the first Down shows the first row); opened
 // by the keys it lights the first.
-import 'package:flutter/gestures.dart' show PointerDeviceKind;
+import 'package:flutter/gestures.dart'
+    show PointerDeviceKind, kSecondaryMouseButton;
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -237,5 +238,66 @@ void main() {
         expect(_lit(), [m.rows[0]]);
       }, variant: _desk);
     });
+  }
+  for (final (name, menu, opener) in [
+    (
+      "a menubar's menu",
+      const TermMenuBar(
+        menus: [
+          RawMenuEntry(
+            label: 'run',
+            children: [
+              RawMenuEntry(label: 'rerun', onPressed: _noop),
+              RawMenuEntry(
+                label: 'delete logs',
+                isDestructiveAction: true,
+                onPressed: _noop,
+              ),
+            ],
+          ),
+        ],
+      ),
+      'run',
+    ),
+    (
+      'a context menu',
+      const TermContextMenu(
+        semanticLabel: 'run #1482',
+        menuChildren: [
+          RawMenuEntry(label: 'rerun', onPressed: _noop),
+          RawMenuEntry(
+            label: 'delete logs',
+            isDestructiveAction: true,
+            onPressed: _noop,
+          ),
+        ],
+        child: Text('run #1482'),
+      ),
+      'run #1482',
+    ),
+  ]) {
+    testWidgets('in $name an entry that destroys something is a danger row, '
+        'the others are not', (tester) async {
+      await tester.pumpWidget(_host(menu));
+      if (menu is TermContextMenu) {
+        final at = tester.getCenter(find.text(opener));
+        final right = await tester.createGesture(
+          kind: PointerDeviceKind.mouse,
+          buttons: kSecondaryMouseButton,
+        );
+        await right.addPointer(location: at);
+        addTearDown(right.removePointer);
+        await right.down(at);
+        await right.up();
+        await _settle(tester);
+      } else {
+        await _click(tester, await _mouse(tester), find.text(opener));
+      }
+      TermMenuRow row(String label) => tester.widget<TermMenuRow>(
+        find.byWidgetPredicate((w) => w is TermMenuRow && w.label == label),
+      );
+      expect(row('delete logs').danger, isTrue);
+      expect(row('rerun').danger, isFalse);
+    }, variant: _desk);
   }
 }

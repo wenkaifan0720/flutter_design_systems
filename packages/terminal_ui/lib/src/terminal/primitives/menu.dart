@@ -203,7 +203,6 @@ class TermMenuReveal extends StatelessWidget {
   Widget build(BuildContext context) => TermReveal(
     presence: info.animation,
     above: info.side == RawPopoverSide.above,
-    maxHeight: info.maxSize.height,
     child: child,
   );
 }

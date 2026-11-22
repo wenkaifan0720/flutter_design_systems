@@ -29,7 +29,8 @@ import 'pane.dart';
 /// one-cell gutter at each end. The keyboard's focus is the cursor over the
 /// whole row, a pair of brackets cut out of its gutters (on a chosen row,
 /// hollow). [selected] draws the row in inverse video, and a screen reader
-/// hears it selected; a press fills it the same way.
+/// hears it selected; a press fills it the same way. An [action] (the
+/// row's menu key) stands at its end, on the chosen bar.
 ///
 /// ```dart
 /// TermListTile(
@@ -61,6 +62,7 @@ class TermListTile extends StatelessWidget {
     this.style,
     this.titleCols,
     this.option = false,
+    this.action,
   });
 
   /// Before the words: a status glyph, a marker.
@@ -75,6 +77,25 @@ class TermListTile extends StatelessWidget {
 
   /// At the end: a time, a count, a key.
   final Widget? trailing;
+
+  /// A control after the row's end (the row's menu key). It stands on the
+  /// chosen row's bar, drawn in inverse video with it, but is its own
+  /// target and its own node, apart from the row's press and the words
+  /// read with it.
+  ///
+  /// ```dart
+  /// TermListTile(
+  ///   title: const Text('atlas-api'),
+  ///   selected: true,
+  ///   onTap: open,
+  ///   action: TermIconButton(
+  ///     glyph: '⋯',
+  ///     semanticLabel: 'actions',
+  ///     onPressed: menu,
+  ///   ),
+  /// )
+  /// ```
+  final Widget? action;
 
   /// The cells [leading] and [title] take on a row whose [subtitle] stands
   /// beside them; null: three fifths of the row. Give a list's rows one
@@ -156,6 +177,10 @@ class TermListTile extends StatelessWidget {
             token: TermMotion.press,
             builder: (context, chosen, _) {
               final inverse = ((active ? chosen : 0.0) + press).clamp(0.0, 1.0);
+              // With an action the chosen bar stands under the row and its
+              // action both (_ActionRow); the row paints its press.
+              final under = action == null ? chosen : 0.0;
+              final filled = ((active ? under : 0.0) + press).clamp(0.0, 1.0);
               // The keys' cursor: a block of the accent over the row, a
               // pair of brackets cut out of its end cells; on the chosen
               // bar it goes hollow, the bar cleared under it.
@@ -172,10 +197,10 @@ class TermListTile extends StatelessWidget {
                     Color.lerp(
                       shade.withValues(alpha: 0),
                       shade,
-                      active ? 0.0 : chosen,
+                      active ? 0.0 : under,
                     ),
                     pointer ? theme.accent : theme.foreground,
-                    inverse,
+                    filled,
                   )!;
               final ground = hollow
                   ? bar.withValues(alpha: bar.a * (1 - cursor))
@@ -354,26 +379,38 @@ class TermListTile extends StatelessWidget {
     // row paints in its states.
     final given = onTap == null ? TermFaceStates.maybeOf(context) : null;
     if (given != null) return row(given);
-    final Widget tile = interactive
-        ? RawButton(
-            onPressed: onTap,
-            focusNode: focusNode,
-            autofocus: autofocus,
-            selected: selected,
-            semanticSelected: selected,
-            semanticLabel: semanticLabel,
-            excludeSemantics: semanticLabel != null,
-            mouseCursor: SystemMouseCursors.click,
-            builder: (context, states, _) => row(states),
-          )
-        : Semantics(
-            container: true,
-            selected: selected ? true : null,
-            label: semanticLabel,
-            enabled: enabled ? null : false,
-            child: row({if (!enabled) WidgetState.disabled}),
-          );
-    return MergeSemantics(child: tile);
+    Widget tile(WidgetStatesController? states) => MergeSemantics(
+      child: interactive
+          ? RawButton(
+              onPressed: onTap,
+              focusNode: focusNode,
+              autofocus: autofocus,
+              selected: selected,
+              semanticSelected: selected,
+              semanticLabel: semanticLabel,
+              excludeSemantics: semanticLabel != null,
+              mouseCursor: SystemMouseCursors.click,
+              statesController: states,
+              builder: (context, states, _) => row(states),
+            )
+          : Semantics(
+              container: true,
+              selected: selected ? true : null,
+              label: semanticLabel,
+              enabled: enabled ? null : false,
+              child: row({if (!enabled) WidgetState.disabled}),
+            ),
+    );
+    final control = action;
+    if (control == null) return tile(null);
+    return _ActionRow(
+      tile: tile,
+      action: control,
+      selected: selected,
+      enabled: enabled,
+      active: active,
+      style: style,
+    );
   }
 
   // Whether the title and the end's words fit on one line [width] wide, read
@@ -405,7 +442,109 @@ class TermListTile extends StatelessWidget {
       ..add(FlagProperty('enabled', value: enabled, ifFalse: 'disabled'))
       ..add(ObjectFlagProperty<VoidCallback>.has('onTap', onTap))
       ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
-      ..add(IntProperty('titleCols', titleCols, defaultValue: null));
+      ..add(IntProperty('titleCols', titleCols, defaultValue: null))
+      ..add(DiagnosticsProperty<Widget>('action', action, defaultValue: null));
+  }
+}
+
+// A row and the control after its end on one chosen bar: the control stands
+// beside the row's press and its merged node, never inside them, and is
+// drawn in inverse video on the inverse bar. The keys' cursor on the chosen
+// row clears the bar under both, as it clears a row's own.
+class _ActionRow extends StatefulWidget {
+  const _ActionRow({
+    required this.tile,
+    required this.action,
+    required this.selected,
+    required this.enabled,
+    required this.active,
+    required this.style,
+  });
+
+  final Widget Function(WidgetStatesController states) tile;
+  final Widget action;
+  final bool selected;
+  final bool enabled;
+  final bool active;
+  final TermStyle? style;
+
+  @override
+  State<_ActionRow> createState() => _ActionRowState();
+}
+
+class _ActionRowState extends State<_ActionRow> {
+  final _states = WidgetStatesController();
+
+  @override
+  void dispose() {
+    _states.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = TermTheme.of(context);
+    final grid = context.termGrid;
+    final active = widget.active;
+    // The action in inverse video: the words' ink and the ground swapped.
+    final inverted = theme.copyWith(
+      foreground: theme.background,
+      background: theme.foreground,
+      surface: theme.foreground,
+      dim: theme.background,
+      rule: Color.lerp(theme.rule, theme.background, 0.5),
+    );
+    return ListenableBuilder(
+      listenable: _states,
+      builder: (context, _) => TermStateSprings(
+        pressed: false,
+        focused: _states.value.contains(WidgetState.focused),
+        builder: (context, _, focus) => TermSpring(
+          target: widget.selected ? 1 : 0,
+          token: TermMotion.press,
+          builder: (context, chosen, _) {
+            final own = TermStyleOf(
+              [widget.style, theme.listTileStyle],
+              {if (widget.selected) WidgetState.selected},
+            );
+            final shade = termRowShade(theme);
+            final inverse = active ? chosen : 0.0;
+            final bar =
+                own.fill ??
+                Color.lerp(
+                  Color.lerp(
+                    shade.withValues(alpha: 0),
+                    shade,
+                    active ? 0.0 : chosen,
+                  ),
+                  theme.foreground,
+                  inverse,
+                )!;
+            final cursor = widget.enabled ? focus : 0.0;
+            final ground = active && widget.selected
+                ? bar.withValues(alpha: bar.a * (1 - cursor))
+                : bar;
+            return ColoredBox(
+              color: ground,
+              child: Row(
+                children: [
+                  Expanded(child: widget.tile(_states)),
+                  TermTheme(
+                    data: TermThemeData.lerp(
+                      theme,
+                      inverted,
+                      inverse * (1 - cursor),
+                    ),
+                    child: widget.action,
+                  ),
+                  SizedBox(width: grid.cellWidth),
+                ],
+              ),
+            );
+          },
+        ),
+      ),
+    );
   }
 }
 
