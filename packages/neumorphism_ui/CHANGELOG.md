@@ -1,3 +1,7 @@
+## 0.4.3
+
+- A `NeumorphicListTile`'s compact `action` (an icon key, no wider than its touch target) stays at the row's end, beside its words, at every width, the selected plate running under it, and the row keeps the height it has without it. Only a wider action (a `NeumorphicButton` with words, a `NeumorphicNumberField`) goes under the words in a tile narrower than 520. At large text in a narrow tile the title wraps word by word first; the key goes under the words only when the title's widest word can't fit beside it. Before, below 520 wide every action went under the words, and each row grew.
+
 ## 0.4.2
 
 - Stands on ui_core 0.4.1. A menu entry marked `isDestructiveAction` (Remove, Delete) in a `NeumorphicMenuBar` or a `NeumorphicContextMenu` takes the danger tone, its warning mark in the glyph slot, as `NeumorphicMenu`'s destructive entries do.

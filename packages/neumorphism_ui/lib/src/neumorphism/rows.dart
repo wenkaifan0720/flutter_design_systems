@@ -6,6 +6,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:flutter/rendering.dart';
 import 'package:ui_core/ui_core.dart';
 
 import 'chrome_metrics.dart';
@@ -453,8 +454,9 @@ class NeumorphicWhoRow extends StatelessWidget {
   }
 }
 
-/// The list row: a mark, a title and its meta, a state beside them, an action. It measures its own width: from 520 wide the action
-/// sits at the end; under that it goes under the words, so the title keeps its line. A hand-written `Row` of words and a button
+/// The list row: a mark, a title and its meta, a state beside them, an action. A compact action (an icon key, no wider
+/// than a touch target) stands at the row's end beside the words at every width; a wider one sits at the end from 520
+/// wide and goes under the words below that, so the title keeps its line. A hand-written `Row` of words and a button
 /// leaves the title a few letters a line. [selected]: the row a list beside its detail has open; its band goes in, as a
 /// bank's chosen cell does.
 ///
@@ -500,8 +502,10 @@ class NeumorphicListTile extends StatelessWidget {
   /// A figure or a `NeumorphicStatus` beside the title, held to a share of the row.
   final Widget? trailing;
 
-  /// A `NeumorphicButton`, one or two words, or a control the row's thing needs: a cart line's
-  /// `NeumorphicNumberField`, a row's menu key. Under 520 wide it goes under the words. In a row that opens
+  /// A row's menu key (a `NeumorphicIconButton`), a `NeumorphicButton` of one or two words, or a control the row's
+  /// thing needs: a cart line's `NeumorphicNumberField`. A key no wider than its touch target stays at the row's end,
+  /// beside the words, at every width; its target stands in the row's padding, so a row of a title and its line keeps
+  /// the height it has without it. A wider action goes under the words below 520 wide. In a row that opens
   /// ([onPressed]) it stays a key of its own, inside the row's band: a screen reader hears the row and the control
   /// as two buttons.
   final Widget? action;
@@ -562,109 +566,95 @@ class NeumorphicListTile extends StatelessWidget {
         ],
       ),
     );
-    Widget row = Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      child: LayoutBuilder(
-        builder: (context, c) {
-          final wide = c.maxWidth >= 520;
-          final mark = lead == null
-              ? const <Widget>[]
-              : <Widget>[lead, const SizedBox(width: 14)];
-          final align = top
-              ? CrossAxisAlignment.start
-              : CrossAxisAlignment.center;
-          // The figure stands beside the words, or under them when beside them the title's longest word would no longer
-          // fit: 'On \u00b7 70%' at twice the text would squeeze a title until 'Pendants' breaks in two, while an
-          // onward glyph never needs to move.
-          final Widget words = trailing == null
-              ? told
-              : wide
-              ? Row(
-                  crossAxisAlignment: align,
-                  children: [
-                    Expanded(child: told),
-                    const SizedBox(width: 12),
-                    ConstrainedBox(
-                      constraints: BoxConstraints(maxWidth: c.maxWidth * .3),
-                      child: passive(trailing!),
-                    ),
-                  ],
-                )
-              : BesideOrUnder(
-                  need:
-                      neumorphicWidestWord(
-                        title,
-                        DefaultTextStyle.of(context).style.merge(titleStyle),
-                        textScaler: MediaQuery.textScalerOf(context),
-                      ) +
-                      1,
-                  centre: !top,
-                  children: [told, passive(trailing!)],
-                );
-          if (wide || action == null) {
-            return Row(
+    Widget layout(BuildContext context, BoxConstraints c) {
+      final wide = c.maxWidth >= 520;
+      final align = top ? CrossAxisAlignment.start : CrossAxisAlignment.center;
+      // The title's widest word at the reader's size: the room the words keep beside a figure or a key.
+      late final need =
+          neumorphicWidestWord(
+            title,
+            DefaultTextStyle.of(context).style.merge(titleStyle),
+            textScaler: MediaQuery.textScalerOf(context),
+          ) +
+          1;
+      // The figure stands beside the words, or under them when beside them the title's longest word would no longer
+      // fit: 'On \u00b7 70%' at twice the text would squeeze a title until 'Pendants' breaks in two, while an
+      // onward glyph never needs to move.
+      final Widget words = trailing == null
+          ? told
+          : wide
+          ? Row(
               crossAxisAlignment: align,
               children: [
-                ...mark,
-                Expanded(child: words),
-                if (action != null) ...[const SizedBox(width: 14), action!],
-              ],
-            );
-          }
-          // The words and the action under them start on a keyline of their own, after the mark: one region, so the
-          // action keeps the words' keyline. The mark stands on the words' middle alone, as it does in a row with no
-          // action: on words and action together, a row with a stepper under it would set its mark at the top while
-          // its neighbour's stands centred. The words are measured as their lines at the reader's size.
-          double lineOf(TextStyle style) {
-            final painter = TextPainter(
-              text: TextSpan(text: 'Hg', style: style),
-              textDirection: TextDirection.ltr,
-              textScaler: MediaQuery.textScalerOf(context),
-              maxLines: 1,
-            )..layout();
-            final h = painter.height;
-            painter.dispose();
-            return h;
-          }
-
-          final wordsTall =
-              lineOf(titleStyle) +
-              (subtitle == null
-                  ? 0
-                  : lineOf(dense ? t.textTheme.micro : t.textTheme.caption));
-          return Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (lead != null) ...[
-                if (top)
-                  lead
-                else
-                  ConstrainedBox(
-                    constraints: BoxConstraints(minHeight: wordsTall),
-                    child: Align(widthFactor: 1, heightFactor: 1, child: lead),
-                  ),
-                const SizedBox(width: 14),
-              ],
-              Expanded(
-                child: DesignKeylineRegion(
-                  label: 'words',
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // The figure stands where it stands without an action, beside the words; the action goes under.
-                      words,
-                      const SizedBox(height: 10),
-                      action!,
-                    ],
-                  ),
+                Expanded(child: told),
+                const SizedBox(width: 12),
+                ConstrainedBox(
+                  constraints: BoxConstraints(maxWidth: c.maxWidth * .3),
+                  child: passive(trailing!),
                 ),
-              ),
-            ],
-          );
-        },
-      ),
-    );
+              ],
+            )
+          : BesideOrUnder(
+              need: need,
+              centre: !top,
+              children: [told, passive(trailing!)],
+            );
+      if (action == null) {
+        return Row(
+          crossAxisAlignment: align,
+          children: [
+            if (lead != null) ...[lead, const SizedBox(width: 14)],
+            Expanded(child: words),
+          ],
+        );
+      }
+      // The words and the action start on a keyline of their own, after the mark: one region, so an action under the
+      // words keeps their keyline. When the action goes under, the mark stands on the words' first lines alone, as it
+      // does in a row with no action: on words and action together, a row with a stepper under it would set its mark
+      // at the top while its neighbour's stands centred. The lines are measured at the reader's size.
+      double lineOf(TextStyle style) {
+        final painter = TextPainter(
+          text: TextSpan(text: 'Hg', style: style),
+          textDirection: TextDirection.ltr,
+          textScaler: MediaQuery.textScalerOf(context),
+          maxLines: 1,
+        )..layout();
+        final h = painter.height;
+        painter.dispose();
+        return h;
+      }
+
+      final wordsTall =
+          lineOf(titleStyle) +
+          (subtitle == null
+              ? 0
+              : lineOf(dense ? t.textTheme.micro : t.textTheme.caption));
+      return _ActionRow(
+        centre: !top,
+        wordsTall: wordsTall,
+        children: [
+          ?lead,
+          DesignKeylineRegion(
+            label: 'words',
+            child: _WordsAndAction(
+              wide: wide,
+              need: need,
+              centre: !top,
+              // The figure stands where it stands without an action, beside the words or under them.
+              children: [words, action!],
+            ),
+          ),
+        ],
+      );
+    }
+
+    // A row with an action lays out its own padding: a compact key's target may stand in it.
+    Widget row = action == null
+        ? Padding(
+            padding: const EdgeInsets.symmetric(vertical: _tilePadding),
+            child: LayoutBuilder(builder: layout),
+          )
+        : LayoutBuilder(builder: layout);
     // In a grouped list the row is a band of the card, a breath inside its rim: the focus lift goes round that band, as a
     // bank's cell's does, and the press sinks the whole band; both follow the card's corners where they meet them. A chosen
     // row outside a group takes a band of its own, a control's corners, 12 past it on each side, and its lift and press
@@ -745,6 +735,379 @@ class NeumorphicListTile extends StatelessWidget {
         DiagnosticsProperty<bool>('autofocus', autofocus, defaultValue: false),
       );
   }
+}
+
+/// A list tile's padding above and below its words.
+const double _tilePadding = 12;
+
+/// The widest action that stays beside a list tile's words at every width: an icon key, as wide as its touch target.
+const double _compactAction = NeumorphicChromeMetrics.touchTarget;
+
+/// How far a compact action's target stands into a list tile's padding, above and below the words: the look's icon key
+/// is a 40 to 44 face in a 48 target, so beside a title and its line it leaves the row the height it has without the
+/// key, its face still clear of the rules.
+const double _actionReach = 6;
+
+/// A list tile with an action, inside the row's padding: its mark, when it has one, then its words and action
+/// ([_WordsAndAction]). While the action stands beside the words, the mark stands on the row's middle with them, as in a
+/// row without an action. When the action goes under the words, the mark stands on the words' first lines
+/// ([wordsTall]) at the top, where its neighbours' marks stand. With [centre] off (the tile's `top`), the mark stands
+/// at the top.
+class _ActionRow extends MultiChildRenderObjectWidget {
+  const _ActionRow({
+    required this.centre,
+    required this.wordsTall,
+    required super.children,
+  });
+
+  /// Whether the mark, words and a key beside them stand on the row's middle (else at its top).
+  final bool centre;
+
+  /// The height of the title's and the subtitle's first lines at the reader's size.
+  final double wordsTall;
+
+  @override
+  _RenderActionRow createRenderObject(BuildContext context) =>
+      _RenderActionRow(centre, wordsTall, Directionality.of(context));
+
+  @override
+  void updateRenderObject(
+    BuildContext context,
+    _RenderActionRow renderObject,
+  ) => renderObject
+    ..centre = centre
+    ..wordsTall = wordsTall
+    ..direction = Directionality.of(context);
+}
+
+class _RowSlot extends ContainerBoxParentData<RenderBox> {}
+
+typedef _Measure = Size Function(RenderBox child, BoxConstraints constraints);
+
+Size _layOut(RenderBox child, BoxConstraints constraints) {
+  child.layout(constraints, parentUsesSize: true);
+  return child.size;
+}
+
+Size _dryLayOut(RenderBox child, BoxConstraints constraints) =>
+    child.getDryLayout(constraints);
+
+class _RenderActionRow extends RenderBox
+    with
+        ContainerRenderObjectMixin<RenderBox, _RowSlot>,
+        RenderBoxContainerDefaultsMixin<RenderBox, _RowSlot> {
+  _RenderActionRow(this._centre, this._wordsTall, this._direction);
+
+  static const _gap = 14.0;
+
+  bool _centre;
+  set centre(bool value) {
+    if (value == _centre) return;
+    _centre = value;
+    markNeedsLayout();
+  }
+
+  double _wordsTall;
+  set wordsTall(double value) {
+    if (value == _wordsTall) return;
+    _wordsTall = value;
+    markNeedsLayout();
+  }
+
+  TextDirection _direction;
+  set direction(TextDirection value) {
+    if (value == _direction) return;
+    _direction = value;
+    markNeedsLayout();
+  }
+
+  @override
+  void setupParentData(RenderBox child) {
+    if (child.parentData is! _RowSlot) child.parentData = _RowSlot();
+  }
+
+  RenderBox? get _mark => childCount == 2 ? firstChild : null;
+
+  // The keyline region around the words and action lays out nothing, so their box is this box's last child.
+  _RenderWordsAndAction get _body => lastChild! as _RenderWordsAndAction;
+
+  /// The row's size and where its mark and body stand, the children measured (or, unless [dry], laid out) in [c].
+  ({Size size, Size mark, double markY, double bodyY}) _arrange(
+    BoxConstraints c, {
+    required bool dry,
+  }) {
+    final measure = dry ? _dryLayOut : _layOut;
+    final mark = _mark, body = _body;
+    final w = c.maxWidth;
+    final m = mark == null
+        ? Size.zero
+        : measure(mark, BoxConstraints(maxWidth: w));
+    final room = BoxConstraints.tightFor(
+      width: math.max(0.0, w - (mark == null ? 0 : m.width + _gap)),
+    );
+    final b = measure(body, room);
+    final place = dry ? body._plan(room, _dryLayOut) : body._laidOut!;
+    // The words' band: the body less the reach its key takes into the padding.
+    final band = b.height - 2 * place.reach;
+    final markBox = place.beside || !_centre
+        ? m.height
+        : math.max(m.height, _wordsTall);
+    final size = c.constrain(
+      Size(w, math.max(markBox, band) + 2 * _tilePadding),
+    );
+    if (place.beside && _centre) {
+      return (
+        size: size,
+        mark: m,
+        markY: (size.height - m.height) / 2,
+        bodyY: (size.height - band) / 2 - place.reach,
+      );
+    }
+    return (
+      size: size,
+      mark: m,
+      markY: _tilePadding + (markBox - m.height) / 2,
+      bodyY: _tilePadding - place.reach,
+    );
+  }
+
+  @override
+  Size computeDryLayout(covariant BoxConstraints constraints) =>
+      _arrange(constraints, dry: true).size;
+
+  @override
+  void performLayout() {
+    final p = _arrange(constraints, dry: false);
+    size = p.size;
+    final mark = _mark;
+    final rtl = _direction == TextDirection.rtl;
+    if (mark != null) {
+      (mark.parentData! as _RowSlot).offset = Offset(
+        rtl ? size.width - p.mark.width : 0,
+        p.markY,
+      );
+    }
+    (_body.parentData! as _RowSlot).offset = Offset(
+      rtl || mark == null ? 0 : p.mark.width + _gap,
+      p.bodyY,
+    );
+  }
+
+  double _markWidth(double height) =>
+      _mark == null ? 0 : _mark!.getMaxIntrinsicWidth(height) + _gap;
+
+  @override
+  double computeMinIntrinsicWidth(double height) =>
+      _markWidth(height) + _body.getMinIntrinsicWidth(height);
+
+  @override
+  double computeMaxIntrinsicWidth(double height) =>
+      _markWidth(height) + _body.getMaxIntrinsicWidth(height);
+
+  @override
+  double computeMinIntrinsicHeight(double width) =>
+      _arrange(BoxConstraints(maxWidth: width), dry: true).size.height;
+
+  @override
+  double computeMaxIntrinsicHeight(double width) =>
+      computeMinIntrinsicHeight(width);
+
+  @override
+  bool hitTestChildren(BoxHitTestResult result, {required Offset position}) =>
+      defaultHitTestChildren(result, position: position);
+
+  @override
+  void paint(PaintingContext context, Offset offset) =>
+      defaultPaint(context, offset);
+}
+
+/// A list tile's words and its action. The action stands beside the words at the row's end when the row is [wide], or
+/// when it is compact (no wider than an icon key's touch target) and the title's widest word ([need]) still fits beside
+/// it; otherwise it goes under the words, at their start. Its width is measured by laying it out, not by its
+/// intrinsics: an action may hold a LayoutBuilder, which has none. Beside the words, a compact action reaches
+/// [_actionReach] above and below their band, into the row's padding, and this box reaches with it, so the key's whole
+/// target takes taps.
+///
+/// What yields as the row narrows or the text grows: first the title wraps, word by word, down to its widest word, and
+/// a figure beside the words goes under them ([BesideOrUnder]); the key keeps its place at the row's end and its whole
+/// target. Only when even the title's widest word no longer fits beside the key does the key go under the words, at
+/// their start, where a wider action stands, and the words take the row's whole width. That is the better failure: a
+/// word broken where its line runs out, with no hyphen, is the one failure that costs reading, while a key under the
+/// words costs the row a line of height and stays a whole target.
+class _WordsAndAction extends MultiChildRenderObjectWidget {
+  const _WordsAndAction({
+    required this.wide,
+    required this.need,
+    required this.centre,
+    required super.children,
+  });
+
+  /// Whether the row is 520 or more wide, where every action stands beside the words.
+  final bool wide;
+
+  /// The title's widest word: the least room the words keep beside a compact action.
+  final double need;
+
+  /// Whether, beside each other, the words and the action stand on their middle (else on their top).
+  final bool centre;
+
+  @override
+  _RenderWordsAndAction createRenderObject(BuildContext context) =>
+      _RenderWordsAndAction(wide, need, centre, Directionality.of(context));
+
+  @override
+  void updateRenderObject(
+    BuildContext context,
+    _RenderWordsAndAction renderObject,
+  ) => renderObject
+    ..wide = wide
+    ..need = need
+    ..centre = centre
+    ..direction = Directionality.of(context);
+}
+
+typedef _ActionPlace = ({bool beside, double reach, Size words, Size action});
+
+class _RenderWordsAndAction extends RenderBox
+    with
+        ContainerRenderObjectMixin<RenderBox, _RowSlot>,
+        RenderBoxContainerDefaultsMixin<RenderBox, _RowSlot> {
+  _RenderWordsAndAction(this._wide, this._need, this._centre, this._direction);
+
+  static const _gap = 14.0, _under = 10.0;
+
+  bool _wide;
+  set wide(bool value) {
+    if (value == _wide) return;
+    _wide = value;
+    markNeedsLayout();
+  }
+
+  double _need;
+  set need(double value) {
+    if (value == _need) return;
+    _need = value;
+    markNeedsLayout();
+  }
+
+  bool _centre;
+  set centre(bool value) {
+    if (value == _centre) return;
+    _centre = value;
+    markNeedsLayout();
+  }
+
+  TextDirection _direction;
+  set direction(TextDirection value) {
+    if (value == _direction) return;
+    _direction = value;
+    markNeedsLayout();
+  }
+
+  /// The place the last layout chose: the row reads it to stand its mark.
+  _ActionPlace? _laidOut;
+
+  @override
+  void setupParentData(RenderBox child) {
+    if (child.parentData is! _RowSlot) child.parentData = _RowSlot();
+  }
+
+  _ActionPlace _plan(BoxConstraints c, _Measure measure) {
+    final words = firstChild!, action = lastChild!;
+    final w = c.maxWidth;
+    final a = measure(action, BoxConstraints(maxWidth: w));
+    final compact = a.width <= _compactAction;
+    final room = w - a.width - _gap;
+    if (_wide || (compact && room >= _need)) {
+      return (
+        beside: true,
+        reach: compact ? _actionReach : 0,
+        words: measure(
+          words,
+          BoxConstraints.tightFor(width: math.max(0.0, room)),
+        ),
+        action: a,
+      );
+    }
+    return (
+      beside: false,
+      reach: 0,
+      words: measure(words, BoxConstraints(maxWidth: w)),
+      action: a,
+    );
+  }
+
+  Size _size(_ActionPlace p, BoxConstraints c) => c.constrain(
+    Size(
+      c.maxWidth,
+      (p.beside
+              ? math.max(p.words.height, p.action.height - 2 * p.reach)
+              : p.words.height + _under + p.action.height) +
+          2 * p.reach,
+    ),
+  );
+
+  @override
+  Size computeDryLayout(covariant BoxConstraints constraints) =>
+      _size(_plan(constraints, _dryLayOut), constraints);
+
+  @override
+  void performLayout() {
+    final p = _laidOut = _plan(constraints, _layOut);
+    size = _size(p, constraints);
+    final words = firstChild!, action = lastChild!;
+    final wordsAt = words.parentData! as _RowSlot;
+    final actionAt = action.parentData! as _RowSlot;
+    final rtl = _direction == TextDirection.rtl;
+    double startOf(double width) => rtl ? size.width - width : 0;
+    if (p.beside) {
+      final band = size.height - 2 * p.reach;
+      wordsAt.offset = Offset(
+        startOf(p.words.width),
+        p.reach + (_centre ? (band - p.words.height) / 2 : 0),
+      );
+      actionAt.offset = Offset(
+        rtl ? 0 : size.width - p.action.width,
+        _centre ? (size.height - p.action.height) / 2 : 0,
+      );
+    } else {
+      wordsAt.offset = Offset(startOf(p.words.width), 0);
+      actionAt.offset = Offset(
+        startOf(p.action.width),
+        p.words.height + _under,
+      );
+    }
+  }
+
+  @override
+  double computeMinIntrinsicWidth(double height) => math.max(
+    firstChild!.getMinIntrinsicWidth(height),
+    lastChild!.getMinIntrinsicWidth(height),
+  );
+
+  @override
+  double computeMaxIntrinsicWidth(double height) =>
+      firstChild!.getMaxIntrinsicWidth(height) +
+      _gap +
+      lastChild!.getMaxIntrinsicWidth(height);
+
+  @override
+  double computeMinIntrinsicHeight(double width) {
+    final c = BoxConstraints(maxWidth: width);
+    return _size(_plan(c, _dryLayOut), c).height;
+  }
+
+  @override
+  double computeMaxIntrinsicHeight(double width) =>
+      computeMinIntrinsicHeight(width);
+
+  @override
+  bool hitTestChildren(BoxHitTestResult result, {required Offset position}) =>
+      defaultHitTestChildren(result, position: position);
+
+  @override
+  void paint(PaintingContext context, Offset offset) =>
+      defaultPaint(context, offset);
 }
 
 /// A thing to do: a round check and its words. Done: pressed, with an ink tick, its words struck. [live]: the note is due now.
