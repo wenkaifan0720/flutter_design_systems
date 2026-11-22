@@ -32,8 +32,9 @@ bool _lit(Set<WidgetState> states) =>
     states.contains(WidgetState.hovered) ||
     states.contains(WidgetState.pressed);
 
-/// A menu entry's row: its words, its shortcut or a chevron to its submenu
-/// at the end, a tick when it is checked.
+/// A menu entry's row: its words (in the danger ink when the entry
+/// destroys something), its shortcut or a chevron to its submenu at the
+/// end, a tick when it is checked.
 Widget _entryRow(
   BuildContext context,
   RawMenuEntry entry,
@@ -46,6 +47,7 @@ Widget _entryRow(
     height: _rowHeight(context),
     enabled: enabled,
     chosen: entry.checked ?? false,
+    destructive: entry.isDestructiveAction,
     lit: enabled && (_lit(states) || states.contains(WidgetState.selected)),
     trailing: entry.children != null
         ? Icon(rtl ? LucideIcons.chevronLeft : LucideIcons.chevronRight)
@@ -89,10 +91,12 @@ Widget _panel(RawPopoverInfo info, List<Widget> items) => KeycapMenuReveal(
 /// A key's menu: its actions in a panel laid over the keyboard. [builder]
 /// draws the key (usually a [KeycapIconButton] with a "More" glyph) and
 /// gets the anchor to open it with. The arrows move the lit row; Enter
-/// runs it; Escape closes the menu and gives the key back its focus.
+/// runs it; Escape closes the menu and gives the key back its focus. An
+/// entry marked [RawMenuEntry.isDestructiveAction] prints in the danger
+/// ink.
 ///
 /// ```dart
-/// KeycapMenu(entries: [RawMenuEntry(label: 'Rename', onPressed: rename), const RawMenuEntry.divider(), RawMenuEntry(label: 'Delete', onPressed: delete)], builder: (context, anchor) => KeycapIconButton(icon: const Icon(LucideIcons.ellipsis), semanticLabel: 'More', onPressed: anchor.toggle))
+/// KeycapMenu(entries: [RawMenuEntry(label: 'Rename', onPressed: rename), const RawMenuEntry.divider(), RawMenuEntry(label: 'Delete', isDestructiveAction: true, onPressed: delete)], builder: (context, anchor) => KeycapIconButton(icon: const Icon(LucideIcons.ellipsis), semanticLabel: 'More', onPressed: anchor.toggle))
 /// ```
 class KeycapMenu extends StatelessWidget {
   /// A menu of [entries].
@@ -101,6 +105,10 @@ class KeycapMenu extends StatelessWidget {
     required this.entries,
     required this.builder,
     this.semanticLabel,
+    @Deprecated(
+      'Mark the entry instead: RawMenuEntry(isDestructiveAction: true). '
+      'This field was deprecated after keycap_ui 0.2.0.',
+    )
     this.destructive = const {},
   });
 
@@ -114,8 +122,12 @@ class KeycapMenu extends StatelessWidget {
   /// The menu's name, for a screen reader.
   final String? semanticLabel;
 
-  /// The labels of the rows that destroy something, printed in the danger
-  /// ink.
+  /// The labels of more rows that destroy something, printed in the danger
+  /// ink as the entries marked [RawMenuEntry.isDestructiveAction] are.
+  @Deprecated(
+    'Mark the entry instead: RawMenuEntry(isDestructiveAction: true). '
+    'This field was deprecated after keycap_ui 0.2.0.',
+  )
   final Set<String> destructive;
 
   @override
@@ -151,7 +163,11 @@ class KeycapMenu extends StatelessWidget {
               height: _rowHeight(context),
               enabled: entry.onPressed != null,
               chosen: entry.checked ?? false,
-              destructive: destructive.contains(entry.label),
+              destructive:
+                  entry.isDestructiveAction ||
+                  // A deprecated field keeps working until it is removed.
+                  // ignore: deprecated_member_use_from_same_package
+                  destructive.contains(entry.label),
               lit: entry.onPressed != null && _lit(states),
               trailing: entry.shortcut == null ? null : Text(entry.shortcut!),
             ),
@@ -168,7 +184,8 @@ class KeycapMenu extends StatelessWidget {
 
 /// A menu that opens where a secondary click or a long press lands on
 /// [child] (a note's row, a folder). Built on ui_core's
-/// `RawContextMenu`.
+/// `RawContextMenu`. An entry marked [RawMenuEntry.isDestructiveAction]
+/// prints in the danger ink.
 ///
 /// ```dart
 /// KeycapContextMenu(entries: [RawMenuEntry(label: 'Pin', onPressed: pin)], child: row)

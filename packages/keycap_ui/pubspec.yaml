@@ -1,7 +1,7 @@
 name: keycap_ui
 description: >-
   Flutter controls drawn as mechanical keyboard keycaps: sculpted keys that travel when pressed, latching choices, wells for lists and fields, in light and dark colourways.
-version: 0.2.0
+version: 0.2.1
 homepage: https://wenkaifan0720.github.io/flutter_design_systems/keycap/
 documentation: https://wenkaifan0720.github.io/flutter_design_systems/docs/looks/keycap/
 repository: https://github.com/wenkaifan0720/flutter_design_systems/tree/main/packages/keycap_ui
@@ -11,6 +11,17 @@ topics:
   - widgets
   - ui
   - theme
+screenshots:
+  - description: "Jotter's home on a desk at 1440 and a phone at 390, by day: the pinned draft, folders as keys, recent notes in a well."
+    path: screenshots/hero.webp
+  - description: "The same home by night: dark caps on a dark case, the cobalt accent key with its backlight showing faintly."
+    path: screenshots/night.webp
+  - description: "A note in the editor on a desk by day and a phone by night: a row of formatting keys over the page."
+    path: screenshots/editor.webp
+  - description: "Jotter's settings on a phone by day and by night: grouped rows in a well, switches, value keys and a segmented row."
+    path: screenshots/settings.webp
+  - description: "The look's overview at 1440: a latched formatting key, a segmented row, a switch, and plain, modifier and accent keys."
+    path: screenshots/parts.webp
 
 environment:
   sdk: ">=3.13.0 <4.0.0"
@@ -21,7 +32,7 @@ resolution: workspace
 dependencies:
   flutter:
     sdk: flutter
-  ui_core: ^0.4.0
+  ui_core: ^0.4.1
   material_ui: ^1.9.0
   cupertino_ui: ^1.0.0
   lucide_icons_flutter: ">=3.1.25 <5.0.0"
@@ -31,7 +42,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   leak_tracker_flutter_testing: any
-  ui_core_test: ^0.2.0
+  ui_core_test: ^0.2.1
 
 flutter:
   fonts:

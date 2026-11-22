@@ -169,7 +169,7 @@ class _Legends extends StatelessWidget {
         children: [
           KeycapShortcut(keys: ['Ctrl', 'N'], semanticLabel: 'Control N'),
           KeycapShortcut(
-            keys: ['Ctrl', '⇧', 'M'],
+            keys: ['Ctrl', 'Shift', 'M'],
             semanticLabel: 'Control Shift M',
           ),
         ],

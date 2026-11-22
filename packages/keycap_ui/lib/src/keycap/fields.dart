@@ -356,35 +356,69 @@ class _KeycapInputGroupState extends State<KeycapInputGroup> {
     final wrong = widget.error != null;
     final pad = KeycapSpacing.medium + theme.density.paddingDelta / 2;
     final ink = widget.enabled ? c.ink : c.inkDisabled;
-    // An add-on takes at most a quarter of the field: large text shortens
-    // it, never the entry beside it.
-    Widget addOn(String words, {required bool start, required double most}) =>
-        ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: most),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (!start) _Hairline(color: c.hairline),
-              Flexible(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: pad),
-                  child: DesignCapCenter(
-                    capHeightFactor: theme.capHeightFactor,
-                    child: Text(
-                      words,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.body.copyWith(
-                        color: widget.enabled ? c.inkMuted : c.inkDisabled,
-                      ),
-                    ),
-                  ),
+    final printed = theme.textTheme.body.copyWith(
+      color: widget.enabled ? c.inkMuted : c.inkDisabled,
+    );
+    // The add-ons keep their words whole: they take their own width and
+    // the entry keeps at least a third of the well; where large text leaves
+    // them too little, their words print smaller to fit, never cut.
+    TextScaler addOnScaler(double width) {
+      final scaler = MediaQuery.textScalerOf(context);
+      final painter = TextPainter(
+        textDirection: Directionality.of(context),
+        textScaler: scaler,
+        locale: Localizations.maybeLocaleOf(context),
+        maxLines: 1,
+      );
+      final drawn = DefaultTextStyle.of(context).style.merge(printed);
+      var words = 0.0;
+      for (final text in [?widget.prefix, ?widget.suffix]) {
+        painter
+          ..text = TextSpan(text: text, style: drawn)
+          ..layout();
+        words += painter.width;
+      }
+      painter.dispose();
+      final ends =
+          (widget.prefix == null ? 0 : 2 * pad + 1) +
+          (widget.suffix == null ? 0 : 2 * pad + 1);
+      final room = width * 2 / 3 - ends;
+      if (words <= room || words <= 0 || room <= 1) return scaler;
+      final size = drawn.fontSize ?? 14;
+      // A pixel spare: text widths round, and a word a hair too wide cuts.
+      return TextScaler.linear(scaler.scale(size) / size * (room - 1) / words);
+    }
+
+    Widget addOn(
+      String words, {
+      required bool start,
+      required double most,
+      required TextScaler scaler,
+    }) => ConstrainedBox(
+      constraints: BoxConstraints(maxWidth: most),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (!start) _Hairline(color: c.hairline),
+          Flexible(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: pad),
+              child: DesignCapCenter(
+                capHeightFactor: theme.capHeightFactor,
+                child: Text(
+                  words,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textScaler: scaler,
+                  style: printed,
                 ),
               ),
-              if (start) _Hairline(color: c.hairline),
-            ],
+            ),
           ),
-        );
+          if (start) _Hairline(color: c.hairline),
+        ],
+      ),
+    );
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -424,59 +458,73 @@ class _KeycapInputGroupState extends State<KeycapInputGroup> {
               theme.textTheme.body,
             ),
             child: LayoutBuilder(
-              builder: (context, box) => Row(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  if (widget.prefix != null)
-                    addOn(widget.prefix!, start: true, most: box.maxWidth / 4),
-                  Expanded(
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: pad),
-                      child: DesignCapCenter(
-                        capHeightFactor: theme.capHeightFactor,
-                        child: Semantics(
-                          container: true,
-                          label: widget.semanticLabel ?? widget.label,
-                          child: DesignTextEntryBox(
-                            minHeight: theme.controlHeight,
-                            controller: _controller,
-                            hint: widget.hint == null
-                                ? null
-                                : Text(
-                                    widget.hint!,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: theme.textTheme.body.copyWith(
-                                      color: c.inkMuted,
+              builder: (context, box) {
+                final scaler = addOnScaler(box.maxWidth);
+                final most = box.maxWidth * 2 / 3;
+                return Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    if (widget.prefix != null)
+                      addOn(
+                        widget.prefix!,
+                        start: true,
+                        most: most,
+                        scaler: scaler,
+                      ),
+                    Expanded(
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(horizontal: pad),
+                        child: DesignCapCenter(
+                          capHeightFactor: theme.capHeightFactor,
+                          child: Semantics(
+                            container: true,
+                            label: widget.semanticLabel ?? widget.label,
+                            child: DesignTextEntryBox(
+                              minHeight: theme.controlHeight,
+                              controller: _controller,
+                              hint: widget.hint == null
+                                  ? null
+                                  : Text(
+                                      widget.hint!,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: theme.textTheme.body.copyWith(
+                                        color: c.inkMuted,
+                                      ),
                                     ),
+                              child: Material(
+                                type: MaterialType.transparency,
+                                child: TextField(
+                                  controller: _controller,
+                                  focusNode: _focus,
+                                  decoration: null,
+                                  style: theme.textTheme.body.copyWith(
+                                    color: ink,
                                   ),
-                            child: Material(
-                              type: MaterialType.transparency,
-                              child: TextField(
-                                controller: _controller,
-                                focusNode: _focus,
-                                decoration: null,
-                                style: theme.textTheme.body.copyWith(
-                                  color: ink,
+                                  cursorColor: c.accent.top,
+                                  cursorWidth: 2,
+                                  keyboardType: widget.keyboardType,
+                                  inputFormatters: widget.inputFormatters,
+                                  onChanged: widget.onChanged,
+                                  onSubmitted: widget.onSubmitted,
+                                  enabled: widget.enabled,
                                 ),
-                                cursorColor: c.accent.top,
-                                cursorWidth: 2,
-                                keyboardType: widget.keyboardType,
-                                inputFormatters: widget.inputFormatters,
-                                onChanged: widget.onChanged,
-                                onSubmitted: widget.onSubmitted,
-                                enabled: widget.enabled,
                               ),
                             ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                  if (widget.suffix != null)
-                    addOn(widget.suffix!, start: false, most: box.maxWidth / 4),
-                ],
-              ),
+                    if (widget.suffix != null)
+                      addOn(
+                        widget.suffix!,
+                        start: false,
+                        most: most,
+                        scaler: scaler,
+                      ),
+                  ],
+                );
+              },
             ),
           ),
         ),

@@ -3,7 +3,10 @@
 /// ruled apart; a pressed row's floor darkens under the finger.
 library;
 
+import 'dart:math' as math;
+
 import 'package:flutter/foundation.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -43,7 +46,8 @@ class KeycapSectionHeader extends StatelessWidget {
       excludeSemantics: true,
       child: Text(
         text.toUpperCase(),
-        maxLines: 1,
+        // One line, two at a larger text size, as a list row's title.
+        maxLines: MediaQuery.textScalerOf(context).scale(16) > 16 ? 2 : 1,
         overflow: TextOverflow.ellipsis,
         style: theme.textTheme.legend
             .merge(layered.textStyle)
@@ -389,7 +393,18 @@ class KeycapListTile extends StatelessWidget {
                 ),
                 const SizedBox(width: KeycapSpacing.medium + 2),
               ],
-              Expanded(child: words),
+              Expanded(
+                child: value == null
+                    ? words
+                    : _WordsAndValue(
+                        words: words,
+                        value: KeycapValueCap(
+                          label: value!,
+                          pressed: states.contains(WidgetState.pressed),
+                          enabled: enabled && onTap != null,
+                        ),
+                      ),
+              ),
               if (trailingText != null) ...[
                 const SizedBox(width: KeycapSpacing.medium),
                 Flexible(
@@ -404,28 +419,19 @@ class KeycapListTile extends StatelessWidget {
                   ),
                 ),
               ],
-              if (value != null) ...[
-                const SizedBox(width: KeycapSpacing.medium),
-                Flexible(
-                  flex: 0,
-                  child: KeycapValueCap(
-                    label: value!,
-                    pressed: states.contains(WidgetState.pressed),
-                    enabled: enabled && onTap != null,
-                  ),
-                ),
-              ],
               if (trailing != null) ...[
                 const SizedBox(width: KeycapSpacing.medium),
                 trailing!,
               ],
               if (chevron) ...[
                 const SizedBox(width: KeycapSpacing.small),
+                // Toward the row's end: the left in right-to-left.
                 Icon(
-                  LucideIcons.chevronRight,
+                  Directionality.of(context) == TextDirection.rtl
+                      ? LucideIcons.chevronLeft
+                      : LucideIcons.chevronRight,
                   size: 18,
                   color: off ? c.inkDisabled : c.inkMuted,
-                  textDirection: Directionality.of(context),
                 ),
               ],
             ],
@@ -684,8 +690,9 @@ class KeycapValueCap extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: KeycapSpacing.tight),
+                // The select's sign: what opens a choice ends in it.
                 Icon(
-                  LucideIcons.chevronsUpDown,
+                  LucideIcons.chevronDown,
                   size: 14,
                   color: enabled
                       ? theme.colors.inkMuted
@@ -706,4 +713,158 @@ class KeycapValueCap extends StatelessWidget {
       ..add(StringProperty('label', label))
       ..add(FlagProperty('pressed', value: pressed, ifTrue: 'pressed'));
   }
+}
+
+/// A row's words with its value cap at their end, or under them when the two
+/// don't fit side by side without breaking a word (large text on a phone):
+/// beside the cap the words take the room left, never less than their
+/// longest word.
+class _WordsAndValue extends MultiChildRenderObjectWidget {
+  _WordsAndValue({required Widget words, required Widget value})
+    : super(children: [words, value]);
+
+  @override
+  RenderObject createRenderObject(BuildContext context) =>
+      _RenderWordsAndValue(Directionality.of(context));
+
+  @override
+  void updateRenderObject(
+    BuildContext context,
+    _RenderWordsAndValue renderObject,
+  ) => renderObject.textDirection = Directionality.of(context);
+}
+
+class _WordsAndValueData extends ContainerBoxParentData<RenderBox> {}
+
+class _RenderWordsAndValue extends RenderBox
+    with
+        ContainerRenderObjectMixin<RenderBox, _WordsAndValueData>,
+        RenderBoxContainerDefaultsMixin<RenderBox, _WordsAndValueData> {
+  _RenderWordsAndValue(this._textDirection);
+
+  // The row's gap between its words and what ends it, and the step under
+  // the words when the cap goes below them.
+  static const double _gap = KeycapSpacing.medium;
+  static const double _under = KeycapSpacing.tight;
+
+  TextDirection _textDirection;
+  set textDirection(TextDirection value) {
+    if (value == _textDirection) return;
+    _textDirection = value;
+    markNeedsLayout();
+  }
+
+  RenderBox get _words => firstChild!;
+  RenderBox get _value => lastChild!;
+
+  @override
+  void setupParentData(RenderBox child) {
+    if (child.parentData is! _WordsAndValueData) {
+      child.parentData = _WordsAndValueData();
+    }
+  }
+
+  double get _valueWidth => _value.getMaxIntrinsicWidth(double.infinity);
+
+  bool _beside(double width) =>
+      !width.isFinite ||
+      _words.getMinIntrinsicWidth(double.infinity) + _gap + _valueWidth <=
+          width;
+
+  @override
+  double computeMinIntrinsicWidth(double height) => math.max(
+    _words.getMinIntrinsicWidth(double.infinity),
+    _value.getMinIntrinsicWidth(double.infinity),
+  );
+
+  @override
+  double computeMaxIntrinsicWidth(double height) =>
+      _words.getMaxIntrinsicWidth(double.infinity) + _gap + _valueWidth;
+
+  double _height(double width, double Function(RenderBox, double) of) {
+    if (_beside(width)) {
+      final value = math.min(_valueWidth, width);
+      return math.max(
+        of(_words, math.max(0, width - _gap - value)),
+        of(_value, value),
+      );
+    }
+    return of(_words, width) + _under + of(_value, width);
+  }
+
+  @override
+  double computeMinIntrinsicHeight(double width) =>
+      _height(width, (c, w) => c.getMinIntrinsicHeight(w));
+
+  @override
+  double computeMaxIntrinsicHeight(double width) =>
+      _height(width, (c, w) => c.getMaxIntrinsicHeight(w));
+
+  /// Lays both out by [layout] and returns the size and the two offsets.
+  (Size, Offset, Offset) _arrange(
+    BoxConstraints constraints,
+    Size Function(RenderBox, BoxConstraints) layout,
+  ) {
+    final width = constraints.maxWidth.isFinite
+        ? constraints.maxWidth
+        : computeMaxIntrinsicWidth(double.infinity);
+    final rtl = _textDirection == TextDirection.rtl;
+    final value = layout(_value, BoxConstraints(maxWidth: width));
+    if (_beside(width)) {
+      final words = layout(
+        _words,
+        BoxConstraints.tightFor(width: math.max(0, width - _gap - value.width)),
+      );
+      final size = constraints.constrain(
+        Size(width, math.max(words.height, value.height)),
+      );
+      return (
+        size,
+        Offset(
+          rtl ? size.width - words.width : 0,
+          (size.height - words.height) / 2,
+        ),
+        Offset(
+          rtl ? 0 : size.width - value.width,
+          (size.height - value.height) / 2,
+        ),
+      );
+    }
+    final words = layout(_words, BoxConstraints.tightFor(width: width));
+    final size = constraints.constrain(
+      Size(width, words.height + _under + value.height),
+    );
+    return (
+      size,
+      Offset.zero,
+      Offset(rtl ? size.width - value.width : 0, words.height + _under),
+    );
+  }
+
+  @override
+  Size computeDryLayout(BoxConstraints constraints) =>
+      _arrange(constraints, (c, b) => c.getDryLayout(b)).$1;
+
+  @override
+  void performLayout() {
+    final (size, words, value) = _arrange(constraints, (c, b) {
+      c.layout(b, parentUsesSize: true);
+      return c.size;
+    });
+    this.size = size;
+    (_words.parentData! as _WordsAndValueData).offset = words;
+    (_value.parentData! as _WordsAndValueData).offset = value;
+  }
+
+  @override
+  double? computeDistanceToActualBaseline(TextBaseline baseline) =>
+      defaultComputeDistanceToFirstActualBaseline(baseline);
+
+  @override
+  void paint(PaintingContext context, Offset offset) =>
+      defaultPaint(context, offset);
+
+  @override
+  bool hitTestChildren(BoxHitTestResult result, {required Offset position}) =>
+      defaultHitTestChildren(result, position: position);
 }

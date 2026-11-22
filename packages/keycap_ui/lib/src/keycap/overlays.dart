@@ -6,7 +6,7 @@ library;
 
 import 'dart:math' as math;
 
-import 'package:flutter/foundation.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -18,8 +18,10 @@ import 'theme.dart';
 
 /// A dialog: a panel of keycap plastic laid over the keyboard, with a
 /// [title], its [content] and its [actions] at the foot. Below 600 wide the
-/// actions share the row; wider they stand at its end. When it confirms a
-/// loss, its last action is `KeycapButton.accent(isDestructiveAction: true)`.
+/// actions share the row; wider they stand at its end. When they do not fit
+/// in one row (long words, large text) they stack, each as wide as the
+/// panel, the main one on top. When it confirms a loss, its last action is
+/// `KeycapButton.accent(isDestructiveAction: true)`.
 ///
 /// ```dart
 /// showKeycapDialog(context: context, builder: (context) => KeycapDialog(title: 'Delete note?', actions: [KeycapButton(onPressed: keep, child: const Text('Keep')), KeycapButton.accent(isDestructiveAction: true, onPressed: delete, child: const Text('Delete'))]))
@@ -111,13 +113,9 @@ class KeycapDialog extends StatelessWidget {
                                   actions.length,
                             )
                           : 0.0;
-                      return OverflowBar(
-                        alignment: narrow
-                            ? MainAxisAlignment.spaceBetween
-                            : MainAxisAlignment.end,
-                        overflowAlignment: OverflowBarAlignment.end,
-                        spacing: gap,
-                        overflowSpacing: gap,
+                      return _DialogKeys(
+                        gap: gap,
+                        share: narrow,
                         children: [
                           for (final action in actions)
                             ConstrainedBox(
@@ -144,6 +142,169 @@ class KeycapDialog extends StatelessWidget {
       ..add(StringProperty('title', title, defaultValue: null))
       ..add(IntProperty('actions', actions.length));
   }
+}
+
+/// A dialog's keys. Side by side when they fit, as an [OverflowBar] lays
+/// them: spread over the width on a phone ([share]), at the end elsewhere.
+/// When they do not fit, stacked, each as wide as the dialog, the main key
+/// (the last) on top, [gap] apart.
+class _DialogKeys extends MultiChildRenderObjectWidget {
+  const _DialogKeys({
+    required this.gap,
+    required this.share,
+    required super.children,
+  });
+
+  final double gap;
+  final bool share;
+
+  @override
+  _RenderDialogKeys createRenderObject(BuildContext context) =>
+      _RenderDialogKeys(gap, share, Directionality.of(context));
+
+  @override
+  void updateRenderObject(
+    BuildContext context,
+    _RenderDialogKeys renderObject,
+  ) => renderObject
+    ..gap = gap
+    ..share = share
+    ..textDirection = Directionality.of(context);
+}
+
+class _DialogKeysParentData extends ContainerBoxParentData<RenderBox> {}
+
+class _RenderDialogKeys extends RenderBox
+    with
+        ContainerRenderObjectMixin<RenderBox, _DialogKeysParentData>,
+        RenderBoxContainerDefaultsMixin<RenderBox, _DialogKeysParentData> {
+  _RenderDialogKeys(this._gap, this._share, this._textDirection);
+
+  double _gap;
+  set gap(double value) {
+    if (value == _gap) return;
+    _gap = value;
+    markNeedsLayout();
+  }
+
+  bool _share;
+  set share(bool value) {
+    if (value == _share) return;
+    _share = value;
+    markNeedsLayout();
+  }
+
+  TextDirection _textDirection;
+  set textDirection(TextDirection value) {
+    if (value == _textDirection) return;
+    _textDirection = value;
+    markNeedsLayout();
+  }
+
+  @override
+  void setupParentData(RenderBox child) {
+    if (child.parentData is! _DialogKeysParentData) {
+      child.parentData = _DialogKeysParentData();
+    }
+  }
+
+  List<RenderBox> get _keys => [
+    for (RenderBox? k = firstChild; k != null; k = childAfter(k)) k,
+  ];
+
+  double get _gaps => _gap * math.max(0, childCount - 1);
+
+  @override
+  double computeMinIntrinsicWidth(double height) => _keys.fold(
+    0,
+    (widest, k) => math.max(widest, k.getMinIntrinsicWidth(double.infinity)),
+  );
+
+  @override
+  double computeMaxIntrinsicWidth(double height) =>
+      _keys.fold(
+        0.0,
+        (sum, k) => sum + k.getMaxIntrinsicWidth(double.infinity),
+      ) +
+      _gaps;
+
+  @override
+  double computeMinIntrinsicHeight(double width) =>
+      _height(width, (k, w) => k.getMinIntrinsicHeight(w));
+
+  @override
+  double computeMaxIntrinsicHeight(double width) =>
+      _height(width, (k, w) => k.getMaxIntrinsicHeight(w));
+
+  double _height(double width, double Function(RenderBox, double) measure) {
+    if (computeMaxIntrinsicWidth(double.infinity) <= width) {
+      return _keys.fold(
+        0,
+        (tallest, k) => math.max(tallest, measure(k, double.infinity)),
+      );
+    }
+    return _keys.fold(0.0, (sum, k) => sum + measure(k, width)) + _gaps;
+  }
+
+  @override
+  Size computeDryLayout(BoxConstraints constraints) =>
+      _layout(constraints, (k, c) => k.getDryLayout(c), place: false);
+
+  @override
+  void performLayout() {
+    size = _layout(constraints, (k, c) {
+      k.layout(c, parentUsesSize: true);
+      return k.size;
+    }, place: true);
+  }
+
+  Size _layout(
+    BoxConstraints constraints,
+    Size Function(RenderBox, BoxConstraints) lay, {
+    required bool place,
+  }) {
+    final keys = _keys;
+    if (keys.isEmpty) return constraints.smallest;
+    final sizes = [for (final k in keys) lay(k, constraints.loosen())];
+    final row = sizes.fold(0.0, (sum, s) => sum + s.width) + _gaps;
+    final width = constraints.maxWidth;
+    if (row <= width) {
+      final tallest = sizes.fold(0.0, (h, s) => math.max(h, s.height));
+      final size = constraints.constrain(Size(width, tallest));
+      if (place) {
+        final rtl = _textDirection == TextDirection.rtl;
+        final spacing = _share && keys.length > 1
+            ? (size.width - (row - _gaps)) / (keys.length - 1)
+            : _gap;
+        // From the start edge: spread from it on a phone, else at the end.
+        var along = _share ? 0.0 : size.width - row;
+        for (final (i, k) in keys.indexed) {
+          final w = sizes[i].width;
+          (k.parentData! as _DialogKeysParentData).offset = Offset(
+            rtl ? size.width - along - w : along,
+            (tallest - sizes[i].height) / 2,
+          );
+          along += w + spacing;
+        }
+      }
+      return size;
+    }
+    var y = 0.0;
+    for (final k in keys.reversed) {
+      final s = lay(k, BoxConstraints.tightFor(width: width));
+      if (place) (k.parentData! as _DialogKeysParentData).offset = Offset(0, y);
+      y += s.height + _gap;
+    }
+    return constraints.constrain(Size(width, y - _gap));
+  }
+
+  @override
+  bool hitTestChildren(BoxHitTestResult result, {required Offset position}) =>
+      defaultHitTestChildren(result, position: position);
+
+  @override
+  void paint(PaintingContext context, Offset offset) =>
+      defaultPaint(context, offset);
 }
 
 /// Lays [builder]'s dialog over the keyboard on the app's root navigator:

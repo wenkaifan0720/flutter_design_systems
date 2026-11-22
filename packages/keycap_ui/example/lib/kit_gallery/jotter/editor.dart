@@ -217,11 +217,13 @@ class _EditorState extends State<_Editor> {
           ],
           Expanded(child: well),
           const SizedBox(height: KeycapSpacing.medium),
-          Row(
-            children: [
-              Expanded(child: meta),
-              if (phone) count,
-            ],
+          // The count stands at the line's end, or under the folder and
+          // time when both don't fit (a large text size).
+          Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            spacing: KeycapSpacing.medium,
+            runSpacing: KeycapSpacing.tight,
+            children: [meta, if (phone) count],
           ),
         ],
       ),

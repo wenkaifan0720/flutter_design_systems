@@ -35,6 +35,7 @@ class KeycapFace with Diagnosticable {
     this.focus = const Color(0x00000000),
     this.radius = KeycapMetrics.keyRadius,
     this.travel = 0,
+    this.sculpt = 1,
   });
 
   /// A key moulded in [colors], at rest: its plastic, its legend, its edge,
@@ -84,6 +85,10 @@ class KeycapFace with Diagnosticable {
   /// How far down the cap has gone: 0 at rest, 1 bottomed out, 0.55 latched.
   final double travel;
 
+  /// How much of the cap's moulding shows: 1 sculpted, its dish shaded and
+  /// its rim drawn; 0 a level, matte plate, as a key out of use stands.
+  final double sculpt;
+
   /// A copy with the given qualities replaced.
   KeycapFace copyWith({
     Color? top,
@@ -96,6 +101,7 @@ class KeycapFace with Diagnosticable {
     Color? focus,
     double? radius,
     double? travel,
+    double? sculpt,
   }) => KeycapFace(
     top: top ?? this.top,
     wall: wall ?? this.wall,
@@ -107,19 +113,26 @@ class KeycapFace with Diagnosticable {
     focus: focus ?? this.focus,
     radius: radius ?? this.radius,
     travel: travel ?? this.travel,
+    sculpt: sculpt ?? this.sculpt,
   );
 
-  /// This cap off: its plastic faded toward [ground], its legend [ink], no
-  /// shadow, no travel. It keeps its shape and its size.
-  KeycapFace disabled(Color ground, Color ink) => copyWith(
-    top: Color.lerp(top, ground, 0.55),
-    wall: Color.lerp(wall, ground, 0.55),
-    front: Color.lerp(front, ground, 0.55),
-    legend: ink,
-    shadow: shadow.withValues(alpha: 0),
-    backlight: backlight.withValues(alpha: 0),
-    travel: 0,
-  );
+  /// This cap off: a level, matte plate of its top's plastic faded toward
+  /// [ground], with no moulding, no shadow and no travel, its legend [ink].
+  /// It keeps its shape and its size, and is never brighter than a cap in
+  /// use.
+  KeycapFace disabled(Color ground, Color ink) {
+    final plate = Color.lerp(top, ground, 0.55)!;
+    return copyWith(
+      top: plate,
+      wall: plate,
+      front: plate,
+      legend: ink,
+      shadow: shadow.withValues(alpha: 0),
+      backlight: backlight.withValues(alpha: 0),
+      travel: 0,
+      sculpt: 0,
+    );
+  }
 
   /// Between [a] and [b] by [t].
   static KeycapFace lerp(KeycapFace a, KeycapFace b, double t) {
@@ -136,6 +149,7 @@ class KeycapFace with Diagnosticable {
       focus: c(a.focus, b.focus),
       radius: lerpDouble(a.radius, b.radius, t)!,
       travel: lerpDouble(a.travel, b.travel, t)!,
+      sculpt: lerpDouble(a.sculpt, b.sculpt, t)!,
     );
   }
 
@@ -151,7 +165,8 @@ class KeycapFace with Diagnosticable {
       other.backlight == backlight &&
       other.focus == focus &&
       other.radius == radius &&
-      other.travel == travel;
+      other.travel == travel &&
+      other.sculpt == sculpt;
 
   @override
   int get hashCode => Object.hash(
@@ -165,6 +180,7 @@ class KeycapFace with Diagnosticable {
     focus,
     radius,
     travel,
+    sculpt,
   );
 
   @override
@@ -173,7 +189,8 @@ class KeycapFace with Diagnosticable {
     properties
       ..add(ColorProperty('top', top))
       ..add(ColorProperty('legend', legend))
-      ..add(DoubleProperty('travel', travel));
+      ..add(DoubleProperty('travel', travel))
+      ..add(DoubleProperty('sculpt', sculpt, defaultValue: 1));
   }
 }
 
@@ -440,7 +457,7 @@ class _CapPainter extends CustomPainter {
                 Color.lerp(
                   f.front,
                   const Color(0xFF000000),
-                  0.06,
+                  0.06 * f.sculpt,
                 )!.withValues(alpha: f.front.a),
               ],
             ).createShader(
@@ -467,7 +484,7 @@ class _CapPainter extends CustomPainter {
             Color.lerp(
               f.top,
               const Color(0xFF000000),
-              dark ? 0.13 : 0.075,
+              (dark ? 0.13 : 0.075) * f.sculpt,
             )!.withValues(alpha: f.top.a),
             f.top,
             // A small lift, the same on every plastic: a larger one turns a
@@ -475,13 +492,13 @@ class _CapPainter extends CustomPainter {
             Color.lerp(
               f.top,
               const Color(0xFFFFFFFF),
-              dark ? 0.06 : 0.10,
+              (dark ? 0.06 : 0.10) * f.sculpt,
             )!.withValues(alpha: f.top.a),
           ],
           stops: const [0, 0.55, 1],
         ).createShader(faceRect),
     );
-    if (f.top.a > 0) {
+    if (f.top.a > 0 && f.sculpt > 0) {
       canvas.save();
       canvas.clipRRect(top);
       canvas.drawPath(
@@ -491,7 +508,7 @@ class _CapPainter extends CustomPainter {
           ..addRRect(top),
         Paint()
           ..color = const Color(0xFF000000)
-              .withValues(alpha: (dark ? 0.16 : 0.10) * f.top.a)
+              .withValues(alpha: (dark ? 0.16 : 0.10) * f.top.a * f.sculpt)
           ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2.2),
       );
       canvas.restore();
@@ -506,7 +523,7 @@ class _CapPainter extends CustomPainter {
           f.wall,
           const Color(0xFF000000),
           0.12,
-        )!.withValues(alpha: 0.43 * f.top.a),
+        )!.withValues(alpha: 0.43 * f.top.a * f.sculpt),
     );
 
     // The edge round the foot, a full pixel, so the cap's outline reads on

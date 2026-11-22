@@ -4,6 +4,7 @@
 library;
 
 import 'dart:async' show scheduleMicrotask;
+import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -314,8 +315,10 @@ class _KeycapSelectState<T> extends State<KeycapSelect<T>> {
   }
 }
 
-/// How an open list arrives over the keyboard: it fades in and settles the
-/// last few pixels toward its key; it leaves the same way.
+/// How an open list arrives over the keyboard: it settles the last few
+/// pixels toward its key, opaque from its first frame, as plastic is: the
+/// keys under it never show through its rows while it moves. It leaves the
+/// same way.
 ///
 /// ```dart
 /// KeycapMenuReveal(animation: info.animation, child: list)
@@ -344,12 +347,9 @@ class KeycapMenuReveal extends StatelessWidget {
     child: child,
     builder: (context, child) {
       final t = animation.value;
-      return Opacity(
-        opacity: (t / 0.45).clamp(0.0, 1.0),
-        child: Transform.translate(
-          offset: Offset(0, (1 - t) * (below ? -6 : 6)),
-          child: child,
-        ),
+      return Transform.translate(
+        offset: Offset(0, (1 - t) * (below ? -6 : 6)),
+        child: child,
       );
     },
   );
@@ -500,36 +500,77 @@ class KeycapMenuRow extends StatelessWidget {
         ),
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: inset),
-          child: Row(
-            children: [
-              if (leading != null) ...[
-                IconTheme.merge(
-                  data: IconThemeData(size: 18, color: words),
-                  child: leading!,
+          child: trailing == null
+              ? Row(children: _children(theme, style, words, null))
+              // The words come first: where they and the row's end don't
+              // fit side by side (large text on a phone), the end prints
+              // smaller rather than cut the words.
+              : LayoutBuilder(
+                  builder: (context, box) =>
+                      Row(children: _children(theme, style, words, box)),
                 ),
-                const SizedBox(width: KeycapSpacing.medium),
-              ],
-              Expanded(
-                child: DesignCapCenter(
-                  capHeightFactor: theme.capHeightFactor,
-                  child: Text(
-                    label,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.body
-                        .merge(style.textStyle)
-                        .copyWith(
-                          color: words,
-                          fontWeight: chosen
-                              ? FontWeight.w500
-                              : FontWeight.w400,
-                        ),
-                  ),
-                ),
-              ),
-              if (trailing != null) ...[
-                const SizedBox(width: KeycapSpacing.medium),
-                DefaultTextStyle(
+        ),
+      ),
+    );
+  }
+
+  List<Widget> _children(
+    KeycapThemeData theme,
+    DesignStyleOf style,
+    Color words,
+    BoxConstraints? box,
+  ) {
+    final c = theme.colors;
+    final text = DesignCapCenter(
+      capHeightFactor: theme.capHeightFactor,
+      child: Text(
+        label,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: theme.textTheme.body
+            .merge(style.textStyle)
+            .copyWith(
+              color: words,
+              fontWeight: chosen ? FontWeight.w500 : FontWeight.w400,
+            ),
+      ),
+    );
+    const glyph = 18 + KeycapSpacing.medium;
+    return [
+      if (leading != null) ...[
+        IconTheme.merge(
+          data: IconThemeData(size: 18, color: words),
+          child: leading!,
+        ),
+        const SizedBox(width: KeycapSpacing.medium),
+      ],
+      if (box == null)
+        Expanded(child: text)
+      else
+        ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth: math.max(
+              0,
+              box.maxWidth -
+                  (leading == null ? 0 : glyph) -
+                  (chosen ? glyph : 0) -
+                  KeycapSpacing.medium,
+            ),
+          ),
+          child: text,
+        ),
+      if (trailing != null)
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsetsDirectional.only(
+              start: KeycapSpacing.medium,
+            ),
+            child: Align(
+              alignment: AlignmentDirectional.centerEnd,
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: AlignmentDirectional.centerEnd,
+                child: DefaultTextStyle(
                   style: theme.textTheme.figure.copyWith(
                     color: enabled ? c.inkMuted : c.inkDisabled,
                   ),
@@ -538,16 +579,15 @@ class KeycapMenuRow extends StatelessWidget {
                     child: trailing!,
                   ),
                 ),
-              ],
-              if (chosen) ...[
-                const SizedBox(width: KeycapSpacing.medium),
-                Icon(LucideIcons.check, size: 18, color: words),
-              ],
-            ],
+              ),
+            ),
           ),
         ),
-      ),
-    );
+      if (chosen) ...[
+        const SizedBox(width: KeycapSpacing.medium),
+        Icon(LucideIcons.check, size: 18, color: words),
+      ],
+    ];
   }
 
   @override

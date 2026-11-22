@@ -348,7 +348,8 @@ class KeycapMeter extends StatelessWidget {
   /// How full, 0 to 1.
   final double value;
 
-  /// The amount in words ("7.2 of 10 GB"); the percentage when null.
+  /// The amount in words ("7.2 of 10 GB"); the percentage, in the reader's
+  /// digits, when null.
   final String? valueLabel;
 
   /// Past this the bar turns to the danger plastic; never when null.
@@ -364,7 +365,8 @@ class KeycapMeter extends StatelessWidget {
     final layered = DesignStyleOf([style, theme.progressStyle], const {});
     final v = value.clamp(0.0, 1.0);
     final over = high != null && v > high!;
-    final figure = valueLabel ?? '${(v * 100).round()}%';
+    final figure =
+        valueLabel ?? RawWidgetsLocalizations.of(context).formatPercent(v);
     return Semantics(
       label: label,
       value: figure,

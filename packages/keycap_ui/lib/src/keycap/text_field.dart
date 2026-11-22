@@ -317,9 +317,12 @@ class _KeycapTextFieldState extends State<KeycapTextField> {
           ? null
           : Text(
               widget.hint!,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: words.copyWith(color: c.inkMuted),
+              // A text area's hint wraps over its lines, as its words do.
+              maxLines: oneLine ? 1 : widget.maxLines,
+              overflow: widget.maxLines == null ? null : TextOverflow.ellipsis,
+              style: words.copyWith(
+                color: widget.enabled ? c.inkMuted : c.inkDisabled,
+              ),
             ),
       child: Material(
         type: MaterialType.transparency,

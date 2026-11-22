@@ -552,6 +552,9 @@ class KeycapPageDots extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = KeycapTheme.of(context).colors;
     final words = RawWidgetsLocalizations.of(context);
+    // A page not showing is a small well. By night a well is lighter than
+    // the case (the plastic's wall shade): a darker one vanished into it.
+    final rest = c.brightness == Brightness.dark ? c.alpha.wall : c.wellPressed;
     Widget dot(int i) => KeycapSpringValue(
       value: i == index ? 1 : 0,
       spring: KeycapMotion.latch,
@@ -560,7 +563,7 @@ class KeycapPageDots extends StatelessWidget {
         height: 8,
         child: DecoratedBox(
           decoration: BoxDecoration(
-            color: Color.lerp(c.wellPressed, c.accent.top, t.clamp(0.0, 1.0)),
+            color: Color.lerp(rest, c.accent.top, t.clamp(0.0, 1.0)),
             borderRadius: BorderRadius.circular(4),
             border: Border(
               top: BorderSide(

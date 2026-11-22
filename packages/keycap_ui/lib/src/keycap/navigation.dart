@@ -718,7 +718,16 @@ class KeycapScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.sizeOf(context).width;
-    final page = Semantics(container: true, child: body);
+    // The body keeps its children's nodes apart. A Navigator here would
+    // otherwise hang its route's node off this one, and a list opening over
+    // the route gives the route a node between them: on the web the focused
+    // field's input moves into it and the browser blurs it, so the tap that
+    // opened the list loses focus.
+    final page = Semantics(
+      container: true,
+      explicitChildNodes: true,
+      child: body,
+    );
     if (width < 600) {
       if (!showNavigation) return page;
       return Column(

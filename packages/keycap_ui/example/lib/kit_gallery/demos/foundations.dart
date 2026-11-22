@@ -39,22 +39,30 @@ class _Colourway extends StatelessWidget {
         ],
       ),
     );
+    const gap = SizedBox(width: KeycapSpacing.small);
+    Widget pair(Widget a, Widget b) => Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [a, gap, b],
+    );
+    final alpha = cap('Alpha', c.alpha, 'Neutral');
+    final mod = cap('Mod', c.modifier, 'Secondary, latched');
+    final enter = cap('Enter', c.accent, 'The main action');
+    final del = cap('Del', c.danger, 'Confirms a loss');
     return KitSection(
       title: 'The colourway',
       note: 'Each kind of key in its own plastic; the roles never swap.',
       children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            cap('Alpha', c.alpha, 'Neutral'),
-            const SizedBox(width: KeycapSpacing.small),
-            cap('Mod', c.modifier, 'Secondary, latched'),
-            const SizedBox(width: KeycapSpacing.small),
-            cap('Enter', c.accent, 'The main action'),
-            const SizedBox(width: KeycapSpacing.small),
-            cap('Del', c.danger, 'Confirms a loss'),
-          ],
-        ),
+        // Two by two at a large text size, where four in a row cut their
+        // legends and break their roles' words.
+        if (MediaQuery.textScalerOf(context).scale(16) > 24) ...[
+          pair(alpha, mod),
+          const SizedBox(height: KeycapSpacing.regular),
+          pair(enter, del),
+        ] else
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [alpha, gap, mod, gap, enter, gap, del],
+          ),
       ],
     );
   }

@@ -62,11 +62,13 @@ List<Color> _inks(KeycapColors c) => c.brightness == Brightness.light
         c.inkMuted,
       ];
 
-/// A figure with no needless decimals.
-String _plain(double v) {
-  if (v == v.roundToDouble()) return v.toInt().toString();
-  return v.toStringAsFixed(v.abs() < 10 ? 1 : 0);
-}
+/// A figure with no needless decimals, in the reader's digits (Arabic's
+/// Arabic-Indic, German's decimal comma).
+String _plain(BuildContext context, double v) =>
+    RawWidgetsLocalizations.of(context).formatDecimal(
+      v,
+      fractionDigits: v == v.roundToDouble() || v.abs() >= 10 ? 0 : 1,
+    );
 
 /// The size [s] takes in [style] at the reader's text size.
 Size _measure(BuildContext context, String s, TextStyle style) {
@@ -222,7 +224,7 @@ class _SeriesChartState extends State<_SeriesChart> {
     super.dispose();
   }
 
-  String _text(double v) => widget.valueText?.call(v) ?? _plain(v);
+  String _text(double v) => widget.valueText?.call(v) ?? _plain(context, v);
 
   int get _count => widget.labels.length;
 
@@ -648,7 +650,8 @@ class KeycapLineChart extends StatelessWidget {
   /// Its height, the labels included.
   final double height;
 
-  /// How a value reads; plain figures when null.
+  /// How a value reads, with its unit ("4 h", "€12"); plain figures in the
+  /// reader's digits when null.
   final String Function(double value)? valueText;
 
   /// Whether its values are on their way (a spinner in the well).
@@ -717,7 +720,8 @@ class KeycapAreaChart extends StatelessWidget {
   /// Its height, the labels included.
   final double height;
 
-  /// How a value reads; plain figures when null.
+  /// How a value reads, with its unit ("4 h", "€12"); plain figures in the
+  /// reader's digits when null.
   final String Function(double value)? valueText;
 
   /// Whether its values are on their way.
@@ -784,7 +788,8 @@ class KeycapBarChart extends StatelessWidget {
   /// Its height, the labels included.
   final double height;
 
-  /// How a value reads; plain figures when null.
+  /// How a value reads, with its unit ("4 h", "€12"); plain figures in the
+  /// reader's digits when null.
   final String Function(double value)? valueText;
 
   /// Whether its values are on their way.
@@ -851,7 +856,8 @@ class KeycapDonutChart extends StatefulWidget {
   /// The words under the total in its middle ("Notes", "Total").
   final String? centerLabel;
 
-  /// How a value reads; plain figures when null.
+  /// How a value reads, with its unit ("4 h", "€12"); plain figures in the
+  /// reader's digits when null.
   final String Function(double value)? valueText;
 
   /// Whether its values are on their way.
@@ -889,9 +895,10 @@ class _KeycapDonutChartState extends State<KeycapDonutChart> {
       widget.slices.fold<double>(0, (sum, s) => sum + math.max(0.0, s.$2));
 
   String _share(double v) =>
-      _total <= 0 ? '0%' : '${(v / _total * 100).round()}%';
+      RawWidgetsLocalizations.of(context)
+          .formatPercent(_total <= 0 ? 0 : v / _total);
 
-  String _text(double v) => widget.valueText?.call(v) ?? _plain(v);
+  String _text(double v) => widget.valueText?.call(v) ?? _plain(context, v);
 
   @override
   Widget build(BuildContext context) {
@@ -906,6 +913,15 @@ class _KeycapDonutChartState extends State<KeycapDonutChart> {
     final colours = [
       for (var i = 0; i < widget.slices.length; i++) inks[i % inks.length],
     ];
+    // A legend line's first line of words, for its swatch to centre on.
+    final probe = TextPainter(
+      text: TextSpan(text: 'Hg', style: t.body),
+      textDirection: Directionality.of(context),
+      textScaler: MediaQuery.textScalerOf(context),
+      maxLines: 1,
+    )..layout();
+    final firstLine = probe.height;
+    probe.dispose();
     final Widget ring;
     if (widget.loading || empty) {
       ring = Semantics(
@@ -996,42 +1012,54 @@ class _KeycapDonutChartState extends State<KeycapDonutChart> {
                     padding: const EdgeInsets.symmetric(
                       vertical: KeycapSpacing.tight,
                     ),
-                    // One run of words, so large text wraps it rather than
-                    // pushing it past the chart's edge.
-                    child: Text.rich(
-                      TextSpan(
-                        children: [
-                          WidgetSpan(
-                            alignment: PlaceholderAlignment.middle,
-                            child: Padding(
-                              padding: const EdgeInsetsDirectional.only(
-                                end: KeycapSpacing.small,
+                    // The swatch stands at the line's start on either
+                    // reading side (a label written the other way, as an
+                    // English name on an Arabic page, can't carry it off),
+                    // centred on the first line; the words are one run, so
+                    // large text wraps them rather than pushing them past the
+                    // chart's edge.
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SizedBox(
+                          height: firstLine,
+                          child: Center(
+                            child: DecoratedBox(
+                              decoration: BoxDecoration(
+                                color: colours[i],
+                                borderRadius: BorderRadius.circular(2),
                               ),
-                              child: DecoratedBox(
-                                decoration: BoxDecoration(
-                                  color: colours[i],
-                                  borderRadius: BorderRadius.circular(2),
+                              child: const SizedBox.square(dimension: 10),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: KeycapSpacing.small),
+                        Flexible(
+                          child: Text.rich(
+                            TextSpan(
+                              children: [
+                                TextSpan(
+                                  text: label,
+                                  style: t.body.copyWith(
+                                    color: c.ink,
+                                    fontWeight: at == i
+                                        ? FontWeight.w600
+                                        : null,
+                                  ),
                                 ),
-                                child: const SizedBox.square(dimension: 10),
-                              ),
+                                const WidgetSpan(
+                                  child: SizedBox(width: KeycapSpacing.small),
+                                ),
+                                TextSpan(
+                                  text: '${_text(value)} · ${_share(value)}',
+                                  style: t.figure.copyWith(color: c.inkMuted),
+                                ),
+                              ],
                             ),
                           ),
-                          TextSpan(
-                            text: label,
-                            style: t.body.copyWith(
-                              color: c.ink,
-                              fontWeight: at == i ? FontWeight.w600 : null,
-                            ),
-                          ),
-                          const WidgetSpan(
-                            child: SizedBox(width: KeycapSpacing.small),
-                          ),
-                          TextSpan(
-                            text: '${_text(value)} · ${_share(value)}',
-                            style: t.figure.copyWith(color: c.inkMuted),
-                          ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ),
               ],

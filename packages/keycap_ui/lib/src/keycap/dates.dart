@@ -139,18 +139,25 @@ Widget _day(
       : pressed
       ? c.inkMuted
       : layered.foreground ?? c.ink;
-  Widget figure(Color color) => FittedBox(
-    fit: BoxFit.scaleDown,
-    child: DesignCapCenter(
-      capHeightFactor: theme.capHeightFactor,
-      child: Text(
-        '${day.date.day}',
-        maxLines: 1,
-        softWrap: false,
-        style: theme.textTheme.body.copyWith(
-          color: color,
-          fontWeight: day.isToday || end ? FontWeight.w600 : FontWeight.w400,
-          fontFeatures: const [FontFeature.tabularFigures()],
+  // At a large text size the figures shrink to keep 6 px inside their cell:
+  // where a month is narrow a day's touch target overhangs its seventh, and
+  // the figures still keep apart, so a row's days never run together.
+  Widget figure(Color color) => Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 6),
+    child: FittedBox(
+      fit: BoxFit.scaleDown,
+      child: DesignCapCenter(
+        capHeightFactor: theme.capHeightFactor,
+        child: Text(
+          // The reader's digits: Arabic-Indic in Arabic, as the month is named.
+          RawWidgetsLocalizations.of(context).formatDecimal(day.date.day),
+          maxLines: 1,
+          softWrap: false,
+          style: theme.textTheme.body.copyWith(
+            color: color,
+            fontWeight: day.isToday || end ? FontWeight.w600 : FontWeight.w400,
+            fontFeatures: const [FontFeature.tabularFigures()],
+          ),
         ),
       ),
     ),
@@ -423,10 +430,13 @@ class _PickerKey extends StatelessWidget {
         ? key(null)
         : RawPopover(
             semanticLabel: semanticLabel,
+            // The calendar wants its whole month (two, side by side, for a
+            // range on a desk) before it picks a side: low on a phone it
+            // opens above the field rather than below in a sliver.
             placement: const RawPopoverPlacement(
               gap: KeycapSpacing.tight + 2,
               margin: KeycapSpacing.small,
-              preferredExtent: 380,
+              preferredExtent: double.infinity,
               matchAnchorWidth: false,
               maxWidth: 340,
             ),

@@ -1019,12 +1019,15 @@ final DesignInventory keycapInventory = DesignInventory(
       'Menu',
       (_) => KeycapMenu(
         semanticLabel: 'Note',
-        destructive: const {'Delete'},
         entries: const [
           RawMenuEntry(label: 'Pin', onPressed: _none),
           RawMenuEntry(label: 'Move', onPressed: _none),
           RawMenuEntry.divider(),
-          RawMenuEntry(label: 'Delete', onPressed: _none),
+          RawMenuEntry(
+            label: 'Delete',
+            isDestructiveAction: true,
+            onPressed: _none,
+          ),
         ],
         builder: (context, anchor) => KeycapIconButton(
           icon: const Icon(LucideIcons.ellipsis),

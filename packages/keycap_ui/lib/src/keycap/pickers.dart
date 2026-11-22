@@ -230,7 +230,8 @@ Widget _failed(BuildContext context, RawSearchError error) {
 /// A field that suggests as it is typed in: the [options] that fit the
 /// words (or what [search] finds) open in a panel under it, the lit row a
 /// plate inset in the panel, the chosen one ticked. The arrows move the lit
-/// row; Enter takes it. Built on ui_core's `RawCombobox`.
+/// row; Enter takes it. It ends in a [KeycapSelect]'s chevron, the sign of
+/// a field that opens a list. Built on ui_core's `RawCombobox`.
 ///
 /// ```dart
 /// KeycapCombobox<String>(label: 'Folder', options: const ['Ideas', 'Work', 'Home'], onSelected: move)
@@ -426,10 +427,11 @@ class _KeycapComboboxState<T extends Object> extends State<KeycapCombobox<T>> {
                       ),
                     ),
                   ),
+                  // The select's sign: a field that opens a list ends in it.
                   Padding(
                     padding: EdgeInsets.symmetric(horizontal: pad),
                     child: Icon(
-                      LucideIcons.chevronsUpDown,
+                      LucideIcons.chevronDown,
                       size: 18,
                       color: widget.enabled ? c.inkMuted : c.inkDisabled,
                     ),
