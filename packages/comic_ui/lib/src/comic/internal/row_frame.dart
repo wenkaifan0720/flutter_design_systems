@@ -90,6 +90,12 @@ class RowFrame extends InheritedWidget {
   /// The nearest group's lit rows.
   static RowLights? lightsOf(BuildContext context) => _of(context)?.lights;
 
+  /// Whether the row stands in another row's layout, beside that row's action ([RowFrame.off]).
+  static bool besideAction(BuildContext context) {
+    final frame = _of(context);
+    return frame != null && frame.shape == null;
+  }
+
   /// What a group's first row adds above itself and its last row below, the group's padding less its rows' inset:
   /// zero for the rows between.
   static EdgeInsets endsOf(BuildContext context) =>

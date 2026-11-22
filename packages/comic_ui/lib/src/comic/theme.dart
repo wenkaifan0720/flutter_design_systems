@@ -301,8 +301,10 @@ class ComicColors with Diagnosticable {
     required this.highlight,
   });
 
-  /// The backdrop dims the page behind the open surface in either edition.
-  Color get scrim => dark ? const Color(0x88000000) : const Color(0x66000000);
+  /// The ink of the Ben-Day screen over the page behind an open surface: black, its alpha the share of the page the
+  /// dots cover: a quarter by day, a third by night, where a flat veil darkens no more. Denser, the dots run together,
+  /// a checker by day and a sieve of the page's light by night.
+  Color get scrim => dark ? const Color(0x55000000) : const Color(0x40000000);
 
   /// Semantic status inks on the current panel ground.
   ComicTones get tones => status ?? (dark ? ComicTones.dark : ComicTones.light);

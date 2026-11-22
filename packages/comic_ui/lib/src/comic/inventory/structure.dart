@@ -91,6 +91,7 @@ class ComicMenuBar extends StatelessWidget {
               label: entry.label,
               icon: entry.data is IconData ? entry.data! as IconData : null,
               checked: entry.checked == true,
+              danger: entry.isDestructiveAction,
               trailing: entry.isSubmenu
                   ? const Icon(ComicGlyphs.forward, size: 18)
                   : entry.shortcut == null

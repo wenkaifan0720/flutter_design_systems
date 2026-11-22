@@ -808,6 +808,9 @@ Widget _onPrint(bool live, bool down, OutlinedBorder? shape, Widget face) =>
       )
     : face;
 
+/// A field's caret, as wide as Flutter's own.
+const double _caretWidth = 2;
+
 /// A field on the control surface. [onPaper] uses the paper surface for a reply by day; by night every field is on the
 /// night card. Its outline remains on the same corner scale.
 /// [maxLines] above one makes a note box; [trailing] holds a send button or a unit.
@@ -1012,6 +1015,7 @@ class ComicTextField extends StatelessWidget {
           minLines: minLines ?? maxLines,
           maxLines: maxLines,
           cursorColor: look.foreground ?? inputInk,
+          cursorWidth: _caretWidth,
           textAlignVertical: maxLines > 1
               ? TextAlignVertical.top
               : TextAlignVertical.center,
@@ -1019,14 +1023,23 @@ class ComicTextField extends StatelessWidget {
             isCollapsed: true,
             border: InputBorder.none,
             // A note box's hint wraps over its lines, as its words would; a one-line field's ends in an ellipsis.
+            // At rest it stands where a select's value does. While the caret shows it moves in past the caret (its
+            // 1 pt gap and width) and a letter's space, so an empty field's caret stands clear of its first letter.
             hint: hint == null
                 ? null
                 : ExcludeSemantics(
-                    child: Text(
-                      hint!,
-                      style: textStyle.copyWith(color: inputHint),
-                      maxLines: maxLines,
-                      overflow: TextOverflow.ellipsis,
+                    child: AnimatedPadding(
+                      duration: ComicMotion.of(context).state,
+                      curve: ComicMotion.of(context).standard,
+                      padding: EdgeInsetsDirectional.only(
+                        start: effectiveFocus.hasFocus ? _caretWidth + 3 : 0,
+                      ),
+                      child: Text(
+                        hint!,
+                        style: textStyle.copyWith(color: inputHint),
+                        maxLines: maxLines,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
                   ),
             hintStyle: textStyle.copyWith(color: inputHint),

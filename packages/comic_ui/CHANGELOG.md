@@ -1,3 +1,28 @@
+## 0.4.1
+
+- Needs ui_core 0.4.1.
+- A `ComicMenuBar` item marked `isDestructiveAction` (ui_core 0.4.1's `DesignMenuEntry`), a Delete say, sets its
+  words in the danger tone, as Comic's other menus set a destructive row's.
+- A modal's page behind is screened in Ben-Day dots again, not dimmed by a flat grey wash: solid dots that cover as
+  much of the page as `ComicColors.scrim`'s alpha would darken it, swelling in with the route. The page's colours
+  stay their own between the dots, so a yellow tab under a dialog no longer turns mustard. `ComicColors.scrim` is a
+  quarter black by day and a third by night, so the dots stand apart.
+- `ComicCombobox` ends in the select's chevron, at the same place, so it reads as a field that opens a list.
+- A `ComicCombobox` whose `initialValue` is an option's words starts on that option, taken: opened, it offers
+  every option with that one chosen, not only the one it holds.
+- An empty `ComicTextField`'s caret stands before its hint, not over the hint's first letter: while the caret shows,
+  the hint moves in past it, clear by a letter's space. At rest it stands where a select's value does.
+- A chosen `ComicListTile` keeps its words on the list's line: its yellow plate reaches past them at either side
+  (beside a row's action, at its start only), where it used to step them in 8 px from every other row's.
+- A `ComicDialog` whose actions don't fit in a row stacks them as one column, each as wide as the dialog, the
+  confirming one on top. They used to keep their own widths at the end, a ragged stack.
+- `showComicDatePicker` on a phone shows the whole month: its seven columns narrow to 40 to fit the dialog, as
+  Material's calendar's days do, where Sunday's column was cut off.
+- A chart's figures, on its axis and in what a screen reader hears, are the reader's: Arabic-Indic digits on an
+  Arabic page, grouped as the locale groups. `ComicSparkline` says its range in the page's language.
+- `ComicLetteringStyle` is a value, as `TextStyle` is: two with the same `outline` and `layers` are equal and hash
+  alike.
+
 ## 0.4.0
 
 - Stands on ui_core 0.4.0, on Flutter 3.47 or later as before. The ui_core types comic_ui's API names take their

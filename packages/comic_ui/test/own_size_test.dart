@@ -177,6 +177,7 @@ const _flows = <String, String>{
   'ComicTreeView':
       'rows the width of its column; the keyboard\'s ring laid inside its row',
   'ComicChip': 'hugs its words; a stretching column widens its face, a remove cross at the face\'s end (held below)',
+  'ComicListTile': 'a row the width of its column; a chosen row\'s plate is laid under it, past its words',
 };
 
 // A part drawn through its own RenderObject shows none of these; its laws are in print_test.dart.

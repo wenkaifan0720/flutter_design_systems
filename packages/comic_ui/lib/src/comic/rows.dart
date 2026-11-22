@@ -655,7 +655,9 @@ class ComicListTile extends StatelessWidget {
     );
     // In a group a row reaches past the group's padding to a few pixels inside its rim, as an open menu's rows do:
     // its fill and press marks take the group's corner less that inset, concentric, and its words keep the padding.
-    // The rules beside a lit row (pressed or chosen) stand aside. Alone, a selected row pads inside its fill.
+    // The rules beside a lit row (pressed or chosen) stand aside. Alone, a selected row's fill reaches past its words
+    // at either side, so they stay on the list's line, not stepped in from every other row's; beside an action the
+    // fill stops at the row's end, clear of it.
     final fill = grouped ?? t.shapes.small;
     final reach = grouped == null
         ? EdgeInsets.zero
@@ -691,17 +693,23 @@ class ComicListTile extends StatelessWidget {
       row = RowLit(lights: lights, lit: true, child: row);
     }
     if (selected) {
-      row = ComicStateDecoration(
-        decoration: ShapeDecoration(color: t.colors.caption, shape: fill),
-        child: grouped != null
-            ? ComicLetteringScope(t.colors.onCaption, child: row)
-            : Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: ComicSpace.close,
+      final plate = ShapeDecoration(color: t.colors.caption, shape: fill);
+      final lettered = ComicLetteringScope(t.colors.onCaption, child: row);
+      row = grouped != null
+          ? ComicStateDecoration(decoration: plate, child: lettered)
+          : Stack(
+              clipBehavior: Clip.none,
+              children: [
+                PositionedDirectional(
+                  start: -ComicSpace.close,
+                  end: RowFrame.besideAction(context) ? 0 : -ComicSpace.close,
+                  top: 0,
+                  bottom: 0,
+                  child: ComicStateDecoration(decoration: plate),
                 ),
-                child: ComicLetteringScope(t.colors.onCaption, child: row),
-              ),
-      );
+                lettered,
+              ],
+            );
     }
     if (grouped != null) row = RowReach(reach: reach, child: row);
     return ComicRuled(rule: !isFirst, child: row);

@@ -27,7 +27,9 @@ import 'rows.dart';
 import 'layout.dart';
 import 'tell.dart';
 import 'tones.dart';
+import 'internal/actions.dart';
 import 'internal/cap_label.dart';
+import 'print.dart' show ComicScreenGrid;
 import 'internal/lettering.dart' show comicDisplayFor;
 import 'internal/track.dart';
 import 'internal/style_guard.dart';
@@ -309,7 +311,7 @@ class ComicDialog extends StatelessWidget {
   final List<Widget> content;
 
   /// Actions from least to most prominent, in a row at the dialog's trailing end, the confirming one last (give it
-  /// the act button); stacked where the row has no room, the last first.
+  /// the act button); where the row has no room, stacked each as wide as the dialog, the last on top.
   final List<Widget> actions;
 
   /// Appearance above this surface's component theme.
@@ -326,15 +328,8 @@ class ComicDialog extends StatelessWidget {
       ...content,
       if (actions.isNotEmpty)
         // The actions stand at the trailing end in reading order, the confirming one last, as Material's and
-        // Cupertino's dialogs set theirs.
-        OverflowBar(
-          spacing: ComicSpace.close,
-          overflowSpacing: 8,
-          alignment: MainAxisAlignment.end,
-          overflowAlignment: OverflowBarAlignment.end,
-          overflowDirection: VerticalDirection.up,
-          children: actions,
-        ),
+        // Cupertino's dialogs set theirs; stacked, one column at the dialog's width, the confirming one on top.
+        ComicActionBar(children: actions),
     ],
   );
 
@@ -482,7 +477,7 @@ class _SheetScope extends InheritedWidget {
       sheet.scrollController != old.sheet.scrollController;
 }
 
-/// A dialog that springs into view over a plain [ComicScreenScrim].
+/// A dialog that springs into view over a [ComicScreenScrim].
 /// The dialog appears immediately when reduced motion is enabled.
 class ComicDialogRoute<T> extends DesignDialogRoute<T> {
   /// Creates a [ComicDialogRoute] whose face [builder] builds.
@@ -527,7 +522,7 @@ class _Pop extends StatelessWidget {
         );
 }
 
-/// A sheet that slides up over a plain [ComicScreenScrim].
+/// A sheet that slides up over a [ComicScreenScrim].
 /// The sheet is centred and at most 640 logical pixels wide.
 class ComicBottomSheetRoute<T> extends RawBottomSheetRoute<T> {
   /// Creates a [ComicBottomSheetRoute] whose panel [builder] builds.
@@ -2744,7 +2739,8 @@ class ComicCombobox<T extends Object> extends StatefulWidget {
   /// Called with the option taken.
   final ValueChanged<T>? onSelected;
 
-  /// [label]: the field's name. [hint]: its placeholder. [helper]: a line under it. [initialValue]: its starting text.
+  /// [label]: the field's name. [hint]: its placeholder. [helper]: a line under it. [initialValue]: its starting text;
+  /// the words of one of [options] start it on that option, taken.
   final String? label, hint, helper, initialValue;
 
   /// How many matches typed words show at most. With no words typed, or the words of the option taken, the list
@@ -2827,8 +2823,11 @@ class _ComicComboboxState<T extends Object> extends State<ComicCombobox<T>> {
   String _words(T option) =>
       widget.displayStringForOption?.call(option) ?? option.toString();
 
-  /// The option last taken, while the field still holds its words: the list shows it chosen.
-  T? _taken;
+  /// The option last taken, while the field still holds its words: the list shows it chosen and offers every option
+  /// (ui_core's combobox does, for its value). An [ComicCombobox.initialValue] that is an option's words starts on it.
+  late T? _taken = widget.options
+      .where((option) => _words(option) == widget.initialValue)
+      .firstOrNull;
 
   void _take(T option) {
     setState(() => _taken = option);
@@ -2870,6 +2869,8 @@ class _ComicComboboxState<T extends Object> extends State<ComicCombobox<T>> {
         label: widget.label,
         hint: widget.hint,
         helper: widget.helper,
+        // It ends in the select's chevron: the field opens a list as a select does.
+        trailing: const Icon(ComicGlyphs.chevronDown),
         // Enter takes the highlighted option and the field keeps the focus, as a combobox's does: Flutter's own
         // finish to a done action would drop it. The take runs here, with no onSubmitted: a field told of a submit
         // that keeps its focus has its text input restarted, and in a browser the restarted input takes no typing.
@@ -2964,7 +2965,9 @@ Widget comicSearchFailed(
   );
 }
 
-/// A uniform veil over the page behind a modal. The route drives its opacity.
+/// The page behind a modal, screened back in Ben-Day dots of [ink], not dimmed: the dots cover as much of the page as
+/// [ink]'s alpha would darken it (0x40 black, a quarter), so the page recedes as far as under a veil while its colours
+/// between the dots stay its own. The dots swell in with the route and shrink away with it.
 ///
 /// ```dart
 /// ComicScreenScrim(animation: animation, ink: ComicTheme.of(context).colors.scrim)
@@ -2977,17 +2980,36 @@ class ComicScreenScrim extends StatelessWidget {
     required this.ink,
   });
 
-  /// The route progress, from a clear page to the full veil.
+  /// The route progress, from a clear page to the full screen.
   final Animation<double> animation;
 
-  /// The veil colour at full strength.
+  /// The screen's ink: the dots print it solid, its alpha the share of the page they cover.
   final Color ink;
 
   @override
-  Widget build(BuildContext context) => FadeTransition(
-    opacity: animation,
-    child: ColoredBox(color: ink, child: const SizedBox.expand()),
-  );
+  Widget build(BuildContext context) {
+    final dpr = MediaQuery.maybeDevicePixelRatioOf(context) ?? 1;
+    // Staggered rows half a pitch apart put two dots in each pitch square: they cover 2 pi r^2 / pitch^2 of it.
+    final full = comicScrimPitch * math.sqrt(ink.a / (2 * math.pi));
+    return RepaintBoundary(
+      child: AnimatedBuilder(
+        animation: animation,
+        builder: (context, _) => SizedBox.expand(
+          child: CustomPaint(
+            painter: _ScrimPainter(
+              ink.withValues(alpha: 1),
+              ComicScreenGrid(
+                comicScrimPitch,
+                // The tone grows with the dots' area, so evenly with the route.
+                full * math.sqrt(animation.value.clamp(0.0, 1.0)),
+                dpr,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -2998,14 +3020,32 @@ class ComicScreenScrim extends StatelessWidget {
   }
 }
 
-/// A modal route which lays a [ComicScreenScrim] of [screenInk] under its
+class _ScrimPainter extends CustomPainter {
+  const _ScrimPainter(this.ink, this.grid);
+  final Color ink;
+  final ComicScreenGrid grid;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (grid.radius <= 0) return;
+    grid.paint(canvas, Offset.zero & size, ink);
+  }
+
+  @override
+  bool shouldRepaint(_ScrimPainter old) =>
+      old.ink != ink ||
+      old.grid.radius != grid.radius ||
+      old.grid.pitch != grid.pitch;
+}
+
+/// A modal route whose page behind is screened in Ben-Day dots, not dimmed: a [ComicScreenScrim] of [screenInk] under its
 /// barrier, which still takes the presses. Give the route no barrier colour of its own.
 ///
 /// ```dart
 /// class IssueRoute<T> extends RawDialogRoute<T> with ComicScreenedRoute<T> { IssueRoute({required super.pageBuilder}) : super(barrierColor: null, barrierLabel: 'Close'); @override Color? get screenInk => const Color(0x99000000); }
 /// ```
 mixin ComicScreenedRoute<T> on ModalRoute<T> {
-  /// The veil colour; null leaves the page as it is.
+  /// The screen's ink; null leaves the page as it is.
   Color? get screenInk;
 
   @override
@@ -3025,5 +3065,6 @@ mixin ComicScreenedRoute<T> on ModalRoute<T> {
   }
 }
 
-/// Legacy grid dimensions for artwork matching the 0.2.0 modal screen.
+/// The modal screen's dot pitch, and the dot radius of a screen a quarter of the page in ink, for artwork that
+/// matches it.
 const double comicScrimPitch = 6, comicScrimRadius = 1.25;

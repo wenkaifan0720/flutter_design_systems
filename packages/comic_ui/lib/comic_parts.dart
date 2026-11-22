@@ -17,6 +17,7 @@ export 'comic_host.dart';
 export 'src/comic/balloons.dart';
 export 'src/comic/component_themes.dart';
 export 'src/comic/frames.dart';
+export 'src/comic/internal/actions.dart';
 export 'src/comic/internal/cap_label.dart';
 export 'src/comic/internal/field_icon.dart';
 export 'src/comic/internal/geometry.dart';

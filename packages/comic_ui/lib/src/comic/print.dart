@@ -471,6 +471,9 @@ class ComicActionLines extends StatelessWidget {
 }
 
 /// How lettering is outlined: contour width, then the layers behind it from nearest to farthest.
+///
+/// A value, as a [TextStyle] is: two styles with the same [outline] and [layers] are equal.
+@immutable
 class ComicLetteringStyle {
   /// Creates a [ComicLetteringStyle].
   const ComicLetteringStyle({this.outline = 0, this.layers = const []});
@@ -516,6 +519,16 @@ class ComicLetteringStyle {
     outline: 2.4,
     layers: [(3.5, 3.5, 1, 'act'), (5, 4.5, 1, 'line')],
   );
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ComicLetteringStyle &&
+          other.outline == outline &&
+          listEquals(other.layers, layers);
+
+  @override
+  int get hashCode => Object.hash(outline, Object.hashAll(layers));
 }
 
 /// Outlined lettering: the concept's stacked `text-shadow`, as one part. It lays out once and paints that one layout in every

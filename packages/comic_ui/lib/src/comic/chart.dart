@@ -119,7 +119,8 @@ class ComicChart extends StatefulWidget {
   /// Plot height, excluding axis labels and legend.
   final double height;
 
-  /// Formats values in the accessible summary, the value axis and the plate.
+  /// Formats values in the accessible summary, the value axis and the plate, with their unit
+  /// (`(v) => '${v.round()} h'`); null: whole numbers in the reader's digits.
   final String Function(double)? format;
 
   /// The values are on their way: the plot holds its place, quietly.
@@ -363,7 +364,11 @@ class _ComicChartState extends State<ComicChart> {
       whole: widget.format == null,
     );
     final low = guides.last, upper = guides.first;
-    final fmt = widget.format ?? (double n) => n.toStringAsFixed(0);
+    // The reader's own figures: Arabic-Indic digits on an Arabic page, the locale's grouping.
+    final digits = RawWidgetsLocalizations.of(context);
+    final fmt =
+        widget.format ??
+        (double n) => digits.formatDecimal(n, fractionDigits: 0);
     final nothing = values.isEmpty && !widget.loading;
     final read =
         widget.summary ??
@@ -1044,15 +1049,22 @@ class ComicSparkline extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = ComicTheme.of(context);
-    final fmt = format ?? (double n) => n.toStringAsFixed(0);
+    final digits = RawWidgetsLocalizations.of(context);
+    final fmt =
+        format ?? (double n) => digits.formatDecimal(n, fractionDigits: 0);
     final finite = [
       for (final v in values)
         if (v != null && v.isFinite) v,
     ];
     final read = finite.isEmpty
         ? ComicLocalizations.of(context).noData
-        : '${fmt(finite.first)} to ${fmt(finite.last)}, '
-              'low ${fmt(finite.reduce(math.min))}, high ${fmt(finite.reduce(math.max))}';
+        : [
+            digits.chartRangeLabel(fmt(finite.first), fmt(finite.last)),
+            digits.chartExtremesLabel(
+              fmt(finite.reduce(math.min)),
+              fmt(finite.reduce(math.max)),
+            ),
+          ].join(digits.listSeparator);
     return Semantics(
       container: true,
       label: label,

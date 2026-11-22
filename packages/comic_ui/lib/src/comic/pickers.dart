@@ -97,7 +97,9 @@ class ComicDatePicker extends StatefulWidget {
   final ComicStyle? style;
 
   /// A day's cell, wide and tall: a touch's least target. Every month Comic draws ([ComicCalendar], the range picker)
-  /// takes it, so two calendars on one screen share their grid.
+  /// takes it, so two calendars on one screen share their grid. Where a month has less than seven of them across
+  /// (a phone's dialog), its columns narrow, as Material's calendar's, down to 40 or the width that keeps each number
+  /// 4 clear of its outline, and keep this height; narrower still, the month scrolls sideways.
   static const double dayWidth = 48;
 
   /// Width of the seven-column month at its default cell size.
@@ -262,7 +264,10 @@ class _ComicDatePickerState extends State<ComicDatePicker> {
     // Reserve the measured day label and its actual outline insets. An
     // arbitrary text allowance made even an ordinary phone scroll sideways.
     // The numbers grow at most twice (see [_grid]), so they are measured so.
-    var minimumDayWidth = 48.0;
+    // A day keeps a touch's width (48) where seven fit; where they don't (a
+    // phone's dialog) they narrow, but never so far that a number comes within
+    // 4 of its day's outline, the corner's curve included.
+    var minimumDayWidth = ComicDatePicker.dayWidth, narrowestDay = 0.0;
     final direction = Directionality.of(context);
     for (final states in const <Set<WidgetState>>[
       {},
@@ -283,6 +288,7 @@ class _ComicDatePickerState extends State<ComicDatePicker> {
           .resolve(direction)
           .horizontal;
       final padding = look.padding(direction)?.horizontal ?? 0;
+      final corner = comicCornerInset(shape, direction);
       final painter = TextPainter(
         textDirection: direction,
         textScaler: MediaQuery.textScalerOf(context)
@@ -297,6 +303,11 @@ class _ComicDatePickerState extends State<ComicDatePicker> {
         minimumDayWidth = math.max(
           minimumDayWidth,
           (painter.width + inset / 2 + padding).ceilToDouble(),
+        );
+        narrowestDay = math.max(
+          narrowestDay,
+          (painter.width + inset + padding + 2 * (_dayClearance + corner))
+              .ceilToDouble(),
         );
       }
       painter.dispose();
@@ -468,7 +479,16 @@ class _ComicDatePickerState extends State<ComicDatePicker> {
       heightFactor: 1,
       child: ConstrainedBox(
         constraints: BoxConstraints(maxWidth: 7 * minimumDayWidth),
-        child: _grid(previous, next, month, count, lead, cell, minimumDayWidth),
+        child: _grid(
+          previous,
+          next,
+          month,
+          count,
+          lead,
+          cell,
+          minimumDayWidth,
+          math.max(narrowestDay, _narrowestDay),
+        ),
       ),
     );
   }
@@ -482,6 +502,7 @@ class _ComicDatePickerState extends State<ComicDatePicker> {
     int lead,
     Widget Function(int) cell,
     double minimumDayWidth,
+    double narrowestDay,
   ) {
     final t = ComicTheme.of(context);
     final words = ComicLocalizations.of(context);
@@ -512,16 +533,20 @@ class _ComicDatePickerState extends State<ComicDatePicker> {
             ),
           const SizedBox(height: ComicSpace.close),
           // The weekdays and days grow at most twice, as Material's calendar on a phone: larger, seven initials touch
-          // and seven days' numbers outgrew a phone, the grid scrolling sideways.
+          // and seven days' numbers outgrew a phone, the grid scrolling sideways. Where seven fit at their narrowest
+          // (a phone's dialog), they share the width, as Material's calendar's days do, rather than cut Sunday off;
+          // where they don't, each keeps a touch's width and the month scrolls.
           MediaQuery.withClampedTextScaling(
             maxScaleFactor: comicCalendarScaleMost,
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: SizedBox(
-                width: math.max(
-                  7 * minimumDayWidth,
-                  box.hasBoundedWidth ? box.maxWidth : 336,
-                ),
+                width: box.hasBoundedWidth && box.maxWidth >= 7 * narrowestDay
+                    ? box.maxWidth
+                    : math.max(
+                        7 * minimumDayWidth,
+                        box.hasBoundedWidth ? box.maxWidth : 336,
+                      ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -795,6 +820,12 @@ class ComicTimePicker extends StatelessWidget {
       );
   }
 }
+
+/// The narrowest a day's column gets before the month scrolls sideways: Material's calendar's day.
+const double _narrowestDay = 40;
+
+/// The least room between a day's number and its outline, as every Comic face keeps round its content.
+const double _dayClearance = 4;
 
 /// Raises a calendar and returns the confirmed day, or null on dismissal.
 ///

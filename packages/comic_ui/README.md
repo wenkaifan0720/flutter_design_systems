@@ -6,6 +6,7 @@ charts, speech balloons and illustrated panels. Five colour presets support ligh
 ![Comic's cover page at desktop and phone width, by day](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/comic_ui/screenshots/hero.png)
 
 **[Live gallery](https://wenkaifan0720.github.io/flutter_design_systems/comic/)** ·
+[Docs](https://wenkaifan0720.github.io/flutter_design_systems/docs/looks/comic/) ·
 [API reference](https://pub.dev/documentation/comic_ui/latest/) ·
 [All the looks](https://wenkaifan0720.github.io/flutter_design_systems/)
 
@@ -16,7 +17,8 @@ flutter pub add comic_ui material_ui
 ```
 
 `material_ui` is Flutter's Material as a package, as it is from Flutter 3.50; the quick start's app is a
-`MaterialApp`. An app on `WidgetsApp` or `CupertinoApp` needs only `comic_ui` (see [Set up the theme](#set-up-the-theme)).
+`MaterialApp`. An app on `WidgetsApp` needs only `comic_ui`; one on `CupertinoApp` adds `cupertino_ui` (see
+[Set up the theme](#set-up-the-theme)).
 
 ## Quick start
 
@@ -79,13 +81,13 @@ from Flutter 3.50) a `MaterialPageRoute` reads Flutter's `Theme`, which Comic do
 theme carries `comicPageTransitions`: `theme: ThemeData(pageTransitionsTheme: const PageTransitionsTheme(builders:
 comicPageTransitions))`. The one map fits both Materials' `PageTransitionsTheme`. On iOS a page still pops with a swipe
 from the screen's leading edge, the page following the finger: the map wraps the cut there in ui_core's
-`DesignSwipeBackPageTransitionsBuilder`. A map of your own built on `ComicPageTransitionsBuilder` keeps the swipe the
+`SwipeBackPageTransitionsBuilder`. A map of your own built on `ComicPageTransitionsBuilder` keeps the swipe the
 same way, or with `designSwipeBack(map)`.
 
 With `CupertinoApp`:
 
 ```dart
-import 'package:flutter/cupertino.dart';
+import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:comic_ui/comic_ui.dart';
 
 class App extends StatelessWidget {
@@ -301,11 +303,11 @@ lettering keep a clear background behind the words.
 - **Other scripts.** Bangers and Shantell Sans cover Latin scripts. Arabic, Hebrew, Chinese, Japanese, Hindi, Thai and
   other scripts fall back to the platform's fonts (on the web, to the Noto fonts the engine fetches; a build made
   with `--no-web-resources-cdn` must bundle its own).
-- **Control labels.** Register `DesignLocalizations.delegate` and `ComicLocalizations.delegate` in
+- **Control labels.** Register `RawWidgetsLocalizations.delegate` and `ComicLocalizations.delegate` in
   `localizationsDelegates`. Both support every locale. ui_core says the shared labels (Close, Cancel, Loading, a
   time's hour and minute) in its 30 languages; Comic says its own labels (file prompts, ratings) in English, with the
   words ui_core shares in the app's language. Extend `ComicLocalizations` to say Comic's labels in another language,
-  and `DefaultDesignLocalizations` to change the shared ones.
+  and `DefaultRawWidgetsLocalizations` to change the shared ones.
 - **Dates and numbers.** Call `initializeDateFormatting()` for localized month and weekday names. Use
   `firstWeekday` to change the Monday start. Time pickers follow the platform's 24-hour setting. Pass
   locale-formatted strings for counts and currency.
@@ -326,6 +328,10 @@ Use `comic_ui.dart` elsewhere in your app. The parts library supports copied com
 
 The gallery includes individual controls and complete form, settings, list and checkout screens. Use the app bar
 to switch light and dark mode. Open Customize to change the edition, colours, reading direction and text size.
+
+## Requirements
+
+Flutter 3.47.0 or later (Dart 3.13), on Android, iOS, web, macOS, Windows and Linux.
 
 ## Licence
 
