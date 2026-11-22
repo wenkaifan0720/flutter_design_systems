@@ -10,6 +10,7 @@
 // may start its rows on its own edge and on one column after a lead (the words beside a glyph or a mark); its glyphs,
 // controls and sums end on its other edge. Controls that share a row share a height. Slips are their own printed
 // composition and are measured as one thing.
+// The gallery is the example app; a test reads its pages from there.
 // ignore_for_file: avoid_relative_lib_imports
 import 'dart:convert';
 

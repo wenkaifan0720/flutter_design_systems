@@ -554,8 +554,9 @@ abstract final class LedgerChromeMetrics {
   /// The distance between the blank ledger page's ruled lines.
   static const double emptyLines = 32;
 
-  /// `.empty-t` 18 under the seal, set 32 on 34; `.empty-s` 10 under it, 15
-  /// on 22; the act 22 under that.
+  /// `.empty-t` 18 under the seal, set 32 on 34. The title's last line
+  /// stands on the page's first rule, the body's lines on the rules under
+  /// it and the act's words on a rule clear of them.
   static const double emptyTitleTop = 18;
 
   /// An empty state's title size.
@@ -564,13 +565,25 @@ abstract final class LedgerChromeMetrics {
   /// An empty state's title line height.
   static const double emptyTitleLine = 34;
 
-  /// An empty state's body distance under its title.
+  /// An empty state's body distance under its title, before 0.4.1.
+  @Deprecated(
+    'The empty page stands its body and act on its rules. '
+    'This feature was deprecated after ledger_ui 0.4.0.',
+  )
   static const double emptyBodyTop = 10;
 
-  /// An empty state's body line height.
+  /// An empty state's body line height, before 0.4.1.
+  @Deprecated(
+    'The empty page stands its body and act on its rules. '
+    'This feature was deprecated after ledger_ui 0.4.0.',
+  )
   static const double emptyBodyLine = 22;
 
-  /// An empty state's act distance under its body.
+  /// An empty state's act distance under its body, before 0.4.1.
+  @Deprecated(
+    'The empty page stands its body and act on its rules. '
+    'This feature was deprecated after ledger_ui 0.4.0.',
+  )
   static const double emptyActTop = 22;
 
   /// `.seal`: 112 round, pressed 7° off square (6° the other way over, 5°

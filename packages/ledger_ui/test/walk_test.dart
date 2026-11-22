@@ -10,6 +10,7 @@
 // - a sheet's acts span their card on a phone (its one act too); from 600 each keeps to 320 (ui_core's
 //   DesignWidthCheck), the row on the card's trailing end, the confirm last: a dialog's two share it, its one stands
 //   at its end, as a tablet's bottom sheet's do.
+// The gallery is the example app; a test reads its pages from there.
 // ignore_for_file: avoid_relative_lib_imports
 import 'dart:convert';
 import 'dart:math' as math;

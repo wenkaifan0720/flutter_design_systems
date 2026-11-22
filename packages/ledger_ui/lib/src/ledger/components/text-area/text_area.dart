@@ -218,8 +218,12 @@ class _LedgerTextAreaState extends State<LedgerTextArea> {
       ),
     );
     final hint = widget.hint;
+    // The box holds one line at least; the editable's own minLines rules
+    // the rest. A taller box would stand the first line where a single line
+    // would (centred in it), half a box down, and the rule a line under the
+    // paper's top would run through the words.
     final box = DesignTextEntryBox(
-      minHeight: step * widget.minLines,
+      minHeight: step,
       controller: hint == null ? null : _controller,
       hint: hint == null
           ? null

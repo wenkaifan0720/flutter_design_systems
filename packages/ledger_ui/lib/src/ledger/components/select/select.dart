@@ -85,8 +85,8 @@ class LedgerSelect<T> extends StatefulWidget {
   /// What it chooses, over the line in the small capitals; its spoken name.
   final String? label;
 
-  /// Shown while nothing is chosen; "Choose one" when null (English in
-  /// 0.1.0: the shared words have no such prompt).
+  /// Shown while nothing is chosen; "Choose one" when null (in English:
+  /// the shared words have no such prompt).
   final String? hint;
 
   /// Help under the rule.

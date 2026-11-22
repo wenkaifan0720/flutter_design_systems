@@ -107,8 +107,12 @@ void main() {
         await t.pumpAndSettle();
         expect(t.getRect(find.text('Continue')), rest);
         expect(face().boxShadow ?? const <BoxShadow>[], isEmpty);
-        // The fill keeps its colour; the impression over it deepens it.
-        expect(face().color, theme.accent);
+        // The fill sinks a quarter of the way into the ink, and the
+        // impression over it deepens it with the words.
+        expect(
+          face().color,
+          isSameColorAs(Color.lerp(theme.accent, theme.textPrimary, .25)!),
+        );
         expect(_depth(t, find.text('Continue')), LedgerImpression.pressed);
 
         await finger.up();

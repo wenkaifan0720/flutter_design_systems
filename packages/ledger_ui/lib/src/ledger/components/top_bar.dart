@@ -324,8 +324,8 @@ class LedgerBack extends StatelessWidget {
     final where = label ?? _BackLabel.of(context);
     final close = _close;
     final words = RawWidgetsLocalizations.of(context);
-    // "Back to Home" stays English in 0.1.0: the shared words have no
-    // "back to" phrase.
+    // "Back to Home" stays English: the shared words have no "back to"
+    // phrase.
     final spoken = close
         ? words.closeButtonLabel
         : where == null

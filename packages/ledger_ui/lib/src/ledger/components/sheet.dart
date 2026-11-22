@@ -12,6 +12,7 @@ import '../internal/cap_center.dart';
 import '../internal/even_acts.dart';
 import '../internal/grabber.dart';
 import '../internal/narrow.dart';
+import '../internal/pixel_center.dart';
 import '../internal/presence.dart';
 import '../theme.dart';
 import 'host.dart';
@@ -383,7 +384,7 @@ abstract final class LedgerSheet {
           builder: (sheetContext, details) => themes.wrap(
             FadeTransition(
               opacity: details.animation.drive(ledgerPresence),
-              child: Center(
+              child: LedgerPixelCenter(
                 child: ConstrainedBox(
                   constraints: BoxConstraints(
                     maxWidth: dialogWidth(confirm: confirm),
@@ -436,7 +437,7 @@ abstract final class LedgerSheet {
         barrierColor: t.overlay,
         builder: (sheetContext, details) => FadeTransition(
           opacity: details.animation.drive(ledgerPresence),
-          child: Center(
+          child: LedgerPixelCenter(
             child: SizedBox(
               width: dialogWidth(confirm: confirm),
               height: drawer ? null : most,

@@ -1,3 +1,15 @@
+## 0.4.1
+
+- Needs ui_core 0.4.1.
+- The blank page's words stand on its rules. Its head is left unruled; the title's last line stands on the first rule, each line of the body on the rules after it, and the act's words on a rule, on the act's own paper. The ruling runs whole across the page, where it broke round each block of words. This applies to `LedgerEmptyState` and `LedgerErrorState`.
+- `LedgerErrorState` rules its margin in the vermilion, where a faint red read as the empty page's green.
+- `LedgerEmptyState`'s green margin crosses the rules in one ink. Before, each crossing printed a darker knot by day and a lighter one by night.
+- `LedgerTextArea`'s hint and first line stand on its first line. Before, they stood half a box down, with a rule through the hint.
+- A sheet or dialog centred on a desk stands on whole pixels, so its hairlines print crisp.
+- A held filled button shows the press past its hover, with or without a pointer. A filled face sinks a quarter of the way into the page's ink. A key already in the ink (`LedgerButton.ink`) goes deeper still: darker by day, lighter by night.
+- `LedgerDialog` takes `actions`, a list of `LedgerDialogAction`s in place of the two labels. They share the card's width, or stack across it with the last on top when their words don't fit. `LedgerDialog.showActions` raises one and completes with the pressed action's `value`. The slip carries one filled seal: the `isDefaultAction`, or with none a destructive action. A destructive action beside the seal is ringed in the vermilion. The two-label form is unchanged.
+- Deprecates `LedgerChromeMetrics.emptyBodyTop`, `emptyBodyLine` and `emptyActTop`, which the package no longer uses.
+
 ## 0.4.0
 
 - Needs ui_core 0.4.0 and Flutter 3.47. `ledger_ui` re-exports ui_core, whose types now take `Raw` names (`DesignPressable` is `RawButton`). The old names stay through ui_core 0.4 as deprecated typedefs, and `dart fix --apply` renames them.

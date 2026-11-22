@@ -14,6 +14,7 @@
 //   covers the window; one page frame across destinations; a card in a row hugs its content.
 // Ledger puts no act in a card that stands in a row (its tiles are links whole), so "cards in a row share their action
 // line" has nothing to hold here.
+// The gallery is the example app; a test reads its pages from there.
 // ignore_for_file: avoid_relative_lib_imports
 import 'dart:convert';
 import 'dart:math' as math;
@@ -634,6 +635,7 @@ Iterable<String> _filterWords(Widget filters) {
 Iterable<String> _toggleWords(Widget group) {
   // Through `dynamic`: a group of strings' labelOf takes a String, so a cast to a group of Object? would not hold it.
   final dynamic g = group;
+  // Reads a private type, which no public type describes.
   // ignore: avoid_dynamic_calls
   return [for (final Object? o in g.options as List) g.labelOf(o) as String];
 }
@@ -1455,6 +1457,7 @@ void screenRowsSweep(double width, Brightness brightness) {
           densities: [density],
           brightnesses: [brightness],
         );
+        // Lists what the check read, for the log.
         // ignore: avoid_print
         print('rows set aside, $when: $_asideRows');
         expect(found, isEmpty, reason: found.join('\n'));
@@ -1482,6 +1485,7 @@ void screenRowsOnce(int part, int parts) {
         once: true,
         only: (i) => i % parts == part,
       );
+      // Lists what the check read, for the log.
       // ignore: avoid_print
       print('rows set aside, once, part ${part + 1}: $_asideRows');
       expect(found, isEmpty, reason: found.join('\n'));

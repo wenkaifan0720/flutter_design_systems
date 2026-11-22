@@ -1388,4 +1388,21 @@ Future<void> _compiledOnly(BuildContext context) async {
     type: LedgerDialogType.destructive,
     confirmLabel: 'Delete',
   );
+  final choice = await LedgerDialog.showActions<String>(
+    context,
+    title: 'Unsaved changes',
+    body: 'Save your changes before leaving?',
+    actions: const [
+      LedgerDialogAction('Cancel'),
+      LedgerDialogAction(
+        'Discard',
+        value: 'discard',
+        isDestructiveAction: true,
+      ),
+      LedgerDialogAction('Save changes', value: 'save', isDefaultAction: true),
+    ],
+  );
+  show(
+    LedgerDialogAction('Save changes', value: 'save', isDefaultAction: true),
+  );
 }

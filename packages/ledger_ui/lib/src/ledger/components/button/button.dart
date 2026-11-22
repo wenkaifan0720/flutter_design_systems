@@ -321,12 +321,24 @@ class LedgerButton extends StatelessWidget {
             : ring != null
             ? t.textPrimary.withValues(alpha: _impression / 4)
             : null;
-        // Held, a filled face's fill deepens with the rest of its ink
-        // ([LedgerImpression]), from its own green rather than the hover's
-        // lift, so a press reads deeper than a hover by day and by night; a
-        // ringed face keeps the hover's wash and the press's own wash of
-        // the paper lies under it, a step deeper.
-        final Color? pressedFill = fill ?? hoveredFill;
+        // Held, a filled face's fill sinks a quarter of the way into the
+        // page's ink, and [LedgerImpression] deepens it with the rest of its
+        // marks. A fill already in the ink (an ink key) goes deeper still,
+        // away from the paper: darker by day, lighter by night. Either way a
+        // press shows past the hover, with no pointer at all. A ringed face
+        // keeps the hover's wash and the press's own wash of the paper lies
+        // under it, a step deeper.
+        final Color? pressedFill = fill == null
+            ? hoveredFill
+            : LedgerThemeData.contrast(fill, t.textPrimary) < _inkKeyContrast
+            ? Color.lerp(
+                fill,
+                fill.computeLuminance() < t.surface.computeLuminance()
+                    ? const Color(0xFF000000)
+                    : const Color(0xFFFFFFFF),
+                _inkKeyDeepen,
+              )
+            : Color.lerp(fill, t.textPrimary, _pressSink);
         return LedgerFace(
           style: so.dress(
             LedgerFaceStyle(
@@ -454,4 +466,15 @@ class LedgerButton extends StatelessWidget {
   // How far a hovered fill lifts toward its words: a tenth, as a pointer's
   // highlight reads on a filled act without passing for a press.
   static const double _hoverLift = .1;
+
+  // Under this contrast with the page's ink a fill is the ink itself: a
+  // press can't deepen it.
+  static const double _inkKeyContrast = 1.5;
+
+  // How far a held fill sinks into the page's ink: a quarter, a plain step
+  // past the hover's tenth.
+  static const double _pressSink = .25;
+
+  // How far a held ink key goes past the ink, away from the paper.
+  static const double _inkKeyDeepen = .6;
 }

@@ -3,6 +3,7 @@
 // desktop; the main gallery pages against Flutter's tap-target, label and text-contrast guidelines by day and by night,
 // at Ledger's 44 targets (iOS's, on every platform, by design); every single choice answering the keys as Flutter's
 // RadioGroup does, and the checklist's marks reading as checkboxes. Reduced motion is on, so every page settles.
+// The gallery is the example app; a test reads its pages from there.
 // ignore_for_file: avoid_relative_lib_imports
 import 'dart:convert';
 import 'dart:math' as math;

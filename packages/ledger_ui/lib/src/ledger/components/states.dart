@@ -1,4 +1,7 @@
+import 'dart:math' as math;
+
 import 'package:flutter/foundation.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -215,14 +218,16 @@ class LedgerEmptyState extends StatelessWidget {
   );
 }
 
-/// The blank ledger page (`.empty.sheet`): a slip of raised paper ruled in
-/// the hairline every 32, its double margin rule in the green rule at 18
-/// and 22, padded clear of it; from 1024 ruled every 36, its rules at 28
-/// and 32, padded 36 36 32 56, its title 44 on 46. The ruling breaks round
-/// the words and the act in a whole band from the margin rule to the slip's
-/// end, and round the stamp, each laid on the slip's own paper: ink never
-/// lies over ink, and no rule is left a stub beside the words. A [failed] page rules its margin in the
-/// vermilion.
+/// The blank ledger page (`.empty.sheet`): a slip of raised paper with its
+/// double margin rule down its start (in the green rule at 18 and 22, in
+/// the vermilion when [failed]) and its head left unruled, as a ledger
+/// page's is. The [title] is written in the head, its last line on the
+/// page's first rule; the ruling runs from there to the slip's foot, a
+/// hairline every 32, and every other word stands on it: each line of the
+/// [body] on the next rules, the [act]'s words on a rule clear of them, on
+/// its own paper (ink never lies over ink). From 1024 it is the desktop's:
+/// ruled every 36, its margin rules at 28 and 32, padded 36 36 32 56, its
+/// title 44 on 46.
 class _BlankPage extends StatelessWidget {
   const _BlankPage({
     required this.title,
@@ -244,13 +249,32 @@ class _BlankPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.ledgerTheme;
     final wide = LedgerLayout.isWide(context);
+    final scaler = MediaQuery.textScalerOf(context);
+    final direction = Directionality.of(context);
+    final pitch = wide ? _linesWide : LedgerChromeMetrics.emptyLines;
     final titleStyle = wide
         ? t.title.sized(_titleWide).line(_titleLineWide)
         : t.title
               .sized(LedgerChromeMetrics.emptyTitle)
               .line(LedgerChromeMetrics.emptyTitleLine);
-    // The slip's padding; its start measured past the second margin rule,
-    // where each block's band of clear paper begins.
+    // The body's lines the fewest whole rules apart that hold a line of its
+    // face at the text size, so a larger size keeps to the ruling too.
+    final bodySize = scaler.scale(t.body.fontSize!);
+    final face = TextPainter(
+      text: TextSpan(
+        text: 'Hg',
+        style: TextStyle(
+          fontFamily: t.body.fontFamily,
+          fontFamilyFallback: t.body.fontFamilyFallback,
+          fontSize: t.body.fontSize,
+        ),
+      ),
+      textScaler: scaler,
+      textDirection: direction,
+    )..layout();
+    final bodyLine =
+        pitch * math.max(1, (face.preferredLineHeight / pitch).ceil());
+    face.dispose();
     final pad = wide
         ? const EdgeInsetsDirectional.fromSTEB(
             _startWide,
@@ -264,32 +288,7 @@ class _BlankPage extends StatelessWidget {
             LedgerChromeMetrics.emptyEnd,
             LedgerChromeMetrics.emptyFoot,
           );
-    final band =
-        (wide ? _rule2Wide : LedgerChromeMetrics.emptyMarginRule2) +
-        LedgerLayout.hairline;
-    // A block on the slip's own paper across the whole line, from past the
-    // margin rule to the slip's end: the ruling breaks round it whole,
-    // never leaving a stub of rule beside the words.
-    Widget clear(Widget child) => SizedBox(
-      width: double.infinity,
-      child: ColoredBox(
-        color: t.surface,
-        child: Padding(
-          padding: EdgeInsetsDirectional.only(
-            start: pad.start - band,
-            end: pad.end,
-          ),
-          child: Align(
-            alignment: AlignmentDirectional.centerStart,
-            child: child,
-          ),
-        ),
-      ),
-    );
-    Widget round(Widget child) => DecoratedBox(
-      decoration: BoxDecoration(color: t.surface, shape: BoxShape.circle),
-      child: child,
-    );
+    final act = this.act;
     return DecoratedBox(
       decoration: BoxDecoration(
         color: t.surface,
@@ -298,78 +297,57 @@ class _BlankPage extends StatelessWidget {
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(t.cardRadius),
-        child: CustomPaint(
-          painter: _Ruling(
-            rtl: Directionality.of(context) == TextDirection.rtl,
-            lines: t.hairline,
-            margin: failed
-                ? t.over.withValues(alpha: t.accentRule.a)
-                : t.accentRule,
-            pitch: wide ? _linesWide : LedgerChromeMetrics.emptyLines,
-            rules: wide
-                ? const (_ruleWide, _rule2Wide)
-                : const (
-                    LedgerChromeMetrics.emptyMarginRule,
-                    LedgerChromeMetrics.emptyMarginRule2,
-                  ),
-          ),
-          child: Padding(
-            padding: EdgeInsetsDirectional.only(
-              start: band,
-              top: pad.top,
-              bottom: pad.bottom,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (seal != null)
-                  Padding(
-                    padding: EdgeInsetsDirectional.only(end: pad.end),
-                    child: Align(
-                      alignment: AlignmentDirectional.centerEnd,
-                      child: round(seal!),
-                    ),
-                  ),
-                if (seal != null)
-                  const SizedBox(height: LedgerChromeMetrics.emptyTitleTop),
-                clear(
-                  Semantics(
-                    header: true,
-                    child: Text.rich(
-                      TextSpan(
-                        children: [
-                          TextSpan(text: title),
-                          if (titleItalic != null) ...[
-                            const TextSpan(text: ' '),
-                            TextSpan(
-                              text: titleItalic,
-                              style: titleStyle.italic,
-                            ),
-                          ],
-                        ],
-                      ),
-                      style: titleStyle,
-                    ),
-                  ),
+        child: _RuledPage(
+          pitch: pitch,
+          rules: wide
+              ? const (_ruleWide, _rule2Wide)
+              : const (
+                  LedgerChromeMetrics.emptyMarginRule,
+                  LedgerChromeMetrics.emptyMarginRule2,
                 ),
-                if (body != null) ...[
-                  const SizedBox(height: LedgerChromeMetrics.emptyBodyTop),
-                  clear(
-                    Text(
-                      body!,
-                      style: t.body
-                          .line(LedgerChromeMetrics.emptyBodyLine)
-                          .colored(t.textSecondary),
-                    ),
-                  ),
+          padding: pad,
+          titleLine: scaler.scale(titleStyle.fontSize!) * titleStyle.height!,
+          bodyLine: bodyLine,
+          lines: t.hairline,
+          // One ink where the margin crosses the rules, as a printed
+          // margin is: its wash laid on the paper first, never over a rule.
+          margin: Color.alphaBlend(failed ? t.danger : t.accentRule, t.surface),
+          textDirection: direction,
+          seal: seal,
+          title: Semantics(
+            header: true,
+            child: Text.rich(
+              TextSpan(
+                children: [
+                  TextSpan(text: title),
+                  if (titleItalic != null) ...[
+                    const TextSpan(text: ' '),
+                    TextSpan(text: titleItalic, style: titleStyle.italic),
+                  ],
                 ],
-                if (act != null) ...[
-                  const SizedBox(height: LedgerChromeMetrics.emptyActTop),
-                  clear(act!),
-                ],
-              ],
+              ),
+              style: titleStyle,
             ),
           ),
+          body: body == null
+              ? null
+              : Text(
+                  body!,
+                  style: t.body
+                      .copyWith(height: bodyLine / bodySize)
+                      .colored(t.textSecondary),
+                ),
+          // The act's own paper under its face: the rule its words stand
+          // on stops at its edge.
+          act: act == null
+              ? null
+              : DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: t.surface,
+                    borderRadius: BorderRadius.circular(t.controlRadius),
+                  ),
+                  child: act,
+                ),
         ),
       ),
     );
@@ -389,46 +367,311 @@ class _BlankPage extends StatelessWidget {
   static const double _titleLineWide = 46;
 }
 
-/// The blank page's ruling: a 1 hairline at the foot of every [pitch] (32,
-/// 36 on the desktop), and two 1 green [rules] down its start (18 and 22,
-/// 28 and 32 on the desktop): its right in a right-to-left page ([rtl]).
-class _Ruling extends CustomPainter {
-  const _Ruling({
-    required this.rtl,
-    required this.lines,
-    required this.margin,
+enum _Part { seal, title, body, act }
+
+/// The blank page's paper, ruled and written: the [seal] at the head's end,
+/// the [title]'s last line on the first rule, the [body]'s lines on the
+/// rules after it ([bodyLine] apart, a whole number of rules) and the
+/// [act]'s words on the first rule that leaves it clear of the words over
+/// it. Rules every [pitch] from the first down, a 1 [lines] hairline under
+/// each line's words, and the two [margin] rules down its start at [rules]
+/// (its right in a right-to-left page).
+class _RuledPage extends SlottedMultiChildRenderObjectWidget<_Part, RenderBox> {
+  const _RuledPage({
     required this.pitch,
     required this.rules,
+    required this.padding,
+    required this.titleLine,
+    required this.bodyLine,
+    required this.lines,
+    required this.margin,
+    required this.textDirection,
+    required this.title,
+    this.seal,
+    this.body,
+    this.act,
   });
 
-  final bool rtl;
-  final Color lines;
-  final Color margin;
   final double pitch;
   final (double, double) rules;
+  final EdgeInsetsDirectional padding;
+  final double titleLine;
+  final double bodyLine;
+  final Color lines;
+  final Color margin;
+  final TextDirection textDirection;
+  final Widget title;
+  final Widget? seal;
+  final Widget? body;
+  final Widget? act;
 
   @override
-  void paint(Canvas canvas, Size size) {
-    final rule = Paint()..color = lines;
-    for (var y = pitch - 1; y < size.height; y += pitch) {
-      canvas.drawRect(Rect.fromLTWH(0, y, size.width, 1), rule);
+  Iterable<_Part> get slots => _Part.values;
+
+  @override
+  Widget? childForSlot(_Part slot) => switch (slot) {
+    _Part.seal => seal,
+    _Part.title => title,
+    _Part.body => body,
+    _Part.act => act,
+  };
+
+  @override
+  _RenderRuledPage createRenderObject(BuildContext context) =>
+      _RenderRuledPage()..configure(this);
+
+  @override
+  void updateRenderObject(
+    BuildContext context,
+    _RenderRuledPage renderObject,
+  ) => renderObject.configure(this);
+}
+
+/// Where each part stands, and where the first rule runs.
+typedef _Laid = ({
+  Size size,
+  double firstRule,
+  Map<_Part, Offset> at,
+  Map<_Part, BoxConstraints> constraints,
+});
+
+class _RenderRuledPage extends RenderBox
+    with SlottedContainerRenderObjectMixin<_Part, RenderBox> {
+  late double _pitch;
+  late (double, double) _rules;
+  late EdgeInsetsDirectional _padding;
+  late double _titleLine;
+  late double _bodyLine;
+  late Color _lines;
+  late Color _margin;
+  late TextDirection _textDirection;
+  double _firstRule = 0;
+
+  void configure(_RuledPage page) {
+    final relayout =
+        !_isConfigured ||
+        page.pitch != _pitch ||
+        page.padding != _padding ||
+        page.titleLine != _titleLine ||
+        page.bodyLine != _bodyLine ||
+        page.textDirection != _textDirection;
+    final repaint =
+        relayout ||
+        page.rules != _rules ||
+        page.lines != _lines ||
+        page.margin != _margin;
+    _isConfigured = true;
+    _pitch = page.pitch;
+    _rules = page.rules;
+    _padding = page.padding;
+    _titleLine = page.titleLine;
+    _bodyLine = page.bodyLine;
+    _lines = page.lines;
+    _margin = page.margin;
+    _textDirection = page.textDirection;
+    if (relayout) {
+      markNeedsLayout();
+    } else if (repaint) {
+      markNeedsPaint();
     }
-    final green = Paint()..color = margin;
-    for (final x in [rules.$1, rules.$2]) {
+  }
+
+  bool _isConfigured = false;
+
+  bool get _rtl => _textDirection == TextDirection.rtl;
+
+  // The parts in paint and hit order.
+  Iterable<(_Part, RenderBox)> get _parts sync* {
+    for (final part in _Part.values) {
+      final child = childForSlot(part);
+      if (child != null) yield (part, child);
+    }
+  }
+
+  _Laid _lay(
+    BoxConstraints constraints,
+    Size Function(RenderBox, BoxConstraints) layoutChild,
+    double? Function(RenderBox, BoxConstraints) baselineOf,
+  ) {
+    final pad = _padding.resolve(_textDirection);
+    final width = constraints.hasBoundedWidth
+        ? constraints.maxWidth
+        : _widest() + pad.horizontal;
+    final room = math.max(0.0, width - pad.horizontal);
+    final at = <_Part, Offset>{};
+    final given = <_Part, BoxConstraints>{};
+    double start(double w) => _rtl ? width - pad.right - w : pad.left;
+    var y = pad.top;
+    var bottom = pad.top;
+
+    final seal = childForSlot(_Part.seal);
+    if (seal != null) {
+      final c = BoxConstraints(maxWidth: room);
+      final s = layoutChild(seal, c);
+      given[_Part.seal] = c;
+      at[_Part.seal] = Offset(_rtl ? pad.left : width - pad.right - s.width, y);
+      y += s.height + LedgerChromeMetrics.emptyTitleTop;
+    }
+
+    // The title's last line on the first rule, the rule on a whole pixel.
+    final title = childForSlot(_Part.title)!;
+    final tc = BoxConstraints(maxWidth: room);
+    final ts = layoutChild(title, tc);
+    given[_Part.title] = tc;
+    final tb = baselineOf(title, tc) ?? ts.height;
+    final firstRule = (y + tb + _lastLineDrop(ts.height, _titleLine))
+        .roundToDouble();
+    at[_Part.title] = Offset(start(ts.width), y);
+    bottom = y + ts.height;
+    var written = firstRule;
+
+    // Each later part on the first rule past the last words written, its
+    // box clear of the box over it.
+    void stand(_Part part, double clear, double line) {
+      final child = childForSlot(part);
+      if (child == null) return;
+      final c = BoxConstraints(maxWidth: room);
+      final s = layoutChild(child, c);
+      given[part] = c;
+      final b = baselineOf(child, c) ?? s.height;
+      var rule = written + _pitch;
+      while (rule - b < bottom + clear) {
+        rule += _pitch;
+      }
+      at[part] = Offset(start(s.width), rule - b);
+      bottom = rule - b + s.height;
+      written = rule + _lastLineDrop(s.height, line);
+    }
+
+    stand(_Part.body, 0, _bodyLine);
+    stand(_Part.act, _actClear, double.infinity);
+
+    final tall = bottom + pad.bottom;
+    final size = constraints.constrain(
+      Size(
+        width,
+        constraints.hasBoundedHeight
+            ? math.max(tall, constraints.maxHeight)
+            : tall,
+      ),
+    );
+    return (size: size, firstRule: firstRule, at: at, constraints: given);
+  }
+
+  // How far a block's last line stands under its first: its lines [line]
+  // apart; a single line (or a part with no lines) none.
+  static double _lastLineDrop(double height, double line) {
+    if (!line.isFinite || line <= 0) return 0;
+    final count = math.max(1, (height / line).round());
+    return (count - 1) * line;
+  }
+
+  // The room between the act's face and the words over it.
+  static const double _actClear = 12;
+
+  double _widest() {
+    var most = 0.0;
+    for (final (_, child) in _parts) {
+      most = math.max(most, child.getMaxIntrinsicWidth(double.infinity));
+    }
+    return most;
+  }
+
+  @override
+  void performLayout() {
+    final laid = _lay(
+      constraints,
+      ChildLayoutHelper.layoutChild,
+      (child, _) =>
+          child.getDistanceToBaseline(TextBaseline.alphabetic, onlyReal: true),
+    );
+    for (final (part, child) in _parts) {
+      (child.parentData! as BoxParentData).offset = laid.at[part]!;
+    }
+    _firstRule = laid.firstRule;
+    size = laid.size;
+  }
+
+  @override
+  Size computeDryLayout(covariant BoxConstraints constraints) => _lay(
+    constraints,
+    ChildLayoutHelper.dryLayoutChild,
+    (child, c) => child.getDryBaseline(c, TextBaseline.alphabetic),
+  ).size;
+
+  @override
+  double computeMinIntrinsicWidth(double height) {
+    var most = 0.0;
+    for (final (_, child) in _parts) {
+      most = math.max(most, child.getMinIntrinsicWidth(double.infinity));
+    }
+    return most + _padding.horizontal;
+  }
+
+  @override
+  double computeMaxIntrinsicWidth(double height) =>
+      _widest() + _padding.horizontal;
+
+  @override
+  double computeMinIntrinsicHeight(double width) =>
+      getDryLayout(BoxConstraints(maxWidth: width)).height;
+
+  @override
+  double computeMaxIntrinsicHeight(double width) =>
+      computeMinIntrinsicHeight(width);
+
+  @override
+  double? computeDistanceToActualBaseline(TextBaseline baseline) {
+    final title = childForSlot(_Part.title)!;
+    final distance = title.getDistanceToActualBaseline(baseline);
+    if (distance == null) return null;
+    return distance + (title.parentData! as BoxParentData).offset.dy;
+  }
+
+  @override
+  void paint(PaintingContext context, Offset offset) {
+    final canvas = context.canvas;
+    final rule = Paint()..color = _lines;
+    for (var y = _firstRule; y < size.height; y += _pitch) {
       canvas.drawRect(
-        Rect.fromLTWH(rtl ? size.width - x - 1 : x, 0, 1, size.height),
-        green,
+        Rect.fromLTWH(offset.dx, offset.dy + y, size.width, 1),
+        rule,
+      );
+    }
+    final margin = Paint()..color = _margin;
+    for (final x in [_rules.$1, _rules.$2]) {
+      canvas.drawRect(
+        Rect.fromLTWH(
+          offset.dx + (_rtl ? size.width - x - 1 : x),
+          offset.dy,
+          1,
+          size.height,
+        ),
+        margin,
+      );
+    }
+    for (final (_, child) in _parts) {
+      context.paintChild(
+        child,
+        offset + (child.parentData! as BoxParentData).offset,
       );
     }
   }
 
   @override
-  bool shouldRepaint(_Ruling old) =>
-      old.rtl != rtl ||
-      old.lines != lines ||
-      old.margin != margin ||
-      old.pitch != pitch ||
-      old.rules != rules;
+  bool hitTestChildren(BoxHitTestResult result, {required Offset position}) {
+    for (final (_, child) in _parts.toList().reversed) {
+      final at = (child.parentData! as BoxParentData).offset;
+      final hit = result.addWithPaintOffset(
+        offset: at,
+        position: position,
+        hitTest: (result, transformed) =>
+            child.hitTest(result, position: transformed),
+      );
+      if (hit) return true;
+    }
+    return false;
+  }
 }
 
 /// The loading ring: a hairline circle with a quarter of it in the green,

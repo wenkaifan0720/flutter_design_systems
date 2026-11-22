@@ -2,6 +2,7 @@
 // way, so a mirrored Quill never shows English reordered by the bidi algorithm ("8 of 12 packed" read as "of 12 packed
 // 8"). What stays in Latin letters is what a Hebrew page keeps in them: figures, money, codes (··4821, T280812BLUE) and
 // the install's code.
+// The gallery is the example app; a test reads its pages from there.
 // ignore_for_file: avoid_relative_lib_imports
 import 'dart:async';
 

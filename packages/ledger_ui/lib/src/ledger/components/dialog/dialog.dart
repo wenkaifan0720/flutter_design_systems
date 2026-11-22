@@ -6,6 +6,7 @@ import 'package:ui_core/ui_core.dart';
 import '../../chrome_metrics.dart';
 import '../../internal/even_acts.dart';
 import '../../internal/narrow.dart';
+import '../../internal/pixel_center.dart';
 import '../../internal/presence.dart';
 import '../../internal/styled.dart';
 import '../../style.dart';
@@ -26,13 +27,55 @@ enum LedgerDialogType {
   acknowledge,
 }
 
+/// One act of a [LedgerDialog] that takes its [LedgerDialog.actions]: a
+/// [label] and what a press does. A slip carries one seal: the
+/// [isDefaultAction], filled in the green (the vermilion when it
+/// [isDestructiveAction] too), or with no default act a destructive one,
+/// filled in the vermilion. Beside the seal a destructive act is ringed in the
+/// vermilion, its words in the over ink, and any other act ringed in the ink.
+///
+/// ```dart
+/// LedgerDialogAction('Save changes', value: 'save', isDefaultAction: true)
+/// ```
+@immutable
+class LedgerDialogAction {
+  /// An act worded [label].
+  const LedgerDialogAction(
+    this.label, {
+    this.onPressed,
+    this.value,
+    this.isDefaultAction = false,
+    this.isDestructiveAction = false,
+  });
+
+  /// The act's words.
+  final String label;
+
+  /// What a press does; null draws it out of use in a dialog standing in a
+  /// page. [LedgerDialog.showActions] closes the dialog first, then runs it.
+  final VoidCallback? onPressed;
+
+  /// What [LedgerDialog.showActions] completes with when this act closes it.
+  final Object? value;
+
+  /// Whether it is the act the dialog is for (Save, Send), in the green.
+  final bool isDefaultAction;
+
+  /// Whether it cannot be taken back (Discard, Delete), in the vermilion;
+  /// the dialog opens with the focus on an act that is not.
+  final bool isDestructiveAction;
+}
+
 /// A decision put on a slip of paper, centred over the scrim: the [title] in
 /// the serif over the ink rule, the [body] under it (and any [children] after
-/// the body: a field, a note), then the acts, two sharing the width or one
-/// across it. [type] picks them: a [LedgerDialogType.confirm] has Cancel and
+/// the body: a field, a note), then the acts, sharing the width evenly or,
+/// when one's words would not fit its share, stacked across it, the last
+/// (the confirm) on top. [type] picks two of them: a [LedgerDialogType.confirm] has Cancel and
 /// the green [confirmLabel], a [LedgerDialogType.destructive] the vermilion one
 /// (only for what cannot be undone), an [LedgerDialogType.acknowledge] a lone
-/// "Got it". Its card is 360 at most, the raised paper on the dialog's
+/// "Got it". A question with more answers (Cancel, Discard, Save changes)
+/// gives them as [actions] instead, raised with [showActions]. Its card is
+/// 360 at most, the raised paper on the dialog's
 /// shadow, and it scrolls once its words outgrow the screen. Raise it with
 /// [show], which completes with true for the confirm, false for Cancel and
 /// null when the scrim, Escape or the system back dismisses it: ui_core's
@@ -45,6 +88,10 @@ enum LedgerDialogType {
 /// ```dart
 /// final ok = await LedgerDialog.show(context, title: 'Delete this entry?', body: 'It leaves your records for good.', type: LedgerDialogType.destructive, confirmLabel: 'Delete');
 /// ```
+///
+/// ```dart
+/// final choice = await LedgerDialog.showActions<String>(context, title: 'Unsaved changes', body: 'Save your changes before leaving?', actions: const [LedgerDialogAction('Cancel'), LedgerDialogAction('Discard', value: 'discard', isDestructiveAction: true), LedgerDialogAction('Save changes', value: 'save', isDefaultAction: true)]);
+/// ```
 class LedgerDialog extends StatelessWidget {
   /// A dialog titled [title], its acts picked by [type].
   const LedgerDialog({
@@ -56,9 +103,17 @@ class LedgerDialog extends StatelessWidget {
     this.cancelLabel,
     this.onConfirmPressed,
     this.onCancelPressed,
+    this.actions,
     this.style,
     super.key,
-  });
+  }) : assert(
+         actions == null ||
+             (confirmLabel == null &&
+                 cancelLabel == null &&
+                 onConfirmPressed == null &&
+                 onCancelPressed == null),
+         'Give the acts as actions or as the two labels, not both.',
+       );
 
   /// The decision, in the serif.
   final String title;
@@ -74,7 +129,8 @@ class LedgerDialog extends StatelessWidget {
   /// Parts after the body.
   final List<Widget> children;
 
-  /// What it asks: its acts and the confirm's ink.
+  /// What it asks: its two acts and the confirm's ink. Unused with
+  /// [actions].
   final LedgerDialogType type;
 
   /// The confirming act's words; null is "Confirm" ("Got it" to
@@ -90,6 +146,11 @@ class LedgerDialog extends StatelessWidget {
 
   /// What Cancel does; null leaves it to the route's pop.
   final VoidCallback? onCancelPressed;
+
+  /// Its acts, in reading order with the confirm last, in place of the two
+  /// that [type] picks: they share the width evenly, or stack across it, the
+  /// last on top, when one's words would not fit its share.
+  final List<LedgerDialogAction>? actions;
 
   /// Raises a [LedgerDialog] over the whole app (the app's root navigator,
   /// [LedgerHost.navigatorOf]) on ui_core's [DesignDialogRoute]. Completes
@@ -118,7 +179,7 @@ class LedgerDialog extends StatelessWidget {
           FadeTransition(
             opacity: details.animation.drive(ledgerPresence),
             child: SafeArea(
-              child: Center(
+              child: LedgerPixelCenter(
                 child: LedgerDialog(
                   title: title,
                   body: body,
@@ -127,6 +188,56 @@ class LedgerDialog extends StatelessWidget {
                   cancelLabel: cancelLabel,
                   onConfirmPressed: () => Navigator.of(dialogContext).pop(true),
                   onCancelPressed: () => Navigator.of(dialogContext).pop(false),
+                  children: children,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Raises a [LedgerDialog] with [actions] as [show] raises one. A press
+  /// closes it with that act's [LedgerDialogAction.value], then runs its
+  /// [LedgerDialogAction.onPressed]; it completes with null when the scrim,
+  /// Escape or the system back dismisses it.
+  static Future<T?> showActions<T>(
+    BuildContext context, {
+    required String title,
+    required List<LedgerDialogAction> actions,
+    String? body,
+    List<Widget> children = const [],
+  }) {
+    final t = context.ledgerTheme;
+    final navigator = LedgerHost.navigatorOf(context);
+    final themes = InheritedTheme.capture(from: context, to: navigator.context);
+    return navigator.push(
+      DesignDialogRoute<T>(
+        barrierDismissible: true,
+        barrierColor: t.overlay,
+        semanticLabel: title,
+        builder: (dialogContext, details) => themes.wrap(
+          FadeTransition(
+            opacity: details.animation.drive(ledgerPresence),
+            child: SafeArea(
+              child: LedgerPixelCenter(
+                child: LedgerDialog(
+                  title: title,
+                  body: body,
+                  actions: [
+                    for (final a in actions)
+                      LedgerDialogAction(
+                        a.label,
+                        value: a.value,
+                        isDefaultAction: a.isDefaultAction,
+                        isDestructiveAction: a.isDestructiveAction,
+                        onPressed: () {
+                          Navigator.of(dialogContext).pop(a.value as T?);
+                          a.onPressed?.call();
+                        },
+                      ),
+                  ],
                   children: children,
                 ),
               ),
@@ -160,6 +271,13 @@ class LedgerDialog extends StatelessWidget {
           'onCancelPressed',
           onCancelPressed,
         ),
+      )
+      ..add(
+        IterableProperty<String>(
+          'actions',
+          actions?.map((a) => a.label),
+          defaultValue: null,
+        ),
       );
   }
 
@@ -169,8 +287,7 @@ class LedgerDialog extends StatelessWidget {
     final destructive = type == LedgerDialogType.destructive;
     final acknowledge = type == LedgerDialogType.acknowledge;
     final shared = RawWidgetsLocalizations.of(context);
-    // "Got it" and "Confirm" stay English in 0.1.0: the shared words have
-    // neither.
+    // "Got it" and "Confirm" stay English: the shared words have neither.
     final yes =
         confirmLabel ??
         (acknowledge
@@ -210,6 +327,64 @@ class LedgerDialog extends StatelessWidget {
     );
     final words = body;
     final so = LedgerStyleOf([style, t.components.dialog], const {});
+    final given = actions;
+    final Widget acts;
+    if (given != null) {
+      final first = !raised
+          ? null
+          : RawAlertDialog.safeActionIndex([
+              for (final a in given)
+                RawDialogAction(
+                  label: a.label,
+                  onPressed: a.onPressed,
+                  isDefaultAction: a.isDefaultAction,
+                  isDestructiveAction: a.isDestructiveAction,
+                ),
+            ]);
+      // One seal on the slip: the default act, or failing one the loss.
+      final seal = given.any((a) => a.isDefaultAction)
+          ? (LedgerDialogAction a) => a.isDefaultAction
+          : (LedgerDialogAction a) => a.isDestructiveAction;
+      final buttons = [
+        for (final (i, a) in given.indexed)
+          seal(a)
+              ? LedgerButton.filled(
+                  a.label,
+                  onPressed: a.onPressed,
+                  expand: true,
+                  isDestructiveAction: a.isDestructiveAction,
+                  autofocus: first == i,
+                )
+              : LedgerButton(
+                  a.label,
+                  onPressed: a.onPressed,
+                  expand: true,
+                  isDestructiveAction: a.isDestructiveAction,
+                  autofocus: first == i,
+                ),
+      ];
+      acts = buttons.length == 1
+          ? buttons.single
+          : LedgerEvenActs(
+              gap: LedgerChromeMetrics.buttonRowGap,
+              children: buttons,
+            );
+    } else if (acknowledge) {
+      acts = confirm;
+    } else {
+      acts = LedgerEvenActs(
+        gap: LedgerChromeMetrics.buttonRowGap,
+        children: [
+          LedgerButton(
+            cancel,
+            expand: true,
+            onPressed: onCancel,
+            autofocus: safe == 0,
+          ),
+          confirm,
+        ],
+      );
+    }
     return Semantics(
       scopesRoute: !raised,
       namesRoute: !raised,
@@ -247,24 +422,8 @@ class LedgerDialog extends StatelessWidget {
                     ],
                     const SizedBox(height: _actsTop),
                     // The card is the acts' measure: one takes its width,
-                    // two share it, at any window.
-                    if (acknowledge)
-                      LedgerCardActsScope(child: confirm)
-                    else
-                      LedgerCardActsScope(
-                        child: LedgerEvenActs(
-                          gap: LedgerChromeMetrics.buttonRowGap,
-                          children: [
-                            LedgerButton(
-                              cancel,
-                              expand: true,
-                              onPressed: onCancel,
-                              autofocus: safe == 0,
-                            ),
-                            confirm,
-                          ],
-                        ),
-                      ),
+                    // more share it, at any window.
+                    LedgerCardActsScope(child: acts),
                   ],
                 ),
               ),

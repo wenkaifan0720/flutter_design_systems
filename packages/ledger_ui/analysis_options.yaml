@@ -1,5 +1,5 @@
-# ledger_ui's analysis options: ui_core's template, which look:package writes into the package. pana and pub.dev
-# read a package's own options, never a workspace root's, so they repeat the strict modes.
+# ledger_ui's analysis options: strict modes and documented public API. pana and pub.dev read a package's own
+# options, so they are set here.
 include: package:flutter_lints/flutter.yaml
 
 analyzer:

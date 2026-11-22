@@ -2,6 +2,7 @@
 // laid out and as drawn, under each density Ledger ships, on a phone and on the desktop (ui_core's label sweep). Each
 // page's everyday case is one width and density, the two turning over the pages; the rest of its widths and densities
 // are the sweep's (tiers.dart).
+// The gallery is the example app; a test reads its pages from there.
 // ignore_for_file: avoid_relative_lib_imports
 import 'dart:convert';
 import 'dart:math' as math;

@@ -1,10 +1,11 @@
 # ledger_ui
 
-A Flutter design system for financial apps, with ruled tables, tabular amounts, accessible form controls and responsive navigation. Choose from five colour presets in light or dark mode.
+A Flutter design system kept in ink on warm paper, with ruled tables, tabular amounts, accessible form controls and responsive navigation. Choose from five colour presets in light or dark mode.
 
 ![Home at 1440 by day beside a phone by night](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/ledger_ui/screenshots/hero.webp)
 
 **[Live gallery](https://wenkaifan0720.github.io/flutter_design_systems/ledger/)** ·
+[Docs](https://wenkaifan0720.github.io/flutter_design_systems/docs/looks/ledger/) ·
 [API reference](https://pub.dev/documentation/ledger_ui/latest/) ·
 [All the looks](https://wenkaifan0720.github.io/flutter_design_systems/)
 
@@ -46,6 +47,36 @@ class App extends StatelessWidget {
     home: const Center(child: Text('Accounts')),
   );
 }
+```
+
+Under a `CupertinoApp` (from `cupertino_ui`) it is the same `builder:`. With no Material words in the app, `LedgerTheme` supplies them to its fields:
+
+```dart
+CupertinoApp(
+  builder: (context, child) => LedgerTheme(
+    data: LedgerThemeData.light(),
+    child: child!,
+  ),
+  home: const AccountsPage(),
+);
+```
+
+A bare `WidgetsApp` asks for its colour and how to build a route:
+
+```dart
+WidgetsApp(
+  color: const Color(0xFF2F6B4F),
+  builder: (context, child) => LedgerTheme(
+    data: LedgerThemeData.light(),
+    child: child!,
+  ),
+  pageRouteBuilder: <T>(RouteSettings settings, WidgetBuilder builder) =>
+      PageRouteBuilder<T>(
+        settings: settings,
+        pageBuilder: (context, _, _) => builder(context),
+      ),
+  home: const AccountsPage(),
+);
 ```
 
 `ledgerPageTransitions` applies Ledger’s short fade and 8-pixel slide to pushed routes. Navigation destinations switch in place. The iOS back gesture and Android system back are supported. Reduced motion follows the platform setting.
@@ -197,12 +228,17 @@ pressable, the rules, the leader, the engraving and the other helpers). The rest
 - Use Tab to move between controls, Enter or Space to activate them, and Escape to close overlays. A set of radios, a segmented control or a one-choice toggle group is one Tab stop, on the chosen option, and the arrow keys move and choose. Selects support arrow keys, Home, End and type-ahead. Sliders respond to arrow keys. Keyboard focus is shown with a double underline.
 - Control hit targets stay at least 44 logical pixels across densities. Labels and form rows wrap at large text sizes. Calendar days and weekday names scale within the seven-column grid. Chart legends and rulers scale separately from labels inside the plot.
 - The layout follows `Directionality`. Money, masked account numbers and step counts preserve their numeric order in right-to-left layouts. Charts retain their left-to-right time axis.
-- Add `DesignLocalizations.delegate` to `localizationsDelegates` and `DesignLocalizations.supportedLocales` to `supportedLocales` to localize shared control labels. Supply translated application labels, chart names and prompts yourself. The bundled fonts cover Latin scripts. Other scripts use platform fallback fonts.
+- Add `RawWidgetsLocalizations.delegate` to `localizationsDelegates` and `RawWidgetsLocalizations.supportedLocales` to `supportedLocales` to localize shared control labels. Supply translated application labels, chart names and prompts yourself. The bundled fonts cover Latin scripts. Other scripts use platform fallback fonts.
 - `LedgerFormat` prints dates and times in English and currency amounts in US dollars. Use `LedgerStepper.format` to display a different unit in a stepper.
 
 ## Example app
 
 Run the app in `example/` to explore Quill, a household ledger with an account overview, transaction register, entry form and settings. Its component gallery includes every preset in light and dark mode.
+
+## Requirements
+
+Flutter 3.47 or later (Dart 3.13). The package depends on ui_core ^0.4.1 and re-exports it, so `RawWidgetsLocalizations`
+and the `Raw*` parts come with the one import.
 
 ## Licences
 

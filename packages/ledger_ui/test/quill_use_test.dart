@@ -3,6 +3,7 @@
 // error; signing out closes the account until Sign in; a changed name stays; the register counts only what a scroll
 // reaches; the currency is a fact, not a choice the app could not keep; and at twice the text size the tab bar's names
 // read large, breaking between their words.
+// The gallery is the example app; a test reads its pages from there.
 // ignore_for_file: avoid_relative_lib_imports
 import 'dart:convert';
 
