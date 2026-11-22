@@ -4,7 +4,7 @@ A quiet look, where restraint and alignment are the whole test.
 
 ## The brief, as given to the agent
 
-> Build `grid_ui`, a Flutter design-system package on ui_core ^0.4.1, in the
+> Build `grid_ui`, a Flutter design-system package on ui_core ^0.5.0, in the
 > International Typographic Style: a strict 8 px grid, one sans-serif family
 > (any the app loads; Inter by default), black and white with one red, flat
 > surfaces with hairline rules, square corners, no shadows, no gradients.

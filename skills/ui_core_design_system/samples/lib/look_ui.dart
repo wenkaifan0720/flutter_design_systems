@@ -11,13 +11,17 @@ export 'package:ui_core/ui_core.dart'
         DesignStyle,
         RawDialogAction,
         RawMenuEntry,
+        RawToast,
+        RawToasterState,
         RawWidgetsLocalizations;
 
 export 'src/button.dart';
 export 'src/controls.dart';
+export 'src/dates.dart';
 export 'src/face.dart';
 export 'src/field.dart';
 export 'src/lists.dart';
 export 'src/overlays.dart';
+export 'src/tabs.dart';
 export 'src/theme.dart';
 export 'src/transitions.dart';

@@ -5,10 +5,22 @@ description: Build a complete, production-grade Flutter design-system package (a
 
 # Building a design system on ui_core
 
+Written for ui_core 0.5.x and ui_core_test 0.3.x, on Flutter 3.47 or later.
+
 This skill builds a Flutter package that is a whole design language: a
 theme, every part an ordinary app needs, in every state, on every screen size,
-for every reader. It targets **ui_core ^0.4.1** and **ui_core_test ^0.2.1** on
-**Flutter 3.47 or later**, and uses only their published API (pub.dev).
+for every reader. It uses only the published API of ui_core and ui_core_test
+(pub.dev).
+
+To use it, copy this folder into a project's `.claude/skills/` (or your own
+`~/.claude/skills/`); the agent reads it when asked to build a design system.
+The package it builds starts from:
+
+```text
+flutter create --template=package <name>_ui
+flutter pub add ui_core:^0.5.0 material_ui
+flutter pub add 'dev:ui_core_test:^0.3.0' dev:leak_tracker_flutter_testing dev:flutter_lints
+```
 
 A design system on ui_core splits the work in two:
 
@@ -74,8 +86,8 @@ leave it plainer. See [taste.md](references/taste.md).
   README.md  CHANGELOG.md  LICENSE
 ```
 
-Depend on `ui_core: ^0.4.1` and, for the text editing and the localizations a
-look reuses, `material_ui`; dev-depend on `ui_core_test: ^0.2.1`,
+Depend on `ui_core: ^0.5.0` and, for the text editing and the localizations a
+look reuses, `material_ui`; dev-depend on `ui_core_test: ^0.3.0`,
 `leak_tracker_flutter_testing` and `flutter_lints`. Turn on `strict-casts`,
 `strict-inference`, `strict-raw-types` and `public_member_api_docs`, and leak
 tracking for every test. [checks.md](references/checks.md) has the files.
@@ -90,6 +102,8 @@ export 'package:ui_core/ui_core.dart'
         DesignStyle,
         RawDialogAction,
         RawMenuEntry,
+        RawToast,
+        RawToasterState,
         RawWidgetsLocalizations;
 ```
 
@@ -137,7 +151,9 @@ builder: (context, child) => MediaQuery.withClampedTextScaling(
         data: LookThemeData.of(brightness),
 ```
 
-The same builder works under `CupertinoApp` and `WidgetsApp`.
+The same builder works under `CupertinoApp` and `WidgetsApp`. The look's
+toaster (step 6) goes in it too, under the theme, so a toast shows over
+every route.
 
 ### 4. Make the face, then the button
 
@@ -226,6 +242,19 @@ the return of focus to its opener. Build dialogs on `DesignDialogRoute` with
 final themes = InheritedTheme.capture(from: context, to: navigator.context);
 ```
 
+- **Actions.** `RawAlertDialog` lays its actions out on a `RawActionBar`:
+  one row while they fit, else one column of one width with the confirming
+  action on top. A sheet or a dialog with a footer of its own puts its
+  buttons in a `RawActionBar` too, never a `Row` or a `Wrap`.
+- **Pickers.** A calendar or a grid raised from a field opens with
+  `RawPopoverPlacement(fit: RawPopoverFit.whole)`, so it lands whole on
+  the side that holds it; a list keeps the default and scrolls.
+- **Toasts.** A `RawToaster` in the app's builder holds them; the look
+  paints one. A bar the look draws along the screen's foot is wrapped in
+  `RawToasterKeepClear`, so a toast stands above it, never on it.
+
+[contract.md](references/contract.md) has each.
+
 ### 7. Prove each part
 
 For every part, a widget test that pumps it in a screen and runs the
@@ -240,11 +269,18 @@ const DesignTapTargetCheck(look: 'Look').check(screen).verify();
 const DesignCursorCheck(look: 'Look').check(screen).verify();
 ```
 
-Parts with a tooltip, a text field or a list take one more check each:
-`DesignTooltipNodeCheck` (the tip is on the control's node),
-`DesignFieldNodesCheck` (a field keeps its nodes as its text changes) and
-`DesignListSideCheck` (an open list sits below its field while below holds
-it).
+Every screen also takes `DesignOverflowCheck` at twice the text size (no
+part overflows or runs off its screen). Parts with a tooltip, a field, a list
+or actions take more:
+
+- `DesignTooltipNodeCheck`: the tip is on the control's node.
+- `DesignFieldNodesCheck`: a field keeps its nodes as its text changes;
+  `DesignFieldWordsCheck`: its help and error are read with it.
+- `DesignListSideCheck`: an open list sits below its field while below
+  holds it; `DesignOverlayCheck`: a raised surface stays on a phone's
+  screen, its anchor high, in the middle or low.
+- `DesignDialogActionsCheck`: a dialog's or a sheet's actions stand in one
+  row or one column, at 320 and 390 wide, at 1x and 2x text.
 
 Then look at it: shoot every part in every state at full size, day and
 night, at 390 and 1440 wide, left to right and right to left, and read every
@@ -341,6 +377,17 @@ const DesignInventoryEntry.absent(
 - **A dialog that takes two actions.** A general dialog takes a list, as
   Material's `AlertDialog` does, and stacks them, the confirming one on top,
   all one width.
+- **Words changed to pass a check.** A shorter label, a dropped word, a
+  hidden helper: the check then passes and the part still fails at the
+  length a real app gives it. Fix the part; if the part is right, tell the
+  ui_core maintainers what the check got wrong.
+- **A field's words as `label` or `hint`.** In Flutter those are `Widget`
+  slots. A field's strings are `labelText`, `hintText`, `helperText` and
+  `errorText`, as in `InputDecoration`, and they go to `RawInputDecorator`,
+  which reads them with the field.
+- **A toast over a bar.** A bottom bar the look draws is wrapped in
+  `RawToasterKeepClear`; padding the toaster by the bar's height leaves a
+  gap once the bar goes.
 - **A card in a card.** Never nest a container in another of the same look,
   and never pad one on some sides only.
 - **Re-exporting all of ui_core.** Its surface and its versions then become

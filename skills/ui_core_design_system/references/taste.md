@@ -347,6 +347,21 @@ name, value, state); checkables never also say "button".
   and animation disposed.
 - Each look's API is its own: names and parameters come from its language,
   not from a shared vocabulary across looks.
+- A field's words are strings named as `InputDecoration` names them:
+  `labelText`, `hintText`, `helperText`, `errorText`. In Flutter `label`,
+  `hint`, `helper` and `error` are `Widget` slots; a `String label` on a
+  field reads as the wrong kind of slot.
+- Null disables. A part with no callback (`onPressed: null`,
+  `onChanged: null`) is turned off and looks it; no separate `enabled` flag
+  is needed where a callback says it.
+- A change of behaviour that `dart fix` can't rewrite fails to compile, so
+  no app keeps the old behaviour without knowing. Make the new callback
+  required but nullable, as `ElevatedButton.onPressed` is: every caller
+  names it, and null still disables.
+- Breaking changes go out together, in one release, each with a `dart fix`
+  entry (`lib/fix_data.yaml`) for what a rename or a moved parameter can
+  express, and a CHANGELOG line for what it can't. Keep the old names as
+  deprecated aliases for that release where they still mean the same.
 
 ## 13. Customisable within the principles
 

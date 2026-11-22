@@ -2,7 +2,9 @@ name: ci
 
 # CI runs on pull requests (testing only the packages a pull request changes) and by hand. It does not run on every
 # push to main: releases are checked before they are pushed. A change to ui_core, the workspace pubspec or this
-# workflow tests every package. Each package runs as its own job, in parallel.
+# workflow tests every package. Each package runs as its own job, in parallel. The skill's samples
+# (skills/ui_core_design_system/samples, job ui_core_design_system) run whenever ui_core or ui_core_test does, and when
+# the skill changes.
 on:
   pull_request:
   workflow_dispatch:
@@ -42,6 +44,10 @@ jobs:
           else
             all=$(sed -nE 's#^  - packages/([^/]+)$#\1#p' pubspec.yaml)
           fi
+          # The skill's samples are a member too, named for the skill. They resolve on the ui_core beside them.
+          skill=ui_core_design_system
+          skill_dir=skills/$skill/samples
+          grep -qxF "  - $skill_dir" pubspec.yaml || skill=""
           if [ "$EVENT" = "pull_request" ]; then
             changed=$(git diff --name-only "origin/$BASE...HEAD")
             if echo "$changed" | grep -qE '^(packages/ui_core/|pubspec\.yaml$|\.github/)'; then
@@ -49,12 +55,21 @@ jobs:
             else
               pick=$(echo "$changed" | sed -nE 's#^packages/([^/]+)/.*#\1#p' | sort -u | grep -xF "$all" || true)
             fi
+            if [ -n "$skill" ] && echo "$changed" | grep -q "^skills/$skill/"; then pick="$pick $skill"; fi
           elif [ -n "$ONLY" ] && [ "$ONLY" != "all" ]; then
             pick=$(echo "$ONLY" | tr ',' '\n' | tr -d ' ')
           else
             pick="$all"
           fi
+          # Wherever the core is tested, the skill is: a core change that breaks the skill fails here.
+          if [ -n "$skill" ] && printf '%s\n' $pick | grep -qxE 'ui_core|ui_core_test'; then pick="$pick $skill"; fi
+          pick=$(printf '%s\n' $pick | awk 'NF && !seen[$0]++')
+          dir() { if [ -n "$skill" ] && [ "$1" = "$skill" ]; then echo "$skill_dir"; else echo "packages/$1"; fi; }
           for p in $pick; do
+            if [ "$p" = ui_core_design_system ]; then
+              [ -n "$skill" ] || { echo "$skill_dir is not in the workspace"; exit 1; }
+              continue
+            fi
             [ -d "packages/$p" ] || { echo "No package named $p"; exit 1; }
             echo "$all" | grep -qxF "$p" || { echo "packages/$p is not in the workspace (it rejoins with its release)"; exit 1; }
           done
@@ -62,7 +77,8 @@ jobs:
           shards() { case "$1" in material_expressive_ui) echo 4 ;; *) echo 1 ;; esac; }
           json=$(for p in $pick; do n=$(shards "$p"); for i in $(seq 0 $((n - 1))); do
             label=$p; [ "$n" -gt 1 ] && label="$p ($((i + 1))/$n)"
-            jq -nc --arg p "$p" --arg l "$label" --argjson i "$i" --argjson n "$n" '{package: $p, label: $l, shard: $i, shards: $n}'
+            jq -nc --arg p "$p" --arg d "$(dir "$p")" --arg l "$label" --argjson i "$i" --argjson n "$n" \
+              '{package: $p, dir: $d, label: $l, shard: $i, shards: $n}'
           done; done | jq -sc .)
           echo "packages=$json" >> "$GITHUB_OUTPUT"
           echo "Testing: $json"
@@ -87,21 +103,22 @@ jobs:
         run: flutter pub get
       - name: Analyze
         if: matrix.shard == 0
-        run: dart analyze --fatal-infos packages/${{ matrix.package }}
+        run: dart analyze --fatal-infos ${{ matrix.dir }}
       - name: Test, without the goldens
-        working-directory: packages/${{ matrix.package }}
+        working-directory: ${{ matrix.dir }}
         run: |
           if [ -d test ]; then
             flutter test --exclude-tags goldens --total-shards ${{ matrix.shards }} --shard-index ${{ matrix.shard }}
           fi
       - name: Dry-run publish
         if: matrix.shard == 0
-        # A package marked publish_to: none (ui_core_review) is never published, so it has nothing to dry-run.
+        # A package marked publish_to: none (ui_core_review, the skill's samples) is never published, so it has
+        # nothing to dry-run.
         run: |
-          if grep -q '^publish_to: none' packages/${{ matrix.package }}/pubspec.yaml; then
-            echo "packages/${{ matrix.package }} is not published (publish_to: none)"
+          if grep -q '^publish_to: none' ${{ matrix.dir }}/pubspec.yaml; then
+            echo "${{ matrix.dir }} is not published (publish_to: none)"
           else
-            dart pub publish --dry-run --directory packages/${{ matrix.package }}
+            dart pub publish --dry-run --directory ${{ matrix.dir }}
           fi
 
   goldens:

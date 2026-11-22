@@ -1,8 +1,9 @@
 name: look_ui
 description: >-
   The skill's code samples, as a look of their own: every Dart block in the skill's pages is taken from this
-  package, which compiles and is tested against the published ui_core and ui_core_test.
+  package, which compiles and is tested in the repository's pub workspace, on the ui_core and ui_core_test beside it.
 publish_to: none
+resolution: workspace
 
 environment:
   sdk: ">=3.13.0 <4.0.0"
@@ -12,11 +13,11 @@ dependencies:
   flutter:
     sdk: flutter
   material_ui: ^1.9.0
-  ui_core: ^0.4.1
+  ui_core: ^0.5.0
 
 dev_dependencies:
   flutter_lints: ^6.0.0
   flutter_test:
     sdk: flutter
   leak_tracker_flutter_testing: any
-  ui_core_test: ^0.2.1
+  ui_core_test: ^0.3.0

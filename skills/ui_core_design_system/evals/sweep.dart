@@ -135,6 +135,7 @@ Future<List<String>> sweepInventory(
           input: condition.touch ? DesignInput.touch : DesignInput.pointer,
         ).check(screen),
         if (!condition.touch) DesignCursorCheck(look: look).check(screen),
+        DesignOverflowCheck(look: look).check(screen),
         DesignClipCheck(look: look).check(screen),
         DesignWordBreakCheck(look: look).check(screen),
       ];
@@ -242,9 +243,8 @@ class _Fonts {
   Set<String>? _loaded;
 
   /// Pumps each present part of [inventory] once under [wrap] and loads every
-  /// family they ask for, before any part is measured or drawn: a field laid
-  /// out before its font arrives keeps the test font's baseline, or draws
-  /// nothing.
+  /// family they ask for, before any part is measured or drawn: a part that
+  /// measures its words as it builds keeps the test font's measure.
   Future<void> prime(
     DesignInventory inventory,
     Widget Function(Widget child) wrap,

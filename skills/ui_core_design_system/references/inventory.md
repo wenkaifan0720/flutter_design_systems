@@ -50,12 +50,12 @@ later part reuses what they decide.
 | `IconButton` | Icon button | MCS | `RawButton` |
 | `Link` | Link | S | `RawButton(link: true)` |
 | `TextField` | Text field | MCS | `TextField`, `DesignTextEntryBox` |
-| `FormField` | Form + field (label, help, error) | MCS | `RawInputDecorator` |
+| `FormField` | Form + field (label, help, error) | MCS | `RawInputDecorator` (`labelText`, `helperText`, `errorText`, `required`, `invalid`) |
 | `Checkbox` | Checkbox | MCS | `RawButton(checked:, mixed:)` |
 | `RadioGroup` | Radio group | MCS | `RadioGroup`, `RawRadio`, `RadioGroupKeyboardFix` |
 | `Switch` | Switch | MCS | `RawButton(toggled:)` |
 | `Tooltip` | Tooltip | MS | `RawTooltip`, `RawTooltipPlacement`, `RawTooltipFocusFix` |
-| `Dialog` | Dialog / alert dialog | MCS | `DesignDialogRoute`, `RawAlertDialog` |
+| `Dialog` | Dialog / alert dialog | MCS | `DesignDialogRoute`, `RawAlertDialog` (actions on `RawActionBar`) |
 
 ## Stage 2: actions
 
@@ -64,7 +64,7 @@ The rest of what a person presses. A toggle group whose choice is single is the 
 | Row id | What it is | In | Build on |
 |---|---|---|---|
 | `FloatingActionButton` | Floating action button (+extended, menu) | M | drawn by the look |
-| `ButtonGroup` | Button group / toolbar | MS | drawn by the look |
+| `ButtonGroup` | Button group / toolbar | MS | the look's buttons in a `RawRovingFocusGroup` |
 | `ToggleGroup` | Toggle button / toggle group | MS | `RawSegmentedButton` |
 | `SplitButton` | Split button | M | `RawSplitButton` |
 | `Kbd` | Keyboard key (Kbd) | S | drawn by the look |
@@ -81,8 +81,8 @@ Each input stands at the control height, takes the field's rule and its focus tr
 | `InputGroup` | Input group (prefix/suffix add-ons) | S | `DesignInputGroup` |
 | `InputOtp` | OTP / PIN code | S | `RawOtpField` |
 | `NumberField` | Number field / quantity stepper | – | `RawNumberField` |
-| `Select` | Select / dropdown | MS | `RawPopover`, `RawButton` |
-| `Combobox` | Combobox / autocomplete | MS | `RawCombobox` |
+| `Select` | Select / dropdown | MS | `RawPopover`, `RawButton` (the chosen option `autofocus`) |
+| `Combobox` | Combobox / autocomplete | MS | `RawCombobox` (`field.isOpen`) |
 | `MultiSelect` | Multi-select / tag input | – | `RawTagInput` |
 | `Slider` | Slider | MCS | `DesignValueHandle` (the thumb's keys and screen reader; the look draws the track and turns drags into values) |
 | `RangeSlider` | Range slider | M | `RawRangeSlider` |
@@ -90,7 +90,7 @@ Each input stands at the control height, takes the field's rule and its focus tr
 | `Chip` | Chips (filter/choice/input) | M | `RawButton` |
 | `Rating` | Rating | – | `RawRating` |
 | `FileUpload` | File upload / drop zone | – | drawn by the look |
-| `DatePicker` | Date picker | MCS | `RawDateField`, `RawCalendarDatePicker` in a `RawPopover` |
+| `DatePicker` | Date picker | MCS | `RawDateField`, `RawCalendarDatePicker` in a `RawPopover` (`RawPopoverFit.whole`) |
 | `DateRangePicker` | Date range picker | M | `RawCalendarDatePicker` |
 | `TimePicker` | Time picker | MCS | `RawTimeField` |
 | `Calendar` | Inline calendar | MS | `RawCalendarDatePicker` |
@@ -107,7 +107,7 @@ Each input stands at the control height, takes the field's rule and its focus tr
 | `NavigationBar` | Bottom navigation bar | MC | `DesignAdaptiveShell` |
 | `NavigationRail` | Navigation rail | M | `DesignAdaptiveShell` |
 | `NavigationDrawer` | Navigation drawer / sidebar | MS | `DesignAdaptiveShell` |
-| `TabBar` | Tabs | MCS | `RawTabBar` |
+| `TabBar` | Tabs | MCS | `RawTabBar`; `RawTabGroup` for tabs the look lays out |
 | `Breadcrumb` | Breadcrumbs | S | drawn by the look |
 | `Pagination` | Pagination | S | drawn by the look |
 | `StepProgress` | Step progress / wizard | M | drawn by the look |
@@ -152,13 +152,13 @@ Each raised part has its own `show<Look>…` function or widget that owns its ro
 
 | Row id | What it is | In | Build on |
 |---|---|---|---|
-| `BottomSheet` | Bottom sheet / modal sheet | MCS | `RawBottomSheetRoute` |
+| `BottomSheet` | Bottom sheet / modal sheet | MCS | `RawBottomSheetRoute`, its actions on `RawActionBar` |
 | `Sheet` | Side sheet / drawer overlay | MS | `RawSideSheetRoute` |
 | `ActionSheet` | Action sheet | C | drawn by the look |
 | `Popover` | Popover | S | `RawPopover` |
 | `HoverCard` | Hover card | S | `RawPopover` |
 | `Menu` | Menu / context menu | MCS | `RawContextMenu`, `RawPopover`, `RawMenuEntry` |
-| `SnackBar` | Toast / snackbar (stacking) | MS | `RawToaster` |
+| `SnackBar` | Toast / snackbar (stacking) | MS | `RawToaster`; the look's bars in `RawToasterKeepClear` |
 | `Banner` | Banner / inline alert | MS | drawn by the look |
 
 ## Stage 7: feedback

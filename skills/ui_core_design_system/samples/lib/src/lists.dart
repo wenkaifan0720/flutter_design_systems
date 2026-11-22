@@ -34,20 +34,35 @@ LookFace lookFieldFace(
 }
 
 /// The sign at the end of a field that opens a list: a select's and a
-/// combobox's are the same, so both read as fields that offer choices.
+/// combobox's are the same, so both read as fields that offer choices. It
+/// turns over while the list shows.
 class LookListSign extends StatelessWidget {
-  /// The sign, in the face's foreground.
-  const LookListSign({super.key});
+  /// The sign, in the face's foreground, turned over while [open].
+  const LookListSign({super.key, this.open = false});
+
+  /// Whether the field's list shows.
+  final bool open;
 
   @override
   Widget build(BuildContext context) => ExcludeSemantics(
-    child: SizedBox.square(
-      dimension: 20,
-      child: CustomPaint(
-        painter: _ChevronPainter(DefaultTextStyle.of(context).style.color),
+    child: LookSpringBuilder(
+      value: open ? 1 : 0,
+      builder: (context, turn, sign) =>
+          Transform.rotate(angle: turn * math.pi, child: sign),
+      child: SizedBox.square(
+        dimension: 20,
+        child: CustomPaint(
+          painter: _ChevronPainter(DefaultTextStyle.of(context).style.color),
+        ),
       ),
     ),
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(FlagProperty('open', value: open, ifTrue: 'open'));
+  }
 }
 
 class _ChevronPainter extends CustomPainter {
@@ -233,13 +248,13 @@ double _choiceWidth(
 /// sign as [LookCombobox], so the two read as one kind of field.
 ///
 /// ```dart
-/// LookSelect<String>(label: 'Plan', options: const ['Day', 'Week'], value: plan, onChanged: (next) => plan = next)
+/// LookSelect<String>(labelText: 'Plan', options: const ['Day', 'Week'], value: plan, onChanged: (next) => plan = next)
 /// ```
 class LookSelect<T extends Object> extends StatelessWidget {
-  /// A field labelled [label] offering [options].
+  /// A field labelled [labelText] offering [options].
   const LookSelect({
     super.key,
-    required this.label,
+    required this.labelText,
     required this.options,
     required this.value,
     required this.onChanged,
@@ -247,7 +262,7 @@ class LookSelect<T extends Object> extends StatelessWidget {
   });
 
   /// What the choice is for, above the field.
-  final String label;
+  final String labelText;
 
   /// What can be chosen.
   final List<T> options;
@@ -266,9 +281,14 @@ class LookSelect<T extends Object> extends StatelessWidget {
     final theme = LookTheme.of(context);
     final chosen = value;
     final change = onChanged;
-    final width = _choiceWidth(context, theme, label, options.map(optionLabel));
+    final width = _choiceWidth(
+      context,
+      theme,
+      labelText,
+      options.map(optionLabel),
+    );
     return RawInputDecorator(
-      labelText: label,
+      labelText: labelText,
       enabled: change != null,
       builder: (context, parts) => ConstrainedBox(
         constraints: BoxConstraints(maxWidth: width),
@@ -284,7 +304,7 @@ class LookSelect<T extends Object> extends StatelessWidget {
       ),
       child: RawPopover(
         arrowKeyNavigation: true,
-        semanticLabel: label,
+        semanticLabel: labelText,
         anchorBuilder: (context, anchor) => TapTargetPadding(
           child: RawButton(
             onPressed: change == null ? null : anchor.toggle,
@@ -315,7 +335,7 @@ class LookSelect<T extends Object> extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 8),
-                      const LookListSign(),
+                      LookListSign(open: anchor.isOpen),
                     ],
                   ),
                 ),
@@ -332,6 +352,9 @@ class LookSelect<T extends Object> extends StatelessWidget {
                 for (final option in options)
                   RawButton(
                     selected: option == chosen,
+                    // The chosen option takes the focus as the list opens,
+                    // from the keys or a pointer, and is kept in view.
+                    autofocus: option == chosen,
                     onPressed: change == null
                         ? null
                         : () {
@@ -353,7 +376,7 @@ class LookSelect<T extends Object> extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('label', label))
+      ..add(StringProperty('labelText', labelText))
       ..add(DiagnosticsProperty<T>('value', value, defaultValue: null));
   }
 }
@@ -365,13 +388,13 @@ String _words(Object option) => '$option';
 /// [LookSelect], its rows the same as the select's and the menu's.
 ///
 /// ```dart
-/// LookCombobox<String>(label: 'Assignee', options: const ['Ada', 'Grace'], value: who, onSelected: (next) => who = next)
+/// LookCombobox<String>(labelText: 'Assignee', options: const ['Ada', 'Grace'], value: who, onSelected: (next) => who = next)
 /// ```
 class LookCombobox<T extends Object> extends StatefulWidget {
-  /// A field labelled [label] filtering [options].
+  /// A field labelled [labelText] filtering [options].
   const LookCombobox({
     super.key,
-    required this.label,
+    required this.labelText,
     required this.options,
     this.value,
     this.onSelected,
@@ -380,7 +403,7 @@ class LookCombobox<T extends Object> extends StatefulWidget {
   });
 
   /// What the choice is for, above the field.
-  final String label;
+  final String labelText;
 
   /// What can be chosen.
   final List<T> options;
@@ -404,7 +427,7 @@ class LookCombobox<T extends Object> extends StatefulWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('label', label))
+      ..add(StringProperty('labelText', labelText))
       ..add(DiagnosticsProperty<T>('value', value, defaultValue: null));
   }
 }
@@ -438,11 +461,11 @@ class _LookComboboxState<T extends Object> extends State<LookCombobox<T>> {
     final width = _choiceWidth(
       context,
       theme,
-      widget.label,
+      widget.labelText,
       widget.options.map(widget.optionLabel),
     );
     return RawInputDecorator(
-      labelText: widget.label,
+      labelText: widget.labelText,
       focusNode: _focusNode,
       builder: (context, parts) => ConstrainedBox(
         constraints: BoxConstraints(maxWidth: width),
@@ -466,10 +489,7 @@ class _LookComboboxState<T extends Object> extends State<LookCombobox<T>> {
         onSelected: widget.onSelected,
         displayStringForOption: widget.optionLabel,
         focusNode: _focusNode,
-        semanticLabel: widget.label,
-        // A list opens below its field while below holds it, as every list
-        // of the look does; this is ui_core's default.
-        optionsViewOpenDirection: OptionsViewOpenDirection.down,
+        semanticLabel: widget.labelText,
         fieldBuilder: (context, field) {
           Widget entry = TextField(
             controller: field.controller,
@@ -482,6 +502,9 @@ class _LookComboboxState<T extends Object> extends State<LookCombobox<T>> {
           if (Material.maybeOf(context) == null) {
             entry = Material(type: MaterialType.transparency, child: entry);
           }
+          // The text input says whether its list shows, as the select's
+          // button does: on the input itself, not round the whole field.
+          entry = Semantics(expanded: field.isOpen, child: entry);
           return ListenableBuilder(
             listenable: field.focusNode,
             builder: (context, _) => MouseRegion(
@@ -518,7 +541,7 @@ class _LookComboboxState<T extends Object> extends State<LookCombobox<T>> {
                           ),
                         ),
                         const SizedBox(width: 8),
-                        const LookListSign(),
+                        LookListSign(open: field.isOpen),
                       ],
                     ),
                   ),

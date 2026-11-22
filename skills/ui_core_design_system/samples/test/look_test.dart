@@ -7,6 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:look_ui/look_ui.dart';
 import 'package:look_ui/src/inventory.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:ui_core/ui_core.dart' show RawCalendarDatePicker;
 import 'package:ui_core_test/guidelines.dart';
 import 'package:ui_core_test/ui_core_test.dart';
 
@@ -59,9 +60,12 @@ Widget lookApp({
       textDirection: direction ?? Directionality.of(context),
       child: LookTheme(
         data: LookThemeData.of(brightness),
-        child: ColoredBox(
-          color: LookThemeData.of(brightness).colors.ground,
-          child: child!,
+        // Toasts over every route, under the look's theme.
+        child: LookToaster(
+          child: ColoredBox(
+            color: LookThemeData.of(brightness).colors.ground,
+            child: child!,
+          ),
         ),
       ),
     ),
@@ -133,13 +137,26 @@ class _PartsScreenState extends State<PartsScreen> {
         ),
         const SizedBox(height: 16),
         const LookTextField(
-          label: 'Name',
-          hint: 'Ada Lovelace',
+          labelText: 'Name',
+          hintText: 'Ada Lovelace',
           helperText: 'As it appears on your card',
         ),
       ],
     ),
   );
+}
+
+/// The words of the control the keyboard's focus is on, or null.
+String? focusedWords(WidgetTester tester) {
+  final at = FocusManager.instance.primaryFocus?.context;
+  if (at == null) return null;
+  final words = find.descendant(
+    of: find.byElementPredicate((e) => e == at),
+    matching: find.byType(Text),
+  );
+  return words.evaluate().isEmpty
+      ? null
+      : tester.widget<Text>(words.first).data;
 }
 
 void main() {
@@ -263,6 +280,7 @@ void main() {
     );
     expect(tester.takeException(), isNull);
     final screen = tester.element(find.byType(PartsScreen));
+    const DesignOverflowCheck(look: 'Look').check(screen).verify();
     const DesignClipCheck(look: 'Look').check(screen).verify();
     const DesignWordBreakCheck(look: 'Look').check(screen).verify();
     // Right to left, a checkbox's words stand to the left of its box.
@@ -391,19 +409,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Delete the draft?'), findsOneWidget);
     // The focus starts on the safe action, never on the destructive one.
-    String? focused() {
-      final at = FocusManager.instance.primaryFocus?.context;
-      if (at == null) return null;
-      final words = find.descendant(
-        of: find.byElementPredicate((e) => e == at),
-        matching: find.byType(Text),
-      );
-      return words.evaluate().isEmpty
-          ? null
-          : tester.widget<Text>(words.first).data;
-    }
-
-    expect(focused(), 'Cancel');
+    expect(focusedWords(tester), 'Cancel');
     final screen = tester.element(find.text('Delete the draft?'));
     const DesignCheckableCheck(look: 'Look').check(screen).verify();
     const DesignTapTargetCheck(look: 'Look').check(screen).verify();
@@ -412,7 +418,7 @@ void main() {
     expect(find.text('Delete the draft?'), findsNothing);
     expect(answer, isNull);
     // The focus is back on the button that opened it.
-    expect(focused(), 'Delete');
+    expect(focusedWords(tester), 'Delete');
   });
 
   testWidgets('on iOS a swipe from the leading edge pops the page', (
@@ -480,54 +486,109 @@ void main() {
     expect(find.text('Share'), findsOneWidget);
   });
 
-  testWidgets('three dialog actions stack, one width, the confirming on top, '
-      'when they do not fit', (tester) async {
-    tester.view.physicalSize = const Size(390, 844);
+  testWidgets('dialog actions stand in one row, or one column of one width '
+      'with the confirming on top', (tester) async {
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
-    await tester.pumpWidget(
-      lookApp(
-        home: Builder(
-          builder: (context) => Center(
-            child: LookButton(
-              'Close',
-              onPressed: () => showLookDialog<void>(
-                context,
-                title: 'Discard the draft?',
-                content: const Text('Your changes will be lost.'),
-                actions: (context) => [
-                  for (final label in ['Keep editing', 'Discard', 'Save draft'])
-                    RawDialogAction(
-                      label: label,
-                      isDestructiveAction: label == 'Discard',
-                      onPressed: () => Navigator.pop(context),
-                    ),
-                ],
+    const labels = ['Keep editing', 'Discard', 'Save draft'];
+    for (final width in [320.0, 390.0]) {
+      for (final scale in [1.0, 2.0]) {
+        tester.view.physicalSize = Size(width, 844);
+        await tester.pumpWidget(
+          lookApp(
+            textScale: scale,
+            home: Builder(
+              builder: (context) => Center(
+                child: LookButton(
+                  'Close',
+                  onPressed: () => showLookDialog<void>(
+                    context,
+                    title: 'Discard the draft?',
+                    content: const Text('Your changes will be lost.'),
+                    actions: (context) => [
+                      for (final label in labels)
+                        RawDialogAction(
+                          label: label,
+                          isDestructiveAction: label == 'Discard',
+                          onPressed: () => Navigator.pop(context),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+        await tester.tap(find.text('Close'));
+        await tester.pumpAndSettle();
+        final dialog = tester.element(find.text('Discard the draft?'));
+        const DesignDialogActionsCheck(
+          look: 'Look',
+          actions: labels,
+        ).check(dialog).verify();
+        const DesignOverlayCheck(look: 'Look').check(dialog).verify();
+        // The words and the actions keep a gap between them.
+        final top = [
+          for (final label in labels) tester.getRect(find.text(label)).top,
+        ].reduce((a, b) => a < b ? a : b);
+        expect(
+          top - tester.getRect(find.text('Your changes will be lost.')).bottom,
+          greaterThanOrEqualTo(16),
+        );
+        await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+        await tester.pumpAndSettle();
+      }
+    }
+  });
+
+  testWidgets('a sheet lays its own buttons out as a dialog does', (
+    tester,
+  ) async {
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    const labels = ['Cancel', 'Copy link', 'Send a copy'];
+    for (final width in [320.0, 1024.0]) {
+      tester.view.physicalSize = Size(width, 700);
+      await tester.pumpWidget(
+        lookApp(
+          home: Builder(
+            builder: (context) => Center(
+              child: LookButton(
+                'Share',
+                onPressed: () => showLookSheet<void>(
+                  context,
+                  title: 'Share the list',
+                  actions: (context) => [
+                    for (final label in labels)
+                      LookButton(
+                        label,
+                        variant: label == labels.last
+                            ? LookButtonVariant.filled
+                            : LookButtonVariant.outlined,
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                  ],
+                ),
               ),
             ),
           ),
         ),
-      ),
-    );
-    await tester.tap(find.text('Close'));
-    await tester.pumpAndSettle();
-    Rect face(String label) => tester.getRect(
-      find
-          .ancestor(of: find.text(label), matching: find.byType(LookSurface))
-          .first,
-    );
-    final keep = face('Keep editing');
-    final discard = face('Discard');
-    final save = face('Save draft');
-    expect(save.top, lessThan(discard.top));
-    expect(discard.top, lessThan(keep.top));
-    expect({keep.width, discard.width, save.width}, hasLength(1));
-    expect({keep.height, discard.height, save.height}, hasLength(1));
-    // The words and the actions keep a gap between them.
-    expect(
-      save.top - tester.getRect(find.text('Your changes will be lost.')).bottom,
-      greaterThanOrEqualTo(16),
-    );
+      );
+      await tester.tap(find.text('Share'));
+      await tester.pumpAndSettle();
+      final sheet = tester.element(find.text('Share the list'));
+      const DesignDialogActionsCheck(
+        look: 'Look',
+        actions: labels,
+      ).check(sheet).verify();
+      // Stacked on a narrow phone, side by side on a desk.
+      final copy = tester.getRect(find.text('Copy link'));
+      final send = tester.getRect(find.text('Send a copy'));
+      expect(send.bottom < copy.top, width < 600);
+      await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+      await tester.pumpAndSettle();
+      expect(find.text('Share the list'), findsNothing);
+    }
   });
 
   testWidgets('built-in words follow the reader\'s language', (tester) async {
@@ -600,10 +661,13 @@ void main() {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const SizedBox(width: 160, child: LookTextField(label: 'Name')),
+              const SizedBox(
+                width: 160,
+                child: LookTextField(labelText: 'Name'),
+              ),
               const SizedBox(width: 12),
               LookSelect<String>(
-                label: 'Plan',
+                labelText: 'Plan',
                 options: const ['Day', 'Week'],
                 value: 'Day',
                 onChanged: (_) {},
@@ -612,7 +676,7 @@ void main() {
               const SizedBox(
                 width: 160,
                 child: LookCombobox<String>(
-                  label: 'Owner',
+                  labelText: 'Owner',
                   options: ['Ada', 'Grace'],
                 ),
               ),
@@ -666,12 +730,12 @@ void main() {
 
     const options = ['Day', 'Week', 'Month'];
     LookSelect<String> select(String value) => LookSelect<String>(
-      label: 'Plan',
+      labelText: 'Plan',
       options: options,
       value: value,
       onChanged: (_) {},
     );
-    const combobox = LookCombobox<String>(label: 'Plan', options: options);
+    const combobox = LookCombobox<String>(labelText: 'Plan', options: options);
     const start = CrossAxisAlignment.start;
     final day = await faceWidth(start, select('Day'));
     expect(day, lessThan(240));
@@ -701,14 +765,14 @@ void main() {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 LookSelect<String>(
-                  label: 'Plan',
+                  labelText: 'Plan',
                   options: const ['Day', 'Week', 'Month'],
                   value: 'Week',
                   onChanged: (_) {},
                 ),
                 const SizedBox(height: 16),
                 LookCombobox<String>(
-                  label: 'Owner',
+                  labelText: 'Owner',
                   options: const ['Ada', 'Grace', 'Katherine'],
                   value: owner,
                   onSelected: (next) => setState(() => owner = next),
@@ -784,6 +848,280 @@ void main() {
         tester.widget<Text>(find.text(label)).style?.color;
     expect(ink('Delete'), colors.danger);
     expect(ink('Rename'), colors.ink);
+  });
+
+  testWidgets('a select opened from the keys starts on its chosen option', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      lookApp(
+        home: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              LookSelect<String>(
+                labelText: 'Plan',
+                options: const ['Day', 'Week', 'Month'],
+                value: 'Month',
+                onChanged: (_) {},
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+    await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+    await tester.pumpAndSettle();
+    expect(focusedWords(tester), 'Month');
+  });
+
+  testWidgets('a combobox\'s input says whether its list shows', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      lookApp(
+        home: const Padding(
+          padding: EdgeInsets.all(24),
+          child: Align(
+            alignment: AlignmentDirectional.topStart,
+            child: LookCombobox<String>(
+              labelText: 'Owner',
+              options: ['Ada', 'Grace'],
+            ),
+          ),
+        ),
+      ),
+    );
+    final input = find.byType(EditableText);
+    Matcher expanded(bool open) =>
+        isSemantics(hasExpandedState: true, isExpanded: open);
+    expect(tester.getSemantics(input), expanded(false));
+    await tester.tap(input);
+    await tester.pumpAndSettle();
+    expect(find.text('Grace'), findsOneWidget);
+    expect(tester.getSemantics(input), expanded(true));
+    await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+    await tester.pumpAndSettle();
+    expect(tester.getSemantics(input), expanded(false));
+  });
+
+  testWidgets('a field\'s help and error are read with it; required is a '
+      'flag', (tester) async {
+    for (final error in [null, 'Enter the whole address']) {
+      await tester.pumpWidget(
+        lookApp(
+          home: Padding(
+            padding: const EdgeInsets.all(24),
+            child: LookTextField(
+              labelText: 'Email',
+              helperText: 'For receipts only',
+              errorText: error,
+              required: true,
+            ),
+          ),
+        ),
+      );
+      final screen = tester.element(find.byType(LookTextField));
+      DesignFieldWordsCheck(
+        look: 'Look',
+        words: [error ?? 'For receipts only'],
+      ).check(screen).verify();
+      expect(
+        tester.getSemantics(find.byType(EditableText)),
+        isSemantics(isRequired: true, isTextField: true),
+      );
+    }
+  });
+
+  testWidgets('a month opens whole where it fits, on its chosen day', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    DateTime? due = DateTime(2026, 3, 18);
+    await tester.pumpWidget(
+      lookApp(
+        home: StatefulBuilder(
+          builder: (context, setState) => Padding(
+            padding: const EdgeInsets.all(24),
+            // The field at the foot of a phone: too little room below.
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.end,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                LookDateField(
+                  labelText: 'Due',
+                  value: due,
+                  firstDate: DateTime(2026),
+                  lastDate: DateTime(2027),
+                  onChanged: (day) => setState(() => due = day),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+    await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+    await tester.pumpAndSettle();
+    final screen = tester.element(find.byType(LookDateField));
+    // Above the field's face, whole: below it the month would not fit.
+    final face = find.descendant(
+      of: find.byType(LookDateField),
+      matching: find.byType(LookListSign),
+    );
+    expect(
+      tester.getRect(find.byType(RawCalendarDatePicker)).bottom,
+      lessThan(tester.getRect(face).top),
+    );
+    const DesignOverlayCheck(look: 'Look').check(screen).verify();
+    const DesignListSideCheck(look: 'Look').check(screen).verify();
+    const DesignTapTargetCheck(look: 'Look').check(screen).verify();
+    // The keys start on the chosen day: the next one, then Enter.
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
+    await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+    await tester.pumpAndSettle();
+    expect(due, DateTime(2026, 3, 19));
+    expect(find.byType(RawCalendarDatePicker), findsNothing);
+  });
+
+  testWidgets('a toast stands clear of the bar at the foot', (tester) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(
+      lookApp(
+        home: Builder(
+          builder: (context) => Column(
+            children: [
+              const Expanded(child: SizedBox.expand()),
+              LookBottomBar(
+                child: LookButton(
+                  'Save draft',
+                  onPressed: () =>
+                      LookToaster.of(context)
+                          .show(const RawToast(message: 'Draft saved')),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('Save draft'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 600));
+    expect(
+      tester.getRect(find.text('Draft saved')).bottom,
+      lessThanOrEqualTo(tester.getRect(find.byType(LookBottomBar)).top),
+    );
+    // Its time runs out, and it leaves.
+    await tester.pump(const Duration(seconds: 5));
+    await tester.pumpAndSettle();
+    expect(find.text('Draft saved'), findsNothing);
+  });
+
+  testWidgets('tabs are one tab stop, and the arrows choose', (tester) async {
+    final before = FocusNode();
+    addTearDown(before.dispose);
+    var tab = 'open';
+    await tester.pumpWidget(
+      lookApp(
+        home: StatefulBuilder(
+          builder: (context, setState) => Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Focus(
+                focusNode: before,
+                child: const SizedBox.square(dimension: 1),
+              ),
+              LookTabs<String>(
+                value: tab,
+                semanticLabel: 'Tasks',
+                onChanged: (next) => setState(() => tab = next),
+                tabs: const [
+                  LookTab(value: 'all', label: 'All'),
+                  LookTab(value: 'open', label: 'Open'),
+                  LookTab(value: 'done', label: 'Done'),
+                ],
+              ),
+              LookButton('After', onPressed: () {}),
+            ],
+          ),
+        ),
+      ),
+    );
+    before.requestFocus();
+    await tester.pump();
+    await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+    await tester.pumpAndSettle();
+    // Tab enters on the chosen tab; an arrow moves and chooses.
+    expect(focusedWords(tester), 'Open');
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
+    await tester.pumpAndSettle();
+    expect(tab, 'done');
+    expect(
+      tester.getSemantics(find.text('Done')),
+      isSemantics(isSelected: true),
+    );
+    await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+    await tester.pumpAndSettle();
+    expect(focusedWords(tester), 'After');
+    final screen = tester.element(find.byType(LookTabs<String>));
+    const DesignTapTargetCheck(look: 'Look').check(screen).verify();
+    const DesignCursorCheck(look: 'Look').check(screen).verify();
+  });
+
+  testWidgets('a toolbar is one tab stop, and the arrows move along it', (
+    tester,
+  ) async {
+    final before = FocusNode();
+    addTearDown(before.dispose);
+    await tester.pumpWidget(
+      lookApp(
+        home: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Focus(
+              focusNode: before,
+              child: const SizedBox.square(dimension: 1),
+            ),
+            LookToolbar(
+              toggles: [
+                for (final (label, icon) in [
+                  ('Bold', Icons.format_bold),
+                  ('Italic', Icons.format_italic),
+                  ('Underline', Icons.format_underline),
+                ])
+                  LookToolbarToggle(
+                    icon: icon,
+                    semanticLabel: label,
+                    isSelected: label == 'Italic',
+                    onPressed: () {},
+                  ),
+              ],
+            ),
+            LookButton('After', onPressed: () {}),
+          ],
+        ),
+      ),
+    );
+    Matcher focused() => isSemantics(isFocused: true);
+    before.requestFocus();
+    await tester.pump();
+    await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+    await tester.pumpAndSettle();
+    expect(tester.getSemantics(find.bySemanticsLabel('Bold')), focused());
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
+    await tester.pumpAndSettle();
+    expect(tester.getSemantics(find.bySemanticsLabel('Italic')), focused());
+    await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+    await tester.pumpAndSettle();
+    expect(focusedWords(tester), 'After');
   });
 
   test('the inventory answers its rows; what it leaves are missing', () {

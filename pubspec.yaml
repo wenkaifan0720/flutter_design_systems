@@ -15,6 +15,9 @@ workspace:
   - packages/ui_core_test/example
   - packages/ui_core_review
   - packages/ui_core_review/example
+  # The skill's samples, on the ui_core beside them: a core change that breaks the skill fails CI. This line stays
+  # below the packages.
+  - skills/ui_core_design_system/samples
 
 dev_dependencies:
   flutter_lints: ^6.0.0

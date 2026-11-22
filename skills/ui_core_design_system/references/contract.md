@@ -2,7 +2,7 @@
 
 ui_core gives a look every behaviour a part needs and no paint. A look
 wraps each part's ui_core widget, reads the states it reports, and draws the
-look's face for them. This page lists what ui_core 0.4.1 carries, how to
+look's face for them. This page lists what ui_core 0.5.0 carries, how to
 wire each kind of part, and the three shims a look puts in place until
 Flutter's own fixes reach its minimum version.
 
@@ -21,13 +21,13 @@ with the `Raw*` names only.
 | Pressing | `RawButton`: tap, long press, Enter and Space, focus, hover, the press shown at once for a mouse and after `kPressTimeout` for a touch in a scroll view, haptics, semantics | The face for each state |
 | Tap targets | `TapTargetPadding`, `DesignTapTargetScope`, `DesignTapTargets` (44 touch, 24 pointer by default), `DesignInput` | Its floors, if not the defaults |
 | Choosing one | Flutter's `RadioGroup` and `RawRadio`, with `RadioGroupKeyboardFix` | The mark and the row |
-| Text entry | Flutter's `TextField` (from material_ui) with `decoration: null`; `DesignTextEntryBox`, `RawInputDecorator`, `DesignForm`, `DesignFormField` | The box, rule, label, help, error |
+| Text entry | Flutter's `TextField` (from material_ui) with `decoration: null`; `DesignTextEntryBox`, `RawInputDecorator` (label, help, error, required, invalid, read with the field), `DesignForm`, `DesignFormField` | The box, rule, label, help, error |
 | Layout | `DesignControlBox`, `DesignCapCenter`, `DesignDensity`, `DesignSpacingScope`, `DesignKeylineRegion` | Its control height, padding, grid |
 | Style | `DesignStyle` (ten `WidgetStateProperty` slots), `DesignStyleOf` | A typedef, a slot per part in its theme, its defaults |
 | Motion | `designSpring`, `DesignMotionPolicy`, `springTo`, `designReduceMotionOf` | Its tokens |
-| Raised surfaces | `DesignDialogRoute`, `RawAlertDialog`, `RawBottomSheetRoute`, `RawSideSheetRoute`, `RawPopover`, `RawContextMenu`, `RawToaster`, Flutter's `RawTooltip` with `RawTooltipPlacement` | Scrim colour, frame, motion values |
-| Lists | `RawPopover` (a select's list, a menu), `RawCombobox`, `RawTagInput`, `RawMenuEntry` (with `isDestructiveAction`): placement below the field, keys, highlight, announcements | One list surface, one row, the destructive tone |
-| Navigation | `RawTabBar`, `RawMenuBar`, `RawCommandPalette`, `DesignAdaptiveShell`, `SwipeBackPageTransitionsBuilder` | Tabs, bars, rails, page motion |
+| Raised surfaces | `DesignDialogRoute`, `RawAlertDialog`, `RawBottomSheetRoute`, `RawSideSheetRoute`, `RawActionBar` (a dialog's or a sheet's actions), `RawPopover` (`RawPopoverFit.whole` for a picker), `RawContextMenu`, `RawToaster` with `RawToasterKeepClear`, Flutter's `RawTooltip` with `RawTooltipPlacement` | Scrim colour, frame, motion values |
+| Lists | `RawPopover` (a select's list, a menu), `RawCombobox`, `RawTagInput`, `RawMenuEntry` (with `isDestructiveAction`): placement below the field, keys, highlight, the chosen option focused, announcements | One list surface, one row, the destructive tone |
+| Navigation | `RawTabBar`, `RawTabGroup` (tabs the look lays out), `RawRovingFocusGroup` (a toolbar, a grid of choices), `RawMenuBar`, `RawCommandPalette`, `DesignAdaptiveShell`, `SwipeBackPageTransitionsBuilder` | Tabs, bars, rails, page motion |
 | Words | `RawWidgetsLocalizations` (30 languages) | Its own words, if any |
 | Checklist | `package:ui_core/inventory.dart`: `DesignInventoryRow`, `DesignInventory`, `DesignInventoryGallery` | Its answers |
 
@@ -81,6 +81,13 @@ control beside the row's button, not inside it: `RawButton` merges what it
 holds into its own node and reports focus while anything in it has focus.
 Two targets, two nodes, each named; a row face painted round both reads the
 row button's states through its `statesController`.
+
+Where ui_core adds only semantics round a control (a labelled `RawButton`'s
+face, a `RawInputDecorator`'s control, a `RawTabGroup`'s tabs), the
+render object it puts there is a `RenderDesignSemanticsProxy`: it lays out,
+paints and takes hits as its child. A look never makes one; a layout that
+looks through render objects by type (one that hosts nested flows) names
+that one type for all of them.
 
 ```dart
 // A checkbox is a checkbox to a screen reader, never also a button.
@@ -252,11 +259,24 @@ everything round it.
   text is empty, and a press anywhere in the box reaching the editable. Wrap
   it in `DesignCapCenter` with the family's factor, and in
   `Semantics(hint:)`, since the drawn hint is not heard.
-- **`RawInputDecorator`** gives the field's parts to a builder
-  (`RawInputDecoratorDetails`): `control` (the entry, carrying the field's
-  name, hint and validity), `label`, `helper`, `error` (draw this one: it is
-  announced as it appears), `labelText`, `helperText`, `errorText`,
-  `required`, `enabled`, `focused`. A tap on `label` focuses the control.
+- **`RawInputDecorator`** takes the field's words and reads them with the
+  field, as Material's `TextField` does: `labelText` names the entry,
+  `errorText` and `helperText` are its hint, `required: true` puts the
+  required flag on its node, and `invalid: true` marks it invalid with no
+  words to say why. Its builder gets the parts
+  (`RawInputDecoratorDetails`): `control` (the entry, carrying all of
+  that), `label`, `helper` and `error` (the words as text a screen reader
+  skips, since the control says them; draw these, not copies of your own,
+  and the error is announced as it appears), `required` (draw the mark),
+  `invalid` (paint the error state from it), `enabled`, `focused`. A tap
+  on `label` focuses the control. Words a look draws beside the decorator
+  instead are read on a node of their own, apart from the field, and a
+  screen reader on the field never hears them: `DesignFieldWordsCheck`
+  catches it.
+- **The field's words are strings, named as Flutter names them**:
+  `labelText`, `hintText`, `helperText`, `errorText`, as `InputDecoration`
+  has them. In Flutter `label`, `hint`, `helper` and `error` are `Widget`
+  slots, so a `String label` on a field reads as the wrong kind of slot.
 - **`DesignForm`** and **`DesignFormField`** validate and save a form.
 - `TextField` asks for a `Material` above it; a look on no Material adds a
   transparent one.
@@ -273,18 +293,35 @@ everything round it.
 if (Material.maybeOf(context) == null) {
   entry = Material(type: MaterialType.transparency, child: entry);
 }
+// The words go to the decorator, which reads them with the field; the
+// look draws the parts it hands back.
 return RawInputDecorator(
-  labelText: widget.label,
+  labelText: widget.labelText,
   helperText: widget.helperText,
   errorText: widget.errorText,
+  required: widget.required,
   enabled: widget.enabled,
   focusNode: _focusNode,
   builder: (context, parts) => Column(
 ```
 
 ```dart
+// The field's node carries the required flag; the
+// mark is for the eye and says nothing more.
+if (parts.required)
+  ExcludeSemantics(
+    child: Text(' *', style: TextStyle(color: c.danger)),
+  ),
+```
+
+```dart
+// Invalid with or without words to say why.
+error: parts.invalid,
+```
+
+```dart
 child: Semantics(
-  hint: widget.hint,
+  hint: widget.hintText,
   child: DesignCapCenter(
     capHeightFactor: theme.capHeightFactor,
     child: DesignTextEntryBox(
@@ -316,8 +353,10 @@ named for a screen reader. Its `builder` gets `DesignDialogDetails`
 the safe action: while one action is destructive, the first enabled action
 that is not (`RawAlertDialog.safeActionIndex`). Actions are given dismissive
 first and confirming last (Cancel, Discard, Save): in a row they read in
-that order, the confirming one at the end; when they do not fit, ui_core
-stacks them one to a line, the confirming one on top. The look's own
+that order, the confirming one at the end; when they do not fit (long
+words, a phone, twice the text size), they stack in one column, each as
+wide as the dialog, the confirming one on top, never two on a line and one
+under them. A `RawActionBar` lays them out. The look's own
 `show<Look>Dialog` takes a list of actions too, as Material's `AlertDialog`
 does, never a fixed two, and paints a destructive action in the look's
 destructive tone.
@@ -332,9 +371,9 @@ The look draws it through four builders:
   actions while the words `overflows`). Without it the actions sit right
   under the words.
 - `actionBuilder` (`RawDialogActionDetails`: `states`, `stacked`, `index`,
-  `count`): each action. ui_core puts a stacked action at its line's end;
-  the look makes it as wide as the dialog while `details.stacked`, so a
-  stack reads as one column of equal keys.
+  `count`): each action's face. The bar gives a stacked action the
+  dialog's width; `details.stacked` is there for a look that draws a stack
+  apart (a divider between keys, say).
 
 ```dart
 // A gap on the grid between the words and the actions, and a
@@ -343,16 +382,135 @@ actionsBuilder: (context, frame, bar) => DecoratedBox(
 ```
 
 ```dart
-// The dialog makes each action's press; the look draws its face.
-actionBuilder: (context, action, details) => SizedBox(
-  // Stacked, every action is as wide as the dialog: one column
-  // of equal keys.
-  width: details.stacked ? double.infinity : null,
-  child: AnimatedLookSurface(
+// The dialog makes each action's press and lays the actions
+// out; the look draws each face.
+actionBuilder: (context, action, details) => AnimatedLookSurface(
 ```
 
 The route builds under the navigator, not under the opener: capture the
 opener's themes and wrap the dialog in them.
+
+### A look's own footer: `RawActionBar`
+
+A dialog or a sheet the look lays out itself (a bottom sheet's actions, a
+dialog with a footer of its own) puts its styled actions in a
+`RawActionBar` and draws nothing else round them. Give them in reading
+order, dismissive first and confirming last. The bar keeps them in one row
+while each fits at its widest content (at the end of the row, or sharing it
+equally with `expanded: true`, as a phone's dialog spreads two keys), and
+mirrors the row right to left; when they don't fit, it stacks them in one
+column, each as wide as the bar, the confirming one on top. Whether they fit
+is read from the words at the current text size, so text at 2x stacks them
+where 1x fits. `onStackedChanged` tells the look when they stack, for a
+stack it draws apart. Each action keeps its own node and focus.
+`DesignDialogActionsCheck` holds a dialog or a sheet to it.
+
+```dart
+// The look's own buttons, given dismissive first and
+// confirming last. The bar keeps them in one row while
+// they fit; else it stacks them, each as wide as the
+// sheet, the confirming one on top.
+RawActionBar(
+  spacing: 12,
+  overflowSpacing: 12,
+  children: actions(context),
+),
+```
+
+## Toasts
+
+A `RawToaster` in the app's builder, under the look's theme and over every
+route, holds the toasts: the queue (`maxVisible`), each toast's time
+(paused under a pointer or the focus), the swipe away, F6 to reach the
+newest and Escape to dismiss it, and what a screen reader hears. The look
+paints one toast in `toastBuilder` from `RawToastDetails` (`toast`,
+`animation`, `remaining`, `dismiss`, `runAction`) and gives its springs.
+The presence animation may pass 1 on its spring: clamp it before an
+`Opacity`. An app shows one with `RawToaster.of(context).show(RawToast(...))`;
+a look gives that a name of its own.
+
+```dart
+// The presence spring may pass 1; an opacity stays within 0 and 1.
+builder: (context, toast) => Opacity(
+  opacity: details.animation.value.clamp(0.0, 1.0),
+  child: toast,
+),
+```
+
+A toast never covers a bar along the screen's foot or top. A
+`DesignAdaptiveShell` keeps its phone bar clear by itself. A bar the look
+draws itself (a bottom app bar, a docked composer, its own scaffold's
+bottom slot) is wrapped in `RawToasterKeepClear`: the toasts stand above it
+(below a top one), follow it as it springs in or away, and stand where they
+did once it goes. The bar takes the screen's safe inset itself;
+`RawToaster.padding` stays between the bar and the toasts. Never pad the
+toaster by a bar's height: the bar comes and goes, and the padding stays.
+
+```dart
+// The toasts stand above the bar, and follow it as it comes and goes.
+return RawToasterKeepClear(
+  child: DecoratedBox(
+```
+
+## Tabs, toolbars and roving focus
+
+A tab bar with its own strip and moving indicator is a `RawTabBar`. Tabs
+the look lays out itself (words over a rule, tabs in a wrap or between
+words, a vertical list) stand in a `RawTabGroup<T>`, shaped as Flutter's
+`RadioGroup`: the group is a scope (`groupValue`, `onChanged`,
+`selectionFollowsFocus`, `semanticLabel`), and each `RawTabGroupTab<T>`
+finds it by its `value` wherever it stands below. The group gives one Tab
+stop on the chosen tab, the arrows along `orientation` (mirrored right to
+left), Home and End, tabs turned off passed over, the selection, and the
+semantics: a tab bar whose every child is a tab, each selected or not.
+Words between the tabs join the bar's name. A part with a node of its own
+between the group and its tabs (a scroll view, a labelled image) leaves
+the group a plain group: put a scroll view round the group, not inside it.
+Each tab is a `RawButton` read as a tab; its builder paints the face for
+`WidgetState.selected` and the rest. Give the type when `groupValue` may be
+null (`RawTabGroup<String>`), so the tabs find the group.
+
+```dart
+return RawTabGroup<T>(
+  groupValue: value,
+  onChanged: onChanged,
+  semanticLabel: semanticLabel,
+```
+
+```dart
+for (final tab in tabs)
+  RawTabGroupTab<T>(
+    value: tab.value,
+    enabled: onChanged != null && tab.enabled,
+    builder: (context, states, _) =>
+        _lookTab(context, theme, states, tab.label),
+  ),
+```
+
+The same keys for any group of the look's own (a toolbar, a grid of
+swatches, a row of toggles) come from `RawRovingFocusGroup` and a
+`RawRovingFocusItem` round each control: one Tab stop, the arrows along
+`orientation` (all four when null), `loop`, `homeAndEnd`, items turned off
+passed over, and `RawRovingFocusIntent` so an app changes a key the
+Flutter way. The item takes the control's own focus node (the caller makes
+it, gives the same node to the control, and disposes it). The group moves
+the focus only: a selection that follows the focus is made in the item's
+`onMovedTo`; a selection on a press stays in the control's press. Tab
+enters on the item marked `selected`, else on the first.
+
+```dart
+RawRovingFocusItem(
+  focusNode: _nodes[i],
+  enabled: toggle.onPressed != null,
+  child: LookIconButton(
+    icon: toggle.icon,
+    semanticLabel: toggle.semanticLabel,
+    isSelected: toggle.isSelected,
+    onPressed: toggle.onPressed,
+    focusNode: _nodes[i],
+  ),
+),
+```
 
 ## Tooltips
 
@@ -409,15 +567,44 @@ and above has more room, and otherwise fills the room and scrolls.
 `OptionsViewOpenDirection.mostSpace` keeps Flutter's meaning, the larger
 side. A `RawPopover` measures its surface before it turns, so a short list
 under a low field stays below. `RawPopoverPlacement` sets the side, the
-alignment, `preferredExtent` (200) and `matchAnchorWidth` (on by default: a
-list as wide as its field, wider only for its widest row, up to
-`maxWidth`). A look that places a picker of its own (a calendar under a date
-field) follows the same rule: open where the whole of it fits, prefer
-below, flip only when the other side fits more, else shrink and scroll
-inside the screen; its `preferredExtent` is its full height, not 200.
-`focusOnOpen` gives focus to the first focusable widget inside, in reading
-order, ahead of any `autofocus` there; a calendar that lands on its chosen
-day asks for that day's focus after its first frame. A calendar sizes its seven day columns from its own
+alignment, `fit`, `preferredExtent` (200) and `matchAnchorWidth` (on by
+default: a list as wide as its field, wider only for its widest row, up to
+`maxWidth`). A list or a menu keeps `RawPopoverFit.scroll`: it shrinks to
+its side's room and scrolls. A picker that does not shrink (a calendar, a
+grid of swatches, a time picker's wheels) takes `fit: RawPopoverFit.whole`:
+it is measured whole, opens below while below holds it, takes the other
+side when that holds it, and only scrolls where neither side does.
+`DesignListSideCheck` reads both fits.
+
+```dart
+placement: const RawPopoverPlacement(
+  fit: RawPopoverFit.whole,
+  matchAnchorWidth: false,
+),
+```
+
+`focusOnOpen` moves the focus into the surface as it opens, to a widget
+there with `autofocus` first, else the first focusable one. So a select
+gives its chosen option `autofocus: true`, and the keys start on it, from
+the keys or a pointer; a calendar takes `autofocus: true` and starts on its
+chosen day (else today). The anchor's `isOpen` turns the look's chevron. A
+combobox's field gets `field.isOpen` too: put it on the text input itself,
+`Semantics(expanded: field.isOpen, child: input)`, as the select's button
+says `expanded`, so a screen reader hears whether its list shows.
+
+```dart
+// The chosen option takes the focus as the list opens,
+// from the keys or a pointer, and is kept in view.
+autofocus: option == chosen,
+```
+
+```dart
+// The text input says whether its list shows, as the select's
+// button does: on the input itself, not round the whole field.
+entry = Semantics(expanded: field.isOpen, child: entry);
+```
+
+A calendar sizes its seven day columns from its own
 width: on a phone it takes its field's width, so its edges meet the
 field's; from 600 px it keeps its own (`matchAnchorWidth: false`, seven
 cells at the look's tap size), from the field's start edge.

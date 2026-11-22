@@ -187,6 +187,7 @@ class LookIconButton extends StatelessWidget {
     required this.semanticLabel,
     required this.onPressed,
     this.isSelected,
+    this.focusNode,
   });
 
   /// The glyph.
@@ -201,6 +202,9 @@ class LookIconButton extends StatelessWidget {
   /// Whether a toggle button is on; null for a plain icon button.
   final bool? isSelected;
 
+  /// {@macro design.focusNode}
+  final FocusNode? focusNode;
+
   @override
   Widget build(BuildContext context) {
     final theme = LookTheme.of(context);
@@ -208,6 +212,7 @@ class LookIconButton extends StatelessWidget {
     return TapTargetPadding(
       child: RawButton(
         onPressed: onPressed,
+        focusNode: focusNode,
         semanticLabel: semanticLabel,
         selected: isSelected ?? false,
         semanticSelected: isSelected,

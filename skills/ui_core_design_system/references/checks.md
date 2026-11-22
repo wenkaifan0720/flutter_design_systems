@@ -16,7 +16,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   leak_tracker_flutter_testing: any
-  ui_core_test: ^0.2.1
+  ui_core_test: ^0.3.0
 ```
 
 `analysis_options.yaml`, the options the analyzer holds every package to:
@@ -94,7 +94,11 @@ the part and what to change.
 | `DesignFieldSemanticsCheck` | A field whose label, help or error is not on its node, or is read twice | Semantics, layout |
 | `DesignFieldNodesCheck` | A field whose text entry moves to another semantics node, or whose nodes change role, as its text goes from empty to a letter (a clear key showing) | Semantics |
 | `DesignTooltipNodeCheck` | A tooltip on a node of its own, read apart from the control it names | Semantics |
-| `DesignListSideCheck` | An open list (a select's, a combobox's, a menu from a field) above its field while the room below holds it, or 200 px of a longer one | Layout |
+| `DesignFieldWordsCheck` | A field's help or error read on a node apart from the field, so a screen reader on the field never hears it; give it the words the screen shows | Semantics |
+| `DesignListSideCheck` | An open list (a select's, a combobox's, a menu from a field) above its field while the room below holds it, or 200 px of a longer one; a picker placed with `RawPopoverFit.whole` on a side that can't hold it whole while the other can | Layout |
+| `DesignOverlayCheck` | An open popover, list, menu, tooltip or dialog running off the screen, or a picker cut where it could have opened whole | Layout |
+| `DesignDialogActionsCheck` | A dialog's or a sheet's actions neither in one row nor in one column of one width with the confirming on top (two on a line and one under them), or out of the order given; give it the labels, dismissive first | Layout |
+| `DesignOverflowCheck` | A part that overflows its box or runs off its screen (run it at 2x text) | Layout |
 | `DesignTapTargetCheck` | A target under the floor, or a semantics box larger than where a tap reaches | Semantics, hit testing |
 | `DesignCursorCheck` | A live part that shows the arrow, or a handle without grab | Mouse regions |
 | `DesignRadioGroupCheck` | A radio group that is more than one Tab stop, or whose arrows do not choose, wrap, skip and mirror | Focus, keys |
@@ -107,9 +111,11 @@ The checks come from `package:ui_core_test/ui_core_test.dart`.
 `package:ui_core_test/guidelines.dart` offers the same rules as Flutter
 accessibility guidelines (`checkableRoleGuideline`, `fieldSemanticsGuideline`,
 `textFieldNameGuideline`, `tapTargetReachGuideline`, `cursorGuideline`,
-`labelPlacementGuideline`, `tooltipNodeGuideline`, `listSideGuideline`) for
-`meetsGuideline`, beside Flutter's own. The radio group and field nodes
-checks are not guidelines: one presses keys and the other types.
+`labelPlacementGuideline`, `tooltipNodeGuideline`, `listSideGuideline`,
+`overlayGuideline`, `overflowGuideline`) for `meetsGuideline`, beside
+Flutter's own. The radio group and field nodes checks are not guidelines:
+one presses keys and the other types; nor are the field words and dialog
+actions checks, which take the words to look for.
 
 A screen of parts, every check and guideline over it:
 
@@ -205,11 +211,40 @@ check.check(empty, screen).verify();
 Run it on every kind of text field: plain, search (with its clear key),
 password (with its reveal key), combobox, number field.
 
+### The field words check reads what the screen shows
+
+Pump each field with its help, then with its error, and give the check the
+words shown. It finds the field's node and fails when the words sit on a
+node of their own:
+
+```dart
+DesignFieldWordsCheck(
+  look: 'Look',
+  words: [error ?? 'For receipts only'],
+).check(screen).verify();
+```
+
+### The dialog actions check reads one open dialog
+
+Open the dialog (or the sheet) with three actions, a long label among them,
+and run it at 320 and 390 wide, at 1x and 2x text. Give the labels in the
+order the look was given them, dismissive first:
+
+```dart
+const DesignDialogActionsCheck(
+  look: 'Look',
+  actions: labels,
+).check(dialog).verify();
+const DesignOverlayCheck(look: 'Look').check(dialog).verify();
+```
+
 ### The list side check opens a list
 
 Open each list, then check the screen. Put the field low on a phone-sized
 screen too, where below still holds the list and an older placement chose
-the larger side above:
+the larger side above. A picker opened with `RawPopoverFit.whole` is held
+to its whole extent, so a month that fits above a low field must stand
+above it:
 
 ```dart
 await tester.tap(find.byType(LookSelect<String>));
@@ -250,6 +285,7 @@ any overflow, clip or broken word; assert mirrored positions:
 ```dart
 expect(tester.takeException(), isNull);
 final screen = tester.element(find.byType(PartsScreen));
+const DesignOverflowCheck(look: 'Look').check(screen).verify();
 const DesignClipCheck(look: 'Look').check(screen).verify();
 const DesignWordBreakCheck(look: 'Look').check(screen).verify();
 ```
@@ -334,6 +370,12 @@ then `verify()` on the report.
 
 ## The screenshot review
 
+Never change what a part says or shows to pass a check: a shorter label, a
+dropped helper, words clipped on purpose. The check then passes and the
+part still fails at the length an app gives it. Fix the part; if the part is
+right and the check is wrong, report it to ui_core with a test that shows
+it.
+
 Checks pass parts that look wrong. Before a part is done, shoot it and read
 every picture at full size. A golden of a widget below the app's builder has
 no ground behind it unless the test paints one, so wrap the shot in the
@@ -388,15 +430,21 @@ grep -rIniwE "todo|fixme|hack|wip|self-review|round [0-9]+" lib test example/lib
 ## How this skill's samples are checked
 
 Every Dart block in `SKILL.md` and these references is taken from
-`samples/`, a small look that depends only on published packages.
-`samples/test/docs_test.dart` fails if a block is not found, token for token,
-in the samples' sources; `examples.md`'s excerpts are matched against the
-published looks' sources: the `packages/` folder of the repository the skill
-ships in, or the folders listed in `LOOK_SOURCES`. From `samples/`, on
-Flutter 3.47 or later:
+`samples/`, a small look that uses only the public API of ui_core and
+ui_core_test. `samples/test/docs_test.dart` fails if a block is not found,
+token for token, in the samples' sources; `examples.md`'s excerpts are
+matched against the published looks' sources: the `packages/` folder of the
+repository the skill ships in, or the folders listed in `LOOK_SOURCES`.
+
+The samples are a member of that repository's pub workspace, so they
+resolve on the ui_core and ui_core_test beside them, and its CI runs them
+with every change to either. From `samples/`, on Flutter 3.47 or later:
 
 ```sh
 flutter pub get
 dart analyze --fatal-infos
 flutter test
 ```
+
+Outside the repository, delete `resolution: workspace` from
+`samples/pubspec.yaml` first; they then resolve on the published packages.
