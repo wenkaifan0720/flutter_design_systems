@@ -1,3 +1,7 @@
+## 0.4.2
+
+- A page drawn with ui_core instantiated afresh over a Flutter framework that lives on (a widget-preview host that runs each preview with its own package instances: App Preview, drip's preview) no longer fails its first focus-showing part with `'!_globalRoutes.containsKey(route)': is not true` from `PointerRouter.addGlobalRoute`. What ui_core hears focus by, to show it after a key and hide it after a press as a browser's `:focus-visible` does (a pointer route, a key handler, a semantics action listener), is now held by the parts that show focus: registered afresh as the first of them mounts, each registration its own, and taken away as the last is disposed, so nothing outlives the page that made it. Focus shows and hides as in 0.4.1.
+
 ## 0.4.1
 
 - A list opens below its field while below holds it, as Material's menus and autocomplete place theirs. `RawCombobox` now opens down by default (it opened on the side with more room, so a field in a form's lower half opened its list upward with room to spare below), and a list on its side, `RawTagInput`'s suggestions too, takes the other side only when the side it asks for can't hold it, or 200 px of a longer one, and the other side has more room; else it fills the room and scrolls. A list is never drawn on the wrong side, even in the frame it opens. `OptionsViewOpenDirection.mostSpace` keeps Flutter's meaning, the larger side. `RawPopover` measures its surface before it turns: a short list that fits under its anchor stays there, though the room is under the placement's `preferredExtent`.

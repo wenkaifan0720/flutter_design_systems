@@ -246,6 +246,10 @@ class _DesignTooltipState extends State<DesignTooltip>
 
   bool get _isShown => identical(_shown, this);
 
+  // The input, heard while it stands: the keys' focus shows the tip, a
+  // pointer's does not.
+  final DesignFocusHearing _hearing = DesignFocusVisible.hold();
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -261,6 +265,7 @@ class _DesignTooltipState extends State<DesignTooltip>
 
   @override
   void dispose() {
+    _hearing.release();
     _showTimer?.cancel();
     _hideTimer?.cancel();
     if (_isShown) {

@@ -55,6 +55,10 @@ class _RawTooltipFocusFixState extends State<RawTooltipFocusFix> {
   // Whether the control has the focus, as last told.
   bool _focused = false;
 
+  // The input, heard while it stands: the keys' focus shows the tip, a
+  // pointer's does not.
+  final DesignFocusHearing _hearing = DesignFocusVisible.hold();
+
   // Flutter 3.47's RawTooltip does not hide on Escape (3.50's does, flutter
   // #192966 and #193192), so this does while the tip it showed shows.
   KeyEventResult _escape(KeyEvent event) {
@@ -101,6 +105,7 @@ class _RawTooltipFocusFixState extends State<RawTooltipFocusFix> {
 
   @override
   void dispose() {
+    _hearing.release();
     if (_shown) _hide();
     super.dispose();
   }

@@ -614,6 +614,9 @@ class _DesignAnchoredOverlayState extends State<RawPopover>
     vsync: this,
   );
   late final FocusScopeNode _scope = FocusScopeNode(debugLabel: 'RawPopover');
+  // The input, heard while it stands: a keyboard's focus shows a hover
+  // card, a pointer's does not; a surface a pointer opened shows no focus.
+  final DesignFocusHearing _hearing = DesignFocusVisible.hold();
   // The surface itself, inside [_scope]: a menu a pointer opened holds the
   // keys here, no item lit.
   final FocusNode _surfaceNode = FocusNode(
@@ -815,6 +818,7 @@ class _DesignAnchoredOverlayState extends State<RawPopover>
 
   @override
   void dispose() {
+    _hearing.release();
     _watchFocus(false);
     _holdBack(false);
     _intent?.removeListener(_hoverChanged);

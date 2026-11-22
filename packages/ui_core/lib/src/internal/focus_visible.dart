@@ -18,6 +18,9 @@ import 'package:flutter/widgets.dart';
 
 /// The last input's word on whether focus is shown.
 abstract final class DesignFocusVisible {
+  // What hears the input now: started by the first part to hold it, gone
+  // with the last to let go.
+  static DesignFocusHearing? _hearing;
   static FocusManager? _manager;
   static bool _shown = true;
   static final ObserverList<VoidCallback> _listeners =
@@ -29,31 +32,47 @@ abstract final class DesignFocusVisible {
   /// Always, when the app keeps the traditional mode for good
   /// ([FocusHighlightStrategy.alwaysTraditional]).
   static bool get shown {
-    watch();
     final manager = FocusManager.instance;
+    _meet(manager);
     if (manager.highlightStrategy == FocusHighlightStrategy.alwaysTraditional) {
       return true;
     }
     return _shown && manager.highlightMode == FocusHighlightMode.traditional;
   }
 
-  /// Hears the input from now on, if it does not yet. Every part that
-  /// paints its focus calls it as it mounts, so the press that opens a
-  /// surface is heard before the surface takes the focus.
-  static void watch() {
-    final manager = FocusManager.instance;
+  // A new focus manager (each test has its own): the input starts again.
+  static void _meet(FocusManager manager) {
     if (identical(manager, _manager)) return;
-    // A new focus manager (each test has its own): the input starts again.
-    if (_manager != null) {
-      GestureBinding.instance.pointerRouter.removeGlobalRoute(_pointer);
-      SemanticsBinding.instance.removeSemanticsActionListener(_semantics);
-      HardwareKeyboard.instance.removeHandler(_key);
-    }
     _manager = manager;
     _shown = true;
-    HardwareKeyboard.instance.addHandler(_key);
-    GestureBinding.instance.pointerRouter.addGlobalRoute(_pointer);
-    SemanticsBinding.instance.addSemanticsActionListener(_semantics);
+  }
+
+  /// Hears the input until the returned hearing is released. Every part
+  /// that paints its focus, or shows something on it, holds one from its
+  /// mounting to its disposal, so the press that opens a surface is heard
+  /// before the surface takes the focus.
+  ///
+  /// What it hears by (a global pointer route, a key handler, a semantics
+  /// action listener) is its own each time the first part holds it, and is
+  /// taken away when the last lets go: nothing is kept for the life of the
+  /// bindings. A page drawn with ui_core instantiated afresh over a binding
+  /// that lives on (App Preview's) neither meets the last page's
+  /// registration nor leaves its own.
+  static DesignFocusHearing hold() {
+    _meet(FocusManager.instance);
+    final hearing = _hearing ??= DesignFocusHearing._().._start();
+    hearing._holds++;
+    return hearing;
+  }
+
+  /// Forgets what it hears with, as ui_core instantiated afresh over the
+  /// same bindings does (App Preview drawing a page), leaving what the
+  /// mounted parts hold in place: they let go of it as they go.
+  @visibleForTesting
+  static void debugForget() {
+    _hearing = null;
+    _manager = null;
+    _shown = true;
   }
 
   /// Calls [listener] when [shown] may have changed.
@@ -98,18 +117,60 @@ abstract final class DesignFocusVisible {
   }
 }
 
+/// What [DesignFocusVisible] hears the input by while parts hold it: its
+/// own pointer route, key handler and semantics action listener (each this
+/// object's, so equal to no other's), registered as the first part holds it
+/// and removed as the last [release]s it.
+final class DesignFocusHearing {
+  DesignFocusHearing._();
+
+  int _holds = 0;
+  late final PointerRouter _router;
+  late final HardwareKeyboard _keys;
+  late final SemanticsBinding _semantics;
+
+  void _start() {
+    _router = GestureBinding.instance.pointerRouter;
+    _keys = HardwareKeyboard.instance;
+    _semantics = SemanticsBinding.instance;
+    _keys.addHandler(_key);
+    _router.addGlobalRoute(_pointer);
+    _semantics.addSemanticsActionListener(_action);
+  }
+
+  /// Lets go of it: the last part to let go takes its registrations away.
+  void release() {
+    assert(_holds > 0, 'a hearing released more often than held');
+    if (_holds == 0 || --_holds > 0) return;
+    _keys.removeHandler(_key);
+    _router.removeGlobalRoute(_pointer);
+    _semantics.removeSemanticsActionListener(_action);
+    if (identical(DesignFocusVisible._hearing, this)) {
+      DesignFocusVisible._hearing = null;
+    }
+  }
+
+  bool _key(KeyEvent event) => DesignFocusVisible._key(event);
+
+  void _pointer(PointerEvent event) => DesignFocusVisible._pointer(event);
+
+  void _action(SemanticsActionEvent event) =>
+      DesignFocusVisible._semantics(event);
+}
+
 /// One part's focus, shown or not: whether the part has the focus Flutter
 /// would highlight ([focused]) and [DesignFocusVisible.shown] says focus is
 /// shown now. [onChanged] hears each change, a key pressed while the part
 /// has the focus included.
 class DesignFocusShown {
-  /// Tells [onChanged] whether the part shows its focus.
-  DesignFocusShown(this.onChanged) {
-    DesignFocusVisible.watch();
-  }
+  /// Tells [onChanged] whether the part shows its focus, hearing the input
+  /// until [dispose].
+  DesignFocusShown(this.onChanged) : _hearing = DesignFocusVisible.hold();
 
   /// Hears whether the part shows its focus, as it changes.
   final ValueChanged<bool> onChanged;
+
+  DesignFocusHearing? _hearing;
 
   bool _focused = false;
   bool _value = false;
@@ -139,5 +200,9 @@ class DesignFocusShown {
   }
 
   /// Stops hearing the input.
-  void dispose() => DesignFocusVisible.removeListener(_update);
+  void dispose() {
+    DesignFocusVisible.removeListener(_update);
+    _hearing?.release();
+    _hearing = null;
+  }
 }
