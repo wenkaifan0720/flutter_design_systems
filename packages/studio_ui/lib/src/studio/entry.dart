@@ -18,6 +18,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import 'button.dart';
 import 'feedback.dart' show StudioSpinner;
+import 'internal/control_light.dart';
 import 'internal/stepper_glyph.dart';
 import 'select.dart';
 import 'surface.dart';
@@ -1051,8 +1052,70 @@ Widget _nothing(BuildContext context, String words) {
   );
 }
 
-Widget _suggestions(BuildContext context, Widget list) =>
-    StudioListBezel(child: list);
+// A combobox's or tag input's list hangs flush from its field; it stands
+// clear of it by a select's gap, on whichever side it opens, so its rim
+// doesn't run against the field's.
+Widget _suggestions(BuildContext context, Widget list) => Padding(
+  padding: const EdgeInsets.symmetric(vertical: StudioSpacing.tight),
+  child: StudioListBezel(child: list),
+);
+
+// A combobox's open list, which knows whether a key or the pointer has moved
+// since it opened. A list the keys open (a letter typed, an arrow) has moved
+// from the start.
+class _OpenedList extends StatefulWidget {
+  const _OpenedList({required this.child});
+
+  final Widget child;
+
+  // Whether the list round [context] has moved since it opened; true
+  // outside one.
+  static bool movedOf(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<_Moved>()?.moved ?? true;
+
+  @override
+  State<_OpenedList> createState() => _OpenedListState();
+}
+
+class _OpenedListState extends State<_OpenedList> {
+  bool _moved = HardwareKeyboard.instance.logicalKeysPressed.isNotEmpty;
+
+  @override
+  void initState() {
+    super.initState();
+    HardwareKeyboard.instance.addHandler(_key);
+  }
+
+  @override
+  void dispose() {
+    HardwareKeyboard.instance.removeHandler(_key);
+    super.dispose();
+  }
+
+  bool _key(KeyEvent event) {
+    _move();
+    return false;
+  }
+
+  void _move() {
+    if (!_moved && mounted) setState(() => _moved = true);
+  }
+
+  @override
+  Widget build(BuildContext context) => MouseRegion(
+    onHover: (_) => _move(),
+    child: _Moved(moved: _moved, child: widget.child),
+  );
+}
+
+class _Moved extends InheritedWidget {
+  const _Moved({required this.moved, required super.child});
+
+  final bool moved;
+
+  @override
+  bool updateShouldNotify(_Moved old) => old.moved != moved;
+}
 
 // A search on its way: a small ring of lamps and its word, where the
 // options will stand.
@@ -1246,9 +1309,19 @@ class StudioCombobox<T extends Object> extends StatelessWidget {
           optionBuilder: (context, option, states) => StudioMenuRow(
             label: labelOf(option),
             states: states,
+            // Opened on its value by a pointer, the list marks the value as
+            // chosen only (its lamp, heavier words), as a select's list does,
+            // until a key or the pointer moves: lit, it would read as the
+            // keys parked on it.
+            highlighted:
+                states.contains(WidgetState.selected) &&
+                    !_OpenedList.movedOf(context)
+                ? false
+                : null,
             showLamp: true,
           ),
-          surfaceBuilder: _suggestions,
+          surfaceBuilder: (context, list) =>
+              _OpenedList(child: _suggestions(context, list)),
           emptyBuilder: (context) => _nothing(context, emptyText),
         ),
         StudioFieldMessage(helper: helper, error: error),
@@ -1535,6 +1608,7 @@ class _Plate extends StatelessWidget {
               radius: StudioRadii.small,
               focus: focused ? c.focusRing : c.focusRing.withValues(alpha: 0),
               fill: enabled ? null : Color.lerp(c.key, c.panelLow, 0.5),
+              presence: enabled ? 1 : studioUnpowered,
             ),
             child: SizedBox(
               height: faceHeight,

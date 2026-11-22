@@ -209,6 +209,7 @@ class StudioMenuBar extends StatelessWidget {
                   label: item.label,
                   onPressed: item.onPressed,
                   shortcut: item.shortcut,
+                  isDestructiveAction: item.isDestructiveAction,
                   data: item,
                 ),
             ],
@@ -242,7 +243,7 @@ class StudioMenuBar extends StatelessWidget {
           return StudioMenuRow(
             label: entry.label,
             icon: item?.icon,
-            isDestructiveAction: item?.isDestructiveAction ?? false,
+            isDestructiveAction: entry.isDestructiveAction,
             states: states,
             trailing: entry.shortcut == null ? null : Text(entry.shortcut!),
           );

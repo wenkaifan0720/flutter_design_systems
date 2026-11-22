@@ -13,6 +13,7 @@ import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+import 'internal/control_light.dart';
 import 'internal/strip.dart';
 import 'menu.dart';
 import 'select.dart';
@@ -37,6 +38,7 @@ StudioFace _keyFace(
         radius: radius,
         travel: latched || states.contains(WidgetState.pressed) ? 1 : 0,
         fill: disabled ? Color.lerp(c.key, c.panelLow, 0.5) : null,
+        presence: disabled ? studioUnpowered : 1,
         foreground: disabled
             ? c.disabled
             : latched
@@ -51,16 +53,17 @@ StudioFace _keyFace(
       );
 }
 
-// The graphite main key's face in [states].
+// The graphite main key's face in [states]; disabled, an ordinary disabled
+// key with its lamp out.
 StudioFace _litFace(StudioColors c, Set<WidgetState> states, double radius) =>
-    c.litKeyFace.copyWith(
-      radius: radius,
-      travel: states.contains(WidgetState.pressed) ? 1 : 0,
-      foreground: states.contains(WidgetState.disabled)
-          ? c.onLitKeyOff
-          : c.onLitKey,
-      focus: _litRing(c, states),
-    );
+    states.contains(WidgetState.disabled)
+    ? _keyFace(c, states, radius: radius)
+    : c.litKeyFace.copyWith(
+        radius: radius,
+        travel: states.contains(WidgetState.pressed) ? 1 : 0,
+        foreground: c.onLitKey,
+        focus: _litRing(c, states),
+      );
 
 // The graphite key's focus light: by day its deep cast shadow lies under
 // its lower edge, so the amber is deepened to read over it.

@@ -5,6 +5,7 @@
 /// moves from one [StudioFace] to the next on a spring.
 library;
 
+import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:flutter/foundation.dart';
@@ -221,6 +222,11 @@ class StudioLight {
   /// How dark the shadow inside a recess is.
   double get innerStrength => _night ? 0.85 : 0.52;
 
+  // Dark glass by night: how much of the edge light it reflects high up,
+  // and how much the wall inside its lower lip catches.
+  double get _sheen => _night ? 0.8 : 0;
+  double get _lowerWall => _night ? 1.6 : 0;
+
   @override
   bool operator ==(Object other) =>
       other is StudioLight &&
@@ -405,6 +411,13 @@ void paintStudioFocusLight(
   );
 }
 
+// The height from which a recess is a window (a field's glass, a bank of
+// keys, a pane), not a slot: by night its lips show.
+const double _windowFrom = 28;
+
+// How far down dark glass reflects the room by night.
+const double _reflectionReach = 24;
+
 void _paintBody(
   Canvas canvas,
   Rect rect,
@@ -503,6 +516,27 @@ void _paintBody(
       // A pane (glass a page reads on) sits deeper than a slot: its lip
       // casts a longer shadow.
       final pane = body.height > StudioMetrics.paneDepthFrom;
+      // A window (a field's glass, a bank of keys, a pane), not a slot.
+      final window = body.height >= _windowFrom;
+      // Dark glass by night: a shadow can't darken it, so the light shows
+      // the recess. The glass reflects the room in a strip under the shadow
+      // its top lip casts, clear of the first row a pane holds, and the wall
+      // inside its lower lip faces the light.
+      if (window && light._sheen > 0) {
+        final reach = math.min(body.height * 0.6, _reflectionReach);
+        canvas.drawRRect(
+          body,
+          Paint()
+            ..shader = ui.Gradient.linear(
+              body.outerRect.topCenter,
+              body.outerRect.topCenter + Offset(0, reach),
+              [
+                edge.withValues(alpha: edge.a * light._sheen),
+                edge.withValues(alpha: 0),
+              ],
+            ),
+        );
+      }
       _innerShadow(
         canvas,
         body,
@@ -526,6 +560,14 @@ void _paintBody(
             ],
           ),
       );
+      if (window && light._lowerWall > 0) {
+        _edgeLine(
+          canvas,
+          body,
+          edge.withValues(alpha: math.min(1, edge.a * light._lowerWall)),
+          top: false,
+        );
+      }
   }
 
   if (light.highContrast) {

@@ -135,6 +135,7 @@ class _CheckKey extends StatelessWidget {
             radius: StudioRadii.small,
             travel: value || pressed ? 1 : 0,
             fill: disabled ? Color.lerp(c.key, c.panelLow, 0.5) : null,
+            presence: disabled ? studioUnpowered : 1,
             rim: isError ? c.danger : c.indicator.withValues(alpha: cue),
           )
           .backlitIf(
@@ -463,6 +464,7 @@ class _RadioKey extends StatelessWidget {
             radius: 12,
             travel: chosen || pressed ? 1 : 0,
             fill: disabled ? Color.lerp(c.key, c.panelLow, 0.5) : null,
+            presence: disabled ? studioUnpowered : 1,
             rim: studioLitFocus(c, states, lit: chosen && !disabled),
           )
           .backlitIf(
@@ -1357,6 +1359,7 @@ class _StudioSegmentedButtonState<T> extends State<StudioSegmentedButton<T>> {
               radius: StudioRadii.bank - StudioMetrics.recessInset,
               travel: chosen || pressed ? 1 : 0,
               fill: disabled ? Color.lerp(c.key, c.panelLow, 0.5) : null,
+              presence: disabled ? studioUnpowered : 1,
               foreground: ink,
               focus: states.contains(WidgetState.focused)
                   ? c.focusRing

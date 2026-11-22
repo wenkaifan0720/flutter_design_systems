@@ -3,6 +3,12 @@ import 'package:flutter/widgets.dart';
 import '../surface.dart';
 import '../theme.dart';
 
+/// How much of a key's body shows once it has no power: it no longer stands
+/// proud of the metal (its cap, its lift and its shadow fade into the panel),
+/// so it reads as a key that can't be pressed. Its legend takes the disabled
+/// ink.
+const double studioUnpowered = 0.4;
+
 /// Intensity of the pilot light for the control's current state.
 double studioControlLight(Set<WidgetState> states) {
   if (states.contains(WidgetState.disabled)) return 0;

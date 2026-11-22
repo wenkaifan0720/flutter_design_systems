@@ -450,10 +450,12 @@ class _StudioCalendarState extends State<StudioCalendar> {
                                       ),
                                     ),
                                   ),
+                                  // Today's lamp, lit on a chosen day too,
+                                  // as a latched key keeps its lamp lit.
                                   SizedBox(
                                     height: 4,
                                     child: day.isToday
-                                        ? StudioLamp(on: !end, size: 4)
+                                        ? const StudioLamp(on: true, size: 4)
                                         : null,
                                   ),
                                 ],
@@ -1811,6 +1813,7 @@ class StudioChip extends StatelessWidget {
               : states.contains(WidgetState.pressed)
               ? Color.lerp(c.key, c.keyLow, 0.24)
               : null,
+          presence: disabled ? studioUnpowered : 1,
           foreground: ink,
           // Focus lights the rim, selected or not: the lamp means selected,
           // and a half-lit lamp would read as half selected.

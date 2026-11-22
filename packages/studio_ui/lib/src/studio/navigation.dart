@@ -1270,9 +1270,16 @@ class StudioScaffold extends StatelessWidget {
               // The body a semantics container of its own: a navigator in it
               // (a desk's pages) puts a modal barrier over its routes, which
               // would otherwise hide the places beside it from a screen
-              // reader.
+              // reader. Its routes keep nodes of their own, as the app's
+              // navigator's do: merged into the body, a route gains a node
+              // only when a list opens over it, and on the web the focused
+              // field's input moves into that node and loses its focus.
               child: SizedBox.expand(
-                child: Semantics(container: true, child: body),
+                child: Semantics(
+                  container: true,
+                  explicitChildNodes: true,
+                  child: body,
+                ),
               ),
             ),
           ),

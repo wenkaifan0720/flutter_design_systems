@@ -5,6 +5,7 @@ library;
 
 import 'dart:async' show scheduleMicrotask;
 import 'dart:math' as math;
+import 'dart:ui' as ui;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -474,12 +475,20 @@ class _StudioMenuListState<T> extends State<StudioMenuList<T>> {
   }
 }
 
-/// The bezel an open list stands in: glass in a raised rim with a soft
-/// shadow under it, clipped to its corners; [child] inset [padding] (4 px,
-/// the slots' inset, by default) so a row's slot is concentric with it.
+/// The bezel an open list stands in: glass framed by a 2 px metal rim, with
+/// a soft shadow under it, clipped to its corners; [child] inset [padding]
+/// in the glass (4 px, the slots' inset, by default) so a row's slot is
+/// concentric with it.
+///
+/// By day the rim is the bars' anodised tone and the shadow parts the list
+/// from the pale panel under it. By night the rim is the caps' brushed
+/// aluminium with a lit top edge, so a list over a field's black glass or a
+/// pane still reads as a plate above it: the rim stands at least 3:1 from
+/// the glass on both sides of it.
 ///
 /// Every open list draws on it: a select's, a combobox's, a tag input's,
-/// a menu's, the menu bar's and the command palette's.
+/// a date picker's calendar, a menu's, the menu bar's and the command
+/// palette's.
 ///
 /// ```dart
 /// StudioListBezel(child: Column(children: rows))
@@ -504,7 +513,7 @@ class StudioListBezel extends StatelessWidget {
     final night = c.brightness == Brightness.dark;
     return DecoratedBox(
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(StudioRadii.bank),
+        borderRadius: BorderRadius.circular(StudioRadii.bank + _bezelRim),
         boxShadow: [
           BoxShadow(
             color: c.shadow.withValues(alpha: night ? 0.55 : 0.22),
@@ -513,21 +522,96 @@ class StudioListBezel extends StatelessWidget {
           ),
         ],
       ),
-      child: StudioSurface(
-        face: StudioFace(
-          fill: c.display,
-          fillLow: c.displayLow,
-          depth: StudioDepth.level,
-          radius: StudioRadii.bank,
-          foreground: c.onDisplay,
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(StudioRadii.bank),
-          child: Padding(padding: padding, child: child),
+      child: CustomPaint(
+        // By night the rim is laid over the glass's edge, so the glass's own
+        // contact shadow can't darken it; by day that shadow shades the rim's
+        // lower edge, as it always has.
+        painter: night ? null : _BezelRimPainter(c),
+        foregroundPainter: night ? _BezelRimPainter(c, over: true) : null,
+        child: Padding(
+          padding: const EdgeInsets.all(_bezelRim),
+          child: StudioSurface(
+            face: StudioFace(
+              fill: c.display,
+              fillLow: c.displayLow,
+              depth: StudioDepth.level,
+              radius: StudioRadii.bank,
+              foreground: c.onDisplay,
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(StudioRadii.bank),
+              child: Padding(padding: padding, child: child),
+            ),
+          ),
         ),
       ),
     );
   }
+}
+
+// How wide the bezel's metal rim is.
+const double _bezelRim = 2;
+
+// The light the bezel's top edge catches by night: brighter than the panels'
+// faint edge, as bare aluminium catches more of the room's light than
+// graphite does.
+const Color _nightEdgeLight = Color(0x59FFFFFF);
+
+// The bezel's metal rim, framing the glass, its top edge catching the light,
+// so an open list stands apart from any glass under it. By day it is the
+// bars' anodised tone, and the list's shadow on the pale panel parts it from
+// what lies under it. By night a field's glass is as black as the list's and
+// no shadow reads on it, so the rim is the caps' brushed aluminium, lit from
+// above: falling from the caps' tone to halfway to their lower tone, it
+// stands at least 3:1 from the glass on both sides of it, all round, and its
+// top edge catches the room's light.
+class _BezelRimPainter extends CustomPainter {
+  _BezelRimPainter(this.colors, {this.over = false});
+
+  final StudioColors colors;
+
+  // Whether the rim is laid over the glass's edge rather than under it.
+  final bool over;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final night = colors.brightness == Brightness.dark;
+    final outline = RRect.fromRectAndRadius(
+      Offset.zero & size,
+      const Radius.circular(StudioRadii.bank + _bezelRim),
+    );
+    final metal = Paint()
+      ..shader = ui.Gradient.linear(
+        Offset.zero,
+        Offset(0, size.height),
+        night
+            ? [colors.cap, Color.lerp(colors.cap, colors.capLow, 0.5)!]
+            : [colors.bar, colors.barLow],
+      );
+    if (over) {
+      // Laid over the glass: only the ring round it.
+      canvas.drawDRRect(outline, outline.deflate(_bezelRim), metal);
+    } else {
+      // Under the glass: the whole plate, the glass painting the middle.
+      canvas.drawRRect(outline, metal);
+    }
+    // The top edge catches the light: the crescent between the outline and
+    // the outline a pixel lower.
+    canvas.save();
+    canvas.clipRRect(outline);
+    canvas.drawPath(
+      Path()
+        ..fillType = PathFillType.evenOdd
+        ..addRRect(outline)
+        ..addRRect(outline.shift(const Offset(0, 1))),
+      Paint()..color = night ? _nightEdgeLight : colors.edgeLight,
+    );
+    canvas.restore();
+  }
+
+  @override
+  bool shouldRepaint(_BezelRimPainter old) =>
+      old.colors != colors || old.over != over;
 }
 
 /// A row in an open list. Keyboard focus and hover illuminate its legend.

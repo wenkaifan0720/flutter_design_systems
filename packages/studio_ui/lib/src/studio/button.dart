@@ -255,17 +255,23 @@ class StudioButton extends StatelessWidget {
               ? Color.lerp(c.dangerLegend, c.litLegend, cue * 0.35)!
               : legend(c.onKey),
           fill: disabled ? Color.lerp(c.key, c.panelLow, 0.5) : null,
+          presence: disabled ? studioUnpowered : 1,
         );
       case _KeyKind.lit:
-        // The graphite key; with no power its legend and lamp are out.
+        // The graphite key. Disabled, it is an ordinary disabled key with
+        // its lamp out: every key that can't be pressed looks the same.
+        if (disabled) {
+          return c.keyFace.copyWith(
+            rim: edge,
+            foreground: disabledInk,
+            fill: Color.lerp(c.key, c.panelLow, 0.5),
+            presence: studioUnpowered,
+          );
+        }
         return c.litKeyFace.copyWith(
           travel: pressed ? 1 : 0,
           rim: edge,
-          foreground: disabled
-              ? c.onLitKeyOff
-              : isDestructiveAction
-              ? c.onLitKeyDanger
-              : c.onLitKey,
+          foreground: isDestructiveAction ? c.onLitKeyDanger : c.onLitKey,
         );
     }
   }
@@ -358,6 +364,7 @@ class StudioIconButton extends StatelessWidget {
               .copyWith(
                 travel: pressed || latched ? 1 : 0,
                 fill: disabled ? Color.lerp(c.key, c.panelLow, 0.5) : null,
+                presence: disabled ? studioUnpowered : 1,
                 foreground: disabled
                     ? c.disabled
                     : latched
@@ -477,6 +484,7 @@ class StudioTransportKey extends StatelessWidget {
           radius: size / 2,
           travel: pressed ? 1 : 0,
           fill: disabled ? Color.lerp(c.key, c.panelLow, 0.5) : null,
+          presence: disabled ? studioUnpowered : 1,
           foreground: disabled
               ? c.disabled
               : lit && !record

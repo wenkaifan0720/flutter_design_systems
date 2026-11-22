@@ -1,3 +1,20 @@
+## 0.2.1
+
+- Needs ui_core 0.4.1.
+- A field on a route of a navigator in `StudioScaffold`'s body keeps its focus on the web when a list opens over it;
+  on a phone a combobox took a second tap.
+- By night, glass set into the metal (a display's pane, a field's window) reflects the room under its top lip and
+  lights the wall inside its lower lip, so it reads as recessed.
+- A disabled key, lit key, icon or transport key, checkbox, radio, segment, stepper key or chip sits flush with the
+  panel: its lift and shadow fade with its legend.
+- An open list (`StudioSelect`, `StudioCombobox`, a menu, `StudioCommandPalette`, a date picker's calendar) stands
+  in a 2 px metal rim; `StudioListBezel` takes 2 px more on each side for it. By night the rim is the caps' lit
+  aluminium, at least 3:1 from the glass inside and under it, so a list over a field reads as a plate above it. A
+  combobox's or tag input's list stands as clear of its field as a select's, above or below it; it hung flush.
+- `StudioCombobox` opened by a pointer marks its value as `StudioSelect` does, and lights a row only after a key or
+  a pointer move.
+- A calendar's today keeps its lamp lit when it is also the chosen day; it went out.
+
 ## 0.2.0
 
 - Needs ui_core 0.4.0 and Flutter 3.47. `studio_ui` re-exports ui_core, whose types now take `Raw` names (`DesignPressable` is `RawButton`). The old names stay through ui_core 0.4 as deprecated typedefs, and `dart fix --apply` renames them.
