@@ -279,7 +279,7 @@ const DesignInventoryEntry.absent(
 - `repository:` in the pubspec names where the source really lives; never
   invent one. Until the owner gives it, the publish dry-run's warning about
   it is the one warning left.
-- `dart pub publish --dry-run` with 0 warnings.
+- `dart pub publish --dry-run` with 0 warnings, but for that one.
 - Nothing in `lib`, `test` or `example` but what a user of the package
   needs: no working notes, dates, review names or to-dos.
 
@@ -304,10 +304,11 @@ const DesignInventoryEntry.absent(
       destructive actions in menus and dialogs take the danger tone.
 - [ ] Right to left mirrors; built-in words come from
       `RawWidgetsLocalizations`; dates and numbers follow the locale.
-- [ ] Under Reduce Motion nothing overshoots or travels far, and state
-      changes settle within 150 ms.
+- [ ] Under Reduce Motion nothing overshoots or travels far, and colour
+      and opacity changes settle within 150 ms.
 - [ ] `dart analyze --fatal-infos`, `flutter test`, `dart doc` and
-      `dart pub publish --dry-run` are clean, and every picture has been read.
+      `dart pub publish --dry-run` are clean (but for a repository not yet
+      given), and every picture has been read.
 
 ## Pitfalls
 

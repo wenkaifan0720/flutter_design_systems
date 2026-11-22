@@ -79,6 +79,14 @@ Future<List<String>> sweepInventory(
   final found = <String>[];
   final fonts = _Fonts(tester);
   addTearDown(tester.view.reset);
+  await fonts.prime(
+    inventory,
+    (child) => MaterialApp(
+      localizationsDelegates: const [RawWidgetsLocalizations.delegate],
+      builder: (context, child) => host(context, child!, Brightness.light),
+      home: child,
+    ),
+  );
   for (final condition in conditions ?? sweepConditions) {
     tester.view.devicePixelRatio = 2;
     tester.view.physicalSize = Size(condition.width, 900) * 2;
@@ -166,7 +174,7 @@ Future<void> loadLookFonts(WidgetTester tester, [Set<String>? names]) async {
   Future<ByteData> file(String path) =>
       File(path).readAsBytes().then(ByteData.sublistView);
   final roboto = [
-    for (final w in ['Regular', 'Medium', 'Bold'])
+    for (final w in ['Thin', 'Light', 'Regular', 'Medium', 'Bold', 'Black'])
       '$sdk/material_fonts/Roboto-$w.ttf',
   ];
   await tester.runAsync(() async {
@@ -233,6 +241,29 @@ class _Fonts {
   final WidgetTester tester;
   Set<String>? _loaded;
 
+  /// Pumps each present part of [inventory] once under [wrap] and loads every
+  /// family they ask for, before any part is measured or drawn: a field laid
+  /// out before its font arrives keeps the test font's baseline, or draws
+  /// nothing.
+  Future<void> prime(
+    DesignInventory inventory,
+    Widget Function(Widget child) wrap,
+  ) async {
+    final names = <String>{};
+    for (final e in inventory.entries.where((e) => e.isPresent)) {
+      final key = GlobalKey();
+      await tester.pumpWidget(
+        wrap(KeyedSubtree(key: key, child: Builder(builder: e.builder!))),
+      );
+      tester.takeException();
+      names.addAll(lookFamilies(key.currentContext!));
+    }
+    await tester.pumpWidget(const SizedBox.shrink());
+    tester.takeException();
+    _loaded = names;
+    await loadLookFonts(tester, names);
+  }
+
   /// Loads what the paragraphs under [context] ask for, if any of it is new;
   /// true when it loaded (the screen then needs another frame).
   Future<bool> under(BuildContext context) async {
@@ -298,6 +329,7 @@ Future<List<String>> shootInventory(
     color: Color(0xFF888888),
   );
   final fonts = _Fonts(tester);
+  await fonts.prime(inventory, (child) => app(shootConditions.first, child));
 
   for (final c in conditions ?? shootConditions) {
     tester.view.devicePixelRatio = 1;

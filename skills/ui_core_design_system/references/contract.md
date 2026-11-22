@@ -126,7 +126,8 @@ rule: look.edge ?? c.rule,
 foreground: look.foreground ?? c.mutedInk,
 ```
 
-It also offers `padding(TextDirection)`, `overlay`, `at(states)` (the same
+It also offers `padding(TextDirection)`, `overlay` (still a
+`WidgetStateProperty`: resolve it with the states), `at(states)` (the same
 layers for other states), `shapes(fallback)` (the shape slot as a
 `WidgetStateProperty`) and `freeze()` (the resolved values as a plain
 style). Give a part a style only for what a
@@ -413,7 +414,10 @@ list as wide as its field, wider only for its widest row, up to
 `maxWidth`). A look that places a picker of its own (a calendar under a date
 field) follows the same rule: open where the whole of it fits, prefer
 below, flip only when the other side fits more, else shrink and scroll
-inside the screen. A calendar sizes its seven day columns from its own
+inside the screen; its `preferredExtent` is its full height, not 200.
+`focusOnOpen` gives focus to the first focusable widget inside, in reading
+order, ahead of any `autofocus` there; a calendar that lands on its chosen
+day asks for that day's focus after its first frame. A calendar sizes its seven day columns from its own
 width: on a phone it takes its field's width, so its edges meet the
 field's; from 600 px it keeps its own (`matchAnchorWidth: false`, seven
 cells at the look's tap size), from the field's start edge.

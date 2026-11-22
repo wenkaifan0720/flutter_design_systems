@@ -239,8 +239,9 @@ expect(midway, isNot(rest));
 expect(midway, isNot(pressed));
 ```
 
-**Reduce Motion.** Under `MediaQueryData(disableAnimations: true)` a state
-change has settled 150 ms after it starts, and nothing overshoots.
+**Reduce Motion.** Under `MediaQueryData(disableAnimations: true)` a colour
+or opacity change has settled 150 ms after it starts, and nothing that moves,
+resizes or reshapes overshoots.
 
 **Right to left and large text.** Pump every gallery page at
 `TextDirection.rtl` and at twice the text size, at 390 and 1440 wide; fail on
@@ -268,7 +269,8 @@ expect(find.text('Share the link?'), findsNothing);
 expect(find.text('Share'), findsOneWidget);
 ```
 
-**Semantics per part.** A `matchesSemantics` test for each kind of part:
+**Semantics per part.** A `matchesSemantics` (or `isSemantics`, which
+leaves out what it doesn't name) test for each kind of part:
 role, name, value, state and actions, as Flutter's own widget has them.
 
 **Languages.** Pump the gallery under a few locales (`ar`, `de`, `ja`) and
@@ -335,7 +337,11 @@ then `verify()` on the report.
 Checks pass parts that look wrong. Before a part is done, shoot it and read
 every picture at full size. A golden of a widget below the app's builder has
 no ground behind it unless the test paints one, so wrap the shot in the
-look's ground; two mice hovering in one test need two `TestPointer` devices.
+look's ground. Two mice hovering in one test need a device each:
+`createGesture` takes no device, so build them as
+`TestGesture(dispatcher: tester.sendEventToBinding, kind: PointerDeviceKind.mouse, pointer: n, device: n)`.
+Shoot a state after its springs settle (`pumpAndSettle`); one long pump
+after a pointer event draws the face before the spring has moved.
 Read:
 
 - every part, in every state it has (rest, hover, Tab focus, pressed,
