@@ -388,18 +388,30 @@ class _ClayCalendarState extends State<ClayCalendar> {
                           radius: ball / 2,
                           fill: fill,
                         ),
-                        child: Center(
-                          child: Text(
-                            '${day.date.day}',
-                            maxLines: 1,
-                            softWrap: false,
-                            style: theme.textTheme.body.copyWith(
-                              color: ink,
-                              fontWeight: weight,
-                              fontVariations: clayWeight(weight),
-                              fontFeatures: const [
-                                FontFeature.tabularFigures(),
-                              ],
+                        // At a large text size the figures shrink to keep
+                        // inside their ball, so a row's days never run
+                        // together on a phone.
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          child: Center(
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text(
+                                // The reader's digits: Arabic-Indic in
+                                // Arabic, as the month is named.
+                                RawWidgetsLocalizations.of(context)
+                                    .formatDecimal(day.date.day),
+                                maxLines: 1,
+                                softWrap: false,
+                                style: theme.textTheme.body.copyWith(
+                                  color: ink,
+                                  fontWeight: weight,
+                                  fontVariations: clayWeight(weight),
+                                  fontFeatures: const [
+                                    FontFeature.tabularFigures(),
+                                  ],
+                                ),
+                              ),
                             ),
                           ),
                         ),
@@ -642,9 +654,12 @@ class ClayDatePicker extends StatelessWidget {
       error: error,
       box: RawPopover(
         semanticLabel: label,
+        // The calendar wants its whole month before it picks a side: low on
+        // a phone it opens above the field rather than below in a sliver.
         placement: const RawPopoverPlacement(
           gap: ClaySpacing.small,
           margin: ClaySpacing.small,
+          preferredExtent: double.infinity,
           matchAnchorWidth: false,
         ),
         dampingRatio: ClayMotion.panelDamping,
@@ -757,9 +772,12 @@ class ClayDateRangePicker extends StatelessWidget {
       error: error,
       box: RawPopover(
         semanticLabel: label,
+        // The calendar wants its whole month before it picks a side: low on
+        // a phone it opens above the field rather than below in a sliver.
         placement: const RawPopoverPlacement(
           gap: ClaySpacing.small,
           margin: ClaySpacing.small,
+          preferredExtent: double.infinity,
           matchAnchorWidth: false,
         ),
         dampingRatio: ClayMotion.panelDamping,
@@ -805,8 +823,10 @@ class ClayDateRangePicker extends StatelessWidget {
   }
 }
 
-// A drum's row height.
-const double _rowHeight = 40;
+// A drum's row height: 40, and taller at a large text size, so a row's
+// figures keep clear of the next row's.
+double _rowHeight(BuildContext context) =>
+    math.max(40, MediaQuery.textScalerOf(context).scale(18) * 1.25 + 12);
 
 /// Clay's drums on ui_core's wheel picker: each column turns in the well,
 /// its chosen row standing on a raised clay pill across the middle (one
@@ -825,11 +845,12 @@ Widget _drums(
 }) {
   final theme = ClayTheme.of(context);
   final c = theme.colors;
+  final row = _rowHeight(context);
   return RawPicker(
     columns: (_) => columns,
     selection: selection,
     onChanged: onChanged,
-    itemExtent: _rowHeight,
+    itemExtent: row,
     visibleItemCount: rows,
     diameterRatio: 2.2,
     perspective: 0.004,
@@ -852,7 +873,7 @@ Widget _drums(
     ),
     columnBuilder: (context, column, wheel) => SizedBox(
       width: width,
-      height: _rowHeight * rows,
+      height: row * rows,
       child: Stack(
         children: [
           // The pill the chosen row stands on: under a shared wheel's
@@ -860,7 +881,7 @@ Widget _drums(
           Center(
             child: SizedBox(
               width: double.infinity,
-              height: _rowHeight,
+              height: row,
               child: Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: ClaySpacing.tight,
@@ -1115,7 +1136,7 @@ class ClayTimePicker extends StatelessWidget {
               child: Center(
                 child: SizedBox(
                   width: double.infinity,
-                  height: _rowHeight,
+                  height: _rowHeight(context),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
                       horizontal: ClaySpacing.tight,

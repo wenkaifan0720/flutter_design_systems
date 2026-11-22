@@ -84,10 +84,9 @@ class ClayButtonGroup extends StatelessWidget {
             // whole height and draws its dent inset from it.
             padding: const EdgeInsets.symmetric(horizontal: _inset),
             // Keys too wide for their row (long words, large text) scroll
-            // along the slab rather than spill out of it.
+            // along the slab, cut at its ends, rather than spill out of it.
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
-              clipBehavior: Clip.none,
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [

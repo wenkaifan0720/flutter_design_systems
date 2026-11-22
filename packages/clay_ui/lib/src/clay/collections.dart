@@ -17,6 +17,7 @@ import 'choices.dart' show ClayCheckMark;
 import 'feedback.dart' show ClaySpinner;
 import 'fonts.dart';
 import 'internal/menu.dart' show ClayChevronPainter;
+import 'internal/words_fit.dart';
 import 'lists.dart' show ClayGroove;
 import 'surface.dart';
 import 'theme.dart';
@@ -130,6 +131,19 @@ class ClayDataTable<R> extends StatelessWidget {
       horizontal: ClaySpacing.medium,
       vertical: ClaySpacing.medium,
     );
+    TextStyle headStyle(bool sorted) => t.caption.copyWith(
+      color: sorted ? c.ink : c.inkSecondary,
+      fontWeight: FontWeight.w600,
+      fontVariations: clayWeight(FontWeight.w600),
+    );
+    TextStyle cellStyle(RawDataColumn<R> column) => t.body
+        .copyWith(
+          color: c.ink,
+          fontFeatures: column.numeric
+              ? const [FontFeature.tabularFigures()]
+              : null,
+        )
+        .merge(frame.textStyle);
     Widget mark(bool? value) => IgnorePointer(
       child: SizedBox.square(
         dimension: 24,
@@ -160,11 +174,7 @@ class ClayDataTable<R> extends StatelessWidget {
                     column.label,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: t.caption.copyWith(
-                      color: sort == null ? c.inkSecondary : c.ink,
-                      fontWeight: FontWeight.w600,
-                      fontVariations: clayWeight(FontWeight.w600),
-                    ),
+                    style: headStyle(sort != null),
                   ),
                 ),
                 // Only the column the rows are sorted by carries an arrow.
@@ -224,14 +234,7 @@ class ClayDataTable<R> extends StatelessWidget {
         child: Text(
           cell(row, column.id),
           textAlign: column.numeric ? TextAlign.end : TextAlign.start,
-          style: t.body
-              .copyWith(
-                color: c.ink,
-                fontFeatures: column.numeric
-                    ? const [FontFeature.tabularFigures()]
-                    : null,
-              )
-              .merge(frame.textStyle),
+          style: cellStyle(column),
         ),
       ),
       rowBuilder: (context, row, cells) {
@@ -310,7 +313,18 @@ class ClayDataTable<R> extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  table,
+                  LayoutBuilder(
+                    builder: (context, box) {
+                      final least = _least(context, headStyle, cellStyle);
+                      if (!box.hasBoundedWidth || box.maxWidth >= least) {
+                        return table;
+                      }
+                      return SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: SizedBox(width: least, child: table),
+                      );
+                    },
+                  ),
                   if (controller.pageRows.isEmpty) ...[
                     const ClayGroove(
                       indent: ClaySpacing.small,
@@ -356,6 +370,40 @@ class ClayDataTable<R> extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  // The least width that keeps every heading on its line and every cell's
+  // words whole (large text on a phone): narrower, the table scrolls
+  // sideways rather than cut a heading or break a word.
+  double _least(
+    BuildContext context,
+    TextStyle Function(bool sorted) headStyle,
+    TextStyle Function(RawDataColumn<R> column) cellStyle,
+  ) {
+    final columns = controller.columns;
+    final shares = columns.fold(
+      0,
+      (sum, col) => sum + (col as ClayDataColumn<R>).flex,
+    );
+    final rows = controller.pageRows;
+    var least = 0.0;
+    for (final col in columns) {
+      // The heading, with room for its arrow while the rows sort by it.
+      final sorted = controller.sortOf(col.id) != null;
+      final head =
+          clayWidestWord(context, [col.label], headStyle(sorted), whole: true) +
+          (sorted ? ClaySpacing.tight + 14 : 0);
+      final words = clayWidestWord(context, [
+        for (final row in rows) cell(row, col.id),
+      ], cellStyle(col));
+      final need = math.max(head, words) + 2 * ClaySpacing.medium;
+      least = math.max(
+        least,
+        need * shares / math.max(1, (col as ClayDataColumn<R>).flex),
+      );
+    }
+    // The check column, and a row's inset either side.
+    return least + (selectable ? _box : 0) + 2 * ClaySpacing.tight;
   }
 
   @override

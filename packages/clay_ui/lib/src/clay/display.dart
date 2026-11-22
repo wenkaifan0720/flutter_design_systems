@@ -14,6 +14,7 @@ import 'feedback.dart' show ClaySpinner;
 import 'fonts.dart';
 import 'internal/menu.dart' show ClayChevronPainter;
 import 'internal/spring.dart';
+import 'internal/words_fit.dart';
 import 'lists.dart' show ClayGroove;
 import 'surface.dart';
 import 'theme.dart';
@@ -325,6 +326,15 @@ class ClayTable extends StatelessWidget {
     final theme = ClayTheme.of(context);
     final c = theme.colors;
     final layered = DesignStyleOf([style, theme.tableStyle], const {});
+    final headStyle = theme.textTheme.caption.copyWith(
+      color: c.inkSecondary,
+      fontWeight: FontWeight.w600,
+      fontVariations: clayWeight(FontWeight.w600),
+    );
+    TextStyle bodyStyle(ClayTableColumn col) => theme.textTheme.body.copyWith(
+      color: c.ink,
+      fontFeatures: col.numeric ? const [FontFeature.tabularFigures()] : null,
+    );
     Widget row(List<String> cells, {required bool head}) => Padding(
       padding: const EdgeInsets.symmetric(horizontal: ClaySpacing.small),
       child: Row(
@@ -340,18 +350,7 @@ class ClayTable extends StatelessWidget {
                 child: Text(
                   i < cells.length ? cells[i] : '',
                   textAlign: col.numeric ? TextAlign.end : TextAlign.start,
-                  style: head
-                      ? theme.textTheme.caption.copyWith(
-                          color: c.inkSecondary,
-                          fontWeight: FontWeight.w600,
-                          fontVariations: clayWeight(FontWeight.w600),
-                        )
-                      : theme.textTheme.body.copyWith(
-                          color: c.ink,
-                          fontFeatures: col.numeric
-                              ? const [FontFeature.tabularFigures()]
-                              : null,
-                        ),
+                  style: head ? headStyle : bodyStyle(col),
                 ),
               ),
             ),
@@ -385,8 +384,25 @@ class ClayTable extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: ClaySpacing.small),
         child: LayoutBuilder(
           builder: (context, box) {
-            final least =
-                columns.length * minColumnWidth + 2 * ClaySpacing.small;
+            // Each column as wide as its widest word (large text on a phone)
+            // and [minColumnWidth]: narrower, the table scrolls rather than
+            // break a word.
+            final shares = columns.fold(0, (sum, col) => sum + col.flex);
+            var least = columns.length * minColumnWidth;
+            for (final (i, col) in columns.indexed) {
+              final word = math.max(
+                clayWidestWord(context, [col.label], headStyle),
+                clayWidestWord(context, [
+                  for (final cells in rows)
+                    if (i < cells.length) cells[i],
+                ], bodyStyle(col)),
+              );
+              least = math.max(
+                least,
+                (word + 2 * ClaySpacing.small) * shares / math.max(1, col.flex),
+              );
+            }
+            least += 2 * ClaySpacing.small;
             if (!box.hasBoundedWidth || box.maxWidth >= least) return table;
             return SingleChildScrollView(
               scrollDirection: Axis.horizontal,
@@ -1262,7 +1278,7 @@ class ClayMeter extends StatelessWidget {
   /// Past this it turns to the danger red.
   final double? high;
 
-  /// The value in words; null: a percentage.
+  /// The value in words; null: a percentage in the reader's digits.
   final String? valueText;
 
   /// This meter's own style, over [ClayThemeData.meterStyle]: `fill` the
@@ -1277,7 +1293,8 @@ class ClayMeter extends StatelessWidget {
     final share = max <= 0 ? 0.0 : (value / max).clamp(0.0, 1.0);
     final over = high != null && value > high!;
     final fill = over ? c.danger : (layered.fill ?? c.accent);
-    final said = valueText ?? '${(share * 100).round()}%';
+    final said =
+        valueText ?? RawWidgetsLocalizations.of(context).formatPercent(share);
     return Semantics(
       label: label,
       value: said,

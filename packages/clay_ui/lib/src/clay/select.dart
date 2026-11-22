@@ -259,8 +259,10 @@ class ClaySelect<T> extends StatelessWidget {
   }
 }
 
-/// How a floating list arrives: it fades in and grows from 96% of its size
-/// toward its anchor's side, on the presence spring of [info]; no bounce.
+/// How a floating list arrives: it grows from 96% of its size toward its
+/// anchor's side, on the presence spring of [info]; no bounce. It is opaque
+/// from its first frame, as clay is: the page under it never shows through
+/// its rows while it moves.
 ///
 /// ```dart
 /// ClayMenuReveal(info: info, child: const SizedBox(width: 200, height: 120))
@@ -283,15 +285,12 @@ class ClayMenuReveal extends StatelessWidget {
       child: child,
       builder: (context, child) {
         final t = info.animation.value.clamp(0.0, 1.0);
-        return Opacity(
-          opacity: Curves.easeOut.transform((t / 0.7).clamp(0.0, 1.0)),
-          child: Transform.scale(
-            scale: 0.96 + 0.04 * t,
-            alignment: above
-                ? AlignmentDirectional.bottomStart
-                : AlignmentDirectional.topStart,
-            child: child,
-          ),
+        return Transform.scale(
+          scale: 0.96 + 0.04 * t,
+          alignment: above
+              ? AlignmentDirectional.bottomStart
+              : AlignmentDirectional.topStart,
+          child: child,
         );
       },
     );

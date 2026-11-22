@@ -45,6 +45,10 @@ class ClayMenuItem {
   String toString() => 'ClayMenuItem($label)';
 }
 
+/// The narrowest and widest a key's menu stands.
+const double _menuMinWidth = 160;
+const double _menuMaxWidth = 320;
+
 /// A menu that floats under the key [builder] makes: a slab of clay, its
 /// items as rows that dent under the pointer and the keys. Down on the key
 /// opens it; the arrows walk it; Escape closes it.
@@ -110,24 +114,34 @@ class ClayMenu extends StatelessWidget {
       ),
       overlayBuilder: (context, info) => ClayMenuReveal(
         info: info,
-        child: ClayMenuList<int>(
-          entries: [
-            for (final (i, item) in items.indexed)
-              ClayMenuEntry(
-                value: i,
-                label: item.label,
-                leading: item.icon == null ? null : Icon(item.icon),
-                enabled: item.onPressed != null,
-                destructive: item.isDestructiveAction,
-              ),
-          ],
-          rowHeight: theme.controlHeight,
-          maxHeight: info.maxSize.height.clamp(120.0, 360.0),
-          style: style,
-          onChosen: (i) {
-            info.close();
-            items[i].onPressed?.call();
-          },
+        // As wide as its widest row, within a menu's measures: a key's menu
+        // is not as wide as the window.
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(
+            minWidth: _menuMinWidth,
+            maxWidth: _menuMaxWidth,
+          ),
+          child: IntrinsicWidth(
+            child: ClayMenuList<int>(
+              entries: [
+                for (final (i, item) in items.indexed)
+                  ClayMenuEntry(
+                    value: i,
+                    label: item.label,
+                    leading: item.icon == null ? null : Icon(item.icon),
+                    enabled: item.onPressed != null,
+                    destructive: item.isDestructiveAction,
+                  ),
+              ],
+              rowHeight: theme.controlHeight,
+              maxHeight: info.maxSize.height.clamp(120.0, 360.0),
+              style: style,
+              onChosen: (i) {
+                info.close();
+                items[i].onPressed?.call();
+              },
+            ),
+          ),
         ),
       ),
     );
@@ -182,6 +196,7 @@ class ClayContextMenu extends StatelessWidget {
           label: item.label,
           onPressed: item.onPressed,
           shortcut: item.shortcut,
+          isDestructiveAction: item.isDestructiveAction,
           data: item,
         ),
     ],
@@ -190,7 +205,7 @@ class ClayContextMenu extends StatelessWidget {
       return ClayMenuRow(
         label: entry.label,
         leading: item?.icon == null ? null : Icon(item!.icon),
-        destructive: item?.isDestructiveAction ?? false,
+        destructive: entry.isDestructiveAction,
         states: states,
         trailing: entry.shortcut == null ? null : Text(entry.shortcut!),
       );
@@ -518,8 +533,9 @@ class _TipPresenceState extends State<_TipPresence>
   Widget build(BuildContext context) => widget.builder(context, _presence);
 }
 
-/// The tip arriving as Clay's floating lists do ([ClayMenuReveal]): it fades
-/// in and grows from 96% of its size toward the control, on [presence]. A
+/// The tip arriving as Clay's floating lists do ([ClayMenuReveal]): it grows
+/// from 96% of its size toward the control, on [presence], opaque from its
+/// first frame. A
 /// screen reader hears the words as the control's tooltip, so the tip itself
 /// is left out.
 class _TipReveal extends StatelessWidget {
@@ -539,15 +555,12 @@ class _TipReveal extends StatelessWidget {
     child: ExcludeSemantics(child: child),
     builder: (context, child) {
       final t = presence.value.clamp(0.0, 1.0);
-      return Opacity(
-        opacity: Curves.easeOut.transform((t / 0.7).clamp(0.0, 1.0)),
-        child: Transform.scale(
-          scale: 0.96 + 0.04 * t,
-          alignment: above
-              ? AlignmentDirectional.bottomStart
-              : AlignmentDirectional.topStart,
-          child: child,
-        ),
+      return Transform.scale(
+        scale: 0.96 + 0.04 * t,
+        alignment: above
+            ? AlignmentDirectional.bottomStart
+            : AlignmentDirectional.topStart,
+        child: child,
       );
     },
   );

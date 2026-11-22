@@ -122,6 +122,9 @@ class _Type extends StatelessWidget {
       ('Secondary 14', t.secondary),
       ('Caption 12', t.caption),
     ];
+    // At a large text size the sample stands under its name: beside it, a
+    // display line has no room for its words.
+    final stacked = MediaQuery.textScalerOf(context).scale(16) > 24;
     return ClayGroup(
       children: [
         for (final (name, style) in styles)
@@ -130,25 +133,37 @@ class _Type extends StatelessWidget {
               horizontal: ClaySpacing.roomy,
               vertical: ClaySpacing.medium,
             ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.baseline,
-              textBaseline: TextBaseline.alphabetic,
-              children: [
-                SizedBox(
-                  width: 112,
-                  child: Text(
-                    name,
-                    style: t.caption.copyWith(color: c.inkSecondary),
+            child: stacked
+                ? Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        name,
+                        style: t.caption.copyWith(color: c.inkSecondary),
+                      ),
+                      const SizedBox(height: ClaySpacing.tight),
+                      Text('Steady days', style: style.copyWith(color: c.ink)),
+                    ],
+                  )
+                : Row(
+                    crossAxisAlignment: CrossAxisAlignment.baseline,
+                    textBaseline: TextBaseline.alphabetic,
+                    children: [
+                      SizedBox(
+                        width: 112,
+                        child: Text(
+                          name,
+                          style: t.caption.copyWith(color: c.inkSecondary),
+                        ),
+                      ),
+                      Expanded(
+                        child: Text(
+                          'Steady days',
+                          style: style.copyWith(color: c.ink),
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-                Expanded(
-                  child: Text(
-                    'Steady days',
-                    style: style.copyWith(color: c.ink),
-                  ),
-                ),
-              ],
-            ),
           ),
       ],
     );
@@ -193,7 +208,8 @@ class _MotionState extends State<_Motion> {
         ),
         const SizedBox(height: ClaySpacing.regular),
         SizedBox(
-          height: 72,
+          // The card's padding and a title line, at the reader's text size.
+          height: 32 + MediaQuery.textScalerOf(context).scale(40),
           child: ClayPlaceSwitch(
             place: _place,
             child: ClayCard(

@@ -168,11 +168,21 @@ class _SteadyEditorState extends State<SteadyEditor> {
   }
 
   Future<void> _chooseReminder() async {
-    final picked = await showClayBottomSheet<int?>(
-      context: context,
-      title: 'Reminder time',
-      builder: (context) => _ReminderSheet(initial: _reminder ?? 8 * 60),
-    );
+    final initial = _reminder ?? 8 * 60;
+    // A phone takes the time in a sheet in thumb's reach; a tablet or a desk
+    // in a dialog over the page.
+    final picked =
+        MediaQuery.sizeOf(context).width >= ClayMetrics.railBreakpoint
+        ? await showClayDialog<int?>(
+            context: context,
+            builder: (context) =>
+                _ReminderSheet(initial: initial, dialog: true),
+          )
+        : await showClayBottomSheet<int?>(
+            context: context,
+            title: 'Reminder time',
+            builder: (context) => _ReminderSheet(initial: initial),
+          );
     if (picked != null && mounted) setState(() => _reminder = picked);
   }
 
@@ -372,9 +382,12 @@ class _Swatch extends StatelessWidget {
 /// The reminder's time: the hour and the minute on clay drums a thumb turns,
 /// and the key that sets it.
 class _ReminderSheet extends StatefulWidget {
-  const _ReminderSheet({required this.initial});
+  const _ReminderSheet({required this.initial, this.dialog = false});
 
   final int initial;
+
+  // In a dialog: its title over the wheels, Cancel and Set as its keys.
+  final bool dialog;
 
   @override
   State<_ReminderSheet> createState() => _ReminderSheetState();
@@ -388,14 +401,33 @@ class _ReminderSheetState extends State<_ReminderSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final wheels = ClayTimePicker(
+      value: _time,
+      onChanged: (t) => setState(() => _time = t),
+      semanticLabel: 'Reminder time',
+    );
+    if (widget.dialog) {
+      return ClayDialog(
+        title: 'Reminder time',
+        content: wheels,
+        actions: [
+          ClayDialogAction(
+            label: 'Cancel',
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+          ClayDialogAction(
+            label: 'Set reminder',
+            primary: true,
+            onPressed: () =>
+                Navigator.of(context).pop(_time.hour * 60 + _time.minute),
+          ),
+        ],
+      );
+    }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        ClayTimePicker(
-          value: _time,
-          onChanged: (t) => setState(() => _time = t),
-          semanticLabel: 'Reminder time',
-        ),
+        wheels,
         const SizedBox(height: ClaySpacing.large),
         ClayButton.filled(
           'Set reminder',

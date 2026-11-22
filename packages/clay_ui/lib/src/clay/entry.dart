@@ -15,7 +15,9 @@ import 'button.dart';
 import 'feedback.dart' show ClaySpinner;
 import 'fonts.dart';
 import 'internal/entry_parts.dart';
+import 'internal/keys_shown.dart';
 import 'internal/menu.dart';
+import 'internal/words_fit.dart';
 import 'surface.dart';
 import 'text_field.dart';
 import 'theme.dart';
@@ -492,16 +494,42 @@ class _ClayInputGroupState extends State<ClayInputGroup>
   @override
   FocusNode? get givenFocusNode => widget.focusNode;
 
-  // An add-on keeps its words on one line and to at most [maxWidth]: at a
-  // large text size a long unit ends in an ellipsis rather than pushing the
-  // well past its edge.
+  // The add-ons' words, as they print.
+  TextStyle _addOnStyle(ClayThemeData theme) => theme.textTheme.body.copyWith(
+    color: widget.enabled
+        ? theme.colors.inkSecondary
+        : theme.colors.inkDisabled,
+  );
+
+  // The add-ons keep their words whole: they take their own width and the
+  // entry keeps at least a third of the well; where large text leaves them
+  // too little, their words print smaller to fit, never cut.
+  TextScaler _addOnScaler(
+    BuildContext context,
+    ClayThemeData theme,
+    double width,
+  ) {
+    final style = _addOnStyle(theme);
+    final texts = [?widget.prefixText, ?widget.suffixText];
+    var words = 0.0;
+    for (final text in texts) {
+      words += clayWidestWord(context, [text], style, whole: true);
+    }
+    return clayScalerToFit(
+      MediaQuery.textScalerOf(context),
+      fontSize: style.fontSize ?? 16,
+      widest: words,
+      room: width * 2 / 3 - texts.length * (2 * ClaySpacing.medium + 2),
+    );
+  }
+
   Widget _addOn(
     ClayThemeData theme,
     String words, {
     required bool start,
     required double maxWidth,
+    required TextScaler scaler,
   }) {
-    final c = theme.colors;
     return ConstrainedBox(
       constraints: BoxConstraints(maxWidth: maxWidth),
       child: Row(
@@ -520,9 +548,8 @@ class _ClayInputGroupState extends State<ClayInputGroup>
                   maxLines: 1,
                   softWrap: false,
                   overflow: TextOverflow.ellipsis,
-                  style: theme.textTheme.body.copyWith(
-                    color: widget.enabled ? c.inkSecondary : c.inkDisabled,
-                  ),
+                  textScaler: scaler,
+                  style: _addOnStyle(theme),
                 ),
               ),
             ),
@@ -565,69 +592,74 @@ class _ClayInputGroupState extends State<ClayInputGroup>
           );
         },
         child: LayoutBuilder(
-          builder: (context, box) => Row(
-            children: [
-              if (widget.prefixText != null)
-                _addOn(
-                  theme,
-                  widget.prefixText!,
-                  start: true,
-                  maxWidth: box.maxWidth * 0.45,
-                ),
-              if (widget.leading != null)
-                Padding(
-                  padding: const EdgeInsetsDirectional.only(
-                    start: ClaySpacing.regular,
+          builder: (context, box) {
+            final scaler = _addOnScaler(context, theme, box.maxWidth);
+            return Row(
+              children: [
+                if (widget.prefixText != null)
+                  _addOn(
+                    theme,
+                    widget.prefixText!,
+                    start: true,
+                    maxWidth: box.maxWidth * 2 / 3,
+                    scaler: scaler,
                   ),
-                  child: IconTheme.merge(
-                    data: IconThemeData(
-                      size: 20,
-                      color: widget.enabled
-                          ? theme.colors.inkSecondary
-                          : theme.colors.inkDisabled,
+                if (widget.leading != null)
+                  Padding(
+                    padding: const EdgeInsetsDirectional.only(
+                      start: ClaySpacing.regular,
                     ),
-                    child: widget.leading!,
+                    child: IconTheme.merge(
+                      data: IconThemeData(
+                        size: 20,
+                        color: widget.enabled
+                            ? theme.colors.inkSecondary
+                            : theme.colors.inkDisabled,
+                      ),
+                      child: widget.leading!,
+                    ),
+                  ),
+                Expanded(
+                  child: Padding(
+                    padding: EdgeInsetsDirectional.only(
+                      start: widget.prefixText != null || widget.leading != null
+                          ? ClaySpacing.medium
+                          : ClaySpacing.regular,
+                      end: widget.suffixText != null || widget.trailing != null
+                          ? ClaySpacing.medium
+                          : ClaySpacing.regular,
+                    ),
+                    child: ClayEntryText(
+                      controller: controller,
+                      focusNode: focusNode,
+                      hint: widget.hint,
+                      enabled: widget.enabled,
+                      keyboardType: widget.keyboardType,
+                      inputFormatters: widget.inputFormatters,
+                      semanticLabel: widget.label,
+                      onChanged: widget.onChanged,
+                      onSubmitted: widget.onSubmitted,
+                    ),
                   ),
                 ),
-              Expanded(
-                child: Padding(
-                  padding: EdgeInsetsDirectional.only(
-                    start: widget.prefixText != null || widget.leading != null
-                        ? ClaySpacing.medium
-                        : ClaySpacing.regular,
-                    end: widget.suffixText != null || widget.trailing != null
-                        ? ClaySpacing.medium
-                        : ClaySpacing.regular,
+                if (widget.trailing != null)
+                  Padding(
+                    padding: const EdgeInsetsDirectional.only(
+                      end: ClaySpacing.tight,
+                    ),
+                    child: widget.trailing,
                   ),
-                  child: ClayEntryText(
-                    controller: controller,
-                    focusNode: focusNode,
-                    hint: widget.hint,
-                    enabled: widget.enabled,
-                    keyboardType: widget.keyboardType,
-                    inputFormatters: widget.inputFormatters,
-                    semanticLabel: widget.label,
-                    onChanged: widget.onChanged,
-                    onSubmitted: widget.onSubmitted,
+                if (widget.suffixText != null)
+                  _addOn(
+                    theme,
+                    widget.suffixText!,
+                    start: false,
+                    maxWidth: box.maxWidth * 2 / 3,
+                    scaler: scaler,
                   ),
-                ),
-              ),
-              if (widget.trailing != null)
-                Padding(
-                  padding: const EdgeInsetsDirectional.only(
-                    end: ClaySpacing.tight,
-                  ),
-                  child: widget.trailing,
-                ),
-              if (widget.suffixText != null)
-                _addOn(
-                  theme,
-                  widget.suffixText!,
-                  start: false,
-                  maxWidth: box.maxWidth * 0.45,
-                ),
-            ],
-          ),
+              ],
+            );
+          },
         ),
       ),
     );
@@ -1129,6 +1161,7 @@ class ClayCombobox<T extends Object> extends StatelessWidget {
     final theme = ClayTheme.of(context);
     final c = theme.colors;
     final words = displayStringForOption ?? _words;
+    ClayKeysShown.watch();
     return _labelled(
       label: label,
       enabled: enabled,
@@ -1144,7 +1177,10 @@ class ClayCombobox<T extends Object> extends StatelessWidget {
         requireSelection: requireSelection,
         controller: controller,
         focusNode: focusNode,
-        highlightFollowsPointer: true,
+        // The pointer lights the row it is over; the keys' ring shows
+        // after a key (ClayKeysShown), so a list a press opened marks its
+        // chosen option alone, as a select's does.
+        highlightFollowsPointer: false,
         semanticLabel: semanticLabel ?? label,
         fieldBuilder: (context, field) => ClayOnFocus(
           focusNode: field.focusNode,
@@ -1194,7 +1230,7 @@ class ClayCombobox<T extends Object> extends StatelessWidget {
         ),
         optionBuilder: (context, option, states) => ClayMenuRow(
           label: words(option),
-          states: states,
+          states: ClayKeysShown.option(states),
           chosen: states.contains(WidgetState.selected),
         ),
         surfaceBuilder: _optionPanel,
@@ -1309,6 +1345,7 @@ class ClayTagInput<T extends Object> extends StatelessWidget {
     final theme = ClayTheme.of(context);
     final c = theme.colors;
     final words = displayStringForOption ?? _words;
+    ClayKeysShown.watch();
     final input = RawTagInput<T>(
       values: values,
       onChanged: enabled ? onChanged : (_) {},
@@ -1320,7 +1357,9 @@ class ClayTagInput<T extends Object> extends StatelessWidget {
       maxTags: maxTags,
       controller: controller,
       focusNode: focusNode,
-      highlightFollowsPointer: true,
+      // As the combobox: the pointer lights its row, the keys' ring
+      // shows after a key.
+      highlightFollowsPointer: false,
       semanticLabel: semanticLabel ?? label,
       // The typing line: its whole slot takes a tap, and alone in the well
       // its words stand where every field's do. Beside tags it is a short
@@ -1355,8 +1394,10 @@ class ClayTagInput<T extends Object> extends StatelessWidget {
           ),
         ),
       ),
-      optionBuilder: (context, option, states) =>
-          ClayMenuRow(label: words(option), states: states),
+      optionBuilder: (context, option, states) => ClayMenuRow(
+        label: words(option),
+        states: ClayKeysShown.option(states),
+      ),
       tagBuilder: (context, value, tag) =>
           _Tag(label: words(value), tag: tag, enabled: enabled),
       surfaceBuilder: _optionPanel,

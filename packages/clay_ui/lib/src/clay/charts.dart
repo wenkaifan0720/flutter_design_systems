@@ -1356,7 +1356,7 @@ class ClayPieChart extends StatelessWidget {
     final palette = _palette(c, layered, slices.length, pastel: true);
     final total = slices.fold<double>(0, (a, s) => a + s.value);
     String value(double v) => formatValue?.call(v) ?? l.formatDecimal(v);
-    String share(double v) => total <= 0 ? '' : '${(v / total * 100).round()}%';
+    String share(double v) => total <= 0 ? '' : l.formatPercent(v / total);
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,

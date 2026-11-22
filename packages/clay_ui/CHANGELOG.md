@@ -1,3 +1,20 @@
+## 0.2.1
+
+- Needs ui_core 0.4.1. `ClayMenuItem.isDestructiveAction` reaches ui_core's `RawMenuEntry` in a context menu and a menu bar.
+- `ClayPieChart`'s shares and `ClayMeter`'s percentage are written in the reader's digits (Arabic-Indic in Arabic), as the charts' values already were.
+- `ClayCalendar` numbers its days in the reader's digits, and at a large text size shrinks them to keep inside their balls, so a row's days don't run together on a phone.
+- `ClayCombobox` and `ClayTagInput` ring an option only after a key, as a select's list does: a list a tap or a click opened marks its chosen option alone (its words in the accent's ink and a check), and the pointer lights the row it is over. The ring showed on the chosen option at once, where it read as the keys' place.
+- `ClayMenu` is as wide as its widest row, between 160 and 320, under its key. It spread across the window.
+- A floating list (`ClayMenuReveal`: a select's, a menu's, a date picker's) and a tooltip are opaque from their first frame, as clay is. They faded in over about 120 ms, the page under them showing through their rows.
+- `ClayDatePicker` and `ClayDateRangePicker` open their calendar on the side with more room, so it stays on a phone's screen.
+- `ClayScaffold`'s body keeps its parts' semantics nodes apart: a field opened over a nested `Navigator`'s page keeps its focus.
+- `ClayTable` and `ClayDataTable` never break a word inside a cell: where a column is narrower than its widest word (large text on a phone), the table scrolls sideways. A `ClayDataTable` heading also keeps to its line whole, with room for its sort arrow. At the usual text size they lay out as before.
+- `ClayStepProgress` never breaks a step's name inside a word: a name with a word too wide for its cell lowers its own size to fit.
+- A `ClayNavigationBar` place's name shrinks to fit whole, rather than lose its end to an ellipsis ("Settin…" at a large text size).
+- `ClayButtonGroup`'s keys, where they don't fit their row, scroll inside the slab and are cut at its ends. They spilled past the slab, off a phone's screen right to left.
+- `ClayWheelPicker`, `ClayTimePicker` and the other drums grow their rows with the text, so a row's figures keep clear of the next row's at a large text size. At the usual size a row is 40 high, as before.
+- `ClayInputGroup`'s add-ons keep their words whole. They take their own width, the entry keeps a third of the well, and where large text leaves them too little their words print smaller. They were held to 45% each and cut ("…glasses").
+
 ## 0.2.0
 
 - On ui_core 0.4.0, on Flutter 3.47 or later as before. The ui_core names Clay's API uses are 0.4.0's: `dart fix` renames them in an app. Clay draws and moves as before.

@@ -15,6 +15,7 @@ import 'button.dart';
 import 'fonts.dart';
 import 'internal/entry_parts.dart';
 import 'internal/menu.dart';
+import 'internal/words_fit.dart';
 import 'popovers.dart' show ClayMenuItem;
 import 'select.dart' show ClayMenuReveal;
 import 'surface.dart';
@@ -470,9 +471,8 @@ class ClayStepProgress extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(
                         horizontal: ClaySpacing.tight,
                       ),
-                      child: Text(
-                        name,
-                        textAlign: TextAlign.center,
+                      child: _StepName(
+                        name: name,
                         style: theme.textTheme.caption.copyWith(
                           color: i == current ? c.ink : c.inkSecondary,
                           fontWeight: i == current
@@ -497,6 +497,31 @@ class ClayStepProgress extends StatelessWidget {
       ..add(IntProperty('steps', steps.length))
       ..add(IntProperty('current', current));
   }
+}
+
+// A step's name under its ball: it wraps between words; a word too wide for
+// its cell (large text on a phone) lowers the name's size until it fits,
+// rather than break across two lines.
+class _StepName extends StatelessWidget {
+  const _StepName({required this.name, required this.style});
+
+  final String name;
+  final TextStyle style;
+
+  @override
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, box) => Text(
+      name,
+      textAlign: TextAlign.center,
+      style: style,
+      textScaler: clayScalerToFit(
+        MediaQuery.textScalerOf(context),
+        fontSize: style.fontSize ?? 14,
+        widest: clayWidestWord(context, [name], style),
+        room: box.maxWidth,
+      ),
+    ),
+  );
 }
 
 class _Run extends StatelessWidget {
@@ -680,6 +705,7 @@ class ClayMenuBar extends StatelessWidget {
                   label: item.label,
                   onPressed: item.onPressed,
                   shortcut: item.shortcut,
+                  isDestructiveAction: item.isDestructiveAction,
                   data: item,
                 ),
             ],
@@ -712,7 +738,7 @@ class ClayMenuBar extends StatelessWidget {
           return ClayMenuRow(
             label: entry.label,
             leading: item?.icon == null ? null : Icon(item!.icon),
-            destructive: item?.isDestructiveAction ?? false,
+            destructive: entry.isDestructiveAction,
             states: states,
             trailing: entry.shortcut == null ? null : Text(entry.shortcut!),
           );

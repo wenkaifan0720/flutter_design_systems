@@ -330,14 +330,18 @@ class _DockFace extends StatelessWidget {
                 color: ink,
               ),
               const SizedBox(height: ClaySpacing.hairline),
-              Text(
-                destination.label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.caption.copyWith(
-                  color: ink,
-                  fontWeight: weight,
-                  fontVariations: clayWeight(weight),
+              // A name too wide for its place (large text) shrinks to fit
+              // whole, rather than lose its end to an ellipsis.
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  destination.label,
+                  maxLines: 1,
+                  style: theme.textTheme.caption.copyWith(
+                    color: ink,
+                    fontWeight: weight,
+                    fontVariations: clayWeight(weight),
+                  ),
                 ),
               ),
             ],
@@ -913,7 +917,16 @@ class ClayScaffold extends StatelessWidget {
             context: context,
             removeTop: topBar != null,
             removeBottom: bar,
-            child: Semantics(container: true, child: body),
+            // The body keeps its children's nodes apart. A Navigator here
+            // would otherwise hang its route's node off this one, and a list
+            // opening over the route gives the route a node between them:
+            // on the web the focused field's input moves into it and the
+            // browser blurs it, so the tap that opened the list loses focus.
+            child: Semantics(
+              container: true,
+              explicitChildNodes: true,
+              child: body,
+            ),
           ),
         ),
       ],

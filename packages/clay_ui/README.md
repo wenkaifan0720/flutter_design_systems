@@ -6,7 +6,10 @@ lists, dialogs, sheets and toasts, with matching light and dark themes.
 
 ![Steady's Today screen on a desk at 1440 and on a phone at 390, by day](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/clay_ui/screenshots/hero.webp)
 
-**[Live gallery](https://wenkaifan0720.github.io/flutter_design_systems/clay/)** · [API reference](https://pub.dev/documentation/clay_ui/latest/) · [All the looks](https://wenkaifan0720.github.io/flutter_design_systems/)
+**[Live gallery](https://wenkaifan0720.github.io/flutter_design_systems/clay/)** ·
+[Docs](https://wenkaifan0720.github.io/flutter_design_systems/docs/looks/clay/) ·
+[API reference](https://pub.dev/documentation/clay_ui/latest/) ·
+[All the looks](https://wenkaifan0720.github.io/flutter_design_systems/)
 
 ## Install
 
@@ -56,8 +59,103 @@ class TodayPage extends StatelessWidget {
 }
 ```
 
-`clayPageTransitions` supplies page transitions on each platform, including the iOS swipe-back gesture. You can also
-install the theme with the builder of a `CupertinoApp` or `WidgetsApp`.
+`clayPageTransitions` supplies page transitions on each platform, including the iOS swipe-back gesture.
+
+### CupertinoApp and WidgetsApp
+
+`ClayTheme` goes in the builder of any app widget. With `CupertinoApp` from `cupertino_ui`:
+
+```dart
+CupertinoApp(
+  builder: (context, child) => ClayTheme(
+    data: ClayThemeData.clay(MediaQuery.platformBrightnessOf(context)),
+    child: ClayToaster(child: child!),
+  ),
+  home: const TodayPage(),
+)
+```
+
+With Flutter's `WidgetsApp`:
+
+```dart
+WidgetsApp(
+  color: const Color(0xFFFF7A59),
+  builder: (context, child) => ClayTheme(
+    data: ClayThemeData.clay(MediaQuery.platformBrightnessOf(context)),
+    child: ClayToaster(child: child!),
+  ),
+  pageRouteBuilder: <T>(settings, builder) =>
+      PageRouteBuilder<T>(settings: settings, pageBuilder: (context, _, _) => builder(context)),
+  home: const TodayPage(),
+)
+```
+
+## Everyday parts
+
+A form: a field, a select and the screen's one coral key.
+
+```dart
+Column(
+  crossAxisAlignment: CrossAxisAlignment.stretch,
+  children: [
+    ClayTextField(label: 'Habit name', hint: 'Drink water', onChanged: setName),
+    const SizedBox(height: 24),
+    ClaySelect<String>(
+      label: 'Repeat',
+      value: repeat,
+      items: const [
+        ClaySelectItem(value: 'daily', label: 'Every day'),
+        ClaySelectItem(value: 'weekdays', label: 'Weekdays'),
+      ],
+      onChanged: (value) => setState(() => repeat = value),
+    ),
+    const SizedBox(height: 24),
+    ClayButton.filled('Add habit', onPressed: save),
+  ],
+)
+```
+
+Rows live in a group; a switch applies at once:
+
+```dart
+ClayGroup(
+  header: 'Reminders',
+  children: [
+    ClayListTile(title: 'Morning check-in', trailingText: '8:00', onTap: editTime),
+    ClayListTile(
+      title: 'Evening review',
+      trailing: ClaySwitch(
+        value: evening,
+        onChanged: (value) => setState(() => evening = value),
+        semanticLabel: 'Evening review',
+      ),
+    ),
+  ],
+)
+```
+
+A short question asks with a dialog, and a toast confirms what was done:
+
+```dart
+final delete = await showClayDialog<bool>(
+  context: context,
+  isAlert: true,
+  builder: (context) => ClayDialog(
+    title: 'Delete this habit?',
+    content: const Text('Its 42-day streak goes with it.'),
+    actions: [
+      ClayDialogAction(label: 'Keep', onPressed: () => Navigator.pop(context, false)),
+      ClayDialogAction(
+        label: 'Delete',
+        primary: true,
+        destructive: true,
+        onPressed: () => Navigator.pop(context, true),
+      ),
+    ],
+  ),
+);
+if (delete ?? false) showClayToast(context, 'Habit deleted', actionLabel: 'Undo');
+```
 
 ## Components
 
@@ -98,8 +196,13 @@ and toasts respect reduced motion.
 ## Right to left and languages
 
 Controls follow the ambient `Directionality`, and the light falls from the top-leading corner in either direction.
-Add `RawWidgetsLocalizations.delegate` to your app for localized control labels. Use `clayPlural` for phrases that
-depend on a count.
+Add `RawWidgetsLocalizations.delegate` to your app for the controls' own words in 30 languages. Use `clayPlural` for
+phrases that depend on a count. Figures follow the locale: dates, times, the number field, the charts' scales,
+readouts and shares, and a meter's percentage write the reader's digits, Arabic-Indic in Arabic.
+
+## Requirements
+
+Flutter 3.47.0 or later.
 
 ## Licence
 
