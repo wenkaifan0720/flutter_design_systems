@@ -134,7 +134,11 @@ class _Anchored extends StatelessWidget {
                   RawMenuEntry(label: 'Track', onPressed: () {}),
                   RawMenuEntry(label: 'Reorder', onPressed: () {}),
                   const RawMenuEntry.divider(),
-                  RawMenuEntry(label: 'Cancel', onPressed: () {}),
+                  RawMenuEntry(
+                    label: 'Cancel',
+                    isDestructiveAction: true,
+                    onPressed: () {},
+                  ),
                 ],
                 builder: (context, anchor) => ApplianceIconButton(
                   icon: const Icon(LucideIcons.ellipsis),
@@ -156,7 +160,11 @@ class _Anchored extends StatelessWidget {
             semanticLabel: 'Kettle',
             entries: [
               RawMenuEntry(label: 'Save for later', onPressed: () {}),
-              RawMenuEntry(label: 'Remove', onPressed: () {}),
+              RawMenuEntry(
+                label: 'Remove',
+                isDestructiveAction: true,
+                onPressed: () {},
+              ),
             ],
             child: const ApplianceListTile(
               title: 'Kettle',

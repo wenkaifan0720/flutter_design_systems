@@ -6,12 +6,10 @@
 // scene of one (`/#/scene/product`, `filter`, `checkout`, `remove`, `order`, `search`, `searchEmpty`, `paymentFailed`,
 // `emptyBasket`); `theme=dark` at night, `dir=rtl` right to left,
 // `text=200` the words at twice the size, `density=comfortable|compact` that density. `?slow=8` runs every
-// animation eight times slower; `?a11y=1` turns the semantics on from the start; `?keylines=1` draws ui_core's
-// keyline sheet over it.
+// animation eight times slower; `?a11y=1` turns the semantics on from the start.
 import 'package:appliance_ui/appliance_ui.dart';
 import 'package:flutter/scheduler.dart' show timeDilation;
 import 'package:flutter/widgets.dart';
-import 'package:ui_core_review/ui_core_review.dart';
 
 import 'gallery_pages.dart';
 import 'kit_gallery/larder/larder.dart';
@@ -83,15 +81,5 @@ Future<void> main() async {
       final i => i,
     },
   );
-  runApp(
-    query['keylines'] == '1'
-        ? Directionality(
-            textDirection: TextDirection.ltr,
-            child: DesignKeylineSheet(
-              check: const DesignKeylineCheck(look: 'Appliance'),
-              child: app,
-            ),
-          )
-        : app,
-  );
+  runApp(app);
 }

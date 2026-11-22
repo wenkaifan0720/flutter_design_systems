@@ -1,11 +1,11 @@
 // Larder's everyday screens, each the whole app opened on it, by day or by
-// night, left to right or right to left: what ui_core's sweep reads as
-// everyday/<id>, at every width.
+// night, left to right or right to left, at every width: the screens the
+// screen tests and goldens open, by id.
 import 'package:flutter/widgets.dart';
 
 import 'kit_gallery/larder/larder.dart';
 
-/// The screens, by their ids in the look's decisions.
+/// The screens, each by its id.
 final everydayScreens =
     <
       ({

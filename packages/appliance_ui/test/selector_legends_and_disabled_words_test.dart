@@ -1,3 +1,7 @@
+// At twice the text size, by day and by night, in either reading
+// direction: a slide selector's legends (Light, Dark, System) stay whole on
+// one line each, and a disabled key's words read at 4.5:1 or more on its
+// face.
 import 'dart:math' as math;
 
 import 'package:appliance_ui/appliance_ui.dart';

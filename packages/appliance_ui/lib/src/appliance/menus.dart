@@ -12,8 +12,11 @@ import 'material.dart';
 import 'select.dart';
 import 'theme.dart';
 
-/// One row of an open menu, painted for its [states]: under the pointer or
-/// the keys its legend lights, and a held command sinks into the plate.
+/// One row of an open menu, painted for its [states]. A command is a key:
+/// under the pointer or the keys its legend lights, and it sinks into the
+/// plate only while held. A choice (a [chosen] row) the pointer or the keys
+/// are on sits down as a pressed key, as a select's lit row does, so every
+/// list of options in a form marks its lit row one way.
 /// [chosen] lights its lamp at the row's end. A row that does nothing stands
 /// greyed.
 ///
@@ -66,8 +69,13 @@ class ApplianceMenuRow extends StatelessWidget {
     final theme = ApplianceTheme.of(context);
     final c = theme.colors;
     final on = enabled && !states.contains(WidgetState.disabled);
-    final pressed = on && states.contains(WidgetState.pressed);
-    final lamp = on ? applianceControlLight(states) : 0.0;
+    final choice = chosen != null;
+    final lit =
+        states.contains(WidgetState.focused) ||
+        states.contains(WidgetState.hovered);
+    final down =
+        on && (states.contains(WidgetState.pressed) || (choice && lit));
+    final lamp = on && !choice ? applianceControlLight(states) : 0.0;
     final row = DesignStyleOf([style, theme.menuStyle], states);
     final words =
         row.foreground ??
@@ -77,10 +85,10 @@ class ApplianceMenuRow extends StatelessWidget {
             ? c.danger
             : c.print);
     final face = ApplianceFace(
-      top: pressed ? c.keyDownTop : c.keyDownTop.withValues(alpha: 0),
-      bottom: pressed ? c.keyDownBottom : c.keyDownBottom.withValues(alpha: 0),
-      lift: pressed ? -0.6 : 0,
-      travel: pressed ? 0.6 : 0,
+      top: down ? c.keyDownTop : c.keyDownTop.withValues(alpha: 0),
+      bottom: down ? c.keyDownBottom : c.keyDownBottom.withValues(alpha: 0),
+      lift: down ? -0.6 : 0,
+      travel: down ? 0.6 : 0,
       radius: BorderRadius.circular(ApplianceMenuPlate.rowRadius),
       foreground: words,
     );

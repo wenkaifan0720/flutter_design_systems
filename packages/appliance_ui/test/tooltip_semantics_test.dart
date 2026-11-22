@@ -1,6 +1,6 @@
-// A tooltip's message joins the tipped control's own semantics node, as
-// the published tooltip made it: a screen reader hears the tip with the
-// control, and no node around it takes the tip instead.
+// A tooltip's message joins the tipped control's own semantics node: a
+// screen reader hears the tip with the control, and no node around it
+// takes the tip instead.
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';

@@ -454,7 +454,7 @@ class _PickerKey extends StatelessWidget {
           );
           final down = states.contains(WidgetState.pressed) || open;
           final base = !enabled
-              ? ApplianceFace.key(c).copyWith(lift: 0.35)
+              ? ApplianceFace.key(c).asDisabled(c)
               : down
               ? ApplianceFace.keyDown(c)
               : ApplianceFace.key(c);
@@ -1194,9 +1194,12 @@ class _Meridiem extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
+                    // Out of use, the chosen key keeps its lamp lit in the
+                    // disabled print, as a radio's does.
                     ApplianceLamp(
-                      lit: on && change != null,
+                      lit: on,
                       size: ApplianceMetrics.lampSize - 2,
+                      color: change == null ? c.printDisabled : null,
                     ),
                     const SizedBox(width: ApplianceSpacing.tight + 2),
                     Text(

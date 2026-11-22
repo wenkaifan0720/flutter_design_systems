@@ -2,9 +2,9 @@
 ///
 /// Every demo renders inside the environment an Appliance page gets live:
 /// an app with the theme over its navigator, toasts above it, the
-/// appearance pinned because the preview host ignores the shell's simulated
-/// platform brightness. A page the example's Overview opens shares the
-/// example's app instead ([KitGalleryScope]).
+/// appearance set by the gallery rather than taken from the platform. A
+/// page the example's Overview opens shares the example's app instead
+/// ([KitGalleryScope]).
 ///
 /// Demos import only the Appliance barrel, this file, Flutter and the
 /// packages Appliance depends on.

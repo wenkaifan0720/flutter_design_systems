@@ -1,6 +1,6 @@
 // Larder's everyday screens on a phone and a desktop, by day and by night,
 // each matching its golden.
-// ignore_for_file: avoid_relative_lib_imports
+// ignore_for_file: avoid_relative_lib_imports — the example app's screens are what this test matches; example/ is not a dependency of the package.
 import 'dart:convert';
 import 'dart:io';
 

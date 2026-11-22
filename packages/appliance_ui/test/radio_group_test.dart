@@ -53,8 +53,7 @@ const _group = ValueKey('group');
 /// at its start, its middle, its end, its top and its bottom, each time from
 /// another choice, and expects the press to choose it. RawRadio's own
 /// detector takes a press only where the face paints; a radio takes it
-/// anywhere in its box, as the published radios did, the gap between its
-/// mark and its words too.
+/// anywhere in its box, the gap between its mark and its words too.
 Future<void> _pressEverywhere<V>(
   WidgetTester tester,
   Finder radios,

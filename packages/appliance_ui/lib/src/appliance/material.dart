@@ -133,6 +133,26 @@ class ApplianceFace with Diagnosticable {
   /// by default.
   final Color edge;
 
+  /// The same part out of use: level with its panel and matte, seated at a
+  /// faint parting line, its legend [ApplianceColors.printDisabled]: nothing
+  /// left to press. Its plastic is the darker of a key's middle tone and the
+  /// faceplate's, so it never stands brighter than a key in use (a brighter
+  /// flat face read as an outlined key, lit).
+  ApplianceFace asDisabled(ApplianceColors colors) {
+    final mid = Color.lerp(colors.keyTop, colors.keyBottom, .5)!;
+    final matte = mid.computeLuminance() < colors.face.computeLuminance()
+        ? mid
+        : colors.face;
+    return copyWith(
+      top: matte,
+      bottom: matte,
+      lift: 0,
+      seam: .6,
+      travel: 0,
+      foreground: colors.printDisabled,
+    );
+  }
+
   /// A copy with the given values replaced.
   ApplianceFace copyWith({
     Color? top,
@@ -488,9 +508,10 @@ class AnimatedApplianceSurface extends StatefulWidget {
   /// The face to arrive at.
   final ApplianceFace face;
 
-  /// Whether it is a control's face (a key, a well), marked as one for
-  /// ui_core's checks, or a surface whose contents are read on their own (a
-  /// faceplate, a row).
+  /// Whether it is a control's face (a key, a well) or a surface whose
+  /// contents are read on their own (a faceplate, a row). A control's face
+  /// is marked as one item ([DesignKeylineFace]) for the layout checks in
+  /// `package:ui_core_test`; the mark lays out and paints nothing.
   final bool control;
 
   /// What stands on the face.

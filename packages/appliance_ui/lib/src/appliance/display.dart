@@ -10,9 +10,19 @@ import 'package:flutter/widgets.dart';
 import 'package:ui_core/host.dart';
 import 'package:ui_core/ui_core.dart';
 
-import 'lists.dart';
+import 'internal/state_plate.dart';
 import 'material.dart';
 import 'theme.dart';
+
+/// [image] filling its box, [fallback] standing in until its first frame
+/// and when it fails, as a media slot's picture does.
+Widget _picture(ImageProvider image, Widget fallback) => Image(
+  image: image,
+  fit: BoxFit.cover,
+  frameBuilder: (context, child, frame, synchronouslyLoaded) =>
+      frame == null && !synchronouslyLoaded ? fallback : child,
+  errorBuilder: (context, error, stack) => fallback,
+);
 
 /// A name's initials, at most two.
 String _initials(String name) {
@@ -35,6 +45,7 @@ class ApplianceAvatar extends StatelessWidget {
   const ApplianceAvatar({
     super.key,
     required this.name,
+    this.image,
     this.slotId,
     this.size = 40,
     this.style,
@@ -43,7 +54,12 @@ class ApplianceAvatar extends StatelessWidget {
   /// Whose: their initials, and their name for a screen reader.
   final String name;
 
-  /// Their picture's media slot; null shows the initials.
+  /// Their picture (a `NetworkImage`, an `AssetImage`); over [slotId] when
+  /// both are given. Null with no [slotId] shows the initials.
+  final ImageProvider? image;
+
+  /// Their picture's media slot (`assets/media/<slotId>.jpg`); null with no
+  /// [image] shows the initials.
   final String? slotId;
 
   /// Its diameter.
@@ -69,13 +85,14 @@ class ApplianceAvatar extends StatelessWidget {
         ),
       ),
     );
+    final picture = image;
     final slot = slotId;
     // The ring round the picture: two hairlines on a large one, one on a
     // small one.
     final ring = size >= 40 ? ApplianceSpacing.nudge : ApplianceSpacing.hair;
     return Semantics(
       label: name,
-      image: slot != null,
+      image: picture != null || slot != null,
       child: ExcludeSemantics(
         child: SizedBox.square(
           dimension: size,
@@ -89,9 +106,11 @@ class ApplianceAvatar extends StatelessWidget {
             child: Padding(
               padding: EdgeInsets.all(ring),
               child: ClipOval(
-                child: slot == null
-                    ? initials
-                    : MediaSlotImage(slotId: slot, fallback: initials),
+                child: picture != null
+                    ? _picture(picture, initials)
+                    : slot != null
+                    ? MediaSlotImage(slotId: slot, fallback: initials)
+                    : initials,
               ),
             ),
           ),
@@ -421,77 +440,16 @@ class ApplianceEmptyState extends StatelessWidget {
   final ApplianceStyle? style;
 
   @override
-  Widget build(BuildContext context) {
-    final look = DesignStyleOf([
-      style,
-      ApplianceTheme.of(context).displayStyle,
-    ], const {});
-    final theme = ApplianceTheme.of(context);
-    final c = theme.colors;
-    final t = theme.textTheme;
-    return Semantics(
-      container: true,
-      child: AppliancePanel(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ExcludeSemantics(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(minWidth: 120, minHeight: 56),
-                child: ApplianceSurface(
-                  face: ApplianceFace.well(c, fill: look.fill ?? c.display),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
-                    child: Center(
-                      widthFactor: 1,
-                      heightFactor: 1,
-                      child: Text(
-                        reading,
-                        style: t.display.copyWith(
-                          color: c.onDisplay.withValues(alpha: 0.55),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: ApplianceSpacing.regular),
-            Semantics(
-              header: true,
-              child: Text(
-                title,
-                textAlign: TextAlign.center,
-                style: look
-                    .text(t.heading)
-                    .copyWith(color: look.foreground ?? c.print),
-              ),
-            ),
-            if (message != null) ...[
-              const SizedBox(height: ApplianceSpacing.small),
-              ConstrainedBox(
-                constraints: const BoxConstraints(
-                  maxWidth: ApplianceMetrics.readingWidth,
-                ),
-                child: Text(
-                  message!,
-                  textAlign: TextAlign.center,
-                  style: t.body.copyWith(color: c.printMuted),
-                ),
-              ),
-            ],
-            if (action != null) ...[
-              const SizedBox(height: ApplianceSpacing.large),
-              action!,
-            ],
-          ],
-        ),
-      ),
-    );
-  }
+  Widget build(BuildContext context) => Semantics(
+    container: true,
+    child: ApplianceStatePlate(
+      reading: reading,
+      title: title,
+      message: message,
+      action: action,
+      style: style,
+    ),
+  );
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {

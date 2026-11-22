@@ -228,8 +228,7 @@ class ApplianceToggleGroup<T> extends StatelessWidget {
                 ? ApplianceFace.keyDown(c, radius: _keyInStrip)
                 : ApplianceFace.key(c, radius: _keyInStrip);
             final face = layered.on(
-              base.copyWith(
-                lift: disabled && !down ? 0.35 : null,
+              (disabled && !down ? base.asDisabled(c) : base).copyWith(
                 foreground: disabled ? c.printDisabled : c.print,
                 focus: states.contains(WidgetState.focused)
                     ? c.focus
@@ -251,9 +250,12 @@ class ApplianceToggleGroup<T> extends StatelessWidget {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
+                        // Out of use, a key down keeps its lamp lit in the
+                        // disabled print, as a radio's does.
                         ApplianceLamp(
-                          lit: down && !disabled,
+                          lit: down,
                           size: ApplianceMetrics.lampSize - 2,
+                          color: disabled ? c.printDisabled : null,
                         ),
                         if (option.icon != null) ...[
                           const SizedBox(width: ApplianceSpacing.small),
@@ -461,8 +463,8 @@ class ApplianceSplitButton extends StatelessWidget {
 }
 
 /// A key's face as Appliance draws it in a state: the plain key or the
-/// signal key ([filled]), [down] when held or latched, lower and greyed
-/// when [disabled], its rim backlit when [focused].
+/// signal key ([filled]), [down] when held or latched, level, matte and
+/// greyed when [disabled], its rim backlit when [focused].
 ApplianceFace applianceKeyFace(
   ApplianceColors c, {
   bool filled = false,
@@ -476,7 +478,7 @@ ApplianceFace applianceKeyFace(
     return ApplianceFace.key(
       c,
       radius: radius,
-    ).copyWith(lift: 0.35, foreground: c.printDisabled, focus: focus);
+    ).asDisabled(c).copyWith(focus: focus);
   }
   if (!filled) {
     return (down

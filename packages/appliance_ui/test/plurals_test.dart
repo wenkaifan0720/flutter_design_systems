@@ -3,7 +3,7 @@
 // through localizations that take the number whole, so another language
 // words its own forms: Larder's through its own, a chart's through ui_core's
 // (here Russian's one, few and many).
-// ignore_for_file: avoid_relative_lib_imports
+// ignore_for_file: avoid_relative_lib_imports — the example app's words and screens are what this test counts in; example/ is not a dependency of the package.
 import 'package:appliance_ui/appliance_ui.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';

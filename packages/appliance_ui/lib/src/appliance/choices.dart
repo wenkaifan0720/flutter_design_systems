@@ -705,12 +705,15 @@ class ApplianceSwitch extends StatelessWidget {
                               light: c.highlight,
                             ),
                             child: Center(
+                              // Out of use, an on switch's lamp stays lit in
+                              // the disabled print, as a radio's does.
                               child: ApplianceControlLamp(
-                                lit: value && !disabled,
+                                lit: value,
                                 states: states.difference(const {
                                   WidgetState.focused,
                                 }),
                                 size: ApplianceMetrics.lampSize - 1,
+                                color: disabled ? c.printDisabled : null,
                               ),
                             ),
                           ),
@@ -1157,11 +1160,14 @@ class ApplianceSegmentedButton<T> extends StatelessWidget {
     final radius = ApplianceMetrics.troughRadius - ApplianceMetrics.troughInset;
     // The lamp before the glyph and words says which position is chosen, as
     // a chip's does. Stacked in a narrow space, it stands beside the glyph,
-    // or over the words, so the words keep the whole width.
+    // or over the words, so the words keep the whole width. Out of use, the
+    // chosen segment's lamp stays lit in the disabled print, as a radio's
+    // does.
     final lamp = ApplianceControlLamp(
-      lit: chosen && !disabled,
+      lit: chosen,
       states: states,
       size: _segmentLamp,
+      color: disabled ? c.printDisabled : null,
     );
     final legend = DesignCapCenter(
       capHeightFactor: theme.capHeightFactor,
@@ -1531,6 +1537,7 @@ class ApplianceStepper extends StatelessWidget {
     this.semanticLabel,
     this.decreaseLabel = 'Decrease',
     this.increaseLabel = 'Increase',
+    this.valueText,
     this.style,
   }) : assert(min <= value && value <= max),
        assert(step > 0);
@@ -1559,6 +1566,10 @@ class ApplianceStepper extends StatelessWidget {
   /// What a screen reader calls the plus key, before [semanticLabel].
   final String increaseLabel;
 
+  /// A number as the window shows it and a screen reader hears it ("45 min");
+  /// the number in the reader's digits otherwise.
+  final String Function(int value)? valueText;
+
   /// Its style, over [ApplianceThemeData.stepperStyle].
   final ApplianceStyle? style;
 
@@ -1579,12 +1590,14 @@ class ApplianceStepper extends StatelessWidget {
         fontFeatures: const [FontFeature.tabularFigures()],
       ),
     );
+    final words = RawWidgetsLocalizations.of(context);
+    String shown(int n) => valueText?.call(n) ?? words.formatDecimal(n);
     // The longest number the window shows, as it will be set.
     final scaler = MediaQuery.textScalerOf(context);
     var figureSize = Size.zero;
     for (final n in [min, max]) {
       final painter = TextPainter(
-        text: TextSpan(text: '$n', style: figure),
+        text: TextSpan(text: shown(n), style: figure),
         textDirection: TextDirection.ltr,
         textScaler: scaler,
       )..layout();
@@ -1615,17 +1628,16 @@ class ApplianceStepper extends StatelessWidget {
           final layered = DesignStyleOf(layers, states);
           final disabled = states.contains(WidgetState.disabled);
           final pressed = states.contains(WidgetState.pressed);
-          final face =
-              (pressed ? ApplianceFace.keyDown(c) : ApplianceFace.key(c))
-                  .copyWith(
-                    lift: disabled ? 0.35 : null,
-                    foreground:
-                        layered.foreground ??
-                        (disabled ? c.printDisabled : c.print),
-                    focus: states.contains(WidgetState.focused)
-                        ? c.focus
-                        : _none(c.focus),
-                  );
+          final base = pressed
+              ? ApplianceFace.keyDown(c)
+              : ApplianceFace.key(c);
+          final face = (disabled ? base.asDisabled(c) : base).copyWith(
+            foreground:
+                layered.foreground ?? (disabled ? c.printDisabled : c.print),
+            focus: states.contains(WidgetState.focused)
+                ? c.focus
+                : _none(c.focus),
+          );
           return TapTargetPadding(
             child: SizedBox.square(
               dimension: h,
@@ -1657,9 +1669,12 @@ class ApplianceStepper extends StatelessWidget {
           children: [
             stepKey(false, _name(decreaseLabel)),
             const SizedBox(width: ApplianceSpacing.small),
+            // The window's node: its name and its number, once.
             Semantics(
+              container: true,
               label: semanticLabel,
-              value: '$value',
+              value: shown(value),
+              excludeSemantics: true,
               child: SizedBox(
                 width: windowWidth,
                 height: h,
@@ -1669,7 +1684,7 @@ class ApplianceStepper extends StatelessWidget {
                     child: DesignCapCenter(
                       capHeightFactor: theme.capHeightFactor,
                       child: Text(
-                        '$value',
+                        shown(value),
                         maxLines: 1,
                         softWrap: false,
                         style: figure,

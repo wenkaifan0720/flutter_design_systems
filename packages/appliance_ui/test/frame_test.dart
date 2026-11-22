@@ -1,4 +1,4 @@
-// The app layer a generated app stands on, on what it draws: a place's page
+// The app frame (frame.dart), on what it draws: a place's page
 // framed by its places and the app's act, each keyed on its hit target, at
 // a phone's, a tablet's and a desk's width; a pushed page's bar finds its
 // way back, a sheet's its close key, a place's nothing; the router's pages

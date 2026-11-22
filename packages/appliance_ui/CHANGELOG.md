@@ -1,3 +1,22 @@
+## 0.2.1
+
+- Stands on ui_core 0.4.1. A menu entry marked `isDestructiveAction` (Delete, Remove) prints its words in the danger ink, in `ApplianceMenu`, `ApplianceContextMenu` and `ApplianceMenuBar`, as an action sheet's destructive row does. An all-zero chart counts up from zero, its bars flat on the floor; it was scaled from −1 to 1.
+- `ApplianceCombobox` carries the select's up-and-down legend at its end, so it reads as a field that opens a list. A tap on the legend opens the list.
+- A disabled key stands level and matte with grey words, never brighter than a key in use. It kept its raised, lit body and looked pressable. This covers `ApplianceButton` and its filled form, `ApplianceIconButton`, a stepper's key at its bound, the toggle strip, chips, tags, the date field's key and the select. `ApplianceFace.asDisabled` gives the same face to a part of your own.
+- `ApplianceErrorState` stands on the faceplate of `ApplianceEmptyState`. Its display window reads a fault code (`reading`, "Err" by default) and a lamp lit in the danger colour stands beside its heading. It was a red bead in a halo on the bare housing.
+- `ApplianceStepper` writes its value in the reader's digits (Arabic-Indic in Arabic) and takes `valueText` for a value with its unit ("45 min"), which a screen reader hears too. Chart figures and a donut's shares are in the reader's digits as well.
+- An empty chart's idle window keeps its dashes at one size, so a 134 px chart holds its words at text scale 2. It overflowed on a phone.
+- A screen reader hears an `ApplianceListTile`'s trailing control (a row's menu key) as a button of its own, beside the row's. The row's node took the control's name.
+- In a combobox and a tag field, the row the pointer or the keys are on sits down as a pressed key, as it does in a select. It was underlined in orange. Menu commands still light their legend and sink only while held.
+- An open list's plate casts a lid's shade, close round its edge and soft under it, so words it half covers at its corners sink into shade. They showed as a stray mark.
+- A `Navigator` in `ApplianceScaffold`'s body keeps a semantics node per route, as the app's own navigator does, so on the web a tap on a combobox on a pushed page keeps the focus it gives. A list opening over the page made a node above it, and the browser blurred the field.
+- A selected `ApplianceChip` with no `onSelected` stays latched down and reads as selected, disabled, as a disabled `FilterChip` does. It showed as a chip that is not selected.
+- A chosen part out of use keeps its lamp lit in the disabled print, as `ApplianceRadio` does: an `ApplianceChip`, an `ApplianceSegmentedButton` segment, an `ApplianceSwitch`, an `ApplianceToggleGroup` key and the AM/PM key of `ApplianceTimePicker`. Its lamp went out, as an unchosen part's does.
+- `ApplianceAvatar` takes an `image` (an `ImageProvider`, such as a `NetworkImage`), shown over `slotId` when both are given.
+- `ApplianceThemeData.copyWith(colors:)` recolours the text theme and keeps its family, package and sizes. It rebuilt the text in Barlow, dropping a family set through `ApplianceThemeData.from(fontFamily:)`.
+- `ApplianceChevronPainter` has a const constructor.
+- The example app resolves from pub.dev alone: it imported `ui_core_review`, which is not published, for a review overlay.
+
 ## 0.2.0
 
 - Needs ui_core 0.4.0 and Flutter 3.47. `appliance_ui` re-exports ui_core, whose types now take `Raw` names (`DesignPressable` is `RawButton`). The old names stay through ui_core 0.4 as deprecated typedefs, and `dart fix --apply` renames them.
@@ -28,7 +47,7 @@
 - An `ApplianceField` holding a time picker keeps each figure's and key's own node and tap, as it does a stepper's, and its label names the picker. Before, a screen reader's tap on the PM key went to the field's one node.
 - `ApplianceRadioGroup`: preset keys and their words, one choice, the whole row a key's target. Tab reaches the group once, at its choice, and the next Tab leaves it; the arrows choose the next or the previous and wrap (mirrored right to left in a row), Home and End its ends, Space chooses, as Flutter's `RadioGroup` does. A screen reader hears a radio group of radios, in an `ApplianceField` too, whose label names the group while each radio keeps its own node. The gallery's preset keys are one.
 - A radio and a checkbox read as Flutter's do: a checkable (in a mutually exclusive group, for a radio), not a button as well.
-- An `ApplianceListTile`'s `trailingText` takes its own width, up to under half the row, and the title the rest: before, the value's slot took half the row's room however short it was, so a title wrapped early beside a date (Stint's Up next wrapped "Proof the studio map" at 390 beside its date). A long value still ends in an ellipsis.
+- An `ApplianceListTile`'s `trailingText` takes its own width, up to under half the row, and the title the rest: before, the value's slot took half the row's room however short it was, so a title wrapped early beside a date (a four-word task name wrapped beside its due date in a 390 px list). A long value still ends in an ellipsis.
 - An `ApplianceField` left to choose (`mergeSemantics` null) reads its child by what it brings to the semantics tree, on ui_core 0.3.2's `DesignField`, where it went by the child's type: one control is one node named by the label, and any group keeps each control's own node and tap. A group that names itself, a selector named as its field, is read once, where it read the field's label twice.
 
 ## 0.1.2

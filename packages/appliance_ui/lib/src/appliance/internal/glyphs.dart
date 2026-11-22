@@ -53,6 +53,49 @@ class ApplianceCrossPainter extends CustomPainter {
   bool shouldRepaint(ApplianceCrossPainter old) => old.color != color;
 }
 
+/// The legend at the end of a field that opens a list (a select's key, a
+/// combobox's well): a small chevron up over one down.
+class ApplianceUpDownPainter extends CustomPainter {
+  /// The legend in [color].
+  ApplianceUpDownPainter(this.color);
+
+  /// The legend's box.
+  static const Size size = Size(10, 16);
+
+  /// Its colour.
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final w = size.width;
+    final h = size.height;
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.6
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+    canvas
+      ..drawPath(
+        Path()
+          ..moveTo(1, h * 0.38)
+          ..lineTo(w / 2, h * 0.12)
+          ..lineTo(w - 1, h * 0.38),
+        paint,
+      )
+      ..drawPath(
+        Path()
+          ..moveTo(1, h * 0.62)
+          ..lineTo(w / 2, h * 0.88)
+          ..lineTo(w - 1, h * 0.62),
+        paint,
+      );
+  }
+
+  @override
+  bool shouldRepaint(ApplianceUpDownPainter old) => old.color != color;
+}
+
 /// A glyph painted in the ambient icon colour at the ambient icon size.
 class ApplianceGlyph extends StatelessWidget {
   /// The glyph [painter] draws.

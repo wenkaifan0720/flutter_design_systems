@@ -1,7 +1,7 @@
 // Larder's everyday screens at a phone's, a tablet's and a desktop's width, by day and by night: each lays out with
 // nothing overflowing and nothing thrown. And to a screen reader: every node is named once (never a name and then
 // the same words again), and on a desk the side panel's places are there beside whatever the body holds.
-// ignore_for_file: avoid_relative_lib_imports
+// ignore_for_file: avoid_relative_lib_imports — the example app's screens are what this test checks; example/ is not a dependency of the package.
 import 'dart:convert';
 
 import 'package:appliance_ui/appliance_ui.dart';

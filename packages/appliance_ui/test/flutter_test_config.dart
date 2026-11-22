@@ -2,9 +2,6 @@
 // ChangeNotifier, a controller, a focus node or a picture a test or the
 // package makes and never disposes fails the test that made it. What the
 // test helpers make (a tester's own objects) is theirs to track.
-//
-// A look copies this file into its package's test/ (with
-// leak_tracker_flutter_testing among its dev dependencies).
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';

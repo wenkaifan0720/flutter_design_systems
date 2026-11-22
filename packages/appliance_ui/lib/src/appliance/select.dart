@@ -10,6 +10,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
+import 'internal/glyphs.dart';
 import 'internal/keep_in_view.dart';
 import 'internal/type_ahead.dart';
 import 'material.dart';
@@ -220,7 +221,7 @@ class _ApplianceSelectState<T> extends State<ApplianceSelect<T>> {
             final disabled = !enabled;
             final down = states.contains(WidgetState.pressed) || open;
             final base = disabled
-                ? ApplianceFace.key(c).copyWith(lift: 0.35)
+                ? ApplianceFace.key(c).asDisabled(c)
                 : down
                 ? ApplianceFace.keyDown(c)
                 : ApplianceFace.key(c);
@@ -269,8 +270,8 @@ class _ApplianceSelectState<T> extends State<ApplianceSelect<T>> {
                         ),
                         const SizedBox(width: ApplianceSpacing.small),
                         CustomPaint(
-                          size: const Size(10, 16),
-                          painter: _UpDownPainter(
+                          size: ApplianceUpDownPainter.size,
+                          painter: ApplianceUpDownPainter(
                             disabled ? c.printDisabled : c.printMuted,
                           ),
                         ),
@@ -336,42 +337,6 @@ class _ApplianceSelectState<T> extends State<ApplianceSelect<T>> {
       ),
     );
   }
-}
-
-class _UpDownPainter extends CustomPainter {
-  _UpDownPainter(this.color);
-
-  final Color color;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final w = size.width;
-    final h = size.height;
-    final paint = Paint()
-      ..color = color
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.6
-      ..strokeCap = StrokeCap.round
-      ..strokeJoin = StrokeJoin.round;
-    canvas
-      ..drawPath(
-        Path()
-          ..moveTo(1, h * 0.38)
-          ..lineTo(w / 2, h * 0.12)
-          ..lineTo(w - 1, h * 0.38),
-        paint,
-      )
-      ..drawPath(
-        Path()
-          ..moveTo(1, h * 0.62)
-          ..lineTo(w / 2, h * 0.88)
-          ..lineTo(w - 1, h * 0.62),
-        paint,
-      );
-  }
-
-  @override
-  bool shouldRepaint(_UpDownPainter old) => old.color != color;
 }
 
 /// An open list's reveal: it rises out of the panel toward the side it
@@ -458,24 +423,50 @@ class ApplianceMenuPlate extends StatelessWidget {
         foreground: theme.colors.print,
       ),
     );
+    final night = theme.colors.brightness == Brightness.dark;
     return Padding(
       // Room under the plate for its shade.
       padding: const EdgeInsets.only(bottom: ApplianceSpacing.tight),
-      child: ApplianceSurface(
-        face: face,
-        child: ConstrainedBox(
-          constraints: BoxConstraints(maxHeight: maxHeight ?? double.infinity),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(radius),
-            child: scroll
-                ? SingleChildScrollView(
-                    padding: const EdgeInsets.all(ApplianceSpacing.tight),
-                    child: child,
-                  )
-                : Padding(
-                    padding: const EdgeInsets.all(ApplianceSpacing.tight),
-                    child: child,
-                  ),
+      child: DecoratedBox(
+        // A lid lifted off the panel casts a longer, softer shade than a key
+        // seated in it; what the plate covers sinks into that shade.
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(radius),
+          boxShadow: [
+            // Close round its edge, where the corners lift off what they
+            // cover,
+            BoxShadow(
+              color: theme.colors.shade.withValues(alpha: night ? 0.7 : 0.3),
+              blurRadius: 4,
+              spreadRadius: 1,
+              offset: const Offset(0, 1),
+            ),
+            // and far and soft under it.
+            BoxShadow(
+              color: theme.colors.shade.withValues(alpha: night ? 0.5 : 0.18),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: ApplianceSurface(
+          face: face,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxHeight: maxHeight ?? double.infinity,
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(radius),
+              child: scroll
+                  ? SingleChildScrollView(
+                      padding: const EdgeInsets.all(ApplianceSpacing.tight),
+                      child: child,
+                    )
+                  : Padding(
+                      padding: const EdgeInsets.all(ApplianceSpacing.tight),
+                      child: child,
+                    ),
+            ),
           ),
         ),
       ),

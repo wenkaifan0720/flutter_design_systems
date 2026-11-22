@@ -230,9 +230,9 @@ class ApplianceTooltip extends StatelessWidget {
         preferredExtent: 48,
       ),
       builder: (context, positionDelegate) => MergeSemantics(
-        // One node for the control and its tip, as the published tooltip
-        // made: a screen reader hears the tip with the control. RawTooltip's
-        // own tooltip semantics do not merge, and went to the node above.
+        // One node for the control and its tip: a screen reader hears the
+        // tip with the control. RawTooltip's own tooltip semantics do not
+        // merge, and would land on the node above.
         child: RawTooltip(
           semanticsTooltip: message,
           hoverDelay: const Duration(milliseconds: 500),
@@ -347,6 +347,7 @@ class _MenuRows extends StatelessWidget {
                         states: states,
                         enabled: entry.onPressed != null,
                         chosen: entry.checked,
+                        destructive: entry.isDestructiveAction,
                         trailing: entry.shortcut == null
                             ? null
                             : Text(entry.shortcut!),

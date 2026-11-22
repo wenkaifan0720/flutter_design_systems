@@ -1,10 +1,9 @@
-/// What an app's routes, previews and generated pages stand on: a tab
-/// ([ApplianceTab]), the app's one act ([ApplianceShellAction]), a page
-/// while its data comes and when it cannot ([ApplianceLoadingState],
-/// [ApplianceErrorState]), the one-line field a stub draws
-/// ([ApplianceInput]) and a page's preview as the app frames it
-/// ([AppliancePreview]). The router's pages are [AppliancePage] and
-/// [ApplianceSheetPage].
+/// The app's frame: a tab ([ApplianceTab]), the app's one act
+/// ([ApplianceShellAction]), a page while its data comes and when it
+/// cannot ([ApplianceLoadingState], [ApplianceErrorState]), a one-line
+/// field in short form ([ApplianceInput]) and a page's preview as the app
+/// frames it ([AppliancePreview]). The router's pages are [AppliancePage]
+/// and [ApplianceSheetPage].
 library;
 
 import 'package:flutter/foundation.dart';
@@ -15,6 +14,7 @@ import 'package:ui_core/ui_core.dart';
 import 'app.dart';
 import 'button.dart';
 import 'feedback.dart';
+import 'internal/state_plate.dart';
 import 'navigation.dart';
 import 'overlays.dart';
 import 'page_transitions.dart';
@@ -22,7 +22,7 @@ import 'text_field.dart';
 import 'theme.dart';
 
 /// One tab as an app declares it: its glyph, its name and the key on its
-/// hit target (a walkthrough presses it by that key).
+/// hit target (a test finds and presses it by that key).
 ///
 /// ```dart
 /// ApplianceTab(LucideIcons.house, 'Home', ValueKey('open-home'))
@@ -96,8 +96,10 @@ class ApplianceLoadingState extends StatelessWidget {
   }
 }
 
-/// A page's data that could not load: the danger lamp, what happened, and
-/// a key to try again.
+/// A page's data that could not load, the [ApplianceEmptyState]'s sibling:
+/// the same faceplate and display window, the window reading a fault code
+/// at full strength, the danger lamp lit beside what happened, and a key to
+/// try again.
 ///
 /// ```dart
 /// ApplianceErrorState(title: 'Could not load the orders', message: 'Check the connection.', onRetry: () {})
@@ -109,6 +111,7 @@ class ApplianceErrorState extends StatelessWidget {
     required this.title,
     this.message,
     this.onRetry,
+    this.reading = 'Err',
   });
 
   /// What failed.
@@ -120,24 +123,25 @@ class ApplianceErrorState extends StatelessWidget {
   /// Tries again; null: no key.
   final VoidCallback? onRetry;
 
+  /// What the window reads: an appliance's fault code.
+  final String reading;
+
   @override
-  Widget build(BuildContext context) => Center(
-    child: Padding(
-      padding: const EdgeInsets.symmetric(
-        vertical: ApplianceSpacing.extraLarge,
-      ),
-      child: ApplianceStatusView(
-        status: ApplianceStatus.error,
-        title: title,
-        message: message,
-        actions: [
-          if (onRetry != null)
-            ApplianceButton(
+  Widget build(BuildContext context) => Semantics(
+    container: true,
+    liveRegion: true,
+    child: ApplianceStatePlate(
+      reading: reading,
+      lit: true,
+      lamp: ApplianceTheme.of(context).colors.danger,
+      title: title,
+      message: message,
+      action: onRetry == null
+          ? null
+          : ApplianceButton(
               RawWidgetsLocalizations.of(context).retryButtonLabel,
               onPressed: onRetry,
             ),
-        ],
-      ),
     ),
   );
 
@@ -150,9 +154,9 @@ class ApplianceErrorState extends StatelessWidget {
   }
 }
 
-/// A one-line field as a generated page draws it: an [ApplianceTextField]
-/// with its [label] or [hint], hidden letters when [obscure], and an
-/// [error] under its well.
+/// A one-line field in short form: an [ApplianceTextField] with its
+/// [label] or [hint], hidden letters when [obscure], and an [error] under
+/// its well.
 ///
 /// ```dart
 /// ApplianceInput(key: const ValueKey('postcode'), label: 'Postcode', onChanged: (text) {})

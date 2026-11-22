@@ -339,6 +339,53 @@ class ApplianceDivider extends StatelessWidget {
   }
 }
 
+/// [child] (a row's words and controls) over [under] (the row's key),
+/// which fills it; with no [under], [child] alone.
+class _UnderWords extends StatelessWidget {
+  const _UnderWords({required this.under, required this.child});
+
+  final Widget? under;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => under == null
+      ? child
+      : Stack(
+          children: [
+            Positioned.fill(child: under!),
+            child,
+          ],
+        );
+}
+
+/// Holds the states of a row's key that lies under its words, so the face
+/// round both follows them.
+class _KeyedRow extends StatefulWidget {
+  const _KeyedRow({required this.builder});
+
+  final Widget Function(BuildContext context, WidgetStatesController states)
+  builder;
+
+  @override
+  State<_KeyedRow> createState() => _KeyedRowState();
+}
+
+class _KeyedRowState extends State<_KeyedRow> {
+  final WidgetStatesController _states = WidgetStatesController();
+
+  @override
+  void dispose() {
+    _states.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => ListenableBuilder(
+    listenable: _states,
+    builder: (context, _) => widget.builder(context, _states),
+  );
+}
+
 /// One row of an [ApplianceListGroup]: an optional [leading] glyph, a
 /// [title] and a [subtitle], and at the end a [trailingText] value, a
 /// [trailing] control or, when it opens something, a chevron.
@@ -347,7 +394,9 @@ class ApplianceDivider extends StatelessWidget {
 /// from the plate's edges with its own corners, and its keyboard bezel runs
 /// round that key inside the row (rows share their seams, so a bezel outside
 /// would sit on a neighbour). [selected] latches it down, as the current
-/// choice in a list.
+/// choice in a list. A [trailing] control on a key row stands inside the
+/// key, latched with it, yet stays a key of its own: a press on it, and a
+/// screen reader's, reaches it rather than the row.
 ///
 /// Reads [style]'s `fill` (in its states: pressed, selected), `foreground`,
 /// `padding`, `minimumSize` (its least height), `textStyle` (the title) and
@@ -419,7 +468,14 @@ class ApplianceListTile extends StatelessWidget {
     final theme = ApplianceTheme.of(context);
     final c = theme.colors;
     final named = semanticLabel != null;
-    Widget body(Set<WidgetState> states) {
+    // [under]: the row's key beneath its words, when a trailing control
+    // stands beside it in the same latched face (the words are its node's).
+    Widget body(Set<WidgetState> states, {Widget? under}) {
+      final quiet = named || under != null;
+      // Over the row's key, only the control takes a press: the words and
+      // glyphs let it through to the key beneath.
+      Widget passive(Widget part) =>
+          under == null ? part : IgnorePointer(child: part);
       final layered = DesignStyleOf(
         [style, theme.listTileStyle],
         {...states, if (selected) WidgetState.selected},
@@ -459,112 +515,129 @@ class ApplianceListTile extends StatelessWidget {
         child: AnimatedApplianceSurface(
           control: false,
           face: face,
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              minHeight:
-                  (layered.minimumSize?.height ?? (hasRoom ? 72 : 56)) -
-                  2 * keyInset,
-            ),
-            child: Padding(
-              padding:
-                  layered.padding(Directionality.of(context)) ??
-                  const EdgeInsets.symmetric(
-                    horizontal: ApplianceSpacing.medium,
-                    vertical: ApplianceSpacing.small,
-                  ),
-              // A value at the end takes its own width (up to under half the
-              // row), the title the rest, so a short value leaves the title
-              // the row.
-              child: LayoutBuilder(
-                builder: (context, box) => Row(
-                  children: [
-                    if (leading != null) ...[
-                      IconTheme.merge(
-                        data: IconThemeData(
-                          size: layered.iconSize ?? 20,
-                          color: disabled ? c.printDisabled : c.printMuted,
-                        ),
-                        child: SizedBox.square(
-                          dimension: 24,
-                          child: Center(child: leading),
-                        ),
-                      ),
-                      const SizedBox(width: ApplianceSpacing.medium),
-                    ],
-                    Expanded(
-                      child: ExcludeSemantics(
-                        excluding: named,
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            DesignCapCenter(
-                              capHeightFactor: theme.capHeightFactor,
-                              child: Text(
-                                title,
-                                style: layered.text(
-                                  theme.textTheme.body.copyWith(
-                                    color: ink,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            if (subtitle != null)
-                              Padding(
-                                padding: const EdgeInsets.only(
-                                  top: ApplianceSpacing.tight / 2,
-                                ),
-                                child: Text(
-                                  subtitle!,
-                                  style: theme.textTheme.secondary.copyWith(
-                                    color: muted,
-                                  ),
-                                ),
-                              ),
-                          ],
-                        ),
-                      ),
+          child: _UnderWords(
+            under: under,
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minHeight:
+                    (layered.minimumSize?.height ?? (hasRoom ? 72 : 56)) -
+                    2 * keyInset,
+              ),
+              child: Padding(
+                padding:
+                    layered.padding(Directionality.of(context)) ??
+                    const EdgeInsets.symmetric(
+                      horizontal: ApplianceSpacing.medium,
+                      vertical: ApplianceSpacing.small,
                     ),
-                    if (trailingText != null) ...[
-                      const SizedBox(width: ApplianceSpacing.medium),
-                      ConstrainedBox(
-                        constraints: BoxConstraints(
-                          maxWidth: box.maxWidth.isFinite
-                              ? box.maxWidth * 0.45
-                              : double.infinity,
-                        ),
-                        child: ExcludeSemantics(
-                          excluding: named,
-                          child: Text(
-                            trailingText!,
-                            textAlign: TextAlign.end,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: theme.textTheme.body.copyWith(color: muted),
+                // A value at the end takes its own width (up to under half the
+                // row), the title the rest, so a short value leaves the title
+                // the row.
+                child: LayoutBuilder(
+                  builder: (context, box) => Row(
+                    children: [
+                      if (leading != null) ...[
+                        passive(
+                          ExcludeSemantics(
+                            excluding: under != null,
+                            child: IconTheme.merge(
+                              data: IconThemeData(
+                                size: layered.iconSize ?? 20,
+                                color: disabled
+                                    ? c.printDisabled
+                                    : c.printMuted,
+                              ),
+                              child: SizedBox.square(
+                                dimension: 24,
+                                child: Center(child: leading),
+                              ),
+                            ),
                           ),
                         ),
-                      ),
-                    ],
-                    if (trailing != null) ...[
-                      const SizedBox(width: ApplianceSpacing.medium),
-                      trailing!,
-                    ],
-                    if (chevron) ...[
-                      const SizedBox(width: ApplianceSpacing.small),
-                      Transform.flip(
-                        flipX: Directionality.of(context) == TextDirection.rtl,
-                        child: SizedBox.square(
-                          dimension: 16,
-                          child: CustomPaint(
-                            painter: ApplianceChevronPainter(
-                              disabled ? c.printDisabled : c.printMuted,
+                        const SizedBox(width: ApplianceSpacing.medium),
+                      ],
+                      Expanded(
+                        child: passive(
+                          ExcludeSemantics(
+                            excluding: quiet,
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                DesignCapCenter(
+                                  capHeightFactor: theme.capHeightFactor,
+                                  child: Text(
+                                    title,
+                                    style: layered.text(
+                                      theme.textTheme.body.copyWith(
+                                        color: ink,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                if (subtitle != null)
+                                  Padding(
+                                    padding: const EdgeInsets.only(
+                                      top: ApplianceSpacing.tight / 2,
+                                    ),
+                                    child: Text(
+                                      subtitle!,
+                                      style: theme.textTheme.secondary.copyWith(
+                                        color: muted,
+                                      ),
+                                    ),
+                                  ),
+                              ],
                             ),
                           ),
                         ),
                       ),
+                      if (trailingText != null) ...[
+                        const SizedBox(width: ApplianceSpacing.medium),
+                        ConstrainedBox(
+                          constraints: BoxConstraints(
+                            maxWidth: box.maxWidth.isFinite
+                                ? box.maxWidth * 0.45
+                                : double.infinity,
+                          ),
+                          child: passive(
+                            ExcludeSemantics(
+                              excluding: quiet,
+                              child: Text(
+                                trailingText!,
+                                textAlign: TextAlign.end,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: theme.textTheme.body.copyWith(
+                                  color: muted,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                      if (trailing != null) ...[
+                        const SizedBox(width: ApplianceSpacing.medium),
+                        trailing!,
+                      ],
+                      if (chevron) ...[
+                        const SizedBox(width: ApplianceSpacing.small),
+                        Transform.flip(
+                          flipX:
+                              Directionality.of(context) == TextDirection.rtl,
+                          child: SizedBox.square(
+                            dimension: 16,
+                            child: CustomPaint(
+                              painter: ApplianceChevronPainter(
+                                disabled ? c.printDisabled : c.printMuted,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ],
-                  ],
+                  ),
                 ),
               ),
             ),
@@ -580,6 +653,26 @@ class ApplianceListTile extends StatelessWidget {
         label: semanticLabel,
         value: named ? trailingText : null,
         child: body({if (!enabled) WidgetState.disabled}),
+      );
+    }
+    if (trailing != null) {
+      // The row's key lies under its words, the control on top: the latched
+      // face takes both, the control keeps its own press and node.
+      return _KeyedRow(
+        builder: (context, controller) => body(
+          controller.value,
+          under: RawButton(
+            onPressed: enabled ? onTap : null,
+            statesController: controller,
+            selected: selected,
+            semanticSelected: selected ? true : null,
+            semanticLabel:
+                semanticLabel ??
+                (subtitle == null ? title : '$title\n$subtitle'),
+            semanticValue: trailingText,
+            builder: (context, states, _) => const SizedBox.expand(),
+          ),
+        ),
       );
     }
     return RawButton(
@@ -607,7 +700,7 @@ class ApplianceListTile extends StatelessWidget {
 /// something. Flip it for right-to-left text.
 class ApplianceChevronPainter extends CustomPainter {
   /// A chevron in [color].
-  ApplianceChevronPainter(this.color);
+  const ApplianceChevronPainter(this.color);
 
   /// Its colour.
   final Color color;

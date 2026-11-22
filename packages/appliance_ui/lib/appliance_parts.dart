@@ -20,4 +20,5 @@ export 'src/appliance/internal/glyphs.dart';
 export 'src/appliance/internal/keep_in_view.dart';
 export 'src/appliance/internal/menu_paint.dart';
 export 'src/appliance/internal/spring_value.dart';
+export 'src/appliance/internal/state_plate.dart';
 export 'src/appliance/internal/type_ahead.dart';

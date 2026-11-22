@@ -980,7 +980,11 @@ final DesignInventory applianceInventory = DesignInventory(
           const RawMenuEntry(label: 'Track', onPressed: _none),
           const RawMenuEntry(label: 'Reorder', onPressed: _none),
           const RawMenuEntry.divider(),
-          const RawMenuEntry(label: 'Cancel', onPressed: _none),
+          const RawMenuEntry(
+            label: 'Cancel',
+            isDestructiveAction: true,
+            onPressed: _none,
+          ),
         ],
         builder: (context, anchor) => ApplianceIconButton(
           icon: const Icon(LucideIcons.ellipsis),

@@ -25,7 +25,7 @@ import 'words.dart';
 /// Where the app opens.
 enum LarderPlace { home, shop, basket, orders, settings, overview }
 
-/// A state of a place Larder can open straight onto, as a link or the sweep
+/// A state of a place Larder can open straight onto, as a link or a test
 /// of its everyday screens does.
 enum LarderScene {
   /// A product's page over Shop.

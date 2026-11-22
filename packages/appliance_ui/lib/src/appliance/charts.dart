@@ -64,11 +64,12 @@ List<Color> _traces(ApplianceColors c) => _lcd(c)
 Color _faint(ApplianceColors c, double night) =>
     c.onDisplay.withValues(alpha: _lcd(c) ? math.max(night, 0.76) : night);
 
-/// A figure with no needless decimals.
-String _plain(double v) {
-  if (v == v.roundToDouble()) return v.toInt().toString();
-  return v.toStringAsFixed(v.abs() < 10 ? 1 : 0);
-}
+/// A figure with no needless decimals, in the reader's digits.
+String _plain(BuildContext context, double v) =>
+    RawWidgetsLocalizations.of(context).formatDecimal(
+      v,
+      fractionDigits: v == v.roundToDouble() || v.abs() >= 10 ? 0 : 1,
+    );
 
 /// The window a chart stands in, and what it shows while loading or empty.
 class _Window extends StatelessWidget {
@@ -131,9 +132,12 @@ class _Idle extends StatelessWidget {
           : Column(
               mainAxisSize: MainAxisSize.min,
               children: [
+                // The dashes are a reading, not words: they keep their
+                // size as the text grows, so the words under them fit.
                 ExcludeSemantics(
                   child: Text(
                     '- - -',
+                    textScaler: TextScaler.noScaling,
                     style: theme.textTheme.display.copyWith(
                       color: c.onDisplay.withValues(alpha: 0.45),
                     ),
@@ -226,7 +230,7 @@ class _SeriesChartState extends State<_SeriesChart> {
     super.dispose();
   }
 
-  String _text(double v) => widget.valueText?.call(v) ?? _plain(v);
+  String _text(double v) => widget.valueText?.call(v) ?? _plain(context, v);
 
   int get _count => widget.labels.length;
 
@@ -893,9 +897,10 @@ class _ApplianceDonutChartState extends State<ApplianceDonutChart> {
       widget.slices.fold<double>(0, (sum, s) => sum + math.max(0.0, s.$2));
 
   String _share(double v) =>
-      _total <= 0 ? '0%' : '${(v / _total * 100).round()}%';
+      RawWidgetsLocalizations.of(context)
+          .formatPercent(_total <= 0 ? 0 : v / _total);
 
-  String _text(double v) => widget.valueText?.call(v) ?? _plain(v);
+  String _text(double v) => widget.valueText?.call(v) ?? _plain(context, v);
 
   @override
   Widget build(BuildContext context) {

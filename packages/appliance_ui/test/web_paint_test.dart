@@ -1,8 +1,8 @@
-// What Appliance paints must look the same in a browser. Flutter 3.47's web
-// renderer fills a Path.combine difference or intersection whose result has
-// a hole as the whole first path: a well, a bezel or a ring cut that way
-// stands solid in a browser while the tests' renderer shows nothing wrong
-// (Appliance's wells did, at M1). A ring or a cut-out is a DRRect, two nested
+// What Appliance paints looks the same in a browser as in the tests.
+// Flutter's web renderer fills a Path.combine difference or intersection
+// whose result has a hole as the whole first path: a well, a bezel or a
+// ring cut that way would stand solid in a browser while the tests'
+// renderer shows nothing wrong. A ring or a cut-out is a DRRect, two nested
 // outlines filled even-odd, or a clip; nothing in lib combines paths.
 import 'dart:io';
 

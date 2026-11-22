@@ -250,14 +250,16 @@ ApplianceFace _keyFace(
     case _ButtonKind.key:
       if (disabled) {
         return ApplianceFace.key(c)
-            .copyWith(lift: 0.35, foreground: legend, focus: focus);
+            .asDisabled(c)
+            .copyWith(foreground: legend, focus: focus);
       }
       return (pressed ? ApplianceFace.keyDown(c) : ApplianceFace.key(c))
           .copyWith(foreground: legend, focus: focus);
     case _ButtonKind.filled:
       if (disabled) {
         return ApplianceFace.key(c)
-            .copyWith(lift: 0.35, foreground: legend, focus: focus);
+            .asDisabled(c)
+            .copyWith(foreground: legend, focus: focus);
       }
       final top = destructive ? c.danger : c.signalTop;
       final bottom = destructive

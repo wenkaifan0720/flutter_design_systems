@@ -819,6 +819,26 @@ class ApplianceTextTheme with Diagnosticable {
     figure: figure ?? this.figure,
   );
 
+  /// These styles moved from [from] to [to]: a style in [from]'s print or
+  /// muted print takes [to]'s; its face, sizes and any other colour stay.
+  ApplianceTextTheme _recoloured(ApplianceColors from, ApplianceColors to) {
+    TextStyle on(TextStyle style) => style.color == from.print
+        ? style.copyWith(color: to.print)
+        : style.color == from.printMuted
+        ? style.copyWith(color: to.printMuted)
+        : style;
+    return ApplianceTextTheme(
+      display: on(display),
+      title: on(title),
+      heading: on(heading),
+      body: on(body),
+      secondary: on(secondary),
+      label: on(label),
+      legend: on(legend),
+      figure: on(figure),
+    );
+  }
+
   /// Between [a] and [b] by [t].
   static ApplianceTextTheme lerp(
     ApplianceTextTheme a,
@@ -1079,15 +1099,14 @@ class ApplianceThemeData with Diagnosticable {
   /// The typeface's cap height as a fraction of its size.
   double get capHeightFactor => applianceCapHeightFactor;
 
-  /// A page's first heading, as generated pages name it: the
-  /// [ApplianceTextTheme.title] style.
+  /// A page's first heading: the [ApplianceTextTheme.title] style.
   TextStyle get h1 => textTheme.title;
 
-  /// Running copy, as generated pages name it: the [ApplianceTextTheme.body]
-  /// style.
+  /// Running copy: the [ApplianceTextTheme.body] style.
   TextStyle get body => textTheme.body;
 
-  /// A copy with the given settings replaced.
+  /// A copy with the given settings replaced. New [colors] with no
+  /// [textTheme] recolour the text theme, keeping its face and sizes.
   ApplianceThemeData copyWith({
     ApplianceColors? colors,
     ApplianceTextTheme? textTheme,
@@ -1125,7 +1144,9 @@ class ApplianceThemeData with Diagnosticable {
     colors: colors ?? this.colors,
     textTheme:
         textTheme ??
-        (colors == null ? this.textTheme : ApplianceTextTheme.of(colors)),
+        (colors == null
+            ? this.textTheme
+            : this.textTheme._recoloured(this.colors, colors)),
     density: density ?? this.density,
     texture: texture ?? this.texture,
     buttonStyle: buttonStyle ?? this.buttonStyle,

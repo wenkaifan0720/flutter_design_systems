@@ -226,7 +226,7 @@ class ApplianceDestination {
   /// window; null: none.
   final String? badge;
 
-  /// The key on its hit target (a walkthrough presses it by that key).
+  /// The key on its hit target (a test finds and presses it by that key).
   final Key? key;
 }
 
@@ -1114,8 +1114,15 @@ class ApplianceScaffold extends StatelessWidget {
     final top = header;
     // The body is a semantics container of its own, so a navigator in it (a
     // router's shell) hides only what lies under its page, never the places
-    // beside it or below it.
-    final page = Semantics(container: true, child: body);
+    // beside it or below it. Routes under it keep nodes of their own, as
+    // the app's navigator's do: otherwise a pushed route's node forms only
+    // when a list opens over it, and on the web the focused field's input
+    // moves into that node and loses the focus the tap just gave it.
+    final page = Semantics(
+      container: true,
+      explicitChildNodes: true,
+      child: body,
+    );
     if (width < 600) {
       // A phone's strip stays Appliance's: the act key stands in it, and
       // ui_core's bar is a tab bar that holds only tabs.

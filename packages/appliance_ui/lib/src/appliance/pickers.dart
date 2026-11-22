@@ -127,9 +127,10 @@ Widget _failed(BuildContext context, RawSearchError error) {
   );
 }
 
-/// A combobox: a well that suggests as you type. The suggestions open on a
-/// plate under it, the one chosen with its lamp lit; the pointer and the
-/// arrows light the same row; Enter takes it and the field keeps the focus.
+/// A combobox: a well that suggests as you type, the select's up-and-down
+/// legend at its end. The suggestions open on a plate under it, the one
+/// chosen with its lamp lit; the pointer and the arrows light the same row;
+/// Enter takes it and the field keeps the focus.
 ///
 /// [options] are filtered by the words; [search] looks them up instead (it
 /// may be async: [debounceDuration] lets the typing rest first; while it
@@ -313,20 +314,27 @@ class _ApplianceComboboxState<T extends Object>
               child: AnimatedApplianceSurface(
                 face: layered.on(_wellFace(c, states, error: error)),
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: ApplianceSpacing.medium,
+                  padding: const EdgeInsetsDirectional.only(
+                    start: ApplianceSpacing.medium,
                   ),
-                  child: DesignCapCenter(
-                    capHeightFactor: theme.capHeightFactor,
-                    child: ApplianceBareField(
-                      controller: field.controller,
-                      focusNode: field.focusNode,
-                      minHeight: theme.controlHeight,
-                      hint: widget.hint,
-                      semanticLabel: widget.semanticLabel ?? widget.label,
-                      enabled: widget.enabled,
-                      onEditingComplete: field.submit,
-                    ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: DesignCapCenter(
+                          capHeightFactor: theme.capHeightFactor,
+                          child: ApplianceBareField(
+                            controller: field.controller,
+                            focusNode: field.focusNode,
+                            minHeight: theme.controlHeight,
+                            hint: widget.hint,
+                            semanticLabel: widget.semanticLabel ?? widget.label,
+                            enabled: widget.enabled,
+                            onEditingComplete: field.submit,
+                          ),
+                        ),
+                      ),
+                      _ListLegend(field: field, enabled: widget.enabled),
+                    ],
                   ),
                 ),
               ),
@@ -335,6 +343,48 @@ class _ApplianceComboboxState<T extends Object>
         ),
         ApplianceFieldMessage(helper: widget.helper, error: widget.error),
       ],
+    );
+  }
+}
+
+/// The select's up-and-down legend at the end of a combobox's well: it says
+/// the well opens a list, and a press on it opens the list as a press on
+/// the words does. The well's own node is the one a screen reader uses.
+class _ListLegend extends StatelessWidget {
+  const _ListLegend({required this.field, required this.enabled});
+
+  final DesignComboboxField field;
+  final bool enabled;
+
+  void _open(BuildContext context) {
+    if (!field.focusNode.hasFocus) {
+      field.focusNode.requestFocus();
+      return;
+    }
+    // A closed list opens without moving its highlight.
+    Actions.maybeInvoke<Intent>(context, const AutocompleteNextOptionIntent());
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final c = ApplianceTheme.of(context).colors;
+    return ExcludeSemantics(
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: enabled ? () => _open(context) : null,
+        child: Padding(
+          padding: const EdgeInsetsDirectional.only(
+            start: ApplianceSpacing.small,
+            end: ApplianceSpacing.medium,
+          ),
+          child: CustomPaint(
+            size: ApplianceUpDownPainter.size,
+            painter: ApplianceUpDownPainter(
+              enabled ? c.printMuted : c.printDisabled,
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
@@ -579,12 +629,12 @@ class _TagKey extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = ApplianceTheme.of(context);
     final c = theme.colors;
-    final face =
-        ApplianceFace.key(
-          c,
-          radius: ApplianceMetrics.wellRadius - ApplianceSpacing.small,
-        ).copyWith(
-          lift: enabled ? 0.8 : 0.35,
+    final key = ApplianceFace.key(
+      c,
+      radius: ApplianceMetrics.wellRadius - ApplianceSpacing.small,
+    );
+    final face = (enabled ? key.copyWith(lift: 0.8) : key.asDisabled(c))
+        .copyWith(
           foreground: enabled ? c.print : c.printDisabled,
           focus: focused ? c.focus : c.focus.withValues(alpha: 0),
         );
@@ -654,7 +704,8 @@ class _TagKey extends StatelessWidget {
 /// A chip: a small key. With [onSelected] it latches (a filter, a choice):
 /// down, its lamp lit, until pressed again. With [onDeleted] it carries a
 /// remove key (a choice made, a recipient). A chip with neither is shown
-/// only.
+/// only; a [selected] one with no [onSelected] stays latched down and takes
+/// no presses, as a disabled `FilterChip` keeps its selected state.
 ///
 /// ```dart
 /// ApplianceChip('In stock', selected: true, onSelected: (on) {})
@@ -676,10 +727,11 @@ class ApplianceChip extends StatelessWidget {
   /// Its words.
   final String label;
 
-  /// Whether it is latched down.
+  /// Whether it is latched down, whether or not it takes presses.
   final bool selected;
 
-  /// Called with its new state when pressed; null: it does not latch.
+  /// Called with its new state when pressed; null: it takes no presses (a
+  /// [selected] chip stays down, disabled; any other is shown only).
   final ValueChanged<bool>? onSelected;
 
   /// Removes it; null: no remove key.
@@ -720,24 +772,24 @@ class ApplianceChip extends StatelessWidget {
       words.height + 2 * ApplianceSpacing.tight,
     );
     words.dispose();
-    final latches = onSelected != null;
+    // A selected chip keeps its latched key even when it takes no presses.
+    final latches = onSelected != null || selected;
     Widget body(Set<WidgetState> states) {
       final layered = DesignStyleOf([style, theme.chipStyle], states);
       final down =
           (latches && selected) || states.contains(WidgetState.pressed);
       final disabled = states.contains(WidgetState.disabled);
+      final base = down
+          ? ApplianceFace.keyDown(c, radius: height / 2)
+          : ApplianceFace.key(c, radius: height / 2);
       final face = layered.on(
-        (down
-                ? ApplianceFace.keyDown(c, radius: height / 2)
-                : ApplianceFace.key(c, radius: height / 2))
-            .copyWith(
-              lift: disabled && !down ? 0.35 : null,
-              foreground: disabled ? c.printDisabled : c.print,
-              // Focus lights a latching chip's bezel, selected or not: the
-              // lamp means selected, and a half-lit lamp would read as half
-              // selected.
-              focus: applianceLitFocus(c, states, lit: latches && !disabled),
-            ),
+        (disabled && !down ? base.asDisabled(c) : base).copyWith(
+          foreground: disabled ? c.printDisabled : c.print,
+          // Focus lights a latching chip's bezel, selected or not: the
+          // lamp means selected, and a half-lit lamp would read as half
+          // selected.
+          focus: applianceLitFocus(c, states, lit: latches && !disabled),
+        ),
       );
       final content = Padding(
         padding: EdgeInsetsDirectional.only(
@@ -750,10 +802,13 @@ class ApplianceChip extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             if (latches) ...[
+              // Out of use, a selected chip's lamp stays lit in the disabled
+              // print, as a radio's does.
               ApplianceControlLamp(
-                lit: selected && !disabled,
+                lit: selected,
                 states: states.difference(const {WidgetState.focused}),
                 size: ApplianceMetrics.lampSize - 2,
+                color: disabled ? c.printDisabled : null,
               ),
               const SizedBox(width: ApplianceSpacing.small),
             ],
@@ -840,7 +895,9 @@ class ApplianceChip extends StatelessWidget {
       );
     }
     return RawButton(
-      onPressed: enabled ? () => onSelected!(!selected) : null,
+      onPressed: enabled && onSelected != null
+          ? () => onSelected!(!selected)
+          : null,
       selected: selected,
       // A button that is selected, as a Material filter chip reads.
       semanticSelected: selected,
@@ -970,13 +1027,11 @@ class ApplianceDropZone extends StatelessWidget {
               semanticLabel: buttonLabel,
               excludeSemantics: true,
               builder: (context, states, _) {
-                final face = ApplianceFace.key(c).copyWith(
-                  lift: !enabled
-                      ? 0.35
-                      : states.contains(WidgetState.pressed)
-                      ? -0.7
-                      : 1,
-                  travel: states.contains(WidgetState.pressed) ? 1 : 0,
+                final pressed = states.contains(WidgetState.pressed);
+                final key = ApplianceFace.key(
+                  c,
+                ).copyWith(lift: pressed ? -0.7 : 1, travel: pressed ? 1 : 0);
+                final face = (enabled ? key : key.asDisabled(c)).copyWith(
                   foreground: enabled ? c.print : c.printDisabled,
                   focus: states.contains(WidgetState.focused)
                       ? c.focus
