@@ -5,8 +5,11 @@
 library;
 
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
@@ -216,7 +219,8 @@ class RawToaster extends StatefulWidget {
   /// Where the stack sits.
   final AlignmentGeometry alignment;
 
-  /// Space between the stack and the screen's edge (inside the safe area).
+  /// Space between the stack and the screen's edge (inside the safe area),
+  /// or a bar along that edge that a [RawToasterKeepClear] keeps clear.
   final EdgeInsetsGeometry padding;
 
   /// The stack's size limits.
@@ -386,6 +390,44 @@ class RawToasterState extends State<RawToaster> with TickerProviderStateMixin {
   // The F6 cycle the toaster's toasts are a pane of.
   final GlobalKey<PaneCycleState> _cycle = GlobalKey();
   // 0.3.0 routes end
+
+  // What the parts kept clear cover of the toaster's top and bottom
+  // edges ([RawToasterKeepClear]), each part's, and the most of them.
+  final Map<Object, (double, double)> _kept = {};
+  double _clearTop = 0;
+  double _clearBottom = 0;
+
+  void _keepClear(Object part, double top, double bottom) {
+    if (_kept[part] == (top, bottom)) return;
+    _kept[part] = (top, bottom);
+    _clearChanged();
+  }
+
+  void _letGo(Object part) {
+    if (_kept.remove(part) != null) _clearChanged();
+  }
+
+  void _clearChanged() {
+    var top = 0.0;
+    var bottom = 0.0;
+    for (final (t, b) in _kept.values) {
+      top = math.max(top, t);
+      bottom = math.max(bottom, b);
+    }
+    if (top == _clearTop && bottom == _clearBottom) return;
+    _clearTop = top;
+    _clearBottom = bottom;
+    // With nothing shown, the next toast's build reads it.
+    if (!mounted || (_shown.isEmpty && _waiting.isEmpty)) return;
+    if (SchedulerBinding.instance.schedulerPhase ==
+        SchedulerPhase.persistentCallbacks) {
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        if (mounted) setState(() {});
+      });
+    } else {
+      setState(() {});
+    }
+  }
 
   /// How many toasts are shown, leaving ones included.
   int get shownCount => _shown.length;
@@ -746,6 +788,8 @@ class RawToasterState extends State<RawToaster> with TickerProviderStateMixin {
         app,
         Positioned.fill(
           child: SafeArea(
+            // A bar kept clear takes the safe inset on its edge.
+            minimum: EdgeInsets.only(top: _clearTop, bottom: _clearBottom),
             child: Padding(
               padding: widget.padding,
               child: Align(
@@ -764,6 +808,106 @@ class RawToasterState extends State<RawToaster> with TickerProviderStateMixin {
     // F6 and Shift+F6 cycle the panes: the toasts, and a shell's below.
     return PaneCycle(key: _cycle, child: toaster);
     // 0.3.0 routes end
+  }
+}
+
+/// Keeps the nearest [RawToaster]'s toasts clear of [child]: a bar along
+/// the bottom (a tab bar, a bottom app bar, a docked composer) keeps them
+/// above it, and one along the top keeps them below it, as Material's
+/// `Scaffold` keeps a snackbar above its bottom navigation bar. It reads how
+/// much of the toaster's bottom or top edge [child] covers each frame it is
+/// laid out or painted, so the toasts follow a bar that springs in or away,
+/// and lets go as it leaves the tree. A part that reaches neither edge, or
+/// both (a rail, a sidebar), keeps nothing clear. The covered edge takes
+/// the place of the screen's safe inset there (a bar takes that inset
+/// itself); [RawToaster.padding] stays between the bar and the toasts.
+/// `DesignAdaptiveShell` keeps its navigation clear.
+///
+/// ```dart
+/// Column(
+///   children: [
+///     const Expanded(child: Text('Messages')),
+///     RawToasterKeepClear(
+///       child: SafeArea(
+///         top: false,
+///         child: SizedBox(height: 56, child: Text('Composer')),
+///       ),
+///     ),
+///   ],
+/// )
+/// ```
+class RawToasterKeepClear extends SingleChildRenderObjectWidget {
+  /// Keeps the nearest toaster's toasts clear of [child].
+  const RawToasterKeepClear({super.key, super.child});
+
+  @override
+  RenderObject createRenderObject(BuildContext context) =>
+      _RenderKeepClear(RawToaster.maybeOf(context));
+
+  @override
+  void updateRenderObject(BuildContext context, RenderObject renderObject) {
+    (renderObject as _RenderKeepClear).toaster = RawToaster.maybeOf(context);
+  }
+}
+
+class _RenderKeepClear extends RenderProxyBox {
+  _RenderKeepClear(this._toaster);
+
+  RawToasterState? _toaster;
+  set toaster(RawToasterState? value) {
+    if (identical(value, _toaster)) return;
+    _toaster?._letGo(this);
+    _toaster = value;
+    _measure();
+  }
+
+  bool _measuring = false;
+
+  // After the frame's layout and paint: where the part stands then.
+  void _measure() {
+    if (_measuring) return;
+    _measuring = true;
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      _measuring = false;
+      _report();
+    });
+  }
+
+  void _report() {
+    final toaster = _toaster;
+    if (toaster == null || !toaster.mounted || !attached || !hasSize) return;
+    final area = toaster.context.findRenderObject();
+    if (area is! RenderBox || !area.hasSize || !area.attached) return;
+    final rect = MatrixUtils.transformRect(
+      getTransformTo(area),
+      Offset.zero & size,
+    );
+    final height = area.size.height;
+    final top = rect.top <= 0.5;
+    final bottom = rect.bottom >= height - 0.5;
+    toaster._keepClear(
+      this,
+      top && !bottom ? rect.bottom.clamp(0.0, height) : 0,
+      bottom && !top ? (height - rect.top).clamp(0.0, height) : 0,
+    );
+  }
+
+  @override
+  void performLayout() {
+    super.performLayout();
+    _measure();
+  }
+
+  @override
+  void paint(PaintingContext context, Offset offset) {
+    super.paint(context, offset);
+    _measure();
+  }
+
+  @override
+  void detach() {
+    _toaster?._letGo(this);
+    super.detach();
   }
 }
 

@@ -1,4 +1,6 @@
 // DesignListSideCheck: a list opens below its field while below holds it.
+import 'dart:math' as math;
+
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ui_core_test/ui_core_test.dart';
@@ -148,5 +150,92 @@ void main() {
           .problems,
       isEmpty,
     );
+  });
+
+  // A popover from a field whose foot stands [below] px over the screen's
+  // foot, its surface [extent] px high.
+  Future<(DesignAlignmentReport, Rect, Rect)> openAt(
+    WidgetTester tester, {
+    required double below,
+    required double extent,
+    required RawPopoverPlacement placement,
+  }) async {
+    tester.view
+      ..devicePixelRatio = 1
+      ..physicalSize = const Size(390, 844);
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(
+      harness(
+        Align(
+          alignment: Alignment.topLeft,
+          child: Padding(
+            padding: EdgeInsets.only(top: 844 - below - 44, left: 16),
+            child: RawPopover(
+              placement: placement,
+              anchorBuilder: (context, anchor) => RawButton(
+                onPressed: anchor.toggle,
+                builder: (context, states, _) => const SizedBox(
+                  key: _fieldKey,
+                  width: 320,
+                  height: 44,
+                  child: Text('Due'),
+                ),
+              ),
+              overlayBuilder: (context, info) => SizedBox(
+                key: const ValueKey('surface'),
+                width: 300,
+                height: math.min(extent, info.maxSize.height),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.byKey(_fieldKey));
+    await tester.pumpAndSettle();
+    return (
+      const DesignListSideCheck(look: 'Test')
+          .check(tester.element(find.byType(WidgetsApp))),
+      tester.getRect(find.byKey(_fieldKey)),
+      tester.getRect(find.byKey(const ValueKey('surface'))),
+    );
+  }
+
+  testWidgets("a month that fits whole only above opens there and passes, "
+      'though below holds 200 px of it (RawPopoverFit.whole)', (tester) async {
+    final (report, field, month) = await openAt(
+      tester,
+      below: 250,
+      extent: 300,
+      placement: const RawPopoverPlacement(fit: RawPopoverFit.whole),
+    );
+    expect(month.bottom, lessThanOrEqualTo(field.top), reason: 'above');
+    expect(month.height, 300, reason: 'whole');
+    expect(report.problems, isEmpty);
+  });
+
+  testWidgets('a month that fits whole below opens there and passes', (
+    tester,
+  ) async {
+    final (report, field, month) = await openAt(
+      tester,
+      below: 340,
+      extent: 300,
+      placement: const RawPopoverPlacement(fit: RawPopoverFit.whole),
+    );
+    expect(month.top, greaterThanOrEqualTo(field.bottom), reason: 'below');
+    expect(report.problems, isEmpty);
+  });
+
+  testWidgets("a list that asks for 300 px below opens above where below "
+      'holds 250, and passes (its preferredExtent)', (tester) async {
+    final (report, field, list) = await openAt(
+      tester,
+      below: 250,
+      extent: 360,
+      placement: const RawPopoverPlacement(preferredExtent: 300),
+    );
+    expect(list.bottom, lessThanOrEqualTo(field.top), reason: 'above');
+    expect(report.problems, isEmpty);
   });
 }

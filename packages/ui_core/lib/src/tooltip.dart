@@ -395,8 +395,9 @@ class _DesignTooltipState extends State<DesignTooltip>
 
   void _focusChanged(bool focused) {
     // The keys' focus shows the tip; a pointer's does not (a dialog a click
-    // opened, its safe action focused), as for :focus-visible.
-    _focused = focused && DesignFocusVisible.shown;
+    // opened, its safe action focused), as for :focus-visible, nor focus
+    // given back as a dialog closes.
+    _focused = focused && DesignFocusVisible.keyboardArrival;
     if (_focused) {
       _show();
     } else {

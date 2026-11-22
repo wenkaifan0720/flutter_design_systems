@@ -7,6 +7,8 @@
 /// held equal when the two are exported: change the source, never a copy.
 library;
 
+import 'dart:math' as math;
+
 import 'package:flutter/rendering.dart';
 
 /// The line [root] shows: its text entry's editable when it holds one (its
@@ -137,9 +139,61 @@ TextStyle? lineStyle(RenderBox line) {
 
 /// [line]'s first baseline as laid out, from its top; null when it holds
 /// widgets inline.
+///
+/// Measured afresh, as the line lays its words out, in the fonts the engine
+/// has now. A line's dry baseline comes from a second painter Flutter keeps
+/// for intrinsics, which a font that arrives after the first layout (a web
+/// font) does not lay out again: it gives the fallback font's baseline, or
+/// fails Flutter's debug check against a fresh measure as it is read.
 double? laidBaseline(RenderBox line) {
   if (holdsWidgets(line) || !line.hasSize) return null;
-  return line.getDryBaseline(line.constraints, TextBaseline.alphabetic);
+  final painter = switch (line) {
+    final RenderParagraph p =>
+      TextPainter(
+        text: p.text,
+        textAlign: p.textAlign,
+        textDirection: p.textDirection,
+        textScaler: p.textScaler,
+        maxLines: p.maxLines,
+        ellipsis: p.overflow == TextOverflow.ellipsis ? '\u2026' : null,
+        locale: p.locale,
+        strutStyle: p.strutStyle,
+        textWidthBasis: p.textWidthBasis,
+        textHeightBehavior: p.textHeightBehavior,
+      )..layout(
+        minWidth: p.constraints.minWidth,
+        maxWidth: p.softWrap || p.overflow == TextOverflow.ellipsis
+            ? p.constraints.maxWidth
+            : double.infinity,
+      ),
+    // An editable lays out one line unbounded, more inside its width less
+    // its caret's.
+    RenderEditable(:final text?) && final e =>
+      TextPainter(
+        text: text,
+        textAlign: e.textAlign,
+        textDirection: e.textDirection,
+        textScaler: e.textScaler,
+        maxLines: e.maxLines == 1 ? 1 : null,
+        locale: e.locale,
+        strutStyle: e.strutStyle,
+        textWidthBasis: e.textWidthBasis,
+        textHeightBehavior: e.textHeightBehavior,
+      )..layout(
+        maxWidth: e.maxLines == 1
+            ? double.infinity
+            : math.max(0.0, e.constraints.maxWidth - e.cursorWidth - 1),
+      ),
+    _ => null,
+  };
+  if (painter == null) {
+    return line.getDryBaseline(line.constraints, TextBaseline.alphabetic);
+  }
+  try {
+    return painter.computeDistanceToActualBaseline(TextBaseline.alphabetic);
+  } finally {
+    painter.dispose();
+  }
 }
 
 // The font size the first words of [span] are set in, unscaled (an empty

@@ -35,13 +35,19 @@ jobs:
           BASE: ${{ github.base_ref }}
           ONLY: ${{ inputs.packages }}
         run: |
-          all=$(for d in packages/*/; do basename "$d"; done)
+          # The workspace's members: every package, or, while the looks move to a new ui_core minor, the core packages
+          # and the looks on it (a look out of the root pubspec's list can't resolve; it rejoins with its release).
+          if grep -qE '^  - packages/\*' pubspec.yaml; then
+            all=$(for d in packages/*/; do basename "$d"; done)
+          else
+            all=$(sed -nE 's#^  - packages/([^/]+)$#\1#p' pubspec.yaml)
+          fi
           if [ "$EVENT" = "pull_request" ]; then
             changed=$(git diff --name-only "origin/$BASE...HEAD")
             if echo "$changed" | grep -qE '^(packages/ui_core/|pubspec\.yaml$|\.github/)'; then
               pick="$all"
             else
-              pick=$(echo "$changed" | sed -nE 's#^packages/([^/]+)/.*#\1#p' | sort -u)
+              pick=$(echo "$changed" | sed -nE 's#^packages/([^/]+)/.*#\1#p' | sort -u | grep -xF "$all" || true)
             fi
           elif [ -n "$ONLY" ] && [ "$ONLY" != "all" ]; then
             pick=$(echo "$ONLY" | tr ',' '\n' | tr -d ' ')
@@ -50,6 +56,7 @@ jobs:
           fi
           for p in $pick; do
             [ -d "packages/$p" ] || { echo "No package named $p"; exit 1; }
+            echo "$all" | grep -qxF "$p" || { echo "packages/$p is not in the workspace (it rejoins with its release)"; exit 1; }
           done
           # A package whose suite outgrows one runner's memory is split into parts (flutter test --total-shards).
           shards() { case "$1" in material_expressive_ui) echo 4 ;; *) echo 1 ;; esac; }

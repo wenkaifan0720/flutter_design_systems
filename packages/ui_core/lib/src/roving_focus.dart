@@ -1,21 +1,24 @@
 /// One tab stop for a group of items, the arrows moving between them, on
 /// Flutter's focus system: what the radio group, the toggle group (and so a
 /// segmented control) and the tab bar share, so they answer the keys alike,
-/// as Flutter keeps its RadioGroup's arrows inside it. Inside ui_core; not
-/// exported.
+/// as Flutter keeps its RadioGroup's arrows inside it. A caller's own group
+/// (a row of tabs it lays out, a toolbar, a grid of choices) takes the same
+/// keys from it.
 library;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
-import '../roving_focus_intent.dart';
+import 'pressable.dart' show RawButton;
+import 'roving_focus_intent.dart';
+import 'tabs.dart' show RawTabGroup;
 
-/// One tab stop over its [RovingItem]s, the arrows moving the
+/// One tab stop over its [RawRovingFocusItem]s, the arrows moving the
 /// focus between them.
 ///
 /// - **One tab stop.** Tab and Shift+Tab reach the group once. Tab enters
-///   on its selected item ([RovingItem.selected], the first in
+///   on its selected item ([RawRovingFocusItem.selected], the first in
 ///   order when several are), else on its first enabled item, and the next
 ///   Tab leaves the group from wherever the focus is in it.
 /// - **The arrows.** Along a horizontal [orientation], Right moves to the
@@ -23,16 +26,36 @@ import '../roving_focus_intent.dart';
 ///   vertical one, Down and Up; with no [orientation], all four. Home and
 ///   End go to the first and the last ([homeAndEnd]). Items turned off are
 ///   passed over, and the ends wrap round when [loop] is true.
-/// - **The order.** By each item's [RovingItem.order] when every
+/// - **The order.** By each item's [RawRovingFocusItem.order] when every
 ///   item gives one, else by where the items are drawn, in reading order.
 ///
 /// It is built on [FocusTraversalGroup], [Shortcuts], [Actions] and
 /// [RawRovingFocusIntent], so an app changes a key the Flutter way: see
-/// [RawRovingFocusIntent]. It adds no semantics and draws nothing: the
-/// widget that uses it says what the group is (a radio group, a tab bar).
-class RovingGroup extends StatefulWidget {
-  /// A group over the [RovingItem]s in [child].
-  const RovingGroup({
+/// [RawRovingFocusIntent]. It adds no semantics and draws nothing, and
+/// lays its [child] out as given: the widget that uses it says what the
+/// group is (a radio group, a tab bar: [RawTabGroup] is this group with a
+/// tab bar's semantics and selection).
+///
+/// Each item is a [RawRovingFocusItem] round a control that takes its
+/// [RawRovingFocusItem.focusNode] (a [RawButton] given the same node). The
+/// group moves the focus only; the caller keeps the selection:
+///
+/// - **Selection that follows focus** (a tab row, a radio group): choose in
+///   [RawRovingFocusItem.onMovedTo], which each arrow, Home and End calls on
+///   the item it moves to.
+/// - **Selection on a press** (a toolbar, tabs with manual activation):
+///   choose in the control's own press, which Enter and Space make on a
+///   [RawButton].
+///
+/// Tell each item whether it is the chosen one
+/// ([RawRovingFocusItem.selected]), so Tab enters the group there.
+///
+/// ```dart
+/// RawRovingFocusGroup(orientation: Axis.horizontal, child: Row(children: [RawRovingFocusItem(focusNode: focusNode, selected: true, onMovedTo: () {}, child: RawButton(focusNode: focusNode, onPressed: () {}, builder: (context, states, _) => const Text('Bold')))]))
+/// ```
+class RawRovingFocusGroup extends StatefulWidget {
+  /// A group over the [RawRovingFocusItem]s in [child].
+  const RawRovingFocusGroup({
     super.key,
     required this.child,
     this.orientation,
@@ -42,7 +65,7 @@ class RovingGroup extends StatefulWidget {
     this.shortcuts,
   });
 
-  /// The items, each a [RovingItem] somewhere below.
+  /// The items, each a [RawRovingFocusItem] somewhere below.
   final Widget child;
 
   /// Which arrows move: Left and Right for [Axis.horizontal], Up and Down
@@ -98,7 +121,7 @@ class RovingGroup extends StatefulWidget {
   }
 
   @override
-  State<RovingGroup> createState() => _RovingGroupState();
+  State<RawRovingFocusGroup> createState() => _RawRovingFocusGroupState();
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -138,8 +161,8 @@ class RovingGroup extends StatefulWidget {
   }
 }
 
-class _RovingGroupState extends State<RovingGroup> {
-  final List<_RovingItemState> _items = [];
+class _RawRovingFocusGroupState extends State<RawRovingFocusGroup> {
+  final List<_RawRovingFocusItemState> _items = [];
   late final _RovingPolicy _policy = _RovingPolicy(this);
   // The group's move, which an [Actions] round the group may override.
   late final Action<RawRovingFocusIntent> _move =
@@ -148,13 +171,13 @@ class _RovingGroupState extends State<RovingGroup> {
         context: context,
       );
 
-  void _add(_RovingItemState item) => _items.add(item);
+  void _add(_RawRovingFocusItemState item) => _items.add(item);
 
-  void _remove(_RovingItemState item) => _items.remove(item);
+  void _remove(_RawRovingFocusItemState item) => _items.remove(item);
 
   // The items laid out, enabled ones only when [enabledOnly], in the group's
   // order.
-  List<_RovingItemState> _ordered({bool enabledOnly = true}) {
+  List<_RawRovingFocusItemState> _ordered({bool enabledOnly = true}) {
     final items = [
       for (final item in _items)
         if (item._node.context != null && (!enabledOnly || item._enabled)) item,
@@ -170,7 +193,7 @@ class _RovingGroupState extends State<RovingGroup> {
   }
 
   // The item Tab enters on: the first selected one, else the first.
-  _RovingItemState? _entry() {
+  _RawRovingFocusItemState? _entry() {
     final items = _ordered();
     for (final item in items) {
       if (item.widget.selected) return item;
@@ -178,7 +201,7 @@ class _RovingGroupState extends State<RovingGroup> {
     return items.isEmpty ? null : items.first;
   }
 
-  _RovingItemState? _focusedItem() {
+  _RawRovingFocusItemState? _focusedItem() {
     final primary = FocusManager.instance.primaryFocus;
     for (final item in _items) {
       if (item._node == primary) return item;
@@ -226,7 +249,7 @@ class _RovingGroupState extends State<RovingGroup> {
   Widget build(BuildContext context) {
     final shortcuts =
         widget.shortcuts ??
-        RovingGroup.defaultShortcuts(
+        RawRovingFocusGroup.defaultShortcuts(
           orientation: widget.orientation,
           homeAndEnd: widget.homeAndEnd,
           textDirection: widget.textDirection ?? Directionality.of(context),
@@ -251,7 +274,7 @@ class _RovingGroupState extends State<RovingGroup> {
 class _MoveAction extends Action<RawRovingFocusIntent> {
   _MoveAction(this._group);
 
-  final _RovingGroupState _group;
+  final _RawRovingFocusGroupState _group;
 
   @override
   bool isEnabled(RawRovingFocusIntent intent) =>
@@ -266,7 +289,7 @@ class _MoveAction extends Action<RawRovingFocusIntent> {
 class _RovingPolicy extends ReadingOrderTraversalPolicy {
   _RovingPolicy(this._group);
 
-  final _RovingGroupState _group;
+  final _RawRovingFocusGroupState _group;
 
   @override
   Iterable<FocusNode> sortDescendants(
@@ -287,20 +310,27 @@ class _RovingPolicy extends ReadingOrderTraversalPolicy {
 class _RovingScope extends InheritedWidget {
   const _RovingScope({required this.state, required super.child});
 
-  final _RovingGroupState state;
+  final _RawRovingFocusGroupState state;
 
   @override
   bool updateShouldNotify(_RovingScope oldWidget) => state != oldWidget.state;
 }
 
-/// One item of the nearest [RovingGroup]: the control that takes
+/// One item of the nearest [RawRovingFocusGroup]: the control that takes
 /// [focusNode] somewhere in [child].
 ///
 /// It adds no focus node of its own and changes nothing on [focusNode], so a
-/// node the caller owns keeps its settings and its listeners.
-class RovingItem extends StatefulWidget {
+/// node the caller owns keeps its settings and its listeners; it adds no
+/// semantics and lays [child] out as given. The caller makes [focusNode],
+/// gives the same node to the control, and disposes it. Outside a group it
+/// does nothing.
+///
+/// ```dart
+/// RawRovingFocusItem(focusNode: focusNode, onMovedTo: () {}, child: RawButton(focusNode: focusNode, onPressed: () {}, builder: (context, states, _) => const Text('Bold')))
+/// ```
+class RawRovingFocusItem extends StatefulWidget {
   /// An item focused through [focusNode].
-  const RovingItem({
+  const RawRovingFocusItem({
     super.key,
     required this.focusNode,
     required this.child,
@@ -333,7 +363,7 @@ class RovingItem extends StatefulWidget {
   final VoidCallback? onMovedTo;
 
   @override
-  State<RovingItem> createState() => _RovingItemState();
+  State<RawRovingFocusItem> createState() => _RawRovingFocusItemState();
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -361,8 +391,8 @@ class RovingItem extends StatefulWidget {
   }
 }
 
-class _RovingItemState extends State<RovingItem> {
-  _RovingGroupState? _group;
+class _RawRovingFocusItemState extends State<RawRovingFocusItem> {
+  _RawRovingFocusGroupState? _group;
 
   FocusNode get _node => widget.focusNode;
 

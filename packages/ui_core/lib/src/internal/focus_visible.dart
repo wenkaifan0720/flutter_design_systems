@@ -1,13 +1,21 @@
 /// Whether a part with the focus paints it, as a browser's `:focus-visible`
 /// decides: shown after a key, hidden after a press of a pointer (a mouse, a
-/// finger, a pen) or a tap that reaches the app as a semantics action (a
-/// click on the web with semantics on, a screen reader's), until the next
-/// key. Focus that ui_core or the app moves (a dialog's safe action, a
-/// popover's first control, a closed surface giving it back) shows as the
-/// last input decides, so a surface a pointer opened shows no focus until a
-/// key is pressed, and one the keys opened shows it at once. An app that
-/// sets [FocusHighlightStrategy.alwaysTraditional] shows focus whatever the
-/// input, as Flutter's own widgets do. Inside ui_core; not exported.
+/// finger, a pen) or a tap or a focus that reaches the app as a semantics
+/// action with no key held (a click on the web with semantics on, which
+/// focuses the pressed control's node before the press reaches the app; a
+/// screen reader's), until the next key. Focus that ui_core or the app moves
+/// (a dialog's safe action, a popover's first control, a closed surface
+/// giving it back) shows as the last input decides, so a surface a pointer
+/// opened shows no focus until a key is pressed, and one the keys opened
+/// shows it at once. An app that sets
+/// [FocusHighlightStrategy.alwaysTraditional] shows focus whatever the
+/// input, as Flutter's own widgets do.
+///
+/// And how the focus arrived ([DesignFocusArrival]): from the keys, from a
+/// pointer, or given back as what held it closed or went (a dialog's route,
+/// Flutter's or ui_core's, a popover, a removed control). A tip shows for
+/// the keys' arrival alone, and a field's list opens for no focus given
+/// back. Inside ui_core; not exported.
 library;
 
 import 'package:flutter/foundation.dart';
@@ -15,6 +23,23 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+
+import 'quiet_focus.dart';
+
+/// How the primary focus arrived.
+enum DesignFocusArrival {
+  /// The keys moved it, or moved last: a Tab, an arrow, a key that opened a
+  /// surface that took it.
+  keyboard,
+
+  /// A pointer moved it, or moved last: a press, a tap, a click on the web
+  /// (its semantics focus).
+  pointer,
+
+  /// It was given back: what held it closed or went (a route popped, a
+  /// popover closed, the control was removed), whatever moved last.
+  restore,
+}
 
 /// The last input's word on whether focus is shown.
 abstract final class DesignFocusVisible {
@@ -45,6 +70,66 @@ abstract final class DesignFocusVisible {
     if (identical(manager, _manager)) return;
     _manager = manager;
     _shown = true;
+    _primary = manager.primaryFocus;
+    _arrival = DesignFocusArrival.keyboard;
+  }
+
+  static FocusNode? _primary;
+  static DesignFocusArrival _arrival = DesignFocusArrival.keyboard;
+
+  /// How the primary focus arrived. Read as soon as a focus change is told
+  /// (a node's `onFocusChange`), it is already the new focus's.
+  static DesignFocusArrival get arrival {
+    _meet(FocusManager.instance);
+    _classify();
+    return _arrival;
+  }
+
+  /// Whether the primary focus came from the keys, as a tip or a hover card
+  /// shows for focus: shown now, and not given back. An app that keeps the
+  /// traditional highlight mode for good shows it for a pointer's too.
+  static bool get keyboardArrival {
+    if (!shown) return false;
+    final arrival = DesignFocusVisible.arrival;
+    if (arrival == DesignFocusArrival.restore) return false;
+    return arrival == DesignFocusArrival.keyboard ||
+        FocusManager.instance.highlightStrategy ==
+            FocusHighlightStrategy.alwaysTraditional;
+  }
+
+  static void _classify() {
+    final manager = FocusManager.instance;
+    final now = manager.primaryFocus;
+    if (identical(now, _primary)) return;
+    final old = _primary;
+    _primary = now;
+    if (now == null) return;
+    // Given back: what held it closed or went. Focus that rests on a scope
+    // (no control) and then moves on was moved by the input, as any other.
+    if (DesignQuietFocus.isRestoring ||
+        (old != null && old is! FocusScopeNode && _lost(old))) {
+      _arrival = DesignFocusArrival.restore;
+    } else {
+      _arrival =
+          _shown && manager.highlightMode == FocusHighlightMode.traditional
+          ? DesignFocusArrival.keyboard
+          : DesignFocusArrival.pointer;
+    }
+  }
+
+  // Whether [node] can no longer hold the focus: removed, in a scope that
+  // turned it away, or in a route on its way out (popped, or removed).
+  static bool _lost(FocusNode node) {
+    if (identical(node, FocusManager.instance.rootScope)) return false;
+    final context = node.context;
+    if (context == null ||
+        !context.mounted ||
+        node.parent == null ||
+        !node.canRequestFocus) {
+      return true;
+    }
+    final route = ModalRoute.of(context);
+    return route != null && !route.isActive;
   }
 
   /// Hears the input until the returned hearing is released. Every part
@@ -53,7 +138,8 @@ abstract final class DesignFocusVisible {
   /// before the surface takes the focus.
   ///
   /// What it hears by (a global pointer route, a key handler, a semantics
-  /// action listener) is its own each time the first part holds it, and is
+  /// action listener, a focus manager listener and a highlight mode
+  /// listener) is its own each time the first part holds it, and is
   /// taken away when the last lets go: nothing is kept for the life of the
   /// bindings. A page drawn with ui_core instantiated afresh over a binding
   /// that lives on (App Preview's) neither meets the last page's
@@ -73,6 +159,8 @@ abstract final class DesignFocusVisible {
     _hearing = null;
     _manager = null;
     _shown = true;
+    _primary = null;
+    _arrival = DesignFocusArrival.keyboard;
   }
 
   /// Calls [listener] when [shown] may have changed.
@@ -98,11 +186,14 @@ abstract final class DesignFocusVisible {
     if (event is PointerDownEvent) _set(false);
   }
 
-  // A tap with no key held is a pointer's or a screen reader's: on the web
-  // with semantics on, a click reaches the app as a tap, with no press.
+  // A tap or a focus with no key held is a pointer's or a screen reader's:
+  // on the web with semantics on, a click focuses the pressed control's node
+  // and reaches the app as a tap, before the press (if ever). A Tab that
+  // moves the browser's focus holds its key.
   static void _semantics(SemanticsActionEvent event) {
     if (event.type != SemanticsAction.tap &&
-        event.type != SemanticsAction.longPress) {
+        event.type != SemanticsAction.longPress &&
+        event.type != SemanticsAction.focus) {
       return;
     }
     if (HardwareKeyboard.instance.logicalKeysPressed.isEmpty) _set(false);
@@ -111,6 +202,14 @@ abstract final class DesignFocusVisible {
   static void _set(bool shown) {
     if (shown == _shown) return;
     _shown = shown;
+    _notify();
+  }
+
+  // Flutter's highlight mode switches after the key handlers have run (a
+  // key after a touch): [shown] reads it, so its listeners hear the switch.
+  static void _modeSwitched() => _notify();
+
+  static void _notify() {
     for (final listener in List<VoidCallback>.of(_listeners)) {
       if (_listeners.contains(listener)) listener();
     }
@@ -118,9 +217,10 @@ abstract final class DesignFocusVisible {
 }
 
 /// What [DesignFocusVisible] hears the input by while parts hold it: its
-/// own pointer route, key handler and semantics action listener (each this
-/// object's, so equal to no other's), registered as the first part holds it
-/// and removed as the last [release]s it.
+/// own pointer route, key handler, semantics action listener, focus manager
+/// listener and highlight mode listener (each this object's, so equal to no
+/// other's), registered as the first part holds it and removed as the last
+/// [release]s it.
 final class DesignFocusHearing {
   DesignFocusHearing._();
 
@@ -128,11 +228,15 @@ final class DesignFocusHearing {
   late final PointerRouter _router;
   late final HardwareKeyboard _keys;
   late final SemanticsBinding _semantics;
+  late final FocusManager _focus;
 
   void _start() {
     _router = GestureBinding.instance.pointerRouter;
     _keys = HardwareKeyboard.instance;
     _semantics = SemanticsBinding.instance;
+    _focus = FocusManager.instance;
+    _focus.addListener(_focusChanged);
+    _focus.addHighlightModeListener(_modeChanged);
     _keys.addHandler(_key);
     _router.addGlobalRoute(_pointer);
     _semantics.addSemanticsActionListener(_action);
@@ -145,6 +249,8 @@ final class DesignFocusHearing {
     _keys.removeHandler(_key);
     _router.removeGlobalRoute(_pointer);
     _semantics.removeSemanticsActionListener(_action);
+    _focus.removeListener(_focusChanged);
+    _focus.removeHighlightModeListener(_modeChanged);
     if (identical(DesignFocusVisible._hearing, this)) {
       DesignFocusVisible._hearing = null;
     }
@@ -156,6 +262,20 @@ final class DesignFocusHearing {
 
   void _action(SemanticsActionEvent event) =>
       DesignFocusVisible._semantics(event);
+
+  void _modeChanged(FocusHighlightMode mode) {
+    if (identical(_focus, FocusManager.instance)) {
+      DesignFocusVisible._modeSwitched();
+    }
+  }
+
+  void _focusChanged() {
+    // A focus manager that is not the one in use (one a test swapped out)
+    // classifies nothing.
+    if (identical(_focus, FocusManager.instance)) {
+      DesignFocusVisible._classify();
+    }
+  }
 }
 
 /// One part's focus, shown or not: whether the part has the focus Flutter

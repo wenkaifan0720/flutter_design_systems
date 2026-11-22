@@ -20,11 +20,11 @@ import 'package:flutter/semantics.dart'
         SemanticsConfiguration,
         SemanticsRole,
         SemanticsValidationResult;
-import 'package:flutter/rendering.dart' show RenderProxyBox;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import 'internal/focus_visible.dart';
+import 'semantics_proxy.dart';
 
 /// Builds a pressable's face for its current [states] (hovered, focused,
 /// pressed, disabled, selected, error). [child] is the pressable's own
@@ -202,8 +202,15 @@ class RawButton extends StatefulWidget {
   ///
   /// A toggle button (a formatting bar's Bold, a pin, a password reveal) says
   /// it here and stays a button, read as a button that is selected, as
-  /// `IconButton(isSelected:)` is. A switch says [toggled] and a checkbox
-  /// [checked] instead, and neither is a button.
+  /// `IconButton(isSelected:)` and `SegmentedButton` are. A switch says
+  /// [toggled] and a checkbox [checked] instead, and neither is a button.
+  ///
+  /// [toggled] is no way to say a toggle button is on: Flutter reads it as a
+  /// switch everywhere (role switch on the web, a native switch on iOS,
+  /// `android.widget.Switch` on Android), and no Flutter flag gives the web's
+  /// `aria-pressed`. On the web a selected button is read as the current one
+  /// (`aria-current`), which `ToggleButtons` avoids by saying checked; this
+  /// button keeps to selected, as `IconButton` does.
   final bool? semanticSelected;
 
   /// A screen reader's checked flag, for a checkbox or a radio. Null leaves it out.
@@ -717,24 +724,42 @@ class _FaceSemantics extends SingleChildRenderObjectWidget {
 
   @override
   _RenderFaceSemantics createRenderObject(BuildContext context) =>
-      _RenderFaceSemantics((label, value));
+      _RenderFaceSemantics(label: label, value: value);
 
   @override
   void updateRenderObject(
     BuildContext context,
     _RenderFaceSemantics renderObject,
   ) {
-    renderObject.words = (label, value);
+    renderObject
+      ..label = label
+      ..value = value;
   }
 }
 
-class _RenderFaceSemantics extends RenderProxyBox {
-  _RenderFaceSemantics(this._words);
-  (String?, String?) _words;
+// What a RawButton given its own words puts round its face. A word the face
+// shows that repeats the button's label or value is dropped from what a
+// screen reader hears, so the button's name is read once; the face's other
+// words (a subtitle) stay.
+class _RenderFaceSemantics extends RenderDesignSemanticsProxy {
+  _RenderFaceSemantics({String? label, String? value}) {
+    _label = label;
+    _value = value;
+  }
 
-  set words((String?, String?) value) {
-    if (_words == value) return;
-    _words = value;
+  String? get label => _label;
+  String? _label;
+  set label(String? value) {
+    if (_label == value) return;
+    _label = value;
+    markNeedsSemanticsUpdate();
+  }
+
+  String? get value => _value;
+  String? _value;
+  set value(String? value) {
+    if (_value == value) return;
+    _value = value;
     markNeedsSemanticsUpdate();
   }
 
@@ -744,13 +769,21 @@ class _RenderFaceSemantics extends RenderProxyBox {
     config.childConfigurationsDelegate = _merge;
   }
 
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('value', value, defaultValue: null));
+  }
+
   ChildSemanticsConfigurationsResult _merge(
     List<SemanticsConfiguration> children,
   ) {
     final result = ChildSemanticsConfigurationsResultBuilder();
     for (final child in children) {
       final text = child.label;
-      if (text.isNotEmpty && (text == _words.$1 || text == _words.$2)) {
+      if (text.isNotEmpty && (text == _label || text == _value)) {
         result.markAsMergeUp(child.copy()..label = '');
       } else {
         result.markAsMergeUp(child);

@@ -35,11 +35,7 @@ class _TextBox {
 
   // Its first line's alphabetic baseline, from its top; null when it holds
   // widgets inline, whose layout only its own pass knows.
-  double? get baseline {
-    final b = box;
-    if (b is RenderParagraph && b.childCount > 0) return null;
-    return b.getDryBaseline(b.constraints, TextBaseline.alphabetic);
-  }
+  double? get baseline => laidBaseline(box);
 
   // Whether it is one line high: the engine rounds each line's baseline
   // from that line's own top, so only a single line's rounding is its

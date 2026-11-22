@@ -37,6 +37,9 @@ late _HostState _host;
 // Each suggestion's states, as last painted.
 final Map<String, Set<WidgetState>> _seen = {};
 
+// What the field last heard of its suggestions: shown or not.
+bool? _open;
+
 // The suggestions the open list shows.
 List<String> _listed() => [
   for (final c in _colours)
@@ -68,13 +71,16 @@ class _HostState extends State<_Host> {
       highlightFollowsPointer: widget.follows,
       onCreate: (text) => text.toLowerCase(),
       onChanged: (next) => setState(() => values = next),
-      fieldBuilder: (context, field) => plainField(
-        key: _fieldKey,
-        controller: field.controller,
-        focusNode: field.focusNode,
-        onSubmitted: field.submit,
-        width: 120,
-      ),
+      fieldBuilder: (context, field) {
+        _open = field.isOpen;
+        return plainField(
+          key: _fieldKey,
+          controller: field.controller,
+          focusNode: field.focusNode,
+          onSubmitted: field.submit,
+          width: 120,
+        );
+      },
       optionBuilder: (context, option, states) {
         _seen[option] = states;
         return SizedBox(height: 32, child: Text('option $option'));
@@ -135,6 +141,19 @@ bool _fieldFocused(WidgetTester tester) => tester
     .hasFocus;
 
 void main() {
+  testWidgets('the field hears whether its suggestions show', (tester) async {
+    await tester.pumpWidget(_page(const _Host()));
+    expect(_open, isFalse);
+    await tester.tap(find.byKey(_fieldKey));
+    await tester.pumpAndSettle();
+    expect(_listed(), isNotEmpty);
+    expect(_open, isTrue);
+    await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+    await tester.pumpAndSettle();
+    expect(_listed(), isEmpty);
+    expect(_open, isFalse);
+  });
+
   testWidgets('suggestions open above the whole field near the bottom, '
       'when below can\'t hold them', (tester) async {
     await tester.pumpWidget(

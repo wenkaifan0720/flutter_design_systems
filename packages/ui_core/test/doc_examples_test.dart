@@ -639,6 +639,51 @@ final Map<String, DocExample> _examples = {
     end: 400,
     labels: ['Q1', 'Q2', 'Q3', 'Q4'],
   ).map(2),
+  'DesignChartValueFormat': (context) =>
+      const DesignChartValueFormat(suffix: ' h')
+          .format(4, RawWidgetsLocalizations.of(context)),
+  'DesignScaleTick.widestLabel': (context) => DesignChart(
+    semanticLabel: 'Hours',
+    series: const [
+      DesignChartSeries(label: 'Hours', points: [DesignChartPoint(0, 4)]),
+    ],
+    builder: (context, details) => Text(
+      '${DesignScaleTick.widestLabel(details.yTicks, style: const TextStyle(fontSize: 12), textScaler: MediaQuery.textScalerOf(context))}',
+    ),
+  ),
+  'DesignComboboxField.isOpen': (context) {
+    final field = DesignComboboxField(
+      controller: _own(TextEditingController()),
+      focusNode: _own(FocusNode()),
+      submit: () {},
+      isOpen: true,
+    );
+    return Semantics(
+      expanded: field.isOpen,
+      child: EditableText(
+        controller: field.controller,
+        focusNode: field.focusNode,
+        onEditingComplete: field.submit,
+        style: const TextStyle(),
+        cursorColor: const Color(0xFF000000),
+        backgroundCursorColor: const Color(0xFF808080),
+      ),
+    );
+  },
+  'RawToasterKeepClear': (context) => const Column(
+    children: [
+      Expanded(child: Text('Messages')),
+      RawToasterKeepClear(
+        child: SafeArea(
+          top: false,
+          child: SizedBox(height: 56, child: Text('Composer')),
+        ),
+      ),
+    ],
+  ),
+  'RawActionBar': (context) => const RawActionBar(
+    children: [Text('Cancel'), Text('Discard'), Text('Save changes')],
+  ),
   'DesignChart': (context) => DesignChart(
     semanticLabel: 'Revenue',
     series: const [
@@ -761,6 +806,62 @@ final Map<String, DocExample> _examples = {
       ),
     );
   },
+  'RawRovingFocusGroup': (context) {
+    final focusNode = _own(FocusNode());
+    return RawRovingFocusGroup(
+      orientation: Axis.horizontal,
+      child: Row(
+        children: [
+          RawRovingFocusItem(
+            focusNode: focusNode,
+            selected: true,
+            onMovedTo: () {},
+            child: RawButton(
+              focusNode: focusNode,
+              onPressed: () {},
+              builder: (context, states, _) => const Text('Bold'),
+            ),
+          ),
+        ],
+      ),
+    );
+  },
+  'RawRovingFocusItem': (context) {
+    final focusNode = _own(FocusNode());
+    return RawRovingFocusItem(
+      focusNode: focusNode,
+      onMovedTo: () {},
+      child: RawButton(
+        focusNode: focusNode,
+        onPressed: () {},
+        builder: (context, states, _) => const Text('Bold'),
+      ),
+    );
+  },
+  'RawTabGroup': (context) => RawTabGroup<String>(
+    groupValue: 'overview',
+    onChanged: (value) {},
+    child: Row(
+      children: [
+        RawTabGroupTab(
+          value: 'overview',
+          builder: (context, states, _) => const Text('Overview'),
+        ),
+        const Text('·'),
+        RawTabGroupTab(
+          value: 'reviews',
+          builder: (context, states, _) => const Text('Reviews'),
+        ),
+      ],
+    ),
+  ),
+  'RawTabGroupTab': (context) => RawTabGroup<String>(
+    groupValue: 'overview',
+    child: RawTabGroupTab(
+      value: 'overview',
+      builder: (context, states, _) => const Text('Overview'),
+    ),
+  ),
   'DesignWindowSizeClass': (context) => DesignWindowSizeClass.fromWidth(900),
   'DesignAdaptiveShell': (context) => DesignAdaptiveShell(
     destinations: const [
@@ -820,9 +921,13 @@ const Set<String> _checksFiles = {
   'alignment.dart',
   'checkable_check.dart',
   'cursor_check.dart',
+  'dialog_actions_check.dart',
   'field_nodes_check.dart',
   'field_semantics_check.dart',
+  'field_words_check.dart',
   'list_side_check.dart',
+  'overflow_check.dart',
+  'overlay_check.dart',
   'radio_group_check.dart',
   'shadow_clip_check.dart',
   'tap_target_check.dart',

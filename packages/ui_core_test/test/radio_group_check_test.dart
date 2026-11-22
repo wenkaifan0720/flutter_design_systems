@@ -1,7 +1,10 @@
 // DesignRadioGroupCheck and DesignCheckableCheck: a group of radios is one
 // tab stop whose arrows choose, and each checkbox, radio and switch says
 // what it is, as Flutter's do.
+import 'dart:async' show unawaited;
+
 import 'package:material_ui/material_ui.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ui_core_test/ui_core_test.dart';
 import 'package:ui_core/ui_core.dart';
@@ -109,7 +112,133 @@ Widget _segments(
       SizedBox(width: 60, height: 44, child: Center(child: Text(value))),
 );
 
+// A page and a modal route over it, each a one-choice group at the same
+// spot behind a control (the Lobo pilot's schedule chips under its
+// new-class sheet): the page's group, behind the route's barrier, is out
+// of the semantics tree.
+Future<(DesignAlignmentReport, DesignAlignmentReport)> _covered(
+  WidgetTester tester,
+  double scale,
+) async {
+  final backBefore = FocusNode();
+  final frontBefore = FocusNode();
+  addTearDown(backBefore.dispose);
+  addTearDown(frontBefore.dispose);
+  final navigator = GlobalKey<NavigatorState>();
+  Widget layer(
+    FocusNode before,
+    Key key,
+    List<String> options,
+    String initial,
+  ) {
+    var chosen = initial;
+    return Material(
+      type: MaterialType.transparency,
+      child: StatefulBuilder(
+        builder: (context, setState) => Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 200),
+            TextButton(
+              focusNode: before,
+              onPressed: () {},
+              child: const Text('Before'),
+            ),
+            KeyedSubtree(
+              key: key,
+              child: RawSegmentedButton<String>(
+                options: options,
+                selected: {chosen},
+                onSelectionChanged: (next) =>
+                    setState(() => chosen = next.single),
+                itemBuilder: (context, value, states) =>
+                    SizedBox(width: 90, height: 44, child: Text(value)),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  await tester.pumpWidget(
+    MaterialApp(
+      navigatorKey: navigator,
+      builder: (context, child) => MediaQuery(
+        data: MediaQuery.of(context)
+            .copyWith(textScaler: TextScaler.linear(scale)),
+        child: child!,
+      ),
+      home: layer(backBefore, const ValueKey('back'), const [
+        'All',
+        'Strength',
+        'Conditioning',
+        'Mobility',
+      ], 'All'),
+    ),
+  );
+  unawaited(
+    navigator.currentState!.push(
+      PageRouteBuilder<void>(
+        opaque: false,
+        barrierColor: const Color(0x80000000),
+        pageBuilder: (context, _, _) => layer(
+          frontBefore,
+          const ValueKey('front'),
+          const ['Strength', 'Conditioning', 'Mobility', 'Boxing'],
+          'Strength',
+        ),
+      ),
+    ),
+  );
+  await tester.pumpAndSettle();
+  // The page's group is behind the barrier: its words are read nowhere.
+  bool read(String label) {
+    var found = false;
+    bool visit(SemanticsNode node) {
+      if (node.getSemanticsData().label == label) found = true;
+      node.visitChildren(visit);
+      return true;
+    }
+
+    visit(
+      tester
+          .renderObject(find.byType(MaterialApp))
+          .owner!
+          .semanticsOwner!
+          .rootSemanticsNode!,
+    );
+    return found;
+  }
+
+  expect(read('All'), isFalse);
+  expect(read('Boxing'), isTrue);
+  Future<DesignAlignmentReport> check(String key, FocusNode before) =>
+      const DesignRadioGroupCheck(look: 'Test').check(
+        tester.element(find.byKey(ValueKey(key))),
+        before: before,
+        sendKeyEvent: tester.sendKeyEvent,
+        pump: tester.pump,
+      );
+  final back = await check('back', backBefore);
+  final front = await check('front', frontBefore);
+  navigator.currentState!.pop();
+  await tester.pumpAndSettle();
+  return (back, front);
+}
+
 void main() {
+  testWidgets('a group behind a modal route is not read from the group over '
+      'it, and the group over it passes', (tester) async {
+    final semantics = tester.ensureSemantics();
+    for (final scale in [1.0, 2.0]) {
+      final (back, front) = await _covered(tester, scale);
+      expect(back.problems, isEmpty, reason: '${scale}x');
+      expect(front.problems, isEmpty, reason: '${scale}x');
+    }
+    semantics.dispose();
+  });
+
   testWidgets('a one-choice RawSegmentedButton passes as a radio group, '
       'either way it runs and reads', (tester) async {
     final semantics = tester.ensureSemantics();

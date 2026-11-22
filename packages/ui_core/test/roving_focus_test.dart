@@ -1,9 +1,8 @@
-// RovingGroup: one tab stop, the arrows between its items, built
+// RawRovingFocusGroup: one tab stop, the arrows between its items, built
 // on Flutter's focus system so an app changes a key the Flutter way.
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:ui_core/src/internal/roving_group.dart';
 import 'package:ui_core/ui_core.dart';
 
 import 'behaviour_harness.dart';
@@ -48,7 +47,7 @@ class _GroupState extends State<_Group> {
   Widget build(BuildContext context) {
     final items = [
       for (final (i, word) in _words.indexed)
-        RovingItem(
+        RawRovingFocusItem(
           key: ValueKey(word),
           focusNode: _nodes[word]!,
           enabled: !widget.off.contains(word),
@@ -66,7 +65,7 @@ class _GroupState extends State<_Group> {
       mainAxisSize: MainAxisSize.min,
       children: [
         Focus(focusNode: _before, child: const Text('before')),
-        RovingGroup(
+        RawRovingFocusGroup(
           orientation: widget.orientation,
           loop: widget.loop,
           homeAndEnd: widget.homeAndEnd,
@@ -274,7 +273,7 @@ void main() {
     // A Shortcuts between the group and an item stops a key there.
     await tester.pumpWidget(
       harness(
-        RovingGroup(
+        RawRovingFocusGroup(
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -284,7 +283,7 @@ void main() {
                     SingleActivator(LogicalKeyboardKey.arrowRight):
                         DoNothingAndStopPropagationIntent(),
                   },
-                  child: RovingItem(
+                  child: RawRovingFocusItem(
                     focusNode: _nodes[word]!,
                     child: Focus(
                       focusNode: _nodes[word],
@@ -324,5 +323,60 @@ void main() {
     await tester.pumpWidget(const SizedBox());
     // Usable after the group is gone: not disposed.
     _nodes['B']!.addListener(() {});
+  });
+
+  testWidgets('a row of buttons the caller lays out, its words between them: '
+      'one tab stop, the arrows choosing as they move (onMovedTo)', (
+    tester,
+  ) async {
+    final nodes = [for (final w in _words) FocusNode(debugLabel: 'row $w')];
+    addTearDown(() {
+      for (final node in nodes) {
+        node.dispose();
+      }
+    });
+    var chosen = 1;
+    await tester.pumpWidget(
+      harness(
+        StatefulBuilder(
+          builder: (context, setState) => Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Focus(focusNode: _before, child: const Text('before')),
+              RawRovingFocusGroup(
+                orientation: Axis.horizontal,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    for (final (i, word) in _words.indexed) ...[
+                      if (i > 0) const Text(' | '),
+                      RawRovingFocusItem(
+                        focusNode: nodes[i],
+                        selected: i == chosen,
+                        onMovedTo: () => setState(() => chosen = i),
+                        child: RawButton(
+                          focusNode: nodes[i],
+                          selected: i == chosen,
+                          onPressed: () => setState(() => chosen = i),
+                          builder: (context, states, _) => Text(word),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    await _enter(tester);
+    expect(nodes[1].hasPrimaryFocus, isTrue, reason: 'Tab enters on B');
+    await _key(tester, LogicalKeyboardKey.arrowRight);
+    expect(nodes[2].hasPrimaryFocus, isTrue);
+    expect(chosen, 2);
+    await _key(tester, LogicalKeyboardKey.home);
+    expect(nodes[0].hasPrimaryFocus, isTrue);
+    expect(chosen, 0);
   });
 }

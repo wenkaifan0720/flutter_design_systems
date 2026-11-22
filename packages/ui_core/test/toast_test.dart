@@ -62,6 +62,60 @@ Widget _app({
 );
 
 void main() {
+  testWidgets('RawToasterKeepClear: a bar along the top keeps top toasts '
+      'below it, in place of the safe inset, and lets go as it leaves', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(390, 700);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final toaster = GlobalKey<RawToasterState>();
+    var bar = true;
+    late StateSetter setOuter;
+    await tester.pumpWidget(
+      harness(
+        Builder(
+          builder: (context) => MediaQuery(
+            data: MediaQuery.of(context)
+                .copyWith(padding: const EdgeInsets.only(top: 24)),
+            child: RawToaster(
+              key: toaster,
+              alignment: AlignmentDirectional.topCenter,
+              toastBuilder: (context, details) => SizedBox(
+                key: const ValueKey('toast'),
+                height: 48,
+                child: Text(details.toast.message),
+              ),
+              child: StatefulBuilder(
+                builder: (context, setState) {
+                  setOuter = setState;
+                  return Column(
+                    children: [
+                      if (bar)
+                        const RawToasterKeepClear(
+                          child: SizedBox(height: 80, width: double.infinity),
+                        ),
+                      const Expanded(child: SizedBox.expand()),
+                    ],
+                  );
+                },
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    toaster.currentState!.show(
+      const RawToast(message: 'Saved', duration: null),
+    );
+    await tester.pumpAndSettle();
+    Rect toast() => tester.getRect(find.byKey(const ValueKey('toast')));
+    expect(toast().top, 80 + 16, reason: 'below the bar, its inset its own');
+    setOuter(() => bar = false);
+    await tester.pumpAndSettle();
+    expect(toast().top, 24 + 16, reason: 'the safe inset again');
+  });
+
   var undone = 0;
   final page = FocusNode(debugLabel: 'page');
   tearDownAll(page.dispose);

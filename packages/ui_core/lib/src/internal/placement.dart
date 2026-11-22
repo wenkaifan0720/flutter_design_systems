@@ -47,7 +47,11 @@ Rect designOverlayBounds({
 /// known, or [RawPopoverPlacement.preferredExtent], whichever is less: a
 /// short list that fits under its field stays there, and a long one stays
 /// while its side holds the preferred extent, shrinking to the room and
-/// scrolling inside. [bounds] is [designOverlayBounds].
+/// scrolling inside. A surface that does not shrink
+/// ([RawPopoverFit.whole]: a calendar, a grid) needs its whole [extent]:
+/// until it is measured, or while it fills its side's room (capped there,
+/// it may be taller), it takes the roomier side. [bounds] is
+/// [designOverlayBounds].
 RawPopoverSide designResolveSide(
   Rect anchor,
   Rect bounds,
@@ -66,9 +70,17 @@ RawPopoverSide designResolveSide(
     gap,
     textDirection,
   );
-  final needs = extent == null
-      ? placement.preferredExtent
-      : math.min(extent, placement.preferredExtent);
+  final double needs;
+  if (placement.fit == RawPopoverFit.whole) {
+    // Unmeasured, or as tall as its side's room (a surface that caps itself
+    // at [RawPopoverInfo.maxSize] reads no taller there): measured on the
+    // roomier side first, where its whole extent shows.
+    needs = extent == null || extent >= room - 0.5 ? double.infinity : extent;
+  } else {
+    needs = extent == null
+        ? placement.preferredExtent
+        : math.min(extent, placement.preferredExtent);
+  }
   return room < needs && other > room ? side.opposite : side;
 }
 

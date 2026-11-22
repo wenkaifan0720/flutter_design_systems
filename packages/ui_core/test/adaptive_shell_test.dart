@@ -687,6 +687,47 @@ void main() {
     expect(_focusedOn(tester, 'Home'), isTrue);
   });
 
+  testWidgets('a toast keeps clear of the bar, as a snackbar of the bottom '
+      'navigation bar, and follows it as it springs away', (tester) async {
+    await _width(tester, 390);
+    final toaster = GlobalKey<RawToasterState>();
+    await tester.pumpWidget(
+      harness(
+        RawToaster(
+          key: toaster,
+          toastBuilder: (context, details) => SizedBox(
+            key: const ValueKey('toast'),
+            height: 48,
+            child: Text(details.toast.message),
+          ),
+          child: const _Host(),
+        ),
+      ),
+    );
+    toaster.currentState!.show(
+      const RawToast(message: 'Saved', duration: null),
+    );
+    await tester.pumpAndSettle();
+    Rect toast() => tester.getRect(find.byKey(const ValueKey('toast')));
+    final bar = tester.getRect(find.byKey(const ValueKey('nav')));
+    expect(toast().bottom, moreOrLessEquals(bar.top - 16));
+    // Half way through the bar's spring the toast is on its way down.
+    _host(tester).showNavigation(false);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 40));
+    final moving = tester.getRect(find.byKey(const ValueKey('nav'))).top;
+    await tester.pump();
+    expect(toast().bottom, lessThanOrEqualTo(moving - 16 + 0.5));
+    expect(toast().bottom, greaterThan(bar.top - 16));
+    await tester.pumpAndSettle();
+    expect(toast().bottom, moreOrLessEquals(700 - 16), reason: 'bar gone');
+    // A rail, at the start edge, from top to bottom: no bar to keep clear of.
+    _host(tester).showNavigation(true);
+    await _width(tester, 768);
+    await tester.pumpAndSettle();
+    expect(toast().bottom, moreOrLessEquals(700 - 16), reason: 'a rail');
+  });
+
   testWidgets('from outside every pane, F6 goes to the first', (tester) async {
     await _width(tester, 768);
     await tester.pumpWidget(

@@ -18,7 +18,8 @@ import 'package:flutter/widgets.dart';
 import 'localizations.dart';
 import 'motion.dart';
 import 'pressable.dart';
-import 'internal/roving_group.dart';
+import 'roving_focus.dart';
+import 'semantics_proxy.dart';
 import 'tap_target.dart';
 
 /// Which tab is selected, and where a swipe or a change has got to: Material's
@@ -253,6 +254,368 @@ typedef RawTabIndicatorBuilder = Widget Function(
 String _panelId(RawTabController controller, int index) =>
     'RawTabBarView ${shortHash(controller)} $index';
 
+/// A tab bar's behaviour round tabs the caller lays out, as Flutter's
+/// `RadioGroup` is a radio group's: the bar's semantics, one tab stop with
+/// the arrows along it, and the selection. [RawTabBar] is this group with
+/// its own strip, indicator and words.
+///
+/// Each tab is a [RawTabGroupTab] of the same type, with its own
+/// [RawTabGroupTab.value], anywhere below the group: in the caller's
+/// frames, between its words, in a row, a wrap or a scroll view of its own.
+/// The group adds no layout, paints nothing, and moves none of it.
+///
+/// - **Selection.** [groupValue] is the caller's: the tab with that value
+///   is selected. A press on a tab, or Enter or Space while it has the
+///   focus, calls [onChanged] with its value, and so does the focus
+///   reaching it by an arrow, Home or End when [selectionFollowsFocus].
+/// - **Keys.** One tab stop, on the selected tab; the arrows along
+///   [orientation] move the focus (mirrored right to left), wrapping, Home
+///   and End to the ends, tabs turned off passed over, in reading order: a
+///   [RawRovingFocusGroup], so an app changes a key the Flutter way (see
+///   [RawRovingFocusIntent]).
+/// - **Scrolling.** A tab the arrows, Home or End reach is brought wholly
+///   into view in the scroll views round it, the least way, as Flutter's
+///   own traversal brings a focused widget into view.
+/// - **Semantics.** A screen reader hears each tab as a tab, with the
+///   words its face shows, as given, and whether it is selected. The
+///   group's node is a tab bar ([SemanticsRole.tabBar], named
+///   [semanticLabel]) while every node under it is a tab, as Flutter
+///   requires of a tab bar. Words between the tabs (a "·" or a "|", a "Sort
+///   by" before them) make no node of their own: they join the bar's name
+///   and are read with it. A part that makes a node of its own between the
+///   group and its tabs (a scroll view round them, an image with a label,
+///   a link) leaves the group's node a plain group: the part keeps its
+///   place, the tabs stay tabs, each selected or not, but the bar's role
+///   is gone. Put a scroll view round the group, not inside it, to keep it.
+///
+/// Give the type when [groupValue] may be null (`RawTabGroup<String>`), so
+/// the tabs find the group.
+///
+/// ```dart
+/// RawTabGroup<String>(groupValue: 'overview', onChanged: (value) {}, child: Row(children: [RawTabGroupTab(value: 'overview', builder: (context, states, _) => const Text('Overview')), const Text('·'), RawTabGroupTab(value: 'reviews', builder: (context, states, _) => const Text('Reviews'))]))
+/// ```
+class RawTabGroup<T> extends StatelessWidget {
+  /// The tab bar's behaviour round the [RawTabGroupTab]s below [child].
+  const RawTabGroup({
+    super.key,
+    required this.groupValue,
+    required this.child,
+    this.onChanged,
+    this.orientation = Axis.horizontal,
+    this.selectionFollowsFocus = true,
+    this.semanticLabel,
+  });
+
+  /// The value of the selected tab; the caller's. Null: none is selected,
+  /// and Tab enters the group on its first tab.
+  final T? groupValue;
+
+  /// Called with a tab's value as it is chosen; null: the tabs are turned
+  /// off.
+  final ValueChanged<T>? onChanged;
+
+  /// Which way the tabs run, and so which arrows move along them.
+  final Axis orientation;
+
+  /// Whether a tab is chosen as the arrows, Home or End move the focus to it
+  /// (automatic activation); otherwise Enter, Space or a press chooses it.
+  final bool selectionFollowsFocus;
+
+  /// What a screen reader calls the bar.
+  final String? semanticLabel;
+
+  /// The tabs, laid out as given, and what stands between them.
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => _TabBarSemantics(
+    label: semanticLabel,
+    textDirection: Directionality.maybeOf(context),
+    child: RawRovingFocusGroup(
+      orientation: orientation,
+      child: _TabGroupScope<T>(group: this, child: child),
+    ),
+  );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<T>('groupValue', groupValue))
+      ..add(ObjectFlagProperty<ValueChanged<T>>.has('onChanged', onChanged))
+      ..add(
+        EnumProperty<Axis>(
+          'orientation',
+          orientation,
+          defaultValue: Axis.horizontal,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'selectionFollowsFocus',
+          value: selectionFollowsFocus,
+          ifFalse: 'selectionFollowsFocus: false',
+          defaultValue: true,
+        ),
+      )
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
+  }
+}
+
+// The group's node: a tab bar while every node under it is a tab (Flutter
+// fails a tab bar holding anything else), else a plain group.
+class _TabBarSemantics extends SingleChildRenderObjectWidget {
+  const _TabBarSemantics({
+    required this.label,
+    required this.textDirection,
+    required super.child,
+  });
+
+  final String? label;
+  final TextDirection? textDirection;
+
+  @override
+  _RenderTabBarSemantics createRenderObject(BuildContext context) =>
+      _RenderTabBarSemantics(label, textDirection);
+
+  @override
+  void updateRenderObject(
+    BuildContext context,
+    _RenderTabBarSemantics renderObject,
+  ) {
+    renderObject
+      ..label = label
+      ..textDirection = textDirection;
+  }
+}
+
+class _RenderTabBarSemantics extends RenderDesignSemanticsProxy {
+  _RenderTabBarSemantics(this._label, this._textDirection);
+
+  String? _label;
+  set label(String? value) {
+    if (value == _label) return;
+    _label = value;
+    markNeedsSemanticsUpdate();
+  }
+
+  TextDirection? _textDirection;
+  set textDirection(TextDirection? value) {
+    if (value == _textDirection) return;
+    _textDirection = value;
+    markNeedsSemanticsUpdate();
+  }
+
+  @override
+  void describeSemanticsConfiguration(SemanticsConfiguration config) {
+    super.describeSemanticsConfiguration(config);
+    config
+      ..isSemanticBoundary = true
+      ..role = SemanticsRole.tabBar;
+    final label = _label;
+    if (label != null) {
+      config
+        ..label = label
+        ..textDirection = _textDirection;
+    }
+  }
+
+  @override
+  void assembleSemanticsNode(
+    SemanticsNode node,
+    SemanticsConfiguration config,
+    Iterable<SemanticsNode> children,
+  ) {
+    // The nodes under it are built by now; a tab's role may come from a
+    // node merged into it, so read each as Flutter's check does.
+    final tabs =
+        children.isNotEmpty &&
+        children.every(
+          (child) => child.getSemanticsData().role == SemanticsRole.tab,
+        );
+    super.assembleSemanticsNode(
+      node,
+      tabs ? config : (config.copy()..role = SemanticsRole.none),
+      children,
+    );
+  }
+}
+
+// Under a RawTabBar, which brings a tab into view on its own spring and
+// keeps its tabs in their index order.
+class _TabBarHooks extends InheritedWidget {
+  const _TabBarHooks({required this.reveal, required super.child});
+
+  final ValueChanged<int> reveal;
+
+  @override
+  bool updateShouldNotify(_TabBarHooks oldWidget) => false;
+}
+
+class _TabGroupScope<T> extends InheritedWidget {
+  const _TabGroupScope({required this.group, required super.child});
+
+  final RawTabGroup<T> group;
+
+  @override
+  bool updateShouldNotify(_TabGroupScope<T> oldWidget) =>
+      group.groupValue != oldWidget.group.groupValue ||
+      group.onChanged != oldWidget.group.onChanged ||
+      group.selectionFollowsFocus != oldWidget.group.selectionFollowsFocus;
+}
+
+/// One tab of the nearest [RawTabGroup] of the same type, standing for
+/// [value]: a [RawButton] read as a tab ([RawButton.tab]), selected while
+/// [value] is the group's [RawTabGroup.groupValue] (and so drawn with
+/// [WidgetState.selected]), its face what [builder] paints, laid out as
+/// given. A press, Enter or Space chooses it.
+///
+/// ```dart
+/// RawTabGroupTab(value: 'overview', builder: (context, states, _) => const Text('Overview'))
+/// ```
+class RawTabGroupTab<T> extends StatefulWidget {
+  /// The group's tab for [value], its face from [builder].
+  const RawTabGroupTab({
+    super.key,
+    required this.value,
+    required this.builder,
+    this.child,
+    this.enabled = true,
+    this.focusNode,
+    this.statesController,
+  });
+
+  /// What it stands for: the group's [RawTabGroup.groupValue] while it is
+  /// selected, and what [RawTabGroup.onChanged] gives as it is chosen.
+  final T value;
+
+  /// Paints the tab's face from its states.
+  final RawButtonBuilder builder;
+
+  /// Passed to [builder], for a part that doesn't change with the states.
+  final Widget? child;
+
+  /// Whether it can be chosen; the arrows pass over a tab turned off.
+  final bool enabled;
+
+  /// Its focus node; null: its own. The caller disposes one it gives.
+  final FocusNode? focusNode;
+
+  /// Watches and drives its states ([RawButton.statesController]).
+  final WidgetStatesController? statesController;
+
+  @override
+  State<RawTabGroupTab<T>> createState() => _RawTabGroupTabState<T>();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<T>('value', value))
+      ..add(ObjectFlagProperty<RawButtonBuilder>.has('builder', builder))
+      ..add(
+        FlagProperty(
+          'enabled',
+          value: enabled,
+          ifFalse: 'disabled',
+          defaultValue: true,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<WidgetStatesController>(
+          'statesController',
+          statesController,
+          defaultValue: null,
+        ),
+      );
+  }
+}
+
+class _RawTabGroupTabState<T> extends State<RawTabGroupTab<T>> {
+  FocusNode? _own;
+
+  FocusNode get _node =>
+      widget.focusNode ??
+      (_own ??= FocusNode(debugLabel: 'RawTabGroupTab ${widget.value}'));
+
+  @override
+  void didUpdateWidget(RawTabGroupTab<T> oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.focusNode != null && _own != null) {
+      _own!.dispose();
+      _own = null;
+    }
+  }
+
+  @override
+  void dispose() {
+    _own?.dispose();
+    super.dispose();
+  }
+
+  // An arrow, Home or End moved the focus here.
+  void _movedTo() {
+    final group = context
+        .getInheritedWidgetOfExactType<_TabGroupScope<T>>()!
+        .group;
+    final value = widget.value;
+    if (group.selectionFollowsFocus) group.onChanged?.call(value);
+    final bar = context.getInheritedWidgetOfExactType<_TabBarHooks>();
+    if (bar != null) {
+      bar.reveal(value as int);
+      return;
+    }
+    // The least way: each policy moves only when its own edge is out.
+    Scrollable.ensureVisible(
+      context,
+      alignmentPolicy: ScrollPositionAlignmentPolicy.keepVisibleAtEnd,
+    );
+    Scrollable.ensureVisible(
+      context,
+      alignmentPolicy: ScrollPositionAlignmentPolicy.keepVisibleAtStart,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final group = context
+        .dependOnInheritedWidgetOfExactType<_TabGroupScope<T>>()
+        ?.group;
+    assert(
+      group != null,
+      'a RawTabGroupTab<$T> stands below a RawTabGroup<$T>',
+    );
+    final value = widget.value;
+    final selected = group?.groupValue == value;
+    final choose = group?.onChanged;
+    final enabled = widget.enabled && choose != null;
+    final bar = context.getInheritedWidgetOfExactType<_TabBarHooks>();
+    return RawRovingFocusItem(
+      focusNode: _node,
+      enabled: enabled,
+      selected: selected,
+      order: bar == null ? null : value as int,
+      onMovedTo: _movedTo,
+      child: RawButton(
+        focusNode: _node,
+        statesController: widget.statesController,
+        onPressed: enabled ? () => choose(value) : null,
+        selected: selected,
+        tab: true,
+        builder: widget.builder,
+        child: widget.child,
+      ),
+    );
+  }
+}
+
 /// A bar of [tabs], [controller] choosing among them; the look paints each
 /// tab ([tabBuilder]) and the indicator under them ([indicatorBuilder]), or
 /// over them ([indicatorPosition]).
@@ -273,7 +636,9 @@ String _panelId(RawTabController controller, int index) =>
 /// disabled tabs skipped. With [selectionFollowsFocus] the focused tab is
 /// chosen as focus reaches it; otherwise Enter or Space chooses it. Each
 /// arrow, Home and End is a [RawRovingFocusIntent], which an [Actions]
-/// round the bar overrides.
+/// round the bar overrides. It is a [RawTabGroup] with its own strip: a
+/// tab row laid out otherwise (frames, words between its tabs) takes the
+/// group itself.
 ///
 /// ```dart
 /// RawTabBar(controller: controller, tabs: const [RawTab(label: 'Inbox'), RawTab(label: 'Sent')], tabBuilder: (context, tab, details) => Text(tab.label))
@@ -449,12 +814,6 @@ class _DesignTabBarState extends State<RawTabBar>
     });
   }
 
-  // A key moved the focus to tab [i].
-  void _movedTo(int i) {
-    if (widget.selectionFollowsFocus) _controller.animateTo(i);
-    _reveal(i);
-  }
-
   // Scrolls the strip, on the controller's spring, the least way that shows
   // tab [i] whole.
   void _reveal(int i) {
@@ -527,12 +886,16 @@ class _DesignTabBarState extends State<RawTabBar>
           ),
       ],
     );
-    bar = Semantics(
-      role: SemanticsRole.tabBar,
-      container: true,
-      explicitChildNodes: true,
-      label: widget.semanticLabel,
-      child: RovingGroup(orientation: widget.direction, child: bar),
+    bar = _TabBarHooks(
+      reveal: _reveal,
+      child: RawTabGroup<int>(
+        groupValue: selected,
+        onChanged: _controller.animateTo,
+        orientation: widget.direction,
+        selectionFollowsFocus: widget.selectionFollowsFocus,
+        semanticLabel: widget.semanticLabel,
+        child: bar,
+      ),
     );
     if (widget.isScrollable) {
       bar = SingleChildScrollView(
@@ -546,27 +909,13 @@ class _DesignTabBarState extends State<RawTabBar>
 
   Widget _tab(int i, RawWidgetsLocalizations words) {
     final tab = widget.tabs[i];
-    final controller = _controller;
-    return RovingItem(
-      focusNode: _nodes[i],
-      enabled: tab.enabled,
-      selected: i == controller.index,
-      order: i,
-      onMovedTo: () => _movedTo(i),
-      child: _pressable(i, words),
-    );
-  }
-
-  Widget _pressable(int i, RawWidgetsLocalizations words) {
-    final tab = widget.tabs[i];
     final n = widget.tabs.length;
     final controller = _controller;
-    return RawButton(
+    return RawTabGroupTab<int>(
+      value: i,
+      enabled: tab.enabled,
       focusNode: _nodes[i],
       statesController: _states[i],
-      onPressed: tab.enabled ? () => controller.animateTo(i) : null,
-      selected: i == controller.index,
-      tab: true,
       builder: (context, states, _) => Semantics(
         // As Material's TabBar: its name, then its place.
         label: '${tab.label}\n${words.tabLabel(tabIndex: i + 1, tabCount: n)}',

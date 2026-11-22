@@ -5,12 +5,23 @@
 /// ui_core; not exported.
 library;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 
+/// Whether the platform reads a node's required flag aloud. In Flutter
+/// 3.47 the web does: it writes `aria-required` on the node's element, a
+/// text field's input included. Android's, iOS's, macOS's, Windows' and
+/// Linux's embedders carry the flag and say nothing of it, so a required
+/// field keeps its words there.
+abstract final class DesignRequiredFlag {
+  /// Whether the flag is heard: on the web. A test sets it.
+  static bool heard = kIsWeb;
+}
+
 /// The field's name (its label, and that it is required), its hint (the
-/// error, then the help) and whether it is invalid, for the control under
-/// it that carries them.
+/// error, then the help), whether it is required and whether it is invalid,
+/// for the control under it that carries them.
 class DesignFieldWords extends InheritedWidget {
   /// The words of the field round [child].
   const DesignFieldWords({
@@ -18,6 +29,7 @@ class DesignFieldWords extends InheritedWidget {
     required this.name,
     required this.hint,
     required this.invalid,
+    this.required = false,
     required super.child,
   });
 
@@ -31,6 +43,10 @@ class DesignFieldWords extends InheritedWidget {
   /// Whether the field shows an error.
   final bool invalid;
 
+  /// Whether the field must be filled: the node that carries the words
+  /// sets the required flag.
+  final bool required;
+
   /// The words of the nearest field round [context], or null outside one.
   static DesignFieldWords? maybeOf(BuildContext context) =>
       context.dependOnInheritedWidgetOfExactType<DesignFieldWords>();
@@ -39,7 +55,8 @@ class DesignFieldWords extends InheritedWidget {
   bool updateShouldNotify(DesignFieldWords oldWidget) =>
       name != oldWidget.name ||
       hint != oldWidget.hint ||
-      invalid != oldWidget.invalid;
+      invalid != oldWidget.invalid ||
+      required != oldWidget.required;
 }
 
 /// Marks [child] as the control that carries its field's words, so the

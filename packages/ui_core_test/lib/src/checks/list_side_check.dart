@@ -9,12 +9,17 @@ part of '../alignment.dart';
 /// other side only when the room below can't hold it, or a sensible least
 /// of a longer list (200 px, which it then fills and scrolls). A list that
 /// opens above with that room below, because above has more, jumps from
-/// side to side as the page scrolls.
+/// side to side as the page scrolls. A popover is held to its own
+/// placement's rule: its [RawPopoverPlacement.preferredExtent] is the
+/// least, and a surface placed with [RawPopoverFit.whole] (a month, a grid)
+/// needs its whole extent below, so one that fits whole only above opens
+/// there.
 ///
 /// - **Below while below holds it**: a list that asks for below (a
 ///   popover placed below, an autocomplete that opens down or on the side
 ///   with most space) and stands above its anchor has less than its height,
-///   and less than 200 px, below the anchor: `a list over "Assignee" at 16,
+///   and less than its least (200 px, or its placement's), below the anchor:
+///   `a list over "Assignee" at 16,
 ///   246 opens above it with 330 px free below, room for 200 px of its 220
 ///   px`.
 ///
@@ -36,21 +41,29 @@ class DesignListSideCheck {
   final String look;
 
   /// The least of a longer list that the room below must hold before the
-  /// list may open above: a [RawPopoverPlacement]'s preferred extent.
+  /// list may open above: a [RawPopoverPlacement]'s default preferred
+  /// extent, and an autocomplete's. A popover's own placement says its
+  /// least.
   static const double least = 200;
 
   /// Checks every list open under [context].
   DesignAlignmentReport check(BuildContext context) {
     final problems = <String>[];
     void find(Element e) {
-      final asksBelow = switch (e.widget) {
-        RawPopover(:final placement) => placement.side == RawPopoverSide.below,
-        RawAutocomplete<Object>(:final optionsViewOpenDirection) =>
-          optionsViewOpenDirection != OptionsViewOpenDirection.up,
-        _ => false,
+      // The least of it the room below must hold, when it asks for below.
+      final least = switch (e.widget) {
+        RawPopover(:final placement)
+            when placement.side == RawPopoverSide.below =>
+          placement.fit == RawPopoverFit.whole
+              ? double.infinity
+              : placement.preferredExtent,
+        RawAutocomplete<Object>(:final optionsViewOpenDirection)
+            when optionsViewOpenDirection != OptionsViewOpenDirection.up =>
+          DesignListSideCheck.least,
+        _ => null,
       };
-      if (asksBelow) {
-        if (_listAbove(e) case final problem?) problems.add(problem);
+      if (least != null) {
+        if (_listAbove(e, least) case final problem?) problems.add(problem);
       }
       e.visitChildren(find);
     }
@@ -61,8 +74,9 @@ class DesignListSideCheck {
 }
 
 // What is wrong with the list [anchor] opens, if it is open: null when it
-// is closed, below its anchor, or above with too little room below.
-String? _listAbove(Element anchor) {
+// is closed, below its anchor, or above with too little room below for it
+// or [least] of it.
+String? _listAbove(Element anchor, double least) {
   final box = anchor.renderObject;
   if (box is! RenderBox || !box.attached || !box.hasSize || !_isShown(box)) {
     return null;
@@ -80,12 +94,12 @@ String? _listAbove(Element anchor) {
     Offset.zero & media.size,
   );
   final below = screen.bottom - field.bottom;
-  final needs = math.min(drawn.height, DesignListSideCheck.least);
+  final needs = math.min(drawn.height, least);
   if (below < needs + 1) return null;
   final name = _nameOf(box);
   return 'a list over $name at ${_px(drawn.left)}, ${_px(drawn.top)} '
       'opens above it with ${_px(below)} px free below, room for '
-      '${drawn.height <= DesignListSideCheck.least ? 'its' : '${_px(needs)} px of its'} '
+      '${drawn.height <= least ? 'its' : '${_px(needs)} px of its'} '
       '${_px(drawn.height)} px: it opens below while below holds it';
 }
 

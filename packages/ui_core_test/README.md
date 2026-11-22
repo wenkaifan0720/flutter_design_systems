@@ -46,7 +46,8 @@ await expectLater(tester, meetsGuideline(textFieldNameGuideline));
 ```
 
 `checkableRoleGuideline`, `fieldSemanticsGuideline`, `textFieldNameGuideline`, `tapTargetReachGuideline`,
-`cursorGuideline`, `labelPlacementGuideline`, `tooltipNodeGuideline` and `listSideGuideline`. The radio group check
+`cursorGuideline`, `labelPlacementGuideline`, `tooltipNodeGuideline`, `listSideGuideline`, `overlayGuideline` and
+`overflowGuideline`. The radio group check
 and the field nodes check are not: one presses keys and the other types, and a guideline reads a screen without
 changing it. The guidelines library imports `flutter_test`; the main library does not, so the
 checks also run in an app (each takes the tester's `pump` and `runAsync` as functions).
@@ -70,7 +71,17 @@ What a control says and does, from the semantics tree, layout boxes and hit test
   new one loses the keys typed meanwhile). A test reads the fields, types, then checks them.
 - `DesignTooltipNodeCheck`: each tooltip is on the node of the control it tips, so a screen reader reads them as one.
 - `DesignListSideCheck`: each open list that asks for below opens below its field while the room below holds it, or
-  200 px of a longer one, as Material's menus and autocomplete do.
+  200 px of a longer one, as Material's menus and autocomplete do. A popover is held to its placement: its
+  `preferredExtent`, and all of a surface placed with `RawPopoverFit.whole` (a month), which opens above where only
+  above holds it whole.
+- `DesignFieldWordsCheck`: a text field's help and error are read with the field, on its node or inside it, as
+  Material's `TextField` reads them, not on a node beside it.
+- `DesignOverlayCheck`: each open overlay (a popover, a menu, a picker, a sheet, a dialog) shows whole: all it paints
+  stands on the screen, nothing in it is cut, and a grid in it (a month) doesn't shrink and scroll where the other
+  side of its anchor holds it whole, nor scroll sideways by less than one of its controls.
+- `DesignOverflowCheck`: no row or column holds more than it has room for; run it at text scale 2 too.
+- `DesignDialogActionsCheck`: a dialog's actions stand in one row, or else in one column of one width with the
+  confirming action on top; never some side by side and one under them.
 - `DesignTapTargetCheck`: every control's tap target reaches the look's floor for the input (a phone's screen is
   read for a finger, a desk's for a pointer), and its target is where it is drawn; a text field's own keys (a clear
   or reveal key whose node lies in the field's) are part of the field's reach.

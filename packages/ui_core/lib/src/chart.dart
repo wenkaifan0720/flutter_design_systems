@@ -126,13 +126,21 @@ class DesignChartDetails {
     required this.activePosition,
     required this.activeBy,
     required this.states,
+    this.textDirection = TextDirection.ltr,
   });
 
   /// The chart's whole size.
   final Size size;
 
-  /// Where the marks go: the size, less [DesignChart.padding].
+  /// Where the marks go: the size, less [DesignChart.padding] and, at the
+  /// reading start, [DesignChart.yLabelGutter]'s room for the y labels.
   final Rect plotArea;
+
+  /// The reader's direction, which the chart is laid out in: the x scale
+  /// runs from the right and the y labels' room is at the right when it is
+  /// [TextDirection.rtl]. A look sets its words and the y labels' side by
+  /// it.
+  final TextDirection textDirection;
 
   /// The x scale, ranged to [plotArea]'s width: right to left when the
   /// reader's direction is.
@@ -266,6 +274,8 @@ class DesignChart extends StatefulWidget {
     this.tickCount = 5,
     this.formatX,
     this.formatY,
+    this.valueFormat,
+    this.yLabelGutter,
     this.semanticSummary,
     this.onActivePointChanged,
     this.onShowTable,
@@ -305,8 +315,22 @@ class DesignChart extends StatefulWidget {
   /// reader's numbers, dates, or [categories]).
   final DesignChartFormat? formatX;
 
-  /// The y values' labels, readout and speech; null: the reader's numbers.
+  /// The y values' labels, readout and speech, in place of [valueFormat];
+  /// null: [valueFormat]'s.
   final DesignChartFormat? formatY;
+
+  /// How the y values are written on the axis, in the readout and what a
+  /// screen reader hears, with their unit (`DesignChartValueFormat(suffix:
+  /// ' h')`): in the reader's digits, each tick at its scale's decimals.
+  /// Null: the reader's numbers alone.
+  final DesignChartValueFormat? valueFormat;
+
+  /// The room the y labels take beside the plot, at the reading start (the
+  /// left, or the right when the reader's direction is right to left),
+  /// within [padding]: given the y ticks as labelled, it gives the width of
+  /// the widest as the look sets it ([DesignScaleTick.widestLabel]) and
+  /// any gap. Null: none, [padding] alone.
+  final double Function(List<DesignScaleTick> yTicks)? yLabelGutter;
 
   /// What a screen reader hears of the data; null: a sentence built from
   /// it.
@@ -363,6 +387,19 @@ class DesignChart extends StatefulWidget {
       ..add(IntProperty('tickCount', tickCount, defaultValue: 5))
       ..add(ObjectFlagProperty<DesignChartFormat>.has('formatX', formatX))
       ..add(ObjectFlagProperty<DesignChartFormat>.has('formatY', formatY))
+      ..add(
+        DiagnosticsProperty<DesignChartValueFormat>(
+          'valueFormat',
+          valueFormat,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<double Function(List<DesignScaleTick>)>.has(
+          'yLabelGutter',
+          yLabelGutter,
+        ),
+      )
       ..add(
         StringProperty('semanticSummary', semanticSummary, defaultValue: null),
       )
@@ -740,7 +777,9 @@ class _DesignChartState extends State<DesignChart>
   );
 
   String _yLabel(double y, RawWidgetsLocalizations l) =>
-      widget.formatY?.call(y) ?? l.formatDecimal(y);
+      widget.formatY?.call(y) ??
+      widget.valueFormat?.format(y, l) ??
+      l.formatDecimal(y);
 
   String _pointLabel(DesignChartPointRef ref, RawWidgetsLocalizations l) {
     final s = widget.series[ref.series];
@@ -920,9 +959,48 @@ class _DesignChartState extends State<DesignChart>
     final domain = _drawnDomain(t, widget);
     final direction = Directionality.of(context);
     final rtl = direction == TextDirection.rtl;
-    final plot = widget.padding
+    var plot = widget.padding
         .resolve(direction)
         .deflateRect(Offset.zero & size);
+    final y = DesignLinearScale(
+      min: domain.yMin,
+      max: domain.yMax,
+      start: plot.bottom,
+      end: plot.top,
+    );
+    List<DesignScaleTick> labelled(
+      List<DesignScaleTick> ticks,
+      DesignChartFormat? format,
+    ) => format == null
+        ? ticks
+        : [
+            for (final tick in ticks)
+              DesignScaleTick(
+                value: tick.value,
+                position: tick.position,
+                label: format(tick.value),
+                fractionDigits: tick.fractionDigits,
+              ),
+          ];
+    final yRaw = y.ticks(l, count: widget.tickCount);
+    final yTicks = widget.formatY != null
+        ? labelled(yRaw, widget.formatY)
+        : widget.valueFormat?.labelTicks(yRaw, l) ?? yRaw;
+    // The y labels' room, at the reading start.
+    final gutter = math.min(
+      plot.width,
+      math.max(0.0, widget.yLabelGutter?.call(yTicks) ?? 0),
+    );
+    if (gutter > 0) {
+      plot = rtl
+          ? Rect.fromLTRB(plot.left, plot.top, plot.right - gutter, plot.bottom)
+          : Rect.fromLTRB(
+              plot.left + gutter,
+              plot.top,
+              plot.right,
+              plot.bottom,
+            );
+    }
     final xStart = rtl ? plot.right : plot.left;
     final xEnd = rtl ? plot.left : plot.right;
     final DesignScale x = switch (widget.xAxis) {
@@ -945,25 +1023,6 @@ class _DesignChartState extends State<DesignChart>
         labels: widget.categories,
       ),
     };
-    final y = DesignLinearScale(
-      min: domain.yMin,
-      max: domain.yMax,
-      start: plot.bottom,
-      end: plot.top,
-    );
-    List<DesignScaleTick> labelled(
-      List<DesignScaleTick> ticks,
-      DesignChartFormat? format,
-    ) => format == null
-        ? ticks
-        : [
-            for (final tick in ticks)
-              DesignScaleTick(
-                value: tick.value,
-                position: tick.position,
-                label: format(tick.value),
-              ),
-          ];
     final series = _drawn(t, widget);
     final a = _active;
     final p = a == null ? null : series[a.series].points[a.index];
@@ -973,12 +1032,13 @@ class _DesignChartState extends State<DesignChart>
       x: x,
       y: y,
       xTicks: labelled(x.ticks(l, count: widget.tickCount), widget.formatX),
-      yTicks: labelled(y.ticks(l, count: widget.tickCount), widget.formatY),
+      yTicks: yTicks,
       series: series,
       active: a,
       activePosition: p == null ? null : Offset(x.map(p.x), y.map(p.y!)),
       activeBy: _activeBy,
       states: pickingStates,
+      textDirection: direction,
     );
   }
 
@@ -1155,6 +1215,7 @@ class DesignPieChart extends StatefulWidget {
     this.padding = EdgeInsets.zero,
     this.holeRadius = 0,
     this.formatValue,
+    this.valueFormat,
     this.semanticSummary,
     this.onActiveSliceChanged,
     this.onShowTable,
@@ -1181,8 +1242,14 @@ class DesignPieChart extends StatefulWidget {
   /// nothing. Defaults to 0, a pie.
   final double holeRadius;
 
-  /// The values' readout and speech; null: the reader's numbers.
+  /// The values' readout and speech, in place of [valueFormat]; null:
+  /// [valueFormat]'s.
   final DesignChartFormat? formatValue;
+
+  /// How the values are written in the readout and what a screen reader
+  /// hears, with their unit, in the reader's digits; null: the reader's
+  /// numbers alone.
+  final DesignChartValueFormat? valueFormat;
 
   /// What a screen reader hears of the data; null: a sentence built from
   /// it.
@@ -1226,6 +1293,13 @@ class DesignPieChart extends StatefulWidget {
       )
       ..add(
         ObjectFlagProperty<DesignChartFormat>.has('formatValue', formatValue),
+      )
+      ..add(
+        DiagnosticsProperty<DesignChartValueFormat>(
+          'valueFormat',
+          valueFormat,
+          defaultValue: null,
+        ),
       )
       ..add(
         StringProperty('semanticSummary', semanticSummary, defaultValue: null),
@@ -1339,7 +1413,9 @@ class _DesignPieChartState extends State<DesignPieChart>
   // ---- Words.
 
   String _valueLabel(double v, RawWidgetsLocalizations l) =>
-      widget.formatValue?.call(v) ?? l.formatDecimal(v);
+      widget.formatValue?.call(v) ??
+      widget.valueFormat?.format(v, l) ??
+      l.formatDecimal(v);
 
   String _sliceLabel(int i, RawWidgetsLocalizations l) {
     final total = widget.slices.fold(0.0, (sum, s) => sum + _value(s));
@@ -1579,6 +1655,7 @@ class DesignChartTable extends StatelessWidget {
     this.categories,
     this.formatX,
     this.formatY,
+    this.valueFormat,
     this.xHeader = '',
     this.semanticLabel,
   }) : slices = null,
@@ -1591,6 +1668,7 @@ class DesignChartTable extends StatelessWidget {
     required List<DesignPieSlice> this.slices,
     required this.cellBuilder,
     DesignChartFormat? formatValue,
+    this.valueFormat,
     this.xHeader = '',
     this.valueHeader = '',
     this.shareHeader = '',
@@ -1623,6 +1701,9 @@ class DesignChartTable extends StatelessWidget {
   /// [DesignPieChart.formatValue]).
   final DesignChartFormat? formatY;
 
+  /// How the values are written, as [DesignChart.valueFormat].
+  final DesignChartValueFormat? valueFormat;
+
   /// The first column's header ("Month"); empty by default.
   final String xHeader;
 
@@ -1636,7 +1717,8 @@ class DesignChartTable extends StatelessWidget {
   final String? semanticLabel;
 
   List<List<String>> _rows(RawWidgetsLocalizations l) {
-    String y(double v) => formatY?.call(v) ?? l.formatDecimal(v);
+    String y(double v) =>
+        formatY?.call(v) ?? valueFormat?.format(v, l) ?? l.formatDecimal(v);
     final slices = this.slices;
     if (slices != null) {
       final total = slices.fold(0.0, (sum, s) => sum + math.max(0, s.value));
@@ -1739,6 +1821,13 @@ class DesignChartTable extends StatelessWidget {
       )
       ..add(ObjectFlagProperty<DesignChartFormat>.has('formatX', formatX))
       ..add(ObjectFlagProperty<DesignChartFormat>.has('formatY', formatY))
+      ..add(
+        DiagnosticsProperty<DesignChartValueFormat>(
+          'valueFormat',
+          valueFormat,
+          defaultValue: null,
+        ),
+      )
       ..add(StringProperty('xHeader', xHeader, defaultValue: ''))
       ..add(StringProperty('valueHeader', valueHeader, defaultValue: ''))
       ..add(StringProperty('shareHeader', shareHeader, defaultValue: ''))

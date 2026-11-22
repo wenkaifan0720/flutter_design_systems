@@ -586,6 +586,7 @@ class _DesignNumberFieldState extends State<RawNumberField> {
         validationResult: words?.invalid ?? false
             ? SemanticsValidationResult.invalid
             : SemanticsValidationResult.none,
+        isRequired: words?.required ?? false ? true : null,
         enabled: _enabled,
         minValue: widget.min?.toString(),
         maxValue: widget.max?.toString(),

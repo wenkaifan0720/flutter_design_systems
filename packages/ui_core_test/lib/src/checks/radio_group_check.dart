@@ -16,8 +16,12 @@ part of '../alignment.dart';
 ///   A radio turned off is passed over.
 /// - **What each radio says**: [DesignCheckableCheck] over the group.
 ///
-/// The radios are the group's nodes in a group of which one is chosen,
-/// read in reading order. The check moves the focus and sends keys, so the
+/// The radios are the group's own nodes in a group of which one is chosen,
+/// read in reading order: the nodes its widgets make, not another's drawn
+/// over it (a sheet's group over a page's). A group none of whose nodes
+/// stand in the semantics tree (behind a modal route's barrier) is out of
+/// reach and passes unread. Focus outside the group's widgets is outside
+/// the group, whatever lies under it on screen. The check moves the focus and sends keys, so the
 /// group's `onChanged` must hold the choice, as an app's does (a
 /// [StatefulBuilder] round it in a test). [before] is a focusable control
 /// just before the group, and the check takes the tester's
@@ -56,6 +60,7 @@ class DesignRadioGroupCheck {
     final reader = _RadioReader(group);
     var radios = reader.radios();
     if (radios.length < 2) {
+      if (reader.outOfTree) return DesignAlignmentReport(look, const []);
       return DesignAlignmentReport(look, [
         'a group of ${radios.length} radios: a group holds two or more',
       ]);
@@ -174,6 +179,38 @@ class _RadioReader {
     return box is RenderBox && box.hasSize ? _global(box) : Rect.zero;
   }
 
+  // The nodes the group's own render objects make (a node merged into
+  // another read as the one it merges into), as a debug build maps the
+  // render tree to the semantics tree; null where it is not mapped (a
+  // release build: then by the group's place on screen).
+  Set<SemanticsNode>? _ownNodes() {
+    final root = group.findRenderObject();
+    if (root == null) return null;
+    if (kReleaseMode) return null;
+    final own = <SemanticsNode>{};
+    void visit(RenderObject r) {
+      final node = r.debugSemantics;
+      if (node != null) {
+        var read = node;
+        while (read.isMergedIntoParent && read.parent != null) {
+          read = read.parent!;
+        }
+        if (read.attached) own.add(read);
+      }
+      r.visitChildren(visit);
+    }
+
+    visit(root);
+    return own;
+  }
+
+  // Whether none of the group's nodes stand in the semantics tree: behind
+  // a modal route's barrier, nothing reaches it.
+  bool get outOfTree {
+    final own = _ownNodes();
+    return own != null && own.isEmpty;
+  }
+
   // The group's radios in reading order.
   List<_Radio> radios() {
     final box = group.findRenderObject();
@@ -188,10 +225,11 @@ class _RadioReader {
     final area = _area.inflate(1);
     final ratio = View.of(group).devicePixelRatio;
     final rtl = Directionality.maybeOf(group) == TextDirection.rtl;
+    final own = _ownNodes();
     final found = [
       for (final (node, rect) in _placedNodes(semantics, ratio))
         if (!node.isMergedIntoParent &&
-            area.contains(rect.center) &&
+            (own != null ? own.contains(node) : area.contains(rect.center)) &&
             node.getSemanticsData().flagsCollection.isInMutuallyExclusiveGroup)
           _Radio(node.getSemanticsData(), rect),
     ];
@@ -209,8 +247,10 @@ class _RadioReader {
 
   // The radio the focus is on: -1 when the focus is outside the group.
   int focused(List<_Radio> radios) {
-    final box = FocusManager.instance.primaryFocus?.context?.findRenderObject();
+    final context = FocusManager.instance.primaryFocus?.context;
+    final box = context?.findRenderObject();
     if (box is! RenderBox || !box.attached || !box.hasSize) return -1;
+    if (context is Element && !_within(context)) return -1;
     final rect = _global(box);
     if (!_area.inflate(1).contains(rect.center)) return -1;
     for (var i = 0; i < radios.length; i++) {
@@ -218,5 +258,16 @@ class _RadioReader {
       if (r.contains(rect.center) || rect.contains(r.center)) return i;
     }
     return -1;
+  }
+
+  // Whether [element] is the group's or stands under it.
+  bool _within(Element element) {
+    if (identical(element, group)) return true;
+    var under = false;
+    element.visitAncestorElements((e) {
+      under = identical(e, group);
+      return !under;
+    });
+    return under;
   }
 }

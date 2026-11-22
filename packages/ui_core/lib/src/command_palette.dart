@@ -419,6 +419,8 @@ class _DesignCommandPaletteState extends State<RawCommandPalette> {
             controller: _text,
             focusNode: _focus,
             submit: _run,
+            // The palette's list always shows.
+            isOpen: true,
           ),
         ),
       ),

@@ -6,6 +6,7 @@ library;
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
@@ -14,7 +15,7 @@ import '../localizations.dart';
 import '../pressable.dart';
 import 'announce.dart';
 import 'back.dart';
-import 'quiet_focus.dart';
+import 'focus_visible.dart';
 
 /// An option taken from the list, as a [RawAutocomplete]'s `onSelected` gets
 /// it: a new object each time, so the autocomplete never skips an option it
@@ -44,6 +45,50 @@ class DesignListKeys {
 
   /// Whether a list of options is on screen.
   bool get isOpen => _list != null && _shown;
+
+  // The views marked as the options under the field ([surface]).
+  int _surfaces = 0;
+  final ValueNotifier<bool> _opened = ValueNotifier(false);
+  bool _publishing = false;
+  bool _disposed = false;
+
+  /// Whether the field's options show: the list, or its loading, no-match
+  /// or failure view. Told as the frame that shows or hides them ends.
+  ValueListenable<bool> get opened => _opened;
+
+  /// Marks [child] as the options shown under the field.
+  Widget surface(Widget child) => _Surface(keys: this, child: child);
+
+  void _surfaceShown() {
+    _surfaces++;
+    _publish();
+  }
+
+  void _surfaceGone() {
+    _surfaces--;
+    _publish();
+  }
+
+  // Shown and hidden in the frame's build: the field hears it after.
+  void _publish() {
+    if (_disposed) return;
+    if (SchedulerBinding.instance.schedulerPhase == SchedulerPhase.idle) {
+      _opened.value = _surfaces > 0;
+      return;
+    }
+    if (_publishing) return;
+    _publishing = true;
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      _publishing = false;
+      if (!_disposed) _opened.value = _surfaces > 0;
+    });
+  }
+
+  /// Lets go of what the keys hold, as the field's owner is disposed.
+  void dispose() {
+    _disposed = true;
+    _opened.dispose();
+  }
 
   /// Wraps the text field so arrows move its highlight and a hardware Enter
   /// accepts it. An active input-method composition keeps its Enter key.
@@ -79,10 +124,13 @@ class DesignListKeys {
   );
 
   // The autocomplete opens its list as the field gains focus. Focus given
-  // back by ui_core (a closed popover's) is not the user's: the list closes
-  // again before it is built, and Down, a press or typing opens it.
+  // back (a closed popover's or dialog's, ui_core's or Flutter's) is not
+  // the user's: the list closes again before it is built, and Down, a press
+  // or typing opens it.
   void _focusChanged(bool focused) {
-    if (!focused || !DesignQuietFocus.isRestoring) return;
+    if (!focused || DesignFocusVisible.arrival != DesignFocusArrival.restore) {
+      return;
+    }
     // After the autocomplete has heard the focus too.
     scheduleMicrotask(() {
       final field = _field;
@@ -189,6 +237,42 @@ class DesignListKeys {
     if (identical(_list, list)) _list = null;
     _syncBack();
   }
+}
+
+class _Surface extends StatefulWidget {
+  const _Surface({required this.keys, required this.child});
+
+  final DesignListKeys keys;
+  final Widget child;
+
+  @override
+  State<_Surface> createState() => _SurfaceState();
+}
+
+class _SurfaceState extends State<_Surface> {
+  @override
+  void initState() {
+    super.initState();
+    widget.keys._surfaceShown();
+  }
+
+  @override
+  void didUpdateWidget(_Surface oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!identical(oldWidget.keys, widget.keys)) {
+      oldWidget.keys._surfaceGone();
+      widget.keys._surfaceShown();
+    }
+  }
+
+  @override
+  void dispose() {
+    widget.keys._surfaceGone();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
 }
 
 class _ListKeyAction<I extends Intent> extends ContextAction<I> {

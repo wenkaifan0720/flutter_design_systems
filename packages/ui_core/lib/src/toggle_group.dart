@@ -8,7 +8,7 @@ import 'package:flutter/semantics.dart' show SemanticsRole;
 import 'package:flutter/widgets.dart';
 
 import 'pressable.dart';
-import 'internal/roving_group.dart';
+import 'roving_focus.dart';
 
 /// Builds an item's face for its [states] (selected, focused while the
 /// keyboard is on it, hovered, pressed, disabled).
@@ -234,7 +234,7 @@ class _DesignToggleGroupState<T> extends State<RawSegmentedButton<T>> {
       explicitChildNodes: true,
       role: single ? SemanticsRole.radioGroup : null,
       label: widget.semanticLabel,
-      child: RovingGroup(
+      child: RawRovingFocusGroup(
         // One choice answers every arrow, as a radio group does; many, the
         // arrows along the group, as a toolbar's toggles do.
         orientation: single ? null : widget.direction,
@@ -246,7 +246,7 @@ class _DesignToggleGroupState<T> extends State<RawSegmentedButton<T>> {
   Widget _item(BuildContext context, int i) {
     final v = widget.options[i];
     final on = widget.selected.contains(v);
-    return RovingItem(
+    return RawRovingFocusItem(
       focusNode: _nodes[i],
       enabled: _enabled(i),
       selected: on,

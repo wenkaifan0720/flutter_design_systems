@@ -4,7 +4,7 @@ library;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
-import 'internal/roving_group.dart';
+import 'roving_focus.dart';
 
 /// Builds the look's radio for [option]. Attach [focusNode] to the control
 /// that takes the press and use [select] as its press callback. A null
@@ -159,7 +159,7 @@ class _DesignRadioGroupState<T> extends State<DesignRadioGroup<T>> {
     );
     final items = [
       for (final value in widget.options)
-        RovingItem(
+        RawRovingFocusItem(
           key: ObjectKey(value),
           focusNode: nodes[value]!,
           enabled: _enabled(value),
@@ -191,7 +191,7 @@ class _DesignRadioGroupState<T> extends State<DesignRadioGroup<T>> {
       onChanged: (value) {
         if (value != null) _choose(value);
       },
-      child: RovingGroup(
+      child: RawRovingFocusGroup(
         homeAndEnd: false,
         child: label == null ? layout : Semantics(label: label, child: layout),
       ),

@@ -41,8 +41,11 @@ class _Searches {
       pending.remove(query)!.completeError(error);
 }
 
+bool? _open;
+
 Widget _field(DesignComboboxField field) {
   _focus = field.focusNode;
+  _open = field.isOpen;
   return SizedBox(
     key: _fieldKey,
     width: 200,
@@ -115,6 +118,29 @@ Future<void> _type(WidgetTester tester, String text) async {
 
 void main() {
   setUp(() => _error = null);
+
+  testWidgets('the field hears that its options show while the search runs '
+      'and as it fails, and that none do once a search finds nothing', (
+    tester,
+  ) async {
+    final searches = _Searches();
+    await tester.pumpWidget(_page(_combobox(searches.call)));
+    expect(_open, isFalse);
+    await _type(tester, 'pe');
+    await tester.pump();
+    expect(find.byKey(_loadingKey), findsOneWidget);
+    expect(_open, isTrue, reason: 'loading shows');
+    searches.fail('pe', StateError('offline'));
+    await tester.pumpAndSettle();
+    expect(find.byKey(_errorKey), findsOneWidget);
+    expect(_open, isTrue, reason: 'the failure shows');
+    await _type(tester, 'xq');
+    searches.answer('xq', []);
+    await tester.pumpAndSettle();
+    expect(find.byKey(_errorKey), findsNothing);
+    expect(find.byKey(_loadingKey), findsNothing);
+    expect(_open, isFalse, reason: 'nothing found, nothing shows');
+  });
 
   group('a debounce', () {
     testWidgets('one search per pause, for the words then', (tester) async {

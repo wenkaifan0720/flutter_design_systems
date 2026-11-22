@@ -64,4 +64,30 @@ void main() {
     await tester.pumpWidget(const SizedBox());
     expect(_routes, before);
   });
+
+  testWidgets('the highlight mode is heard while a part stands, and not once '
+      'the last has gone', (tester) async {
+    var told = 0;
+    void tell() => told++;
+    DesignFocusVisible.addListener(tell);
+    addTearDown(() => DesignFocusVisible.removeListener(tell));
+    Future<void> switchMode() async {
+      // A touch, then a key: the key's handler, then the mode switch.
+      await tester.tapAt(const Offset(5, 5));
+      await tester.sendKeyEvent(LogicalKeyboardKey.shift);
+      await tester.pump();
+      expect(
+        FocusManager.instance.highlightMode,
+        FocusHighlightMode.traditional,
+      );
+    }
+
+    await tester.pumpWidget(_page(0));
+    await switchMode();
+    expect(told, greaterThan(0));
+    await tester.pumpWidget(const SizedBox());
+    told = 0;
+    await switchMode();
+    expect(told, 0, reason: 'nothing left registered');
+  });
 }

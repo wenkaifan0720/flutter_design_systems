@@ -1,12 +1,14 @@
 /// Chart scales: values (a number, a time's milliseconds, a category's
 /// index) to positions on screen and back, and the ticks between, labelled
-/// in the reader's numbers and dates. No widgets: [DesignChart] makes them
-/// for its plot, and a look may make its own.
+/// in the reader's numbers and dates, and [DesignChartValueFormat], a
+/// value's words with its unit. No widgets: [DesignChart] makes them for its
+/// plot, and a look may make its own.
 library;
 
 import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/painting.dart';
 
 import 'date_field.dart' show RawTimeOfDay;
 import 'internal/decimal.dart' as decimal;
@@ -20,6 +22,7 @@ class DesignScaleTick {
     required this.value,
     required this.position,
     required this.label,
+    this.fractionDigits,
   });
 
   /// The value it marks: a number, a time's milliseconds since the epoch,
@@ -32,15 +35,50 @@ class DesignScaleTick {
   /// Its label, in the reader's numbers and dates.
   final String label;
 
+  /// The decimals its scale writes every tick's value with (a step of 0.2
+  /// writes 1), so a format writes them alike
+  /// ([DesignChartValueFormat.labelTicks]); null for a category's or a
+  /// time's tick.
+  final int? fractionDigits;
+
+  /// The width of the widest of [ticks]' labels set in [style] at
+  /// [textScaler], for the room a look keeps for them beside a plot
+  /// ([DesignChart.yLabelGutter]); 0 when there are none.
+  ///
+  /// ```dart
+  /// DesignScaleTick.widestLabel(details.yTicks, style: const TextStyle(fontSize: 12), textScaler: MediaQuery.textScalerOf(context))
+  /// ```
+  static double widestLabel(
+    Iterable<DesignScaleTick> ticks, {
+    required TextStyle style,
+    TextScaler textScaler = TextScaler.noScaling,
+    TextDirection textDirection = TextDirection.ltr,
+  }) {
+    var widest = 0.0;
+    final painter = TextPainter(
+      textDirection: textDirection,
+      textScaler: textScaler,
+    );
+    for (final tick in ticks) {
+      painter
+        ..text = TextSpan(text: tick.label, style: style)
+        ..layout();
+      widest = math.max(widest, painter.width);
+    }
+    painter.dispose();
+    return widest;
+  }
+
   @override
   bool operator ==(Object other) =>
       other is DesignScaleTick &&
       other.value == value &&
       other.position == position &&
-      other.label == label;
+      other.label == label &&
+      other.fractionDigits == fractionDigits;
 
   @override
-  int get hashCode => Object.hash(value, position, label);
+  int get hashCode => Object.hash(value, position, label, fractionDigits);
 
   @override
   String toString() => 'DesignScaleTick($label at $position)';
@@ -205,6 +243,7 @@ class DesignLinearScale extends DesignScale {
           value: min,
           position: map(min),
           label: localizations.formatDecimal(min),
+          fractionDigits: decimal.decimalsOf(min),
         ),
       ];
     }
@@ -221,6 +260,7 @@ class DesignLinearScale extends DesignScale {
               value: value,
               position: map(value),
               label: localizations.formatDecimal(value, fractionDigits: digits),
+              fractionDigits: digits,
             ),
       ];
     }
@@ -235,6 +275,7 @@ class DesignLinearScale extends DesignScale {
             value: value,
             position: map(value),
             label: localizations.formatDecimal(value, fractionDigits: digits),
+            fractionDigits: digits,
           ),
     ];
   }
@@ -547,4 +588,111 @@ class DesignBandScale extends DesignScale {
 
   @override
   String toString() => 'DesignBandScale($count bands, $start–$end)';
+}
+
+/// The words for a value of [value] given as [figure]: the value in the
+/// reader's digits at the scale's decimals; [localizations] writes others.
+typedef DesignChartValueBuilder = String Function(
+  double value,
+  String figure,
+  RawWidgetsLocalizations localizations,
+);
+
+/// How a chart writes a value, on its axis, in what a screen reader hears
+/// and in its table: in the reader's digits and separators (Arabic-Indic in
+/// Arabic), at its scale's decimals (or [fractionDigits]), with a unit
+/// ([prefix], [suffix]), or as [DesignChartValueFormat.custom] builds it.
+///
+/// A look's own painter writes its ticks with [labelTicks] and a value with
+/// [format]; [DesignChart.valueFormat] and [DesignPieChart.valueFormat] take
+/// one. The unit is the app's words, in the reader's language: a format
+/// writes digits for the locale, not units.
+///
+/// ```dart
+/// const DesignChartValueFormat(suffix: ' h').format(4, RawWidgetsLocalizations.of(context))
+/// ```
+@immutable
+class DesignChartValueFormat {
+  /// A value with [prefix] before it and [suffix] after (r'$', ' h', '%').
+  const DesignChartValueFormat({
+    this.prefix = '',
+    this.suffix = '',
+    this.fractionDigits,
+  }) : _builder = null,
+       assert(fractionDigits == null || fractionDigits >= 0);
+
+  /// A value as [builder] writes it, from the figure in the reader's digits
+  /// (a compact 1.2k past a thousand, say).
+  const DesignChartValueFormat.custom(
+    DesignChartValueBuilder builder, {
+    this.fractionDigits,
+  }) : _builder = builder,
+       prefix = '',
+       suffix = '',
+       assert(fractionDigits == null || fractionDigits >= 0);
+
+  /// What comes before the figure.
+  final String prefix;
+
+  /// What comes after the figure: a unit, with the space the language puts
+  /// before it (' h').
+  final String suffix;
+
+  /// The decimals of every value; null: a tick's scale's, else as many as
+  /// the value has, up to three.
+  final int? fractionDigits;
+
+  final DesignChartValueBuilder? _builder;
+
+  /// [value]'s words for [localizations], with [fractionDigits] decimals
+  /// when this format sets none (a scale's tick's).
+  String format(
+    double value,
+    RawWidgetsLocalizations localizations, {
+    int? fractionDigits,
+  }) {
+    final figure = localizations.formatDecimal(
+      value,
+      fractionDigits: this.fractionDigits ?? fractionDigits,
+    );
+    final builder = _builder;
+    if (builder != null) return builder(value, figure, localizations);
+    return '$prefix$figure$suffix';
+  }
+
+  /// [ticks] labelled by this format, each at its scale's decimals.
+  List<DesignScaleTick> labelTicks(
+    List<DesignScaleTick> ticks,
+    RawWidgetsLocalizations localizations,
+  ) => [
+    for (final tick in ticks)
+      DesignScaleTick(
+        value: tick.value,
+        position: tick.position,
+        label: format(
+          tick.value,
+          localizations,
+          fractionDigits: tick.fractionDigits,
+        ),
+        fractionDigits: tick.fractionDigits,
+      ),
+  ];
+
+  @override
+  bool operator ==(Object other) =>
+      other is DesignChartValueFormat &&
+      other.prefix == prefix &&
+      other.suffix == suffix &&
+      other.fractionDigits == fractionDigits &&
+      other._builder == _builder;
+
+  @override
+  int get hashCode => Object.hash(prefix, suffix, fractionDigits, _builder);
+
+  @override
+  String toString() => _builder != null
+      ? 'DesignChartValueFormat.custom()'
+      : 'DesignChartValueFormat(${prefix.isEmpty ? '' : 'prefix: "$prefix", '}'
+            '${suffix.isEmpty ? '' : 'suffix: "$suffix", '}'
+            'fractionDigits: $fractionDigits)';
 }

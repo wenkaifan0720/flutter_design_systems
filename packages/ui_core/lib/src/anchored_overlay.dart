@@ -63,6 +63,24 @@ enum RawPopoverAlign {
   end,
 }
 
+/// How much of its own height (its width, beside the anchor) a surface
+/// wants on its side before it takes the other: [RawPopoverPlacement.fit].
+enum RawPopoverFit {
+  /// It shrinks to the room on its side and scrolls inside (a list, a
+  /// menu): it wants [RawPopoverPlacement.preferredExtent], or less when it
+  /// is shorter, so a long list stays under its field while 200 px fit.
+  scroll,
+
+  /// It does not shrink (a calendar, a grid, a picker's wheels): it wants
+  /// its whole measured extent, and takes the other side when its own can't
+  /// hold it and the other has more room, so a month never runs off the
+  /// screen, or shrinks and scrolls, while the other side holds it. It is
+  /// measured on the roomier side, so a surface that caps itself at
+  /// [RawPopoverInfo.maxSize] (scrolling where neither side holds it) still
+  /// shows its whole extent.
+  whole,
+}
+
 /// What opens an anchored surface.
 enum RawPopoverTrigger {
   /// The anchor's press toggles it ([DesignOverlayAnchor.toggle]): a popover
@@ -88,6 +106,7 @@ class RawPopoverPlacement {
     this.margin = 8,
     this.flip = true,
     this.preferredExtent = 200,
+    this.fit = RawPopoverFit.scroll,
     this.matchAnchorWidth = true,
     this.maxWidth = 320,
   }) : assert(maxWidth > 0);
@@ -112,8 +131,16 @@ class RawPopoverPlacement {
   final bool flip;
 
   /// The room it wants on its side before it flips: it flips when its side
-  /// has less than this and the opposite side has more.
+  /// has less than this (or than its own extent, when shorter) and the
+  /// opposite side has more. With [fit] at [RawPopoverFit.whole], it wants
+  /// its whole extent instead, once measured.
   final double preferredExtent;
+
+  /// Whether it shrinks to the room on its side and scrolls
+  /// ([RawPopoverFit.scroll], a list's, the default) or wants its whole
+  /// extent there before it picks the side ([RawPopoverFit.whole], a
+  /// calendar's or a grid's).
+  final RawPopoverFit fit;
 
   /// Whether, above or below the anchor, it is a list opened from a field
   /// (a select's, a combobox's, a menu from a form field): as wide as the
@@ -149,6 +176,7 @@ class RawPopoverPlacement {
       other.margin == margin &&
       other.flip == flip &&
       other.preferredExtent == preferredExtent &&
+      other.fit == fit &&
       other.matchAnchorWidth == matchAnchorWidth &&
       other.maxWidth == maxWidth;
 
@@ -160,6 +188,7 @@ class RawPopoverPlacement {
     margin,
     flip,
     preferredExtent,
+    fit,
     matchAnchorWidth,
     maxWidth,
   );
@@ -472,11 +501,14 @@ class RawPopover extends StatefulWidget {
   /// and Tab stays inside it; true by default. A hover card leaves focus on
   /// its anchor.
   ///
-  /// It goes to the surface's first focusable widget, except in a menu
-  /// ([arrowKeyNavigation]) a pointer opened: there it goes to the surface
-  /// itself and no item is lit, as a menu opened with a click shows none;
-  /// Down then focuses the first item and Up the last. A menu opened from
-  /// the keys, or by a screen reader, starts on its first item.
+  /// A widget in the surface that asks for focus as it mounts
+  /// (`autofocus: true`: a select's chosen option, a calendar's chosen day)
+  /// takes it, however the surface was opened, and is kept in view.
+  /// Otherwise it goes to the surface's first focusable widget, except in a
+  /// menu ([arrowKeyNavigation]) a pointer opened: there it goes to the
+  /// surface itself and no item is lit, as a menu opened with a click shows
+  /// none; Down then focuses the first item and Up the last. A menu opened
+  /// from the keys, or by a screen reader, starts on its first item.
   final bool focusOnOpen;
 
   /// Whether Up and Down move focus through the surface's items, wrapping,
@@ -864,6 +896,17 @@ class _DesignAnchoredOverlayState extends State<RawPopover>
       // The surface mounts in this frame; focus it once it has.
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted || !_controller.isOpen) return;
+        // A widget that asked for focus as it mounted has it now, ahead of
+        // the first item.
+        FocusManager.instance.applyFocusChangesIfNeeded();
+        final primary = FocusManager.instance.primaryFocus;
+        if (primary != null &&
+            primary != _scope &&
+            primary != _surfaceNode &&
+            primary.ancestors.contains(_scope)) {
+          _keepInView(primary);
+          return;
+        }
         if (widget.arrowKeyNavigation && _openedBy == DesignOpenedBy.pointer) {
           _focusSurface();
         } else {
@@ -972,6 +1015,14 @@ class _DesignAnchoredOverlayState extends State<RawPopover>
       }
     }
     node.requestFocus();
+    _keepInView(node, position);
+  }
+
+  // Keeps [node]'s widget wholly in view in the list that scrolls it inside
+  // the surface ([position], when known).
+  void _keepInView(FocusNode node, [ScrollPosition? position]) {
+    final context = node.context;
+    position ??= context == null ? null : _innerScroll(context);
     final row = context?.findRenderObject();
     if (position == null || row == null || !row.attached) return;
     position
@@ -1246,8 +1297,8 @@ class _DesignAnchoredOverlayState extends State<RawPopover>
               includeSemantics: false,
               onFocusChange: (focused) {
                 // A keyboard's focus shows the card; a tap's or a click's
-                // does not, as for :focus-visible.
-                final keyboard = DesignFocusVisible.shown;
+                // does not, as for :focus-visible, nor focus given back.
+                final keyboard = DesignFocusVisible.keyboardArrival;
                 if (focused && keyboard) {
                   intent.enter();
                 } else if (!focused) {

@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:ui' show Tristate;
 
 import 'package:flutter/gestures.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -137,6 +139,67 @@ bool _pagePops(WidgetTester tester) =>
     RoutePopDisposition.pop;
 
 void main() {
+  testWidgets('the field hears whether its options show (a look turns its '
+      'chevron by it) and, said on its input, a screen reader hears expanded', (
+    tester,
+  ) async {
+    final semantics = tester.ensureSemantics();
+    final heard = <bool>[];
+    await tester.pumpWidget(
+      _page(
+        RawCombobox<String>(
+          options: _fruit,
+          semanticLabel: 'Fruit',
+          emptyBuilder: (context) => const Text('No fruit'),
+          fieldBuilder: (context, field) {
+            heard.add(field.isOpen);
+            return Semantics(
+              expanded: field.isOpen,
+              child: plainField(
+                key: _fieldKey,
+                controller: field.controller,
+                focusNode: field.focusNode,
+                onSubmitted: field.submit,
+              ),
+            );
+          },
+          optionBuilder: _option,
+        ),
+      ),
+    );
+    SemanticsData input() {
+      final node = tester.getSemantics(find.byType(EditableText));
+      expect(node.getSemanticsData().flagsCollection.isTextField, isTrue);
+      return node.getSemanticsData();
+    }
+
+    expect(heard.last, isFalse);
+    expect(input().flagsCollection.isExpanded, Tristate.isFalse);
+    await tester.tap(find.byKey(_fieldKey));
+    await tester.pumpAndSettle();
+    expect(_listed(), _fruit);
+    expect(heard.last, isTrue, reason: 'the list shows');
+    expect(input().flagsCollection.isExpanded, Tristate.isTrue);
+    await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+    await tester.pumpAndSettle();
+    expect(_listed(), isEmpty);
+    expect(heard.last, isFalse, reason: 'Escape closed it');
+    expect(input().flagsCollection.isExpanded, Tristate.isFalse);
+    await tester.enterText(find.byType(EditableText), 'zz');
+    await tester.pumpAndSettle();
+    expect(find.text('No fruit'), findsOneWidget);
+    expect(heard.last, isTrue, reason: 'its no-match words show');
+    await tester.enterText(find.byType(EditableText), 'Ch');
+    await tester.pumpAndSettle();
+    expect(_listed(), ['Cherry']);
+    expect(heard.last, isTrue);
+    await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+    await tester.pumpAndSettle();
+    expect(_listed(), isEmpty);
+    expect(heard.last, isFalse, reason: 'an option taken closes it');
+    semantics.dispose();
+  });
+
   testWidgets('options open above the field when there is more room there', (
     tester,
   ) async {

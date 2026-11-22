@@ -30,6 +30,15 @@ class TaskForm extends StatelessWidget {
   Widget build(BuildContext context) => const SizedBox();
 }
 
+/// The form [DesignFieldWordsCheck]'s example checks.
+class SignUpForm extends StatelessWidget {
+  /// A form.
+  const SignUpForm({super.key});
+
+  @override
+  Widget build(BuildContext context) => const SizedBox();
+}
+
 /// The list [DesignFieldNodesCheck]'s example types in.
 class TaskList extends StatelessWidget {
   /// A list.
@@ -49,6 +58,26 @@ void _nodeAndSideChecks(WidgetTester tester) {
   const DesignListSideCheck(look: 'Comic')
       .check(tester.element(find.byType(TaskForm)))
       .verify();
+}
+
+/// [DesignOverlayCheck]'s, [DesignOverflowCheck]'s,
+/// [DesignDialogActionsCheck]'s and [DesignFieldWordsCheck]'s examples, run
+/// by checks_050_test.dart's shapes.
+void _checks050(WidgetTester tester) {
+  const DesignOverlayCheck(look: 'Comic')
+      .check(tester.element(find.byType(TaskForm)))
+      .verify();
+  const DesignOverflowCheck(look: 'Comic')
+      .check(tester.element(find.byType(SettingsScreen)))
+      .verify();
+  const DesignDialogActionsCheck(
+    look: 'Comic',
+    actions: ['Cancel', 'Discard', 'Save changes'],
+  ).check(tester.element(find.byType(TaskForm))).verify();
+  const DesignFieldWordsCheck(
+    look: 'Comic',
+    words: ['We never share it', 'Enter a valid email'],
+  ).check(tester.element(find.byType(SignUpForm))).verify();
 }
 
 /// [DesignFieldNodesCheck]'s example: it types, so field_nodes_check_test.dart
@@ -155,9 +184,13 @@ const Set<String> _checksFiles = {
   'alignment.dart',
   'checkable_check.dart',
   'cursor_check.dart',
+  'dialog_actions_check.dart',
   'field_nodes_check.dart',
+  'field_words_check.dart',
   'field_semantics_check.dart',
   'list_side_check.dart',
+  'overflow_check.dart',
+  'overlay_check.dart',
   'radio_group_check.dart',
   'shadow_clip_check.dart',
   'tap_target_check.dart',
@@ -178,6 +211,7 @@ void main() {
     expect(_radioGroupCheck, isNotNull);
     expect(_nodeAndSideChecks, isNotNull);
     expect(_fieldNodesCheck, isNotNull);
+    expect(_checks050, isNotNull);
   });
 
   testDocExamples(

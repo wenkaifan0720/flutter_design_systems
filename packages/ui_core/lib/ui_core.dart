@@ -2,6 +2,7 @@
 /// behaviours each look paints. Every look's package depends on it and re-exports it.
 library;
 
+export 'src/action_bar.dart';
 export 'src/adaptive_shell.dart';
 export 'src/anchored_overlay.dart';
 export 'src/barrier.dart';
@@ -38,8 +39,10 @@ export 'src/range_slider.dart';
 export 'src/rating.dart';
 export 'src/raw_tooltip_fixes.dart';
 export 'src/reorderable_list.dart';
+export 'src/roving_focus.dart';
 export 'src/roving_focus_intent.dart';
 export 'src/scroll_area.dart';
+export 'src/semantics_proxy.dart';
 export 'src/shortcut_label.dart';
 export 'src/side_sheet.dart';
 export 'src/spacing.dart';

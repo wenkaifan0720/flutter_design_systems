@@ -397,6 +397,54 @@ void main() {
   );
 
   testWidgets(
+    "a calendar a touch left focused lights its day on the first arrow: the "
+    'highlight mode the key switches is heard',
+    (tester) async {
+      final days = <DateTime, Set<WidgetState>>{};
+      final controller = RawCalendarController(
+        firstDate: DateTime(2025),
+        lastDate: DateTime(2027, 12, 31),
+        initialMonth: DateTime(2026, 1),
+        currentDate: DateTime(2026, 1, 15),
+      );
+      addTearDown(controller.dispose);
+      bool lit(int day) =>
+          days[DateTime(2026, 1, day)]?.contains(WidgetState.focused) ?? false;
+      await tester.pumpWidget(
+        harness(
+          Center(
+            child: SizedBox(
+              width: 320,
+              child: RawCalendarDatePicker(
+                controller: controller,
+                autofocus: true,
+                dayBuilder: (context, day, states) {
+                  if (day.inMonth) days[day.date] = states;
+                  return SizedBox(
+                    height: 40,
+                    child: Center(child: Text('${day.date.day}')),
+                  );
+                },
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.tapAt(const Offset(5, 5));
+      await tester.pump();
+      expect(FocusManager.instance.highlightMode, FocusHighlightMode.touch);
+      expect(controller.focusedDay, DateTime(2026, 1, 1));
+      expect(lit(1), isFalse, reason: 'no day lit after a touch');
+      // The calendar keeps the focus; the arrow moves its day.
+      await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
+      await tester.pump();
+      expect(controller.focusedDay, DateTime(2026, 1, 2));
+      expect(lit(2), isTrue, reason: 'the arrow lights the day it moved to');
+    },
+    variant: _desktop,
+  );
+
+  testWidgets(
     'an app that keeps the traditional highlight mode shows focus whatever '
     'the input',
     (tester) async {

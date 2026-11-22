@@ -1,3 +1,16 @@
+## 0.3.0
+
+- **Breaking:** needs ui_core 0.5.0.
+- `DesignOverlayCheck`: each open overlay (a popover, a menu, a list, a picker, a sheet, a dialog) shows whole. All it paints stands on the screen; no control and no line of words in it is cut, as `DesignClipCheck` reads them; and a grid in it (a month, swatches) doesn't shrink and scroll where the other side of its anchor holds it whole, nor scroll sideways by less than one of its controls. A list may shrink and scroll (`DesignListSideCheck`). It reads layout boxes.
+- `DesignOverflowCheck`: no row or column holds more than it has room for, the fault large text brings out; run it at text scale 2 too. It reads layout boxes, so it holds where an app's error handler swallows Flutter's overflow report.
+- `DesignDialogActionsCheck`: a dialog's or a sheet's actions stand in one row, or else in one column of one width with the confirming action on top and the dismissive one at the foot; never some side by side and one under them. It reads layout boxes and the labels on them.
+- `DesignFieldWordsCheck`: a text field's help and error are read with the field (on its node or inside it), as Material's `TextField` reads them, not on a node beside it. It reads the semantics tree.
+- `DesignClipCheck` and the new checks share their reading. It reads a line by its words, run between spaces, so the space a wrapped line broke at is not read as cut: a right-to-left paragraph sets that space past its start edge, where nothing is drawn, and left-to-right words wrapping in one (a label at 2x text) were named `cut at their right` by the width of a space. Its other reports are unchanged.
+- `DesignRadioGroupCheck` reads a group's own radios, the nodes its widgets make, not another group's drawn over its place: a sheet's group over a page's group was read as the page's, and the page's keys judged by it (`Down moves to "Conditioning" but does not choose it` where both groups worked). A group behind a modal route's barrier, out of the semantics tree, is out of reach and passes unread, where it read as `a group of 0 radios`. Focus outside the group's widgets is outside the group.
+- The checks read a line's baseline afresh, in the fonts the engine has now, as ui_core 0.5.0's `DesignCapCenter` does: a font loaded after a test's first frame no longer fails Flutter's dry-baseline check.
+- `DesignListSideCheck` holds a popover to its placement's own rule, as `RawPopover` places it: its `preferredExtent` is the least the room below must hold, and a surface placed with `RawPopoverFit.whole` (a month, a grid) needs its whole extent below, so one that fits whole only above opens there and passes. Before, 200 px below was the rule for all, and a 300 px month that opened above a field with 250 px below was named.
+- `package:ui_core_test/guidelines.dart` adds `overlayGuideline` and `overflowGuideline`.
+
 ## 0.2.1
 
 - `DesignTooltipNodeCheck`: each tooltip is on the node of the control it tips, so a screen reader reads the tip with the control, as Flutter's `Tooltip` gives it. A `Semantics(tooltip:)` round a button that keeps its own node fails. It reads the semantics tree.

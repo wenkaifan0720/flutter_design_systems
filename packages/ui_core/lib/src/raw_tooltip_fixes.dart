@@ -94,8 +94,15 @@ class _RawTooltipFocusFixState extends State<RawTooltipFocusFix> {
 
   void _show() {
     // The keys' focus shows the tip; a pointer's does not (a dialog a click
-    // opened, its safe action focused), as for :focus-visible.
-    if (!mounted || !_focused || _shown || !DesignFocusVisible.shown) return;
+    // opened, its safe action focused; a click on the web, which focuses
+    // the node before the press), as for :focus-visible, nor focus given
+    // back as a dialog closes.
+    if (!mounted ||
+        !_focused ||
+        _shown ||
+        !DesignFocusVisible.keyboardArrival) {
+      return;
+    }
     final tooltip = context.findAncestorStateOfType<RawTooltipState>();
     if (tooltip != null && tooltip.ensureTooltipVisible()) {
       _shown = true;

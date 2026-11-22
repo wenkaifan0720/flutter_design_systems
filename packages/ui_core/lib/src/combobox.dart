@@ -16,8 +16,13 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
+import 'internal/focus_visible.dart';
 import 'internal/list_side.dart';
 import 'internal/option_list.dart';
+
+// A search's view while a search that found nothing closes the list: no
+// options show.
+const Widget _nothing = SizedBox.shrink();
 
 /// The field, as [RawCombobox.fieldBuilder] gets it: wire [controller]
 /// and [focusNode] to the look's text input, and [submit] to its
@@ -29,6 +34,7 @@ class DesignComboboxField {
     required this.controller,
     required this.focusNode,
     required this.submit,
+    this.isOpen = false,
   });
 
   /// The text the field edits: the caller's when it gave one, else the
@@ -49,6 +55,29 @@ class DesignComboboxField {
   /// browser's focus, and letters stop reaching a field that still looks
   /// focused.
   final VoidCallback submit;
+
+  /// Whether the field's options show under it: the list, or its loading,
+  /// no-match or failure view. A look turns its chevron by it, as a select's
+  /// anchor does by `DesignOverlayAnchor.isOpen`, and says it on its text
+  /// input, where a screen reader hears it, as a select says it on its
+  /// button:
+  ///
+  /// ```dart
+  /// Semantics(
+  ///   expanded: field.isOpen,
+  ///   child: EditableText(
+  ///     controller: field.controller,
+  ///     focusNode: field.focusNode,
+  ///     onEditingComplete: field.submit,
+  ///     style: const TextStyle(),
+  ///     cursorColor: const Color(0xFF000000),
+  ///     backgroundCursorColor: const Color(0xFF808080),
+  ///   ),
+  /// )
+  /// ```
+  ///
+  /// A command palette's list always shows.
+  final bool isOpen;
 }
 
 /// Paints the field.
@@ -374,6 +403,9 @@ class _DesignComboboxState<T extends Object> extends State<RawCombobox<T>> {
   TextEditingController? _ownController;
   FocusNode? _ownFocus;
   final DesignListKeys _keys = DesignListKeys();
+  // The input, heard while it stands: focus given back to the field opens
+  // no list.
+  final DesignFocusHearing _hearing = DesignFocusVisible.hold();
   // The text of the option last taken from the list.
   String? _taken;
   // The query of the options the autocomplete was last asked for.
@@ -418,6 +450,8 @@ class _DesignComboboxState<T extends Object> extends State<RawCombobox<T>> {
 
   @override
   void dispose() {
+    _keys.dispose();
+    _hearing.release();
     _focus.removeListener(_focusChanged);
     _run.dispose();
     _ownController?.dispose();
@@ -550,14 +584,18 @@ class _DesignComboboxState<T extends Object> extends State<RawCombobox<T>> {
             // closed list without moving, and pass over disabled options.
             child: _keys.field(
               controller,
-              widget.fieldBuilder(
-                context,
-                DesignComboboxField(
-                  controller: controller,
-                  focusNode: focusNode,
-                  submit: () {
-                    if (!_keys.submit()) onSubmitted();
-                  },
+              ValueListenableBuilder<bool>(
+                valueListenable: _keys.opened,
+                builder: (context, open, _) => widget.fieldBuilder(
+                  context,
+                  DesignComboboxField(
+                    controller: controller,
+                    focusNode: focusNode,
+                    submit: () {
+                      if (!_keys.submit()) onSubmitted();
+                    },
+                    isOpen: open,
+                  ),
                 ),
               ),
             ),
@@ -569,12 +607,15 @@ class _DesignComboboxState<T extends Object> extends State<RawCombobox<T>> {
               run: _run,
               child: ListenableBuilder(
                 listenable: _run,
-                builder: (context, _) => _searchView(context, onSelected),
+                builder: (context, _) {
+                  final view = _searchView(context, onSelected);
+                  return identical(view, _nothing) ? view : _keys.surface(view);
+                },
               ),
             ),
           );
         }
-        return _onItsSide(_list(context, onSelected, options));
+        return _onItsSide(_keys.surface(_list(context, onSelected, options)));
       },
     );
   }
@@ -635,7 +676,7 @@ class _DesignComboboxState<T extends Object> extends State<RawCombobox<T>> {
           }
         });
       }
-      return const SizedBox.shrink();
+      return _nothing;
     }
     return _list(context, onSelected, options);
   }

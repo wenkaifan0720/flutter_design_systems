@@ -12,6 +12,9 @@ import 'behaviour_harness.dart';
 const _fieldKey = ValueKey('field');
 
 final List<String> _ran = [];
+
+// What the field last heard: its list shows (a palette's always does).
+bool? _open;
 final Map<String, Set<WidgetState>> _items = {};
 
 List<RawCommand> _commands() => [
@@ -47,12 +50,15 @@ RawCommandPalette _palette({
   commands: _commands(),
   onSelected: onSelected,
   autofocus: autofocus,
-  fieldBuilder: (context, field) => plainField(
-    key: _fieldKey,
-    controller: field.controller,
-    focusNode: field.focusNode,
-    onSubmitted: field.submit,
-  ),
+  fieldBuilder: (context, field) {
+    _open = field.isOpen;
+    return plainField(
+      key: _fieldKey,
+      controller: field.controller,
+      focusNode: field.focusNode,
+      onSubmitted: field.submit,
+    );
+  },
   groupBuilder: (context, group) => Text('# $group'),
   emptyBuilder: (context) => const Text('Nothing found'),
   itemBuilder: (context, command, states) {
@@ -64,6 +70,14 @@ RawCommandPalette _palette({
 bool _lit(String label) => _items[label]!.contains(WidgetState.focused);
 
 void main() {
+  testWidgets('the field hears that its list shows: a palette\'s always '
+      'does', (tester) async {
+    _open = null;
+    await tester.pumpWidget(harness(_palette()));
+    await tester.pumpAndSettle();
+    expect(_open, isTrue);
+  });
+
   setUp(() {
     _ran.clear();
     _items.clear();

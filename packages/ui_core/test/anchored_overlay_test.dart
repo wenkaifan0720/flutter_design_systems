@@ -907,4 +907,156 @@ void main() {
       },
     );
   }
+
+  group(
+    'a widget in the surface that asks for focus as it mounts keeps it',
+    () {
+      // A select's list of 40 options, the chosen one (30) out of the list's
+      // first view; or a calendar: its month's arrows ahead of its days, the
+      // chosen day (12) asking for focus.
+      Widget popover({required FocusNode anchor, required bool menu}) {
+        Widget item(String key, {bool chosen = false}) => RawButton(
+          autofocus: chosen,
+          onPressed: () {},
+          builder: (context, states, _) =>
+              SizedBox(key: ValueKey(key), height: 30, child: Text(key)),
+        );
+        return _at(
+          Alignment.topCenter,
+          RawPopover(
+            arrowKeyNavigation: menu,
+            anchorBuilder: (context, overlay) => RawButton(
+              focusNode: anchor,
+              onPressed: overlay.toggle,
+              builder: (context, states, _) =>
+                  plainFace('Open', key: _anchorKey),
+            ),
+            overlayBuilder: (context, info) => menu
+                ? SizedBox(
+                    key: const ValueKey('list'),
+                    width: 120,
+                    height: 150,
+                    child: SingleChildScrollView(
+                      child: Column(
+                        children: [
+                          for (var i = 0; i < 40; i++)
+                            item('option $i', chosen: i == 30),
+                        ],
+                      ),
+                    ),
+                  )
+                : SizedBox(
+                    width: 200,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(child: item('previous month')),
+                            Expanded(child: item('next month')),
+                          ],
+                        ),
+                        for (var d = 10; d < 14; d++)
+                          item('day $d', chosen: d == 12),
+                      ],
+                    ),
+                  ),
+          ),
+        );
+      }
+
+      bool focused(WidgetTester tester, String key) =>
+          Focus.of(tester.element(find.byKey(ValueKey(key)))).hasPrimaryFocus;
+
+      testWidgets("a select opened from the keys focuses the chosen option and "
+          'keeps it in view', (tester) async {
+        final anchor = FocusNode(debugLabel: 'anchor');
+        addTearDown(anchor.dispose);
+        await tester.pumpWidget(popover(anchor: anchor, menu: true));
+        anchor.requestFocus();
+        await tester.pump();
+        await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+        await tester.pumpAndSettle();
+        expect(focused(tester, 'option 30'), isTrue);
+        final list = tester.getRect(find.byKey(const ValueKey('list')));
+        final row = tester.getRect(find.byKey(const ValueKey('option 30')));
+        expect(
+          row.top >= list.top - 0.5 && row.bottom <= list.bottom + 0.5,
+          isTrue,
+          reason: 'the chosen option in view: $row in $list',
+        );
+        // Down goes on from it.
+        await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
+        await tester.pump();
+        expect(focused(tester, 'option 31'), isTrue);
+      });
+
+      testWidgets('a select opened with a click focuses the chosen option', (
+        tester,
+      ) async {
+        final anchor = FocusNode(debugLabel: 'anchor');
+        addTearDown(anchor.dispose);
+        await tester.pumpWidget(popover(anchor: anchor, menu: true));
+        await tester.tap(find.byKey(_anchorKey));
+        await tester.pumpAndSettle();
+        expect(focused(tester, 'option 30'), isTrue);
+      });
+
+      testWidgets("a calendar opened from the keys focuses the chosen day, not "
+          "the month's arrows ahead of it", (tester) async {
+        final anchor = FocusNode(debugLabel: 'anchor');
+        addTearDown(anchor.dispose);
+        await tester.pumpWidget(popover(anchor: anchor, menu: false));
+        anchor.requestFocus();
+        await tester.pump();
+        await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+        await tester.pumpAndSettle();
+        expect(focused(tester, 'day 12'), isTrue);
+        // Opened again, it asks again.
+        await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+        await tester.pumpAndSettle();
+        expect(anchor.hasPrimaryFocus, isTrue);
+        await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+        await tester.pumpAndSettle();
+        expect(focused(tester, 'day 12'), isTrue);
+      });
+
+      testWidgets('with nothing asking, the first item has it as before', (
+        tester,
+      ) async {
+        final anchor = FocusNode(debugLabel: 'anchor');
+        addTearDown(anchor.dispose);
+        await tester.pumpWidget(
+          _at(
+            Alignment.topCenter,
+            RawPopover(
+              arrowKeyNavigation: true,
+              anchorBuilder: (context, overlay) => RawButton(
+                focusNode: anchor,
+                onPressed: overlay.toggle,
+                builder: (context, states, _) =>
+                    plainFace('Open', key: _anchorKey),
+              ),
+              overlayBuilder: (context, info) => Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  for (final key in ['a', 'b'])
+                    RawButton(
+                      onPressed: () {},
+                      builder: (context, states, _) =>
+                          SizedBox(key: ValueKey(key), height: 30, width: 90),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        );
+        anchor.requestFocus();
+        await tester.pump();
+        await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+        await tester.pumpAndSettle();
+        expect(focused(tester, 'a'), isTrue);
+      });
+    },
+  );
 }

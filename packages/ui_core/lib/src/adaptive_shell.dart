@@ -17,6 +17,7 @@ import 'internal/roving_focus.dart';
 import 'localizations.dart';
 import 'motion.dart';
 import 'pressable.dart';
+import 'toast.dart';
 
 /// Material's window size classes, by width in logical pixels.
 enum DesignWindowSizeClass {
@@ -776,13 +777,17 @@ class _DesignAdaptiveShellState extends State<DesignAdaptiveShell>
       label: mode == DesignNavigationMode.sidebar ? words.drawerLabel : null,
       child: navigation,
     );
-    navigation = Pane(
-      debugLabel: 'DesignAdaptiveShell navigation',
-      child: ExcludeFocus(
-        excluding: hidden,
-        child: ExcludeSemantics(
+    // A bar keeps the toasts above it, as Material's bottom navigation bar
+    // keeps a snackbar (a rail or a sidebar, edge to edge, keeps none).
+    navigation = RawToasterKeepClear(
+      child: Pane(
+        debugLabel: 'DesignAdaptiveShell navigation',
+        child: ExcludeFocus(
           excluding: hidden,
-          child: IgnorePointer(ignoring: hidden, child: navigation),
+          child: ExcludeSemantics(
+            excluding: hidden,
+            child: IgnorePointer(ignoring: hidden, child: navigation),
+          ),
         ),
       ),
     );

@@ -29,9 +29,13 @@ import 'internal/label_line.dart';
 
 part 'checks/checkable_check.dart';
 part 'checks/cursor_check.dart';
+part 'checks/dialog_actions_check.dart';
 part 'checks/field_nodes_check.dart';
 part 'checks/field_semantics_check.dart';
+part 'checks/field_words_check.dart';
 part 'checks/list_side_check.dart';
+part 'checks/overflow_check.dart';
+part 'checks/overlay_check.dart';
 part 'checks/radio_group_check.dart';
 part 'checks/shadow_clip_check.dart';
 part 'checks/shared/reading.dart';
@@ -507,6 +511,11 @@ class DesignClipCheck {
     final root = context.findRenderObject();
     if (root == null) return DesignAlignmentReport(look, const []);
     final reader = _DrawnReader(null, null, _markedFaces(context));
+    return DesignAlignmentReport(look, _cutsUnder(root, reader));
+  }
+
+  // Every control and line of words under [root] cut by a clip round it.
+  List<String> _cutsUnder(RenderObject root, _DrawnReader reader) {
     final found = <String>[];
     final cut = <RenderBox>{};
     void visit(RenderObject node, RenderBox? control) {
@@ -532,7 +541,7 @@ class DesignClipCheck {
     }
 
     visit(root, null);
-    return DesignAlignmentReport(look, found);
+    return found;
   }
 
   // Where [shown] stands past [clip], "at its right by 22 px: 26 of its 48
@@ -578,9 +587,15 @@ class DesignClipCheck {
     if (p.didExceedMaxLines && !ellipsis && !icon) {
       return ['$words run past their last line and are cut short there'];
     }
-    final boxes = p.getBoxesForSelection(
-      TextSelection(baseOffset: 0, extentOffset: text.length),
-    );
+    // The words' boxes, each run between spaces: a line keeps the space it
+    // broke at, and a right-to-left paragraph sets that space past its start
+    // edge (left-to-right words wrapping in it), where nothing is drawn.
+    final boxes = [
+      for (final run in RegExp(r'\S+').allMatches(text))
+        ...p.getBoxesForSelection(
+          TextSelection(baseOffset: run.start, extentOffset: run.end),
+        ),
+    ];
     if (boxes.isEmpty) return const [];
     final lines = MatrixUtils.transformRect(
       p.getTransformTo(null),

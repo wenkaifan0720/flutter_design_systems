@@ -633,9 +633,7 @@ void main() {
       find
           .ancestor(
             of: find.byKey(const ValueKey('action No')),
-            matching: find.byWidgetPredicate(
-              (w) => w.runtimeType.toString() == '_ActionBar',
-            ),
+            matching: find.byWidgetPredicate((w) => w is RawActionBar),
           )
           .first,
     );

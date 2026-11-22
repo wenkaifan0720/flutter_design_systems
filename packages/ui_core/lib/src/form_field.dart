@@ -31,6 +31,7 @@ import 'package:flutter/widgets.dart';
 import 'internal/announce.dart';
 import 'internal/field_words.dart';
 import 'localizations.dart';
+import 'semantics_proxy.dart';
 
 /// What a [RawInputDecorator]'s builder lays out.
 @immutable
@@ -47,6 +48,7 @@ class RawInputDecoratorDetails {
     required this.required,
     required this.enabled,
     required this.focused,
+    this.invalid = false,
   });
 
   /// The control, carrying the field's name, hint and validity for a
@@ -85,6 +87,11 @@ class RawInputDecoratorDetails {
 
   /// Whether anything in the field has focus.
   final bool focused;
+
+  /// Whether the field's value is invalid: it has [errorText], or the
+  /// decorator was told so with no words ([RawInputDecorator.invalid]).
+  /// Paint the error state from this.
+  final bool invalid;
 
   /// Whether the field shows an error.
   bool get hasError => errorText != null;
@@ -140,6 +147,7 @@ class RawInputDecorator extends StatefulWidget {
     this.focusNode,
     this.mergeSemantics,
     this.requiredHint,
+    this.invalid = false,
   });
 
   /// Lays out the parts.
@@ -154,10 +162,20 @@ class RawInputDecorator extends StatefulWidget {
   /// Help under it.
   final String? helperText;
 
-  /// What is wrong, or null.
+  /// What is wrong, or null. A field with an error is invalid: a screen
+  /// reader hears it so ([SemanticsValidationResult.invalid]), and the
+  /// error's words are its hint.
   final String? errorText;
 
-  /// Whether it must be filled.
+  /// Whether its value is invalid with no words to say why: a screen
+  /// reader hears it invalid ([SemanticsValidationResult.invalid]), as it
+  /// does a field with [errorText], and the builder's
+  /// [RawInputDecoratorDetails.invalid] is true.
+  final bool invalid;
+
+  /// Whether it must be filled. Its node carries the required flag
+  /// ([SemanticsProperties.isRequired]); where the platform says nothing
+  /// of the flag, its name also ends with [requiredHint].
   final bool required;
 
   /// Whether the control takes input.
@@ -173,8 +191,15 @@ class RawInputDecorator extends StatefulWidget {
   /// the child's controls say (see [RawInputDecorator]).
   final bool? mergeSemantics;
 
-  /// Added to the name of a required field; null:
-  /// [RawWidgetsLocalizations.requiredHint].
+  /// Added to the name of a required field where the platform says nothing
+  /// of the required flag; null: [RawWidgetsLocalizations.requiredHint].
+  ///
+  /// In Flutter 3.47 only the web reads the flag aloud (`aria-required`);
+  /// Android, iOS, macOS, Windows and Linux carry it and say nothing. So
+  /// the words go everywhere but the web, and on the web too unless the
+  /// field's node is its text entry (one text field, alone or beside
+  /// controls with nodes of their own), whose input the flag marks: a
+  /// group, a select or a field that merges its whole child keeps them.
   final String? requiredHint;
 
   @override
@@ -220,7 +245,15 @@ class RawInputDecorator extends StatefulWidget {
           defaultValue: null,
         ),
       )
-      ..add(StringProperty('requiredHint', requiredHint, defaultValue: null));
+      ..add(StringProperty('requiredHint', requiredHint, defaultValue: null))
+      ..add(
+        FlagProperty(
+          'invalid',
+          value: invalid,
+          ifTrue: 'invalid',
+          defaultValue: false,
+        ),
+      );
   }
 }
 
@@ -253,6 +286,7 @@ class _DesignFieldState extends State<RawInputDecorator> {
         ? label
         : '$label, $needed';
     final hint = [?error, ?help].join('. ');
+    final invalid = error != null || widget.invalid;
     Widget control = Focus(
       canRequestFocus: false,
       skipTraversal: true,
@@ -267,12 +301,13 @@ class _DesignFieldState extends State<RawInputDecorator> {
         words: label,
         needed: needed,
         hint: hint.isEmpty ? null : hint,
-        invalid: error != null,
+        invalid: invalid,
         textDirection: Directionality.maybeOf(context),
         child: DesignFieldWords(
           name: name,
           hint: hint.isEmpty ? null : hint,
-          invalid: error != null,
+          invalid: invalid,
+          required: widget.required,
           child: control,
         ),
       );
@@ -281,9 +316,10 @@ class _DesignFieldState extends State<RawInputDecorator> {
         child: Semantics(
           label: name,
           hint: hint.isEmpty ? null : hint,
-          validationResult: error == null
-              ? SemanticsValidationResult.none
-              : SemanticsValidationResult.invalid,
+          isRequired: widget.required ? true : null,
+          validationResult: invalid
+              ? SemanticsValidationResult.invalid
+              : SemanticsValidationResult.none,
           child: control,
         ),
       );
@@ -319,6 +355,7 @@ class _DesignFieldState extends State<RawInputDecorator> {
       required: widget.required,
       enabled: widget.enabled,
       focused: _focused,
+      invalid: invalid,
     );
     final field = widget.builder(context, parts);
     if (merge != false) return field;
@@ -328,6 +365,7 @@ class _DesignFieldState extends State<RawInputDecorator> {
       explicitChildNodes: true,
       label: name,
       hint: hint.isEmpty ? null : hint,
+      isRequired: widget.required ? true : null,
       child: field,
     );
   }
@@ -583,7 +621,7 @@ class _FieldSemantics extends SingleChildRenderObjectWidget {
   }
 }
 
-class _RenderFieldSemantics extends RenderProxyBox {
+class _RenderFieldSemantics extends RenderDesignSemanticsProxy {
   _RenderFieldSemantics(
     this._label,
     this._words,
@@ -661,9 +699,17 @@ class _RenderFieldSemantics extends RenderProxyBox {
     } else if (!shape.entry) {
       config.explicitChildNodes = true;
     }
-    final label = _label;
+    final required = _needed != null;
+    // The node is the field's text entry, whose input the web marks
+    // required from the flag: the flag says it, not the words.
+    final flagged =
+        required && DesignRequiredFlag.heard && (shape.lone || shape.entry);
+    final label = flagged ? _words : _label;
     if (label != null && !shape.said) config.label = label;
-    final hint = [if (shape.said && !shape.saidWhole) ?_needed, ?_hint];
+    final hint = [
+      if (shape.said && !shape.saidWhole && !flagged) ?_needed,
+      ?_hint,
+    ];
     if (hint.isNotEmpty) config.hint = hint.join(', ');
     if (config.label.isNotEmpty || config.hint.isNotEmpty) {
       config.textDirection = _textDirection;
@@ -671,6 +717,7 @@ class _RenderFieldSemantics extends RenderProxyBox {
     config.validationResult = _invalid
         ? SemanticsValidationResult.invalid
         : SemanticsValidationResult.none;
+    if (required) config.isRequired = true;
   }
 
   // Whether the child holds one control at most; whether anything it
@@ -811,6 +858,7 @@ class _RenderFieldSemantics extends RenderProxyBox {
       said: said,
       saidWhole: saidWhole,
       entry: controls > 1 && entries == 1 && joins && apart && !alone,
+      lone: controls == 1 && entries == 1,
       carried: carried,
     );
   }
@@ -890,5 +938,7 @@ typedef _FieldShape = ({
   bool said,
   bool saidWhole,
   bool entry,
+  // One control, and it is a text entry: the field's node is the entry.
+  bool lone,
   bool carried,
 });

@@ -14,9 +14,14 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
 import 'combobox.dart';
+import 'internal/focus_visible.dart';
 import 'internal/list_side.dart';
 import 'internal/option_list.dart';
 import 'localizations.dart';
+
+// A search's view while a search that found nothing closes the list: no
+// suggestions show.
+const Widget _nothing = SizedBox.shrink();
 
 /// One tag, as [RawTagInput.tagBuilder] gets it.
 @immutable
@@ -307,6 +312,9 @@ class _DesignTagInputState<T extends Object> extends State<RawTagInput<T>> {
   FocusNode? _ownFocus;
   final List<FocusNode> _tagNodes = [];
   final DesignListKeys _keys = DesignListKeys();
+  // The input, heard while it stands: focus given back to the field opens
+  // no list.
+  final DesignFocusHearing _hearing = DesignFocusVisible.hold();
   int? _focusedTag;
   bool _picked = false;
   // The search's states, when the list shows them.
@@ -343,6 +351,8 @@ class _DesignTagInputState<T extends Object> extends State<RawTagInput<T>> {
 
   @override
   void dispose() {
+    _hearing.release();
+    _keys.dispose();
     _controller.removeListener(_textChanged);
     _run.dispose();
     for (final node in _tagNodes) {
@@ -623,12 +633,16 @@ class _DesignTagInputState<T extends Object> extends State<RawTagInput<T>> {
           // ui_core's keys over the autocomplete's, as RawCombobox's.
           child: _keys.field(
             controller,
-            widget.fieldBuilder(
-              context,
-              DesignComboboxField(
-                controller: controller,
-                focusNode: focusNode,
-                submit: () => _submit(onSubmitted),
+            ValueListenableBuilder<bool>(
+              valueListenable: _keys.opened,
+              builder: (context, open, _) => widget.fieldBuilder(
+                context,
+                DesignComboboxField(
+                  controller: controller,
+                  focusNode: focusNode,
+                  submit: () => _submit(onSubmitted),
+                  isOpen: open,
+                ),
               ),
             ),
           ),
@@ -662,10 +676,15 @@ class _DesignTagInputState<T extends Object> extends State<RawTagInput<T>> {
                 run: _run,
                 child: ListenableBuilder(
                   listenable: _run,
-                  builder: (context, _) => _searchView(context, onSelected),
+                  builder: (context, _) {
+                    final view = _searchView(context, onSelected);
+                    return identical(view, _nothing)
+                        ? view
+                        : _keys.surface(view);
+                  },
                 ),
               )
-            : _list(options.cast<T>().toList(), onSelected),
+            : _keys.surface(_list(options.cast<T>().toList(), onSelected)),
       ),
     );
     return field;
@@ -708,7 +727,7 @@ class _DesignTagInputState<T extends Object> extends State<RawTagInput<T>> {
           }
         });
       }
-      return const SizedBox.shrink();
+      return _nothing;
     }
     return _list(shown, onSelected);
   }

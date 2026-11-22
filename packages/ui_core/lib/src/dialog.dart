@@ -9,6 +9,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 
+import 'action_bar.dart';
 import 'adaptive_shell.dart' show DesignWindowSizeClass;
 import 'barrier.dart';
 import 'internal/painted_barrier.dart';
@@ -338,8 +339,8 @@ class RawDialogActionDetails {
   /// Its pressable states: focused only when the keyboard moved focus to it.
   final Set<WidgetState> states;
 
-  /// Whether the actions are stacked, one to a line, because they do not fit
-  /// side by side: a look usually widens each to the dialog's width.
+  /// Whether the actions are stacked, one to a line and each as wide as the
+  /// dialog, because they do not fit side by side ([RawActionBar]).
   final bool stacked;
 
   /// Its place among the actions, 0 for the first given.
@@ -396,9 +397,10 @@ typedef RawAlertDialogPartBuilder = Widget Function(
 /// together over [actions], which stay put. The actions sit side by side,
 /// sharing the row on a compact screen and aligned at the end on a larger
 /// screen. When their labels do not fit, including at a large text size,
-/// they stack, one to a line, the last given (the confirm) on top and the
-/// first (the dismissive one) at the bottom, as Material and iOS stack
-/// them.
+/// they stack in one column, each as wide as the dialog, the last given (the
+/// confirm) on top and the first (the dismissive one) at the bottom, as
+/// Material and iOS stack them: a [RawActionBar] lays them out, which a
+/// look's own dialog can use as it is.
 ///
 /// As the dialog opens, focus goes to the safe action: while an action is
 /// destructive, the first enabled action that is not (Cancel); else the
@@ -659,12 +661,12 @@ class _DesignDialogState extends State<RawAlertDialog> {
     final safe = RawAlertDialog.safeActionIndex(actions);
     Widget? bar;
     if (actions.isNotEmpty || widget.actionWidgets.isNotEmpty) {
-      bar = _ActionBar(
+      bar = RawActionBar(
         spacing: widget.actionSpacing,
-        stackedSpacing: widget.stackedActionSpacing,
-        shareWidth:
+        overflowSpacing: widget.stackedActionSpacing,
+        expanded:
             DesignWindowSizeClass.of(context) == DesignWindowSizeClass.compact,
-        onStacked: _onStacked,
+        onStackedChanged: _onStacked,
         children: [
           ...widget.actionWidgets,
           for (final (i, a) in actions.indexed)
@@ -738,234 +740,4 @@ class _DesignDialogState extends State<RawAlertDialog> {
       ),
     );
   }
-}
-
-// The actions: side by side at the end while every one fits at its own
-// width, else stacked, the last on top, each at the end of its line. Whether
-// they fit is read from their widest content (their max intrinsic widths),
-// so an action the look widens once stacked does not keep them stacked.
-class _ActionBar extends MultiChildRenderObjectWidget {
-  const _ActionBar({
-    required this.spacing,
-    required this.stackedSpacing,
-    required this.shareWidth,
-    required this.onStacked,
-    required super.children,
-  });
-
-  final double spacing;
-  final double stackedSpacing;
-  final bool shareWidth;
-  final ValueChanged<bool> onStacked;
-
-  @override
-  _RenderActionBar createRenderObject(BuildContext context) => _RenderActionBar(
-    spacing: spacing,
-    stackedSpacing: stackedSpacing,
-    shareWidth: shareWidth,
-    onStacked: onStacked,
-    textDirection: Directionality.of(context),
-  );
-
-  @override
-  void updateRenderObject(BuildContext context, _RenderActionBar render) {
-    render
-      ..spacing = spacing
-      ..stackedSpacing = stackedSpacing
-      ..shareWidth = shareWidth
-      ..onStacked = onStacked
-      ..textDirection = Directionality.of(context);
-  }
-}
-
-class _ActionBarParentData extends ContainerBoxParentData<RenderBox> {}
-
-class _RenderActionBar extends RenderBox
-    with
-        ContainerRenderObjectMixin<RenderBox, _ActionBarParentData>,
-        RenderBoxContainerDefaultsMixin<RenderBox, _ActionBarParentData> {
-  _RenderActionBar({
-    required this._spacing,
-    required this._stackedSpacing,
-    required this._shareWidth,
-    required this.onStacked,
-    required this._textDirection,
-  });
-
-  double _spacing;
-  bool _shareWidth;
-  set shareWidth(bool value) {
-    if (_shareWidth == value) return;
-    _shareWidth = value;
-    markNeedsLayout();
-  }
-
-  set spacing(double value) {
-    if (value == _spacing) return;
-    _spacing = value;
-    markNeedsLayout();
-  }
-
-  double _stackedSpacing;
-  set stackedSpacing(double value) {
-    if (value == _stackedSpacing) return;
-    _stackedSpacing = value;
-    markNeedsLayout();
-  }
-
-  TextDirection _textDirection;
-  set textDirection(TextDirection value) {
-    if (value == _textDirection) return;
-    _textDirection = value;
-    markNeedsLayout();
-  }
-
-  ValueChanged<bool> onStacked;
-  bool? _reported;
-
-  @override
-  void setupParentData(RenderBox child) {
-    if (child.parentData is! _ActionBarParentData) {
-      child.parentData = _ActionBarParentData();
-    }
-  }
-
-  List<RenderBox> get _children => getChildrenAsList();
-
-  // The width side by side: each action's widest content and the gaps.
-  double get _rowWidth {
-    final children = _children;
-    if (children.isEmpty) return 0;
-    var width = 0.0;
-    var widest = 0.0;
-    for (final c in children) {
-      final natural = c.getMaxIntrinsicWidth(double.infinity);
-      width += natural;
-      if (natural > widest) widest = natural;
-    }
-    return (_shareWidth ? widest * children.length : width) +
-        _spacing * (children.length - 1);
-  }
-
-  @override
-  double computeMinIntrinsicWidth(double height) {
-    var widest = 0.0;
-    for (final c in _children) {
-      final w = c.getMinIntrinsicWidth(double.infinity);
-      if (w > widest) widest = w;
-    }
-    return widest;
-  }
-
-  @override
-  double computeMaxIntrinsicWidth(double height) => _rowWidth;
-
-  @override
-  double computeMinIntrinsicHeight(double width) => _height(width);
-
-  @override
-  double computeMaxIntrinsicHeight(double width) => _height(width);
-
-  double _height(double width) {
-    final children = _children;
-    if (children.isEmpty) return 0;
-    if (_rowWidth <= width) {
-      var tallest = 0.0;
-      for (final c in children) {
-        final h = c.getMaxIntrinsicHeight(double.infinity);
-        if (h > tallest) tallest = h;
-      }
-      return tallest;
-    }
-    var total = _stackedSpacing * (children.length - 1);
-    for (final c in children) {
-      total += c.getMaxIntrinsicHeight(width);
-    }
-    return total;
-  }
-
-  @override
-  Size computeDryLayout(BoxConstraints constraints) =>
-      _layout(constraints, dry: true);
-
-  @override
-  void performLayout() {
-    size = _layout(constraints, dry: false);
-  }
-
-  Size _layout(BoxConstraints constraints, {required bool dry}) {
-    final children = _children;
-    final room = constraints.maxWidth;
-    final row = _rowWidth;
-    final stacked = row > room;
-    // Side by side, each at its own content's width (an action that fills
-    // what it is given stays its size); stacked, each up to the bar's width.
-    final share =
-        _shareWidth && !stacked && room.isFinite && children.isNotEmpty
-        ? (room - _spacing * (children.length - 1)) / children.length
-        : null;
-    BoxConstraints loose(RenderBox c) => share != null
-        ? BoxConstraints.tightFor(width: share)
-        : BoxConstraints(
-            maxWidth: stacked ? room : c.getMaxIntrinsicWidth(double.infinity),
-          );
-    Size sizeOf(RenderBox c) => dry
-        ? c.getDryLayout(loose(c))
-        : (c..layout(loose(c), parentUsesSize: true)).size;
-    final sizes = [for (final c in children) sizeOf(c)];
-    final width = room.isFinite ? room : constraints.constrainWidth(row);
-    final rtl = _textDirection == TextDirection.rtl;
-    double height;
-    if (!stacked) {
-      height = 0;
-      for (final s in sizes) {
-        if (s.height > height) height = s.height;
-      }
-      if (!dry) {
-        // At the end: the last action against the end edge.
-        var used = _spacing * (sizes.length - 1);
-        for (final s in sizes) {
-          used += s.width;
-        }
-        var x = rtl ? width - (width - used) : width - used;
-        for (final (i, c) in children.indexed) {
-          final s = sizes[i];
-          final data = c.parentData! as _ActionBarParentData;
-          final left = rtl ? x - s.width : x;
-          data.offset = Offset(left, (height - s.height) / 2);
-          x = rtl ? left - _spacing : left + s.width + _spacing;
-        }
-      }
-    } else {
-      height = _stackedSpacing * (sizes.length - 1);
-      for (final s in sizes) {
-        height += s.height;
-      }
-      if (!dry) {
-        // The last on top, each at its line's end.
-        var y = 0.0;
-        for (var i = children.length - 1; i >= 0; i--) {
-          final s = sizes[i];
-          final data = children[i].parentData! as _ActionBarParentData;
-          data.offset = Offset(rtl ? 0 : width - s.width, y);
-          y += s.height + _stackedSpacing;
-        }
-      }
-    }
-    if (!dry && _reported != stacked) {
-      _reported = stacked;
-      // Told after the frame: the dialog builds its actions again, now
-      // knowing.
-      WidgetsBinding.instance.addPostFrameCallback((_) => onStacked(stacked));
-    }
-    return constraints.constrain(Size(width, height));
-  }
-
-  @override
-  void paint(PaintingContext context, Offset offset) =>
-      defaultPaint(context, offset);
-
-  @override
-  bool hitTestChildren(BoxHitTestResult result, {required Offset position}) =>
-      defaultHitTestChildren(result, position: position);
 }

@@ -139,6 +139,28 @@ const AccessibilityGuideline listSideGuideline = DesignCheckGuideline(
   run: _listSide,
 );
 
+/// Each open overlay shows whole: on the screen, nothing in it cut
+/// (`DesignOverlayCheck`). It reads layout boxes.
+const AccessibilityGuideline overlayGuideline = DesignCheckGuideline(
+  description:
+      'Each open popover, menu, list, sheet and dialog stands on the screen, '
+      'nothing in it cut.',
+  run: _overlay,
+);
+
+/// Nothing overflows its row or column (`DesignOverflowCheck`); run it at
+/// text scale 2 too. It reads layout boxes.
+const AccessibilityGuideline overflowGuideline = DesignCheckGuideline(
+  description: 'No row or column holds more than it has room for.',
+  run: _overflow,
+);
+
+DesignAlignmentReport _overlay(WidgetTester tester, BuildContext screen) =>
+    const DesignOverlayCheck(look: 'Screen').check(screen);
+
+DesignAlignmentReport _overflow(WidgetTester tester, BuildContext screen) =>
+    const DesignOverflowCheck(look: 'Screen').check(screen);
+
 DesignAlignmentReport _tooltipNode(WidgetTester tester, BuildContext screen) =>
     const DesignTooltipNodeCheck(look: 'Screen').check(screen);
 

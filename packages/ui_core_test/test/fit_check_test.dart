@@ -273,6 +273,46 @@ void main() {
       );
     });
 
+    testWidgets("a wrapped line's trailing space is no cut: left-to-right "
+        'words in a right-to-left paragraph at 2x text', (tester) async {
+      // Each line that wraps keeps the space it broke at, set past the
+      // paragraph's start edge (its right), where nothing is drawn.
+      for (final width in [150.0, 190.0, 230.0]) {
+        await _pump(
+          tester,
+          Directionality(
+            textDirection: TextDirection.rtl,
+            child: SizedBox(
+              width: width,
+              child: const Text(
+                'Order the quiet room for tonight before noon',
+                style: _style,
+                textScaler: TextScaler.linear(2),
+              ),
+            ),
+          ),
+        );
+        expect(_cut(), isEmpty, reason: 'at $width px');
+      }
+      // Words that do run past the box in that paragraph are still cut.
+      await _pump(
+        tester,
+        const Directionality(
+          textDirection: TextDirection.rtl,
+          child: SizedBox(
+            width: 60,
+            child: Text(
+              'Wednesday',
+              style: _style,
+              softWrap: false,
+              textScaler: TextScaler.linear(2),
+            ),
+          ),
+        ),
+      );
+      expect(_cut(), [startsWith('the words "Wednesday" are cut at their ')]);
+    });
+
     testWidgets("a line's leading clipped off a tight pill is no cut", (
       tester,
     ) async {

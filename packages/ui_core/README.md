@@ -111,6 +111,7 @@ through its accessibility nodes and change appearance with Arabic text at twice 
 | Swipe actions | `RawSwipeActions` | `Dismissible` |
 | Tag input | `RawTagInput` | `InputChip` |
 | Toasts | `RawToaster` | `ScaffoldMessenger` |
+| A bar toasts keep clear of | `RawToasterKeepClear` | `Scaffold.bottomNavigationBar` |
 | Toggle group | `RawSegmentedButton` | `SegmentedButton` |
 | Radio group | `RadioGroupKeyboardFix`, inside Flutter's `RadioGroup`, round its `RawRadio`s | `RadioGroup` |
 | Tree | `DesignTree`, `DesignTreeController` | `TreeSliver` |
@@ -123,10 +124,13 @@ through its accessibility nodes and change appearance with Arabic text at twice 
 | Full-screen sheet | `RawSheetRoute` | `PageRoute` |
 | Dialog and alert | `DesignDialogRoute`, `RawAlertDialog` | `DialogRoute`, `AlertDialog` |
 | Swipe actions, from outside | `RawSwipeActionsController` | |
-| Tabs | `RawTabController`, `RawTabBar`, `RawTabBarView` | `TabController`, `TabBar`, `TabBarView` |
+| Tabs | `RawTabController`, `RawTabBar`, `RawTabBarView`; `RawTabGroup<T>`, `RawTabGroupTab<T>` round tabs the caller lays out | `TabController`, `TabBar`, `TabBarView` |
+| A group's arrows (one tab stop) | `RawRovingFocusGroup`, `RawRovingFocusItem`, `RawRovingFocusIntent` | `RadioGroup`'s, `TabBar`'s |
+| Semantics-only proxies, by one type | `RenderDesignSemanticsProxy` | `RenderMergeSemantics` |
 | Adaptive shell | `DesignAdaptiveShell`, `DesignWindowSizeClass`, `DesignNavigationMode` | `NavigationBar`, `NavigationRail`, `NavigationDrawer` |
 | List and detail | `DesignListDetail` | |
 | Wheel picker | `RawPicker`, `RawPickerColumn` | `CupertinoPicker` |
+| Dialog and sheet actions | `RawActionBar` | `OverflowBar` |
 | Date and time fields | `RawDateField`, `RawTimeField`, `RawTimeOfDay` | `InputDatePickerFormField`, `TimeOfDay` |
 | Number field | `RawNumberField` | `TextField` with `keyboardType: number` |
 | Rating | `RawRating` | (none) |

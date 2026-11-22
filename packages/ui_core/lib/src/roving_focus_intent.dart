@@ -1,11 +1,12 @@
 /// The move the arrow keys make in a [DesignRadioGroup], a
-/// [RawSegmentedButton] or a [RawTabBar], as an [Intent], so an app
-/// changes a key the Flutter way.
+/// [RawSegmentedButton], a [RawTabBar] or any [RawRovingFocusGroup], as an
+/// [Intent], so an app changes a key the Flutter way.
 library;
 
 import 'package:flutter/widgets.dart';
 
 import 'radio_group.dart' show DesignRadioGroup;
+import 'roving_focus.dart' show RawRovingFocusGroup;
 import 'tabs.dart' show RawTabBar;
 import 'toggle_group.dart' show RawSegmentedButton;
 
