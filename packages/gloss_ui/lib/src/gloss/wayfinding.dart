@@ -742,6 +742,7 @@ class GlossMenuBar extends StatelessWidget {
                   onPressed: item.onPressed,
                   shortcut: item.shortcut,
                   data: item,
+                  isDestructiveAction: item.isDestructiveAction,
                 ),
             ],
           ),
@@ -771,7 +772,7 @@ class GlossMenuBar extends StatelessWidget {
           return GlossMenuRow(
             label: entry.label,
             icon: item?.icon,
-            isDestructiveAction: item?.isDestructiveAction ?? false,
+            isDestructiveAction: entry.isDestructiveAction,
             states: states,
             trailing: entry.shortcut == null ? null : Text(entry.shortcut!),
           );

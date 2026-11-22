@@ -1340,6 +1340,12 @@ Color glossGlazeOf(GlossColors colors, Set<WidgetState> states) =>
                 colors.focus.a,
     );
 
+/// The jade light a focused well glows with from its foot, as a switch's
+/// slot lights from inside.
+Color glossFocusGlow(GlossColors colors) => colors.focus.withValues(
+  alpha: colors.brightness == Brightness.light ? 0.22 : 0.3,
+);
+
 /// The reflected light for a part which reports just its keyboard focus.
 Color glossFocusOf(GlossColors colors, {required bool focused}) =>
     focused ? colors.focus : colors.focus.withValues(alpha: 0);

@@ -113,10 +113,20 @@ class GlossSelect<T> extends StatelessWidget {
         final pressed = states.contains(WidgetState.pressed);
         var well = GlossFace.well(c, radius: GlossMetrics.fieldRadius);
         if (layered.fill != null) well = well.glazed(layered.fill!);
+        // Focused by the keys, the well lights jade from inside, as a
+        // text field's does: that one mark, no reflection along its floor
+        // as well.
+        final keyed = states.contains(WidgetState.focused);
+        final lit = keyed && error == null;
         well = well.copyWith(
           lift: enabled ? -1 : -0.45,
-          edge: error != null ? c.danger : layered.edge,
-          focus: glossGlazeOf(c, {...states, if (open) WidgetState.focused}),
+          edge: error != null
+              ? c.danger
+              : layered.edge ?? (keyed ? c.focus : null),
+          glow: lit ? glossFocusGlow(c) : null,
+          focus: lit
+              ? c.focus.withValues(alpha: 0)
+              : glossGlazeOf(c, {...states, if (open) WidgetState.focused}),
           travel: states.contains(WidgetState.pressed) ? 1 : 0,
         );
         final bead = height - 14;
@@ -153,27 +163,11 @@ class GlossSelect<T> extends StatelessWidget {
                 // turning as the list opens.
                 Padding(
                   padding: EdgeInsetsDirectional.only(end: (height - bead) / 2),
-                  child: SizedBox.square(
-                    dimension: bead,
-                    child: AnimatedGlossSurface(
-                      face: enabled
-                          ? GlossFace.pearl(c)
-                                .copyWith(travel: pressed || open ? 1 : 0)
-                          // Disabled, the bead lies flat and dull: nothing
-                          // to press.
-                          : GlossFace.pearl(c).copyWith(
-                              lens: 0,
-                              lift: 0,
-                              glow: const Color(0x00000000),
-                              foreground: c.inkDisabled,
-                            ),
-                      child: Center(
-                        child: GlossChevron(
-                          open: open,
-                          color: enabled ? c.inkSecondary : c.inkDisabled,
-                        ),
-                      ),
-                    ),
+                  child: GlossDialBead(
+                    size: bead,
+                    enabled: enabled,
+                    open: open,
+                    pressed: pressed,
                   ),
                 ),
               ],

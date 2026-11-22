@@ -23,15 +23,20 @@ GlossFace glossEntryFace(
   final c = theme.colors;
   final error = states.contains(WidgetState.error);
   final enabled = !states.contains(WidgetState.disabled);
+  final focused = states.contains(WidgetState.focused);
   var face = GlossFace.well(c, radius: radius ?? GlossMetrics.fieldRadius);
   if (fill != null) face = face.glazed(fill);
   return face.copyWith(
     foreground: enabled ? c.ink : c.inkDisabled,
-    edge: error ? c.danger : edge,
+    // Focused, the well lights jade from inside, as a switch's slot does:
+    // its rim and a glow up from its foot, so the field with the keys is
+    // found at a glance; the one mark, no streak of reflected light along
+    // its floor too. An error keeps its red rim, and focused, the red light
+    // along its floor.
+    edge: error ? c.danger : edge ?? (focused ? c.focus : null),
+    glow: focused && !error ? glossFocusGlow(c) : null,
     lift: enabled ? -1 : -0.45,
-    focus: states.contains(WidgetState.focused)
-        ? (error ? c.danger : c.focus)
-        : c.focus.withValues(alpha: 0),
+    focus: focused && error ? c.danger : c.focus.withValues(alpha: 0),
   );
 }
 

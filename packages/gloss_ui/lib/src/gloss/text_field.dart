@@ -284,9 +284,15 @@ class _GlossTextFieldState extends State<GlossTextField> {
     if (layered.fill != null) face = face.glazed(layered.fill!);
     face = face.copyWith(
       foreground: words.color,
-      edge: layered.edge,
+      // Focused, the well lights jade from inside, as a switch's slot does:
+      // its rim and a glow up from its foot, so the field with the keys is
+      // found at a glance; the one mark, no streak of reflected light along
+      // its floor too. An error keeps the well as it is and says so under
+      // it.
+      edge: layered.edge ?? (focused ? c.focus : null),
+      glow: focused ? glossFocusGlow(c) : null,
       lift: widget.enabled ? -1 : -0.45,
-      focus: focused ? c.focus : c.focus.withValues(alpha: 0),
+      focus: c.focus.withValues(alpha: 0),
     );
     final entry = DesignTextEntryBox(
       minHeight: theme.controlHeight,

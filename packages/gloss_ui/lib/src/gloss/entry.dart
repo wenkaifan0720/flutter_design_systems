@@ -1034,15 +1034,16 @@ class GlossCombobox<T extends Object> extends StatelessWidget {
                   fill: layered.fill,
                   edge: layered.edge,
                 ),
+                // The select's dial bead, seated as the select seats it:
+                // the two read as one kind of field.
                 trailing: Padding(
                   padding: const EdgeInsetsDirectional.only(
-                    end: GlossSpacing.small,
+                    end: 7 - GlossSpacing.tight,
                   ),
-                  child: GlossChevron(
+                  child: GlossDialBead(
+                    size: theme.controlHeight - 14,
+                    enabled: enabled,
                     open: focused,
-                    color: enabled
-                        ? theme.colors.inkSecondary
-                        : theme.colors.inkDisabled,
                   ),
                 ),
                 // Enter takes the lit option and keeps the focus here (on

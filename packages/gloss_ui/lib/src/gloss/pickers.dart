@@ -488,10 +488,14 @@ class _PickerField extends StatelessWidget {
       mouseCursor: SystemMouseCursors.click,
       builder: (context, states, _) {
         final open = anchor.isOpen;
+        // Focused by the keys, the well lights jade from inside, as a
+        // text field's does.
+        final keyed = states.contains(WidgetState.focused);
         var well = GlossFace.well(c, radius: GlossMetrics.fieldRadius);
         well = well.copyWith(
           lift: enabled ? -1 : -0.45,
-          edge: error ? c.danger : null,
+          edge: error ? c.danger : (keyed ? c.focus : null),
+          glow: keyed && !error ? glossFocusGlow(c) : null,
           focus: glossGlazeOf(c, {...states, if (open) WidgetState.focused}),
           travel: states.contains(WidgetState.pressed) ? 1 : 0,
         );
@@ -577,12 +581,21 @@ Widget _fieldColumn({
   ],
 );
 
-Widget _calendarPanel(BuildContext context, Widget calendar) => GlossSurface(
-  face: glossPanelFace(GlossTheme.of(context).colors, radius: 20),
-  child: SingleChildScrollView(
-    primary: false,
-    padding: const EdgeInsets.all(GlossSpacing.medium),
-    child: calendar,
+// The calendar's panel, no taller than the room on its side ([info]), the
+// month scrolling inside where it must.
+Widget _calendarPanel(
+  BuildContext context,
+  RawPopoverInfo info,
+  Widget calendar,
+) => ConstrainedBox(
+  constraints: BoxConstraints(maxHeight: info.maxSize.height),
+  child: GlossSurface(
+    face: glossPanelFace(GlossTheme.of(context).colors, radius: 20),
+    child: SingleChildScrollView(
+      primary: false,
+      padding: const EdgeInsets.all(GlossSpacing.medium),
+      child: calendar,
+    ),
   ),
 );
 
@@ -645,10 +658,14 @@ class GlossDatePicker extends StatelessWidget {
       error: error,
       box: RawPopover(
         semanticLabel: label,
+        // The calendar opens where its whole month fits: below while below
+        // holds it, else above; it shrinks and scrolls only where neither
+        // side does.
         placement: const RawPopoverPlacement(
           gap: GlossSpacing.small,
           margin: GlossSpacing.small,
           matchAnchorWidth: false,
+          preferredExtent: double.infinity,
         ),
         dampingRatio: GlossMotion.panelDamping,
         stiffness: GlossMotion.panelStiffness,
@@ -665,6 +682,7 @@ class GlossDatePicker extends StatelessWidget {
           info,
           _calendarPanel(
             context,
+            info,
             GlossCalendar(
               firstDate: firstDate,
               lastDate: lastDate,
@@ -751,10 +769,14 @@ class GlossDateRangePicker extends StatelessWidget {
       error: error,
       box: RawPopover(
         semanticLabel: label,
+        // The calendar opens where its whole month fits: below while below
+        // holds it, else above; it shrinks and scrolls only where neither
+        // side does.
         placement: const RawPopoverPlacement(
           gap: GlossSpacing.small,
           margin: GlossSpacing.small,
           matchAnchorWidth: false,
+          preferredExtent: double.infinity,
         ),
         dampingRatio: GlossMotion.panelDamping,
         stiffness: GlossMotion.panelStiffness,
@@ -774,6 +796,7 @@ class GlossDateRangePicker extends StatelessWidget {
           info,
           _calendarPanel(
             context,
+            info,
             GlossCalendar.range(
               firstDate: firstDate,
               lastDate: lastDate,

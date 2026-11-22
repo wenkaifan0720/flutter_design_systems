@@ -870,8 +870,15 @@ class GlossScaffold extends StatelessWidget {
             removeBottom: bar,
             // A semantics node of its own: a navigator in the body (a
             // list-and-detail pane) blocks only the body's semantics under
-            // its pages, never the bar, rail or sidebar beside it.
-            child: Semantics(container: true, child: body),
+            // its pages, never the bar, rail or sidebar beside it. Its
+            // children keep nodes of their own: a route's node there forms
+            // only when a list opens over it otherwise, and on the web that
+            // moves the field's input and blurs the tap's focus.
+            child: Semantics(
+              container: true,
+              explicitChildNodes: true,
+              child: body,
+            ),
           ),
         ),
       ],

@@ -1,3 +1,17 @@
+## 0.2.1
+
+- Needs ui_core 0.4.1.
+- `GlossDatePicker` and `GlossDateRangePicker` open their calendar where the whole month fits: below while below holds it, else above; where neither side does, the panel shrinks to the room and the month scrolls in it. Before, a field low on a phone opened it below, off the screen's foot.
+- `GlossScaffold`'s body keeps its children's semantics nodes apart, so a navigator in it (a list-and-detail pane) keeps its page's node when a list opens over the page. On the web a combobox on such a page lost the focus its first tap gave it, and took a second tap.
+- `GlossCombobox` ends in `GlossSelect`'s pearl dial bead, seated as the select seats it, instead of a bare chevron, so the two read as one kind of field.
+- The field the keys are in lights its well jade from inside, its rim and a glow up from its foot, so it is found at a glance by day and by night: `GlossTextField`, `GlossSelect`, `GlossCombobox`, `GlossSearchField`, `GlossPasswordField`, `GlossInputGroup`, `GlossOtpField`, `GlossTagInput`, `GlossCommandPalette`'s field and the date and time pickers' fields. Before, only a faint reflection changed; that reflection along the well's floor now gives way to the rim, so a lit field carries one mark.
+- `GlossSegmentedButton`'s chosen segment is a raised pearl thumb with its words lit jade, as a latched chip's, rather than the jade gel of a screen's one action, and no longer engraved with the gel's dark line above them. By night the jade of its words is lifted until it reads at 4.5:1 on the slate pearl, up to its crown.
+- By night the chevron on a select's, a combobox's and a disclosure's pearl bead takes the pearl's ink. The grey of supporting words read at 2.4:1 on the slate bead.
+- The charts give their figures in the reader's digits (Arabic-Indic on an Arabic page): on the value axis, in a pie's middle and legend, and in what a screen reader hears.
+- `GlossLineChart`, `GlossAreaChart` and `GlossBarChart` take a `valueLabel`: the words for a value with its unit (`(v) => '${v.round()} h'`), on the value axis and in what a screen reader hears.
+- A chart whose values are all 0 counts its axis 0 and 1, rather than 0, 0.2 … 1.
+- On a right-to-left page a chart's plot is its left-to-right one mirrored. Before, the figures' side and the far side swapped their insets, so the grid ran nearer the far wall.
+
 ## 0.2.0
 
 - Needs ui_core 0.4.0 and Flutter 3.47. `gloss_ui` re-exports ui_core, whose types now take `Raw` names (`DesignPressable` is `RawButton`). The old names stay through ui_core 0.4 as deprecated typedefs, and `dart fix --apply` renames them.

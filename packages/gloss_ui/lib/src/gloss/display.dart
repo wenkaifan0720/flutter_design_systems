@@ -147,7 +147,7 @@ class _GlossDisclosureState extends State<GlossDisclosure> {
                           child: Center(
                             child: GlossChevron(
                               open: _open,
-                              color: c.inkSecondary,
+                              color: glossBeadInk(c),
                             ),
                           ),
                         ),

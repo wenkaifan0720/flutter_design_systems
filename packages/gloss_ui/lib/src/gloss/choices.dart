@@ -1001,8 +1001,10 @@ class GlossSegment<T> {
 }
 
 /// A Gloss segmented control: a capsule trough pressed into the surface,
-/// one equal slot per choice, and one jade gel thumb that slides to the
-/// chosen slot. Labels never move; the chosen one turns white on the gel.
+/// one equal slot per choice, and one raised pearl thumb that slides to the
+/// chosen slot, its words lit jade. A choice is a state, so it is pearl, as
+/// a latched chip is: the jade gel stays the screen's one action. Labels
+/// never move.
 ///
 /// A screen reader hears a group of radios, the chosen one checked. Tab
 /// reaches the control once, at its choice; the arrows choose the next or
@@ -1109,7 +1111,7 @@ class GlossSegmentedButton<T> extends StatelessWidget {
                       child: GlossSurface(
                         face: onChanged == null
                             ? GlossFace.pearlOff(c).copyWith(foreground: c.ink)
-                            : GlossFace.gel(c).copyWith(lift: 0.7),
+                            : GlossFace.pearl(c).copyWith(lift: 0.7),
                       ),
                     );
                   },
@@ -1166,6 +1168,29 @@ class GlossSegmentedButton<T> extends StatelessWidget {
         FlagProperty('enabled', value: onChanged != null, ifFalse: 'disabled'),
       );
   }
+}
+
+// The jade ink of words on a pearl part (a chosen segment): the jade ink
+// is set to read on a well, and by night the slate pearl is lighter than a
+// well, so the jade is lifted, its hue kept, until it reads at 4.5:1 on the
+// pearl's crown, the lightest of its glaze, behind the tops of the words.
+Color _jadeOnPearl(GlossColors c) {
+  final ground = GlossFace.pearl(c).top;
+  final night = c.brightness == Brightness.dark;
+  var ink = HSLColor.fromColor(c.jadeInk);
+  double contrast(Color a, Color b) {
+    final la = a.computeLuminance(), lb = b.computeLuminance();
+    return (math.max(la, lb) + 0.05) / (math.min(la, lb) + 0.05);
+  }
+
+  while (contrast(ink.toColor(), ground) < 4.6 &&
+      ink.lightness > 0.02 &&
+      ink.lightness < 0.98) {
+    ink = ink.withLightness(
+      (ink.lightness + (night ? 0.02 : -0.02)).clamp(0.0, 1.0),
+    );
+  }
+  return ink.toColor();
 }
 
 // A slot of a GlossSegmentedButton: a radio of the control's group, checked
@@ -1259,7 +1284,7 @@ class _SegmentState<T> extends State<_Segment<T>> {
         (disabled
             ? c.inkDisabled
             : chosen
-            ? c.onJade
+            ? _jadeOnPearl(c)
             : c.ink);
     final focused = states.contains(WidgetState.focused);
     final pressed = states.contains(WidgetState.pressed);
@@ -1269,8 +1294,6 @@ class _SegmentState<T> extends State<_Segment<T>> {
         hovered: states.contains(WidgetState.hovered),
         pressed: states.contains(WidgetState.pressed),
         inside: true,
-        // On the chosen position's jade, the light of its words.
-        color: chosen && !disabled ? c.onJade : null,
         child: SizedBox(
           height: height,
           child: Transform.translate(
@@ -1294,20 +1317,10 @@ class _SegmentState<T> extends State<_Segment<T>> {
                           segment.label,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
+                          // No engraving on the chosen words: the pearl
+                          // thumb is no jade gel to cut them into.
                           style: style
-                              .copyWith(
-                                color: colour,
-                                shadows: chosen
-                                    ? [
-                                        Shadow(
-                                          color: c.jadeEdge.withValues(
-                                            alpha: 0.45,
-                                          ),
-                                          offset: const Offset(0, -1),
-                                        ),
-                                      ]
-                                    : null,
-                              )
+                              .copyWith(color: colour)
                               .merge(styles.textStyle),
                         ),
                       ),

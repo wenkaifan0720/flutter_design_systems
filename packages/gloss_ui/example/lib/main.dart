@@ -5,12 +5,10 @@
 // `choices`...) or a screen by its name (`overview`, `home`, `recipes`, `shopping`, `settings`), or a scene of one
 // (`/#/scene/recipe`, `filter`, `planner`, `deletePlan`, `search`, `searchNone`, `syncFailed`, `emptyList`);
 // `theme=dark` at night, `dir=rtl` right to left, `text=200` the words at twice the size, `density=comfortable|compact`
-// that density. `?slow=8` runs every animation eight times slower; `?a11y=1` turns the semantics on from the start;
-// `?keylines=1` draws ui_core's keyline sheet over it.
+// that density. `?slow=8` runs every animation eight times slower; `?a11y=1` turns the semantics on from the start.
 import 'package:flutter/scheduler.dart' show timeDilation;
 import 'package:flutter/widgets.dart';
 import 'package:gloss_ui/gloss_ui.dart';
-import 'package:ui_core_review/ui_core_review.dart';
 
 import 'gallery_pages.dart';
 import 'kit_gallery/simmer/simmer.dart';
@@ -76,15 +74,5 @@ Future<void> main() async {
       final i => i,
     },
   );
-  runApp(
-    query['keylines'] == '1'
-        ? Directionality(
-            textDirection: TextDirection.ltr,
-            child: DesignKeylineSheet(
-              check: const DesignKeylineCheck(look: 'Gloss'),
-              child: app,
-            ),
-          )
-        : app,
-  );
+  runApp(app);
 }

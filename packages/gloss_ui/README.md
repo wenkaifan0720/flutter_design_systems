@@ -5,7 +5,7 @@ It includes forms, navigation, calendars, charts, dialogs, and matching light an
 
 ![Gloss's Today screen on a desk at 1440 and on a phone at 390, by day](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/gloss_ui/screenshots/hero.webp)
 
-**[Live gallery](https://wenkaifan0720.github.io/flutter_design_systems/gloss/)** · [API reference](https://pub.dev/documentation/gloss_ui/latest/) · [All the looks](https://wenkaifan0720.github.io/flutter_design_systems/)
+**[Live gallery](https://wenkaifan0720.github.io/flutter_design_systems/gloss/)** · [Docs](https://wenkaifan0720.github.io/flutter_design_systems/docs/looks/gloss/) · [API reference](https://pub.dev/documentation/gloss_ui/latest/) · [All the looks](https://wenkaifan0720.github.io/flutter_design_systems/)
 
 ## Install
 
@@ -56,7 +56,29 @@ class TodayPage extends StatelessWidget {
 ```
 
 `glossPageTransitions` supplies page transitions on each platform, including the iOS swipe-back gesture.
-You can also install the theme with the builder of a `CupertinoApp` or `WidgetsApp`.
+
+Under a `CupertinoApp` (from `cupertino_ui`, which an app adds itself) or a bare `WidgetsApp`, the theme goes in the
+same place:
+
+```dart
+import 'package:cupertino_ui/cupertino_ui.dart';
+
+CupertinoApp(
+  builder: (context, child) => GlossTheme(
+    data: GlossThemeData.light(),
+    child: GlossToaster(child: child!),
+  ),
+  home: const TodayPage(),
+);
+
+WidgetsApp(
+  color: const Color(0xFF2E9E7A),
+  builder: (context, _) => GlossTheme(
+    data: GlossThemeData.dark(),
+    child: const GlossToaster(child: TodayPage()),
+  ),
+);
+```
 
 ## Components
 
@@ -76,6 +98,14 @@ for a custom primary color. The factory adjusts the gel color to keep its white 
 Theme defaults cover typography, density, and component styles. Widgets with a `style` parameter
 can override them locally.
 
+```dart
+// A coral gel for the one action; its label stays readable.
+final theme = GlossThemeData.from(gel: const Color(0xFFE4572E));
+
+// The same theme, denser, for a desk app.
+final dense = theme.copyWith(density: GlossDensity.compact);
+```
+
 ## Platforms
 
 Gloss supports Android, iOS, web, macOS, Windows, and Linux.
@@ -83,13 +113,17 @@ Gloss supports Android, iOS, web, macOS, Windows, and Linux.
 ## Accessibility
 
 Use Tab to reach a control and the arrow keys to move within tabs, ratings, and wheels.
-Keyboard focus sharpens the reflection on a glazed control. On a recessed field, the light catches its inner edge. Charts expose values to screen readers and scale axis labels with
+Keyboard focus sharpens the reflection on a glazed control; a recessed field lights its rim jade. Charts expose values to screen readers and scale axis labels with
 system text size. Dialogs, sheets, tabs, and toasts respect reduced motion.
 
 ## Right to left and languages
 
-Controls follow the ambient `Directionality`. Add `DesignLocalizations.delegate` to your app for
-localized control labels. Use `glossPlural` for phrases that depend on a count.
+Controls follow the ambient `Directionality`. Add `RawWidgetsLocalizations.delegate` to your app for
+control labels in ui_core's 30 languages. Use `glossPlural` for phrases that depend on a count.
+
+## Requirements
+
+Flutter 3.47.0 or later (Dart 3.13), on Android, iOS, web, macOS, Windows and Linux.
 
 ## Licence
 
