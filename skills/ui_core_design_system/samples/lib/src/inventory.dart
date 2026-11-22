@@ -46,12 +46,9 @@ final DesignInventory lookInventory = DesignInventory(
     ),
     DesignInventoryEntry.present(
       'Combobox',
-      (context) => const SizedBox(
-        width: 240,
-        child: LookCombobox<String>(
-          label: 'Owner',
-          options: ['Ada', 'Grace', 'Katherine'],
-        ),
+      (context) => const LookCombobox<String>(
+        label: 'Owner',
+        options: ['Ada', 'Grace', 'Katherine'],
       ),
     ),
     DesignInventoryEntry.present(

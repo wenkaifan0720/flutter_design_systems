@@ -75,7 +75,12 @@ widget uses; never two.
 Composite parts announce for themselves: a `RawTabBar`'s tabs, a
 `RawRadio`'s radio, a `RawSegmentedButton`'s segments.
 A part whose words do not name it passes `semanticLabel:`; a part beside its
-label merges with it (`MergeSemantics`).
+label merges with it (`MergeSemantics`). A row that acts (a list row with an
+`onTap`) and holds a control of its own (a "…" menu, a switch) keeps that
+control beside the row's button, not inside it: `RawButton` merges what it
+holds into its own node and reports focus while anything in it has focus.
+Two targets, two nodes, each named; a row face painted round both reads the
+row button's states through its `statesController`.
 
 ```dart
 // A checkbox is a checkbox to a screen reader, never also a button.
@@ -160,7 +165,11 @@ the text field's entry, so a row of mixed parts lines up.
 
 **`DesignDensity`** shrinks or grows faces (`height`, `padding`,
 `heightDelta`, `paddingDelta`; `standard`, `comfortable`, `compact`; `lerp`).
-It never moves the tap-target floor. **`DesignSpacingScope`** carries the
+It never moves the tap-target floor. So a compact density is for the
+pointer: on touch the floor holds a field's box at 44 while a compact button
+shrinks below it, and a row loses its one height. Offer compact where the
+pointer is the input (desktop and the web on a desktop), as Material's
+`VisualDensity.adaptivePlatformDensity` does, and keep standard on touch. **`DesignSpacingScope`** carries the
 spacing grid. **`DesignKeylineRegion`** and **`DesignKeylineFace`** mark the
 faces a keyline check compares.
 
@@ -302,23 +311,43 @@ named for a screen reader. Its `builder` gets `DesignDialogDetails`
 
 `RawAlertDialog` lays out an alert: `title`, `content`, `actions` (a list of
 `RawDialogAction`: `label`, `onPressed`, `isDefaultAction`,
-`isDestructiveAction`, `data`), between 280 and 560 wide, actions in a row
-that stack (the confirming one on top, each as wide as the dialog) when they
-do not fit, and the focus on the safe action: while one action is
-destructive, the first enabled action that is not
-(`RawAlertDialog.safeActionIndex`). The look's own `show<Look>Dialog` takes a
-list of actions too, as Material's `AlertDialog` does, never a fixed two,
-and paints a destructive action in the look's destructive tone. The look draws it through `titleBuilder`, `frameBuilder`
-(`RawAlertDialogFrameDetails`: `scrolled`, `overflows`, `stacked`) and
-`actionBuilder` (`RawDialogActionDetails`: `states`, `stacked`, `index`,
-`count`):
+`isDestructiveAction`, `data`), between 280 and 560 wide, and the focus on
+the safe action: while one action is destructive, the first enabled action
+that is not (`RawAlertDialog.safeActionIndex`). Actions are given dismissive
+first and confirming last (Cancel, Discard, Save): in a row they read in
+that order, the confirming one at the end; when they do not fit, ui_core
+stacks them one to a line, the confirming one on top. The look's own
+`show<Look>Dialog` takes a list of actions too, as Material's `AlertDialog`
+does, never a fixed two, and paints a destructive action in the look's
+destructive tone.
+
+The look draws it through four builders:
+
+- `titleBuilder` and `frameBuilder` (`RawAlertDialogFrameDetails`:
+  `scrolled`, `overflows`, `stacked`): the title, and the surface round it
+  all, with a rule under the top edge while `scrolled`.
+- `actionsBuilder` (the same details, and the bar): the room between the
+  words and the actions (a gap on the look's grid, and a rule over the
+  actions while the words `overflows`). Without it the actions sit right
+  under the words.
+- `actionBuilder` (`RawDialogActionDetails`: `states`, `stacked`, `index`,
+  `count`): each action. ui_core puts a stacked action at its line's end;
+  the look makes it as wide as the dialog while `details.stacked`, so a
+  stack reads as one column of equal keys.
+
+```dart
+// A gap on the grid between the words and the actions, and a
+// rule over the actions while the words scroll under them.
+actionsBuilder: (context, frame, bar) => DecoratedBox(
+```
 
 ```dart
 // The dialog makes each action's press; the look draws its face.
-actionBuilder: (context, action, details) => AnimatedLookSurface(
-  face: lookButtonFace(
-    theme,
-    details.states,
+actionBuilder: (context, action, details) => SizedBox(
+  // Stacked, every action is as wide as the dialog: one column
+  // of equal keys.
+  width: details.stacked ? double.infinity : null,
+  child: AnimatedLookSurface(
 ```
 
 The route builds under the navigator, not under the opener: capture the
@@ -379,11 +408,22 @@ and above has more room, and otherwise fills the room and scrolls.
 `OptionsViewOpenDirection.mostSpace` keeps Flutter's meaning, the larger
 side. A `RawPopover` measures its surface before it turns, so a short list
 under a low field stays below. `RawPopoverPlacement` sets the side, the
-alignment, `preferredExtent` (200) and `matchAnchorWidth` (a list as wide as
-its field, wider only for its widest row, up to `maxWidth`). A look that
-places a picker of its own (a calendar under a date field) follows the same
-rule: open where the whole of it fits, prefer below, flip only when the
-other side fits more, else shrink and scroll inside the screen.
+alignment, `preferredExtent` (200) and `matchAnchorWidth` (on by default: a
+list as wide as its field, wider only for its widest row, up to
+`maxWidth`). A look that places a picker of its own (a calendar under a date
+field) follows the same rule: open where the whole of it fits, prefer
+below, flip only when the other side fits more, else shrink and scroll
+inside the screen. A calendar sizes its seven day columns from its own
+width: on a phone it takes its field's width, so its edges meet the
+field's; from 600 px it keeps its own (`matchAnchorWidth: false`, seven
+cells at the look's tap size), from the field's start edge.
+
+A select and a combobox size alike. Given room to choose (a start-aligned
+column, a toolbar), each is as wide as its label and its widest option,
+as Material's `DropdownMenu` is, so it keeps one width as the choice
+changes; a form that sets its fields' width (a stretched column, a
+`SizedBox`) sets theirs. A text field has no options to measure and fills
+what it is given; a form puts all three in one width.
 `DesignListSideCheck` catches a list on the wrong side.
 
 ```dart
@@ -471,6 +511,7 @@ Each row on the left is built on the API on the right, painted by the look.
 | Range slider | `RawRangeSlider` |
 | Rating | `RawRating` |
 | Calendar, date and date-range picker | `RawCalendarDatePicker` |
+| Date field (a date typed in segments) | `RawDateField` |
 | Time field | `RawTimeField` |
 | Wheel picker | `RawPicker` |
 | Colour picker | `RawColorPicker` |

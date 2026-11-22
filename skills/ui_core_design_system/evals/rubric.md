@@ -17,8 +17,8 @@ gate and at least 80% of the review points.
 | G6 | Behaviour comes from ui_core | `lib` has no `FocusableActionDetector`, no `GestureDetector` with `onTap` that is the only press of a part, and every pressable uses `RawButton`, `RawRadio` or a `Raw*` behaviour | 0 hand-rolled presses |
 | G7 | Its API is its own | The library re-exports ui_core with a `show` list only | no whole re-export |
 | G8 | Documented | `dart doc --dry-run` | 0 warnings, 0 errors |
-| G9 | Publishable | `dart pub publish --dry-run` | 0 warnings |
-| G10 | Production grade | `grep -rniwE "todo\|fixme\|hack\|wip\|self-review\|round [0-9]+" lib test example/lib` | no hits |
+| G9 | Publishable | `dart pub publish --dry-run` | 0 warnings, or only the one asking for a homepage or repository the brief did not give |
+| G10 | Production grade | `grep -rIniwE "todo\|fixme\|hack\|wip\|self-review\|round [0-9]+" lib test example/lib` | no hits |
 
 ## Review (100 points)
 

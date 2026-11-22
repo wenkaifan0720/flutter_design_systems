@@ -199,6 +199,35 @@ Widget _fieldLabel(LookThemeData theme, Widget label) => DefaultTextStyle(
   child: label,
 );
 
+/// The widest a select or a combobox grows when its parent lets it choose:
+/// room for its label and its widest option, as Material's DropdownMenu
+/// sizes to its widest entry. The field keeps one width as the choice
+/// changes, and a select and a combobox offering one list are one width. A
+/// form that sets its fields' width (a stretched column) still sets it.
+double _choiceWidth(
+  BuildContext context,
+  LookThemeData theme,
+  String label,
+  Iterable<String> options,
+) {
+  double measure(String text, TextStyle style) {
+    final painter = TextPainter(
+      text: TextSpan(text: text, style: style),
+      textDirection: Directionality.of(context),
+      textScaler: MediaQuery.textScalerOf(context),
+      maxLines: 1,
+    )..layout();
+    final width = painter.width;
+    painter.dispose();
+    return width.ceilToDouble();
+  }
+
+  final entry = theme.body.copyWith(height: 1.2);
+  final widest = options.fold(0.0, (w, o) => math.max(w, measure(o, entry)));
+  // The face's insets (12 and 8), the gap (8) and the sign (20).
+  return math.max(widest + 48, measure(label, theme.label));
+}
+
 /// Chooses one of [options] from a list that opens below the field: a
 /// [RawPopover] round a [RawButton], on the same face and with the same
 /// sign as [LookCombobox], so the two read as one kind of field.
@@ -237,17 +266,21 @@ class LookSelect<T extends Object> extends StatelessWidget {
     final theme = LookTheme.of(context);
     final chosen = value;
     final change = onChanged;
+    final width = _choiceWidth(context, theme, label, options.map(optionLabel));
     return RawInputDecorator(
       labelText: label,
       enabled: change != null,
-      builder: (context, parts) => Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (parts.label != null) _fieldLabel(theme, parts.label!),
-          const SizedBox(height: 6),
-          parts.control,
-        ],
+      builder: (context, parts) => ConstrainedBox(
+        constraints: BoxConstraints(maxWidth: width),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (parts.label != null) _fieldLabel(theme, parts.label!),
+            const SizedBox(height: 6),
+            parts.control,
+          ],
+        ),
       ),
       child: RawPopover(
         arrowKeyNavigation: true,
@@ -271,9 +304,8 @@ class LookSelect<T extends Object> extends StatelessWidget {
                 child: DesignControlBox(
                   minHeight: theme.density.height(theme.controlHeight),
                   child: Row(
-                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Flexible(
+                      Expanded(
                         child: DesignCapCenter(
                           capHeightFactor: theme.capHeightFactor,
                           child: Text(
@@ -403,21 +435,30 @@ class _LookComboboxState<T extends Object> extends State<LookCombobox<T>> {
     final theme = LookTheme.of(context);
     final c = theme.colors;
     final entryStyle = theme.body.copyWith(height: 1.2);
+    final width = _choiceWidth(
+      context,
+      theme,
+      widget.label,
+      widget.options.map(widget.optionLabel),
+    );
     return RawInputDecorator(
       labelText: widget.label,
       focusNode: _focusNode,
-      builder: (context, parts) => Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (parts.label != null)
-            MouseRegion(
-              cursor: SystemMouseCursors.text,
-              child: _fieldLabel(theme, parts.label!),
-            ),
-          const SizedBox(height: 6),
-          parts.control,
-        ],
+      builder: (context, parts) => ConstrainedBox(
+        constraints: BoxConstraints(maxWidth: width),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (parts.label != null)
+              MouseRegion(
+                cursor: SystemMouseCursors.text,
+                child: _fieldLabel(theme, parts.label!),
+              ),
+            const SizedBox(height: 6),
+            parts.control,
+          ],
+        ),
       ),
       child: RawCombobox<T>(
         options: widget.options,

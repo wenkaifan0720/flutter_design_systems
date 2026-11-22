@@ -56,6 +56,8 @@ else
   cp "$evals/sweep.dart" "$ex/test/score_sweep.dart" 2>/dev/null ||
     { mkdir -p "$ex/test" && cp "$evals/sweep.dart" "$ex/test/score_sweep.dart"; }
   cat >"$ex/test/score_test.dart" <<EOF
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ui_core/inventory.dart';
 import 'package:$example/inventory.dart';
@@ -82,6 +84,14 @@ void main() {
     );
     expect(found, isEmpty, reason: found.join('\n'));
   });
+  testWidgets('shoot', (tester) async {
+    await shootInventory(
+      tester,
+      inventory: inventory,
+      host: lookHost,
+      outDir: Platform.environment['SHOOT_DIR']!,
+    );
+  });
 }
 EOF
   for g in G3 G4 G5; do
@@ -91,6 +101,12 @@ EOF
       gate "$g" FAIL "see $log/$g.txt"
     fi
   done
+  # The review pictures (not a gate): the gallery and each part under focus.
+  if (cd "$ex" && SHOOT_DIR="$work/shots" flutter test test/score_test.dart --plain-name shoot) >"$log/shoot.txt" 2>&1; then
+    gate R REVIEW "pictures in $work/shots"
+  else
+    gate R REVIEW "shooting failed: see $log/shoot.txt"
+  fi
 fi
 
 # G6: behaviour from ui_core, not hand-rolled.
@@ -119,16 +135,20 @@ else
   gate G8 FAIL "$(grep -E "Found [0-9]+ warnings" "$log/doc.txt" || echo "see $log/doc.txt")"
 fi
 
-# G9: publishable.
-if dart pub publish --dry-run --directory "$pkg" >"$log/publish.txt" 2>&1 &&
-  grep -q "has 0 warnings" "$log/publish.txt"; then
+# G9: publishable. A brief gives no repository, so the one warning about a
+# missing homepage or repository is allowed; an invented URL is worse.
+dart pub publish --dry-run --directory "$pkg" >"$log/publish.txt" 2>&1
+if grep -q "has 0 warnings" "$log/publish.txt"; then
   gate G9 PASS "publish dry-run clean"
+elif grep -q "has 1 warning" "$log/publish.txt" &&
+  grep -q '"homepage" or "repository"' "$log/publish.txt"; then
+  gate G9 PASS "publish dry-run clean but for the repository, not given"
 else
   gate G9 FAIL "see $log/publish.txt"
 fi
 
 # G10: production grade.
-hits="$(grep -rniwE "todo|fixme|hack|wip|self-review|round [0-9]+" "$pkg/lib" "$pkg/test" "$ex/lib" 2>/dev/null | grep -v "score_" | wc -l | tr -d ' ')"
+hits="$(grep -rIniwE "todo|fixme|hack|wip|self-review|round [0-9]+" "$pkg/lib" "$pkg/test" "$ex/lib" 2>/dev/null | grep -v "score_" | wc -l | tr -d ' ')"
 if [ "$hits" = 0 ]; then
   gate G10 PASS "no working notes"
 else

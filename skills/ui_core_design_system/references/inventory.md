@@ -84,13 +84,13 @@ Each input stands at the control height, takes the field's rule and its focus tr
 | `Select` | Select / dropdown | MS | `RawPopover`, `RawButton` |
 | `Combobox` | Combobox / autocomplete | MS | `RawCombobox` |
 | `MultiSelect` | Multi-select / tag input | – | `RawTagInput` |
-| `Slider` | Slider | MCS | `DesignValueHandle` |
+| `Slider` | Slider | MCS | `DesignValueHandle` (the thumb's keys and screen reader; the look draws the track and turns drags into values) |
 | `RangeSlider` | Range slider | M | `RawRangeSlider` |
 | `SegmentedButton` | Segmented control | MC | `RawSegmentedButton` |
 | `Chip` | Chips (filter/choice/input) | M | `RawButton` |
 | `Rating` | Rating | – | `RawRating` |
 | `FileUpload` | File upload / drop zone | – | drawn by the look |
-| `DatePicker` | Date picker | MCS | drawn by the look |
+| `DatePicker` | Date picker | MCS | `RawDateField`, `RawCalendarDatePicker` in a `RawPopover` |
 | `DateRangePicker` | Date range picker | M | `RawCalendarDatePicker` |
 | `TimePicker` | Time picker | MCS | `RawTimeField` |
 | `Calendar` | Inline calendar | MS | `RawCalendarDatePicker` |
@@ -203,6 +203,8 @@ final DesignInventory lookInventory = DesignInventory(
 
 The look's test calls `lookInventory.verify()`, which fails on any row that
 is missing, any entry for an unknown row, and any reason that only says the
-part is not built. The gallery lists the same inventory with
+part is not built. The inventory stands beside the look, not in its API: in
+`lib/src` without an export, or in the example app, since
+`package:ui_core/inventory.dart` stays out of the look's public signatures. The gallery lists the same inventory with
 `DesignInventoryGallery`, so a person choosing the look sees every part it
 has and the reason for every part it does not.

@@ -103,6 +103,7 @@ the part and what to change.
 | `DesignClipCheck` | Words or a face cut by a clip or an overflow | Layout |
 | `DesignShadowClipCheck` | A shadow cut by its parent's clip | Pixels |
 
+The checks come from `package:ui_core_test/ui_core_test.dart`.
 `package:ui_core_test/guidelines.dart` offers the same rules as Flutter
 accessibility guidelines (`checkableRoleGuideline`, `fieldSemanticsGuideline`,
 `textFieldNameGuideline`, `tapTargetReachGuideline`, `cursorGuideline`,
@@ -134,10 +135,16 @@ await expectLater(tester, meetsGuideline(textContrastGuideline));
 
 ### Pixel checks need the look's real fonts
 
-A test draws text in a stand-in font unless the look's families are loaded;
-`DesignLabelCheck` then reads boxes, not capitals. Load every family the look
-uses (its icon font too) before a pixel check, and pass the tester's
-`runAsync`:
+A test draws text in a stand-in font unless the look's families are loaded:
+`DesignLabelCheck` then reads boxes, not capitals, and `DesignWordBreakCheck`
+and `DesignClipCheck` measure square glyphs that break words a real font
+keeps whole. Load every family the look uses, in every weight it draws (its
+icon font too), before
+these checks and the pictures, and pass the tester's `runAsync`. The files
+come from the package's own `fonts/` folder for the families it bundles;
+Flutter's Roboto and Material icons sit in the SDK, under
+`$FLUTTER_ROOT/bin/cache/artifacts/material_fonts/`, for a family the look
+leaves to the app.
 
 ```dart
 await tester.runAsync(() async {
@@ -182,13 +189,16 @@ to left.
 
 It reads every field's nodes, then compares them after the first letter, so
 a clear key or a counter that appears with the text cannot move the entry to
-a new node:
+a new node. Settle after typing: a combobox's list opening is still
+scrolling a frame later, and a check run mid-scroll fails. Each field needs
+a node of its own (`RawInputDecorator` gives it one); a field without one
+is read with the whole screen round it:
 
 ```dart
 const check = DesignFieldNodesCheck(look: 'Look');
 final empty = check.read(screen);
 await tester.enterText(find.byType(EditableText).first, 'A');
-await tester.pump();
+await tester.pumpAndSettle();
 check.check(empty, screen).verify();
 ```
 
@@ -284,8 +294,10 @@ Rect face(Finder part) => tester.getRect(
 - **One height in a row.** A text field, a select, a combobox and a button
   in one `Row` have faces of one height, and the fields one centre line.
 - **No stretch from 600 px.** In a 1440-wide column with start alignment, a
-  select, a button, a stepper and a segmented control keep their content's
-  width.
+  button, a stepper and a segmented control keep their content's width, and
+  a select and a combobox the width of their label and widest option: one
+  width whatever is chosen, the same for both. In a stretched column both
+  fill it.
 - **Keylines.** A card's rows start and end on the card's inner edges.
 - **The grid.** Gaps between parts are multiples of the look's unit.
 
@@ -321,7 +333,10 @@ then `verify()` on the report.
 ## The screenshot review
 
 Checks pass parts that look wrong. Before a part is done, shoot it and read
-every picture at full size:
+every picture at full size. A golden of a widget below the app's builder has
+no ground behind it unless the test paints one, so wrap the shot in the
+look's ground; two mice hovering in one test need two `TestPointer` devices.
+Read:
 
 - every part, in every state it has (rest, hover, Tab focus, pressed,
   disabled, selected, error, busy);
@@ -361,7 +376,7 @@ process (review notes, dates, internal names), and test files are named for
 what they check:
 
 ```sh
-grep -rniwE "todo|fixme|hack|wip|self-review|round [0-9]+" lib test example/lib
+grep -rIniwE "todo|fixme|hack|wip|self-review|round [0-9]+" lib test example/lib
 ```
 
 ## How this skill's samples are checked

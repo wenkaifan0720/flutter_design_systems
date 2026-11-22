@@ -14,6 +14,6 @@ void main() {
       host: (context, child, brightness) =>
           LookTheme(data: LookThemeData.of(brightness), child: child),
     );
-    expect(found, isEmpty);
+    expect(found, isEmpty, reason: found.join('\n'));
   });
 }

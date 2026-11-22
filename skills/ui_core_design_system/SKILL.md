@@ -118,6 +118,10 @@ child: DesignTapTargetScope(
     spacing: DesignSpacing.fallback,
 ```
 
+`DesignSpacing.fallback` is a 4 px grid; a look on another unit names it
+(`DesignSpacing(grid: 8)` for an 8 px grid), and its gaps, insets and
+control heights are multiples of it.
+
 Apps install it in their app widget's `builder`, so every route and overlay
 stands under it, with the look's page transitions in `ThemeData`:
 
@@ -266,10 +270,15 @@ const DesignInventoryEntry.absent(
 
 - A README with the look in a paragraph, install, setup under `MaterialApp`,
   `CupertinoApp` and `WidgetsApp`, five or six everyday snippets, pictures,
-  accessibility and languages, and the Flutter range and platforms.
+  accessibility and languages, and the Flutter range and platforms. The
+  pictures are the review shots, day and night, copied into `doc/`, listed
+  under `screenshots:` in the pubspec and shown in the README.
 - Every public member documented in plain words; `dart doc` with 0 warnings.
 - A short `example/lib/main.dart` that installs the theme and shows parts.
 - A CHANGELOG entry per version: short present-tense lines naming the API.
+- `repository:` in the pubspec names where the source really lives; never
+  invent one. Until the owner gives it, the publish dry-run's warning about
+  it is the one warning left.
 - `dart pub publish --dry-run` with 0 warnings.
 - Nothing in `lib`, `test` or `example` but what a user of the package
   needs: no working notes, dates, review names or to-dos.

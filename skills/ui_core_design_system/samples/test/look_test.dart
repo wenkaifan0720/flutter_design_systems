@@ -232,6 +232,8 @@ void main() {
       await tester.pumpWidget(
         lookApp(home: const PartsScreen(), brightness: brightness),
       );
+      // A theme that springs from day to night is read once it lands.
+      await tester.pumpAndSettle();
       final screen = tester.element(find.byType(PartsScreen));
       final labels = await const DesignLabelCheck(
         look: 'Look',
@@ -478,6 +480,56 @@ void main() {
     expect(find.text('Share'), findsOneWidget);
   });
 
+  testWidgets('three dialog actions stack, one width, the confirming on top, '
+      'when they do not fit', (tester) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(
+      lookApp(
+        home: Builder(
+          builder: (context) => Center(
+            child: LookButton(
+              'Close',
+              onPressed: () => showLookDialog<void>(
+                context,
+                title: 'Discard the draft?',
+                content: const Text('Your changes will be lost.'),
+                actions: (context) => [
+                  for (final label in ['Keep editing', 'Discard', 'Save draft'])
+                    RawDialogAction(
+                      label: label,
+                      isDestructiveAction: label == 'Discard',
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('Close'));
+    await tester.pumpAndSettle();
+    Rect face(String label) => tester.getRect(
+      find
+          .ancestor(of: find.text(label), matching: find.byType(LookSurface))
+          .first,
+    );
+    final keep = face('Keep editing');
+    final discard = face('Discard');
+    final save = face('Save draft');
+    expect(save.top, lessThan(discard.top));
+    expect(discard.top, lessThan(keep.top));
+    expect({keep.width, discard.width, save.width}, hasLength(1));
+    expect({keep.height, discard.height, save.height}, hasLength(1));
+    // The words and the actions keep a gap between them.
+    expect(
+      save.top - tester.getRect(find.text('Your changes will be lost.')).bottom,
+      greaterThanOrEqualTo(16),
+    );
+  });
+
   testWidgets('built-in words follow the reader\'s language', (tester) async {
     await tester.pumpWidget(
       lookApp(
@@ -536,7 +588,7 @@ void main() {
     const check = DesignFieldNodesCheck(look: 'Look');
     final empty = check.read(screen);
     await tester.enterText(find.byType(EditableText).first, 'A');
-    await tester.pump();
+    await tester.pumpAndSettle();
     check.check(empty, screen).verify();
   });
 
@@ -591,40 +643,50 @@ void main() {
     }
   });
 
-  testWidgets('from 600 px wide, a select and a button keep their '
-      'content\'s width', (tester) async {
+  testWidgets('from 600 px wide, a select, a combobox and a button keep '
+      'their content\'s width', (tester) async {
     tester.view.physicalSize = const Size(1440, 900);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
-    await tester.pumpWidget(
-      lookApp(
-        home: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              LookSelect<String>(
-                label: 'Plan',
-                options: const ['Day', 'Week'],
-                value: 'Week',
-                onChanged: (_) {},
-              ),
-              LookButton('Save', onPressed: () {}),
-            ],
+    Future<double> faceWidth(CrossAxisAlignment align, Widget part) async {
+      await tester.pumpWidget(
+        lookApp(
+          home: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(crossAxisAlignment: align, children: [part]),
           ),
         ),
-      ),
-    );
-    for (final part in [
-      find.byType(LookSelect<String>),
-      find.byType(LookButton),
-    ]) {
+      );
       final face = find.descendant(
-        of: part,
+        of: find.byWidget(part),
         matching: find.byType(LookSurface),
       );
-      expect(tester.getSize(face.first).width, lessThan(240));
+      return tester.getSize(face.first).width;
     }
+
+    const options = ['Day', 'Week', 'Month'];
+    LookSelect<String> select(String value) => LookSelect<String>(
+      label: 'Plan',
+      options: options,
+      value: value,
+      onChanged: (_) {},
+    );
+    const combobox = LookCombobox<String>(label: 'Plan', options: options);
+    const start = CrossAxisAlignment.start;
+    final day = await faceWidth(start, select('Day'));
+    expect(day, lessThan(240));
+    // One width whatever is chosen, and the combobox offering the same
+    // list is that width too: the two read as one kind of field.
+    expect(await faceWidth(start, select('Month')), day);
+    expect(await faceWidth(start, combobox), day);
+    expect(
+      await faceWidth(start, LookButton('Save', onPressed: () {})),
+      lessThan(240),
+    );
+    // A form that sets its fields' width still sets it.
+    const stretch = CrossAxisAlignment.stretch;
+    expect(await faceWidth(stretch, select('Day')), 1440 - 48);
+    expect(await faceWidth(stretch, combobox), 1440 - 48);
   });
 
   testWidgets('a select and a combobox open their lists below, as one kind '
@@ -645,14 +707,11 @@ void main() {
                   onChanged: (_) {},
                 ),
                 const SizedBox(height: 16),
-                SizedBox(
-                  width: 240,
-                  child: LookCombobox<String>(
-                    label: 'Owner',
-                    options: const ['Ada', 'Grace', 'Katherine'],
-                    value: owner,
-                    onSelected: (next) => setState(() => owner = next),
-                  ),
+                LookCombobox<String>(
+                  label: 'Owner',
+                  options: const ['Ada', 'Grace', 'Katherine'],
+                  value: owner,
+                  onSelected: (next) => setState(() => owner = next),
                 ),
               ],
             ),

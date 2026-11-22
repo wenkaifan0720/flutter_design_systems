@@ -30,8 +30,14 @@ ui_core_test ^0.2.1 on pub.dev, and Flutter 3.47 or later.
    under each of sixteen conditions (390 and 1440 wide, day and night, left
    to right and right to left, 1x and 2x text) and runs ui_core_test's
    checks over it.
-5. Shoot the gallery as [checks.md](../references/checks.md) describes and
-   score the review items R1 to R9.
+5. Read the pictures `score.sh` draws with `shootInventory` (in
+   [sweep.dart](sweep.dart)): a gallery of every present part in four
+   conditions (a phone by day; a phone by night, right to left, at twice the
+   text size; a desk by day and by night) and each part under keyboard
+   focus, by day and by night, all at twice their size with the look's
+   fonts. Add the side-by-side pairs of
+   [checks.md](../references/checks.md) ("The screenshot review") from the
+   candidate's own tests or example, and score the review items R1 to R9.
 
 A brief passes with every gate and 80 or more review points. The skill passes
 when all three briefs do.

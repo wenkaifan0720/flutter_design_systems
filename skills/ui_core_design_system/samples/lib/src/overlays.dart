@@ -120,26 +120,48 @@ Future<T?> showLookDialog<T>(
               ),
               child: Padding(padding: const EdgeInsets.all(24), child: child),
             ),
-            // The dialog makes each action's press; the look draws its face.
-            actionBuilder: (context, action, details) => AnimatedLookSurface(
-              face: lookButtonFace(
-                theme,
-                details.states,
-                variant: details.index == details.count - 1
-                    ? LookButtonVariant.filled
-                    : LookButtonVariant.outlined,
-                destructive: action.isDestructiveAction,
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(theme.radius),
+            // A gap on the grid between the words and the actions, and a
+            // rule over the actions while the words scroll under them.
+            actionsBuilder: (context, frame, bar) => DecoratedBox(
+              decoration: BoxDecoration(
+                border: Border(
+                  top: BorderSide(
+                    color: frame.overflows
+                        ? theme.colors.rule
+                        : const Color(0x00000000),
+                  ),
+                ),
               ),
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: DesignControlBox(
-                  minHeight: theme.controlHeight,
-                  child: DesignCapCenter(
-                    capHeightFactor: theme.capHeightFactor,
-                    child: Text(action.label, style: theme.label),
+                padding: const EdgeInsets.only(top: 24),
+                child: bar,
+              ),
+            ),
+            // The dialog makes each action's press; the look draws its face.
+            actionBuilder: (context, action, details) => SizedBox(
+              // Stacked, every action is as wide as the dialog: one column
+              // of equal keys.
+              width: details.stacked ? double.infinity : null,
+              child: AnimatedLookSurface(
+                face: lookButtonFace(
+                  theme,
+                  details.states,
+                  variant: details.index == details.count - 1
+                      ? LookButtonVariant.filled
+                      : LookButtonVariant.outlined,
+                  destructive: action.isDestructiveAction,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(theme.radius),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: DesignControlBox(
+                    minHeight: theme.controlHeight,
+                    child: DesignCapCenter(
+                      capHeightFactor: theme.capHeightFactor,
+                      child: Text(action.label, style: theme.label),
+                    ),
                   ),
                 ),
               ),

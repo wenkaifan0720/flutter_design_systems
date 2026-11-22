@@ -143,16 +143,19 @@ check the compact (desktop) density as well as the standard one.
 for every label. Glyphs sit on the middle of the capitals beside them. Rows
 centre their children; never bottom-align a row of controls.
 
-**From 600 px wide, controls do not stretch** to their column: a select, a
-button, a stepper or a segmented control keeps its content's width (a field
-may fill a form column).
+**From 600 px wide, controls do not stretch** to their column: a button, a
+stepper or a segmented control keeps its content's width; a select and a
+combobox keep the width of their label and widest option, so neither jumps
+as the choice changes. A text field fills what it is given, and a form sets
+one width for all its fields.
 
 **Chosen fills cover the whole cell.** A chosen day, segment, tab or row
 fills its cell edge to edge; nested shapes are concentric with their
 container's corners (inner radius = outer radius − inset).
 
 **Dialog actions stack when they do not fit**, the confirming action on top,
-each as wide as the dialog.
+each as wide as the dialog (ui_core stacks them; the look widens them), with
+a gap on the look's grid between the words and the actions.
 
 *Check:* measure edges at native size before judging; `DesignLabelCheck`,
 `DesignRowCheck` and `DesignKeylineCheck` measure what the eye compares.
@@ -171,8 +174,10 @@ chevron, or what the language uses for it).
 list; a select drawn as a raised key reads as a button. Two kinds of field
 for one kind of choice read as two kinds of thing.
 
-*Check:* a text field, a select and a combobox in one form differ only in
-their words and their end sign.
+*Check:* a text field, a select and a combobox in one form, at the form's
+width, differ only in their words and their end sign; a select and a
+combobox offering one list, left to choose their own width, are one width,
+whatever is chosen.
 
 **An open list is its field's own.** It is drawn in the field's material,
 edge and corner; it is opaque enough that the page's words never show
@@ -350,7 +355,11 @@ Customisation goes as far as Material's and no further than the laws allow:
 - a style per part (`style:` taking the look's `DesignStyle`), for the slots
   that mean something in the material;
 - a component theme slot per part in the theme data;
-- theme-wide knobs the look decides on (accent, corner, density).
+- theme-wide knobs the look decides on (accent, corner, density);
+- the type family. A look works in any family the app loads, as Material
+  does: its sizes, weights and cap-height factor are set for its default,
+  and a family the look names but does not bundle falls back to one it can
+  rely on (Roboto), with the README saying how to supply the intended one.
 
 A customisation that breaks a law (a hard ring on glass, a gradient on a flat
 look) is not offered. Values that differ only in tokens are presets of one
