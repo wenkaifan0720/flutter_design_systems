@@ -305,13 +305,14 @@ class _MinimalMenuState extends State<MinimalMenu> {
     final child =
         widget.child ??
         (text == null
-            // The icon button's square, at the theme's density.
+            // The icon button's square, at the theme's density: a hairline
+            // on whatever it stands on, so a selected row's wash runs under
+            // it.
             ? Container(
                 width: t.density.height(side),
                 height: t.density.height(side),
                 decoration: minimalFrame(
                   t.shapes.small,
-                  fill: t.background,
                   side: BorderSide(color: t.border, width: t.rim),
                 ),
                 child: MinimalIcon(icon!, color: t.foreground),
@@ -602,6 +603,7 @@ class _PopoverRoute<T> extends PopupRoute<T> {
         delegate: _PopoverLayout(
           anchor: anchor,
           width: width,
+          direction: Directionality.of(context),
           safe: EdgeInsets.fromLTRB(
             m.padding.left,
             m.padding.top,
@@ -665,11 +667,13 @@ class _PopoverLayout extends SingleChildLayoutDelegate {
   const _PopoverLayout({
     required this.anchor,
     required this.width,
+    required this.direction,
     required this.safe,
   });
 
   final Rect anchor;
   final double width;
+  final TextDirection direction;
   final EdgeInsets safe;
 
   double _top() => safe.top + _MenuMetrics.edge;
@@ -685,8 +689,10 @@ class _PopoverLayout extends SingleChildLayoutDelegate {
       size.width - safe.horizontal - 2 * _MenuMetrics.edge,
     );
     final room = math.max(_below(size), _above());
+    // At least a row's height, unless the screen itself has less room.
+    final whole = math.max(0.0, _bottom(size) - _top());
     return BoxConstraints.tightFor(width: math.max(0, w)).copyWith(
-      maxHeight: room.clamp(MinimalLayout.minHitTarget, _bottom(size) - _top()),
+      maxHeight: room.clamp(math.min(MinimalLayout.minHitTarget, whole), whole),
     );
   }
 
@@ -703,17 +709,23 @@ class _PopoverLayout extends SingleChildLayoutDelegate {
       size.width - safe.right - _MenuMetrics.edge - childSize.width,
     );
     // On the control's leading edge wherever the card fits there (a list
-    // from a field starts where the field does); else ending on its far
-    // edge, as from a toolbar's last button.
-    final x = anchor.left <= maxX
-        ? anchor.left
-        : anchor.right - childSize.width;
+    // from a field starts where the field does), its left in a
+    // left-to-right page and its right in a right-to-left one; else ending
+    // on its far edge, as from a toolbar's last button.
+    final x = direction == TextDirection.ltr
+        ? (anchor.left <= maxX ? anchor.left : anchor.right - childSize.width)
+        : (anchor.right - childSize.width >= minX
+              ? anchor.right - childSize.width
+              : anchor.left);
     return Offset(x.clamp(minX, maxX), y.clamp(top, lowest));
   }
 
   @override
   bool shouldRelayout(_PopoverLayout old) =>
-      anchor != old.anchor || width != old.width || safe != old.safe;
+      anchor != old.anchor ||
+      width != old.width ||
+      direction != old.direction ||
+      safe != old.safe;
 }
 
 /// The menu's items in the card, and its keys: a menu button's (see
@@ -1034,10 +1046,11 @@ class _MenuAction extends StatelessWidget {
                   ],
                   if (item.selected) ...[
                     const MinimalGap(MinimalSpacing.s8),
+                    // The chosen row's check is in its words' ink, not the accent's.
                     MinimalIcon(
                       LucideIcons.check,
                       size: MinimalIconSize.i16,
-                      color: t.primaryInk,
+                      color: ink,
                     ),
                   ],
                 ],

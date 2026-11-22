@@ -6,11 +6,9 @@
 // in Flutter's own config: tracked, ui_core's reorderable list and swipe
 // row tests fail on the recognizer a drag makes.
 //
-// ui_core's template (design-kit/files/test/flutter_test_config.dart);
-// look:package adds leak_tracker_flutter_testing to the dev dependencies.
 // Minimal's walks of whole gallery pages and app screens take the long
-// walk's (below): tracked, a file of them grew test by test to 3.4 GB in
-// one process and ran two and a half times as long. Each part's own tests,
+// walk's (below): tracked, a file of them grows test by test to gigabytes
+// in one process and runs more than twice as long. Each part's own tests,
 // and the apps' happy path, keep tracking.
 import 'dart:async';
 

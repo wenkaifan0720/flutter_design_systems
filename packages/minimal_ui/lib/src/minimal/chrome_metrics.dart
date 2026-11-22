@@ -207,11 +207,11 @@ abstract final class MinimalChromeMetrics {
   static const double routeDamping = 1;
 
   /// A sheet's spring stiffness (k): critically damped, within 2% of rest
-  /// at [sheetIn], as its 180 ms slide was (ω = 6 / 0.18 s, k = ω²).
+  /// at [sheetIn], 180 ms (ω = 6 / 0.18 s, k = ω²).
   static const double sheetStiffness = 1111;
 
-  /// A dialog's spring stiffness (k): within 2% of rest at [fadeIn], as its
-  /// 120 ms fade was (ω = 6 / 0.12 s, k = ω²).
+  /// A dialog's spring stiffness (k): within 2% of rest at [fadeIn],
+  /// 120 ms (ω = 6 / 0.12 s, k = ω²).
   static const double dialogStiffness = 2500;
 
   /// The tab bar yielding to pushed depth.

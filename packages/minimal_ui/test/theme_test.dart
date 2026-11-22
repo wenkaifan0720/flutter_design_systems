@@ -252,8 +252,20 @@ void main() {
       expect(light.primary, const Color(0xFF3E63DD));
       expect(light.border, const Color(0xFFE8E8EB));
       expect(dark.background, const Color(0xFF0E0E11));
-      expect(dark.primary, const Color(0xFF7C9BFF));
-      expect(dark.primaryForeground, const Color(0xFF0E0E11));
+      // By night the solid accent is a crisp indigo under white words;
+      // words, links and the focus ring take the lighter ink.
+      expect(dark.primary, const Color(0xFF4669E0));
+      expect(dark.primaryForeground, const Color(0xFFFFFFFF));
+      expect(dark.primaryInk, const Color(0xFF7C9BFF));
+      expect(dark.ring, dark.primaryInk);
+      // The destructive fill is the day's deep red under white words by
+      // night too; danger words keep the lighter red.
+      expect(dark.destructive, light.destructive);
+      expect(dark.destructiveForeground, const Color(0xFFFFFFFF));
+      expect(dark.destructiveInk, const Color(0xFFF06B6B));
+      // Ember's night pink takes the dark ink, as its accent does.
+      final emberDark = MinimalThemeData.preset('ember', Brightness.dark);
+      expect(emberDark.destructiveForeground, emberDark.textInverse);
       // Graphite spends the ink as its accent; ember runs warm.
       expect(
         MinimalThemeData.preset('graphite', Brightness.light).primary,

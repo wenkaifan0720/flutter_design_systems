@@ -512,6 +512,12 @@ class _MinimalMultiSelectState<T extends Object>
       widget.focusNode ??
       (_owned ??= FocusNode(debugLabel: 'MinimalMultiSelect'));
 
+  // A disabled field still lists each tag's Remove action (ui_core's tag
+  // input has no disabled state); running it changes nothing.
+  void _changed(List<T> values) {
+    if (widget.enabled) widget.onChanged(values);
+  }
+
   @override
   void dispose() {
     _owned?.dispose();
@@ -666,7 +672,7 @@ class _MinimalMultiSelectState<T extends Object>
 
     final input = RawTagInput<T>(
       values: widget.values,
-      onChanged: widget.onChanged,
+      onChanged: _changed,
       // One place, as the combobox's.
       highlightFollowsPointer: true,
       options: widget.options,

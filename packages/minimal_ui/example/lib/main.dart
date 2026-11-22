@@ -161,9 +161,8 @@ final List<ExamplePage> examplePages = [
   ),
 ];
 
-/// The inventory of every part against the kit's list: for the package's
-/// own tests and reviews, linked as `?page=inventory`, out of the
-/// navigation.
+/// The inventory of every part against the kit's list, linked as
+/// `?page=inventory`, out of the navigation.
 final ExamplePage inventoryPage = (
   name: 'Inventory',
   icon: LucideIcons.listChecks,

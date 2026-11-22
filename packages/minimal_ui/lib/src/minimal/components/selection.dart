@@ -119,8 +119,9 @@ class MinimalChoiceRow extends StatelessWidget {
             const MinimalGap(MinimalSpacing.s12),
             SizedBox(
               width: MinimalIconSize.i18,
+              // The chosen row's check is in its words' ink, not the accent's.
               child: selected
-                  ? MinimalIcon(LucideIcons.check, color: t.primaryInk)
+                  ? MinimalIcon(LucideIcons.check, color: ink)
                   : null,
             ),
           ],

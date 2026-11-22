@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../internal/controls.dart';
+import '../internal/reader_digits.dart';
 import '../localizations.dart';
 import '../theme.dart';
 import 'pressable.dart';
@@ -34,6 +35,7 @@ class MinimalBarChart extends StatelessWidget {
     this.highlight,
     this.onBarPressed,
     this.semanticLabel,
+    this.format,
   });
 
   /// The bars' values, in order.
@@ -50,6 +52,10 @@ class MinimalBarChart extends StatelessWidget {
 
   /// Makes every bar a control that reports its index.
   final ValueChanged<int>? onBarPressed;
+
+  /// Writes a bar's value as a screen reader hears it, with its unit
+  /// (`2h 30m`); null writes the figure in the reader's digits.
+  final String Function(double value)? format;
 
   /// What a screen reader announces for the chart as a whole; each bar
   /// reads its own label and value after it.
@@ -104,7 +110,8 @@ class MinimalBarChart extends StatelessWidget {
       );
       final name = names != null && i < names.length ? names[i] : null;
       final announced =
-          '${name ?? MinimalLocalizations.of(context).bar(i + 1)}: ${_figure(v)}';
+          '${name ?? MinimalLocalizations.of(context).bar(i + 1)}: '
+          '${format?.call(v) ?? minimalReaderDigits(context, _figure(v))}';
       final cell = Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -167,7 +174,10 @@ class MinimalBarChart extends StatelessWidget {
       ..add(
         ObjectFlagProperty<ValueChanged<int>>.has('onBarPressed', onBarPressed),
       )
-      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<String Function(double value)>.has('format', format),
+      );
   }
 }
 
@@ -175,7 +185,8 @@ class MinimalBarChart extends StatelessWidget {
 /// cell or a row, never a chart in its own right: a 1.6 px line with round
 /// joins over a faint area, ending on a dot where the series stands now.
 /// The line spans the series' own range; a flat series (every value
-/// equal) runs through the middle of the box, steady rather than zero.
+/// equal) runs through the middle of the box, steady, and a series of
+/// zeros lies along its foot.
 /// Time runs from the start edge, as in Minimal's bar and line charts: right
 /// to left, the series begins at the right and stands now on the left.
 ///
@@ -276,6 +287,7 @@ class _SparklinePainter extends CustomPainter {
     final hi = data.reduce(math.max);
     final flat = hi == lo;
     final range = flat ? 1.0 : hi - lo;
+    final none = flat && lo == 0;
     // The dot's radius is kept clear on every edge so it never clips.
     const pad = _dot + MinimalSparkline.stroke / 2;
     final w = size.width - pad * 2;
@@ -285,7 +297,11 @@ class _SparklinePainter extends CustomPainter {
       final along = i / (data.length - 1) * w;
       return Offset(
         rtl ? size.width - pad - along : pad + along,
-        flat ? size.height / 2 : pad + h - (data[i] - lo) / range * h,
+        none
+            ? pad + h
+            : flat
+            ? size.height / 2
+            : pad + h - (data[i] - lo) / range * h,
       );
     }
 

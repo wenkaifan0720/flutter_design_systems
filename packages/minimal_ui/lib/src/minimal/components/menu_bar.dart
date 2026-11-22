@@ -35,6 +35,7 @@ class MinimalMenuEntry {
     this.icon,
     this.shortcut,
     this.checked,
+    this.isDestructiveAction = false,
   }) : divider = false;
 
   /// A hairline between groups of items.
@@ -45,6 +46,7 @@ class MinimalMenuEntry {
       icon = null,
       shortcut = null,
       checked = null,
+      isDestructiveAction = false,
       divider = true;
 
   /// Its words.
@@ -68,6 +70,10 @@ class MinimalMenuEntry {
   /// The check of an item that toggles; null: none.
   final bool? checked;
 
+  /// Whether the command destroys something (Delete, Remove): its words and
+  /// glyph stand in the destructive ink.
+  final bool isDestructiveAction;
+
   /// Whether it is a hairline.
   final bool divider;
 
@@ -89,6 +95,7 @@ class MinimalMenuEntry {
             null => null,
           },
           checked: checked,
+          isDestructiveAction: isDestructiveAction,
           data: this,
         );
 }
@@ -175,6 +182,7 @@ class MinimalMenuBar extends StatelessWidget {
         label: entry.label,
         icon: source is MinimalMenuEntry ? source.icon : null,
         checked: entry.checked ?? false,
+        destructive: entry.isDestructiveAction,
         ring: true,
         trailing: entry.isSubmenu
             ? MinimalIcon(

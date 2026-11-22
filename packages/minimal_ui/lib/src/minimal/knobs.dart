@@ -73,6 +73,14 @@ class MinimalDensity with Diagnosticable {
   /// The vertical step.
   final double vertical;
 
+  /// This density with the given steps replaced, as
+  /// `VisualDensity.copyWith`.
+  MinimalDensity copyWith({double? horizontal, double? vertical}) =>
+      MinimalDensity(
+        horizontal: horizontal ?? this.horizontal,
+        vertical: vertical ?? this.vertical,
+      );
+
   /// What it adds to a control's height: 2 a step.
   double get heightDelta => vertical * 2;
 

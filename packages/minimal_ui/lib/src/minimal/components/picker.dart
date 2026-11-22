@@ -200,9 +200,9 @@ class _MinimalSelectState<T> extends State<MinimalSelect<T>> {
         .where((option) => option.value == widget.value)
         .firstOrNull;
     final chosenIcon = chosen?.icon;
-    // Spanning a phone's column; from the compact width up it stops at a
-    // control's measure, as every control does.
-    return MinimalLayout.capControl(context, _row(t, icon, chosen, chosenIcon));
+    // A form row spans its column at every width, as a text field and every
+    // other form row do, so a form's rows end on one edge.
+    return _row(t, icon, chosen, chosenIcon);
   }
 
   Widget _row(

@@ -41,8 +41,7 @@ void main() {
   final built = <String>{};
 
   // Each page and app at both widths. The everyday tier builds each once,
-  // at 390 and 1440 in turn, which the census below needs no more than;
-  // the sweep tier the other width.
+  // at 390 and 1440 in turn; the sweep tier the other width.
   for (final (i, page) in galleryPagesAll.indexed) {
     for (final (w, size) in const [Size(390, 844), Size(1440, 1000)].indexed) {
       testWidgets(
@@ -81,8 +80,9 @@ void main() {
           // Every band's heading reaches a screen reader, the windows' too:
           // a demo's own app or navigator stands a route's modal barrier,
           // which hides whatever painted before it in its semantics
-          // container (the Navigation page's shell window once took the top
-          // bars and the menu bar above it out of the page's semantics).
+          // container (on the Navigation page, the shell window would take
+          // the top bars and the menu bar above it out of the page's
+          // semantics).
           final headings = [
             for (final screen in tester.widgetList<KitEmbeddedScreen>(
               find.byType(KitEmbeddedScreen),

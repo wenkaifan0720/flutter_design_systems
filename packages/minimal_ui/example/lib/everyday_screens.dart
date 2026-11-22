@@ -1,5 +1,5 @@
 // The example's ten everyday screens: each is the whole app, opened at that screen, by day or by night and either way
-// round (right to left, the gallery speaks Arabic). They are the screens a review looks at first.
+// round (right to left, the gallery speaks Arabic).
 import 'package:flutter/widgets.dart';
 
 import 'main.dart';

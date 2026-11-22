@@ -3,7 +3,7 @@
 // and wraps between its words, as Material's text field grows, rather than
 // cutting the date short, and keeps the row's inset under it; a chart's
 // labels grow to 1.3x, as Material's navigation bar labels do, and stay whole
-// in their columns (Stint's Due date and Hours logged at 300%).
+// in their columns (a Due date and an Hours logged chart at 300%).
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -101,8 +101,8 @@ void main() {
       );
       expect(row.height, greaterThanOrEqualTo(MinimalLayout.minHitTarget));
       if (scale == 1) {
-        // At 100% the row is as it was: one line in a 28 px pill, in the
-        // row's 44 px.
+        // At 100% the row is one line in a 28 px pill, in the row's
+        // 44 px.
         expect(pill.height, 28);
         expect(row.height, MinimalLayout.minHitTarget);
         expect(

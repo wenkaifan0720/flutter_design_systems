@@ -107,8 +107,8 @@ void main() {
   for (final (direction, label, value) in [
     (TextDirection.ltr, 'Time of day', 'Every evening'),
     (TextDirection.rtl, 'Time of day', 'Every evening'),
-    // A phone's project picker in Arabic: the docs' Stint walk saw the value
-    // cut to an ellipsis at 200%.
+    // A phone's project picker in Arabic, whose value must not be cut to an
+    // ellipsis at 200%.
     (TextDirection.rtl, 'المشروع', 'الاستوديو المفتوح'),
   ]) {
     testWidgets('picker labels and values fit at 200% in $direction: $value', (

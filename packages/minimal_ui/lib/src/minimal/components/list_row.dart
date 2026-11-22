@@ -359,6 +359,10 @@ class MinimalListTile extends StatelessWidget {
       autofocus: autofocus,
       onPressed: onTap,
       enabled: enabled,
+      // The row stands the tap floor itself, so it takes no tap target: one
+      // would merge a control in its slots (a row's menu key) into the row's
+      // node, and a screen reader could not reach the control alone.
+      tapTarget: false,
       // Full-bleed: the wash runs square to the edges (a card clips it to
       // its own corners), and the keyboard's ring stands inside the edge,
       // where neither the neighbouring rows nor a card can cover it.

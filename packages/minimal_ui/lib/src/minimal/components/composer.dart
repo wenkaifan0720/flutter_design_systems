@@ -103,7 +103,8 @@ class MinimalComposer extends StatefulWidget {
   /// Stops a streaming reply: the send seat while [busy].
   final VoidCallback? onStop;
 
-  /// Opens the model or visibility choice behind the [model] pill.
+  /// Opens the model or visibility choice behind the [model] pill; null
+  /// hides the pill.
   final VoidCallback? onModel;
 
   /// Removes the [attachment] chip.

@@ -477,16 +477,13 @@ class _MinimalDatePickerState extends State<MinimalDatePicker> {
         ),
       ),
     );
-    // Spanning a phone's column; from the compact width up it stops at a
-    // control's measure, as a select does.
-    return MinimalLayout.capControl(
-      context,
-      enabled
-          ? row
-          // Dimmed, the row says so to a screen reader too: its label is
-          // an inactive control's, not text the page asks anyone to read.
-          : Semantics(container: true, enabled: false, child: row),
-    );
+    // A form row spans its column at every width, as a select and a text
+    // field do, so a form's rows end on one edge.
+    return enabled
+        ? row
+        // Dimmed, the row says so to a screen reader too: its label is
+        // an inactive control's, not text the page asks anyone to read.
+        : Semantics(container: true, enabled: false, child: row);
   }
 
   int _daysIn(DateTime month) => DateTime(month.year, month.month + 1, 0).day;

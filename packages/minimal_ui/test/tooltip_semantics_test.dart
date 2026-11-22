@@ -1,6 +1,6 @@
-// A tooltip's message joins the tipped key's own semantics node, as the
-// published tooltip made it: a screen reader hears the key's name, its tip
-// and that it is a button together, and no node round it takes the tip.
+// A tooltip's message joins the tipped key's own semantics node: a screen
+// reader hears the key's name, its tip and that it is a button together,
+// and no node round it takes the tip.
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart' show SemanticsNode;
 import 'package:flutter_test/flutter_test.dart';

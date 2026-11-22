@@ -107,7 +107,7 @@ class MinimalIconButton extends StatelessWidget {
     // Off, a toggle's glyph is muted in any register (the rest stay muted);
     // a plain action's glyph is the ink.
     final glyphInk = selected == false ? t.mutedForeground : t.foreground;
-    final (bg, fg, border) = switch (variant) {
+    final (tone, toneInk, border) = switch (variant) {
       // On is said in ink: the glyph goes from the muted ink to the full
       // one, and a bordered square's hairline turns to the ink. No tint.
       MinimalIconButtonVariant.outline => (
@@ -133,6 +133,11 @@ class MinimalIconButton extends StatelessWidget {
         null,
       ),
     };
+    // Out of use, a filled square takes the muted fill and the ink, as a
+    // button out of use does, and fades as one.
+    final out = onPressed == null;
+    final bg = out && tone != null ? t.muted : tone;
+    final fg = out ? t.foreground : toneInk;
     final square = t.density.height(switch (size) {
       MinimalButtonSize.small => MinimalChromeMetrics.controlSm,
       MinimalButtonSize.medium => MinimalChromeMetrics.barControl,

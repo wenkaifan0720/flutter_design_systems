@@ -17,15 +17,13 @@ import 'date_picker.dart';
 import 'input.dart';
 import 'picker.dart';
 import 'pressable.dart';
-import 'time_picker.dart';
 
 /// Grouped form rows the Minimal way: no card — an uppercase group label
 /// over a hairline, the rows (each drawing its own rule under it), and a
 /// quiet footer line. It takes no inset of its own; the page's gutter is
 /// the measure. Compose [MinimalInputRow], [MinimalFormRow], picker and date
-/// rows inside it. A section holding a select or a date row keeps their
-/// measure (320 from the compact width up), every other row, its label and
-/// hairline with them, so the group's rows end on one edge.
+/// rows inside it. Every row spans the column, so the group's rows end on one
+/// edge with the text fields beside them.
 ///
 /// ```dart
 /// MinimalFormSection(title: 'Schedule', footer: 'Reminders follow your device time zone.', children: rows)
@@ -53,21 +51,10 @@ class MinimalFormSection extends StatelessWidget {
     final t = context.minimalTheme;
     final title = this.title;
     final footer = this.footer;
-    final section = DesignKeylineRegion(
+    return DesignKeylineRegion(
       label: 'MinimalFormSection',
       child: _section(t, title, footer),
     );
-    // One select, date or time row holds to a control's measure, so its
-    // whole section does: every row of a group, and the rule over them, runs
-    // to the same edge, never a picker stopping half way along its
-    // neighbours or under its section's rule.
-    final ofControls = children.any(
-      (c) =>
-          c is MinimalSelect ||
-          c is MinimalDatePicker ||
-          (c is MinimalTimePicker && !c.wheel),
-    );
-    return ofControls ? MinimalLayout.capControl(context, section) : section;
   }
 
   Widget _section(MinimalThemeData t, String? title, String? footer) {

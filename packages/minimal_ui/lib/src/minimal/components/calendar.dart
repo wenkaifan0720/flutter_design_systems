@@ -537,10 +537,13 @@ class _MinimalDateRangePickerState extends State<MinimalDateRangePicker> {
 
     final overlay = RawPopover(
       semanticLabel: label,
-      // The calendar keeps its own width under a wide field.
+      // The calendar keeps its own width under a wide field, and opens where
+      // its whole month fits: below while below holds it, else above; it
+      // shrinks and scrolls only where neither side does.
       placement: const RawPopoverPlacement(
         gap: MinimalSpacing.s4,
         matchAnchorWidth: false,
+        preferredExtent: double.infinity,
       ),
       onOpenChanged: (open) {
         if (!open) {
@@ -617,18 +620,22 @@ class _MinimalDateRangePickerState extends State<MinimalDateRangePicker> {
           info,
           MinimalKitPanel(
             padding: const EdgeInsets.all(MinimalSpacing.s8),
-            child: _Grid(
-              controller: controller,
-              months: months,
-              firstWeekday: widget.firstWeekday,
-              autofocus: true,
-              onChanged: (_) {
-                final r = controller.selectedRange;
-                if (r != null && r.isComplete) {
-                  widget.onChanged?.call(r);
-                  info.close();
-                }
-              },
+            maxHeight: info.maxSize.height,
+            child: SingleChildScrollView(
+              primary: false,
+              child: _Grid(
+                controller: controller,
+                months: months,
+                firstWeekday: widget.firstWeekday,
+                autofocus: true,
+                onChanged: (_) {
+                  final r = controller.selectedRange;
+                  if (r != null && r.isComplete) {
+                    widget.onChanged?.call(r);
+                    info.close();
+                  }
+                },
+              ),
             ),
           ),
         );

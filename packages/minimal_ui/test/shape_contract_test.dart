@@ -6,7 +6,7 @@
 //   widget in neither fails the test, so it can't slip through;
 // - a nested outline is the outer one moved by one constant distance, measured on the path;
 // - no text falls back to Flutter's unstyled double underline;
-// - a hovering pointer changes nothing on the new parts, and every pressable shows the click cursor;
+// - a hovering pointer changes nothing on the controls it lists, and every pressable shows the click cursor;
 // - in the state matrix every pressed, disabled and error cell differs from idle pixel for pixel at idle's size (an
 //   error may add its message below), a part with a chosen face pressed on its chosen item as well as off;
 // - labels in a row of controls share one centre line.
@@ -602,7 +602,7 @@ double _enters(Path path, Offset from, Offset step) {
   return double.nan;
 }
 
-/// A part of the review's state matrix, switched by its own controls:
+/// A part of the state matrix, switched by its own controls:
 /// [build] with `enabled: false` is its disabled cell and with an `error`
 /// its error cell. [press] is where a finger lands for its pressed cell
 /// (null: no pressed look of its own, as text you type into, which a press
@@ -1158,10 +1158,9 @@ void main() {
         ),
       ),
       // Pressed while chosen. Every part above is pressed while it is off,
-      // so a chosen fill that swallowed the press would go through: a chosen
-      // toggle group item once looked the same pressed as idle (its press
-      // had landed on the seam between two items). Each of these presses the
-      // chosen item itself.
+      // so a chosen fill that swallowed the press would go through (a chosen
+      // toggle group item pressed on the seam between two items looks the
+      // same as idle). Each of these presses the chosen item itself.
       'MinimalToggleGroup on': _stated(
         ({enabled = true, error}) => MinimalToggleGroup<String>(
           label: 'Text style',

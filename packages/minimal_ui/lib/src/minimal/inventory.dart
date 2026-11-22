@@ -1031,7 +1031,7 @@ const Set<String> _spans = {'Card', ..._framed};
 
 /// The rows whose part stands at the width its route shows it at, on the
 /// column's start: a dialog (340), a side sheet (380), a sheet, an action
-/// sheet and a toast (at most 560). Across the column they had read as
+/// sheet and a toast (at most 560). Across the column they would read as
 /// banners.
 double? _ownWidth(String id) => switch (id) {
   'Dialog' => MinimalDialog.maxWidth,

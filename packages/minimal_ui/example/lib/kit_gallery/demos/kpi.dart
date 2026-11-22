@@ -10,7 +10,7 @@ import 'package:minimal_ui/minimal_ui.dart';
 import '../kit.dart';
 
 /// Morning run's last twelve weeks, Monday first, today the Friday of the
-/// last week: the same seeded record the reference mockup draws.
+/// last week: a seeded record, the same on every run.
 List<int> _record({int weeks = 12, int seed = 7}) {
   var s = seed;
   double next() {

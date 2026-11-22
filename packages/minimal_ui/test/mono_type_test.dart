@@ -64,6 +64,21 @@ void main() {
     }
   });
 
+  test(
+    'a stat\'s value keeps Geist\'s space at a tile\'s and a strip\'s size',
+    () {
+      for (final joined in [false, true]) {
+        final style = MinimalStat.valueStyleOf(t, joined: joined);
+        final gap = _width('15h 45m', style) - _width('15h45m', style);
+        expect(
+          gap,
+          closeTo(style.fontSize! * 0.25 + (style.letterSpacing ?? 0), 0.01),
+          reason: joined ? 'strip' : 'tile',
+        );
+      }
+    },
+  );
+
   test('a column of stamps still aligns: every stamp is one width', () {
     final widths = {
       for (final at in [

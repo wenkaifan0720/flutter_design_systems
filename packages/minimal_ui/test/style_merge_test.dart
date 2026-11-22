@@ -1,6 +1,6 @@
-// MinimalStyle.merge keeps a slot whole, as ButtonStyle.merge does and as
-// Minimal's own MinimalStyle did in 0.1.0: a style that sets a fill only for
-// a press keeps no fill at rest, even over one that sets it. Falling through
+// MinimalStyle.merge keeps a slot whole, as ButtonStyle.merge does: a style
+// that sets a fill only for a press keeps no fill at rest, even over one that
+// sets it. Falling through
 // within a slot is MinimalStyle.layered's (ui_core's DesignStyle.layered).
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';

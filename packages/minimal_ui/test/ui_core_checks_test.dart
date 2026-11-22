@@ -1,4 +1,4 @@
-// ui_core's shared checks (088701304f) over every gallery page and app
+// ui_core's shared layout checks over every gallery page and app
 // screen: DesignRowCheck (controls sharing a row, by their drawn outline)
 // under each density, day and night; DesignWidthCheck at 600, 1024, 1440
 // and 1920; checkList on each field that opens a list, at 390 and 1440.

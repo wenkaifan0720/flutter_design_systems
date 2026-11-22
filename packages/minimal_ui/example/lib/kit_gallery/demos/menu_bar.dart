@@ -89,6 +89,13 @@ List<MinimalMenuEntry> _menus({
         shortcut: _command(LogicalKeyboardKey.keyF),
         onPressed: () => say('Find'),
       ),
+      const MinimalMenuEntry.divider(),
+      MinimalMenuEntry(
+        'Delete issue',
+        icon: LucideIcons.trash2,
+        isDestructiveAction: true,
+        onPressed: () => say('Delete issue'),
+      ),
     ],
   ),
   MinimalMenuEntry(

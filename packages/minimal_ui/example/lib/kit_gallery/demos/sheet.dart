@@ -115,7 +115,7 @@ class _Afloat extends StatelessWidget {
   }
 }
 
-/// The create form the mockup raises: a big name, a note, and the property
+/// The create form the sheet raises: a big name, a note, and the property
 /// pills a create form sets ([repeats], [time] and [group] set; a goal and a
 /// start date still to set).
 class _NewHabitForm extends StatelessWidget {
@@ -212,7 +212,7 @@ class _NewHabitForm extends StatelessWidget {
   static void _pick() {}
 }
 
-/// The footer's leading slot in the mockup: the labelled switch, its words
+/// The footer's leading slot: the labelled switch, its words
 /// and its track one control.
 class _CreateAnother extends StatefulWidget {
   const _CreateAnother();

@@ -31,6 +31,7 @@ export 'src/minimal/internal/page_foot.dart';
 export 'src/minimal/internal/platform_words.dart';
 export 'src/minimal/internal/press_feedback.dart';
 export 'src/minimal/internal/rail_action.dart';
+export 'src/minimal/internal/reader_digits.dart';
 export 'src/minimal/internal/sheet_header.dart';
 export 'src/minimal/internal/styled.dart';
 export 'src/minimal/internal/tap_band.dart';

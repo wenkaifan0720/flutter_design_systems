@@ -1,11 +1,13 @@
 // Controls laid out, each read from what is drawn:
-// (a) from 600 up no select, button, stepper or segmented control stretches
-//     to its column: at most 320 px (free text entries and tables may span);
+// (a) from 600 up no button, stepper, segmented control, inline calendar or
+//     wheel stretches to its column: at most 320 px (a select and a date or
+//     time row span it, as a form's text fields and tables do, so a form's
+//     rows end on one edge);
 // (b) a chosen or pressed fill covers the whole cell the user sees;
 // (c) a glyph beside a title: its middle on the capitals' middle, both on
 //     the row's centre line, within half a device pixel;
-// (d) a select at 600, 1024, 1440 and 1920: closed at most 320, its list
-//     opening on the field's leading edge and at least as wide;
+// (d) a select at 600, 1024, 1440 and 1920: its list opening on the field's
+//     leading edge and at least as wide;
 // (e) buttons sharing a row show one top and one bottom by what they draw,
 //     each variant beside the others, on each ground, by day and by night.
 // At each density Minimal ships.
@@ -32,7 +34,6 @@ const Map<String, MinimalDensity> _densities = {
 String _kind(Widget w) => w.runtimeType.toString().split('<').first;
 
 const Set<String> _capped = {
-  'MinimalSelect',
   'MinimalButton',
   'MinimalSplitButton',
   'MinimalCounter',
@@ -42,6 +43,14 @@ const Set<String> _capped = {
   'MinimalTimePicker',
   'MinimalCombobox',
 };
+
+/// A date or time picker's compact row is a form row: it spans its column, as
+/// a select and a text field do. Its inline calendar and its wheel keep the
+/// cap.
+bool _formRow(Widget w) =>
+    (w is MinimalDatePicker &&
+        w.presentation == MinimalDatePickerPresentation.compact) ||
+    (w is MinimalTimePicker && !w.wheel);
 
 const Key _frame = Key('frame');
 
@@ -157,7 +166,9 @@ void main() {
     Future<void> holds(WidgetTester tester, String at) async {
       for (final e
           in find
-              .byWidgetPredicate((w) => _capped.contains(_kind(w)))
+              .byWidgetPredicate(
+                (w) => _capped.contains(_kind(w)) && !_formRow(w),
+              )
               .evaluate()) {
         final outer = e.renderObject;
         if (outer is! RenderBox || !outer.hasSize || !outer.attached) continue;
@@ -383,8 +394,8 @@ void main() {
     }
   });
 
-  group('(d) a select: closed at most 320, open from its leading edge', () {
-    // The everyday tier at 600, where the cap first holds; the sweep tier
+  group('(d) a select opens from its leading edge, at least as wide', () {
+    // The everyday tier at 600, the compact width; the sweep tier
     // the wider three.
     for (final width in const [600.0, 1024.0, 1440.0, 1920.0]) {
       testWidgets(
@@ -410,11 +421,6 @@ void main() {
           for (final e in selects.evaluate()) {
             final face = _faceOf(e.renderObject! as RenderBox);
             final rect = _rectOf(face);
-            expect(
-              rect.width,
-              lessThanOrEqualTo(MinimalLayout.controlMax),
-              reason: 'closed select ${rect.width} wide at $rect',
-            );
             final press =
                 find
                         .descendant(

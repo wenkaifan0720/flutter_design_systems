@@ -112,8 +112,26 @@ class MinimalStat extends StatelessWidget {
   /// three or four fit a strip).
   static TextStyle valueStyleOf(MinimalThemeData t, {bool joined = false}) =>
       joined
-      ? t.giant.copyWith(fontSize: 20, height: 26 / 20, letterSpacing: -0.5)
-      : t.giant.copyWith(fontSize: 22, height: 28 / 22, letterSpacing: -0.4);
+      ? _resized(t.giant, 20, 26, -0.5)
+      : _resized(t.giant, 22, 28, -0.4);
+
+  /// [style] at [size]: its word gap, set for its own size, scales with it,
+  /// so `15h 45m` keeps its space at a tile's size.
+  static TextStyle _resized(
+    TextStyle style,
+    double size,
+    double lineHeight,
+    double tracking,
+  ) {
+    final gap = style.wordSpacing;
+    final from = style.fontSize;
+    return style.copyWith(
+      fontSize: size,
+      height: lineHeight / size,
+      letterSpacing: tracking,
+      wordSpacing: gap == null || from == null ? null : gap * size / from,
+    );
+  }
 
   /// [delta] with any leading sign (`+`, `-`, `−`, `±`) and the space after
   /// it dropped: the magnitude a stat prints.

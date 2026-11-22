@@ -12,6 +12,7 @@ import 'package:ui_core/ui_core.dart';
 
 import '../internal/cap_label.dart';
 import '../internal/controls.dart';
+import '../internal/reader_digits.dart';
 import '../internal/styled.dart';
 import '../localizations.dart';
 import '../theme.dart';
@@ -174,7 +175,7 @@ class MinimalLineChart extends StatelessWidget {
     loading: loading,
     emptyLabel: emptyLabel,
     semanticLabel: semanticLabel,
-    format: format ?? _figure,
+    format: format ?? (v) => minimalReaderDigits(context, _figure(v)),
     area: false,
   );
 
@@ -245,7 +246,7 @@ class MinimalAreaChart extends StatelessWidget {
     loading: loading,
     emptyLabel: emptyLabel,
     semanticLabel: semanticLabel,
-    format: format ?? _figure,
+    format: format ?? (v) => minimalReaderDigits(context, _figure(v)),
     area: true,
   );
 
@@ -746,19 +747,26 @@ class _ChartWords {
   final Map<String, TextPainter> _laid = {};
   TextStyle? _style;
   TextScaler? _scaler;
+  TextDirection? _direction;
 
-  /// [s] laid out in [style] at [scaler].
-  TextPainter of(String s, TextStyle style, TextScaler scaler) {
-    if (style != _style || scaler != _scaler) {
+  /// [s] laid out in [style] at [scaler], in the page's [direction].
+  TextPainter of(
+    String s,
+    TextStyle style,
+    TextScaler scaler,
+    TextDirection direction,
+  ) {
+    if (style != _style || scaler != _scaler || direction != _direction) {
       dispose();
       _style = style;
       _scaler = scaler;
+      _direction = direction;
     }
     return _laid.putIfAbsent(
       s,
       () => TextPainter(
         text: TextSpan(text: s, style: style),
-        textDirection: TextDirection.ltr,
+        textDirection: direction,
         textScaler: scaler,
         maxLines: 1,
       )..layout(),
@@ -828,7 +836,8 @@ class _SeriesPainter extends CustomPainter {
   /// The chart's laid-out words, which its state owns and disposes.
   final _ChartWords words;
 
-  TextPainter _text(String s) => words.of(s, figure, scaler);
+  TextPainter _text(String s) =>
+      words.of(s, figure, scaler, rtl ? TextDirection.rtl : TextDirection.ltr);
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -1101,7 +1110,8 @@ class _MinimalPieChartState extends State<MinimalPieChart> {
   Widget build(BuildContext context) {
     final t = context.minimalTheme;
     final l = MinimalLocalizations.of(context);
-    final format = widget.format ?? _figure;
+    final format =
+        widget.format ?? (v) => minimalReaderDigits(context, _figure(v));
     final palette = minimalChartPalette(t);
     final colours = [
       for (var i = 0; i < widget.slices.length; i++)

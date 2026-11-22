@@ -576,10 +576,11 @@ class MinimalKitRow extends StatelessWidget {
           if (end != null) ...[const MinimalGap(MinimalSpacing.s8), end],
           if (checked) ...[
             const MinimalGap(MinimalSpacing.s8),
+            // The chosen row's check is in its words' ink, not the accent's.
             MinimalIcon(
               LucideIcons.check,
               size: MinimalIconSize.i16,
-              color: t.primaryInk,
+              color: ink,
             ),
           ],
         ],

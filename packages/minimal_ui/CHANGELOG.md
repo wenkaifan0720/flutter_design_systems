@@ -1,3 +1,21 @@
+## 0.4.1
+
+- Stands on ui_core 0.4.1. `MinimalMenuEntry` takes `isDestructiveAction`: a menu bar command that destroys something (Delete) stands in the destructive ink, as a `MinimalMenuItem` marked `destructive` does.
+- `MinimalDialog` takes `actions`, a list of `DesignDialogAction`s, for a question with more than a confirm and a cancel (Cancel, Discard, Save changes): the dismissive one first, the main one last. They stand in a row at the end and stack, the main one on top, when they don't share a line, raised or in place. An in-place card's two buttons stack the same way (they used to wrap, the confirm under the cancel).
+- A form section's date, time and choice rows span the column, ending on the same edge as the text fields beside them (they stopped at a control's width).
+- A pressable `MinimalListTile` keeps a control in its trailing slot (a row's menu key) a node of its own: a screen reader hears the row by its words, and reaches and presses the control alone.
+- `MinimalMenu.button`'s square is a hairline on whatever it stands on, so a selected row's wash runs under it.
+- A stat's value keeps its word space at a tile's and a strip's size (`15h 45m` read as `15h45m`).
+- The check on a chosen row (a menu's, a select's sheet, a `MinimalSelectionGroup`) is in the row's ink, not the accent.
+- A `MinimalMenu` opens on its key's leading edge, its right edge under right to left, and still opens, in what room there is, with a keyboard up on a short screen.
+- A `MinimalIconButton` without `onPressed` dims as `MinimalButton` does: a toned variant (`primary`, `destructive`) turns to the muted face and the foreground ink.
+- `MinimalBarChart` takes `format` for the value a screen reader hears. Charts' read values use the locale's digits (`MinimalLocalizations.digits`), and line, area and donut labels follow the reading direction.
+- A `MinimalSparkline` of zeros lies along its foot; any other flat series still runs through the middle.
+- A `MinimalDateRangePicker` opens its calendar where the whole month fits, below the field or else above it; where neither side holds it, the panel scrolls within the room.
+- A `MinimalMultiSelect` with `enabled: false` keeps its tags when a screen reader runs a tag's Remove action.
+- `MinimalDensity.copyWith` replaces either step, as `VisualDensity.copyWith` does.
+- By night the standard preset's filled button, and every solid accent, stands in a crisp indigo with white words, and a destructive button in a deep red with white words; the accent's and the danger's words and links keep their lighter inks.
+
 ## 0.4.0
 
 - Stands on ui_core 0.4.0, on Flutter 3.47 or later as before. The ui_core types minimal_ui's API names take their new names (`DesignOverlayPlacement` is `RawPopoverPlacement`, and so on); `dart fix --apply` moves your code.

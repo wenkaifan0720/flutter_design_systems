@@ -1,4 +1,4 @@
-// ui_core's own list keys (0.2.0), as Minimal's lists carry them: the
+// ui_core's own list keys, as Minimal's lists carry them: the
 // combobox (RawCombobox), the multi-select (RawTagInput) and the menu
 // bar (RawMenuBar). The row the keys are on is the one on the muted fill
 // ("lit"). Up and Down go round the ends; Down or Up on a closed list only

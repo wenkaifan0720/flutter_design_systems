@@ -18,8 +18,11 @@ import '../theme.dart';
 /// a colored surface so feedback can preserve its label contrast.
 ///
 /// Use [builder] to resolve the child's appearance for each [WidgetState].
-/// Set [enabled] to false for an unavailable control. With [enabled] true
-/// and [onPressed] null, the child handles its own interactions.
+/// Set [enabled] to false for an unavailable control: it dims, takes no
+/// press or focus, and a screen reader hears it disabled. With [enabled]
+/// true and [onPressed] null it is not a control at all: [child] stands as
+/// it is, with no wash, focus stop, tap target or button semantics, and
+/// handles its own interactions.
 ///
 /// The hit target is at least 44 px for touch and 24 px for a pointer.
 /// [tapAlignment] places the painted control inside it. A larger control
@@ -72,7 +75,8 @@ class MinimalPressable extends StatefulWidget {
   /// What the control shows for its states, in place of [child].
   final Widget Function(BuildContext context, Set<WidgetState> states)? builder;
 
-  /// Its press; null disables it.
+  /// Its press. Null with [enabled] true leaves [child] as it is, not a
+  /// control; to show a disabled control, set [enabled] to false.
   final VoidCallback? onPressed;
 
   /// Whether the control can receive input. A disabled control is dimmed

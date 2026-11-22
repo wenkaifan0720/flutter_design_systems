@@ -16,6 +16,8 @@ import '../shapes.dart';
 import '../theme.dart';
 import 'button.dart';
 
+export 'package:ui_core/ui_core.dart' show RawDialogAction;
+
 /// Minimal's confirm dialog — the kit's only modal question: a compact
 /// card centred over the scrim, its title in [MinimalThemeData.h3], the
 /// [message] in the quiet 13 px ink, and small buttons right-aligned in a
@@ -37,6 +39,10 @@ import 'button.dart';
 /// side, shape (else `shapes.large`) and padding (round the question). The
 /// buttons keep their own styles, as Material's do.
 ///
+/// A question with more than a yes and a no (Cancel, Discard, Save changes)
+/// takes [actions] instead: each a [RawDialogAction], the dismissive one
+/// first and the main one last, laid out and stacked by the same rule.
+///
 /// ```dart
 /// final sure = await showMinimalDialog<bool>(context, builder: (context) => const MinimalDialog(title: 'Delete habit?', message: 'Its history goes too.', confirmLabel: 'Delete', cancelLabel: 'Keep', destructive: true));
 /// ```
@@ -51,10 +57,19 @@ class MinimalDialog extends StatelessWidget {
     this.destructive = false,
     this.onConfirm,
     this.onCancel,
+    this.actions,
     this.autofocus,
     this.elevated,
     this.style,
-  });
+  }) : assert(
+         actions == null ||
+             (confirmLabel == null &&
+                 cancelLabel == null &&
+                 onConfirm == null &&
+                 onCancel == null &&
+                 !destructive),
+         'Give actions, or the confirm and the cancel, not both.',
+       );
 
   /// The question, which names a raised card's route for a screen reader.
   final String title;
@@ -80,6 +95,15 @@ class MinimalDialog extends StatelessWidget {
   /// Called by the cancel; a raised card's cancel answers false either way.
   final VoidCallback? onCancel;
 
+  /// The answers, in place of the confirm and the cancel, for a question with
+  /// more than two (Cancel, Discard, Save changes): the dismissive one first,
+  /// the main one last. A default action wears the primary fill, a
+  /// destructive one the destructive fill, the rest the secondary one. Each
+  /// action's `onPressed` answers a raised card's route itself
+  /// (`Navigator.pop(context, answer)`), as a Material dialog's buttons do;
+  /// in place, Enter presses the default action.
+  final List<RawDialogAction>? actions;
+
   /// In place, take the keyboard focus on arrival, so Enter confirms at
   /// once; null leaves the page's focus alone. Raised, the focus opens on
   /// the safe answer whatever this says.
@@ -103,6 +127,7 @@ class MinimalDialog extends StatelessWidget {
     final t = context.minimalTheme;
     final message = this.message;
     final cancelLabel = this.cancelLabel;
+    final actions = this.actions;
     final raised = _RaisedDialog.of(context);
     final elevated = this.elevated ?? raised;
     final autofocus = this.autofocus ?? false;
@@ -171,17 +196,30 @@ class MinimalDialog extends StatelessWidget {
       ),
     );
 
+    final answers =
+        actions ??
+        [
+          if (cancelLabel != null)
+            RawDialogAction(label: cancelLabel, onPressed: cancel),
+          RawDialogAction(
+            label: confirmWords,
+            onPressed: confirm,
+            isDefaultAction: !destructive,
+            isDestructiveAction: destructive,
+          ),
+        ];
+
     if (raised) {
       // ui_core lays the question out and holds the focus: on the safe
       // answer as it opens, Tab kept inside, Enter or Space pressing the
       // focused answer. The words scroll between the title and the band
       // when they run long.
       MinimalButtonTone toneOf(RawDialogAction action) =>
-          !action.isDefaultAction && !action.isDestructiveAction
-          ? MinimalButtonTone.secondary
-          : destructive
+          action.isDestructiveAction
           ? MinimalButtonTone.destructive
-          : MinimalButtonTone.primary;
+          : action.isDefaultAction
+          ? MinimalButtonTone.primary
+          : MinimalButtonTone.secondary;
       return RawAlertDialog(
         title: title,
         titleBuilder: (context, title) => Padding(
@@ -204,16 +242,7 @@ class MinimalDialog extends StatelessWidget {
                 ),
                 child: words,
               ),
-        actions: [
-          if (cancelLabel != null)
-            RawDialogAction(label: cancelLabel, onPressed: cancel),
-          RawDialogAction(
-            label: confirmWords,
-            onPressed: confirm,
-            isDefaultAction: !destructive,
-            isDestructiveAction: destructive,
-          ),
-        ],
+        actions: answers,
         actionBuilder: (context, action, details) {
           final paint = MinimalButtonPaint.of(
             context,
@@ -285,27 +314,27 @@ class MinimalDialog extends StatelessWidget {
             ],
           ),
         ),
+        // In a row at the end; stacked, the last given (the main one) on
+        // top, when they don't share a line, as a raised card's are.
         band(
-          Wrap(
-            alignment: WrapAlignment.end,
+          OverflowBar(
+            alignment: MainAxisAlignment.end,
             spacing: MinimalSpacing.s8,
-            runSpacing: MinimalSpacing.s8,
+            overflowSpacing: MinimalSpacing.s8,
+            overflowAlignment: OverflowBarAlignment.end,
+            overflowDirection: VerticalDirection.up,
             children: [
-              if (cancelLabel != null)
+              for (final action in answers)
                 MinimalButton(
-                  cancelLabel,
+                  action.label,
                   size: MinimalButtonSize.small,
-                  variant: MinimalButtonVariant.secondary,
-                  onPressed: cancel,
+                  variant: action.isDestructiveAction
+                      ? MinimalButtonVariant.destructive
+                      : action.isDefaultAction
+                      ? MinimalButtonVariant.primary
+                      : MinimalButtonVariant.secondary,
+                  onPressed: action.onPressed,
                 ),
-              MinimalButton(
-                confirmWords,
-                size: MinimalButtonSize.small,
-                variant: destructive
-                    ? MinimalButtonVariant.destructive
-                    : MinimalButtonVariant.primary,
-                onPressed: confirm,
-              ),
             ],
           ),
         ),
@@ -315,6 +344,9 @@ class MinimalDialog extends StatelessWidget {
     // In place, Enter answers the question when the card itself has the
     // focus (a focused button answers for itself); a card standing in a
     // page is no route of its own.
+    final enter = actions == null
+        ? confirm
+        : actions.where((a) => a.isDefaultAction).firstOrNull?.onPressed;
     return Semantics(
       container: true,
       explicitChildNodes: true,
@@ -324,13 +356,13 @@ class MinimalDialog extends StatelessWidget {
         // stop there would show nothing.
         skipTraversal: true,
         onKeyEvent: (node, event) {
-          final enter =
+          final key =
               event.logicalKey == LogicalKeyboardKey.enter ||
               event.logicalKey == LogicalKeyboardKey.numpadEnter;
-          if (confirm == null || !enter || !node.hasPrimaryFocus) {
+          if (enter == null || !key || !node.hasPrimaryFocus) {
             return KeyEventResult.ignored;
           }
-          if (event is KeyDownEvent) confirm();
+          if (event is KeyDownEvent) enter();
           return KeyEventResult.handled;
         },
         child: card(body),
@@ -346,6 +378,13 @@ class MinimalDialog extends StatelessWidget {
       ..add(StringProperty('message', message, defaultValue: null))
       ..add(StringProperty('confirmLabel', confirmLabel, defaultValue: null))
       ..add(StringProperty('cancelLabel', cancelLabel, defaultValue: null))
+      ..add(
+        IterableProperty<String>(
+          'actions',
+          actions?.map((a) => a.label),
+          defaultValue: null,
+        ),
+      )
       ..add(
         FlagProperty('destructive', value: destructive, ifTrue: 'destructive'),
       )

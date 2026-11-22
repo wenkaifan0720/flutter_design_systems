@@ -523,8 +523,10 @@ class MinimalColors with Diagnosticable {
 
   /// The accent as TEXT or a thin glyph (a link, an accent tag, a
   /// selection check): [primary] itself wherever it clears AA on the ground
-  /// and on [primarySubtle], a deeper cut where it does not (ember's orange).
-  /// [primary] stays the fill — the primary button, a toggle's track, a bar.
+  /// and on [primarySubtle], another cut where it does not: deeper on a
+  /// light ground (ember's orange), lighter on a dark one (the standard
+  /// indigo by night). [primary] stays the fill — the primary button, a
+  /// toggle's track, a bar.
   final Color primaryInk;
 
   /// A status colour splits in two: the fill ([success], [warning],
@@ -1767,17 +1769,23 @@ class MinimalTheme extends StatelessWidget {
       selectionColor: t.primary.withValues(alpha: 0.24),
       selectionHandleColor: t.primary,
     ),
+    // Material's parts print the scheme's primary and error as words (a text
+    // button's label, a field's error line) as well as filling under
+    // onPrimary and onError, so by night each is the tone's ink with the
+    // dark ground on it, as Material's dark schemes pair them.
     colorScheme:
         ColorScheme.fromSeed(
-          seedColor: t.primary,
+          seedColor: t.isLightAppearance ? t.primary : t.primaryInk,
           brightness: t.brightness,
           surface: t.background,
         ).copyWith(
-          primary: t.primary,
-          onPrimary: t.primaryForeground,
+          primary: t.isLightAppearance ? t.primary : t.primaryInk,
+          onPrimary: t.isLightAppearance ? t.primaryForeground : t.textInverse,
           onSurface: t.foreground,
-          error: t.destructive,
-          onError: t.destructiveForeground,
+          error: t.isLightAppearance ? t.destructive : t.destructiveInk,
+          onError: t.isLightAppearance
+              ? t.destructiveForeground
+              : t.textInverse,
           outline: t.borderStrong,
           outlineVariant: t.border,
         ),
@@ -2058,8 +2066,12 @@ const _Palette _standardDark = (
   text2: Color(0xFF8B8B96),
   text3: Color(0xFF5C5C66),
   textInverse: Color(0xFF0E0E11),
-  primary: Color(0xFF7C9BFF),
-  primaryForeground: Color(0xFF0E0E11),
+  // The solid accent is a crisp indigo under white words (4.8:1); as a mark
+  // it stands 4.0:1 on the ground, 3.2:1 on the subtle fill and 3.1:1 on a
+  // hairline track. Words and thin marks take the lighter ink (7.3:1 on the
+  // ground, 5.9:1 on the subtle fill).
+  primary: Color(0xFF4669E0),
+  primaryForeground: Color(0xFFFFFFFF),
   primarySubtle: Color(0xFF1C2340),
   primaryInk: Color(0xFF7C9BFF),
   success: _successDark,
@@ -2068,7 +2080,10 @@ const _Palette _standardDark = (
   warning: _warningDark,
   warningSubtle: _warningSubtleDark,
   warningInk: _warningDark,
-  destructive: _dangerDark,
+  // The destructive fill is the day's deep red under white words (4.75:1),
+  // 4.1:1 on the ground; danger words and thin marks take the lighter red
+  // (6.4:1 on the ground, 5.7:1 on the subtle fill).
+  destructive: _dangerLight,
   destructiveSubtle: _dangerSubtleDark,
   destructiveInk: _dangerDark,
   overlay: _overlayDark,
@@ -2126,7 +2141,8 @@ final _Palette _graphiteDark = (
   warning: _warningDark,
   warningSubtle: _warningSubtleDark,
   warningInk: _warningDark,
-  destructive: _dangerDark,
+  // As in the standard preset: the deep red fill, the lighter red ink.
+  destructive: _dangerLight,
   destructiveSubtle: _dangerSubtleDark,
   destructiveInk: _dangerDark,
   overlay: _overlayDark,
@@ -2280,12 +2296,18 @@ MinimalColors _colors(_Palette p) => MinimalColors(
   warningSubtle: p.warningSubtle,
   warningInk: p.warningInk,
   destructive: p.destructive,
-  destructiveForeground: p.textInverse,
+  // White where it reads at AA on the fill, else the ground's ink: white on
+  // every red but ember's night pink, which takes the dark ink.
+  destructiveForeground: _contrast(_white, p.destructive) >= 4.5
+      ? _white
+      : p.textInverse,
   destructiveSubtle: p.destructiveSubtle,
   destructiveInk: p.destructiveInk,
   info: p.primaryInk,
   overlay: p.overlay,
-  ring: p.primary,
+  // By night the ring is the accent's ink: a thin mark that stands 7.3:1 on
+  // the ground and 5.9:1 on a selected row's wash (the solid accent, 3.2:1).
+  ring: p.dark ? p.primaryInk : p.primary,
   selection: p.primarySubtle,
 );
 

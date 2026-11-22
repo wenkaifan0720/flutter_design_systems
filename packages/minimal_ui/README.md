@@ -4,7 +4,7 @@ Compact Flutter components for dashboards, forms and data tables. Minimal uses f
 
 ![Minimal's issue tracker at 1440 px by day, beside the same tracker on a 390 px phone by night](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/minimal_ui/screenshots/hero_tracker.png)
 
-**[Live gallery](https://wenkaifan0720.github.io/flutter_design_systems/minimal/)** · [API reference](https://pub.dev/documentation/minimal_ui/latest/) · [All the looks](https://wenkaifan0720.github.io/flutter_design_systems/)
+**[Live gallery](https://wenkaifan0720.github.io/flutter_design_systems/minimal/)** · [Docs](https://wenkaifan0720.github.io/flutter_design_systems/docs/looks/minimal/) · [API reference](https://pub.dev/documentation/minimal_ui/latest/) · [All the looks](https://wenkaifan0720.github.io/flutter_design_systems/)
 
 ## Install
 
@@ -177,3 +177,7 @@ For Minimal-specific words such as status names and composer actions, extend `Mi
 ## Fonts and icons
 
 Geist and Geist Mono are bundled (SIL OFL 1.1). Icons come from Lucide (ISC) through `lucide_icons_flutter`.
+
+## Requirements
+
+Flutter 3.47.0 or later (Dart 3.13), on Android, iOS, web, macOS, Windows and Linux.

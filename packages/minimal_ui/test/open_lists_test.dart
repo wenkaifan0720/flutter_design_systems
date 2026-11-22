@@ -1,7 +1,7 @@
 // An open list says its choice as Minimal says one (the README's "Choice"):
 // the chosen option's words in the full ink at medium weight, with its
-// check, and the other options muted, so it reads at a glance and not only
-// by a small check. The row a pointer or the keyboard is on takes the muted
+// check in the same ink (not the accent), and the other options muted, so it
+// reads at a glance and not only by a small check. The row a pointer or the keyboard is on takes the muted
 // fill: a place, never a second choice, and never the selection's tint. In
 // the select's menu and its sheet, the combobox's list, and a choice group.
 import 'package:flutter/gestures.dart' show PointerDeviceKind;
@@ -10,6 +10,7 @@ import 'package:flutter/services.dart' show LogicalKeyboardKey;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:minimal_ui/minimal_ui.dart';
 import 'package:minimal_ui/minimal_host.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 const _options = [
   MinimalSelectOption('daily', 'Every day'),
@@ -59,6 +60,14 @@ void _expectChoice(
   String why,
 ) {
   expect(_style(tester, chosen).color, t.foreground, reason: '$why: chosen');
+  final check = find.byWidgetPredicate(
+    (w) => w is MinimalIcon && w.icon == LucideIcons.check,
+  );
+  expect(
+    tester.widget<MinimalIcon>(check.last).color,
+    t.foreground,
+    reason: '$why: the chosen row\'s check',
+  );
   expect(
     _style(tester, chosen).fontWeight,
     FontWeight.w500,

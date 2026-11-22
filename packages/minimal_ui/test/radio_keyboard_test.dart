@@ -2,8 +2,7 @@
 // (the choice, or the first option while there is none) that the next Tab
 // leaves, and arrows that choose the next or the previous option, skipping
 // disabled ones and wrapping at the ends, Left and Right swapped in a
-// right-to-left layout. Minimal's group once kept Tab inside and moved
-// focus without choosing. Each radio, checkbox and switch reads as that
+// right-to-left layout. Each radio, checkbox and switch reads as that
 // control and never as a button. A selection group's rows are a radio group
 // too, and radios that draw their own rows group in Flutter's RadioGroup on
 // their callers' own focus nodes.
@@ -583,7 +582,7 @@ void main() {
 /// box is Flutter's RawRadio, the one standing for the value [radioOf] gives.
 /// RawRadio's own detector takes a press only where the face paints; a
 /// Minimal radio or choice row takes it anywhere in its box, the gap between
-/// its dot and its words too, as the published ones did.
+/// its dot and its words too.
 Future<void> _pressEverywhere<V>(
   WidgetTester tester,
   Object? Function() chosen,

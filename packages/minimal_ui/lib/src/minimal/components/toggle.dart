@@ -95,8 +95,8 @@ class MinimalSwitch extends StatefulWidget {
   }
 }
 
-// The track and thumb, per the mockup's mini switch grown to the lead's
-// 32 × 18: 2 px of track shows around the thumb.
+// The track and thumb: a 32 × 18 track, 2 px of it showing around the
+// thumb.
 const double _trackWidth = 32;
 const double _trackHeight = 18;
 const double _inset = 2;
@@ -125,12 +125,12 @@ class _MinimalSwitchState extends State<MinimalSwitch> {
     final duration = instant ? Duration.zero : MinimalMotion.fast;
     final fraction = _drag ?? (widget.value ? 1.0 : 0.0);
     final on = fraction >= 0.5;
-    // In light the thumb is always the paper — the mock's white knob, which
-    // holds 3:1 on every light accent and on the off track (ember's ink
-    // onAccent would read as a hole in the track). In dark a white thumb
-    // would glare and fail 3:1 on the pale accents, so on it is the accent's
-    // dark ink; off, a ground-dark knob would read as a hole punched in the
-    // grey track, so it takes the light ink.
+    // In light the thumb is always the paper: a white knob, which holds 3:1
+    // on every light accent and on the off track (ember's ink onAccent would
+    // read as a hole in the track). In dark, on, it is the words the accent
+    // carries (white on the standard indigo, the dark ink on graphite's and
+    // ember's light fills); off, a ground-dark knob would read as a hole
+    // punched in the grey track, so it takes the light ink.
     final thumb = t.isLightAppearance
         ? t.card
         : (on ? t.primaryForeground : t.foreground);
