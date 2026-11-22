@@ -63,7 +63,7 @@ typedef _Run = ({int index, int count, bool deepFirst, bool deepLast});
 
 /// The run a channel cell paints: the painter is the calendar's own, so its field is read by name.
 _Run _runOf(CustomPaint paint) =>
-    // ignore: avoid_dynamic_calls
+    // ignore: avoid_dynamic_calls — the painter is private to lib, so its field is read by name.
     (paint.painter as dynamic).run as _Run;
 
 List<(Rect, _Run)> _band(WidgetTester tester) => [

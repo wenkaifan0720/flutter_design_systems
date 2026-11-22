@@ -1,5 +1,4 @@
-// Text sits centred in its box, on a desktop and a phone. Line boxes, measured from the layout; the glyphs themselves are
-// compared with the concept's by tools/compare.py (baseline to baseline).
+// Text sits centred in its box, on a desktop and a phone: line boxes, measured from the layout.
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:neumorphism_ui/neumorphism_ui.dart';

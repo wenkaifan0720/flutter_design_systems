@@ -17,11 +17,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:neumorphism_ui/neumorphism_ui.dart';
 import 'package:ui_core_review/ui_core_review.dart' show DesignKeylineCheck;
 
-// ignore: avoid_relative_lib_imports
+// ignore_for_file: avoid_relative_lib_imports — the gallery under test is the example app, not a package dependency.
 import '../example/lib/main.dart';
-// ignore: avoid_relative_lib_imports
 import '../example/lib/kit_gallery/hearth.dart';
-// ignore: avoid_relative_lib_imports
 import '../example/lib/kit_gallery/live.dart' show liveGalleryPages;
 import 'gallery_support.dart' show loadBundledFonts, settle;
 import 'support.dart' show loadNeumorphicFonts;
@@ -405,7 +403,7 @@ void main() {
             final why = _named(screen, p);
             (why == null ? left : named).add(why == null ? p : '$p  [$why]');
           }
-          // ignore: avoid_print
+          // ignore: avoid_print — the walk's verdict, named exceptions included, goes to the test log.
           print(
             'KEYLINES $screen ${width.toInt()}: ${left.length} (named ${named.length})'
             '${report.problems.isEmpty ? '' : '\n  ${[...left, ...named].join('\n  ')}'}',

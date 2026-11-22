@@ -79,7 +79,7 @@ Widget kitSpecimenCarousel() => NeumorphicCarouselView(
   ],
 );
 
-/// A carousel's slide: a card of the one plaster, a title and a line. Tinted each with its own hue, the slides read as
+/// A carousel's slide: a card of the one wall, a title and a line. Tinted each with its own hue, the slides read as
 /// slabs of other materials laid on the wall (muddy by night).
 Widget kitSlide(String title, String line) =>
     NeumorphicCard(title: title, children: [Text(line)]);

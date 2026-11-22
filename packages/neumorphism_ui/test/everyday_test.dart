@@ -1,5 +1,5 @@
-// The everyday parts survive a phone: the units that wrote their own rows crushed them at 390, so these parts must take
-// what a unit hands them, and a row written by hand beside them must keep its words.
+// The everyday parts hold up on a 390 px phone: each takes the width its row hands it, and a row written by hand beside
+// them keeps its words.
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:neumorphism_ui/neumorphism_ui.dart';

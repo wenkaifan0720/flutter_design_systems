@@ -13,97 +13,11 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter/widgets.dart';
 import 'package:neumorphism_ui/neumorphism_ui.dart';
 import 'package:neumorphism_ui_example/gallery_pages.dart';
-import 'package:neumorphism_ui_example/kit_gallery/kit.dart';
 import 'package:neumorphism_ui_example/kit_gallery/live.dart';
 import 'package:neumorphism_ui_example/main.dart' as gallery;
 
 @JS('neumorphicPerformanceReport')
 external set _report(JSString value);
-
-@JS('neumorphicReviewProbe')
-external set _reviewProbe(JSFunction value);
-
-@JS('neumorphicReviewScroll')
-external set _reviewScroll(JSFunction value);
-
-Future<void> _review(String id) async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await neumorphicLoadFonts();
-  final query = Uri.base.queryParameters;
-  final preset = query['preset'] ?? 'porcelain';
-  final mode = query['dark'] == '1' ? Brightness.dark : Brightness.light;
-  final custom = switch (query['custom']) {
-    'contrast' => const gallery.GalleryCustom(highContrast: true),
-    'compact' => const gallery.GalleryCustom(
-      density: gallery.GalleryDensity.compact,
-    ),
-    _ => const gallery.GalleryCustom(),
-  };
-  kitShownPreset = preset;
-  kitShownTheme = (brightness) => custom.theme(preset, brightness);
-  final design = id.startsWith('design-');
-  runApp(
-    design
-        ? gallery.GalleryApp(
-            initialPage: id.substring(7),
-            initialBrightness: mode,
-            initialCustom: custom,
-          )
-        : galleryPages.firstWhere((page) => page.id == id).build(mode),
-  );
-  await SchedulerBinding.instance.endOfFrame;
-  _reviewProbe = (() {
-    final scroll = _verticalScroll(WidgetsBinding.instance.rootElement!);
-    final view = WidgetsBinding.instance.renderViews.first;
-    final box = scroll?.context.findRenderObject() as RenderBox?;
-    final origin = box?.localToGlobal(Offset.zero) ?? Offset.zero;
-    final anchors = <String, Object>{};
-    void visit(Element element) {
-      final key = element.widget.key;
-      if (key is ValueKey<String> && key.value.startsWith('live-')) {
-        final render = element.findRenderObject();
-        if (render is RenderBox && render.hasSize) {
-          final at = render.localToGlobal(Offset.zero);
-          anchors[key.value] = {
-            'x': at.dx,
-            'y': at.dy,
-            'width': render.size.width,
-            'height': render.size.height,
-          };
-        }
-      }
-      element.visitChildElements(visit);
-    }
-
-    visit(WidgetsBinding.instance.rootElement!);
-    return jsonEncode({
-      'anchors': anchors,
-      'page': id,
-      'preset': preset,
-      'mode': mode.name,
-      'custom': query['custom'] ?? 'drawn',
-      'width': view.child!.size.width,
-      'height': view.child!.size.height,
-      'viewport': scroll?.position.viewportDimension ?? 0,
-      'extent': scroll?.position.maxScrollExtent ?? 0,
-      'offset': scroll?.position.pixels ?? 0,
-      'top': origin.dy,
-      'bottom': box == null
-          ? 0
-          : view.child!.size.height - origin.dy - box.size.height,
-    }).toJS;
-  }).toJS;
-  _reviewScroll = ((JSNumber value) {
-    final scroll = _verticalScroll(WidgetsBinding.instance.rootElement!);
-    if (scroll == null) return;
-    scroll.position.jumpTo(
-      value.toDartDouble.clamp(
-        scroll.position.minScrollExtent,
-        scroll.position.maxScrollExtent,
-      ),
-    );
-  }).toJS;
-}
 
 Map<String, Object> _durations(Iterable<Duration> values) {
   final ms = values.map((v) => v.inMicroseconds / 1000).toList()..sort();
@@ -135,11 +49,6 @@ ScrollableState? _verticalScroll(Element root) {
 }
 
 Future<void> main() async {
-  final review = Uri.base.queryParameters['review'];
-  if (review != null) {
-    await _review(review);
-    return;
-  }
   if (Uri.base.queryParameters['profile'] != 'scroll') {
     await gallery.main();
     return;

@@ -49,7 +49,7 @@ final _densities = <String, DesignAlignmentTheme>{
   'compact': _look(NeumorphicDensity.compact),
 };
 
-/// The look's matrix, for this test and the review page's Rows sheet.
+/// The look's alignment matrix.
 final neumorphicAlignment = DesignAlignmentMatrix(
   look: 'Neumorphism',
   themes: _densities,

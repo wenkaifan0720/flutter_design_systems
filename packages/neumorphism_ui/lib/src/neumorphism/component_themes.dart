@@ -18,7 +18,7 @@ export 'package:ui_core/ui_core.dart' show DesignStyle, DesignStyleOf;
 /// | [edge] | the rim's colour, at the look's width: off the look's rule (relief is the only edge), as the fine outline is what high contrast draws, so keep it for a high-contrast rim of your own |
 /// | [overlay] | a wash over the face for the states you name; the look draws none (hover changes nothing, a press sinks) |
 /// | [side] | the whole rim, colour and width; it wins over [edge], and is off the look's rule as [edge] is |
-/// | [shape] | the outline, one of Neumorphism's own: a rounded border at least `NeumorphicRadii.least` round, a stadium or a circle (a debug build asserts it: plaster has no sharp corner) |
+/// | [shape] | the outline, one of Neumorphism's own: a rounded border at least `NeumorphicRadii.least` round, a stadium or a circle (a debug build asserts it: a moulded surface has no sharp corner) |
 /// | [padding] | the room between the rim and what stands inside |
 /// | [minimumSize] | the least the face stands; the touch target stays 48 on every platform |
 /// | [textStyle] | the words' style, merged over the look's (its colour comes from [foreground]) |

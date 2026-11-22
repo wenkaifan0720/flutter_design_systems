@@ -249,7 +249,7 @@ class NeumorphicDataTable<R> extends StatelessWidget {
 
   /// The least width at which every column holds its longest word on one line, at the reader's text size: the columns
   /// share the width by their flex, so the narrowest share sets it. Under it the table scrolls sideways; at twice the
-  /// text on a phone the shares broke words ('Hea / t', 'Bedro / om').
+  /// text on a phone the shares would break words ('Hea / t', 'Bedro / om').
   double _least(BuildContext context, NeumorphicThemeData t) {
     final scaler = MediaQuery.textScalerOf(context);
     final direction = Directionality.of(context);
@@ -325,7 +325,7 @@ class _Sideways extends StatelessWidget {
   Widget build(BuildContext context) => LayoutBuilder(
     builder: (context, box) => box.maxWidth >= least
         ? child
-        // Its ends fade where more columns lie beyond them: cut square, a column past the edge was simply gone.
+        // Its ends fade where more columns lie beyond them: cut square, a column past the edge would simply be gone.
         : neumorphicFadedScroll(
             padding: EdgeInsets.zero,
             child: SizedBox(width: least, child: child),
@@ -508,7 +508,7 @@ class NeumorphicResizable extends StatelessWidget {
           alignment: Alignment.center,
           clipBehavior: Clip.none,
           children: [
-            // The groove stops short of the holder's edges, both ends round: run out to them, its end was cut flat
+            // The groove stops short of the holder's edges, both ends round: run out to them, its end would be cut flat
             // by the card's rim.
             Padding(
               padding: side
@@ -718,7 +718,7 @@ class NeumorphicSwipeActions extends StatelessWidget {
     final c = t.colors;
     final label = t.textTheme.caption.copyWith(fontWeight: FontWeight.w700);
     // An action is as wide as its longest word on one line, at the reader's text size, and never under 88: at twice
-    // the text a fixed 88 broke 'Delete' and 'Archive' in two.
+    // the text a fixed 88 would break 'Delete' and 'Archive' in two.
     var extent = 88.0;
     for (final action in [...startActions, ...endActions]) {
       final painter = TextPainter(
@@ -738,8 +738,8 @@ class NeumorphicSwipeActions extends StatelessWidget {
         endActions: endActions,
         actionExtent: extent.ceilToDouble(),
         actionBuilder: (context, action, state) {
-          // A destructive action is a plaster key with ink words, the act beside it the pigment's: an ink face was ink
-          // as a body (law 5), a black slab by day and a silver one by night.
+          // A destructive action is a plain key of the wall with ink words, the act beside it the pigment's: an ink
+          // face would be ink as a body (law 5), a black slab by day and a silver one by night.
           final fill = action.destructive ? null : c.pigment;
           final words = action.destructive ? c.ink : c.onPigment;
           // Each action is a face of a control's corners, a little in from its neighbours and the row: the strip the
@@ -747,7 +747,7 @@ class NeumorphicSwipeActions extends StatelessWidget {
           final face = t.shapes.corner(NeumorphicRadii.control);
           // The face at the row's edge keeps the row's own inset there, so it ends where the row's words end (the
           // strip's start is the row's edge). The innermost face stands as far in from the edge the row uncovers: at
-          // half a gap its shadow ran 2 pt under the row and was cut there.
+          // half a gap its shadow would run 2 pt under the row and be cut there.
           return Padding(
             padding: EdgeInsetsDirectional.fromSTEB(
               state.index == 0 ? _edgeInset : _bandInset,
@@ -774,7 +774,8 @@ class NeumorphicSwipeActions extends StatelessWidget {
                   t.elevation,
                   NeumorphicFlatScope.of(context),
                 ),
-                // The word on the face's middle by its capitals, as a key's: centred by its line box it stood high.
+                // The word on the face's middle by its capitals, as a key's: centred by its line box it would stand
+                // high.
                 child: Center(
                   child: Opacity(
                     opacity: state.reveal.clamp(0.0, 1.0),
@@ -925,7 +926,7 @@ class _ActionFace extends CustomPainter {
   final NeumorphicColors c;
   final OutlinedBorder shape;
 
-  /// The face's colour; null is the plaster's own face.
+  /// The face's colour; null is the wall's own face.
   final Color? fill;
   final NeumorphicElevation elevation;
   final bool flat;
@@ -940,12 +941,12 @@ class _ActionFace extends CustomPainter {
       light: (const Offset(-2, -2), 4),
       dark: (const Offset(2, 2), 5),
       // Lit top-left and deeper toward the bottom-right, as a filled key's face (pigment to its deep tone): shaded
-      // toward the plaster's shadow, which is lighter than ink or pigment, the faces read lit from the bottom-right.
+      // toward the wall's shadow, which is lighter than ink or pigment, the faces read lit from the bottom-right.
       face: fill == null
           ? null
           : cssLinear(box, 145, [
               fill!,
-              // A plaster face (an armed destructive key) shades toward the plaster's own shadow.
+              // A face of the wall (an armed destructive key) shades toward the wall's own shadow.
               fill == c.pigment
                   ? c.pigmentDk
                   : Color.lerp(fill, c.shadow, .35)!,

@@ -441,7 +441,7 @@ class NeumorphicShapes {
       inset(border, -gap);
 
   /// A concentric inner face, whose radius is the outer radius minus [inset] around the same centres, never below
-  /// the look's least corner ([NeumorphicRadii.least]): moulded plaster has no sharp corner. A corner a theme made
+  /// the look's least corner ([NeumorphicRadii.least]): a moulded surface has no sharp corner. A corner a theme made
   /// square stays square, inside or out.
   static OutlinedBorder inset(OutlinedBorder border, double inset) {
     if (border is NeumorphicCellBorder) return border.inset(inset);

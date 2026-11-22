@@ -1,4 +1,4 @@
-/// Neumorphism: one porcelain material, cast and pressed, and one mineral pigment that means live. See SKILL.md.
+/// Neumorphism: one porcelain material, cast and pressed, and one mineral pigment that means live.
 ///
 /// Components, pressable and surface primitives are public for app and kit composition.
 /// Raw painting and pigment-gradient helpers remain on the package's parts library.

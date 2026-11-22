@@ -640,8 +640,8 @@ class _NeumorphicCodeFieldState extends State<NeumorphicInputOtp> {
       builder: (context, box) {
         final max = box.hasBoundedWidth ? box.maxWidth : 56.0 * slots.length;
         const gap = 8.0;
-        // A cell is its widest figure and 8 each side: taken as a whole em, at twice the text six cells wanted 56 each
-        // and the code broke into two rows of three, read as two codes.
+        // A cell is its widest figure and 8 each side: taken as a whole em, at twice the text six cells would want 56
+        // each and the code would break into two rows of three, read as two codes.
         final figure = TextPainter(
           text: TextSpan(text: '0', style: digitStyle.tabular),
           textDirection: TextDirection.ltr,
@@ -1145,8 +1145,8 @@ class NeumorphicCheckbox extends StatelessWidget {
     final t = NeumorphicTheme.of(context);
     final mark = t.shapes.corner(6);
     // Laid out at its target (TapTargetPadding), the mark on the start keyline unless its slot says otherwise: the
-    // press, the one spoken node and the box are one. Handed a column's whole width, it stands at the start. Before 0.2.0 the mark stood on the box's edge with
-    // its target's margins past it, and the words or key beside it took presses a screen reader said were its own.
+    // press, the one spoken node and the box are one, so the words or key beside it never take a press a screen reader
+    // says is the mark's. Handed a column's whole width, it stands at the start.
     final place = NeumorphicFacePlace.of(context);
     return NeumorphicOwnRoot(
       child: TapTargetPadding(
@@ -1990,7 +1990,7 @@ class NeumorphicSegmentedButton<T> extends StatelessWidget {
                                       o.icon,
                                       size: look.iconSize ?? 18,
                                       // On the selected wash a glyph takes the pigment's ink for words over a
-                                      // wash, as the label's accent would: the raw pigment fell to 4.33:1.
+                                      // wash, as the label's accent would: the raw pigment would fall to 4.33:1.
                                       color:
                                           look.foreground ??
                                           (selected
@@ -2523,8 +2523,8 @@ class _StarPainter extends CustomPainter {
                 ) *
                 (i.isEven ? r : r * .5),
     ];
-    // Moulded, not cut: each point and each inner corner is rounded off (no sharp corner in the plaster), the curve
-    // starting a fifth of the way along each arm.
+    // Moulded, not cut: each point and each inner corner is rounded off (no sharp corner in a moulded surface), the
+    // curve starting a fifth of the way along each arm.
     final star = Path();
     for (var i = 0; i < 10; i++) {
       final before = points[(i + 9) % 10], at = points[i];
@@ -2538,7 +2538,7 @@ class _StarPainter extends CustomPainter {
     final box = Offset.zero & size;
     final d = (size.shortestSide / 24).clamp(.5, 1.5);
     // An empty star's floor is the quiet ink, the look's 3:1 mark with no words, by day and by night: in the well's
-    // own colour by day its shadow alone showed it, and five stars read as four.
+    // own colour by day its shadow alone would show it, and five stars read as four.
     final floor = colors.quiet;
     if (fill < 1) {
       neumorphicPaintPressed(

@@ -409,8 +409,8 @@ class NeumorphicWhoRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = NeumorphicTheme.of(context);
-    // Up and down only: its monogram starts on the list's keyline, as every row's first item does. It stands under
-    // the list's one line and keeps a row's height, as its neighbours do: at 6 up and down and with no line it read
+    // Up and down only: its monogram starts on the list's keyline, as every row's first item does. It stands under the
+    // list's one line and keeps a row's height, as its neighbours do: at 6 up and down and with no line it would read
     // as a squeezed head of the row under it.
     return NeumorphicRuled(
       rule: !isFirst,
@@ -501,7 +501,9 @@ class NeumorphicListTile extends StatelessWidget {
   final Widget? trailing;
 
   /// A `NeumorphicButton`, one or two words, or a control the row's thing needs: a cart line's
-  /// `NeumorphicNumberField`. Under 520 wide it goes under the words.
+  /// `NeumorphicNumberField`, a row's menu key. Under 520 wide it goes under the words. In a row that opens
+  /// ([onPressed]) it stays a key of its own, inside the row's band: a screen reader hears the row and the control
+  /// as two buttons.
   final Widget? action;
 
   /// The whole row opens something.
@@ -535,36 +537,44 @@ class NeumorphicListTile extends StatelessWidget {
             color: t.colors.ink,
           )
         : t.textTheme.title;
-    final told = Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // A one-line row's title stands on the row's middle by its capitals.
-        neumorphicLabel(Text(title, style: titleStyle)),
-        if (subtitle != null)
-          Text(
-            subtitle!,
-            style: (dense ? t.textTheme.micro : t.textTheme.caption).tabular,
-          ),
-        if (note != null) ...[
-          const SizedBox(height: 6),
-          Text(note!, style: t.textTheme.caption),
+    // A row that opens and holds a control of its own: the press lies under the row as its own key, and the words
+    // and mark only show, so the control stays a key a screen reader reaches, inside the row's band.
+    final split = onPressed != null && action != null;
+    Widget passive(Widget part) =>
+        split ? IgnorePointer(child: ExcludeSemantics(child: part)) : part;
+    final lead = leading == null ? null : passive(leading!);
+    final told = passive(
+      Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // A one-line row's title stands on the row's middle by its capitals.
+          neumorphicLabel(Text(title, style: titleStyle)),
+          if (subtitle != null)
+            Text(
+              subtitle!,
+              style: (dense ? t.textTheme.micro : t.textTheme.caption).tabular,
+            ),
+          if (note != null) ...[
+            const SizedBox(height: 6),
+            Text(note!, style: t.textTheme.caption),
+          ],
         ],
-      ],
+      ),
     );
     Widget row = Padding(
       padding: const EdgeInsets.symmetric(vertical: 12),
       child: LayoutBuilder(
         builder: (context, c) {
           final wide = c.maxWidth >= 520;
-          final mark = leading == null
+          final mark = lead == null
               ? const <Widget>[]
-              : <Widget>[leading!, const SizedBox(width: 14)];
+              : <Widget>[lead, const SizedBox(width: 14)];
           final align = top
               ? CrossAxisAlignment.start
               : CrossAxisAlignment.center;
-          // The figure stands beside the words, or under them when beside them the title's longest word would no
-          // longer fit: 'On \u00b7 70%' at twice the text squeezed a title until 'Pendants' broke in two, while an
+          // The figure stands beside the words, or under them when beside them the title's longest word would no longer
+          // fit: 'On \u00b7 70%' at twice the text would squeeze a title until 'Pendants' breaks in two, while an
           // onward glyph never needs to move.
           final Widget words = trailing == null
               ? told
@@ -576,7 +586,7 @@ class NeumorphicListTile extends StatelessWidget {
                     const SizedBox(width: 12),
                     ConstrainedBox(
                       constraints: BoxConstraints(maxWidth: c.maxWidth * .3),
-                      child: trailing,
+                      child: passive(trailing!),
                     ),
                   ],
                 )
@@ -589,7 +599,7 @@ class NeumorphicListTile extends StatelessWidget {
                       ) +
                       1,
                   centre: !top,
-                  children: [told, trailing!],
+                  children: [told, passive(trailing!)],
                 );
           if (wide || action == null) {
             return Row(
@@ -603,8 +613,8 @@ class NeumorphicListTile extends StatelessWidget {
           }
           // The words and the action under them start on a keyline of their own, after the mark: one region, so the
           // action keeps the words' keyline. The mark stands on the words' middle alone, as it does in a row with no
-          // action: on words and action together, a row with a stepper under it set its mark at the top while its
-          // neighbour's stood centred. The words are measured as their lines at the reader's size.
+          // action: on words and action together, a row with a stepper under it would set its mark at the top while
+          // its neighbour's stands centred. The words are measured as their lines at the reader's size.
           double lineOf(TextStyle style) {
             final painter = TextPainter(
               text: TextSpan(text: 'Hg', style: style),
@@ -625,17 +635,13 @@ class NeumorphicListTile extends StatelessWidget {
           return Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (leading != null) ...[
+              if (lead != null) ...[
                 if (top)
-                  leading!
+                  lead
                 else
                   ConstrainedBox(
                     constraints: BoxConstraints(minHeight: wordsTall),
-                    child: Align(
-                      widthFactor: 1,
-                      heightFactor: 1,
-                      child: leading,
-                    ),
+                    child: Align(widthFactor: 1, heightFactor: 1, child: lead),
                   ),
                 const SizedBox(width: 14),
               ],
@@ -674,7 +680,7 @@ class NeumorphicListTile extends StatelessWidget {
         ),
         child: row,
       );
-      row = NeumorphicTap(
+      final press = NeumorphicTap(
         focusNode: focusNode,
         autofocus: autofocus,
         onPressed: onPressed,
@@ -691,8 +697,16 @@ class NeumorphicListTile extends StatelessWidget {
         shape: cell?.border ?? t.shapes.corner(NeumorphicRadii.control),
         faceOutset: cell?.outset ?? const EdgeInsets.symmetric(horizontal: 12),
         focusReach: cell == null ? 1 : .5,
-        child: row,
+        child: split ? const SizedBox.expand() : row,
       );
+      row = split
+          ? Stack(
+              children: [
+                Positioned.fill(child: press),
+                row,
+              ],
+            )
+          : press;
     } else if (selected) {
       row = Semantics(selected: true, child: row);
     }
@@ -901,8 +915,8 @@ class NeumorphicLevelRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = NeumorphicTheme.of(context);
     final c = t.colors;
-    // Under a level the row's foot is the slider's own target below its thumb: 14 more stood 50 of dead floor under
-    // the thumb against 14 under a row's words.
+    // Under a level the row's foot is the slider's own target below its thumb: 14 more would leave 50 of dead floor
+    // under the thumb against 14 under a row's words.
     final leveled = value && level != null;
     return NeumorphicRuled(
       rule: !isFirst,

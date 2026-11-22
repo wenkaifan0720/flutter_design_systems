@@ -7,11 +7,9 @@ import 'package:neumorphism_ui/neumorphism_ui.dart';
 import 'package:neumorphism_ui/neumorphism_host.dart';
 import 'package:neumorphism_ui/neumorphism_parts.dart' show NeumorphicChart;
 
-// ignore: avoid_relative_lib_imports
+// ignore_for_file: avoid_relative_lib_imports — the gallery under test is the example app, not a package dependency.
 import '../example/lib/main.dart';
-// ignore: avoid_relative_lib_imports
 import '../example/lib/kit_gallery/live.dart';
-// ignore: avoid_relative_lib_imports
 import '../example/lib/kit_gallery/hearth.dart' show hearthScreens;
 import 'flutter_test_config.dart' show longWalkLeakTesting;
 import 'gallery_live_test.dart'

@@ -745,7 +745,7 @@ class NeumorphicMonth extends StatelessWidget {
   /// Reports the selected day number.
   final ValueChanged<int>? onDay;
   // A month's figures grow with the text only so far (1.3), as Material's date picker's do: at twice the text on a
-  // phone its figures ran together and to the well's walls.
+  // phone its figures would run together and into the well's walls.
   @override
   Widget build(BuildContext context) => MediaQuery.withClampedTextScaling(
     maxScaleFactor: 1.3,
@@ -760,7 +760,7 @@ class NeumorphicMonth extends StatelessWidget {
       MediaQuery.textScalerOf(context).scale(18) + 6,
     );
     final first = DateTime(year, month);
-    // The week starts where the locale's does: fixed on Monday, the month stood a day off the pickers beside it.
+    // The week starts where the locale's does: fixed on Monday, the month would stand a day off the pickers beside it.
     final firstDay = NeumorphicLocalizations.of(context).firstDayOfWeek;
     final lead = (first.weekday - firstDay + 7) % 7;
     final length = DateTime(year, month + 1, 0).day;
@@ -823,7 +823,7 @@ class NeumorphicMonth extends StatelessWidget {
         height: height,
         child: Center(
           // Today is pressed in under the pigment's tint, as a chosen cell is: a slab of the pigment laid on the
-          // month was a body of its own (law 5), raised among figures that are not.
+          // month would be a body of its own (law 5), raised among figures that are not.
           child: isToday
               ? SizedBox.square(
                   dimension: height,

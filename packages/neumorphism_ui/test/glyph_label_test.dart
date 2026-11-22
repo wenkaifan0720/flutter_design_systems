@@ -13,18 +13,15 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:neumorphism_ui/neumorphism_ui.dart';
 
-// ignore: avoid_relative_lib_imports
+// ignore_for_file: avoid_relative_lib_imports — the gallery under test is the example app, not a package dependency.
 import '../example/lib/main.dart';
-// ignore: avoid_relative_lib_imports
 import '../example/lib/kit_gallery/hearth.dart';
-// ignore: avoid_relative_lib_imports
 import '../example/lib/kit_gallery/live.dart';
 import 'gallery_support.dart' show loadBundledFonts, settle;
 import 'support.dart' show loadNeumorphicFonts;
 
-/// A desk's screen: half a device pixel is a quarter of a logical one.
+/// A desk's screen: two device pixels to a logical one.
 const _dpr = 2.0;
-const _halfPixel = .5 / _dpr;
 
 /// What is held: ui_core's tolerance for a label's or an icon's ink off its line (DesignLabelCheck), the engine's
 /// whole-pixel baseline aside. The text engine draws every line of text, a glyph's included, with its baseline snapped
@@ -283,7 +280,7 @@ void main() {
           '${p.boxToCaps.toStringAsFixed(2)} from the capitals, its ink ${p.own.toStringAsFixed(2)} from its own '
           'box\'s middle; the capitals ${p.capsToRow.toStringAsFixed(2)} from the row';
       // Placed off: the glyph's box or the capitals off the line, or its ink off them by more than Lucide's own
-      // drawing puts it off its box (that drawing is listed below, as drawn: e1bf's ink stands 0.6 above its box).
+      // drawing puts it off its box (e1bf's ink stands 0.6 above its box).
       final off = [
         for (final p in pairs)
           if ((p.glyphToCaps - p.own).abs() > _tolerance ||
@@ -291,18 +288,6 @@ void main() {
               p.capsToRow.abs() > _tolerance)
             say(p),
       ];
-      // On the line as laid out, but more than half a device pixel off the capitals as drawn: the engine's snapped
-      // baselines, and Lucide's drawing where its ink is off its own box's middle.
-      final drawn = [
-        for (final p in pairs)
-          if (!off.contains(say(p)) && p.glyphToCaps.abs() > _halfPixel) say(p),
-      ];
-      // ignore: avoid_print
-      print(
-        'GLYPHS $screen ${width.toInt()} ${density.name}: ${pairs.length} pairs, '
-        '${off.length} off${off.isEmpty ? '' : '\n  ${off.join('\n  ')}'}'
-        '${drawn.isEmpty ? '' : '\n  over half a device pixel as drawn: ${drawn.join('\n  over half a device pixel as drawn: ')}'}',
-      );
       expect(off, isEmpty, reason: off.join('\n'));
     }, tags: ['goldens']);
   }

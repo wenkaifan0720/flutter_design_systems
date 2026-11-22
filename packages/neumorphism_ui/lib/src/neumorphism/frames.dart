@@ -266,7 +266,8 @@ bool neumorphicIsColourFace(Color? fill, NeumorphicColors c) {
   return d > .3 && HSLColor.fromColor(fill).saturation > .2;
 }
 
-/// One level on [shape], by name. The numbers are the concept's: e1, e2, e3, p1 and p2.
+/// One level on [shape], by name: each [NeumorphicDraw] is its own pair of shadows, the light one up-left and the dark
+/// one down-right; a raised level casts them round the shape, a pressed one inside it.
 void neumorphicPaintCast(
   Canvas canvas,
   Path shape,
@@ -368,7 +369,7 @@ void neumorphicPaintCast(
 
 /// Keyboard focus on a moulded part, said in the material: the part rises. Its two shadows go deeper and crisper, a
 /// wide pair (the part stands further off the wall) and a near pair close under its edge: the lit side brighter, the
-/// shaded side darker, in the plaster's own light and shade, never the pigment and never a line. The near pair carries
+/// shaded side darker, in the wall's own light and shade, never the pigment and never a line. The near pair carries
 /// the focus at 3:1, its shade on a light ground and its light at night. Painted round [shape] and never over it, so
 /// the face and its words stay as they are. Never a press: pressed in means on. [amount] eases it in and out; [reach]
 /// scales the wide pair to a small part (a cell in its bank, a slider's thumb), the near pair keeping its width.
@@ -389,7 +390,7 @@ void neumorphicPaintFocusLift(
   canvas.clipPath(_outside(shape, box, Offset.zero, 40 * d + 16));
   final shade = c.shadowDeep;
   final white = const Color(0xFFFFFFFF);
-  // The lit side: the day's white, and at night the plaster lit toward its ink, without the pigment's hue.
+  // The lit side: the day's white, and at night the wall lit toward its ink, without the pigment's hue.
   final lit = c.dark ? Color.lerp(c.ground, c.ink, .7)! : white;
   // A small part (a checkbox's box) rises a little less, so its lit copy never reads as a second box beside it.
   final near = (math.min(box.width, box.height) * .22)
@@ -437,6 +438,12 @@ void neumorphicPaintFocusLift(
   );
   canvas.restore();
 }
+
+/// The lit lip of a well that deepens for focus, by [focus]. By day the light is already strong and the deeper shade
+/// carries the depth. By night that shade is lost on the dark ground, so the lip along the bottom and end lifts from
+/// the faint rim toward twice its reach: still a rim, never a glow. Null by day: the wall's own light.
+Color? _deeperLip(NeumorphicColors c, double focus) =>
+    c.dark && focus > 0 ? Color.lerp(c.ground, c.highlight, 1 + focus) : null;
 
 /// Keyboard focus on a hollow that has no deeper inset of its own (a switch's slot, a slider's groove): it stays a
 /// hollow and goes a little deeper, one more long, soft shade inside its rim, as a field's well deepens. No light pair
@@ -534,6 +541,7 @@ class _CastPainter extends CustomPainter {
         shape,
         c,
         light: (Offset(-3 - 2 * f, -3 - 2 * f), 5 + 5 * f),
+        lightColor: _deeperLip(c, f),
         dark: (Offset(3 + 3 * f, 3 + 3 * f), 5 + 7 * f),
         darkColor: c.shadowInset.withValues(
           alpha: math.min(
@@ -559,6 +567,7 @@ class _CastPainter extends CustomPainter {
         shape,
         c,
         light: (Offset(-o - 2 * f, -o - 2 * f), b + 5 * f),
+        lightColor: _deeperLip(c, f),
         dark: (Offset(o + 3 * f, o + 3 * f), b + 7 * f),
         darkColor: c.shadowInset.withValues(
           alpha: math.min(1, c.shadowInset.a * (1 + .7 * f)),
@@ -679,8 +688,8 @@ class _CastPainter extends CustomPainter {
 }
 
 /// What [child]'s surfaces stand on, with no surface of its own drawn. A carousel's frame seats its slides as on a
-/// face: a card in it casts as a part does, so its whole cast stays inside the frame, where a slab's cast (50 px) was
-/// cut by the frame into a tray under the slide.
+/// face: a card in it casts as a part does, so its whole cast stays inside the frame, where a slab's cast (50 px) would
+/// be cut by the frame into a tray under the slide.
 class NeumorphicSeat extends StatelessWidget {
   /// Seats [child]'s surfaces on [on].
   const NeumorphicSeat({super.key, required this.on, required this.child});
@@ -1053,7 +1062,7 @@ class NeumorphicSlab extends StatelessWidget {
   /// before the card component theme. Explicit child styles keep precedence.
   final NeumorphicStyle? style;
 
-  /// Defaults to the concept's card inset: 20 on a phone, 24 on a desktop.
+  /// The space inside the card: null is [inset], 20 on a phone and 24 on a desktop.
   final EdgeInsetsGeometry? padding;
 
   /// The default inset, for a child that bleeds to the edge by hand.

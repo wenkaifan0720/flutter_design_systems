@@ -742,7 +742,7 @@ class NeumorphicBottomSheet extends StatelessWidget {
         if (title != null || showClose)
           Padding(
             // The close key's face ends on the body's keyline, 20 in, as the title starts on it (a dialog's does): at
-            // 12 it stood 8 px past the body's end and crowded the sheet's edge.
+            // 12 it would stand 8 px past the body's end and crowd the sheet's edge.
             padding: const EdgeInsetsDirectional.fromSTEB(20, 0, 20, 12),
             child: Row(
               children: [
@@ -1707,7 +1707,8 @@ class NeumorphicTooltipFace extends StatelessWidget {
                 NeumorphicTheme.of(context).tooltipTheme,
               ], const {}).textStyle,
             )
-            // The tooltip's one message is read, in the ink: in the caption's quiet ink it stood about 3:1 by night.
+            // The tooltip's one message is read, in the ink: in the caption's quiet ink it would stand about 3:1 by
+            // night.
             .copyWith(
               color:
                   neumorphicStyleOf([
@@ -2106,8 +2107,8 @@ class NeumorphicSnackBar extends StatelessWidget {
                   const SizedBox(width: 12),
                   Expanded(
                     // The act stands at the words' end, its target level with them (on a line of its own under them
-                    // its 48 target left a tall empty band in the toast), while that costs the words no line: at
-                    // twice the text it held the end and broke the message one word to a line.
+                    // its 48 target would leave a tall empty band in the toast), while that costs the words no line: at
+                    // twice the text it would hold the end and break the message one word to a line.
                     child: actionLabel == null
                         ? words
                         : BesideOrUnder(

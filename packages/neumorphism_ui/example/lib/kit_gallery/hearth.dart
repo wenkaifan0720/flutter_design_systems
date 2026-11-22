@@ -27,7 +27,7 @@ const hearthScreens = <HearthScreen>[
 bool isHearthScreen(String id) => hearthScreens.any((s) => s.id == id);
 
 /// Where the app opens past its screen: a search typed, a device open, a dialog or a sheet showing. A link to a state
-/// opens with one, and so does each of the everyday screens a review walks. It applies once, when the app first
+/// opens with one, and so does each everyday screen. It applies once, when the app first
 /// shows its screen.
 @immutable
 class HearthStart {

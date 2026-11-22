@@ -159,8 +159,7 @@ Widget kitSection(String label, {required List<Widget> children}) =>
       ),
     );
 
-/// Where a specimen sits on its stage (the specimen's `frame` in
-/// metadata.yaml names the same band): the bottom or top edge, a band across
+/// Where a specimen sits on its stage: the bottom or top edge, a band across
 /// the middle, or the whole phone.
 class KitFrame {
   const KitFrame.bottom(double this.height) : _place = _KitPlace.bottom;
@@ -256,8 +255,8 @@ class _KitStage extends StatelessWidget {
         clipBehavior: Clip.none,
         children: [Positioned(left: 0, right: 0, top: 0, child: child)],
       ),
-      // A band keeps a cast's room at its sides and clips nothing; its height (the specimen's frame in
-      // metadata.yaml) leaves the same room above and below, so its specimen shows whole.
+      // A band keeps a cast's room at its sides and clips nothing; its height leaves the same room above and below,
+      // so its specimen shows whole.
       _KitPlace.band => _KitRoom(
         room: kitCastRoom,
         child: Center(

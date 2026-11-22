@@ -248,7 +248,7 @@ class NeumorphicCard extends StatelessWidget {
     ),
   );
 
-  // On the card's gap a run of rows stood each rule twice as far from the row above it as from the row below.
+  // On the card's gap a run of rows would stand each rule twice as far from the row above it as from the row below.
   static List<Widget> _rowsTogether(List<Widget> children) {
     final out = <Widget>[];
     var run = <Widget>[];

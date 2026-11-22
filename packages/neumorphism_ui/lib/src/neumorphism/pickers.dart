@@ -233,8 +233,8 @@ class _NeumorphicDatePickerState extends State<NeumorphicDatePicker> {
   // From a medium window up the month keeps its seven days' width (7 × 48), at the start of its column, never cut;
   // on a phone it spans the column.
   @override
-  // Its figures grow with the text only so far (1.3), as the calendar's do: at twice the text its days ran together
-  // (2324252627) and its chosen day outgrew its cell.
+  // Its figures grow with the text only so far (1.3), as the calendar's do: at twice the text its days would run
+  // together (2324252627) and its chosen day outgrow its cell.
   Widget build(BuildContext context) => neumorphicWideRoom(
     AlignmentDirectional.topStart,
     Listener(

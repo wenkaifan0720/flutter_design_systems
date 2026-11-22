@@ -1,3 +1,16 @@
+## 0.4.2
+
+- Stands on ui_core 0.4.1. A menu entry marked `isDestructiveAction` (Remove, Delete) in a `NeumorphicMenuBar` or a `NeumorphicContextMenu` takes the danger tone, its warning mark in the glyph slot, as `NeumorphicMenu`'s destructive entries do.
+- A selected `NeumorphicListTile` that opens and holds an `action` (a row's menu key) is pressed in under one plate that runs to the row's end, with the action inside it. The action stays a key of its own: a screen reader hears the row and the action as two buttons, and a tap on the action presses only the action.
+- By night, a focused field's well stands deeper than one at rest, as plainly as by day: the lit lip along its bottom and end lifts toward twice its reach. In 0.4.0 and 0.4.1, a focused field by night looked the same as one at rest.
+- A `NeumorphicButton.filled` or `NeumorphicRoundButton.filled` with no `onPressed` lays its pigment down and stands as a plain key or cap out of use. It keeps the act's size, its glyph included, so its row doesn't shift. Before, it kept a pale pigment face, half raised.
+- `NeumorphicErrorState` stands in a well, as `NeumorphicEmptyState` does, and its dome carries a glyph: a triangle alert by default, or the new `icon`. Before, its dome was bare.
+- The bars of `NeumorphicColumnBars`, `NeumorphicTwoWayBars` and `NeumorphicShareBars` are printed in one flat ink. Before, they were shaded from top to foot, like tubes.
+- Charts read in the page's direction. In right-to-left text, `NeumorphicColumnBars`, `NeumorphicTwoWayBars`, `NeumorphicStepLine`, `NeumorphicLineChart`, `NeumorphicBarChart`, `NeumorphicAreaChart` and `NeumorphicSparkline` run from the right, with their scale on the right. Before, they ran left to right in every language.
+- A `NeumorphicColumnBars` with nothing above zero stands on a scale of round steps from 0 to 1. Before, every gridline read 0. Its gridlines also write as many decimals as the step needs, so a quarter step reads 0.25 rather than 0.3.
+- `NeumorphicTextTheme` is a value: it has `==`, `hashCode`, `copyWith` and `lerp`.
+- `NeumorphicColors` has `copyWith`, and is marked `@immutable`.
+
 ## 0.4.1
 
 - When a `NeumorphicDialog`'s or a `NeumorphicBottomSheet`'s keys don't fit side by side (long labels on a phone, large text), they stack, each as wide as the slab, the main one on top. Before, they stacked at their own widths at the end, a staircase.

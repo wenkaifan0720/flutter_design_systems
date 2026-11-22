@@ -284,7 +284,8 @@ class _NeumorphicDisclosureState extends State<NeumorphicDisclosure> {
             onPressed: enabled ? _toggle : null,
             child: NeumorphicOutOfUse(
               off: !enabled,
-              // On the column's keyline, as every ruled row's words are: 6 in, its title stood off the rows beside it.
+              // On the column's keyline, as every ruled row's words are: 6 in, its title would stand off the rows
+              // beside it.
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 child: Row(

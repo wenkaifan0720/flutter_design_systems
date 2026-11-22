@@ -32,7 +32,7 @@ class NeumorphicElevation with Diagnosticable {
   /// Opacity multiplier; never changes the face or its printed boundary.
   final double strength;
 
-  /// The shallowest relief a theme casts: below it a part reads as flat print, not plaster.
+  /// The shallowest relief a theme casts: below it a part reads as flat print, not a moulded surface.
   static const double leastDepth = .5;
 
   /// The deepest relief a theme casts: past it a part reads as a skeuomorphic object.

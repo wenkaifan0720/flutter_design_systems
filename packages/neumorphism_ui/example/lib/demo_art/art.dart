@@ -8,7 +8,7 @@ import 'package:flutter/widgets.dart';
 
 import 'package:neumorphism_ui/neumorphism_parts.dart';
 
-/// A plaster pediment beneath a moon and stars. Use as demo art in a relief's
+/// A moulded pediment beneath a moon and stars. Use as demo art in a relief's
 /// headerArt slot, or supply an app's own picture instead.
 ///
 /// ```dart
@@ -51,7 +51,8 @@ class _GablePainter extends CustomPainter {
     // Relief shadows may overhang; the flat face stays inside its art slot.
     if (flat) canvas.clipRect(Offset.zero & s);
     // The gable's moulded eaves reach past its points by the round join's radius (the least corner): drawn to the
-    // slot's edges, its feet stood about 10 px past the column's keylines. The whole mark is set in by that reach.
+    // slot's edges, its feet would stand about 10 px past the column's keylines. The whole mark is set in by that
+    // reach.
     const reach = NeumorphicRadii.least;
     final sx = s.width / (_w + 2 * reach), sy = s.height / (_h + reach);
     canvas.translate(reach * sx, 0);
@@ -154,7 +155,7 @@ class _GablePainter extends CustomPainter {
       Offset(_w, _h),
     ]);
     // Moulded, not cut: the eaves and the apex round by the look's least corner (the round join's radius is half the
-    // stroke). At 7 the points were knife-sharp (law 8).
+    // stroke). At 7 the points would be knife-sharp (law 8).
     final round = Paint()
       ..style = PaintingStyle.stroke
       ..strokeJoin = StrokeJoin.round

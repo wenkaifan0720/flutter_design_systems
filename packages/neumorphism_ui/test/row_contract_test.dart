@@ -145,8 +145,6 @@ void main() {
           continue;
         }
         final panel = _panel(tester, shown.last, width);
-        // ignore: avoid_print
-        print('DROPDOWN $key $width: face ${_r(face)} list ${_r(panel)}');
         if ((panel.left - face.left).abs() > 1) {
           faults.add(
             '$key: its list starts ${(panel.left - face.left).toStringAsFixed(1)} px from the face\'s leading edge',
@@ -218,11 +216,6 @@ void main() {
             for (final k in ['line', 'act', 'field', 'select'])
               k: _face(tester, find.byKey(Key(k))),
           };
-          // ignore: avoid_print
-          print(
-            'ROW $name ${brightness.name}: '
-            '${faces.entries.map((e) => '${e.key} ${_r(e.value)}').join(', ')}',
-          );
           final a = faces['act']!;
           final faults = [
             for (final MapEntry(:key, :value) in faces.entries)

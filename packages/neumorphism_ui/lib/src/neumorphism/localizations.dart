@@ -40,7 +40,7 @@ abstract class NeumorphicLocalizations {
     );
   }
 
-  /// The intl locale used by generated dates and numbers. A custom delegate
+  /// The intl locale the dates and numbers are written in. A custom delegate
   /// initializes its date symbols with `initializeDateFormatting` before loading.
   String get localeName => 'en_US';
 

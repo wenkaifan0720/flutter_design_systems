@@ -1,5 +1,4 @@
-# Neumorphism's package analysis options, written by look:package to the package's own analysis_options.yaml:
-# ui_core's template (design-kit/package/analysis_options.yaml). pana and pub.dev read a package's own options,
+# Neumorphism's package analysis options, the same as ui_core's. pana and pub.dev read a package's own options,
 # never a workspace root's, so they repeat the strict modes. The excludes are the ones Flutter's pub get writes into
 # options that lack them: written here, a fresh workspace's pub get leaves the file as it is.
 include: package:flutter_lints/flutter.yaml

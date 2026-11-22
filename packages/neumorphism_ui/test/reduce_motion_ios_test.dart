@@ -1,4 +1,4 @@
-// iOS's Reduce Motion calms plaster as Android's Remove animations and the web's prefers-reduced-motion do. Flutter
+// iOS's Reduce Motion calms the look as Android's Remove animations and the web's prefers-reduced-motion do. Flutter
 // 3.47 on iOS sets only dart:ui's reduceMotion, never MediaQuery's disableAnimations, so each test here sets the iOS
 // flag alone. The look's every move is timed by NeumorphicMotion.of, read through ui_core's designReduceMotionOf; its
 // springs (the toaster's, an anchored surface's) are ui_core's, critically damped already and calmed by the same read.

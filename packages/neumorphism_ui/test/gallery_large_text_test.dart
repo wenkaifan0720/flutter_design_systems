@@ -1,9 +1,8 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-// ignore: avoid_relative_lib_imports
+// ignore_for_file: avoid_relative_lib_imports — the gallery under test is the example app, not a package dependency.
 import '../example/lib/main.dart';
-// ignore: avoid_relative_lib_imports
 import '../example/lib/kit_gallery/live.dart';
 import 'gallery_support.dart' show loadBundledFonts, settle;
 import 'support.dart' show loadNeumorphicFonts, sweepUnlessTurn;
@@ -15,8 +14,8 @@ void main() {
     await loadNeumorphicFonts();
     await loadBundledFonts();
   });
-  // Each page at one of the two widths every time, in turn, the other width than world_checks_test takes it at; the
-  // sweep runs the rest.
+  // Each page at one of the two widths every time, in turn, the other width than gallery_text_scale_test takes it at;
+  // the sweep runs the rest.
   for (final (turn, page) in liveGalleryPages.indexed) {
     for (final (cell, width) in const [390.0, 1440.0].indexed) {
       testWidgets('${page.id} at text 2.0, $width wide', (tester) async {

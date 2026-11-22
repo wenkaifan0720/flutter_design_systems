@@ -498,7 +498,7 @@ class _NeumorphicInputGroupState extends State<NeumorphicInputGroup> {
           ),
         // The face keeps the density's height and the reach round it the platform's target, as a text field's: the
         // reach is the field's one node, and a press in it off the face reaches the line (in a 40-tall face the seat
-        // alone was a 40-tall target).
+        // alone would be a 40-tall target).
         Semantics(
           container: true,
           label: [
@@ -559,7 +559,7 @@ class _NeumorphicInputGroupState extends State<NeumorphicInputGroup> {
                   }
 
                   // A text field's height: the density's control, or a line and its floor when the words are larger. Its
-                  // own editor's intrinsic height stood the group 54 tall among 40-tall fields.
+                  // own editor's intrinsic height would stand the group 54 tall among 40-tall fields.
                   final control = math.max(
                     t.density.height(48),
                     neumorphicLineHeight(context, t.textTheme.body) + 16,
@@ -1244,7 +1244,7 @@ class NeumorphicFormField extends StatelessWidget {
     final c = t.colors;
     final isGroup = group ?? _isGroup(child);
     // A group that already says the label's words on its own node: the field draws the label but does not say it, so
-    // it is read once, not "Priority, Priority" (ui_core 0.3.2's rule, which applies when a field decides for itself).
+    // it is read once, not "Priority, Priority" (ui_core's rule, which applies when a field decides for itself).
     final own = isGroup ? _ownName(child)?.trim().toLowerCase() : null;
     final heard = own != null && own == label?.trim().toLowerCase();
     return RawInputDecorator(
@@ -1584,7 +1584,7 @@ class _RangeTrack extends CustomPainter {
     final b = _thumbReach + run * (rtl ? 1 - start : end);
     if (b - a <= 0) return;
     // The span is the groove's floor between the handles, under the groove's own shade in the pigment's tones: laid
-    // over the groove, it stood fuller than the groove beside it.
+    // over the groove, it would stand fuller than the groove beside it.
     final span = Rect.fromLTRB(a, 0, b, size.height);
     canvas.save();
     canvas.clipRect(span);

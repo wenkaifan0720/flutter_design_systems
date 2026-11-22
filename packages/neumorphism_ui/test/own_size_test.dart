@@ -205,7 +205,7 @@ const _flows = <String, String>{
   'NeumorphicPushGroup': 'its buttons stand in shares of its column',
   'NeumorphicShareBars': 'bars the width of their column',
   'NeumorphicLegend': 'a wrap of swatches and words',
-  // Round 4: each paints its relief, rail or focus lift to the box its contents make.
+  // Each of these paints its relief, rail or focus lift to the box its contents make.
   'NeumorphicTimeline': 'its rail paints the height of each stop, words beside',
   'NeumorphicMeter': 'a groove the width of its column',
   'NeumorphicSplitButton': 'two halves of one face, each painted to its half',
@@ -229,6 +229,8 @@ const _flows = <String, String>{
   'NeumorphicEntrySeat': 'a band the width of its field and the control height, its line centred in it',
   'NeumorphicBanner': 'a soft well the width of its column, its mark a fixed glyph beside its words',
   'NeumorphicEmptyState': 'a column of its mark and words, the mark a fixed bead with its glyph stacked on it',
+  'NeumorphicErrorState': 'a well the width of its column holding its mark and words, the mark a fixed bead with its glyph stacked on it',
+  'NeumorphicListTile': 'a row the width of its column; one that opens and holds an action lays its press under the row, painted to it',
   'NeumorphicChosenBand':
       'a chosen row\'s pressed band, painted to the row it stands behind',
 };
@@ -460,7 +462,7 @@ void main() {
                 }
                 final room = width - part.size.width;
                 // A part whose target is wider than its face is laid out at its target, the face centred in it
-                // (ui_core's TapTargetPadding, 0.2.0): the target's box starts on the edge.
+                // (ui_core's TapTargetPadding): the target's box starts on the edge.
                 final x = direction == TextDirection.ltr ? 0.0 : room;
                 final place = Offset(x, 0) & part.size;
                 final at = place;

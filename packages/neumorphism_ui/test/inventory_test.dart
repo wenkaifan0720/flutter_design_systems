@@ -14,8 +14,8 @@ void main() {
   test('every row is answered once, and none is left out', () {
     expect(neumorphicInventory.problems, isEmpty);
     expect(neumorphicInventory.entries.length, DesignInventoryRow.all.length);
-    // Left out of 0.1.0 by the look's laws, each with its reason (README, "How Neumorphism is built"): a key floating
-    // over the content is a bump over bumps, and a pull's dome stood over the first row.
+    // Left out by the look's laws, each with its reason (README, "How Neumorphism is built"): a key floating over the
+    // content is a bump over bumps, and a pull's dome would stand over the first row.
     expect(
       {
         for (final e in neumorphicInventory.entries)

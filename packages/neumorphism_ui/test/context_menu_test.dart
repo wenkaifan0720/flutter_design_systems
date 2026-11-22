@@ -46,6 +46,7 @@ class _LampState extends State<_Lamp> {
           const RawMenuEntry.divider(),
           RawMenuEntry(
             label: 'Remove',
+            isDestructiveAction: true,
             onPressed: () => widget.log.add('Remove'),
           ),
         ],
@@ -109,6 +110,20 @@ void main() {
     await tester.longPress(find.text('Hall lamp').first);
     await tester.pumpAndSettle();
     expect(_panel, findsOneWidget);
+  });
+
+  testWidgets('a command that destroys something takes the danger tone', (
+    tester,
+  ) async {
+    await tester.pumpWidget(neumorphicApp(const _Lamp(log: [])));
+    await tester.longPress(find.text('Hall lamp').first);
+    await tester.pumpAndSettle();
+    NeumorphicPanelRow row(String label) => tester
+        .widgetList<NeumorphicPanelRow>(find.byType(NeumorphicPanelRow))
+        .singleWhere((r) => r.label == label);
+    expect(row('Remove').danger, isTrue);
+    expect(row('Rename').danger, isFalse);
+    expect(find.byIcon(NeumorphicGlyphs.triangleAlert), findsOneWidget);
   });
 
   testWidgets(

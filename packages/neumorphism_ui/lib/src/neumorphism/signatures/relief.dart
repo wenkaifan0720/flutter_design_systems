@@ -225,7 +225,7 @@ class _WindowPainter extends CustomPainter {
         math.max(0.0, h - 2 * NeumorphicRadii.least),
       ),
     );
-    // Its foot is rounded too: a square-cornered sill is a sharp corner in the plaster.
+    // Its foot is rounded too: a square-cornered sill is a sharp corner in the wall.
     final sill = Radius.circular(
       math.min(NeumorphicRadii.least, math.max(0, h - head.y) / 2),
     );
@@ -615,9 +615,9 @@ class _MiniElevation extends CustomPainter {
       o.c != c || o.flat != flat || o.courses != courses;
 }
 
-/// The hero of a home page: a set of grouped things as one plaster casting, on the wall and not in a card. Each [courses] entry is a floor
-/// of bays with its name on a string course; [title] and [subtitle] are cast in the pediment. Use one on an app, on its home. [compact]: on
-/// a phone a small elevation beside the words, about 130 tall.
+/// The hero of a home page: a set of grouped things as one moulded casting, on the wall and not in a card. Each
+/// [courses] entry is a floor of bays with its name on a string course; [title] and [subtitle] are cast in the
+/// pediment. Use one on an app, on its home. [compact]: on a phone a small elevation beside the words, about 130 tall.
 ///
 /// ```dart
 /// NeumorphicRelief(title: '14', subtitle: 'A place', count: '*5 of 9* on', courses: const [NeumorphicCourse('Upper', [NeumorphicBay(name: 'A room', figure: '18.2', note: 'Off')])])

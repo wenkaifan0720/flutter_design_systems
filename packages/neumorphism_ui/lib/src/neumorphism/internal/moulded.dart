@@ -1,6 +1,6 @@
-// The look's rule on a part's outline, held where every part reads its style: plaster is moulded, so no corner is
+// The look's rule on a part's outline, held where every part reads its style: the surface is moulded, so no corner is
 // sharper than the look's least, and an outline is one of the look's own borders, whose relief, insets and press the
-// parts know how to draw. A foreign border (Material's rounded rectangle, a bevel) draws flat UI in plaster's colours.
+// parts know how to draw. A foreign border (Material's rounded rectangle, a bevel) draws flat UI in the wall's colours.
 import 'package:flutter/widgets.dart';
 
 import '../component_themes.dart';
@@ -18,7 +18,7 @@ NeumorphicStyleOf neumorphicStyleOf(
   final look = NeumorphicStyleOf(layers, states);
   assert(
     neumorphicMoulded(look.shape),
-    'Neumorphism moulds plaster with no sharp corner, round its own borders only: a style\'s shape is a '
+    'Neumorphism moulds its surface with no sharp corner, round its own borders only: a style\'s shape is a '
     'NeumorphicRoundedBorder at least NeumorphicRadii.least (${NeumorphicRadii.least}) round, a '
     'NeumorphicStadiumBorder or a NeumorphicCircleBorder, not ${look.shape}.',
   );

@@ -1,6 +1,6 @@
 // The look's page change, on every platform: a page pushed over another fades up from the wall with a short travel
 // from the reading end, the page under it holding still; a pop is the same change run back. No platform's own
-// (Cupertino's full-width slide, the zoom) reaches a screen in plaster: the theme's Material bridge and the router's
+// (Cupertino's full-width slide, the zoom) reaches a screen in this look: the theme's Material bridge and the router's
 // pages both draw this one. A switch between top-level places (a side bar, a tab bar, a rail) is no route: it changes
 // in place. On iOS, ui_core's swipe back stands round it: a finger from the leading edge takes the page back.
 import 'package:flutter/foundation.dart';

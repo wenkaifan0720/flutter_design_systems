@@ -1,6 +1,6 @@
 // The description every public part of the look gives of itself in the inspector and in a failing test's tree: each
 // field it is built with, a field at its default hidden. And a value out of its range asserts where the part is made.
-// The source scan is ui_core's (design-kit/files/test/diagnostics_test.dart).
+// The source scan is the same as ui_core's own.
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';

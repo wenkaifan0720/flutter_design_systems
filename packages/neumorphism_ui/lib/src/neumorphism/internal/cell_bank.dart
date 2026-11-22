@@ -63,8 +63,8 @@ double neumorphicControlWidth(
 
 /// A wide button's room: its whole column on a phone, and from a medium window up a column no wider than half again a
 /// control's most ([most], a control's unless a part needs more: a month's seven 48 px days); in a wider one it takes
-/// that most, at [alignment]. Capped in a column a little wider than its most, it stood at three quarters of it, under
-/// a card of that column and aligned to neither (a checkout's Pay key under its order).
+/// that most, at [alignment]. Capped in a column a little wider than its most, it would stand at three quarters of it,
+/// under a card of that column and aligned to neither (a checkout's Pay key under its order).
 Widget neumorphicWideRoom(
   AlignmentGeometry alignment,
   Widget child, {

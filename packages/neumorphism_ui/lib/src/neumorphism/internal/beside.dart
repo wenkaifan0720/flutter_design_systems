@@ -7,7 +7,7 @@ import 'package:flutter/widgets.dart';
 /// A row's words and its figure: the figure beside them, at most [share] of the row, while the words keep [need] (the
 /// title's longest word), the figure stands on one line in its share and, unless it is a mark, standing beside costs
 /// the words no line; else under them at the start. A figure is never broken: at 390 and twice the text a price beside
-/// its words broke as £32.0 over 0, and a status as On · over 70%.
+/// its words would break as £32.0 over 0, and a status as On · over 70%.
 class BesideOrUnder extends MultiChildRenderObjectWidget {
   /// Lays out [children]: the words, then the figure.
   const BesideOrUnder({
@@ -176,8 +176,9 @@ class RenderBesideOrUnder extends RenderBox
   }
 
   /// Whether the figure stands beside the words in [width]: on one line in its share, the words keeping [need] beside
-  /// it and, for a price or a status, keeping their lines. At twice the text a bulb row kept £8.00 beside its words
-  /// and broke 'Warm white, £4.00 each' over three lines, while the lamp's £32.00 above it stood under its own.
+  /// it and, for a price or a status, keeping their lines. Otherwise, at twice the text a bulb row would keep £8.00
+  /// beside its words and break 'Warm white, £4.00 each' over three lines, while the lamp's £32.00 above it stands
+  /// under its own.
   /// (The intrinsic sizes' reading; layout measures the same by laying out.)
   bool _beside(double width) {
     final words = firstChild!, side = childAfter(words)!;

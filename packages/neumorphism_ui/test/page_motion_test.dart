@@ -1,4 +1,4 @@
-// A page change in plaster, on every platform: a route the app pushes fades up with a 16 px step from the reading end
+// A page change in this look, on every platform: a route the app pushes fades up with a 16 px step from the reading end
 // over the look's travel, the page under it still, and a pop runs it back over the look's leave. No platform's own
 // slide or zoom: a page never flies in from the screen's edge. Reduce Motion cuts it.
 import 'package:material_ui/material_ui.dart';

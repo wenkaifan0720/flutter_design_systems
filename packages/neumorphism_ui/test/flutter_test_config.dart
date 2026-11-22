@@ -6,7 +6,7 @@
 // in Flutter's own config: tracked, ui_core's reorderable list and swipe
 // row tests fail on the recognizer a drag makes.
 //
-// ui_core's template (design-kit/files/test/flutter_test_config.dart).
+// The same setting as ui_core's own tests.
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';

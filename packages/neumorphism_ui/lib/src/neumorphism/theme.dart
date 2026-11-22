@@ -1,6 +1,6 @@
 // Neumorphism's tokens: one cast material, cool porcelain by default, lit from the top left, and one mineral pigment set into
-// it. `NeumorphicTheme.of(context)` is the only way in. The concept's values are the first preset; every preset changes the
-// plaster and the pigment together, and each mode is a seed of its own, decided rather than inverted.
+// it. `NeumorphicTheme.of(context)` is the only way in. Porcelain is the first preset; every preset changes the wall
+// and the pigment together, and each mode is a seed of its own, decided rather than inverted.
 //
 // The pigment is not on `NeumorphicColors`. It means one thing, live, and a page reaches it only through a part that says
 // so (`NeumorphicLiveText`, `NeumorphicLed`, `NeumorphicButton.filled`, a latched control): `NeumorphicPigment` is hidden from the barrel.
@@ -71,13 +71,13 @@ enum NeumorphicWindow {
 /// softness here is the shadow's job. Only objects keep their own shape: a dial, a knob, a switch's slot, a round push
 /// button, a monogram, a check, an LED, an arched window with nothing written in it.
 abstract final class NeumorphicRadii {
-  /// A slab: a card on the wall, a tab bar's shoulders. The concept's 24 sits at the ceiling; this sits under it.
+  /// A slab: a card on the wall, a tab bar's shoulders. 20, the largest radius on the scale.
   static const double slab = 20;
 
-  /// A well holding words or a chart, a bank of buttons, the day's tray. The concept's 18 to 28.
+  /// A well holding words or a chart, a bank of buttons, the day's tray: 14.
   static const double well = 14;
 
-  /// A control you press or type in, a stat's well, a small well, a picture. The concept's pills.
+  /// A control you press or type in, a stat's well, a small well, a picture: 12.
   static const double control = 12;
 
   /// A chip, an event's tile.
@@ -86,13 +86,13 @@ abstract final class NeumorphicRadii {
   /// A latch's cap inside its bank, a small mark holding a figure.
   static const double cap = 8;
 
-  /// The smallest corner the look cuts. Moulded plaster has no sharp corner: a face moved in from its holder keeps at
+  /// The smallest corner the look cuts. A moulded surface has no sharp corner: a face moved in from its holder keeps at
   /// least this much round, and a pressed row or cell rounds by it where it meets its neighbour.
   static const double least = 6;
 }
 
 /// The illustration's colours: what the look's relief (a lit building by night) and its sky draw with. They change with
-/// the preset and the night like the rest of the plaster, and no part of a page reads them.
+/// the preset and the night like the rest of the wall, and no part of a page reads them.
 @immutable
 class NeumorphicArtColors {
   /// The relief's colours, each set by the preset.
@@ -142,7 +142,9 @@ class NeumorphicArtColors {
   int get hashCode => Object.hash(lamp, moon, moonShade, star);
 }
 
-/// The plaster: what a page may read. Field names follow the concept's CSS variables.
+/// The look's colours: what a page may read. Each preset designs them for light and dark; [NeumorphicThemeData.from]
+/// works them out from a ground and a pigment.
+@immutable
 class NeumorphicColors {
   const NeumorphicColors._({
     required this.dark,
@@ -223,7 +225,7 @@ class NeumorphicColors {
   /// The illustration's own colours: the relief's lamplight, moon and stars. A page never reads them.
   final NeumorphicArtColors art;
 
-  /// The plaster's own greys, for a drawing with no picture: light to dark, then the darkest detail.
+  /// The wall's own greys, for a drawing with no picture: light to dark, then the darkest detail.
   final Color toneLight, toneMid, toneDark, toneDetail;
 
   final Color _pigment,
@@ -232,6 +234,86 @@ class NeumorphicColors {
       _pigmentInk,
       _pigmentInkLit,
       _onPigment;
+
+  /// A copy with the given colours replaced. The pigment's six colours go by the names [NeumorphicThemeData.from]
+  /// takes its pigment by: [pigment] is the [accent], [onPigment] the [onAccent] and [pigmentInk] the [accentInk];
+  /// [pigmentHi] and [pigmentDk] are its gradient's lit and deep ends, and [pigmentInkLit] its words over a wash.
+  /// Replace them together, so the pigment's words keep their contrast.
+  NeumorphicColors copyWith({
+    bool? dark,
+    Color? ground,
+    Color? faceStart,
+    Color? faceEnd,
+    Color? wellStart,
+    Color? wellEnd,
+    Color? highlight,
+    Color? highlightSoft,
+    Color? shadow,
+    Color? shadowDeep,
+    Color? shadowInset,
+    Color? rim,
+    Color? crease,
+    Color? ink,
+    Color? inkSecondary,
+    Color? inkTertiary,
+    Color? quiet,
+    Color? edge,
+    Color? barStart,
+    Color? barEnd,
+    Color? domeLight,
+    Color? domeMid,
+    Color? domeDark,
+    Color? fluteHighlight,
+    Color? fluteShadow,
+    NeumorphicArtColors? art,
+    Color? toneLight,
+    Color? toneMid,
+    Color? toneDark,
+    Color? toneDetail,
+    Color? pigment,
+    Color? pigmentHi,
+    Color? pigmentDk,
+    Color? pigmentInk,
+    Color? pigmentInkLit,
+    Color? onPigment,
+  }) => NeumorphicColors._(
+    dark: dark ?? this.dark,
+    ground: ground ?? this.ground,
+    faceStart: faceStart ?? this.faceStart,
+    faceEnd: faceEnd ?? this.faceEnd,
+    wellStart: wellStart ?? this.wellStart,
+    wellEnd: wellEnd ?? this.wellEnd,
+    highlight: highlight ?? this.highlight,
+    highlightSoft: highlightSoft ?? this.highlightSoft,
+    shadow: shadow ?? this.shadow,
+    shadowDeep: shadowDeep ?? this.shadowDeep,
+    shadowInset: shadowInset ?? this.shadowInset,
+    rim: rim ?? this.rim,
+    crease: crease ?? this.crease,
+    ink: ink ?? this.ink,
+    inkSecondary: inkSecondary ?? this.inkSecondary,
+    inkTertiary: inkTertiary ?? this.inkTertiary,
+    quiet: quiet ?? this.quiet,
+    edge: edge ?? this.edge,
+    barStart: barStart ?? this.barStart,
+    barEnd: barEnd ?? this.barEnd,
+    domeLight: domeLight ?? this.domeLight,
+    domeMid: domeMid ?? this.domeMid,
+    domeDark: domeDark ?? this.domeDark,
+    fluteHighlight: fluteHighlight ?? this.fluteHighlight,
+    fluteShadow: fluteShadow ?? this.fluteShadow,
+    art: art ?? this.art,
+    toneLight: toneLight ?? this.toneLight,
+    toneMid: toneMid ?? this.toneMid,
+    toneDark: toneDark ?? this.toneDark,
+    toneDetail: toneDetail ?? this.toneDetail,
+    pigment: pigment ?? _pigment,
+    pigmentHi: pigmentHi ?? _pigmentHi,
+    pigmentDk: pigmentDk ?? _pigmentDk,
+    pigmentInk: pigmentInk ?? _pigmentInk,
+    pigmentInkLit: pigmentInkLit ?? _pigmentInkLit,
+    onPigment: onPigment ?? _onPigment,
+  );
 
   /// The colours [t] of the way from [a] to [b]. Whether it is a night palette snaps at the middle.
   static NeumorphicColors lerp(
@@ -610,8 +692,8 @@ _Seed _brandSeed(Color ground, Color pigment, Brightness brightness) {
   );
 }
 
-/// Porcelain plaster and ultramarine, the concept's own: the fresco blue on a cool grey-blue lime, lit to a clear cobalt
-/// on a moonlit blue-slate at night.
+/// A porcelain wall and ultramarine, the default preset: the fresco blue on a cool grey-blue lime, lit to a clear
+/// cobalt on a moonlit blue-slate at night.
 const _plaster = _Palette(
   _Seed(
     dark: false,
@@ -815,7 +897,7 @@ const _verona = _Palette(
   ),
 );
 
-/// Sand plaster and raw sienna: a hill town's wall in the sun. At night olive umber, the sienna lit to gold.
+/// A sand wall and raw sienna: a hill town's wall in the sun. At night olive umber, the sienna lit to gold.
 const _siena = _Palette(
   _Seed(
     dark: false,
@@ -957,8 +1039,9 @@ double _lh(double size, double px) => (px - .01) / size;
 
 /// The type scale, Manrope alone. Every style is already right for the current width: `page` is 30 on a phone, 48 at 300
 /// on a desktop. Sentence case everywhere; no tracked caps.
+@immutable
 class NeumorphicTextTheme {
-  NeumorphicTextTheme._(this.colors, this.desk, this.typeface);
+  const NeumorphicTextTheme._(this.colors, this.desk, this.typeface);
 
   /// The inks used by the scale.
   final NeumorphicColors colors;
@@ -991,6 +1074,43 @@ class NeumorphicTextTheme {
 
   /// A prominent number, 48/52.
   TextStyle get figure => _t(48, 52, FontWeight.w300, colors.ink, -.03, true);
+
+  /// A copy with the given fields replaced.
+  NeumorphicTextTheme copyWith({
+    NeumorphicColors? colors,
+    bool? desk,
+    NeumorphicTypeface? typeface,
+  }) => NeumorphicTextTheme._(
+    colors ?? this.colors,
+    desk ?? this.desk,
+    typeface ?? this.typeface,
+  );
+
+  /// The text theme [t] of the way from [a] to [b]: the inks and the typeface blend, and the desktop sizes snap at
+  /// the middle.
+  static NeumorphicTextTheme lerp(
+    NeumorphicTextTheme a,
+    NeumorphicTextTheme b,
+    double t,
+  ) {
+    if (identical(a, b)) return a;
+    return NeumorphicTextTheme._(
+      NeumorphicColors.lerp(a.colors, b.colors, t),
+      t < .5 ? a.desk : b.desk,
+      NeumorphicTypeface.lerp(a.typeface, b.typeface, t),
+    );
+  }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is NeumorphicTextTheme &&
+          other.colors == colors &&
+          other.desk == desk &&
+          other.typeface == typeface;
+
+  @override
+  int get hashCode => Object.hash(colors, desk, typeface);
 
   /// Text at a component's own size, using the same family and scale.
   TextStyle text(
@@ -1320,7 +1440,7 @@ class NeumorphicThemeData with Diagnosticable {
     );
   }
 
-  /// Cool porcelain and ultramarine, the concept's own: the default.
+  /// Cool porcelain and ultramarine: the default.
   factory NeumorphicThemeData.porcelain([
     Brightness brightness = Brightness.light,
   ]) => preset('porcelain', brightness);
@@ -1587,7 +1707,7 @@ class NeumorphicThemeData with Diagnosticable {
     );
   }
 
-  /// The stubs' page title and body text.
+  /// A page's title: the same as [NeumorphicTextTheme.page].
   TextStyle get h1 => textTheme.page;
 
   /// The default body text for content under this theme.

@@ -1045,7 +1045,7 @@ class RenderNeumorphicAutoRow extends RenderBox
       );
       h = math.max(h, kids[i].size.height);
     }
-    // Words on their first line's baseline, as a label stands beside its value: centred, a one-line label stood
+    // Words on their first line's baseline, as a label stands beside its value: centred, a one-line label would stand
     // halfway down a value wrapped over five lines. Columns with no words are centred.
     final baselines = [
       for (final kid in kids)

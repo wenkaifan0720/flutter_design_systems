@@ -19,7 +19,7 @@ double neumorphicLineHeight(BuildContext context, TextStyle style) =>
     (style.height ?? 1);
 
 /// A glyph of [size] that stands beside words grows with them, up to half again: at twice the text a button's 18 px
-/// glyph stood small and lost beside its words.
+/// glyph would stand small and lost beside its words.
 double neumorphicGlyphBeside(BuildContext context, double size) =>
     size * (MediaQuery.textScalerOf(context).scale(16) / 16).clamp(1.0, 1.5);
 
@@ -120,7 +120,7 @@ class NeumorphicEntrySeat extends StatelessWidget {
 /// press that lands on nothing that answers it (the box's side air, a glyph beside the words, the gap before a key)
 /// goes to the nearest point of the seat inside ([NeumorphicEntrySeat]) at the press's own height, or for one line at
 /// its middle: it focuses the field and the caret lands at the nearest character. A key in the box keeps its own
-/// presses. Before 0.2.0 a press in the box's 14 pt of side air did nothing.
+/// presses.
 class NeumorphicEntryReach extends SingleChildRenderObjectWidget {
   /// Takes every press in [child], a field's box, to its seat.
   const NeumorphicEntryReach({super.key, super.child});

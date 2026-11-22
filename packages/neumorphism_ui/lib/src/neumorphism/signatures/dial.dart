@@ -243,7 +243,8 @@ class _DialPainter extends CustomPainter {
   }
 }
 
-/// A figure with a degree sign stands optically centred: the sign hangs out to the right, as the concept's negative margin does.
+/// A figure with a degree sign stands optically centred: the sign hangs out to the right by [hang], so the figure's
+/// digits, not the digits and the sign, sit on the centre.
 Widget _hung(String figure, TextStyle style, double hang) {
   final text = Text(figure, textAlign: TextAlign.center, style: style);
   return figure.endsWith('°') && hang != 0
@@ -425,7 +426,7 @@ class NeumorphicDial extends StatelessWidget {
 
     if (compact && !t.desk) {
       // The band's words at the reader's own size, as every part's are; only the small dial's figure keeps the face's
-      // limit (inside the instrument the words had stayed at 1.3 while the page round them doubled).
+      // limit (otherwise inside the instrument the words would stay at 1.3 while the page round them doubles).
       return _atReader(
         context,
         reader,
@@ -865,7 +866,7 @@ class NeumorphicSpanDial extends StatelessWidget {
     final gone = elapsed.clamp(0, whole).toDouble();
     if (compact && !t.desk) {
       // The band's words at the reader's own size, as every part's are; only the small dial's figure keeps the face's
-      // limit (inside the instrument the words had stayed at 1.3 while the page round them doubled).
+      // limit (otherwise inside the instrument the words would stay at 1.3 while the page round them doubles).
       return _atReader(
         context,
         reader,

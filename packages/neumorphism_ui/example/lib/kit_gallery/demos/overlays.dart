@@ -148,6 +148,7 @@ Widget kitSpecimenContextMenu() => kitValue<bool>(
         const RawMenuEntry.divider(),
         RawMenuEntry(
           label: 'Remove',
+          isDestructiveAction: true,
           onPressed: () => showNeumorphicSnackBar(context, message: 'Removed'),
         ),
       ],

@@ -476,7 +476,8 @@ class NeumorphicBrandMark extends StatelessWidget {
   }
 }
 
-/// The look's mark with no pigment: a small moat and dome in the plaster. It stands in for a picture and waits with a page.
+/// The look's mark with no pigment: a small moat and dome in the wall. It stands in for a picture and waits with a
+/// page.
 ///
 /// ```dart
 /// NeumorphicMark(size: 44)
@@ -509,7 +510,7 @@ class NeumorphicMark extends StatelessWidget {
   }
 }
 
-/// A moat and a dome at [at], in the plaster alone.
+/// A moat and a dome at [at], in the wall's colours alone.
 void neumorphicPaintDimple(
   Canvas canvas,
   Offset at,
@@ -559,7 +560,7 @@ void neumorphicPaintDome(
   if (flat) canvas.drawOval(box.deflate(.5), neumorphicStrokePaint(c.quiet, 1));
 }
 
-/// The only line in the look: a 1 px crease over a 1 px catch-light, cut into the plaster. Rows draw it themselves.
+/// The only line in the look: a 1 px crease over a 1 px catch-light, cut into the wall. Rows draw it themselves.
 ///
 /// ```dart
 /// NeumorphicEngraved()

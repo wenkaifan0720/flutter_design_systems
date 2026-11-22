@@ -210,59 +210,59 @@ class NeumorphicChart extends StatelessWidget {
     // keys (one tab stop: Left and Right, Home and End, Escape) and a screen reader's steps choose a sample; the look
     // draws the plot, marks the sample and raises its values above it. The chart's one node is DesignChart's: its
     // name, the summary, and the sample the keys or a screen reader step to. The words round the plot are drawn only.
-    final plot = Directionality(
-      // The plot reads left to right in every language, as its gutter and its labels do.
-      textDirection: TextDirection.ltr,
-      child: DesignChart(
-        semanticLabel: label,
-        semanticSummary: read,
-        series: [
-          for (final s in series)
-            DesignChartSeries(
-              label: s.label,
-              points: [
-                for (final (i, value) in s.values.indexed)
-                  DesignChartPoint(
-                    i.toDouble(),
-                    value != null && value.isFinite ? value : null,
-                  ),
-              ],
-            ),
-        ],
-        xAxis: kind == NeumorphicChartKind.bar
-            ? DesignChartXAxis.band
-            : DesignChartXAxis.linear,
-        categories: kind == NeumorphicChartKind.bar
-            ? [
-                for (var i = 0; i < count; i++)
-                  i < labels.length ? labels[i] : '${i + 1}',
-              ]
-            : null,
-        // The plot's own 4 px margin (_plotArea): ui_core's columns are the look's, sample for sample.
-        padding: const EdgeInsets.all(4),
-        formatX: (x) {
-          final i = x.round();
-          return i >= 0 && i < labels.length ? labels[i] : '${i + 1}';
-        },
-        formatY: fmt,
-        builder: (context, chart) => _Readout(
-          selected: chart.active?.index,
-          focused: chart.states.contains(WidgetState.focused),
-          count: count,
-          kind: kind,
-          read: readAt,
-          child: CustomPaint(
-            painter: _ChartPainter(
-              series,
-              kind,
-              band,
-              low,
-              high,
-              step,
-              t.colors,
-              barRadius,
-              chart.active?.index,
-            ),
+    // The plot reads in the page's direction, as ui_core's picking does: right to left, the first sample stands at the
+    // right, the gutter and its scale too.
+    final rtl = direction == TextDirection.rtl;
+    final plot = DesignChart(
+      semanticLabel: label,
+      semanticSummary: read,
+      series: [
+        for (final s in series)
+          DesignChartSeries(
+            label: s.label,
+            points: [
+              for (final (i, value) in s.values.indexed)
+                DesignChartPoint(
+                  i.toDouble(),
+                  value != null && value.isFinite ? value : null,
+                ),
+            ],
+          ),
+      ],
+      xAxis: kind == NeumorphicChartKind.bar
+          ? DesignChartXAxis.band
+          : DesignChartXAxis.linear,
+      categories: kind == NeumorphicChartKind.bar
+          ? [
+              for (var i = 0; i < count; i++)
+                i < labels.length ? labels[i] : '${i + 1}',
+            ]
+          : null,
+      // The plot's own 4 px margin (_plotArea): ui_core's columns are the look's, sample for sample.
+      padding: const EdgeInsets.all(4),
+      formatX: (x) {
+        final i = x.round();
+        return i >= 0 && i < labels.length ? labels[i] : '${i + 1}';
+      },
+      formatY: fmt,
+      builder: (context, chart) => _Readout(
+        selected: chart.active?.index,
+        focused: chart.states.contains(WidgetState.focused),
+        count: count,
+        kind: kind,
+        read: readAt,
+        child: CustomPaint(
+          painter: _ChartPainter(
+            series,
+            kind,
+            band,
+            low,
+            high,
+            step,
+            t.colors,
+            barRadius,
+            chart.active?.index,
+            rtl: rtl,
           ),
         ),
       ),
@@ -282,7 +282,6 @@ class NeumorphicChart extends StatelessWidget {
                 vertical: math.max(0.0, tickHeight / 2 - 4),
               ),
               child: Row(
-                textDirection: TextDirection.ltr,
                 children: [
                   ExcludeSemantics(
                     child: neumorphicOwnSize(
@@ -292,8 +291,8 @@ class NeumorphicChart extends StatelessWidget {
                         clipBehavior: Clip.none,
                         children: [
                           for (final value in ticks)
-                            Positioned(
-                              right: 0,
+                            PositionedDirectional(
+                              end: 0,
                               top:
                                   4 +
                                   (high - value) /
@@ -326,8 +325,9 @@ class NeumorphicChart extends StatelessWidget {
                 count: count,
                 // The well's inset, the gutter and the plot's own 4 px margin: the labels sit under the bars and
                 // points.
-                left: inset.left + gutter + gutterGap,
-                right: inset.right,
+                left: inset.left + (rtl ? 0 : gutter + gutterGap),
+                right: inset.right + (rtl ? gutter + gutterGap : 0),
+                rtl: rtl,
                 style: t.textTheme.micro,
               ),
             ),
@@ -566,11 +566,15 @@ class _AxisLabels extends StatelessWidget {
     required this.left,
     required this.right,
     required this.style,
+    this.rtl = false,
   });
   final List<String> labels;
   final NeumorphicChartKind kind;
   final int count;
   final double left, right;
+
+  /// Whether the samples run right to left, the first at the right.
+  final bool rtl;
   final TextStyle style;
   @override
   Widget build(BuildContext context) {
@@ -594,7 +598,7 @@ class _AxisLabels extends StatelessWidget {
         final placed = <(String, double, double)>[];
         var height = 0.0;
         for (var i = 0; i < math.min(labels.length, n); i++) {
-          final x = _plotX(plot, i, n, kind);
+          final x = _mirror(plot, _plotX(plot, i, n, kind), rtl);
           final w = math.max(
             1.0,
             math.min(slot, math.min(2 * x, 2 * (width - x))),
@@ -602,7 +606,7 @@ class _AxisLabels extends StatelessWidget {
           final painter = TextPainter(
             text: TextSpan(text: labels[i], style: words),
             textAlign: TextAlign.center,
-            textDirection: TextDirection.ltr,
+            textDirection: Directionality.of(context),
             textScaler: scaler,
           )..layout(maxWidth: w);
           height = math.max(height, painter.height);
@@ -620,12 +624,7 @@ class _AxisLabels extends StatelessWidget {
                   left: x - w / 2,
                   top: 0,
                   width: w,
-                  child: Text(
-                    value,
-                    style: style,
-                    textAlign: TextAlign.center,
-                    textDirection: TextDirection.ltr,
-                  ),
+                  child: Text(value, style: style, textAlign: TextAlign.center),
                 ),
             ],
           ),
@@ -645,11 +644,12 @@ class _ChartPainter extends CustomPainter {
     this.step,
     this.colors,
     this.barRadius,
-    this.selected,
-  ) : series = [
-        for (final s in series)
-          NeumorphicChartSeries(s.label, List.unmodifiable(s.values)),
-      ];
+    this.selected, {
+    this.rtl = false,
+  }) : series = [
+         for (final s in series)
+           NeumorphicChartSeries(s.label, List.unmodifiable(s.values)),
+       ];
   final List<NeumorphicChartSeries> series;
   final NeumorphicChartKind kind;
   final NeumorphicChartBand? band;
@@ -657,6 +657,9 @@ class _ChartPainter extends CustomPainter {
   final NeumorphicColors colors;
   final double barRadius;
   final int? selected;
+
+  /// Whether the samples run right to left, the first at the right.
+  final bool rtl;
   @override
   void paint(Canvas canvas, Size size) {
     if (size.isEmpty) return;
@@ -666,6 +669,11 @@ class _ChartPainter extends CustomPainter {
     double y(double v) => area.bottom - (v - low) / (high - low) * area.height;
     canvas.save();
     canvas.clipRect(Offset.zero & size);
+    if (rtl) {
+      canvas
+        ..translate(size.width, 0)
+        ..scale(-1, 1);
+    }
     if (band != null) {
       canvas.drawRect(
         Rect.fromLTRB(area.left, y(band!.high), area.right, y(band!.low)),
@@ -802,10 +810,15 @@ class _ChartPainter extends CustomPainter {
       step != old.step ||
       colors != old.colors ||
       barRadius != old.barRadius ||
-      selected != old.selected;
+      selected != old.selected ||
+      rtl != old.rtl;
 }
 
 Rect _plotArea(Size size) => (Offset.zero & size).deflate(4);
+
+/// [x] across [area] as the page reads: mirrored right to left.
+double _mirror(Rect area, double x, bool rtl) =>
+    rtl ? area.left + area.right - x : x;
 
 /// Where sample [i] of [count] sits across the plot: on the line's points, or at the middle of its bar group.
 double _plotX(Rect area, int i, int count, NeumorphicChartKind kind) {
@@ -850,7 +863,16 @@ class _Readout extends StatelessWidget {
             if (text.isNotEmpty)
               Align(
                 alignment: Alignment(
-                  (_plotX(_plotArea(box.biggest), at!, count, kind) /
+                  (_mirror(
+                                _plotArea(box.biggest),
+                                _plotX(
+                                  _plotArea(box.biggest),
+                                  at!,
+                                  count,
+                                  kind,
+                                ),
+                                Directionality.of(context) == TextDirection.rtl,
+                              ) /
                               math.max(box.maxWidth, 1) *
                               2 -
                           1)
@@ -1071,7 +1093,7 @@ class _NeumorphicDonutState extends State<NeumorphicPieChart> {
                   padding: EdgeInsets.all(widget.size * .2),
                   // The hole's width for the words to wrap in; under large text the readout scales down to the hole
                   // rather than spill out of it. Its words grow only so far (1.3), as an instrument face's do: at twice
-                  // the text the caption broke over three lines and its corners grazed the ring.
+                  // the text the caption would break over three lines and its corners graze the ring.
                   child: FittedBox(
                     fit: BoxFit.scaleDown,
                     child: SizedBox(
@@ -1166,7 +1188,7 @@ class _NeumorphicDonutState extends State<NeumorphicPieChart> {
                     ring,
                     const SizedBox(width: 24),
                     // A key as wide as a key reads, beside the ring: run across a wide well, each slice's
-                    // figures stood 300 px from its name, and the eye lost the row between them.
+                    // figures would stand 300 px from its name, and the eye lose the row between them.
                     Expanded(
                       child: Align(
                         alignment: AlignmentDirectional.centerStart,
@@ -1366,7 +1388,13 @@ class NeumorphicSparkline extends StatelessWidget {
         child: neumorphicOwnSize(
           width: width,
           height: height,
-          child: CustomPaint(painter: _SparkPainter(points, t.colors)),
+          child: CustomPaint(
+            painter: _SparkPainter(
+              points,
+              t.colors,
+              rtl: Directionality.of(context) == TextDirection.rtl,
+            ),
+          ),
         ),
       ),
     );
@@ -1388,10 +1416,13 @@ class NeumorphicSparkline extends StatelessWidget {
 }
 
 class _SparkPainter extends CustomPainter {
-  _SparkPainter(List<double> points, this.colors)
+  _SparkPainter(List<double> points, this.colors, {this.rtl = false})
     : points = List.unmodifiable(points);
   final List<double> points;
   final NeumorphicColors colors;
+
+  /// Whether the line runs right to left, the latest value at the left.
+  final bool rtl;
   @override
   void paint(Canvas canvas, Size size) {
     final area = (Offset.zero & size).deflate(4);
@@ -1410,7 +1441,7 @@ class _SparkPainter extends CustomPainter {
     final low = points.reduce(math.min), high = points.reduce(math.max);
     final span = high - low == 0 ? 1.0 : high - low;
     Offset at(int i) => Offset(
-      area.left + area.width * i / (points.length - 1),
+      _mirror(area, area.left + area.width * i / (points.length - 1), rtl),
       high == low
           ? area.center.dy
           : area.bottom - (points[i] - low) / span * area.height,
@@ -1433,5 +1464,5 @@ class _SparkPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_SparkPainter old) =>
-      !listEquals(points, old.points) || colors != old.colors;
+      !listEquals(points, old.points) || colors != old.colors || rtl != old.rtl;
 }

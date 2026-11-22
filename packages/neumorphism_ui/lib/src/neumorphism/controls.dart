@@ -1,4 +1,4 @@
-// Controls, moulded from the plaster. Off is raised, in ink. Latched is pressed in AND carries the pigment AND says so: an
+// Controls, moulded from the wall. Off is raised, in ink. Latched is pressed in AND carries the pigment AND says so: an
 // icon or an LED, heavier words. The shadow is the third cue and never the only one, so a control still reads with every
 // shadow gone (`NeumorphicFlatScope`). A control that isn't an object takes the control scale: 8 to 12, no pills.
 import 'dart:math' as math;
@@ -311,8 +311,8 @@ class _NeumorphicTapState extends State<NeumorphicTap> {
   Widget build(BuildContext context) {
     // A face that runs past the target (a grouped list's band of its card) is the control a person sees, so the
     // pressable is laid out round it: keyboard focus, a screen reader's outline and the scroll to a focused row are the
-    // band, while the row keeps its room in its column. Laid out at the row's words, a group's first row lifted 14 out
-    // of the box its focus was measured on, and its focus read as none there.
+    // band, while the row keeps its room in its column. Laid out at the row's words, a group's first row would lift 14
+    // out of the box its focus is measured on, and its focus read as none there.
     final outset = widget.faceOutset.resolve(Directionality.of(context));
     final band = EdgeInsets.fromLTRB(
       math.max(0, outset.left),
@@ -1166,8 +1166,8 @@ double _buttonHeight(NeumorphicButtonSize size) => switch (size) {
   NeumorphicButtonSize.large => 56,
 };
 
-/// A filled key's side room by its size, so the sizes read as a scale: with one room for all, 'Large' stood narrower
-/// than 'Medium'.
+/// A filled key's side room by its size, so the sizes read as a scale: with one room for all, 'Large' would stand
+/// narrower than 'Medium'.
 EdgeInsets _buttonSides(NeumorphicButtonSize size) => EdgeInsets.symmetric(
   horizontal: switch (size) {
     NeumorphicButtonSize.small => 14,
@@ -1175,6 +1175,85 @@ EdgeInsets _buttonSides(NeumorphicButtonSize size) => EdgeInsets.symmetric(
     NeumorphicButtonSize.large => 28,
   },
 );
+
+/// The act's size for a round cap [size] across: small up to 40, large from 52, medium between.
+NeumorphicButtonSize _capSize(double size) => size >= 52
+    ? NeumorphicButtonSize.large
+    : size <= 40
+    ? NeumorphicButtonSize.small
+    : NeumorphicButtonSize.medium;
+
+/// The act's component theme: the filled button's over every button's.
+NeumorphicStyle _actTheme(NeumorphicThemeData t) =>
+    NeumorphicStyle.layered([t.filledButtonTheme, t.buttonTheme]);
+
+/// What the act lays out by at a [NeumorphicButtonSize], read from its resolved look. A filled key or cap laid down
+/// out of use draws a plain face by these same measures, so it keeps the act's size and its glyph and words stand
+/// where they stood live.
+class _ActMeasures {
+  factory _ActMeasures(
+    BuildContext context,
+    NeumorphicButtonSize size,
+    NeumorphicStyleOf look,
+  ) {
+    final t = NeumorphicTheme.of(context);
+    final padding = look.padding(Directionality.of(context));
+    final height = math.max(
+      t.density.height(_buttonHeight(size)),
+      look.minimumSize?.height ?? 0,
+    );
+    return _ActMeasures._(
+      height: height,
+      diameter: math.max(height, look.minimumSize?.width ?? 0),
+      sides: padding ?? t.density.padding(_buttonSides(size)),
+      padded: padding != null,
+      glyph: neumorphicGlyphBeside(context, look.iconSize ?? 20),
+      capGlyph: look.iconSize ?? 22,
+      words:
+          (size == NeumorphicButtonSize.small
+                  ? t.textTheme.caption.copyWith(fontWeight: FontWeight.w700)
+                  : t.textTheme.title)
+              .merge(look.textStyle),
+    );
+  }
+
+  const _ActMeasures._({
+    required this.height,
+    required this.diameter,
+    required this.sides,
+    required this.padded,
+    required this.glyph,
+    required this.capGlyph,
+    required this.words,
+  });
+
+  /// The key face's least height.
+  final double height;
+
+  /// The cap's face across.
+  final double diameter;
+
+  /// The face's padding round its glyph and words: the look's, or the size's side room at the theme's density.
+  final EdgeInsets sides;
+
+  /// Whether the look sets the face's padding, which then is all the room round the glyph and words.
+  final bool padded;
+
+  /// The key's glyph beside its words, grown with large text.
+  final double glyph;
+
+  /// The cap's glyph, alone on its face.
+  final double capGlyph;
+
+  /// The words' style, before their ink.
+  final TextStyle words;
+
+  /// The room above and below the words inside the face's least height, clear of a pill's [cut]: 4, or none when
+  /// the look sets the face's padding.
+  EdgeInsets lineRoom(EdgeInsets cut) => padded
+      ? EdgeInsets.zero
+      : neumorphicClearOfCut(const EdgeInsets.symmetric(vertical: 4), cut);
+}
 
 /// While busy, a key with a glyph turns the ring in the glyph's place and keeps its words: held in with its words
 /// hidden too, a key with a ring alone read as an empty field. The ring's box is the glyph's, so the key keeps its
@@ -1283,23 +1362,13 @@ class _ActButtonState extends State<_ActButton> {
     final states = {..._states}..remove(WidgetState.disabled);
     if (disabled) states.add(WidgetState.disabled);
     if (widget.busy || disabled) states.remove(WidgetState.pressed);
-    final themeStyle = NeumorphicStyle.layered([
-      t.filledButtonTheme,
-      t.buttonTheme,
-    ]);
+    final themeStyle = _actTheme(t);
     final look = neumorphicStyleOf([widget.style, themeStyle], states);
-    final height = math.max(
-      t.density.height(_buttonHeight(widget.size)),
-      look.minimumSize?.height ?? 0,
-    );
+    final act = _ActMeasures(context, widget.size, look);
+    final height = act.height;
     final ink = look.foreground ?? c.onPigment;
-    final words =
-        (widget.size == NeumorphicButtonSize.small
-                ? t.textTheme.caption.copyWith(fontWeight: FontWeight.w700)
-                : t.textTheme.title)
-            .merge(look.textStyle)
-            .copyWith(color: ink);
-    final glyph = neumorphicGlyphBeside(context, look.iconSize ?? 20);
+    final words = act.words.copyWith(color: ink);
+    final glyph = act.glyph;
     var shape =
         look.shape ??
         (!widget.round &&
@@ -1314,13 +1383,11 @@ class _ActButtonState extends State<_ActButton> {
         text: widget.label,
         textStyle: words,
         width: box.hasBoundedWidth ? box.maxWidth : double.infinity,
-        padding:
-            look.padding(Directionality.of(context)) ??
-            t.density.padding(_buttonSides(widget.size)),
+        padding: act.sides,
         beside: widget.leading != null || widget.icon != null ? glyph + 8 : 0,
       );
     }
-    final diameter = math.max(height, look.minimumSize?.width ?? 0);
+    final diameter = act.diameter;
     if (widget.round && shape is NeumorphicBorder) {
       shape = shape.fit(Size.square(diameter));
     }
@@ -1413,7 +1480,7 @@ class _ActButtonState extends State<_ActButton> {
                           widget.leading ??
                           Icon(
                             widget.icon ?? NeumorphicGlyphs.plus,
-                            size: look.iconSize ?? 22,
+                            size: act.capGlyph,
                             color: ink,
                           ),
                     ),
@@ -1445,7 +1512,7 @@ class _ActButtonState extends State<_ActButton> {
           const SizedBox(width: 8),
         ],
         // As wide as its longest line, so glyph and words stay one centred group: a label wrapped at twice the text
-        // took the whole width, and its arrow stood stranded at the key's start while the lines centred.
+        // would take the whole width, and its arrow stand stranded at the key's start while the lines centred.
         Flexible(
           child: neumorphicLabel(
             Text(
@@ -1472,12 +1539,7 @@ class _ActButtonState extends State<_ActButton> {
           child: Padding(
             // The minimum face height already gives a one-line label room.
             // Wrapped or enlarged words need the same breathing space.
-            padding: look.padding(Directionality.of(context)) == null
-                ? neumorphicClearOfCut(
-                    const EdgeInsets.symmetric(vertical: 4),
-                    cut,
-                  )
-                : EdgeInsets.zero,
+            padding: act.lineRoom(cut),
             child: _busyContent(
               Center(widthFactor: 1, heightFactor: 1, child: row),
               widget.busy &&
@@ -1488,9 +1550,7 @@ class _ActButtonState extends State<_ActButton> {
             ),
           ),
         ),
-        padding:
-            look.padding(Directionality.of(context)) ??
-            t.density.padding(_buttonSides(widget.size)),
+        padding: act.sides,
       ),
     );
     if (widget.wide) {
@@ -1527,11 +1587,16 @@ class _LineButton extends StatelessWidget {
     this.focusNode,
     this.alignment = AlignmentDirectional.centerStart,
     this.size = NeumorphicButtonSize.medium,
+    this.act,
     this.style,
   });
 
   /// State-resolved visual overrides before the component theme.
   final NeumorphicStyle? style;
+
+  /// The act's measures, for the act laid down out of use: this plain face lays out its glyph and words by them, so it
+  /// keeps the act's size. Null lays out the plain key's own.
+  final _ActMeasures? act;
 
   /// The text identifying this item or control.
   final String label;
@@ -1566,7 +1631,8 @@ class _LineButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = NeumorphicTheme.of(context);
-    final height = t.density.height(_buttonHeight(size));
+    final act = this.act;
+    final height = act?.height ?? t.density.height(_buttonHeight(size));
     final themeStyle = NeumorphicStyle.layered([t.buttonTheme]);
     final shape = size == NeumorphicButtonSize.small && !wide
         ? t.shapes.capsule
@@ -1587,28 +1653,38 @@ class _LineButton extends StatelessWidget {
           [style, themeStyle],
           {if (onPressed == null && !busy) WidgetState.disabled},
         );
+        TextStyle words(NeumorphicStyleOf look) =>
+            act?.words ??
+            (size == NeumorphicButtonSize.small
+                    ? t.textTheme.caption
+                    : t.textTheme.title)
+                .merge(look.textStyle);
         final role = neumorphicInlineRoleShape(
           context,
           shape: shape,
           text: label,
-          textStyle:
-              (size == NeumorphicButtonSize.small
-                      ? t.textTheme.caption
-                      : t.textTheme.title)
-                  .merge(look.textStyle),
+          textStyle: words(look),
           width: limit,
           padding:
+              act?.sides ??
               look.padding(Directionality.of(context)) ??
               t.density.padding(inset),
           beside: leading != null || icon != null
-              ? neumorphicGlyphBeside(context, look.iconSize ?? 18) + 8
+              ? (act?.glyph ??
+                        neumorphicGlyphBeside(context, look.iconSize ?? 18)) +
+                    8
               : 0,
         );
         // A pill's cut-in counts towards the face's height, not on top of it.
         final cut =
             role?.dimensions.resolve(Directionality.of(context)) ??
             EdgeInsets.zero;
-        final facePadding = neumorphicClearOfCut(t.density.padding(inset), cut);
+        // The room above and below the words counts towards the face's least height. The act's side room stands
+        // outside it, as on the act's own face.
+        final lineRoom =
+            act?.lineRoom(cut) ??
+            neumorphicClearOfCut(t.density.padding(inset), cut);
+        final facePadding = act == null ? lineRoom : act.sides + lineRoom;
         final button = ConstrainedBox(
           constraints: BoxConstraints(maxWidth: limit, minHeight: height),
           // Out of use the whole face goes quiet: a shallow relief, its words in the quiet ink.
@@ -1628,7 +1704,7 @@ class _LineButton extends StatelessWidget {
                 constraints: BoxConstraints(
                   minHeight: math.max(
                     0.0,
-                    height - facePadding.vertical - cut.vertical,
+                    height - lineRoom.vertical - cut.vertical,
                   ),
                 ),
                 child: Center(
@@ -1645,23 +1721,22 @@ class _LineButton extends StatelessWidget {
                             leading ??
                                 Icon(
                                   icon,
-                                  size: look.iconSize ?? 18,
+                                  size: act?.glyph ?? look.iconSize ?? 18,
                                   color: look.foreground ?? t.colors.ink,
                                 ),
-                            look.iconSize ?? 18,
+                            act?.glyph ?? look.iconSize ?? 18,
                             busy && showBusy,
                             look.foreground ?? t.colors.ink,
                           ),
                         neumorphicLabel(
                           Text(
                             label,
-                            style:
-                                (size == NeumorphicButtonSize.small
-                                        ? t.textTheme.caption
-                                        : t.textTheme.title)
-                                    .merge(look.textStyle)
-                                    .copyWith(color: look.foreground),
+                            style: words(look).copyWith(color: look.foreground),
                             textAlign: TextAlign.center,
+                            // The act's words are as wide as their longest line, so its wrapped words keep its width.
+                            textWidthBasis: act == null
+                                ? TextWidthBasis.parent
+                                : TextWidthBasis.longestLine,
                           ),
                         ),
                       ],
@@ -1891,7 +1966,7 @@ class NeumorphicButton extends StatelessWidget {
   }) : _form = _ButtonForm.ordinary;
 
   /// THE act: the one pigment-filled button on a screen. [NeumorphicRoundButton.filled] is the act as a round cap
-  /// with its icon alone.
+  /// with its icon alone. Out of use (no [onPressed]) it lays its pigment down and stands as a plain key out of use.
   ///
   /// ```dart
   /// NeumorphicButton.filled('Turn off', icon: NeumorphicGlyphs.power, onPressed: () {})
@@ -1981,7 +2056,13 @@ class NeumorphicButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final mark =
         icon ?? (isDestructiveAction ? NeumorphicGlyphs.triangleAlert : null);
-    return switch (_form) {
+    // Out of use, the act lays its pigment down: it stands as any key out of use does, shallower and grey, since the
+    // pigment is for what is live (law 3).
+    // It lays out by the act's measures, so it keeps the act's size, glyph and words, and a key going out of use never
+    // shifts its row.
+    final laidDown = _form == _ButtonForm.filled && onPressed == null && !busy;
+    final form = laidDown ? _ButtonForm.ordinary : _form;
+    return switch (form) {
       _ButtonForm.ordinary => _LineButton(
         label,
         icon: mark,
@@ -1993,6 +2074,16 @@ class NeumorphicButton extends StatelessWidget {
         focusNode: focusNode,
         alignment: alignment,
         size: size,
+        act: laidDown
+            ? _ActMeasures(
+                context,
+                size,
+                neumorphicStyleOf(
+                  [style, _actTheme(NeumorphicTheme.of(context))],
+                  const {WidgetState.disabled},
+                ),
+              )
+            : null,
         style: style,
       ),
       _ButtonForm.filled => _ActButton(
@@ -2221,8 +2312,8 @@ class NeumorphicLink extends StatelessWidget {
                             ),
                             const SizedBox(width: 6),
                           ],
-                          // As wide as its longest line: a label that wraps took the whole width, and its glyph stood
-                          // stranded at the key's start while the lines centred.
+                          // As wide as its longest line: a label that wraps would take the whole width, and its glyph
+                          // stand stranded at the key's start while the lines centred.
                           Flexible(
                             child: Text(
                               label,
@@ -2353,7 +2444,8 @@ class NeumorphicRoundButton extends StatelessWidget {
        onPressed = null;
 
   /// The act as a round key: the pigment-filled cap with [icon] alone, for a phone's top or a row with no room for the
-  /// word; [label] is read out, never drawn. [size] is the face's diameter: 36, 48 or 56.
+  /// word; [label] is read out, never drawn. [size] is the face's diameter: 36, 48 or 56. Out of use (no
+  /// [onPressed]) it lays its pigment down and stands as a plain cap out of use.
   ///
   /// ```dart
   /// NeumorphicRoundButton.filled(NeumorphicGlyphs.power, label: 'Turn off', onPressed: () {})
@@ -2417,38 +2509,51 @@ class NeumorphicRoundButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (_filled) {
+    // Out of use, the act's cap lays its pigment down and stands as a plain cap out of use (law 3), at the act's
+    // diameter with the act's glyph, so it keeps its place.
+    if (_filled && onPressed != null) {
       return _ActButton(
         focusNode: focusNode,
         autofocus: autofocus,
         label ?? '',
         icon: icon,
         round: true,
-        size: size >= 52
-            ? NeumorphicButtonSize.large
-            : size <= 40
-            ? NeumorphicButtonSize.small
-            : NeumorphicButtonSize.medium,
+        size: _capSize(size),
         onPressed: onPressed,
         style: style,
       );
     }
     final t = NeumorphicTheme.of(context);
     final c = t.colors;
+    final act = _filled
+        ? _ActMeasures(
+            context,
+            _capSize(size),
+            neumorphicStyleOf(
+              [style, _actTheme(t)],
+              const {WidgetState.disabled},
+            ),
+          )
+        : null;
     final rest = neumorphicStyleOf(
       [style, t.iconButtonTheme],
       {if (selected) WidgetState.selected, if (_off) WidgetState.disabled},
     );
-    double faceMinimum(NeumorphicStyleOf look) => math.max(
-      t.density.height(size),
-      math.max(
-        (look.iconSize ??
-                iconSize ??
-                (t.density.height(size) * .46).clamp(18, 28)) *
-            math.sqrt2,
-        math.max(look.minimumSize?.width ?? 0, look.minimumSize?.height ?? 0),
-      ),
-    );
+    double faceMinimum(NeumorphicStyleOf look) =>
+        act?.diameter ??
+        math.max(
+          t.density.height(size),
+          math.max(
+            (look.iconSize ??
+                    iconSize ??
+                    (t.density.height(size) * .46).clamp(18, 28)) *
+                math.sqrt2,
+            math.max(
+              look.minimumSize?.width ?? 0,
+              look.minimumSize?.height ?? 0,
+            ),
+          ),
+        );
     // The tap is the button's own size wherever it stands: a row that hands it its whole width still gets the lift
     // round the face, not round the room. The merge keeps the button's one spoken node at its own root.
     // Laid out at its target: the press, the spoken node and the box are one. The face stands on the start keyline
@@ -2471,6 +2576,7 @@ class NeumorphicRoundButton extends StatelessWidget {
           child: Icon(
             icon,
             size:
+                act?.capGlyph ??
                 look.iconSize ??
                 iconSize ??
                 (faceSize * .46).clamp(18, 28).toDouble(),
@@ -2518,7 +2624,7 @@ class NeumorphicRoundButton extends StatelessWidget {
                   clipBehavior: Clip.none,
                   fit: StackFit.expand,
                   children: [
-                    // The count is a bead of the plaster with its figure in the ink, as NeumorphicBadge's:
+                    // The count is a bead of the wall with its figure in the ink, as NeumorphicBadge's:
                     // pigment is never a body of its own (law 5). It is cast in one piece with its key (law 4):
                     // its shadow lies under the key, so it never falls on the key's face, and its face comes
                     // over the key's. Large text grows it only so far, so it never swallows the key it counts
@@ -3105,7 +3211,7 @@ class NeumorphicChip extends StatelessWidget {
                   ),
                 ),
                 // The cross is the chip's own face at its end, sinking where it is pressed as the words' part does: a
-                // raised key on the raised chip stood one bump on another (law 4). Its target is the platform's,
+                // raised key on the raised chip would stand one bump on another (law 4). Its target is the platform's,
                 // reaching past the band up and down.
                 NeumorphicTallTarget(
                   height: NeumorphicChromeMetrics.targetSize,
@@ -3948,9 +4054,9 @@ class _NeumorphicTextFieldState extends State<NeumorphicTextField> {
       shape: shape,
       minHeight: widget.minHeight ?? (multi ? 92 : 48),
       // The key's end floor is the floor above and below it after the density's step, which the box takes off its
-      // padding: given as is, a compact groove set the key 5 from its end against 8 above it, jammed into the end.
-      // A send key at the end of one line stands as the eye key does, as far from the end as from the top and bottom:
-      // at 14 it stood 10 from the end against 6 above and below.
+      // padding: given as is, a compact groove would set the key 5 from its end against 8 above it, jammed into the
+      // end. A send key at the end of one line stands as the eye key does, as far from the end as from the top and
+      // bottom: at 14 it would stand 10 from the end against 6 above and below.
       padding: EdgeInsetsDirectional.only(
         start: 14,
         end: reveal != null && !multi
@@ -3981,7 +4087,7 @@ class _NeumorphicTextFieldState extends State<NeumorphicTextField> {
           Expanded(child: input),
           if (end != null) ...[
             SizedBox(width: math.max(0, _keyGap - keyAir)),
-            // Centred in its target, inside the box: the box's end padding was cut for the target's air.
+            // Centred in its target, inside the box: the box's end padding is cut for the target's air.
             band(
               NeumorphicFacePlace(
                 alignment: AlignmentDirectional.center,
@@ -4001,8 +4107,8 @@ class _NeumorphicTextFieldState extends State<NeumorphicTextField> {
           ExcludeSemantics(
             child: Text(
               widget.label!,
-              // A field being typed in names itself in the pigment's ink: its deeper well alone was barely deeper
-              // by night, and the caret blinks, so focus had no steady 3:1 mark but the edge.
+              // A field being typed in names itself in the pigment's ink: its deeper well alone is barely deeper
+              // by night, and the caret blinks, so focus would have no steady 3:1 mark but the edge.
               style: t.textTheme.caption.copyWith(
                 fontWeight: FontWeight.w700,
                 color: _focused ? t.colors.pigmentInk : null,
@@ -4804,8 +4910,8 @@ class NeumorphicNumberField extends StatelessWidget {
     final unitWord = unit == null
         ? 0.0
         : neumorphicWidestWord(unit!, t.textTheme.micro, textScaler: scaler);
-    // As wide as its keys, their gaps and its field round its widest word: at a floor of 200 a one-figure count stood
-    // 160 px between keys that no longer read as one stepper.
+    // As wide as its keys, their gaps and its field round its widest word, from 176: any wider, a one-figure count
+    // stands so far from its keys that they no longer read as one stepper.
     final width = math.max(
       176.0,
       96 +
@@ -4920,10 +5026,10 @@ const _numberInset = 12.0;
 
 // The number field's figure: an editable in the title's figures, its unit after it, in a groove as tall as the keys'
 // faces, so the stepper reads as one control of one height: a place to type the number between its two keys. Focus
-// deepens the groove, as every field's well, and the caret does the rest.
-// Bare, not a Material TextField: a TextField says whether it is enabled, as ui_core's field does, so its text stood as
-// a node of its own and the field's steps on one with no value. It takes a text field's gestures (a tap places the
-// caret, a double tap and a drag select, the look's menu).
+// deepens the groove, as every field's well, and the caret does the rest. Bare, not a Material TextField: a TextField
+// says whether it is enabled, as ui_core's field does, so its text would stand as a node of its own and the field's
+// steps on one with no value. It takes a text field's gestures (a tap places the caret, a double tap and a drag select,
+// the look's menu).
 class _NumberFigure extends StatefulWidget {
   const _NumberFigure({
     required this.field,
@@ -5163,7 +5269,7 @@ class _SwitchPainter extends CustomPainter {
           .paint(canvas, knob);
     }
     // The thumb's printed mark says the state without colour or shadow: a bar for on, a ring for off. The bar is the
-    // pigment by night too: the thumb is plaster, and the dark ink that stands on the pigment vanished on it.
+    // pigment by night too: the thumb is the wall's colour, and the dark ink that stands on the pigment vanished on it.
     if (on) {
       canvas.drawRRect(
         RRect.fromRectAndRadius(
@@ -5590,7 +5696,7 @@ class _SliderPainter extends CustomPainter {
           ? Rect.fromLTRB(x, track.top, track.right, track.bottom)
           : Rect.fromLTRB(track.left, track.top, x, track.bottom);
       // The fill is the groove's floor where it reaches, under the groove's own shade in the pigment's tones: laid
-      // over the groove, it stood fuller than the groove beside it, whose upper edge is shade (by night the dark
+      // over the groove, it would stand fuller than the groove beside it, whose upper edge is shade (by night the dark
       // wall swallows it). Its end lies under the thumb.
       canvas.save();
       canvas.clipRect(filled);
@@ -6406,9 +6512,8 @@ class _RenderTapTarget extends RenderShiftedBox {
 /// [child], a control whose face is [face] across, laid out at its target (the platform's least however small the
 /// density draws the face, the same on every platform): its box, the area a press reaches and the box a screen reader
 /// outlines are one, as Material's padded tap target lays out (ui_core's TapTargetPadding). The face stands where
-/// [alignment] says, the control's [NeumorphicFacePlace]: on the start keyline unless its slot sets another.
-/// Before 0.2.0 the face stood on the box's edge and its target's margins reached past the box, hit-tested only: a
-/// neighbour within them, or the parent's edge, took the presses a screen reader said were the control's.
+/// [alignment] says, the control's [NeumorphicFacePlace]: on the start keyline unless its slot sets another. No
+/// neighbour, nor the parent's edge, takes a press a screen reader says is the control's.
 Widget _padded(
   double face,
   Widget child, {

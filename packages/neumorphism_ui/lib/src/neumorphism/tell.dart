@@ -933,8 +933,8 @@ class NeumorphicBadge extends StatelessWidget {
       measure.height + padding.vertical + rimInsets.vertical,
       look.minimumSize?.height ?? 0,
     );
-    // A bead is never narrower than it is tall: one figure is a round bead at any text size (at 2.0 a "3" stood in a
-    // tall narrow pill).
+    // A bead is never narrower than it is tall: one figure is a round bead at any text size (at 2.0 a "3" would
+    // otherwise stand in a tall narrow pill).
     final plate = diameter != null
         ? Size.square(diameter)
         : Size(

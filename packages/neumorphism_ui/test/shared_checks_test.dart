@@ -23,11 +23,9 @@ import 'package:ui_core_review/ui_core_review.dart'
         DesignWidthKind,
         DesignWidthLimit;
 
-// ignore: avoid_relative_lib_imports
+// ignore_for_file: avoid_relative_lib_imports — the gallery under test is the example app, not a package dependency.
 import '../example/lib/main.dart';
-// ignore: avoid_relative_lib_imports
 import '../example/lib/kit_gallery/hearth.dart';
-// ignore: avoid_relative_lib_imports
 import '../example/lib/kit_gallery/live.dart';
 import 'gallery_support.dart' show fitPage, loadBundledFonts, settle;
 import 'support.dart' show loadNeumorphicFonts, sweepUnlessTurn;
@@ -113,7 +111,7 @@ void main() {
           }
 
           visit(tester.renderObject(find.byType(GalleryApp)));
-          // ignore: avoid_print
+          // ignore: avoid_print — names what never painted before the failure is rethrown.
           print('UNPAINTED ${waiting.length}\n  ${waiting.join('\n  ')}');
           rethrow;
         }
@@ -133,7 +131,7 @@ void main() {
       final why = _named(p);
       (why == null ? left : named).add(why == null ? p : '$p  [$why]');
     }
-    // ignore: avoid_print
+    // ignore: avoid_print — the check's verdict, named exceptions included, goes to the test log.
     print(
       '$tag: ${left.length} (named ${named.length})'
       '${found.isEmpty ? '' : '\n  ${[...left, ...named].join('\n  ')}'}',
@@ -454,9 +452,9 @@ String? _named(String problem) {
   }
   // A month's days are figures on its holder, one line a row (only the chosen day is a well, a chosen span one channel,
   // today underlined). Every day of a row reads the same offset, to a tenth, against the day the check holds the row
-  // to (the chosen day, a span's end): what is off is that day's centre line as ui_core_test 0.1.0 reads it, below the
-  // figures by day and above them by night, not a day. Drawn, the figures and the chosen well stand level (goldens
-  // pickers/a_month_laid_open, unchanged since 0.2.1, when ui_core 0.2's checks read these rows level).
+  // to (the chosen day, a span's end): what is off is that day's centre line as ui_core_test reads it, below the
+  // figures by day and above them by night, not a day. Drawn, the figures and the chosen well stand level (golden
+  // pickers/a_month_laid_open).
   const day = '"$_weekday, [^"]*"';
   if (RegExp(
     '^(standard|compact) (dark|light) · a button $day beside a button $day: the capitals of "\\d{1,2}" are '

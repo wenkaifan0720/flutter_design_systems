@@ -1,6 +1,6 @@
 // The presets: one list, each a value, and each appearance reads. The bars are WCAG's, by Flutter's own luminance: words
-// 4.5:1 on every ground they stand on; edges of controls and marks with no words 3:1. No preset is exempt, the concept's
-// own included, and a pair under its bar moves a token rather than the bar.
+// 4.5:1 on every ground they stand on; edges of controls and marks with no words 3:1. No preset is exempt, the default
+// (porcelain) included, and a pair under its bar moves a token rather than the bar.
 import 'dart:io';
 
 import 'package:material_ui/material_ui.dart';
@@ -147,55 +147,49 @@ void main() {
         },
       );
 
-      test(
-        '$name is a designed mode, the pigment and the plaster together',
-        () {
-          final other = NeumorphicThemeData.preset(
-            id,
-            b == Brightness.dark ? Brightness.light : Brightness.dark,
-          ).colors;
-          expect(c.pigment, isNot(other.pigment));
-          expect(c.ground, isNot(other.ground));
-          // Mud: a well inside a dark slab is darker than the wall, and a catch-light carries the edge.
-          expect(
-            c.wellEnd.computeLuminance(),
-            lessThan(c.faceStart.computeLuminance()),
-          );
-        },
-      );
+      test('$name is a designed mode, the pigment and the wall together', () {
+        final other = NeumorphicThemeData.preset(
+          id,
+          b == Brightness.dark ? Brightness.light : Brightness.dark,
+        ).colors;
+        expect(c.pigment, isNot(other.pigment));
+        expect(c.ground, isNot(other.ground));
+        // Mud: a well inside a dark slab is darker than the wall, and a catch-light carries the edge.
+        expect(
+          c.wellEnd.computeLuminance(),
+          lessThan(c.faceStart.computeLuminance()),
+        );
+      });
     }
   }
 
-  test(
-    'the presets are designed apart: plaster and pigment change together',
-    () {
-      final grounds = <int>{}, pigments = <int>{};
-      for (final id in NeumorphicThemeData.presets) {
-        for (final b in Brightness.values) {
-          final c = NeumorphicThemeData.preset(id, b).colors;
-          expect(
-            grounds.add(c.ground.toARGB32()),
-            isTrue,
-            reason: '$id ${b.name}',
-          );
-          expect(
-            pigments.add(c.pigment.toARGB32()),
-            isTrue,
-            reason: '$id ${b.name}',
-          );
-        }
-      }
-      final seen = <String>{};
-      for (final id in NeumorphicThemeData.presets) {
-        final c = NeumorphicThemeData.preset(id, Brightness.light).colors;
+  test('the presets are designed apart: wall and pigment change together', () {
+    final grounds = <int>{}, pigments = <int>{};
+    for (final id in NeumorphicThemeData.presets) {
+      for (final b in Brightness.values) {
+        final c = NeumorphicThemeData.preset(id, b).colors;
         expect(
-          seen.add('${c.ground.toARGB32()}-${c.pigment.toARGB32()}'),
+          grounds.add(c.ground.toARGB32()),
           isTrue,
-          reason: id,
+          reason: '$id ${b.name}',
+        );
+        expect(
+          pigments.add(c.pigment.toARGB32()),
+          isTrue,
+          reason: '$id ${b.name}',
         );
       }
-    },
-  );
+    }
+    final seen = <String>{};
+    for (final id in NeumorphicThemeData.presets) {
+      final c = NeumorphicThemeData.preset(id, Brightness.light).colors;
+      expect(
+        seen.add('${c.ground.toARGB32()}-${c.pigment.toARGB32()}'),
+        isTrue,
+        reason: id,
+      );
+    }
+  });
 
   test(
     'a colour with a hue lives in the theme, or a preset wears another\'s',

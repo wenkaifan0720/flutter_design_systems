@@ -1,5 +1,5 @@
 // Neumorphism's drawing helpers. Angles are degrees clockwise from 12 o'clock, as on a dial. Gradients and shadows take the
-// CSS's own numbers, so a part reads as its concept: a CSS blur B is a Gaussian of sigma B / 2.
+// CSS's own numbers, so a part reads as its CSS description does: a CSS blur B is a Gaussian of sigma B / 2.
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 

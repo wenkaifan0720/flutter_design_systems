@@ -395,7 +395,7 @@ class NeumorphicCommand extends StatelessWidget {
     commands: commands,
     onRun: onRun,
     hint: hint ?? NeumorphicLocalizations.of(context).search,
-    // The list holds as many rows at any text size: at twice the text a 240 list showed a group's name with its
+    // The list holds as many rows at any text size: at twice the text a 240 list would show a group's name with its
     // one command cut off under it.
     maxHeight:
         maxHeight *
@@ -621,13 +621,15 @@ Widget _menuPanel(
   ),
 );
 
-// One row of a menu: its words, its keys at the end, its check or its submenu's chevron.
+// One row of a menu: its words (in the danger ink for one that destroys something), its keys at the end, its check
+// or its submenu's chevron.
 Widget _menuRow(RawMenuEntry entry, Set<WidgetState> states) =>
     NeumorphicPanelRow(
       label: entry.label,
       states: {...states, if (!entry.enabled) WidgetState.disabled},
       trailing: entry.shortcut,
       checked: entry.checked ?? false,
+      danger: entry.isDestructiveAction,
       submenu: entry.isSubmenu,
     );
 

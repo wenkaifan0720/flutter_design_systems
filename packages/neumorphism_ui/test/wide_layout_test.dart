@@ -203,10 +203,9 @@ void main() {
     expect(start, moreOrLessEquals(48, epsilon: 1));
   });
 
-  // An example starts on the column's edge with its drawn face, never its target. Since 0.2.0 the
-  // target is laid out (ui_core's TapTargetPadding at centerStart): the face on the edge, the target growing toward the
-  // end, so the box, the press and the spoken node are one. (Before, the target's margins past the box were hit-tested
-  // only, and a neighbour or the parent's edge took presses a screen reader said were the control's.)
+  // An example starts on the column's edge with its drawn face, never its target. The target is laid out (ui_core's
+  // TapTargetPadding at centerStart): the face on the edge, the target growing toward the end, so the box, the press
+  // and the spoken node are one, and no neighbour or parent's edge takes a press a screen reader says is the control's.
   Rect faceIn(WidgetTester tester, Finder control, Type face) => tester.getRect(
     find.descendant(of: control, matching: find.byType(face)).first,
   );

@@ -6,8 +6,8 @@ import 'package:flutter/widgets.dart';
 
 import '../layout.dart' show neumorphicWidestWord;
 
-/// The text scale for [text] in [style] across [width]: the reader's own, or less where its longest word would break
-/// in two at it (at twice the text a sheet's "Neumorphism gallery" broke into "Neumorphis" and "m"). Never under no
+/// The text scale for [text] in [style] across [width]: the reader's own, or less where its longest word would break in
+/// two at it (at twice the text a sheet's "Neumorphism gallery" would break into "Neumorphis" and "m"). Never under no
 /// scaling, so a word longer than the width at the size as set still breaks, as it would without this.
 TextScaler neumorphicWholeWordScaler(
   BuildContext context,

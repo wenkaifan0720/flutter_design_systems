@@ -56,7 +56,7 @@ class NeumorphicLegend extends StatelessWidget {
   final List<NeumorphicLegendItem> items;
 
   /// Words with no swatch that say what the key is of ('Today'), at its head in bold. At its end, in the items' own
-  /// style, it read as a series that had lost its swatch.
+  /// style, it would read as a series that had lost its swatch.
   final String? note;
   @override
   Widget build(BuildContext context) {
@@ -131,6 +131,10 @@ class _LineSwatch extends CustomPainter {
   bool shouldRepaint(_LineSwatch old) => old.color != color;
 }
 
+/// The one ink a chart's bars are printed in: the middle of the theme's bar pair, flat from top to foot, so a bar
+/// reads as a mark on the wall, never a lit, shaded tube.
+Color _barInk(NeumorphicColors c) => Color.lerp(c.barStart, c.barEnd, .5)!;
+
 class _Xaxis extends StatelessWidget {
   const _Xaxis({required this.labels, this.now});
 
@@ -156,32 +160,31 @@ class _Xaxis extends StatelessWidget {
     painter.dispose();
     return SizedBox(
       height: math.max(16, line),
-      child: Directionality(
-        textDirection: TextDirection.ltr,
-        child: LayoutBuilder(
-          builder: (context, box) {
-            Widget at(double f, String word, TextStyle s) => Positioned(
-              left: f * box.maxWidth - 40,
-              width: 80,
-              top: 0,
-              child: Text(
-                word,
-                textAlign: TextAlign.center,
-                maxLines: 1,
-                style: s,
-              ),
-            );
-            return Stack(
-              clipBehavior: Clip.none,
-              children: [
-                for (final e in labels.entries)
-                  if (now == null || (e.key - now!.$1).abs() > .07)
-                    at(e.key, e.value, style),
-                if (now != null) at(now!.$1, now!.$2, nowStyle),
-              ],
-            );
-          },
-        ),
+      // Each word from the axis's start: right to left, the first slot's word stands at the right, under its bar.
+      child: LayoutBuilder(
+        builder: (context, box) {
+          Widget at(double f, String word, TextStyle s) =>
+              PositionedDirectional(
+                start: f * box.maxWidth - 40,
+                width: 80,
+                top: 0,
+                child: Text(
+                  word,
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  style: s,
+                ),
+              );
+          return Stack(
+            clipBehavior: Clip.none,
+            children: [
+              for (final e in labels.entries)
+                if (now == null || (e.key - now!.$1).abs() > .07)
+                  at(e.key, e.value, style),
+              if (now != null) at(now!.$1, now!.$2, nowStyle),
+            ],
+          );
+        },
       ),
     );
   }
@@ -196,12 +199,16 @@ class _TwoWayPainter extends CustomPainter {
     this.slots,
     this.now, {
     this.round = true,
+    this.rtl = false,
   });
   final NeumorphicColors c;
   final bool flat;
 
   /// Round-ended bars; false in the square corner family.
   final bool round;
+
+  /// Whether the slots run right to left, the first at the right.
+  final bool rtl;
   final List<double> above;
   final Map<int, double> below;
   final int slots;
@@ -211,6 +218,11 @@ class _TwoWayPainter extends CustomPainter {
   void paint(Canvas canvas, Size s) {
     canvas.save();
     canvas.scale(s.width / 480, s.height / 156);
+    if (rtl) {
+      canvas
+        ..translate(480, 0)
+        ..scale(-1, 1);
+    }
     final unit = 480 / slots;
     final barW = unit / 2;
     final peak = above.fold<double>(0, math.max);
@@ -244,16 +256,15 @@ class _TwoWayPainter extends CustomPainter {
         if (v > 0) {
           final r = Rect.fromLTWH(x, _axis - v, barW, v);
           // Round at its outer end only, square on the axis: rounded at both ends, a value under the bar's width
-          // closed into a circle or a lozenge and its size no longer read.
+          // would close into a circle or a lozenge and its size would no longer read.
           final end = Radius.circular(round ? math.min(barW / 2, v) : 0);
           canvas.drawRRect(
             RRect.fromRectAndCorners(r, topLeft: end, topRight: end),
             Paint()
               ..isAntiAlias = true
-              ..shader = cssLinear(r, 180, [
-                h == nowSlot ? c.barStart.withValues(alpha: .45) : c.barStart,
-                h == nowSlot ? c.barEnd.withValues(alpha: .45) : c.barEnd,
-              ]),
+              ..color = h == nowSlot
+                  ? _barInk(c).withValues(alpha: .45)
+                  : _barInk(c),
           );
         }
       } else {
@@ -271,7 +282,7 @@ class _TwoWayPainter extends CustomPainter {
           RRect.fromRectAndCorners(r, bottomLeft: end, bottomRight: end),
           Paint()
             ..isAntiAlias = true
-            ..shader = cssLinear(r, 180, [c.pigment, c.pigmentHi]),
+            ..color = c.pigment,
         );
       }
     }
@@ -300,7 +311,8 @@ class _TwoWayPainter extends CustomPainter {
       !mapEquals(o.below, below) ||
       o.slots != slots ||
       o.now != now ||
-      o.round != round;
+      o.round != round ||
+      o.rtl != rtl;
 }
 
 /// Two directions per slot across a day, mirrored over an engraved axis: what went one way above in ink, what came back below in the pigment.
@@ -366,62 +378,61 @@ class NeumorphicTwoWayBars extends StatelessWidget {
         children: [
           NeumorphicWell(
             padding: const EdgeInsets.fromLTRB(14, 34, 14, 14),
-            child: Directionality(
-              textDirection: TextDirection.ltr,
-              child: LayoutBuilder(
-                builder: (context, box) {
-                  final w = box.maxWidth;
-                  final h = w * 156 / 480;
-                  final unit = w / count;
-                  final kUnit = math.min(
-                    topValue > 0 ? 104.5 / topValue : 55.0,
-                    below.isEmpty
-                        ? 55.0
-                        : 38 / below.values.reduce(math.max).clamp(.001, 1e9),
-                  );
-                  final peakY = (112 - topValue * kUnit) * h / 156;
-                  return SizedBox.fromSize(
-                    size: Size(w, h),
-                    child: Stack(
-                      clipBehavior: Clip.none,
-                      children: [
-                        Positioned.fill(
-                          child: CustomPaint(
-                            painter: _TwoWayPainter(
-                              c,
-                              NeumorphicFlatScope.of(context),
-                              above,
-                              below,
-                              count,
-                              now,
-                              round: true,
-                            ),
+            child: LayoutBuilder(
+              builder: (context, box) {
+                final w = box.maxWidth;
+                final h = w * 156 / 480;
+                final unit = w / count;
+                final kUnit = math.min(
+                  topValue > 0 ? 104.5 / topValue : 55.0,
+                  below.isEmpty
+                      ? 55.0
+                      : 38 / below.values.reduce(math.max).clamp(.001, 1e9),
+                );
+                final peakY = (112 - topValue * kUnit) * h / 156;
+                return SizedBox.fromSize(
+                  size: Size(w, h),
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      Positioned.fill(
+                        child: CustomPaint(
+                          painter: _TwoWayPainter(
+                            c,
+                            NeumorphicFlatScope.of(context),
+                            above,
+                            below,
+                            count,
+                            now,
+                            round: true,
+                            rtl:
+                                Directionality.of(context) == TextDirection.rtl,
                           ),
                         ),
-                        if (peak != null)
-                          // Its foot 5 over the bar, so it grows upward with the text: held by its top at 18 over,
-                          // at twice the text it sank into the bar.
-                          Positioned(
-                            left: (top + .5) * unit - 30,
-                            width: 60,
-                            bottom: h - peakY + 5,
-                            child: Text(
-                              peak!,
-                              textAlign: TextAlign.center,
-                              maxLines: 1,
-                              style: t.textTheme.micro
-                                  .copyWith(
-                                    color: c.ink,
-                                    fontWeight: FontWeight.w700,
-                                  )
-                                  .tabular,
-                            ),
+                      ),
+                      if (peak != null)
+                        // Its foot 5 over the bar, so it grows upward with the text: held by its top at 18 over,
+                        // at twice the text it sank into the bar.
+                        PositionedDirectional(
+                          start: (top + .5) * unit - 30,
+                          width: 60,
+                          bottom: h - peakY + 5,
+                          child: Text(
+                            peak!,
+                            textAlign: TextAlign.center,
+                            maxLines: 1,
+                            style: t.textTheme.micro
+                                .copyWith(
+                                  color: c.ink,
+                                  fontWeight: FontWeight.w700,
+                                )
+                                .tabular,
                           ),
-                      ],
-                    ),
-                  );
-                },
-              ),
+                        ),
+                    ],
+                  ),
+                );
+              },
             ),
           ),
           const SizedBox(height: 8),
@@ -491,11 +502,15 @@ class _ColumnPainter extends CustomPainter {
     required this.ticks,
     required this.flat,
     this.round = true,
+    this.rtl = false,
   });
   final NeumorphicColors c;
 
   /// Round-topped columns; false in the square corner family.
   final bool round;
+
+  /// Whether the columns run right to left, the first at the right.
+  final bool rtl;
   final List<double> values;
   final int? now;
   final double? forecast;
@@ -510,6 +525,11 @@ class _ColumnPainter extends CustomPainter {
   void paint(Canvas canvas, Size s) {
     canvas.save();
     canvas.scale(s.width / 280, s.height / 150);
+    if (rtl) {
+      canvas
+        ..translate(280, 0)
+        ..scale(-1, 1);
+    }
     // One engraved gridline a step, under the columns; the gutter beside the plot labels each.
     for (final v in ticks) {
       final y =
@@ -548,18 +568,14 @@ class _ColumnPainter extends CustomPainter {
           );
         }
         if (h > 0) {
-          // In the bars' own paint, as the two-way bars and the share bars are: in a flat ink the columns stood over
-          // moulded bars on the same page, two kinds of bar one above the other.
+          // In the bars' one ink, as the two-way bars and the share bars are: printed on the wall like every mark
+          // of the look, never a lit, shaded tube.
           final r = Rect.fromLTWH(x, base - h, w, h);
           canvas.drawRRect(
             RRect.fromRectAndRadius(r, Radius.circular(round ? w / 2 : 0)),
             Paint()
               ..isAntiAlias = true
-              ..shader = cssLinear(
-                r,
-                180,
-                i == now ? [c.pigment, c.pigmentHi] : [c.barStart, c.barEnd],
-              ),
+              ..color = i == now ? c.pigment : _barInk(c),
           );
         }
       }
@@ -576,7 +592,8 @@ class _ColumnPainter extends CustomPainter {
       o.high != high ||
       !listEquals(o.ticks, ticks) ||
       o.flat != flat ||
-      o.round != round;
+      o.round != round ||
+      o.rtl != rtl;
 }
 
 /// A few periods side by side, in a well, each in ink; the one that's [now] goes to the pigment, with a dashed open cap for where it's heading.
@@ -627,15 +644,27 @@ class NeumorphicColumnBars extends StatelessWidget {
     }
     final t = NeumorphicTheme.of(context);
     final c = t.colors;
-    // About four round steps from zero over the tallest column or cap; the top gridline is the scale's top.
+    // About four round steps from zero over the tallest column or cap; the top gridline is the scale's top. Nothing
+    // above zero (an empty week) still stands on round steps, one unit tall as the line and bar charts give it,
+    // never a scale squeezed onto zero whose every gridline reads 0.
     final most = [...values, ?forecast].fold<double>(0, math.max);
-    final step = neumorphicRoundStep(math.max(most, 1e-9) / 4);
-    final count = math.max(1, (most / step - 1e-9).ceil());
+    final top = most > 0 ? most : 1.0;
+    final step = neumorphicRoundStep(top / 4);
+    final count = math.max(1, (top / step - 1e-9).ceil());
     final high = count * step;
     final ticks = [for (var i = 0; i <= count; i++) i * step];
+    // As many decimals as the step has: a quarter step reads 0.25, never 0.3.
+    var decimals = 0;
+    while (decimals < 6 &&
+        ((step * math.pow(10, decimals)) -
+                    (step * math.pow(10, decimals)).roundToDouble())
+                .abs() >
+            1e-6) {
+      decimals++;
+    }
     String fmt(double v) =>
         format?.call(v) ??
-        words.formatNumber(v, maximumFractionDigits: step < 1 ? 1 : 0);
+        words.formatNumber(v, maximumFractionDigits: decimals);
     final tickStyle = t.textTheme.micro.tabular;
     final scaler = MediaQuery.textScalerOf(context);
     var gutter = 0.0, tickHeight = 0.0;
@@ -670,59 +699,61 @@ class NeumorphicColumnBars extends StatelessWidget {
               ),
               child: Align(
                 alignment: Alignment.bottomCenter,
-                child: Directionality(
-                  textDirection: TextDirection.ltr,
-                  child: LayoutBuilder(
-                    builder: (context, box) {
-                      final width = math.max(0.0, box.maxWidth - gutter - gap);
-                      final height = width * 150 / 280;
-                      double y(double v) =>
-                          (_columnBase -
-                              (high <= 0 ? 0 : v / high) *
-                                  (_columnBase - _columnTop)) *
-                          height /
-                          150;
-                      return SizedBox(
-                        height: height,
-                        child: Row(
-                          children: [
-                            neumorphicOwnSize(
-                              width: gutter,
-                              height: height,
-                              child: Stack(
-                                clipBehavior: Clip.none,
-                                children: [
-                                  for (final v in ticks)
-                                    Positioned(
-                                      right: 0,
-                                      top: y(v) - tickHeight / 2,
-                                      child: Text(fmt(v), style: tickStyle),
-                                    ),
-                                ],
+                // The week reads in the page's direction: right to left, its first day and the scale stand at the right,
+                // as the days under it and the page's own drawings do.
+                child: LayoutBuilder(
+                  builder: (context, box) {
+                    final width = math.max(0.0, box.maxWidth - gutter - gap);
+                    final height = width * 150 / 280;
+                    double y(double v) =>
+                        (_columnBase -
+                            (high <= 0 ? 0 : v / high) *
+                                (_columnBase - _columnTop)) *
+                        height /
+                        150;
+                    return SizedBox(
+                      height: height,
+                      child: Row(
+                        children: [
+                          neumorphicOwnSize(
+                            width: gutter,
+                            height: height,
+                            child: Stack(
+                              clipBehavior: Clip.none,
+                              children: [
+                                for (final v in ticks)
+                                  PositionedDirectional(
+                                    end: 0,
+                                    top: y(v) - tickHeight / 2,
+                                    child: Text(fmt(v), style: tickStyle),
+                                  ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: gap),
+                          neumorphicOwnSize(
+                            width: width,
+                            height: height,
+                            child: CustomPaint(
+                              painter: _ColumnPainter(
+                                c,
+                                values,
+                                now,
+                                forecast,
+                                high: high,
+                                ticks: ticks,
+                                flat: NeumorphicFlatScope.of(context),
+                                round: true,
+                                rtl:
+                                    Directionality.of(context) ==
+                                    TextDirection.rtl,
                               ),
                             ),
-                            const SizedBox(width: gap),
-                            neumorphicOwnSize(
-                              width: width,
-                              height: height,
-                              child: CustomPaint(
-                                painter: _ColumnPainter(
-                                  c,
-                                  values,
-                                  now,
-                                  forecast,
-                                  high: high,
-                                  ticks: ticks,
-                                  flat: NeumorphicFlatScope.of(context),
-                                  round: true,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
                 ),
               ),
             ),
@@ -731,31 +762,31 @@ class NeumorphicColumnBars extends StatelessWidget {
             const SizedBox(height: 16),
             Padding(
               // Under the plot: past the well's padding, the gutter and its gap.
-              padding: EdgeInsets.only(left: 8 + gutter + gap, right: 8),
-              child: Directionality(
-                textDirection: TextDirection.ltr,
-                child: Row(
-                  children: [
-                    for (var i = 0; i < labels.length; i++)
-                      Expanded(
-                        child: Text(
-                          labels[i],
-                          textAlign: TextAlign.center,
-                          style: i == now
-                              ? t.textTheme.micro.copyWith(
-                                  color: c.pigmentInk,
-                                  fontWeight: FontWeight.w800,
-                                )
-                              : t.textTheme.micro,
-                        ),
+              padding: EdgeInsetsDirectional.only(
+                start: 8 + gutter + gap,
+                end: 8,
+              ),
+              child: Row(
+                children: [
+                  for (var i = 0; i < labels.length; i++)
+                    Expanded(
+                      child: Text(
+                        labels[i],
+                        textAlign: TextAlign.center,
+                        style: i == now
+                            ? t.textTheme.micro.copyWith(
+                                color: c.pigmentInk,
+                                fontWeight: FontWeight.w800,
+                              )
+                            : t.textTheme.micro,
                       ),
-                  ],
-                ),
+                    ),
+                ],
               ),
             ),
           ],
           // The key: what the pigment column is, and its dashed cap. On the chart's edge, as every chart's key stands,
-          // a line under the days: past the gutter it stood 34 in, and pressed to the days' labels.
+          // a line under the days: past the gutter it would stand 34 in, pressed to the days' labels.
           if (shown)
             Padding(
               padding: const EdgeInsets.only(top: 10),
@@ -810,9 +841,13 @@ class _StepPainter extends CustomPainter {
     required this.yMin,
     required this.yMax,
     required this.ticks,
+    this.rtl = false,
   });
   final NeumorphicColors c;
   final bool flat;
+
+  /// Whether the day runs right to left, its start at the right.
+  final bool rtl;
   final List<(double, double)> readings, steps;
   final double? now;
   final double xMin, xMax, yMin, yMax;
@@ -823,6 +858,11 @@ class _StepPainter extends CustomPainter {
   void paint(Canvas canvas, Size s) {
     canvas.save();
     canvas.scale(s.width / 480, s.height / 256);
+    if (rtl) {
+      canvas
+        ..translate(480, 0)
+        ..scale(-1, 1);
+    }
     for (final t in ticks) {
       final y = _y(t);
       canvas.drawLine(
@@ -908,7 +948,8 @@ class _StepPainter extends CustomPainter {
       o.yMin != yMin ||
       o.yMax != yMax ||
       !listEquals(o.ticks, ticks) ||
-      o.now != now;
+      o.now != now ||
+      o.rtl != rtl;
 }
 
 /// A reading over a day against what was set: the reading a curve in ink that never overshoots a point, the set point a stepped line in the
@@ -988,59 +1029,58 @@ class NeumorphicStepLine extends StatelessWidget {
       child: NeumorphicColumn(
         children: [
           NeumorphicWell(
-            padding: const EdgeInsets.fromLTRB(38, 18, 14, 12),
-            child: Directionality(
-              textDirection: TextDirection.ltr,
-              child: LayoutBuilder(
-                builder: (context, box) {
-                  final w = box.maxWidth;
-                  final h = w * 256 / 480;
-                  return SizedBox.fromSize(
-                    size: Size(w, h),
-                    child: Stack(
-                      clipBehavior: Clip.none,
-                      children: [
-                        Positioned.fill(
-                          child: CustomPaint(
-                            painter: _StepPainter(
-                              c: t.colors,
-                              flat: NeumorphicFlatScope.of(context),
-                              readings: readings,
-                              steps: steps,
-                              now: now,
-                              xMin: xMin,
-                              xMax: xMin + span,
-                              yMin: yMin,
-                              yMax: yMin + ySpan,
-                              ticks: yTicks,
+            padding: const EdgeInsetsDirectional.fromSTEB(38, 18, 14, 12),
+            child: LayoutBuilder(
+              builder: (context, box) {
+                final w = box.maxWidth;
+                final h = w * 256 / 480;
+                return SizedBox.fromSize(
+                  size: Size(w, h),
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      Positioned.fill(
+                        child: CustomPaint(
+                          painter: _StepPainter(
+                            c: t.colors,
+                            flat: NeumorphicFlatScope.of(context),
+                            readings: readings,
+                            steps: steps,
+                            now: now,
+                            xMin: xMin,
+                            xMax: xMin + span,
+                            yMin: yMin,
+                            yMax: yMin + ySpan,
+                            ticks: yTicks,
+                            rtl:
+                                Directionality.of(context) == TextDirection.rtl,
+                          ),
+                        ),
+                      ),
+                      for (final v in yTicks)
+                        PositionedDirectional(
+                          start: -30,
+                          top: (242 - (v - yMin) / ySpan * 240) * h / 256,
+                          // Centred on its gridline by its own height, at any text size (a fixed 8 left
+                          // twice-size labels hanging under their lines).
+                          child: FractionalTranslation(
+                            translation: const Offset(0, -.5),
+                            child: Text(
+                              '${NeumorphicLocalizations.of(context).formatNumber(v, maximumFractionDigits: 6)}$yLabel',
+                              maxLines: 1,
+                              style: style,
                             ),
                           ),
                         ),
-                        for (final v in yTicks)
-                          Positioned(
-                            left: -30,
-                            top: (242 - (v - yMin) / ySpan * 240) * h / 256,
-                            // Centred on its gridline by its own height, at any text size (a fixed 8 left
-                            // twice-size labels hanging under their lines).
-                            child: FractionalTranslation(
-                              translation: const Offset(0, -.5),
-                              child: Text(
-                                '${NeumorphicLocalizations.of(context).formatNumber(v, maximumFractionDigits: 6)}$yLabel',
-                                maxLines: 1,
-                                style: style,
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
-                  );
-                },
-              ),
+                    ],
+                  ),
+                );
+              },
             ),
           ),
           const SizedBox(height: 10),
           Padding(
-            padding: const EdgeInsets.fromLTRB(38, 0, 14, 0),
+            padding: const EdgeInsetsDirectional.fromSTEB(38, 0, 14, 0),
             child: _Xaxis(
               labels: {for (final e in xLabels) (e.$1 - xMin) / span: e.$2},
             ),
@@ -1189,7 +1229,7 @@ class NeumorphicShareBars extends StatelessWidget {
                     border.getOuterPath(fill),
                     Paint()
                       ..isAntiAlias = true
-                      ..shader = cssLinear(fill, 90, [c.barStart, c.barEnd]),
+                      ..color = _barInk(c),
                   );
                 }
               }),

@@ -459,8 +459,8 @@ class _MeterPainter extends CustomPainter {
       elevation: elevation,
     );
     // The fill ends round, as the groove it lies in does: a square end read as a cut stick. It is the groove's floor
-    // where it reaches, under the groove's own shade in its colour's tones: laid over the groove, it stood fuller than
-    // the groove beside it. Painted before the mirror, so its light stays top-left.
+    // where it reaches, under the groove's own shade in its colour's tones: laid over the groove, it would stand fuller
+    // than the groove beside it. Painted before the mirror, so its light stays top-left.
     final reach = value * size.width;
     if (reach > 0) {
       final colour = off ? colors.ink : colors.pigment;

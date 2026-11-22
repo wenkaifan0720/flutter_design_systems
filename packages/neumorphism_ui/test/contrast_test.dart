@@ -351,10 +351,10 @@ void main() {
     });
   }
 
-  // WCAG 1.4.11 asks 3:1 of what a person needs to identify a control or its state, not of every edge. Plaster's night
+  // WCAG 1.4.11 asks 3:1 of what a person needs to identify a control or its state, not of every edge. The wall's night
   // light is a faint rim, so its edges are held to showing, and each state and each part with no words of its own carries
-  // a cue at 3:1 that is not a glow. High contrast (the device setting) prints the fine outline at 3:1: look_laws_test
-  // holds that for every preset by day and by night.
+  // a cue at 3:1 that is not a glow. High contrast (the device setting) prints the fine outline at 3:1:
+  // high_contrast_edge_test holds that for every preset by day and by night.
   final palettes = <String, NeumorphicThemeData>{
     for (final brightness in Brightness.values) ...{
       for (final id in NeumorphicThemeData.presets)

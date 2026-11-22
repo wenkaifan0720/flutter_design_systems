@@ -426,7 +426,7 @@ class NeumorphicCalendar extends StatelessWidget {
     final least = minMonthWidth * months + 28 * (months - 1);
     final most = maxMonthWidth * months + 28 * (months - 1);
     // A month's figures grow with the text only so far (1.3), as Material's date picker's do: at twice the text on a
-    // phone its figures ran together and to the well's walls.
+    // phone its figures would run together and into the well's walls.
     return MediaQuery.withClampedTextScaling(
       maxScaleFactor: 1.3,
       child: _sized(calendar, least, most),

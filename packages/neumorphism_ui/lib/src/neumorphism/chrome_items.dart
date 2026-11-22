@@ -49,6 +49,6 @@ class NeumorphicNavItem {
   /// Called when the item is activated.
   final VoidCallback? onPressed;
 
-  /// The walkthrough key on its hit target.
+  /// A key for the item's hit target, to find it in a test.
   final Key? key;
 }

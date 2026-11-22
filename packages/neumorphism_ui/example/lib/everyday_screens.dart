@@ -1,6 +1,5 @@
 // The ten everyday screens of Hearth, the gallery's app: each one is the whole app, opened at that screen, by day or
-// by night and in either reading direction. A design review walks them, and ui_core's sweep checks every one at each
-// width.
+// by night and in either reading direction. The example's tests open every one.
 import 'package:flutter/widgets.dart';
 
 import 'kit_gallery/hearth.dart';
@@ -19,7 +18,7 @@ Widget _hearth(
   initialStart: start,
 );
 
-/// The screens, by the ids the look's design decisions name them.
+/// The screens, each with an id that names it.
 final everydayScreens =
     <
       ({

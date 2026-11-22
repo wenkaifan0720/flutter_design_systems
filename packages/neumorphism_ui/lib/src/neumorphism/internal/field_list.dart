@@ -32,8 +32,8 @@ class NeumorphicFieldListOpen extends InheritedWidget {
       open != oldWidget.open;
 }
 
-/// A field that opens a list of its own: [builder] builds it with [list], through which the list's surface goes. The
-/// surface then stands [neumorphicFieldListGap] clear of the field, and the field under this reads
+/// A field that opens a list of its own: [builder] builds it with its `list` wrap, through which the list's surface
+/// goes. The surface then stands [neumorphicFieldListGap] clear of the field, and the field under this reads
 /// [NeumorphicFieldListOpen] while a surface is up (counted, so a list replacing its loading row stays open).
 class NeumorphicFieldListOwner extends StatefulWidget {
   /// A field built by [builder].

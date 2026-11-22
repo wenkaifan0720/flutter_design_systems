@@ -280,7 +280,7 @@ void main() {
       );
     }
   });
-  // The look's own corners (corner families are no longer a setting).
+  // The look's own corners.
   for (final family in const ['drawn']) {
     final theme = NeumorphicThemeData.porcelain();
 

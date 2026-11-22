@@ -194,7 +194,7 @@ class NeumorphicFace {
   final ImageProvider? image;
 }
 
-/// A few people as one moulded cluster: their faces are bumps cast in one piece of the plaster, like drops that ran
+/// A few people as one moulded cluster: their faces are bumps cast in one piece of the wall, like drops that ran
 /// together before they set, joined by a soft neck where neighbours meet, and the number of people beyond them is the
 /// cluster's last bump. The first face sits in front: a faint crease runs along its rim. Raised from the wall as one
 /// piece, with one light and one shadow; with [onPressed] it is a button, and a press sinks the whole cluster.

@@ -61,8 +61,8 @@ class _RaisedScreen extends StatelessWidget {
                   ),
                 ),
               ),
-              // The look's own veil over the page (its routes lay the bare plaster at 72%), not a grey: a grey dirtied
-              // the plaster and turned a layer's light cast into a halo on every side.
+              // The look's own veil over the page (its routes lay the bare wall at 72%), not a grey: a grey would dirty
+              // the wall and turn a layer's light cast into a halo on every side.
               if (scrim)
                 ColoredBox(
                   color: context.neumorphicTheme.colors.ground.withValues(

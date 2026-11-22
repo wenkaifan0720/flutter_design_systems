@@ -706,7 +706,7 @@ class NeumorphicStepProgress extends StatelessWidget {
                   children: [
                     for (var i = 0; i < count; i++) ...[
                       if (i > 0) SizedBox(width: gap),
-                      // Each step is a progress groove, filled with the pigment once reached: ink bars were ink
+                      // Each step is a progress groove, filled with the pigment once reached: ink bars would be ink
                       // as a body (law 5).
                       Expanded(
                         child: NeumorphicLinearProgressIndicator(
@@ -790,7 +790,7 @@ class NeumorphicPagination extends StatelessWidget {
     // A key's face: the control's height with its corner's content-safe inset round it, as any shaped face is drawn.
     // Its target is a finger's at least, and never so tight that two faces touch: one gap of 8 at the least. The face
     // stands in its target a whole number of pixels from each side, so its words are drawn where they are laid out
-    // (a compact face of 39.02 centred in 48 stood 4.49 down, and its digits drew 0.6 px high).
+    // (a compact face of 39.02 centred in 48 would stand 4.49 down, and its digits draw 0.6 px high).
     final face =
         t.density.height(40) +
         t.shapes
@@ -1204,9 +1204,9 @@ class _NeumorphicCarouselState extends State<NeumorphicCarouselView> {
     final region = t.shapes.corner(NeumorphicRadii.slab);
     return RawCarousel(
       itemCount: count,
-      // One slide in view at rest, its whole cast inside the frame. Slides beside it showing a share of themselves were
-      // cut by the frame, cast and all, and the cut casts drew the frame's outline as a raised tray under the slides
-      // (a bump under bumps); the arrows, the dots and a swipe say there are more.
+      // One slide in view at rest, its whole cast inside the frame. Slides beside it showing a share of themselves
+      // would be cut by the frame, cast and all, and the cut casts draw the frame's outline as a raised tray under the
+      // slides (a bump under bumps); the arrows, the dots and a swipe say there are more.
       viewportFraction: 1,
       initialPage: widget.initialPage,
       semanticLabel: widget.label,

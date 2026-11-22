@@ -1,5 +1,5 @@
-// A page row's spans are shares of the row: [1, 1] is halves as [6, 6] is, and a row is always filled. The 12-column
-// grid reads the same as before; a row whose spans don't add up to 12 no longer leaves its children a twelfth each.
+// A page row's spans are shares of the row: [1, 1] is halves as [6, 6] is, and a row is always filled. Spans that add
+// up to 12 read as a 12-column grid; a row whose spans don't still fills, each child taking its share.
 // Side by side, Tab walks each section to its end before the next, as the tree (and a browser) reads them. Below the
 // desk a row stacks, unless it is given `from`: then it stands side by side wherever the row itself is that wide.
 import 'package:material_ui/material_ui.dart';

@@ -19,8 +19,8 @@ import 'internal/page_motion.dart';
 /// The app-level act beside the tabs: a small round key in the tab bar's middle on a phone, the pilaster's wide act on a desktop.
 /// A plain moulded key when [accent] is off.
 class NeumorphicShellAction extends ShellAction {
-  /// Creates a [NeumorphicShellAction]. Not const: [ShellAction] is not.
-  // ignore: prefer_const_constructors_in_immutables
+  /// Creates a [NeumorphicShellAction].
+  // ignore: prefer_const_constructors_in_immutables — ui_core's ShellAction has no const constructor.
   NeumorphicShellAction({
     required super.icon,
     required super.onPressed,
@@ -443,8 +443,8 @@ class NeumorphicPreview extends StatelessWidget {
       platform: platform,
       brightness: brightness,
       // The preview's app in a semantics container of its own: its first route's modal barrier hides from a screen
-      // reader whatever was painted before it in the same container, so a preview on a page took the page above it
-      // (material_ui's MaterialApp has none of the containers Flutter's own MaterialApp had).
+      // reader whatever was painted before it in the same container, so a preview on a page would take the page above
+      // it (material_ui's MaterialApp has none of the containers Flutter's own MaterialApp had).
       child: Semantics(
         container: true,
         child: MaterialApp(

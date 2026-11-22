@@ -9,11 +9,9 @@ import 'package:ui_core_test/ui_core_test.dart'
 import 'package:neumorphism_ui/src/neumorphism/internal/cap_label.dart'
     show neumorphicCapCentred;
 
-// ignore: avoid_relative_lib_imports
+// ignore_for_file: avoid_relative_lib_imports — the gallery under test is the example app, not a package dependency.
 import '../example/lib/main.dart';
-// ignore: avoid_relative_lib_imports
 import '../example/lib/kit_gallery/hearth.dart';
-// ignore: avoid_relative_lib_imports
 import '../example/lib/kit_gallery/live.dart';
 import 'gallery_support.dart' show fitPage, loadBundledFonts, settle;
 import 'support.dart' show loadNeumorphicFonts;
@@ -39,7 +37,8 @@ void main() {
       );
       addTearDown(tester.view.reset);
       addTearDown(() => neumorphicCapCentred = true);
-      // Before: labels centred by their line boxes; after: by their capitals (DesignCapCenter). Only after is held.
+      // Two passes: labels centred by their line boxes, then by their capitals (DesignCapCenter). Only the second is
+      // held.
       final counts = <String>[];
       var found = <String>[];
       for (final centred in [false, true]) {
@@ -108,7 +107,7 @@ void main() {
         final why = _named(p);
         (why == null ? left : named).add(why == null ? p : '$p  [$why]');
       }
-      // ignore: avoid_print
+      // ignore: avoid_print — the walk's verdict, named exceptions included, goes to the test log.
       print(
         'LABELS $screen ${width.toInt()}: ${left.length} (named ${named.length}) '
         '[${counts.join('; ')}]'

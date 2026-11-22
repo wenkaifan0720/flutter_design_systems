@@ -1041,7 +1041,7 @@ class _TabBarPainter extends CustomPainter {
       );
     if (!flat) {
       // The bar's top edge faces the light: it casts the light up the page, as a raised part's lit side does, and
-      // parts from the page by it. A dark shade cast upward was against the light, and floated the bar over the page
+      // parts from the page by it. A dark shade cast upward would be against the light, and float the bar over the page
       // at rest (laws 2 and 6).
       canvas.drawPath(
         shape.shift(const Offset(0, -10)),
@@ -1234,9 +1234,9 @@ class _ActKey extends StatelessWidget {
   }
 }
 
-// --- What the generator's routes, previews and page stubs stand on. ---
+// --- A page and what it is declared with: a tab, the scaffold, its head and sections, and a plain one-line field. ---
 
-/// One tab as a generated app declares it: its glyph, its label and the walkthrough key on its hit target.
+/// One tab of an app's shell: its glyph, its label and an optional [key] for its hit target, to find it in a test.
 ///
 /// ```dart
 /// NeumorphicTab(NeumorphicGlyphs.house, 'Today', ValueKey('open-today'))
@@ -1752,7 +1752,8 @@ class NeumorphicAppBar extends StatelessWidget {
   }
 }
 
-/// A one-line text field the generated stubs draw; [NeumorphicTextField] is the same field with more to say.
+/// A plain one-line text field: a hint and the words typed. [NeumorphicTextField] is the same field with a label,
+/// help, an error and more.
 ///
 /// ```dart
 /// NeumorphicInput(key: const ValueKey('name'), hint: 'A name', onChanged: (text) {})
@@ -1849,10 +1850,11 @@ class NeumorphicInput extends StatelessWidget {
   }
 }
 
-/// A photograph from a declared media slot, on the control radius; until it loads, or if it never does, the plaster one step off the
-/// card with the look's mark pressed into it: it stays dark at night, so a shelf of them isn't a wall of lit blocks. It takes the
-/// width it's given and sets its height by [aspect]. A piece with no photograph of its own is drawn, not missed: [glyph] puts its
-/// sign on a raised cap in the same well, so a shelf of them reads as things and not as holes. Keep the missing state for one.
+/// A photograph from a declared media slot, on the control radius; until it loads, or if it never does, the wall one
+/// step off the card with the look's mark pressed into it: it stays dark at night, so a shelf of them isn't a wall of
+/// lit blocks. It takes the width it's given and sets its height by [aspect]. A piece with no photograph of its own is
+/// drawn, not missed: [glyph] puts its sign on a raised cap in the same well, so a shelf of them reads as things and
+/// not as holes. Keep the missing state for one.
 ///
 /// ```dart
 /// NeumorphicMedia(slotId: 'item-1', aspect: 1, label: 'A piece')
@@ -2187,7 +2189,9 @@ class NeumorphicLoadingState extends StatelessWidget {
   }
 }
 
-/// When a page's data could not load: what happened, and a way to try again.
+/// When a page's data could not load: what happened, and a way to try again. The empty state's sibling: the same well
+/// and dome, the dome carrying [icon] (the warning mark, in the ink, as a field that fails carries it), then the words
+/// and a key to try again.
 ///
 /// ```dart
 /// NeumorphicErrorState(title: 'Could not load', message: 'Check your connection.', onRetry: retry)
@@ -2200,6 +2204,7 @@ class NeumorphicErrorState extends StatelessWidget {
     this.message,
     this.onRetry,
     this.retryLabel,
+    this.icon = NeumorphicGlyphs.triangleAlert,
   });
 
   /// The primary heading.
@@ -2213,36 +2218,46 @@ class NeumorphicErrorState extends StatelessWidget {
 
   /// The retry action's words; null: Try again.
   final String? retryLabel;
+
+  /// The glyph on the dome that says what failed (a lost connection's, a lock's); the warning mark by default.
+  final IconData icon;
   @override
   Widget build(BuildContext context) {
     final t = NeumorphicTheme.of(context);
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(28),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
+    return NeumorphicWell(
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 24),
+      child: SizedBox(
+        width: double.infinity,
+        child: NeumorphicColumn(
+          gap: 10,
           children: [
-            const NeumorphicMark(),
-            const SizedBox(height: 16),
-            Text(title, textAlign: TextAlign.center, style: t.textTheme.value),
-            if (message != null) ...[
-              const SizedBox(height: 8),
+            Center(
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  const NeumorphicMark(size: 44),
+                  Icon(icon, size: 14, color: t.colors.inkSecondary),
+                ],
+              ),
+            ),
+            Text(title, textAlign: TextAlign.center, style: t.textTheme.title),
+            if (message != null)
               Text(
                 message!,
                 textAlign: TextAlign.center,
                 style: t.textTheme.caption,
               ),
-            ],
-            if (onRetry != null) ...[
-              const SizedBox(height: 18),
-              Center(
-                widthFactor: 1,
-                child: NeumorphicButton(
-                  retryLabel ?? NeumorphicLocalizations.of(context).tryAgain,
-                  onPressed: onRetry,
+            if (onRetry != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Center(
+                  widthFactor: 1,
+                  child: NeumorphicButton(
+                    retryLabel ?? NeumorphicLocalizations.of(context).tryAgain,
+                    onPressed: onRetry,
+                  ),
                 ),
               ),
-            ],
           ],
         ),
       ),
@@ -2256,6 +2271,7 @@ class NeumorphicErrorState extends StatelessWidget {
       ..add(StringProperty('title', title))
       ..add(StringProperty('message', message, defaultValue: null))
       ..add(ObjectFlagProperty<VoidCallback>.has('onRetry', onRetry))
-      ..add(StringProperty('retryLabel', retryLabel, defaultValue: null));
+      ..add(StringProperty('retryLabel', retryLabel, defaultValue: null))
+      ..add(IconDataProperty('icon', icon));
   }
 }
