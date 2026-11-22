@@ -4,7 +4,9 @@
 // list only opens it; Up and Down walk the list round its ends; once the words
 // are edited the list shows those they match, the first lit; the return key
 // takes the lit answer and closes the list; Escape closes it; Home and End stay
-// with the words. A test takes an answer as a phone's keyboard does,
+// with the words. The chosen answer is marked by its inset rule, except under
+// the keys' plate, which is mark enough with its bold words and tick. A test
+// takes an answer as a phone's keyboard does,
 // receiveAction(TextInputAction.done), not an Enter key event.
 // ignore_for_file: avoid_relative_lib_imports
 import 'package:civic_ui/civic_ui.dart';
@@ -102,6 +104,33 @@ void main() {
     expect(_listed(), _streets);
     expect(_lit(), 'Castle Hill');
     expect(_chosen(), 'Castle Hill');
+  });
+
+  testWidgets('the chosen answer keeps its inset rule only off the plate', (
+    tester,
+  ) async {
+    // The rule painted over the option, if any.
+    CustomPainter? rule(String label) => tester
+        .widget<CustomPaint>(
+          find
+              .descendant(
+                of: find.byWidgetPredicate(
+                  (w) => w is CivicListOption && w.label == label,
+                ),
+                matching: find.byType(CustomPaint),
+              )
+              .first,
+        )
+        .foregroundPainter;
+    await _combobox(tester, value: 'Castle Hill');
+    await tester.tap(find.byType(EditableText));
+    await tester.pumpAndSettle();
+    expect(_lit(), 'Castle Hill');
+    expect(rule('Castle Hill'), isNull, reason: 'a rule over the plate');
+    await _press(tester, LogicalKeyboardKey.arrowDown);
+    expect(_lit(), 'Dock Lane');
+    expect(rule('Castle Hill'), isNotNull, reason: 'the chosen mark');
+    expect(rule('Dock Lane'), isNull);
   });
 
   testWidgets('Up and Down walk the list round its ends', (tester) async {

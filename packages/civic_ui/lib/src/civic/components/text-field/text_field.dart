@@ -510,9 +510,15 @@ class _CivicTextFieldState extends State<CivicTextField> {
         : Semantics(hint: hint, child: entry);
     // The seat: the box's whole width inside its edge is the field's, so a
     // tap in the padding beside the words focuses it as a tap on them does.
+    // A screen reader's tap reaches the entry's own; this one stays out of
+    // the semantics tree, as Flutter's text field keeps its own, so the
+    // entry is the field's one node, its label's, as a clear key comes and
+    // goes beside it (on the web a new node is a new input, and the keys
+    // typed while it is made are lost).
     return TextFieldTapRegion(
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
+        excludeFromSemantics: true,
         onTap: widget.enabled ? _focus.requestFocus : null,
         child: MouseRegion(
           cursor: widget.enabled

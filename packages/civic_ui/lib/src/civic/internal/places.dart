@@ -400,9 +400,13 @@ class _RenderWholeLine extends RenderProxyBox {
 }
 
 /// A place's face in the band or the rail ([rail]): its glyph over its
-/// name, the current one in bold ink under (in the rail, beside) a bar in
+/// name, the current one in bold ink over (in the rail, beside) a bar in
 /// the action colour; a press greys it, a keyboard focus lays it on the
 /// yellow plate. Labels use the reader's text size.
+///
+/// In the band the bar stands at the place's foot, under its name: at its
+/// top it stood on the band's rule, against the page, and read as an
+/// underline on whatever scrolled behind it.
 class CivicBarPlace extends StatelessWidget {
   /// The face of the place [label].
   const CivicBarPlace({
@@ -434,7 +438,7 @@ class CivicBarPlace extends StatelessWidget {
   /// Whether it is the current place.
   final bool selected;
 
-  /// Whether it stands in the rail: its bar at its start, not over it.
+  /// Whether it stands in the rail: its bar at its start, not under it.
   final bool rail;
 
   @override
@@ -473,13 +477,14 @@ class CivicBarPlace extends StatelessWidget {
                 focusColor: t.focus,
                 barColor: t.focusBar,
               ),
-              foregroundPainter: _TopBar(
-                amount: on,
+              foregroundPainter: _PlaceBar(
+                // The focus plate's ink bar says it while the keys are on it.
+                amount: on * (1 - focus.clamp(0.0, 1.0)),
                 color: so.edge ?? t.action,
                 start: rail ? Directionality.of(context) : null,
               ),
-              // A press greys the place under the bar's ink rule, never
-              // over it.
+              // A press greys the place under the band's rule, never over
+              // it.
               child: Padding(
                 padding: rail
                     ? const EdgeInsetsDirectional.only(start: CivicMetrics.edge)
@@ -495,7 +500,10 @@ class CivicBarPlace extends StatelessWidget {
                       top: rail
                           ? CivicSpacing.s8
                           : CivicSpacing.s8 - CivicMetrics.edge,
-                      bottom: CivicSpacing.s4,
+                      // In the band the bar has its own room under the name.
+                      bottom: rail
+                          ? CivicSpacing.s4
+                          : CivicSpacing.s4 + CivicMetrics.bar,
                     ),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -539,8 +547,8 @@ class CivicBarPlace extends StatelessWidget {
 
 /// The current place's bar: across the top of a place in the bottom bar,
 /// down the [start] of one in the rail.
-class _TopBar extends CustomPainter {
-  _TopBar({required this.amount, required this.color, this.start});
+class _PlaceBar extends CustomPainter {
+  _PlaceBar({required this.amount, required this.color, this.start});
 
   final double amount;
   final Color color;
@@ -555,7 +563,12 @@ class _TopBar extends CustomPainter {
     if (side == null) {
       final w = size.width * 0.6 * a;
       canvas.drawRect(
-        Rect.fromLTWH((size.width - w) / 2, 0, w, CivicMetrics.bar),
+        Rect.fromLTWH(
+          (size.width - w) / 2,
+          size.height - CivicMetrics.bar,
+          w,
+          CivicMetrics.bar,
+        ),
         paint,
       );
       return;
@@ -569,7 +582,7 @@ class _TopBar extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_TopBar old) =>
+  bool shouldRepaint(_PlaceBar old) =>
       old.amount != amount || old.color != color || old.start != start;
 }
 

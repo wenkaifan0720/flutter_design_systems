@@ -148,6 +148,8 @@ class _CivicRadioGroupState<T> extends State<CivicRadioGroup<T>> {
 /// words), edge (the circle's edge) and textStyle (the words): its
 /// `style:`, then [CivicThemeData.radioStyle]. The circle's size and the
 /// focus ring are the look's.
+///
+/// [CivicRadioGroup]'s example puts a set of them in a group.
 class CivicRadio<T> extends StatefulWidget {
   /// An answer.
   const CivicRadio({

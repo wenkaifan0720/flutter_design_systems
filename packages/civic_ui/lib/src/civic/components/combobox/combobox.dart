@@ -2,15 +2,16 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../internal/list_option.dart';
 import '../../internal/paint.dart';
 import '../../theme.dart';
 import '../text-field/text_field.dart';
 
-/// One answer from a long list, found by typing: a [CivicTextField] whose
-/// words narrow the [options] in a list under the box, floating on a
-/// hairline and a soft shadow, as a select's list is: the chosen row on
+/// One answer from a long list, found by typing: a [CivicTextField] ending
+/// in the select's chevron, whose words narrow the [options] in a list
+/// under the box, on the field's own edge, as a select's list is: the chosen row on
 /// the inset rule in the action colour, bold and ticked, a row under the
 /// pointer grey. The arrow keys walk the list, the row reached lies on the
 /// yellow plate, Enter or a press takes it, Escape closes the list; after
@@ -128,6 +129,23 @@ class CivicCombobox<T extends Object> extends StatelessWidget {
         // Flutter never restarts the field's text input (in a browser the
         // restarted input would take no more typing).
         onEditingComplete: field.submit,
+        // It ends in the select's chevron, as far in: a box that opens a
+        // list, as a select is. A press on it reaches the box.
+        suffixIcon: IgnorePointer(
+          child: ExcludeSemantics(
+            child: Align(
+              alignment: AlignmentDirectional.centerEnd,
+              child: Padding(
+                padding: const EdgeInsetsDirectional.only(end: CivicSpacing.s8),
+                child: Icon(
+                  LucideIcons.chevronDown,
+                  size: 24,
+                  color: enabled ? t.textPrimary : t.textDisabled,
+                ),
+              ),
+            ),
+          ),
+        ),
         style: style,
       ),
       surfaceBuilder: (context, list) => Padding(

@@ -6,6 +6,7 @@ words, answers checked before they are sent.
 ![Civic's start page at desktop and phone width, by day](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/civic_ui/screenshots/hero.png)
 
 **[Live gallery](https://wenkaifan0720.github.io/flutter_design_systems/civic/)** ·
+[Docs](https://wenkaifan0720.github.io/flutter_design_systems/docs/looks/civic/) ·
 [API reference](https://pub.dev/documentation/civic_ui/latest/) ·
 [All the looks](https://wenkaifan0720.github.io/flutter_design_systems/)
 
@@ -16,7 +17,7 @@ flutter pub add civic_ui material_ui
 ```
 
 `material_ui` is Flutter's Material as a package, as it is from Flutter 3.50; the quick start's app is a
-`MaterialApp`. Civic has no app widget of its own: an app on `WidgetsApp` or `CupertinoApp` needs only `civic_ui` (see
+`MaterialApp`. Civic has no app widget of its own: an app on `WidgetsApp` needs only `civic_ui`, one on `CupertinoApp` adds `cupertino_ui` (see
 [Set up the theme](#set-up-the-theme)).
 
 ## Quick start
@@ -126,6 +127,29 @@ const Map<TargetPlatform, PageTransitionsBuilder> transitions = {
 
 `designSwipeBack(map)` does the same to a map built at run time.
 
+Under a `CupertinoApp` (from `cupertino_ui`, which an app adds itself) or a bare `WidgetsApp`, the theme goes in the
+same place:
+
+```dart
+import 'package:cupertino_ui/cupertino_ui.dart';
+
+CupertinoApp(
+  builder: (context, child) => CivicTheme(
+    data: CivicThemeData.light(),
+    child: CivicToaster(child: child!),
+  ),
+  home: const VehiclePage(),
+);
+
+WidgetsApp(
+  color: const Color(0xFF0B0C0C),
+  builder: (context, _) => CivicTheme(
+    data: CivicThemeData.dark(),
+    child: const CivicToaster(child: VehiclePage()),
+  ),
+);
+```
+
 ## Make it yours
 
 Civic keeps what makes it trustworthy: the yellow focus over a thick ink bar, the fields' 2 pt ink edges, large type, and tap
@@ -179,7 +203,8 @@ bounces.
 
 ## Languages and right to left
 
-Civic's parts take their own words (Back, Close) from ui_core's localizations, in 30 languages. The words of your
+Civic's parts take their own words (Back, Close) from ui_core's localizations, in 30 languages: add
+`RawWidgetsLocalizations.delegate` to your app's `localizationsDelegates`. The words of your
 service (Continue, There is a problem, Step 1 of 3, Change) are yours to give, in your reader's language.
 
 A page in Arabic reads right to left in Noto Sans Arabic, and the example service says its counts in the form each
@@ -191,9 +216,13 @@ Use the arrow keys to select a tab. In an application shell, F6 moves focus betw
 Type in a combobox to filter the options, then press Enter to choose one. A dialog keeps focus inside while open
 and restores it on dismissal. Civic uses [ui_core](https://pub.dev/packages/ui_core) for these interactions.
 
+## Requirements
+
+Flutter 3.47.0 or later (Dart 3.13), on Android, iOS, web, macOS, Windows and Linux.
+
 ## Licences
 
-Civic's code is MIT. Its faces are under the SIL Open Font License 1.1: Atkinson Hyperlegible Next and Mono (Braille
+Civic's code is under the BSD 3-Clause License. Its faces are under the SIL Open Font License 1.1: Atkinson Hyperlegible Next and Mono (Braille
 Institute of America) and Noto Sans Arabic (the Noto Project Authors); see `THIRD_PARTY_NOTICES/`. Its glyphs are
 Lucide's (ISC). The patterns of public-service design it follows are widely shared; no code, tokens or assets of any
 design system were taken.

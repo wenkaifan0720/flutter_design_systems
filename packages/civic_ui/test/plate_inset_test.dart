@@ -157,7 +157,9 @@ void main() {
           expect(color(start(.25), card.top + 9), theme.action);
           final cell = t.getRect(find.byKey(const ValueKey('home')));
           final mid = cell.center.dx;
-          final level = cell.top + 2;
+          // The current place's bar stands at its foot, clear of the band's
+          // top rule and the page above it.
+          final level = cell.bottom - 2;
           expect(color(mid, level), theme.action);
           for (final sign in [-1, 1]) {
             expect(
@@ -199,22 +201,30 @@ void main() {
             final menu = find
                 .ancestor(
                   of: find.text('A3'),
+                  // The list's surface: the field's own square ink edge.
                   matching: find.byWidgetPredicate(
                     (w) =>
                         w is DecoratedBox &&
                         w.decoration is BoxDecoration &&
-                        (w.decoration as BoxDecoration).boxShadow?.isNotEmpty ==
-                            true,
+                        (w.decoration as BoxDecoration).border != null,
                   ),
                 )
                 .first;
             final box = t.getRect(menu);
             final color = await _picture(t);
-            double start(double d) => rtl ? box.right - d : box.left + d;
-            final inset = color(start(1.25), box.top + 9.25);
-            expect(color(start(1.25), box.top + 1.25), isNot(inset));
-            expect(color(start(2.75), box.top + 2.75), inset);
-            expect(color(start(0.25), box.top + 9.25), isNot(inset));
+            // Measured from the end: a highlighted row's ink notch stands at
+            // its start, against the rim.
+            double start(double d) => rtl ? box.left + d : box.right - d;
+            // The list's 2 pt ink edge, as its field's: the first option
+            // fills the square inside it and never paints over it.
+            const edge = 2.0;
+            final inset = color(start(edge + 1.25), box.top + 9.25);
+            expect(color(start(edge - .75), box.top + 9.25), isNot(inset));
+            expect(
+              color(start(edge + .75), box.top + edge - .75),
+              isNot(inset),
+            );
+            expect(color(start(edge + .75), box.top + edge + .75), inset);
           },
         );
       }

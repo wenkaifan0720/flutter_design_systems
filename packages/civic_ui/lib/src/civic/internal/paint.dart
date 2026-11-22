@@ -50,7 +50,7 @@ Color civicPointerFill(Color fill, Color ink, Set<WidgetState> states) {
   return Color.alphaBlend(ink.withValues(alpha: ink.a * opacity), fill);
 }
 
-/// A surface that floats over the page (an open list, a dialog): the
+/// A surface that floats over the page (a menu, a dialog): the
 /// card's [face], its corners rounded ([radius]), a [hairline] round it and
 /// a soft shadow under it; never an ink edge, which Civic keeps for a
 /// field's well.

@@ -18,6 +18,9 @@ import '../top-bar/top_bar.dart';
 /// Its toasts read [CivicStyle]'s fill (the band), foreground (the words
 /// and the glyph) and textStyle: its `style:`, then
 /// [CivicThemeData.toastStyle]. Keep the words at 7:1 on the band.
+///
+/// In an app's `builder:`, under its theme:
+/// `builder: (context, child) => CivicTheme(data: CivicThemeData.light(), child: CivicToaster(child: child!))`.
 class CivicToaster extends StatelessWidget {
   /// A toaster over [child].
   const CivicToaster({super.key, required this.child, this.style});

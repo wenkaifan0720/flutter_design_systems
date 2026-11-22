@@ -4,9 +4,11 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../theme.dart';
 import 'paint.dart';
 
-/// The surface shared by select and combobox menus.
+/// The surface shared by select and combobox lists: the field's own
+/// material, square on its 2 pt edge in the field's ink, so the list reads
+/// as the field's, opened, not a card floating over the page.
 class CivicOptionSurface extends StatelessWidget {
-  /// Clips [child] to the inside of the menu border.
+  /// Clips [child] to the inside of the list's edge.
   const CivicOptionSurface({super.key, required this.child});
 
   /// The scrolling list of options.
@@ -15,19 +17,14 @@ class CivicOptionSurface extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.civicTheme;
-    const inset = 1.0;
     return DecoratedBox(
-      decoration: civicFloating(
-        face: t.background,
-        hairline: t.rule,
-        dark: t.isDark,
+      decoration: BoxDecoration(
+        color: t.background,
+        border: Border.all(color: t.border, width: CivicMetrics.edge),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(inset),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(CivicMetrics.corner - inset),
-          child: child,
-        ),
+        padding: const EdgeInsets.all(CivicMetrics.edge),
+        child: ClipRect(child: child),
       ),
     );
   }
@@ -43,6 +40,9 @@ class CivicOptionSurface extends StatelessWidget {
 ///   step deeper), a fill and never a line, so it reads as no divider and no
 ///   second answer;
 /// * the keyboard's: the yellow plate over the ink bar, the look's focus.
+///   On the plate the chosen option keeps its bold words and tick, and its
+///   inset rule gives way: an ink rule at the plate's start read as a gap at
+///   the list's edge by night and a second, heavier edge by day.
 ///
 /// Plumbing; pages never place one.
 class CivicListOption extends StatelessWidget {
@@ -100,11 +100,8 @@ class CivicListOption extends StatelessWidget {
         focusColor: t.focus,
         barColor: t.focusBar,
       ),
-      foregroundPainter: chosen
-          ? _ChosenRule(
-              color: focused ? t.onFocus : t.action,
-              direction: Directionality.of(context),
-            )
+      foregroundPainter: chosen && !focused
+          ? _ChosenRule(color: t.action, direction: Directionality.of(context))
           : null,
       child: ConstrainedBox(
         constraints: const BoxConstraints(

@@ -69,6 +69,9 @@ Future<T?> showCivicDialog<T>({
 /// Reads [CivicStyle]'s fill, edge, foreground, padding and textStyle (the
 /// question): its `style:`, then [CivicThemeData.dialogStyle]. The edge's
 /// width is the look's.
+///
+/// [showCivicDialog] opens one; its example builds a dialog with its
+/// actions.
 class CivicDialog extends StatelessWidget {
   /// A dialog.
   const CivicDialog({

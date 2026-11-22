@@ -8,6 +8,36 @@ import 'paint.dart';
 import 'spinner_arc.dart';
 import 'spring.dart';
 
+/// A solid button's face by night, from [colour] (the action's or the
+/// error's): its hue at the lightest tone that carries white words at
+/// 4.5:1 (they are large and bold), on an edge of the same hue darker. The
+/// light tone those colours take by night for words on the page (7:1) is
+/// too pale for a face: a button in it read washed out. This one keeps the
+/// button's weight on the slate (about 3.8:1 against the night page).
+(Color, Color, Color) civicNightFace(Color colour) {
+  const white = Color(0xFFFFFFFF);
+  final hsl = HSLColor.fromColor(colour);
+  final hue = hsl.withSaturation(math.min(hsl.saturation, 0.85));
+  var near = hue.lightness;
+  var far = 0.0;
+  for (var i = 0; i < 24; i++) {
+    final mid = (near + far) / 2;
+    if (CivicThemeData.contrastRatio(hue.withLightness(mid).toColor(), white) >=
+        4.5) {
+      far = mid;
+    } else {
+      near = mid;
+    }
+  }
+  var face = hue.withLightness(far).toColor();
+  // The channels round to 8 bits: a step on where that fell just short.
+  while (CivicThemeData.contrastRatio(face, white) < 4.5 && far > 0) {
+    far = math.max(0, far - 0.004);
+    face = hue.withLightness(far).toColor();
+  }
+  return (face, white, hue.withLightness(far * 0.68).toColor());
+}
+
 /// Which of Civic's buttons a [CivicButtonFace] paints.
 enum CivicButtonKind {
   /// The page's one action, solid in the action colour.
@@ -100,9 +130,13 @@ class CivicButtonFace extends StatelessWidget {
             tint(t.danger, t.isDark ? 0.45 : 0.4),
           )
         : destructive
-        ? (t.danger, t.onDanger, t.dangerEdge)
+        ? (t.isDark
+              ? civicNightFace(t.danger)
+              : (t.danger, t.onDanger, t.dangerEdge))
         : secondary
         ? (t.secondaryFill, t.onSecondary, t.secondaryEdge)
+        : t.isDark
+        ? civicNightFace(t.action)
         : (t.action, t.onAction, t.actionEdge);
     final pressed = !busy && states.contains(WidgetState.pressed) ? 1.0 : 0.0;
     final focused = states.contains(WidgetState.focused) ? 1.0 : 0.0;
@@ -138,16 +172,24 @@ class CivicButtonFace extends StatelessWidget {
             // a solid face a clear step darker, a tinted one a step
             // toward its edge.
             final rest = so.fill ?? fill;
+            // A face under light words deepens; one under dark words (a
+            // light face an app chose) lifts, so the words keep their
+            // contrast either way.
+            final deepens = (so.foreground ?? ink).computeLuminance() > 0.5;
             final over = secondary
                 ? Color.lerp(rest, so.edge ?? edge, 0.45)!
-                : t.isDark
-                ? Color.lerp(rest, const Color(0xFFFFFFFF), 0.25)!
-                : Color.lerp(rest, const Color(0xFF000000), 0.35)!;
+                : deepens
+                ? Color.lerp(
+                    rest,
+                    const Color(0xFF000000),
+                    t.isDark ? 0.25 : 0.35,
+                  )!
+                : Color.lerp(rest, const Color(0xFFFFFFFF), 0.25)!;
             final face = disabled ? rest : Color.lerp(rest, over, hover)!;
-            // By day a solid face's edge deepens with it, so the
-            // deeper face still stands on a darker edge.
+            // A deepening face's edge deepens with it, so the deeper face
+            // still stands on a darker edge.
             final base = so.edge ?? edge;
-            final under = disabled || secondary || t.isDark
+            final under = disabled || secondary || !deepens
                 ? base
                 : Color.lerp(base, const Color(0xFF000000), 0.5 * hover)!;
             final fg = Color.lerp(so.foreground ?? ink, t.onFocus, focus)!;

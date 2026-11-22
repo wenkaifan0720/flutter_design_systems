@@ -1,3 +1,23 @@
+## 0.4.1
+
+- Needs ui_core 0.4.1.
+- `CivicTextField`'s line tap, which focuses the entry from the padding beside its words, is out of the semantics
+  tree, as Flutter's text field keeps its own: a screen reader's tap reaches the entry's own. With ui_core 0.4.1 the
+  entry is then the field's one node, named by its label, as a clear key (`suffixIcon`) comes and goes with the first
+  letter; on the web a new node there was a new input, and the keys typed while it was made were lost.
+- By night a solid `CivicButton` (and a destructive one) keeps its weight: its face is the action's (or the error's)
+  own hue, deep enough to carry white words at 4.5:1, where it was the pale tone that colour takes for words on the
+  night page, with dark words. A pointer over it deepens it, by day and by night.
+- `CivicCombobox` ends in the select's chevron, as far in, so it reads as a box that opens a list; a press on the
+  chevron opens it as a press on the box does.
+- The list a `CivicSelect`, `CivicCombobox` or `CivicMultiSelect` opens stands on the field's own 2 pt ink edge,
+  square, so it reads as the field's: it was a card on a grey hairline and a soft shadow. Under the keys' yellow
+  plate the chosen answer is marked by its bold words and tick alone; its inset rule, drawn over the plate, read as
+  a gap at the list's edge by night and a second, heavier edge by day.
+- On a phone the current place's bar stands at the place's foot, under its name. At its top it stood on the band's
+  rule against the page and read as an underline on whatever scrolled behind it. While the keys are on the place,
+  the focus plate's ink bar says it alone.
+
 ## 0.4.0
 
 - **Breaking:** stands on ui_core 0.4.0. Flutter 3.47 or later, as before.

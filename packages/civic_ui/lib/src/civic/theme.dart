@@ -509,7 +509,8 @@ final class CivicThemeData with Diagnosticable {
       CivicThemeData.from(brightness: Brightness.light);
 
   /// Civic by night, designed: slate cards on a deeper ground, light words,
-  /// a light-blue action carrying dark words.
+  /// a light-blue action for links and marks; a solid button takes the
+  /// action's hue deep enough to carry white words.
   factory CivicThemeData.dark() =>
       CivicThemeData.from(brightness: Brightness.dark);
 
@@ -738,13 +739,15 @@ final class CivicThemeData with Diagnosticable {
   /// Words of a part that cannot be used now.
   final Color textDisabled;
 
-  /// The one colour for action: buttons and links.
+  /// The one colour for action: buttons and links. By night a solid
+  /// button's face is this hue deepened to carry white words.
   final Color action;
 
   /// Words on [action].
   final Color onAction;
 
-  /// The solid edge under an action button, which a press sinks onto.
+  /// The solid edge under an action button by day, which a press sinks
+  /// onto.
   final Color actionEdge;
 
   /// A secondary button's face.
