@@ -68,7 +68,7 @@ bool _convex(
   ExpressivePoint current,
   ExpressivePoint next,
 ) {
-  // TODO: b/369320447 - This is a fast, but not reliable calculation.
+  // A fast test, not an exact one.
   return (current - previous).clockwise(next - current);
 }
 

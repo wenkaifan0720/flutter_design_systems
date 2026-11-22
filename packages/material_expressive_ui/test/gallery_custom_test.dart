@@ -7,6 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:material_expressive_ui/material_expressive_ui.dart';
 import 'package:leak_tracker_flutter_testing/leak_tracker_flutter_testing.dart';
 
+// The gallery is the example app; a test reads its pages from there.
 // ignore_for_file: avoid_relative_lib_imports
 import '../example/lib/main.dart';
 import '../example/lib/kit_gallery/kit.dart';

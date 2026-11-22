@@ -321,6 +321,15 @@ class ExpressiveStatusColors {
   /// What needs a look before it fails: a low balance, an expiring card.
   final ExpressiveCustomColor warning;
 
+  /// A copy with the given groups in place of these.
+  ExpressiveStatusColors copyWith({
+    ExpressiveCustomColor? success,
+    ExpressiveCustomColor? warning,
+  }) => ExpressiveStatusColors(
+    success: success ?? this.success,
+    warning: warning ?? this.warning,
+  );
+
   /// [a] and [b] interpolated at [t], colour by colour.
   static ExpressiveStatusColors lerp(
     ExpressiveStatusColors a,

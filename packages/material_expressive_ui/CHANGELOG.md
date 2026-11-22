@@ -1,3 +1,20 @@
+## 0.4.1
+
+- Needs ui_core 0.4.1.
+- `ExpressiveMenuBarEntry` takes `destructive`: its label takes the `error` role, as an `ExpressiveMenuItem`'s does (ui_core's `RawMenuEntry.isDestructiveAction`).
+- `ExpressiveDockedDatePicker` keeps its calendar 360dp wide under its field, as Compose's docked picker does. Before, on a wide window the calendar spanned the whole window.
+- A list opened from a field (a select's, a combobox's) takes `ExposedDropdownMenu`'s shape, `MenuDefaults.shape` (extra-small corners), not a standalone menu group's large ones. Its corners no longer show the field under them.
+- A select, a combobox and any field whose menu is open show their focus while it is open: the label and the 2dp indicator in `primary`, as Compose's exposed dropdown field does. `ExpressiveDockedDatePicker`'s field does the same while its calendar is open, and says it is expanded.
+- A select's list as wide as a wide field marks its choice with the check at the row's end. Before, a row stopped laying out its content at 280dp, so the check stood short of the row's end.
+- A read-only field that opens something (a select's, a date's) never selects its value as text: neither when it takes the focus on the web and desktop nor by a drag, as Flutter's `DropdownMenu` field that takes no typing.
+- A combobox's arrow keeps the name Show suggestions open or closed; its expanded state says which. `ExpressiveLocalizations.hideSuggestions` is no longer read and is deprecated, to be removed in 0.5.0.
+- `ExpressiveTooltip` merges its tip into its control's own semantics node (a button's, a link's), so a screen reader hears the control's name with its tip.
+- `ExpressiveMenuItem` takes `destructive`: in a standard menu its label and icons take the `error` role.
+- `ExpressiveErrorState` stands its glyph on a round `errorContainer` ground, as the empty state stands its own on a tonal one.
+- `ExpressiveDialog` stands its actions in one row while they all fit, and otherwise stacks them all in one column, the confirm action on top, as Material's `AlertDialog` does. Before, three actions could wrap as two in a row with the third under them.
+- `ExpressiveToggleButtonColors`, `ExpressiveCardColors` and `ExpressiveStatusColors` take `copyWith`, as Compose's colour classes take `copy`. `ExpressiveToggleButtonColors` compares by value.
+- `ExpressiveDialogAction` takes `destructive`: a text action's label takes the `error` role, and a filled one fills in `error` under `onError`.
+
 ## 0.4.0
 
 - Needs ui_core 0.4.0 and Flutter 3.47. `material_expressive_ui` re-exports ui_core, whose types now take `Raw` names (`DesignPressable` is `RawButton`). The old names stay through ui_core 0.4 as deprecated typedefs, and `dart fix --apply` renames them.

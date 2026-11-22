@@ -1318,11 +1318,19 @@ class _ExpressiveTextFieldState extends State<ExpressiveTextField>
 
   late _Phase _phase = _phaseNow;
 
+  /// Whether the field's menu is open (a select's, a combobox's).
+  bool _expanded = false;
+
+  /// Whether the field shows its focus: it has the focus, or the menu it
+  /// opened does, as an exposed dropdown's field stays focused while its
+  /// menu is open.
+  bool get _owning => _focusNode.hasFocus || _expanded;
+
   bool get _showExpandedLabel =>
       widget.label != null && !widget.alwaysMinimizeLabel;
 
   _Phase get _phaseNow {
-    if (_focusNode.hasFocus) return _Phase.focused;
+    if (_owning) return _Phase.focused;
     return _controller.text.isEmpty
         ? _Phase.unfocusedEmpty
         : _Phase.unfocusedNotEmpty;
@@ -1362,6 +1370,16 @@ class _ExpressiveTextFieldState extends State<ExpressiveTextField>
     super.initState();
     _controller.addListener(_update);
     _focusNode.addListener(_update);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final expanded = ExpressiveFieldNodeHost.expandedOf(context) ?? false;
+    if (expanded != _expanded) {
+      _expanded = expanded;
+      _settle();
+    }
   }
 
   @override
@@ -1477,7 +1495,7 @@ class _ExpressiveTextFieldState extends State<ExpressiveTextField>
     final type = theme.type;
     final enabled = widget.enabled;
     final isError = widget.errorText != null;
-    final focused = _focusNode.hasFocus;
+    final focused = _owning;
     final states = <WidgetState>{
       if (!enabled) WidgetState.disabled,
       if (isError) WidgetState.error,
@@ -1661,6 +1679,10 @@ class _ExpressiveTextFieldState extends State<ExpressiveTextField>
         inputFormatters: widget.inputFormatters,
         enabled: enabled,
         readOnly: widget.readOnly,
+        // A read-only field that opens something (a select's, a date's) is
+        // a button over its value: its words are not selected on focus or
+        // by a drag, as `DropdownMenu`'s field that takes no typing.
+        enableInteractiveSelection: !(widget.readOnly && widget.onTap != null),
         mouseCursor: enabled ? cursor : null,
         autofocus: widget.autofocus,
         autofillHints: widget.autofillHints,

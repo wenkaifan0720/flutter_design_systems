@@ -8,6 +8,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ui_core_test/ui_core_test.dart';
 
+// The gallery is the example app; a test reads its pages from there.
 // ignore_for_file: avoid_relative_lib_imports
 import '../example/lib/main.dart';
 import '../example/lib/kit_gallery/trip.dart';
@@ -99,6 +100,7 @@ Future<void> _sweep(
     for (final p in report.problems)
       if (_misread(what, p) == null) p,
   ];
+  // Lists what the check read, for the log.
   // ignore: avoid_print
   print(
     [

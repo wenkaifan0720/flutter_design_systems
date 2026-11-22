@@ -145,6 +145,31 @@ class ExpressiveToggleButtonColors with Diagnosticable {
   /// The label and icon while checked.
   final Color? checkedContent;
 
+  /// A copy with the given colours in place of these (Compose's `copy`).
+  ExpressiveToggleButtonColors copyWith({
+    Color? container,
+    Color? content,
+    Color? checkedContainer,
+    Color? checkedContent,
+  }) => ExpressiveToggleButtonColors(
+    container: container ?? this.container,
+    content: content ?? this.content,
+    checkedContainer: checkedContainer ?? this.checkedContainer,
+    checkedContent: checkedContent ?? this.checkedContent,
+  );
+
+  @override
+  bool operator ==(Object other) =>
+      other is ExpressiveToggleButtonColors &&
+      other.container == container &&
+      other.content == content &&
+      other.checkedContainer == checkedContainer &&
+      other.checkedContent == checkedContent;
+
+  @override
+  int get hashCode =>
+      Object.hash(container, content, checkedContainer, checkedContent);
+
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);

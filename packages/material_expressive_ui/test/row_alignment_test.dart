@@ -231,6 +231,7 @@ void main() {
       for (final p in report.problems)
         if (_rowMisread(p) == null) p,
     ];
+    // Lists what the check read, for the log.
     // ignore: avoid_print
     print(
       [

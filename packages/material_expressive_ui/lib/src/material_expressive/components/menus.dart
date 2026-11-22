@@ -69,6 +69,7 @@ class ExpressiveMenuItem extends ExpressiveMenuEntry {
     this.supportingText,
     this.trailingText,
     this.trailingIcon,
+    this.destructive = false,
   });
 
   /// The label.
@@ -76,6 +77,12 @@ class ExpressiveMenuItem extends ExpressiveMenuEntry {
 
   /// What a tap does, after the menu closes.
   final VoidCallback? onPressed;
+
+  /// Whether it destroys something (Delete, Remove): in a standard menu its
+  /// label and icons take the `error` role, as Compose's
+  /// `MenuDefaults.itemColors(textColor = error)` sets a loss. A vibrant
+  /// menu keeps its own colours.
+  final bool destructive;
 
   /// A leading glyph.
   final IconData? icon;
@@ -275,12 +282,14 @@ class ExpressiveMenuSurface extends StatelessWidget {
     this.style,
     this.vibrant = false,
     super.key,
-  }) : _inPopup = false;
+  }) : _inPopup = false,
+       _exposed = false;
 
   const ExpressiveMenuSurface._popup({
     required this.groups,
     this.style,
     required this.vibrant,
+    this._exposed = false,
   }) : _inPopup = true;
 
   /// Stateful visual overrides for the menu.
@@ -295,6 +304,12 @@ class ExpressiveMenuSurface extends StatelessWidget {
   /// Whether it is in a menu's popup, which checked the hero at its anchor
   /// (the popup is on the root overlay, outside the page's hero).
   final bool _inPopup;
+
+  /// Whether it is a field's list (`ExposedDropdownMenu`, as wide as its
+  /// field): one group takes the menu's own shape, `MenuDefaults.shape`,
+  /// not a standalone group's, so its corners stay inside the field's
+  /// column and show nothing of what lies under them.
+  final bool _exposed;
 
   @override
   Widget build(BuildContext context) {
@@ -317,7 +332,9 @@ class ExpressiveMenuSurface extends StatelessWidget {
         child: visible.length == 1
             ? _MenuGroup(
                 group: visible.single,
-                shapes: _groupShapes(context, 0, 1),
+                shapes: _exposed
+                    ? _exposedShapes(context)
+                    : _groupShapes(context, 0, 1),
                 vibrant: vibrant,
                 scrolls: true,
               )
@@ -361,6 +378,15 @@ class ExpressiveMenuSurface extends StatelessWidget {
       ..add(IterableProperty<ExpressiveMenuGroup>('groups', groups))
       ..add(FlagProperty('vibrant', value: vibrant, ifTrue: 'vibrant'));
   }
+}
+
+/// `ExposedDropdownMenu`'s shape (`MenuDefaults.shape`), at rest and
+/// inactive alike.
+({ExpressiveCornerBorder rest, ExpressiveCornerBorder inactive}) _exposedShapes(
+  BuildContext context,
+) {
+  final shape = context.expressiveTheme.shapes.of(MenuTokens.containerShape);
+  return (rest: shape, inactive: shape);
 }
 
 /// `MenuDefaults.groupShape(index, count)`: rest and inactive shapes.
@@ -699,6 +725,23 @@ typedef _ItemColors = ({
   Color leading,
   Color trailing,
 });
+
+/// [colors] with a destructive item's label and icons in the `error` role,
+/// when [loss].
+_ItemColors _lossColors(
+  BuildContext context,
+  _ItemColors colors, {
+  required bool loss,
+}) {
+  if (!loss) return colors;
+  final error = context.expressiveTheme.colors.error;
+  return (
+    container: colors.container,
+    text: error,
+    leading: error,
+    trailing: error,
+  );
+}
 
 /// [_tokenItemColors] under the menu theme: the content slot paints the
 /// label and icons (resolved with disabled and selected), the container
@@ -1099,12 +1142,16 @@ class _MenuEntryTileState extends State<_MenuEntryTile> {
           icon: entry.icon,
           trailing: _trailing(entry.trailingText, entry.trailingIcon),
           geometry: widget.geometry,
-          colors: _itemColors(
+          colors: _lossColors(
             context,
-            selectable: false,
-            vibrant: widget.vibrant,
-            enabled: enabled,
-            selected: false,
+            _itemColors(
+              context,
+              selectable: false,
+              vibrant: widget.vibrant,
+              enabled: enabled,
+              selected: false,
+            ),
+            loss: entry.destructive && enabled && !widget.vibrant,
           ),
           role: ExpressivePressRole.button,
           onPressed: enabled
@@ -1395,10 +1442,7 @@ class _MenuItemTile extends StatelessWidget {
                   ),
                 ],
               );
-        return ConstrainedBox(
-          constraints: const BoxConstraints(
-            maxWidth: MenuBehavior.itemMaxWidth,
-          ),
+        return _ItemWidth(
           child: ExpressiveStyledContent(
             center: false,
             minimumSize: const Size(
@@ -3007,8 +3051,34 @@ class _ExpressiveMenuState extends _MenuAnchorState<ExpressiveMenu> {
           groups: _groups,
           vibrant: widget.vibrant,
           style: widget.style,
+          exposed: widget.matchAnchorWidth,
         ),
       );
+}
+
+/// An item asking at most [MenuBehavior.itemMaxWidth]: a menu sized to its
+/// items stops there. Given more, as in a field's list as wide as its
+/// field, the item takes it all, so its trailing mark (a select's check)
+/// stands at the row's end, under the field's own trailing icon.
+class _ItemWidth extends SingleChildRenderObjectWidget {
+  const _ItemWidth({required super.child});
+
+  @override
+  RenderObject createRenderObject(BuildContext context) => _RenderItemWidth();
+}
+
+class _RenderItemWidth extends RenderProxyBox {
+  @override
+  double computeMinIntrinsicWidth(double height) => math.min(
+    super.computeMinIntrinsicWidth(height),
+    MenuBehavior.itemMaxWidth,
+  );
+
+  @override
+  double computeMaxIntrinsicWidth(double height) => math.min(
+    super.computeMaxIntrinsicWidth(height),
+    MenuBehavior.itemMaxWidth,
+  );
 }
 
 /// [ExpressiveMenu.wordsStart], for the items under it.
@@ -3025,11 +3095,17 @@ class _WordsStart extends InheritedWidget {
 }
 
 class _LiveGroups extends StatelessWidget {
-  const _LiveGroups({required this.groups, required this.vibrant, this.style});
+  const _LiveGroups({
+    required this.groups,
+    required this.vibrant,
+    this.style,
+    this.exposed = false,
+  });
 
   final ValueListenable<List<ExpressiveMenuGroup>> groups;
   final bool vibrant;
   final ExpressiveComponentThemeData? style;
+  final bool exposed;
 
   @override
   Widget build(BuildContext context) =>
@@ -3039,6 +3115,7 @@ class _LiveGroups extends StatelessWidget {
           groups: groups,
           vibrant: vibrant,
           style: style,
+          exposed: exposed,
         ),
       );
 }
@@ -3312,6 +3389,7 @@ Future<void> showExpressiveMenu(
       groups: resolved,
       vibrant: vibrant,
       style: style,
+      exposed: matchAnchorWidth,
     ),
   );
   if (chosen == true || opener == null || !context.mounted) return;
@@ -3393,6 +3471,7 @@ Widget _optionFace(
   bool selectable = true,
   bool keyboard = true,
   bool resolved = false,
+  bool loss = false,
 }) {
   final shown = resolved
       ? states
@@ -3400,12 +3479,16 @@ Widget _optionFace(
   final t = context.expressiveTheme;
   final enabled = !shown.contains(WidgetState.disabled);
   final selected = shown.contains(WidgetState.selected);
-  final colors = _itemColors(
+  final colors = _lossColors(
     context,
-    selectable: selectable,
-    vibrant: false,
-    enabled: enabled,
-    selected: selected,
+    _itemColors(
+      context,
+      selectable: selectable,
+      vibrant: false,
+      enabled: enabled,
+      selected: selected,
+    ),
+    loss: loss && enabled,
   );
   // A standalone option sits 4 dp inside the large popover on every side.
   final shape = _itemGeometry(
@@ -3917,6 +4000,7 @@ class ExpressiveMenuBarEntry {
     this.children,
     this.shortcut,
     this.checked,
+    this.destructive = false,
   }) : _divider = false;
 
   /// A hairline between groups of items.
@@ -3926,6 +4010,7 @@ class ExpressiveMenuBarEntry {
       children = null,
       shortcut = null,
       checked = null,
+      destructive = false,
       _divider = true;
 
   /// What it says.
@@ -3943,6 +4028,10 @@ class ExpressiveMenuBarEntry {
   /// A check item's state; null for a plain item.
   final bool? checked;
 
+  /// Whether it destroys something (Delete, Remove): its label and icons
+  /// take the `error` role, as an [ExpressiveMenuItem]'s do.
+  final bool destructive;
+
   /// Whether it can be chosen: it has [onPressed] or [children], as a
   /// Flutter menu item without a handler is disabled.
   bool get enabled => !_divider && (onPressed != null || children != null);
@@ -3959,6 +4048,7 @@ class ExpressiveMenuBarEntry {
               : <RawMenuEntry>[for (final child in children!) child._design()],
           shortcut: shortcut,
           checked: checked,
+          isDestructiveAction: destructive,
         );
 }
 
@@ -4071,6 +4161,7 @@ class ExpressiveMenuBar extends StatelessWidget {
             if (entry.checked ?? false) WidgetState.selected,
           },
           resolved: true,
+          loss: entry.isDestructiveAction,
           label: entry.label,
           selectable: entry.checked != null || entry.isSubmenu,
           icon: entry.checked == null

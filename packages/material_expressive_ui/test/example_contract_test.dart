@@ -9,6 +9,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_expressive_ui/material_expressive_ui.dart';
 
+// The gallery is the example app; a test reads its pages from there.
 // ignore_for_file: avoid_relative_lib_imports
 import '../example/lib/main.dart';
 import 'flutter_test_config.dart' show longWalkLeakTesting;

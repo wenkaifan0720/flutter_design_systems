@@ -88,8 +88,7 @@ ExpressiveMeasuredFeatures _doMapping(
 /// different shapes. This information is used to determine how to map features
 /// (and the curves that make up those features).
 double _featureDistSquared(ExpressiveFeature f1, ExpressiveFeature f2) {
-  // TODO: We might want to enable concave-convex matching in some situations.
-  // If so, the approach below will not work
+  // Only corners of the same kind match: the approach below relies on it.
   if (f1 is ExpressiveCornerFeature &&
       f2 is ExpressiveCornerFeature &&
       f1.convex != f2.convex) {
@@ -102,7 +101,6 @@ double _featureDistSquared(ExpressiveFeature f1, ExpressiveFeature f2) {
       .getDistanceSquared();
 }
 
-// TODO: b/378441547 - Move to explicit parameter / expose?
 /// The point midway between the first curve's start and the last curve's end.
 ExpressivePoint _featureRepresentativePoint(ExpressiveFeature feature) {
   final cubics = feature.cubics;

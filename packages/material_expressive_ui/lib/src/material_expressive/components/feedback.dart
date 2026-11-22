@@ -681,9 +681,10 @@ class ExpressiveLoadingState extends StatelessWidget {
   }
 }
 
-/// The page's error state: an error glyph, what failed and why, and a
-/// tonal retry — centred and announced; the render state of any page that
-/// can fail. Where the page already shows a mark above it (a hero that
+/// The page's error state: an error glyph on a round `errorContainer`
+/// ground (the empty and success states' sibling), what failed and why,
+/// and a tonal retry — centred and announced; the render state of any page
+/// that can fail. Where the page already shows a mark above it (a hero that
 /// stays mounted through the error), [icon] null leaves the glyph out, so
 /// the page keeps one focal shape.
 ///
@@ -730,19 +731,29 @@ class ExpressiveErrorState extends StatelessWidget {
       states: const <WidgetState>{WidgetState.error},
       lead: glyph == null
           ? null
-          : ExpressiveIcon(
-              glyph,
-              size:
-                  t.statusViewTheme.layeredUnder(style).iconSize?.resolve(
-                    const <WidgetState>{WidgetState.error},
-                  ) ??
-                  ExpressiveSpacing.s48,
-              color:
-                  t.statusViewTheme
-                      .layeredUnder(style)
-                      .foregroundColor
-                      ?.resolve(const <WidgetState>{WidgetState.error}) ??
-                  t.colors.error,
+          : SizedBox(
+              width: ExpressiveSpacing.s72,
+              height: ExpressiveSpacing.s72,
+              child: ExpressiveSurface(
+                color: t.colors.errorContainer,
+                shape: t.shapes.full,
+                child: Center(
+                  child: ExpressiveIcon(
+                    glyph,
+                    size:
+                        t.statusViewTheme.layeredUnder(style).iconSize?.resolve(
+                          const <WidgetState>{WidgetState.error},
+                        ) ??
+                        ExpressiveSpacing.s32,
+                    color:
+                        t.statusViewTheme
+                            .layeredUnder(style)
+                            .foregroundColor
+                            ?.resolve(const <WidgetState>{WidgetState.error}) ??
+                        t.colors.onErrorContainer,
+                  ),
+                ),
+              ),
             ),
       title: title,
       message: message,

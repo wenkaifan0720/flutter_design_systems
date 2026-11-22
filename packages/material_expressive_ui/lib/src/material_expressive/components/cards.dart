@@ -118,6 +118,24 @@ class ExpressiveCardColors with Diagnosticable {
   /// The outline stroke's colour when disabled (outlined only).
   final Color? disabledOutline;
 
+  /// A copy with the given colours in place of these (Compose's
+  /// `CardColors.copy`).
+  ExpressiveCardColors copyWith({
+    Color? container,
+    Color? content,
+    Color? disabledContainer,
+    Color? disabledContent,
+    Color? outline,
+    Color? disabledOutline,
+  }) => ExpressiveCardColors(
+    container: container ?? this.container,
+    content: content ?? this.content,
+    disabledContainer: disabledContainer ?? this.disabledContainer,
+    disabledContent: disabledContent ?? this.disabledContent,
+    outline: outline ?? this.outline,
+    disabledOutline: disabledOutline ?? this.disabledOutline,
+  );
+
   @override
   bool operator ==(Object other) =>
       other is ExpressiveCardColors &&

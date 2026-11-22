@@ -155,6 +155,8 @@ class ExpressiveLocalizations {
   ]) : _time = time,
        cancelSearch = own.cancelSearch,
        showSuggestions = own.showSuggestions,
+       // Honours the deprecated member until it is removed.
+       // ignore: deprecated_member_use_from_same_package
        hideSuggestions = own.hideSuggestions,
        sheetDragHandle = own.sheetDragHandle,
        toolbarExpand = own.toolbarExpand,
@@ -343,10 +345,15 @@ class ExpressiveLocalizations {
   /// ([RawWidgetsLocalizations.hidePasswordLabel]).
   String get hidePassword => _shared.hidePasswordLabel;
 
-  /// A select field's menu toggle, while closed.
+  /// A combobox's menu toggle: its one name, open or closed (its expanded
+  /// state says which).
   final String showSuggestions;
 
-  /// A select field's menu toggle, while open.
+  /// A combobox's menu toggle, while open: no longer read, as the toggle
+  /// keeps [showSuggestions] while open.
+  @Deprecated(
+    'The toggle keeps showSuggestions while open; to be removed in 0.5.0.',
+  )
   final String hideSuggestions;
 
   /// A sheet's drag handle (Compose `Strings.BottomSheetDragHandleDescription`).

@@ -11,6 +11,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:ui_core_review/ui_core_review.dart';
 import 'package:material_expressive_ui/material_expressive_ui.dart';
 
+// The gallery is the example app; a test reads its pages from there.
 // ignore_for_file: avoid_relative_lib_imports
 import '../example/lib/main.dart';
 import '../example/lib/kit_gallery/trip.dart';
@@ -180,6 +181,7 @@ void _report(String what, String where, List<String> problems) {
     for (final p in problems)
       if (_misread(where, p) == null) p,
   ];
+  // Lists what the check read, for the log.
   // ignore: avoid_print
   print(
     [

@@ -191,8 +191,8 @@ class ExpressiveCornerFeature extends ExpressiveFeature {
       _cubics.length,
       (i) => _cubics[_cubics.length - 1 - i].reverse(),
     ),
-    // TODO: b/369320447 - Revert flag negation when [ExpressiveRoundedPolygon]
-    // ignores orientation for setting the flag.
+    // [ExpressiveRoundedPolygon] sets the flag by orientation, so it is
+    // negated here.
     convex: !convex,
   );
 

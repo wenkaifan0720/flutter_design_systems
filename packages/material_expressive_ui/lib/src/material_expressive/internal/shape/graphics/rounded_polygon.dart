@@ -129,8 +129,6 @@ class ExpressiveRoundedPolygon {
   /// [perVertexRounding] parameter is not null and the size doesn't match the
   /// number vertices.
   ///
-  // TODO(performance): Update the map calls to more efficient code that
-  // doesn't allocate Iterators unnecessarily.
   factory ExpressiveRoundedPolygon.fromVertices(
     List<double> vertices, {
     ExpressiveCornerRounding rounding = ExpressiveCornerRounding.unrounded,
@@ -1213,7 +1211,7 @@ class _RoundedCorner {
     // We use an approximation to cut a part of the circle section proportional
     // to 1 - smooth, When smooth = 0, we take the full section, when
     // smooth = 1, we take nothing.
-    // TODO: revisit this, it can be problematic as it approaches 180 degrees
+    // Less exact as the angle approaches 180 degrees.
     final p = _interpolate(
       circleSegmentIntersection,
       (circleSegmentIntersection + otherCircleSegmentIntersection) / 2,

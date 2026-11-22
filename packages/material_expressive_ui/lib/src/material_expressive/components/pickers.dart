@@ -14,6 +14,7 @@ import 'package:ui_core/ui_core.dart';
 
 import '../component_themes.dart';
 import '../internal/cap_label.dart';
+import '../internal/field_node.dart';
 import '../internal/focus_ring.dart';
 import '../internal/styled_content.dart';
 import '../internal/state_face.dart';
@@ -2703,42 +2704,52 @@ class _ExpressiveDockedDatePickerState
       context,
       padding: EdgeInsets.zero,
       label: widget.label ?? ExpressiveLocalizations.of(context).date,
-      builder: (context) => StatefulBuilder(
-        builder: (context, update) => ExpressiveDatePicker(
-          style: widget.style,
-          selected: chosen,
-          showHeader: false,
-          showModeToggle: false,
-          firstDate: widget.firstDate,
-          lastDate: widget.lastDate,
-          selectableDayPredicate: widget.selectableDayPredicate,
-          currentDate: widget.currentDate,
-          firstDayOfWeek: widget.firstDayOfWeek,
-          onChanged: (d) {
-            update(() => chosen = d);
-            widget.onChanged?.call(d);
-          },
+      // The docked calendar keeps its container's width under its field,
+      // however wide the window (a desk's list beside its detail).
+      builder: (context) => SizedBox(
+        width: DatePickerModalTokens.containerWidth,
+        child: StatefulBuilder(
+          builder: (context, update) => ExpressiveDatePicker(
+            style: widget.style,
+            selected: chosen,
+            showHeader: false,
+            showModeToggle: false,
+            firstDate: widget.firstDate,
+            lastDate: widget.lastDate,
+            selectableDayPredicate: widget.selectableDayPredicate,
+            currentDate: widget.currentDate,
+            firstDayOfWeek: widget.firstDayOfWeek,
+            onChanged: (d) {
+              update(() => chosen = d);
+              widget.onChanged?.call(d);
+            },
+          ),
         ),
       ),
     );
     if (mounted) setState(() => _open = false);
   }
 
+  // The field shows its focus while its calendar is open, as a select's
+  // while its list is, whichever opened it: a tap on its words or its icon.
   @override
-  Widget build(BuildContext context) => ExpressiveTextField(
-    style: context.expressiveTheme.datePickerTheme.layeredUnder(widget.style),
-    controller: _text,
-    kind: widget.kind,
-    label: widget.label ?? ExpressiveLocalizations.of(context).date,
-    hintText: ExpressiveLocalizations.of(context).datePattern,
-    helperText: widget.supportingText,
-    readOnly: true,
-    enabled: widget.onChanged != null,
-    onTap: _show,
-    trailing: ExpressiveIconButton(
-      ExpressiveSymbols.calendarMonth,
-      onPressed: widget.onChanged == null ? null : _show,
-      semanticLabel: ExpressiveLocalizations.of(context).selectDate,
+  Widget build(BuildContext context) => ExpressiveFieldNodeHost(
+    expanded: _open,
+    child: ExpressiveTextField(
+      style: context.expressiveTheme.datePickerTheme.layeredUnder(widget.style),
+      controller: _text,
+      kind: widget.kind,
+      label: widget.label ?? ExpressiveLocalizations.of(context).date,
+      hintText: ExpressiveLocalizations.of(context).datePattern,
+      helperText: widget.supportingText,
+      readOnly: true,
+      enabled: widget.onChanged != null,
+      onTap: _show,
+      trailing: ExpressiveIconButton(
+        ExpressiveSymbols.calendarMonth,
+        onPressed: widget.onChanged == null ? null : _show,
+        semanticLabel: ExpressiveLocalizations.of(context).selectDate,
+      ),
     ),
   );
 }

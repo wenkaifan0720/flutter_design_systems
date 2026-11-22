@@ -254,6 +254,7 @@ void main() {
           r! + 1.0,
           b! + 1.0,
         );
+        // Lists what the check read, for the log.
         // ignore: avoid_print
         print('CELL-FILL $part $name: cell $cell, changed $changed');
         const slack = 2.0;

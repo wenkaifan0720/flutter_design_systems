@@ -886,9 +886,8 @@ class _ComboboxToggle extends StatelessWidget {
     button: true,
     enabled: enabled,
     expanded: expanded,
-    label: expanded
-        ? ExpressiveLocalizations.of(context).hideSuggestions
-        : ExpressiveLocalizations.of(context).showSuggestions,
+    // One name, open or closed: [expanded] says which.
+    label: ExpressiveLocalizations.of(context).showSuggestions,
     onTap: enabled ? onToggle : null,
     // The pointer says it presses, as a button's does: the adaptive
     // clickable cursor (the hand on the web, the platform's arrow in a

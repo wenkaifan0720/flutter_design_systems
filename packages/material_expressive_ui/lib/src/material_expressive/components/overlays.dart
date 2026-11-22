@@ -374,9 +374,9 @@ mixin ExpressiveBackHandleRoute<T> on ModalRoute<T> {
 // Dialogs.
 
 /// One action of an [ExpressiveDialog]: a text button, or with
-/// [filled] a filled one. A press closes the dialog (its route returns
-/// [value]) and then runs [onPressed]; [closesDialog] false keeps the dialog
-/// open.
+/// [filled] a filled one, its words in the `error` role when it is
+/// [destructive]. A press closes the dialog (its route returns [value]) and
+/// then runs [onPressed]; [closesDialog] false keeps the dialog open.
 @immutable
 class ExpressiveDialogAction {
   /// An action labelled [label] that runs [onPressed].
@@ -387,6 +387,7 @@ class ExpressiveDialogAction {
     this.closesDialog = true,
     this.enabled = true,
     this.filled = false,
+    this.destructive = false,
   });
 
   /// The button's text.
@@ -407,6 +408,11 @@ class ExpressiveDialogAction {
   /// Whether a press closes the dialog.
   final bool closesDialog;
 
+  /// Whether the action loses something (Discard, Delete): a text action's
+  /// words in the scheme's `error`, as a menu's destructive item sets them;
+  /// a [filled] one filled in `error` under `onError`.
+  final bool destructive;
+
   /// Whether the action can be pressed. It is drawn out of use, too, when
   /// a press would do nothing: no [onPressed] and [closesDialog] false.
   final bool enabled;
@@ -420,7 +426,9 @@ class ExpressiveDialogAction {
 /// Compose's `AlertDialog`: an optional [icon] centred over the [title],
 /// the supporting [text] (or any [content]), scrolling when it is taller
 /// than the dialog may be, and up to three [actions], listed as drawn — the
-/// last is the confirm action, ending the row and on top when they stack.
+/// last is the confirm action. They stand in one row, the confirm action at
+/// its end, while they all fit, and otherwise stack in one column, the
+/// confirm action on top, each at the dialog's end.
 ///
 /// Raise it with [showExpressiveDialog]; it can also be laid out in place.
 class ExpressiveDialog extends StatelessWidget {
@@ -452,8 +460,8 @@ class ExpressiveDialog extends StatelessWidget {
   final IconData? icon;
 
   /// The actions in reading order, as Flutter's `AlertDialog` takes them:
-  /// the confirm action last, at the row's trailing end; when they stack on
-  /// a narrow dialog, it goes on top (Material's rule).
+  /// the confirm action last, at the row's trailing end; when they don't
+  /// all fit one row they all stack, and it goes on top (Material's rule).
   final List<ExpressiveDialogAction> actions;
 
   @override
@@ -596,9 +604,11 @@ class ExpressiveDialog extends StatelessWidget {
   }
 }
 
-/// `AlertDialogFlowRow`: the actions, last first, flow in the reversed
-/// direction, so a row reads as they are listed with the confirm action (the
-/// last) at its end, and a stack has the confirm action on top.
+/// The actions as Material's dialog lays them (Flutter's `AlertDialog`
+/// holds them in an [OverflowBar]; Compose's `AlertDialogFlowRow` holds its
+/// two): one row in reading order, the confirm action (the last) at its
+/// end, while they all fit; otherwise one column, the confirm action on
+/// top, each at the dialog's end. Never two in a row with one under them.
 class _DialogActions extends StatelessWidget {
   const _DialogActions({required this.actions});
 
@@ -606,10 +616,6 @@ class _DialogActions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final direction = Directionality.of(context);
-    final flipped = direction == TextDirection.ltr
-        ? TextDirection.rtl
-        : TextDirection.ltr;
     // What the minimum touch target already adds around each 40dp action
     // comes off the stacked spacing (`buttonPaddingFromMICS`).
     final touch = ExpressiveMinimumInteractiveSize.enforcedAt(context)
@@ -621,19 +627,15 @@ class _DialogActions extends StatelessWidget {
       0,
       AlertDialogBehavior.actionRunSpacing,
     );
-    return Directionality(
-      textDirection: flipped,
-      child: Wrap(
-        spacing: AlertDialogBehavior.actionSpacing,
-        runSpacing: runSpacing,
-        children: <Widget>[
-          for (final action in actions.reversed)
-            Directionality(
-              textDirection: direction,
-              child: _action(context, action),
-            ),
-        ],
-      ),
+    return OverflowBar(
+      alignment: MainAxisAlignment.end,
+      spacing: AlertDialogBehavior.actionSpacing,
+      overflowSpacing: runSpacing,
+      overflowAlignment: OverflowBarAlignment.end,
+      overflowDirection: VerticalDirection.up,
+      children: <Widget>[
+        for (final action in actions) _action(context, action),
+      ],
     );
   }
 
@@ -646,9 +648,23 @@ class _DialogActions extends StatelessWidget {
         : null;
     // A filled confirm: the small (40dp) filled button, the height of the
     // text actions beside it.
+    final c = context.expressiveTheme.colors;
     return action.filled
-        ? ExpressiveFilledButton(action.label, onPressed: press)
-        : _TextAction(label: action.label, onPressed: press);
+        ? ExpressiveFilledButton(
+            action.label,
+            onPressed: press,
+            style: action.destructive
+                ? ExpressiveFilledButton.styleFrom(
+                    backgroundColor: c.error,
+                    foregroundColor: c.onError,
+                  )
+                : null,
+          )
+        : _TextAction(
+            label: action.label,
+            onPressed: press,
+            destructive: action.destructive,
+          );
   }
 }
 
@@ -658,10 +674,17 @@ class _DialogActions extends StatelessWidget {
 // wide, on the full corner, inside the 48dp touch target. An app's own
 // text button is [ExpressiveTextButton].
 class _TextAction extends StatelessWidget {
-  const _TextAction({required this.label, this.onPressed});
+  const _TextAction({
+    required this.label,
+    this.onPressed,
+    this.destructive = false,
+  });
 
   /// The label.
   final String label;
+
+  /// Whether its words are set in `error`.
+  final bool destructive;
 
   /// What a press does; disabled when null.
   final VoidCallback? onPressed;
@@ -672,7 +695,7 @@ class _TextAction extends StatelessWidget {
     final c = t.colors;
     final enabled = onPressed != null;
     final content = enabled
-        ? c.role(TextButtonTokens.labelColor)
+        ? (destructive ? c.error : c.role(TextButtonTokens.labelColor))
         : c
               .role(TextButtonTokens.disabledLabelColor)
               .withValues(alpha: TextButtonTokens.disabledLabelOpacity);
@@ -1477,38 +1500,43 @@ class _ExpressiveTooltipState extends State<ExpressiveTooltip> {
 
   void _showByUser() => _presenter.show(timeout: !widget.persistent);
 
+  // Merged, the tip is on the tipped control's own node (a button's, a
+  // link's), as Compose's TooltipBox sets it on its anchor: a screen reader
+  // hears the control's name with its tip, not the tip on a node above it.
   @override
-  Widget build(BuildContext context) => Semantics(
-    tooltip: widget.message ?? widget.text,
-    onLongPress: _showByUser,
-    child: Focus(
-      canRequestFocus: false,
-      skipTraversal: true,
-      onFocusChange: _focusChanged,
-      onKeyEvent: (_, event) {
-        if (event is! KeyDownEvent ||
-            event.logicalKey != LogicalKeyboardKey.escape ||
-            !_presenter._shown.value) {
-          return KeyEventResult.ignored;
-        }
-        _presenter.hide();
-        widget.controller?.dismiss();
-        return KeyEventResult.handled;
-      },
-      child: MouseRegion(
-        onEnter: (_) {
-          _hovered = true;
-          _presenter.show(timeout: false);
+  Widget build(BuildContext context) => MergeSemantics(
+    child: Semantics(
+      tooltip: widget.message ?? widget.text,
+      onLongPress: _showByUser,
+      child: Focus(
+        canRequestFocus: false,
+        skipTraversal: true,
+        onFocusChange: _focusChanged,
+        onKeyEvent: (_, event) {
+          if (event is! KeyDownEvent ||
+              event.logicalKey != LogicalKeyboardKey.escape ||
+              !_presenter._shown.value) {
+            return KeyEventResult.ignored;
+          }
+          _presenter.hide();
+          widget.controller?.dismiss();
+          return KeyEventResult.handled;
         },
-        onExit: (_) {
-          _hovered = false;
-          if (!widget.persistent && !_keyboardFocus) _presenter.hide();
-        },
-        child: GestureDetector(
-          behavior: HitTestBehavior.translucent,
-          excludeFromSemantics: true,
-          onLongPress: _showByUser,
-          child: widget.child,
+        child: MouseRegion(
+          onEnter: (_) {
+            _hovered = true;
+            _presenter.show(timeout: false);
+          },
+          onExit: (_) {
+            _hovered = false;
+            if (!widget.persistent && !_keyboardFocus) _presenter.hide();
+          },
+          child: GestureDetector(
+            behavior: HitTestBehavior.translucent,
+            excludeFromSemantics: true,
+            onLongPress: _showByUser,
+            child: widget.child,
+          ),
         ),
       ),
     ),
