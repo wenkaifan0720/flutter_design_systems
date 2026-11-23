@@ -1,3 +1,22 @@
+## 0.4.0
+
+- Needs ui_core 0.5.1.
+- **Breaking:** parameters and fields take the names Flutter's widgets give the same jobs. `dart fix --apply` moves each call and read below; the old names are gone.
+- Fields: `label`, `hint`, `helper` and `error` are `labelText`, `hintText`, `helperText` and `errorText`, as on `InputDecoration`: `BrutalTextField`, `BrutalInput`, `BrutalSearchField`, `BrutalPasswordField`, `BrutalInputGroup`, `BrutalCodeField`, `BrutalSelect`, `BrutalCombobox`, `BrutalTagInput`, `BrutalDatePicker`, `BrutalDateRangePicker`, `BrutalFileDrop`, `BrutalFieldMessage`, `BrutalCommandPalette` and `showBrutalCommandPalette`.
+- `BrutalCombobox` and `BrutalTagInput`: `labelOf` is `displayStringForOption`, as on `Autocomplete`.
+- `BrutalHost` and `BrutalPreview`: `light` and `dark` are `theme` and `darkTheme`, as on `MaterialApp`. `BrutalPreview.activeIndex` is `selectedIndex`.
+- `BrutalAppShell`, `BrutalScaffold`, `BrutalNavigationBar`, `BrutalNavigationRail` and `BrutalSideNavigation`: `onSelected` is `onDestinationSelected`, as on `NavigationBar`. `BrutalTabBar.onSelected` is `onTap`, as on `TabBar`.
+- `BrutalDialogAction`: `primary` and `destructive` are `isDefaultAction` and `isDestructiveAction`, as on `CupertinoDialogAction`. `BrutalListTile.destructive` and `BrutalSwipeAction.destructive` are `isDestructiveAction`, as on the look's buttons and menu items.
+- `BrutalIconButton.selected` is `isSelected` (`IconButton`), `BrutalDisclosure.onChanged` is `onExpansionChanged` (`ExpansionTile`), `BrutalStepProgress.current` is `currentStep` (`Stepper`), and `BrutalBadge.max` is `maxCount` (`Badge.count`).
+- `BrutalPageDots`: `count`, `index` and `onChanged` are `pageCount`, `page` and `onPageChanged`, the names `BrutalPagination` takes. `BrutalPagination.onChanged` is `onPageChanged` (`PageView`).
+- `BrutalTextTheme.of` is `BrutalTextTheme.from`: in Flutter, `of` looks a value up from a `BuildContext`.
+- **Breaking:** `BrutalLineChart`, `BrutalAreaChart` and `BrutalBarChart` take ui_core's `valueFormat` in place of `valueLabel`, which is gone (no fix moves it: the two are different kinds of value). For `valueLabel: (v) => '${v.round()} h'`, pass `valueFormat: const DesignChartValueFormat(suffix: ' h', fractionDigits: 0)`, or `DesignChartValueFormat.custom` for words of your own. The format writes the value axis, the read-out and what a screen reader hears in the reader's language, and the axis stands as wide as its widest label at the reader's text size.
+- A field's label, help and error (`BrutalTextField`, `BrutalPasswordField`, `BrutalInputGroup`, `BrutalCodeField`, `BrutalSelect`, `BrutalCombobox`, `BrutalTagInput`, `BrutalDatePicker`, `BrutalDateRangePicker`) are read through ui_core's `RawInputDecorator`: a screen reader hears them on the field itself, its help and then its error, and hears an error when it comes. Before, the help and the error were loose words after the field.
+- `BrutalCombobox`'s and `BrutalTagInput`'s text input reads as expanded while its list shows and collapsed once it closes, as a combo box does; the combobox's mark turns over with the list.
+- A `BrutalDialog`'s actions are laid out by ui_core's `RawActionBar`: side by side in equal cells while every action's words fit its cell, else one above another, each the dialog's width, the main action on top.
+- At large text on a phone a `BrutalInputGroup`'s add-ons wrap their words within a quarter of the row each, a `BrutalMenuBar` wider than the screen scrolls along, and a `BrutalSplitButton`'s main half gives way (its words end in an ellipsis) before its menu half. Before, each ran off the screen's edge.
+- On a phone a toast stands above `BrutalScaffold`'s tab bar: ui_core 0.5.0's `DesignAdaptiveShell` keeps its navigation clear of the toaster. It used to cover the bar.
+
 ## 0.3.1
 
 - Needs ui_core 0.4.1.

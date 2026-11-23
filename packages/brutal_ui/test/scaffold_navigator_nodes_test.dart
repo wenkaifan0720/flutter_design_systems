@@ -63,9 +63,9 @@ void main() {
                         child: SizedBox(
                           width: 320,
                           child: BrutalCombobox<String>(
-                            label: 'Assignee',
+                            labelText: 'Assignee',
                             options: _names,
-                            labelOf: (name) => name,
+                            displayStringForOption: (name) => name,
                             onSelected: (_) {},
                           ),
                         ),

@@ -8,6 +8,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:ui_core/ui_core.dart';
 
+import 'internal/field_frame.dart';
 import 'internal/focus_ink.dart';
 import 'surface.dart';
 import 'theme.dart';
@@ -83,23 +84,23 @@ class BrutalFieldLabel extends StatelessWidget {
 /// `padding` and `textStyle`, then [BrutalThemeData.fieldMessageStyle]'s.
 ///
 /// ```dart
-/// const BrutalFieldMessage(error: 'Enter the card number')
+/// const BrutalFieldMessage(errorText: 'Enter the card number')
 /// ```
 class BrutalFieldMessage extends StatelessWidget {
   /// Help or an error; the error wins.
   const BrutalFieldMessage({
     super.key,
-    this.helper,
-    this.error,
+    this.helperText,
+    this.errorText,
     this.failureLine,
     this.style,
   });
 
   /// The help.
-  final String? helper;
+  final String? helperText;
 
   /// The error.
-  final String? error;
+  final String? errorText;
 
   /// Wraps the error line in place of its live region (a form library that
   /// announces the error itself).
@@ -114,15 +115,15 @@ class BrutalFieldMessage extends StatelessWidget {
     final c = theme.colors;
     final layered = DesignStyleOf(
       [this.style, theme.fieldMessageStyle],
-      {if (error != null) WidgetState.error},
+      {if (errorText != null) WidgetState.error},
     );
     final style = layered.text(theme.textTheme.secondary);
     final padding =
         layered.padding(Directionality.of(context)) ??
         const EdgeInsets.only(top: BrutalSpacing.small);
-    if (error != null) {
+    if (errorText != null) {
       // An empty error marks the box alone; its words stand elsewhere.
-      if (error!.isEmpty) return const SizedBox.shrink();
+      if (errorText!.isEmpty) return const SizedBox.shrink();
       final danger = layered.foreground ?? c.danger;
       final line = Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -142,7 +143,7 @@ class BrutalFieldMessage extends StatelessWidget {
           ),
           const SizedBox(width: BrutalSpacing.small),
           Expanded(
-            child: Text(error!, style: style.copyWith(color: danger)),
+            child: Text(errorText!, style: style.copyWith(color: danger)),
           ),
         ],
       );
@@ -152,10 +153,13 @@ class BrutalFieldMessage extends StatelessWidget {
             failureLine?.call(line) ?? Semantics(liveRegion: true, child: line),
       );
     }
-    if (helper != null) {
+    if (helperText != null) {
       return Padding(
         padding: padding,
-        child: Text(helper!, style: style.copyWith(color: layered.foreground)),
+        child: Text(
+          helperText!,
+          style: style.copyWith(color: layered.foreground),
+        ),
       );
     }
     return const SizedBox.shrink();
@@ -165,8 +169,8 @@ class BrutalFieldMessage extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('helper', helper, defaultValue: null))
-      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(StringProperty('helperText', helperText, defaultValue: null))
+      ..add(StringProperty('errorText', errorText, defaultValue: null))
       ..add(
         ObjectFlagProperty<Widget Function(Widget line)>.has(
           'failureLine',
@@ -180,7 +184,7 @@ class BrutalFieldMessage extends StatelessWidget {
 }
 
 /// A one-line (or, with [maxLines], several-line) text field: a square box
-/// in the look's rule, its [label] above, its [helper] or [error] below. A
+/// in the look's rule, its [labelText] above, its [helperText] or [errorText] below. A
 /// focused field shows an accent bar inside its lower edge. An error turns
 /// the rule red.
 ///
@@ -195,7 +199,7 @@ class BrutalFieldMessage extends StatelessWidget {
 /// [BrutalThemeData.fieldMessageStyle].
 ///
 /// ```dart
-/// BrutalTextField(label: 'Email', hint: 'you@example.com', keyboardType: TextInputType.emailAddress, onChanged: (value) => email = value)
+/// BrutalTextField(labelText: 'Email', hintText: 'you@example.com', keyboardType: TextInputType.emailAddress, onChanged: (value) => email = value)
 /// ```
 class BrutalTextField extends StatefulWidget {
   /// A text field.
@@ -203,10 +207,10 @@ class BrutalTextField extends StatefulWidget {
     super.key,
     this.controller,
     this.focusNode,
-    this.label,
-    this.hint,
-    this.helper,
-    this.error,
+    this.labelText,
+    this.hintText,
+    this.helperText,
+    this.errorText,
     this.prefixIcon,
     this.suffix,
     this.obscureText = false,
@@ -238,18 +242,18 @@ class BrutalTextField extends StatefulWidget {
   final FocusNode? focusNode;
 
   /// The words over the box.
-  final String? label;
+  final String? labelText;
 
   /// Grey words in the empty box: a format or an example, never the label.
-  final String? hint;
+  final String? hintText;
 
   /// Help under the box.
-  final String? helper;
+  final String? helperText;
 
   /// What is wrong with the text, under the box in red; null when nothing.
   /// An empty string turns the rule red and says nothing under it, for a
   /// field whose error stands elsewhere.
-  final String? error;
+  final String? errorText;
 
   /// A glyph at the box's start.
   final Widget? prefixIcon;
@@ -303,7 +307,7 @@ class BrutalTextField extends StatefulWidget {
   /// The fewest lines it shows.
   final int? minLines;
 
-  /// What a screen reader calls it when [label] is not the right name.
+  /// What a screen reader calls it when [labelText] is not the right name.
   final String? semanticLabel;
 
   /// Wraps the editable in your own semantics in place of the field's name
@@ -332,9 +336,9 @@ class BrutalTextField extends StatefulWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('label', label, defaultValue: null))
-      ..add(StringProperty('hint', hint, defaultValue: null))
-      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
+      ..add(StringProperty('errorText', errorText, defaultValue: null))
       ..add(FlagProperty('enabled', value: enabled, ifFalse: 'disabled'))
       ..add(FlagProperty('obscureText', value: obscureText, ifTrue: 'obscured'))
       ..add(
@@ -396,7 +400,7 @@ class _BrutalTextFieldState extends State<BrutalTextField> {
     final states = <WidgetState>{
       if (!widget.enabled) WidgetState.disabled,
       if (_focus.hasFocus) WidgetState.focused,
-      if (widget.error != null) WidgetState.error,
+      if (widget.errorText != null) WidgetState.error,
     };
     final layered = DesignStyleOf([widget.style, theme.textFieldStyle], states);
     final words = theme.textTheme.body
@@ -412,12 +416,12 @@ class _BrutalTextFieldState extends State<BrutalTextField> {
           layered.edge ??
           (!widget.enabled
               ? c.disabled
-              : widget.error != null
+              : widget.errorText != null
               ? c.danger
               : c.ink),
       foreground: words.color!,
       focus: _focus.hasFocus
-          ? (widget.error != null
+          ? (widget.errorText != null
                 ? c.danger
                 : brutalFocusInk(c, layered.fill ?? c.surface))
           : c.ink.withValues(alpha: 0),
@@ -430,10 +434,10 @@ class _BrutalTextFieldState extends State<BrutalTextField> {
       minHeight: layered.minimumSize?.height ?? theme.controlHeight,
       controller: _controller,
       maxLines: widget.maxLines,
-      hint: widget.hint == null
+      hint: widget.hintText == null
           ? null
           : Text(
-              widget.hint!,
+              widget.hintText!,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: words.copyWith(color: c.inkMuted),
@@ -549,35 +553,36 @@ class _BrutalTextFieldState extends State<BrutalTextField> {
         ),
       ),
     );
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        if (widget.label != null)
-          ExcludeSemantics(
-            child: BrutalFieldLabel(widget.label!, enabled: widget.enabled),
-          ),
-        box,
-        BrutalFieldMessage(
-          helper: widget.helper,
-          error: widget.error,
-          failureLine: widget.failureLine,
-        ),
-      ],
+    return BrutalFieldFrame(
+      labelText: widget.labelText,
+      helperText: widget.helperText,
+      errorText: widget.errorText,
+      enabled: widget.enabled,
+      failureLine: widget.failureLine,
+      // A caller's `decorate` names the entry itself.
+      semantics: widget.decorate == null,
+      child: box,
     );
   }
 
-  /// The entry box named by [BrutalTextField.decorate], else by the field,
-  /// as a node of its own: the words' render object is no semantics
-  /// boundary, so without one the field's name and flags land on whatever
-  /// node holds it (a page's column, with its results under it).
+  /// The entry box named by [BrutalTextField.decorate], else by the field.
+  /// A field with words round it and no `decorate` is a node of ui_core's
+  /// RawInputDecorator, which the entry joins (with its help and error as
+  /// its hint); otherwise the entry is a node of its own: the words' render
+  /// object is no semantics boundary, so without one the field's name and
+  /// flags land on whatever node holds it (a page's column, with its
+  /// results under it).
   Widget _named(Widget editable) => Semantics(
-    container: true,
+    container:
+        widget.decorate != null ||
+        (widget.labelText == null &&
+            widget.helperText == null &&
+            widget.errorText == null),
     child:
         widget.decorate?.call(editable) ??
         Semantics(
-          label: widget.semanticLabel ?? widget.label,
-          hint: widget.hint,
+          label: widget.semanticLabel ?? widget.labelText,
+          hint: widget.hintText,
           child: editable,
         ),
   );

@@ -78,7 +78,7 @@ class _PickersState extends State<_Pickers> {
         note: 'A field that drops the month; a chosen day closes it.',
         children: [
           BrutalDatePicker(
-            label: 'Date',
+            labelText: 'Date',
             value: _when,
             firstDate: _first,
             lastDate: _last,
@@ -86,7 +86,7 @@ class _PickersState extends State<_Pickers> {
             onChanged: (d) => setState(() => _when = d),
           ),
           BrutalDateRangePicker(
-            label: 'Dates',
+            labelText: 'Dates',
             value: _span,
             firstDate: _first,
             lastDate: _last,
@@ -94,7 +94,7 @@ class _PickersState extends State<_Pickers> {
             onChanged: (r) => setState(() => _span = r),
           ),
           BrutalDatePicker(
-            label: 'Date',
+            labelText: 'Date',
             value: DateTime(2026, 11, 21),
             firstDate: _first,
             lastDate: _last,
@@ -164,7 +164,7 @@ Widget kitSpecimenCalendar() => kitState(
 Widget kitSpecimenDatePicker() => kitState<DateTime?>(
   DateTime(2026, 11, 14),
   (context, day, change) => BrutalDatePicker(
-    label: 'Date',
+    labelText: 'Date',
     value: day,
     onChanged: change,
     firstDate: DateTime(2026, 11),
@@ -176,7 +176,7 @@ Widget kitSpecimenDatePicker() => kitState<DateTime?>(
 Widget kitSpecimenDateRangePicker() => kitState<BrutalDateRange?>(
   BrutalDateRange(start: DateTime(2026, 11, 14), end: DateTime(2026, 11, 16)),
   (context, span, change) => BrutalDateRangePicker(
-    label: 'Dates',
+    labelText: 'Dates',
     value: span,
     onChanged: change,
     firstDate: DateTime(2026, 11),

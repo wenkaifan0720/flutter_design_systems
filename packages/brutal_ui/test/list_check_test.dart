@@ -77,13 +77,31 @@ void main() {
           }
 
           final problems = <String>[];
-          // The lists a press opens: a select's.
-          final openers = find.byWidgetPredicate(
-            (w) =>
-                w is Semantics &&
+          // The lists a press opens: a select's. A combobox's and a tag
+          // input's text input reads its list's state too, but its list opens
+          // as one types, not on a press.
+          bool typedIn(Element e) {
+            var found = false;
+            void visit(Element child) {
+              if (found) return;
+              if (child.widget is EditableText) {
+                found = true;
+                return;
+              }
+              child.visitChildren(visit);
+            }
+
+            e.visitChildren(visit);
+            return found;
+          }
+
+          final openers = find.byElementPredicate((e) {
+            final w = e.widget;
+            return w is Semantics &&
                 w.properties.expanded == false &&
-                w.properties.enabled != false,
-          );
+                w.properties.enabled != false &&
+                !typedIn(e);
+          });
           await fresh();
           final count = openers.evaluate().length;
           var checked = 0;

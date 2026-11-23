@@ -42,7 +42,7 @@ class BrutalDisclosure extends StatefulWidget {
     this.subtitle,
     this.expanded,
     this.initiallyExpanded = false,
-    this.onChanged,
+    this.onExpansionChanged,
     this.style,
   });
 
@@ -62,7 +62,7 @@ class BrutalDisclosure extends StatefulWidget {
   final bool initiallyExpanded;
 
   /// Called with the state a press asks for.
-  final ValueChanged<bool>? onChanged;
+  final ValueChanged<bool>? onExpansionChanged;
 
   /// Its style, over [BrutalThemeData.disclosureStyle].
   final BrutalStyle? style;
@@ -87,7 +87,7 @@ class _BrutalDisclosureState extends State<BrutalDisclosure> {
   void _toggle() {
     final next = !_open;
     if (widget.expanded == null) setState(() => _own = next);
-    widget.onChanged?.call(next);
+    widget.onExpansionChanged?.call(next);
   }
 
   @override
@@ -945,7 +945,7 @@ class BrutalAvatarGroup extends StatelessWidget {
 }
 
 /// A count on a ruled signal square: on its own, or pinned over the top
-/// end corner of [child]. Zero shows no square; past [max] it reads
+/// end corner of [child]. Zero shows no square; past [maxCount] it reads
 /// `99+`.
 ///
 /// Reads [style]'s `fill` (the count then takes black or white by
@@ -961,7 +961,7 @@ class BrutalBadge extends StatelessWidget {
     super.key,
     required this.count,
     this.child,
-    this.max = 99,
+    this.maxCount = 99,
     this.semanticLabel,
     this.style,
   });
@@ -973,7 +973,7 @@ class BrutalBadge extends StatelessWidget {
   final Widget? child;
 
   /// The highest count it shows.
-  final int max;
+  final int maxCount;
 
   /// What a screen reader hears for it, `3 new`, say; null reads the
   /// count.
@@ -992,7 +992,7 @@ class BrutalBadge extends StatelessWidget {
         layered.foreground ??
         (layered.fill == null ? c.onSignal : c.onColor(fill));
     final least = layered.minimumSize ?? const Size(22, 22);
-    final text = count > max ? '$max+' : '$count';
+    final text = count > maxCount ? '$maxCount+' : '$count';
     final badge = Semantics(
       label: semanticLabel ?? text,
       excludeSemantics: true,
@@ -1044,7 +1044,7 @@ class BrutalBadge extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(IntProperty('count', count))
-      ..add(IntProperty('max', max))
+      ..add(IntProperty('maxCount', maxCount))
       ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(
         DiagnosticsProperty<BrutalStyle>('style', style, defaultValue: null),

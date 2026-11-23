@@ -125,7 +125,7 @@ void main() {
           await _pump(
             t,
             BrutalDatePicker(
-              label: 'Due date',
+              labelText: 'Due date',
               value: DateTime(2026, 11, 20),
               firstDate: DateTime(2020),
               lastDate: DateTime(2040),

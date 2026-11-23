@@ -10,14 +10,14 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   final pickers = <String, Widget>{
     'date': BrutalDatePicker(
-      label: 'Due',
+      labelText: 'Due',
       value: DateTime(2026, 11, 20),
       firstDate: DateTime(2026),
       lastDate: DateTime(2027, 12, 31),
       onChanged: (_) {},
     ),
     'date range': BrutalDateRangePicker(
-      label: 'Due',
+      labelText: 'Due',
       value: BrutalDateRange(
         start: DateTime(2026, 11, 20),
         end: DateTime(2026, 11, 24),

@@ -15,8 +15,8 @@ import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+import 'internal/field_frame.dart';
 import 'surface.dart';
-import 'text_field.dart';
 import 'theme.dart';
 
 DateTime _day(DateTime d) => DateTime(d.year, d.month, d.day);
@@ -535,7 +535,6 @@ class _PickerField extends StatelessWidget {
     required this.icon,
     required this.enabled,
     required this.error,
-    required this.semanticLabel,
   });
 
   final DesignOverlayAnchor anchor;
@@ -544,7 +543,6 @@ class _PickerField extends StatelessWidget {
   final IconData icon;
   final bool enabled;
   final bool error;
-  final String? semanticLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -556,7 +554,6 @@ class _PickerField extends StatelessWidget {
     return RawButton(
       onPressed: enabled ? anchor.toggle : null,
       expanded: anchor.isOpen,
-      semanticLabel: semanticLabel,
       semanticValue: text,
       builder: (context, states, _) {
         final layered = DesignStyleOf(
@@ -673,15 +670,12 @@ Widget _labelled(
   required String? helper,
   required String? error,
   required bool enabled,
-}) => Column(
-  mainAxisSize: MainAxisSize.min,
-  crossAxisAlignment: CrossAxisAlignment.stretch,
-  children: [
-    if (label != null)
-      ExcludeSemantics(child: BrutalFieldLabel(label, enabled: enabled)),
-    field,
-    BrutalFieldMessage(helper: helper, error: error),
-  ],
+}) => BrutalFieldFrame(
+  labelText: label,
+  helperText: helper,
+  errorText: error,
+  enabled: enabled,
+  child: field,
 );
 
 /// A date in a field: a press drops a [BrutalCalendar] under it, and a
@@ -692,7 +686,7 @@ Widget _labelled(
 /// [BrutalThemeData.calendarStyle], as [BrutalCalendar] does.
 ///
 /// ```dart
-/// BrutalDatePicker(label: 'Date', value: day, firstDate: DateTime(2026), lastDate: DateTime(2027), onChanged: (d) => setState(() => day = d))
+/// BrutalDatePicker(labelText: 'Date', value: day, firstDate: DateTime(2026), lastDate: DateTime(2027), onChanged: (d) => setState(() => day = d))
 /// ```
 class BrutalDatePicker extends StatelessWidget {
   /// A date field.
@@ -702,10 +696,10 @@ class BrutalDatePicker extends StatelessWidget {
     required this.onChanged,
     required this.firstDate,
     required this.lastDate,
-    this.label,
-    this.hint = 'Choose a date',
-    this.helper,
-    this.error,
+    this.labelText,
+    this.hintText = 'Choose a date',
+    this.helperText,
+    this.errorText,
     this.currentDate,
     this.style,
   });
@@ -723,16 +717,16 @@ class BrutalDatePicker extends StatelessWidget {
   final DateTime lastDate;
 
   /// The words over the field.
-  final String? label;
+  final String? labelText;
 
   /// What the empty field says.
-  final String hint;
+  final String hintText;
 
   /// Help under the field.
-  final String? helper;
+  final String? helperText;
 
   /// What is wrong, under the field in red.
-  final String? error;
+  final String? errorText;
 
   /// Today; null: the clock's.
   final DateTime? currentDate;
@@ -747,7 +741,7 @@ class BrutalDatePicker extends StatelessWidget {
     final layers = [style, BrutalTheme.of(context).calendarStyle];
     return _labelled(
       RawPopover(
-        semanticLabel: label,
+        semanticLabel: labelText,
         // The calendar opens where its whole month fits: below while below
         // holds it, else above; it shrinks and scrolls only where neither
         // side does.
@@ -755,18 +749,17 @@ class BrutalDatePicker extends StatelessWidget {
           gap: BrutalSpacing.small,
           margin: BrutalSpacing.small,
           matchAnchorWidth: false,
-          preferredExtent: double.infinity,
+          fit: RawPopoverFit.whole,
         ),
         dampingRatio: BrutalMotion.dampingRatio,
         stiffness: BrutalMotion.overlayStiffness,
         anchorBuilder: (context, anchor) => _PickerField(
           anchor: anchor,
           text: value == null ? null : words.formatFullDate(value!),
-          hint: hint,
+          hint: hintText,
           icon: LucideIcons.calendar,
           enabled: enabled,
-          error: error != null,
-          semanticLabel: label,
+          error: errorText != null,
         ),
         overlayBuilder: (context, info) => _panel(
           context,
@@ -789,9 +782,9 @@ class BrutalDatePicker extends StatelessWidget {
           ),
         ),
       ),
-      label: label,
-      helper: helper,
-      error: error,
+      label: labelText,
+      helper: helperText,
+      error: errorText,
       enabled: enabled,
     );
   }
@@ -806,10 +799,10 @@ class BrutalDatePicker extends StatelessWidget {
       )
       ..add(DiagnosticsProperty<DateTime>('firstDate', firstDate))
       ..add(DiagnosticsProperty<DateTime>('lastDate', lastDate))
-      ..add(StringProperty('label', label, defaultValue: null))
-      ..add(StringProperty('hint', hint))
-      ..add(StringProperty('helper', helper, defaultValue: null))
-      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
+      ..add(StringProperty('hintText', hintText))
+      ..add(StringProperty('helperText', helperText, defaultValue: null))
+      ..add(StringProperty('errorText', errorText, defaultValue: null))
       ..add(
         DiagnosticsProperty<DateTime>(
           'currentDate',
@@ -832,7 +825,7 @@ class BrutalDatePicker extends StatelessWidget {
 /// [BrutalThemeData.calendarStyle], as [BrutalCalendar] does.
 ///
 /// ```dart
-/// BrutalDateRangePicker(label: 'Dates', value: span, firstDate: DateTime(2026), lastDate: DateTime(2027), onChanged: (r) => setState(() => span = r))
+/// BrutalDateRangePicker(labelText: 'Dates', value: span, firstDate: DateTime(2026), lastDate: DateTime(2027), onChanged: (r) => setState(() => span = r))
 /// ```
 class BrutalDateRangePicker extends StatelessWidget {
   /// A date span field.
@@ -842,10 +835,10 @@ class BrutalDateRangePicker extends StatelessWidget {
     required this.onChanged,
     required this.firstDate,
     required this.lastDate,
-    this.label,
-    this.hint = 'Choose dates',
-    this.helper,
-    this.error,
+    this.labelText,
+    this.hintText = 'Choose dates',
+    this.helperText,
+    this.errorText,
     this.currentDate,
     this.style,
   });
@@ -863,16 +856,16 @@ class BrutalDateRangePicker extends StatelessWidget {
   final DateTime lastDate;
 
   /// The words over the field.
-  final String? label;
+  final String? labelText;
 
   /// What the empty field says.
-  final String hint;
+  final String hintText;
 
   /// Help under the field.
-  final String? helper;
+  final String? helperText;
 
   /// What is wrong, under the field in red.
-  final String? error;
+  final String? errorText;
 
   /// Today; null: the clock's.
   final DateTime? currentDate;
@@ -898,7 +891,7 @@ class BrutalDateRangePicker extends StatelessWidget {
     final layers = [style, BrutalTheme.of(context).calendarStyle];
     return _labelled(
       RawPopover(
-        semanticLabel: label,
+        semanticLabel: labelText,
         // The calendar opens where its whole month fits: below while below
         // holds it, else above; it shrinks and scrolls only where neither
         // side does.
@@ -906,18 +899,17 @@ class BrutalDateRangePicker extends StatelessWidget {
           gap: BrutalSpacing.small,
           margin: BrutalSpacing.small,
           matchAnchorWidth: false,
-          preferredExtent: double.infinity,
+          fit: RawPopoverFit.whole,
         ),
         dampingRatio: BrutalMotion.dampingRatio,
         stiffness: BrutalMotion.overlayStiffness,
         anchorBuilder: (context, anchor) => _PickerField(
           anchor: anchor,
           text: value == null ? null : _span(words, value!),
-          hint: hint,
+          hint: hintText,
           icon: LucideIcons.calendarRange,
           enabled: enabled,
-          error: error != null,
-          semanticLabel: label,
+          error: errorText != null,
         ),
         overlayBuilder: (context, info) => _panel(
           context,
@@ -941,9 +933,9 @@ class BrutalDateRangePicker extends StatelessWidget {
           ),
         ),
       ),
-      label: label,
-      helper: helper,
-      error: error,
+      label: labelText,
+      helper: helperText,
+      error: errorText,
       enabled: enabled,
     );
   }
@@ -967,10 +959,10 @@ class BrutalDateRangePicker extends StatelessWidget {
       )
       ..add(DiagnosticsProperty<DateTime>('firstDate', firstDate))
       ..add(DiagnosticsProperty<DateTime>('lastDate', lastDate))
-      ..add(StringProperty('label', label, defaultValue: null))
-      ..add(StringProperty('hint', hint))
-      ..add(StringProperty('helper', helper, defaultValue: null))
-      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
+      ..add(StringProperty('hintText', hintText))
+      ..add(StringProperty('helperText', helperText, defaultValue: null))
+      ..add(StringProperty('errorText', errorText, defaultValue: null))
       ..add(
         DiagnosticsProperty<DateTime>(
           'currentDate',

@@ -1,0 +1,11 @@
+# test_fixes/ is an analysis root of its own: the package's options leave it out (its files use old names on purpose),
+# and `dart fix --compare-to-golden test_fixes` needs it analysed to offer the fixes. Its one lint is the one the
+# renames' fixes answer: inside the package that declares them, an old name's use is
+# deprecated_member_use_from_same_package (a lint, off unless named), not deprecated_member_use. No other lint, so the
+# comparison applies the renames' fixes alone.
+analyzer:
+  errors:
+    public_member_api_docs: ignore
+linter:
+  rules:
+    - deprecated_member_use_from_same_package

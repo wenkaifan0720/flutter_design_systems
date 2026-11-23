@@ -23,7 +23,9 @@ Future<void> _open(
 }
 
 Finder _input(String label) => find.descendant(
-  of: find.byWidgetPredicate((w) => w is BrutalTextField && w.label == label),
+  of: find.byWidgetPredicate(
+    (w) => w is BrutalTextField && w.labelText == label,
+  ),
   matching: find.byType(EditableText),
 );
 

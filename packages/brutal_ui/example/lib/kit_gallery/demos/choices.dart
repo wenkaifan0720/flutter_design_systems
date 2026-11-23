@@ -322,8 +322,8 @@ class _MoreState extends State<_More> {
         note: 'A box in a dashed rule to choose from; a row for each file.',
         children: [
           BrutalFileDrop(
-            label: 'Proof of student status',
-            hint: 'A photo or a PDF, up to 10 MB',
+            labelText: 'Proof of student status',
+            hintText: 'A photo or a PDF, up to 10 MB',
             files: _files,
             onChoose: () {},
             onRemove: (f) => setState(() => _files.remove(f)),
@@ -470,7 +470,7 @@ Widget kitSpecimenRating() => kitState(
 
 Widget kitSpecimenFileDrop() => Builder(
   builder: (context) => BrutalFileDrop(
-    label: 'Poster',
+    labelText: 'Poster',
     onChoose: () => kitFeedback(context, 'Your files open here.'),
     files: const [BrutalFile(name: 'poster.png', bytes: 482000)],
   ),

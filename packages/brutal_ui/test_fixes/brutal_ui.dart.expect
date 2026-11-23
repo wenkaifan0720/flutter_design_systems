@@ -1,0 +1,247 @@
+// The names brutal_ui 0.4.0 renames: brutal_ui.dart calls them as before `dart fix --apply`,
+// brutal_ui.dart.expect as after.
+import 'package:flutter/widgets.dart';
+import 'package:brutal_ui/brutal_ui.dart';
+
+void calls(BuildContext context) {
+  final v1 = BrutalInput(hintText: 'Text');
+  print(v1.hintText);
+  final v2 = BrutalSearchField(labelText: 'Text', hintText: 'Text');
+  print(v2.labelText);
+  print(v2.hintText);
+  final v3 = BrutalPasswordField(
+    labelText: 'Text',
+    hintText: 'Text',
+    helperText: 'Text',
+    errorText: 'Text',
+  );
+  print(v3.labelText);
+  print(v3.hintText);
+  print(v3.helperText);
+  print(v3.errorText);
+  final v4 = BrutalInputGroup(
+    labelText: 'Text',
+    hintText: 'Text',
+    helperText: 'Text',
+    errorText: 'Text',
+  );
+  print(v4.labelText);
+  print(v4.hintText);
+  print(v4.helperText);
+  print(v4.errorText);
+  final v5 = BrutalCodeField(labelText: 'Text', helperText: 'Text', errorText: 'Text');
+  print(v5.labelText);
+  print(v5.helperText);
+  print(v5.errorText);
+  final v6 = BrutalCombobox<String>(
+    displayStringForOption: (v) => '$v',
+    labelText: 'Text',
+    hintText: 'Text',
+    helperText: 'Text',
+    errorText: 'Text',
+  );
+  print(v6.labelText);
+  print(v6.hintText);
+  print(v6.helperText);
+  print(v6.errorText);
+  print(v6.displayStringForOption);
+  final v7 = BrutalTagInput<String>(
+    values: const [],
+    onChanged: (_) {},
+    displayStringForOption: (v) => '$v',
+    labelText: 'Text',
+    hintText: 'Text',
+    helperText: 'Text',
+    errorText: 'Text',
+  );
+  print(v7.labelText);
+  print(v7.hintText);
+  print(v7.helperText);
+  print(v7.errorText);
+  print(v7.displayStringForOption);
+  final v8 = BrutalDatePicker(
+    value: DateTime(2026),
+    onChanged: (_) {},
+    firstDate: DateTime(2026),
+    lastDate: DateTime(2026),
+    labelText: 'Text',
+    hintText: 'Text',
+    helperText: 'Text',
+    errorText: 'Text',
+  );
+  print(v8.labelText);
+  print(v8.hintText);
+  print(v8.helperText);
+  print(v8.errorText);
+  final v9 = BrutalDateRangePicker(
+    value: null,
+    onChanged: (_) {},
+    firstDate: DateTime(2026),
+    lastDate: DateTime(2026),
+    labelText: 'Text',
+    hintText: 'Text',
+    helperText: 'Text',
+    errorText: 'Text',
+  );
+  print(v9.labelText);
+  print(v9.hintText);
+  print(v9.helperText);
+  print(v9.errorText);
+  final v10 = BrutalSelect<String>(
+    items: const [],
+    value: 'a',
+    onChanged: (_) {},
+    labelText: 'Text',
+    hintText: 'Text',
+    helperText: 'Text',
+    errorText: 'Text',
+  );
+  print(v10.labelText);
+  print(v10.hintText);
+  print(v10.helperText);
+  print(v10.errorText);
+  final v11 = BrutalTextField(
+    labelText: 'Text',
+    hintText: 'Text',
+    helperText: 'Text',
+    errorText: 'Text',
+  );
+  print(v11.labelText);
+  print(v11.hintText);
+  print(v11.helperText);
+  print(v11.errorText);
+  final v12 = BrutalFieldMessage(helperText: 'Text', errorText: 'Text');
+  print(v12.helperText);
+  print(v12.errorText);
+  final v13 = BrutalFileDrop(onChoose: () {}, labelText: 'Text', hintText: 'Text');
+  print(v13.labelText);
+  print(v13.hintText);
+  final v14 = BrutalCommandPalette(commands: const [], hintText: 'Text');
+  print(v14.hintText);
+  showBrutalCommandPalette(context, commands: const [], hintText: 'Text');
+  final v15 = BrutalHost(theme: null, darkTheme: null, child: const SizedBox());
+  print(v15.theme);
+  print(v15.darkTheme);
+  final v16 = BrutalPreview(
+    child: const SizedBox(),
+    theme: null,
+    darkTheme: null,
+    selectedIndex: 1,
+  );
+  print(v16.theme);
+  print(v16.darkTheme);
+  print(v16.selectedIndex);
+  final v17 = BrutalAppShell(
+    tabs: const [],
+    selectedIndex: 1,
+    onDestinationSelected: (_) {},
+    child: const SizedBox(),
+  );
+  print(v17.onDestinationSelected);
+  final v18 = BrutalNavigationBar(
+    destinations: const [],
+    selectedIndex: 1,
+    onDestinationSelected: (_) {},
+  );
+  print(v18.onDestinationSelected);
+  final v19 = BrutalNavigationRail(
+    destinations: const [],
+    selectedIndex: 1,
+    onDestinationSelected: (_) {},
+  );
+  print(v19.onDestinationSelected);
+  final v20 = BrutalSideNavigation(
+    destinations: const [],
+    selectedIndex: 1,
+    onDestinationSelected: (_) {},
+  );
+  print(v20.onDestinationSelected);
+  final v21 = BrutalScaffold(body: const SizedBox(), onDestinationSelected: (_) {});
+  print(v21.onDestinationSelected);
+  final v22 = BrutalTabBar(
+    tabs: const [],
+    selectedIndex: 1,
+    onTap: (_) {},
+  );
+  print(v22.onTap);
+  final v23 = BrutalDialogAction(
+    label: 'Text',
+    onPressed: () {},
+    isDefaultAction: true,
+    isDestructiveAction: true,
+  );
+  print(v23.isDefaultAction);
+  print(v23.isDestructiveAction);
+  final v24 = BrutalSwipeAction(
+    label: 'Text',
+    onPressed: () {},
+    isDestructiveAction: true,
+  );
+  print(v24.isDestructiveAction);
+  final v25 = BrutalListTile(title: 'Text', isDestructiveAction: true);
+  print(v25.isDestructiveAction);
+  final v26 = BrutalIconButton(
+    onPressed: () {},
+    icon: const SizedBox(),
+    tooltip: 'Text',
+    isSelected: true,
+  );
+  final v27 = BrutalIconButton.plain(
+    onPressed: () {},
+    icon: const SizedBox(),
+    tooltip: 'Text',
+    isSelected: true,
+  );
+  print(v26.isSelected);
+  final v28 = BrutalDisclosure(
+    title: 'Text',
+    child: const SizedBox(),
+    onExpansionChanged: (_) {},
+  );
+  print(v28.onExpansionChanged);
+  final v29 = BrutalStepProgress(steps: const [], currentStep: 1);
+  print(v29.currentStep);
+  final v30 = BrutalPageDots(pageCount: 1, page: 1, onPageChanged: (_) {});
+  print(v30.pageCount);
+  print(v30.page);
+  print(v30.onPageChanged);
+  final v31 = BrutalPagination(page: 1, pageCount: 1, onPageChanged: (_) {});
+  print(v31.onPageChanged);
+  final v32 = BrutalBadge(count: 1, maxCount: 1);
+  print(v32.maxCount);
+  BrutalTextTheme.from(const BrutalColors.light());
+  print([
+    v1,
+    v2,
+    v3,
+    v4,
+    v5,
+    v6,
+    v7,
+    v8,
+    v9,
+    v10,
+    v11,
+    v12,
+    v13,
+    v14,
+    v15,
+    v16,
+    v17,
+    v18,
+    v19,
+    v20,
+    v21,
+    v22,
+    v23,
+    v24,
+    v25,
+    v26,
+    v27,
+    v28,
+    v29,
+    v30,
+    v31,
+    v32,
+  ]);
+}

@@ -72,8 +72,8 @@ class _AdmitSearchPageState extends State<AdmitSearchPage> {
         BrutalSearchField(
           controller: _query,
           focusNode: _field,
-          label: 'Search the week',
-          hint: 'Events, venues, who is on',
+          labelText: 'Search the week',
+          hintText: 'Events, venues, who is on',
           autofocus: widget.initialQuery.isEmpty,
           onChanged: (_) => setState(() {}),
         ),

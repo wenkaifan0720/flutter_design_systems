@@ -79,9 +79,9 @@ void main() {
           SizedBox(
             width: 320,
             child: BrutalSelect<String>(
-              label: 'City',
+              labelText: 'City',
               value: value,
-              hint: 'Pick a city',
+              hintText: 'Pick a city',
               items: _cities,
               focusNode: box,
               onChanged: chosen.add,
@@ -212,7 +212,7 @@ void main() {
           SizedBox(
             width: 320,
             child: BrutalSelect<String>(
-              label: 'Hall',
+              labelText: 'Hall',
               value: 'Hall 22',
               items: [
                 for (var i = 1; i <= 24; i++)
@@ -397,11 +397,11 @@ void main() {
           SizedBox(
             width: 320,
             child: BrutalTagInput<String>(
-              label: 'Kinds of night',
-              hint: 'Add a kind',
+              labelText: 'Kinds of night',
+              hintText: 'Add a kind',
               values: const ['Film', 'Talks'],
               options: const ['Film', 'Music', 'Talks', 'Art', 'Late'],
-              labelOf: (k) => k,
+              displayStringForOption: (k) => k,
               isOptionEnabled: isOptionEnabled,
               onChanged: changed.add,
             ),
@@ -487,10 +487,10 @@ void main() {
           SizedBox(
             width: 320,
             child: BrutalCombobox<String>(
-              label: 'Venue',
+              labelText: 'Venue',
               options: const ['Hall 4', 'Gallery Nine', 'The Yard', 'Pier'],
               value: 'Gallery Nine',
-              labelOf: (v) => v,
+              displayStringForOption: (v) => v,
               isOptionEnabled: isOptionEnabled,
               onSelected: chosen.add,
             ),

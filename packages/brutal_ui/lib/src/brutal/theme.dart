@@ -467,7 +467,7 @@ Offset brutalTravelOffset(
 /// Brutal's type: one grotesk, seven styles. A screen uses at most four.
 @immutable
 class BrutalTextTheme with Diagnosticable {
-  /// Styles given one by one; [BrutalTextTheme.of] builds the look's own.
+  /// Styles given one by one; [BrutalTextTheme.from] builds the look's own.
   const BrutalTextTheme({
     required this.display,
     required this.headline,
@@ -479,7 +479,7 @@ class BrutalTextTheme with Diagnosticable {
   });
 
   /// The look's styles in [typeface], coloured for [colors].
-  factory BrutalTextTheme.of(
+  factory BrutalTextTheme.from(
     BrutalColors colors, {
     BrutalTypeface typeface = BrutalTypeface.spaceGrotesk,
   }) {
@@ -775,7 +775,8 @@ class BrutalThemeData with Diagnosticable {
          BrutalMetrics.minShadowOffset,
          BrutalMetrics.maxShadowOffset,
        ),
-       textTheme = textTheme ?? BrutalTextTheme.of(colors, typeface: typeface),
+       textTheme =
+           textTheme ?? BrutalTextTheme.from(colors, typeface: typeface),
        density = density ?? BrutalDensity.adaptivePlatformDensity;
 
   /// The look by day.

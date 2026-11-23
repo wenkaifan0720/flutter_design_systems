@@ -18,7 +18,7 @@ void main() {
             mainAxisSize: MainAxisSize.min,
             children: [
               BrutalSelect<String>(
-                label: 'Paper size',
+                labelText: 'Paper size',
                 value: 'a4',
                 items: const [BrutalSelectItem(value: 'a4', label: 'A4')],
                 onChanged: (_) {},

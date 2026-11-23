@@ -89,7 +89,7 @@ Widget kitButtonsDemo(Brightness brightness) => kitScreen(
             ),
             BrutalIconButton(
               onPressed: () {},
-              selected: true,
+              isSelected: true,
               icon: const Icon(LucideIcons.heart),
               tooltip: 'Saved',
             ),
@@ -308,7 +308,7 @@ Widget kitSpecimenIconButton() => kitState(
     children: [
       BrutalIconButton(
         onPressed: () => change(!saved),
-        selected: saved,
+        isSelected: saved,
         icon: const Icon(LucideIcons.heart),
         tooltip: saved ? 'Saved' : 'Save',
       ),

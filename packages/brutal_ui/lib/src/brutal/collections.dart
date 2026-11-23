@@ -339,7 +339,7 @@ class BrutalDataTable<R> extends StatelessWidget {
                 BrutalPagination(
                   page: controller.page + 1,
                   pageCount: controller.pageCount,
-                  onChanged: (p) => controller.goToPage(p - 1),
+                  onPageChanged: (p) => controller.goToPage(p - 1),
                 ),
               ],
             ),
@@ -674,9 +674,9 @@ class BrutalCarousel extends StatelessWidget {
               Expanded(
                 child: Center(
                   child: BrutalPageDots(
-                    count: controls.count,
-                    index: controls.page,
-                    onChanged: controls.goToPage,
+                    pageCount: controls.count,
+                    page: controls.page,
+                    onPageChanged: controls.goToPage,
                   ),
                 ),
               ),
@@ -858,7 +858,7 @@ class BrutalSwipeAction {
     required this.label,
     required this.onPressed,
     this.icon,
-    this.destructive = false,
+    this.isDestructiveAction = false,
   });
 
   /// What it says.
@@ -871,11 +871,11 @@ class BrutalSwipeAction {
   final IconData? icon;
 
   /// Whether it destroys: drawn in the danger colour.
-  final bool destructive;
+  final bool isDestructiveAction;
 }
 
 /// [child] with actions behind its edges, shown by a swipe: square ink
-/// cells on rules ([BrutalSwipeAction.destructive] ones in the danger
+/// cells on rules ([BrutalSwipeAction.isDestructiveAction] ones in the danger
 /// colour). A long swipe runs the first; the actions are also a screen
 /// reader's custom actions.
 ///
@@ -884,7 +884,7 @@ class BrutalSwipeAction {
 /// and `iconSize`, then [BrutalThemeData.swipeRowStyle]'s.
 ///
 /// ```dart
-/// BrutalSwipeRow(endActions: [BrutalSwipeAction(label: 'Delete', destructive: true, onPressed: delete)], child: BrutalListTile(title: 'Low Tide'))
+/// BrutalSwipeRow(endActions: [BrutalSwipeAction(label: 'Delete', isDestructiveAction: true, onPressed: delete)], child: BrutalListTile(title: 'Low Tide'))
 /// ```
 class BrutalSwipeRow extends StatelessWidget {
   /// A row over its actions.
@@ -916,7 +916,7 @@ class BrutalSwipeRow extends StatelessWidget {
     RawSwipeAction wrap(BrutalSwipeAction a) => RawSwipeAction(
       label: a.label,
       onPressed: a.onPressed,
-      destructive: a.destructive,
+      destructive: a.isDestructiveAction,
       data: a,
     );
     // The row's box holds the moving row: dragged, it slides under its own

@@ -80,19 +80,19 @@ void main() {
     expect(axis, closeTo(_width('1') + 8, 0.01));
   });
 
-  testWidgets("a chart's valueLabel names the axis and the read-out", (
+  testWidgets("a chart's valueFormat writes the axis and the read-out", (
     tester,
   ) async {
     final semantics = tester.ensureSemantics();
     await _pump(
       tester,
-      BrutalBarChart(
+      const BrutalBarChart(
         labels: _days,
-        series: const [
+        series: [
           BrutalSeries('Hours', [2, 6, 3]),
         ],
         semanticLabel: 'Hours a day',
-        valueLabel: (v) => '${v.round()} h',
+        valueFormat: DesignChartValueFormat(suffix: ' h'),
       ),
     );
     expect(_axis(tester).$2, closeTo(_width('6 h') + 8, 0.01));

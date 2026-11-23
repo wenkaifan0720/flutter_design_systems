@@ -16,24 +16,28 @@ Widget kitFieldsDemo(Brightness brightness) => kitScreen(
           'A square box in the rule, its label above. Focused, a second '
           'square line stands 2 px outside it.',
       children: [
-        BrutalTextField(label: 'Name on ticket', hint: 'As on your ID'),
+        BrutalTextField(labelText: 'Name on ticket', hintText: 'As on your ID'),
         BrutalTextField(
-          label: 'Email',
-          hint: 'you@example.com',
-          helper: 'We send the tickets here.',
+          labelText: 'Email',
+          hintText: 'you@example.com',
+          helperText: 'We send the tickets here.',
           keyboardType: TextInputType.emailAddress,
         ),
         BrutalTextField(
-          label: 'Search',
-          hint: 'Artists, venues',
+          labelText: 'Search',
+          hintText: 'Artists, venues',
           prefixIcon: Icon(LucideIcons.search),
         ),
         BrutalTextField(
-          label: 'Card number',
-          hint: '1234 5678 9012 3456',
-          error: 'That card number is one digit short.',
+          labelText: 'Card number',
+          hintText: '1234 5678 9012 3456',
+          errorText: 'That card number is one digit short.',
         ),
-        BrutalTextField(label: 'Promo code', hint: 'None', enabled: false),
+        BrutalTextField(
+          labelText: 'Promo code',
+          hintText: 'None',
+          enabled: false,
+        ),
       ],
     ),
     KitSection(
@@ -41,8 +45,8 @@ Widget kitFieldsDemo(Brightness brightness) => kitScreen(
       note: 'The same box, several lines tall; it grows to its limit.',
       children: [
         BrutalTextField(
-          label: 'Note to the venue',
-          hint: 'Access needs, a late arrival',
+          labelText: 'Note to the venue',
+          hintText: 'Access needs, a late arrival',
           maxLines: 6,
           minLines: 3,
         ),
@@ -54,23 +58,23 @@ Widget kitFieldsDemo(Brightness brightness) => kitScreen(
           'A search box clears itself; a password shows itself; add-ons '
           'stand in cells of their own on the box\'s rules.',
       children: [
-        BrutalSearchField(hint: 'Events, venues, who is on'),
+        BrutalSearchField(hintText: 'Events, venues, who is on'),
         BrutalPasswordField(
-          label: 'Password',
-          helper: 'At least 12 characters.',
+          labelText: 'Password',
+          helperText: 'At least 12 characters.',
         ),
         BrutalInputGroup(
-          label: 'Your page',
+          labelText: 'Your page',
           before: 'https://',
           after: '.admit.events',
-          hint: 'your-night',
+          hintText: 'your-night',
         ),
         BrutalInputGroup(
-          label: 'Donation',
+          labelText: 'Donation',
           before: '€',
-          hint: '5.00',
+          hintText: '5.00',
           keyboardType: TextInputType.number,
-          error: 'Give at least €1.',
+          errorText: 'Give at least €1.',
         ),
       ],
     ),
@@ -81,13 +85,13 @@ Widget kitFieldsDemo(Brightness brightness) => kitScreen(
           'fill it whole. The caret\'s cell carries a heavy bar.',
       children: [
         BrutalCodeField(
-          label: 'Code from your bank',
-          helper: 'Six figures, sent by text.',
+          labelText: 'Code from your bank',
+          helperText: 'Six figures, sent by text.',
         ),
         BrutalCodeField(
-          label: 'Door code',
+          labelText: 'Door code',
           length: 4,
-          error: 'That code has been used.',
+          errorText: 'That code has been used.',
         ),
       ],
     ),
@@ -136,28 +140,28 @@ class _SelectsState extends State<_Selects> {
     crossAxisAlignment: CrossAxisAlignment.stretch,
     children: [
       BrutalSelect<String>(
-        label: 'City',
+        labelText: 'City',
         items: _cities,
         value: _city,
         onChanged: (v) => setState(() => _city = v),
       ),
       const SizedBox(height: BrutalSpacing.regular),
       BrutalSelect<String>(
-        label: 'When',
-        hint: 'Any day',
+        labelText: 'When',
+        hintText: 'Any day',
         items: const [
           BrutalSelectItem(value: 'tonight', label: 'Tonight'),
           BrutalSelectItem(value: 'weekend', label: 'This weekend'),
           BrutalSelectItem(value: 'month', label: 'This month'),
         ],
         value: _when,
-        error: _when == null ? 'Pick a day to see times.' : null,
+        errorText: _when == null ? 'Pick a day to see times.' : null,
         onChanged: (v) => setState(() => _when = v),
       ),
       const SizedBox(height: BrutalSpacing.regular),
       const BrutalSelect<String>(
-        label: 'Seat',
-        hint: 'Standing only',
+        labelText: 'Seat',
+        hintText: 'Standing only',
         items: [],
         value: null,
         onChanged: null,
@@ -192,20 +196,20 @@ class _SuggestingState extends State<_Suggesting> {
     crossAxisAlignment: CrossAxisAlignment.stretch,
     children: [
       BrutalCombobox<String>(
-        label: 'Venue',
-        hint: 'Type a venue',
+        labelText: 'Venue',
+        hintText: 'Type a venue',
         options: _venues,
-        labelOf: (v) => v,
+        displayStringForOption: (v) => v,
         value: _venue,
         onSelected: (v) => setState(() => _venue = v),
       ),
       const SizedBox(height: BrutalSpacing.regular),
       BrutalTagInput<String>(
-        label: 'Kinds of night',
-        hint: 'Add a kind',
+        labelText: 'Kinds of night',
+        hintText: 'Add a kind',
         values: _kinds,
         options: const ['Film', 'Music', 'Talks', 'Art', 'Late', 'Family'],
-        labelOf: (k) => k,
+        displayStringForOption: (k) => k,
         onChanged: (next) => setState(() => _kinds = next),
       ),
     ],
@@ -241,49 +245,49 @@ class _LabelledState extends State<_Labelled> {
 Widget kitSpecimenTextField() => const Column(
   crossAxisAlignment: CrossAxisAlignment.stretch,
   children: [
-    BrutalTextField(label: 'Name on the ticket', hint: 'As on your ID'),
+    BrutalTextField(labelText: 'Name on the ticket', hintText: 'As on your ID'),
     SizedBox(height: BrutalSpacing.regular),
     BrutalTextField(
-      label: 'Email',
-      helper: 'Your tickets go here.',
-      error: 'An email address has an @ in it.',
+      labelText: 'Email',
+      helperText: 'Your tickets go here.',
+      errorText: 'An email address has an @ in it.',
     ),
   ],
 );
 
 Widget kitSpecimenSearchField() =>
-    const BrutalSearchField(hint: 'Events, venues, people');
+    const BrutalSearchField(hintText: 'Events, venues, people');
 
 Widget kitSpecimenPasswordField() => const BrutalPasswordField(
-  label: 'Password',
-  helper: 'Twelve characters or more.',
+  labelText: 'Password',
+  helperText: 'Twelve characters or more.',
 );
 
 Widget kitSpecimenInputGroup() => const BrutalInputGroup(
-  label: 'Price',
+  labelText: 'Price',
   before: '£',
   after: 'each',
   keyboardType: TextInputType.number,
 );
 
 Widget kitSpecimenCodeField() =>
-    const BrutalCodeField(label: 'The code we sent you');
+    const BrutalCodeField(labelText: 'The code we sent you');
 
 Widget kitSpecimenCombobox() => BrutalCombobox<String>(
-  label: 'Venue',
-  hint: 'Type a venue',
+  labelText: 'Venue',
+  hintText: 'Type a venue',
   options: const ['The Shed', 'Dock 4', 'Cellar', 'Glasshouse'],
-  labelOf: (s) => s,
+  displayStringForOption: (s) => s,
 );
 
 Widget kitSpecimenTagInput() => kitState<List<String>>(
   const ['Jazz', 'Folk'],
   (context, values, change) => BrutalTagInput<String>(
-    label: 'Genres',
+    labelText: 'Genres',
     values: values,
     onChanged: change,
     options: const ['Jazz', 'Folk', 'Techno', 'Soul'],
-    labelOf: (s) => s,
+    displayStringForOption: (s) => s,
   ),
 );
 
@@ -299,7 +303,7 @@ Widget kitSpecimenFormField() => kitState(
 Widget kitSpecimenSelect() => kitState(
   'shed',
   (context, venue, change) => BrutalSelect<String>(
-    label: 'Venue',
+    labelText: 'Venue',
     value: venue,
     onChanged: change,
     items: const [

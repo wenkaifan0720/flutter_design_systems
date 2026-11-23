@@ -251,7 +251,7 @@ Widget _strip(
 /// [BrutalThemeData.paginationStyle]'s.
 ///
 /// ```dart
-/// BrutalPagination(page: page, pageCount: 12, onChanged: (p) => setState(() => page = p))
+/// BrutalPagination(page: page, pageCount: 12, onPageChanged: (p) => setState(() => page = p))
 /// ```
 class BrutalPagination extends StatelessWidget {
   /// Pages 1 to [pageCount], at [page].
@@ -259,7 +259,7 @@ class BrutalPagination extends StatelessWidget {
     super.key,
     required this.page,
     required this.pageCount,
-    required this.onChanged,
+    required this.onPageChanged,
     this.style,
   });
 
@@ -273,7 +273,7 @@ class BrutalPagination extends StatelessWidget {
   final int pageCount;
 
   /// Called with the page to go to; null disables it.
-  final ValueChanged<int>? onChanged;
+  final ValueChanged<int>? onPageChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -282,9 +282,9 @@ class BrutalPagination extends StatelessWidget {
     final words = RawWidgetsLocalizations.of(context);
     final rtl = Directionality.of(context) == TextDirection.rtl;
     VoidCallback? go(int p) =>
-        onChanged == null || p < 1 || p > pageCount || p == page
+        onPageChanged == null || p < 1 || p > pageCount || p == page
         ? null
-        : () => onChanged!(p);
+        : () => onPageChanged!(p);
     List<int> near(int reach) => <int>{
       1,
       pageCount,
@@ -359,7 +359,9 @@ class BrutalPagination extends StatelessWidget {
                     ),
                   ),
                 _StripCell(
-                  onPressed: onChanged == null ? null : () => onChanged!(p),
+                  onPressed: onPageChanged == null
+                      ? null
+                      : () => onPageChanged!(p),
                   chosen: p == page,
                   layers: layers,
                   semanticLabel: words.positionLabel(p, pageCount),
@@ -401,14 +403,14 @@ class BrutalPagination extends StatelessWidget {
 /// `textStyle` (the names), then [BrutalThemeData.stepProgressStyle]'s.
 ///
 /// ```dart
-/// BrutalStepProgress(steps: const ['Tickets', 'Details', 'Pay'], current: 1)
+/// BrutalStepProgress(steps: const ['Tickets', 'Details', 'Pay'], currentStep: 1)
 /// ```
 class BrutalStepProgress extends StatelessWidget {
-  /// [steps], at [current] (from 0).
+  /// [steps], at [currentStep] (from 0).
   const BrutalStepProgress({
     super.key,
     required this.steps,
-    required this.current,
+    required this.currentStep,
     this.style,
   });
 
@@ -419,7 +421,7 @@ class BrutalStepProgress extends StatelessWidget {
   final List<String> steps;
 
   /// The step being done, from 0; [steps]' length once all are done.
-  final int current;
+  final int currentStep;
 
   // It measures its step names as it builds: it builds again when the
   // platform's fonts change, so whether they stack follows the words drawn.
@@ -437,7 +439,8 @@ class BrutalStepProgress extends StatelessWidget {
     if (steps.isEmpty) return const SizedBox.shrink();
     return Semantics(
       container: true,
-      label: 'Step ${(current + 1).clamp(1, steps.length)} of ${steps.length}',
+      label:
+          'Step ${(currentStep + 1).clamp(1, steps.length)} of ${steps.length}',
       child: BrutalSurface(
         face: BrutalFace(
           fill: layered.fill ?? c.surface,
@@ -462,7 +465,7 @@ class BrutalStepProgress extends StatelessWidget {
             final stack = steps.indexed.any((entry) {
               painter.text = TextSpan(
                 text: entry.$2,
-                style: _nameStyle(theme, layered, entry.$1 == current),
+                style: _nameStyle(theme, layered, entry.$1 == currentStep),
               );
               painter.layout();
               return painter.width > width;
@@ -516,8 +519,8 @@ class BrutalStepProgress extends StatelessWidget {
     bool stacked = false,
   }) {
     final c = theme.colors;
-    final done = i < current;
-    final now = i == current;
+    final done = i < currentStep;
+    final now = i == currentStep;
     final ink = done
         ? c.paper
         : now
@@ -599,27 +602,27 @@ class BrutalStepProgress extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(IntProperty('steps', steps.length))
-      ..add(IntProperty('current', current));
+      ..add(IntProperty('currentStep', currentStep));
   }
 }
 
 /// Where a carousel or a run of pages stands: a small square a page, the
-/// current one stretched to a bar. Given [onChanged], each is a button that
+/// current one stretched to a bar. Given [onPageChanged], each is a button that
 /// goes to its page.
 ///
 /// Reads [style]'s `foreground` (selected for the current page's bar, and
 /// the rest's squares), then [BrutalThemeData.pageDotsStyle]'s.
 ///
 /// ```dart
-/// BrutalPageDots(count: 4, index: page, onChanged: goTo)
+/// BrutalPageDots(pageCount: 4, page: page, onPageChanged: goTo)
 /// ```
 class BrutalPageDots extends StatelessWidget {
-  /// [count] dots at [index].
+  /// [pageCount] dots at [page].
   const BrutalPageDots({
     super.key,
-    required this.count,
-    required this.index,
-    this.onChanged,
+    required this.pageCount,
+    required this.page,
+    this.onPageChanged,
     this.style,
   });
 
@@ -627,13 +630,13 @@ class BrutalPageDots extends StatelessWidget {
   final BrutalStyle? style;
 
   /// How many pages.
-  final int count;
+  final int pageCount;
 
   /// The current page, from 0.
-  final int index;
+  final int page;
 
   /// Goes to a page; null: the dots only show.
-  final ValueChanged<int>? onChanged;
+  final ValueChanged<int>? onPageChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -645,22 +648,22 @@ class BrutalPageDots extends StatelessWidget {
     Widget dot(int i) => AnimatedContainer(
       duration: reduce ? Duration.zero : const Duration(milliseconds: 200),
       curve: Curves.easeOutCubic,
-      width: i == index ? 24 : 8,
+      width: i == page ? 24 : 8,
       height: 8,
       color:
           DesignStyleOf(layers, {
-            if (i == index) WidgetState.selected,
+            if (i == page) WidgetState.selected,
           }).foreground ??
-          (i == index ? c.ink : c.inkMuted),
+          (i == page ? c.ink : c.inkMuted),
     );
     return Semantics(
       container: true,
-      label: words.positionLabel(index + 1, count),
+      label: words.positionLabel(page + 1, pageCount),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          for (var i = 0; i < count; i++)
-            if (onChanged == null)
+          for (var i = 0; i < pageCount; i++)
+            if (onPageChanged == null)
               Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: BrutalSpacing.tight,
@@ -670,9 +673,9 @@ class BrutalPageDots extends StatelessWidget {
             else
               TapTargetPadding(
                 child: RawButton(
-                  onPressed: () => onChanged!(i),
-                  selected: i == index,
-                  semanticLabel: words.positionLabel(i + 1, count),
+                  onPressed: () => onPageChanged!(i),
+                  selected: i == page,
+                  semanticLabel: words.positionLabel(i + 1, pageCount),
                   builder: (context, states, _) => CustomPaint(
                     foregroundPainter: states.contains(WidgetState.focused)
                         ? BrutalInsetFocusPainter(c.ink)
@@ -696,9 +699,14 @@ class BrutalPageDots extends StatelessWidget {
       ..add(
         DiagnosticsProperty<BrutalStyle>('style', style, defaultValue: null),
       )
-      ..add(IntProperty('count', count))
-      ..add(IntProperty('index', index))
-      ..add(ObjectFlagProperty<ValueChanged<int>>.has('onChanged', onChanged));
+      ..add(IntProperty('pageCount', pageCount))
+      ..add(IntProperty('page', page))
+      ..add(
+        ObjectFlagProperty<ValueChanged<int>>.has(
+          'onPageChanged',
+          onPageChanged,
+        ),
+      );
   }
 }
 
@@ -769,17 +777,22 @@ class BrutalMenuBar extends StatelessWidget {
         ),
         child: SizedBox(
           height: bar.minimumSize?.height ?? theme.controlHeight,
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              for (final item in items) ...[
-                item,
-                SizedBox(
-                  width: theme.borderWidth,
-                  child: ColoredBox(color: rule),
-                ),
+          // Menus wider than the bar (large text on a phone) scroll along
+          // it.
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                for (final item in items) ...[
+                  item,
+                  SizedBox(
+                    width: theme.borderWidth,
+                    child: ColoredBox(color: rule),
+                  ),
+                ],
               ],
-            ],
+            ),
           ),
         ),
       ),
@@ -903,7 +916,7 @@ class BrutalCommandPalette extends StatelessWidget {
     super.key,
     required this.commands,
     this.onSelected,
-    this.hint = 'Type a command or search',
+    this.hintText = 'Type a command or search',
     this.emptyText = 'No commands match',
     this.autofocus = false,
     this.style,
@@ -919,7 +932,7 @@ class BrutalCommandPalette extends StatelessWidget {
   final ValueChanged<BrutalCommand>? onSelected;
 
   /// What the empty field says.
-  final String hint;
+  final String hintText;
 
   /// What the list says when nothing matches.
   final String emptyText;
@@ -945,8 +958,8 @@ class BrutalCommandPalette extends StatelessWidget {
     fieldBuilder: (context, field) => BrutalTextField(
       controller: field.controller,
       focusNode: field.focusNode,
-      hint: hint,
-      semanticLabel: hint,
+      hintText: hintText,
+      semanticLabel: hintText,
       prefixIcon: const Icon(LucideIcons.search),
       // Enter in onEditingComplete alone: the field keeps the keyboard, and
       // with no onSubmitted Flutter does not restart its text input (a
@@ -1023,7 +1036,7 @@ class BrutalCommandPalette extends StatelessWidget {
           onSelected,
         ),
       )
-      ..add(StringProperty('hint', hint))
+      ..add(StringProperty('hintText', hintText))
       ..add(StringProperty('emptyText', emptyText))
       ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
   }
@@ -1065,7 +1078,7 @@ Widget _panel(BuildContext context, BrutalStyle? style, Widget child) {
 Future<void> showBrutalCommandPalette(
   BuildContext context, {
   required List<BrutalCommand> commands,
-  String hint = 'Type a command or search',
+  String hintText = 'Type a command or search',
   BrutalStyle? style,
 }) {
   final scrim = BrutalTheme.of(context).colors.scrim;
@@ -1074,7 +1087,7 @@ Future<void> showBrutalCommandPalette(
     barrierColor: scrim,
     palette: (run) => BrutalCommandPalette(
       commands: commands,
-      hint: hint,
+      hintText: hintText,
       autofocus: true,
       style: style,
     )._body(run),

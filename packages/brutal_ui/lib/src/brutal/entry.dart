@@ -15,6 +15,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import 'feedback.dart';
 import 'internal/drop_mark.dart';
+import 'internal/field_frame.dart';
 import 'lists.dart';
 import 'menu.dart';
 import 'surface.dart';
@@ -112,7 +113,7 @@ class BrutalFieldButton extends StatelessWidget {
 /// [BrutalThemeData.textFieldStyle].
 ///
 /// ```dart
-/// BrutalSearchField(hint: 'Events, venues, who is on', onChanged: (q) => setState(() => query = q))
+/// BrutalSearchField(hintText: 'Events, venues, who is on', onChanged: (q) => setState(() => query = q))
 /// ```
 class BrutalSearchField extends StatefulWidget {
   /// A search field.
@@ -120,8 +121,8 @@ class BrutalSearchField extends StatefulWidget {
     super.key,
     this.controller,
     this.focusNode,
-    this.label,
-    this.hint = 'Search',
+    this.labelText,
+    this.hintText = 'Search',
     this.onChanged,
     this.onSubmitted,
     this.autofocus = false,
@@ -140,10 +141,10 @@ class BrutalSearchField extends StatefulWidget {
   final FocusNode? focusNode;
 
   /// The words over the box.
-  final String? label;
+  final String? labelText;
 
   /// The grey words in the empty box.
-  final String hint;
+  final String hintText;
 
   /// Called on every edit, and with '' when cleared.
   final ValueChanged<String>? onChanged;
@@ -157,7 +158,7 @@ class BrutalSearchField extends StatefulWidget {
   /// Whether it takes input.
   final bool enabled;
 
-  /// What a screen reader calls it when [label] is not the name; the hint
+  /// What a screen reader calls it when [labelText] is not the name; the hint
   /// otherwise.
   final String? semanticLabel;
 
@@ -196,8 +197,8 @@ class BrutalSearchField extends StatefulWidget {
           defaultValue: null,
         ),
       )
-      ..add(StringProperty('label', label, defaultValue: null))
-      ..add(StringProperty('hint', hint))
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
+      ..add(StringProperty('hintText', hintText))
       ..add(
         ObjectFlagProperty<ValueChanged<String>>.has('onChanged', onChanged),
       )
@@ -272,9 +273,9 @@ class _BrutalSearchFieldState extends State<BrutalSearchField> {
   Widget build(BuildContext context) => BrutalTextField(
     controller: _controller,
     focusNode: widget.focusNode,
-    label: widget.label,
-    hint: widget.hint,
-    semanticLabel: widget.semanticLabel ?? widget.label ?? widget.hint,
+    labelText: widget.labelText,
+    hintText: widget.hintText,
+    semanticLabel: widget.semanticLabel ?? widget.labelText ?? widget.hintText,
     prefixIcon: const Icon(LucideIcons.search),
     textInputAction: TextInputAction.search,
     autofocus: widget.autofocus,
@@ -302,7 +303,7 @@ class _BrutalSearchFieldState extends State<BrutalSearchField> {
 /// [BrutalThemeData.textFieldStyle].
 ///
 /// ```dart
-/// const BrutalPasswordField(label: 'Password', helper: 'At least 12 characters')
+/// const BrutalPasswordField(labelText: 'Password', helperText: 'At least 12 characters')
 /// ```
 class BrutalPasswordField extends StatelessWidget {
   /// A password field.
@@ -310,10 +311,10 @@ class BrutalPasswordField extends StatelessWidget {
     super.key,
     this.controller,
     this.focusNode,
-    this.label,
-    this.hint,
-    this.helper,
-    this.error,
+    this.labelText,
+    this.hintText,
+    this.helperText,
+    this.errorText,
     this.onChanged,
     this.onSubmitted,
     this.textInputAction,
@@ -335,16 +336,16 @@ class BrutalPasswordField extends StatelessWidget {
   final FocusNode? focusNode;
 
   /// The words over the box.
-  final String? label;
+  final String? labelText;
 
   /// The grey words in the empty box.
-  final String? hint;
+  final String? hintText;
 
   /// Help under the box.
-  final String? helper;
+  final String? helperText;
 
   /// What is wrong, under the box in red.
-  final String? error;
+  final String? errorText;
 
   /// Called on every edit.
   final ValueChanged<String>? onChanged;
@@ -395,10 +396,10 @@ class BrutalPasswordField extends StatelessWidget {
     builder: (context, password) => BrutalTextField(
       controller: controller,
       focusNode: focusNode,
-      label: label,
-      hint: hint,
-      helper: helper,
-      error: error,
+      labelText: labelText,
+      hintText: hintText,
+      helperText: helperText,
+      errorText: errorText,
       obscureText: password.obscured,
       keyboardType: TextInputType.visiblePassword,
       textInputAction: textInputAction,
@@ -439,10 +440,10 @@ class BrutalPasswordField extends StatelessWidget {
           defaultValue: null,
         ),
       )
-      ..add(StringProperty('label', label, defaultValue: null))
-      ..add(StringProperty('hint', hint, defaultValue: null))
-      ..add(StringProperty('helper', helper, defaultValue: null))
-      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
+      ..add(StringProperty('helperText', helperText, defaultValue: null))
+      ..add(StringProperty('errorText', errorText, defaultValue: null))
       ..add(
         ObjectFlagProperty<ValueChanged<String>>.has('onChanged', onChanged),
       )
@@ -511,6 +512,7 @@ class _Entry extends StatelessWidget {
     this.onSubmitted,
     this.onEditingComplete,
     this.layers = const [],
+    this.expanded,
   });
 
   final TextEditingController controller;
@@ -519,6 +521,10 @@ class _Entry extends StatelessWidget {
   final List<BrutalStyle?> layers;
   final String? hint;
   final String? semanticLabel;
+
+  /// Whether the list it suggests from is open (a tag input's entry); null
+  /// for an entry with no list.
+  final bool? expanded;
   final TextInputType? keyboardType;
   final ValueChanged<String>? onChanged;
   final ValueChanged<String>? onSubmitted;
@@ -553,6 +559,7 @@ class _Entry extends StatelessWidget {
         child: Semantics(
           label: semanticLabel,
           hint: hint,
+          expanded: expanded,
           child: Material(
             type: MaterialType.transparency,
             child: TextField(
@@ -586,7 +593,7 @@ class _Entry extends StatelessWidget {
 /// paper with muted words.
 ///
 /// ```dart
-/// const BrutalInputGroup(label: 'Your page', before: 'https://', after: '.admit.events', hint: 'your-night')
+/// const BrutalInputGroup(labelText: 'Your page', before: 'https://', after: '.admit.events', hintText: 'your-night')
 /// ```
 class BrutalInputGroup extends StatefulWidget {
   /// A field with add-on cells.
@@ -594,10 +601,10 @@ class BrutalInputGroup extends StatefulWidget {
     super.key,
     this.controller,
     this.focusNode,
-    this.label,
-    this.hint,
-    this.helper,
-    this.error,
+    this.labelText,
+    this.hintText,
+    this.helperText,
+    this.errorText,
     this.before,
     this.after,
     this.keyboardType,
@@ -614,19 +621,19 @@ class BrutalInputGroup extends StatefulWidget {
   final FocusNode? focusNode;
 
   /// The words over the box.
-  final String? label;
+  final String? labelText;
 
   /// The box's style, over [BrutalThemeData.textFieldStyle].
   final BrutalStyle? style;
 
   /// The grey words in the empty entry.
-  final String? hint;
+  final String? hintText;
 
   /// Help under the box.
-  final String? helper;
+  final String? helperText;
 
   /// What is wrong, under the box in red.
-  final String? error;
+  final String? errorText;
 
   /// The cell before the entry.
   final String? before;
@@ -667,13 +674,13 @@ class BrutalInputGroup extends StatefulWidget {
           defaultValue: null,
         ),
       )
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
       ..add(
         DiagnosticsProperty<BrutalStyle>('style', style, defaultValue: null),
       )
-      ..add(StringProperty('hint', hint, defaultValue: null))
-      ..add(StringProperty('helper', helper, defaultValue: null))
-      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
+      ..add(StringProperty('helperText', helperText, defaultValue: null))
+      ..add(StringProperty('errorText', errorText, defaultValue: null))
       ..add(StringProperty('before', before, defaultValue: null))
       ..add(StringProperty('after', after, defaultValue: null))
       ..add(
@@ -711,29 +718,36 @@ class _BrutalInputGroupState extends State<BrutalInputGroup> {
     super.dispose();
   }
 
-  Widget _cell(BrutalThemeData theme, String words) => ExcludeSemantics(
-    child: ColoredBox(
-      color: theme.colors.paper,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: BrutalSpacing.medium),
-        child: Center(
-          widthFactor: 1,
-          child: DesignCapCenter(
-            capHeightFactor: theme.capHeightFactor,
-            child: Text(
-              words,
-              maxLines: 1,
-              style: theme.textTheme.body.copyWith(
-                color: widget.enabled
-                    ? theme.colors.inkMuted
-                    : theme.colors.disabled,
+  // An add-on cell, at most [most] wide: past that its words wrap, so the
+  // entry keeps room to type in.
+  Widget _cell(BrutalThemeData theme, String words, double most) =>
+      ExcludeSemantics(
+        child: ColoredBox(
+          color: theme.colors.paper,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: most),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: BrutalSpacing.medium,
+              ),
+              child: Center(
+                widthFactor: 1,
+                child: DesignCapCenter(
+                  capHeightFactor: theme.capHeightFactor,
+                  child: Text(
+                    words,
+                    style: theme.textTheme.body.copyWith(
+                      color: widget.enabled
+                          ? theme.colors.inkMuted
+                          : theme.colors.disabled,
+                    ),
+                  ),
+                ),
               ),
             ),
           ),
         ),
-      ),
-    ),
-  );
+      );
 
   @override
   Widget build(BuildContext context) {
@@ -742,14 +756,14 @@ class _BrutalInputGroupState extends State<BrutalInputGroup> {
     final layers = [widget.style, theme.textFieldStyle];
     final rest = DesignStyleOf(layers, {
       if (!widget.enabled) WidgetState.disabled,
-      if (widget.error != null) WidgetState.error,
+      if (widget.errorText != null) WidgetState.error,
     });
     final rule =
         rest.side?.color ??
         rest.edge ??
         (!widget.enabled
             ? c.disabled
-            : widget.error != null
+            : widget.errorText != null
             ? c.danger
             : c.ink);
     Widget split() => SizedBox(
@@ -757,72 +771,93 @@ class _BrutalInputGroupState extends State<BrutalInputGroup> {
       child: ColoredBox(color: rule),
     );
     final semantic = [
-      widget.label,
+      widget.labelText,
       widget.before,
       widget.after,
     ].whereType<String>().join(', ');
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        if (widget.label != null)
-          ExcludeSemantics(
-            child: BrutalFieldLabel(widget.label!, enabled: widget.enabled),
+    return BrutalFieldFrame(
+      labelText: widget.labelText,
+      helperText: widget.helperText,
+      errorText: widget.errorText,
+      enabled: widget.enabled,
+      child: DesignInputGroup(
+        focusNode: _focus,
+        enabled: widget.enabled,
+        isError: widget.errorText != null,
+        builder: (context, states, child) => AnimatedBrutalSurface(
+          stiffness: BrutalMotion.colorStiffness,
+          face: BrutalFace(
+            fill: DesignStyleOf(layers, states).fill ?? c.surface,
+            border: rule,
+            foreground: c.ink,
+            focus: states.contains(WidgetState.focused)
+                ? rule
+                : rule.withValues(alpha: 0),
           ),
-        DesignInputGroup(
-          focusNode: _focus,
-          enabled: widget.enabled,
-          isError: widget.error != null,
-          builder: (context, states, child) => AnimatedBrutalSurface(
-            stiffness: BrutalMotion.colorStiffness,
-            face: BrutalFace(
-              fill: DesignStyleOf(layers, states).fill ?? c.surface,
-              border: rule,
-              foreground: c.ink,
-              focus: states.contains(WidgetState.focused)
-                  ? rule
-                  : rule.withValues(alpha: 0),
-            ),
-            child: child,
-          ),
-          child: IntrinsicHeight(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                if (widget.before != null) ...[
-                  _cell(theme, widget.before!),
-                  split(),
-                ],
-                Expanded(
-                  child: Padding(
-                    padding:
-                        rest.padding(Directionality.of(context)) ??
-                        const EdgeInsets.symmetric(
-                          horizontal: BrutalSpacing.medium,
-                        ),
-                    child: _Entry(
-                      controller: _controller,
-                      focusNode: _focus,
-                      enabled: widget.enabled,
-                      layers: layers,
-                      hint: widget.hint,
-                      semanticLabel: semantic.isEmpty ? null : semantic,
-                      keyboardType: widget.keyboardType,
-                      onChanged: widget.onChanged,
-                      onSubmitted: widget.onSubmitted,
+          child: child,
+        ),
+        // An add-on keeps its words on one line while the entry keeps at
+        // least a quarter of the box to type in; past that (large text on a
+        // phone) each cell takes at most a quarter and its words wrap there.
+        child: LayoutBuilder(
+          builder: (context, box) {
+            final scaler = MediaQuery.textScalerOf(context);
+            final direction = Directionality.of(context);
+            double oneLine(String? words) {
+              if (words == null) return 0;
+              final painter = TextPainter(
+                text: TextSpan(text: words, style: theme.textTheme.body),
+                textDirection: direction,
+                textScaler: scaler,
+                maxLines: 1,
+              )..layout();
+              final width = painter.width;
+              painter.dispose();
+              return width + 2 * BrutalSpacing.medium + theme.borderWidth;
+            }
+
+            final cells = oneLine(widget.before) + oneLine(widget.after);
+            final most = box.maxWidth - cells >= box.maxWidth / 4
+                ? double.infinity
+                : box.maxWidth / 4;
+            return IntrinsicHeight(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  if (widget.before != null) ...[
+                    _cell(theme, widget.before!, most),
+                    split(),
+                  ],
+                  Expanded(
+                    child: Padding(
+                      padding:
+                          rest.padding(direction) ??
+                          const EdgeInsets.symmetric(
+                            horizontal: BrutalSpacing.medium,
+                          ),
+                      child: _Entry(
+                        controller: _controller,
+                        focusNode: _focus,
+                        enabled: widget.enabled,
+                        layers: layers,
+                        hint: widget.hintText,
+                        semanticLabel: semantic.isEmpty ? null : semantic,
+                        keyboardType: widget.keyboardType,
+                        onChanged: widget.onChanged,
+                        onSubmitted: widget.onSubmitted,
+                      ),
                     ),
                   ),
-                ),
-                if (widget.after != null) ...[
-                  split(),
-                  _cell(theme, widget.after!),
+                  if (widget.after != null) ...[
+                    split(),
+                    _cell(theme, widget.after!, most),
+                  ],
                 ],
-              ],
-            ),
-          ),
+              ),
+            );
+          },
         ),
-        BrutalFieldMessage(helper: widget.helper, error: widget.error),
-      ],
+      ),
     );
   }
 }
@@ -837,7 +872,7 @@ class _BrutalInputGroupState extends State<BrutalInputGroup> {
 /// [BrutalThemeData.textFieldStyle]'s.
 ///
 /// ```dart
-/// BrutalCodeField(label: 'Code from your bank', onCompleted: (code) => verify(code))
+/// BrutalCodeField(labelText: 'Code from your bank', onCompleted: (code) => verify(code))
 /// ```
 class BrutalCodeField extends StatefulWidget {
   /// A code of [length] characters.
@@ -846,9 +881,9 @@ class BrutalCodeField extends StatefulWidget {
     this.length = 6,
     this.controller,
     this.focusNode,
-    this.label,
-    this.helper,
-    this.error,
+    this.labelText,
+    this.helperText,
+    this.errorText,
     this.onChanged,
     this.onCompleted,
     this.autofocus = false,
@@ -872,13 +907,13 @@ class BrutalCodeField extends StatefulWidget {
   final FocusNode? focusNode;
 
   /// The words over the cells, and the field's name.
-  final String? label;
+  final String? labelText;
 
   /// Help under the cells.
-  final String? helper;
+  final String? helperText;
 
   /// What is wrong, under the cells in red.
-  final String? error;
+  final String? errorText;
 
   /// Called on every edit.
   final ValueChanged<String>? onChanged;
@@ -937,9 +972,9 @@ class BrutalCodeField extends StatefulWidget {
           defaultValue: null,
         ),
       )
-      ..add(StringProperty('label', label, defaultValue: null))
-      ..add(StringProperty('helper', helper, defaultValue: null))
-      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
+      ..add(StringProperty('helperText', helperText, defaultValue: null))
+      ..add(StringProperty('errorText', errorText, defaultValue: null))
       ..add(
         ObjectFlagProperty<ValueChanged<String>>.has('onChanged', onChanged),
       )
@@ -1032,7 +1067,7 @@ class _BrutalCodeFieldState extends State<BrutalCodeField> {
       [widget.style, theme.textFieldStyle],
       {
         if (!widget.enabled) WidgetState.disabled,
-        if (widget.error != null) WidgetState.error,
+        if (widget.errorText != null) WidgetState.error,
         if (_focus.hasFocus) WidgetState.focused,
       },
     );
@@ -1041,7 +1076,7 @@ class _BrutalCodeFieldState extends State<BrutalCodeField> {
         layered.edge ??
         (!widget.enabled
             ? c.disabled
-            : widget.error != null
+            : widget.errorText != null
             ? c.danger
             : c.ink);
     final height = theme.controlHeight + BrutalSpacing.small;
@@ -1052,9 +1087,9 @@ class _BrutalCodeFieldState extends State<BrutalCodeField> {
       focusNode: _focus,
       autofocus: widget.autofocus,
       enabled: widget.enabled,
-      isError: widget.error != null,
+      isError: widget.errorText != null,
       obscureText: widget.obscureText,
-      semanticLabel: decorate == null ? widget.label : null,
+      semanticLabel: decorate == null ? widget.labelText : null,
       textInputAction: widget.textInputAction,
       onSubmitted: widget.onSubmitted,
       onEditingComplete: widget.onEditingComplete,
@@ -1120,21 +1155,15 @@ class _BrutalCodeFieldState extends State<BrutalCodeField> {
         );
       },
     );
-    return Column(
-      mainAxisSize: MainAxisSize.min,
+    return BrutalFieldFrame(
+      labelText: widget.labelText,
+      helperText: widget.helperText,
+      errorText: widget.errorText,
+      enabled: widget.enabled,
+      failureLine: widget.failureLine,
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (widget.label != null)
-          ExcludeSemantics(
-            child: BrutalFieldLabel(widget.label!, enabled: widget.enabled),
-          ),
-        decorate?.call(otp) ?? otp,
-        BrutalFieldMessage(
-          helper: widget.helper,
-          error: widget.error,
-          failureLine: widget.failureLine,
-        ),
-      ],
+      semantics: decorate == null,
+      child: decorate?.call(otp) ?? otp,
     );
   }
 }
@@ -1260,7 +1289,7 @@ Widget _failed(BuildContext context, RawSearchError failed) {
 /// [BrutalThemeData.menuStyle], as every menu does.
 ///
 /// ```dart
-/// BrutalCombobox<String>(label: 'Venue', options: venues, labelOf: (v) => v, value: venue, onSelected: (v) => setState(() => venue = v))
+/// BrutalCombobox<String>(labelText: 'Venue', options: venues, displayStringForOption: (v) => v, value: venue, onSelected: (v) => setState(() => venue = v))
 /// ```
 class BrutalCombobox<T extends Object> extends StatelessWidget {
   /// A combobox over [options].
@@ -1269,13 +1298,13 @@ class BrutalCombobox<T extends Object> extends StatelessWidget {
     this.options = const [],
     this.search,
     this.debounceDuration,
-    required this.labelOf,
+    required this.displayStringForOption,
     this.value,
     this.onSelected,
-    this.label,
-    this.hint,
-    this.helper,
-    this.error,
+    this.labelText,
+    this.hintText,
+    this.helperText,
+    this.errorText,
     this.emptyText = 'Nothing matches',
     this.requireSelection = true,
     this.enabled = true,
@@ -1295,7 +1324,7 @@ class BrutalCombobox<T extends Object> extends StatelessWidget {
   final Duration? debounceDuration;
 
   /// Each option's words.
-  final String Function(T option) labelOf;
+  final String Function(T option) displayStringForOption;
 
   /// Whether an option may be taken; a disabled option stands grey in the
   /// list, the keys pass it by and neither a press nor Enter takes it.
@@ -1308,16 +1337,16 @@ class BrutalCombobox<T extends Object> extends StatelessWidget {
   final ValueChanged<T>? onSelected;
 
   /// The words over the box.
-  final String? label;
+  final String? labelText;
 
   /// The grey words in the empty box.
-  final String? hint;
+  final String? hintText;
 
   /// Help under the box.
-  final String? helper;
+  final String? helperText;
 
   /// What is wrong, under the box in red.
-  final String? error;
+  final String? errorText;
 
   /// What the list says when nothing matches.
   final String emptyText;
@@ -1332,62 +1361,69 @@ class BrutalCombobox<T extends Object> extends StatelessWidget {
   final BrutalStyle? style;
 
   @override
-  Widget build(BuildContext context) => Column(
-    mainAxisSize: MainAxisSize.min,
-    crossAxisAlignment: CrossAxisAlignment.stretch,
-    children: [
-      if (label != null)
-        ExcludeSemantics(child: BrutalFieldLabel(label!, enabled: enabled)),
-      RawCombobox<T>(
-        options: options,
-        search: search,
-        debounceDuration: debounceDuration,
-        displayStringForOption: labelOf,
-        value: value,
-        onSelected: onSelected,
-        requireSelection: requireSelection,
-        isOptionEnabled: isOptionEnabled,
-        // The pointer's row is the keys' row: Brutal draws both the same
-        // way, so two would read as two current options.
-        highlightFollowsPointer: true,
-        semanticLabel: label,
-        fieldBuilder: (context, field) => BrutalTextField(
-          controller: field.controller,
-          focusNode: field.focusNode,
-          hint: hint,
-          error: error == null ? null : '',
-          semanticLabel: label,
-          enabled: enabled,
-          style: style,
-          // Enter in onEditingComplete alone: the field keeps the keyboard, and
-          // with no onSubmitted Flutter does not restart its text input (a
-          // browser's restarted input takes no typing).
-          onEditingComplete: field.submit,
-          // The select's mark, at the select's place, so the two read as
-          // one kind of field.
-          suffix: SizedBox(
-            width: 20,
-            child: Center(
-              child: BrutalDropMark(
-                color: enabled
-                    ? BrutalTheme.of(context).colors.ink
-                    : BrutalTheme.of(context).colors.disabled,
-              ),
+  Widget build(BuildContext context) => BrutalFieldFrame(
+    labelText: labelText,
+    helperText: helperText,
+    errorText: errorText,
+    enabled: enabled,
+    child: RawCombobox<T>(
+      options: options,
+      search: search,
+      debounceDuration: debounceDuration,
+      displayStringForOption: displayStringForOption,
+      value: value,
+      onSelected: onSelected,
+      requireSelection: requireSelection,
+      isOptionEnabled: isOptionEnabled,
+      // The pointer's row is the keys' row: Brutal draws both the same
+      // way, so two would read as two current options.
+      highlightFollowsPointer: true,
+      semanticLabel: labelText,
+      fieldBuilder: (context, field) => BrutalTextField(
+        controller: field.controller,
+        focusNode: field.focusNode,
+        hintText: hintText,
+        errorText: errorText == null ? null : '',
+        semanticLabel: labelText,
+        enabled: enabled,
+        style: style,
+        // The text input itself says whether its list is open, as the
+        // select's button does.
+        decorate: (input) => Semantics(
+          label: labelText,
+          hint: hintText,
+          expanded: field.isOpen,
+          child: input,
+        ),
+        // Enter in onEditingComplete alone: the field keeps the keyboard, and
+        // with no onSubmitted Flutter does not restart its text input (a
+        // browser's restarted input takes no typing).
+        onEditingComplete: field.submit,
+        // The select's mark, at the select's place, so the two read as
+        // one kind of field.
+        suffix: SizedBox(
+          width: 20,
+          child: Center(
+            // Turned over while the list is open, as the select's.
+            child: BrutalDropMark(
+              open: field.isOpen,
+              color: enabled
+                  ? BrutalTheme.of(context).colors.ink
+                  : BrutalTheme.of(context).colors.disabled,
             ),
           ),
         ),
-        optionBuilder: (context, option, states) => BrutalMenuRow(
-          label: labelOf(option),
-          states: states,
-          checked: states.contains(WidgetState.selected),
-        ),
-        surfaceBuilder: _suggestions,
-        emptyBuilder: (context) => _nothing(context, emptyText),
-        loadingBuilder: _searching,
-        errorBuilder: _failed,
       ),
-      BrutalFieldMessage(helper: helper, error: error),
-    ],
+      optionBuilder: (context, option, states) => BrutalMenuRow(
+        label: displayStringForOption(option),
+        states: states,
+        checked: states.contains(WidgetState.selected),
+      ),
+      surfaceBuilder: _suggestions,
+      emptyBuilder: (context) => _nothing(context, emptyText),
+      loadingBuilder: _searching,
+      errorBuilder: _failed,
+    ),
   );
 
   @override
@@ -1396,7 +1432,7 @@ class BrutalCombobox<T extends Object> extends StatelessWidget {
     properties
       ..add(DiagnosticsProperty<T>('value', value, defaultValue: null))
       ..add(ObjectFlagProperty<DesignOptionSearch<T>>.has('search', search))
-      ..add(StringProperty('label', label, defaultValue: null));
+      ..add(StringProperty('labelText', labelText, defaultValue: null));
   }
 }
 
@@ -1415,7 +1451,7 @@ class BrutalCombobox<T extends Object> extends StatelessWidget {
 /// cells, ink while focused.
 ///
 /// ```dart
-/// BrutalTagInput<String>(label: 'Kinds of night', values: kinds, options: allKinds, labelOf: (k) => k, onChanged: (next) => setState(() => kinds = next))
+/// BrutalTagInput<String>(labelText: 'Kinds of night', values: kinds, options: allKinds, displayStringForOption: (k) => k, onChanged: (next) => setState(() => kinds = next))
 /// ```
 class BrutalTagInput<T extends Object> extends StatefulWidget {
   /// Tags over [values].
@@ -1426,12 +1462,12 @@ class BrutalTagInput<T extends Object> extends StatefulWidget {
     this.options = const [],
     this.search,
     this.debounceDuration,
-    required this.labelOf,
+    required this.displayStringForOption,
     this.onCreate,
-    this.label,
-    this.hint,
-    this.helper,
-    this.error,
+    this.labelText,
+    this.hintText,
+    this.helperText,
+    this.errorText,
     this.maxTags,
     this.enabled = true,
     this.isOptionEnabled,
@@ -1460,22 +1496,22 @@ class BrutalTagInput<T extends Object> extends StatefulWidget {
   final Duration? debounceDuration;
 
   /// Each value's words.
-  final String Function(T value) labelOf;
+  final String Function(T value) displayStringForOption;
 
   /// Makes a value of words that match no option; null: only options.
   final T? Function(String text)? onCreate;
 
   /// The words over the box.
-  final String? label;
+  final String? labelText;
 
   /// The grey words in the empty field.
-  final String? hint;
+  final String? hintText;
 
   /// Help under the box.
-  final String? helper;
+  final String? helperText;
 
   /// What is wrong, under the box in red.
-  final String? error;
+  final String? errorText;
 
   /// The most tags it holds.
   final int? maxTags;
@@ -1507,15 +1543,18 @@ class BrutalTagInput<T extends Object> extends StatefulWidget {
         ),
       )
       ..add(
-        ObjectFlagProperty<String Function(T value)>.has('labelOf', labelOf),
+        ObjectFlagProperty<String Function(T value)>.has(
+          'displayStringForOption',
+          displayStringForOption,
+        ),
       )
       ..add(
         ObjectFlagProperty<T? Function(String text)>.has('onCreate', onCreate),
       )
-      ..add(StringProperty('label', label, defaultValue: null))
-      ..add(StringProperty('hint', hint, defaultValue: null))
-      ..add(StringProperty('helper', helper, defaultValue: null))
-      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
+      ..add(StringProperty('helperText', helperText, defaultValue: null))
+      ..add(StringProperty('errorText', errorText, defaultValue: null))
       ..add(IntProperty('maxTags', maxTags, defaultValue: null))
       ..add(FlagProperty('enabled', value: enabled, ifTrue: 'enabled'))
       ..add(
@@ -1550,7 +1589,7 @@ class _BrutalTagInputState<T extends Object> extends State<BrutalTagInput<T>> {
     final layers = [widget.style, theme.textFieldStyle];
     final layered = DesignStyleOf(layers, {
       if (!widget.enabled) WidgetState.disabled,
-      if (widget.error != null) WidgetState.error,
+      if (widget.errorText != null) WidgetState.error,
       if (_focus.hasFocus) WidgetState.focused,
     });
     final rule =
@@ -1558,106 +1597,100 @@ class _BrutalTagInputState<T extends Object> extends State<BrutalTagInput<T>> {
         layered.edge ??
         (!widget.enabled
             ? c.disabled
-            : widget.error != null
+            : widget.errorText != null
             ? c.danger
             : c.ink);
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        if (widget.label != null)
-          ExcludeSemantics(
-            child: BrutalFieldLabel(widget.label!, enabled: widget.enabled),
-          ),
-        RawTagInput<T>(
-          values: widget.values,
-          onChanged: widget.onChanged,
-          options: widget.options,
-          search: widget.search,
-          debounceDuration: widget.debounceDuration,
-          displayStringForOption: widget.labelOf,
-          onCreate: widget.onCreate,
-          maxTags: widget.maxTags,
-          isOptionEnabled: widget.isOptionEnabled,
-          // As the combobox's: the pointer's row is the keys' row.
-          highlightFollowsPointer: true,
-          focusNode: _focus,
-          semanticLabel: widget.label,
-          layoutBuilder: (context, tags, field) => MouseRegion(
-            cursor: SystemMouseCursors.text,
-            // A press anywhere in the box focuses the entry: the pointer's
-            // convenience, no button to a screen reader, which focuses the
-            // entry itself.
-            child: GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              excludeFromSemantics: true,
-              onTap: widget.enabled ? _focus.requestFocus : null,
-              child: AnimatedBrutalSurface(
-                stiffness: BrutalMotion.colorStiffness,
-                face: BrutalFace(
-                  fill: layered.fill ?? c.surface,
-                  border: rule,
-                  foreground: c.ink,
-                  focus: _focus.hasFocus ? rule : rule.withValues(alpha: 0),
+    return BrutalFieldFrame(
+      labelText: widget.labelText,
+      helperText: widget.helperText,
+      errorText: widget.errorText,
+      enabled: widget.enabled,
+      child: RawTagInput<T>(
+        values: widget.values,
+        onChanged: widget.onChanged,
+        options: widget.options,
+        search: widget.search,
+        debounceDuration: widget.debounceDuration,
+        displayStringForOption: widget.displayStringForOption,
+        onCreate: widget.onCreate,
+        maxTags: widget.maxTags,
+        isOptionEnabled: widget.isOptionEnabled,
+        // As the combobox's: the pointer's row is the keys' row.
+        highlightFollowsPointer: true,
+        focusNode: _focus,
+        semanticLabel: widget.labelText,
+        layoutBuilder: (context, tags, field) => MouseRegion(
+          cursor: SystemMouseCursors.text,
+          // A press anywhere in the box focuses the entry: the pointer's
+          // convenience, no button to a screen reader, which focuses the
+          // entry itself.
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            excludeFromSemantics: true,
+            onTap: widget.enabled ? _focus.requestFocus : null,
+            child: AnimatedBrutalSurface(
+              stiffness: BrutalMotion.colorStiffness,
+              face: BrutalFace(
+                fill: layered.fill ?? c.surface,
+                border: rule,
+                foreground: c.ink,
+                focus: _focus.hasFocus ? rule : rule.withValues(alpha: 0),
+              ),
+              child: Padding(
+                padding: const EdgeInsetsDirectional.only(
+                  start: BrutalSpacing.small,
+                  end: BrutalSpacing.small,
                 ),
-                child: Padding(
-                  padding: const EdgeInsetsDirectional.only(
-                    start: BrutalSpacing.small,
-                    end: BrutalSpacing.small,
-                  ),
-                  child: Wrap(
-                    spacing: BrutalSpacing.small,
-                    crossAxisAlignment: WrapCrossAlignment.center,
-                    children: [
-                      ...tags,
-                      ConstrainedBox(
-                        constraints: const BoxConstraints(
-                          minWidth: 120,
-                          maxWidth: 240,
-                        ),
-                        child: IntrinsicWidth(child: field),
+                child: Wrap(
+                  spacing: BrutalSpacing.small,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    ...tags,
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(
+                        minWidth: 120,
+                        maxWidth: 240,
                       ),
-                    ],
-                  ),
+                      child: IntrinsicWidth(child: field),
+                    ),
+                  ],
                 ),
               ),
             ),
           ),
-          fieldBuilder: (context, field) => Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: BrutalSpacing.tight,
-            ),
-            child: _Entry(
-              controller: field.controller,
-              focusNode: field.focusNode,
-              enabled: widget.enabled,
-              layers: layers,
-              hint: widget.values.isEmpty ? widget.hint : null,
-              semanticLabel: widget.label,
-              // Enter takes a tag and leaves the keyboard here for the next,
-              // in onEditingComplete alone: with onSubmitted too, Flutter
-              // restarts the text input, and a browser's restarted input
-              // takes no typing.
-              onEditingComplete: field.submit,
-            ),
-          ),
-          tagBuilder: (context, value, tag) => _Tag(
-            label: widget.labelOf(value),
-            focused: tag.focused,
-            enabled: widget.enabled,
-            onDeleted: tag.onDeleted,
-          ),
-          optionBuilder: (context, option, states) => BrutalMenuRow(
-            label: widget.labelOf(option),
-            states: states,
-            checked: states.contains(WidgetState.selected),
-          ),
-          surfaceBuilder: _suggestions,
-          loadingBuilder: _searching,
-          errorBuilder: _failed,
         ),
-        BrutalFieldMessage(helper: widget.helper, error: widget.error),
-      ],
+        fieldBuilder: (context, field) => Padding(
+          padding: const EdgeInsets.symmetric(horizontal: BrutalSpacing.tight),
+          child: _Entry(
+            controller: field.controller,
+            focusNode: field.focusNode,
+            enabled: widget.enabled,
+            layers: layers,
+            hint: widget.values.isEmpty ? widget.hintText : null,
+            semanticLabel: widget.labelText,
+            expanded: field.isOpen,
+            // Enter takes a tag and leaves the keyboard here for the next,
+            // in onEditingComplete alone: with onSubmitted too, Flutter
+            // restarts the text input, and a browser's restarted input
+            // takes no typing.
+            onEditingComplete: field.submit,
+          ),
+        ),
+        tagBuilder: (context, value, tag) => _Tag(
+          label: widget.displayStringForOption(value),
+          focused: tag.focused,
+          enabled: widget.enabled,
+          onDeleted: tag.onDeleted,
+        ),
+        optionBuilder: (context, option, states) => BrutalMenuRow(
+          label: widget.displayStringForOption(option),
+          states: states,
+          checked: states.contains(WidgetState.selected),
+        ),
+        surfaceBuilder: _suggestions,
+        loadingBuilder: _searching,
+        errorBuilder: _failed,
+      ),
     );
   }
 }
@@ -1825,7 +1858,10 @@ class BrutalFormField extends StatelessWidget {
           ),
         parts.control,
         ExcludeSemantics(
-          child: BrutalFieldMessage(helper: helperText, error: errorText),
+          child: BrutalFieldMessage(
+            helperText: helperText,
+            errorText: errorText,
+          ),
         ),
       ],
     ),

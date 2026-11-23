@@ -70,9 +70,9 @@ void main() {
     await tester.pumpWidget(
       _app(
         BrutalCombobox<String>(
-          label: 'Venue',
+          labelText: 'Venue',
           options: const ['Porto', 'Porto Santo', 'Lisbon'],
-          labelOf: (v) => v,
+          displayStringForOption: (v) => v,
           onSelected: taken.add,
         ),
       ),
@@ -90,10 +90,10 @@ void main() {
       _app(
         StatefulBuilder(
           builder: (context, setState) => BrutalTagInput<String>(
-            label: 'Kinds of night',
+            labelText: 'Kinds of night',
             values: kinds,
             options: const ['Noir', 'Western', 'Satire', 'Romance'],
-            labelOf: (k) => k,
+            displayStringForOption: (k) => k,
             onChanged: (next) => setState(() => kinds = next),
           ),
         ),

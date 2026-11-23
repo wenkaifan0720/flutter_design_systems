@@ -85,7 +85,7 @@ void main() {
         SizedBox(
           width: 280,
           child: BrutalSelect<String>(
-            label: 'Room',
+            labelText: 'Room',
             value: 'hall1',
             items: const [
               BrutalSelectItem(value: 'hall1', label: 'Hall 1'),

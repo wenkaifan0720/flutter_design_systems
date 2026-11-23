@@ -149,7 +149,7 @@ void main() {
         expand: false,
         tabs: const ['Overview', 'Schedule', 'Tickets'],
         selectedIndex: 0,
-        onSelected: (_) {},
+        onTap: (_) {},
       ),
     );
     expect(_rect(tester, 'early').size, _rect(tester, 'fresh').size);
@@ -177,7 +177,7 @@ void main() {
         width: 400,
         child: const BrutalStepProgress(
           steps: ['Shipping', 'Payments', 'Confirms'],
-          current: 1,
+          currentStep: 1,
         ),
       ),
     );

@@ -434,7 +434,7 @@ class BrutalIconButton extends StatelessWidget {
     required this.onPressed,
     required this.icon,
     required this.tooltip,
-    this.selected,
+    this.isSelected,
     this.style,
     this.focusNode,
     this.autofocus = false,
@@ -446,7 +446,7 @@ class BrutalIconButton extends StatelessWidget {
     required this.onPressed,
     required this.icon,
     required this.tooltip,
-    this.selected,
+    this.isSelected,
     this.style,
     this.focusNode,
     this.autofocus = false,
@@ -464,7 +464,7 @@ class BrutalIconButton extends StatelessWidget {
   /// Whether it is on: an ink face with paper glyph. Null (the default)
   /// makes it a plain button; true or false, a toggle a screen reader
   /// reads as on or off.
-  final bool? selected;
+  final bool? isSelected;
 
   /// This button's style, over [BrutalThemeData.iconButtonStyle].
   final BrutalStyle? style;
@@ -485,8 +485,8 @@ class BrutalIconButton extends StatelessWidget {
       onPressed: onPressed,
       focusNode: focusNode,
       autofocus: autofocus,
-      selected: selected ?? false,
-      semanticSelected: selected,
+      selected: isSelected ?? false,
+      semanticSelected: isSelected,
       semanticLabel: tooltip,
       builder: (context, states, _) {
         final layered = DesignStyleOf([style, theme.iconButtonStyle], states);
@@ -550,7 +550,7 @@ class BrutalIconButton extends StatelessWidget {
         FlagProperty('enabled', value: onPressed != null, ifFalse: 'disabled'),
       )
       ..add(
-        DiagnosticsProperty<bool>('selected', selected, defaultValue: null),
+        DiagnosticsProperty<bool>('isSelected', isSelected, defaultValue: null),
       );
   }
 }
@@ -619,10 +619,12 @@ class BrutalSplitButton extends StatelessWidget {
       ],
       menuLabel: menuLabel,
       minimumSize: Size.zero,
+      // The main half gives way where the two are wider than the row
+      // (large text on a phone): its label ends in an ellipsis.
       layoutBuilder: (context, main, toggle) => Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          main,
+          Flexible(child: main),
           const SizedBox(width: BrutalSpacing.tight),
           toggle,
         ],

@@ -1,0 +1,1463 @@
+# brutal_ui's data-driven fixes: `dart fix --apply` moves a caller to each name 0.4.0 renames. test_fixes/ holds
+# their before and after (`dart fix --compare-to-golden test_fixes`).
+version: 1
+transforms:
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      constructor: ''
+      inClass: 'BrutalInput'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      field: 'hint'
+      inClass: 'BrutalInput'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      constructor: ''
+      inClass: 'BrutalSearchField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      field: 'label'
+      inClass: 'BrutalSearchField'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      constructor: ''
+      inClass: 'BrutalSearchField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      field: 'hint'
+      inClass: 'BrutalSearchField'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      constructor: ''
+      inClass: 'BrutalPasswordField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      field: 'label'
+      inClass: 'BrutalPasswordField'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      constructor: ''
+      inClass: 'BrutalPasswordField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      field: 'hint'
+      inClass: 'BrutalPasswordField'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      constructor: ''
+      inClass: 'BrutalPasswordField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      field: 'helper'
+      inClass: 'BrutalPasswordField'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      constructor: ''
+      inClass: 'BrutalPasswordField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      field: 'error'
+      inClass: 'BrutalPasswordField'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      constructor: ''
+      inClass: 'BrutalInputGroup'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      field: 'label'
+      inClass: 'BrutalInputGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      constructor: ''
+      inClass: 'BrutalInputGroup'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      field: 'hint'
+      inClass: 'BrutalInputGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      constructor: ''
+      inClass: 'BrutalInputGroup'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      field: 'helper'
+      inClass: 'BrutalInputGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      constructor: ''
+      inClass: 'BrutalInputGroup'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      field: 'error'
+      inClass: 'BrutalInputGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      constructor: ''
+      inClass: 'BrutalCodeField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      field: 'label'
+      inClass: 'BrutalCodeField'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      constructor: ''
+      inClass: 'BrutalCodeField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      field: 'helper'
+      inClass: 'BrutalCodeField'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      constructor: ''
+      inClass: 'BrutalCodeField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      field: 'error'
+      inClass: 'BrutalCodeField'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      constructor: ''
+      inClass: 'BrutalCombobox'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      field: 'label'
+      inClass: 'BrutalCombobox'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      constructor: ''
+      inClass: 'BrutalCombobox'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      field: 'hint'
+      inClass: 'BrutalCombobox'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      constructor: ''
+      inClass: 'BrutalCombobox'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      field: 'helper'
+      inClass: 'BrutalCombobox'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      constructor: ''
+      inClass: 'BrutalCombobox'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      field: 'error'
+      inClass: 'BrutalCombobox'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+
+  - title: "Rename to 'displayStringForOption'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      constructor: ''
+      inClass: 'BrutalCombobox'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'labelOf'
+        newName: 'displayStringForOption'
+
+  - title: "Rename to 'displayStringForOption'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      field: 'labelOf'
+      inClass: 'BrutalCombobox'
+    changes:
+      - kind: 'rename'
+        newName: 'displayStringForOption'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      constructor: ''
+      inClass: 'BrutalTagInput'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      field: 'label'
+      inClass: 'BrutalTagInput'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      constructor: ''
+      inClass: 'BrutalTagInput'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      field: 'hint'
+      inClass: 'BrutalTagInput'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      constructor: ''
+      inClass: 'BrutalTagInput'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      field: 'helper'
+      inClass: 'BrutalTagInput'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      constructor: ''
+      inClass: 'BrutalTagInput'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      field: 'error'
+      inClass: 'BrutalTagInput'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+
+  - title: "Rename to 'displayStringForOption'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      constructor: ''
+      inClass: 'BrutalTagInput'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'labelOf'
+        newName: 'displayStringForOption'
+
+  - title: "Rename to 'displayStringForOption'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      field: 'labelOf'
+      inClass: 'BrutalTagInput'
+    changes:
+      - kind: 'rename'
+        newName: 'displayStringForOption'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      constructor: ''
+      inClass: 'BrutalDatePicker'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      field: 'label'
+      inClass: 'BrutalDatePicker'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      constructor: ''
+      inClass: 'BrutalDatePicker'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      field: 'hint'
+      inClass: 'BrutalDatePicker'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      constructor: ''
+      inClass: 'BrutalDatePicker'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      field: 'helper'
+      inClass: 'BrutalDatePicker'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      constructor: ''
+      inClass: 'BrutalDatePicker'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      field: 'error'
+      inClass: 'BrutalDatePicker'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      constructor: ''
+      inClass: 'BrutalDateRangePicker'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      field: 'label'
+      inClass: 'BrutalDateRangePicker'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      constructor: ''
+      inClass: 'BrutalDateRangePicker'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      field: 'hint'
+      inClass: 'BrutalDateRangePicker'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      constructor: ''
+      inClass: 'BrutalDateRangePicker'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      field: 'helper'
+      inClass: 'BrutalDateRangePicker'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      constructor: ''
+      inClass: 'BrutalDateRangePicker'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      field: 'error'
+      inClass: 'BrutalDateRangePicker'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      constructor: ''
+      inClass: 'BrutalSelect'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      field: 'label'
+      inClass: 'BrutalSelect'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      constructor: ''
+      inClass: 'BrutalSelect'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      field: 'hint'
+      inClass: 'BrutalSelect'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      constructor: ''
+      inClass: 'BrutalSelect'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      field: 'helper'
+      inClass: 'BrutalSelect'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      constructor: ''
+      inClass: 'BrutalSelect'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      field: 'error'
+      inClass: 'BrutalSelect'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      constructor: ''
+      inClass: 'BrutalTextField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      field: 'label'
+      inClass: 'BrutalTextField'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      constructor: ''
+      inClass: 'BrutalTextField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      field: 'hint'
+      inClass: 'BrutalTextField'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      constructor: ''
+      inClass: 'BrutalTextField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      field: 'helper'
+      inClass: 'BrutalTextField'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      constructor: ''
+      inClass: 'BrutalTextField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      field: 'error'
+      inClass: 'BrutalTextField'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      constructor: ''
+      inClass: 'BrutalFieldMessage'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      field: 'helper'
+      inClass: 'BrutalFieldMessage'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      constructor: ''
+      inClass: 'BrutalFieldMessage'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      field: 'error'
+      inClass: 'BrutalFieldMessage'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      constructor: ''
+      inClass: 'BrutalFileDrop'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      field: 'label'
+      inClass: 'BrutalFileDrop'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      constructor: ''
+      inClass: 'BrutalFileDrop'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      field: 'hint'
+      inClass: 'BrutalFileDrop'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      constructor: ''
+      inClass: 'BrutalCommandPalette'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      field: 'hint'
+      inClass: 'BrutalCommandPalette'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      function: 'showBrutalCommandPalette'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+
+  - title: "Rename to 'theme'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      constructor: ''
+      inClass: 'BrutalHost'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'light'
+        newName: 'theme'
+
+  - title: "Rename to 'theme'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      field: 'light'
+      inClass: 'BrutalHost'
+    changes:
+      - kind: 'rename'
+        newName: 'theme'
+
+  - title: "Rename to 'darkTheme'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      constructor: ''
+      inClass: 'BrutalHost'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'dark'
+        newName: 'darkTheme'
+
+  - title: "Rename to 'darkTheme'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      field: 'dark'
+      inClass: 'BrutalHost'
+    changes:
+      - kind: 'rename'
+        newName: 'darkTheme'
+
+  - title: "Rename to 'theme'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      constructor: ''
+      inClass: 'BrutalPreview'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'light'
+        newName: 'theme'
+
+  - title: "Rename to 'theme'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      field: 'light'
+      inClass: 'BrutalPreview'
+    changes:
+      - kind: 'rename'
+        newName: 'theme'
+
+  - title: "Rename to 'darkTheme'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      constructor: ''
+      inClass: 'BrutalPreview'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'dark'
+        newName: 'darkTheme'
+
+  - title: "Rename to 'darkTheme'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      field: 'dark'
+      inClass: 'BrutalPreview'
+    changes:
+      - kind: 'rename'
+        newName: 'darkTheme'
+
+  - title: "Rename to 'selectedIndex'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      constructor: ''
+      inClass: 'BrutalPreview'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'activeIndex'
+        newName: 'selectedIndex'
+
+  - title: "Rename to 'selectedIndex'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      field: 'activeIndex'
+      inClass: 'BrutalPreview'
+    changes:
+      - kind: 'rename'
+        newName: 'selectedIndex'
+
+  - title: "Rename to 'onDestinationSelected'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      constructor: ''
+      inClass: 'BrutalAppShell'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'onSelected'
+        newName: 'onDestinationSelected'
+
+  - title: "Rename to 'onDestinationSelected'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      field: 'onSelected'
+      inClass: 'BrutalAppShell'
+    changes:
+      - kind: 'rename'
+        newName: 'onDestinationSelected'
+
+  - title: "Rename to 'onDestinationSelected'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      constructor: ''
+      inClass: 'BrutalNavigationBar'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'onSelected'
+        newName: 'onDestinationSelected'
+
+  - title: "Rename to 'onDestinationSelected'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      field: 'onSelected'
+      inClass: 'BrutalNavigationBar'
+    changes:
+      - kind: 'rename'
+        newName: 'onDestinationSelected'
+
+  - title: "Rename to 'onDestinationSelected'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      constructor: ''
+      inClass: 'BrutalNavigationRail'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'onSelected'
+        newName: 'onDestinationSelected'
+
+  - title: "Rename to 'onDestinationSelected'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      field: 'onSelected'
+      inClass: 'BrutalNavigationRail'
+    changes:
+      - kind: 'rename'
+        newName: 'onDestinationSelected'
+
+  - title: "Rename to 'onDestinationSelected'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      constructor: ''
+      inClass: 'BrutalSideNavigation'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'onSelected'
+        newName: 'onDestinationSelected'
+
+  - title: "Rename to 'onDestinationSelected'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      field: 'onSelected'
+      inClass: 'BrutalSideNavigation'
+    changes:
+      - kind: 'rename'
+        newName: 'onDestinationSelected'
+
+  - title: "Rename to 'onDestinationSelected'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      constructor: ''
+      inClass: 'BrutalScaffold'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'onSelected'
+        newName: 'onDestinationSelected'
+
+  - title: "Rename to 'onDestinationSelected'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      field: 'onSelected'
+      inClass: 'BrutalScaffold'
+    changes:
+      - kind: 'rename'
+        newName: 'onDestinationSelected'
+
+  - title: "Rename to 'onTap'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      constructor: ''
+      inClass: 'BrutalTabBar'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'onSelected'
+        newName: 'onTap'
+
+  - title: "Rename to 'onTap'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      field: 'onSelected'
+      inClass: 'BrutalTabBar'
+    changes:
+      - kind: 'rename'
+        newName: 'onTap'
+
+  - title: "Rename to 'isDefaultAction'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      constructor: ''
+      inClass: 'BrutalDialogAction'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'primary'
+        newName: 'isDefaultAction'
+
+  - title: "Rename to 'isDefaultAction'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      field: 'primary'
+      inClass: 'BrutalDialogAction'
+    changes:
+      - kind: 'rename'
+        newName: 'isDefaultAction'
+
+  - title: "Rename to 'isDestructiveAction'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      constructor: ''
+      inClass: 'BrutalDialogAction'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'destructive'
+        newName: 'isDestructiveAction'
+
+  - title: "Rename to 'isDestructiveAction'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      field: 'destructive'
+      inClass: 'BrutalDialogAction'
+    changes:
+      - kind: 'rename'
+        newName: 'isDestructiveAction'
+
+  - title: "Rename to 'isDestructiveAction'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      constructor: ''
+      inClass: 'BrutalSwipeAction'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'destructive'
+        newName: 'isDestructiveAction'
+
+  - title: "Rename to 'isDestructiveAction'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      field: 'destructive'
+      inClass: 'BrutalSwipeAction'
+    changes:
+      - kind: 'rename'
+        newName: 'isDestructiveAction'
+
+  - title: "Rename to 'isDestructiveAction'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      constructor: ''
+      inClass: 'BrutalListTile'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'destructive'
+        newName: 'isDestructiveAction'
+
+  - title: "Rename to 'isDestructiveAction'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      field: 'destructive'
+      inClass: 'BrutalListTile'
+    changes:
+      - kind: 'rename'
+        newName: 'isDestructiveAction'
+
+  - title: "Rename to 'isSelected'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      constructor: ''
+      inClass: 'BrutalIconButton'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'selected'
+        newName: 'isSelected'
+
+  - title: "Rename to 'isSelected'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      constructor: 'plain'
+      inClass: 'BrutalIconButton'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'selected'
+        newName: 'isSelected'
+
+  - title: "Rename to 'isSelected'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      field: 'selected'
+      inClass: 'BrutalIconButton'
+    changes:
+      - kind: 'rename'
+        newName: 'isSelected'
+
+  - title: "Rename to 'onExpansionChanged'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      constructor: ''
+      inClass: 'BrutalDisclosure'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'onChanged'
+        newName: 'onExpansionChanged'
+
+  - title: "Rename to 'onExpansionChanged'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      field: 'onChanged'
+      inClass: 'BrutalDisclosure'
+    changes:
+      - kind: 'rename'
+        newName: 'onExpansionChanged'
+
+  - title: "Rename to 'currentStep'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      constructor: ''
+      inClass: 'BrutalStepProgress'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'current'
+        newName: 'currentStep'
+
+  - title: "Rename to 'currentStep'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      field: 'current'
+      inClass: 'BrutalStepProgress'
+    changes:
+      - kind: 'rename'
+        newName: 'currentStep'
+
+  - title: "Rename to 'pageCount'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      constructor: ''
+      inClass: 'BrutalPageDots'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'count'
+        newName: 'pageCount'
+
+  - title: "Rename to 'pageCount'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      field: 'count'
+      inClass: 'BrutalPageDots'
+    changes:
+      - kind: 'rename'
+        newName: 'pageCount'
+
+  - title: "Rename to 'page'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      constructor: ''
+      inClass: 'BrutalPageDots'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'index'
+        newName: 'page'
+
+  - title: "Rename to 'page'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      field: 'index'
+      inClass: 'BrutalPageDots'
+    changes:
+      - kind: 'rename'
+        newName: 'page'
+
+  - title: "Rename to 'onPageChanged'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      constructor: ''
+      inClass: 'BrutalPageDots'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'onChanged'
+        newName: 'onPageChanged'
+
+  - title: "Rename to 'onPageChanged'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      field: 'onChanged'
+      inClass: 'BrutalPageDots'
+    changes:
+      - kind: 'rename'
+        newName: 'onPageChanged'
+
+  - title: "Rename to 'onPageChanged'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      constructor: ''
+      inClass: 'BrutalPagination'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'onChanged'
+        newName: 'onPageChanged'
+
+  - title: "Rename to 'onPageChanged'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      field: 'onChanged'
+      inClass: 'BrutalPagination'
+    changes:
+      - kind: 'rename'
+        newName: 'onPageChanged'
+
+  - title: "Rename to 'maxCount'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      constructor: ''
+      inClass: 'BrutalBadge'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'max'
+        newName: 'maxCount'
+
+  - title: "Rename to 'maxCount'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      field: 'max'
+      inClass: 'BrutalBadge'
+    changes:
+      - kind: 'rename'
+        newName: 'maxCount'
+
+  - title: "Rename to 'from'"
+    date: 2026-11-22
+    element:
+      uris: ['brutal_ui.dart']
+      constructor: 'of'
+      inClass: 'BrutalTextTheme'
+    changes:
+      - kind: 'rename'
+        newName: 'from'

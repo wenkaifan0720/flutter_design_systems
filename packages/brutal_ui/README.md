@@ -74,7 +74,7 @@ For a multi-page app, use `BrutalHost` in the app builder, `BrutalAppShell` for 
 BrutalAppShell(
   tabs: const [BrutalTab(LucideIcons.house, 'Home'), BrutalTab(LucideIcons.ticket, 'Tickets')],
   selectedIndex: index,
-  onSelected: (i) => setState(() => index = i),
+  onDestinationSelected: (i) => setState(() => index = i),
   child: BrutalScreen(
     topBar: const BrutalAppBar(title: 'Tonight'),
     footer: BrutalButton.filled('Buy tickets', onPressed: buy),

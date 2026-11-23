@@ -433,7 +433,7 @@ class AdmitFrameState extends State<AdmitFrame> {
     return BrutalScaffold(
       destinations: _places,
       selectedIndex: _place.index,
-      onSelected: (i) => go(AdmitPlace.values[i]),
+      onDestinationSelected: (i) => go(AdmitPlace.values[i]),
       brand: Text(
         MediaQuery.sizeOf(context).width >= 1024 ? 'ADMIT' : 'A',
         style: theme.textTheme.title,

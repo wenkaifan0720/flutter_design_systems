@@ -11,6 +11,7 @@ import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
 import 'internal/drop_mark.dart';
+import 'internal/field_frame.dart';
 import 'internal/keep_in_view.dart';
 import 'internal/keyed_row.dart';
 import 'internal/type_ahead.dart';
@@ -39,7 +40,7 @@ class BrutalSelectItem<T> {
 }
 
 /// A choice of one from a short list, shaped like a [BrutalTextField]: its
-/// [label] above, its [helper] or [error] below. The chevron stands in a
+/// [labelText] above, its [helperText] or [errorText] below. The chevron stands in a
 /// square cell at the box's end, on a rule of its own; the open list hangs
 /// from the box, its top rule the box's bottom one, as wide as the box: the
 /// chosen item ink, bold, with a square mark; where the pointer or the
@@ -63,7 +64,7 @@ class BrutalSelectItem<T> {
 /// [BrutalThemeData.menuStyle], as every menu does.
 ///
 /// ```dart
-/// BrutalSelect<String>(label: 'City', value: city, items: const [BrutalSelectItem(value: 'north', label: 'North quarter'), BrutalSelectItem(value: 'harbour', label: 'Harbour')], onChanged: (value) => setState(() => city = value))
+/// BrutalSelect<String>(labelText: 'City', value: city, items: const [BrutalSelectItem(value: 'north', label: 'North quarter'), BrutalSelectItem(value: 'harbour', label: 'Harbour')], onChanged: (value) => setState(() => city = value))
 /// ```
 class BrutalSelect<T> extends StatefulWidget {
   /// A select over [items].
@@ -72,10 +73,10 @@ class BrutalSelect<T> extends StatefulWidget {
     required this.items,
     required this.value,
     required this.onChanged,
-    this.label,
-    this.hint,
-    this.helper,
-    this.error,
+    this.labelText,
+    this.hintText,
+    this.helperText,
+    this.errorText,
     this.focusNode,
     this.style,
   });
@@ -83,23 +84,23 @@ class BrutalSelect<T> extends StatefulWidget {
   /// The choices.
   final List<BrutalSelectItem<T>> items;
 
-  /// The chosen value, or null for none (the [hint] shows).
+  /// The chosen value, or null for none (the [hintText] shows).
   final T? value;
 
   /// Called with the value chosen; null disables the select.
   final ValueChanged<T>? onChanged;
 
   /// The words over the box.
-  final String? label;
+  final String? labelText;
 
   /// What the box says while nothing is chosen.
-  final String? hint;
+  final String? hintText;
 
   /// Help under the box.
-  final String? helper;
+  final String? helperText;
 
   /// What is wrong, under the box in red.
-  final String? error;
+  final String? errorText;
 
   /// {@macro design.focusNode}
   final FocusNode? focusNode;
@@ -120,7 +121,7 @@ class BrutalSelect<T> extends StatefulWidget {
     properties
       ..add(DiagnosticsProperty<T>('value', value))
       ..add(IntProperty('items', items.length))
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
       ..add(
         FlagProperty('enabled', value: onChanged != null, ifFalse: 'disabled'),
       );
@@ -147,10 +148,10 @@ class _BrutalSelectState<T> extends State<BrutalSelect<T>> {
       :items,
       :value,
       :onChanged,
-      :label,
-      :hint,
-      :helper,
-      :error,
+      :labelText,
+      :hintText,
+      :helperText,
+      :errorText,
       :style,
     ) = widget;
     final theme = BrutalTheme.of(context);
@@ -197,19 +198,19 @@ class _BrutalSelectState<T> extends State<BrutalSelect<T>> {
               },
         focusNode: _focus,
         expanded: anchor?.isOpen,
-        semanticLabel: label,
+        // Named by its field (ui_core's RawInputDecorator), with its help.
         semanticValue: chosen?.label,
         builder: (context, states, _) {
           final layered = DesignStyleOf(
             [style, theme.textFieldStyle],
-            {...states, if (error != null) WidgetState.error},
+            {...states, if (errorText != null) WidgetState.error},
           );
           final rule =
               layered.side?.color ??
               layered.edge ??
               (!enabled
                   ? c.disabled
-                  : error != null
+                  : errorText != null
                   ? c.danger
                   : c.ink);
           final ink = layered.foreground ?? (enabled ? c.ink : c.disabled);
@@ -241,7 +242,7 @@ class _BrutalSelectState<T> extends State<BrutalSelect<T>> {
                         capHeightFactor: BrutalTheme.of(context)
                             .capHeightFactor,
                         child: Text(
-                          chosen?.label ?? hint ?? '',
+                          chosen?.label ?? hintText ?? '',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: layered.text(
@@ -287,7 +288,7 @@ class _BrutalSelectState<T> extends State<BrutalSelect<T>> {
         ? face(null)
         : RawPopover(
             arrowKeyNavigation: true,
-            semanticLabel: label,
+            semanticLabel: labelText,
             placement: RawPopoverPlacement(
               gap: -theme.borderWidth,
               margin: BrutalSpacing.small,
@@ -310,15 +311,12 @@ class _BrutalSelectState<T> extends State<BrutalSelect<T>> {
           );
     // From 600 up a select takes its words' room, never its column's.
     final narrow = MediaQuery.sizeOf(context).width < 600;
-    final field = Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        if (label != null)
-          ExcludeSemantics(child: BrutalFieldLabel(label, enabled: enabled)),
-        box,
-        BrutalFieldMessage(helper: helper, error: error),
-      ],
+    final field = BrutalFieldFrame(
+      labelText: labelText,
+      helperText: helperText,
+      errorText: errorText,
+      enabled: enabled,
+      child: box,
     );
     if (narrow) return field;
     return Align(
@@ -370,16 +368,6 @@ class _SelectListState<T> extends State<_SelectList<T>> {
       node.addListener(_moved);
     }
     brutalKeepInView(_nodes);
-    // The overlay puts the keyboard on the first row as the list opens; a
-    // select's goes on to the chosen row (the first when none is), in view.
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      final items = widget.items;
-      var at = items.indexWhere((i) => i.enabled && i.value == widget.value);
-      if (at < 0) at = items.indexWhere((i) => i.enabled);
-      if (at < 0) return;
-      FocusTraversalPolicy.defaultTraversalRequestFocusCallback(_nodes[at]);
-    });
   }
 
   @override
@@ -451,6 +439,9 @@ class _SelectListState<T> extends State<_SelectList<T>> {
                             ? () => onChosen(item.value)
                             : null,
                         focusNode: _nodes[i],
+                        // The chosen row takes the keyboard as the list
+                        // opens, and the popover keeps it in view.
+                        autofocus: item.enabled && item.value == value,
                         selected: item.value == value,
                         semanticSelected: item.value == value,
                         semanticLabel: item.label,

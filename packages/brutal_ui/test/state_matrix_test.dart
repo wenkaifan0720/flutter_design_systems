@@ -82,7 +82,7 @@ final _parts = <_Part>[
     (s, d, e) => BrutalIconButton(
       icon: const Icon(LucideIcons.heart),
       tooltip: 'Save',
-      selected: s,
+      isSelected: s,
       onPressed: d ? null : _none,
     ),
     states: _all.difference({'error'}),
@@ -146,7 +146,7 @@ final _parts = <_Part>[
     (s, d, e) => BrutalTabBar(
       tabs: const ['Upcoming', 'Past'],
       selectedIndex: s ? 1 : 0,
-      onSelected: (_) {},
+      onTap: (_) {},
     ),
     states: {'idle', 'hovered', 'pressed', 'focused', 'selected'},
     target: () => find.text('Past'),
@@ -162,7 +162,7 @@ final _parts = <_Part>[
         BrutalDestination(icon: LucideIcons.settings, label: 'Settings'),
       ],
       selectedIndex: s ? 1 : 0,
-      onSelected: (_) {},
+      onDestinationSelected: (_) {},
     ),
     states: {'idle', 'hovered', 'pressed', 'focused', 'selected'},
     // The bar draws its labels in capitals.
@@ -201,7 +201,7 @@ final _parts = <_Part>[
     (s, d, e) => BrutalDisclosure(
       title: 'Refunds',
       expanded: s,
-      onChanged: d ? null : (_) {},
+      onExpansionChanged: d ? null : (_) {},
       child: const Text('Up to a day before the doors open.'),
     ),
     states: _all.difference({'error'}),
@@ -210,9 +210,9 @@ final _parts = <_Part>[
   _Part(
     'Text field',
     (s, d, e) => BrutalTextField(
-      label: 'Email',
-      hint: 'name@example.com',
-      error: e ? 'Enter an email with an @.' : null,
+      labelText: 'Email',
+      hintText: 'name@example.com',
+      errorText: e ? 'Enter an email with an @.' : null,
       enabled: !d,
       onChanged: (_) {},
     ),
@@ -222,7 +222,7 @@ final _parts = <_Part>[
   _Part(
     'Search field',
     (s, d, e) => BrutalSearchField(
-      hint: 'Search the week',
+      hintText: 'Search the week',
       enabled: !d,
       onChanged: (_) {},
     ),
@@ -232,9 +232,9 @@ final _parts = <_Part>[
   _Part(
     'Select',
     (s, d, e) => BrutalSelect<String>(
-      label: 'Seat',
+      labelText: 'Seat',
       value: 'standing',
-      error: e ? 'Pick a seat.' : null,
+      errorText: e ? 'Pick a seat.' : null,
       items: const [
         BrutalSelectItem(value: 'standing', label: 'Standing'),
         BrutalSelectItem(value: 'balcony', label: 'Balcony'),
@@ -274,8 +274,11 @@ final _parts = <_Part>[
   ),
   _Part(
     'Pagination',
-    (s, d, e) =>
-        BrutalPagination(page: 2, pageCount: 5, onChanged: d ? null : (_) {}),
+    (s, d, e) => BrutalPagination(
+      page: 2,
+      pageCount: 5,
+      onPageChanged: d ? null : (_) {},
+    ),
     target: () => find.text('3'),
     width: 360,
   ),

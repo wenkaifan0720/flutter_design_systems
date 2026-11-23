@@ -45,7 +45,7 @@ class _AdmitTicketsState extends State<AdmitTickets> {
         BrutalTabBar(
           tabs: const ['Upcoming', 'Past'],
           selectedIndex: _tab,
-          onSelected: (i) => setState(() => _tab = i),
+          onTap: (i) => setState(() => _tab = i),
         ),
         const SizedBox(height: BrutalSpacing.large),
         if (_tab == 0 && upcoming.isEmpty)
@@ -157,8 +157,8 @@ class _AdmitTicketPageState extends State<AdmitTicketPage> {
           ),
           BrutalDialogAction(
             label: 'Cancel tickets',
-            primary: true,
-            destructive: true,
+            isDefaultAction: true,
+            isDestructiveAction: true,
             onPressed: () => Navigator.of(context).pop(true),
           ),
         ],

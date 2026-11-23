@@ -109,7 +109,7 @@ Widget kitSpecimenAppShell() => kitState<int>(
   (context, index, change) => BrutalAppShell(
     tabs: _places,
     selectedIndex: index,
-    onSelected: change,
+    onDestinationSelected: change,
     brand: 'Admit',
     action: BrutalShellAction(
       icon: LucideIcons.plus,
@@ -149,7 +149,7 @@ Widget kitSpecimenErrorState() => Builder(
 
 Widget kitSpecimenInput() => Builder(
   builder: (context) => BrutalInput(
-    hint: 'Search events',
+    hintText: 'Search events',
     onSubmitted: (text) => kitFeedback(context, 'Searching for "$text".'),
   ),
 );

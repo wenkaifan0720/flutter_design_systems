@@ -119,7 +119,7 @@ void main() {
             children: [
               BrutalSelect<String>(
                 key: const Key('select'),
-                label: 'Stage',
+                labelText: 'Stage',
                 items: const [
                   BrutalSelectItem(value: 'a', label: 'Main hall'),
                   BrutalSelectItem(value: 'b', label: 'Courtyard'),
@@ -129,9 +129,9 @@ void main() {
               ),
               BrutalCombobox<String>(
                 key: const Key('combobox'),
-                label: 'Venue',
+                labelText: 'Venue',
                 options: const ['Gallery Nine', 'Library Hall'],
-                labelOf: (v) => v,
+                displayStringForOption: (v) => v,
               ),
             ],
           ),
@@ -165,9 +165,9 @@ void main() {
     await _pump(
       tester,
       BrutalCombobox<String>(
-        label: 'Venue',
+        labelText: 'Venue',
         options: const ['Gallery Nine', 'Library Hall', 'Kino 2'],
-        labelOf: (v) => v,
+        displayStringForOption: (v) => v,
       ),
     );
     await tester.showKeyboard(find.byType(EditableText));
@@ -186,7 +186,7 @@ void main() {
     await _pump(
       tester,
       BrutalSelect<String>(
-        label: 'Stage',
+        labelText: 'Stage',
         items: const [
           BrutalSelectItem(value: 'a', label: 'Main hall'),
           BrutalSelectItem(value: 'b', label: 'Courtyard'),

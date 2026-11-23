@@ -23,9 +23,9 @@ void main() {
               child: SizedBox(
                 width: 600,
                 child: BrutalCombobox<String>(
-                  label: 'Venue',
+                  labelText: 'Venue',
                   options: const ['Gallery Nine', 'Library Hall', 'Kino 2'],
-                  labelOf: (v) => v,
+                  displayStringForOption: (v) => v,
                 ),
               ),
             ),

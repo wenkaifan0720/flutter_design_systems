@@ -747,7 +747,7 @@ class BrutalFile {
 /// [BrutalThemeData.fileDropStyle]'s.
 ///
 /// ```dart
-/// BrutalFileDrop(label: 'Proof of student status', hint: 'A photo or a PDF, up to 10 MB', files: files, onChoose: pick, onRemove: (f) => setState(() => files.remove(f)))
+/// BrutalFileDrop(labelText: 'Proof of student status', hintText: 'A photo or a PDF, up to 10 MB', files: files, onChoose: pick, onRemove: (f) => setState(() => files.remove(f)))
 /// ```
 class BrutalFileDrop extends StatelessWidget {
   /// A file box.
@@ -756,8 +756,8 @@ class BrutalFileDrop extends StatelessWidget {
     required this.onChoose,
     this.files = const [],
     this.onRemove,
-    this.label,
-    this.hint,
+    this.labelText,
+    this.hintText,
     this.style,
   });
 
@@ -771,10 +771,10 @@ class BrutalFileDrop extends StatelessWidget {
   final ValueChanged<BrutalFile>? onRemove;
 
   /// The words over the box.
-  final String? label;
+  final String? labelText;
 
   /// What it takes, under the call to action.
-  final String? hint;
+  final String? hintText;
 
   /// Its style, over [BrutalThemeData.fileDropStyle].
   final BrutalStyle? style;
@@ -798,9 +798,9 @@ class BrutalFileDrop extends StatelessWidget {
     final box = RawButton(
       onPressed: onChoose,
       semanticLabel: [
-        label,
+        labelText,
         'Choose a file',
-        hint,
+        hintText,
       ].whereType<String>().join(', '),
       excludeSemantics: true,
       builder: (context, states, _) {
@@ -841,10 +841,10 @@ class BrutalFileDrop extends StatelessWidget {
                   style: layered.text(t.label).copyWith(color: ink),
                   textAlign: TextAlign.center,
                 ),
-                if (hint != null) ...[
+                if (hintText != null) ...[
                   const SizedBox(height: BrutalSpacing.tight),
                   Text(
-                    hint!,
+                    hintText!,
                     style: t.secondary.copyWith(
                       color: pressed && !disabled ? c.paper : null,
                     ),
@@ -861,12 +861,12 @@ class BrutalFileDrop extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        if (label != null)
+        if (labelText != null)
           Padding(
             padding: const EdgeInsets.only(bottom: BrutalSpacing.small),
             child: ExcludeSemantics(
               child: Text(
-                label!,
+                labelText!,
                 style: t.label.copyWith(
                   fontSize: 14,
                   height: 20 / 14,

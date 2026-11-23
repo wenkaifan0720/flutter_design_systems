@@ -440,7 +440,7 @@ class BrutalDestination {
 /// `iconSize`, then [BrutalThemeData.navigationBarStyle]'s.
 ///
 /// ```dart
-/// BrutalNavigationBar(destinations: const [BrutalDestination(icon: LucideIcons.house, label: 'Home'), BrutalDestination(icon: LucideIcons.ticket, label: 'Tickets')], selectedIndex: index, onSelected: (i) => setState(() => index = i))
+/// BrutalNavigationBar(destinations: const [BrutalDestination(icon: LucideIcons.house, label: 'Home'), BrutalDestination(icon: LucideIcons.ticket, label: 'Tickets')], selectedIndex: index, onDestinationSelected: (i) => setState(() => index = i))
 /// ```
 class BrutalNavigationBar extends StatelessWidget {
   /// A bar over [destinations].
@@ -448,7 +448,7 @@ class BrutalNavigationBar extends StatelessWidget {
     super.key,
     required this.destinations,
     required this.selectedIndex,
-    required this.onSelected,
+    required this.onDestinationSelected,
     this.style,
   });
 
@@ -462,7 +462,7 @@ class BrutalNavigationBar extends StatelessWidget {
   final int selectedIndex;
 
   /// Called with the place chosen.
-  final ValueChanged<int> onSelected;
+  final ValueChanged<int> onDestinationSelected;
 
   @override
   Widget build(BuildContext context) {
@@ -471,7 +471,7 @@ class BrutalNavigationBar extends StatelessWidget {
       for (final (i, d) in destinations.indexed)
         _Cell(
           key: d.key,
-          onPressed: () => onSelected(i),
+          onPressed: () => onDestinationSelected(i),
           chosen: i == selectedIndex,
           semanticLabel: d.label,
           layers: layers,
@@ -552,7 +552,10 @@ class BrutalNavigationBar extends StatelessWidget {
       ..add(IterableProperty<BrutalDestination>('destinations', destinations))
       ..add(IntProperty('selectedIndex', selectedIndex))
       ..add(
-        ObjectFlagProperty<ValueChanged<int>>.has('onSelected', onSelected),
+        ObjectFlagProperty<ValueChanged<int>>.has(
+          'onDestinationSelected',
+          onDestinationSelected,
+        ),
       );
   }
 }
@@ -566,7 +569,7 @@ class BrutalNavigationBar extends StatelessWidget {
 /// `iconSize`, then [BrutalThemeData.navigationRailStyle]'s.
 ///
 /// ```dart
-/// BrutalNavigationRail(destinations: places, selectedIndex: index, onSelected: (i) => setState(() => index = i))
+/// BrutalNavigationRail(destinations: places, selectedIndex: index, onDestinationSelected: (i) => setState(() => index = i))
 /// ```
 class BrutalNavigationRail extends StatelessWidget {
   /// A rail over [destinations].
@@ -574,7 +577,7 @@ class BrutalNavigationRail extends StatelessWidget {
     super.key,
     required this.destinations,
     required this.selectedIndex,
-    required this.onSelected,
+    required this.onDestinationSelected,
     this.leading,
     this.style,
   });
@@ -589,7 +592,7 @@ class BrutalNavigationRail extends StatelessWidget {
   final int selectedIndex;
 
   /// Called with the place chosen.
-  final ValueChanged<int> onSelected;
+  final ValueChanged<int> onDestinationSelected;
 
   /// What stands over the cells: the app's mark.
   final Widget? leading;
@@ -604,7 +607,7 @@ class BrutalNavigationRail extends StatelessWidget {
       for (final (i, d) in destinations.indexed)
         _Cell(
           key: d.key,
-          onPressed: () => onSelected(i),
+          onPressed: () => onDestinationSelected(i),
           chosen: i == selectedIndex,
           semanticLabel: d.label,
           layers: layers,
@@ -698,7 +701,10 @@ class BrutalNavigationRail extends StatelessWidget {
       ..add(IterableProperty<BrutalDestination>('destinations', destinations))
       ..add(IntProperty('selectedIndex', selectedIndex))
       ..add(
-        ObjectFlagProperty<ValueChanged<int>>.has('onSelected', onSelected),
+        ObjectFlagProperty<ValueChanged<int>>.has(
+          'onDestinationSelected',
+          onDestinationSelected,
+        ),
       );
   }
 }
@@ -712,7 +718,7 @@ class BrutalNavigationRail extends StatelessWidget {
 /// `iconSize`, then [BrutalThemeData.sideNavigationStyle]'s.
 ///
 /// ```dart
-/// BrutalSideNavigation(header: const Text('ADMIT'), destinations: places, selectedIndex: index, onSelected: (i) => setState(() => index = i))
+/// BrutalSideNavigation(header: const Text('ADMIT'), destinations: places, selectedIndex: index, onDestinationSelected: (i) => setState(() => index = i))
 /// ```
 class BrutalSideNavigation extends StatelessWidget {
   /// A side list over [destinations].
@@ -720,7 +726,7 @@ class BrutalSideNavigation extends StatelessWidget {
     super.key,
     required this.destinations,
     required this.selectedIndex,
-    required this.onSelected,
+    required this.onDestinationSelected,
     this.header,
     this.footer,
     this.style,
@@ -736,7 +742,7 @@ class BrutalSideNavigation extends StatelessWidget {
   final int selectedIndex;
 
   /// Called with the place chosen.
-  final ValueChanged<int> onSelected;
+  final ValueChanged<int> onDestinationSelected;
 
   /// What stands in the top cell: the app's name.
   final Widget? header;
@@ -754,7 +760,7 @@ class BrutalSideNavigation extends StatelessWidget {
       for (final (i, d) in destinations.indexed)
         _Cell(
           key: d.key,
-          onPressed: () => onSelected(i),
+          onPressed: () => onDestinationSelected(i),
           chosen: i == selectedIndex,
           semanticLabel: d.label,
           layers: layers,
@@ -884,7 +890,10 @@ class BrutalSideNavigation extends StatelessWidget {
       ..add(IterableProperty<BrutalDestination>('destinations', destinations))
       ..add(IntProperty('selectedIndex', selectedIndex))
       ..add(
-        ObjectFlagProperty<ValueChanged<int>>.has('onSelected', onSelected),
+        ObjectFlagProperty<ValueChanged<int>>.has(
+          'onDestinationSelected',
+          onDestinationSelected,
+        ),
       );
   }
 }
@@ -903,7 +912,7 @@ class BrutalSideNavigation extends StatelessWidget {
 /// away and the body takes its room.
 ///
 /// ```dart
-/// BrutalScaffold(appBar: const BrutalAppBar(title: 'Home'), destinations: places, selectedIndex: 0, onSelected: (i) {}, body: const SizedBox.expand())
+/// BrutalScaffold(appBar: const BrutalAppBar(title: 'Home'), destinations: places, selectedIndex: 0, onDestinationSelected: (i) {}, body: const SizedBox.expand())
 /// ```
 class BrutalScaffold extends StatelessWidget {
   /// A screen of [body].
@@ -913,7 +922,7 @@ class BrutalScaffold extends StatelessWidget {
     this.appBar,
     this.destinations = const [],
     this.selectedIndex = 0,
-    this.onSelected,
+    this.onDestinationSelected,
     this.brand,
     this.sideFooter,
     this.floatingButton,
@@ -941,7 +950,7 @@ class BrutalScaffold extends StatelessWidget {
   final int selectedIndex;
 
   /// Called with the place chosen.
-  final ValueChanged<int>? onSelected;
+  final ValueChanged<int>? onDestinationSelected;
 
   /// The app's name, at the head of the rail and the side list.
   final Widget? brand;
@@ -953,7 +962,7 @@ class BrutalScaffold extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = BrutalTheme.of(context);
     final width = MediaQuery.sizeOf(context).width;
-    final places = destinations.isNotEmpty && onSelected != null;
+    final places = destinations.isNotEmpty && onDestinationSelected != null;
     // The bar stands under the body, which leaves it the safe area's foot.
     final under = places && width < 600 && showNavigation;
     // The body is a semantics container of its own, so a navigator in it (a
@@ -1017,7 +1026,7 @@ class BrutalScaffold extends StatelessWidget {
           DesignNavigationDestination(label: d.label, icon: d.icon, data: d),
       ],
       selectedIndex: selectedIndex,
-      onDestinationSelected: onSelected!,
+      onDestinationSelected: onDestinationSelected!,
       destinationBuilder: (context, destination, details) {
         final d = destination.data! as BrutalDestination;
         return KeyedSubtree(
@@ -1080,7 +1089,12 @@ class BrutalScaffold extends StatelessWidget {
     properties
       ..add(IterableProperty<BrutalDestination>('destinations', destinations))
       ..add(IntProperty('selectedIndex', selectedIndex))
-      ..add(ObjectFlagProperty<ValueChanged<int>>.has('onSelected', onSelected))
+      ..add(
+        ObjectFlagProperty<ValueChanged<int>>.has(
+          'onDestinationSelected',
+          onDestinationSelected,
+        ),
+      )
       ..add(
         FlagProperty(
           'showNavigation',
@@ -1107,7 +1121,7 @@ class BrutalScaffold extends StatelessWidget {
 /// bar), `padding` and `textStyle`, then [BrutalThemeData.tabBarStyle]'s.
 ///
 /// ```dart
-/// BrutalTabBar(tabs: const ['Upcoming', 'Past'], selectedIndex: index, onSelected: (i) => setState(() => index = i))
+/// BrutalTabBar(tabs: const ['Upcoming', 'Past'], selectedIndex: index, onTap: (i) => setState(() => index = i))
 /// ```
 class BrutalTabBar extends StatefulWidget {
   /// Tabs reading [tabs].
@@ -1115,7 +1129,7 @@ class BrutalTabBar extends StatefulWidget {
     super.key,
     required this.tabs,
     required this.selectedIndex,
-    required this.onSelected,
+    required this.onTap,
     this.expand,
     this.style,
   });
@@ -1130,7 +1144,7 @@ class BrutalTabBar extends StatefulWidget {
   final int selectedIndex;
 
   /// Called with the tab chosen.
-  final ValueChanged<int> onSelected;
+  final ValueChanged<int> onTap;
 
   /// Whether the cells span the row; null: below 600 px they do.
   final bool? expand;
@@ -1150,7 +1164,7 @@ class BrutalTabBar extends StatefulWidget {
       )
       ..add(IterableProperty<String>('tabs', tabs))
       ..add(IntProperty('selectedIndex', selectedIndex))
-      ..add(ObjectFlagProperty<ValueChanged<int>>.has('onSelected', onSelected))
+      ..add(ObjectFlagProperty<ValueChanged<int>>.has('onTap', onTap))
       ..add(DiagnosticsProperty<bool>('expand', expand, defaultValue: null));
   }
 }
@@ -1172,7 +1186,7 @@ class _BrutalTabBarState extends State<BrutalTabBar>
   // A tab the person chose: the caller's to take.
   void _chosen() {
     final at = _controller.index;
-    if (at != widget.selectedIndex) widget.onSelected(at);
+    if (at != widget.selectedIndex) widget.onTap(at);
   }
 
   @override

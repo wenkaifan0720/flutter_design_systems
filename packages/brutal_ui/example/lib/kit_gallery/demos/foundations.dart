@@ -257,9 +257,14 @@ class _Formats extends StatelessWidget {
                     horizontal: 12,
                     vertical: 10,
                   ),
-                  child: Row(
+                  // The sample at the end of its name's line, or under it
+                  // where large text leaves no room beside it.
+                  child: Wrap(
+                    alignment: WrapAlignment.spaceBetween,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    spacing: 12,
                     children: [
-                      Expanded(child: Text(name, style: t.secondary)),
+                      Text(name, style: t.secondary),
                       Text(sample, style: t.label),
                     ],
                   ),
