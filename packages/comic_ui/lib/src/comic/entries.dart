@@ -28,17 +28,17 @@ import 'knobs.dart' show ComicSpace;
 /// A multiline field, using Flutter's editor and Comic's selection menu.
 ///
 /// ```dart
-/// ComicTextArea(label: 'Notes', onChanged: save)
+/// ComicTextArea(labelText: 'Notes', onChanged: save)
 /// ```
 class ComicTextArea extends StatelessWidget {
   /// Creates a multiline field.
   const ComicTextArea({
     super.key,
     this.style,
-    this.label,
-    this.hint,
-    this.helper,
-    this.error,
+    this.labelText,
+    this.hintText,
+    this.helperText,
+    this.errorText,
     this.controller,
     this.initialValue,
     this.onChanged,
@@ -54,7 +54,7 @@ class ComicTextArea extends StatelessWidget {
        );
 
   /// Field label, prompt and supporting messages.
-  final String? label, hint, helper, error, initialValue;
+  final String? labelText, hintText, helperText, errorText, initialValue;
 
   /// The caller's controller, if any.
   final TextEditingController? controller;
@@ -82,10 +82,10 @@ class ComicTextArea extends StatelessWidget {
   @override
   Widget build(BuildContext context) => ComicTextField(
     style: style,
-    label: label,
-    hint: hint,
-    helper: helper,
-    error: error,
+    labelText: labelText,
+    hintText: hintText,
+    helperText: helperText,
+    errorText: errorText,
     controller: controller,
     initialValue: initialValue,
     onChanged: onChanged,
@@ -100,10 +100,10 @@ class ComicTextArea extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('label', label, defaultValue: null))
-      ..add(StringProperty('hint', hint, defaultValue: null))
-      ..add(StringProperty('helper', helper, defaultValue: null))
-      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
+      ..add(StringProperty('helperText', helperText, defaultValue: null))
+      ..add(StringProperty('errorText', errorText, defaultValue: null))
       ..add(StringProperty('initialValue', initialValue, defaultValue: null))
       ..add(
         DiagnosticsProperty<TextEditingController>(
@@ -149,14 +149,14 @@ class ComicTextArea extends StatelessWidget {
 /// A search field with a clear control and standard submit behavior.
 ///
 /// ```dart
-/// ComicSearchField(hint: 'Search issues', onChanged: search)
+/// ComicSearchField(hintText: 'Search issues', onChanged: search)
 /// ```
 class ComicSearchField extends StatefulWidget {
   /// Creates a search field.
   const ComicSearchField({
     super.key,
     this.style,
-    required this.hint,
+    required this.hintText,
     this.controller,
     this.onChanged,
     this.onSubmitted,
@@ -170,7 +170,7 @@ class ComicSearchField extends StatefulWidget {
   });
 
   /// The search prompt.
-  final String hint;
+  final String hintText;
 
   /// The caller's controller; otherwise this widget owns one.
   final TextEditingController? controller;
@@ -211,7 +211,7 @@ class ComicSearchField extends StatefulWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('hint', hint))
+      ..add(StringProperty('hintText', hintText))
       ..add(
         DiagnosticsProperty<TextEditingController>(
           'controller',
@@ -308,14 +308,14 @@ class _ComicSearchFieldState extends State<ComicSearchField> {
     style: widget.style,
     controller: _controller,
     focusNode: widget.focusNode ?? _focus,
-    label: widget.name,
+    labelText: widget.name,
     showLabel: false,
     nameOnly: true,
     enabled: widget.enabled,
     autofocus: widget.autofocus,
     onEditingComplete: widget.onEditingComplete,
     decorate: widget.decorate,
-    hint: widget.hint,
+    hintText: widget.hintText,
     onChanged: widget.onChanged,
     onSubmitted: widget.onSubmitted,
     textInputAction: TextInputAction.search,
@@ -358,7 +358,7 @@ class ComicSelectOption<T> {
 /// A field that opens Comic's keyboard-accessible menu.
 ///
 /// ```dart
-/// ComicSelect<String>(label: 'Format', options: const [ComicSelectOption('print', 'Print')], value: 'print', onChanged: change)
+/// ComicSelect<String>(labelText: 'Format', options: const [ComicSelectOption('print', 'Print')], value: 'print', onChanged: change)
 /// ```
 class ComicSelect<T> extends StatelessWidget {
   /// Creates a select, disabled when [onChanged] is absent.
@@ -368,10 +368,10 @@ class ComicSelect<T> extends StatelessWidget {
     required this.options,
     this.value,
     this.onChanged,
-    this.label,
-    this.hint,
-    this.helper,
-    this.error,
+    this.labelText,
+    this.hintText,
+    this.helperText,
+    this.errorText,
     this.focusNode,
     this.autofocus = false,
   });
@@ -386,13 +386,13 @@ class ComicSelect<T> extends StatelessWidget {
   final ValueChanged<T>? onChanged;
 
   /// Optional visible field label, also the field's spoken name.
-  final String? label;
+  final String? labelText;
 
   /// Overrides the localized empty prompt.
-  final String? hint;
+  final String? hintText;
 
-  /// Supporting text, replaced by [error] when present.
-  final String? helper, error;
+  /// Supporting text, replaced by [errorText] when present.
+  final String? helperText, errorText;
 
   /// {@macro comic.style}
   final ComicStyle? style;
@@ -407,7 +407,7 @@ class ComicSelect<T> extends StatelessWidget {
   Widget build(BuildContext context) {
     final matches = options.where((option) => option.value == value);
     final text = matches.isEmpty
-        ? hint ?? ComicLocalizations.of(context).choose
+        ? hintText ?? ComicLocalizations.of(context).choose
         : matches.first.label;
     final t = ComicTheme.of(context);
     // From 600 up the field keeps to its own width (at most 320) at its column's start; its list matches the field.
@@ -434,16 +434,16 @@ class ComicSelect<T> extends StatelessWidget {
               focusNode: focusNode,
               autofocus: autofocus,
               style: style,
-              label: label,
+              labelText: labelText,
               value: text,
               onPressed: onChanged == null ? null : open,
             ),
           ),
-          if (error != null || helper != null) ...[
+          if (errorText != null || helperText != null) ...[
             const SizedBox(height: ComicSpace.close),
             Semantics(
-              liveRegion: error != null,
-              child: Text(error ?? helper!, style: t.type.small),
+              liveRegion: errorText != null,
+              child: Text(errorText ?? helperText!, style: t.type.small),
             ),
           ],
         ],
@@ -458,10 +458,10 @@ class ComicSelect<T> extends StatelessWidget {
       ..add(IterableProperty<ComicSelectOption<T>>('options', options))
       ..add(DiagnosticsProperty<T>('value', value, defaultValue: null))
       ..add(ObjectFlagProperty<ValueChanged<T>>.has('onChanged', onChanged))
-      ..add(StringProperty('label', label, defaultValue: null))
-      ..add(StringProperty('hint', hint, defaultValue: null))
-      ..add(StringProperty('helper', helper, defaultValue: null))
-      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
+      ..add(StringProperty('helperText', helperText, defaultValue: null))
+      ..add(StringProperty('errorText', errorText, defaultValue: null))
       ..add(DiagnosticsProperty<ComicStyle>('style', style, defaultValue: null))
       ..add(
         DiagnosticsProperty<FocusNode>(
@@ -643,30 +643,30 @@ class ComicRadio<T> {
 /// The group is Flutter's [RadioGroup], each option a `RawRadio`, with ui_core's [RadioGroupKeyboardFix] round them:
 /// Tab stops once, on the chosen option (on the first that can be chosen while none is, or while the chosen one is
 /// turned off), and the arrows move and choose, Left and Right swapped right to left. A screen reader hears a radio
-/// group named [label], each option a radio.
+/// group named [labelText], each option a radio.
 ///
 /// ```dart
-/// ComicRadioGroup<String>(label: 'Format', options: const [ComicRadio('print', 'Print'), ComicRadio('digital', 'Digital')], value: 'print', onChanged: change)
+/// ComicRadioGroup<String>(labelText: 'Format', options: const [ComicRadio('print', 'Print'), ComicRadio('digital', 'Digital')], groupValue: 'print', onChanged: change)
 /// ```
 class ComicRadioGroup<T> extends StatefulWidget {
   /// Creates an exclusive choice group.
   const ComicRadioGroup({
     super.key,
     this.style,
-    required this.label,
+    required this.labelText,
     required this.options,
-    this.value,
+    this.groupValue,
     this.onChanged,
   });
 
   /// The group's name.
-  final String label;
+  final String labelText;
 
   /// Options in reading order.
   final List<ComicRadio<T>> options;
 
   /// The current value.
-  final T? value;
+  final T? groupValue;
 
   /// Receives a choice; absent means disabled.
   final ValueChanged<T>? onChanged;
@@ -680,9 +680,11 @@ class ComicRadioGroup<T> extends StatefulWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('label', label))
+      ..add(StringProperty('labelText', labelText))
       ..add(IterableProperty<ComicRadio<T>>('options', options))
-      ..add(DiagnosticsProperty<T>('value', value, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<T>('groupValue', groupValue, defaultValue: null),
+      )
       ..add(ObjectFlagProperty<ValueChanged<T>>.has('onChanged', onChanged))
       ..add(
         DiagnosticsProperty<ComicStyle>('style', style, defaultValue: null),
@@ -716,7 +718,9 @@ class _ComicRadioGroupState<T> extends State<ComicRadioGroup<T>> {
 
   void _choose(T? value) {
     final onChanged = widget.onChanged;
-    if (onChanged == null || value == null || value == widget.value) return;
+    if (onChanged == null || value == null || value == widget.groupValue) {
+      return;
+    }
     HapticFeedback.selectionClick();
     _nodes[value]?.requestFocus();
     onChanged(value);
@@ -747,12 +751,12 @@ class _ComicRadioGroupState<T> extends State<ComicRadioGroup<T>> {
       t.radioTheme,
     ], const {}).overlay;
     return RadioGroup<T>(
-      groupValue: widget.value,
+      groupValue: widget.groupValue,
       // RadioGroup takes no null: a group that takes no choice gives a no-op and turns each option off.
       onChanged: _choose,
       child: RadioGroupKeyboardFix<T>(
         child: Semantics(
-          label: widget.label,
+          label: widget.labelText,
           // Under the group, where each option finds it.
           child: Builder(
             builder: (context) {
@@ -762,7 +766,7 @@ class _ComicRadioGroupState<T> extends State<ComicRadioGroup<T>> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   ExcludeSemantics(
-                    child: Text(widget.label, style: t.type.title),
+                    child: Text(widget.labelText, style: t.type.title),
                   ),
                   for (final o in widget.options)
                     // The row's side room stands outward, its wash and its pop on the column's edge.
@@ -854,7 +858,7 @@ class _ComicRadioGroupState<T> extends State<ComicRadioGroup<T>> {
                                   color: look.fill ?? const Color(0x00000000),
                                   shape: outline.copyWith(side: rim),
                                 ),
-                                child: o.value == widget.value
+                                child: o.value == widget.groupValue
                                     ? Padding(
                                         // The dot is the ring moved in: concentric, 3 px of ground between them.
                                         padding: EdgeInsets.all(rim.width + 3),
@@ -1226,26 +1230,26 @@ class ComicDroppedFile {
 /// its platform's drop to it).
 ///
 /// ```dart
-/// ComicFileUpload(label: 'Cover art', files: files, onChoose: pick, onRemove: remove)
+/// ComicFileUpload(labelText: 'Cover art', files: files, onChoose: pick, onRemove: remove)
 /// ```
 class ComicFileUpload extends StatefulWidget {
   /// Creates a file drop.
   const ComicFileUpload({
     super.key,
-    required this.label,
-    this.hint,
+    required this.labelText,
+    this.hintText,
     this.files = const [],
     this.onChoose,
     this.onDrop,
     this.onRemove,
-    this.error,
+    this.errorText,
   });
 
   /// What the files are for.
-  final String label;
+  final String labelText;
 
   /// What's accepted: 'PNG or JPG, up to 10 MB'.
-  final String? hint;
+  final String? hintText;
 
   /// The files chosen so far.
   final List<ComicDroppedFile> files;
@@ -1260,7 +1264,7 @@ class ComicFileUpload extends StatefulWidget {
   final ValueChanged<int>? onRemove;
 
   /// What's wrong with the whole drop.
-  final String? error;
+  final String? errorText;
 
   @override
   State<ComicFileUpload> createState() => _ComicFileDropState();
@@ -1269,8 +1273,8 @@ class ComicFileUpload extends StatefulWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('label', label))
-      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(StringProperty('labelText', labelText))
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
       ..add(
         IterableProperty<ComicDroppedFile>(
           'files',
@@ -1281,7 +1285,7 @@ class ComicFileUpload extends StatefulWidget {
       ..add(ObjectFlagProperty<VoidCallback>.has('onChoose', onChoose))
       ..add(ObjectFlagProperty<ValueChanged<Object>>.has('onDrop', onDrop))
       ..add(ObjectFlagProperty<ValueChanged<int>>.has('onRemove', onRemove))
-      ..add(StringProperty('error', error, defaultValue: null));
+      ..add(StringProperty('errorText', errorText, defaultValue: null));
   }
 }
 
@@ -1294,7 +1298,7 @@ class _ComicFileDropState extends State<ComicFileUpload> {
     final c = t.colors;
     final words = ComicLocalizations.of(context);
     final rim = BorderSide(
-      color: widget.error != null || comicFieldInError(context)
+      color: widget.errorText != null || comicFieldInError(context)
           ? c.tones.danger
           : c.nightLine,
       width: t.rim(2.5),
@@ -1333,10 +1337,10 @@ class _ComicFileDropState extends State<ComicFileUpload> {
                 textAlign: TextAlign.center,
                 style: t.type.title,
               ),
-              if (widget.hint != null) ...[
+              if (widget.hintText != null) ...[
                 const SizedBox(height: ComicSpace.tight),
                 Text(
-                  widget.hint!,
+                  widget.hintText!,
                   textAlign: TextAlign.center,
                   style: t.type.small,
                 ),
@@ -1349,7 +1353,7 @@ class _ComicFileDropState extends State<ComicFileUpload> {
       ),
     );
     return Semantics(
-      label: widget.label,
+      label: widget.labelText,
       container: true,
       explicitChildNodes: true,
       child: Column(
@@ -1358,15 +1362,15 @@ class _ComicFileDropState extends State<ComicFileUpload> {
         children: [
           // The field label's face, as a text field's and a select's: the
           // look's small capitals are a section's, not a field's.
-          ExcludeSemantics(child: Text(widget.label, style: t.type.title)),
+          ExcludeSemantics(child: Text(widget.labelText, style: t.type.title)),
           const SizedBox(height: ComicSpace.close),
           well,
-          if (widget.error != null) ...[
+          if (widget.errorText != null) ...[
             const SizedBox(height: ComicSpace.close),
             Semantics(
               liveRegion: true,
               child: Text(
-                widget.error!,
+                widget.errorText!,
                 style: t.type.small.copyWith(color: c.tones.danger),
               ),
             ),

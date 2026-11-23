@@ -91,7 +91,7 @@ void main() {
                   child: ComicTabBar(
                     tabs: const ['All', 'Saved', 'Finished'],
                     selectedIndex: chosen,
-                    onChanged: (i) => setState(() => chosen = i),
+                    onTap: (i) => setState(() => chosen = i),
                   ),
                 ),
               ),

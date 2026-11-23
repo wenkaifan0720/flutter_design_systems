@@ -169,9 +169,9 @@ A text field takes a label, a hint and an error, and reports what is typed:
 
 ```dart
 ComicTextField(
-  label: 'Your name',
-  hint: 'As it should be lettered',
-  error: name.isEmpty ? 'Tell us who you are' : null,
+  labelText: 'Your name',
+  hintText: 'As it should be lettered',
+  errorText: name.isEmpty ? 'Tell us who you are' : null,
   onChanged: (text) => setState(() => name = text),
 )
 ```
@@ -180,7 +180,7 @@ A select opens its options in a raised menu; the current one carries a check:
 
 ```dart
 ComicSelect<String>(
-  label: 'Format',
+  labelText: 'Format',
   value: format,
   options: const [
     ComicSelectOption('print', 'Print'),

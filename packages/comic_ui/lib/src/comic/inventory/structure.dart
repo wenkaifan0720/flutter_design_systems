@@ -298,7 +298,7 @@ class ComicCommand extends StatelessWidget {
   const ComicCommand({
     super.key,
     required this.commands,
-    this.hint,
+    this.hintText,
     this.label,
     this.onRun,
     this.controller,
@@ -311,7 +311,7 @@ class ComicCommand extends StatelessWidget {
   final List<RawCommand> commands;
 
   /// The field's prompt.
-  final String? hint;
+  final String? hintText;
 
   /// What a screen reader calls the field and its results.
   final String? label;
@@ -345,7 +345,7 @@ class ComicCommand extends StatelessWidget {
           focusNode: focusNode,
           autofocus: autofocus,
           maxHeight: maxHeight,
-          hint: hint,
+          hint: hintText,
           label: label,
           onRun: onRun,
           controller: controller,
@@ -359,7 +359,7 @@ class ComicCommand extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(IterableProperty<RawCommand>('commands', commands))
-      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
       ..add(StringProperty('label', label, defaultValue: null))
       ..add(ObjectFlagProperty<ValueChanged<RawCommand>>.has('onRun', onRun))
       ..add(
@@ -397,7 +397,7 @@ class ComicCommand extends StatelessWidget {
 Future<void> showComicCommand(
   BuildContext context, {
   required List<RawCommand> commands,
-  String? hint,
+  String? hintText,
   String? label,
   double maxHeight = 340,
 }) {
@@ -419,7 +419,7 @@ Future<void> showComicCommand(
       commands: commands,
       autofocus: true,
       maxHeight: maxHeight,
-      hint: hint,
+      hint: hintText,
       label: label,
       onRun: run,
     ),
@@ -622,9 +622,9 @@ class ComicDataTable<R> extends StatelessWidget {
             const SizedBox(height: ComicSpace.near),
             Center(
               child: ComicPagination(
-                count: controller.pageCount,
+                pageCount: controller.pageCount,
                 page: controller.page,
-                onChanged: controller.goToPage,
+                onPageChanged: controller.goToPage,
               ),
             ),
           ],

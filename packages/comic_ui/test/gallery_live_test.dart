@@ -76,7 +76,7 @@ void main() {
     expect(
       tester
           .widget<ComicIconButton>(find.byType(ComicIconButton).last)
-          .selected,
+          .isSelected,
       isTrue,
     );
   });
@@ -181,7 +181,7 @@ void main() {
     expect(
       tester
           .widget<ComicRadioGroup<String>>(find.byType(ComicRadioGroup<String>))
-          .value,
+          .groupValue,
       'collect',
     );
   });

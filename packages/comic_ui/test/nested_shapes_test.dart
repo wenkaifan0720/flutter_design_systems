@@ -276,7 +276,7 @@ List<_Part> _parts() {
   Widget tabs(int chosen) => ComicTabBar(
     tabs: const ['All', 'Saved', 'Read'],
     selectedIndex: chosen,
-    onChanged: (_) {},
+    onTap: (_) {},
   );
   Widget group(bool first) => ComicListSection(
     children: [
@@ -293,23 +293,24 @@ List<_Part> _parts() {
   return [
     (
       name: 'text field',
-      build: () => const ComicTextField(label: 'Name', initialValue: 'Alex'),
+      build: () =>
+          const ComicTextField(labelText: 'Name', initialValue: 'Alex'),
       focus: 0,
     ),
     (
       name: 'search field',
-      build: () => const ComicSearchField(hint: 'Search'),
+      build: () => const ComicSearchField(hintText: 'Search'),
       focus: 0,
     ),
     (
       name: 'text area',
-      build: () => const ComicTextArea(label: 'Notes'),
+      build: () => const ComicTextArea(labelText: 'Notes'),
       focus: 0,
     ),
     (
       name: 'select',
       build: () => ComicSelect<int>(
-        label: 'Size',
+        labelText: 'Size',
         value: 1,
         options: const [
           ComicSelectOption(1, 'Small'),
@@ -334,7 +335,7 @@ List<_Part> _parts() {
       build: () => ComicIconButton(
         ComicGlyphs.bell,
         label: 'Alerts',
-        selected: true,
+        isSelected: true,
         onPressed: () {},
       ),
       focus: 0,
@@ -353,8 +354,8 @@ List<_Part> _parts() {
     (
       name: 'radio',
       build: () => ComicRadioGroup<int>(
-        label: 'Format',
-        value: 1,
+        labelText: 'Format',
+        groupValue: 1,
         options: const [ComicRadio(1, 'Print'), ComicRadio(2, 'Digital')],
         onChanged: (_) {},
       ),
@@ -384,17 +385,20 @@ List<_Part> _parts() {
     ),
     (
       name: 'pagination, first',
-      build: () => ComicPagination(count: 10, page: 0, onChanged: (_) {}),
+      build: () =>
+          ComicPagination(pageCount: 10, page: 0, onPageChanged: (_) {}),
       focus: null,
     ),
     (
       name: 'pagination, middle',
-      build: () => ComicPagination(count: 10, page: 4, onChanged: (_) {}),
+      build: () =>
+          ComicPagination(pageCount: 10, page: 4, onPageChanged: (_) {}),
       focus: null,
     ),
     (
       name: 'pagination, last',
-      build: () => ComicPagination(count: 10, page: 9, onChanged: (_) {}),
+      build: () =>
+          ComicPagination(pageCount: 10, page: 9, onPageChanged: (_) {}),
       focus: 0,
     ),
     (

@@ -100,7 +100,7 @@ Widget kitSpecimenButton() => Builder(
 );
 
 Widget kitSpecimenInput() => Builder(
-  builder: (context) => ComicInput(hint: kitSay(context, 'A plain input')),
+  builder: (context) => ComicInput(hintText: kitSay(context, 'A plain input')),
 );
 
 Widget kitSpecimenScreen() => Builder(

@@ -93,7 +93,7 @@ Future<({FocusNode field, List<String> chosen})> _select(
         child: SizedBox(
           width: 320,
           child: ComicSelect<String>(
-            label: 'Delivery',
+            labelText: 'Delivery',
             value: value,
             focusNode: field,
             onChanged: chosen.add,
@@ -201,7 +201,7 @@ void main() {
             child: SizedBox(
               width: 320,
               child: ComicSelect<String>(
-                label: 'Delivery',
+                labelText: 'Delivery',
                 value: 'standard',
                 onChanged: (_) {},
                 options: const [
@@ -254,7 +254,7 @@ void main() {
             child: SizedBox(
               width: 320,
               child: ComicCombobox<String>(
-                label: 'Port',
+                labelText: 'Port',
                 options: ['Porto', 'Porto Santo', 'Lisbon'],
               ),
             ),
@@ -300,7 +300,7 @@ void main() {
             child: SizedBox(
               width: 320,
               child: ComicCombobox<String>(
-                label: 'Port',
+                labelText: 'Port',
                 options: const ['Porto', 'Porto Santo', 'Lisbon'],
                 onSelected: taken.add,
               ),
@@ -336,7 +336,7 @@ void main() {
           child: SizedBox(
             width: 320,
             child: ComicSelect<String>(
-              label: 'Delivery',
+              labelText: 'Delivery',
               value: 'standard',
               onChanged: (_) {},
               options: const [
@@ -481,7 +481,7 @@ void main() {
             child: SizedBox(
               width: 320,
               child: ComicCombobox<String>(
-                label: 'City',
+                labelText: 'City',
                 options: const ['Paris', 'Porto', 'Prague', 'Lisbon'],
                 isOptionEnabled: (city) => city != 'Prague',
                 onSelected: taken.add,
@@ -565,13 +565,13 @@ void main() {
               width: 320,
               child: multi
                   ? ComicMultiSelect<String>(
-                      label: 'Genres',
+                      labelText: 'Genres',
                       values: const ['Noir'],
                       options: const ['Noir', 'Western', 'Horror', 'Romance'],
                       onChanged: (_) {},
                     )
                   : const ComicCombobox<String>(
-                      label: 'City',
+                      labelText: 'City',
                       options: ['Paris', 'Porto', 'Prague', 'Lisbon'],
                     ),
             ),
@@ -626,7 +626,7 @@ void main() {
             alignment: Alignment.topCenter,
             child: SizedBox(
               width: 320,
-              child: ComicCombobox<String>(label: 'City', options: cities),
+              child: ComicCombobox<String>(labelText: 'City', options: cities),
             ),
           ),
         ),
@@ -686,7 +686,7 @@ void main() {
               width: 320,
               child: StatefulBuilder(
                 builder: (context, setState) => ComicMultiSelect<String>(
-                  label: 'Genres',
+                  labelText: 'Genres',
                   values: genres,
                   options: const [
                     'Noir',
@@ -1063,11 +1063,11 @@ void main() {
                   width: 320,
                   child: kind == 'combobox'
                       ? const ComicCombobox<String>(
-                          label: 'Port',
+                          labelText: 'Port',
                           options: ['Porto', 'Porto Santo', 'Lisbon'],
                         )
                       : ComicMultiSelect<String>(
-                          label: 'Ports',
+                          labelText: 'Ports',
                           options: const ['Porto', 'Porto Santo', 'Lisbon'],
                           values: const [],
                           onChanged: (_) {},

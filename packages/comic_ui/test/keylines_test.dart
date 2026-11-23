@@ -209,7 +209,7 @@ void main() {
           await pumpScreen(tester, width, body);
           final insets = <String, double>{
             for (final e in find.byType(ComicTextField).evaluate())
-              'field ${(e.widget as ComicTextField).label}':
+              'field ${(e.widget as ComicTextField).labelText}':
                   left(within(e, find.byType(EditableText)).evaluate().first) -
                   left(e),
             // A select's words in its box (its press), not its label above the box.
@@ -278,7 +278,7 @@ void main() {
                     kitState(
                       'print',
                       (context, value, change) => ComicSelect<String>(
-                        label: 'Format',
+                        labelText: 'Format',
                         options: const [
                           ComicSelectOption('print', 'Print'),
                           ComicSelectOption('digital', 'Digital edition'),
@@ -289,11 +289,11 @@ void main() {
                     ),
                     kitSpecimenSelectField(),
                     const ComicCombobox<String>(
-                      label: 'Find a genre',
+                      labelText: 'Find a genre',
                       options: genres,
                     ),
                     ComicMultiSelect<String>(
-                      label: 'Genres',
+                      labelText: 'Genres',
                       options: genres,
                       values: chosen,
                       onChanged: choose,

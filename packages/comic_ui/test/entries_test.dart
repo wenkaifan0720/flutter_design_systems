@@ -16,9 +16,9 @@ void main() {
       comicApp(
         ComicTextField(
           controller: controller,
-          label: 'Title',
-          helper: 'Choose a name',
-          error: 'Already used',
+          labelText: 'Title',
+          helperText: 'Choose a name',
+          errorText: 'Already used',
         ),
       ),
     );
@@ -44,7 +44,11 @@ void main() {
     ]) {
       await tester.pumpWidget(
         comicApp(
-          ComicTextField(label: label, hint: 'Your handle', error: error),
+          ComicTextField(
+            labelText: label,
+            hintText: 'Your handle',
+            errorText: error,
+          ),
         ),
       );
       final data = tester
@@ -70,7 +74,7 @@ void main() {
       comicApp(
         const ComicFormField(
           'Your name',
-          help: 'As it should be on the list',
+          helperText: 'As it should be on the list',
           child: ComicTextField(),
         ),
       ),
@@ -97,7 +101,7 @@ void main() {
             child: SizedBox(
               width: 300,
               child: ComicTextField(
-                hint: 'Reply',
+                hintText: 'Reply',
                 onPaper: talk,
                 focusNode: focus,
               ),
@@ -124,7 +128,7 @@ void main() {
     await tester.pumpWidget(
       comicApp(
         ComicSearchField(
-          hint: 'Search',
+          hintText: 'Search',
           controller: controller,
           onChanged: changes.add,
         ),
@@ -152,10 +156,10 @@ void main() {
       addTearDown(first.dispose);
       addTearDown(second.dispose);
       await tester.pumpWidget(
-        comicApp(ComicSearchField(hint: 'Search', controller: first)),
+        comicApp(ComicSearchField(hintText: 'Search', controller: first)),
       );
       await tester.pumpWidget(
-        comicApp(ComicSearchField(hint: 'Search', controller: second)),
+        comicApp(ComicSearchField(hintText: 'Search', controller: second)),
       );
       first.text = 'Still usable';
       await tester.pump();
@@ -174,7 +178,9 @@ void main() {
     final controller = TextEditingController();
     addTearDown(controller.dispose);
     await tester.pumpWidget(
-      comicApp(ComicInputOtp(label: 'Code', length: 4, controller: controller)),
+      comicApp(
+        ComicInputOtp(labelText: 'Code', length: 4, controller: controller),
+      ),
     );
     await tester.enterText(find.byType(EditableText), 'a12 34b56');
     expect(controller.text, '1234');
@@ -191,7 +197,7 @@ void main() {
     await tester.pumpWidget(
       comicApp(
         ComicSelect<String>(
-          label: 'Format',
+          labelText: 'Format',
           value: 'print',
           options: const [
             ComicSelectOption('print', 'Print'),
@@ -213,7 +219,7 @@ void main() {
     await tester.pumpWidget(
       comicApp(
         const ComicSelect<String>(
-          label: 'Format',
+          labelText: 'Format',
           options: [ComicSelectOption('print', 'Print')],
         ),
       ),
@@ -230,7 +236,7 @@ void main() {
     await tester.pumpWidget(
       comicApp(
         ComicSelectField(
-          label: 'Delivery day',
+          labelText: 'Delivery day',
           value: 'Thursday',
           onPressed: () {},
         ),
@@ -280,7 +286,7 @@ void main() {
     await tester.pumpWidget(
       comicApp(
         ComicSelectField(
-          label: 'Day',
+          labelText: 'Day',
           semanticLabel: 'Delivery day',
           value: 'Thursday',
           onPressed: () {},
@@ -311,7 +317,7 @@ void main() {
       await tester.pumpWidget(
         comicApp(
           ComicSelect<String>(
-            label: 'Format',
+            labelText: 'Format',
             value: 'print',
             options: const [
               ComicSelectOption('print', 'Print'),
@@ -355,7 +361,7 @@ void main() {
                     ],
                     onSelected: (_) {},
                     builder: (context, open) => ComicSelectField(
-                      label: label,
+                      labelText: label,
                       value: 'Thursday',
                       onPressed: open,
                     ),
@@ -393,8 +399,8 @@ void main() {
       comicApp(
         StatefulBuilder(
           builder: (context, setState) => ComicRadioGroup<String>(
-            label: 'Format',
-            value: chosen,
+            labelText: 'Format',
+            groupValue: chosen,
             options: const [
               ComicRadio('a', 'First'),
               ComicRadio('b', 'Closed', enabled: false),
@@ -435,8 +441,8 @@ void main() {
                   Focus(focusNode: before, child: const Text('Before')),
                   ComicRadioGroup<String>(
                     key: const ValueKey('radios'),
-                    label: 'Format',
-                    value: chosen,
+                    labelText: 'Format',
+                    groupValue: chosen,
                     options: const [
                       ComicRadio('a', 'A'),
                       ComicRadio('b', 'B', enabled: false),
@@ -500,8 +506,8 @@ void main() {
               builder: (context, setState) => Padding(
                 padding: const EdgeInsets.all(24),
                 child: ComicRadioGroup<String>(
-                  label: 'Format',
-                  value: chosen,
+                  labelText: 'Format',
+                  groupValue: chosen,
                   options: const [
                     ComicRadio('a', 'A'),
                     ComicRadio('b', 'B', enabled: false),
@@ -659,13 +665,13 @@ void main() {
                   child: Column(
                     children: [
                       const ComicTextField(
-                        label: 'A longer label',
-                        hint: 'Your issue',
-                        helper: 'An explanation',
+                        labelText: 'A longer label',
+                        hintText: 'Your issue',
+                        helperText: 'An explanation',
                         enabled: false,
                       ),
-                      const ComicTextArea(label: 'Notes'),
-                      const ComicInputOtp(label: 'Verification code'),
+                      const ComicTextArea(labelText: 'Notes'),
+                      const ComicInputOtp(labelText: 'Verification code'),
                       ComicSegmentedButton<String>(
                         label: 'View',
                         value: 'all',

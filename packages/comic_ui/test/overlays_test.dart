@@ -177,7 +177,7 @@ void main() {
           Padding(
             padding: const EdgeInsets.all(16),
             child: ComicCombobox<String>(
-              label: 'City',
+              labelText: 'City',
               options: const [],
               focusNode: focus,
               search: (query) {
@@ -222,7 +222,7 @@ void main() {
         const Padding(
           padding: EdgeInsets.all(16),
           child: ComicCombobox<String>(
-            label: 'City',
+            labelText: 'City',
             options: ['Lisbon', 'London'],
           ),
         ),
@@ -244,7 +244,7 @@ void main() {
           Padding(
             padding: const EdgeInsets.all(16),
             child: ComicMultiSelect<String>(
-              label: 'Genres',
+              labelText: 'Genres',
               values: const [],
               onChanged: (_) {},
               search: (query) {

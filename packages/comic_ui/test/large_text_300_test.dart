@@ -359,7 +359,7 @@ void main() {
             child: SizedBox(
               width: column,
               child: ComicSelect<String>(
-                label: 'Delivery day',
+                labelText: 'Delivery day',
                 value: 'thu',
                 options: const [ComicSelectOption('thu', 'Thursday')],
                 onChanged: (_) {},
@@ -404,7 +404,7 @@ void main() {
             child: SizedBox(
               width: 240,
               child: ComicMultiSelect<String>(
-                label: 'Genres',
+                labelText: 'Genres',
                 values: const [tag, 'Western'],
                 options: const [tag, 'Western'],
                 onChanged: (_) {},

@@ -110,7 +110,7 @@ void main() {
                 context,
                 builder: (_) => const ComicDialog(
                   title: 'Rename issue',
-                  content: [ComicTextField(hint: 'Title')],
+                  content: [ComicTextField(hintText: 'Title')],
                 ),
               ),
             ),

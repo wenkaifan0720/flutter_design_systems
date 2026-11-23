@@ -676,10 +676,10 @@ class _ComicCarouselState extends State<ComicCarouselView> {
                     ),
                   Flexible(
                     child: ComicPageDots(
-                      count: controls.count,
+                      pageCount: controls.count,
                       selectedIndex: controls.page,
                       label: widget.label,
-                      onChanged: controls.goToPage,
+                      onPageChanged: controls.goToPage,
                     ),
                   ),
                   if (t.desk)

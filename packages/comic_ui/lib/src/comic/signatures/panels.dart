@@ -1085,14 +1085,14 @@ class ComicSpeech extends StatelessWidget {
 /// Stands under a thread.
 ///
 /// ```dart
-/// ComicReply(person: const ComicPerson(initials: 'Me', size: 44), hint: 'Say something…', onSend: () {})
+/// ComicReply(person: const ComicPerson(initials: 'Me', size: 44), hintText: 'Say something…', onSend: () {})
 /// ```
 class ComicReply extends StatelessWidget {
   /// Creates a [ComicReply].
   const ComicReply({
     super.key,
     required this.person,
-    this.hint,
+    this.hintText,
     this.label,
     this.icon,
     this.controller,
@@ -1105,7 +1105,7 @@ class ComicReply extends StatelessWidget {
   final ComicPerson person;
 
   /// Placeholder text shown when the field is empty.
-  final String? hint;
+  final String? hintText;
 
   /// {@macro comic.label}
   final String? label;
@@ -1165,7 +1165,7 @@ class ComicReply extends StatelessWidget {
         Expanded(
           child: ComicTextField(
             onPaper: true,
-            hint: hint,
+            hintText: hintText,
             controller: controller,
             onSubmitted: onSubmitted,
           ),
@@ -1190,7 +1190,7 @@ class ComicReply extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(DiagnosticsProperty<ComicPerson>('person', person))
-      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
       ..add(StringProperty('label', label, defaultValue: null))
       ..add(DiagnosticsProperty<IconData>('icon', icon, defaultValue: null))
       ..add(

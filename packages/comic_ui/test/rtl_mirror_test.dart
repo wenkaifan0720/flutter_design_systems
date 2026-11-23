@@ -38,8 +38,8 @@ void main() {
     ),
     'text field': (
       ComicTextField(
-        label: 'Weight',
-        hint: 'In kilograms',
+        labelText: 'Weight',
+        hintText: 'In kilograms',
         leading: const Icon(ComicGlyphs.search),
         trailing: const Text('kg'),
         onChanged: (_) {},
@@ -86,7 +86,7 @@ void main() {
       ComicTabBar(
         tabs: const ['All', 'Saved', 'Read'],
         selectedIndex: 0,
-        onChanged: (_) {},
+        onTap: (_) {},
       ),
       [find.text('All'), find.text('Read')],
     ),
@@ -111,7 +111,7 @@ void main() {
       [find.byIcon(ComicGlyphs.house), find.byIcon(ComicGlyphs.person)],
     ),
     'pagination': (
-      ComicPagination(count: 12, page: 2, onChanged: (_) {}),
+      ComicPagination(pageCount: 12, page: 2, onPageChanged: (_) {}),
       [find.text('1'), find.text('12')],
     ),
   };

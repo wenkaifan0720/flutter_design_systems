@@ -54,7 +54,10 @@ void main() {
       late RawWidgetsLocalizations words;
       await pumpIn(tester, (context) {
         words = RawWidgetsLocalizations.of(context);
-        return const ComicTextField(label: 'Name', hint: 'As on your card');
+        return const ComicTextField(
+          labelText: 'Name',
+          hintText: 'As on your card',
+        );
       });
       expect(tester.takeException(), isNull);
       expect(

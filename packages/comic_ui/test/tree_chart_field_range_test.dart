@@ -119,13 +119,13 @@ void main() {
             children: [
               ComicFormField(
                 'Your name',
-                error: error,
-                child: const ComicTextField(hint: 'Name'),
+                errorText: error,
+                child: const ComicTextField(hintText: 'Name'),
               ),
               ComicFormField(
                 'Code',
-                error: error,
-                child: const ComicInputGroup(hint: 'Code'),
+                errorText: error,
+                child: const ComicInputGroup(hintText: 'Code'),
               ),
             ],
           ),

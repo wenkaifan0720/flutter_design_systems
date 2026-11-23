@@ -27,7 +27,8 @@ import 'rows.dart';
 import 'layout.dart';
 import 'tell.dart';
 import 'tones.dart';
-import 'internal/actions.dart';
+import 'internal/footer_clear.dart';
+import 'internal/list_open.dart';
 import 'internal/cap_label.dart';
 import 'print.dart' show ComicScreenGrid;
 import 'internal/lettering.dart' show comicDisplayFor;
@@ -329,7 +330,11 @@ class ComicDialog extends StatelessWidget {
       if (actions.isNotEmpty)
         // The actions stand at the trailing end in reading order, the confirming one last, as Material's and
         // Cupertino's dialogs set theirs; stacked, one column at the dialog's width, the confirming one on top.
-        ComicActionBar(children: actions),
+        RawActionBar(
+          spacing: ComicSpace.close,
+          overflowSpacing: ComicSpace.close,
+          children: actions,
+        ),
     ],
   );
 
@@ -2022,7 +2027,10 @@ ComicRaised showComicSnackBar(
       duration: duration,
       data: _ToastShown(
         carried: _Carried(context, navigator),
-        shell: ShellInsets.of(context),
+        shell: math.max(
+          ShellInsets.of(context),
+          ComicFooterClear.of(context, overlay),
+        ),
         style: style,
         tone: tone,
         dismissLabel: dismissLabel,
@@ -2274,7 +2282,10 @@ ComicRaised showComicToast(
   final overlay = navigator.overlay!;
   _toasts[overlay]?.dismiss();
   final carried = _Carried(context, navigator);
-  final shellAllowance = ShellInsets.of(context);
+  final shellAllowance = math.max(
+    ShellInsets.of(context),
+    ComicFooterClear.of(context, overlay),
+  );
   final handle = _Overlaid();
   _toasts[overlay] = handle;
   handle.closed.whenComplete(() {
@@ -2695,7 +2706,7 @@ class ComicMenuRowFace extends StatelessWidget {
 /// and returns focus to the field.
 ///
 /// ```dart
-/// ComicCombobox<String>(label: 'City', options: const ['Lisbon', 'London', 'Lyon'], onSelected: pick)
+/// ComicCombobox<String>(labelText: 'City', options: const ['Lisbon', 'London', 'Lyon'], onSelected: pick)
 /// ```
 class ComicCombobox<T extends Object> extends StatefulWidget {
   /// Creates an autocomplete field over [options].
@@ -2705,9 +2716,9 @@ class ComicCombobox<T extends Object> extends StatefulWidget {
     required this.options,
     this.displayStringForOption,
     this.onSelected,
-    this.label,
-    this.hint,
-    this.helper,
+    this.labelText,
+    this.hintText,
+    this.helperText,
     this.initialValue,
     this.maxOptions = 6,
     this.isOptionEnabled,
@@ -2739,9 +2750,9 @@ class ComicCombobox<T extends Object> extends StatefulWidget {
   /// Called with the option taken.
   final ValueChanged<T>? onSelected;
 
-  /// [label]: the field's name. [hint]: its placeholder. [helper]: a line under it. [initialValue]: its starting text;
+  /// [labelText]: the field's name. [hintText]: its placeholder. [helperText]: a line under it. [initialValue]: its starting text;
   /// the words of one of [options] start it on that option, taken.
-  final String? label, hint, helper, initialValue;
+  final String? labelText, hintText, helperText, initialValue;
 
   /// How many matches typed words show at most. With no words typed, or the words of the option taken, the list
   /// offers every option, scrolling.
@@ -2771,9 +2782,9 @@ class ComicCombobox<T extends Object> extends StatefulWidget {
         ),
       )
       ..add(ObjectFlagProperty<ValueChanged<T>>.has('onSelected', onSelected))
-      ..add(StringProperty('label', label, defaultValue: null))
-      ..add(StringProperty('hint', hint, defaultValue: null))
-      ..add(StringProperty('helper', helper, defaultValue: null))
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
+      ..add(StringProperty('helperText', helperText, defaultValue: null))
       ..add(StringProperty('initialValue', initialValue, defaultValue: null))
       ..add(IntProperty('maxOptions', maxOptions, defaultValue: 6))
       ..add(
@@ -2861,20 +2872,26 @@ class _ComicComboboxState<T extends Object> extends State<ComicCombobox<T>> {
       // as two current options.
       highlightFollowsPointer: true,
       onSelected: _take,
-      semanticLabel: widget.label,
-      fieldBuilder: (context, field) => ComicTextField(
-        controller: field.controller,
-        focusNode: field.focusNode,
-        autofocus: widget.autofocus,
-        label: widget.label,
-        hint: widget.hint,
-        helper: widget.helper,
-        // It ends in the select's chevron: the field opens a list as a select does.
-        trailing: const Icon(ComicGlyphs.chevronDown),
-        // Enter takes the highlighted option and the field keeps the focus, as a combobox's does: Flutter's own
-        // finish to a done action would drop it. The take runs here, with no onSubmitted: a field told of a submit
-        // that keeps its focus has its text input restarted, and in a browser the restarted input takes no typing.
-        onEditingComplete: field.submit,
+      semanticLabel: widget.labelText,
+      fieldBuilder: (context, field) => ComicListOpen(
+        open: field.isOpen,
+        child: ComicTextField(
+          controller: field.controller,
+          focusNode: field.focusNode,
+          autofocus: widget.autofocus,
+          labelText: widget.labelText,
+          hintText: widget.hintText,
+          helperText: widget.helperText,
+          // It ends in the select's chevron, pointing up while the list shows: the field opens a list as a select
+          // does.
+          trailing: Icon(
+            field.isOpen ? ComicGlyphs.chevronUp : ComicGlyphs.chevronDown,
+          ),
+          // Enter takes the highlighted option and the field keeps the focus, as a combobox's does: Flutter's own
+          // finish to a done action would drop it. The take runs here, with no onSubmitted: a field told of a submit
+          // that keeps its focus has its text input restarted, and in a browser the restarted input takes no typing.
+          onEditingComplete: field.submit,
+        ),
       ),
       // Its options' words start on the field's words. The kit marks the value selected; Comic prints the chosen option yellow and checked while the field holds its
       // words, so the face takes the keys' and the pointer's states alone.

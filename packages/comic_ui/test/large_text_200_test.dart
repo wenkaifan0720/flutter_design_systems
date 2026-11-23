@@ -146,10 +146,10 @@ void main() {
         label: 'Style',
         values: const ['Bold', 'Italic', 'Underline'],
         selected: const {'Bold'},
-        multiple: true,
-        allowEmpty: true,
+        multiSelectionEnabled: true,
+        emptySelectionAllowed: true,
         labelOf: (v) => v,
-        onChanged: (_) {},
+        onSelectionChanged: (_) {},
       ),
     );
     final heights = [
@@ -213,7 +213,7 @@ void main() {
     await _large(
       tester,
       const ComicTextField(
-        label: 'Member number',
+        labelText: 'Member number',
         initialValue: '0042 1187',
         textDirection: TextDirection.ltr,
       ),

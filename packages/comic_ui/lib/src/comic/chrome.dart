@@ -13,6 +13,7 @@ import 'balloons.dart';
 import 'controls.dart';
 import 'component_themes.dart';
 import 'frames.dart';
+import 'internal/footer_clear.dart';
 import 'internal/geometry.dart';
 import 'layout.dart';
 import 'people.dart';
@@ -620,46 +621,52 @@ class ComicScaffold extends StatelessWidget {
       color: sheet ? c.card : c.background,
       child: content,
     );
-    return ComicBurstLedger(
-      child: ColoredBox(
-        color: sheet ? c.card : c.background,
-        child: Column(
-          mainAxisSize: sheet ? MainAxisSize.min : MainAxisSize.max,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            ?bar,
-            sheet ? Flexible(child: page) : Expanded(child: page),
-            if (footer != null)
-              DecoratedBox(
-                decoration: BoxDecoration(
-                  color: c.card,
-                  border: Border(
-                    top: BorderSide(color: c.nightLine, width: t.rim(3)),
-                  ),
-                ),
-                child: SafeArea(
-                  top: false,
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(
-                      ComicSpace.near,
-                      ComicSpace.near,
-                      ComicSpace.near,
-                      ComicSpace.near,
+    // A snack bar raised from the page stands above its footer.
+    return _FooterHost(
+      builder: (footerKey) => ComicBurstLedger(
+        child: ColoredBox(
+          color: sheet ? c.card : c.background,
+          child: Column(
+            mainAxisSize: sheet ? MainAxisSize.min : MainAxisSize.max,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              ?bar,
+              sheet ? Flexible(child: page) : Expanded(child: page),
+              if (footer != null)
+                DecoratedBox(
+                  key: footerKey,
+                  decoration: BoxDecoration(
+                    color: c.card,
+                    border: Border(
+                      top: BorderSide(color: c.nightLine, width: t.rim(3)),
                     ),
-                    child: t.desk && !sheet
-                        ? Align(
-                            alignment: AlignmentDirectional.centerEnd,
-                            heightFactor: 1,
-                            child: ConstrainedBox(
-                              constraints: const BoxConstraints(maxWidth: 360),
-                              child: footer!,
-                            ),
-                          )
-                        : footer!,
+                  ),
+                  child: SafeArea(
+                    top: false,
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(
+                        ComicSpace.near,
+                        ComicSpace.near,
+                        ComicSpace.near,
+                        ComicSpace.near,
+                      ),
+                      child: t.desk && !sheet
+                          ? Align(
+                              alignment: AlignmentDirectional.centerEnd,
+                              heightFactor: 1,
+                              child: ConstrainedBox(
+                                constraints: const BoxConstraints(
+                                  maxWidth: 360,
+                                ),
+                                child: footer!,
+                              ),
+                            )
+                          : footer!,
+                    ),
                   ),
                 ),
-              ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -978,14 +985,14 @@ class _ShellAct extends StatelessWidget {
 /// A one-line text field the generated stubs draw; [ComicTextField] is the same field with more to say.
 ///
 /// ```dart
-/// ComicInput(key: const ValueKey('name'), hint: 'Your name', onChanged: (text) {})
+/// ComicInput(key: const ValueKey('name'), hintText: 'Your name', onChanged: (text) {})
 /// ```
 class ComicInput extends StatelessWidget {
   /// Creates a [ComicInput].
   const ComicInput({
     super.key,
     this.style,
-    this.hint,
+    this.hintText,
     this.controller,
     this.initialValue,
     this.onChanged,
@@ -994,8 +1001,8 @@ class ComicInput extends StatelessWidget {
     this.autofocus = false,
   });
 
-  /// [hint]: placeholder text shown when the field is empty. [initialValue]: initial text when no editing controller is supplied.
-  final String? hint, initialValue;
+  /// [hintText]: placeholder text shown when the field is empty. [initialValue]: initial text when no editing controller is supplied.
+  final String? hintText, initialValue;
 
   /// The caller-owned editing controller.
   final TextEditingController? controller;
@@ -1017,7 +1024,7 @@ class ComicInput extends StatelessWidget {
     focusNode: focusNode,
     autofocus: autofocus,
     style: style,
-    hint: hint,
+    hintText: hintText,
     controller: controller,
     initialValue: initialValue,
     onChanged: onChanged,
@@ -1028,7 +1035,7 @@ class ComicInput extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
       ..add(StringProperty('initialValue', initialValue, defaultValue: null))
       ..add(
         DiagnosticsProperty<TextEditingController>(
@@ -1426,4 +1433,23 @@ class ComicErrorState extends StatelessWidget {
       ..add(ObjectFlagProperty<VoidCallback>.has('onRetry', onRetry))
       ..add(StringProperty('retryLabel', retryLabel, defaultValue: null));
   }
+}
+
+// Holds a page's footer key for as long as the page stands, and tells what is
+// raised from the page where the footer is ([ComicFooterClear]).
+class _FooterHost extends StatefulWidget {
+  const _FooterHost({required this.builder});
+
+  final Widget Function(GlobalKey footerKey) builder;
+
+  @override
+  State<_FooterHost> createState() => _FooterHostState();
+}
+
+class _FooterHostState extends State<_FooterHost> {
+  final _footer = GlobalKey(debugLabel: 'ComicScaffold.footer');
+
+  @override
+  Widget build(BuildContext context) =>
+      ComicFooterClear(footer: _footer, child: widget.builder(_footer));
 }

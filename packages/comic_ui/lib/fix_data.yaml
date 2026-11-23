@@ -42,3 +42,1259 @@ transforms:
     changes:
       - kind: 'removeParameter'
         name: 'scale'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicTextField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      field: 'label'
+      inClass: 'ComicTextField'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicTextField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      field: 'hint'
+      inClass: 'ComicTextField'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicTextField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      field: 'helper'
+      inClass: 'ComicTextField'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicTextField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      field: 'error'
+      inClass: 'ComicTextField'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+
+  - title: "Rename to 'prefixText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicTextField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'prefix'
+        newName: 'prefixText'
+
+  - title: "Rename to 'prefixText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      field: 'prefix'
+      inClass: 'ComicTextField'
+    changes:
+      - kind: 'rename'
+        newName: 'prefixText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicInput'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      field: 'hint'
+      inClass: 'ComicInput'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicTextArea'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      field: 'label'
+      inClass: 'ComicTextArea'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicTextArea'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      field: 'hint'
+      inClass: 'ComicTextArea'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicTextArea'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      field: 'helper'
+      inClass: 'ComicTextArea'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicTextArea'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      field: 'error'
+      inClass: 'ComicTextArea'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicSearchField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      field: 'hint'
+      inClass: 'ComicSearchField'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicSelect'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      field: 'label'
+      inClass: 'ComicSelect'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicSelect'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      field: 'hint'
+      inClass: 'ComicSelect'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicSelect'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      field: 'helper'
+      inClass: 'ComicSelect'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicSelect'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      field: 'error'
+      inClass: 'ComicSelect'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicSelectField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      field: 'label'
+      inClass: 'ComicSelectField'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicSelectField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'note'
+        newName: 'helperText'
+
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      field: 'note'
+      inClass: 'ComicSelectField'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicCombobox'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      field: 'label'
+      inClass: 'ComicCombobox'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicCombobox'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      field: 'hint'
+      inClass: 'ComicCombobox'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicCombobox'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      field: 'helper'
+      inClass: 'ComicCombobox'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicPasswordField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      field: 'label'
+      inClass: 'ComicPasswordField'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicPasswordField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      field: 'hint'
+      inClass: 'ComicPasswordField'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicPasswordField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      field: 'helper'
+      inClass: 'ComicPasswordField'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicPasswordField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      field: 'error'
+      inClass: 'ComicPasswordField'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicInputGroup'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      field: 'label'
+      inClass: 'ComicInputGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicInputGroup'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      field: 'hint'
+      inClass: 'ComicInputGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicInputGroup'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      field: 'helper'
+      inClass: 'ComicInputGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicInputGroup'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      field: 'error'
+      inClass: 'ComicInputGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicMultiSelect'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      field: 'label'
+      inClass: 'ComicMultiSelect'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicMultiSelect'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      field: 'hint'
+      inClass: 'ComicMultiSelect'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicMultiSelect'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      field: 'helper'
+      inClass: 'ComicMultiSelect'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicMultiSelect'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      field: 'error'
+      inClass: 'ComicMultiSelect'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+
+  - title: "Rename to 'displayStringForOption'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicMultiSelect'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'labelOf'
+        newName: 'displayStringForOption'
+
+  - title: "Rename to 'displayStringForOption'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      field: 'labelOf'
+      inClass: 'ComicMultiSelect'
+    changes:
+      - kind: 'rename'
+        newName: 'displayStringForOption'
+
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicFormField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'help'
+        newName: 'helperText'
+
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      field: 'help'
+      inClass: 'ComicFormField'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicFormField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      field: 'error'
+      inClass: 'ComicFormField'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicFileUpload'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      field: 'label'
+      inClass: 'ComicFileUpload'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicFileUpload'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      field: 'hint'
+      inClass: 'ComicFileUpload'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicFileUpload'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      field: 'error'
+      inClass: 'ComicFileUpload'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicNumberField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'note'
+        newName: 'helperText'
+
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      field: 'note'
+      inClass: 'ComicNumberField'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicInputOtp'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      field: 'label'
+      inClass: 'ComicInputOtp'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicInputOtp'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      field: 'error'
+      inClass: 'ComicInputOtp'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicReply'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      field: 'hint'
+      inClass: 'ComicReply'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicCommand'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      field: 'hint'
+      inClass: 'ComicCommand'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      function: 'showComicCommand'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicRadioGroup'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      field: 'label'
+      inClass: 'ComicRadioGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+
+  - title: "Rename to 'groupValue'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicRadioGroup'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'value'
+        newName: 'groupValue'
+
+  - title: "Rename to 'groupValue'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      field: 'value'
+      inClass: 'ComicRadioGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'groupValue'
+
+  - title: "Rename to 'onTap'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicTabBar'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'onChanged'
+        newName: 'onTap'
+
+  - title: "Rename to 'onTap'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      field: 'onChanged'
+      inClass: 'ComicTabBar'
+    changes:
+      - kind: 'rename'
+        newName: 'onTap'
+
+  - title: "Rename to 'pageCount'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicPageDots'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'count'
+        newName: 'pageCount'
+
+  - title: "Rename to 'pageCount'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      field: 'count'
+      inClass: 'ComicPageDots'
+    changes:
+      - kind: 'rename'
+        newName: 'pageCount'
+
+  - title: "Rename to 'onPageChanged'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicPageDots'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'onChanged'
+        newName: 'onPageChanged'
+
+  - title: "Rename to 'onPageChanged'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      field: 'onChanged'
+      inClass: 'ComicPageDots'
+    changes:
+      - kind: 'rename'
+        newName: 'onPageChanged'
+
+  - title: "Rename to 'pageCount'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicPagination'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'count'
+        newName: 'pageCount'
+
+  - title: "Rename to 'pageCount'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      field: 'count'
+      inClass: 'ComicPagination'
+    changes:
+      - kind: 'rename'
+        newName: 'pageCount'
+
+  - title: "Rename to 'onPageChanged'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicPagination'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'onChanged'
+        newName: 'onPageChanged'
+
+  - title: "Rename to 'onPageChanged'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      field: 'onChanged'
+      inClass: 'ComicPagination'
+    changes:
+      - kind: 'rename'
+        newName: 'onPageChanged'
+
+  - title: "Rename to 'isSelected'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicIconButton'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'selected'
+        newName: 'isSelected'
+
+  - title: "Rename to 'isSelected'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      field: 'selected'
+      inClass: 'ComicIconButton'
+    changes:
+      - kind: 'rename'
+        newName: 'isSelected'
+
+  - title: "Rename to 'isDestructiveAction'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicListTile'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'destructive'
+        newName: 'isDestructiveAction'
+
+  - title: "Rename to 'isDestructiveAction'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      field: 'destructive'
+      inClass: 'ComicListTile'
+    changes:
+      - kind: 'rename'
+        newName: 'isDestructiveAction'
+
+  - title: "Rename to 'isDestructiveAction'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicSheetAction'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'destructive'
+        newName: 'isDestructiveAction'
+
+  - title: "Rename to 'isDestructiveAction'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      field: 'destructive'
+      inClass: 'ComicSheetAction'
+    changes:
+      - kind: 'rename'
+        newName: 'isDestructiveAction'
+
+  - title: "Rename to 'onSelectionChanged'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicToggleGroup'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'onChanged'
+        newName: 'onSelectionChanged'
+
+  - title: "Rename to 'onSelectionChanged'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      field: 'onChanged'
+      inClass: 'ComicToggleGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'onSelectionChanged'
+
+  - title: "Rename to 'multiSelectionEnabled'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicToggleGroup'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'multiple'
+        newName: 'multiSelectionEnabled'
+
+  - title: "Rename to 'multiSelectionEnabled'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      field: 'multiple'
+      inClass: 'ComicToggleGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'multiSelectionEnabled'
+
+  - title: "Rename to 'emptySelectionAllowed'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicToggleGroup'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'allowEmpty'
+        newName: 'emptySelectionAllowed'
+
+  - title: "Rename to 'emptySelectionAllowed'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      field: 'allowEmpty'
+      inClass: 'ComicToggleGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'emptySelectionAllowed'
+
+  - title: "Rename to 'confirmText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      function: 'showComicDatePicker'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'confirm'
+        newName: 'confirmText'
+
+  - title: "Rename to 'cancelText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      function: 'showComicDatePicker'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'cancel'
+        newName: 'cancelText'
+
+  - title: "Rename to 'confirmText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      function: 'showComicDateRangePicker'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'confirm'
+        newName: 'confirmText'
+
+  - title: "Rename to 'cancelText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      function: 'showComicDateRangePicker'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'cancel'
+        newName: 'cancelText'
+
+  - title: "Rename to 'confirmText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      function: 'showComicTimePicker'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'confirm'
+        newName: 'confirmText'
+
+  - title: "Rename to 'cancelText'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      function: 'showComicTimePicker'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'cancel'
+        newName: 'cancelText'
+
+  - title: "Rename to 'forPlatform'"
+    date: 2026-11-22
+    element:
+      uris: ['comic_ui.dart']
+      method: 'of'
+      inClass: 'ComicTextSelectionControls'
+    changes:
+      - kind: 'rename'
+        newName: 'forPlatform'

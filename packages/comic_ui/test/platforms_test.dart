@@ -62,14 +62,17 @@ Widget _controls() => ComicColumn(
       ('link', ComicLink('Read the issue', onPressed: () {})),
       (
         'field',
-        const SizedBox(width: 300, child: ComicTextField(hint: 'Your name')),
+        const SizedBox(
+          width: 300,
+          child: ComicTextField(hintText: 'Your name'),
+        ),
       ),
       (
         'select',
         SizedBox(
           width: 300,
           child: ComicSelect<String>(
-            label: 'Format',
+            labelText: 'Format',
             value: 'print',
             onChanged: (_) {},
             options: const [
@@ -186,7 +189,7 @@ void main() {
                     const SizedBox(
                       width: 300,
                       child: ComicCombobox<String>(
-                        label: 'City',
+                        labelText: 'City',
                         options: ['Paris', 'Porto', 'Lisbon'],
                       ),
                     ),

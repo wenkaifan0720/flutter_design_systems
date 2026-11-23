@@ -173,7 +173,7 @@ Widget kitSpecimenReply() => Builder(
   builder: (context) => _ReplyDemo(
     builder: (controller, send) => ComicReply(
       person: const ComicPerson(initials: 'Me', size: 44, fillIndex: 2),
-      hint: kitSay(context, 'Say something…'),
+      hintText: kitSay(context, 'Say something…'),
       controller: controller,
       onSend: send,
       onSubmitted: (_) => send(),

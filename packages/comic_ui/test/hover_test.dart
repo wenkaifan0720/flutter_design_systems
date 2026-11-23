@@ -124,14 +124,17 @@ void main() {
       tester,
     ) async {
       final fields = <String, Widget>{
-        'text field': const ComicTextField(label: 'Name', initialValue: 'Alex'),
-        'search field': const ComicSearchField(hint: 'Search'),
-        'text area': const ComicTextArea(label: 'Notes'),
-        'code field': const ComicInputOtp(label: 'Code'),
-        'plain input': const ComicInput(hint: 'Your name'),
-        'reply': const ComicTextField(hint: 'A reply', onPaper: true),
+        'text field': const ComicTextField(
+          labelText: 'Name',
+          initialValue: 'Alex',
+        ),
+        'search field': const ComicSearchField(hintText: 'Search'),
+        'text area': const ComicTextArea(labelText: 'Notes'),
+        'code field': const ComicInputOtp(labelText: 'Code'),
+        'plain input': const ComicInput(hintText: 'Your name'),
+        'reply': const ComicTextField(hintText: 'A reply', onPaper: true),
         'autocomplete': const ComicCombobox<String>(
-          label: 'City',
+          labelText: 'City',
           options: ['Lisbon', 'London'],
         ),
       };

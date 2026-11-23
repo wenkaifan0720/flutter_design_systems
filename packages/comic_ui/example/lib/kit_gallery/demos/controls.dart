@@ -68,7 +68,7 @@ Widget kitSpecimenIconButton() => Builder(
       label: kitSay(context, 'Alerts'),
       // Alone on its column, the face stands on the keyline and its target grows toward the end.
       targetAlignment: AlignmentDirectional.centerStart,
-      selected: value,
+      isSelected: value,
       onPressed: () => change(!value),
     ),
   ),
@@ -78,8 +78,8 @@ Widget kitSpecimenField() => Builder(
   builder: (context) => ComicColumn(
     gap: 10,
     children: [
-      ComicTextField(hint: kitSay(context, 'As it should be on the list')),
-      ComicTextField(hint: kitSay(context, 'Write a reply'), onPaper: true),
+      ComicTextField(hintText: kitSay(context, 'As it should be on the list')),
+      ComicTextField(hintText: kitSay(context, 'Write a reply'), onPaper: true),
     ],
   ),
 );
@@ -105,7 +105,7 @@ Widget kitSpecimenSelectField() => kitState(
     onSelected: change,
     builder: (context, open) => ComicSelectField(
       value: kitSay(context, value),
-      note: kitSay(context, 'Delivery day'),
+      helperText: kitSay(context, 'Delivery day'),
       onPressed: open,
     ),
   ),
@@ -190,7 +190,7 @@ Widget kitSpecimenStepper() => kitState(
   (context, value, change) => ComicNumberField(
     value: value,
     unit: kitSay(context, 'people'),
-    note: kitSay(context, 'Up to six'),
+    helperText: kitSay(context, 'Up to six'),
     onChanged: change,
     min: 1,
     max: 6,
@@ -246,13 +246,13 @@ Widget kitPressTile() => Builder(
 
 Widget kitSpecimenSearch() => Builder(
   builder: (context) =>
-      ComicSearchField(hint: kitSay(context, 'Search issues')),
+      ComicSearchField(hintText: kitSay(context, 'Search issues')),
 );
 
 Widget kitSpecimenSelect() => kitState(
   'print',
   (context, value, change) => ComicSelect<String>(
-    label: kitSay(context, 'Format'),
+    labelText: kitSay(context, 'Format'),
     options: [
       ComicSelectOption('print', kitSay(context, 'Print')),
       ComicSelectOption('digital', kitSay(context, 'Digital')),
@@ -264,12 +264,12 @@ Widget kitSpecimenSelect() => kitState(
 Widget kitSpecimenRadio() => kitState(
   'post',
   (context, value, change) => ComicRadioGroup<String>(
-    label: kitSay(context, 'Delivery'),
+    labelText: kitSay(context, 'Delivery'),
     options: [
       ComicRadio('post', kitSay(context, 'By post')),
       ComicRadio(kitSay(context, 'collect'), kitSay(context, 'Collect')),
     ],
-    value: value,
+    groupValue: value,
     onChanged: change,
   ),
 );
@@ -287,8 +287,8 @@ Widget kitSpecimenSegmented() => kitState(
 );
 Widget kitSpecimenTextArea() => Builder(
   builder: (context) => ComicTextArea(
-    label: kitSay(context, 'Notes'),
-    hint: kitSay(context, 'A few words about the issue'),
+    labelText: kitSay(context, 'Notes'),
+    hintText: kitSay(context, 'A few words about the issue'),
   ),
 );
 Widget kitSpecimenCheckRow() => kitState(
@@ -306,8 +306,8 @@ Widget kitSpecimenFileDrop() => kitState(
     ComicDroppedFile('page-03.jpg', size: '1.1 MB', progress: .6),
   ],
   (context, value, change) => ComicFileUpload(
-    label: kitSay(context, 'Cover art'),
-    hint: kitSay(context, 'PNG or JPG, up to 10\u00A0MB'),
+    labelText: kitSay(context, 'Cover art'),
+    hintText: kitSay(context, 'PNG or JPG, up to 10\u00A0MB'),
     files: [
       for (final file in value)
         ComicDroppedFile(

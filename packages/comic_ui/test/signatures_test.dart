@@ -745,8 +745,8 @@ void main() {
       'say fill',
       () => const ComicSpeech(person: _head, text: 'Hm', fill: true),
     );
-    check('reply', () => const ComicReply(person: _head, hint: 'Say…'));
-    check('reply long', () => const ComicReply(person: _head, hint: long));
+    check('reply', () => const ComicReply(person: _head, hintText: 'Say…'));
+    check('reply long', () => const ComicReply(person: _head, hintText: long));
     check('reply plain', () => const ComicReply(person: _head, plain: true));
     check('claim', () => const ComicClaim(figure: '19'));
     check(

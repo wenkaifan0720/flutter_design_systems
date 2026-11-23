@@ -28,7 +28,7 @@ void main() {
           comicApp(
             const Padding(
               padding: EdgeInsets.all(16),
-              child: ComicTextField(hint: 'Write a reply', onPaper: true),
+              child: ComicTextField(hintText: 'Write a reply', onPaper: true),
             ),
             dark: dark,
           ),
@@ -103,7 +103,7 @@ void main() {
           child: ComicTabBar(
             tabs: const ['All', 'Saved', 'Read'],
             selectedIndex: 1,
-            onChanged: (_) {},
+            onTap: (_) {},
           ),
         );
         const spacer = SizedBox(width: 800, height: 600);
@@ -154,7 +154,7 @@ void main() {
                     child: ComicTabBar(
                       tabs: const ['All', 'Saved', 'Finished'],
                       selectedIndex: chosen,
-                      onChanged: (_) {},
+                      onTap: (_) {},
                     ),
                   ),
                 ),

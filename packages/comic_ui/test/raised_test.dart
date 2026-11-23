@@ -269,7 +269,7 @@ void main() {
     await tester.pumpWidget(
       _host(
         ComicCombobox<String>(
-          label: 'City',
+          labelText: 'City',
           options: const ['Lisbon', 'Porto'],
           onSelected: (city) => taken = city,
         ),

@@ -494,7 +494,7 @@ class ComicSheetAction<T> {
     this.label, {
     required this.value,
     this.icon,
-    this.destructive = false,
+    this.isDestructiveAction = false,
     this.enabled = true,
   });
 
@@ -508,7 +508,7 @@ class ComicSheetAction<T> {
   final IconData? icon;
 
   /// Destroys something: the danger tone.
-  final bool destructive;
+  final bool isDestructiveAction;
 
   /// Whether it can be taken.
   final bool enabled;
@@ -577,7 +577,7 @@ class ComicActionSheet<T> extends StatelessWidget {
                   states: states,
                   label: action.label,
                   icon: action.icon,
-                  danger: action.destructive,
+                  danger: action.isDestructiveAction,
                   shape: t.shapes.small,
                 ),
               ),
@@ -623,7 +623,7 @@ class _SheetRowReach extends StatelessWidget {
 /// Raises a [ComicActionSheet] and returns the chosen value, or null on cancel or dismissal.
 ///
 /// ```dart
-/// final choice = await showComicActionSheet<String>(context, title: 'Issue 12', actions: const [ComicSheetAction('Delete', value: 'delete', destructive: true)]);
+/// final choice = await showComicActionSheet<String>(context, title: 'Issue 12', actions: const [ComicSheetAction('Delete', value: 'delete', isDestructiveAction: true)]);
 /// ```
 Future<T?> showComicActionSheet<T>(
   BuildContext context, {

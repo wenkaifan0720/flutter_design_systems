@@ -77,7 +77,7 @@ void main() {
             builder: (context, setState) => ComicTabBar(
               tabs: const ['All', 'Saved', 'Read'],
               selectedIndex: selected,
-              onChanged: (next) {
+              onTap: (next) {
                 hits.add(next);
                 setState(() => selected = next);
               },
@@ -480,10 +480,7 @@ void main() {
                         onPressed: () {},
                       ),
                       ComicChip(longLine, onDeleted: () {}),
-                      ComicTabBar(
-                        tabs: const [long, 'Saved'],
-                        onChanged: (_) {},
-                      ),
+                      ComicTabBar(tabs: const [long, 'Saved'], onTap: (_) {}),
                       const ComicStepProgress(
                         count: 6,
                         currentStep: 2,

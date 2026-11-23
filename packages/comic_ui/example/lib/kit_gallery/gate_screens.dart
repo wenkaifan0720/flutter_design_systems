@@ -74,12 +74,12 @@ Widget _field(
     return error == null ? null : kitSay(context, error);
   },
   builder: (field) => ComicTextField(
-    label: label,
+    labelText: label,
     initialValue: initialValue,
     keyboardType: keyboardType,
     textDirection: textDirection,
     onChanged: field.didChange,
-    error: field.errorText,
+    errorText: field.errorText,
   ),
 );
 
@@ -199,7 +199,7 @@ Widget gateAccount() => kitState(
           _firstCell(
             context,
             ComicSelect<String>(
-              label: say('Delivery'),
+              labelText: say('Delivery'),
               value: delivery,
               options: [
                 ComicSelectOption('standard', say('Standard delivery')),
@@ -386,7 +386,7 @@ Widget gateLibrary() => kitState(0, (context, tab, change) {
         ComicTabBar(
           tabs: [say('All'), say('Saved'), say('Finished')],
           selectedIndex: tab,
-          onChanged: change,
+          onTap: change,
         ),
       ),
       ComicTier(phone: ComicTierLayout.pairs, children: covers),

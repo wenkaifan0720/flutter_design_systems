@@ -91,7 +91,7 @@ class ComicChart extends StatefulWidget {
     this.band,
     this.summary,
     this.height = 180,
-    this.format,
+    this.valueFormat,
     this.loading = false,
     this.empty,
   });
@@ -119,9 +119,9 @@ class ComicChart extends StatefulWidget {
   /// Plot height, excluding axis labels and legend.
   final double height;
 
-  /// Formats values in the accessible summary, the value axis and the plate, with their unit
-  /// (`(v) => '${v.round()} h'`); null: whole numbers in the reader's digits.
-  final String Function(double)? format;
+  /// How values read in the accessible summary, on the value axis and on the plate, in the reader's digits, with
+  /// their unit (`DesignChartValueFormat(suffix: ' h')`); null: whole numbers.
+  final DesignChartValueFormat? valueFormat;
 
   /// The values are on their way: the plot holds its place, quietly.
   final bool loading;
@@ -151,7 +151,13 @@ class ComicChart extends StatefulWidget {
       )
       ..add(StringProperty('summary', summary, defaultValue: null))
       ..add(DoubleProperty('height', height, defaultValue: 180))
-      ..add(ObjectFlagProperty<String Function(double)>.has('format', format))
+      ..add(
+        DiagnosticsProperty<DesignChartValueFormat>(
+          'valueFormat',
+          valueFormat,
+          defaultValue: null,
+        ),
+      )
       ..add(
         FlagProperty(
           'loading',
@@ -180,7 +186,7 @@ class ComicLineChart extends StatelessWidget {
     this.band,
     this.summary,
     this.height = 180,
-    this.format,
+    this.valueFormat,
     this.loading = false,
     this.empty,
   });
@@ -203,8 +209,8 @@ class ComicLineChart extends StatelessWidget {
   /// See [ComicChart.height].
   final double height;
 
-  /// See [ComicChart.format].
-  final String Function(double)? format;
+  /// See [ComicChart.valueFormat].
+  final DesignChartValueFormat? valueFormat;
 
   /// See [ComicChart.loading].
   final bool loading;
@@ -220,7 +226,7 @@ class ComicLineChart extends StatelessWidget {
     band: band,
     summary: summary,
     height: height,
-    format: format,
+    valueFormat: valueFormat,
     loading: loading,
     empty: empty,
   );
@@ -237,7 +243,13 @@ class ComicLineChart extends StatelessWidget {
       )
       ..add(StringProperty('summary', summary, defaultValue: null))
       ..add(DoubleProperty('height', height, defaultValue: 180))
-      ..add(ObjectFlagProperty<String Function(double)>.has('format', format))
+      ..add(
+        DiagnosticsProperty<DesignChartValueFormat>(
+          'valueFormat',
+          valueFormat,
+          defaultValue: null,
+        ),
+      )
       ..add(
         FlagProperty(
           'loading',
@@ -265,7 +277,7 @@ class ComicAreaChart extends ComicLineChart {
     super.band,
     super.summary,
     super.height,
-    super.format,
+    super.valueFormat,
     super.loading,
     super.empty,
   });
@@ -279,7 +291,7 @@ class ComicAreaChart extends ComicLineChart {
     band: band,
     summary: summary,
     height: height,
-    format: format,
+    valueFormat: valueFormat,
     loading: loading,
     empty: empty,
   );
@@ -300,7 +312,7 @@ class ComicBarChart extends ComicLineChart {
     super.band,
     super.summary,
     super.height,
-    super.format,
+    super.valueFormat,
     super.loading,
     super.empty,
   });
@@ -314,7 +326,7 @@ class ComicBarChart extends ComicLineChart {
     band: band,
     summary: summary,
     height: height,
-    format: format,
+    valueFormat: valueFormat,
     loading: loading,
     empty: empty,
   );
@@ -361,14 +373,14 @@ class _ComicChartState extends State<ComicChart> {
     final guides = _roundGuides(
       least,
       least == most ? least + 1 : most,
-      whole: widget.format == null,
+      whole: widget.valueFormat == null,
     );
     final low = guides.last, upper = guides.first;
     // The reader's own figures: Arabic-Indic digits on an Arabic page, the locale's grouping.
     final digits = RawWidgetsLocalizations.of(context);
-    final fmt =
-        widget.format ??
-        (double n) => digits.formatDecimal(n, fractionDigits: 0);
+    final valueFormat =
+        widget.valueFormat ?? const DesignChartValueFormat(fractionDigits: 0);
+    String fmt(double n) => valueFormat.format(n, digits);
     final nothing = values.isEmpty && !widget.loading;
     final read =
         widget.summary ??
@@ -431,7 +443,7 @@ class _ComicChartState extends State<ComicChart> {
             : null,
         padding: EdgeInsetsDirectional.only(start: start + 4, end: end + 4),
         formatX: (x) => slotName(x.round()),
-        formatY: fmt,
+        valueFormat: valueFormat,
         series: widget.loading || nothing
             ? const []
             : [
@@ -1028,7 +1040,7 @@ class ComicSparkline extends StatelessWidget {
     this.width = 96,
     this.height = 28,
     this.area = true,
-    this.format,
+    this.valueFormat,
   });
 
   /// Its accessible name.
@@ -1043,15 +1055,17 @@ class ComicSparkline extends StatelessWidget {
   /// Fills under the line, faintly.
   final bool area;
 
-  /// Formats the values a screen reader hears.
-  final String Function(double)? format;
+  /// How the values a screen reader hears read, in the reader's digits;
+  /// null: whole numbers.
+  final DesignChartValueFormat? valueFormat;
 
   @override
   Widget build(BuildContext context) {
     final t = ComicTheme.of(context);
     final digits = RawWidgetsLocalizations.of(context);
-    final fmt =
-        format ?? (double n) => digits.formatDecimal(n, fractionDigits: 0);
+    final valueFormat =
+        this.valueFormat ?? const DesignChartValueFormat(fractionDigits: 0);
+    String fmt(double n) => valueFormat.format(n, digits);
     final finite = [
       for (final v in values)
         if (v != null && v.isFinite) v,
@@ -1102,7 +1116,13 @@ class ComicSparkline extends StatelessWidget {
           defaultValue: true,
         ),
       )
-      ..add(ObjectFlagProperty<String Function(double)>.has('format', format));
+      ..add(
+        DiagnosticsProperty<DesignChartValueFormat>(
+          'valueFormat',
+          valueFormat,
+          defaultValue: null,
+        ),
+      );
   }
 }
 

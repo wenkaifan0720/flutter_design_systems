@@ -49,7 +49,7 @@ void main() {
             children: [
               ComicSelect<String>(
                 key: const Key('select'),
-                label: 'Due',
+                labelText: 'Due',
                 options: const [
                   ComicSelectOption('today', 'Today'),
                   ComicSelectOption('later', 'Later'),
@@ -60,7 +60,7 @@ void main() {
               const SizedBox(height: 16),
               const ComicCombobox<String>(
                 key: Key('combobox'),
-                label: 'Project',
+                labelText: 'Project',
                 options: _places,
               ),
             ],
@@ -95,7 +95,7 @@ void main() {
     await _pump(
       tester,
       const ComicCombobox<String>(
-        label: 'Project',
+        labelText: 'Project',
         options: _places,
         initialValue: 'Field guide',
       ),
@@ -111,7 +111,7 @@ void main() {
   ) async {
     await _pump(
       tester,
-      const ComicCombobox<String>(label: 'Project', options: _places),
+      const ComicCombobox<String>(labelText: 'Project', options: _places),
     );
     await tester.tap(find.byType(EditableText));
     await tester.pumpAndSettle();
@@ -134,7 +134,7 @@ void main() {
         addTearDown(focus.dispose);
         await _pump(
           tester,
-          ComicTextField(hint: 'Find a command', focusNode: focus),
+          ComicTextField(hintText: 'Find a command', focusNode: focus),
           direction: direction,
         );
         focus.requestFocus();
@@ -177,7 +177,7 @@ void main() {
                 onChanged: (_) {},
               ),
               const SizedBox(height: 16),
-              ComicTextField(hint: 'Find a command', focusNode: focus),
+              ComicTextField(hintText: 'Find a command', focusNode: focus),
             ],
           ),
           direction: direction,

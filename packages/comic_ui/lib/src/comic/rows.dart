@@ -446,7 +446,7 @@ class ComicListTile extends StatelessWidget {
     this.isFirst = false,
     this.label,
     this.selected = false,
-    this.destructive = false,
+    this.isDestructiveAction = false,
     this.enabled = true,
     this.focusNode,
     this.autofocus = false,
@@ -463,7 +463,7 @@ class ComicListTile extends StatelessWidget {
   final String? label;
 
   /// Selection and destructive emphasis.
-  final bool selected, destructive;
+  final bool selected, isDestructiveAction;
 
   /// [subtitle]: secondary information printed with the entry. [note]: secondary explanatory text.
   final String? subtitle, note;
@@ -505,7 +505,7 @@ class ComicListTile extends StatelessWidget {
         isFirst: isFirst,
         label: label,
         selected: selected,
-        destructive: destructive,
+        isDestructiveAction: isDestructiveAction,
         enabled: enabled,
       );
       return _ListActionRow(
@@ -529,7 +529,7 @@ class ComicListTile extends StatelessWidget {
               child: Text(
                 title,
                 style: t.type.title.copyWith(
-                  color: destructive && !selected
+                  color: isDestructiveAction && !selected
                       ? t.colors.tones.danger
                       : t.colors.text,
                 ),
@@ -739,8 +739,8 @@ class ComicListTile extends StatelessWidget {
       )
       ..add(
         FlagProperty(
-          'destructive',
-          value: destructive,
+          'isDestructiveAction',
+          value: isDestructiveAction,
           ifTrue: 'destructive',
           defaultValue: false,
         ),
@@ -1285,7 +1285,7 @@ class ComicFacts extends StatelessWidget {
 /// A labelled group in a form: a label, then the control, a line of help under it.
 ///
 /// ```dart
-/// ComicFormField('Your name', child: ComicTextField(hint: 'Name'))
+/// ComicFormField('Your name', child: ComicTextField(hintText: 'Name'))
 /// ```
 class ComicFormField extends StatelessWidget {
   /// Creates a [ComicFormField].
@@ -1293,8 +1293,8 @@ class ComicFormField extends StatelessWidget {
     this.label, {
     super.key,
     required this.child,
-    this.help,
-    this.error,
+    this.helperText,
+    this.errorText,
     this.required = false,
     this.enabled = true,
     this.focusNode,
@@ -1308,10 +1308,10 @@ class ComicFormField extends StatelessWidget {
   final Widget child;
 
   /// Supporting guidance displayed with the control.
-  final String? help;
+  final String? helperText;
 
-  /// What is wrong, in the danger tone in place of [help].
-  final String? error;
+  /// What is wrong, in the danger tone in place of [helperText].
+  final String? errorText;
 
   /// Whether it must be filled: a mark beside the label, and said aloud.
   final bool required;
@@ -1336,8 +1336,8 @@ class ComicFormField extends StatelessWidget {
     return RawInputDecorator(
       mergeSemantics: !many,
       labelText: label,
-      helperText: help,
-      errorText: error,
+      helperText: helperText,
+      errorText: errorText,
       required: required,
       enabled: enabled,
       focusNode: focusNode,
@@ -1368,17 +1368,21 @@ class ComicFormField extends StatelessWidget {
           ),
           const SizedBox(height: ComicSpace.close),
           // The control shows the error too: a field's rim in the danger tone, not only the line under it.
-          comicFieldTrouble(error: error != null, child: parts.control),
-          if (error != null || help != null)
+          comicFieldTrouble(error: parts.invalid, child: parts.control),
+          // The error line is ui_core's, so it is heard as it appears; the help is read with the control.
+          if (parts.error case final error?)
+            Padding(
+              padding: const EdgeInsets.only(top: ComicSpace.close),
+              child: DefaultTextStyle.merge(
+                style: t.type.small.copyWith(color: c.tones.danger),
+                child: error,
+              ),
+            )
+          else if (helperText != null)
             Padding(
               padding: const EdgeInsets.only(top: ComicSpace.close),
               child: ExcludeSemantics(
-                child: Text(
-                  error ?? help!,
-                  style: error == null
-                      ? t.type.small
-                      : t.type.small.copyWith(color: c.tones.danger),
-                ),
+                child: Text(helperText!, style: t.type.small),
               ),
             ),
         ],
@@ -1392,8 +1396,8 @@ class ComicFormField extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(StringProperty('label', label))
-      ..add(StringProperty('help', help, defaultValue: null))
-      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(StringProperty('helperText', helperText, defaultValue: null))
+      ..add(StringProperty('errorText', errorText, defaultValue: null))
       ..add(
         FlagProperty(
           'required',

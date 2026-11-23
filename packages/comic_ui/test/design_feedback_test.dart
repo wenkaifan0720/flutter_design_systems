@@ -65,7 +65,7 @@ void main() {
                     child: SizedBox(
                       width: width == 390 ? 342 : 600,
                       child: ComicSelect<String>(
-                        label: 'Delivery',
+                        labelText: 'Delivery',
                         value: 'standard',
                         options: const [
                           ComicSelectOption('standard', 'Standard delivery'),
@@ -170,7 +170,7 @@ void main() {
         (
           const SizedBox(
             width: 240,
-            child: ComicTextField(label: 'Name', initialValue: 'Alex'),
+            child: ComicTextField(labelText: 'Name', initialValue: 'Alex'),
           ),
           find.byType(ComicTextField),
           const Offset(10, 40),

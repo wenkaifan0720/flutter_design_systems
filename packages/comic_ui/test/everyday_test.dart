@@ -214,7 +214,7 @@ void main() {
       () => ComicNumberField(
         value: 1204,
         unit: 'people',
-        note: longLine,
+        helperText: longLine,
         format: (count) => '1,204',
       ),
     );
@@ -309,7 +309,7 @@ void main() {
       tester,
       390,
       const ComicTextField(
-        hint: 'A name',
+        hintText: 'A name',
         trailing: Icon(LucideIcons.search, size: 18),
       ),
     );

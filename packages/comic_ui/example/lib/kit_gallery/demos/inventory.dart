@@ -119,10 +119,10 @@ Widget kitSpecimenToggleGroup() => kitState<Set<String>>(
     label: kitSay(context, 'Style'),
     values: const ['Bold', 'Italic', 'Underline'],
     selected: on,
-    multiple: true,
-    allowEmpty: true,
+    multiSelectionEnabled: true,
+    emptySelectionAllowed: true,
     labelOf: (value) => kitSay(context, value),
-    onChanged: change,
+    onSelectionChanged: change,
   ),
 );
 
@@ -155,16 +155,16 @@ Widget kitSpecimenKbd() => const Wrap(
 
 Widget kitSpecimenPasswordField() => Builder(
   builder: (context) => ComicPasswordField(
-    label: kitSay(context, 'Password'),
-    hint: kitSay(context, 'At least eight letters'),
-    helper: kitSay(context, 'Letters and a number.'),
+    labelText: kitSay(context, 'Password'),
+    hintText: kitSay(context, 'At least eight letters'),
+    helperText: kitSay(context, 'Letters and a number.'),
   ),
 );
 
 Widget kitSpecimenInputGroup() => Builder(
   builder: (context) => ComicInputGroup(
-    label: kitSay(context, 'Price'),
-    hint: '0.00',
+    labelText: kitSay(context, 'Price'),
+    hintText: '0.00',
     leading: [Text(kitSay(context, 'USD'))],
     trailing: [Icon(ComicGlyphs.info, size: 18)],
     keyboardType: TextInputType.number,
@@ -173,15 +173,15 @@ Widget kitSpecimenInputGroup() => Builder(
 
 Widget kitSpecimenCode() => Builder(
   builder: (context) =>
-      ComicInputOtp(label: kitSay(context, 'Verification code')),
+      ComicInputOtp(labelText: kitSay(context, 'Verification code')),
 );
 
 Widget kitSpecimenMultiSelect() => kitState<List<String>>(
   const ['Noir', 'Western'],
   (context, genres, change) => ComicMultiSelect<String>(
-    label: kitSay(context, 'Genres'),
-    labelOf: (genre) => kitSay(context, genre),
-    hint: 'Add a genre',
+    labelText: kitSay(context, 'Genres'),
+    displayStringForOption: (genre) => kitSay(context, genre),
+    hintText: 'Add a genre',
     values: genres,
     options: const ['Noir', 'Western', 'Horror', 'Romance', 'Science fiction'],
     onChanged: change,

@@ -249,9 +249,9 @@ const _cities = [
 
 Widget kitSpecimenAutocomplete() => Builder(
   builder: (context) => ComicCombobox<String>(
-    label: kitSay(context, 'City'),
-    hint: kitSay(context, 'Start typing a city'),
-    helper: kitSay(context, 'A city not on the list says so.'),
+    labelText: kitSay(context, 'City'),
+    hintText: kitSay(context, 'Start typing a city'),
+    helperText: kitSay(context, 'A city not on the list says so.'),
     options: [for (final city in _cities) kitSay(context, city)],
     onSelected: (city) => kitFeedback(context, '$city chosen.'),
   ),

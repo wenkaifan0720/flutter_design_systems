@@ -32,7 +32,7 @@ Widget reviewCorners(Brightness brightness) => _screen(
           'Form and open dropdown',
           children: [
             const ComicTextField(
-              label: 'Full name',
+              labelText: 'Full name',
               initialValue: 'Alex Morgan',
             ),
             kitState(
@@ -41,7 +41,7 @@ Widget reviewCorners(Brightness brightness) => _screen(
                 gap: 4,
                 children: [
                   ComicSelect<String>(
-                    label: 'Delivery',
+                    labelText: 'Delivery',
                     value: value,
                     options: const [
                       ComicSelectOption('standard', 'Standard delivery'),
@@ -157,8 +157,8 @@ Widget reviewCorners(Brightness brightness) => _screen(
             kitState(
               0,
               (context, value, change) => ComicRadioGroup<int>(
-                label: 'Format',
-                value: value,
+                labelText: 'Format',
+                groupValue: value,
                 options: const [
                   ComicRadio(0, 'Print edition'),
                   ComicRadio(1, 'Digital edition'),
@@ -171,7 +171,7 @@ Widget reviewCorners(Brightness brightness) => _screen(
               (context, value, change) => ComicTabBar(
                 tabs: const ['All items', 'Saved'],
                 selectedIndex: value,
-                onChanged: change,
+                onTap: change,
               ),
             ),
           ],
@@ -256,15 +256,15 @@ Widget reviewFormBody() => kitState(
         'Tell us where to send your order.',
         style: ComicTheme.of(context).type.body,
       ),
-      const ComicTextField(label: 'Full name', initialValue: 'Alex Morgan'),
+      const ComicTextField(labelText: 'Full name', initialValue: 'Alex Morgan'),
       const ComicTextField(
-        label: 'Email address',
+        labelText: 'Email address',
         initialValue: 'alex@example.com',
         keyboardType: TextInputType.emailAddress,
       ),
       ComicSelect<String>(
         key: const ValueKey('review/dropdown'),
-        label: 'Delivery',
+        labelText: 'Delivery',
         value: value,
         options: const [
           ComicSelectOption('standard', 'Standard delivery'),
@@ -391,7 +391,7 @@ Widget reviewTabsBody() => kitState(
       ComicTabBar(
         tabs: const ['All items', 'Saved', 'Finished'],
         selectedIndex: value,
-        onChanged: change,
+        onTap: change,
       ),
       Text(
         [

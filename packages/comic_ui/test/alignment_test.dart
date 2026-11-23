@@ -222,7 +222,7 @@ void main() {
             ComicTabBar(
               tabs: const ['Latest', 'Popular', 'Saved'],
               selectedIndex: 1,
-              onChanged: (_) {},
+              onTap: (_) {},
               label: 'Sort',
             ),
           );
@@ -329,7 +329,7 @@ void main() {
                 leading: Icon(ComicGlyphs.search),
                 trailing: Icon(ComicGlyphs.close),
               ),
-              ComicSearchField(hint: 'Search issues'),
+              ComicSearchField(hintText: 'Search issues'),
             ],
           ),
         );
@@ -495,9 +495,9 @@ void main() {
         await pump(
           tester,
           ComicPagination(
-            count: 9,
+            pageCount: 9,
             page: 4,
-            onChanged: (_) {},
+            onPageChanged: (_) {},
             label: 'Results',
           ),
         );

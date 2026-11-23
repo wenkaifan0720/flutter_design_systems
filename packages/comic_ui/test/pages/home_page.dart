@@ -281,7 +281,7 @@ class HomePage extends StatelessWidget {
                         isCurrentUser: true,
                         size: 40,
                       ),
-                      hint: 'Say something…',
+                      hintText: 'Say something…',
                       icon: LucideIcons.send,
                       onSend: () {},
                     ),

@@ -90,6 +90,9 @@ class ComicSectionHeader extends StatelessWidget {
       title.toUpperCase(),
       style: comicDisplayFor(title, t.type.section),
     );
+    // The title alone is the header, so the note after it reads as words of
+    // its own.
+    final heading = Semantics(container: true, header: true, child: head);
     final small = note == null
         ? null
         : Text(
@@ -104,7 +107,7 @@ class ComicSectionHeader extends StatelessWidget {
         0,
       ),
       child: small == null
-          ? head
+          ? heading
           : LayoutBuilder(
               builder: (context, box) {
                 double wide(Text x) {
@@ -127,7 +130,7 @@ class ComicSectionHeader extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.baseline,
                         textBaseline: TextBaseline.alphabetic,
                         children: [
-                          head,
+                          heading,
                           const SizedBox(width: ComicSpace.near),
                           Flexible(child: small),
                         ],
@@ -136,7 +139,7 @@ class ComicSectionHeader extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          head,
+                          heading,
                           const SizedBox(height: ComicSpace.tight),
                           small,
                         ],
