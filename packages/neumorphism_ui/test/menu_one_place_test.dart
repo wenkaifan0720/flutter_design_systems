@@ -394,7 +394,7 @@ void main() {
             child: SizedBox(
               width: 320,
               child: NeumorphicSelect<String>(
-                label: 'Country',
+                labelText: 'Country',
                 focusNode: node,
                 value: 'Austria',
                 options: [for (final c in countries) NeumorphicMenuItem(c, c)],

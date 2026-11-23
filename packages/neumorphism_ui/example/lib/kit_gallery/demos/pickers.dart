@@ -29,7 +29,7 @@ Widget kitPickersDemo(Brightness brightness) => kitScreen(
                 onPressed: () => showNeumorphicDatePicker(
                   context,
                   value: DateTime(2026, 11, 6),
-                  today: kitPickerToday,
+                  currentDate: kitPickerToday,
                 ),
               ),
               NeumorphicButton(
@@ -51,9 +51,9 @@ Widget kitSpecimenDatePicker() {
   return StatefulBuilder(
     builder: (context, setState) => NeumorphicDatePicker(
       value: value,
-      today: kitPickerToday,
-      first: DateTime(2026, 11, 1),
-      last: DateTime(2027, 1, 31),
+      currentDate: kitPickerToday,
+      firstDate: DateTime(2026, 11, 1),
+      lastDate: DateTime(2027, 1, 31),
       onChanged: (v) => setState(() => value = v),
     ),
   );

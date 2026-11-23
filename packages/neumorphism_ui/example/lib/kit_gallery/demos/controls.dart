@@ -97,8 +97,8 @@ Widget kitSpecimenLatches() => NeumorphicLatchGroup(
 Widget kitSpecimenTextField() => const NeumorphicColumn(
   gap: 12,
   children: [
-    NeumorphicTextField(hint: 'A name'),
-    NeumorphicTextField(hint: 'A longer note', lines: 3),
+    NeumorphicTextField(hintText: 'A name'),
+    NeumorphicTextField(hintText: 'A longer note', maxLines: 3),
   ],
 );
 
@@ -119,7 +119,7 @@ Widget kitSpecimenStepper() => NeumorphicNumberField(
   min: 1,
   max: 12,
   unit: 'people',
-  note: 'Up to 12',
+  helperText: 'Up to 12',
   onChanged: (_) {},
 );
 
@@ -146,7 +146,7 @@ Widget kitSpecimenSwitch() {
 
 Widget kitSpecimenSwitchRow() => NeumorphicSwitchRow(
   label: 'Reminders',
-  note: 'On, at 09:00',
+  subtitle: 'On, at 09:00',
   value: true,
   onChanged: (_) {},
 );
@@ -201,6 +201,6 @@ Widget kitRemovableChips() => Wrap(
   children: [
     NeumorphicChip('Studio', onPressed: () {}, onDeleted: () {}),
     NeumorphicChip('Selected', selected: true, onDeleted: () {}),
-    NeumorphicChip('Unavailable', enabled: false, onDeleted: () {}),
+    NeumorphicChip('Unavailable', isEnabled: false, onDeleted: () {}),
   ],
 );

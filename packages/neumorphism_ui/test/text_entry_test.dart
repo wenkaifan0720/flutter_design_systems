@@ -21,33 +21,34 @@ final _entries =
       })
     >{
       'field': (
-        build: (c) => NeumorphicTextField(controller: c, hint: 'Name'),
+        build: (c) => NeumorphicTextField(controller: c, hintText: 'Name'),
         hint: 'Name',
         typed: true,
       ),
       'composer': (
         build: (c) => NeumorphicTextField(
           controller: c,
-          hint: 'Ask',
+          hintText: 'Ask',
           trailing: NeumorphicSendButton(onPressed: () {}),
         ),
         hint: 'Ask',
         typed: true,
       ),
       'search': (
-        build: (c) => NeumorphicSearchField(controller: c, hint: 'Search'),
+        build: (c) => NeumorphicSearchField(controller: c, hintText: 'Search'),
         hint: 'Search',
         typed: true,
       ),
       'password': (
-        build: (c) => NeumorphicPasswordField(controller: c, hint: 'Secret'),
+        build: (c) =>
+            NeumorphicPasswordField(controller: c, hintText: 'Secret'),
         hint: 'Secret',
         typed: true,
       ),
       'input group': (
         build: (c) => NeumorphicInputGroup(
           controller: c,
-          hint: 'site',
+          hintText: 'site',
           prefix: 'https://',
           suffix: '.com',
         ),
@@ -58,7 +59,7 @@ final _entries =
         build: (_) => NeumorphicMultiSelect<String>(
           values: const [],
           options: const ['Hall', 'Den'],
-          hint: 'Rooms',
+          hintText: 'Rooms',
           onChanged: (_) {},
         ),
         hint: 'Rooms',
@@ -204,7 +205,7 @@ void main() {
                 // Several lines: the first stands where a field's one line does.
                 final area = await _place(
                   tester,
-                  const NeumorphicTextArea(hint: 'Notes', lines: 3),
+                  const NeumorphicTextArea(hintText: 'Notes', maxLines: 3),
                   density: density,
                   scale: scale,
                   hostile: hostile,

@@ -364,7 +364,7 @@ void main() {
     final palette = find.byWidgetPredicate(
       (widget) =>
           widget is NeumorphicSelect<String> &&
-          widget.label == 'Your own colours',
+          widget.labelText == 'Your own colours',
     );
     await tapLive(tester, palette);
     await tapLive(tester, find.text('Clay and blue'));

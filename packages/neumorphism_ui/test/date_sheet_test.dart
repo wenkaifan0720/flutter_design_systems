@@ -40,7 +40,7 @@ Future<TestGesture> _open(WidgetTester tester, Size size) async {
             onPressed: () => showNeumorphicDatePicker(
               context,
               value: DateTime(2026, 11, 20),
-              today: DateTime(2026, 11, 18),
+              currentDate: DateTime(2026, 11, 18),
               title: 'Due date',
             ),
           ),

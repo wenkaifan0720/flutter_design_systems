@@ -56,7 +56,7 @@ void main() {
       await tester.pumpWidget(
         _sized(
           NeumorphicCombobox<String>(
-            label: 'Port',
+            labelText: 'Port',
             options: const ['Porto', 'Porto Santo', 'Lisbon'],
             onSelected: taken.add,
           ),
@@ -79,7 +79,7 @@ void main() {
         _sized(
           StatefulBuilder(
             builder: (context, setState) => NeumorphicMultiSelect<String>(
-              label: 'Genres',
+              labelText: 'Genres',
               values: genres,
               options: const ['Noir', 'Western', 'Horror'],
               onChanged: (next) => setState(() => genres = next),
@@ -108,7 +108,7 @@ void main() {
         _sized(
           StatefulBuilder(
             builder: (context, setState) => NeumorphicMultiSelect<String>(
-              label: 'Tags',
+              labelText: 'Tags',
               values: tags,
               onCreate: (words) => words,
               onChanged: (next) => setState(() => tags = next),

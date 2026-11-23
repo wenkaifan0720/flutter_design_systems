@@ -158,7 +158,10 @@ void main() {
         ) async {
           await pumpFlat(
             tester,
-            const SizedBox(width: 300, child: NeumorphicTextField(hint: 'A')),
+            const SizedBox(
+              width: 300,
+              child: NeumorphicTextField(hintText: 'A'),
+            ),
             t.copyWith(highContrast: true),
           );
           final (w, h, px) = await stagePixels(tester);

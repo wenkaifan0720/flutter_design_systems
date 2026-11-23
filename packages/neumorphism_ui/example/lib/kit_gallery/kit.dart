@@ -137,7 +137,7 @@ Widget _kitApp({required Brightness brightness, required Widget home}) =>
         child: NeumorphicChromeScope(
           brand: _kitBrand,
           nav: kitTabs,
-          active: 0,
+          selectedIndex: 0,
           child: child ?? const SizedBox.shrink(),
         ),
       ),
@@ -226,7 +226,7 @@ Widget kitSpecimenStage({
     child: NeumorphicChromeScope(
       brand: _kitBrand,
       nav: kitTabs,
-      active: 0,
+      selectedIndex: 0,
       child: home ?? const SizedBox.shrink(),
     ),
   ),

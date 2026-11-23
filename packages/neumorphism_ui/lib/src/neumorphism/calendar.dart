@@ -345,26 +345,50 @@ Widget _figure(
 
 /// A month (or [months] side by side) laid open on the page, for picking a day, a range or several days as the
 /// [controller]'s mode says. Arrows move the keyboard's day, Page Up and Down the month, Enter picks; a range shows its
-/// preview under the pointer or the keyboard before its second end is picked. The [controller] is the caller's, made
-/// once (in a State's initState, as `RawCalendarController(firstDate: start, lastDate: end)`) and disposed with it.
+/// preview under the pointer or the keyboard before its second end is picked.
+///
+/// A [controller] is the caller's, made once (in a State's initState, as `RawCalendarController(firstDate: start,
+/// lastDate: end)`) and disposed with it. Without one the calendar picks one day between [firstDate] and [lastDate] on
+/// a controller of its own, starting on [initialDate], and tells [onChanged].
 ///
 /// ```dart
 /// NeumorphicCalendar(controller: dates)
 /// ```
-class NeumorphicCalendar extends StatelessWidget {
-  /// A calendar on [controller].
+///
+/// ```dart
+/// NeumorphicCalendar(firstDate: DateTime(2026), lastDate: DateTime(2026, 12, 31), onChanged: (day) {})
+/// ```
+class NeumorphicCalendar extends StatefulWidget {
+  /// A calendar on [controller], or on one of its own between [firstDate] and [lastDate].
   const NeumorphicCalendar({
     super.key,
-    required this.controller,
+    this.controller,
+    this.firstDate,
+    this.lastDate,
+    this.initialDate,
     this.months = 1,
     this.onChanged,
     this.firstWeekday,
     this.style,
   }) : assert(months >= 1),
-       assert((firstWeekday ?? 1) >= 1 && (firstWeekday ?? 7) <= 7);
+       assert((firstWeekday ?? 1) >= 1 && (firstWeekday ?? 7) <= 7),
+       assert(
+         controller != null || (firstDate != null && lastDate != null),
+         'A NeumorphicCalendar without a controller needs a firstDate and a lastDate.',
+       );
 
-  /// The days, the mode and the choice.
-  final RawCalendarController controller;
+  /// The days, the mode and the choice. The caller keeps it and disposes it; when null, the calendar makes its own
+  /// from [firstDate], [lastDate] and [initialDate] and disposes it with itself.
+  final RawCalendarController? controller;
+
+  /// The earliest day it offers, without a [controller].
+  final DateTime? firstDate;
+
+  /// The latest day it offers, without a [controller].
+  final DateTime? lastDate;
+
+  /// The day chosen when it first shows, without a [controller]; later changes are not read.
+  final DateTime? initialDate;
 
   /// How many months show side by side.
   final int months;
@@ -386,12 +410,136 @@ class NeumorphicCalendar extends StatelessWidget {
   static const double maxMonthWidth = 7 * 48;
 
   @override
+  State<NeumorphicCalendar> createState() => _NeumorphicCalendarState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<RawCalendarController>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<DateTime>(
+          'firstDate',
+          firstDate,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<DateTime>('lastDate', lastDate, defaultValue: null),
+      )
+      ..add(
+        DiagnosticsProperty<DateTime>(
+          'initialDate',
+          initialDate,
+          defaultValue: null,
+        ),
+      )
+      ..add(IntProperty('months', months, defaultValue: 1))
+      ..add(
+        ObjectFlagProperty<ValueChanged<DateTime>>.has('onChanged', onChanged),
+      )
+      ..add(IntProperty('firstWeekday', firstWeekday, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<NeumorphicStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      );
+  }
+}
+
+/// A calendar's own controller, kept while the caller hands in none: made from the widget's bounds and its first
+/// choice, made again when the bounds change (keeping the choice and the month while they are still in them), and
+/// disposed when a controller is handed in or the widget goes.
+mixin _OwnCalendar<W extends StatefulWidget> on State<W> {
+  RawCalendarController? _own;
+
+  RawCalendarController? get _handed;
+  DateTime? get _first;
+  DateTime? get _last;
+  RawCalendarController _make(RawCalendarController? before);
+
+  RawCalendarController get _controller => _handed ?? (_own ??= _make(null));
+
+  void _update(DateTime? oldFirst, DateTime? oldLast) {
+    final own = _own;
+    if (own == null) return;
+    if (_handed != null) {
+      own.dispose();
+      _own = null;
+    } else if (!_sameDay(_first, oldFirst) || !_sameDay(_last, oldLast)) {
+      _own = _make(own);
+      own.dispose();
+    }
+  }
+
+  @override
+  void dispose() {
+    _own?.dispose();
+    super.dispose();
+  }
+}
+
+bool _sameDay(DateTime? a, DateTime? b) => a == null || b == null
+    ? a == b
+    : a.year == b.year && a.month == b.month && a.day == b.day;
+
+/// [day] when it is still between [first] and [last], else null.
+DateTime? _within(DateTime? day, DateTime first, DateTime last) {
+  if (day == null) return null;
+  final d = DateTime(day.year, day.month, day.day);
+  return d.isBefore(DateTime(first.year, first.month, first.day)) ||
+          d.isAfter(DateTime(last.year, last.month, last.day))
+      ? null
+      : day;
+}
+
+class _NeumorphicCalendarState extends State<NeumorphicCalendar>
+    with _OwnCalendar<NeumorphicCalendar> {
+  @override
+  RawCalendarController? get _handed => widget.controller;
+  @override
+  DateTime? get _first => widget.firstDate;
+  @override
+  DateTime? get _last => widget.lastDate;
+
+  @override
+  RawCalendarController _make(RawCalendarController? before) {
+    final first = widget.firstDate!, last = widget.lastDate!;
+    return RawCalendarController(
+      firstDate: first,
+      lastDate: last,
+      selectedDate: before == null
+          ? widget.initialDate
+          : _within(before.selectedDate, first, last),
+      initialMonth: before?.month,
+    );
+  }
+
+  @override
+  void didUpdateWidget(NeumorphicCalendar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _update(oldWidget.firstDate, oldWidget.lastDate);
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final controller = _controller;
+    final months = widget.months;
+    final firstWeekday = widget.firstWeekday;
+    final style = widget.style;
     final words = NeumorphicLocalizations.of(context);
     final calendar = RawCalendarDatePicker(
       controller: controller,
       months: months,
-      onChanged: onChanged,
+      onChanged: widget.onChanged,
       firstWeekday: firstWeekday ?? words.firstDayOfWeek,
       monthLabel: words.formatMonthYear,
       dayLabel: words.formatFullDate,
@@ -423,8 +571,8 @@ class NeumorphicCalendar extends StatelessWidget {
         firstWeekday ?? words.firstDayOfWeek,
       ),
     );
-    final least = minMonthWidth * months + 28 * (months - 1);
-    final most = maxMonthWidth * months + 28 * (months - 1);
+    final least = NeumorphicCalendar.minMonthWidth * months + 28 * (months - 1);
+    final most = NeumorphicCalendar.maxMonthWidth * months + 28 * (months - 1);
     // A month's figures grow with the text only so far (1.3), as Material's date picker's do: at twice the text on a
     // phone its figures would run together and into the well's walls.
     return MediaQuery.withClampedTextScaling(
@@ -455,50 +603,51 @@ class NeumorphicCalendar extends StatelessWidget {
       },
     );
   }
-
-  @override
-  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
-    super.debugFillProperties(properties);
-    properties
-      ..add(
-        DiagnosticsProperty<RawCalendarController>('controller', controller),
-      )
-      ..add(IntProperty('months', months, defaultValue: 1))
-      ..add(
-        ObjectFlagProperty<ValueChanged<DateTime>>.has('onChanged', onChanged),
-      )
-      ..add(IntProperty('firstWeekday', firstWeekday, defaultValue: null))
-      ..add(
-        DiagnosticsProperty<NeumorphicStyle>(
-          'style',
-          style,
-          defaultValue: null,
-        ),
-      );
-  }
 }
 
-/// A range of days picked on the calendar, first end then second, with the span written above it ("14 June – 18 June,
-/// 4 nights"). Two months side by side when there is room, one when there is not.
-/// [showNeumorphicDateRangePicker] raises one in a dialog. The [controller] is the caller's, made once (in a State's
-/// initState, as `RawCalendarController(firstDate: start, lastDate: end, mode: RawCalendarMode.range)`) and
-/// disposed with it.
+/// A range of days picked on the calendar, first end then second, with the span written above it ("14 June – 18 June, 4
+/// nights"). Two months side by side when there is room, one when there is not. [showNeumorphicDateRangePicker] raises
+/// one in a dialog. A [controller] is the caller's, made once (in a State's initState, as
+/// `RawCalendarController(firstDate: start, lastDate: end, mode: RawCalendarMode.range)`) and disposed with it.
+/// Without one the picker keeps a range between [firstDate] and [lastDate] on a controller of its own, starting on
+/// [initialDateRange], and tells [onChanged].
 ///
 /// ```dart
 /// NeumorphicDateRangePicker(controller: stay)
 /// ```
-class NeumorphicDateRangePicker extends StatelessWidget {
-  /// A range picker on [controller], which should be in range mode.
+///
+/// ```dart
+/// NeumorphicDateRangePicker(firstDate: DateTime(2026), lastDate: DateTime(2026, 12, 31), onChanged: (range) {})
+/// ```
+class NeumorphicDateRangePicker extends StatefulWidget {
+  /// A range picker on [controller], which should be in range mode, or on one of its own between [firstDate] and
+  /// [lastDate].
   const NeumorphicDateRangePicker({
     super.key,
-    required this.controller,
+    this.controller,
+    this.firstDate,
+    this.lastDate,
+    this.initialDateRange,
     this.onChanged,
     this.nightsLabel,
     this.style,
-  });
+  }) : assert(
+         controller != null || (firstDate != null && lastDate != null),
+         'A NeumorphicDateRangePicker without a controller needs a firstDate and a lastDate.',
+       );
 
-  /// The days and the range.
-  final RawCalendarController controller;
+  /// The days and the range. The caller keeps it and disposes it; when null, the picker makes its own in range mode
+  /// from [firstDate], [lastDate] and [initialDateRange] and disposes it with itself.
+  final RawCalendarController? controller;
+
+  /// The earliest day it offers, without a [controller].
+  final DateTime? firstDate;
+
+  /// The latest day it offers, without a [controller].
+  final DateTime? lastDate;
+
+  /// The range chosen when it first shows, without a [controller]; later changes are not read.
+  final RawDateRange? initialDateRange;
 
   /// Called when the range changes.
   final ValueChanged<RawDateRange?>? onChanged;
@@ -510,7 +659,98 @@ class NeumorphicDateRangePicker extends StatelessWidget {
   final NeumorphicStyle? style;
 
   @override
+  State<NeumorphicDateRangePicker> createState() =>
+      _NeumorphicDateRangePickerState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<RawCalendarController>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<DateTime>(
+          'firstDate',
+          firstDate,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<DateTime>('lastDate', lastDate, defaultValue: null),
+      )
+      ..add(
+        DiagnosticsProperty<RawDateRange>(
+          'initialDateRange',
+          initialDateRange,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<RawDateRange?>>.has(
+          'onChanged',
+          onChanged,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<String Function(int nights)>.has(
+          'nightsLabel',
+          nightsLabel,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<NeumorphicStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      );
+  }
+}
+
+class _NeumorphicDateRangePickerState extends State<NeumorphicDateRangePicker>
+    with _OwnCalendar<NeumorphicDateRangePicker> {
+  @override
+  RawCalendarController? get _handed => widget.controller;
+  @override
+  DateTime? get _first => widget.firstDate;
+  @override
+  DateTime? get _last => widget.lastDate;
+
+  @override
+  RawCalendarController _make(RawCalendarController? before) {
+    final first = widget.firstDate!, last = widget.lastDate!;
+    final range = before == null
+        ? widget.initialDateRange
+        : before.selectedRange;
+    final kept =
+        range != null &&
+        _within(range.start, first, last) != null &&
+        (range.end == null || _within(range.end, first, last) != null);
+    return RawCalendarController(
+      firstDate: first,
+      lastDate: last,
+      mode: RawCalendarMode.range,
+      selectedRange: kept ? range : null,
+      initialMonth: before?.month,
+    );
+  }
+
+  @override
+  void didUpdateWidget(NeumorphicDateRangePicker oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _update(oldWidget.firstDate, oldWidget.lastDate);
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final controller = _controller;
+    final onChanged = widget.onChanged;
+    final nightsLabel = widget.nightsLabel;
     final t = NeumorphicTheme.of(context);
     final words = NeumorphicLocalizations.of(context);
     return LayoutBuilder(
@@ -537,7 +777,7 @@ class NeumorphicDateRangePicker extends StatelessWidget {
               NeumorphicCalendar(
                 controller: controller,
                 months: box.maxWidth >= 640 ? 2 : 1,
-                style: style,
+                style: widget.style,
                 onChanged: (_) => onChanged?.call(controller.selectedRange),
               ),
             ],
@@ -545,34 +785,6 @@ class NeumorphicDateRangePicker extends StatelessWidget {
         },
       ),
     );
-  }
-
-  @override
-  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
-    super.debugFillProperties(properties);
-    properties
-      ..add(
-        DiagnosticsProperty<RawCalendarController>('controller', controller),
-      )
-      ..add(
-        ObjectFlagProperty<ValueChanged<RawDateRange?>>.has(
-          'onChanged',
-          onChanged,
-        ),
-      )
-      ..add(
-        ObjectFlagProperty<String Function(int nights)>.has(
-          'nightsLabel',
-          nightsLabel,
-        ),
-      )
-      ..add(
-        DiagnosticsProperty<NeumorphicStyle>(
-          'style',
-          style,
-          defaultValue: null,
-        ),
-      );
   }
 }
 

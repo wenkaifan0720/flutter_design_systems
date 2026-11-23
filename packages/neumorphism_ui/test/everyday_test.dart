@@ -59,7 +59,7 @@ void main() {
       'row, long',
       () => NeumorphicSwitchRow(
         label: long,
-        note: longLine,
+        subtitle: longLine,
         value: true,
         onChanged: (_) {},
       ),
@@ -193,7 +193,7 @@ void main() {
         value: 1204,
         onChanged: null,
         unit: 'people',
-        note: longLine,
+        helperText: longLine,
       ),
     );
     check(
@@ -297,7 +297,7 @@ void main() {
       tester,
       390,
       const NeumorphicTextField(
-        hint: 'A name',
+        hintText: 'A name',
         trailing: Icon(NeumorphicGlyphs.search, size: 18),
       ),
     );

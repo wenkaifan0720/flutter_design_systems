@@ -89,6 +89,8 @@ void main() {
       found.remove('NeumorphicCellBank');
       found.remove('NeumorphicPanelRowRelief');
       found.remove('NeumorphicPanelRowRaise');
+      // A colour picker's initialColor is the value it picks from, not a colour it is drawn in.
+      found.remove('NeumorphicColorPicker');
       expect(found, isEmpty);
     });
 

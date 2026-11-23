@@ -149,11 +149,15 @@ class NeumorphicSectionHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = NeumorphicTheme.of(context);
     final look = neumorphicStyleOf([style], NeumorphicStatesScope.of(context));
-    final heading = Text(
-      title,
-      style: t.textTheme.title
-          .merge(look.textStyle)
-          .copyWith(color: look.foreground),
+    // A heading to a screen reader, as a page's section heading is.
+    final heading = Semantics(
+      header: true,
+      child: Text(
+        title,
+        style: t.textTheme.title
+            .merge(look.textStyle)
+            .copyWith(color: look.foreground),
+      ),
     );
     // A head with nothing at its end is its title alone: an empty end dropped under a title that wrapped (large text,
     // a phone) and left a blank line and its gap under the head.

@@ -50,7 +50,10 @@ void main() {
       find.text('Profile'),
     ),
     'text field': (
-      () => const NeumorphicTextField(label: 'Full name', initialValue: 'Ada'),
+      () => const NeumorphicTextField(
+        labelText: 'Full name',
+        initialValue: 'Ada',
+      ),
       find.text('Full name'),
     ),
     'deletable chip': (

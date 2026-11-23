@@ -224,24 +224,25 @@ final DesignInventory neumorphicInventory = DesignInventory(
     // Inputs
     DesignInventoryEntry.present(
       'TextField',
-      (_) => const NeumorphicTextField(label: 'Name', initialValue: 'Marta'),
+      (_) =>
+          const NeumorphicTextField(labelText: 'Name', initialValue: 'Marta'),
     ),
     DesignInventoryEntry.present(
       'TextArea',
-      (_) => const NeumorphicTextArea(label: 'Notes'),
+      (_) => const NeumorphicTextArea(labelText: 'Notes'),
     ),
     DesignInventoryEntry.present(
       'SearchField',
-      (_) => const NeumorphicSearchField(hint: 'Find a room'),
+      (_) => const NeumorphicSearchField(hintText: 'Find a room'),
     ),
     DesignInventoryEntry.present(
       'PasswordField',
-      (_) => const NeumorphicPasswordField(label: 'Password'),
+      (_) => const NeumorphicPasswordField(labelText: 'Password'),
     ),
     DesignInventoryEntry.present(
       'InputGroup',
       (_) => const NeumorphicInputGroup(
-        label: 'Website',
+        labelText: 'Website',
         prefix: 'https://',
         keyboardType: TextInputType.url,
         suffix: '.com',
@@ -249,7 +250,7 @@ final DesignInventory neumorphicInventory = DesignInventory(
     ),
     DesignInventoryEntry.present(
       'InputOtp',
-      (_) => const NeumorphicInputOtp(label: 'Code', length: 6),
+      (_) => const NeumorphicInputOtp(labelText: 'Code', length: 6),
     ),
     DesignInventoryEntry.present(
       'NumberField',
@@ -262,7 +263,7 @@ final DesignInventory neumorphicInventory = DesignInventory(
     DesignInventoryEntry.present(
       'Select',
       (_) => const NeumorphicSelect<String>(
-        label: 'Room',
+        labelText: 'Room',
         value: 'bed',
         options: [
           NeumorphicMenuItem('bed', 'Bedroom'),
@@ -274,15 +275,15 @@ final DesignInventory neumorphicInventory = DesignInventory(
     DesignInventoryEntry.present(
       'Combobox',
       (_) => const NeumorphicCombobox<String>(
-        label: 'Room',
-        hint: 'Type or choose a room',
+        labelText: 'Room',
+        hintText: 'Type or choose a room',
         options: ['Bedroom', 'Kitchen', 'Study', 'Hall'],
       ),
     ),
     DesignInventoryEntry.present(
       'MultiSelect',
       (_) => const NeumorphicMultiSelect<String>(
-        label: 'Rooms',
+        labelText: 'Rooms',
         values: ['Bedroom'],
         onChanged: _drop,
         options: ['Bedroom', 'Kitchen', 'Study'],
@@ -395,10 +396,10 @@ final DesignInventory neumorphicInventory = DesignInventory(
     DesignInventoryEntry.present(
       'FormField',
       (_) => const NeumorphicFormField(
-        label: 'Email',
-        help: 'The receipt goes here',
+        labelText: 'Email',
+        helperText: 'The receipt goes here',
         required: true,
-        child: NeumorphicTextField(hint: 'name@example.com'),
+        child: NeumorphicTextField(hintText: 'name@example.com'),
       ),
     ),
     // Navigation

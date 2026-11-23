@@ -160,13 +160,13 @@ final neumorphicFixtures = <String, Widget Function(BuildContext)>{
   'NeumorphicChromeScope': (context) => const NeumorphicChromeScope(
     brand: NeumorphicBrand(name: 'Workspace'),
     nav: [],
-    active: 0,
+    selectedIndex: 0,
     child: Text('Page'),
   ),
   'NeumorphicCircularProgressIndicator': (context) =>
       const NeumorphicCircularProgressIndicator(value: .5),
   'NeumorphicInputOtp': (context) =>
-      NeumorphicInputOtp(label: 'Code', onChanged: (_) => hit()),
+      NeumorphicInputOtp(labelText: 'Code', onChanged: (_) => hit()),
   'NeumorphicColumn': (context) =>
       const NeumorphicColumn(children: [Text('First'), Text('Second')]),
   'NeumorphicColumnBars': (context) => const NeumorphicColumnBars(
@@ -182,8 +182,8 @@ final neumorphicFixtures = <String, Widget Function(BuildContext)>{
   ),
   'NeumorphicDatePicker': (context) => NeumorphicDatePicker(
     value: DateTime(2026, 11, 6),
-    first: DateTime(2026, 11, 6),
-    last: DateTime(2026, 11, 6),
+    firstDate: DateTime(2026, 11, 6),
+    lastDate: DateTime(2026, 11, 6),
     onChanged: (_) => hit(),
   ),
   'NeumorphicDayTray': (context) => const NeumorphicDayTray(
@@ -236,7 +236,7 @@ final neumorphicFixtures = <String, Widget Function(BuildContext)>{
   'NeumorphicFlatScope': (context) =>
       const NeumorphicFlatScope(child: NeumorphicSlab(child: Text('Content'))),
   'NeumorphicFormGroup': (context) =>
-      const NeumorphicFormGroup(label: 'Personal', child: Text('Content')),
+      const NeumorphicFormGroup(labelText: 'Personal', child: Text('Content')),
   'NeumorphicGableArt': (context) => const NeumorphicGableArt(),
   'NeumorphicGauge': (context) => const NeumorphicGauge(
     value: 40,
@@ -392,7 +392,7 @@ final neumorphicFixtures = <String, Widget Function(BuildContext)>{
     body: Text('Content'),
   ),
   'NeumorphicSearchField': (context) =>
-      NeumorphicSearchField(hint: 'Search', onChanged: (_) => hit()),
+      NeumorphicSearchField(hintText: 'Search', onChanged: (_) => hit()),
   'NeumorphicSectionHeader': (context) =>
       const NeumorphicSectionHeader(title: 'Details'),
   'NeumorphicSections': (context) =>
@@ -403,7 +403,7 @@ final neumorphicFixtures = <String, Widget Function(BuildContext)>{
     onChanged: (_) => hit(),
   ),
   'NeumorphicSelect': (context) => NeumorphicSelect<String>(
-    label: 'Space',
+    labelText: 'Space',
     options: const [NeumorphicMenuItem('room', 'Room')],
     onChanged: (_) => hit(),
   ),
@@ -482,7 +482,7 @@ final neumorphicFixtures = <String, Widget Function(BuildContext)>{
   'NeumorphicText': (context) =>
       const NeumorphicText('Content', style: TextStyle(fontSize: 16)),
   'NeumorphicTextArea': (context) =>
-      NeumorphicTextArea(label: 'Notes', onChanged: (_) => hit()),
+      NeumorphicTextArea(labelText: 'Notes', onChanged: (_) => hit()),
   'NeumorphicTextContextMenu': (context) => NeumorphicTextContextMenu(
     anchors: const TextSelectionToolbarAnchors(primaryAnchor: Offset(100, 150)),
     buttonItems: [ContextMenuButtonItem(label: 'Copy', onPressed: () {})],

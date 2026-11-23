@@ -20,7 +20,7 @@ Future<(Rect field, Rect list)> _open(
   addTearDown(tester.view.reset);
   final select = NeumorphicSelect<String>(
     key: const Key('room'),
-    label: 'Room',
+    labelText: 'Room',
     value: 'Living room',
     options: [for (final r in _rooms) NeumorphicMenuItem(r, r)],
     onChanged: (_) {},

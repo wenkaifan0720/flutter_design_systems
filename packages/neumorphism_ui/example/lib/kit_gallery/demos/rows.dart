@@ -140,7 +140,7 @@ Widget kitSpecimenLevelRow() => NeumorphicList(
       level: .3,
       figure: '30%',
       onChanged: (_) {},
-      onLevel: (_) {},
+      onLevelChanged: (_) {},
     ),
   ],
 );
@@ -170,9 +170,9 @@ Widget kitSpecimenNudge() => NeumorphicNudge(
 );
 
 Widget kitSpecimenFormGroup() => const NeumorphicFormGroup(
-  label: 'A name',
-  help: 'A short help line.',
-  child: NeumorphicTextField(hint: 'A name'),
+  labelText: 'A name',
+  helperText: 'A short help line.',
+  child: NeumorphicTextField(hintText: 'A name'),
 );
 
 Widget kitSpecimenEmpty() => const NeumorphicEmptyState(

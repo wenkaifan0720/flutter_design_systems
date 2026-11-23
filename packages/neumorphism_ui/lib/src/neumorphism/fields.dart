@@ -29,6 +29,7 @@ import 'glyphs.dart';
 import 'internal/cap_label.dart';
 import 'internal/cell_bank.dart' show neumorphicWideRoom;
 import 'internal/error_line.dart';
+import 'internal/field_hooks.dart';
 import 'internal/geometry.dart' show cssLinear;
 import 'internal/field_list.dart' show NeumorphicFieldListOwner;
 import 'internal/panel.dart';
@@ -65,18 +66,27 @@ class _Label extends StatelessWidget {
 }
 
 /// A field's failure, or else its help, under it: the lines a text field draws.
+/// The help or the error under a field whose node says them (ui_core's decorator put them there): drawn out of the
+/// tree, but for the error where the platform takes no announcements, which stays a live region, as the decorator's
+/// own line does.
 class _Under extends StatelessWidget {
   const _Under({this.error, this.helper});
   final String? error, helper;
   @override
   Widget build(BuildContext context) {
     final t = NeumorphicTheme.of(context);
+    final error = this.error;
+    final helper = this.helper;
     if (error == null && helper == null) return const SizedBox.shrink();
     return Padding(
       padding: const EdgeInsets.only(top: 8),
       child: error == null
-          ? Text(helper!, style: t.textTheme.caption)
-          : NeumorphicErrorLine(child: Text(error!)),
+          ? ExcludeSemantics(child: Text(helper!, style: t.textTheme.caption))
+          : MediaQuery.supportsAnnounceOf(context)
+          ? ExcludeSemantics(
+              child: NeumorphicErrorLine(live: false, child: Text(error)),
+            )
+          : NeumorphicErrorLine(child: Text(error)),
     );
   }
 }
@@ -95,10 +105,14 @@ class _BareEditor extends StatelessWidget {
     this.semanticLabel,
     this.style,
     this.node = true,
+    this.expanded,
   });
 
   /// Whether its seat is the field's semantics node; false where the node is a reach round the whole box.
   final bool node;
+
+  /// Whether the list the field opens is showing; null for a field that opens none.
+  final bool? expanded;
   final TextEditingController controller;
   final FocusNode focusNode;
   final String? hint;
@@ -129,6 +143,7 @@ class _BareEditor extends StatelessWidget {
       enabled: enabled,
       label: semanticLabel,
       node: node,
+      expanded: expanded,
       // One line, on the seat's middle by its capitals, as the text field's.
       child: neumorphicLabel(
         Material(
@@ -164,17 +179,17 @@ class _BareEditor extends StatelessWidget {
 /// A password's field: the text field with its eye, hidden until asked, and autofill told what it holds.
 ///
 /// ```dart
-/// NeumorphicPasswordField(label: 'Password', onChanged: setPassword)
+/// NeumorphicPasswordField(labelText: 'Password', onChanged: setPassword)
 /// ```
 class NeumorphicPasswordField extends StatelessWidget {
   /// Creates a [NeumorphicPasswordField].
   const NeumorphicPasswordField({
     super.key,
     this.controller,
-    this.label,
-    this.hint,
-    this.helper,
-    this.error,
+    this.labelText,
+    this.hintText,
+    this.helperText,
+    this.errorText,
     this.onChanged,
     this.onSubmitted,
     this.textInputAction,
@@ -189,16 +204,16 @@ class NeumorphicPasswordField extends StatelessWidget {
   final TextEditingController? controller;
 
   /// The words above the field, and its spoken name.
-  final String? label;
+  final String? labelText;
 
   /// Placeholder words.
-  final String? hint;
+  final String? hintText;
 
   /// Supporting words under the field.
-  final String? helper;
+  final String? helperText;
 
   /// Validation words; non-null marks the field invalid.
-  final String? error;
+  final String? errorText;
 
   /// Receives each edit.
   final ValueChanged<String>? onChanged;
@@ -227,10 +242,10 @@ class NeumorphicPasswordField extends StatelessWidget {
   @override
   Widget build(BuildContext context) => NeumorphicTextField(
     controller: controller,
-    label: label,
-    hint: hint,
-    helper: helper,
-    error: error,
+    labelText: labelText,
+    hintText: hintText,
+    helperText: helperText,
+    errorText: errorText,
     onChanged: onChanged,
     onSubmitted: onSubmitted,
     textInputAction: textInputAction,
@@ -256,10 +271,10 @@ class NeumorphicPasswordField extends StatelessWidget {
           defaultValue: null,
         ),
       )
-      ..add(StringProperty('label', label, defaultValue: null))
-      ..add(StringProperty('hint', hint, defaultValue: null))
-      ..add(StringProperty('helper', helper, defaultValue: null))
-      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
+      ..add(StringProperty('helperText', helperText, defaultValue: null))
+      ..add(StringProperty('errorText', errorText, defaultValue: null))
       ..add(
         ObjectFlagProperty<ValueChanged<String>>.has('onChanged', onChanged),
       )
@@ -309,23 +324,23 @@ class NeumorphicPasswordField extends StatelessWidget {
 /// the whole groove rings while the field has focus.
 ///
 /// ```dart
-/// NeumorphicInputGroup(label: 'Website', prefix: 'https://', suffix: '.com', controller: site)
+/// NeumorphicInputGroup(labelText: 'Website', prefix: 'https://', suffix: '.com', controller: site)
 /// ```
 class NeumorphicInputGroup extends StatefulWidget {
   /// Creates a [NeumorphicInputGroup].
   const NeumorphicInputGroup({
     super.key,
-    this.label,
+    this.labelText,
     this.controller,
-    this.hint,
+    this.hintText,
     this.prefix,
     this.suffix,
     this.leading,
     this.trailing,
     this.onChanged,
     this.onSubmitted,
-    this.error,
-    this.helper,
+    this.errorText,
+    this.helperText,
     this.enabled = true,
     this.keyboardType,
     this.focusNode,
@@ -333,13 +348,13 @@ class NeumorphicInputGroup extends StatefulWidget {
   });
 
   /// The words above the groove, and the field's spoken name.
-  final String? label;
+  final String? labelText;
 
   /// An optional caller-owned controller.
   final TextEditingController? controller;
 
   /// Placeholder words.
-  final String? hint;
+  final String? hintText;
 
   /// Words before the value.
   final String? prefix;
@@ -360,10 +375,10 @@ class NeumorphicInputGroup extends StatefulWidget {
   final ValueChanged<String>? onSubmitted;
 
   /// Validation words; non-null marks the field invalid.
-  final String? error;
+  final String? errorText;
 
   /// Supporting words under the groove.
-  final String? helper;
+  final String? helperText;
 
   /// Whether the field takes input.
   final bool enabled;
@@ -384,7 +399,7 @@ class NeumorphicInputGroup extends StatefulWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
       ..add(
         DiagnosticsProperty<TextEditingController>(
           'controller',
@@ -392,7 +407,7 @@ class NeumorphicInputGroup extends StatefulWidget {
           defaultValue: null,
         ),
       )
-      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
       ..add(StringProperty('prefix', prefix, defaultValue: null))
       ..add(StringProperty('suffix', suffix, defaultValue: null))
       ..add(
@@ -404,8 +419,8 @@ class NeumorphicInputGroup extends StatefulWidget {
           onSubmitted,
         ),
       )
-      ..add(StringProperty('error', error, defaultValue: null))
-      ..add(StringProperty('helper', helper, defaultValue: null))
+      ..add(StringProperty('errorText', errorText, defaultValue: null))
+      ..add(StringProperty('helperText', helperText, defaultValue: null))
       ..add(DiagnosticsProperty<bool>('enabled', enabled, defaultValue: true))
       ..add(
         DiagnosticsProperty<TextInputType>(
@@ -490,152 +505,162 @@ class _NeumorphicInputGroupState extends State<NeumorphicInputGroup> {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        if (widget.label != null)
+        if (widget.labelText != null)
           ListenableBuilder(
             listenable: _focus,
             builder: (context, _) =>
-                _Label(widget.label!, lit: _focus.hasFocus),
+                _Label(widget.labelText!, lit: _focus.hasFocus),
           ),
         // The face keeps the density's height and the reach round it the platform's target, as a text field's: the
         // reach is the field's one node, and a press in it off the face reaches the line (in a 40-tall face the seat
         // alone would be a 40-tall target).
-        Semantics(
-          container: true,
-          label: [
-            widget.label,
-            widget.prefix,
-            widget.suffix,
-          ].whereType<String>().join(', '),
-          child: NeumorphicReach(
-            height: NeumorphicChromeMetrics.targetSize,
-            child: DesignInputGroup(
-              focusNode: _focus,
-              enabled: widget.enabled,
-              isError: widget.error != null,
-              builder: (context, states, child) => NeumorphicOutOfUse(
-                off: !widget.enabled,
-                child: NeumorphicFieldBox(
-                  style: widget.style,
-                  states: states,
-                  shape: shape,
-                  padding: EdgeInsets.zero,
-                  child: child,
+        // The help and the error join the group's node, from ui_core's decorator; the lines are drawn under the field.
+        RawInputDecorator(
+          helperText: widget.helperText,
+          errorText: widget.errorText,
+          enabled: widget.enabled,
+          focusNode: _focus,
+          builder: (context, parts) => parts.control,
+          child: Semantics(
+            container: true,
+            label: [
+              widget.labelText,
+              widget.prefix,
+              widget.suffix,
+            ].whereType<String>().join(', '),
+            child: NeumorphicReach(
+              height: NeumorphicChromeMetrics.targetSize,
+              child: DesignInputGroup(
+                focusNode: _focus,
+                enabled: widget.enabled,
+                isError: widget.errorText != null,
+                builder: (context, states, child) => NeumorphicOutOfUse(
+                  off: !widget.enabled,
+                  child: NeumorphicFieldBox(
+                    style: widget.style,
+                    states: states,
+                    shape: shape,
+                    padding: EdgeInsets.zero,
+                    child: child,
+                  ),
                 ),
-              ),
-              child: LayoutBuilder(
-                builder: (context, box) {
-                  // The add-ons keep their whole words while the editor keeps 80 px; narrower, the shorter keeps its whole
-                  // words if they fit in half of what is left, and the longer takes the rest: shared in the measure of
-                  // their words, twice the text cut both (http… and .c…).
-                  double natural(String? words) {
-                    if (words == null) return 0;
-                    final painter = TextPainter(
-                      text: TextSpan(text: words, style: t.textTheme.body),
-                      textDirection: TextDirection.ltr,
-                      textScaler: MediaQuery.textScalerOf(context),
-                      maxLines: 1,
-                    )..layout();
-                    final w = painter.width + 24;
-                    painter.dispose();
-                    return w;
-                  }
-
-                  final wants = (
-                    natural(widget.prefix),
-                    natural(widget.suffix),
-                  );
-                  final room = box.maxWidth - 108;
-                  double most(double want) {
-                    if (!box.hasBoundedWidth || wants.$1 + wants.$2 <= room) {
-                      return double.infinity;
+                child: LayoutBuilder(
+                  builder: (context, box) {
+                    // The add-ons keep their whole words while the editor keeps 80 px; narrower, the shorter keeps its whole
+                    // words if they fit in half of what is left, and the longer takes the rest: shared in the measure of
+                    // their words, twice the text cut both (http… and .c…).
+                    double natural(String? words) {
+                      if (words == null) return 0;
+                      final painter = TextPainter(
+                        text: TextSpan(text: words, style: t.textTheme.body),
+                        textDirection: TextDirection.ltr,
+                        textScaler: MediaQuery.textScalerOf(context),
+                        maxLines: 1,
+                      )..layout();
+                      final w = painter.width + 24;
+                      painter.dispose();
+                      return w;
                     }
-                    final other = want == wants.$1 ? wants.$2 : wants.$1;
-                    final whole = math.min(want, other) <= room / 2
-                        ? math.min(want, other)
-                        : room / 2;
-                    // This one is the shorter (or the two are equal): its whole words, or half.
-                    if (want <= other) return math.max(48.0, whole);
-                    return math.max(48.0, room - whole);
-                  }
 
-                  // A text field's height: the density's control, or a line and its floor when the words are larger. Its
-                  // own editor's intrinsic height would stand the group 54 tall among 40-tall fields.
-                  final control = math.max(
-                    t.density.height(48),
-                    neumorphicLineHeight(context, t.textTheme.body) + 16,
-                  );
-                  // A link, an address or a number is written left to right in any page, its add-ons with it: set in a
-                  // right-to-left page's direction, https:// your-home .com read ".com your-home //:https".
-                  final leftToRight = const [
-                    TextInputType.number,
-                    TextInputType.phone,
-                    TextInputType.datetime,
-                    TextInputType.emailAddress,
-                    TextInputType.url,
-                  ].any((kind) => kind.index == widget.keyboardType?.index);
-                  final group = SizedBox(
-                    height: control,
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        if (widget.prefix != null) ...[
-                          addOn(widget.prefix!, most(wants.$1)),
-                          line,
-                        ],
-                        if (widget.leading != null)
-                          Padding(
-                            padding: const EdgeInsetsDirectional.only(
-                              start: 12,
+                    final wants = (
+                      natural(widget.prefix),
+                      natural(widget.suffix),
+                    );
+                    final room = box.maxWidth - 108;
+                    double most(double want) {
+                      if (!box.hasBoundedWidth || wants.$1 + wants.$2 <= room) {
+                        return double.infinity;
+                      }
+                      final other = want == wants.$1 ? wants.$2 : wants.$1;
+                      final whole = math.min(want, other) <= room / 2
+                          ? math.min(want, other)
+                          : room / 2;
+                      // This one is the shorter (or the two are equal): its whole words, or half.
+                      if (want <= other) return math.max(48.0, whole);
+                      return math.max(48.0, room - whole);
+                    }
+
+                    // A text field's height: the density's control, or a line and its floor when the words are larger. Its
+                    // own editor's intrinsic height would stand the group 54 tall among 40-tall fields.
+                    final control = math.max(
+                      t.density.height(48),
+                      neumorphicLineHeight(context, t.textTheme.body) + 16,
+                    );
+                    // A link, an address or a number is written left to right in any page, its add-ons with it: set in a
+                    // right-to-left page's direction, https:// your-home .com read ".com your-home //:https".
+                    final leftToRight = const [
+                      TextInputType.number,
+                      TextInputType.phone,
+                      TextInputType.datetime,
+                      TextInputType.emailAddress,
+                      TextInputType.url,
+                    ].any((kind) => kind.index == widget.keyboardType?.index);
+                    final group = SizedBox(
+                      height: control,
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          if (widget.prefix != null) ...[
+                            addOn(widget.prefix!, most(wants.$1)),
+                            line,
+                          ],
+                          if (widget.leading != null)
+                            Padding(
+                              padding: const EdgeInsetsDirectional.only(
+                                start: 12,
+                              ),
+                              child: Center(child: widget.leading),
                             ),
-                            child: Center(child: widget.leading),
-                          ),
-                        Expanded(
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 14),
-                            child: Center(
-                              child: _BareEditor(
-                                controller: _text,
-                                focusNode: _focus,
-                                hint: widget.hint,
-                                enabled: widget.enabled,
-                                keyboardType: widget.keyboardType,
-                                onChanged: widget.onChanged,
-                                onSubmitted: widget.onSubmitted,
-                                style: widget.style,
-                                node: false,
-                                semanticLabel: [
-                                  widget.label,
-                                  widget.prefix,
-                                  widget.suffix,
-                                ].whereType<String>().join(', '),
+                          Expanded(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                              ),
+                              child: Center(
+                                child: _BareEditor(
+                                  controller: _text,
+                                  focusNode: _focus,
+                                  hint: widget.hintText,
+                                  enabled: widget.enabled,
+                                  keyboardType: widget.keyboardType,
+                                  onChanged: widget.onChanged,
+                                  onSubmitted: widget.onSubmitted,
+                                  style: widget.style,
+                                  node: false,
+                                  semanticLabel: [
+                                    widget.labelText,
+                                    widget.prefix,
+                                    widget.suffix,
+                                  ].whereType<String>().join(', '),
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                        if (widget.trailing != null)
-                          Padding(
-                            padding: const EdgeInsetsDirectional.only(end: 6),
-                            child: Center(child: widget.trailing),
-                          ),
-                        if (widget.suffix != null) ...[
-                          line,
-                          addOn(widget.suffix!, most(wants.$2)),
+                          if (widget.trailing != null)
+                            Padding(
+                              padding: const EdgeInsetsDirectional.only(end: 6),
+                              child: Center(child: widget.trailing),
+                            ),
+                          if (widget.suffix != null) ...[
+                            line,
+                            addOn(widget.suffix!, most(wants.$2)),
+                          ],
                         ],
-                      ],
-                    ),
-                  );
-                  return leftToRight
-                      ? Directionality(
-                          textDirection: TextDirection.ltr,
-                          child: group,
-                        )
-                      : group;
-                },
+                      ),
+                    );
+                    return leftToRight
+                        ? Directionality(
+                            textDirection: TextDirection.ltr,
+                            child: group,
+                          )
+                        : group;
+                  },
+                ),
               ),
             ),
           ),
         ),
-        _Under(error: widget.error, helper: widget.helper),
+        _Under(error: widget.errorText, helper: widget.helperText),
       ],
     );
   }
@@ -646,7 +671,7 @@ class _NeumorphicInputGroupState extends State<NeumorphicInputGroup> {
 /// choice when focus leaves.
 ///
 /// ```dart
-/// NeumorphicCombobox<String>(label: 'Town', options: towns, onSelected: setTown)
+/// NeumorphicCombobox<String>(labelText: 'Town', options: towns, onSelected: setTown)
 /// ```
 class NeumorphicCombobox<T extends Object> extends StatelessWidget {
   /// Creates a [NeumorphicCombobox].
@@ -655,15 +680,15 @@ class NeumorphicCombobox<T extends Object> extends StatelessWidget {
     required this.options,
     this.search,
     this.debounceDuration,
-    this.label,
-    this.hint,
+    this.labelText,
+    this.hintText,
     this.value,
     this.onSelected,
-    this.displayString,
+    this.displayStringForOption,
     this.isOptionEnabled,
     this.requireSelection = false,
-    this.error,
-    this.helper,
+    this.errorText,
+    this.helperText,
     this.enabled = true,
     this.style,
   });
@@ -680,10 +705,10 @@ class NeumorphicCombobox<T extends Object> extends StatelessWidget {
   final Duration? debounceDuration;
 
   /// The words above the field, and its spoken name.
-  final String? label;
+  final String? labelText;
 
   /// Placeholder words.
-  final String? hint;
+  final String? hintText;
 
   /// The current choice.
   final T? value;
@@ -692,7 +717,7 @@ class NeumorphicCombobox<T extends Object> extends StatelessWidget {
   final ValueChanged<T>? onSelected;
 
   /// An option's words; `toString` by default.
-  final String Function(T option)? displayString;
+  final String Function(T option)? displayStringForOption;
 
   /// Whether an option can be taken; one that cannot is shown out of use, and the keys pass over it. All by default.
   final bool Function(T option)? isOptionEnabled;
@@ -701,10 +726,10 @@ class NeumorphicCombobox<T extends Object> extends StatelessWidget {
   final bool requireSelection;
 
   /// Validation words; non-null marks the field invalid.
-  final String? error;
+  final String? errorText;
 
   /// Supporting words under the field.
-  final String? helper;
+  final String? helperText;
 
   /// Whether the field takes input.
   final bool enabled;
@@ -714,7 +739,7 @@ class NeumorphicCombobox<T extends Object> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final words = displayString ?? (T option) => option.toString();
+    final words = displayStringForOption ?? (T option) => option.toString();
     final t = NeumorphicTheme.of(context);
     // Its open list starts its options' words where the field starts its value.
     final list = neumorphicFieldPanelInsets(context);
@@ -727,7 +752,7 @@ class NeumorphicCombobox<T extends Object> extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            if (label != null) _Label(label!),
+            if (labelText != null) _Label(labelText!),
             RawCombobox<T>(
               options: options,
               search: search,
@@ -743,26 +768,31 @@ class NeumorphicCombobox<T extends Object> extends StatelessWidget {
               // native menu: the pointer moves the keys' place, and two rows never read as two current options.
               highlightFollowsPointer: true,
               requireSelection: requireSelection,
-              semanticLabel: label,
-              fieldBuilder: (context, field) => NeumorphicTextField(
-                label: label,
+              semanticLabel: labelText,
+              // The input says the label, the help and the error; the label stands above and the lines under the
+              // whole, so the list opens at the groove.
+              fieldBuilder: (context, field) => NeumorphicFieldHooks(
                 nameOnly: true,
-                hint: hint,
-                // The groove shows the failure; its line is drawn under the field, below.
-                error: error,
-                failureLine: (_) => const SizedBox.shrink(),
-                enabled: enabled,
-                style: style,
-                controller: field.controller,
-                focusNode: field.focusNode,
-                // Enter keeps the focus here, so it comes in onEditingComplete with no onSubmitted: a submit that keeps the
-                // focus restarts the text input, and in a browser the restarted input takes no typing.
-                onEditingComplete: field.submit,
-                trailing: ExcludeSemantics(
-                  child: Icon(
-                    NeumorphicGlyphs.chevronsUpDown,
-                    size: 18,
-                    color: t.colors.inkTertiary,
+                lines: false,
+                expanded: field.isOpen,
+                child: NeumorphicTextField(
+                  labelText: labelText,
+                  hintText: hintText,
+                  helperText: helperText,
+                  errorText: errorText,
+                  enabled: enabled,
+                  style: style,
+                  controller: field.controller,
+                  focusNode: field.focusNode,
+                  // Enter keeps the focus here, so it comes in onEditingComplete with no onSubmitted: a submit that keeps the
+                  // focus restarts the text input, and in a browser the restarted input takes no typing.
+                  onEditingComplete: field.submit,
+                  trailing: ExcludeSemantics(
+                    child: Icon(
+                      NeumorphicGlyphs.chevronsUpDown,
+                      size: 18,
+                      color: t.colors.inkTertiary,
+                    ),
                   ),
                 ),
               ),
@@ -791,7 +821,7 @@ class NeumorphicCombobox<T extends Object> extends StatelessWidget {
                 ),
               ),
             ),
-            _Under(error: error, helper: helper),
+            _Under(error: errorText, helper: helperText),
           ],
         ),
       ),
@@ -811,14 +841,14 @@ class NeumorphicCombobox<T extends Object> extends StatelessWidget {
           defaultValue: null,
         ),
       )
-      ..add(StringProperty('label', label, defaultValue: null))
-      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
       ..add(DiagnosticsProperty<T>('value', value, defaultValue: null))
       ..add(ObjectFlagProperty<ValueChanged<T>>.has('onSelected', onSelected))
       ..add(
         ObjectFlagProperty<String Function(T option)>.has(
-          'displayString',
-          displayString,
+          'displayStringForOption',
+          displayStringForOption,
         ),
       )
       ..add(
@@ -834,8 +864,8 @@ class NeumorphicCombobox<T extends Object> extends StatelessWidget {
           defaultValue: false,
         ),
       )
-      ..add(StringProperty('error', error, defaultValue: null))
-      ..add(StringProperty('helper', helper, defaultValue: null))
+      ..add(StringProperty('errorText', errorText, defaultValue: null))
+      ..add(StringProperty('helperText', helperText, defaultValue: null))
       ..add(DiagnosticsProperty<bool>('enabled', enabled, defaultValue: true))
       ..add(
         DiagnosticsProperty<NeumorphicStyle>(
@@ -848,10 +878,11 @@ class NeumorphicCombobox<T extends Object> extends StatelessWidget {
 }
 
 /// Several choices in one groove, each a chip with its own ✕: type to find more among [options] (or, with [onCreate], to
-/// add new ones), Backspace on an empty field takes the last chip, the arrows walk the chips.
+/// add new ones), Backspace on an empty field takes the last chip, the arrows walk the chips. With no [onChanged] it is
+/// out of use: its chips show without a ✕ and its field takes no typing.
 ///
 /// ```dart
-/// NeumorphicMultiSelect<String>(label: 'Guests', values: guests, onChanged: setGuests, options: people)
+/// NeumorphicMultiSelect<String>(labelText: 'Guests', values: guests, onChanged: setGuests, options: people)
 /// ```
 class NeumorphicMultiSelect<T extends Object> extends StatefulWidget {
   /// Creates a [NeumorphicMultiSelect].
@@ -862,22 +893,22 @@ class NeumorphicMultiSelect<T extends Object> extends StatefulWidget {
     this.options = const [],
     this.search,
     this.debounceDuration,
-    this.label,
-    this.hint,
-    this.displayString,
+    this.labelText,
+    this.hintText,
+    this.displayStringForOption,
     this.isOptionEnabled,
     this.onCreate,
     this.maxTags,
-    this.error,
-    this.helper,
+    this.errorText,
+    this.helperText,
     this.style,
   }) : assert((maxTags ?? 1) > 0);
 
   /// The chosen values, in order.
   final List<T> values;
 
-  /// Receives the new list.
-  final ValueChanged<List<T>> onChanged;
+  /// Receives the new list; null puts the field out of use.
+  final ValueChanged<List<T>>? onChanged;
 
   /// What it may suggest.
   final List<T> options;
@@ -891,13 +922,13 @@ class NeumorphicMultiSelect<T extends Object> extends StatefulWidget {
   final Duration? debounceDuration;
 
   /// The words above the groove, and its spoken name.
-  final String? label;
+  final String? labelText;
 
   /// Placeholder words.
-  final String? hint;
+  final String? hintText;
 
   /// A value's words; `toString` by default.
-  final String Function(T value)? displayString;
+  final String Function(T value)? displayStringForOption;
 
   /// Whether an option can be taken; one that cannot is shown out of use, and the keys pass over it. All by default.
   final bool Function(T option)? isOptionEnabled;
@@ -909,10 +940,10 @@ class NeumorphicMultiSelect<T extends Object> extends StatefulWidget {
   final int? maxTags;
 
   /// Validation words; non-null marks the field invalid.
-  final String? error;
+  final String? errorText;
 
   /// Supporting words under the groove.
-  final String? helper;
+  final String? helperText;
 
   /// Visual slots before the text-field component theme.
   final NeumorphicStyle? style;
@@ -940,12 +971,12 @@ class NeumorphicMultiSelect<T extends Object> extends StatefulWidget {
           defaultValue: null,
         ),
       )
-      ..add(StringProperty('label', label, defaultValue: null))
-      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
       ..add(
         ObjectFlagProperty<String Function(T value)>.has(
-          'displayString',
-          displayString,
+          'displayStringForOption',
+          displayStringForOption,
         ),
       )
       ..add(
@@ -958,8 +989,8 @@ class NeumorphicMultiSelect<T extends Object> extends StatefulWidget {
         ObjectFlagProperty<T? Function(String text)>.has('onCreate', onCreate),
       )
       ..add(IntProperty('maxTags', maxTags, defaultValue: null))
-      ..add(StringProperty('error', error, defaultValue: null))
-      ..add(StringProperty('helper', helper, defaultValue: null))
+      ..add(StringProperty('errorText', errorText, defaultValue: null))
+      ..add(StringProperty('helperText', helperText, defaultValue: null))
       ..add(
         DiagnosticsProperty<NeumorphicStyle>(
           'style',
@@ -976,14 +1007,26 @@ class _NeumorphicMultiSelectState<T extends Object>
   // one thing at a time shows focus.
   bool _editing = false;
 
+  // Out of use, the list never changes: the editor takes no focus, so no key reaches a tag.
+  void _unchanged(List<T> _) {}
+
   @override
   Widget build(BuildContext context) {
     final t = NeumorphicTheme.of(context);
     // Its open list starts its options' words where the field starts its value.
     final list = neumorphicFieldPanelInsets(context);
     final local = NeumorphicLocalizations.of(context);
-    final words = widget.displayString ?? (T value) => value.toString();
+    final words =
+        widget.displayStringForOption ?? (T value) => value.toString();
     final shape = t.shapes.corner(NeumorphicRadii.well);
+    final off = widget.onChanged == null;
+    Widget chip(T value, VoidCallback? onDeleted) => NeumorphicChip(
+      words(value),
+      dense: true,
+      isEnabled: !off,
+      onDeleted: onDeleted,
+      deleteLabel: local.remove(words(value)),
+    );
     // Its list stands clear of the well, and while it is up the well rests.
     return NeumorphicFieldListOwner(
       builder: (context, open, surface) => neumorphicWideRoom(
@@ -992,87 +1035,109 @@ class _NeumorphicMultiSelectState<T extends Object>
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            if (widget.label != null) _Label(widget.label!),
-            RawTagInput<T>(
-              values: widget.values,
-              onChanged: widget.onChanged,
-              options: widget.options,
-              search: widget.search,
-              debounceDuration: widget.debounceDuration,
-              loadingBuilder: _searching,
-              errorBuilder: (context, failure) =>
-                  _SearchFailed(failure: failure, list: list),
-              displayStringForOption: words,
-              isOptionEnabled: widget.isOptionEnabled,
-              // One place for the pointer and the keys, as the combobox's.
-              highlightFollowsPointer: true,
-              onCreate: widget.onCreate,
-              maxTags: widget.maxTags,
-              semanticLabel: widget.label,
-              deleteLabel: local.remove('').trim(),
-              fieldBuilder: (context, field) => Focus(
-                canRequestFocus: false,
-                skipTraversal: true,
-                includeSemantics: false,
-                onFocusChange: (on) => setState(() => _editing = on),
-                child: _BareEditor(
-                  controller: field.controller,
-                  focusNode: field.focusNode,
-                  // The hint stays under the chips: without it the words line read as an empty well under them.
-                  hint: widget.hint,
-                  // Enter keeps the focus here, so it comes in onEditingComplete with no onSubmitted: a submit that keeps the
-                  // focus restarts the text input, and in a browser the restarted input takes no typing.
-                  onEditingComplete: field.submit,
-                  style: widget.style,
-                  semanticLabel: widget.label ?? widget.hint,
+            if (widget.labelText != null) _Label(widget.labelText!),
+            // The entry says the help and the error, from ui_core's decorator; the lines are drawn under the field.
+            RawInputDecorator(
+              helperText: widget.helperText,
+              errorText: widget.errorText,
+              enabled: !off,
+              builder: (context, parts) => parts.control,
+              child: RawTagInput<T>(
+                values: widget.values,
+                onChanged: widget.onChanged ?? _unchanged,
+                options: widget.options,
+                search: widget.search,
+                debounceDuration: widget.debounceDuration,
+                loadingBuilder: _searching,
+                errorBuilder: (context, failure) =>
+                    _SearchFailed(failure: failure, list: list),
+                displayStringForOption: words,
+                isOptionEnabled: widget.isOptionEnabled,
+                // One place for the pointer and the keys, as the combobox's.
+                highlightFollowsPointer: true,
+                onCreate: widget.onCreate,
+                maxTags: widget.maxTags,
+                semanticLabel: widget.labelText,
+                deleteLabel: local.remove('').trim(),
+                fieldBuilder: (context, field) => Focus(
+                  canRequestFocus: false,
+                  skipTraversal: true,
+                  includeSemantics: false,
+                  onFocusChange: (on) => setState(() => _editing = on),
+                  child: _BareEditor(
+                    controller: field.controller,
+                    focusNode: field.focusNode,
+                    enabled: !off,
+                    // The hint stays under the chips: without it the words line read as an empty well under them.
+                    hint: widget.hintText,
+                    // Enter keeps the focus here, so it comes in onEditingComplete with no onSubmitted: a submit that keeps the
+                    // focus restarts the text input, and in a browser the restarted input takes no typing.
+                    onEditingComplete: field.submit,
+                    style: widget.style,
+                    semanticLabel: widget.labelText ?? widget.hintText,
+                    expanded: field.isOpen,
+                  ),
                 ),
-              ),
-              layoutBuilder: (context, tags, field) => NeumorphicFieldBox(
-                style: widget.style,
-                multiline: true,
-                shape: shape,
-                states: {
-                  if (_editing && !open) WidgetState.focused,
-                  if (widget.error != null) WidgetState.error,
+                layoutBuilder: (context, tags, field) => NeumorphicOutOfUse(
+                  off: off,
+                  child: NeumorphicFieldBox(
+                    style: widget.style,
+                    multiline: true,
+                    shape: shape,
+                    states: {
+                      if (_editing && !open) WidgetState.focused,
+                      if (widget.errorText != null) WidgetState.error,
+                      if (off) WidgetState.disabled,
+                    },
+                    // The chips start where the words of any field start, and the words line goes on after the last chip,
+                    // on its line while there is room, as one flow. With chips the flow stands 3 further in above and
+                    // below, so the first chip stands as far in from the well's top as from its side, square in its
+                    // corner.
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: tags.isEmpty ? 0 : 3,
+                    ),
+                    // Out of use, each chip is shown alone: no ✕, and no remove action for a screen reader.
+                    child: _TagFlow(
+                      children: [
+                        if (off) ...[
+                          for (final value in widget.values)
+                            KeyedSubtree(
+                              key: ValueKey<Object>(value),
+                              child: chip(value, null),
+                            ),
+                        ] else
+                          ...tags,
+                        field,
+                      ],
+                    ),
+                  ),
+                ),
+                tagBuilder: (context, value, tag) {
+                  final face = chip(value, tag.onDeleted);
+                  if (!tag.focused) return face;
+                  return CustomPaint(
+                    foregroundPainter: neumorphicFocusLift(t, t.shapes.capsule),
+                    child: face,
+                  );
                 },
-                // The chips start where the words of any field start, and the words line goes on after the last chip, on
-                // its line while there is room, as one flow. With chips the flow stands 3 further in above and below, so
-                // the first chip stands as far in from the well's top as from its side, square in its corner.
-                padding: EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: tags.isEmpty ? 0 : 3,
+                optionBuilder: (context, option, states) => NeumorphicPanelRow(
+                  label: words(option),
+                  states: states,
+                  checked: widget.values.contains(option),
+                  inset: list.row,
+                  panelInset: list.panel,
+                  checkAtEnd: true,
                 ),
-                child: _TagFlow(children: [...tags, field]),
-              ),
-              tagBuilder: (context, value, tag) {
-                final chip = NeumorphicChip(
-                  words(value),
-                  dense: true,
-                  onDeleted: tag.onDeleted,
-                  deleteLabel: local.remove(words(value)),
-                );
-                if (!tag.focused) return chip;
-                return CustomPaint(
-                  foregroundPainter: neumorphicFocusLift(t, t.shapes.capsule),
-                  child: chip,
-                );
-              },
-              optionBuilder: (context, option, states) => NeumorphicPanelRow(
-                label: words(option),
-                states: states,
-                checked: widget.values.contains(option),
-                inset: list.row,
-                panelInset: list.panel,
-                checkAtEnd: true,
-              ),
-              surfaceBuilder: (context, rows) => surface(
-                NeumorphicPanel(
-                  padding: EdgeInsets.all(list.panel),
-                  child: rows,
+                surfaceBuilder: (context, rows) => surface(
+                  NeumorphicPanel(
+                    padding: EdgeInsets.all(list.panel),
+                    child: rows,
+                  ),
                 ),
               ),
             ),
-            _Under(error: widget.error, helper: widget.helper),
+            _Under(error: widget.errorText, helper: widget.helperText),
           ],
         ),
       ),
@@ -1167,16 +1232,16 @@ class _SearchFailedState extends State<_SearchFailed> {
 /// and the form focuses the first wrong field on submit.
 ///
 /// ```dart
-/// NeumorphicFormField(label: 'Email', help: 'The receipt goes here', required: true, child: NeumorphicTextField(controller: email))
+/// NeumorphicFormField(labelText: 'Email', helperText: 'The receipt goes here', required: true, child: NeumorphicTextField(controller: email))
 /// ```
 class NeumorphicFormField extends StatelessWidget {
   /// Creates a [NeumorphicFormField].
   const NeumorphicFormField({
     super.key,
     required this.child,
-    this.label,
-    this.help,
-    this.error,
+    this.labelText,
+    this.helperText,
+    this.errorText,
     this.required = false,
     this.enabled = true,
     this.group,
@@ -1186,13 +1251,13 @@ class NeumorphicFormField extends StatelessWidget {
   final Widget child;
 
   /// The words above it.
-  final String? label;
+  final String? labelText;
 
   /// Supporting words under it.
-  final String? help;
+  final String? helperText;
 
   /// Validation words; they replace the help.
-  final String? error;
+  final String? errorText;
 
   /// Whether it must be filled: a mark after the label, "required" spoken.
   final bool required;
@@ -1246,12 +1311,12 @@ class NeumorphicFormField extends StatelessWidget {
     // A group that already says the label's words on its own node: the field draws the label but does not say it, so
     // it is read once, not "Priority, Priority" (ui_core's rule, which applies when a field decides for itself).
     final own = isGroup ? _ownName(child)?.trim().toLowerCase() : null;
-    final heard = own != null && own == label?.trim().toLowerCase();
+    final heard = own != null && own == labelText?.trim().toLowerCase();
     return RawInputDecorator(
       mergeSemantics: !isGroup,
-      labelText: heard ? null : label,
-      helperText: help,
-      errorText: error,
+      labelText: heard ? null : labelText,
+      helperText: helperText,
+      errorText: errorText,
       required: required,
       enabled: enabled,
       requiredHint: NeumorphicLocalizations.of(context).requiredField,
@@ -1259,7 +1324,7 @@ class NeumorphicFormField extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          if ((parts.labelText ?? (heard ? label : null)) case final shown?)
+          if ((parts.labelText ?? (heard ? labelText : null)) case final shown?)
             Padding(
               padding: const EdgeInsets.only(bottom: 8),
               child: DefaultTextStyle.merge(
@@ -1288,7 +1353,7 @@ class NeumorphicFormField extends StatelessWidget {
               ),
             ),
           parts.control,
-          if (parts.hasError)
+          if (parts.invalid && parts.errorText != null)
             Padding(
               padding: const EdgeInsets.only(top: 8),
               child: NeumorphicErrorLine(
@@ -1314,9 +1379,9 @@ class NeumorphicFormField extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('label', label, defaultValue: null))
-      ..add(StringProperty('help', help, defaultValue: null))
-      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
+      ..add(StringProperty('helperText', helperText, defaultValue: null))
+      ..add(StringProperty('errorText', errorText, defaultValue: null))
       ..add(
         DiagnosticsProperty<bool>('required', required, defaultValue: false),
       )
@@ -1616,20 +1681,36 @@ class _RangeTrack extends CustomPainter {
 /// A colour chosen on a saturation and brightness field and a hue strip (and an opacity strip with [showAlpha]), with
 /// its hex beside a swatch. Every handle takes the arrows.
 ///
+/// A [controller] is the caller's, made once and disposed with its owner. Without one the picker keeps its colour on a
+/// controller of its own, starting on [initialColor], and tells [onChanged].
+///
 /// ```dart
 /// NeumorphicColorPicker(controller: colour)
 /// ```
-class NeumorphicColorPicker extends StatelessWidget {
+///
+/// ```dart
+/// NeumorphicColorPicker(initialColor: NeumorphicTheme.of(context).colors.accent, onChanged: (colour) {})
+/// ```
+class NeumorphicColorPicker extends StatefulWidget {
   /// Creates a [NeumorphicColorPicker].
   const NeumorphicColorPicker({
     super.key,
-    required this.controller,
+    this.controller,
+    this.initialColor = const Color(0xFF000000),
+    this.onChanged,
     this.showAlpha = false,
     this.label,
   });
 
-  /// The colour, with its hex.
-  final RawColorController controller;
+  /// The colour, with its hex. The caller keeps it and disposes it; when null, the picker makes its own, starting on
+  /// [initialColor], and disposes it with itself.
+  final RawColorController? controller;
+
+  /// The colour the picker's own controller starts on, without a [controller]; later changes are not read.
+  final Color initialColor;
+
+  /// Called with the colour each time it changes.
+  final ValueChanged<Color>? onChanged;
 
   /// Whether an opacity strip shows.
   final bool showAlpha;
@@ -1638,7 +1719,87 @@ class NeumorphicColorPicker extends StatelessWidget {
   final String? label;
 
   @override
+  State<NeumorphicColorPicker> createState() => _NeumorphicColorPickerState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<RawColorController>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        ColorProperty(
+          'initialColor',
+          initialColor,
+          defaultValue: const Color(0xFF000000),
+        ),
+      )
+      ..add(ObjectFlagProperty<ValueChanged<Color>>.has('onChanged', onChanged))
+      ..add(
+        DiagnosticsProperty<bool>('showAlpha', showAlpha, defaultValue: false),
+      )
+      ..add(StringProperty('label', label, defaultValue: null));
+  }
+}
+
+class _NeumorphicColorPickerState extends State<NeumorphicColorPicker> {
+  // The picker's own controller, while the caller hands in none.
+  RawColorController? _own;
+
+  RawColorController get _controller =>
+      widget.controller ?? (_own ??= RawColorController(widget.initialColor));
+
+  // The colour last told to onChanged, so a change of hue alone on a grey tells no one.
+  late Color _told;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller.addListener(_changed);
+    _told = _controller.color;
+  }
+
+  @override
+  void didUpdateWidget(NeumorphicColorPicker oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.controller == oldWidget.controller) return;
+    (oldWidget.controller ?? _own)?.removeListener(_changed);
+    // A controller handed in takes over from the picker's own, which goes; one taken away leaves a new own one,
+    // starting on the colour the picker showed.
+    if (widget.controller != null) {
+      _own?.dispose();
+      _own = null;
+    } else {
+      _own = RawColorController(oldWidget.controller!.color);
+    }
+    _controller.addListener(_changed);
+    _told = _controller.color;
+  }
+
+  void _changed() {
+    final colour = _controller.color;
+    if (colour == _told) return;
+    _told = colour;
+    widget.onChanged?.call(colour);
+  }
+
+  @override
+  void dispose() {
+    _controller.removeListener(_changed);
+    _own?.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final controller = _controller;
+    final showAlpha = widget.showAlpha;
+    final label = widget.label;
     final t = NeumorphicTheme.of(context);
     final c = t.colors;
     final area = t.shapes.corner(NeumorphicRadii.well);
@@ -1647,7 +1808,7 @@ class NeumorphicColorPicker extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        if (label != null) _Label(label!),
+        if (label != null) _Label(label),
         RawColorPicker(
           controller: controller,
           showAlpha: showAlpha,
@@ -1800,17 +1961,6 @@ class NeumorphicColorPicker extends StatelessWidget {
         ),
       ],
     );
-  }
-
-  @override
-  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
-    super.debugFillProperties(properties);
-    properties
-      ..add(DiagnosticsProperty<RawColorController>('controller', controller))
-      ..add(
-        DiagnosticsProperty<bool>('showAlpha', showAlpha, defaultValue: false),
-      )
-      ..add(StringProperty('label', label, defaultValue: null));
   }
 }
 

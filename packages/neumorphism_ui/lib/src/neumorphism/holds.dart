@@ -106,11 +106,7 @@ class NeumorphicListSection extends StatelessWidget {
           child: NeumorphicColumn(
             gap: 12,
             children: [
-              if (label != null)
-                Semantics(
-                  header: true,
-                  child: NeumorphicSectionHeader(title: label!),
-                ),
+              if (label != null) NeumorphicSectionHeader(title: label!),
               // Each row is a band of the card, from its rule down to the next: its lift and its press go round the
               // whole band and follow the card's corners where it meets them.
               for (final (i, child) in children.indexed)
@@ -156,7 +152,7 @@ class NeumorphicDisclosure extends StatefulWidget {
     super.key,
     this.autofocus = false,
     required this.title,
-    this.note,
+    this.subtitle,
     required this.child,
     this.initiallyExpanded = false,
     this.expanded,
@@ -170,7 +166,7 @@ class NeumorphicDisclosure extends StatefulWidget {
   final String title;
 
   /// Supporting text displayed with the primary content.
-  final String? note;
+  final String? subtitle;
 
   /// The content placed inside this component.
   final Widget child;
@@ -204,7 +200,7 @@ class NeumorphicDisclosure extends StatefulWidget {
     super.debugFillProperties(properties);
     properties
       ..add(StringProperty('title', title))
-      ..add(StringProperty('note', note, defaultValue: null))
+      ..add(StringProperty('subtitle', subtitle, defaultValue: null))
       ..add(
         DiagnosticsProperty<bool>(
           'initiallyExpanded',
@@ -277,7 +273,7 @@ class _NeumorphicDisclosureState extends State<NeumorphicDisclosure> {
             autofocus: widget.autofocus,
             label: [
               widget.title,
-              if (widget.note != null) widget.note!,
+              if (widget.subtitle != null) widget.subtitle!,
             ].join(', '),
             expanded: _open,
             focusNode: _headFocus,
@@ -296,8 +292,8 @@ class _NeumorphicDisclosureState extends State<NeumorphicDisclosure> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(widget.title, style: t.textTheme.title),
-                          if (widget.note != null)
-                            Text(widget.note!, style: t.textTheme.caption),
+                          if (widget.subtitle != null)
+                            Text(widget.subtitle!, style: t.textTheme.caption),
                         ],
                       ),
                     ),

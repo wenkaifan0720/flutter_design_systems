@@ -111,7 +111,7 @@ void main() {
         style: s,
         value: true,
         label: 'Choice',
-        note: 'Note',
+        subtitle: 'Note',
         onChanged: (_) {},
       ),
       (t, s) => t.copyWith(checkboxTheme: s),

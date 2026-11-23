@@ -1,0 +1,145 @@
+// Each name neumorphism_ui 0.5.0 renamed, used once; dart fix renames it (renames.dart.expect).
+import 'package:neumorphism_ui/neumorphism_host.dart';
+import 'package:neumorphism_ui/neumorphism_ui.dart';
+
+dynamic any;
+
+void constructors() {
+  NeumorphicChromeScope(selectedIndex: any);
+  NeumorphicChip(isEnabled: any);
+  NeumorphicTextField(
+    labelText: any,
+    hintText: any,
+    helperText: any,
+    errorText: any,
+    maxLines: any,
+  );
+  NeumorphicSearchField(labelText: any, hintText: any, errorText: any);
+  NeumorphicTextArea(
+    labelText: any,
+    hintText: any,
+    helperText: any,
+    errorText: any,
+    maxLines: any,
+  );
+  NeumorphicPasswordField(labelText: any, hintText: any, helperText: any, errorText: any);
+  NeumorphicInputGroup(labelText: any, hintText: any, helperText: any, errorText: any);
+  NeumorphicInputOtp(labelText: any, helperText: any, errorText: any);
+  NeumorphicSelect(labelText: any, hintText: any, helperText: any, errorText: any);
+  NeumorphicCombobox(
+    labelText: any,
+    hintText: any,
+    helperText: any,
+    errorText: any,
+    displayStringForOption: any,
+  );
+  NeumorphicMultiSelect(
+    labelText: any,
+    hintText: any,
+    helperText: any,
+    errorText: any,
+    displayStringForOption: any,
+  );
+  NeumorphicFormField(labelText: any, helperText: any, errorText: any);
+  NeumorphicFormGroup(labelText: any, helperText: any);
+  NeumorphicNumberField(labelText: any, helperText: any);
+  NeumorphicInput(hintText: any);
+  NeumorphicCommand(hintText: any);
+  NeumorphicCheckbox(isError: any);
+  NeumorphicCheckRow(subtitle: any, isError: any);
+  NeumorphicSwitchRow(subtitle: any);
+  NeumorphicDisclosure(subtitle: any);
+  NeumorphicDatePicker(firstDate: any, lastDate: any, currentDate: any);
+  NeumorphicWheelPicker(displayStringForOption: any);
+  NeumorphicLevelRow(onLevelChanged: any);
+  NeumorphicScrollArea(thumbVisibility: any);
+  showNeumorphicDatePicker(any, value: any, firstDate: any, lastDate: any, currentDate: any);
+}
+
+void fields(
+  NeumorphicChromeScope p0,
+  NeumorphicChip p1,
+  NeumorphicTextField p2,
+  NeumorphicSearchField p3,
+  NeumorphicTextArea p4,
+  NeumorphicPasswordField p5,
+  NeumorphicInputGroup p6,
+  NeumorphicInputOtp p7,
+  NeumorphicSelect<Object?> p8,
+  NeumorphicCombobox<Object?> p9,
+  NeumorphicMultiSelect<Object?> p10,
+  NeumorphicFormField p11,
+  NeumorphicFormGroup p12,
+  NeumorphicNumberField p13,
+  NeumorphicInput p14,
+  NeumorphicCommand p15,
+  NeumorphicCheckbox p16,
+  NeumorphicCheckRow p17,
+  NeumorphicSwitchRow p18,
+  NeumorphicDisclosure p19,
+  NeumorphicDatePicker p20,
+  NeumorphicWheelPicker<Object?> p21,
+  NeumorphicLevelRow p22,
+  NeumorphicScrollArea p23,
+) {
+  p0.selectedIndex;
+  p1.isEnabled;
+  p2.labelText;
+  p2.hintText;
+  p2.helperText;
+  p2.errorText;
+  p2.maxLines;
+  p3.labelText;
+  p3.hintText;
+  p3.errorText;
+  p4.labelText;
+  p4.hintText;
+  p4.helperText;
+  p4.errorText;
+  p4.maxLines;
+  p5.labelText;
+  p5.hintText;
+  p5.helperText;
+  p5.errorText;
+  p6.labelText;
+  p6.hintText;
+  p6.helperText;
+  p6.errorText;
+  p7.labelText;
+  p7.helperText;
+  p7.errorText;
+  p8.labelText;
+  p8.hintText;
+  p8.helperText;
+  p8.errorText;
+  p9.labelText;
+  p9.hintText;
+  p9.helperText;
+  p9.errorText;
+  p9.displayStringForOption;
+  p10.labelText;
+  p10.hintText;
+  p10.helperText;
+  p10.errorText;
+  p10.displayStringForOption;
+  p11.labelText;
+  p11.helperText;
+  p11.errorText;
+  p12.labelText;
+  p12.helperText;
+  p13.labelText;
+  p13.helperText;
+  p14.hintText;
+  p15.hintText;
+  p16.isError;
+  p17.subtitle;
+  p17.isError;
+  p18.subtitle;
+  p19.subtitle;
+  p20.firstDate;
+  p20.lastDate;
+  p20.currentDate;
+  p21.displayStringForOption;
+  p22.onLevelChanged;
+  p23.thumbVisibility;
+}

@@ -22,9 +22,9 @@ void main() {
       (context) => showNeumorphicDatePicker(
         context,
         value: DateTime(2026, 8, 20),
-        first: DateTime(2026),
-        last: DateTime(2027, 12, 31),
-        today: DateTime(2026, 8, 20),
+        firstDate: DateTime(2026),
+        lastDate: DateTime(2027, 12, 31),
+        currentDate: DateTime(2026, 8, 20),
       ),
     ),
     'date range': (

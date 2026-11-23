@@ -207,7 +207,7 @@ void main() {
                               children: [
                                 const Text('Second'),
                                 NeumorphicSelect<String>(
-                                  label: 'Country',
+                                  labelText: 'Country',
                                   value: 'Austria',
                                   options: const [
                                     NeumorphicMenuItem('Austria', 'Austria'),
@@ -315,7 +315,7 @@ void main() {
                     const SizedBox(height: 24),
                     const NeumorphicButton('Out of use', onPressed: null),
                     const SizedBox(height: 24),
-                    const NeumorphicTextField(hint: 'A name'),
+                    const NeumorphicTextField(hintText: 'A name'),
                     const SizedBox(height: 24),
                     const Text('Words'),
                   ],

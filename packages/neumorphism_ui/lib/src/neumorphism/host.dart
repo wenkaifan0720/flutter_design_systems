@@ -33,7 +33,7 @@ class NeumorphicShellAction extends ShellAction {
 /// What every page under the shell reads: the app's name and its places.
 ///
 /// ```dart
-/// NeumorphicChromeScope(brand: NeumorphicBrand(name: 'Home'), nav: const [], active: 0, child: Text('Page content'))
+/// NeumorphicChromeScope(brand: NeumorphicBrand(name: 'Home'), nav: const [], selectedIndex: 0, child: Text('Page content'))
 /// ```
 class NeumorphicChromeScope extends InheritedWidget {
   /// Creates a [NeumorphicChromeScope].
@@ -41,7 +41,7 @@ class NeumorphicChromeScope extends InheritedWidget {
     super.key,
     required this.brand,
     required this.nav,
-    required this.active,
+    required this.selectedIndex,
     this.action,
     required super.child,
   });
@@ -53,7 +53,7 @@ class NeumorphicChromeScope extends InheritedWidget {
   final List<NeumorphicNavItem> nav;
 
   /// The zero-based index of the current destination.
-  final int active;
+  final int selectedIndex;
 
   /// The primary action available to the surrounding chrome.
   final ShellAction? action;
@@ -63,7 +63,7 @@ class NeumorphicChromeScope extends InheritedWidget {
       context.dependOnInheritedWidgetOfExactType<NeumorphicChromeScope>();
   @override
   bool updateShouldNotify(NeumorphicChromeScope old) =>
-      old.active != active ||
+      old.selectedIndex != selectedIndex ||
       old.brand != brand ||
       old.nav != nav ||
       old.action != action;
@@ -74,7 +74,7 @@ class NeumorphicChromeScope extends InheritedWidget {
     properties
       ..add(DiagnosticsProperty<NeumorphicBrand>('brand', brand))
       ..add(IterableProperty<NeumorphicNavItem>('nav', nav))
-      ..add(IntProperty('active', active))
+      ..add(IntProperty('selectedIndex', selectedIndex))
       ..add(
         DiagnosticsProperty<ShellAction>('action', action, defaultValue: null),
       );
@@ -435,7 +435,7 @@ class NeumorphicPreview extends StatelessWidget {
         : NeumorphicChromeScope(
             brand: NeumorphicBrand(name: brand ?? ''),
             nav: nav,
-            active: activeIndex,
+            selectedIndex: activeIndex,
             action: action,
             child: page,
           );

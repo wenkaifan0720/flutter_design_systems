@@ -23,6 +23,7 @@ export 'src/neumorphism/internal/cap_label.dart';
 export 'src/neumorphism/internal/cell_bank.dart';
 export 'src/neumorphism/internal/day_face.dart';
 export 'src/neumorphism/internal/error_line.dart';
+export 'src/neumorphism/internal/field_hooks.dart';
 export 'src/neumorphism/internal/field_list.dart';
 export 'src/neumorphism/internal/geometry.dart';
 export 'src/neumorphism/internal/group_rows.dart';

@@ -106,7 +106,7 @@ void main() {
                             ),
                             const SizedBox(height: 24),
                             const NeumorphicTextField(
-                              hint: 'A field beside it',
+                              hintText: 'A field beside it',
                             ),
                           ],
                         ),
@@ -243,7 +243,7 @@ void main() {
                     padding: const EdgeInsets.all(40),
                     child: RepaintBoundary(
                       key: shot,
-                      child: const NeumorphicTextField(hint: 'Name'),
+                      child: const NeumorphicTextField(hintText: 'Name'),
                     ),
                   ),
                 ),

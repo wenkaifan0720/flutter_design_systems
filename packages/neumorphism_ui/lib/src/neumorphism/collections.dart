@@ -337,18 +337,21 @@ class _Sideways extends StatelessWidget {
 /// over the region, and the keyboard's ring around the region when it has focus (arrows, Page Up and Down, Home and End
 /// scroll it).
 ///
+/// With no [controller] the region makes its own and hands it to [child] as the [PrimaryScrollController], on every
+/// platform, so a scroll view along [axis] with no controller of its own scrolls on it.
+///
 /// ```dart
-/// NeumorphicScrollArea(controller: scroll, label: 'Notes', child: ListView(controller: scroll, children: rows))
+/// NeumorphicScrollArea(label: 'Notes', child: ListView(children: rows))
 /// ```
-class NeumorphicScrollArea extends StatelessWidget {
+class NeumorphicScrollArea extends StatefulWidget {
   /// A region around [child], which scrolls by [controller].
   const NeumorphicScrollArea({
     super.key,
-    required this.controller,
+    this.controller,
     required this.child,
     this.axis = Axis.vertical,
     this.label,
-    this.alwaysShown = false,
+    this.thumbVisibility = false,
     this.focusNode,
     this.autofocus = false,
   });
@@ -359,8 +362,9 @@ class NeumorphicScrollArea extends StatelessWidget {
   /// Whether the region takes focus when it first shows.
   final bool autofocus;
 
-  /// The scroll view's controller.
-  final ScrollController controller;
+  /// The scroll view's controller: give [child] the same one. The caller keeps it and disposes it. When null, the
+  /// region makes its own, disposes it with itself, and hands it to [child] as its [PrimaryScrollController].
+  final ScrollController? controller;
 
   /// The scroll view.
   final Widget child;
@@ -372,21 +376,83 @@ class NeumorphicScrollArea extends StatelessWidget {
   final String? label;
 
   /// Whether the bar always shows.
-  final bool alwaysShown;
+  final bool thumbVisibility;
+
+  @override
+  State<NeumorphicScrollArea> createState() => _NeumorphicScrollAreaState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<bool>('autofocus', autofocus, defaultValue: false),
+      )
+      ..add(
+        DiagnosticsProperty<ScrollController>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(EnumProperty<Axis>('axis', axis, defaultValue: Axis.vertical))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<bool>(
+          'thumbVisibility',
+          thumbVisibility,
+          defaultValue: false,
+        ),
+      );
+  }
+}
+
+class _NeumorphicScrollAreaState extends State<NeumorphicScrollArea> {
+  // The region's own controller, while the caller hands in none.
+  ScrollController? _own;
+
+  ScrollController get _controller =>
+      widget.controller ?? (_own ??= ScrollController());
+
+  @override
+  void didUpdateWidget(NeumorphicScrollArea oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // A controller handed in takes over from the region's own, which goes; one taken away leaves a new own one to
+    // be made at the next build.
+    if (widget.controller != null && _own != null) {
+      _own!.dispose();
+      _own = null;
+    }
+  }
+
+  @override
+  void dispose() {
+    _own?.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final t = NeumorphicTheme.of(context);
     final c = t.colors;
     final region = t.shapes.corner(NeumorphicRadii.well);
+    final controller = _controller;
+    final handed = widget.controller != null;
     return RawScrollArea(
       controller: controller,
-      axis: axis,
-      focusNode: focusNode,
-      autofocus: autofocus,
+      axis: widget.axis,
+      focusNode: widget.focusNode,
+      autofocus: widget.autofocus,
       thickness: 12,
-      semanticLabel: label,
-      visibility: alwaysShown
+      semanticLabel: widget.label,
+      visibility: widget.thumbVisibility
           ? DesignScrollbarVisibility.always
           : DesignScrollbarVisibility.auto,
       thumbBuilder: (context, thumb) {
@@ -409,34 +475,15 @@ class NeumorphicScrollArea extends StatelessWidget {
         foregroundPainter: focused ? neumorphicFocusLift(t, region) : null,
         child: area,
       ),
-      child: child,
+      child: handed
+          ? widget.child
+          : PrimaryScrollController(
+              controller: controller,
+              scrollDirection: widget.axis,
+              automaticallyInheritForPlatforms: TargetPlatform.values.toSet(),
+              child: widget.child,
+            ),
     );
-  }
-
-  @override
-  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
-    super.debugFillProperties(properties);
-    properties
-      ..add(
-        DiagnosticsProperty<FocusNode>(
-          'focusNode',
-          focusNode,
-          defaultValue: null,
-        ),
-      )
-      ..add(
-        DiagnosticsProperty<bool>('autofocus', autofocus, defaultValue: false),
-      )
-      ..add(DiagnosticsProperty<ScrollController>('controller', controller))
-      ..add(EnumProperty<Axis>('axis', axis, defaultValue: Axis.vertical))
-      ..add(StringProperty('label', label, defaultValue: null))
-      ..add(
-        DiagnosticsProperty<bool>(
-          'alwaysShown',
-          alwaysShown,
-          defaultValue: false,
-        ),
-      );
   }
 }
 

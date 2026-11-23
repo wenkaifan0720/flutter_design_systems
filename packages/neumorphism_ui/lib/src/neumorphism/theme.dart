@@ -1151,8 +1151,13 @@ extension NeumorphicTextStyle on TextStyle {
       copyWith(fontFeatures: const [FontFeature.tabularFigures()]);
 }
 
-/// The look's timing: how long each kind of change takes, and the curves it eases on. Read it through
-/// [NeumorphicMotion.of], which gives every duration as zero when the platform asks for reduced motion.
+/// The look's timing: how long each kind of change takes, and the curves it eases on. A theme carries one
+/// ([NeumorphicThemeData.motion], set with `copyWith(motion:)`); read it through [NeumorphicMotion.of], which gives
+/// every duration as zero when the platform asks for reduced motion.
+///
+/// ```dart
+/// theme.copyWith(motion: const NeumorphicMotion(raise: Duration(milliseconds: 260)))
+/// ```
 @immutable
 class NeumorphicMotion {
   /// Creates a [NeumorphicMotion].
@@ -1265,6 +1270,7 @@ class NeumorphicThemeData with Diagnosticable {
     this._platformHighContrast = false,
     this._density,
     this.typeface = NeumorphicTypeface.look,
+    this.motion = const NeumorphicMotion(),
     NeumorphicElevation elevation = const NeumorphicElevation(),
     this.buttonTheme = const NeumorphicStyle(),
     this.filledButtonTheme = const NeumorphicStyle(),
@@ -1314,8 +1320,9 @@ class NeumorphicThemeData with Diagnosticable {
   final bool? _highContrast;
   final bool _platformHighContrast;
 
-  /// The look's timing. Not a setting; [NeumorphicMotion.of] gives it with the platform's reduced motion applied.
-  NeumorphicMotion get motion => const NeumorphicMotion();
+  /// The look's timing: how long a press, a state change, a rising surface and a page's travel take, and their curves.
+  /// [NeumorphicMotion.of] gives it with the platform's reduced motion applied; [copyWith] sets another.
+  final NeumorphicMotion motion;
 
   /// The look's corners.
   NeumorphicShapes get shapes => const NeumorphicShapes();
@@ -1494,6 +1501,7 @@ class NeumorphicThemeData with Diagnosticable {
     NeumorphicDensity? density,
     NeumorphicTypeface? typeface,
     NeumorphicElevation? elevation,
+    NeumorphicMotion? motion,
     NeumorphicStyle? buttonTheme,
     NeumorphicStyle? filledButtonTheme,
     NeumorphicStyle? textButtonTheme,
@@ -1524,6 +1532,7 @@ class NeumorphicThemeData with Diagnosticable {
     density: density,
     typeface: typeface,
     elevation: elevation,
+    motion: motion,
     buttonTheme: buttonTheme,
     filledButtonTheme: filledButtonTheme,
     textButtonTheme: textButtonTheme,
@@ -1556,6 +1565,7 @@ class NeumorphicThemeData with Diagnosticable {
     NeumorphicDensity? density,
     NeumorphicTypeface? typeface,
     NeumorphicElevation? elevation,
+    NeumorphicMotion? motion,
     NeumorphicStyle? buttonTheme,
     NeumorphicStyle? filledButtonTheme,
     NeumorphicStyle? textButtonTheme,
@@ -1590,6 +1600,7 @@ class NeumorphicThemeData with Diagnosticable {
     density: density ?? _density,
     typeface: typeface ?? this.typeface,
     elevation: elevation ?? this.elevation,
+    motion: motion ?? this.motion,
     buttonTheme: buttonTheme ?? this.buttonTheme,
     filledButtonTheme: filledButtonTheme ?? this.filledButtonTheme,
     textButtonTheme: textButtonTheme ?? this.textButtonTheme,
@@ -1636,6 +1647,7 @@ class NeumorphicThemeData with Diagnosticable {
           : NeumorphicDensity.lerp(a.density, b.density, t),
       typeface: NeumorphicTypeface.lerp(a.typeface, b.typeface, t),
       elevation: NeumorphicElevation.lerp(a.elevation, b.elevation, t),
+      motion: t < .5 ? a.motion : b.motion,
       buttonTheme: NeumorphicStyle.lerp(a.buttonTheme, b.buttonTheme, t)!,
       filledButtonTheme: NeumorphicStyle.lerp(
         a.filledButtonTheme,
@@ -1749,6 +1761,7 @@ class NeumorphicThemeData with Diagnosticable {
           other._density == _density &&
           other.typeface == typeface &&
           other.elevation == elevation &&
+          other.motion == motion &&
           other.buttonTheme == buttonTheme &&
           other.filledButtonTheme == filledButtonTheme &&
           other.textButtonTheme == textButtonTheme &&
@@ -1783,6 +1796,7 @@ class NeumorphicThemeData with Diagnosticable {
     _density,
     typeface,
     elevation,
+    motion,
     buttonTheme,
     filledButtonTheme,
     textButtonTheme,
@@ -1833,6 +1847,13 @@ class NeumorphicThemeData with Diagnosticable {
       )
       ..add(DiagnosticsProperty<NeumorphicTypeface>('typeface', typeface))
       ..add(DiagnosticsProperty<NeumorphicElevation>('elevation', elevation))
+      ..add(
+        DiagnosticsProperty<NeumorphicMotion>(
+          'motion',
+          motion,
+          defaultValue: const NeumorphicMotion(),
+        ),
+      )
       ..add(DiagnosticsProperty<NeumorphicStyle>('buttonTheme', buttonTheme))
       ..add(
         DiagnosticsProperty<NeumorphicStyle>(
@@ -1902,15 +1923,15 @@ class NeumorphicThemeData with Diagnosticable {
 /// ```dart
 /// NeumorphicTheme(data: NeumorphicThemeData.porcelain(), child: home)
 /// ```
-class NeumorphicTheme extends InheritedTheme {
+class NeumorphicTheme extends StatelessWidget {
   /// Creates a [NeumorphicTheme].
-  NeumorphicTheme({super.key, required this.data, required Widget child})
-    : super(
-        child: _Dressing(data: data, child: child),
-      );
+  const NeumorphicTheme({super.key, required this.data, required this.child});
 
   /// The theme in scope below.
   final NeumorphicThemeData data;
+
+  /// What stands under it.
+  final Widget child;
 
   /// The theme in scope at [context], its type set for the window's width. With none in scope it is the default,
   /// porcelain by day, as `Theme.of` gives Material's fallback: a part shown outside the look's root still draws.
@@ -1926,9 +1947,10 @@ class NeumorphicTheme extends InheritedTheme {
 
   /// The theme in scope at [context], or null.
   static NeumorphicThemeData? maybeOf(BuildContext context) {
-    final scope = context.dependOnInheritedWidgetOfExactType<NeumorphicTheme>();
+    final scope = context
+        .dependOnInheritedWidgetOfExactType<_InheritedNeumorphicTheme>();
     if (scope == null) return null;
-    final data = scope.data;
+    final data = scope.theme.data;
     return data._atWindow(
       MediaQuery.maybeSizeOf(context)?.width ?? data.width,
       MediaQuery.maybeHighContrastOf(context) ?? false,
@@ -1936,17 +1958,32 @@ class NeumorphicTheme extends InheritedTheme {
   }
 
   @override
-  Widget wrap(BuildContext context, Widget child) =>
-      NeumorphicTheme(data: data, child: child);
-
-  @override
-  bool updateShouldNotify(NeumorphicTheme oldWidget) => data != oldWidget.data;
+  Widget build(BuildContext context) => _InheritedNeumorphicTheme(
+    theme: this,
+    child: _Dressing(data: data, child: child),
+  );
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties.add(DiagnosticsProperty<NeumorphicThemeData>('data', data));
   }
+}
+
+/// The theme's data in scope, carried into a route pushed elsewhere ([InheritedTheme.capture]), as Material's
+/// `_InheritedTheme` carries `Theme`'s.
+class _InheritedNeumorphicTheme extends InheritedTheme {
+  const _InheritedNeumorphicTheme({required this.theme, required super.child});
+
+  final NeumorphicTheme theme;
+
+  @override
+  Widget wrap(BuildContext context, Widget child) =>
+      NeumorphicTheme(data: theme.data, child: child);
+
+  @override
+  bool updateShouldNotify(_InheritedNeumorphicTheme oldWidget) =>
+      theme.data != oldWidget.theme.data;
 }
 
 /// A theme that eases to a new [data] over [duration], as `AnimatedTheme` does.

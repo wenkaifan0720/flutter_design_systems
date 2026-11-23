@@ -40,11 +40,15 @@ class NeumorphicEntrySeat extends StatelessWidget {
     this.label,
     this.maxLength,
     this.node = true,
+    this.expanded,
   });
 
   /// Whether the band is the field's semantics node. A one-line field whose node is its reach round the whole box
   /// (NeumorphicReach) says false.
   final bool node;
+
+  /// Whether the list the field opens is showing, said on its node; null for a field that opens none.
+  final bool? expanded;
 
   /// The box's control height.
   final double height;
@@ -110,6 +114,7 @@ class NeumorphicEntrySeat extends StatelessWidget {
     return Semantics(
       container: true,
       label: label,
+      expanded: expanded,
       maxValueLength: maxLength,
       child: band,
     );

@@ -425,7 +425,7 @@ class _HearthAppState extends State<HearthApp> {
     final scope = NeumorphicChromeScope(
       brand: const NeumorphicBrand(name: 'Hearth'),
       nav: nav,
-      active: _index,
+      selectedIndex: _index,
       child: Builder(builder: _screen),
     );
     if (t.desk) return scope;
@@ -610,7 +610,9 @@ class _HomeScreen extends StatelessWidget {
             level: d.dims ? d.level : null,
             isFirst: i == 0,
             onChanged: (v) => home.change(() => d.on = v),
-            onLevel: d.dims ? (v) => home.change(() => d.level = v) : null,
+            onLevelChanged: d.dims
+                ? (v) => home.change(() => d.level = v)
+                : null,
           ),
       ],
     );
@@ -784,12 +786,12 @@ class _AddDeviceState extends State<_AddDevice> {
         children: [
           NeumorphicTextField(
             key: const Key('hearth-add-name'),
-            label: kitSay(context, 'Name'),
-            hint: kitSay(context, 'Hall lamp'),
+            labelText: kitSay(context, 'Name'),
+            hintText: kitSay(context, 'Hall lamp'),
             controller: _name,
           ),
           NeumorphicSelect<String>(
-            label: kitSay(context, 'Room'),
+            labelText: kitSay(context, 'Room'),
             value: _room,
             options: [
               for (final r in widget.rooms)
@@ -915,8 +917,8 @@ class _DevicesScreenState extends State<_DevicesScreen> {
     );
     final find = NeumorphicSearchField(
       key: const Key('hearth-search'),
-      label: kitSay(context, 'Search devices'),
-      hint: kitSay(context, 'Search by name or room'),
+      labelText: kitSay(context, 'Search devices'),
+      hintText: kitSay(context, 'Search by name or room'),
       controller: _search,
       onChanged: (v) => setState(() => _query = v),
     );
@@ -1046,7 +1048,7 @@ class _DeviceDetail extends StatelessWidget {
           level: device.dims ? device.level : null,
           isFirst: true,
           onChanged: (v) => home.change(() => device.on = v),
-          onLevel: device.dims
+          onLevelChanged: device.dims
               ? (v) => home.change(() => device.level = v)
               : null,
         ),
@@ -1091,10 +1093,10 @@ class _ShopScreen extends StatelessWidget {
     final value = home._addressValue(context, field);
     return NeumorphicTextField(
       key: Key('hearth-${field.name}'),
-      label: kitSay(context, field.label),
+      labelText: kitSay(context, field.label),
       initialValue: value,
       focusNode: home._addressFocus[field],
-      error: home._validateAddress && value.trim().isEmpty
+      errorText: home._validateAddress && value.trim().isEmpty
           ? kitSay(context, field.error)
           : null,
       onChanged: (text) {
@@ -1144,7 +1146,7 @@ class _ShopScreen extends StatelessWidget {
           onChanged: (v) => home.change(() => home.express = v),
         ),
         NeumorphicFormGroup(
-          label: kitSay(context, 'Pay with'),
+          labelText: kitSay(context, 'Pay with'),
           child: NeumorphicSegmentedButton<String>(
             key: const Key('hearth-pay-with'),
             label: kitSay(context, 'Pay with'),
@@ -1231,7 +1233,7 @@ class _Order extends StatelessWidget {
             value: home.bulbs.toDouble(),
             min: 1,
             max: 9,
-            label: kitSay(context, 'Bulbs'),
+            labelText: kitSay(context, 'Bulbs'),
             onChanged: (value) =>
                 home.change(() => home.bulbs = (value ?? 1).round()),
           ),
@@ -1423,14 +1425,14 @@ class _AccountScreenState extends State<_AccountScreen> {
           children: [
             NeumorphicTextField(
               key: const Key('hearth-first'),
-              label: kitSay(context, 'First name'),
+              labelText: kitSay(context, 'First name'),
               controller: _first,
               autofillHints: const [AutofillHints.givenName],
               onChanged: (_) => setState(() {}),
             ),
             NeumorphicTextField(
               key: const Key('hearth-last'),
-              label: kitSay(context, 'Last name'),
+              labelText: kitSay(context, 'Last name'),
               controller: _last,
               autofillHints: const [AutofillHints.familyName],
               onChanged: (_) => setState(() {}),
@@ -1439,26 +1441,32 @@ class _AccountScreenState extends State<_AccountScreen> {
         ),
         NeumorphicTextField(
           key: const Key('hearth-email'),
-          label: kitSay(context, 'Email'),
+          labelText: kitSay(context, 'Email'),
           controller: _email,
           keyboardType: TextInputType.emailAddress,
           autofillHints: const [AutofillHints.email],
-          helper: kitSay(context, 'Receipts and the weekly summary go here.'),
-          error: _emailError,
+          helperText: kitSay(
+            context,
+            'Receipts and the weekly summary go here.',
+          ),
+          errorText: _emailError,
           onChanged: (_) {
             if (_emailError != null) setState(() => _emailError = null);
           },
         ),
         NeumorphicTextField(
-          label: kitSay(context, 'Phone'),
+          labelText: kitSay(context, 'Phone'),
           controller: _phone,
           keyboardType: TextInputType.phone,
           autofillHints: const [AutofillHints.telephoneNumber],
-          helper: kitSay(context, 'For the courier, on delivery days only.'),
+          helperText: kitSay(
+            context,
+            'For the courier, on delivery days only.',
+          ),
         ),
         NeumorphicSelect<String>(
           key: const Key('hearth-country'),
-          label: kitSay(context, 'Country'),
+          labelText: kitSay(context, 'Country'),
           value: _country,
           options: [
             for (final c in const [
@@ -1586,14 +1594,17 @@ class _SettingsScreen extends StatelessWidget {
         NeumorphicSwitchRow(
           key: const Key('hearth-email-updates'),
           label: kitSay(context, 'Weekly summary'),
-          note: kitSay(context, 'What your home used, each Monday by email.'),
+          subtitle: kitSay(
+            context,
+            'What your home used, each Monday by email.',
+          ),
           value: home.emailUpdates,
           onChanged: (v) => home.change(() => home.emailUpdates = v),
         ),
         NeumorphicSwitchRow(
           key: const Key('hearth-push'),
           label: kitSay(context, 'Alerts on this phone'),
-          note: kitSay(context, 'A door left open, a room too cold.'),
+          subtitle: kitSay(context, 'A door left open, a room too cold.'),
           value: home.pushUpdates,
           onChanged: (v) => home.change(() => home.pushUpdates = v),
         ),
@@ -1627,7 +1638,7 @@ class _SettingsScreen extends StatelessWidget {
         NeumorphicSwitchRow(
           key: const Key('hearth-away'),
           label: kitSay(context, 'Lights on at sunset'),
-          note: kitSay(context, 'So the house looks lived in.'),
+          subtitle: kitSay(context, 'So the house looks lived in.'),
           value: home.awayLights,
           onChanged: (v) => home.change(() => home.awayLights = v),
         ),
@@ -1639,7 +1650,7 @@ class _SettingsScreen extends StatelessWidget {
         NeumorphicSwitchRow(
           key: const Key('hearth-usage'),
           label: kitSay(context, 'Share usage, without names'),
-          note: kitSay(context, 'Helps us make the schedules better.'),
+          subtitle: kitSay(context, 'Helps us make the schedules better.'),
           value: home.usageData,
           onChanged: (v) => home.change(() => home.usageData = v),
         ),

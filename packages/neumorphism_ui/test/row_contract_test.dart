@@ -78,7 +78,7 @@ void main() {
               children: [
                 NeumorphicSelect<String>(
                   key: const Key('select'),
-                  label: 'Space',
+                  labelText: 'Space',
                   options: const [
                     NeumorphicMenuItem('quiet', 'Quiet room'),
                     NeumorphicMenuItem('hall', 'The long hall'),
@@ -89,14 +89,14 @@ void main() {
                 const SizedBox(height: 24),
                 NeumorphicCombobox<String>(
                   key: const Key('combo'),
-                  label: 'Town',
+                  labelText: 'Town',
                   options: const ['Bath', 'Bristol', 'Brighton'],
                   onSelected: (_) {},
                 ),
                 const SizedBox(height: 24),
                 NeumorphicMultiSelect<String>(
                   key: const Key('multi'),
-                  label: 'Guests',
+                  labelText: 'Guests',
                   values: const ['Ana'],
                   onChanged: (_) {},
                   options: const ['Ana', 'Ben', 'Cleo'],
@@ -196,7 +196,7 @@ void main() {
                       width: 220,
                       child: NeumorphicTextField(
                         key: Key('field'),
-                        hint: 'Search',
+                        hintText: 'Search',
                       ),
                     ),
                     const SizedBox(width: 12),

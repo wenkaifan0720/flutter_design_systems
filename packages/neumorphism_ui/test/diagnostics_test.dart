@@ -94,7 +94,7 @@ void main() {
       'a thirteenth month': () => NeumorphicMonth(year: 2026, month: 13),
       'a gauge whose min passes its max': () =>
           NeumorphicGauge(value: 5, min: 10, max: 0, figure: '5', name: 'Hum'),
-      'a text area of no lines': () => NeumorphicTextArea(lines: 0),
+      'a text area of no lines': () => NeumorphicTextArea(maxLines: 0),
       'a grid of no columns': () =>
           NeumorphicGridOf(columns: 0, children: const []),
       'a split past its whole': () => NeumorphicResizable(

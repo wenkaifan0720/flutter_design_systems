@@ -133,7 +133,7 @@ final Map<String, _Stated> _parts = {
   ),
   'NeumorphicChip': _stated(
     ({enabled = true, error}) =>
-        NeumorphicChip('Warm', enabled: enabled, onPressed: _tap),
+        NeumorphicChip('Warm', isEnabled: enabled, onPressed: _tap),
   ),
   'NeumorphicLink': _stated(
     ({enabled = true, error}) =>
@@ -143,7 +143,7 @@ final Map<String, _Stated> _parts = {
     ({enabled = true, error}) => NeumorphicCheckbox(
       value: false,
       label: 'Agree',
-      error: error != null,
+      isError: error != null,
       onChanged: enabled ? _drop : null,
     ),
     errs: true,
@@ -209,7 +209,11 @@ final Map<String, _Stated> _parts = {
   ),
   'NeumorphicTextField': _stated(
     ({enabled = true, error}) => _wide(
-      NeumorphicTextField(label: 'Name', enabled: enabled, error: error),
+      NeumorphicTextField(
+        labelText: 'Name',
+        enabled: enabled,
+        errorText: error,
+      ),
     ),
     presses: false,
     errs: true,
@@ -217,9 +221,9 @@ final Map<String, _Stated> _parts = {
   'NeumorphicPasswordField': _stated(
     ({enabled = true, error}) => _wide(
       NeumorphicPasswordField(
-        label: 'Password',
+        labelText: 'Password',
         enabled: enabled,
-        error: error,
+        errorText: error,
       ),
     ),
     presses: false,
@@ -228,10 +232,10 @@ final Map<String, _Stated> _parts = {
   'NeumorphicInputGroup': _stated(
     ({enabled = true, error}) => _wide(
       NeumorphicInputGroup(
-        label: 'Site',
+        labelText: 'Site',
         prefix: 'https://',
         enabled: enabled,
-        error: error,
+        errorText: error,
       ),
     ),
     presses: false,
@@ -240,10 +244,10 @@ final Map<String, _Stated> _parts = {
   'NeumorphicCombobox': _stated(
     ({enabled = true, error}) => _wide(
       NeumorphicCombobox<String>(
-        label: 'Room',
+        labelText: 'Room',
         options: const ['Bed', 'Hall'],
         enabled: enabled,
-        error: error,
+        errorText: error,
       ),
     ),
     presses: false,
@@ -252,9 +256,9 @@ final Map<String, _Stated> _parts = {
   'NeumorphicSelect': _stated(
     ({enabled = true, error}) => _wide(
       NeumorphicSelect<String>(
-        label: 'Room',
+        labelText: 'Room',
         value: 'a',
-        error: error,
+        errorText: error,
         options: const [NeumorphicMenuItem('a', 'Bed')],
         onChanged: enabled ? _drop : null,
       ),

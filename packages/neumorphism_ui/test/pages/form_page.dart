@@ -19,19 +19,19 @@ class FormPage extends StatelessWidget {
       title: 'Who',
       children: [
         const NeumorphicFormGroup(
-          label: 'Name',
-          child: NeumorphicTextField(hint: 'A name'),
+          labelText: 'Name',
+          child: NeumorphicTextField(hintText: 'A name'),
         ),
         const NeumorphicFormGroup(
-          label: 'Email',
-          help: 'Only for this. We send one note.',
+          labelText: 'Email',
+          helperText: 'Only for this. We send one note.',
           child: NeumorphicTextField(
-            hint: 'name@example.com',
+            hintText: 'name@example.com',
             keyboardType: TextInputType.emailAddress,
           ),
         ),
         NeumorphicFormGroup(
-          label: 'Where',
+          labelText: 'Where',
           child: NeumorphicSelectField(value: 'A town', onPressed: () {}),
         ),
       ],
@@ -40,7 +40,7 @@ class FormPage extends StatelessWidget {
       title: 'What',
       children: [
         NeumorphicFormGroup(
-          label: 'Which one',
+          labelText: 'Which one',
           child: NeumorphicChoices(
             options: const [
               NeumorphicChoice('The small one', note: 'For one or two'),
@@ -52,17 +52,17 @@ class FormPage extends StatelessWidget {
           ),
         ),
         NeumorphicFormGroup(
-          label: 'How many',
+          labelText: 'How many',
           child: NeumorphicNumberField(
             value: 3,
             unit: 'people',
-            note: 'Up to 12',
+            helperText: 'Up to 12',
             onChanged: (_) {},
           ),
         ),
         NeumorphicSwitchRow(
           label: 'Send a copy',
-          note: 'To the same address',
+          subtitle: 'To the same address',
           value: true,
           onChanged: (_) {},
         ),
@@ -70,7 +70,9 @@ class FormPage extends StatelessWidget {
     );
     final note = NeumorphicCard(
       title: 'Anything else',
-      children: [NeumorphicTextField(hint: 'A note', lines: t.desk ? 6 : 3)],
+      children: [
+        NeumorphicTextField(hintText: 'A note', maxLines: t.desk ? 6 : 3),
+      ],
     );
     const summary = NeumorphicCard(
       title: 'So far',

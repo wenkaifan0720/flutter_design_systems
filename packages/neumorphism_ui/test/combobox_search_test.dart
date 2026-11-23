@@ -23,13 +23,13 @@ void main() {
           width: 320,
           child: multi
               ? NeumorphicMultiSelect<String>(
-                  label: 'Cities',
+                  labelText: 'Cities',
                   values: const [],
                   onChanged: (_) {},
                   search: search,
                 )
               : NeumorphicCombobox<String>(
-                  label: 'City',
+                  labelText: 'City',
                   options: const [],
                   onSelected: (_) {},
                   search: search,

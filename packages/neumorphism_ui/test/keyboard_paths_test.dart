@@ -69,8 +69,8 @@ final _parts = <String, _Build>{
   ),
   'NeumorphicDatePicker': (hit) => NeumorphicDatePicker(
     value: DateTime(2026, 11, 6),
-    first: DateTime(2026, 11, 6),
-    last: DateTime(2026, 11, 6),
+    firstDate: DateTime(2026, 11, 6),
+    lastDate: DateTime(2026, 11, 6),
     onChanged: hit == null ? null : (_) => hit(),
   ),
   'NeumorphicTimePicker': (hit) => NeumorphicTimePicker(
@@ -82,19 +82,19 @@ final _parts = <String, _Build>{
   'NeumorphicIconButton': (hit) =>
       NeumorphicIconButton(NeumorphicGlyphs.plus, label: 'Add', onPressed: hit),
   'NeumorphicSearchField': (hit) => NeumorphicSearchField(
-    hint: 'Search',
+    hintText: 'Search',
     onChanged: hit == null ? null : (_) => hit(),
   ),
   'NeumorphicTextArea': (hit) => NeumorphicTextArea(
-    label: 'Notes',
+    labelText: 'Notes',
     onChanged: hit == null ? null : (_) => hit(),
   ),
   'NeumorphicInputOtp': (hit) => NeumorphicInputOtp(
-    label: 'Code',
+    labelText: 'Code',
     onChanged: hit == null ? null : (_) => hit(),
   ),
   'NeumorphicSelect': (hit) => NeumorphicSelect<String>(
-    label: 'Space',
+    labelText: 'Space',
     options: const [NeumorphicMenuItem('room', 'Room')],
     onChanged: hit == null ? null : (_) => hit(),
   ),
@@ -301,16 +301,16 @@ final _parts = <String, _Build>{
     onCancel: hit,
   ),
   'NeumorphicPasswordField': (hit) => NeumorphicPasswordField(
-    label: 'Password',
+    labelText: 'Password',
     onChanged: hit == null ? null : (_) => hit(),
   ),
   'NeumorphicInputGroup': (hit) => NeumorphicInputGroup(
-    label: 'Site',
+    labelText: 'Site',
     prefix: 'https://',
     onChanged: hit == null ? null : (_) => hit(),
   ),
   'NeumorphicCombobox': (hit) => NeumorphicCombobox<String>(
-    label: 'Room',
+    labelText: 'Room',
     options: const ['Bedroom', 'Study'],
     onSelected: hit == null ? null : (_) => hit(),
   ),
@@ -362,6 +362,10 @@ final _parts = <String, _Build>{
         currentDate: DateTime(2026, 6, 10),
       ),
     ),
+    onChanged: hit == null ? null : (_) => hit(),
+  ),
+  'NeumorphicColorPicker': (hit) => NeumorphicColorPicker(
+    initialColor: const Color(0xFF3F51B5),
     onChanged: hit == null ? null : (_) => hit(),
   ),
   'NeumorphicDataTable': (hit) => NeumorphicDataTable<String>(
@@ -466,6 +470,7 @@ final _drives = <String, _Drive>{
   },
   // Handles and wheels move by the arrows.
   'NeumorphicRangeSlider': _tabUntil(LogicalKeyboardKey.arrowRight),
+  'NeumorphicColorPicker': _tabUntil(LogicalKeyboardKey.arrowRight),
   'NeumorphicWheelPicker': _tabUntil(LogicalKeyboardKey.arrowDown),
   'NeumorphicResizable': _tabUntil(LogicalKeyboardKey.arrowRight),
   // The keyboard's day: Enter picks it, and so does Space.
@@ -488,6 +493,7 @@ const _noPressable = {
   'NeumorphicRating',
   'NeumorphicNumberField',
   'NeumorphicRangeSlider',
+  'NeumorphicColorPicker',
   'NeumorphicWheelPicker',
   'NeumorphicResizable',
 };

@@ -193,7 +193,7 @@ void main() {
         neumorphicApp(
           NeumorphicChip(
             'Studio',
-            enabled: false,
+            isEnabled: false,
             onPressed: () => presses++,
             onDeleted: () => deletes++,
           ),

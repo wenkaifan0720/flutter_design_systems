@@ -37,7 +37,7 @@ void main() {
       // No page picker: the menu key opens the look's drawer, which names every page.
       expect(
         find.byWidgetPredicate(
-          (w) => w is NeumorphicSelect<String> && w.label == 'Page',
+          (w) => w is NeumorphicSelect<String> && w.labelText == 'Page',
         ),
         findsNothing,
       );
@@ -116,7 +116,8 @@ void main() {
     await pumpLive(tester, 'navigation');
     await openCustomize(tester);
     Finder select(String label) => find.byWidgetPredicate(
-      (widget) => widget is NeumorphicSelect<String> && widget.label == label,
+      (widget) =>
+          widget is NeumorphicSelect<String> && widget.labelText == label,
     );
     await tapLive(tester, select('Preset'));
     await tapLive(tester, find.text('Siena'));
@@ -150,7 +151,7 @@ void main() {
       tester
           .getTopLeft(
             find.byWidgetPredicate(
-              (w) => w is NeumorphicSelect<String> && w.label == 'Preset',
+              (w) => w is NeumorphicSelect<String> && w.labelText == 'Preset',
             ),
           )
           .dx,

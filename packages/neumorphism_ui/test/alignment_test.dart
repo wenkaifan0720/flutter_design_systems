@@ -316,10 +316,10 @@ void main() {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                NeumorphicSearchField(hint: 'Search rooms'),
+                NeumorphicSearchField(hintText: 'Search rooms'),
                 SizedBox(height: 16),
                 NeumorphicTextField(
-                  label: 'Email',
+                  labelText: 'Email',
                   initialValue: 'ana@example.com',
                   leading: Icon(NeumorphicGlyphs.mail),
                 ),

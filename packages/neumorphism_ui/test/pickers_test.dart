@@ -87,8 +87,8 @@ void main() {
                 width: 350,
                 child: NeumorphicDatePicker(
                   value: DateTime(2028, 2, 28),
-                  first: DateTime(2028, 2, 1),
-                  last: DateTime(2028, 3, 31),
+                  firstDate: DateTime(2028, 2, 1),
+                  lastDate: DateTime(2028, 3, 31),
                   onChanged: (v) => picked = v,
                 ),
               ),
@@ -133,8 +133,8 @@ void main() {
             width: 350,
             child: NeumorphicDatePicker(
               value: DateTime(2026, 11, 6),
-              first: DateTime(2026, 11, 5),
-              last: DateTime(2026, 11, 8),
+              firstDate: DateTime(2026, 11, 5),
+              lastDate: DateTime(2026, 11, 8),
               onChanged: (v) => picked = v,
             ),
           ),

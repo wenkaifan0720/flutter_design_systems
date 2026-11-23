@@ -21,10 +21,14 @@ void main() {
     ),
     (
       'area',
-      (s) => NeumorphicTextArea(initialValue: 'Content', lines: 3, style: s),
+      (s) => NeumorphicTextArea(initialValue: 'Content', maxLines: 3, style: s),
       true,
     ),
-    ('search', (s) => NeumorphicSearchField(hint: 'Content', style: s), false),
+    (
+      'search',
+      (s) => NeumorphicSearchField(hintText: 'Content', style: s),
+      false,
+    ),
     (
       'select',
       (s) =>
@@ -145,7 +149,7 @@ void main() {
     expect(await pixel(tester), Colors.blue.toARGB32());
     await mount(
       tester,
-      NeumorphicTextField(style: style, error: 'Required'),
+      NeumorphicTextField(style: style, errorText: 'Required'),
       NeumorphicThemeData.porcelain(),
     );
     expect(await pixel(tester), Colors.red.toARGB32());

@@ -24,26 +24,26 @@ Widget kitEntriesDemo(Brightness brightness) => kitScreen(
 Widget kitSpecimenSearchField() => const NeumorphicColumn(
   gap: 12,
   children: [
-    NeumorphicSearchField(hint: 'Search the shelf'),
-    NeumorphicSearchField(hint: 'Search unavailable', enabled: false),
+    NeumorphicSearchField(hintText: 'Search the shelf'),
+    NeumorphicSearchField(hintText: 'Search unavailable', enabled: false),
   ],
 );
 Widget kitSpecimenTextArea() => const NeumorphicTextArea(
-  label: 'A note for tomorrow',
-  hint: 'Write a few words',
-  helper: 'Only you can see this.',
+  labelText: 'A note for tomorrow',
+  hintText: 'Write a few words',
+  helperText: 'Only you can see this.',
 );
 Widget kitSpecimenCodeField() => const NeumorphicInputOtp(
-  label: 'Verification code',
-  helper: 'Enter the six digits we sent you.',
+  labelText: 'Verification code',
+  helperText: 'Enter the six digits we sent you.',
 );
 Widget kitSpecimenSelect() {
   var value = 'room';
   return StatefulBuilder(
     builder: (context, setState) => NeumorphicSelect<String>(
-      label: 'Space',
+      labelText: 'Space',
       value: value,
-      helper: 'Choose somewhere quiet.',
+      helperText: 'Choose somewhere quiet.',
       options: const [
         NeumorphicMenuItem('room', 'Reading room'),
         NeumorphicMenuItem('window', 'Beside the window'),
@@ -68,7 +68,7 @@ Widget kitSpecimenCheckbox() {
         ),
         NeumorphicCheckRow(
           label: 'Some reminders',
-          note: 'Mixed, then off on the next press',
+          subtitle: 'Mixed, then off on the next press',
           value: null,
           tristate: true,
           onChanged: (_) {},
@@ -77,7 +77,7 @@ Widget kitSpecimenCheckbox() {
         NeumorphicCheckRow(
           label: 'Review this choice',
           value: false,
-          error: true,
+          isError: true,
           onChanged: (_) {},
         ),
       ],

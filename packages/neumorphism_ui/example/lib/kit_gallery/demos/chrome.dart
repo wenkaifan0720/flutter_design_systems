@@ -59,7 +59,8 @@ Widget kitSpecimenPictureCard() => const NeumorphicPictureCard(
   figure: '48',
 );
 
-Widget kitSpecimenInput() => NeumorphicInput(hint: 'A name', onChanged: (_) {});
+Widget kitSpecimenInput() =>
+    NeumorphicInput(hintText: 'A name', onChanged: (_) {});
 
 Widget kitSpecimenLoadingState() => const NeumorphicLoadingState();
 

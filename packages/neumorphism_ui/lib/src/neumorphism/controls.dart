@@ -21,6 +21,7 @@ import 'editing.dart';
 import 'localizations.dart';
 import 'internal/cell_bank.dart';
 import 'internal/error_line.dart';
+import 'internal/field_hooks.dart';
 import 'internal/geometry.dart';
 import 'internal/reach.dart';
 import 'internal/risen_focus.dart';
@@ -2969,7 +2970,7 @@ class NeumorphicChip extends StatelessWidget {
     this.onPressed,
     this.onDeleted,
     this.deleteLabel,
-    this.enabled = true,
+    this.isEnabled = true,
     this.selected = false,
     this.live = false,
     this.dense = false,
@@ -2998,7 +2999,7 @@ class NeumorphicChip extends StatelessWidget {
   final String? deleteLabel;
 
   /// Whether the control accepts user interaction.
-  final bool enabled;
+  final bool isEnabled;
 
   /// Whether this item is selected.
   final bool selected;
@@ -3033,7 +3034,10 @@ class NeumorphicChip extends StatelessWidget {
     final padding = t.density.padding(pad);
     final rest = neumorphicStyleOf(
       [style, t.chipTheme],
-      {if (selected) WidgetState.selected, if (!enabled) WidgetState.disabled},
+      {
+        if (selected) WidgetState.selected,
+        if (!isEnabled) WidgetState.disabled,
+      },
     );
     final shape = neumorphicInlineRoleShape(
       context,
@@ -3053,7 +3057,7 @@ class NeumorphicChip extends StatelessWidget {
     );
     final states = <WidgetState>{
       if (selected) WidgetState.selected,
-      if (!enabled || (onPressed == null && onDeleted == null))
+      if (!isEnabled || (onPressed == null && onDeleted == null))
         WidgetState.disabled,
     };
     Widget content(BuildContext context, NeumorphicStyleOf look) {
@@ -3186,15 +3190,15 @@ class NeumorphicChip extends StatelessWidget {
                     child: Semantics(
                       container: true,
                       button: onPressed != null,
-                      enabled: enabled,
+                      enabled: isEnabled,
                       selected: selected,
                       label: label,
-                      onTap: enabled ? onPressed : null,
+                      onTap: isEnabled ? onPressed : null,
                       child: ExcludeSemantics(
                         child: NeumorphicTap(
                           focusNode: focusNode,
                           autofocus: autofocus,
-                          onPressed: enabled ? onPressed : null,
+                          onPressed: isEnabled ? onPressed : null,
                           style: style,
                           themeStyle: t.chipTheme,
                           shape: shape,
@@ -3216,7 +3220,7 @@ class NeumorphicChip extends StatelessWidget {
                 NeumorphicTallTarget(
                   height: NeumorphicChromeMetrics.targetSize,
                   child: NeumorphicTap(
-                    onPressed: enabled ? onDeleted : null,
+                    onPressed: isEnabled ? onDeleted : null,
                     label:
                         deleteLabel ??
                         '${NeumorphicLocalizations.of(context).delete} $label',
@@ -3230,7 +3234,7 @@ class NeumorphicChip extends StatelessWidget {
                       child: Icon(
                         NeumorphicGlyphs.close,
                         size: 16,
-                        color: enabled ? c.inkSecondary : c.inkTertiary,
+                        color: isEnabled ? c.inkSecondary : c.inkTertiary,
                       ),
                     ),
                   ),
@@ -3244,7 +3248,7 @@ class NeumorphicChip extends StatelessWidget {
       face = _Moulded(
         focusNode: focusNode,
         autofocus: autofocus,
-        onPressed: enabled ? onPressed : null,
+        onPressed: isEnabled ? onPressed : null,
         label: label,
         selected: selected,
         style: style,
@@ -3260,7 +3264,7 @@ class NeumorphicChip extends StatelessWidget {
       alignment: AlignmentDirectional.centerStart,
       widthFactor: 1,
       heightFactor: 1,
-      child: NeumorphicOutOfUse(off: !enabled, child: face),
+      child: NeumorphicOutOfUse(off: !isEnabled, child: face),
     );
   }
 
@@ -3280,7 +3284,9 @@ class NeumorphicChip extends StatelessWidget {
       ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
       ..add(ObjectFlagProperty<VoidCallback>.has('onDeleted', onDeleted))
       ..add(StringProperty('deleteLabel', deleteLabel, defaultValue: null))
-      ..add(DiagnosticsProperty<bool>('enabled', enabled, defaultValue: true))
+      ..add(
+        DiagnosticsProperty<bool>('isEnabled', isEnabled, defaultValue: true),
+      )
       ..add(
         DiagnosticsProperty<bool>('selected', selected, defaultValue: false),
       )
@@ -3619,10 +3625,10 @@ class NeumorphicFieldBox extends StatelessWidget {
 
 /// A text input in Neumorphism's field: the look's groove around a bare editable, one line centred in it whatever the
 /// platform, density or an app's input theme.
-/// [lines] > 1 makes a note box; [trailing] holds a send button or a unit.
+/// [maxLines] > 1 makes a note box; [trailing] holds a send button or a unit.
 ///
 /// ```dart
-/// NeumorphicTextField(hint: 'A name', trailing: const Icon(NeumorphicGlyphs.search, size: 18))
+/// NeumorphicTextField(hintText: 'A name', trailing: const Icon(NeumorphicGlyphs.search, size: 18))
 /// ```
 class NeumorphicTextField extends StatefulWidget {
   /// Creates a [NeumorphicTextField].
@@ -3630,16 +3636,16 @@ class NeumorphicTextField extends StatefulWidget {
     super.key,
     this.controller,
     this.initialValue,
-    this.label,
-    this.hint,
-    this.helper,
-    this.error,
+    this.labelText,
+    this.hintText,
+    this.helperText,
+    this.errorText,
     this.onChanged,
     this.onSubmitted,
     this.onEditingComplete,
     this.leading,
     this.trailing,
-    this.lines = 1,
+    this.maxLines = 1,
     this.counter,
     this.minHeight,
     this.keyboardType,
@@ -3652,13 +3658,10 @@ class NeumorphicTextField extends StatefulWidget {
     this.readOnly = false,
     this.obscureText = false,
     this.maxLength,
-    this.decorate,
-    this.failureLine,
     this.revealLabels,
-    this.nameOnly = false,
     this.style,
-  }) : assert(lines > 0),
-       assert(!obscureText || lines == 1);
+  }) : assert(maxLines > 0),
+       assert(!obscureText || maxLines == 1);
 
   /// Visual shell and editable text slots, before textFieldTheme.
   final NeumorphicStyle? style;
@@ -3670,16 +3673,16 @@ class NeumorphicTextField extends StatefulWidget {
   final String? initialValue;
 
   /// The text identifying this item or control.
-  final String? label;
+  final String? labelText;
 
   /// Placeholder text shown when the input is empty.
-  final String? hint;
+  final String? hintText;
 
   /// Supporting text beneath the input.
-  final String? helper;
+  final String? helperText;
 
   /// An error message displayed beneath the input.
-  final String? error;
+  final String? errorText;
 
   /// Optional text describing the input count or limit.
   final String? counter;
@@ -3700,7 +3703,7 @@ class NeumorphicTextField extends StatefulWidget {
   final Widget? trailing;
 
   /// The number of visible input lines; values above one use the multiline role.
-  final int lines;
+  final int maxLines;
 
   /// The maximum number of input characters, when specified.
   final int? maxLength;
@@ -3735,18 +3738,9 @@ class NeumorphicTextField extends StatefulWidget {
   /// Whether to obscure the entered text.
   final bool obscureText;
 
-  /// Wraps only the editable, allowing a form to own its name and hints.
-  /// When supplied, the visible label and placeholder do not add spoken names.
-  final Widget Function(Widget editable)? decorate;
-
-  /// Wraps the drawn failure when a form owns its announcement.
-  final Widget Function(Widget failure)? failureLine;
-
   /// Caller-provided words for the password's show and hide actions.
   final (String show, String hide)? revealLabels;
 
-  /// Uses [label] only as the input's name; no label is drawn above it.
-  final bool nameOnly;
   @override
   State<NeumorphicTextField> createState() => _NeumorphicTextFieldState();
 
@@ -3769,10 +3763,10 @@ class NeumorphicTextField extends StatefulWidget {
         ),
       )
       ..add(StringProperty('initialValue', initialValue, defaultValue: null))
-      ..add(StringProperty('label', label, defaultValue: null))
-      ..add(StringProperty('hint', hint, defaultValue: null))
-      ..add(StringProperty('helper', helper, defaultValue: null))
-      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
+      ..add(StringProperty('helperText', helperText, defaultValue: null))
+      ..add(StringProperty('errorText', errorText, defaultValue: null))
       ..add(StringProperty('counter', counter, defaultValue: null))
       ..add(
         ObjectFlagProperty<ValueChanged<String>>.has('onChanged', onChanged),
@@ -3789,7 +3783,7 @@ class NeumorphicTextField extends StatefulWidget {
           onEditingComplete,
         ),
       )
-      ..add(IntProperty('lines', lines, defaultValue: 1))
+      ..add(IntProperty('maxLines', maxLines, defaultValue: 1))
       ..add(IntProperty('maxLength', maxLength, defaultValue: null))
       ..add(DoubleProperty('minHeight', minHeight, defaultValue: null))
       ..add(
@@ -3842,26 +3836,11 @@ class NeumorphicTextField extends StatefulWidget {
         ),
       )
       ..add(
-        ObjectFlagProperty<Widget Function(Widget editable)>.has(
-          'decorate',
-          decorate,
-        ),
-      )
-      ..add(
-        ObjectFlagProperty<Widget Function(Widget failure)>.has(
-          'failureLine',
-          failureLine,
-        ),
-      )
-      ..add(
         DiagnosticsProperty<(String show, String hide)>(
           'revealLabels',
           revealLabels,
           defaultValue: null,
         ),
-      )
-      ..add(
-        DiagnosticsProperty<bool>('nameOnly', nameOnly, defaultValue: false),
       );
   }
 }
@@ -3900,12 +3879,21 @@ class _NeumorphicTextFieldState extends State<NeumorphicTextField> {
 
   Widget _field(BuildContext context, RawPasswordDetails? reveal) {
     final t = NeumorphicTheme.of(context);
+    // A form that says the field's words itself (a kit adapter) wraps the editable in them; else ui_core's decorator
+    // reads the label, the help and the error on the input's node.
+    final hooks = NeumorphicFieldHooks.maybeOf(context);
+    final decorate = hooks?.decorate;
+    final failureLine = hooks?.failureLine;
+    final nameOnly = hooks?.nameOnly ?? false;
+    final lines = hooks?.lines ?? true;
+    final expanded = hooks?.expanded;
+    final own = decorate == null;
     final states = <WidgetState>{
       // While its own list is open the well rests: the list shows where the keys are.
       if (_focused && !NeumorphicFieldListOpen.of(context)) WidgetState.focused,
       if (_hovered && widget.enabled) WidgetState.hovered,
       if (!widget.enabled) WidgetState.disabled,
-      if (widget.error != null) WidgetState.error,
+      if (widget.errorText != null) WidgetState.error,
     };
     final look = neumorphicStyleOf([widget.style, t.textFieldTheme], states);
     final shape = look.shape;
@@ -3915,7 +3903,7 @@ class _NeumorphicTextFieldState extends State<NeumorphicTextField> {
     final hintStyle = text.copyWith(
       color: look.foreground ?? t.colors.inkTertiary,
     );
-    final multi = widget.lines > 1;
+    final multi = widget.maxLines > 1;
     // The box's control height: one line is centred in it, and the first of several stands where that line does. Large
     // text keeps 8 px of well above and below its line: at twice the size a 48 well held its words edge to edge.
     final control = math.max(
@@ -3961,8 +3949,8 @@ class _NeumorphicTextFieldState extends State<NeumorphicTextField> {
           if (widget.maxLength != null)
             LengthLimitingTextInputFormatter(widget.maxLength),
         ],
-        minLines: widget.lines,
-        maxLines: widget.lines,
+        minLines: widget.maxLines,
+        maxLines: widget.maxLines,
         cursorColor: t.colors.ink,
         cursorWidth: 1.5,
         selectionControls: NeumorphicTextSelectionControls.of(
@@ -3970,32 +3958,34 @@ class _NeumorphicTextFieldState extends State<NeumorphicTextField> {
         ),
         contextMenuBuilder: NeumorphicTextContextMenu.editable,
         decoration: _bareDecoration(
-          hint: widget.decorate == null ? widget.hint : null,
-          hintWidget: widget.decorate != null && widget.hint != null
-              ? ExcludeSemantics(child: Text(widget.hint!, style: hintStyle))
+          hint: own ? widget.hintText : null,
+          hintWidget: !own && widget.hintText != null
+              ? ExcludeSemantics(
+                  child: Text(widget.hintText!, style: hintStyle),
+                )
               : null,
           hintStyle: hintStyle,
           // A box of several lines lets its hint take them: cut to one, the notes' hint ended in an ellipsis in an
           // empty three-line box at large text.
-          hintLines: widget.lines,
+          hintLines: widget.maxLines,
         ),
       ),
     );
     final input = NeumorphicEntrySeat(
       height: control,
       line: neumorphicLineHeight(context, text),
-      lines: widget.lines,
+      lines: widget.maxLines,
       focusNode: _focus,
       enabled: widget.enabled,
-      label: widget.decorate == null ? widget.label : null,
       maxLength: widget.maxLength,
       // One line's node is its reach round the whole box (below).
       node: multi,
+      expanded: expanded,
       // One line stands on the seat's middle by its capitals (ui_core's DesignCapCenter): caret, hint and taps move
       // with it. Several lines start at the top, where they are laid out.
       child: multi
-          ? (widget.decorate?.call(editable) ?? editable)
-          : neumorphicLabel(widget.decorate?.call(editable) ?? editable),
+          ? (decorate?.call(editable) ?? editable)
+          : neumorphicLabel(decorate?.call(editable) ?? editable),
     );
     // Beside several lines, a glyph or a key stands on the first line's band. Beside one, a key's own 48 target
     // overhangs a groove the density draws smaller instead of growing it; the field's reach takes a press there to it.
@@ -4038,7 +4028,7 @@ class _NeumorphicTextFieldState extends State<NeumorphicTextField> {
     // there (the eye, a send key) keeps its place, and the line under the field still says why.
     final end =
         trailing ??
-        (widget.error == null
+        (widget.errorText == null
             ? null
             : ExcludeSemantics(
                 child: Icon(
@@ -4099,75 +4089,87 @@ class _NeumorphicTextFieldState extends State<NeumorphicTextField> {
       ),
     );
     final drawn = NeumorphicOutOfUse(off: !widget.enabled, child: field);
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        if (widget.label != null && !widget.nameOnly) ...[
-          ExcludeSemantics(
-            child: Text(
-              widget.label!,
+    final label = widget.labelText;
+    final helper = widget.helperText;
+    final error = widget.errorText;
+    final box = MouseRegion(
+      // The text cursor over the whole field, its padding included; the face itself doesn't change.
+      cursor: widget.enabled
+          ? SystemMouseCursors.text
+          : SystemMouseCursors.basic,
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit: (_) => setState(() => _hovered = false),
+      child: Focus(
+        canRequestFocus: false,
+        skipTraversal: true,
+        includeSemantics: false,
+        onFocusChange: (v) => setState(() => _focused = v),
+        // One line keeps a control's 48 target round its face, as a button does: the groove takes the density's
+        // height in it, so a field and a button share a box in any row, and a press in it off the groove reaches the
+        // line. Its flags go on the field's node, which is the text entry's: beside an eye or a send key too, the
+        // entry reads the field's name, help and error.
+        child: multi
+            ? drawn
+            : Semantics(
+                expanded: expanded,
+                maxValueLength: widget.maxLength,
+                child: NeumorphicReach(
+                  height: NeumorphicChromeMetrics.targetSize,
+                  child: drawn,
+                ),
+              ),
+      ),
+    );
+    return RawInputDecorator(
+      labelText: own ? label : null,
+      helperText: own ? helper : null,
+      errorText: own ? error : null,
+      invalid: error != null,
+      enabled: widget.enabled,
+      focusNode: _focus,
+      child: box,
+      builder: (context, parts) => Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (label != null && !nameOnly) ...[
+            DefaultTextStyle.merge(
               // A field being typed in names itself in the pigment's ink: its deeper well alone is barely deeper
               // by night, and the caret blinks, so focus would have no steady 3:1 mark but the edge.
               style: t.textTheme.caption.copyWith(
                 fontWeight: FontWeight.w700,
                 color: _focused ? t.colors.pigmentInk : null,
               ),
+              child: parts.label ?? ExcludeSemantics(child: Text(label)),
             ),
-          ),
-          const SizedBox(height: 8),
-        ],
-        MouseRegion(
-          // The text cursor over the whole field, its padding included; the face itself doesn't change.
-          cursor: widget.enabled
-              ? SystemMouseCursors.text
-              : SystemMouseCursors.basic,
-          onEnter: (_) => setState(() => _hovered = true),
-          onExit: (_) => setState(() => _hovered = false),
-          child: Focus(
-            canRequestFocus: false,
-            skipTraversal: true,
-            includeSemantics: false,
-            onFocusChange: (v) => setState(() => _focused = v),
-            // One line keeps a control's 48 target round its face, as a button does: the groove takes the density's
-            // height in it, so a field and a button share a box in any row. The target is the field's one node, and
-            // a press in it off the groove reaches the line.
-            child: multi
-                ? drawn
-                : Semantics(
-                    container: true,
-                    label: widget.decorate == null ? widget.label : null,
-                    maxValueLength: widget.maxLength,
-                    child: NeumorphicReach(
-                      height: NeumorphicChromeMetrics.targetSize,
-                      child: drawn,
-                    ),
-                  ),
-          ),
-        ),
-        if (widget.error != null || widget.helper != null) ...[
-          const SizedBox(height: 8),
-          if (widget.error != null)
-            (widget.failureLine ?? (child) => child)(
-              NeumorphicErrorLine(
-                live: widget.failureLine == null,
-                child: Text(widget.error!),
+            const SizedBox(height: 8),
+          ],
+          parts.control,
+          if (lines && (error != null || helper != null)) ...[
+            const SizedBox(height: 8),
+            if (error != null)
+              (failureLine ?? (child) => child)(
+                // The decorator's error line is the field's announcement; a form's own is the form's.
+                NeumorphicErrorLine(
+                  live: !own && failureLine == null,
+                  child: parts.error ?? Text(error),
+                ),
+              )
+            else
+              DefaultTextStyle.merge(
+                style: t.textTheme.caption,
+                child: parts.helper ?? ExcludeSemantics(child: Text(helper!)),
               ),
-            )
-          else
-            ExcludeSemantics(
-              excluding: widget.decorate != null,
-              child: Text(widget.helper!, style: t.textTheme.caption),
+          ],
+          if (widget.counter != null) ...[
+            const SizedBox(height: 6),
+            Align(
+              alignment: AlignmentDirectional.centerEnd,
+              child: Text(widget.counter!, style: t.textTheme.micro),
             ),
+          ],
         ],
-        if (widget.counter != null) ...[
-          const SizedBox(height: 6),
-          Align(
-            alignment: AlignmentDirectional.centerEnd,
-            child: Text(widget.counter!, style: t.textTheme.micro),
-          ),
-        ],
-      ],
+      ),
     );
   }
 }
@@ -4856,8 +4858,8 @@ class NeumorphicNumberField extends StatelessWidget {
     this.max,
     this.step = 1,
     this.unit,
-    this.note,
-    this.label,
+    this.helperText,
+    this.labelText,
     this.focusNode,
     this.autofocus = false,
     this.style,
@@ -4883,14 +4885,14 @@ class NeumorphicNumberField extends StatelessWidget {
   /// What a key or an arrow moves the number by: whole numbers by default.
   final double step;
 
-  /// A unit displayed under the figure; read out as the field's name when there is no [label].
+  /// A unit displayed under the figure; read out as the field's name when there is no [labelText].
   final String? unit;
 
   /// Supporting text displayed with the primary content.
-  final String? note;
+  final String? helperText;
 
   /// What a screen reader calls the field; null, the [unit].
-  final String? label;
+  final String? labelText;
 
   /// The figure's focus; null, its own.
   final FocusNode? focusNode;
@@ -4943,12 +4945,12 @@ class NeumorphicNumberField extends StatelessWidget {
             step: step,
             focusNode: focusNode,
             autofocus: autofocus,
-            semanticLabel: label ?? unit,
+            semanticLabel: labelText ?? unit,
             fieldBuilder: (context, field) => _NumberFigure(
               field: field,
               style: figure,
               unit: unit,
-              unitSpoken: label == null,
+              unitSpoken: labelText == null,
               // With both keys out of use the field is: its figure goes quiet with them. One key out (at a bound) is
               // not.
               off: onChanged == null,
@@ -4978,7 +4980,7 @@ class NeumorphicNumberField extends StatelessWidget {
             ),
           ),
         ),
-        if (note != null) Text(note!, style: t.textTheme.caption),
+        if (helperText != null) Text(helperText!, style: t.textTheme.caption),
       ],
     );
   }
@@ -4999,8 +5001,8 @@ class NeumorphicNumberField extends StatelessWidget {
       ..add(DoubleProperty('max', max, defaultValue: null))
       ..add(DoubleProperty('step', step, defaultValue: 1))
       ..add(StringProperty('unit', unit, defaultValue: null))
-      ..add(StringProperty('note', note, defaultValue: null))
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('helperText', helperText, defaultValue: null))
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
       ..add(
         DiagnosticsProperty<FocusNode>(
           'focusNode',
@@ -5492,7 +5494,7 @@ class NeumorphicSwitch extends StatelessWidget {
 /// A line of words and its switch: a setting. The words say on or off; the switch doesn't have to say it alone.
 ///
 /// ```dart
-/// NeumorphicSwitchRow(label: 'Reminders', note: 'On, at 09:00', value: true, onChanged: (v) {})
+/// NeumorphicSwitchRow(label: 'Reminders', subtitle: 'On, at 09:00', value: true, onChanged: (v) {})
 /// ```
 class NeumorphicSwitchRow extends StatelessWidget {
   /// Creates a [NeumorphicSwitchRow].
@@ -5500,7 +5502,7 @@ class NeumorphicSwitchRow extends StatelessWidget {
     super.key,
     this.autofocus = false,
     required this.label,
-    this.note,
+    this.subtitle,
     required this.value,
     this.onChanged,
     this.focusNode,
@@ -5515,7 +5517,7 @@ class NeumorphicSwitchRow extends StatelessWidget {
   final String label;
 
   /// Supporting text displayed with the primary content.
-  final String? note;
+  final String? subtitle;
 
   /// Whether the switch is on.
   final bool value;
@@ -5544,7 +5546,7 @@ class NeumorphicSwitchRow extends StatelessWidget {
       style: style,
       themeStyle: t.switchTheme,
       label: label,
-      semanticHint: note,
+      semanticHint: subtitle,
       toggled: value,
       button: false,
       // A row that holds a control passes its press to the control: the row stays flat and the control moves.
@@ -5583,9 +5585,9 @@ class NeumorphicSwitchRow extends StatelessWidget {
                           .merge(look.textStyle)
                           .copyWith(color: look.foreground),
                     ),
-                    if (note != null)
+                    if (subtitle != null)
                       Text(
-                        note!,
+                        subtitle!,
                         style: t.textTheme.caption
                             .merge(look.textStyle)
                             .copyWith(
@@ -5628,7 +5630,7 @@ class NeumorphicSwitchRow extends StatelessWidget {
         ),
       )
       ..add(StringProperty('label', label))
-      ..add(StringProperty('note', note, defaultValue: null))
+      ..add(StringProperty('subtitle', subtitle, defaultValue: null))
       ..add(DiagnosticsProperty<bool>('value', value))
       ..add(
         DiagnosticsProperty<FocusNode>(

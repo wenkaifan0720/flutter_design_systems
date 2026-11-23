@@ -1,3 +1,34 @@
+## 0.5.0
+
+- Needs ui_core 0.5.1.
+- Field words take `InputDecoration`'s names: `label` is `labelText`, `hint` (and `NeumorphicSelect.prompt`) is `hintText`, `helper` (and `NeumorphicFormField.help`, `NeumorphicFormGroup.help`, `NeumorphicNumberField.note`) is `helperText`, and `error` is `errorText`, on `NeumorphicTextField`, `NeumorphicSearchField`, `NeumorphicTextArea`, `NeumorphicPasswordField`, `NeumorphicInputGroup`, `NeumorphicInputOtp`, `NeumorphicSelect`, `NeumorphicCombobox`, `NeumorphicMultiSelect`, `NeumorphicFormField`, `NeumorphicFormGroup`, `NeumorphicNumberField`, `NeumorphicInput` and `NeumorphicCommand`. `dart fix` renames them.
+- `NeumorphicTextField.lines` and `NeumorphicTextArea.lines` are `maxLines`, as `TextField` names it. `dart fix` renames them.
+- `NeumorphicCheckbox.error` and `NeumorphicCheckRow.error` are `isError`, as `Checkbox` names it. `dart fix` renames them.
+- `note` is `subtitle` on `NeumorphicCheckRow`, `NeumorphicSwitchRow` and `NeumorphicDisclosure`, as `CheckboxListTile`, `SwitchListTile` and `ExpansionTile` name it. `dart fix` renames them.
+- `NeumorphicCombobox.displayString`, `NeumorphicMultiSelect.displayString` and `NeumorphicWheelPicker.itemLabel` are `displayStringForOption`, as `Autocomplete` names it. `dart fix` renames them.
+- `NeumorphicDatePicker` and `showNeumorphicDatePicker`: `first`, `last` and `today` are `firstDate`, `lastDate` and `currentDate`, as `showDatePicker` names them. `dart fix` renames them.
+- `NeumorphicChromeScope.active` is `selectedIndex`, as `NavigationBar` names it. `dart fix` renames it.
+- `NeumorphicChip.enabled` is `isEnabled`, as `InputChip` names it. `dart fix` renames it.
+- `NeumorphicScrollArea.alwaysShown` is `thumbVisibility`, as `Scrollbar` names it. `dart fix` renames it.
+- `NeumorphicLevelRow.onLevel` is `onLevelChanged`, beside the row's `onChanged`. `dart fix` renames it.
+- The form wiring leaves the public API: `decorate`, `failureLine` and `nameOnly` on `NeumorphicTextField`, and `decorate` and `failureLine` on `NeumorphicSearchField` and `NeumorphicInputOtp`, are gone. A field in a form takes its words from the `NeumorphicFormField` around it.
+- `NeumorphicTheme` is a `const` `StatelessWidget` over a private inherited theme, as `Theme` is. Read it with `NeumorphicTheme.of` or `maybeOf`; `dependOnInheritedWidgetOfExactType<NeumorphicTheme>()` no longer finds it.
+- `NeumorphicThemeData` carries a `motion` (`copyWith(motion: ...)`), which `NeumorphicMotion.of` and the page transitions read. Before, a `NeumorphicMotion` you built reached nothing.
+- `NeumorphicMultiSelect.onChanged` may be null: the field is then out of use, its chips without a ✕ and its field taking no typing, as other controls with no callback are.
+- `NeumorphicScrollArea.controller` is optional. Without one, the area makes its own and hands it to its scroll view as the `PrimaryScrollController`, so `NeumorphicScrollArea(child: ListView(children: rows))` scrolls with the area's bar and keys.
+- `NeumorphicCalendar` and `NeumorphicDateRangePicker` work without a `controller`: give `firstDate` and `lastDate` (and `initialDate` or `initialDateRange`), and read the choice in `onChanged`.
+- `NeumorphicColorPicker.controller` is optional, with the new `initialColor` and `onChanged`; `onChanged` also tells the changes of a controller handed in.
+- A controller handed to any of these is the caller's and is never disposed; one handed in or taken away while the part shows takes over.
+- A field's label names it for a screen reader, and its help and error are said on its input, with the field marked invalid while in error, also with no words (ui_core's `RawInputDecorator`).
+- A combobox's and a multi-select's text input say whether their list is open (expanded).
+- A date picker opens with its chosen day focused: `showNeumorphicDatePicker`, and `NeumorphicDatePicker` with the new `autofocus`.
+- Toasts keep clear of the navigation bar and a page's footer (ui_core's `RawToasterKeepClear`), rising and settling as the bar comes and goes. A bar of your own does the same wrapped in `RawToasterKeepClear`.
+- A chart's first series prints in the look's pigment, flat, by night in its night step, at 3:1 or more on every surface (where the other two inks need the room, a few L* lighter or darker); the other series step from it in its hue. Bars lose their ink outline; a zero stands as a 2 px stub on the baseline. Before, the series printed in the text ink.
+- A chart's gridline labels write as many decimals as the step needs, in the reader's digits, and its readout and what a screen reader hears write the values the same way (ui_core's `DesignChartValueFormat`).
+- A `NeumorphicListTile` of three lines or more (a title, its subtitle and a note, or words that wrap) stands its mark and its `action` at the top by itself, as Material 3's list items do, both on the middle of the title's first line. `top` still does it for a shorter row.
+- A `NeumorphicSheet`'s actions stand side by side at the end while they fit and otherwise stack, each as wide as the sheet, the main one on top, as a dialog's do. Before, a sheet's actions wrapped onto a second line at their own widths.
+- A `NeumorphicSectionHeader`, and so a `NeumorphicCard`'s title, tells a screen reader it is a heading, as a `NeumorphicListSection`'s label already did. Before, it read as plain text.
+
 ## 0.4.3
 
 - A `NeumorphicListTile`'s compact `action` (an icon key, no wider than its touch target) stays at the row's end, beside its words, at every width, the selected plate running under it, and the row keeps the height it has without it. Only a wider action (a `NeumorphicButton` with words, a `NeumorphicNumberField`) goes under the words in a tile narrower than 520. At large text in a narrow tile the title wraps word by word first; the key goes under the words only when the title's widest word can't fit beside it. Before, below 520 wide every action went under the words, and each row grew.

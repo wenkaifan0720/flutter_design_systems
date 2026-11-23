@@ -142,6 +142,12 @@ void main() {
         );
         return NeumorphicCalendar(controller: dates);
       },
+      'NeumorphicCalendar on its own controller': (context) =>
+          NeumorphicCalendar(
+            firstDate: DateTime(2026),
+            lastDate: DateTime(2026, 12, 31),
+            onChanged: (day) {},
+          ),
       'NeumorphicDateRangePicker': (context) {
         final stay = _own(
           RawCalendarController(
@@ -152,6 +158,12 @@ void main() {
         );
         return NeumorphicDateRangePicker(controller: stay);
       },
+      'NeumorphicDateRangePicker on its own controller': (context) =>
+          NeumorphicDateRangePicker(
+            firstDate: DateTime(2026),
+            lastDate: DateTime(2026, 12, 31),
+            onChanged: (range) {},
+          ),
       'showNeumorphicDateRangePicker': (context) {
         final today = DateTime(2026, 11, 14);
         final nextYear = DateTime(2027, 11, 14);
@@ -284,7 +296,7 @@ void main() {
       ),
       'NeumorphicInput': (context) => NeumorphicInput(
         key: const ValueKey('name'),
-        hint: 'A name',
+        hintText: 'A name',
         onChanged: (text) {},
       ),
       'NeumorphicMedia': (context) =>
@@ -335,12 +347,10 @@ void main() {
         );
       },
       'NeumorphicScrollArea': (context) {
-        final scroll = _own(ScrollController());
         final rows = [for (var i = 0; i < 20; i++) Text('Note $i')];
         return NeumorphicScrollArea(
-          controller: scroll,
           label: 'Notes',
-          child: ListView(controller: scroll, children: rows),
+          child: ListView(children: rows),
         );
       },
       'NeumorphicResizable': (context) {
@@ -468,7 +478,7 @@ void main() {
       'NeumorphicFieldBox': (context) =>
           const NeumorphicFieldBox(child: Text('A custom input')),
       'NeumorphicTextField': (context) => const NeumorphicTextField(
-        hint: 'A name',
+        hintText: 'A name',
         trailing: Icon(NeumorphicGlyphs.search, size: 18),
       ),
       'NeumorphicSendButton': (context) =>
@@ -498,7 +508,7 @@ void main() {
           NeumorphicSwitch(value: true, onChanged: (v) {}),
       'NeumorphicSwitchRow': (context) => NeumorphicSwitchRow(
         label: 'Reminders',
-        note: 'On, at 09:00',
+        subtitle: 'On, at 09:00',
         value: true,
         onChanged: (v) {},
       ),
@@ -522,18 +532,18 @@ void main() {
       'NeumorphicSearchField': (context) {
         void filter(String query) {}
         return NeumorphicSearchField(
-          hint: 'Search the shelf',
+          hintText: 'Search the shelf',
           onChanged: filter,
         );
       },
       'NeumorphicTextArea': (context) {
         void saveDraft(String text) {}
-        return NeumorphicTextArea(label: 'Notes', onChanged: saveDraft);
+        return NeumorphicTextArea(labelText: 'Notes', onChanged: saveDraft);
       },
       'NeumorphicInputOtp': (context) {
         void verify(String code) {}
         return NeumorphicInputOtp(
-          label: 'Verification code',
+          labelText: 'Verification code',
           length: 6,
           onCompleted: verify,
         );
@@ -542,7 +552,7 @@ void main() {
         const space = 'quiet';
         void choose(String value) {}
         return NeumorphicSelect<String>(
-          label: 'Space',
+          labelText: 'Space',
           options: const [NeumorphicMenuItem('quiet', 'Quiet room')],
           value: space,
           onChanged: choose,
@@ -617,14 +627,14 @@ void main() {
       'NeumorphicPasswordField': (context) {
         void setPassword(String password) {}
         return NeumorphicPasswordField(
-          label: 'Password',
+          labelText: 'Password',
           onChanged: setPassword,
         );
       },
       'NeumorphicInputGroup': (context) {
         final site = _own(TextEditingController());
         return NeumorphicInputGroup(
-          label: 'Website',
+          labelText: 'Website',
           prefix: 'https://',
           suffix: '.com',
           controller: site,
@@ -634,7 +644,7 @@ void main() {
         const towns = ['Leeds', 'York'];
         void setTown(String town) {}
         return NeumorphicCombobox<String>(
-          label: 'Town',
+          labelText: 'Town',
           options: towns,
           onSelected: setTown,
         );
@@ -644,7 +654,7 @@ void main() {
         void setGuests(List<String> guests) {}
         const people = ['Ada', 'Ben'];
         return NeumorphicMultiSelect<String>(
-          label: 'Guests',
+          labelText: 'Guests',
           values: guests,
           onChanged: setGuests,
           options: people,
@@ -653,8 +663,8 @@ void main() {
       'NeumorphicFormField': (context) {
         final email = _own(TextEditingController());
         return NeumorphicFormField(
-          label: 'Email',
-          help: 'The receipt goes here',
+          labelText: 'Email',
+          helperText: 'The receipt goes here',
           required: true,
           child: NeumorphicTextField(controller: email),
         );
@@ -672,6 +682,11 @@ void main() {
         final colour = _own(RawColorController());
         return NeumorphicColorPicker(controller: colour);
       },
+      'NeumorphicColorPicker on its own controller': (context) =>
+          NeumorphicColorPicker(
+            initialColor: NeumorphicTheme.of(context).colors.accent,
+            onChanged: (colour) {},
+          ),
       'NeumorphicFlatScope': (context) => NeumorphicFlatScope(
         child: NeumorphicButton('Save', onPressed: () {}),
       ),
@@ -744,7 +759,7 @@ void main() {
       'NeumorphicChromeScope': (context) => const NeumorphicChromeScope(
         brand: NeumorphicBrand(name: 'Home'),
         nav: [],
-        active: 0,
+        selectedIndex: 0,
         child: Text('Page content'),
       ),
       'NeumorphicHost': (context) =>
@@ -777,6 +792,12 @@ void main() {
           ),
         );
         return theme;
+      },
+      'NeumorphicMotion': (context) {
+        final theme = NeumorphicThemeData.porcelain();
+        return theme.copyWith(
+          motion: const NeumorphicMotion(raise: Duration(milliseconds: 260)),
+        );
       },
       'NeumorphicFill': (context) =>
           const NeumorphicFill(maxWidth: 640, child: Text('A bounded column')),
@@ -1195,7 +1216,7 @@ void main() {
         level: .3,
         figure: '30%',
         onChanged: (v) {},
-        onLevel: (v) {},
+        onLevelChanged: (v) {},
       ),
       'NeumorphicStats': (context) => const NeumorphicStats([
         NeumorphicStat('Using now', '1.8', 'kW'),
@@ -1225,7 +1246,7 @@ void main() {
         const way = 'card';
         void setWay(String way) {}
         return NeumorphicFormGroup(
-          label: 'Pay with',
+          labelText: 'Pay with',
           child: NeumorphicSegmentedButton<String>(
             label: 'Pay with',
             segments: ways,

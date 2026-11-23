@@ -1,5 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:ui_core_review/ui_core_review.dart' show DesignOverflowCheck;
 
 // ignore_for_file: avoid_relative_lib_imports — the gallery under test is the example app, not a package dependency.
 import '../example/lib/kit_gallery/live.dart';
@@ -8,7 +9,8 @@ import 'gallery_support.dart' show loadBundledFonts;
 import 'support.dart' show loadNeumorphicFonts, sweepUnlessTurn;
 import 'world_checks.dart';
 
-/// Every gallery page at twice the text size, on a phone and on a desktop: nothing overflows.
+/// Every gallery page at twice the text size, on a phone and on a desktop: nothing overflows, nothing throws, and
+/// ui_core's overflow check finds no text cut and nothing past its box.
 void main() {
   setUpAll(() async {
     await loadNeumorphicFonts();
@@ -34,6 +36,9 @@ void main() {
           tester,
           GalleryApp(initialPage: page.id),
         );
+        const DesignOverflowCheck(look: 'Neumorphism')
+            .check(tester.element(find.byType(GalleryApp)))
+            .verify();
       }, tags: sweepUnlessTurn(turn, cell, 2));
     }
   }

@@ -20,6 +20,7 @@ import 'raised.dart';
 import 'theme.dart';
 import 'internal/reach.dart' show neumorphicAtEnd;
 import 'internal/cap_label.dart';
+import 'internal/actions.dart' show NeumorphicActionBar;
 
 /// Words or a small form on a raised panel beside its trigger, opened and closed by a press on it. Escape, a press
 /// outside and Tab out close it, and focus goes back to the trigger.
@@ -290,12 +291,7 @@ class NeumorphicSheet extends StatelessWidget {
                 const NeumorphicEngraved(),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(24, 14, 24, 18),
-                  child: Wrap(
-                    alignment: WrapAlignment.end,
-                    spacing: 12,
-                    runSpacing: 12,
-                    children: actions,
-                  ),
+                  child: NeumorphicActionBar(children: actions),
                 ),
               ],
             ],
@@ -366,7 +362,7 @@ class NeumorphicCommand extends StatelessWidget {
     super.key,
     required this.commands,
     this.onRun,
-    this.hint,
+    this.hintText,
     this.maxHeight = 360,
     this.autofocus = false,
     this.focusNode,
@@ -382,7 +378,7 @@ class NeumorphicCommand extends StatelessWidget {
   final ValueChanged<RawCommand>? onRun;
 
   /// The field's placeholder; null: the localized Search.
-  final String? hint;
+  final String? hintText;
 
   /// The tallest the result list grows before it scrolls.
   final double maxHeight;
@@ -394,7 +390,7 @@ class NeumorphicCommand extends StatelessWidget {
   Widget build(BuildContext context) => _palette(
     commands: commands,
     onRun: onRun,
-    hint: hint ?? NeumorphicLocalizations.of(context).search,
+    hint: hintText ?? NeumorphicLocalizations.of(context).search,
     // The list holds as many rows at any text size: at twice the text a 240 list would show a group's name with its
     // one command cut off under it.
     maxHeight:
@@ -417,7 +413,7 @@ class NeumorphicCommand extends StatelessWidget {
       )
       ..add(IterableProperty<RawCommand>('commands', commands))
       ..add(ObjectFlagProperty<ValueChanged<RawCommand>>.has('onRun', onRun))
-      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
       ..add(DoubleProperty('maxHeight', maxHeight, defaultValue: 360))
       ..add(
         DiagnosticsProperty<bool>('autofocus', autofocus, defaultValue: false),
@@ -443,7 +439,7 @@ RawCommandPalette _palette({
     child: NeumorphicTextField(
       controller: field.controller,
       focusNode: field.focusNode,
-      hint: hint,
+      hintText: hint,
       autofocus: autofocus,
       // Enter keeps the focus here, so it comes in onEditingComplete with no onSubmitted: a submit that keeps the
       // focus restarts the text input, and in a browser the restarted input takes no typing.

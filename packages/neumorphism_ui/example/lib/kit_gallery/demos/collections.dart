@@ -190,7 +190,7 @@ Widget kitLiveScrollArea() => kitHeld<ScrollController>(
           child: NeumorphicScrollArea(
             controller: scroll,
             label: 'Rooms',
-            alwaysShown: true,
+            thumbVisibility: true,
             child: ListView(
               controller: scroll,
               children: [

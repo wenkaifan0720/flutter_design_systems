@@ -2,6 +2,8 @@ import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:neumorphism_ui/neumorphism_ui.dart';
+import 'package:neumorphism_ui/src/neumorphism/internal/reach.dart'
+    show NeumorphicReach;
 
 import 'styled_controls_test.dart' show mount;
 import 'support.dart';
@@ -27,12 +29,12 @@ void main() {
                 tester,
                 kind == 'search'
                     ? NeumorphicSearchField(
-                        label: 'Find',
-                        hint: 'Search',
+                        labelText: 'Find',
+                        hintText: 'Search',
                         focusNode: focus,
                       )
                     : NeumorphicTextField(
-                        label: 'Name',
+                        labelText: 'Name',
                         focusNode: focus,
                         obscureText: kind == 'password',
                       ),
@@ -53,16 +55,11 @@ void main() {
                 semantics.getSemanticsData().label,
                 kind == 'search' ? 'Find\nSearch' : 'Name',
               );
-              // The editable is one line; a press in its reach off the line (the field's node, round the groove the
-              // density draws) still puts the caret in it.
+              // The editable is one line; a press in its reach off the line (round the groove the density draws) still
+              // puts the caret in it.
               final band = tester.getRect(
                 find
-                    .ancestor(
-                      of: input,
-                      matching: find.byWidgetPredicate(
-                        (w) => w is Semantics && w.container,
-                      ),
-                    )
+                    .ancestor(of: input, matching: find.byType(NeumorphicReach))
                     .first,
               );
               expect(band.height, greaterThanOrEqualTo(target - .01));

@@ -44,7 +44,7 @@ void main() {
       ),
       'an empty field': const SizedBox(
         width: 300,
-        child: NeumorphicTextField(hint: 'A name'),
+        child: NeumorphicTextField(hintText: 'A name'),
       ),
       'a select': SizedBox(
         width: 300,

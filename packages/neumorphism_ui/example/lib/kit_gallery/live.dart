@@ -220,9 +220,9 @@ class _LiveExampleState extends State<LiveExample> {
     final value = await showNeumorphicDatePicker(
       context,
       value: _date,
-      today: kitPickerToday,
-      first: DateTime(2026),
-      last: DateTime(2027),
+      currentDate: kitPickerToday,
+      firstDate: DateTime(2026),
+      lastDate: DateTime(2027),
     );
     if (mounted && value != null) setState(() => _date = value);
   }
@@ -630,7 +630,7 @@ class _LiveExampleState extends State<LiveExample> {
       ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 320),
         child: NeumorphicTextField(
-          hint: 'Message',
+          hintText: 'Message',
           trailing: NeumorphicSendButton(onPressed: () => _say('Sent')),
         ),
       ),
@@ -649,55 +649,55 @@ class _LiveExampleState extends State<LiveExample> {
   Widget _fields() => _stack([
     _part('Fields', [
       NeumorphicTextField(
-        label: 'Full name',
+        labelText: 'Full name',
         controller: _name,
-        hint: 'As on your card',
-        helper: 'We use it on receipts.',
+        hintText: 'As on your card',
+        helperText: 'We use it on receipts.',
         onChanged: (value) => _say('Editing $value'),
       ),
       NeumorphicTextField(
-        label: 'Email address',
+        labelText: 'Email address',
         controller: _email,
         leading: const Icon(NeumorphicGlyphs.mail, size: 18),
         keyboardType: TextInputType.emailAddress,
-        error: _email.text.contains('@') ? null : 'Add an @ and a domain.',
+        errorText: _email.text.contains('@') ? null : 'Add an @ and a domain.',
         onChanged: (_) => setState(() {}),
       ),
       const NeumorphicTextField(
-        label: 'Password',
+        labelText: 'Password',
         obscureText: true,
         initialValue: 'porcelain',
       ),
       const NeumorphicTextField(
-        label: 'Member number',
+        labelText: 'Member number',
         initialValue: 'NM-20418',
         enabled: false,
       ),
     ]),
     _part('Search and notes', [
       NeumorphicSearchField(
-        hint: 'Search rooms',
+        hintText: 'Search rooms',
         onChanged: (value) => _say('Searching $value'),
       ),
       NeumorphicTextArea(
         key: const Key('live-notes'),
-        label: 'Notes',
+        labelText: 'Notes',
         controller: _notes,
-        lines: 3,
-        hint: 'Anything we should know?',
+        maxLines: 3,
+        hintText: 'Anything we should know?',
         onChanged: (value) => _say('Notes: $value'),
       ),
     ]),
     _part('Codes and plain inputs', [
       NeumorphicInputOtp(
         key: const Key('live-code'),
-        label: 'Verification code',
+        labelText: 'Verification code',
         length: 4,
         onChanged: (value) => _say('Code: $value'),
         onCompleted: (value) => _say('Code $value entered'),
       ),
       NeumorphicFormGroup(
-        label: 'Room name',
+        labelText: 'Room name',
         child: NeumorphicInput(onChanged: (value) => _say('Room $value')),
       ),
       // Its own input keeps a floor of groove above and below, as a field's line does: bare, two lines at twice the
@@ -799,7 +799,7 @@ class _LiveExampleState extends State<LiveExample> {
           child: NeumorphicSlab(
             child: NeumorphicSwitchRow(
               label: 'Weekly summary',
-              note: 'A short update every Friday.',
+              subtitle: 'A short update every Friday.',
               value: _emailUpdates,
               onChanged: (v) => setState(() => _emailUpdates = v),
             ),
@@ -951,7 +951,7 @@ class _LiveExampleState extends State<LiveExample> {
     _part('Select', [
       NeumorphicSelect<String>(
         key: const Key('live-select'),
-        label: 'Country',
+        labelText: 'Country',
         value: _country,
         options: const [
           NeumorphicMenuItem('United States', 'United States'),
@@ -972,7 +972,7 @@ class _LiveExampleState extends State<LiveExample> {
     ]),
     _part('Autocomplete', [
       NeumorphicSearchField(
-        hint: 'Type a city',
+        hintText: 'Type a city',
         onChanged: (value) => setState(() => _city2 = value),
       ),
       if (_city2.isNotEmpty)
@@ -1010,9 +1010,9 @@ class _LiveExampleState extends State<LiveExample> {
       // The page's one today, as the calendars below hold it: on the clock's it marked the 13th over their 12th.
       NeumorphicDatePicker(
         value: _date,
-        today: kitPickerToday,
-        first: DateTime(2026),
-        last: DateTime(2027),
+        currentDate: kitPickerToday,
+        firstDate: DateTime(2026),
+        lastDate: DateTime(2027),
         onChanged: (v) => setState(() => _date = v),
       ),
       NeumorphicTimePicker(
@@ -1556,7 +1556,7 @@ class _LiveExampleState extends State<LiveExample> {
           NeumorphicSwitchRow(
             label: 'Weekly summary',
             value: _emailUpdates,
-            note: 'A short update every Friday.',
+            subtitle: 'A short update every Friday.',
             onChanged: (value) => setState(() => _emailUpdates = value),
           ),
         ]),
@@ -1943,11 +1943,7 @@ class _LiveExampleState extends State<LiveExample> {
         // A label stands over its control: alone it was a caption that pointed at nothing.
         _stack([
           const NeumorphicLabel('A label over a control'),
-          const NeumorphicTextField(
-            label: 'A label over a control',
-            nameOnly: true,
-            hint: 'Kitchen',
-          ),
+          const NeumorphicInput(hintText: 'Kitchen'),
         ], gap: 8),
       ]),
       // The tiles share the column's width in equal columns: at 150 each the grid stopped short of the column's edge.
@@ -2317,7 +2313,7 @@ class _LiveExampleState extends State<LiveExample> {
       'tabs, rows, chips, a card\'s list and buttons.',
       style: _t.textTheme.body.copyWith(color: _t.colors.inkSecondary),
     ),
-    NeumorphicTextField(label: 'Display name', controller: _name),
+    NeumorphicTextField(labelText: 'Display name', controller: _name),
     NeumorphicSegmentedButton<String>(
       label: 'Billing period',
       value: _segment == 'quarter' ? 'month' : _segment,
@@ -2374,7 +2370,7 @@ class _LiveExampleState extends State<LiveExample> {
       onChanged: (v) => setState(() => _checked = v ?? false),
     ),
     NeumorphicSelect<String>(
-      label: 'Country',
+      labelText: 'Country',
       value: _country,
       options: const [
         NeumorphicMenuItem('United States', 'United States'),

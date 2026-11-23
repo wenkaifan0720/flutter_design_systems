@@ -16,7 +16,7 @@ void main() {
         NeumorphicDisclosure(
           title: 'Details',
           onExpansionChanged: changes.add,
-          child: const NeumorphicTextField(label: 'Note'),
+          child: const NeumorphicTextField(labelText: 'Note'),
         ),
       ),
     );
@@ -52,7 +52,7 @@ void main() {
               focusNode: node,
               expanded: expanded,
               onExpansionChanged: (v) => setState(() => expanded = v),
-              child: const NeumorphicTextField(label: 'Note'),
+              child: const NeumorphicTextField(labelText: 'Note'),
             );
           },
         ),
@@ -135,7 +135,7 @@ void main() {
     'disclosure long details',
     () => const NeumorphicDisclosure(
       title: longLine,
-      note: longLine,
+      subtitle: longLine,
       initiallyExpanded: true,
       child: Text(longLine),
     ),

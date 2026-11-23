@@ -976,25 +976,28 @@ class NeumorphicNavigationBar extends StatelessWidget {
         },
       ),
     );
-    return CustomPaint(
-      painter: _TabBarPainter(
-        c,
-        NeumorphicFlatScope.of(context),
-        t.shapes.corner(NeumorphicRadii.slab),
+    // Toasts stand above the bar (ui_core's RawToasterKeepClear), and follow it as it slides in or away.
+    return RawToasterKeepClear(
+      child: CustomPaint(
+        painter: _TabBarPainter(
+          c,
+          NeumorphicFlatScope.of(context),
+          t.shapes.corner(NeumorphicRadii.slab),
+        ),
+        child: header == null
+            ? tabs
+            : Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
+                    child: header,
+                  ),
+                  tabs,
+                ],
+              ),
       ),
-      child: header == null
-          ? tabs
-          : Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
-                  child: header,
-                ),
-                tabs,
-              ],
-            ),
     );
   }
 
@@ -1406,23 +1409,26 @@ class NeumorphicScaffold extends StatelessWidget {
         if (barAbove) topBar!,
         sheet ? Flexible(child: content) : Expanded(child: content),
         if (footer != null)
-          CustomPaint(
-            painter: _TabBarPainter(
-              t.colors,
-              NeumorphicFlatScope.of(context),
-              t.shapes.corner(NeumorphicRadii.slab),
-            ),
-            child: SafeArea(
-              top: false,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
-                child: t.desk && !sheet
-                    ? Align(
-                        alignment: AlignmentDirectional.centerEnd,
-                        heightFactor: 1,
-                        child: SizedBox(width: 360, child: footer!),
-                      )
-                    : footer!,
+          // Toasts stand above the footer, as above the navigation bar.
+          RawToasterKeepClear(
+            child: CustomPaint(
+              painter: _TabBarPainter(
+                t.colors,
+                NeumorphicFlatScope.of(context),
+                t.shapes.corner(NeumorphicRadii.slab),
+              ),
+              child: SafeArea(
+                top: false,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
+                  child: t.desk && !sheet
+                      ? Align(
+                          alignment: AlignmentDirectional.centerEnd,
+                          heightFactor: 1,
+                          child: SizedBox(width: 360, child: footer!),
+                        )
+                      : footer!,
+                ),
               ),
             ),
           ),
@@ -1449,7 +1455,7 @@ class NeumorphicScaffold extends StatelessWidget {
                     child: _Rail(
                       brand: chrome.brand,
                       nav: chrome.nav,
-                      active: chrome.active,
+                      active: chrome.selectedIndex,
                       action:
                           railAct ??
                           (chrome.action == null
@@ -1756,7 +1762,7 @@ class NeumorphicAppBar extends StatelessWidget {
 /// help, an error and more.
 ///
 /// ```dart
-/// NeumorphicInput(key: const ValueKey('name'), hint: 'A name', onChanged: (text) {})
+/// NeumorphicInput(key: const ValueKey('name'), hintText: 'A name', onChanged: (text) {})
 /// ```
 class NeumorphicInput extends StatelessWidget {
   /// Creates a [NeumorphicInput].
@@ -1764,7 +1770,7 @@ class NeumorphicInput extends StatelessWidget {
     super.key,
     this.focusNode,
     this.autofocus = false,
-    this.hint,
+    this.hintText,
     this.controller,
     this.initialValue,
     this.onChanged,
@@ -1776,7 +1782,7 @@ class NeumorphicInput extends StatelessWidget {
   final NeumorphicStyle? style;
 
   /// Placeholder text shown when the input is empty.
-  final String? hint;
+  final String? hintText;
 
   /// The initial text when no controller is supplied.
   final String? initialValue;
@@ -1801,7 +1807,7 @@ class NeumorphicInput extends StatelessWidget {
     focusNode: focusNode,
     autofocus: autofocus,
     style: style,
-    hint: hint,
+    hintText: hintText,
     controller: controller,
     initialValue: initialValue,
     onChanged: onChanged,
@@ -1819,7 +1825,7 @@ class NeumorphicInput extends StatelessWidget {
           defaultValue: null,
         ),
       )
-      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
       ..add(StringProperty('initialValue', initialValue, defaultValue: null))
       ..add(
         DiagnosticsProperty<TextEditingController>(

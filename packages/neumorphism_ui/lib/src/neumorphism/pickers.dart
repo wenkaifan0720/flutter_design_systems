@@ -47,9 +47,10 @@ class NeumorphicDatePicker extends StatefulWidget {
     super.key,
     this.value,
     this.onChanged,
-    this.first,
-    this.last,
-    this.today,
+    this.firstDate,
+    this.lastDate,
+    this.currentDate,
+    this.autofocus = false,
     this.style,
   });
 
@@ -60,13 +61,17 @@ class NeumorphicDatePicker extends StatefulWidget {
   final DateTime? value;
 
   /// The first selectable date; null uses 1 January 1900.
-  final DateTime? first;
+  final DateTime? firstDate;
 
   /// The last selectable date; null uses 31 December 2100.
-  final DateTime? last;
+  final DateTime? lastDate;
 
   /// The date used for the today marker, or the current date when null.
-  final DateTime? today;
+  final DateTime? currentDate;
+
+  /// Whether the chosen day (else today, within the bounds) takes the focus as the picker mounts, as
+  /// `RawCalendarDatePicker(autofocus:)` does. [showNeumorphicDatePicker] sets it.
+  final bool autofocus;
 
   /// Reports a user-requested value change; update the supplied value to reflect it.
   final ValueChanged<DateTime>? onChanged;
@@ -85,9 +90,26 @@ class NeumorphicDatePicker extends StatefulWidget {
         ),
       )
       ..add(DiagnosticsProperty<DateTime>('value', value, defaultValue: null))
-      ..add(DiagnosticsProperty<DateTime>('first', first, defaultValue: null))
-      ..add(DiagnosticsProperty<DateTime>('last', last, defaultValue: null))
-      ..add(DiagnosticsProperty<DateTime>('today', today, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<DateTime>(
+          'firstDate',
+          firstDate,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<DateTime>('lastDate', lastDate, defaultValue: null),
+      )
+      ..add(
+        DiagnosticsProperty<DateTime>(
+          'currentDate',
+          currentDate,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<bool>('autofocus', autofocus, defaultValue: false),
+      )
       ..add(
         ObjectFlagProperty<ValueChanged<DateTime>>.has('onChanged', onChanged),
       );
@@ -104,9 +126,9 @@ class _NeumorphicDatePickerState extends State<NeumorphicDatePicker> {
   // A day that arrives under a still pointer (the month opened in a sheet where the pointer rested) stays at rest until
   // the pointer moves, as an open list's row does: otherwise a day would show hover with the pointer elsewhere.
   var _pointerMoved = false;
-  DateTime get _first => _day(widget.first ?? DateTime(1900));
-  DateTime get _last => _day(widget.last ?? DateTime(2100, 12, 31));
-  DateTime get _today => _day(widget.today ?? DateTime.now());
+  DateTime get _first => _day(widget.firstDate ?? DateTime(1900));
+  DateTime get _last => _day(widget.lastDate ?? DateTime(2100, 12, 31));
+  DateTime get _today => _day(widget.currentDate ?? DateTime.now());
   void _validate() {
     if (_first.isAfter(_last)) {
       throw ArgumentError('first must not be after last');
@@ -137,7 +159,8 @@ class _NeumorphicDatePickerState extends State<NeumorphicDatePicker> {
     if (widget.value != old.value && widget.value != null) {
       _focused = _day(widget.value!);
       _month = DateTime(_focused.year, _focused.month);
-    } else if (widget.first != old.first || widget.last != old.last) {
+    } else if (widget.firstDate != old.firstDate ||
+        widget.lastDate != old.lastDate) {
       _focused = _clampDay(_focused, _first, _last);
       _month = DateTime(_focused.year, _focused.month);
     }
@@ -398,6 +421,9 @@ class _NeumorphicDatePickerState extends State<NeumorphicDatePicker> {
                                     themeStyle: t.datePickerTheme,
                                     shape: t.shapes.corner(NeumorphicRadii.cap),
                                     focusNode: node,
+                                    autofocus:
+                                        widget.autofocus &&
+                                        _sameDay(date, _focused),
                                     focusInset: 2,
                                     radius: NeumorphicRadii.cap,
                                     onKeyEvent: (_, event) => _key(date, event),
@@ -733,7 +759,7 @@ class NeumorphicTimePicker extends StatelessWidget {
 }
 
 /// Raises a calendar in a sheet and returns its value only when confirmed.
-/// [today] sets the day marked as current and the initial selection when [value]
+/// [currentDate] sets the day marked as current and the initial selection when [value]
 /// is omitted. By default the sheet uses the device date when opened.
 ///
 /// ```dart
@@ -742,19 +768,19 @@ class NeumorphicTimePicker extends StatelessWidget {
 Future<DateTime?> showNeumorphicDatePicker(
   BuildContext context, {
   DateTime? value,
-  DateTime? first,
-  DateTime? last,
-  DateTime? today,
+  DateTime? firstDate,
+  DateTime? lastDate,
+  DateTime? currentDate,
   String? title,
   String? confirmLabel,
   String? cancelLabel,
   bool useRootNavigator = true,
   NeumorphicStyle? style,
 }) {
-  final start = _day(first ?? DateTime(1900)),
-      end = _day(last ?? DateTime(2100, 12, 31));
+  final start = _day(firstDate ?? DateTime(1900)),
+      end = _day(lastDate ?? DateTime(2100, 12, 31));
   if (start.isAfter(end)) throw ArgumentError('first must not be after last');
-  final current = _day(today ?? DateTime.now());
+  final current = _day(currentDate ?? DateTime.now());
   var selected = _clampDay(_day(value ?? current), start, end);
   final words = NeumorphicLocalizations.of(context);
   return showNeumorphicBottomSheet<DateTime>(
@@ -785,11 +811,12 @@ Future<DateTime?> showNeumorphicDatePicker(
               ),
             ],
             child: NeumorphicDatePicker(
+              autofocus: true,
               style: style,
               value: selected,
-              first: start,
-              last: end,
-              today: current,
+              firstDate: start,
+              lastDate: end,
+              currentDate: current,
               onChanged: (v) => setState(() => selected = v),
             ),
           ),

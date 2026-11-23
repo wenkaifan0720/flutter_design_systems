@@ -23,7 +23,7 @@ void main() {
                 update = setState;
                 return NeumorphicCheckbox(
                   value: value,
-                  error: error,
+                  isError: error,
                   tristate: true,
                   label: 'Terms',
                   onChanged: (_) {},
@@ -69,7 +69,7 @@ void main() {
       neumorphicApp(
         Center(
           child: NeumorphicSearchField(
-            hint: 'Search',
+            hintText: 'Search',
             controller: controller,
             focusNode: node,
             onChanged: changes.add,
@@ -98,8 +98,11 @@ void main() {
         Widget make(TextEditingController controller) => neumorphicApp(
           Center(
             child: code
-                ? NeumorphicInputOtp(controller: controller, label: 'Code')
-                : NeumorphicSearchField(controller: controller, hint: 'Search'),
+                ? NeumorphicInputOtp(controller: controller, labelText: 'Code')
+                : NeumorphicSearchField(
+                    controller: controller,
+                    hintText: 'Search',
+                  ),
           ),
         );
         await tester.pumpWidget(make(old));
@@ -307,7 +310,7 @@ void main() {
           Center(
             child: StatefulBuilder(
               builder: (context, setState) => NeumorphicSelect<int>(
-                label: 'Room',
+                labelText: 'Room',
                 value: value,
                 options: const [
                   NeumorphicMenuItem(1, 'One'),
@@ -343,7 +346,7 @@ void main() {
           Center(
             child: NeumorphicCheckRow(
               label: 'Remember',
-              note: 'On this device',
+              subtitle: 'On this device',
               value: true,
               onChanged: (_) {},
             ),
@@ -362,20 +365,23 @@ void main() {
   });
   check(
     'search with long label',
-    () => const NeumorphicSearchField(label: longLine, hint: long),
+    () => const NeumorphicSearchField(labelText: longLine, hintText: long),
   );
   check(
     'code with twelve cells',
-    () =>
-        const NeumorphicInputOtp(length: 12, label: longLine, error: longLine),
+    () => const NeumorphicInputOtp(
+      length: 12,
+      labelText: longLine,
+      errorText: longLine,
+    ),
   );
   check(
     'select with long value',
     () => NeumorphicSelect<String>(
-      label: longLine,
+      labelText: longLine,
       value: 'a',
       options: const [NeumorphicMenuItem('a', longLine)],
-      error: longLine,
+      errorText: longLine,
       onChanged: (_) {},
     ),
   );
@@ -383,7 +389,7 @@ void main() {
     'check row with long note',
     () => NeumorphicCheckRow(
       label: longLine,
-      note: longLine,
+      subtitle: longLine,
       value: true,
       onChanged: (_) {},
     ),

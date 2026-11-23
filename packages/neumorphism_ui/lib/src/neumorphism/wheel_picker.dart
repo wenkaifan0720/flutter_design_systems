@@ -26,7 +26,7 @@ class NeumorphicWheelPicker<T> extends StatelessWidget {
     required this.value,
     required this.onChanged,
     required this.label,
-    this.itemLabel,
+    this.displayStringForOption,
     this.rows = 5,
     this.looping = false,
     this.width,
@@ -47,7 +47,7 @@ class NeumorphicWheelPicker<T> extends StatelessWidget {
   final String label;
 
   /// A value's words; null: its `toString()`.
-  final String Function(T value)? itemLabel;
+  final String Function(T value)? displayStringForOption;
 
   /// How many rows show: odd, so one stands in the middle.
   final int rows;
@@ -61,7 +61,7 @@ class NeumorphicWheelPicker<T> extends StatelessWidget {
   /// The well's own style, before the text-field theme.
   final NeumorphicStyle? style;
 
-  String _words(T value) => itemLabel?.call(value) ?? '$value';
+  String _words(T value) => displayStringForOption?.call(value) ?? '$value';
 
   @override
   Widget build(BuildContext context) {
@@ -189,8 +189,8 @@ class NeumorphicWheelPicker<T> extends StatelessWidget {
       ..add(StringProperty('label', label))
       ..add(
         ObjectFlagProperty<String Function(T value)>.has(
-          'itemLabel',
-          itemLabel,
+          'displayStringForOption',
+          displayStringForOption,
         ),
       )
       ..add(IntProperty('rows', rows, defaultValue: 5))

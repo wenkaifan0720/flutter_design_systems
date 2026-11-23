@@ -31,7 +31,7 @@ class _SelectState extends State<_Select> {
     child: SizedBox(
       width: 320,
       child: NeumorphicSelect<String>(
-        label: 'Country',
+        labelText: 'Country',
         focusNode: widget.node,
         value: value,
         options: [for (final c in _countries) NeumorphicMenuItem(c, c)],
@@ -309,7 +309,7 @@ void main() {
             width: 320,
             child: StatefulBuilder(
               builder: (context, setState) => NeumorphicMultiSelect<String>(
-                label: 'Countries',
+                labelText: 'Countries',
                 values: values,
                 options: _countries,
                 isOptionEnabled: (c) => c != 'Belgium',
@@ -439,7 +439,7 @@ Future<List<String>> _combobox(
           width: 320,
           child: StatefulBuilder(
             builder: (context, setState) => NeumorphicCombobox<String>(
-              label: 'Country',
+              labelText: 'Country',
               options: _countries,
               isOptionEnabled: enabled,
               value: taken.isEmpty ? value : taken.last,

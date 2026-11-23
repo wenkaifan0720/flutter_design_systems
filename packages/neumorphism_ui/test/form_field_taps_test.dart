@@ -30,7 +30,7 @@ class _FormState extends State<_Form> {
     mainAxisSize: MainAxisSize.min,
     children: [
       NeumorphicFormField(
-        label: 'Priority',
+        labelText: 'Priority',
         child: NeumorphicSegmentedButton<String>(
           label: 'Priority',
           segments: const [
@@ -46,7 +46,7 @@ class _FormState extends State<_Form> {
         ),
       ),
       NeumorphicFormField(
-        label: 'Labels',
+        labelText: 'Labels',
         child: Wrap(
           spacing: 8,
           children: [
@@ -67,8 +67,8 @@ class _FormState extends State<_Form> {
         ),
       ),
       NeumorphicFormField(
-        label: 'Reminder',
-        help: 'A nudge before it is due',
+        labelText: 'Reminder',
+        helperText: 'A nudge before it is due',
         child: Align(
           alignment: AlignmentDirectional.centerStart,
           child: NeumorphicSwitch(
@@ -82,7 +82,7 @@ class _FormState extends State<_Form> {
         ),
       ),
       NeumorphicFormField(
-        label: 'Done',
+        labelText: 'Done',
         child: Align(
           alignment: AlignmentDirectional.centerStart,
           child: NeumorphicCheckbox(

@@ -79,7 +79,7 @@ class NeumorphicChartBand {
 }
 
 /// Multiple series share a scale, with real gaps and an optional target band.
-/// Series use solid, dashed and dotted strokes, filled areas, or individually outlined bars. Hover or touch the plot
+/// Series use solid, dashed and dotted strokes, filled areas, or flat bars, the first in the look's pigment. Hover or touch the plot
 /// to read one position's values in a raised readout; [loading] shows the well's skeleton; no values show the empty
 /// state.
 ///
@@ -137,8 +137,10 @@ class NeumorphicChart extends StatelessWidget {
     if (loading) {
       return _ChartLoading(label: label, style: style, height: height + 32);
     }
-    final fmt =
-        format ?? (double value) => NeumorphicFormat.number(context, value);
+    // The figures are ui_core's (DesignChartValueFormat), in the reader's digits; [format] replaces them.
+    final figures = RawWidgetsLocalizations.of(context);
+    const plain = DesignChartValueFormat();
+    final fmt = format ?? (double value) => plain.format(value, figures);
     final values = [
       for (final s in series)
         for (final value in s.values)
@@ -167,18 +169,38 @@ class NeumorphicChart extends StatelessWidget {
     final scaler = MediaQuery.textScalerOf(context);
     final tickStyle = DefaultTextStyle.of(context).style
         .merge(t.textTheme.micro.tabular);
-    var gutter = 0.0, tickHeight = 0.0;
-    for (final value in ticks) {
-      final painter = TextPainter(
-        text: TextSpan(text: fmt(value), style: tickStyle),
-        textDirection: TextDirection.ltr,
-        textScaler: scaler,
-      )..layout();
-      gutter = math.max(gutter, painter.width);
-      tickHeight = math.max(tickHeight, painter.height);
-      painter.dispose();
+    // Every gridline's label at the step's decimals (a step of 0.5 writes 1.0, not 1), and the gutter as wide as
+    // the widest of them.
+    var digits = 0;
+    while (digits < 6 &&
+        ((step * math.pow(10, digits)) - (step * math.pow(10, digits)).round())
+                .abs() >
+            1e-6) {
+      digits++;
     }
-    gutter = gutter.ceilToDouble();
+    final marks = [
+      for (final value in ticks)
+        DesignScaleTick(
+          value: value,
+          position: value,
+          label:
+              format?.call(value) ??
+              plain.format(value, figures, fractionDigits: digits),
+          fractionDigits: digits,
+        ),
+    ];
+    final gutter = DesignScaleTick.widestLabel(
+      marks,
+      style: tickStyle,
+      textScaler: scaler,
+    ).ceilToDouble();
+    final line = TextPainter(
+      text: TextSpan(text: marks.first.label, style: tickStyle),
+      textDirection: TextDirection.ltr,
+      textScaler: scaler,
+    )..layout();
+    final tickHeight = line.height;
+    line.dispose();
     const gutterGap = 8.0;
     final read =
         summary ??
@@ -244,7 +266,8 @@ class NeumorphicChart extends StatelessWidget {
         final i = x.round();
         return i >= 0 && i < labels.length ? labels[i] : '${i + 1}';
       },
-      formatY: fmt,
+      formatY: format,
+      valueFormat: format == null ? plain : null,
       builder: (context, chart) => _Readout(
         selected: chart.active?.index,
         focused: chart.states.contains(WidgetState.focused),
@@ -290,17 +313,17 @@ class NeumorphicChart extends StatelessWidget {
                       child: Stack(
                         clipBehavior: Clip.none,
                         children: [
-                          for (final value in ticks)
+                          for (final tick in marks)
                             PositionedDirectional(
                               end: 0,
                               top:
                                   4 +
-                                  (high - value) /
+                                  (high - tick.value) /
                                       (high - low) *
                                       math.max(0.0, height - 8) -
                                   tickHeight / 2,
                               child: Text(
-                                fmt(value),
+                                tick.label,
                                 style: t.textTheme.micro.tabular,
                                 textDirection: TextDirection.ltr,
                               ),
@@ -471,23 +494,46 @@ _ChartColors _chartPalette(NeumorphicColors c) => _chartColors[c] ??= (() {
     }
     opacity = low;
   }
-  // Three ink tones, still in the material's hue. L* separation alone gives
-  // at least 20 CIELAB units; the extra half unit survives 8-bit rasterization.
-  // The faintest line keeps 3.1:1 on every surface, with room above 3:1.
+  // Three ink tones in the pigment's hue, at least 20 CIELAB units apart by
+  // L* alone (the extra half unit survives 8-bit rasterization), each keeping
+  // 3.1:1 on every surface, with room above 3:1. The first series prints in
+  // the pigment itself, flat (by night its night step); the others step away
+  // from the ground where there is room, else towards it, else either side.
+  // Where no ladder starts at the pigment's own lightness, the first ink takes
+  // the nearest lightness one does, so the pigment moves no further than the
+  // three inks need.
   final gap = math.min(20.5, room(opacity) / 2);
   final edge = limit(opacity);
-  final own = _lightness(c.ink.computeLuminance());
-  final first = c.dark
-      ? math.max(own, edge + gap * 2).clamp(0.0, 100.0)
-      : math.min(own, edge - gap * 2).clamp(0.0, 100.0);
+  final least = c.dark ? edge : 0.0, most = c.dark ? 100.0 : edge;
+  final pigment = _lightness(c.accent.computeLuminance());
+  final away = c.dark ? gap : -gap;
+  var ladder = <double>[];
+  var moved = double.infinity;
+  for (final steps in [
+    [0.0, away, 2 * away],
+    [0.0, -away, -2 * away],
+    [0.0, away, -away],
+  ]) {
+    final low = least - steps.reduce(math.min);
+    final high = most - steps.reduce(math.max);
+    if (low > high) continue;
+    final first = pigment.clamp(low, high).toDouble();
+    if ((first - pigment).abs() < moved) {
+      moved = (first - pigment).abs();
+      ladder = [for (final step in steps) first + step];
+    }
+  }
   return (
-    inks: [
-      for (var i = 0; i < 3; i++)
-        _atLightness(c.ink, first + (c.dark ? -1 : 1) * gap * i),
-    ],
+    inks: [for (final l in ladder) _atLightness(c.accent, l)],
     band: c.quiet.withValues(alpha: opacity),
   );
 })();
+
+// A picked bar's ink: [ink] a step further from the ground, by night lighter.
+Color _pickedInk(NeumorphicColors c, Color ink) => _atLightness(
+  ink,
+  (_lightness(ink.computeLuminance()) + (c.dark ? 12 : -12)).clamp(0.0, 100.0),
+);
 
 Color _seriesInk(NeumorphicColors c, int index) {
   final inks = _chartPalette(c).inks;
@@ -766,24 +812,27 @@ class _ChartPainter extends CustomPainter {
           final group = area.width / math.max(count, 1);
           final width = group * .75 / math.max(series.length, 1);
           final left = area.left + i * group + group * .125 + index * width;
+          // A zero stands as a 2 px stub on the baseline, so it reads as a value, not as a gap in the data.
+          var top = math.min(y(0), y(value)), bottom = math.max(y(0), y(value));
+          if (bottom - top < 2) {
+            if (value < 0) {
+              bottom = top + 2;
+            } else {
+              top = bottom - 2;
+            }
+          }
           final rect = Rect.fromLTRB(
             left + 1,
-            math.min(y(0), y(value)),
+            top,
             left + math.max(1, width - 1),
-            math.max(y(0), y(value)),
+            bottom,
           );
           // Bars follow the corner family: square in the square family, a 2 px round otherwise.
           final bar = RRect.fromRectAndRadius(rect, Radius.circular(barRadius));
+          // Flat, in the series' ink; the picked one a step further from the ground.
           canvas.drawRRect(
             bar,
-            i == selected ? (Paint()..color = colors.ink) : paint,
-          );
-          canvas.drawRRect(
-            bar,
-            Paint()
-              ..color = colors.ink
-              ..style = PaintingStyle.stroke
-              ..strokeWidth = 1,
+            i == selected ? (Paint()..color = _pickedInk(colors, ink)) : paint,
           );
         } else {
           final point = Offset(_plotX(area, i, count, kind), y(value));

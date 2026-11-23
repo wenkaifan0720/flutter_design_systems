@@ -65,7 +65,7 @@ class _Page extends StatelessWidget {
     child: Center(
       child: SizedBox(
         width: 320,
-        child: NeumorphicTextField(label: 'Name', controller: controller),
+        child: NeumorphicTextField(labelText: 'Name', controller: controller),
       ),
     ),
   );

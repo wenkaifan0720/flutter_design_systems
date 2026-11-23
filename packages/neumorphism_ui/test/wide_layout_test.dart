@@ -160,8 +160,8 @@ void main() {
       tester,
       NeumorphicDatePicker(
         value: DateTime(2026, 11, 12),
-        first: DateTime(2026),
-        last: DateTime(2027),
+        firstDate: DateTime(2026),
+        lastDate: DateTime(2027),
         onChanged: (_) {},
       ),
     );
@@ -267,8 +267,8 @@ void main() {
             NeumorphicRating(label: 'Rating', value: 3, onChanged: (_) {}),
             NeumorphicDatePicker(
               value: DateTime(2026, 11, 12),
-              first: DateTime(2026),
-              last: DateTime(2027),
+              firstDate: DateTime(2026),
+              lastDate: DateTime(2027),
               onChanged: (_) {},
             ),
           ],
@@ -336,8 +336,8 @@ void main() {
       const NeumorphicRow(
         spans: [7, 5],
         children: [
-          NeumorphicTextField(label: 'Town', initialValue: 'Bristol'),
-          NeumorphicTextField(label: 'Postcode', initialValue: 'BS1 4DJ'),
+          NeumorphicTextField(labelText: 'Town', initialValue: 'Bristol'),
+          NeumorphicTextField(labelText: 'Postcode', initialValue: 'BS1 4DJ'),
         ],
       ),
     );

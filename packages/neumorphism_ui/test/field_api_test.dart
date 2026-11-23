@@ -2,6 +2,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:neumorphism_ui/neumorphism_ui.dart';
+import 'package:neumorphism_ui/src/neumorphism/internal/field_hooks.dart';
 
 import 'support.dart';
 
@@ -17,19 +18,21 @@ void main() {
       await tester.pumpWidget(
         neumorphicApp(
           Center(
-            child: NeumorphicTextField(
-              label: 'Password',
-              hint: 'Eight characters',
-              error: 'Too short',
-              controller: controller,
-              obscureText: true,
-              revealLabels: ('Reveal', 'Conceal'),
+            child: NeumorphicFieldHooks(
               decorate: (input) => Semantics(
                 label: 'Account password',
                 hint: 'Too short',
                 child: input,
               ),
               failureLine: (failure) => ExcludeSemantics(child: failure),
+              child: NeumorphicTextField(
+                labelText: 'Password',
+                hintText: 'Eight characters',
+                errorText: 'Too short',
+                controller: controller,
+                obscureText: true,
+                revealLabels: ('Reveal', 'Conceal'),
+              ),
             ),
           ),
         ),
@@ -58,12 +61,14 @@ void main() {
       await tester.pumpWidget(
         neumorphicApp(
           Center(
-            child: NeumorphicSearchField(
-              label: 'Search records',
-              hint: 'Name or date',
-              onEditingComplete: () => complete++,
+            child: NeumorphicFieldHooks(
               decorate: (input) =>
                   Semantics(label: 'Search records', child: input),
+              child: NeumorphicSearchField(
+                labelText: 'Search records',
+                hintText: 'Name or date',
+                onEditingComplete: () => complete++,
+              ),
             ),
           ),
         ),
@@ -83,14 +88,16 @@ void main() {
       await tester.pumpWidget(
         neumorphicApp(
           Center(
-            child: NeumorphicInputOtp(
-              label: 'Code',
-              length: 4,
-              textInputAction: TextInputAction.next,
-              onCompleted: (_) => submitted++,
-              onEditingComplete: () => complete++,
+            child: NeumorphicFieldHooks(
               decorate: (input) =>
                   Semantics(label: 'Security code', child: input),
+              child: NeumorphicInputOtp(
+                labelText: 'Code',
+                length: 4,
+                textInputAction: TextInputAction.next,
+                onCompleted: (_) => submitted++,
+                onEditingComplete: () => complete++,
+              ),
             ),
           ),
         ),
@@ -124,8 +131,8 @@ void main() {
             child: NeumorphicTextField(
               controller: controller,
               focusNode: node,
-              label: 'Phone',
-              helper: 'Digits only',
+              labelText: 'Phone',
+              helperText: 'Digits only',
               inputFormatters: [FilteringTextInputFormatter.digitsOnly],
               autofillHints: const [AutofillHints.telephoneNumber],
               keyboardType: TextInputType.phone,
@@ -171,7 +178,7 @@ void main() {
           const Center(
             child: NeumorphicTextField(
               initialValue: 'secret',
-              label: 'Password',
+              labelText: 'Password',
               obscureText: true,
             ),
           ),
@@ -198,7 +205,7 @@ void main() {
           const Center(
             child: NeumorphicTextField(
               initialValue: 'secret',
-              label: 'Password',
+              labelText: 'Password',
               obscureText: true,
               enabled: false,
             ),
@@ -275,7 +282,7 @@ void main() {
           body: Padding(
             padding: EdgeInsets.all(24),
             child: NeumorphicCombobox<String>(
-              label: 'Room',
+              labelText: 'Room',
               options: ['Bedroom', 'Study'],
             ),
           ),
@@ -297,12 +304,12 @@ void main() {
   check(
     'field labels and errors at large text',
     () => const NeumorphicTextField(
-      label: longLine,
+      labelText: longLine,
       initialValue: longLine,
-      error: longLine,
-      helper: 'Helper',
+      errorText: longLine,
+      helperText: 'Helper',
       counter: '12 / 120',
-      lines: 3,
+      maxLines: 3,
     ),
   );
 }

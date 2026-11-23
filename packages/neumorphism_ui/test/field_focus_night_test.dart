@@ -48,13 +48,13 @@ Future<double> _deepening(WidgetTester tester, {required bool dark}) async {
                     children: [
                       NeumorphicTextField(
                         key: const ValueKey('title'),
-                        label: 'Title',
+                        labelText: 'Title',
                         onChanged: (_) {},
                       ),
                       const SizedBox(height: 24),
                       NeumorphicTextField(
                         key: const ValueKey('notes'),
-                        label: 'Notes',
+                        labelText: 'Notes',
                         onChanged: (_) {},
                       ),
                     ],

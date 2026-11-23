@@ -99,7 +99,7 @@ final neumorphicAlignment = DesignAlignmentMatrix(
         ),
         DesignAlignmentEntry(
           DesignInlineControl.textField,
-          (context, label) => NeumorphicTextField(hint: label),
+          (context, label) => NeumorphicTextField(hintText: label),
         ),
         DesignAlignmentEntry(
           DesignInlineControl.select,
@@ -111,7 +111,7 @@ final neumorphicAlignment = DesignAlignmentMatrix(
         ),
         DesignAlignmentEntry(
           DesignInlineControl.searchField,
-          (context, label) => NeumorphicSearchField(hint: label),
+          (context, label) => NeumorphicSearchField(hintText: label),
         ),
         DesignAlignmentEntry(
           DesignInlineControl.segmentedButton,
@@ -205,19 +205,19 @@ void main() {
       },
       entries: {
         'Field': (context, controller, hint) =>
-            NeumorphicTextField(controller: controller, hint: hint),
+            NeumorphicTextField(controller: controller, hintText: hint),
         'Composer': (context, controller, hint) => NeumorphicTextField(
           controller: controller,
-          hint: hint,
+          hintText: hint,
           trailing: const NeumorphicSendButton(onPressed: _tap),
         ),
         'Search': (context, controller, hint) =>
-            NeumorphicSearchField(controller: controller, hint: hint),
+            NeumorphicSearchField(controller: controller, hintText: hint),
         'Password': (context, controller, hint) =>
-            NeumorphicPasswordField(controller: controller, hint: hint),
+            NeumorphicPasswordField(controller: controller, hintText: hint),
         'Input group': (context, controller, hint) => NeumorphicInputGroup(
           controller: controller,
-          hint: hint,
+          hintText: hint,
           prefix: 'https://',
           suffix: '.com',
         ),

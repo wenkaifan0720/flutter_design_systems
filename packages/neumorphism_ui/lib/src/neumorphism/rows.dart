@@ -523,7 +523,9 @@ class NeumorphicListTile extends StatelessWidget {
   /// A list inside a rail or a small card: a caption's title over a micro's meta.
   final bool dense;
 
-  /// The mark stands at the row's top, for a meta that may wrap.
+  /// The mark and the key stand at the row's top even while the words keep to two lines. Words of three lines or
+  /// more (a title, its line and a note, or a title that wraps) stand them there by themselves, as Material 3's list
+  /// items do.
   final bool top;
 
   /// An optional focus node for the control; it uses its own when null.
@@ -568,7 +570,10 @@ class NeumorphicListTile extends StatelessWidget {
     );
     Widget layout(BuildContext context, BoxConstraints c) {
       final wide = c.maxWidth >= 520;
-      final align = top ? CrossAxisAlignment.start : CrossAxisAlignment.center;
+      // A title, its line and a note are three lines: the figure beside them stands at their top, as the mark does.
+      final align = top || (subtitle != null && note != null)
+          ? CrossAxisAlignment.start
+          : CrossAxisAlignment.center;
       // The title's widest word at the reader's size: the room the words keep beside a figure or a key.
       late final need =
           neumorphicWidestWord(
@@ -599,19 +604,7 @@ class NeumorphicListTile extends StatelessWidget {
               centre: !top,
               children: [told, passive(trailing!)],
             );
-      if (action == null) {
-        return Row(
-          crossAxisAlignment: align,
-          children: [
-            if (lead != null) ...[lead, const SizedBox(width: 14)],
-            Expanded(child: words),
-          ],
-        );
-      }
-      // The words and the action start on a keyline of their own, after the mark: one region, so an action under the
-      // words keeps their keyline. When the action goes under, the mark stands on the words' first lines alone, as it
-      // does in a row with no action: on words and action together, a row with a stepper under it would set its mark
-      // at the top while its neighbour's stands centred. The lines are measured at the reader's size.
+      // One line of [style] at the reader's size.
       double lineOf(TextStyle style) {
         final painter = TextPainter(
           text: TextSpan(text: 'Hg', style: style),
@@ -624,14 +617,32 @@ class NeumorphicListTile extends StatelessWidget {
         return h;
       }
 
+      final metaStyle = dense ? t.textTheme.micro : t.textTheme.caption;
+      // Words this tall run to three lines (a title and two of its meta's): the mark and the key stand at the top.
+      final threeTall = lineOf(titleStyle) + 2 * lineOf(metaStyle) - 1;
+      if (action == null) {
+        // The words start on a keyline of their own, after the mark, as they do beside an action.
+        return _MarkRow(
+          top: top,
+          threeTall: threeTall,
+          firstLine: lineOf(titleStyle),
+          children: [
+            ?lead,
+            DesignKeylineRegion(label: 'words', child: words),
+          ],
+        );
+      }
+      // The words and the action start on a keyline of their own, after the mark: one region, so an action under the
+      // words keeps their keyline. When the action goes under, the mark stands on the words' first lines alone, as it
+      // does in a row with no action: on words and action together, a row with a stepper under it would set its mark
+      // at the top while its neighbour's stands centred. The lines are measured at the reader's size.
       final wordsTall =
-          lineOf(titleStyle) +
-          (subtitle == null
-              ? 0
-              : lineOf(dense ? t.textTheme.micro : t.textTheme.caption));
+          lineOf(titleStyle) + (subtitle == null ? 0 : lineOf(metaStyle));
       return _ActionRow(
         centre: !top,
         wordsTall: wordsTall,
+        threeTall: threeTall,
+        firstLine: lineOf(titleStyle),
         children: [
           ?lead,
           DesignKeylineRegion(
@@ -640,6 +651,8 @@ class NeumorphicListTile extends StatelessWidget {
               wide: wide,
               need: need,
               centre: !top,
+              threeTall: threeTall,
+              firstLine: lineOf(titleStyle),
               // The figure stands where it stands without an action, beside the words or under them.
               children: [words, action!],
             ),
@@ -753,22 +766,210 @@ const double _actionReach = 6;
 /// row without an action. When the action goes under the words, the mark stands on the words' first lines
 /// ([wordsTall]) at the top, where its neighbours' marks stand. With [centre] off (the tile's `top`), the mark stands
 /// at the top.
+/// A row's mark beside its words, with no action: both on the row's middle, or at its top when [top] or once the
+/// words are [threeTall], as Material 3's list items stand theirs.
+class _MarkRow extends MultiChildRenderObjectWidget {
+  const _MarkRow({
+    required this.top,
+    required this.threeTall,
+    required this.firstLine,
+    required super.children,
+  });
+
+  /// Whether the mark and the words stand at the row's top whatever the words' height.
+  final bool top;
+
+  /// The height of three lines of words.
+  final double threeTall;
+
+  /// The height of the title's first line: at the top, the mark stands on its middle.
+  final double firstLine;
+
+  @override
+  _RenderMarkRow createRenderObject(BuildContext context) =>
+      _RenderMarkRow(top, threeTall, firstLine, Directionality.of(context));
+
+  @override
+  void updateRenderObject(BuildContext context, _RenderMarkRow renderObject) =>
+      renderObject
+        ..top = top
+        ..threeTall = threeTall
+        ..firstLine = firstLine
+        ..direction = Directionality.of(context);
+}
+
+class _RenderMarkRow extends RenderBox
+    with
+        ContainerRenderObjectMixin<RenderBox, _RowSlot>,
+        RenderBoxContainerDefaultsMixin<RenderBox, _RowSlot> {
+  _RenderMarkRow(this._top, this._threeTall, this._firstLine, this._direction);
+
+  static const _gap = 14.0;
+
+  bool _top;
+  set top(bool value) {
+    if (value == _top) return;
+    _top = value;
+    markNeedsLayout();
+  }
+
+  double _threeTall;
+  set threeTall(double value) {
+    if (value == _threeTall) return;
+    _threeTall = value;
+    markNeedsLayout();
+  }
+
+  double _firstLine;
+  set firstLine(double value) {
+    if (value == _firstLine) return;
+    _firstLine = value;
+    markNeedsLayout();
+  }
+
+  TextDirection _direction;
+  set direction(TextDirection value) {
+    if (value == _direction) return;
+    _direction = value;
+    markNeedsLayout();
+  }
+
+  @override
+  void setupParentData(RenderBox child) {
+    if (child.parentData is! _RowSlot) child.parentData = _RowSlot();
+  }
+
+  RenderBox? get _mark => childCount == 2 ? firstChild : null;
+
+  RenderBox get _words => lastChild!;
+
+  // The words take the row's width less the mark and its gap, as an Expanded beside it would. At the top, the mark
+  // stands on the middle of the title's first line, reaching into the row's padding over the words where it is
+  // taller than that line.
+  ({Size size, Size mark, Size words, double? markTop}) _arrange(
+    BoxConstraints c,
+    _Measure measure,
+  ) {
+    final w = c.maxWidth, mark = _mark;
+    final m = mark == null
+        ? Size.zero
+        : measure(mark, BoxConstraints(maxWidth: w));
+    final words = measure(
+      _words,
+      BoxConstraints.tightFor(
+        width: math.max(0.0, w - (mark == null ? 0 : m.width + _gap)),
+      ),
+    );
+    final atTop = _top || words.height >= _threeTall;
+    final markTop = atTop
+        ? math.max(-_tilePadding, (_firstLine - m.height) / 2)
+        : null;
+    return (
+      size: c.constrain(
+        Size(
+          w,
+          markTop == null
+              ? math.max(m.height, words.height)
+              : math.max(words.height, markTop + m.height),
+        ),
+      ),
+      mark: m,
+      words: words,
+      markTop: markTop,
+    );
+  }
+
+  @override
+  Size computeDryLayout(covariant BoxConstraints constraints) =>
+      _arrange(constraints, _dryLayOut).size;
+
+  @override
+  void performLayout() {
+    final p = _arrange(constraints, _layOut);
+    size = p.size;
+    final markTop = p.markTop;
+    final rtl = _direction == TextDirection.rtl;
+    final mark = _mark;
+    if (mark != null) {
+      (mark.parentData! as _RowSlot).offset = Offset(
+        rtl ? size.width - p.mark.width : 0,
+        markTop ?? (size.height - p.mark.height) / 2,
+      );
+    }
+    (_words.parentData! as _RowSlot).offset = Offset(
+      rtl || mark == null ? 0 : p.mark.width + _gap,
+      markTop == null ? (size.height - p.words.height) / 2 : 0,
+    );
+  }
+
+  // A mark on the first line's middle may stand in the row's padding over this box; it takes its taps there too.
+  @override
+  bool hitTest(BoxHitTestResult result, {required Offset position}) {
+    if (hitTestChildren(result, position: position)) {
+      result.add(BoxHitTestEntry(this, position));
+      return true;
+    }
+    return false;
+  }
+
+  double _markWidth(double height) =>
+      _mark == null ? 0 : _mark!.getMaxIntrinsicWidth(height) + _gap;
+
+  @override
+  double computeMinIntrinsicWidth(double height) =>
+      _markWidth(height) + _words.getMinIntrinsicWidth(height);
+
+  @override
+  double computeMaxIntrinsicWidth(double height) =>
+      _markWidth(height) + _words.getMaxIntrinsicWidth(height);
+
+  @override
+  double computeMinIntrinsicHeight(double width) =>
+      _arrange(BoxConstraints(maxWidth: width), _dryLayOut).size.height;
+
+  @override
+  double computeMaxIntrinsicHeight(double width) =>
+      computeMinIntrinsicHeight(width);
+
+  @override
+  bool hitTestChildren(BoxHitTestResult result, {required Offset position}) =>
+      defaultHitTestChildren(result, position: position);
+
+  @override
+  void paint(PaintingContext context, Offset offset) =>
+      defaultPaint(context, offset);
+}
+
 class _ActionRow extends MultiChildRenderObjectWidget {
   const _ActionRow({
     required this.centre,
     required this.wordsTall,
+    required this.threeTall,
+    required this.firstLine,
     required super.children,
   });
 
-  /// Whether the mark, words and a key beside them stand on the row's middle (else at its top).
+  /// Whether the mark, words and a key beside them stand on the row's middle (else at its top), while the words
+  /// are shorter than [threeTall].
   final bool centre;
 
   /// The height of the title's and the subtitle's first lines at the reader's size.
   final double wordsTall;
 
+  /// The height of three lines of words: words this tall stand the mark and the key at the top.
+  final double threeTall;
+
+  /// The height of the title's first line: at the top, the mark and a key beside the words stand on its middle.
+  final double firstLine;
+
   @override
-  _RenderActionRow createRenderObject(BuildContext context) =>
-      _RenderActionRow(centre, wordsTall, Directionality.of(context));
+  _RenderActionRow createRenderObject(BuildContext context) => _RenderActionRow(
+    centre,
+    wordsTall,
+    threeTall,
+    firstLine,
+    Directionality.of(context),
+  );
 
   @override
   void updateRenderObject(
@@ -777,6 +978,8 @@ class _ActionRow extends MultiChildRenderObjectWidget {
   ) => renderObject
     ..centre = centre
     ..wordsTall = wordsTall
+    ..threeTall = threeTall
+    ..firstLine = firstLine
     ..direction = Directionality.of(context);
 }
 
@@ -796,7 +999,13 @@ class _RenderActionRow extends RenderBox
     with
         ContainerRenderObjectMixin<RenderBox, _RowSlot>,
         RenderBoxContainerDefaultsMixin<RenderBox, _RowSlot> {
-  _RenderActionRow(this._centre, this._wordsTall, this._direction);
+  _RenderActionRow(
+    this._centre,
+    this._wordsTall,
+    this._threeTall,
+    this._firstLine,
+    this._direction,
+  );
 
   static const _gap = 14.0;
 
@@ -811,6 +1020,20 @@ class _RenderActionRow extends RenderBox
   set wordsTall(double value) {
     if (value == _wordsTall) return;
     _wordsTall = value;
+    markNeedsLayout();
+  }
+
+  double _threeTall;
+  set threeTall(double value) {
+    if (value == _threeTall) return;
+    _threeTall = value;
+    markNeedsLayout();
+  }
+
+  double _firstLine;
+  set firstLine(double value) {
+    if (value == _firstLine) return;
+    _firstLine = value;
     markNeedsLayout();
   }
 
@@ -849,13 +1072,31 @@ class _RenderActionRow extends RenderBox
     final place = dry ? body._plan(room, _dryLayOut) : body._laidOut!;
     // The words' band: the body less the reach its key takes into the padding.
     final band = b.height - 2 * place.reach;
-    final markBox = place.beside || !_centre
+    final centre = _centre && place.words.height < _threeTall;
+    if (place.beside && !centre) {
+      // At the top the mark and the key stand on the middle of the title's first line; a key taller than that line
+      // reaches over the words into the padding, and lower when it would reach past the row's top.
+      final wordsTop = math.max(_tilePadding, place.top);
+      final bodyY = wordsTop - place.top;
+      final markY = math.max(0.0, wordsTop + (_firstLine - m.height) / 2);
+      final bottom = math.max(
+        math.max(wordsTop + place.words.height, markY + m.height),
+        bodyY + b.height - place.reach,
+      );
+      return (
+        size: c.constrain(Size(w, bottom + _tilePadding)),
+        mark: m,
+        markY: markY,
+        bodyY: bodyY,
+      );
+    }
+    final markBox = place.beside || !centre
         ? m.height
         : math.max(m.height, _wordsTall);
     final size = c.constrain(
       Size(w, math.max(markBox, band) + 2 * _tilePadding),
     );
-    if (place.beside && _centre) {
+    if (place.beside && centre) {
       return (
         size: size,
         mark: m,
@@ -939,6 +1180,8 @@ class _WordsAndAction extends MultiChildRenderObjectWidget {
     required this.wide,
     required this.need,
     required this.centre,
+    required this.threeTall,
+    required this.firstLine,
     required super.children,
   });
 
@@ -948,12 +1191,26 @@ class _WordsAndAction extends MultiChildRenderObjectWidget {
   /// The title's widest word: the least room the words keep beside a compact action.
   final double need;
 
-  /// Whether, beside each other, the words and the action stand on their middle (else on their top).
+  /// Whether, beside each other, the words and the action stand on their middle (else on their top), while the
+  /// words are shorter than [threeTall].
   final bool centre;
+
+  /// The height of three lines of words: words this tall stand the action at the top.
+  final double threeTall;
+
+  /// The height of the title's first line: at the top, an action beside the words stands on its middle.
+  final double firstLine;
 
   @override
   _RenderWordsAndAction createRenderObject(BuildContext context) =>
-      _RenderWordsAndAction(wide, need, centre, Directionality.of(context));
+      _RenderWordsAndAction(
+        wide,
+        need,
+        centre,
+        threeTall,
+        firstLine,
+        Directionality.of(context),
+      );
 
   @override
   void updateRenderObject(
@@ -963,16 +1220,35 @@ class _WordsAndAction extends MultiChildRenderObjectWidget {
     ..wide = wide
     ..need = need
     ..centre = centre
+    ..threeTall = threeTall
+    ..firstLine = firstLine
     ..direction = Directionality.of(context);
 }
 
-typedef _ActionPlace = ({bool beside, double reach, Size words, Size action});
+/// Where a list tile's action stands: [beside] the words or under them; beside them, at the words' top ([atTop]) or
+/// on their middle. [top] is how far the box reaches over the words (at the top, as far as a key on the middle of the
+/// title's first line needs), [reach] how far under them.
+typedef _ActionPlace = ({
+  bool beside,
+  bool atTop,
+  double top,
+  double reach,
+  Size words,
+  Size action,
+});
 
 class _RenderWordsAndAction extends RenderBox
     with
         ContainerRenderObjectMixin<RenderBox, _RowSlot>,
         RenderBoxContainerDefaultsMixin<RenderBox, _RowSlot> {
-  _RenderWordsAndAction(this._wide, this._need, this._centre, this._direction);
+  _RenderWordsAndAction(
+    this._wide,
+    this._need,
+    this._centre,
+    this._threeTall,
+    this._firstLine,
+    this._direction,
+  );
 
   static const _gap = 14.0, _under = 10.0;
 
@@ -994,6 +1270,20 @@ class _RenderWordsAndAction extends RenderBox
   set centre(bool value) {
     if (value == _centre) return;
     _centre = value;
+    markNeedsLayout();
+  }
+
+  double _threeTall;
+  set threeTall(double value) {
+    if (value == _threeTall) return;
+    _threeTall = value;
+    markNeedsLayout();
+  }
+
+  double _firstLine;
+  set firstLine(double value) {
+    if (value == _firstLine) return;
+    _firstLine = value;
     markNeedsLayout();
   }
 
@@ -1019,19 +1309,26 @@ class _RenderWordsAndAction extends RenderBox
     final compact = a.width <= _compactAction;
     final room = w - a.width - _gap;
     if (_wide || (compact && room >= _need)) {
+      final said = measure(
+        words,
+        BoxConstraints.tightFor(width: math.max(0.0, room)),
+      );
+      final reach = compact ? _actionReach : 0.0;
+      final atTop = !_centre || said.height >= _threeTall;
       return (
         beside: true,
-        reach: compact ? _actionReach : 0,
-        words: measure(
-          words,
-          BoxConstraints.tightFor(width: math.max(0.0, room)),
-        ),
+        atTop: atTop,
+        top: atTop ? math.max(reach, (a.height - _firstLine) / 2) : reach,
+        reach: reach,
+        words: said,
         action: a,
       );
     }
     return (
       beside: false,
-      reach: 0,
+      atTop: false,
+      top: 0.0,
+      reach: 0.0,
       words: measure(words, BoxConstraints(maxWidth: w)),
       action: a,
     );
@@ -1040,10 +1337,15 @@ class _RenderWordsAndAction extends RenderBox
   Size _size(_ActionPlace p, BoxConstraints c) => c.constrain(
     Size(
       c.maxWidth,
-      (p.beside
-              ? math.max(p.words.height, p.action.height - 2 * p.reach)
-              : p.words.height + _under + p.action.height) +
-          2 * p.reach,
+      !p.beside
+          ? p.words.height + _under + p.action.height
+          : p.atTop
+          ? math.max(
+              p.top + p.words.height + p.reach,
+              p.top + (_firstLine + p.action.height) / 2,
+            )
+          : math.max(p.words.height, p.action.height - 2 * p.reach) +
+                2 * p.reach,
     ),
   );
 
@@ -1060,15 +1362,21 @@ class _RenderWordsAndAction extends RenderBox
     final actionAt = action.parentData! as _RowSlot;
     final rtl = _direction == TextDirection.rtl;
     double startOf(double width) => rtl ? size.width - width : 0;
-    if (p.beside) {
+    if (p.beside && p.atTop) {
+      wordsAt.offset = Offset(startOf(p.words.width), p.top);
+      actionAt.offset = Offset(
+        rtl ? 0 : size.width - p.action.width,
+        p.top + (_firstLine - p.action.height) / 2,
+      );
+    } else if (p.beside) {
       final band = size.height - 2 * p.reach;
       wordsAt.offset = Offset(
         startOf(p.words.width),
-        p.reach + (_centre ? (band - p.words.height) / 2 : 0),
+        p.reach + (band - p.words.height) / 2,
       );
       actionAt.offset = Offset(
         rtl ? 0 : size.width - p.action.width,
-        _centre ? (size.height - p.action.height) / 2 : 0,
+        (size.height - p.action.height) / 2,
       );
     } else {
       wordsAt.offset = Offset(startOf(p.words.width), 0);
@@ -1222,7 +1530,7 @@ class NeumorphicTodoRow extends StatelessWidget {
 /// figure. On reads three ways with no shadow: the pigment in the icon and the words, the words themselves, the filled slot.
 ///
 /// ```dart
-/// NeumorphicLevelRow(icon: NeumorphicGlyphs.lamp, title: 'A lamp', state: 'On, 30%', value: true, level: .3, figure: '30%', onChanged: (v) {}, onLevel: (v) {})
+/// NeumorphicLevelRow(icon: NeumorphicGlyphs.lamp, title: 'A lamp', state: 'On, 30%', value: true, level: .3, figure: '30%', onChanged: (v) {}, onLevelChanged: (v) {})
 /// ```
 class NeumorphicLevelRow extends StatelessWidget {
   /// Creates a [NeumorphicLevelRow].
@@ -1237,7 +1545,7 @@ class NeumorphicLevelRow extends StatelessWidget {
     this.level,
     this.figure,
     this.onChanged,
-    this.onLevel,
+    this.onLevelChanged,
     this.isFirst = false,
   }) : assert((level ?? 0) >= 0 && (level ?? 0) <= 1);
 
@@ -1263,7 +1571,7 @@ class NeumorphicLevelRow extends StatelessWidget {
   final ValueChanged<bool>? onChanged;
 
   /// Reports a user-requested level change.
-  final ValueChanged<double>? onLevel;
+  final ValueChanged<double>? onLevelChanged;
 
   /// Whether this is the first row, without a preceding separator.
   final bool isFirst;
@@ -1334,7 +1642,7 @@ class NeumorphicLevelRow extends StatelessWidget {
                         child: NeumorphicSlider(
                           label: title,
                           value: level!,
-                          onChanged: onLevel,
+                          onChanged: onLevelChanged,
                         ),
                       ),
                       if (figure != null) ...[
@@ -1380,7 +1688,12 @@ class NeumorphicLevelRow extends StatelessWidget {
       ..add(DoubleProperty('level', level, defaultValue: null))
       ..add(StringProperty('figure', figure, defaultValue: null))
       ..add(ObjectFlagProperty<ValueChanged<bool>>.has('onChanged', onChanged))
-      ..add(ObjectFlagProperty<ValueChanged<double>>.has('onLevel', onLevel))
+      ..add(
+        ObjectFlagProperty<ValueChanged<double>>.has(
+          'onLevelChanged',
+          onLevelChanged,
+        ),
+      )
       ..add(DiagnosticsProperty<bool>('isFirst', isFirst, defaultValue: false))
       ..add(
         DiagnosticsProperty<FocusNode>(
@@ -1728,38 +2041,46 @@ class NeumorphicNudge extends StatelessWidget {
 /// button, a stepper, a slider). The label and the help are a text field's own, so the form keeps one label style.
 ///
 /// ```dart
-/// NeumorphicFormGroup(label: 'Pay with', child: NeumorphicSegmentedButton<String>(label: 'Pay with', segments: ways, value: way, onChanged: setWay))
+/// NeumorphicFormGroup(labelText: 'Pay with', child: NeumorphicSegmentedButton<String>(label: 'Pay with', segments: ways, value: way, onChanged: setWay))
 /// ```
 class NeumorphicFormGroup extends StatelessWidget {
   /// Creates a [NeumorphicFormGroup].
   const NeumorphicFormGroup({
     super.key,
-    required this.label,
-    this.help,
+    required this.labelText,
+    this.helperText,
     required this.child,
   });
 
   /// The text identifying this item or control.
-  final String label;
+  final String labelText;
 
   /// Supporting instructions below the group label.
-  final String? help;
+  final String? helperText;
 
   /// The content placed inside this component.
   final Widget child;
   @override
   Widget build(BuildContext context) {
     final t = NeumorphicTheme.of(context);
-    return NeumorphicColumn(
-      gap: 8,
-      children: [
-        Text(
-          label,
-          style: t.textTheme.caption.copyWith(fontWeight: FontWeight.w700),
-        ),
-        child,
-        if (help != null) Text(help!, style: t.textTheme.caption),
-      ],
+    // ui_core's decorator names the control by the label (or a group of them, each keeping its node) and reads the
+    // help as its hint.
+    return RawInputDecorator(
+      labelText: labelText,
+      helperText: helperText,
+      builder: (context, parts) => NeumorphicColumn(
+        gap: 8,
+        children: [
+          DefaultTextStyle.merge(
+            style: t.textTheme.caption.copyWith(fontWeight: FontWeight.w700),
+            child: parts.label!,
+          ),
+          parts.control,
+          if (parts.helper case final helper?)
+            DefaultTextStyle.merge(style: t.textTheme.caption, child: helper),
+        ],
+      ),
+      child: child,
     );
   }
 
@@ -1767,8 +2088,8 @@ class NeumorphicFormGroup extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('label', label))
-      ..add(StringProperty('help', help, defaultValue: null));
+      ..add(StringProperty('labelText', labelText))
+      ..add(StringProperty('helperText', helperText, defaultValue: null));
   }
 }
 

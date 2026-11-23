@@ -2,6 +2,911 @@
 # lib/fix_data.yaml; package/test_fixes/ holds each fix's before and after (`dart fix --compare-to-golden test_fixes`).
 version: 1
 transforms:
+  # 0.5.0: Flutter's names for Flutter's ideas (InputDecoration's field words, ListTile's subtitle, Checkbox.isError,
+  # Autocomplete.displayStringForOption, NavigationBar.selectedIndex, Scrollbar.thumbVisibility, showDatePicker's dates).
+  - title: "Use NeumorphicChromeScope's new parameter names"
+    date: 2026-11-22
+    element:
+      uris: &uris ['neumorphism_ui.dart', 'neumorphism_parts.dart', 'neumorphism_host.dart']
+      constructor: ''
+      inClass: 'NeumorphicChromeScope'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'active'
+        newName: 'selectedIndex'
+  - title: "Rename to 'selectedIndex'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'active'
+      inClass: 'NeumorphicChromeScope'
+    changes:
+      - kind: 'rename'
+        newName: 'selectedIndex'
+  - title: "Use NeumorphicChip's new parameter names"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'NeumorphicChip'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'enabled'
+        newName: 'isEnabled'
+  - title: "Rename to 'isEnabled'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'enabled'
+      inClass: 'NeumorphicChip'
+    changes:
+      - kind: 'rename'
+        newName: 'isEnabled'
+  - title: "Use NeumorphicTextField's new parameter names"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'NeumorphicTextField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+      - kind: 'renameParameter'
+        oldName: 'lines'
+        newName: 'maxLines'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'NeumorphicTextField'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'hint'
+      inClass: 'NeumorphicTextField'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'helper'
+      inClass: 'NeumorphicTextField'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'error'
+      inClass: 'NeumorphicTextField'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+  - title: "Rename to 'maxLines'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'lines'
+      inClass: 'NeumorphicTextField'
+    changes:
+      - kind: 'rename'
+        newName: 'maxLines'
+  - title: "Use NeumorphicSearchField's new parameter names"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'NeumorphicSearchField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'NeumorphicSearchField'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'hint'
+      inClass: 'NeumorphicSearchField'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'error'
+      inClass: 'NeumorphicSearchField'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+  - title: "Use NeumorphicTextArea's new parameter names"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'NeumorphicTextArea'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+      - kind: 'renameParameter'
+        oldName: 'lines'
+        newName: 'maxLines'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'NeumorphicTextArea'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'hint'
+      inClass: 'NeumorphicTextArea'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'helper'
+      inClass: 'NeumorphicTextArea'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'error'
+      inClass: 'NeumorphicTextArea'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+  - title: "Rename to 'maxLines'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'lines'
+      inClass: 'NeumorphicTextArea'
+    changes:
+      - kind: 'rename'
+        newName: 'maxLines'
+  - title: "Use NeumorphicPasswordField's new parameter names"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'NeumorphicPasswordField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'NeumorphicPasswordField'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'hint'
+      inClass: 'NeumorphicPasswordField'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'helper'
+      inClass: 'NeumorphicPasswordField'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'error'
+      inClass: 'NeumorphicPasswordField'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+  - title: "Use NeumorphicInputGroup's new parameter names"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'NeumorphicInputGroup'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'NeumorphicInputGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'hint'
+      inClass: 'NeumorphicInputGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'helper'
+      inClass: 'NeumorphicInputGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'error'
+      inClass: 'NeumorphicInputGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+  - title: "Use NeumorphicInputOtp's new parameter names"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'NeumorphicInputOtp'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'NeumorphicInputOtp'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'helper'
+      inClass: 'NeumorphicInputOtp'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'error'
+      inClass: 'NeumorphicInputOtp'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+  - title: "Use NeumorphicSelect's new parameter names"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'NeumorphicSelect'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+      - kind: 'renameParameter'
+        oldName: 'prompt'
+        newName: 'hintText'
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'NeumorphicSelect'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'prompt'
+      inClass: 'NeumorphicSelect'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'helper'
+      inClass: 'NeumorphicSelect'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'error'
+      inClass: 'NeumorphicSelect'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+  - title: "Use NeumorphicCombobox's new parameter names"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'NeumorphicCombobox'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+      - kind: 'renameParameter'
+        oldName: 'displayString'
+        newName: 'displayStringForOption'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'NeumorphicCombobox'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'hint'
+      inClass: 'NeumorphicCombobox'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'helper'
+      inClass: 'NeumorphicCombobox'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'error'
+      inClass: 'NeumorphicCombobox'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+  - title: "Rename to 'displayStringForOption'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'displayString'
+      inClass: 'NeumorphicCombobox'
+    changes:
+      - kind: 'rename'
+        newName: 'displayStringForOption'
+  - title: "Use NeumorphicMultiSelect's new parameter names"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'NeumorphicMultiSelect'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+      - kind: 'renameParameter'
+        oldName: 'displayString'
+        newName: 'displayStringForOption'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'NeumorphicMultiSelect'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'hint'
+      inClass: 'NeumorphicMultiSelect'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'helper'
+      inClass: 'NeumorphicMultiSelect'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'error'
+      inClass: 'NeumorphicMultiSelect'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+  - title: "Rename to 'displayStringForOption'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'displayString'
+      inClass: 'NeumorphicMultiSelect'
+    changes:
+      - kind: 'rename'
+        newName: 'displayStringForOption'
+  - title: "Use NeumorphicFormField's new parameter names"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'NeumorphicFormField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+      - kind: 'renameParameter'
+        oldName: 'help'
+        newName: 'helperText'
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'NeumorphicFormField'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'help'
+      inClass: 'NeumorphicFormField'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'error'
+      inClass: 'NeumorphicFormField'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+  - title: "Use NeumorphicFormGroup's new parameter names"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'NeumorphicFormGroup'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+      - kind: 'renameParameter'
+        oldName: 'help'
+        newName: 'helperText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'NeumorphicFormGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'help'
+      inClass: 'NeumorphicFormGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+  - title: "Use NeumorphicNumberField's new parameter names"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'NeumorphicNumberField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+      - kind: 'renameParameter'
+        oldName: 'note'
+        newName: 'helperText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'NeumorphicNumberField'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'note'
+      inClass: 'NeumorphicNumberField'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+  - title: "Use NeumorphicInput's new parameter names"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'NeumorphicInput'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'hint'
+      inClass: 'NeumorphicInput'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  - title: "Use NeumorphicCommand's new parameter names"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'NeumorphicCommand'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'hint'
+      inClass: 'NeumorphicCommand'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  - title: "Use NeumorphicCheckbox's new parameter names"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'NeumorphicCheckbox'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'isError'
+  - title: "Rename to 'isError'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'error'
+      inClass: 'NeumorphicCheckbox'
+    changes:
+      - kind: 'rename'
+        newName: 'isError'
+  - title: "Use NeumorphicCheckRow's new parameter names"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'NeumorphicCheckRow'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'note'
+        newName: 'subtitle'
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'isError'
+  - title: "Rename to 'subtitle'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'note'
+      inClass: 'NeumorphicCheckRow'
+    changes:
+      - kind: 'rename'
+        newName: 'subtitle'
+  - title: "Rename to 'isError'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'error'
+      inClass: 'NeumorphicCheckRow'
+    changes:
+      - kind: 'rename'
+        newName: 'isError'
+  - title: "Use NeumorphicSwitchRow's new parameter names"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'NeumorphicSwitchRow'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'note'
+        newName: 'subtitle'
+  - title: "Rename to 'subtitle'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'note'
+      inClass: 'NeumorphicSwitchRow'
+    changes:
+      - kind: 'rename'
+        newName: 'subtitle'
+  - title: "Use NeumorphicDisclosure's new parameter names"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'NeumorphicDisclosure'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'note'
+        newName: 'subtitle'
+  - title: "Rename to 'subtitle'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'note'
+      inClass: 'NeumorphicDisclosure'
+    changes:
+      - kind: 'rename'
+        newName: 'subtitle'
+  - title: "Use NeumorphicDatePicker's new parameter names"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'NeumorphicDatePicker'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'first'
+        newName: 'firstDate'
+      - kind: 'renameParameter'
+        oldName: 'last'
+        newName: 'lastDate'
+      - kind: 'renameParameter'
+        oldName: 'today'
+        newName: 'currentDate'
+  - title: "Rename to 'firstDate'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'first'
+      inClass: 'NeumorphicDatePicker'
+    changes:
+      - kind: 'rename'
+        newName: 'firstDate'
+  - title: "Rename to 'lastDate'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'last'
+      inClass: 'NeumorphicDatePicker'
+    changes:
+      - kind: 'rename'
+        newName: 'lastDate'
+  - title: "Rename to 'currentDate'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'today'
+      inClass: 'NeumorphicDatePicker'
+    changes:
+      - kind: 'rename'
+        newName: 'currentDate'
+  - title: "Use NeumorphicWheelPicker's new parameter names"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'NeumorphicWheelPicker'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'itemLabel'
+        newName: 'displayStringForOption'
+  - title: "Rename to 'displayStringForOption'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'itemLabel'
+      inClass: 'NeumorphicWheelPicker'
+    changes:
+      - kind: 'rename'
+        newName: 'displayStringForOption'
+  - title: "Use NeumorphicLevelRow's new parameter names"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'NeumorphicLevelRow'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'onLevel'
+        newName: 'onLevelChanged'
+  - title: "Rename to 'onLevelChanged'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'onLevel'
+      inClass: 'NeumorphicLevelRow'
+    changes:
+      - kind: 'rename'
+        newName: 'onLevelChanged'
+  - title: "Use NeumorphicScrollArea's new parameter names"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'NeumorphicScrollArea'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'alwaysShown'
+        newName: 'thumbVisibility'
+  - title: "Rename to 'thumbVisibility'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'alwaysShown'
+      inClass: 'NeumorphicScrollArea'
+    changes:
+      - kind: 'rename'
+        newName: 'thumbVisibility'
+  - title: "Use showNeumorphicDatePicker's new parameter names"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      function: 'showNeumorphicDatePicker'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'first'
+        newName: 'firstDate'
+      - kind: 'renameParameter'
+        oldName: 'last'
+        newName: 'lastDate'
+      - kind: 'renameParameter'
+        oldName: 'today'
+        newName: 'currentDate'
   # 0.2.0: NeumorphicStyle is ui_core's DesignStyle, whose `layered` is what `cascade` was. The old name cannot stay
   # beside it as a deprecated alias (a typedef carries no statics of its own), so the fix is the way across.
   - title: "Rename to 'layered'"

@@ -271,12 +271,12 @@ List<NeumorphicButtonSegment<int>> _segments() => const [
 
 /// The parts measured, each with how many Tab presses reach the mark (0: none, it is chosen).
 final _parts = <String, (Widget Function(), int)>{
-  'text field': (() => const NeumorphicTextField(label: 'Name'), 1),
-  'search field': (() => const NeumorphicSearchField(hint: 'Search'), 1),
-  'text area': (() => const NeumorphicTextArea(label: 'Notes'), 1),
+  'text field': (() => const NeumorphicTextField(labelText: 'Name'), 1),
+  'search field': (() => const NeumorphicSearchField(hintText: 'Search'), 1),
+  'text area': (() => const NeumorphicTextArea(labelText: 'Notes'), 1),
   'select': (
     () => NeumorphicSelect<int>(
-      label: 'Country',
+      labelText: 'Country',
       value: 0,
       options: const [NeumorphicMenuItem(0, 'Canada')],
       onChanged: (_) {},
@@ -398,8 +398,8 @@ final _parts = <String, (Widget Function(), int)>{
   'date picker cell': (
     () => NeumorphicDatePicker(
       value: DateTime(2026, 11, 6),
-      first: DateTime(2026, 11, 1),
-      last: DateTime(2026, 11, 30),
+      firstDate: DateTime(2026, 11, 1),
+      lastDate: DateTime(2026, 11, 30),
       onChanged: (_) {},
     ),
     3,
@@ -703,7 +703,7 @@ final _plates = <String, Widget Function()>{
   'switch, off': () =>
       NeumorphicSwitch(value: false, label: 'Alerts', onChanged: (_) {}),
   'chips in a field': () => NeumorphicMultiSelect<String>(
-    label: 'Guests',
+    labelText: 'Guests',
     values: const ['Ann', 'Ben'],
     options: const ['Ann', 'Ben', 'Cat'],
     onChanged: (_) {},

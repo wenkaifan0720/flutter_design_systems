@@ -113,8 +113,8 @@ final _overlays = <String, void Function(BuildContext)>{
   'showNeumorphicDatePicker': (c) => showNeumorphicDatePicker(
     c,
     value: DateTime(2026, 11, 6),
-    first: DateTime(2026),
-    last: DateTime(2027),
+    firstDate: DateTime(2026),
+    lastDate: DateTime(2027),
   ),
   'showNeumorphicTimePicker': (c) =>
       showNeumorphicTimePicker(c, value: const NeumorphicTime(9, 30)),
@@ -176,7 +176,7 @@ void main() {
         child: SizedBox(
           width: 400,
           child: NeumorphicSelect<int>(
-            label: 'Country',
+            labelText: 'Country',
             value: 0,
             options: const [
               NeumorphicMenuItem(0, 'Canada'),

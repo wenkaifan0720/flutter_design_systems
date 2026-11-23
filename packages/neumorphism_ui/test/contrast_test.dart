@@ -301,7 +301,7 @@ void main() {
           theme,
           NeumorphicSwitchRow(
             label: 'Weekly summary',
-            note: 'A short update every Friday.',
+            subtitle: 'A short update every Friday.',
             value: value,
             onChanged: (_) {},
           ),
@@ -378,7 +378,7 @@ void main() {
     'button': () => NeumorphicButton('Save', onPressed: () {}),
     'field': () => const NeumorphicFieldBox(child: SizedBox(height: 48)),
     'card': () => const NeumorphicCard(children: [SizedBox(height: 80)]),
-    'search': () => const NeumorphicSearchField(hint: 'Search'),
+    'search': () => const NeumorphicSearchField(hintText: 'Search'),
     'checkbox': () =>
         NeumorphicCheckbox(value: false, label: 'Agree', onChanged: (_) {}),
   };
@@ -582,11 +582,11 @@ void main() {
   // the gallery uses it: the box in its row, the slider under its caption.
   final bare = <String, (Widget Function(), String)>{
     'empty field': (
-      () => const NeumorphicTextField(label: 'Full name'),
+      () => const NeumorphicTextField(labelText: 'Full name'),
       'Full name',
     ),
     'empty search': (
-      () => const NeumorphicSearchField(hint: 'Search'),
+      () => const NeumorphicSearchField(hintText: 'Search'),
       'Search',
     ),
     'open checkbox': (

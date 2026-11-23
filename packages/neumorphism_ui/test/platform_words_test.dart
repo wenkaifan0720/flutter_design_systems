@@ -45,7 +45,7 @@ void main() {
                     child: SizedBox(
                       width: 320,
                       child: NeumorphicTextField(
-                        label: 'Name',
+                        labelText: 'Name',
                         controller: text,
                       ),
                     ),

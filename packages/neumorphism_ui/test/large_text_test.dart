@@ -39,7 +39,7 @@ void main() {
                   figure: '30%',
                   level: .3,
                   onChanged: (_) {},
-                  onLevel: (_) {},
+                  onLevelChanged: (_) {},
                 ),
               ],
             ),

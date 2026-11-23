@@ -72,7 +72,7 @@ void main() {
         NeumorphicChromeScope(
           brand: _brand,
           nav: _nav,
-          active: 0,
+          selectedIndex: 0,
           child: page(),
         ),
         preset: preset,
@@ -145,7 +145,7 @@ void main() {
           NeumorphicChromeScope(
             brand: _brand,
             nav: _nav,
-            active: 0,
+            selectedIndex: 0,
             child: _pages[page.key]!(),
           ),
         ),

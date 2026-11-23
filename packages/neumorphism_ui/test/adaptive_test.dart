@@ -52,7 +52,7 @@ void main() {
         Builder(
           builder: (context) {
             platform = Theme.of(context).platform;
-            return const NeumorphicTextField(label: 'Name');
+            return const NeumorphicTextField(labelText: 'Name');
           },
         ),
       ),
@@ -131,8 +131,8 @@ void main() {
                     children: [
                       const Text(longLine),
                       const NeumorphicTextField(
-                        label: 'A descriptive record name',
-                        helper: longLine,
+                        labelText: 'A descriptive record name',
+                        helperText: longLine,
                       ),
                       NeumorphicSegmentedButton<String>(
                         label: 'Period',
@@ -146,7 +146,7 @@ void main() {
                       ),
                       NeumorphicSwitchRow(
                         label: 'Send reminders',
-                        note: longLine,
+                        subtitle: longLine,
                         value: true,
                         onChanged: (_) {},
                       ),

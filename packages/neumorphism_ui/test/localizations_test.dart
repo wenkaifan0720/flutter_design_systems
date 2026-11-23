@@ -179,8 +179,8 @@ void main() {
                       child: SizedBox(
                         width: 320,
                         child: NeumorphicTextField(
-                          label: 'Name',
-                          hint: 'As on your card',
+                          labelText: 'Name',
+                          hintText: 'As on your card',
                         ),
                       ),
                     );
@@ -220,7 +220,10 @@ void main() {
                 child: Center(
                   child: SizedBox(
                     width: 320,
-                    child: NeumorphicTextField(label: 'Name', controller: text),
+                    child: NeumorphicTextField(
+                      labelText: 'Name',
+                      controller: text,
+                    ),
                   ),
                 ),
               ),

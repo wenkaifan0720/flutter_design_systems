@@ -64,7 +64,7 @@ void main() {
                       top: 288,
                       child: NeumorphicSelect<String>(
                         key: const Key('country'),
-                        label: 'Country',
+                        labelText: 'Country',
                         value: 'United States',
                         options: const [
                           NeumorphicMenuItem('United States', 'United States'),
@@ -86,9 +86,9 @@ void main() {
                         builder: (context, visible, _) => Opacity(
                           opacity: visible ? 1 : 0,
                           child: const NeumorphicTextArea(
-                            label: 'Delivery notes',
-                            lines: 3,
-                            hint: 'Anything we should know?',
+                            labelText: 'Delivery notes',
+                            maxLines: 3,
+                            hintText: 'Anything we should know?',
                           ),
                         ),
                       ),

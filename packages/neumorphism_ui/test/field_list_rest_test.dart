@@ -15,19 +15,19 @@ const _rooms = ['Bedroom', 'Kitchen', 'Study'];
 
 final _fields = <String, Widget Function()>{
   'a select': () => NeumorphicSelect<String>(
-    label: 'Room',
+    labelText: 'Room',
     value: 'Bedroom',
     options: [for (final r in _rooms) NeumorphicMenuItem(r, r)],
     onChanged: (_) {},
   ),
   'a combobox': () => NeumorphicCombobox<String>(
-    label: 'Room',
-    hint: 'Type a room',
+    labelText: 'Room',
+    hintText: 'Type a room',
     options: _rooms,
     onSelected: (_) {},
   ),
   'a multi-select': () => NeumorphicMultiSelect<String>(
-    label: 'Rooms',
+    labelText: 'Rooms',
     values: const ['Bedroom'],
     options: _rooms,
     onChanged: (_) {},

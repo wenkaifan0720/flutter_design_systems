@@ -33,25 +33,25 @@ List<Widget> kitFieldsSections() => [
 ];
 
 Widget kitSpecimenPasswordField() => const NeumorphicPasswordField(
-  label: 'Password',
-  hint: 'At least eight letters',
+  labelText: 'Password',
+  hintText: 'At least eight letters',
 );
 
 Widget kitSpecimenInputGroup() => const NeumorphicInputGroup(
-  label: 'Website',
+  labelText: 'Website',
   prefix: 'https://',
   keyboardType: TextInputType.url,
   suffix: '.com',
-  hint: 'your-home',
+  hintText: 'your-home',
 );
 
 // It keeps the room taken, so its list opens on it again, pressed in.
 Widget kitSpecimenCombobox() => kitValue<String?>(
   null,
   (context, room, change) => NeumorphicCombobox<String>(
-    label: 'Room',
-    hint: 'Type a room',
-    helper: 'Words no room fits say so in the list',
+    labelText: 'Room',
+    hintText: 'Type a room',
+    helperText: 'Words no room fits say so in the list',
     options: const ['Bedroom', 'Kitchen', 'Study', 'Hall', 'Attic'],
     value: room,
     onSelected: change,
@@ -61,8 +61,8 @@ Widget kitSpecimenCombobox() => kitValue<String?>(
 Widget kitSpecimenMultiSelect() => kitValue<List<String>>(
   const ['Bedroom', 'Study'],
   (context, rooms, change) => NeumorphicMultiSelect<String>(
-    label: 'Rooms',
-    hint: 'Add a room',
+    labelText: 'Rooms',
+    hintText: 'Add a room',
     values: rooms,
     onChanged: change,
     options: const ['Bedroom', 'Kitchen', 'Study', 'Hall', 'Attic'],
@@ -70,10 +70,10 @@ Widget kitSpecimenMultiSelect() => kitValue<List<String>>(
 );
 
 Widget kitSpecimenFormField() => const NeumorphicFormField(
-  label: 'Email',
-  help: 'The receipt goes here',
+  labelText: 'Email',
+  helperText: 'The receipt goes here',
   required: true,
-  child: NeumorphicTextField(hint: 'name@example.com'),
+  child: NeumorphicTextField(hintText: 'name@example.com'),
 );
 
 Widget kitSpecimenRangeSlider() => kitValue<RawRangeValues>(
@@ -102,7 +102,7 @@ Widget kitSpecimenWheelPicker() => kitValue<int>(
     items: const [1, 2, 3, 4, 5, 6, 7, 8],
     value: lamps,
     onChanged: change,
-    itemLabel: (n) => n == 1 ? '1 lamp' : '$n lamps',
+    displayStringForOption: (n) => n == 1 ? '1 lamp' : '$n lamps',
     width: 220,
   ),
 );

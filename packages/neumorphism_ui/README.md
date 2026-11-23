@@ -61,13 +61,13 @@ A form in a card, its action live once the terms are agreed:
 NeumorphicCard(
   title: 'Create an account',
   children: [
-    NeumorphicTextField(label: 'Full name', onChanged: setName),
+    NeumorphicTextField(labelText: 'Full name', onChanged: setName),
     NeumorphicTextField(
-      label: 'Email',
+      labelText: 'Email',
       keyboardType: TextInputType.emailAddress,
       onChanged: setEmail,
     ),
-    NeumorphicPasswordField(label: 'Password', onChanged: setPassword),
+    NeumorphicPasswordField(labelText: 'Password', onChanged: setPassword),
     NeumorphicSegmentedButton<String>(
       label: 'Plan',
       segments: const [
@@ -79,7 +79,7 @@ NeumorphicCard(
     ),
     NeumorphicSwitchRow(
       label: 'Reminders',
-      note: 'A note each morning',
+      subtitle: 'A note each morning',
       value: reminders,
       onChanged: (on) => setState(() => reminders = on),
     ),

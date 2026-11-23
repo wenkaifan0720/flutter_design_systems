@@ -1,9 +1,11 @@
 // A dialog's keys stand side by side at the end while they fit. When they don't (long labels on a 390-wide phone, or
 // the words at twice the size), they stack, each as wide as the slab, the main key (the last) on top, in both reading
-// directions: never a staircase of keys at their own widths.
+// directions: never a staircase of keys at their own widths. A side sheet's keys at its foot do the same.
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:neumorphism_ui/neumorphism_ui.dart';
+import 'package:ui_core_review/ui_core_review.dart'
+    show DesignDialogActionsCheck;
 
 import 'support.dart';
 
@@ -15,6 +17,7 @@ Future<void> _show(
   double width = 390,
   double text = 1,
   TextDirection direction = TextDirection.ltr,
+  bool sheet = false,
 }) async {
   tester.view.devicePixelRatio = 2;
   tester.view.physicalSize = Size(width * 2, (width == 390 ? 844 : 900) * 2);
@@ -27,19 +30,31 @@ Future<void> _show(
         builder: (context) => Center(
           child: NeumorphicButton(
             'Open',
-            onPressed: () => showNeumorphicDialog<void>(
-              context,
-              builder: (context) => NeumorphicDialog(
-                title: 'Remove this item?',
-                message: _message,
-                actions: [
-                  for (final (i, label) in labels.indexed)
-                    i == labels.length - 1
-                        ? NeumorphicButton.filled(label, onPressed: () {})
-                        : NeumorphicButton(label, onPressed: () {}),
-                ],
-              ),
-            ),
+            onPressed: () {
+              final keys = [
+                for (final (i, label) in labels.indexed)
+                  i == labels.length - 1
+                      ? NeumorphicButton.filled(label, onPressed: () {})
+                      : NeumorphicButton(label, onPressed: () {}),
+              ];
+              sheet
+                  ? showNeumorphicSheet<void>(
+                      context,
+                      builder: (context, close) => NeumorphicSheet(
+                        title: 'Remove this item?',
+                        actions: keys,
+                        child: const Text(_message),
+                      ),
+                    )
+                  : showNeumorphicDialog<void>(
+                      context,
+                      builder: (context) => NeumorphicDialog(
+                        title: 'Remove this item?',
+                        message: _message,
+                        actions: keys,
+                      ),
+                    );
+            },
           ),
         ),
       ),
@@ -140,5 +155,36 @@ void main() {
       await _show(tester, two, text: 2, direction: direction);
       _expectStacked(tester, two);
     });
+  }
+
+  // ui_core's rule for every look: one row while the keys fit, else one column of one width, the confirming key on top.
+  for (final labels in [short, three, two]) {
+    for (final width in const [320.0, 390.0]) {
+      for (final text in const [1.0, 2.0]) {
+        testWidgets('a dialog with ${labels.join(', ')} passes the shared '
+            'actions check at ${width.round()} wide, ${text}x text', (
+          tester,
+        ) async {
+          await _show(tester, labels, width: width, text: text);
+          expect(tester.takeException(), isNull);
+          DesignDialogActionsCheck(
+            look: 'Neumorphism',
+            actions: labels,
+          ).check(tester.element(find.byType(NeumorphicDialog))).verify();
+        });
+
+        testWidgets('a sheet with ${labels.join(', ')} passes the shared '
+            'actions check at ${width.round()} wide, ${text}x text', (
+          tester,
+        ) async {
+          await _show(tester, labels, width: width, text: text, sheet: true);
+          expect(tester.takeException(), isNull);
+          DesignDialogActionsCheck(
+            look: 'Neumorphism',
+            actions: labels,
+          ).check(tester.element(find.byType(NeumorphicSheet))).verify();
+        });
+      }
+    }
   }
 }

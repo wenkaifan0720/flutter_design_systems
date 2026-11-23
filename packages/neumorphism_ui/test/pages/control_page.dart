@@ -75,7 +75,7 @@ class ControlPage extends StatelessWidget {
               level: .3,
               figure: '30%',
               onChanged: (_) {},
-              onLevel: (_) {},
+              onLevelChanged: (_) {},
             ),
             NeumorphicLevelRow(
               icon: NeumorphicGlyphs.lightbulb,
@@ -85,7 +85,7 @@ class ControlPage extends StatelessWidget {
               level: .15,
               figure: '15%',
               onChanged: (_) {},
-              onLevel: (_) {},
+              onLevelChanged: (_) {},
             ),
           ],
         ),

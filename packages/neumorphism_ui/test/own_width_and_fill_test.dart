@@ -87,7 +87,7 @@ int _ground(ByteData px, int g, int i) {
 /// The choice controls and buttons a form or a settings page puts on a line of its own.
 final Map<String, Widget> _controls = {
   'select': const NeumorphicSelect<String>(
-    label: 'Density',
+    labelText: 'Density',
     value: 'standard',
     options: [
       NeumorphicMenuItem('standard', 'Standard'),

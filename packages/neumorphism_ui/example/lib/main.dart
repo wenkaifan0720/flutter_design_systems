@@ -317,7 +317,7 @@ class _GalleryAppState extends State<GalleryApp> {
             onPressed: () => _open(page.id),
           ),
       ],
-      active: active,
+      selectedIndex: active,
       child: NeumorphicScaffold(
         scroll: false,
         fullBleed: true,
@@ -568,14 +568,14 @@ class CustomizePanel extends StatelessWidget {
                   null,
                   260,
                   NeumorphicSelect<String>(
-                    label: 'Preset',
+                    labelText: 'Preset',
                     value: preset,
                     options: [
                       for (final id in NeumorphicThemeData.presets)
                         NeumorphicMenuItem(id, _name(id)),
                     ],
                     onChanged: c.colours == null ? onPreset : null,
-                    helper: c.colours == null
+                    helperText: c.colours == null
                         ? null
                         : 'Your own colours stand in for it.',
                   ),
@@ -584,7 +584,7 @@ class CustomizePanel extends StatelessWidget {
                 null,
                 260,
                 NeumorphicSelect<String>(
-                  label: 'Your own colours',
+                  labelText: 'Your own colours',
                   value: c.colours?.name ?? '',
                   options: [
                     const NeumorphicMenuItem('', "The preset's"),
@@ -633,7 +633,8 @@ class CustomizePanel extends StatelessWidget {
                 340,
                 NeumorphicSwitchRow(
                   label: 'High contrast',
-                  note: 'A fine outline on every part. Off follows the device.',
+                  subtitle:
+                      'A fine outline on every part. Off follows the device.',
                   value: c.highContrast,
                   onChanged: (v) => onChanged(c.copyWith(highContrast: v)),
                 ),
@@ -643,7 +644,7 @@ class CustomizePanel extends StatelessWidget {
                 340,
                 NeumorphicSwitchRow(
                   label: 'Right to left',
-                  note: 'Every page laid out as Arabic and Hebrew read.',
+                  subtitle: 'Every page laid out as Arabic and Hebrew read.',
                   value: c.rightToLeft,
                   onChanged: (v) => onChanged(c.copyWith(rightToLeft: v)),
                 ),

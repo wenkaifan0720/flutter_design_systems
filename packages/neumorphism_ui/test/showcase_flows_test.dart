@@ -89,7 +89,7 @@ void main() {
       final label = field[0].toUpperCase() + field.substring(1);
       final address = find.descendant(
         of: find.byWidgetPredicate(
-          (w) => w is NeumorphicTextField && w.label == label,
+          (w) => w is NeumorphicTextField && w.labelText == label,
         ),
         matching: find.byType(EditableText),
       );
@@ -176,14 +176,16 @@ void main() {
     (tester) async {
       await _open(tester, 'pickers', scale: 2);
       final picker = find.byType(NeumorphicDatePicker);
-      final today = tester.widget<NeumorphicDatePicker>(picker.first).today;
+      final today = tester
+          .widget<NeumorphicDatePicker>(picker.first)
+          .currentDate;
       expect(today, DateTime(2026, 11, 12));
       await tapLive(tester, _key('live-date'));
       final sheet = find.descendant(
         of: find.byType(NeumorphicBottomSheet),
         matching: picker,
       );
-      expect(tester.widget<NeumorphicDatePicker>(sheet).today, today);
+      expect(tester.widget<NeumorphicDatePicker>(sheet).currentDate, today);
       await tapLive(
         tester,
         find.descendant(of: sheet, matching: find.text('15')),
@@ -193,7 +195,10 @@ void main() {
         tester.widget<NeumorphicDatePicker>(picker.first).value,
         DateTime(2026, 11, 15),
       );
-      expect(tester.widget<NeumorphicDatePicker>(picker.first).today, today);
+      expect(
+        tester.widget<NeumorphicDatePicker>(picker.first).currentDate,
+        today,
+      );
     },
   );
 

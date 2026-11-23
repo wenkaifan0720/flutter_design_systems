@@ -585,7 +585,7 @@ void main() {
             level: .4,
             figure: '1,204,000',
             onChanged: (_) {},
-            onLevel: (_) {},
+            onLevelChanged: (_) {},
             isFirst: true,
           ),
           const NeumorphicLevelRow(

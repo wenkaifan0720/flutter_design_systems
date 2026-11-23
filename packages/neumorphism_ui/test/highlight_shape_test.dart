@@ -80,16 +80,17 @@ final _parts = <String, Widget Function()>{
   'NeumorphicTabBar': () =>
       NeumorphicTabBar(tabs: const ['Overview', 'Activity'], onChanged: (_) {}),
   'NeumorphicSelect': () => NeumorphicSelect<int>(
-    label: 'Country',
+    labelText: 'Country',
     value: 0,
     options: const [NeumorphicMenuItem(0, 'Canada')],
     onChanged: (_) {},
   ),
   'NeumorphicSelectField': () =>
       const NeumorphicSelectField(value: 'Canada', onPressed: _hit),
-  'NeumorphicTextField': () => const NeumorphicTextField(label: 'Name'),
-  'NeumorphicSearchField': () => const NeumorphicSearchField(hint: 'Search'),
-  'NeumorphicTextArea': () => const NeumorphicTextArea(label: 'Notes'),
+  'NeumorphicTextField': () => const NeumorphicTextField(labelText: 'Name'),
+  'NeumorphicSearchField': () =>
+      const NeumorphicSearchField(hintText: 'Search'),
+  'NeumorphicTextArea': () => const NeumorphicTextArea(labelText: 'Notes'),
   'NeumorphicInputOtp': () => const NeumorphicInputOtp(length: 4),
   'NeumorphicListTile': () =>
       const NeumorphicListTile(title: 'Profile', onPressed: _hit),
@@ -110,8 +111,8 @@ final _parts = <String, Widget Function()>{
       NeumorphicSlider(label: 'Volume', value: .4, onChanged: (_) {}),
   'NeumorphicDatePicker': () => NeumorphicDatePicker(
     value: DateTime(2026, 11, 6),
-    first: DateTime(2026, 11, 1),
-    last: DateTime(2026, 11, 30),
+    firstDate: DateTime(2026, 11, 1),
+    lastDate: DateTime(2026, 11, 30),
     onChanged: (_) {},
   ),
   'NeumorphicPagination': () =>
@@ -156,12 +157,12 @@ final _disabled = <String, Widget Function()>{
   'NeumorphicButton.filled': () => const NeumorphicButton.filled('Save'),
   'NeumorphicIconButton': () =>
       const NeumorphicIconButton(NeumorphicGlyphs.plus, label: 'Add'),
-  'NeumorphicChip': () => const NeumorphicChip('Quiet', enabled: false),
+  'NeumorphicChip': () => const NeumorphicChip('Quiet', isEnabled: false),
   'NeumorphicSwitch': () => const NeumorphicSwitch(value: true, label: 'On'),
   'NeumorphicCheckbox': () =>
       const NeumorphicCheckbox(value: true, label: 'Agree'),
   'NeumorphicTextField': () =>
-      const NeumorphicTextField(label: 'Name', enabled: false),
+      const NeumorphicTextField(labelText: 'Name', enabled: false),
   'NeumorphicSegmentedButton': () => const NeumorphicSegmentedButton<int>(
     label: 'Period',
     value: 0,
