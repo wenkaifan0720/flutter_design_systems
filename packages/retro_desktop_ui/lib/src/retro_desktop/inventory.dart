@@ -210,41 +210,45 @@ final DesignInventory retroDesktopInventory = DesignInventory(
     // Inputs
     DesignInventoryEntry.present(
       'TextField',
-      (_) => const RetroDesktopTextField(label: 'Name', hint: 'File name'),
+      (_) =>
+          const RetroDesktopTextField(labelText: 'Name', hintText: 'File name'),
     ),
     DesignInventoryEntry.present(
       'TextArea',
       (_) => const RetroDesktopTextArea(
-        label: 'Notes',
-        hint: 'Anything the next reader should know',
+        labelText: 'Notes',
+        hintText: 'Anything the next reader should know',
       ),
     ),
     DesignInventoryEntry.present(
       'SearchField',
-      (_) => const RetroDesktopSearchField(hint: 'Search files'),
+      (_) => const RetroDesktopSearchField(hintText: 'Search files'),
     ),
     DesignInventoryEntry.present(
       'PasswordField',
-      (_) =>
-          const RetroDesktopPasswordField(label: 'Password', onChanged: _drop),
+      (_) => const RetroDesktopPasswordField(
+        labelText: 'Password',
+        onChanged: _drop,
+      ),
     ),
     DesignInventoryEntry.present(
       'InputGroup',
       (_) => const RetroDesktopInputGroup(
-        label: 'Site',
+        labelText: 'Site',
         prefix: 'https://',
         suffix: '.example.com',
-        hint: 'studio',
+        hintText: 'studio',
       ),
     ),
     DesignInventoryEntry.present(
       'InputOtp',
-      (_) => const RetroDesktopInputOtp(label: 'Verification code', length: 6),
+      (_) =>
+          const RetroDesktopInputOtp(labelText: 'Verification code', length: 6),
     ),
     DesignInventoryEntry.present(
       'NumberField',
       (_) => const RetroDesktopNumberField(
-        label: 'Copies',
+        labelText: 'Copies',
         value: 2,
         min: 1,
         max: 9,
@@ -254,7 +258,7 @@ final DesignInventory retroDesktopInventory = DesignInventory(
     DesignInventoryEntry.present(
       'Select',
       (_) => const RetroDesktopSelect<String>(
-        label: 'Paper',
+        labelText: 'Paper',
         value: 'a4',
         options: [
           RetroDesktopOption('a4', 'A4'),
@@ -266,8 +270,8 @@ final DesignInventory retroDesktopInventory = DesignInventory(
     DesignInventoryEntry.present(
       'Combobox',
       (_) => const RetroDesktopCombobox<String>(
-        label: 'Country',
-        hint: 'Type a country',
+        labelText: 'Country',
+        hintText: 'Type a country',
         options: ['Austria', 'Belgium', 'Chile', 'Denmark'],
         onSelected: _drop,
       ),
@@ -284,7 +288,7 @@ final DesignInventory retroDesktopInventory = DesignInventory(
     DesignInventoryEntry.present(
       'RadioGroup',
       (_) => const RetroDesktopRadioGroup<String>(
-        label: 'Paper',
+        labelText: 'Paper',
         value: 'a4',
         options: [
           RetroDesktopRadio('a4', 'A4'),
@@ -355,15 +359,15 @@ final DesignInventory retroDesktopInventory = DesignInventory(
       'DatePicker',
       (_) => RetroDesktopDatePicker(
         value: DateTime(2026, 6, 14),
-        first: DateTime(2026, 6),
-        last: DateTime(2026, 9, 30),
+        firstDate: DateTime(2026, 6),
+        lastDate: DateTime(2026, 9, 30),
         onChanged: _drop,
       ),
     ),
     DesignInventoryEntry.present(
       'DateRangePicker',
       (_) => RetroDesktopDateRangePicker(
-        label: 'Stay',
+        labelText: 'Stay',
         firstDate: DateTime(2026, 6),
         lastDate: DateTime(2026, 9, 30),
         initialMonth: DateTime(2026, 6),
@@ -393,10 +397,10 @@ final DesignInventory retroDesktopInventory = DesignInventory(
     DesignInventoryEntry.present(
       'FormField',
       (_) => const RetroDesktopFormField(
-        label: 'Email',
-        help: 'The receipt goes here',
+        labelText: 'Email',
+        helperText: 'The receipt goes here',
         required: true,
-        child: RetroDesktopTextField(hint: 'name@example.com'),
+        child: RetroDesktopTextField(hintText: 'name@example.com'),
       ),
     ),
     // Navigation
@@ -490,7 +494,7 @@ final DesignInventory retroDesktopInventory = DesignInventory(
       'Scaffold',
       (_) => const RetroDesktopScaffold(
         scroll: false,
-        topBar: RetroDesktopAppBar(title: 'Documents'),
+        appBar: RetroDesktopAppBar(title: 'Documents'),
         body: Center(child: Text('Four items')),
       ),
     ),
@@ -525,7 +529,7 @@ final DesignInventory retroDesktopInventory = DesignInventory(
     ),
     DesignInventoryEntry.present(
       'SectionHeader',
-      (_) => const RetroDesktopSectionHeader('Recent files', note: 'Today'),
+      (_) => const RetroDesktopSectionHeader('Recent files', subtitle: 'Today'),
     ),
     DesignInventoryEntry.present(
       'Disclosure',
@@ -848,7 +852,7 @@ final DesignInventory retroDesktopInventory = DesignInventory(
 /// out. It scrolls itself, so it fills a screen that does not scroll (RetroDesktopScaffold(scroll: false)).
 ///
 /// ```dart
-/// RetroDesktopScaffold(scroll: false, topBar: const RetroDesktopAppBar(title: 'Components'), body: const RetroDesktopInventoryGallery())
+/// RetroDesktopScaffold(scroll: false, appBar: const RetroDesktopAppBar(title: 'Components'), body: const RetroDesktopInventoryGallery())
 /// ```
 class RetroDesktopInventoryGallery extends StatelessWidget {
   /// Creates a [RetroDesktopInventoryGallery].
@@ -896,7 +900,7 @@ class RetroDesktopInventoryGallery extends StatelessWidget {
           top: RetroDesktopSpacing.s20,
           bottom: RetroDesktopSpacing.s10,
         ),
-        child: RetroDesktopSectionHeader(group, note: '$live of $total'),
+        child: RetroDesktopSectionHeader(group, subtitle: '$live of $total'),
       ),
       rowBuilder: (context, row, entry, specimen) {
         final height = retroDesktopInventoryHeights[row.id];
@@ -929,18 +933,18 @@ class RetroDesktopInventoryGallery extends StatelessWidget {
                     container: true,
                     header: true,
                     child: title.contains(' ')
-                        ? Text(title, style: t.type.sub)
+                        ? Text(title, style: t.textTheme.sub)
                         : FittedBox(
                             fit: BoxFit.scaleDown,
                             alignment: AlignmentDirectional.centerStart,
-                            child: Text(title, style: t.type.sub),
+                            child: Text(title, style: t.textTheme.sub),
                           ),
                   ),
                   RetroDesktopColumn(
                     gap: 8,
                     children: [
                       if (title != row.name) ...[
-                        Text(row.name, style: t.type.meta),
+                        Text(row.name, style: t.textTheme.meta),
                         const SizedBox(height: RetroDesktopSpacing.s8),
                       ],
                       sized ??
@@ -951,7 +955,7 @@ class RetroDesktopInventoryGallery extends StatelessWidget {
                                   )
                                 : 'Missing: the inventory does not answer '
                                       'this row',
-                            style: t.type.body,
+                            style: t.textTheme.body,
                           ),
                     ],
                   ),

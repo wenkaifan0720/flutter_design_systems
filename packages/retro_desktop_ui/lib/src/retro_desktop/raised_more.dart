@@ -207,11 +207,11 @@ class RetroDesktopMenuBar extends StatelessWidget {
                   minWidth: math.max(0, RetroDesktopReach.least(context) - 20),
                 ),
                 child: RetroDesktopCaps(
-                  style: t.type.chrome,
+                  style: t.textTheme.chrome,
                   Text(
                     entry.label,
                     textAlign: TextAlign.center,
-                    style: t.type.chrome.copyWith(
+                    style: t.textTheme.chrome.copyWith(
                       color: lit
                           ? c.onHighlight
                           : (enabled ? c.text : c.textTertiary),
@@ -251,10 +251,10 @@ class RetroDesktopMenuBar extends StatelessWidget {
                   // A menu's rows in the chrome's face, as every other menu's and the bar's titles are.
                   Expanded(
                     child: RetroDesktopCaps(
-                      style: t.type.chrome,
+                      style: t.textTheme.chrome,
                       Text(
                         entry.label,
-                        style: t.type.chrome.copyWith(
+                        style: t.textTheme.chrome.copyWith(
                           color: lit
                               ? c.onHighlight
                               : (enabled ? c.text : c.textTertiary),
@@ -266,7 +266,7 @@ class RetroDesktopMenuBar extends StatelessWidget {
                     const SizedBox(width: RetroDesktopSpacing.s16),
                     Text(
                       entry.shortcut!,
-                      style: t.type.small.copyWith(
+                      style: t.textTheme.small.copyWith(
                         color: lit ? c.onHighlight : c.textSecondary,
                       ),
                     ),
@@ -486,7 +486,7 @@ class RetroDesktopActionSheet extends StatelessWidget {
           Text(
             title!,
             textAlign: TextAlign.center,
-            style: t.type.chrome.copyWith(color: t.colors.text),
+            style: t.textTheme.chrome.copyWith(color: t.colors.text),
           ),
         if (message != null)
           Padding(
@@ -494,7 +494,7 @@ class RetroDesktopActionSheet extends StatelessWidget {
             child: Text(
               message!,
               textAlign: TextAlign.center,
-              style: t.type.meta,
+              style: t.textTheme.meta,
             ),
           ),
         if (title != null || message != null)

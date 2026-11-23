@@ -208,7 +208,7 @@ class _MenuBar extends StatelessWidget {
       RetroDesktopReach.least(context),
       MediaQuery.textScalerOf(context).scale(18) + 8,
     );
-    final menu = t.type.chrome;
+    final menu = t.textTheme.chrome;
     Widget? fact(RetroDesktopUtility u) {
       final icon = u.icon == null
           ? null
@@ -240,7 +240,7 @@ class _MenuBar extends StatelessWidget {
           Flexible(
             child: Text(
               brand,
-              style: t.type.pixel(17, 16),
+              style: t.textTheme.pixel(17, 16),
               maxLines: 1,
               softWrap: false,
               overflow: TextOverflow.ellipsis,
@@ -384,7 +384,9 @@ class _GripPainter extends RetroDesktopPixelPainter {
   @override
   void paint(RetroDesktopPixelGrid px, Size s) {
     px.bevel(Offset.zero & s, c.bevelLight, c.bevelDark);
-    final line = c.dark ? const Color(0xFF000000) : c.bevelDarker;
+    final line = c.brightness == Brightness.dark
+        ? const Color(0xFF000000)
+        : c.bevelDarker;
     final h = px.hair;
     final x0 = px.x((s.width - width) / 2);
     final x1 = px.x((s.width + width) / 2);
@@ -449,7 +451,7 @@ class RetroDesktopNavigationBar extends StatelessWidget {
             style: style,
             component: t.navigationBarTheme.over(
               RetroDesktopStyle(
-                textStyle: WidgetStatePropertyAll(t.type.pixel(16, 14)),
+                textStyle: WidgetStatePropertyAll(t.textTheme.pixel(16, 14)),
                 minimumSize: const WidgetStatePropertyAll(Size(0, 50)),
               ),
             ),
@@ -484,32 +486,35 @@ class RetroDesktopNavigationBar extends StatelessWidget {
     if (action != null && items.length <= 1) {
       children.add(actionButton(action!));
     }
-    return Semantics(
-      container: true,
-      child: retroDesktopFace(
-        states: const {},
-        style: style,
-        component: t.navigationBarTheme.over(
-          RetroDesktopStyle(fill: WidgetStatePropertyAll(c.platinum)),
-        ),
-        scale: RetroDesktopFaceScale.surface,
-        padding: EdgeInsets.fromLTRB(
-          8,
-          7,
-          8,
-          8 + MediaQuery.paddingOf(context).bottom,
-        ),
-        // On a wide screen the destinations keep a phone's spacing, centred,
-        // rather than each spreading a third of the screen.
-        child: Align(
-          heightFactor: 1,
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              maxWidth: 168.0 * (items.length + (action == null ? 0 : 1)),
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: children,
+    // Notices stand above the bar (ui_core's RawToasterKeepClear), and follow it as it comes and goes.
+    return RawToasterKeepClear(
+      child: Semantics(
+        container: true,
+        child: retroDesktopFace(
+          states: const {},
+          style: style,
+          component: t.navigationBarTheme.over(
+            RetroDesktopStyle(fill: WidgetStatePropertyAll(c.platinum)),
+          ),
+          scale: RetroDesktopFaceScale.surface,
+          padding: EdgeInsets.fromLTRB(
+            8,
+            7,
+            8,
+            8 + MediaQuery.paddingOf(context).bottom,
+          ),
+          // On a wide screen the destinations keep a phone's spacing, centred,
+          // rather than each spreading a third of the screen.
+          child: Align(
+            heightFactor: 1,
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxWidth: 168.0 * (items.length + (action == null ? 0 : 1)),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: children,
+              ),
             ),
           ),
         ),
@@ -644,7 +649,7 @@ class RetroDesktopDeskStrip extends StatelessWidget {
                             ],
                             Text(
                               m.text,
-                              style: t.type.chrome,
+                              style: t.textTheme.chrome,
                               maxLines: 1,
                               softWrap: false,
                             ),
@@ -705,24 +710,24 @@ class RetroDesktopTab {
 }
 
 /// A page: the menu bar over a desktop of windows. [body] is usually a `RetroDesktopDesktop`, which says which window is active.
-/// Anything else is put in a window of its own, titled from [topBar], and that window is the active one: a page can't come out
+/// Anything else is put in a window of its own, titled from [appBar], and that window is the active one: a page can't come out
 /// with no window or no hero. A pushed page keeps its way back at the menu bar's start. In a sheet there is no desktop: the
 /// sheet is the window.
 ///
 /// ```dart
-/// RetroDesktopScaffold(topBar: RetroDesktopAppBar(title: 'Today'), body: RetroDesktopDesktop(active: 'Today', tiles: [RetroDesktopWindowColumn(span: 8, windows: [RetroDesktopWindow(title: 'Today', child: hero)]), RetroDesktopWindowColumn(span: 4, windows: [RetroDesktopWindow(title: 'Recent', child: list)])]))
+/// RetroDesktopScaffold(appBar: RetroDesktopAppBar(title: 'Today'), body: RetroDesktopDesktop(active: 'Today', tiles: [RetroDesktopWindowColumn(span: 8, windows: [RetroDesktopWindow(title: 'Today', child: hero)]), RetroDesktopWindowColumn(span: 4, windows: [RetroDesktopWindow(title: 'Recent', child: list)])]))
 /// ```
 class RetroDesktopScaffold extends StatelessWidget {
   /// Creates a [RetroDesktopScaffold].
   const RetroDesktopScaffold({
     super.key,
     required this.body,
-    this.topBar,
+    this.appBar,
     this.footer,
     this.scroll = true,
     this.fullBleed = false,
     this.scrollController,
-    this.who,
+    this.initials,
     this.utility = const [],
   });
 
@@ -731,7 +736,7 @@ class RetroDesktopScaffold extends StatelessWidget {
 
   /// Usually a `RetroDesktopAppBar`: the title of the window a plain [body] goes in, and a pushed page's way back. Anything else
   /// stands over the page as given.
-  final Widget? topBar;
+  final Widget? appBar;
 
   /// What stands fixed at a pushed page's foot: the one action.
   final Widget? footer;
@@ -746,7 +751,7 @@ class RetroDesktopScaffold extends StatelessWidget {
   final ScrollController? scrollController;
 
   /// The account's two letters, at the menu bar's end.
-  final String? who;
+  final String? initials;
 
   /// Small facts at the menu bar's end.
   final List<RetroDesktopUtility> utility;
@@ -757,8 +762,8 @@ class RetroDesktopScaffold extends StatelessWidget {
     final chrome = RetroDesktopChromeScope.maybeOf(context);
     final presentation = RoutePresentation.of(context);
     final sheet = presentation == RoutePresentation.sheet;
-    final bar = topBar is RetroDesktopAppBar
-        ? topBar! as RetroDesktopAppBar
+    final bar = appBar is RetroDesktopAppBar
+        ? appBar! as RetroDesktopAppBar
         : null;
     if (sheet) return _sheetBody(context, t);
 
@@ -772,7 +777,7 @@ class RetroDesktopScaffold extends StatelessWidget {
         chrome != null ||
         leading != null ||
         actions.isNotEmpty ||
-        who != null ||
+        initials != null ||
         utility.isNotEmpty;
     final head = !showBar
         ? null
@@ -781,12 +786,12 @@ class RetroDesktopScaffold extends StatelessWidget {
             chrome: chrome,
             active: chrome?.active ?? 0,
             action: chrome?.action,
-            who: who,
+            who: initials,
             utility: utility,
             leading: leading,
             actions: actions,
           );
-    final other = bar == null ? topBar : null;
+    final other = bar == null ? appBar : null;
     final windowTitle = bar?.title ?? chrome?.brand ?? '';
 
     final Widget content;
@@ -885,7 +890,7 @@ class RetroDesktopScaffold extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        ?topBar,
+        ?appBar,
         Flexible(
           child: scroll
               ? ScrollConfiguration(
@@ -916,7 +921,7 @@ class RetroDesktopScaffold extends StatelessWidget {
           defaultValue: null,
         ),
       )
-      ..add(StringProperty('who', who, defaultValue: null))
+      ..add(StringProperty('initials', initials, defaultValue: null))
       ..add(
         IterableProperty<RetroDesktopUtility>(
           'utility',
@@ -933,24 +938,27 @@ class _Foot extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = RetroDesktopTheme.of(context);
-    return RetroDesktopPixelPaint(
-      painter: _StripPainter(t.colors),
-      child: SafeArea(
-        top: false,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(
-            RetroDesktopSpacing.s12,
-            RetroDesktopSpacing.s10,
-            RetroDesktopSpacing.s12,
-            RetroDesktopSpacing.s10,
+    // Notices stand above a page's footer, as above the navigation bar.
+    return RawToasterKeepClear(
+      child: RetroDesktopPixelPaint(
+        painter: _StripPainter(t.colors),
+        child: SafeArea(
+          top: false,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(
+              RetroDesktopSpacing.s12,
+              RetroDesktopSpacing.s10,
+              RetroDesktopSpacing.s12,
+              RetroDesktopSpacing.s10,
+            ),
+            child: t.desk
+                ? Align(
+                    alignment: AlignmentDirectional.centerEnd,
+                    heightFactor: 1,
+                    child: SizedBox(width: 360, child: child),
+                  )
+                : child,
           ),
-          child: t.desk
-              ? Align(
-                  alignment: AlignmentDirectional.centerEnd,
-                  heightFactor: 1,
-                  child: SizedBox(width: 360, child: child),
-                )
-              : child,
         ),
       ),
     );
@@ -1163,7 +1171,7 @@ class RetroDesktopAppBar extends StatelessWidget {
                   if (title != null)
                     Text(
                       title!,
-                      style: t.type.sub.merge(words).copyWith(color: ink),
+                      style: t.textTheme.sub.merge(words).copyWith(color: ink),
                       maxLines: 1,
                       softWrap: false,
                       overflow: TextOverflow.ellipsis,
@@ -1171,7 +1179,7 @@ class RetroDesktopAppBar extends StatelessWidget {
                   if (subtitle != null)
                     Text(
                       subtitle!,
-                      style: t.type.meta.merge(words).copyWith(color: ink),
+                      style: t.textTheme.meta.merge(words).copyWith(color: ink),
                       maxLines: 1,
                       softWrap: false,
                       overflow: TextOverflow.ellipsis,
@@ -1205,17 +1213,17 @@ class RetroDesktopAppBar extends StatelessWidget {
 /// A one-line text field the generated stubs draw; `RetroDesktopTextField` is the same box with more to say.
 ///
 /// ```dart
-/// RetroDesktopInput(key: const ValueKey('name'), hint: 'Your name', onChanged: (text) {})
+/// RetroDesktopInput(key: const ValueKey('name'), hintText: 'Your name', onChanged: (text) {})
 /// ```
 class RetroDesktopInput extends StatelessWidget {
   /// Creates a [RetroDesktopInput].
   const RetroDesktopInput({
     super.key,
     this.style,
-    this.label,
+    this.labelText,
     this.focusNode,
     this.autofocus = false,
-    this.hint,
+    this.hintText,
     this.controller,
     this.initial,
     this.onChanged,
@@ -1227,7 +1235,7 @@ class RetroDesktopInput extends StatelessWidget {
   final RetroDesktopStyle? style;
 
   /// The visible or accessible name of this part.
-  final String? label;
+  final String? labelText;
 
   /// {@macro retro_desktop.focusNode}
   final FocusNode? focusNode;
@@ -1239,7 +1247,7 @@ class RetroDesktopInput extends StatelessWidget {
   final bool enabled;
 
   /// Placeholder text shown while the input has no value.
-  final String? hint;
+  final String? hintText;
 
   /// The initial value used when no external controller supplies one.
   final String? initial;
@@ -1260,10 +1268,10 @@ class RetroDesktopInput extends StatelessWidget {
   Widget build(BuildContext context) => RetroDesktopTextField(
     enabled: enabled,
     style: style,
-    label: label,
+    labelText: labelText,
     focusNode: focusNode,
     autofocus: autofocus,
-    hint: hint,
+    hintText: hintText,
     controller: controller,
     initial: initial,
     onChanged: onChanged,
@@ -1281,7 +1289,7 @@ class RetroDesktopInput extends StatelessWidget {
           defaultValue: null,
         ),
       )
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
       ..add(
         DiagnosticsProperty<FocusNode>(
           'focusNode',
@@ -1291,7 +1299,7 @@ class RetroDesktopInput extends StatelessWidget {
       )
       ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
       ..add(FlagProperty('enabled', value: enabled, ifFalse: 'enabled: false'))
-      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
       ..add(StringProperty('initial', initial, defaultValue: null))
       ..add(
         DiagnosticsProperty<TextEditingController>(
@@ -1555,8 +1563,9 @@ class RetroDesktopPictureCard extends StatelessWidget {
                 child: RetroDesktopColumn(
                   gap: 2,
                   children: [
-                    Text(title, style: t.type.row),
-                    if (subtitle != null) Text(subtitle!, style: t.type.meta),
+                    Text(title, style: t.textTheme.row),
+                    if (subtitle != null)
+                      Text(subtitle!, style: t.textTheme.meta),
                     if (figure != null || trailing != null)
                       Padding(
                         padding: const EdgeInsets.only(
@@ -1565,7 +1574,7 @@ class RetroDesktopPictureCard extends StatelessWidget {
                         child: RetroDesktopSplit(
                           start: figure == null
                               ? const SizedBox.shrink()
-                              : Text(figure!, style: t.type.small),
+                              : Text(figure!, style: t.textTheme.small),
                           end: trailing ?? const SizedBox.shrink(),
                           gap: 8,
                           runGap: 6,
@@ -1667,11 +1676,15 @@ class RetroDesktopLoadingState extends StatelessWidget {
                       child: RetroDesktopCircularProgressIndicator(size: 32),
                     ),
                     const SizedBox(height: RetroDesktopSpacing.s10),
-                    Text(name, style: t.type.head, textAlign: TextAlign.center),
+                    Text(
+                      name,
+                      style: t.textTheme.head,
+                      textAlign: TextAlign.center,
+                    ),
                     if (message != null)
                       Text(
                         message!,
-                        style: t.type.body,
+                        style: t.textTheme.body,
                         textAlign: TextAlign.center,
                       ),
                   ],
@@ -1776,7 +1789,7 @@ class _DesktopBackgroundState extends State<_DesktopBackground> {
   @override
   Widget build(BuildContext context) {
     final ratio = MediaQuery.devicePixelRatioOf(context);
-    if (_painter?.c != widget.colors || _painter?.ratio != ratio) {
+    if (_painter?.colors != widget.colors || _painter?.ratio != ratio) {
       _painter?.dispose();
       _painter = _DesktopRasterPainter(widget.colors, ratio);
     }
@@ -1834,7 +1847,7 @@ class _DesktopRasterPainter extends RetroDesktopDeskPainter {
 
   @override
   bool shouldRepaint(covariant _DesktopRasterPainter old) =>
-      c != old.c || ratio != old.ratio;
+      colors != old.colors || ratio != old.ratio;
 
   void dispose() {
     _image?.dispose();

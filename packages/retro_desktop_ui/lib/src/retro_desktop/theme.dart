@@ -48,7 +48,7 @@ class RetroDesktopColors {
   ///
   /// [tones] is kept as given, not copied: it must not be changed afterwards.
   const RetroDesktopColors({
-    required this.dark,
+    required this.brightness,
     required this.desktop,
     required this.desktopThreadLight,
     required this.desktopThreadDark,
@@ -94,8 +94,8 @@ class RetroDesktopColors {
     required this.illustration,
   });
 
-  /// Whether these are the night colours.
-  final bool dark;
+  /// Day or night: [Brightness.dark] for the night colours.
+  final Brightness brightness;
 
   /// The desktop: its ground and the weave's two threads; [desktopGlow] is a lighter ground for a host that marks a
   /// place on the desk (the look's own desk is flat: nothing glows).
@@ -207,8 +207,8 @@ class RetroDesktopColors {
           HSLColor.fromAHSL(
             1,
             (hue + index * 72) % 360,
-            dark ? .65 : .75,
-            dark ? .7 : .32,
+            brightness == Brightness.dark ? .65 : .75,
+            brightness == Brightness.dark ? .7 : .32,
           ).toColor(),
         ),
     ]);
@@ -219,7 +219,7 @@ class RetroDesktopColors {
 
   /// The same palette with named colours replaced; a [tones] given here is copied.
   RetroDesktopColors copyWith({
-    bool? dark,
+    Brightness? brightness,
     Color? desktop,
     Color? desktopThreadLight,
     Color? desktopThreadDark,
@@ -264,7 +264,7 @@ class RetroDesktopColors {
     List<Color>? tones,
     RetroDesktopIllustrationColors? illustration,
   }) => RetroDesktopColors(
-    dark: dark ?? this.dark,
+    brightness: brightness ?? this.brightness,
     desktop: desktop ?? this.desktop,
     desktopThreadLight: desktopThreadLight ?? this.desktopThreadLight,
     desktopThreadDark: desktopThreadDark ?? this.desktopThreadDark,
@@ -323,7 +323,7 @@ class RetroDesktopColors {
         Color.lerp(i < x.length ? x[i] : null, i < y.length ? y[i] : null, t)!,
     ]);
     return RetroDesktopColors(
-      dark: t < .5 ? a.dark : b.dark,
+      brightness: t < .5 ? a.brightness : b.brightness,
       desktop: Color.lerp(a.desktop, b.desktop, t)!,
       desktopThreadLight: Color.lerp(
         a.desktopThreadLight,
@@ -398,7 +398,7 @@ class RetroDesktopColors {
   bool operator ==(Object other) =>
       identical(this, other) ||
       other is RetroDesktopColors &&
-          dark == other.dark &&
+          brightness == other.brightness &&
           desktop == other.desktop &&
           desktopThreadLight == other.desktopThreadLight &&
           desktopThreadDark == other.desktopThreadDark &&
@@ -445,7 +445,7 @@ class RetroDesktopColors {
 
   @override
   int get hashCode => Object.hashAll([
-    dark,
+    brightness,
     desktop,
     desktopThreadLight,
     desktopThreadDark,
@@ -825,7 +825,7 @@ class _Palette {
         List.unmodifiable([for (final x in xs) _turn(x, s.hue, s.saturation)]);
     final a = art(s.art);
     return RetroDesktopColors(
-      dark: dark,
+      brightness: dark ? Brightness.dark : Brightness.light,
       desktop: s.desk,
       desktopThreadLight: s.deskA,
       desktopThreadDark: s.deskB,
@@ -1442,7 +1442,7 @@ class RetroDesktopThemeData with Diagnosticable {
     this._density,
     this.typeface = const RetroDesktopTypeface(),
     this._focus,
-  }) : type = RetroDesktopTextTheme._(
+  }) : textTheme = RetroDesktopTextTheme._(
          colors,
          width >= retroDesktopDeskWidth,
          typeface,
@@ -1498,7 +1498,7 @@ class RetroDesktopThemeData with Diagnosticable {
   final RetroDesktopColors page;
 
   /// The resolved text styles for this theme.
-  final RetroDesktopTextTheme type;
+  final RetroDesktopTextTheme textTheme;
 
   /// The width in logical pixels.
   final double width;
@@ -1555,16 +1555,16 @@ class RetroDesktopThemeData with Diagnosticable {
         );
 
   /// The stubs' page title and body text.
-  TextStyle get h1 => type.head;
+  TextStyle get h1 => textTheme.head;
 
   /// The main content shown beneath the heading.
-  TextStyle get body => type.body;
+  TextStyle get body => textTheme.body;
 
   /// True from 1024 wide up: the tiled desktop.
   bool get desk => width >= retroDesktopDeskWidth;
 
-  /// Whether the theme is in its night colours.
-  bool get dark => colors.dark;
+  /// Day or night, as its [colors] are.
+  Brightness get brightness => colors.brightness;
 
   /// The palette for what stands on the highlight: a selected row, the default button, today.
   RetroDesktopThemeData get onHighlight {
@@ -1574,7 +1574,7 @@ class RetroDesktopThemeData with Diagnosticable {
       id,
       _palette,
       RetroDesktopColors(
-        dark: c.dark,
+        brightness: c.brightness,
         desktop: c.desktop,
         desktopThreadLight: c.desktopThreadLight,
         desktopThreadDark: c.desktopThreadDark,
@@ -1646,7 +1646,7 @@ class RetroDesktopThemeData with Diagnosticable {
   /// theme's or a `style:`'s shape is bound to them too: any other
   /// [OutlinedBorder] (a stadium, a large radius) is drawn smooth and off the
   /// pixel grid, and no longer looks like this look.
-  RetroDesktopShapes get shapes => RetroDesktopShapes.of(appearance);
+  RetroDesktopShapes get shapes => RetroDesktopShapes.forAppearance(appearance);
 
   /// The look's line widths, for a part drawn in its hand.
   RetroDesktopStrokes get strokes => RetroDesktopStrokes.standard;
@@ -2083,7 +2083,7 @@ class RetroDesktopTheme extends StatelessWidget {
           child: IconTheme.merge(
             data: IconThemeData(color: scoped.colors.text),
             child: DefaultTextStyle.merge(
-              style: scoped.type.body,
+              style: scoped.textTheme.body,
               // The look's spacing steps stand on a 2-pixel grid (RetroDesktopSpacing), which ui_core's spacing
               // check reads from here.
               child: DesignSpacingScope(
@@ -2105,13 +2105,13 @@ class RetroDesktopTheme extends StatelessWidget {
     return ThemeData(
       useMaterial3: true,
       platform: platform,
-      brightness: c.dark ? Brightness.dark : Brightness.light,
+      brightness: c.brightness,
       visualDensity: VisualDensity.standard,
       fontFamily: retroDesktopFontFamily(theme.typeface.bodyFamily),
       scaffoldBackgroundColor: c.desktop,
       canvasColor: c.platinum,
       colorScheme: ColorScheme(
-        brightness: c.dark ? Brightness.dark : Brightness.light,
+        brightness: c.brightness,
         primary: c.highlight,
         onPrimary: c.onHighlight,
         secondary: c.highlightDark,

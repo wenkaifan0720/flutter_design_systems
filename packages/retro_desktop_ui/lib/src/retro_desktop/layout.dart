@@ -1512,7 +1512,7 @@ class RenderRetroDesktopSplit extends RenderBox
 /// `text-wrap: balance`: finds the narrowest width that keeps the same number of lines, so no line ends alone.
 ///
 /// ```dart
-/// RetroDesktopBalancedText('A carefully balanced heading', style: RetroDesktopTheme.of(context).type.head)
+/// RetroDesktopBalancedText('A carefully balanced heading', style: RetroDesktopTheme.of(context).textTheme.head)
 /// ```
 class RetroDesktopBalancedText extends StatelessWidget {
   /// Creates a [RetroDesktopBalancedText].

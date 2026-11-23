@@ -55,7 +55,7 @@ Widget kitSpecimenFigureHero() => const RetroDesktopFigureHero(
   value: '8',
   unit: '°',
   title: 'Showers',
-  note: 'Clearing by 14:00',
+  subtitle: 'Clearing by 14:00',
   reads: [('High', '11°', null), ('Low', '4°', null), ('Rain', '6.4', 'mm')],
   summary: 'Showers ease by midday, dry until evening, then rain again.',
 );
@@ -63,7 +63,7 @@ Widget kitSpecimenFigureHero() => const RetroDesktopFigureHero(
 Widget kitSpecimenReadingHead() => const RetroDesktopReadingHead(
   value: '28',
   title: 'Good',
-  note: 'Nothing to mention today.',
+  subtitle: 'Nothing to mention today.',
 );
 
 Widget kitSpecimenEmpty() => const RetroDesktopEmpty(

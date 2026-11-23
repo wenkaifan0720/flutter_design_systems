@@ -79,7 +79,9 @@ Widget retroDesktopPanel(
   return retroDesktopFace(
     shadows: [
       BoxShadow(
-        color: t.colors.shade.withValues(alpha: t.colors.dark ? .95 : .8),
+        color: t.colors.shade.withValues(
+          alpha: t.colors.brightness == Brightness.dark ? .95 : .8,
+        ),
         offset: const Offset(2, 2),
       ),
     ],
@@ -128,7 +130,7 @@ Widget retroDesktopLitRow(
       color: lit ? c.highlight : null,
     ),
     child: DefaultTextStyle.merge(
-      style: t.type.body.copyWith(color: ink),
+      style: t.textTheme.body.copyWith(color: ink),
       child: IconTheme.merge(
         data: IconThemeData(color: ink, size: 16),
         // Under a finger a row reaches as far as a button does.
@@ -192,7 +194,7 @@ Widget retroDesktopHeldGround(
       ),
       child: RetroDesktopPixelPaint(
         painter: _GroundPainter(
-          c.dark ? c.bevelDark : c.platinumDark,
+          c.brightness == Brightness.dark ? c.bevelDark : c.platinumDark,
           bleed: bleed,
           outline: outline,
           reach: reach,
@@ -425,13 +427,15 @@ Widget retroDesktopBareEditor(
   VoidCallback? onEditingComplete,
   TextInputType? keyboardType,
   String? semanticLabel,
+  String? semanticHint,
+  bool? expanded,
 }) {
   final t = RetroDesktopTheme.of(context);
   final c = t.colors;
   // The text field's type and height: what is typed and hinted is set as the
   // words around it are, and under a pointer the line stands 6 clear above and
   // below (a button's height), under a finger in the whole reach.
-  final style = t.type.body.copyWith(color: c.text);
+  final style = t.textTheme.body.copyWith(color: c.text);
   final line =
       MediaQuery.textScalerOf(context).scale(style.fontSize ?? 14) *
       (style.height ?? 1.3);
@@ -448,6 +452,10 @@ Widget retroDesktopBareEditor(
     child: MergeSemantics(
       child: Semantics(
         label: semanticLabel,
+        // The field's error, else its help, read on the text field itself.
+        hint: semanticHint,
+        // Whether a list it searches shows under it.
+        expanded: expanded,
         // Its capitals on the box's middle, typed or hinted.
         child: RetroDesktopCaps(
           style: style,

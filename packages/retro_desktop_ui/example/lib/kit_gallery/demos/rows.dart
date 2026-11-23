@@ -50,7 +50,7 @@ class _Count extends StatelessWidget {
     final t = RetroDesktopTheme.of(context);
     return Text(
       text,
-      style: t.type.meta.copyWith(color: t.colors.textSecondary),
+      style: t.textTheme.meta.copyWith(color: t.colors.textSecondary),
       maxLines: 1,
       softWrap: false,
     );

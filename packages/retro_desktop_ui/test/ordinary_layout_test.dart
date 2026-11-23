@@ -30,7 +30,7 @@ void main() {
               await tester.pumpWidget(
                 retroDesktopApp(
                   RetroDesktopScaffold(
-                    topBar: const RetroDesktopAppBar(
+                    appBar: const RetroDesktopAppBar(
                       title: 'Everyday application',
                     ),
                     body: RetroDesktopSections(

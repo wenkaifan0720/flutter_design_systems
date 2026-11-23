@@ -141,12 +141,12 @@ class RetroDesktopDataTable<R> extends StatelessWidget {
                 children: [
                   Flexible(
                     child: RetroDesktopCaps(
-                      style: t.type.chrome,
+                      style: t.textTheme.chrome,
                       Text(
                         column.label,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: t.type.chrome.copyWith(color: c.text),
+                        style: t.textTheme.chrome.copyWith(color: c.text),
                       ),
                     ),
                   ),
@@ -187,6 +187,7 @@ class RetroDesktopDataTable<R> extends StatelessWidget {
           shape: const RoundedRectangleBorder(),
           focused: row.states.contains(WidgetState.focused),
           inside: true,
+          insideColor: lit ? c.onHighlight : null,
           child: retroDesktopHeldGround(
             t,
             held: !lit && row.states.contains(WidgetState.pressed),
@@ -196,7 +197,7 @@ class RetroDesktopDataTable<R> extends StatelessWidget {
                 border: Border(bottom: _rule(t)),
               ),
               child: DefaultTextStyle.merge(
-                style: t.type.body.copyWith(
+                style: t.textTheme.body.copyWith(
                   color: lit ? c.onHighlight : c.text,
                 ),
                 child: IntrinsicHeight(
@@ -751,7 +752,7 @@ class _ReorderableListState<T extends Object>
                       children: [
                         Expanded(
                           child: DefaultTextStyle.merge(
-                            style: t.type.body.copyWith(color: c.text),
+                            style: t.textTheme.body.copyWith(color: c.text),
                             child: widget.itemBuilder(context, item),
                           ),
                         ),
@@ -928,6 +929,7 @@ class RetroDesktopTreeView<T extends Object> extends StatelessWidget {
             shape: retroDesktopItemShape(t),
             focused: item.states.contains(WidgetState.focused),
             inside: true,
+            insideColor: lit ? ink : null,
             child: retroDesktopHeldGround(
               t,
               held: !lit && item.states.contains(WidgetState.pressed),
@@ -977,7 +979,7 @@ class RetroDesktopTreeView<T extends Object> extends StatelessWidget {
                             labelOf(item.row.node),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: t.type.body.copyWith(color: ink),
+                            style: t.textTheme.body.copyWith(color: ink),
                           ),
                         ),
                       ],
@@ -1114,8 +1116,8 @@ class RetroDesktopTimeline extends StatelessWidget {
                                   entries[i].title,
                                   style:
                                       (entries[i].current
-                                              ? t.type.chrome
-                                              : t.type.body)
+                                              ? t.textTheme.chrome
+                                              : t.textTheme.body)
                                           .copyWith(
                                             color:
                                                 entries[i].done ||
@@ -1126,11 +1128,11 @@ class RetroDesktopTimeline extends StatelessWidget {
                                 ),
                               ),
                               if (entries[i].time != null)
-                                Text(entries[i].time!, style: t.type.meta),
+                                Text(entries[i].time!, style: t.textTheme.meta),
                             ],
                           ),
                           if (entries[i].note != null)
-                            Text(entries[i].note!, style: t.type.meta),
+                            Text(entries[i].note!, style: t.textTheme.meta),
                         ],
                       ),
                     ),
@@ -1185,7 +1187,7 @@ class RetroDesktopTag extends StatelessWidget {
           RetroDesktopStyle(
             fill: WidgetStatePropertyAll(c.platinumLight),
             foreground: WidgetStatePropertyAll(c.text),
-            textStyle: WidgetStatePropertyAll(t.type.small),
+            textStyle: WidgetStatePropertyAll(t.textTheme.small),
           ),
         ),
         padding: const EdgeInsets.symmetric(

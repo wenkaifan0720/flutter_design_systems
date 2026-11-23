@@ -414,14 +414,14 @@ class _DefaultButton extends StatelessWidget {
               ? t.buttonTheme.over(
                   RetroDesktopStyle(
                     foreground: WidgetStatePropertyAll(c.text),
-                    textStyle: WidgetStatePropertyAll(t.type.chrome),
+                    textStyle: WidgetStatePropertyAll(t.textTheme.chrome),
                     iconSize: const WidgetStatePropertyAll(15),
                   ),
                 )
               : t.defaultButtonTheme.over(
                   RetroDesktopStyle(
                     foreground: WidgetStatePropertyAll(c.onHighlight),
-                    textStyle: WidgetStatePropertyAll(t.type.chrome),
+                    textStyle: WidgetStatePropertyAll(t.textTheme.chrome),
                     iconSize: const WidgetStatePropertyAll(15),
                   ),
                 ),
@@ -561,7 +561,7 @@ class _PlainButton extends StatelessWidget {
           component: t.buttonTheme.over(
             RetroDesktopStyle(
               foreground: WidgetStatePropertyAll(c.text),
-              textStyle: WidgetStatePropertyAll(t.type.chrome),
+              textStyle: WidgetStatePropertyAll(t.textTheme.chrome),
               iconSize: const WidgetStatePropertyAll(15),
             ),
           ),
@@ -650,7 +650,7 @@ class _ExtraButton extends StatelessWidget {
                   RetroDesktopStyle(
                     fill: WidgetStatePropertyAll(t.colors.text),
                     foreground: WidgetStatePropertyAll(t.colors.paper),
-                    textStyle: WidgetStatePropertyAll(t.type.chrome),
+                    textStyle: WidgetStatePropertyAll(t.textTheme.chrome),
                     iconSize: const WidgetStatePropertyAll(15),
                   ),
                 )
@@ -661,7 +661,7 @@ class _ExtraButton extends StatelessWidget {
                     fill: WidgetStateProperty.resolveWith(
                       (states) => bevel ? t.colors.platinum : _clear,
                     ),
-                    textStyle: WidgetStatePropertyAll(t.type.chrome),
+                    textStyle: WidgetStatePropertyAll(t.textTheme.chrome),
                     iconSize: const WidgetStatePropertyAll(15),
                     side: WidgetStateProperty.resolveWith(
                       (states) => BorderSide(
@@ -787,7 +787,7 @@ class RetroDesktopLink extends StatelessWidget {
                     ) ??
                     (inSentence
                         ? DefaultTextStyle.of(context).style
-                        : t.type.body))
+                        : t.textTheme.body))
                 .copyWith(
                   color:
                       RetroDesktopStyle.first(

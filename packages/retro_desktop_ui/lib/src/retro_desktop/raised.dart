@@ -354,7 +354,9 @@ class _RaisedSurface extends StatelessWidget {
     return retroDesktopFace(
       shadows: [
         BoxShadow(
-          color: t.colors.shade.withValues(alpha: t.colors.dark ? .95 : .8),
+          color: t.colors.shade.withValues(
+            alpha: t.colors.brightness == Brightness.dark ? .95 : .8,
+          ),
           offset: const Offset(2, 2),
         ),
       ],
@@ -548,8 +550,8 @@ class RetroDesktopDialog extends StatelessWidget {
                                     namesRoute: true,
                                     child: retroDesktopWholeWords(
                                       title,
-                                      t.type.head,
-                                      Text(title, style: t.type.head),
+                                      t.textTheme.head,
+                                      Text(title, style: t.textTheme.head),
                                     ),
                                   ),
                                   if (message != null)
@@ -1439,7 +1441,7 @@ class _MenuState<T> extends State<RetroDesktopMenu<T>> {
                                   style:
                                       (field
                                               ? const TextStyle()
-                                              : t.type.chrome)
+                                              : t.textTheme.chrome)
                                           .copyWith(
                                             color: lit
                                                 ? t.colors.onHighlight
@@ -1905,7 +1907,7 @@ class RetroDesktopTooltip extends StatelessWidget {
     super.key,
     required this.message,
     required this.child,
-    this.wait = const Duration(milliseconds: 400),
+    this.waitDuration = const Duration(milliseconds: 400),
     this.style,
   });
 
@@ -1916,7 +1918,7 @@ class RetroDesktopTooltip extends StatelessWidget {
   final Widget child;
 
   /// The delay before the tooltip opens.
-  final Duration wait;
+  final Duration waitDuration;
 
   /// {@macro retro_desktop.style}
   final RetroDesktopStyle? style;
@@ -1927,7 +1929,7 @@ class RetroDesktopTooltip extends StatelessWidget {
     child: RawTooltipPlacement(
       builder: (context, positionDelegate) => RawTooltip(
         semanticsTooltip: message,
-        hoverDelay: wait,
+        hoverDelay: waitDuration,
         positionDelegate: positionDelegate,
         animationStyle: _TipSpring.life,
         tooltipBuilder: (context, animation) => ExcludeSemantics(
@@ -1952,8 +1954,8 @@ class RetroDesktopTooltip extends StatelessWidget {
       ..add(StringProperty('message', message))
       ..add(
         DiagnosticsProperty<Duration>(
-          'wait',
-          wait,
+          'waitDuration',
+          waitDuration,
           defaultValue: const Duration(milliseconds: 400),
         ),
       )
@@ -2121,7 +2123,7 @@ class RetroDesktopSnackBar extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             if (title != null) ...[
-              Text(title!, style: t.type.sub),
+              Text(title!, style: t.textTheme.sub),
               const SizedBox(height: RetroDesktopSpacing.s6),
             ],
             Row(
@@ -2193,9 +2195,116 @@ class RetroDesktopSnackBar extends StatelessWidget {
   }
 }
 
-final _notices = Expando<_OverlayHandle>('retro-desktop-notice');
+/// Every notice's id: a new one replaces the one showing.
+const Object _oneNotice = #retroDesktopNotice;
 
-/// Shows one notice per overlay. Hover, focus and accessible actions pause expiry.
+/// What a notice wears beyond its words, and the caller's preferences it carries to the toaster.
+@immutable
+class _NoticeLook {
+  const _NoticeLook(this.carried, this.tone, this.dismissLabel, this.style);
+  final _Carried carried;
+  final RetroDesktopTone tone;
+  final String? dismissLabel;
+  final RetroDesktopStyle? style;
+}
+
+/// A notice's handle. Escape closes the newest notice whose page is current, as it closes the look's other raised
+/// surfaces.
+class _NoticeHandle implements RetroDesktopRaised {
+  _NoticeHandle({bool Function()? active}) {
+    _escape = _EscapeLayer(dismiss, active: active);
+  }
+  late final _EscapeLayer _escape;
+  final _closed = Completer<void>();
+  RawToastController? _toast;
+  bool _dismissed = false;
+
+  void attach(_RetroDesktopToasterState? toaster, RawToast toast) {
+    final shown = toaster?._show(toast);
+    if (shown == null) return _end();
+    // A new notice takes the place of the one showing: that one is closed.
+    toaster!._current?._replaced();
+    toaster._current = this;
+    _toaster = toaster;
+    _toast = shown;
+    shown.closed.whenComplete(_end);
+    if (_dismissed) shown.dismiss();
+  }
+
+  _RetroDesktopToasterState? _toaster;
+
+  void _replaced() {
+    _toast = null;
+    _end();
+  }
+
+  void _end() {
+    if (_closed.isCompleted) return;
+    if (identical(_toaster?._current, this)) _toaster!._current = null;
+    _escape.dispose();
+    _closed.complete();
+  }
+
+  @override
+  Future<void> get closed => _closed.future;
+
+  @override
+  void dismiss() {
+    if (_dismissed) return;
+    _dismissed = true;
+    _toast?.dismiss();
+  }
+}
+
+/// The root overlay's toaster, for a caller with no [RetroDesktopToaster] above it (a page composed without
+/// [RetroDesktopHost]).
+final Expando<_RootToaster> _rootToasters = Expando('retro-desktop-toaster');
+
+/// A toaster in its own entry on the root overlay: inserted for a notice, and removed once its last notice has left.
+class _RootToaster {
+  _RootToaster(this.overlay) {
+    overlay.insert(entry);
+  }
+
+  final OverlayState overlay;
+  final key = GlobalKey<_RetroDesktopToasterState>();
+  late final OverlayEntry entry = OverlayEntry(
+    builder: (context) =>
+        RetroDesktopToaster(key: key, child: const SizedBox.expand()),
+  );
+  int _notices = 0;
+
+  void hold(_NoticeHandle notice) {
+    _notices++;
+    notice.closed.whenComplete(() {
+      _notices--;
+      _leaveWhenEmpty();
+    });
+  }
+
+  // Once nothing shows or waits, the leaving notice's motion included, after the frame that took it away.
+  void _leaveWhenEmpty() {
+    if (_notices > 0) return;
+    final binding = WidgetsBinding.instance;
+    binding.addPostFrameCallback((_) {
+      if (_notices > 0 || !identical(_rootToasters[overlay], this)) return;
+      final toaster = key.currentState?._toaster.currentState;
+      if (toaster != null &&
+          (toaster.shownCount > 0 || toaster.waitingCount > 0)) {
+        return _leaveWhenEmpty();
+      }
+      _rootToasters[overlay] = null;
+      entry
+        ..remove()
+        ..dispose();
+    });
+    binding.ensureVisualUpdate();
+  }
+}
+
+/// Shows a notice at the foot of the screen in the nearest [RetroDesktopToaster] ([RetroDesktopHost] installs one),
+/// replacing the one showing. It waits while a pointer rests on it or the keyboard is in it, and one with an action
+/// waits while a screen reader runs; Escape closes it.
 RetroDesktopRaised showRetroDesktopSnackBar(
   BuildContext context,
   String message, {
@@ -2205,151 +2314,119 @@ RetroDesktopRaised showRetroDesktopSnackBar(
   VoidCallback? onAction,
   String? dismissLabel,
   Duration duration = const Duration(seconds: 5),
-  double bottom = 0,
   RetroDesktopStyle? style,
 }) {
-  final overlay = Overlay.of(context, rootOverlay: true);
-  _notices[overlay]?.dismiss();
   final route = ModalRoute.of(context);
-  final handle = _OverlayHandle(
-    overlay,
-    active: () => route?.isCurrent ?? true,
+  final handle = _NoticeHandle(active: () => route?.isCurrent ?? true);
+  final near = context.findAncestorStateOfType<_RetroDesktopToasterState>();
+  final overlay = Overlay.of(context, rootOverlay: true);
+  final carried = _Carried(context, near?.context ?? overlay.context);
+  final toast = RawToast(
+    message: message,
+    title: title,
+    actionLabel: actionLabel,
+    onAction: onAction,
+    // An action the reader's screen reader reaches here must not expire, wherever the toaster stands.
+    duration: carried.media.accessibleNavigation && onAction != null
+        ? null
+        : duration,
+    id: _oneNotice,
+    data: _NoticeLook(carried, tone, dismissLabel, style),
   );
-  _notices[overlay] = handle;
-  final carried = _Carried(context, overlay.context);
-  final back = FocusManager.instance.primaryFocus;
-  void close() => handle.dismiss();
-  handle.closed.whenComplete(() {
-    if (identical(_notices[overlay], handle)) _notices[overlay] = null;
-  });
-  handle.entry = OverlayEntry(
-    builder: (context) => carried.wrap(
-      _SnackBarHost(
-        handle: handle,
-        motion: carried.motion,
-        duration: duration,
-        bottom: bottom,
-        pauseForAccess: carried.media.accessibleNavigation && onAction != null,
-        onClose: close,
-        backFocus: back,
-        child: RetroDesktopSnackBar(
-          message,
-          title: title,
-          tone: tone,
-          actionLabel: actionLabel,
-          dismissLabel: dismissLabel,
-          style: style,
-          onDismissed: close,
-          onAction: onAction == null
-              ? null
-              : () {
-                  try {
-                    onAction();
-                  } finally {
-                    close();
-                  }
-                },
-        ),
-      ),
-    ),
-  );
-  overlay.insert(handle.entry!);
+  if (near != null) {
+    handle.attach(near, toast);
+    return handle;
+  }
+  final root = _rootToasters[overlay] ??= _RootToaster(overlay);
+  root.hold(handle);
+  final known = root.key.currentState;
+  if (known != null) {
+    handle.attach(known, toast);
+  } else {
+    // The entry builds next frame; the first notice waits for it.
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => handle.attach(root.key.currentState, toast),
+    );
+  }
   return handle;
 }
 
-class _SnackBarHost extends StatefulWidget {
-  const _SnackBarHost({
-    required this.handle,
-    required this.motion,
-    required this.duration,
-    required this.bottom,
-    required this.pauseForAccess,
-    required this.onClose,
-    required this.backFocus,
-    required this.child,
-  });
-  final _OverlayHandle handle;
-  final RetroDesktopMotion motion;
-  final Duration duration;
-  final double bottom;
-  final bool pauseForAccess;
-  final VoidCallback onClose;
-  final FocusNode? backFocus;
+/// Hosts the look's notices over [child]. [showRetroDesktopSnackBar] shows each at the foot, centred, at most 520 wide,
+/// one at a time. ui_core's toaster ([RawToaster]) runs them: a notice waits while a pointer rests on it or the
+/// keyboard is in it, F6 takes the keyboard to it and back, and a swipe sideways dismisses it. They stand above the
+/// keyboard and above a bar along the foot that ui_core's `RawToasterKeepClear` marks
+/// ([RetroDesktopNavigationBar] and [RetroDesktopScaffold.footer] are marked). [RetroDesktopHost] installs one above
+/// the app's navigator.
+///
+/// ```dart
+/// RetroDesktopToaster(child: app)
+/// ```
+class RetroDesktopToaster extends StatefulWidget {
+  /// Creates a [RetroDesktopToaster].
+  const RetroDesktopToaster({super.key, required this.child});
+
+  /// The app the notices stand over.
   final Widget child;
+
   @override
-  State<_SnackBarHost> createState() => _SnackBarHostState();
+  State<RetroDesktopToaster> createState() => _RetroDesktopToasterState();
 }
 
-class _SnackBarHostState extends State<_SnackBarHost> {
-  final _scope = FocusScopeNode();
-  Timer? _timer;
-  bool _hovered = false, _focused = false;
-  void _wait() {
-    _timer?.cancel();
-    if (!widget.pauseForAccess && !_hovered && !_focused) {
-      _timer = Timer(widget.duration, widget.onClose);
+class _RetroDesktopToasterState extends State<RetroDesktopToaster> {
+  final GlobalKey<RawToasterState> _toaster = GlobalKey();
+
+  // The notice showing, which the next one replaces.
+  _NoticeHandle? _current;
+
+  RawToastController? _show(RawToast toast) =>
+      _toaster.currentState?.show(toast);
+
+  Widget _notice(BuildContext context, RawToastDetails v) {
+    final look = v.toast.data;
+    final face = RetroDesktopSnackBar(
+      v.toast.message,
+      title: v.toast.title,
+      tone: look is _NoticeLook ? look.tone : RetroDesktopTone.info,
+      actionLabel: v.toast.actionLabel,
+      onAction: v.runAction,
+      onDismissed: v.dismiss,
+      dismissLabel: look is _NoticeLook ? look.dismissLabel : null,
+      style: look is _NoticeLook ? look.style : null,
+    );
+    if (look is! _NoticeLook) return face;
+    // The look's motion: instant, as the period was, unless the theme gives a notice's rise or fall a time.
+    final motion = look.carried.motion;
+    if (v.exiting && motion.leave == Duration.zero) {
+      return const SizedBox.shrink();
     }
+    final shown = look.carried.wrap(face);
+    if (!v.exiting && motion.raise == Duration.zero) return shown;
+    return AnimatedBuilder(
+      animation: v.animation,
+      builder: (context, child) =>
+          Opacity(opacity: v.animation.value.clamp(0.0, 1.0), child: child),
+      child: shown,
+    );
   }
 
   @override
-  void initState() {
-    super.initState();
-    _wait();
-    widget.handle.beforeDismiss = () {
-      final back = widget.backFocus;
-      if (_scope.hasFocus && back?.context != null && back!.canRequestFocus) {
-        back.requestFocus();
-      }
-    };
-  }
-
-  @override
-  void dispose() {
-    _timer?.cancel();
-    widget.handle.beforeDismiss = null;
-    _scope.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) => SafeArea(
-    child: Align(
-      alignment: Alignment.bottomCenter,
-      child: Padding(
-        padding: EdgeInsets.fromLTRB(
-          16,
-          16,
-          16,
-          16 + widget.bottom + MediaQuery.viewInsetsOf(context).bottom,
-        ),
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 520),
-          child: _OverlayTransition(
-            handle: widget.handle,
-            motion: widget.motion,
-            child: FocusScope(
-              node: _scope,
-              onFocusChange: (value) {
-                _focused = value;
-                _wait();
-              },
-              child: MouseRegion(
-                onEnter: (_) {
-                  _hovered = true;
-                  _wait();
-                },
-                onExit: (_) {
-                  _hovered = false;
-                  _wait();
-                },
-                child: SingleChildScrollView(child: widget.child),
-              ),
-            ),
-          ),
-        ),
+  Widget build(BuildContext context) {
+    final media = MediaQuery.of(context);
+    return RawToaster(
+      key: _toaster,
+      maxVisible: 1,
+      padding: EdgeInsets.fromLTRB(
+        RetroDesktopSpacing.s16,
+        RetroDesktopSpacing.s16,
+        RetroDesktopSpacing.s16,
+        RetroDesktopSpacing.s16 +
+            math.max(media.viewInsets.bottom - media.padding.bottom, 0.0),
       ),
-    ),
-  );
+      constraints: const BoxConstraints(maxWidth: 520),
+      toastBuilder: _notice,
+      child: widget.child,
+    );
+  }
 }
 
 /// Connects a button builder to a menu anchored at that button's bounds.

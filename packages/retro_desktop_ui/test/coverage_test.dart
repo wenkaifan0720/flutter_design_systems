@@ -144,7 +144,7 @@ void main() {
         await _pump(
           tester,
           appearance,
-          RetroDesktopInputOtp(label: 'Code', controller: code),
+          RetroDesktopInputOtp(labelText: 'Code', controller: code),
         );
         // The boxes stand under the label, at the row's start.
         await tester.tapAt(

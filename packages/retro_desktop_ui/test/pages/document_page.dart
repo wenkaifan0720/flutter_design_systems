@@ -17,7 +17,7 @@ class DocumentPage extends StatelessWidget {
   Widget build(BuildContext context) {
     const title = 'A plan worth keeping';
     return RetroDesktopScaffold(
-      topBar: const RetroDesktopAppBar(title: title),
+      appBar: const RetroDesktopAppBar(title: title),
       body: RetroDesktopDesktop(
         active: title,
         phoneOrder: const [title],
@@ -99,7 +99,7 @@ class DocumentPage extends StatelessWidget {
                       ],
                     ),
                     RetroDesktopDisclosure(
-                      note: '12 versions · since Sunday',
+                      subtitle: '12 versions · since Sunday',
                       title: 'Versions',
                       child: Text('Version history'),
                     ),
@@ -135,7 +135,7 @@ class DocumentPage extends StatelessWidget {
                     RetroDesktopFile(
                       'first-sheet.pdf',
                       kind: 'PDF',
-                      note: '2 pages',
+                      subtitle: '2 pages',
                       art: RetroDesktopFilePageArt(
                         kind: RetroDesktopFileArt.text,
                         selected: false,
@@ -144,7 +144,7 @@ class DocumentPage extends StatelessWidget {
                     RetroDesktopFile(
                       'the-numbers.csv',
                       kind: 'CSV',
-                      note: '18 rows',
+                      subtitle: '18 rows',
                       art: RetroDesktopFilePageArt(
                         kind: RetroDesktopFileArt.table,
                         selected: true,
@@ -154,7 +154,7 @@ class DocumentPage extends StatelessWidget {
                     RetroDesktopFile(
                       'a-drawing.svg',
                       kind: 'SVG',
-                      note: '1 sheet',
+                      subtitle: '1 sheet',
                       art: RetroDesktopFilePageArt(
                         kind: RetroDesktopFileArt.plan,
                         selected: false,

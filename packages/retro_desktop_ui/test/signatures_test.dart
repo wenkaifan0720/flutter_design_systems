@@ -327,7 +327,7 @@ void main() {
         value: '1,234,567',
         unit: long,
         title: long,
-        note: longLine,
+        subtitle: longLine,
         summary: longLine,
         reads: [
           (long, '1,234,567', long),
@@ -344,7 +344,7 @@ void main() {
           value: '8',
           unit: '°',
           title: long,
-          note: longLine,
+          subtitle: longLine,
           summary: longLine,
           reads: [('High', '11°', null)],
         ),
@@ -355,7 +355,7 @@ void main() {
       () => const RetroDesktopReadingHead(
         value: '1,234,567',
         title: long,
-        note: longLine,
+        subtitle: longLine,
       ),
     );
   });
@@ -492,7 +492,7 @@ void main() {
           for (var i = 0; i < 80; i++)
             RetroDesktopListTableRow(
               title: longLine,
-              note: long,
+              subtitle: long,
               selected: i == 2,
               cells: const [(long, long)],
             ),
@@ -577,7 +577,7 @@ void main() {
             RetroDesktopFolder(
               long,
               icon: LucideIcons.star,
-              note: longLine,
+              subtitle: longLine,
               selected: i == 1,
               art: RetroDesktopFolderArt(
                 selected: i == 1,
@@ -611,7 +611,7 @@ void main() {
             RetroDesktopFile(
               'a-very-$long.txt',
               kind: long,
-              note: longLine,
+              subtitle: longLine,
               art: RetroDesktopFilePageArt(kind: art, selected: false),
             ),
           for (var i = 0; i < 24; i++)
@@ -649,7 +649,7 @@ void main() {
               '1,234,567,890.12',
               share: i * .1 - 1,
               level: i % 5,
-              open: i % 3 == 0 ? i.isEven : null,
+              isExpanded: i % 3 == 0 ? i.isEven : null,
             ),
         ],
       ),

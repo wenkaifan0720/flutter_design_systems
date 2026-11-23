@@ -33,7 +33,7 @@ void main() {
                       width: 310,
                       key: const ValueKey('radios'),
                       child: RetroDesktopRadioGroup<String>(
-                        label: 'Plan',
+                        labelText: 'Plan',
                         options: const [
                           RetroDesktopRadio('A', 'A'),
                           RetroDesktopRadio('B', 'B', enabled: false),

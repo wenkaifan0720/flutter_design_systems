@@ -24,7 +24,7 @@ import 'tokens.dart';
 /// field's box, taller, its words from the top.
 ///
 /// ```dart
-/// RetroDesktopTextArea(label: 'Notes', hint: 'Anything the courier should know', lines: 4)
+/// RetroDesktopTextArea(labelText: 'Notes', hintText: 'Anything the courier should know', lines: 4)
 /// ```
 class RetroDesktopTextArea extends StatelessWidget {
   /// Creates a [RetroDesktopTextArea].
@@ -32,10 +32,10 @@ class RetroDesktopTextArea extends StatelessWidget {
     super.key,
     this.controller,
     this.initial,
-    this.hint,
-    this.label,
-    this.helper,
-    this.error,
+    this.hintText,
+    this.labelText,
+    this.helperText,
+    this.errorText,
     this.lines = 4,
     this.enabled = true,
     this.focusNode,
@@ -50,10 +50,10 @@ class RetroDesktopTextArea extends StatelessWidget {
   final String? initial;
 
   /// The words shown while the box is empty.
-  final String? hint;
+  final String? hintText;
 
   /// The words above the box, under it, and the error that replaces them.
-  final String? label, helper, error;
+  final String? labelText, helperText, errorText;
 
   /// How many lines the box shows.
   final int lines;
@@ -74,10 +74,10 @@ class RetroDesktopTextArea extends StatelessWidget {
   Widget build(BuildContext context) => RetroDesktopTextField(
     controller: controller,
     initial: initial,
-    hint: hint,
-    label: label,
-    helper: helper,
-    error: error,
+    hintText: hintText,
+    labelText: labelText,
+    helperText: helperText,
+    errorText: errorText,
     lines: lines,
     enabled: enabled,
     focusNode: focusNode,
@@ -99,10 +99,10 @@ class RetroDesktopTextArea extends StatelessWidget {
         ),
       )
       ..add(StringProperty('initial', initial, defaultValue: null))
-      ..add(StringProperty('hint', hint, defaultValue: null))
-      ..add(StringProperty('label', label, defaultValue: null))
-      ..add(StringProperty('helper', helper, defaultValue: null))
-      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
+      ..add(StringProperty('helperText', helperText, defaultValue: null))
+      ..add(StringProperty('errorText', errorText, defaultValue: null))
       ..add(IntProperty('lines', lines, defaultValue: 4))
       ..add(FlagProperty('enabled', value: enabled, ifFalse: 'enabled: false'))
       ..add(
@@ -123,7 +123,7 @@ class RetroDesktopTextArea extends StatelessWidget {
 /// reveal keeps the state and the eye's name; the box is the text field's.
 ///
 /// ```dart
-/// RetroDesktopPasswordField(label: 'Password', onChanged: (_) {})
+/// RetroDesktopPasswordField(labelText: 'Password', onChanged: (_) {})
 /// ```
 class RetroDesktopPasswordField extends StatelessWidget {
   /// Creates a [RetroDesktopPasswordField].
@@ -132,10 +132,10 @@ class RetroDesktopPasswordField extends StatelessWidget {
     this.controller,
     this.focusNode,
     this.autofocus = false,
-    this.label,
-    this.hint,
-    this.helper,
-    this.error,
+    this.labelText,
+    this.hintText,
+    this.helperText,
+    this.errorText,
     this.enabled = true,
     this.onChanged,
     this.onSubmitted,
@@ -152,10 +152,10 @@ class RetroDesktopPasswordField extends StatelessWidget {
   final bool autofocus;
 
   /// The words above the box, in it while empty, and under it.
-  final String? label, hint, helper;
+  final String? labelText, hintText, helperText;
 
   /// The error that replaces the helper.
-  final String? error;
+  final String? errorText;
 
   /// Whether the box takes input.
   final bool enabled;
@@ -176,10 +176,10 @@ class RetroDesktopPasswordField extends StatelessWidget {
         controller: controller,
         focusNode: focusNode,
         autofocus: autofocus,
-        label: label,
-        hint: hint,
-        helper: helper,
-        error: error,
+        labelText: labelText,
+        hintText: hintText,
+        helperText: helperText,
+        errorText: errorText,
         enabled: enabled,
         onChanged: onChanged,
         onSubmitted: onSubmitted,
@@ -217,10 +217,10 @@ class RetroDesktopPasswordField extends StatelessWidget {
         ),
       )
       ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
-      ..add(StringProperty('label', label, defaultValue: null))
-      ..add(StringProperty('hint', hint, defaultValue: null))
-      ..add(StringProperty('helper', helper, defaultValue: null))
-      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
+      ..add(StringProperty('helperText', helperText, defaultValue: null))
+      ..add(StringProperty('errorText', errorText, defaultValue: null))
       ..add(FlagProperty('enabled', value: enabled, ifFalse: 'enabled: false'))
       ..add(
         ObjectFlagProperty<ValueChanged<String>>.has('onChanged', onChanged),
@@ -243,7 +243,7 @@ class RetroDesktopPasswordField extends StatelessWidget {
 /// the available width, the prefix and suffix move above and below the input.
 ///
 /// ```dart
-/// RetroDesktopInputGroup(label: 'Site', prefix: 'https://', suffix: '.example.com', hint: 'studio')
+/// RetroDesktopInputGroup(labelText: 'Site', prefix: 'https://', suffix: '.example.com', hintText: 'studio')
 /// ```
 class RetroDesktopInputGroup extends StatefulWidget {
   /// Creates a [RetroDesktopInputGroup].
@@ -252,10 +252,10 @@ class RetroDesktopInputGroup extends StatefulWidget {
     this.controller,
     this.focusNode,
     this.autofocus = false,
-    this.label,
-    this.hint,
-    this.helper,
-    this.error,
+    this.labelText,
+    this.hintText,
+    this.helperText,
+    this.errorText,
     this.prefix,
     this.suffix,
     this.leading,
@@ -276,10 +276,10 @@ class RetroDesktopInputGroup extends StatefulWidget {
   final bool autofocus;
 
   /// The words above the box, in it while empty, and under it.
-  final String? label, hint, helper;
+  final String? labelText, hintText, helperText;
 
   /// The error that replaces the helper.
-  final String? error;
+  final String? errorText;
 
   /// The fixed words before and after the typed ones.
   final String? prefix, suffix;
@@ -322,10 +322,10 @@ class RetroDesktopInputGroup extends StatefulWidget {
         ),
       )
       ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
-      ..add(StringProperty('label', label, defaultValue: null))
-      ..add(StringProperty('hint', hint, defaultValue: null))
-      ..add(StringProperty('helper', helper, defaultValue: null))
-      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
+      ..add(StringProperty('helperText', helperText, defaultValue: null))
+      ..add(StringProperty('errorText', errorText, defaultValue: null))
       ..add(StringProperty('prefix', prefix, defaultValue: null))
       ..add(StringProperty('suffix', suffix, defaultValue: null))
       ..add(FlagProperty('enabled', value: enabled, ifFalse: 'enabled: false'))
@@ -398,7 +398,7 @@ class _InputGroupState extends State<RetroDesktopInputGroup> {
           widthFactor: 1,
           child: Text(
             words,
-            style: t.type.body.copyWith(color: c.textSecondary),
+            style: t.textTheme.body.copyWith(color: c.textSecondary),
           ),
         ),
       ),
@@ -409,18 +409,19 @@ class _InputGroupState extends State<RetroDesktopInputGroup> {
   Widget build(BuildContext context) {
     final t = RetroDesktopTheme.of(context);
     final c = t.colors;
-    final error = widget.error;
+    final error = widget.errorText;
     final editor = retroDesktopBareEditor(
       context,
       controller: _text,
       focusNode: _focus,
       autofocus: widget.autofocus,
-      hint: widget.hint,
+      hint: widget.hintText,
       enabled: widget.enabled,
       keyboardType: widget.keyboardType,
       onChanged: widget.onChanged,
       onSubmitted: widget.onSubmitted,
-      semanticLabel: widget.label,
+      semanticLabel: widget.labelText,
+      semanticHint: error ?? widget.helperText,
     );
     // Keep the complete address readable when its fixed parts outgrow one line.
     final group = LayoutBuilder(
@@ -428,7 +429,7 @@ class _InputGroupState extends State<RetroDesktopInputGroup> {
         double natural(String? words) {
           if (words == null) return 0;
           final tp = TextPainter(
-            text: TextSpan(text: words, style: t.type.body),
+            text: TextSpan(text: words, style: t.textTheme.body),
             textDirection: Directionality.of(context),
             textScaler: MediaQuery.textScalerOf(context),
             maxLines: 1,
@@ -443,7 +444,7 @@ class _InputGroupState extends State<RetroDesktopInputGroup> {
             room.maxWidth <
                 natural(widget.prefix) +
                     natural(widget.suffix) +
-                    math.max(56, natural(widget.hint)) +
+                    math.max(56, natural(widget.hintText)) +
                     4 +
                     (widget.leading == null ? 0 : 24) +
                     (widget.trailing == null ? 0 : 44);
@@ -515,8 +516,8 @@ class _InputGroupState extends State<RetroDesktopInputGroup> {
       },
     );
     return _Labelled(
-      label: widget.label,
-      note: error ?? widget.helper,
+      label: widget.labelText,
+      note: error ?? widget.helperText,
       error: error != null,
       child: group,
     );
@@ -554,7 +555,9 @@ class _Labelled extends StatelessWidget {
         if (label != null)
           Padding(
             padding: const EdgeInsets.only(bottom: RetroDesktopSpacing.s6),
-            child: ExcludeSemantics(child: Text(label!, style: t.type.body)),
+            child: ExcludeSemantics(
+              child: Text(label!, style: t.textTheme.body),
+            ),
           ),
         if (dropdown && MediaQuery.sizeOf(context).width >= 600)
           Align(
@@ -654,7 +657,7 @@ Widget _listPanel(BuildContext context, Widget list) => retroDesktopPanel(
 /// runs and, should it fail, says so with a row that tries again.
 ///
 /// ```dart
-/// RetroDesktopCombobox<String>(label: 'Country', options: const ['Austria', 'Belgium', 'Chile'], onSelected: (_) {})
+/// RetroDesktopCombobox<String>(labelText: 'Country', options: const ['Austria', 'Belgium', 'Chile'], onSelected: (_) {})
 /// ```
 class RetroDesktopCombobox<T extends Object> extends StatelessWidget {
   /// Creates a [RetroDesktopCombobox].
@@ -666,10 +669,10 @@ class RetroDesktopCombobox<T extends Object> extends StatelessWidget {
     this.displayString,
     this.value,
     this.onSelected,
-    this.label,
-    this.hint,
-    this.helper,
-    this.error,
+    this.labelText,
+    this.hintText,
+    this.helperText,
+    this.errorText,
     this.requireSelection = false,
     this.enabled = true,
     this.controller,
@@ -700,10 +703,10 @@ class RetroDesktopCombobox<T extends Object> extends StatelessWidget {
   final ValueChanged<T>? onSelected;
 
   /// The words above the box, in it while empty, and under it.
-  final String? label, hint, helper;
+  final String? labelText, hintText, helperText;
 
   /// The error that replaces the helper.
-  final String? error;
+  final String? errorText;
 
   /// Whether the box keeps only an option (it clears free words on leaving).
   final bool requireSelection;
@@ -736,24 +739,28 @@ class RetroDesktopCombobox<T extends Object> extends StatelessWidget {
       highlightFollowsPointer: true,
       controller: controller,
       focusNode: focusNode,
-      semanticLabel: label,
+      semanticLabel: labelText,
       fieldBuilder: (context, f) => _ListField(
         focusNode: f.focusNode,
-        error: error != null,
+        error: errorText != null,
         enabled: enabled,
         child: retroDesktopBareEditor(
           context,
           controller: f.controller,
           focusNode: f.focusNode,
           autofocus: autofocus,
-          hint: hint,
+          hint: hintText,
           enabled: enabled,
           // Enter takes the lit option and the field keeps the focus, so it
           // comes through onEditingComplete with no onSubmitted: a submit
           // with the focus kept restarts the text input, and in a browser
           // typing then goes nowhere.
           onEditingComplete: f.submit,
-          semanticLabel: label,
+          semanticLabel: labelText,
+          semanticHint: errorText ?? helperText,
+          // The text input says whether the list shows under it, where a
+          // screen reader hears it, as the select's button does.
+          expanded: f.isOpen,
         ),
       ),
       optionBuilder: (context, option, states) =>
@@ -764,9 +771,9 @@ class RetroDesktopCombobox<T extends Object> extends StatelessWidget {
       errorBuilder: _failedRows,
     );
     return _Labelled(
-      label: label,
-      note: error ?? helper,
-      error: error != null,
+      label: labelText,
+      note: errorText ?? helperText,
+      error: errorText != null,
       dropdown: true,
       child: box,
     );
@@ -793,10 +800,10 @@ class RetroDesktopCombobox<T extends Object> extends StatelessWidget {
       )
       ..add(DiagnosticsProperty<T>('value', value, defaultValue: null))
       ..add(ObjectFlagProperty<ValueChanged<T>>.has('onSelected', onSelected))
-      ..add(StringProperty('label', label, defaultValue: null))
-      ..add(StringProperty('hint', hint, defaultValue: null))
-      ..add(StringProperty('helper', helper, defaultValue: null))
-      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
+      ..add(StringProperty('helperText', helperText, defaultValue: null))
+      ..add(StringProperty('errorText', errorText, defaultValue: null))
       ..add(
         FlagProperty(
           'requireSelection',
@@ -831,7 +838,7 @@ Widget _noMatchesRow(BuildContext context) {
       padding: _optionPadding(t),
       child: Text(
         RawWidgetsLocalizations.of(context).noResultsLabel,
-        style: t.type.body.copyWith(color: t.colors.textSecondary),
+        style: t.textTheme.body.copyWith(color: t.colors.textSecondary),
       ),
     ),
   );
@@ -854,7 +861,7 @@ Widget _searchingRow(BuildContext context) {
       padding: _optionPadding(t),
       child: Text(
         RawWidgetsLocalizations.of(context).loadingLabel,
-        style: t.type.body.copyWith(color: t.colors.textSecondary),
+        style: t.textTheme.body.copyWith(color: t.colors.textSecondary),
       ),
     ),
   );
@@ -874,7 +881,7 @@ Widget _failedRows(BuildContext context, RawSearchError failed) {
         child: ExcludeSemantics(
           child: Text(
             words.searchFailedMessage,
-            style: t.type.body.copyWith(color: t.colors.textSecondary),
+            style: t.textTheme.body.copyWith(color: t.colors.textSecondary),
           ),
         ),
       ),
@@ -996,16 +1003,16 @@ class _ListField extends StatelessWidget {
 /// again.
 ///
 /// ```dart
-/// RetroDesktopFormField(label: 'Email', help: 'We send the receipt here', required: true, child: RetroDesktopTextField(hint: 'name@example.com'))
+/// RetroDesktopFormField(labelText: 'Email', helperText: 'We send the receipt here', required: true, child: RetroDesktopTextField(hintText: 'name@example.com'))
 /// ```
 class RetroDesktopFormField extends StatelessWidget {
   /// Creates a [RetroDesktopFormField].
   const RetroDesktopFormField({
     super.key,
     required this.child,
-    this.label,
-    this.help,
-    this.error,
+    this.labelText,
+    this.helperText,
+    this.errorText,
     this.required = false,
     this.enabled = true,
     this.focusNode,
@@ -1021,7 +1028,7 @@ class RetroDesktopFormField extends StatelessWidget {
 
   /// The name above the control, the help under it, and the error that
   /// replaces the help.
-  final String? label, help, error;
+  final String? labelText, helperText, errorText;
 
   /// Whether the field must be filled.
   final bool required;
@@ -1049,14 +1056,14 @@ class RetroDesktopFormField extends StatelessWidget {
     final decide = mergeSemantics == null;
     final requiredWords =
         requiredHint ?? RawWidgetsLocalizations.of(context).requiredHint;
-    final hint = [?error, ?help].join('. ');
+    final hint = [?errorText, ?helperText].join('. ');
     return RawInputDecorator(
       // Left to Retro (null), the field is told to merge, which adds no node round the field, and the builder places
       // the look's own node in place of the merged control: ui_core's field told to merge merges whatever it holds.
       mergeSemantics: mergeSemantics ?? true,
-      labelText: label,
-      helperText: help,
-      errorText: error,
+      labelText: labelText,
+      helperText: helperText,
+      errorText: errorText,
       required: required,
       enabled: enabled,
       focusNode: focusNode,
@@ -1069,28 +1076,30 @@ class RetroDesktopFormField extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(bottom: RetroDesktopSpacing.s6),
               child: DefaultTextStyle.merge(
-                style: t.type.body.copyWith(
+                style: t.textTheme.body.copyWith(
                   color: enabled ? c.text : c.textTertiary,
                 ),
                 child: Row(
                   children: [
                     Flexible(child: parts.label!),
                     if (parts.required)
-                      ExcludeSemantics(child: Text(' *', style: t.type.body)),
+                      ExcludeSemantics(
+                        child: Text(' *', style: t.textTheme.body),
+                      ),
                   ],
                 ),
               ),
             ),
           if (decide)
             _FieldNode(
-              label: label == null
+              label: labelText == null
                   ? null
                   : required
-                  ? '$label, $requiredWords'
-                  : label,
-              words: label,
+                  ? '$labelText, $requiredWords'
+                  : labelText,
+              words: labelText,
               hint: hint.isEmpty ? null : hint,
-              invalid: error != null,
+              invalid: parts.invalid,
               textDirection: Directionality.maybeOf(context),
               child: child,
             )
@@ -1132,9 +1141,9 @@ class RetroDesktopFormField extends StatelessWidget {
           defaultValue: null,
         ),
       )
-      ..add(StringProperty('label', label, defaultValue: null))
-      ..add(StringProperty('help', help, defaultValue: null))
-      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
+      ..add(StringProperty('helperText', helperText, defaultValue: null))
+      ..add(StringProperty('errorText', errorText, defaultValue: null))
       ..add(FlagProperty('required', value: required, ifTrue: 'required'))
       ..add(FlagProperty('enabled', value: enabled, ifFalse: 'enabled: false'))
       ..add(

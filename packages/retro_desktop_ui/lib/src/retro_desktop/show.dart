@@ -69,7 +69,7 @@ class RetroDesktopAvatar extends StatelessWidget {
         fit: BoxFit.scaleDown,
         child: Text(
           initials,
-          style: (slot((s) => s.textStyle) ?? t.type.small).copyWith(
+          style: (slot((s) => s.textStyle) ?? t.textTheme.small).copyWith(
             color:
                 slot((s) => s.foreground) ??
                 (selected ? t.colors.onHighlight : t.colors.text),
@@ -328,7 +328,7 @@ class RetroDesktopSurface extends StatelessWidget {
           ? [
               BoxShadow(
                 color: t.colors.shade.withValues(
-                  alpha: t.colors.dark ? .95 : .8,
+                  alpha: t.colors.brightness == Brightness.dark ? .95 : .8,
                 ),
                 offset: const Offset(2, 2),
               ),
@@ -433,7 +433,7 @@ class RetroDesktopCard extends StatelessWidget {
               Semantics(
                 container: true,
                 header: true,
-                child: Text(title!, style: t.type.sub),
+                child: Text(title!, style: t.textTheme.sub),
               ),
             body,
           ],
@@ -496,7 +496,7 @@ class RetroDesktopListSection extends StatelessWidget {
             padding: const EdgeInsets.only(bottom: RetroDesktopSpacing.s8),
             child: Semantics(
               header: true,
-              child: Text(title!, style: t.type.small),
+              child: Text(title!, style: t.textTheme.small),
             ),
           ),
         RetroDesktopSurface(
@@ -524,7 +524,7 @@ class RetroDesktopListSection extends StatelessWidget {
         if (footer != null)
           Padding(
             padding: const EdgeInsets.only(top: RetroDesktopSpacing.s8),
-            child: Text(footer!, style: t.type.note),
+            child: Text(footer!, style: t.textTheme.note),
           ),
       ],
     );
@@ -787,7 +787,7 @@ class RetroDesktopAmount extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (label != null) Text(label!, style: t.type.note),
+            if (label != null) Text(label!, style: t.textTheme.note),
             Wrap(
               crossAxisAlignment: WrapCrossAlignment.end,
               spacing: RetroDesktopSpacing.s6,
@@ -795,16 +795,16 @@ class RetroDesktopAmount extends StatelessWidget {
                 Text(
                   value,
                   style: switch (scale) {
-                    RetroDesktopAmountScale.display => t.type.big,
-                    RetroDesktopAmountScale.title => t.type.sub,
-                    RetroDesktopAmountScale.inline => t.type.figure,
+                    RetroDesktopAmountScale.display => t.textTheme.big,
+                    RetroDesktopAmountScale.title => t.textTheme.sub,
+                    RetroDesktopAmountScale.inline => t.textTheme.figure,
                   },
                 ),
-                if (unit != null) Text(unit!, style: t.type.body),
+                if (unit != null) Text(unit!, style: t.textTheme.body),
                 if (was != null)
                   Text(
                     was!,
-                    style: t.type.note.copyWith(
+                    style: t.textTheme.note.copyWith(
                       decoration: TextDecoration.lineThrough,
                     ),
                   ),

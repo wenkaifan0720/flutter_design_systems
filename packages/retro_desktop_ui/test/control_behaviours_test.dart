@@ -36,7 +36,7 @@ void main() {
         await tester.pumpWidget(
           _host(
             RetroDesktopSearchField(
-              hint: 'Find',
+              hintText: 'Find',
               controller: controller,
               focusNode: focus,
               onChanged: changes.add,
@@ -65,7 +65,7 @@ void main() {
     await tester.pumpWidget(
       _host(
         RetroDesktopInputOtp(
-          label: 'Verification',
+          labelText: 'Verification',
           length: 4,
           controller: controller,
         ),
@@ -86,7 +86,7 @@ void main() {
         _host(
           StatefulBuilder(
             builder: (context, change) => RetroDesktopSelect<String>(
-              label: 'Delivery',
+              labelText: 'Delivery',
               value: selected,
               options: const [
                 RetroDesktopOption('slow', 'Post'),
@@ -167,7 +167,7 @@ void main() {
       _host(
         StatefulBuilder(
           builder: (context, change) => RetroDesktopRadioGroup<int>(
-            label: 'Grade',
+            labelText: 'Grade',
             value: value,
             options: const [
               RetroDesktopRadio(1, 'First'),
@@ -266,8 +266,8 @@ void main() {
           StatefulBuilder(
             builder: (context, change) => RetroDesktopDatePicker(
               value: value,
-              first: DateTime(2026, 11, 1),
-              last: DateTime(2026, 12, 2),
+              firstDate: DateTime(2026, 11, 1),
+              lastDate: DateTime(2026, 12, 2),
               onChanged: (next) => change(() => value = next),
             ),
           ),
@@ -350,12 +350,12 @@ void main() {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 RetroDesktopSearchField(
-                  hint: 'Search this collection',
+                  hintText: 'Search this collection',
                   onChanged: (_) {},
                 ),
-                const RetroDesktopInputOtp(label: 'Verification code'),
+                const RetroDesktopInputOtp(labelText: 'Verification code'),
                 RetroDesktopSelect<int>(
-                  label: 'Delivery method',
+                  labelText: 'Delivery method',
                   options: const [RetroDesktopOption(1, 'Courier delivery')],
                   onChanged: (_) {},
                 ),
@@ -365,7 +365,7 @@ void main() {
                   onChanged: (_) {},
                 ),
                 RetroDesktopRadioGroup<int>(
-                  label: 'Grade',
+                  labelText: 'Grade',
                   options: const [
                     RetroDesktopRadio(1, 'The first available grade'),
                   ],

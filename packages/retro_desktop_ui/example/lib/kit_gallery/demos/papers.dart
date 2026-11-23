@@ -380,7 +380,7 @@ class KitDocuments extends StatelessWidget {
               key: ValueKey(r.name),
               title: say(r.name),
               icon: r.icon,
-              note: phone ? '${say(r.kind)}, ${r.size}' : null,
+              subtitle: phone ? '${say(r.kind)}, ${r.size}' : null,
               cells: [
                 if (!phone) (say(r.kind), null),
                 (say(phone ? _shortDate(r.changed) : r.changed), null),
@@ -390,7 +390,7 @@ class KitDocuments extends StatelessWidget {
         ],
       );
       final find = RetroDesktopSearchField(
-        hint: say('Find a document'),
+        hintText: say('Find a document'),
         name: say('Find a document'),
         controller: view.find,
         focusNode: view.findFocus,
@@ -505,21 +505,21 @@ class _KitDetailsFormState extends State<KitDetailsForm> {
             'Your name goes on the documents you share and on the copies you '
             'order.',
           ),
-          style: context.retroDesktopTheme.type.meta,
+          style: context.retroDesktopTheme.textTheme.meta,
         ),
         RetroDesktopTextField(
-          label: say('Name'),
+          labelText: say('Name'),
           initial: say(widget.details.name),
           onChanged: (name) => _change(name: name),
         ),
         RetroDesktopTextField(
-          label: say('Email address'),
+          labelText: say('Email address'),
           initial: widget.details.email,
           keyboardType: TextInputType.emailAddress,
           onChanged: (email) => _change(email: email),
         ),
         RetroDesktopSelect<String>(
-          label: say('Save new documents to'),
+          labelText: say('Save new documents to'),
           value: _draft.location,
           options: [
             RetroDesktopOption('local', say('This computer')),
@@ -568,7 +568,7 @@ class KitSettingsPanel extends StatelessWidget {
                 true,
                 (value, change) => RetroDesktopCheckRow(
                   label: say('Save as I type'),
-                  note: say('Every change is kept as you make it.'),
+                  subtitle: say('Every change is kept as you make it.'),
                   value: value,
                   onChanged: change,
                 ),
@@ -577,7 +577,7 @@ class KitSettingsPanel extends StatelessWidget {
                 false,
                 (value, change) => RetroDesktopCheckRow(
                   label: say('Keep a copy on this computer'),
-                  note: say('Open your documents without a connection.'),
+                  subtitle: say('Open your documents without a connection.'),
                   value: value,
                   onChanged: change,
                 ),
@@ -602,7 +602,7 @@ class KitSettingsPanel extends StatelessWidget {
             false,
             (value, change) => RetroDesktopCheckRow(
               label: say('Send a report when something goes wrong'),
-              note: say('It holds no document, only what failed.'),
+              subtitle: say('It holds no document, only what failed.'),
               value: value,
               onChanged: change,
             ),
@@ -734,7 +734,7 @@ class _KitPrintOrderState extends State<KitPrintOrder> {
           due: (say('Amount due'), _money(each * _copies + postage)),
         ),
         RetroDesktopSelect<int>(
-          label: say('Copies'),
+          labelText: say('Copies'),
           value: _copies,
           options: [for (var n = 1; n <= 5; n++) RetroDesktopOption(n, '$n')],
           onChanged: (value) => setState(() => _copies = value),
@@ -743,11 +743,11 @@ class _KitPrintOrderState extends State<KitPrintOrder> {
         // fields ran the form past a 900 desk under two windows and cut its
         // buttons, and side by side they left the window's keylines.
         RetroDesktopTextField(
-          label: say('Deliver to'),
+          labelText: say('Deliver to'),
           initial: say('Alex Lee, 12 Harbour Street, Leith'),
         ),
         RetroDesktopRadioGroup<String>(
-          label: say('Postage'),
+          labelText: say('Postage'),
           value: _post,
           onChanged: (value) => setState(() => _post = value),
           options: [
@@ -759,7 +759,7 @@ class _KitPrintOrderState extends State<KitPrintOrder> {
           ],
         ),
         RetroDesktopSelect<String>(
-          label: say('Pay with'),
+          labelText: say('Pay with'),
           value: _pay,
           options: [
             RetroDesktopOption('card', say('The card ending 4242')),
@@ -1262,7 +1262,7 @@ class _KitPapersState extends State<KitPapers> {
       // windows stacked on a desk do. A step is a whole title bar and its
       // rim: the window behind shows its title whole, never words cut in
       // half by the bar in front.
-      final chrome = RetroDesktopTheme.of(context).type.chrome;
+      final chrome = RetroDesktopTheme.of(context).textTheme.chrome;
       final line = MediaQuery.textScalerOf(context)
           .scale((chrome.fontSize ?? 14) * (chrome.height ?? 1.2));
       // A title bar keeps a pointer's reach (44 on a desk, 48 to a
@@ -1444,7 +1444,7 @@ class _KitPapersState extends State<KitPapers> {
         child: RetroDesktopScaffold(
           fullBleed: true,
           scroll: false,
-          topBar: ListenableBuilder(
+          appBar: ListenableBuilder(
             listenable: _view,
             builder: (context, _) => RetroDesktopMenuBar(
               label: context.say('Papers'),

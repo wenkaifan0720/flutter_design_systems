@@ -43,7 +43,7 @@ void main() {
                 child: SizedBox(
                   width: 320,
                   child: RetroDesktopCombobox<String>(
-                    label: 'City',
+                    labelText: 'City',
                     search: (query) {
                       asked.add(query);
                       return pending.future;

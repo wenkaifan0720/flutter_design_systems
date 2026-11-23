@@ -1,0 +1,145 @@
+// Each name retro_desktop_ui 0.5.0 renamed, used once; dart fix renames it (renames.dart.expect).
+import 'package:retro_desktop_ui/retro_desktop_parts.dart';
+
+dynamic any;
+
+void constructors() {
+  RetroDesktopCheckRow(isError: any, subtitle: any);
+  RetroDesktopPressable(isError: any);
+  RetroDesktopSearchField(errorText: any, hintText: any, helperText: any);
+  RetroDesktopInputOtp(errorText: any, obscureText: any, labelText: any, helperText: any);
+  RetroDesktopSelect(errorText: any, labelText: any, helperText: any);
+  RetroDesktopRadioGroup(errorText: any, labelText: any);
+  RetroDesktopPasswordField(errorText: any, labelText: any, hintText: any, helperText: any);
+  RetroDesktopInputGroup(errorText: any, labelText: any, hintText: any, helperText: any);
+  RetroDesktopCombobox(errorText: any, labelText: any, hintText: any, helperText: any);
+  RetroDesktopDatePicker(firstDate: any, lastDate: any);
+  RetroDesktopPartHead(isExpanded: any, subtitle: any);
+  RetroDesktopTreeRow(isExpanded: any);
+  RetroDesktopSwitchRow(subtitle: any);
+  RetroDesktopRadio(subtitle: any);
+  RetroDesktopListTableRow(subtitle: any);
+  RetroDesktopDisclosure(subtitle: any);
+  RetroDesktopSectionHeader(subtitle: any);
+  RetroDesktopFolder(subtitle: any);
+  RetroDesktopFile(subtitle: any);
+  RetroDesktopFigureHero(subtitle: any);
+  RetroDesktopReadingHead(subtitle: any);
+  RetroDesktopChoice(subtitle: any);
+  RetroDesktopNumberField(helperText: any, labelText: any);
+  RetroDesktopScaffold(appBar: any, initials: any);
+  RetroDesktopChip(isEnabled: any);
+  RetroDesktopChip.outlined(isEnabled: any);
+  RetroDesktopTooltip(waitDuration: any);
+  RetroDesktopTextField(labelText: any, hintText: any, helperText: any, errorText: any);
+  RetroDesktopTextArea(labelText: any, hintText: any, helperText: any, errorText: any);
+  RetroDesktopFormField(labelText: any, errorText: any, helperText: any);
+  RetroDesktopInput(labelText: any, hintText: any);
+  RetroDesktopDateRangePicker(labelText: any);
+  showRetroDesktopDatePicker(any, firstDate: any, lastDate: any);
+  RetroDesktopShapes.forAppearance(any);
+  showRetroDesktopSnackBar(any, any);
+}
+
+void fields(
+  RetroDesktopCheckRow p0,
+  RetroDesktopPressable p1,
+  RetroDesktopSearchField p2,
+  RetroDesktopInputOtp p3,
+  RetroDesktopSelect<Object> p4,
+  RetroDesktopRadioGroup<Object> p5,
+  RetroDesktopPasswordField p6,
+  RetroDesktopInputGroup p7,
+  RetroDesktopCombobox<Object> p8,
+  RetroDesktopDatePicker p9,
+  RetroDesktopPartHead p10,
+  RetroDesktopTreeRow p11,
+  RetroDesktopSwitchRow p12,
+  RetroDesktopRadio<Object> p13,
+  RetroDesktopListTableRow p14,
+  RetroDesktopDisclosure p15,
+  RetroDesktopSectionHeader p16,
+  RetroDesktopFolder p17,
+  RetroDesktopFile p18,
+  RetroDesktopFigureHero p19,
+  RetroDesktopReadingHead p20,
+  RetroDesktopChoice p21,
+  RetroDesktopNumberField p22,
+  RetroDesktopScaffold p23,
+  RetroDesktopArrowButtonPainter p24,
+  RetroDesktopDeskPainter p25,
+  RetroDesktopChip p26,
+  RetroDesktopTooltip p27,
+  RetroDesktopTextField p28,
+  RetroDesktopTextArea p29,
+  RetroDesktopFormField p30,
+  RetroDesktopInput p31,
+  RetroDesktopDateRangePicker p32,
+  RetroDesktopThemeData p33,
+) {
+  p0.isError;
+  p0.subtitle;
+  p1.isError;
+  p2.errorText;
+  p2.hintText;
+  p2.helperText;
+  p3.errorText;
+  p3.obscureText;
+  p3.labelText;
+  p3.helperText;
+  p4.errorText;
+  p4.labelText;
+  p4.helperText;
+  p5.errorText;
+  p5.labelText;
+  p6.errorText;
+  p6.labelText;
+  p6.hintText;
+  p6.helperText;
+  p7.errorText;
+  p7.labelText;
+  p7.hintText;
+  p7.helperText;
+  p8.errorText;
+  p8.labelText;
+  p8.hintText;
+  p8.helperText;
+  p9.firstDate;
+  p9.lastDate;
+  p10.isExpanded;
+  p10.subtitle;
+  p11.isExpanded;
+  p12.subtitle;
+  p13.subtitle;
+  p14.subtitle;
+  p15.subtitle;
+  p16.subtitle;
+  p17.subtitle;
+  p18.subtitle;
+  p19.subtitle;
+  p20.subtitle;
+  p21.subtitle;
+  p22.helperText;
+  p22.labelText;
+  p23.appBar;
+  p23.initials;
+  p24.colors;
+  p25.colors;
+  p26.isEnabled;
+  p27.waitDuration;
+  p28.labelText;
+  p28.hintText;
+  p28.helperText;
+  p28.errorText;
+  p29.labelText;
+  p29.hintText;
+  p29.helperText;
+  p29.errorText;
+  p30.labelText;
+  p30.errorText;
+  p30.helperText;
+  p31.labelText;
+  p31.hintText;
+  p32.labelText;
+  p33.textTheme;
+}

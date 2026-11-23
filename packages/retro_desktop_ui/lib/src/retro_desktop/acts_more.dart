@@ -102,7 +102,7 @@ Widget _joined(BuildContext context, List<Widget> segments) {
             ),
             component: t.buttonTheme.over(
               RetroDesktopStyle(
-                textStyle: WidgetStatePropertyAll(t.type.chrome),
+                textStyle: WidgetStatePropertyAll(t.textTheme.chrome),
               ),
             ),
             padding: EdgeInsets.zero,
@@ -179,12 +179,12 @@ Widget _segment(
           if (label != null)
             Flexible(
               child: RetroDesktopCaps(
-                style: t.type.chrome,
+                style: t.textTheme.chrome,
                 Text(
                   label,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: t.type.chrome.copyWith(color: ink),
+                  style: t.textTheme.chrome.copyWith(color: ink),
                 ),
               ),
             ),

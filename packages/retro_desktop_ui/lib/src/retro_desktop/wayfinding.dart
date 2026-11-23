@@ -57,8 +57,8 @@ class RetroDesktopBreadcrumb extends StatelessWidget {
     final c = t.colors;
     final rtl = Directionality.of(context) == TextDirection.rtl;
     // The places behind in the secondary ink; where you are in the words' own, so the trail ends on it.
-    final quiet = t.type.caption.copyWith(color: c.textSecondary);
-    final here = t.type.caption.copyWith(
+    final quiet = t.textTheme.caption.copyWith(color: c.textSecondary);
+    final here = t.textTheme.caption.copyWith(
       color: c.text,
       fontWeight: FontWeight.w600,
     );
@@ -205,7 +205,7 @@ class RetroDesktopPagination extends StatelessWidget {
           // numbers a whole number of pixels tall, so each stands centred in
           // its reach on whole pixels at one top (at compact density the
           // fractional height left the arrows 0.3 px higher).
-          final figure = t.type.figure;
+          final figure = t.textTheme.figure;
           final cell =
               (MediaQuery.textScalerOf(context).scale(figure.fontSize ?? 14) *
                           (figure.height ?? 1.2) +
@@ -248,7 +248,7 @@ class RetroDesktopPagination extends StatelessWidget {
                       softWrap: false,
                       overflow: TextOverflow.ellipsis,
                       textAlign: TextAlign.center,
-                      style: t.type.figure.copyWith(color: t.colors.text),
+                      style: t.textTheme.figure.copyWith(color: t.colors.text),
                     ),
                   ),
                 )
@@ -261,7 +261,7 @@ class RetroDesktopPagination extends StatelessWidget {
                         child: Text(
                           '…',
                           textAlign: TextAlign.center,
-                          style: t.type.body.copyWith(
+                          style: t.textTheme.body.copyWith(
                             color: t.colors.textTertiary,
                           ),
                         ),
@@ -293,11 +293,11 @@ class RetroDesktopPagination extends StatelessWidget {
                             vertical: 4,
                           ),
                           child: RetroDesktopCaps(
-                            style: t.type.figure,
+                            style: t.textTheme.figure,
                             Text(
                               words.formatInteger(i + 1),
                               textAlign: TextAlign.center,
-                              style: t.type.figure.copyWith(
+                              style: t.textTheme.figure.copyWith(
                                 color: states.contains(WidgetState.selected)
                                     ? t.colors.onHighlight
                                     : t.colors.text,
@@ -460,7 +460,9 @@ class _RatingState extends State<RetroDesktopRating> {
                 ? null
                 : t.chisel
                 ? retroDesktopChiselHeldBox(c)
-                : (c.dark ? c.platinumLight : c.platinumDark),
+                : (c.brightness == Brightness.dark
+                      ? c.platinumLight
+                      : c.platinumDark),
             sink: held && t.chisel ? 1 : 0,
           ),
         ),
@@ -736,11 +738,15 @@ class RetroDesktopFileUpload extends StatelessWidget {
                 Text(
                   words.dropFiles,
                   textAlign: TextAlign.center,
-                  style: t.type.row,
+                  style: t.textTheme.row,
                 ),
                 if (hint != null) ...[
                   const SizedBox(height: RetroDesktopSpacing.s2),
-                  Text(hint!, textAlign: TextAlign.center, style: t.type.meta),
+                  Text(
+                    hint!,
+                    textAlign: TextAlign.center,
+                    style: t.textTheme.meta,
+                  ),
                 ],
                 if (onChoose != null) ...[
                   const SizedBox(height: RetroDesktopSpacing.s12),
@@ -767,7 +773,7 @@ class RetroDesktopFileUpload extends StatelessWidget {
                   Expanded(
                     child: Text(
                       files[i],
-                      style: t.type.body,
+                      style: t.textTheme.body,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),

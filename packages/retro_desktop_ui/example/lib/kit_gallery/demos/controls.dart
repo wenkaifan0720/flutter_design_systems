@@ -107,12 +107,12 @@ Widget kitSpecimenTextBox() => const RetroDesktopColumn(
   gap: 8,
   children: [
     RetroDesktopTextField(
-      hint: 'Search everything',
+      hintText: 'Search everything',
       leading: Icon(LucideIcons.search),
       trailing: RetroDesktopKbd('Ctrl K'),
     ),
     RetroDesktopTextField(initial: 'What you wrote'),
-    RetroDesktopTextField(hint: 'A few lines', lines: 3),
+    RetroDesktopTextField(hintText: 'A few lines', lines: 3),
   ],
 );
 
@@ -148,7 +148,7 @@ Widget _radioExamples() => Wrap(
     kitValue(
       1,
       (value, change) => RetroDesktopRadioGroup<int>(
-        label: 'Sort by',
+        labelText: 'Sort by',
         options: const [
           RetroDesktopRadio<int>(1, 'Name'),
           RetroDesktopRadio<int>(2, 'Date changed'),
@@ -160,7 +160,7 @@ Widget _radioExamples() => Wrap(
     kitValue(
       2,
       (value, change) => RetroDesktopRadioGroup<int>(
-        label: 'Paper',
+        labelText: 'Paper',
         options: const [
           RetroDesktopRadio<int>(1, 'A4'),
           RetroDesktopRadio<int>(2, 'Letter'),
@@ -176,7 +176,7 @@ Widget kitSpecimenCheckRow() => kitValue(
   true,
   (value, change) => RetroDesktopCheckRow(
     label: 'Before something is due',
-    note: 'An hour ahead',
+    subtitle: 'An hour ahead',
     value: value,
     onChanged: change,
   ),
@@ -251,7 +251,7 @@ Widget kitSpecimenProgress() => Builder(
 Widget kitSpecimenEtch() => const RetroDesktopDivider.etched();
 
 Widget kitSpecimenDisclosure() => const RetroDesktopDisclosure(
-  note: '12 versions',
+  subtitle: '12 versions',
   initiallyExpanded: true,
   title: 'Versions',
   child: Text('What it opens onto.'),
@@ -261,9 +261,9 @@ Widget kitSpecimenChoices() => kitValue(
   'Every week',
   (value, change) => RetroDesktopChoices(
     options: const [
-      RetroDesktopChoice('Every day', note: 'At nine'),
-      RetroDesktopChoice('Every week', note: 'On Monday'),
-      RetroDesktopChoice('Never', note: 'Only when asked'),
+      RetroDesktopChoice('Every day', subtitle: 'At nine'),
+      RetroDesktopChoice('Every week', subtitle: 'On Monday'),
+      RetroDesktopChoice('Never', subtitle: 'Only when asked'),
     ],
     onChanged: change,
     value: value,
@@ -277,7 +277,7 @@ Widget kitSpecimenStepper() => kitValue(
     max: 5,
     onChanged: change,
     unit: 'a day',
-    note: 'Up to 5',
+    helperText: 'Up to 5',
   ),
 );
 

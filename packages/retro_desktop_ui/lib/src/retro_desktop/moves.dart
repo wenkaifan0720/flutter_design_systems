@@ -240,7 +240,7 @@ class _SideNavigation extends StatelessWidget {
                                 if (items[i].badgeLabel != null)
                                   Text(
                                     items[i].badgeLabel!,
-                                    style: t.type.caption,
+                                    style: t.textTheme.caption,
                                   ),
                               ],
                             )
@@ -459,11 +459,11 @@ class RetroDesktopStepProgress extends StatelessWidget {
             Wrap(
               alignment: WrapAlignment.spaceBetween,
               children: [
-                Text(name, style: t.type.body),
+                Text(name, style: t.textTheme.body),
                 Text(
                   fraction,
                   textDirection: TextDirection.ltr,
-                  style: t.type.meta,
+                  style: t.textTheme.meta,
                 ),
               ],
             ),
@@ -495,7 +495,7 @@ class RetroDesktopStepProgress extends StatelessWidget {
             if (phase != null)
               Padding(
                 padding: const EdgeInsets.only(top: RetroDesktopSpacing.s6),
-                child: Text(phase!, style: t.type.meta),
+                child: Text(phase!, style: t.textTheme.meta),
               ),
           ],
         ),

@@ -26,6 +26,7 @@ import 'layout.dart';
 import 'pixels.dart';
 import 'theme.dart';
 import 'internal/caps.dart';
+import 'internal/field_hooks.dart';
 import 'tokens.dart';
 
 /// A button with one icon, or a [triangle], in the family's control shape, and a [label] for a screen reader.
@@ -280,7 +281,7 @@ class RetroDesktopPopupButton extends StatelessWidget {
           ),
           component: t.buttonTheme.over(
             RetroDesktopStyle(
-              textStyle: WidgetStatePropertyAll(t.type.chrome),
+              textStyle: WidgetStatePropertyAll(t.textTheme.chrome),
               // A button's height: beside one it shows the same top and bottom.
               minimumSize: WidgetStatePropertyAll(
                 Size(0, retroDesktopButtonFaceHeight(context)),
@@ -354,7 +355,7 @@ class RetroDesktopPopupButton extends StatelessWidget {
 /// [trailing] a `RetroDesktopKbd` or a small button, [lines] above 1 a box for a note.
 ///
 /// ```dart
-/// RetroDesktopTextField(hint: 'Search 40 notes', leading: const Icon(RetroDesktopGlyphs.search), trailing: const RetroDesktopKbd('/'))
+/// RetroDesktopTextField(hintText: 'Search 40 notes', leading: const Icon(RetroDesktopGlyphs.search), trailing: const RetroDesktopKbd('/'))
 /// ```
 class RetroDesktopTextField extends StatefulWidget {
   /// Creates a [RetroDesktopTextField].
@@ -362,16 +363,16 @@ class RetroDesktopTextField extends StatefulWidget {
     super.key,
     this.controller,
     this.initial,
-    this.hint,
+    this.hintText,
     this.onChanged,
     this.onSubmitted,
     this.leading,
     this.trailing,
     this.lines = 1,
     this.keyboardType,
-    this.label,
-    this.helper,
-    this.error,
+    this.labelText,
+    this.helperText,
+    this.errorText,
     this.enabled = true,
     this.focusNode,
     this.autofocus = false,
@@ -379,12 +380,7 @@ class RetroDesktopTextField extends StatefulWidget {
     this.autofillHints,
     this.inputFormatters,
     this.obscureText = false,
-    this.password = false,
-    this.revealLabels,
     this.onEditingComplete,
-    this.decorate,
-    this.failureLine,
-    this.nameOnly = false,
     this.style,
   }) : assert(lines >= 1);
 
@@ -398,7 +394,7 @@ class RetroDesktopTextField extends StatefulWidget {
   final String? initial;
 
   /// Placeholder text shown while the input has no value.
-  final String? hint;
+  final String? hintText;
 
   /// {@macro retro_desktop.onChanged}
   final ValueChanged<String>? onChanged;
@@ -420,7 +416,7 @@ class RetroDesktopTextField extends StatefulWidget {
   final TextInputType? keyboardType;
 
   /// Static words above and below the editor; labels never float.
-  final String? label, helper, error;
+  final String? labelText, helperText, errorText;
 
   /// Whether the editor accepts input.
   final bool enabled;
@@ -440,24 +436,12 @@ class RetroDesktopTextField extends StatefulWidget {
   /// Transformations applied to user edits.
   final List<TextInputFormatter>? inputFormatters;
 
-  /// Obscures a single-line password.
-  final bool obscureText, password;
-
-  /// Accessible names for showing and hiding a password, in that order.
-  /// Null uses the installed localizations.
-  final (String, String)? revealLabels;
+  /// Hides the typed text, as a password's dots. A password with its eye,
+  /// autofill hints and no suggestions is a `RetroDesktopPasswordField`.
+  final bool obscureText;
 
   /// Completes platform editing before the submit callback.
   final VoidCallback? onEditingComplete;
-
-  /// Wraps only the editable, leaving trailing actions as separate controls.
-  final Widget Function(Widget editable)? decorate;
-
-  /// Wraps the drawn error when the caller owns its announcement.
-  final Widget Function(Widget error)? failureLine;
-
-  /// Draws the label while leaving its accessible name to [decorate].
-  final bool nameOnly;
   @override
   State<RetroDesktopTextField> createState() => _TextFieldState();
 
@@ -480,7 +464,7 @@ class RetroDesktopTextField extends StatefulWidget {
         ),
       )
       ..add(StringProperty('initial', initial, defaultValue: null))
-      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
       ..add(
         ObjectFlagProperty<ValueChanged<String>>.has('onChanged', onChanged),
       )
@@ -498,9 +482,9 @@ class RetroDesktopTextField extends StatefulWidget {
           defaultValue: null,
         ),
       )
-      ..add(StringProperty('label', label, defaultValue: null))
-      ..add(StringProperty('helper', helper, defaultValue: null))
-      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
+      ..add(StringProperty('helperText', helperText, defaultValue: null))
+      ..add(StringProperty('errorText', errorText, defaultValue: null))
       ..add(FlagProperty('enabled', value: enabled, ifFalse: 'enabled: false'))
       ..add(
         DiagnosticsProperty<FocusNode>(
@@ -534,38 +518,16 @@ class RetroDesktopTextField extends StatefulWidget {
       ..add(
         FlagProperty('obscureText', value: obscureText, ifTrue: 'obscureText'),
       )
-      ..add(FlagProperty('password', value: password, ifTrue: 'password'))
-      ..add(
-        DiagnosticsProperty<(String, String)>(
-          'revealLabels',
-          revealLabels,
-          defaultValue: null,
-        ),
-      )
       ..add(
         ObjectFlagProperty<VoidCallback>.has(
           'onEditingComplete',
           onEditingComplete,
         ),
-      )
-      ..add(
-        ObjectFlagProperty<Widget Function(Widget editable)>.has(
-          'decorate',
-          decorate,
-        ),
-      )
-      ..add(
-        ObjectFlagProperty<Widget Function(Widget error)>.has(
-          'failureLine',
-          failureLine,
-        ),
-      )
-      ..add(FlagProperty('nameOnly', value: nameOnly, ifTrue: 'nameOnly'));
+      );
   }
 }
 
 class _TextFieldState extends State<RetroDesktopTextField> {
-  bool _hidden = true;
   bool _hovered = false;
   FocusNode? _ownFocus;
   @override
@@ -578,15 +540,15 @@ class _TextFieldState extends State<RetroDesktopTextField> {
   Widget build(BuildContext context) {
     final controller = widget.controller;
     final initial = widget.initial;
-    final hint = widget.hint;
+    final hint = widget.hintText;
     final onChanged = widget.onChanged;
     final onSubmitted = widget.onSubmitted;
     final leading = widget.leading;
     final lines = widget.lines;
     final keyboardType = widget.keyboardType;
-    final label = widget.label;
-    final helper = widget.helper;
-    final error = widget.error;
+    final label = widget.labelText;
+    final helper = widget.helperText;
+    final error = widget.errorText;
     final enabled = widget.enabled;
     final focusNode = widget.focusNode ?? (_ownFocus ??= FocusNode());
     final autofocus = widget.autofocus;
@@ -594,27 +556,14 @@ class _TextFieldState extends State<RetroDesktopTextField> {
     final autofillHints = widget.autofillHints;
     final inputFormatters = widget.inputFormatters;
     final onEditingComplete = widget.onEditingComplete;
-    final decorate = widget.decorate;
-    final failureLine = widget.failureLine;
-    final nameOnly = widget.nameOnly;
-    final obscureText = widget.obscureText || (widget.password && _hidden);
-    final trailing = widget.password
-        ? retroDesktopFieldButton(
-            context,
-            icon: _hidden ? RetroDesktopGlyphs.eye : RetroDesktopGlyphs.eyeOff,
-            label: _hidden
-                ? widget.revealLabels?.$1 ??
-                      RawWidgetsLocalizations.of(context).showPasswordLabel
-                : widget.revealLabels?.$2 ??
-                      RawWidgetsLocalizations.of(context).hidePasswordLabel,
-            onPressed: enabled
-                ? () {
-                    setState(() => _hidden = !_hidden);
-                    focusNode.requestFocus();
-                  }
-                : null,
-          )
-        : widget.trailing;
+    final hooks = RetroDesktopFieldHooks.maybeOf(context);
+    final decorate = hooks?.decorate;
+    final failureLine = hooks?.failureLine;
+    final nameOnly = hooks?.nameOnly ?? false;
+    final obscureText = widget.obscureText;
+    // A secret, hidden or shown, takes no corrections or suggestions.
+    final secret = obscureText || keyboardType == TextInputType.visiblePassword;
+    final trailing = widget.trailing;
     final t = RetroDesktopTheme.of(context);
     final c = t.colors;
     final states = <WidgetState>{
@@ -627,7 +576,7 @@ class _TextFieldState extends State<RetroDesktopTextField> {
         RetroDesktopStyle.first([widget.style, t.textFieldTheme], get, states);
     final ink = slot((s) => s.foreground) ?? c.text;
     // What a person types is set as the words around it are: the label above and a popup's choice beside it.
-    final style = t.type.body
+    final style = t.textTheme.body
         .merge(slot((s) => s.textStyle))
         .copyWith(color: ink);
     // Under a finger the box is the whole reach. Under a pointer a one-line box is drawn as tall as a popup or a
@@ -661,8 +610,8 @@ class _TextFieldState extends State<RetroDesktopTextField> {
           autofillHints: autofillHints,
           inputFormatters: inputFormatters,
           obscureText: obscureText,
-          autocorrect: !widget.password,
-          enableSuggestions: !widget.password,
+          autocorrect: !secret,
+          enableSuggestions: !secret,
           controller: controller,
           initialValue: controller == null ? initial : null,
           onChanged: onChanged,
@@ -807,7 +756,9 @@ class _TextFieldState extends State<RetroDesktopTextField> {
         if (label != null)
           Padding(
             padding: const EdgeInsets.only(bottom: RetroDesktopSpacing.s6),
-            child: ExcludeSemantics(child: Text(label, style: t.type.body)),
+            child: ExcludeSemantics(
+              child: Text(label, style: t.textTheme.body),
+            ),
           ),
         MouseRegion(
           // The hovered state reaches the component theme; by default it draws
@@ -873,7 +824,7 @@ class RetroDesktopKbd extends StatelessWidget {
             fill: WidgetStatePropertyAll(t.colors.platinumLight),
             foreground: WidgetStatePropertyAll(t.colors.textSecondary),
             textStyle: WidgetStatePropertyAll(
-              t.type.mono(12, 16, weight: FontWeight.w600),
+              t.textTheme.mono(12, 16, weight: FontWeight.w600),
             ),
           ),
         ),
@@ -1036,7 +987,7 @@ class RetroDesktopCheckbox extends StatelessWidget {
         alignment: AlignmentDirectional.centerStart,
         checked: value ?? false,
         mixed: value == null,
-        error: isError,
+        isError: isError,
         focusNode: focusNode,
         autofocus: autofocus,
         label: label,
@@ -1084,17 +1035,17 @@ class RetroDesktopCheckbox extends StatelessWidget {
 /// A setting: a checkbox and its words. The whole row presses, and the words never crush.
 ///
 /// ```dart
-/// RetroDesktopCheckRow(label: 'Sync on start', note: 'Over any network', value: on, onChanged: (v) => setState(() => on = v))
+/// RetroDesktopCheckRow(label: 'Sync on start', subtitle: 'Over any network', value: on, onChanged: (v) => setState(() => on = v))
 /// ```
 class RetroDesktopCheckRow extends StatelessWidget {
   /// Creates a [RetroDesktopCheckRow].
   const RetroDesktopCheckRow({
     super.key,
     required this.label,
-    this.note,
+    this.subtitle,
     required this.value,
     this.onChanged,
-    this.error = false,
+    this.isError = false,
     this.errorText,
     this.focusNode,
     this.autofocus = false,
@@ -1108,16 +1059,16 @@ class RetroDesktopCheckRow extends StatelessWidget {
   final String label;
 
   /// Supporting text shown with the main content.
-  final String? note;
+  final String? subtitle;
 
   /// Whether the box is checked.
   final bool value;
 
   /// Whether the row shows the error state, for a value that needs attention.
-  final bool error;
+  final bool isError;
 
   /// The words under the label when the setting needs attention, after the
-  /// warning sign as a field's are; giving them sets [error].
+  /// warning sign as a field's are; giving them sets [isError].
   final String? errorText;
 
   /// {@macro retro_desktop.focusNode}
@@ -1136,12 +1087,12 @@ class RetroDesktopCheckRow extends StatelessWidget {
       label: label,
       checked: value,
       button: false,
-      error: error || errorText != null,
-      hint: errorText ?? note,
+      isError: isError || errorText != null,
+      hint: errorText ?? subtitle,
       focusNode: focusNode,
       autofocus: autofocus,
       builder: (context, states) {
-        final words = t.type.body
+        final words = t.textTheme.body
             .merge(
               RetroDesktopStyle.first(
                 [style, t.checkboxTheme],
@@ -1179,7 +1130,8 @@ class RetroDesktopCheckRow extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(label, style: words),
-                    if (note != null) Text(note!, style: t.type.meta),
+                    if (subtitle != null)
+                      Text(subtitle!, style: t.textTheme.meta),
                     if (errorText != null)
                       Padding(
                         padding: const EdgeInsets.only(
@@ -1215,9 +1167,9 @@ class RetroDesktopCheckRow extends StatelessWidget {
         ),
       )
       ..add(StringProperty('label', label))
-      ..add(StringProperty('note', note, defaultValue: null))
+      ..add(StringProperty('subtitle', subtitle, defaultValue: null))
       ..add(DiagnosticsProperty<bool>('value', value))
-      ..add(FlagProperty('error', value: error, ifTrue: 'error'))
+      ..add(FlagProperty('isError', value: isError, ifTrue: 'isError'))
       ..add(StringProperty('errorText', errorText, defaultValue: null))
       ..add(
         DiagnosticsProperty<FocusNode>(
@@ -1247,7 +1199,7 @@ class RetroDesktopChip extends StatelessWidget {
     this.leading,
     this.icon,
     this.size = RetroDesktopButtonSize.medium,
-    this.enabled = true,
+    this.isEnabled = true,
     this.filter = false,
     this.onDeleted,
     this.deleteLabel,
@@ -1265,7 +1217,7 @@ class RetroDesktopChip extends StatelessWidget {
     this.leading,
     this.icon,
     this.size = RetroDesktopButtonSize.medium,
-    this.enabled = true,
+    this.isEnabled = true,
     this.filter = false,
     this.onDeleted,
     this.deleteLabel,
@@ -1275,7 +1227,7 @@ class RetroDesktopChip extends StatelessWidget {
   }) : _outlined = true;
 
   /// Whether the part accepts user interaction.
-  final bool enabled;
+  final bool isEnabled;
 
   /// Whether the chip represents a filter choice.
   final bool filter;
@@ -1327,7 +1279,7 @@ class RetroDesktopChip extends StatelessWidget {
             label:
                 deleteLabel ??
                 RawWidgetsLocalizations.of(context).deleteButtonTooltip,
-            onPressed: enabled ? onDeleted : null,
+            onPressed: isEnabled ? onDeleted : null,
           ),
       ],
     ),
@@ -1350,7 +1302,7 @@ class RetroDesktopChip extends StatelessWidget {
               ? const WidgetStatePropertyAll(Color(0x00000000))
               : null,
           textStyle: WidgetStatePropertyAll(
-            t.type.text(small ? 12 : 13, 16, weight: FontWeight.w600),
+            t.textTheme.text(small ? 12 : 13, 16, weight: FontWeight.w600),
           ),
           iconSize: WidgetStatePropertyAll(small ? 12 : 14),
         ),
@@ -1397,12 +1349,12 @@ class RetroDesktopChip extends StatelessWidget {
         excludeSemantics: true,
         child: face({
           if (selected) WidgetState.selected,
-          if (!enabled) WidgetState.disabled,
+          if (!isEnabled) WidgetState.disabled,
         }),
       );
     }
     return RetroDesktopPressable(
-      onPressed: enabled ? onPressed : null,
+      onPressed: isEnabled ? onPressed : null,
       label: label,
       selected: selected,
       focusNode: focusNode,
@@ -1415,7 +1367,7 @@ class RetroDesktopChip extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(FlagProperty('enabled', value: enabled, ifFalse: 'enabled: false'))
+      ..add(FlagProperty('isEnabled', value: isEnabled, ifFalse: 'disabled'))
       ..add(FlagProperty('filter', value: filter, ifTrue: 'filter'))
       ..add(ObjectFlagProperty<VoidCallback>.has('onDeleted', onDeleted))
       ..add(StringProperty('deleteLabel', deleteLabel, defaultValue: null))
@@ -1477,7 +1429,7 @@ class RetroDesktopFlag extends StatelessWidget {
             fill: WidgetStatePropertyAll(t.colors.paper),
             foreground: WidgetStatePropertyAll(t.colors.text),
             edge: WidgetStatePropertyAll(t.colors.text),
-            textStyle: WidgetStatePropertyAll(t.type.chrome),
+            textStyle: WidgetStatePropertyAll(t.textTheme.chrome),
           ),
         ),
         style: style,
@@ -1523,7 +1475,10 @@ class _PriorityPainter extends RetroDesktopPixelPainter {
       if (i < 4 - level) {
         px.fill(bar, c.text);
       } else {
-        px.frame(bar, c.dark ? c.textTertiary : c.bevelDarker);
+        px.frame(
+          bar,
+          c.brightness == Brightness.dark ? c.textTertiary : c.bevelDarker,
+        );
       }
     }
   }
@@ -1772,7 +1727,7 @@ class RetroDesktopLinearProgressIndicator extends StatelessWidget {
                     bar,
                     Text(
                       label,
-                      style: t.type.caption
+                      style: t.textTheme.caption
                           .merge(slot((s) => s.textStyle))
                           .copyWith(color: slot((s) => s.foreground)),
                     ),
@@ -1804,14 +1759,14 @@ class RetroDesktopLinearProgressIndicator extends StatelessWidget {
 /// presses, to go somewhere else.
 ///
 /// ```dart
-/// RetroDesktopDisclosure(note: '18 parts', title: 'Cut list', child: table)
+/// RetroDesktopDisclosure(subtitle: '18 parts', title: 'Cut list', child: table)
 /// ```
 class RetroDesktopDisclosure extends StatefulWidget {
   /// Creates a [RetroDesktopDisclosure].
   const RetroDesktopDisclosure({
     required this.title,
     super.key,
-    this.note,
+    this.subtitle,
     required this.child,
     this.initiallyExpanded = false,
     this.expanded,
@@ -1824,7 +1779,7 @@ class RetroDesktopDisclosure extends StatefulWidget {
   final String title;
 
   /// Supporting text shown with the main content.
-  final String? note;
+  final String? subtitle;
 
   /// The widget displayed inside this part.
   final Widget child;
@@ -1851,7 +1806,7 @@ class RetroDesktopDisclosure extends StatefulWidget {
     super.debugFillProperties(properties);
     properties
       ..add(StringProperty('title', title))
-      ..add(StringProperty('note', note, defaultValue: null))
+      ..add(StringProperty('subtitle', subtitle, defaultValue: null))
       ..add(
         FlagProperty(
           'initiallyExpanded',
@@ -1901,7 +1856,7 @@ class _DisclosureState extends State<RetroDesktopDisclosure> {
             fill: const WidgetStatePropertyAll(Color(0x00000000)),
             side: const WidgetStatePropertyAll(BorderSide.none),
             textStyle: WidgetStatePropertyAll(
-              t.type.pixel(
+              t.textTheme.pixel(
                 18,
                 18,
                 color: open ? t.colors.text : t.colors.textSecondary,
@@ -1920,7 +1875,7 @@ class _DisclosureState extends State<RetroDesktopDisclosure> {
             // at any text size (3 from the top floated it above them at twice
             // the size).
             RetroDesktopOnCaps(
-              style: t.type.pixel(18, 18),
+              style: t.textTheme.pixel(18, 18),
               child: SizedBox(
                 width: 9,
                 height: 12,
@@ -1946,10 +1901,10 @@ class _DisclosureState extends State<RetroDesktopDisclosure> {
                 spacing: RetroDesktopSpacing.s12,
                 children: [
                   Text(widget.title),
-                  if (widget.note != null)
+                  if (widget.subtitle != null)
                     Text(
-                      widget.note!,
-                      style: t.type.caption.copyWith(
+                      widget.subtitle!,
+                      style: t.textTheme.caption.copyWith(
                         color: t.colors.textTertiary,
                       ),
                     ),
@@ -2129,7 +2084,7 @@ class _RenderFillHeight extends RenderProxyBox {
 /// One choice in a [RetroDesktopChoices]: its words, an optional small line, and the value it stands for (its words if left out).
 class RetroDesktopChoice {
   /// Creates a [RetroDesktopChoice].
-  const RetroDesktopChoice(this.label, {this.note, String? value})
+  const RetroDesktopChoice(this.label, {this.subtitle, String? value})
     : value = value ?? label;
 
   /// The visible or accessible name of this part.
@@ -2139,7 +2094,7 @@ class RetroDesktopChoice {
   final String value;
 
   /// Supporting text shown with the main content.
-  final String? note;
+  final String? subtitle;
 }
 
 /// One choice from a few, as tiles: a filter, a grade, a size, a kind. Give it the words: it puts as many on a row as
@@ -2147,7 +2102,7 @@ class RetroDesktopChoice {
 /// boxes. The chosen tile is pressed in and lit.
 ///
 /// ```dart
-/// RetroDesktopChoices(options: const [RetroDesktopChoice('All'), RetroDesktopChoice('Near mint', note: 'Sharp corners')], onChanged: (v) {}, value: 'All')
+/// RetroDesktopChoices(options: const [RetroDesktopChoice('All'), RetroDesktopChoice('Near mint', subtitle: 'Sharp corners')], onChanged: (v) {}, value: 'All')
 /// ```
 class RetroDesktopChoices extends StatelessWidget {
   /// Creates a [RetroDesktopChoices].
@@ -2169,8 +2124,8 @@ class RetroDesktopChoices extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = RetroDesktopTheme.of(context);
-    final words = t.type.chrome;
-    final notes = options.any((o) => o.note != null);
+    final words = t.textTheme.chrome;
+    final notes = options.any((o) => o.subtitle != null);
     return LayoutBuilder(
       builder: (context, box) {
         const pad = 10.0, gap = 6.0;
@@ -2223,14 +2178,14 @@ class RetroDesktopChoices extends StatelessWidget {
                           children: [
                             Text(
                               o.label,
-                              style: tt.type.chrome,
+                              style: tt.textTheme.chrome,
                               textAlign: notes
                                   ? TextAlign.start
                                   : TextAlign.center,
                             ),
-                            if (o.note != null) ...[
+                            if (o.subtitle != null) ...[
                               const SizedBox(height: RetroDesktopSpacing.s2),
-                              Text(o.note!, style: tt.type.meta),
+                              Text(o.subtitle!, style: tt.textTheme.meta),
                             ],
                           ],
                         ),
@@ -2287,8 +2242,8 @@ class RetroDesktopNumberField extends StatefulWidget {
     this.max = 100,
     this.step = 1,
     this.unit = '',
-    this.label,
-    this.note,
+    this.labelText,
+    this.helperText,
     this.style,
   }) : assert(min <= max),
        assert(value >= min && value <= max),
@@ -2316,10 +2271,10 @@ class RetroDesktopNumberField extends StatefulWidget {
   final String unit;
 
   /// The visible or accessible name of this part.
-  final String? label;
+  final String? labelText;
 
   /// Supporting text shown with the main content.
-  final String? note;
+  final String? helperText;
 
   @override
   State<RetroDesktopNumberField> createState() => _NumberFieldState();
@@ -2341,8 +2296,8 @@ class RetroDesktopNumberField extends StatefulWidget {
       ..add(IntProperty('step', step, defaultValue: 1))
       ..add(ObjectFlagProperty<ValueChanged<int>>.has('onChanged', onChanged))
       ..add(StringProperty('unit', unit, defaultValue: ''))
-      ..add(StringProperty('label', label, defaultValue: null))
-      ..add(StringProperty('note', note, defaultValue: null));
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
+      ..add(StringProperty('helperText', helperText, defaultValue: null));
   }
 }
 
@@ -2381,7 +2336,7 @@ class _NumberFieldState extends State<RetroDesktopNumberField> {
       step: w.step.toDouble(),
       fractionDigits: 0,
       controller: _text,
-      semanticLabel: w.label,
+      semanticLabel: w.labelText,
       semanticFormatterCallback: digits.formatDecimal,
       // The keys stand on the stepper's two ends; where a target is wider than its key it grows toward the value.
       buttonBuilder: (context, button) {
@@ -2441,10 +2396,10 @@ class _NumberFieldState extends State<RetroDesktopNumberField> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         field,
-        if (w.note != null)
+        if (w.helperText != null)
           Padding(
             padding: const EdgeInsets.only(top: RetroDesktopSpacing.s6),
-            child: Text(w.note!, style: t.type.note),
+            child: Text(w.helperText!, style: t.textTheme.note),
           ),
       ],
     );
@@ -2464,7 +2419,7 @@ class _NumberFieldState extends State<RetroDesktopNumberField> {
     final w = widget;
     final digits = RawWidgetsLocalizations.of(context);
     final enabled = !input.states.contains(WidgetState.disabled);
-    final style = t.type.small.copyWith(color: c.text);
+    final style = t.textTheme.small.copyWith(color: c.text);
     return _NumberInput(
       input: input,
       enabled: enabled,
@@ -2519,14 +2474,15 @@ class _NumberFieldState extends State<RetroDesktopNumberField> {
                                     digits
                                         .formatDecimal(end.toDouble())
                                         .replaceAll(RegExp('[0-9]'), figure),
-                                    style: t.type.small,
+                                    style: t.textTheme.small,
                                   ),
                                 ),
                               ),
                           Positioned.fill(child: editable),
                         ],
                       ),
-                      if (w.unit.isNotEmpty) Text(w.unit, style: t.type.note),
+                      if (w.unit.isNotEmpty)
+                        Text(w.unit, style: t.textTheme.note),
                     ],
                   ),
                 ),
@@ -2836,7 +2792,7 @@ class RetroDesktopGroupBox extends StatelessWidget {
     final c = t.colors;
     T? slot<T>(WidgetStateProperty<T?>? Function(RetroDesktopStyle) get) =>
         RetroDesktopStyle.first([style, t.cardTheme], get, const {});
-    final text = t.type
+    final text = t.textTheme
         .pixel(16, 18)
         .merge(slot((s) => s.textStyle))
         .copyWith(color: slot((s) => s.foreground));
@@ -3313,7 +3269,7 @@ class _TabBarState extends State<RetroDesktopTabBar>
                           // period's were: grey type means
                           // unavailable (the state law).
                           foreground: WidgetStatePropertyAll(t.colors.text),
-                          textStyle: WidgetStatePropertyAll(t.type.chrome),
+                          textStyle: WidgetStatePropertyAll(t.textTheme.chrome),
                         ),
                       ),
                       style: widget.style,

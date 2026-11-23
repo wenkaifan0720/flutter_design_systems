@@ -1,3 +1,31 @@
+## 0.5.0
+
+- Needs ui_core 0.5.1.
+- Field words take `InputDecoration`'s names: `label` is `labelText`, `hint` is `hintText`, `helper` (and `RetroDesktopNumberField.note`, `RetroDesktopFormField.help`) is `helperText`, and `error` is `errorText`, on `RetroDesktopTextField`, `RetroDesktopTextArea`, `RetroDesktopSearchField`, `RetroDesktopPasswordField`, `RetroDesktopInputGroup`, `RetroDesktopInputOtp`, `RetroDesktopSelect`, `RetroDesktopRadioGroup`, `RetroDesktopCombobox`, `RetroDesktopFormField`, `RetroDesktopNumberField`, `RetroDesktopInput` and `RetroDesktopDateRangePicker`. `dart fix` renames them.
+- `RetroDesktopInputOtp.obscure` is `obscureText`, as `TextField` names it. `dart fix` renames it.
+- `RetroDesktopCheckRow.error` and `RetroDesktopPressable.error` are `isError`, as `Checkbox` names it. `dart fix` renames them.
+- `note` is `subtitle` on `RetroDesktopCheckRow`, `RetroDesktopSwitchRow`, `RetroDesktopRadio`, `RetroDesktopListTableRow`, `RetroDesktopDisclosure`, `RetroDesktopSectionHeader`, `RetroDesktopPartHead`, `RetroDesktopFolder`, `RetroDesktopFile`, `RetroDesktopFigureHero`, `RetroDesktopReadingHead` and `RetroDesktopChoice`, as `ListTile` names it. `RetroDesktopListTile` keeps its `note`, the line under its `subtitle`. `dart fix` renames them.
+- `RetroDesktopPartHead.open` and `RetroDesktopTreeRow.open` are `isExpanded`, as `ExpansionPanel` names it. `dart fix` renames them.
+- `RetroDesktopDatePicker` and `showRetroDesktopDatePicker`: `first` and `last` are `firstDate` and `lastDate`, as `showDatePicker` names them. `dart fix` renames them.
+- `RetroDesktopTooltip.wait` is `waitDuration`, as `Tooltip` names it. `dart fix` renames it.
+- `RetroDesktopScaffold.topBar` is `appBar`, as `Scaffold` names it, and `who` is `initials`, the two letters it shows. `dart fix` renames them.
+- `RetroDesktopThemeData.type` is `textTheme`, as `ThemeData` names it. `dart fix` renames it.
+- `RetroDesktopChip.enabled` is `isEnabled`, as `FilterChip` names it. `dart fix` renames it.
+- `RetroDesktopArrowButtonPainter.c` and `RetroDesktopDeskPainter.c` are `colors`. `dart fix` renames them.
+- `RetroDesktopShapes.of` is `RetroDesktopShapes.forAppearance`: in Flutter an `of` takes a `BuildContext`. `dart fix` renames it.
+- `RetroDesktopColors.dark` and `RetroDesktopThemeData.dark` are `brightness`, a `Brightness`, as `ColorScheme` and `ThemeData` name it; `RetroDesktopColors(brightness:)` and `copyWith(brightness:)` take one. Code that read the bool compares with `Brightness.dark` instead.
+- `RetroDesktopTextField.password` and `revealLabels` are gone: a password with its eye, its autofill hints and no suggestions is a `RetroDesktopPasswordField`. A text field with `obscureText`, or one asking for a visible password, takes no corrections or suggestions.
+- The form wiring leaves the public API: `decorate`, `failureLine` and `nameOnly` on `RetroDesktopTextField`, and `decorate` and `failureLine` on `RetroDesktopSearchField` and `RetroDesktopInputOtp`, are gone.
+- `showRetroDesktopSnackBar` shows its notice in ui_core's toaster, in the new `RetroDesktopToaster` that `RetroDesktopHost` installs above the navigator. A notice stands above `RetroDesktopNavigationBar` and a `RetroDesktopScaffold`'s footer (ui_core's `RawToasterKeepClear`), following them as they come and go, and at the foot on a page pushed over the bar. Before, it stood on the screen's foot, over the bar. A new notice still replaces the one showing; F6 now takes the keyboard to it and back, and a swipe sideways dismisses it.
+- `showRetroDesktopSnackBar`'s `bottom` is gone: a notice keeps clear of the bars by itself, and a bar of your own does the same wrapped in `RawToasterKeepClear`. `dart fix` removes it.
+- A `RetroDesktopCombobox`'s text input says whether its list is open (expanded), where a screen reader hears it.
+- `RetroDesktopDatePicker(autofocus:)` focuses the chosen day when the picker appears; `showRetroDesktopDatePicker` opens on it, so the arrows go on from there.
+- A focused chosen day in `RetroDesktopDatePicker` and `RetroDesktopCalendar`, and a focused chosen row in `RetroDesktopTreeView` and `RetroDesktopDataTable`, ring in the chosen words' colour, as a focused face already does. Before, Platinum drew the ring in the highlight on the highlight, where it didn't show, and Chisel's dots stayed dark on it.
+- A field's help and its error are read on its text field in `RetroDesktopInputGroup`, `RetroDesktopSearchField`, `RetroDesktopCombobox` and `RetroDesktopInputOtp`, as in `RetroDesktopTextField`: a screen reader heard the help nowhere, and the error only apart from the field.
+- `RetroDesktopSectionHeader`'s title is a heading to a screen reader, on a node of its own: under `RetroDesktopScaffold` it was not a heading, and the words after it joined it.
+- `RetroDesktopColorPicker` takes a `value` and an `onChanged`, as Flutter's pickers do, and its `controller` is optional. Without one, the picker keeps a controller of its own, starts at `value`, moves to a new `value`, and disposes it. A handed-in controller is still the caller's to dispose.
+- `RetroDesktopCalendar` takes `firstDate`, `lastDate` and a `value`, and its `controller` is optional. Without one, the calendar keeps a controller of its own for one day, chooses a new `value` and turns to its month, and disposes it. Hand in a controller for a range or a set of days.
+
 ## 0.4.1
 
 - A default `RetroDesktopButton` with no `onPressed` lays its highlight down and stands as a plain button out of use in its grey ring, as it does in a window behind. Before, it kept a washed-out highlight face, so a button out of use looked two ways.

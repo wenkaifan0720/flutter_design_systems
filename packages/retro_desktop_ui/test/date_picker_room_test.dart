@@ -16,8 +16,8 @@ final _openers = <String, (_Opener, Type)>{
     (context) => showRetroDesktopDatePicker(
       context,
       value: DateTime(2026, 11, 20),
-      first: DateTime(2026),
-      last: DateTime(2027, 12, 31),
+      firstDate: DateTime(2026),
+      lastDate: DateTime(2027, 12, 31),
     ),
     RetroDesktopDatePicker,
   ),

@@ -36,7 +36,7 @@ class RetroDesktopPressable extends StatelessWidget {
     this.button = true,
     this.link = false,
     this.inGroup = false,
-    this.error = false,
+    this.isError = false,
     this.mixed = false,
     this.busy = false,
     this.focusNode,
@@ -77,7 +77,7 @@ class RetroDesktopPressable extends StatelessWidget {
   final bool inGroup;
 
   /// Whether the control contains invalid input.
-  final bool error;
+  final bool isError;
 
   /// Whether a tri-state checkbox is indeterminate.
   final bool mixed;
@@ -125,7 +125,7 @@ class RetroDesktopPressable extends StatelessWidget {
       onLongPress: busy ? null : onLongPress,
       enabled: enabled,
       selected: selected ?? checked ?? toggled ?? false,
-      isError: error,
+      isError: isError,
       focusNode: focusNode,
       statesController: statesController,
       autofocus: autofocus,
@@ -175,7 +175,7 @@ class RetroDesktopPressable extends StatelessWidget {
       ..add(FlagProperty('button', value: button, ifFalse: 'button: false'))
       ..add(FlagProperty('link', value: link, ifTrue: 'link'))
       ..add(FlagProperty('inGroup', value: inGroup, ifTrue: 'inGroup'))
-      ..add(FlagProperty('error', value: error, ifTrue: 'error'))
+      ..add(FlagProperty('isError', value: isError, ifTrue: 'isError'))
       ..add(FlagProperty('mixed', value: mixed, ifTrue: 'mixed'))
       ..add(FlagProperty('busy', value: busy, ifTrue: 'busy'))
       ..add(

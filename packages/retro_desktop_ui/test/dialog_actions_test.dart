@@ -5,6 +5,8 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:retro_desktop_ui/retro_desktop_ui.dart';
+import 'package:ui_core_review/ui_core_review.dart'
+    show DesignDialogActionsCheck;
 
 import 'support.dart';
 
@@ -16,6 +18,7 @@ Future<void> _show(
   double width = 390,
   double text = 1,
   TextDirection direction = TextDirection.ltr,
+  bool sheet = false,
 }) async {
   tester.view.devicePixelRatio = 2;
   tester.view.physicalSize = Size(width * 2, (width == 390 ? 844 : 900) * 2);
@@ -28,21 +31,37 @@ Future<void> _show(
         builder: (context) => Center(
           child: RetroDesktopButton(
             'Open',
-            onPressed: () => showRetroDesktopDialog<void>(
-              context,
-              builder: (context) => RetroDesktopDialog(
-                title: 'Save the changes to your details?',
-                message: _message,
-                tone: RetroDesktopTone.warning,
-                actions: [
-                  for (final (i, label) in labels.indexed)
-                    RetroDesktopDialogAction<void>(
-                      label,
-                      isDefaultAction: i == labels.length - 1,
+            onPressed: () => sheet
+                ? showRetroDesktopBottomSheet<void>(
+                    context,
+                    builder: (context) => RetroDesktopBottomSheet(
+                      title: 'Save the changes to your details?',
+                      actions: [
+                        for (final (i, label) in labels.indexed)
+                          RetroDesktopButton(
+                            label,
+                            isDefaultAction: i == labels.length - 1,
+                            onPressed: () {},
+                          ),
+                      ],
+                      child: const Text(_message),
                     ),
-                ],
-              ),
-            ),
+                  )
+                : showRetroDesktopDialog<void>(
+                    context,
+                    builder: (context) => RetroDesktopDialog(
+                      title: 'Save the changes to your details?',
+                      message: _message,
+                      tone: RetroDesktopTone.warning,
+                      actions: [
+                        for (final (i, label) in labels.indexed)
+                          RetroDesktopDialogAction<void>(
+                            label,
+                            isDefaultAction: i == labels.length - 1,
+                          ),
+                      ],
+                    ),
+                  ),
           ),
         ),
       ),
@@ -162,5 +181,37 @@ void main() {
       await _show(tester, two, text: 2, direction: direction);
       _expectColumn(tester, two, direction);
     });
+  }
+
+  // ui_core's rule for every look: one row while the buttons fit, else one
+  // column of one width, the default on top.
+  for (final labels in const [
+    ['Cancel', 'Save'],
+    three,
+    two,
+  ]) {
+    for (final width in const [320.0, 390.0]) {
+      for (final text in const [1.0, 2.0]) {
+        for (final sheet in const [false, true]) {
+          final kind = sheet ? 'sheet' : 'dialog';
+          testWidgets('a $kind with ${labels.join(', ')} passes the shared '
+              'actions check at ${width.round()} wide, ${text}x text', (
+            tester,
+          ) async {
+            await _show(tester, labels, width: width, text: text, sheet: sheet);
+            expect(tester.takeException(), isNull);
+            DesignDialogActionsCheck(look: 'Retro Desktop', actions: labels)
+                .check(
+                  tester.element(
+                    find.byType(
+                      sheet ? RetroDesktopBottomSheet : RetroDesktopDialog,
+                    ),
+                  ),
+                )
+                .verify();
+          });
+        }
+      }
+    }
   }
 }

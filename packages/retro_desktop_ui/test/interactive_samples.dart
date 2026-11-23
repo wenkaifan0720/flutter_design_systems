@@ -21,12 +21,12 @@ final retroDesktopInteractiveSamples = <String, Widget Function(VoidCallback?)>{
   'RetroDesktopPopupButton': (hit) =>
       RetroDesktopPopupButton('Pick one', onPressed: hit),
   'RetroDesktopTextField': (hit) => RetroDesktopTextField(
-    hint: 'Search',
+    hintText: 'Search',
     enabled: hit != null,
     onChanged: hit == null ? null : (_) => hit(),
   ),
   'RetroDesktopInput': (hit) => RetroDesktopInput(
-    hint: 'Your name',
+    hintText: 'Your name',
     enabled: hit != null,
     onChanged: hit == null ? null : (_) => hit(),
   ),
@@ -36,7 +36,7 @@ final retroDesktopInteractiveSamples = <String, Widget Function(VoidCallback?)>{
     label: 'Option',
   ),
   'RetroDesktopRadioGroup': (hit) => RetroDesktopRadioGroup<int>(
-    label: 'Choice',
+    labelText: 'Choice',
     options: const [
       RetroDesktopRadio<int>(1, 'First'),
       RetroDesktopRadio<int>(2, 'Second'),
@@ -53,7 +53,7 @@ final retroDesktopInteractiveSamples = <String, Widget Function(VoidCallback?)>{
   'RetroDesktopDisclosure': (hit) => RetroDesktopDisclosure(
     enabled: hit != null,
     onExpansionChanged: hit == null ? null : (_) => hit(),
-    note: '12',
+    subtitle: '12',
     title: 'Versions',
     child: const Text('Inside'),
   ),
@@ -64,8 +64,8 @@ final retroDesktopInteractiveSamples = <String, Widget Function(VoidCallback?)>{
   ),
   'RetroDesktopChoices': (hit) => RetroDesktopChoices(
     options: [
-      const RetroDesktopChoice('Every day', note: 'At nine'),
-      const RetroDesktopChoice('Every week', note: 'On Monday'),
+      const RetroDesktopChoice('Every day', subtitle: 'At nine'),
+      const RetroDesktopChoice('Every week', subtitle: 'On Monday'),
       const RetroDesktopChoice('Never'),
     ],
     onChanged: hit == null ? null : (_) => hit(),
@@ -158,19 +158,19 @@ final retroDesktopInteractiveSamples = <String, Widget Function(VoidCallback?)>{
     items: [
       RetroDesktopFolder(
         'First',
-        note: '6 things',
+        subtitle: '6 things',
         onPressed: hit,
         art: const RetroDesktopFolderArt(selected: false, icon: null),
       ),
       RetroDesktopFolder(
         'Second',
-        note: '4 things',
+        subtitle: '4 things',
         onPressed: hit,
         art: const RetroDesktopFolderArt(selected: false, icon: null),
       ),
       RetroDesktopFolder(
         'Third',
-        note: '2 things',
+        subtitle: '2 things',
         onPressed: hit,
         art: const RetroDesktopFolderArt(selected: false, icon: null),
       ),
@@ -269,17 +269,17 @@ final retroDesktopInteractiveSamples = <String, Widget Function(VoidCallback?)>{
   ),
   'RetroDesktopLink': (hit) => RetroDesktopLink('Help', onPressed: hit),
   'RetroDesktopSearchField': (hit) => RetroDesktopSearchField(
-    hint: 'Search',
+    hintText: 'Search',
     enabled: hit != null,
     onChanged: hit == null ? null : (_) => hit(),
   ),
   'RetroDesktopInputOtp': (hit) => RetroDesktopInputOtp(
-    label: 'Code',
+    labelText: 'Code',
     enabled: hit != null,
     onChanged: hit == null ? null : (_) => hit(),
   ),
   'RetroDesktopSelect': (hit) => RetroDesktopSelect<String>(
-    label: 'Destination',
+    labelText: 'Destination',
     options: const [RetroDesktopOption('local', 'Local')],
     onChanged: hit == null ? null : (_) => hit(),
   ),
@@ -309,8 +309,8 @@ final retroDesktopInteractiveSamples = <String, Widget Function(VoidCallback?)>{
   ),
   'RetroDesktopDatePicker': (hit) => RetroDesktopDatePicker(
     value: DateTime(2026, 11, 6),
-    first: DateTime(2026, 11, 6),
-    last: DateTime(2026, 11, 6),
+    firstDate: DateTime(2026, 11, 6),
+    lastDate: DateTime(2026, 11, 6),
     onChanged: hit == null ? null : (_) => hit(),
   ),
   'RetroDesktopTimePicker': (hit) => RetroDesktopTimePicker(
@@ -415,23 +415,23 @@ final retroDesktopInteractiveSamples = <String, Widget Function(VoidCallback?)>{
     actions: [RawSplitAction(label: 'Save as', onPressed: () {})],
   ),
   'RetroDesktopTextArea': (hit) => RetroDesktopTextArea(
-    hint: 'Notes',
+    hintText: 'Notes',
     enabled: hit != null,
     onChanged: hit == null ? null : (_) => hit(),
   ),
   'RetroDesktopPasswordField': (hit) => RetroDesktopPasswordField(
-    label: 'Password',
+    labelText: 'Password',
     enabled: hit != null,
     onChanged: hit == null ? null : (_) => hit(),
   ),
   'RetroDesktopInputGroup': (hit) => RetroDesktopInputGroup(
-    label: 'Site',
+    labelText: 'Site',
     prefix: 'https://',
     enabled: hit != null,
     onChanged: hit == null ? null : (_) => hit(),
   ),
   'RetroDesktopCombobox': (hit) => RetroDesktopCombobox<String>(
-    label: 'Country',
+    labelText: 'Country',
     options: const ['Austria', 'Belgium'],
     enabled: hit != null,
     onSelected: hit == null ? null : (_) => hit(),
@@ -452,8 +452,12 @@ final retroDesktopInteractiveSamples = <String, Widget Function(VoidCallback?)>{
     ),
     onChanged: hit == null ? null : (_) => hit(),
   ),
+  'RetroDesktopColorPicker': (hit) => RetroDesktopColorPicker(
+    value: const Color(0xFF3366FF),
+    onChanged: hit == null ? null : (_) => hit(),
+  ),
   'RetroDesktopDateRangePicker': (hit) => RetroDesktopDateRangePicker(
-    label: 'Stay',
+    labelText: 'Stay',
     firstDate: DateTime(2026),
     lastDate: DateTime(2027),
     initialMonth: DateTime(2026, 6),

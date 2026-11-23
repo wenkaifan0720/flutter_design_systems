@@ -169,7 +169,7 @@ final _list = RetroDesktopListTable(
   columns: const [RetroDesktopListTableColumn('Name')],
   rows: [
     for (var i = 0; i < 4; i++)
-      RetroDesktopListTableRow(title: 'Row $i', note: 'A note'),
+      RetroDesktopListTableRow(title: 'Row $i', subtitle: 'A note'),
   ],
 );
 

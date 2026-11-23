@@ -176,7 +176,7 @@ class RetroDesktopGaugeBlock extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = RetroDesktopTheme.of(context);
     final c = t.colors;
-    final smallPx = t.type.chrome.copyWith(color: c.textSecondary);
+    final smallPx = t.textTheme.chrome.copyWith(color: c.textSecondary);
     return RetroDesktopColumn(
       gap: 6,
       children: [
@@ -189,7 +189,7 @@ class RetroDesktopGaugeBlock extends StatelessWidget {
             Text.rich(
               TextSpan(
                 text: value,
-                style: t.type.big,
+                style: t.textTheme.big,
                 children: [
                   if (of != null) TextSpan(text: ' $of', style: smallPx),
                 ],
@@ -210,7 +210,7 @@ class RetroDesktopGaugeBlock extends StatelessWidget {
             children: [
               Text(
                 footStart ?? '',
-                style: t.type.caption,
+                style: t.textTheme.caption,
                 maxLines: 1,
                 softWrap: false,
                 overflow: TextOverflow.ellipsis,
@@ -218,7 +218,7 @@ class RetroDesktopGaugeBlock extends StatelessWidget {
               if (footEnd != null)
                 Text(
                   footEnd!,
-                  style: t.type.caption,
+                  style: t.textTheme.caption,
                   maxLines: 1,
                   softWrap: false,
                   overflow: TextOverflow.ellipsis,
@@ -377,7 +377,7 @@ class RetroDesktopMonthHead extends StatelessWidget {
         children: [
           Text(
             title,
-            style: t.type.big,
+            style: t.textTheme.big,
             maxLines: 1,
             softWrap: false,
             overflow: TextOverflow.ellipsis,
@@ -502,7 +502,7 @@ class RetroDesktopMonthGrid extends StatelessWidget
             final ink = inMonth ? c.text : c.textTertiary;
             final dayNumber = Text(
               words.formatInteger(label),
-              style: t.type.pixel(16, 14, color: ink),
+              style: t.textTheme.pixel(16, 14, color: ink),
               maxLines: 1,
             );
             // An overdue day's number stands in an outlined pill: marked, not chosen (inverted words are chosen).
@@ -600,7 +600,7 @@ class RetroDesktopMonthGrid extends StatelessWidget
 
           // The day names whole in their heads: where a name is wider than its column (large text, a narrow
           // desk), the two-letter names, then the first letters; a name is never sliced.
-          final headStyle = t.type.pixel(16, 21, color: c.textSecondary);
+          final headStyle = t.textTheme.pixel(16, 21, color: c.textSecondary);
           bool fits(List<String> names) {
             for (var i = 0; i < 7 && i < names.length; i++) {
               final p = TextPainter(
@@ -639,7 +639,9 @@ class RetroDesktopMonthGrid extends StatelessWidget
                           child: RetroDesktopPixelPaint(
                             painter: _CellPainter(
                               c.platinumLight,
-                              c.dark ? c.shade : c.bevelDarker,
+                              c.brightness == Brightness.dark
+                                  ? c.shade
+                                  : c.bevelDarker,
                               false,
                               null,
                               t.shapes.small,
@@ -775,7 +777,7 @@ class RetroDesktopLegend extends StatelessWidget {
                   ),
                 },
                 const SizedBox(width: RetroDesktopSpacing.s6),
-                Flexible(child: Text(words, style: t.type.caption)),
+                Flexible(child: Text(words, style: t.textTheme.caption)),
               ],
             ),
         ],
@@ -1592,7 +1594,7 @@ class RetroDesktopHourStrip extends StatelessWidget
                               children: [
                                 Text(
                                   h.label,
-                                  style: t.type.pixel(
+                                  style: t.textTheme.pixel(
                                     t.desk ? 18 : (i == 0 ? 14 : 16),
                                     16,
                                     color: c.textSecondary,
@@ -1640,8 +1642,8 @@ class RetroDesktopHourStrip extends StatelessWidget
                               h.reading,
                               textAlign: TextAlign.center,
                               style: t.desk
-                                  ? t.type.pixel(24, 22)
-                                  : t.type.pixel(18, 16),
+                                  ? t.textTheme.pixel(24, 22)
+                                  : t.textTheme.pixel(18, 16),
                               maxLines: 1,
                               softWrap: false,
                               overflow: TextOverflow.clip,
@@ -1671,7 +1673,7 @@ class RetroDesktopHourStrip extends StatelessWidget
                                 Text(
                                   h.shareLabel ??
                                       '${(h.share * 100).round()}${t.desk ? '%' : ''}',
-                                  style: t.type.mono(
+                                  style: t.textTheme.mono(
                                     t.desk ? 12 : 11,
                                     16,
                                     color: c.textSecondary,
@@ -1940,11 +1942,13 @@ class RetroDesktopRangeShape extends StatelessWidget
               _RangePainter.footRoom;
           final shape = _RangePainter(c, shown, fit, p, m, top, bottom);
           double yAt(double v) => shape.y(v) * p;
-          final hiStyle = t.desk ? t.type.pixel(22, 18) : t.type.pixel(16, 14);
+          final hiStyle = t.desk
+              ? t.textTheme.pixel(22, 18)
+              : t.textTheme.pixel(16, 14);
           final loStyle = t.desk
-              ? t.type.pixel(18, 16, color: c.textSecondary)
-              : t.type.pixel(16, 14, color: c.textSecondary);
-          final figure = t.type.mono(
+              ? t.textTheme.pixel(18, 16, color: c.textSecondary)
+              : t.textTheme.pixel(16, 14, color: c.textSecondary);
+          final figure = t.textTheme.mono(
             t.desk ? 12 : 11,
             t.desk ? 16 : 14,
             weight: FontWeight.w600,
@@ -2000,14 +2004,14 @@ class RetroDesktopRangeShape extends StatelessWidget
                     children: [
                       perDay((i, d) {
                         final words = t.desk
-                            ? t.type.pixel(
+                            ? t.textTheme.pixel(
                                 18,
                                 17,
                                 color: d.warn
                                     ? c.paper
                                     : (i == 0 ? c.text : c.textSecondary),
                               )
-                            : t.type.pixel(
+                            : t.textTheme.pixel(
                                 i == 0 ? 13 : 15,
                                 14,
                                 color: d.warn
@@ -2115,7 +2119,7 @@ class RetroDesktopRangeShape extends StatelessWidget
                                 bottom: rows * p - yAt(0) + 3,
                                 child: Text(
                                   '0$unit',
-                                  style: t.type.text(
+                                  style: t.textTheme.text(
                                     12,
                                     12,
                                     weight: FontWeight.w600,
@@ -2184,7 +2188,7 @@ class RetroDesktopRangeShape extends StatelessWidget
                               children: [
                                 Text(
                                   keyLabel ?? '',
-                                  style: t.type.caption.copyWith(
+                                  style: t.textTheme.caption.copyWith(
                                     color: c.textTertiary,
                                   ),
                                   maxLines: 1,
@@ -2204,7 +2208,7 @@ class RetroDesktopRangeShape extends StatelessWidget
                                     children: [
                                       Text(
                                         dry!,
-                                        style: t.type.caption.copyWith(
+                                        style: t.textTheme.caption.copyWith(
                                           color: c.textTertiary,
                                         ),
                                       ),
@@ -2222,7 +2226,7 @@ class RetroDesktopRangeShape extends StatelessWidget
                                       ),
                                       Text(
                                         wet ?? '',
-                                        style: t.type.caption.copyWith(
+                                        style: t.textTheme.caption.copyWith(
                                           color: c.textTertiary,
                                         ),
                                       ),
@@ -2311,7 +2315,7 @@ class _RulePainter extends RetroDesktopPixelPainter {
 
 // The words of a note over a bar.
 TextStyle _noteStyle(RetroDesktopThemeData t) =>
-    t.type.mono(11, 12, weight: FontWeight.w600);
+    t.textTheme.mono(11, 12, weight: FontWeight.w600);
 
 /// A note on a `RetroDesktopHatchBars`: words over one bar.
 class RetroDesktopBarNote {
@@ -2397,7 +2401,7 @@ class RetroDesktopHatchBars extends StatelessWidget
                 ? 1
                 : math.max(1.15, (height - 1) / (height - 1 - noteRoom)));
     final scale = top <= 0 ? 1.0 : top;
-    final axisStyle = t.type.mono(12, 16, color: c.textTertiary);
+    final axisStyle = t.textTheme.mono(12, 16, color: c.textTertiary);
     // The axis column and the labels' row are as wide and as tall as their words at the reader's size (kept to 22
     // and 12, twice the text cut "1.5" to "1." and the hours' feet off at the well's edge).
     var axisW = 22.0;
@@ -2553,7 +2557,7 @@ class RetroDesktopHatchBars extends StatelessWidget
                                     child: Center(
                                       child: Text(
                                         spanWords ?? '',
-                                        style: t.type.text(
+                                        style: t.textTheme.text(
                                           12,
                                           14,
                                           weight: FontWeight.w600,
@@ -2730,7 +2734,7 @@ class RetroDesktopDayBars extends StatelessWidget {
     final room = height - head - 1;
     String show(double v) =>
         v == v.roundToDouble() ? v.round().toString() : '$v';
-    final figure = t.type.mono(
+    final figure = t.textTheme.mono(
       12,
       16,
       weight: FontWeight.w600,
@@ -2775,7 +2779,7 @@ class RetroDesktopDayBars extends StatelessWidget {
                       ),
                       child: Text(
                         show(limit!),
-                        style: t.type.text(
+                        style: t.textTheme.text(
                           11,
                           12,
                           weight: FontWeight.w600,
@@ -2853,7 +2857,7 @@ class RetroDesktopDayBars extends StatelessWidget {
                   child: Text(
                     labels[i],
                     textAlign: TextAlign.center,
-                    style: t.type.mono(
+                    style: t.textTheme.mono(
                       11,
                       13,
                       weight: i == labels.length - 1
@@ -2917,7 +2921,7 @@ class _ScalePainter extends RetroDesktopPixelPainter {
       r.bottom - h,
     );
     // Each band's hatch closes up on the one before: empty, wide, close, nearly solid.
-    final kinds = c.dark
+    final kinds = c.brightness == Brightness.dark
         ? [
             null,
             (6.0, 1.0, c.bevelLight),
@@ -3033,7 +3037,7 @@ class RetroDesktopScaleBar extends StatelessWidget {
           slot((s) => s.side) ??
           BorderSide(color: c.outline, width: t.strokes.regular),
     );
-    final label = t.type.text(
+    final label = t.textTheme.text(
       12,
       15,
       weight: FontWeight.w600,
@@ -3108,7 +3112,7 @@ class RetroDesktopScaleBar extends StatelessWidget {
             );
           },
         ),
-        if (fine != null) Text(fine!, style: t.type.meta),
+        if (fine != null) Text(fine!, style: t.textTheme.meta),
       ],
     );
   }
@@ -3192,7 +3196,7 @@ class _SpanPainter extends RetroDesktopPixelPainter {
         inner.top,
         b,
         inner.bottom,
-        c.dark ? c.platinumLight : c.paper,
+        c.brightness == Brightness.dark ? c.platinumLight : c.paper,
       );
       px.fillExact(a, inner.top, a + w, inner.bottom, c.bevelDark);
       px.fillExact(b - w, inner.top, b, inner.bottom, c.bevelDark);
@@ -3261,7 +3265,7 @@ class RetroDesktopSpanBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = RetroDesktopTheme.of(context);
     final c = t.colors;
-    final label = t.type.mono(12, 16, color: c.textTertiary);
+    final label = t.textTheme.mono(12, 16, color: c.textTertiary);
     double width(String s) {
       final tp = TextPainter(
         text: TextSpan(text: s, style: label),

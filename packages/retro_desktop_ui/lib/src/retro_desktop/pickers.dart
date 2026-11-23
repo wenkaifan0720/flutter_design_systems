@@ -37,10 +37,11 @@ class RetroDesktopDatePicker extends StatefulWidget {
     super.key,
     this.value,
     this.onChanged,
-    this.first,
-    this.last,
+    this.firstDate,
+    this.lastDate,
     this.today,
     this.style,
+    this.autofocus = false,
   });
 
   /// The selected calendar day, without its time-of-day fields.
@@ -51,16 +52,20 @@ class RetroDesktopDatePicker extends StatefulWidget {
   final DateTime? today;
 
   /// The earliest selectable day, inclusive; defaults to January 1, 1900.
-  final DateTime? first;
+  final DateTime? firstDate;
 
   /// The latest selectable day, inclusive; defaults to December 31, 2100.
-  final DateTime? last;
+  final DateTime? lastDate;
 
   /// {@macro retro_desktop.onChanged}
   final ValueChanged<DateTime>? onChanged;
 
   /// {@macro retro_desktop.style}
   final RetroDesktopStyle? style;
+
+  /// Whether the chosen day (or the month's first day it may take) takes the
+  /// focus when the picker first appears, as in a dialog that opens on it.
+  final bool autofocus;
   @override
   State<RetroDesktopDatePicker> createState() => _DatePickerState();
 
@@ -69,9 +74,18 @@ class RetroDesktopDatePicker extends StatefulWidget {
     super.debugFillProperties(properties);
     properties
       ..add(DiagnosticsProperty<DateTime>('value', value, defaultValue: null))
-      ..add(DiagnosticsProperty<DateTime>('first', first, defaultValue: null))
-      ..add(DiagnosticsProperty<DateTime>('last', last, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<DateTime>(
+          'firstDate',
+          firstDate,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<DateTime>('lastDate', lastDate, defaultValue: null),
+      )
       ..add(DiagnosticsProperty<DateTime>('today', today, defaultValue: null))
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
       ..add(
         ObjectFlagProperty<ValueChanged<DateTime>>.has('onChanged', onChanged),
       )
@@ -88,8 +102,8 @@ class RetroDesktopDatePicker extends StatefulWidget {
 class _DatePickerState extends State<RetroDesktopDatePicker> {
   late DateTime _showing;
   final List<FocusNode> _nodes = List.generate(31, (_) => FocusNode());
-  DateTime get _first => _day(widget.first ?? DateTime(1900));
-  DateTime get _last => _day(widget.last ?? DateTime(2100, 12, 31));
+  DateTime get _first => _day(widget.firstDate ?? DateTime(1900));
+  DateTime get _last => _day(widget.lastDate ?? DateTime(2100, 12, 31));
   bool _available(DateTime date) =>
       !date.isBefore(_first) && !date.isAfter(_last);
   DateTime _clamp(DateTime date) => date.isBefore(_first)
@@ -111,8 +125,8 @@ class _DatePickerState extends State<RetroDesktopDatePicker> {
     super.didUpdateWidget(old);
     assert(!_last.isBefore(_first));
     if (old.value != widget.value ||
-        old.first != widget.first ||
-        old.last != widget.last) {
+        old.firstDate != widget.firstDate ||
+        old.lastDate != widget.lastDate) {
       _showing = _month(_value);
     }
   }
@@ -193,7 +207,7 @@ class _DatePickerState extends State<RetroDesktopDatePicker> {
           (s) => s.textStyle,
           const {},
         ) ??
-        t.type.body;
+        t.textTheme.body;
     final minimum =
         RetroDesktopStyle.first(
           [widget.style, t.datePickerTheme],
@@ -369,7 +383,7 @@ class _DatePickerState extends State<RetroDesktopDatePicker> {
                     child: Text(
                       title,
                       textAlign: TextAlign.center,
-                      style: t.type.chrome.copyWith(color: t.colors.text),
+                      style: t.textTheme.chrome.copyWith(color: t.colors.text),
                     ),
                   ),
                 ),
@@ -396,7 +410,7 @@ class _DatePickerState extends State<RetroDesktopDatePicker> {
                   constraints.hasBoundedWidth ? constraints.maxWidth : week,
                 ) /
                 7;
-            final headStyle = t.type.small.copyWith(
+            final headStyle = t.textTheme.small.copyWith(
               color: t.colors.textSecondary,
             );
             final widest = words.weekdaysShort.fold(0.0, (w, name) {
@@ -473,6 +487,8 @@ class _DatePickerState extends State<RetroDesktopDatePicker> {
                                       label: words.formatDate(date),
                                       selected: chosen,
                                       focusNode: _nodes[day - 1],
+                                      autofocus:
+                                          widget.autofocus && day == target,
                                       onPressed:
                                           widget.onChanged != null &&
                                               _available(date)
@@ -539,6 +555,9 @@ class _DatePickerState extends State<RetroDesktopDatePicker> {
                                               return RetroDesktopHighlight(
                                                 shape: shape,
                                                 inside: true,
+                                                insideColor: chosen
+                                                    ? ink
+                                                    : null,
                                                 focused: states.contains(
                                                   WidgetState.focused,
                                                 ),
@@ -581,7 +600,7 @@ class _DatePickerState extends State<RetroDesktopDatePicker> {
                                                                             ) =>
                                                                                 s.textStyle,
                                                                           ) ??
-                                                                          t.type.body)
+                                                                          t.textTheme.body)
                                                                       .copyWith(
                                                                         color:
                                                                             ink,
@@ -621,14 +640,14 @@ class _DatePickerState extends State<RetroDesktopDatePicker> {
 Future<DateTime?> showRetroDesktopDatePicker(
   BuildContext context, {
   DateTime? value,
-  DateTime? first,
-  DateTime? last,
+  DateTime? firstDate,
+  DateTime? lastDate,
   DateTime? today,
   String? title,
 }) {
   final words = RetroDesktopLocalizations.of(context);
-  final begin = _day(first ?? DateTime(1900));
-  final end = _day(last ?? DateTime(2100, 12, 31));
+  final begin = _day(firstDate ?? DateTime(1900));
+  final end = _day(lastDate ?? DateTime(2100, 12, 31));
   assert(!end.isBefore(begin));
   final initial = _day(value ?? today ?? DateTime.now());
   var selected = initial.isBefore(begin)
@@ -644,9 +663,11 @@ Future<DateTime?> showRetroDesktopDatePicker(
         content: [
           RetroDesktopDatePicker(
             value: selected,
-            first: first,
-            last: last,
+            firstDate: firstDate,
+            lastDate: lastDate,
             today: today,
+            // The dialog opens on the chosen day, where the arrows go on.
+            autofocus: true,
             onChanged: (date) => change(() => selected = date),
           ),
         ],
@@ -759,7 +780,7 @@ class RetroDesktopTimePicker extends StatelessWidget {
         SizedBox(
           width: 128,
           child: RetroDesktopSelect<int>(
-            label: words.hour,
+            labelText: words.hour,
             value: hour,
             style: appearance,
             options: [
@@ -780,7 +801,7 @@ class RetroDesktopTimePicker extends StatelessWidget {
         SizedBox(
           width: 128,
           child: RetroDesktopSelect<int>(
-            label: words.minute,
+            labelText: words.minute,
             value: time.minute,
             style: appearance,
             options: [
@@ -799,7 +820,7 @@ class RetroDesktopTimePicker extends StatelessWidget {
           SizedBox(
             width: 128,
             child: RetroDesktopSelect<bool>(
-              label: words.period,
+              labelText: words.period,
               value: time.hour >= 12,
               style: appearance,
               options: [

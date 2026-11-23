@@ -27,7 +27,8 @@ const appearances = <String, RetroDesktopAppearance>{
 
 /// Each appearance's shapes, by the appearance's name.
 final families = <String, RetroDesktopShapes>{
-  for (final f in appearances.entries) f.key: RetroDesktopShapes.of(f.value),
+  for (final f in appearances.entries)
+    f.key: RetroDesktopShapes.forAppearance(f.value),
 };
 
 OutlinedBorder plain(OutlinedBorder shape) =>

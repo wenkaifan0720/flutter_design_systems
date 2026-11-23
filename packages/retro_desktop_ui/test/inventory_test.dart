@@ -93,7 +93,7 @@ void main() {
                         .copyWith(appearance: appearance),
                     child: const RetroDesktopScaffold(
                       scroll: false,
-                      topBar: RetroDesktopAppBar(title: 'Components'),
+                      appBar: RetroDesktopAppBar(title: 'Components'),
                       body: RetroDesktopInventoryGallery(),
                     ),
                   ),

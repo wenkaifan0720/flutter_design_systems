@@ -24,7 +24,7 @@ void main() {
             child: Align(
               alignment: Alignment.topLeft,
               child: RetroDesktopSelect<String>(
-                label: 'Assignee',
+                labelText: 'Assignee',
                 value: 'maya',
                 focusNode: node,
                 options: const [

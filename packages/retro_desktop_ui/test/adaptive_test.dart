@@ -154,7 +154,7 @@ void main() {
           child: SizedBox(
             width: 300,
             child: RetroDesktopTextField(
-              label: 'Document',
+              labelText: 'Document',
               controller: controller,
             ),
           ),
@@ -200,7 +200,7 @@ void main() {
                 child: SizedBox(
                   width: 300,
                   child: RetroDesktopTextField(
-                    label: 'Document',
+                    labelText: 'Document',
                     controller: controller,
                   ),
                 ),
@@ -359,7 +359,7 @@ void main() {
     addTearDown(info.dispose);
     await tester.pumpWidget(
       _host(
-        const RetroDesktopTextField(hint: 'Drag words'),
+        const RetroDesktopTextField(hintText: 'Drag words'),
         reduceMotion: true,
         look: RetroDesktopThemeData.classic().copyWith(
           // ignore: deprecated_member_use_from_same_package — the deprecated motion setting still works until it is removed, and this test holds it.

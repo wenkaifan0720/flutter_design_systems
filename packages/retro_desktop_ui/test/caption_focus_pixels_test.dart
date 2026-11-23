@@ -143,7 +143,7 @@ void main() {
                         ),
                       ),
                       RetroDesktopRadioGroup<int>(
-                        label: 'Option',
+                        labelText: 'Option',
                         showLabel: false,
                         value: checked ? 1 : null,
                         onChanged: (_) {},
@@ -249,7 +249,7 @@ void main() {
                   child: SizedBox(
                     width: 220,
                     child: RetroDesktopRadioGroup<int>(
-                      label: 'Sort by',
+                      labelText: 'Sort by',
                       showLabel: false,
                       value: 1,
                       onChanged: (_) {},
@@ -525,7 +525,7 @@ void main() {
                 final ink =
                     (chisel
                             ? theme.colors.text
-                            : theme.colors.dark
+                            : theme.colors.brightness == Brightness.dark
                             ? theme.colors.control
                             : theme.colors.outline)
                         .toARGB32();
@@ -648,7 +648,7 @@ void main() {
                   _ => Padding(
                     padding: const EdgeInsets.all(12),
                     child: RetroDesktopNumberField(
-                      label: 'Count',
+                      labelText: 'Count',
                       value: 2,
                       max: 5,
                       unit: 'a day',

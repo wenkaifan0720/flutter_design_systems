@@ -11,7 +11,7 @@ class TablePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const RetroDesktopScaffold(
-      topBar: RetroDesktopAppBar(title: 'This month'),
+      appBar: RetroDesktopAppBar(title: 'This month'),
       body: RetroDesktopDesktop(
         active: 'This month',
         tiles: [
@@ -26,7 +26,7 @@ class TablePage extends StatelessWidget {
                   children: [
                     RetroDesktopSectionHeader(
                       'Where it stands',
-                      note: 'Counted to the 14th',
+                      subtitle: 'Counted to the 14th',
                     ),
                     RetroDesktopGaugeBlock(
                       value: '640',
@@ -43,7 +43,7 @@ class TablePage extends StatelessWidget {
                           'First part',
                           '310',
                           share: .48,
-                          open: true,
+                          isExpanded: true,
                         ),
                         RetroDesktopTreeRow(
                           'A piece of it',

@@ -180,10 +180,12 @@ void main() {
                             child: Column(
                               children: [
                                 const RetroDesktopTextField(
-                                  label: 'Name',
+                                  labelText: 'Name',
                                   initial: 'Ada Lovelace',
                                 ),
-                                const RetroDesktopSearchField(hint: 'Search'),
+                                const RetroDesktopSearchField(
+                                  hintText: 'Search',
+                                ),
                                 RetroDesktopDatePicker(
                                   value: DateTime(2026, 6, 2),
                                   onChanged: (_) {},
@@ -373,7 +375,7 @@ void main() {
               child: SizedBox(
                 width: 320,
                 child: RetroDesktopTextField(
-                  label: 'Name',
+                  labelText: 'Name',
                   initial: 'Ada Lovelace',
                 ),
               ),

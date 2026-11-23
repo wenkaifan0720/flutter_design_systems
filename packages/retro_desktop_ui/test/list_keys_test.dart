@@ -74,7 +74,7 @@ void main() {
       _host(
         StatefulBuilder(
           builder: (context, setState) => RetroDesktopCombobox<String>(
-            label: 'Country',
+            labelText: 'Country',
             options: _countries,
             value: value,
             onSelected: (o) => setState(() => value = o),
@@ -132,7 +132,7 @@ void main() {
     await tester.pumpWidget(
       _host(
         RetroDesktopCombobox<String>(
-          label: 'Country',
+          labelText: 'Country',
           options: _countries,
           value: 'Belgium',
           onSelected: (_) {},
@@ -166,7 +166,7 @@ void main() {
     await tester.pumpWidget(
       _host(
         RetroDesktopCombobox<String>(
-          label: 'Folder',
+          labelText: 'Folder',
           options: many,
           value: 'Folder 37',
           onSelected: (_) {},
@@ -197,7 +197,7 @@ void main() {
     await tester.pumpWidget(
       _host(
         RetroDesktopCombobox<String>(
-          label: 'Country',
+          labelText: 'Country',
           options: _countries,
           onSelected: (_) {},
         ),

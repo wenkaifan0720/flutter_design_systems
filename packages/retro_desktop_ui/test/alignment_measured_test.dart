@@ -17,7 +17,8 @@ const appearances = <String, RetroDesktopAppearance>{
 
 /// Each appearance's shapes, by the appearance's name.
 final families = <String, RetroDesktopShapes>{
-  for (final f in appearances.entries) f.key: RetroDesktopShapes.of(f.value),
+  for (final f in appearances.entries)
+    f.key: RetroDesktopShapes.forAppearance(f.value),
 };
 
 // One device pixel at the test's ratio of one: a centre may round either way.
@@ -87,7 +88,10 @@ void main() {
       testWidgets('$name: a field\'s icon sits on its line of text', (
         tester,
       ) async {
-        await pump(tester, const RetroDesktopSearchField(hint: 'Search files'));
+        await pump(
+          tester,
+          const RetroDesktopSearchField(hintText: 'Search files'),
+        );
         sameLine(tester, [
           find.text('Search files'),
           find.byIcon(RetroDesktopGlyphs.search),

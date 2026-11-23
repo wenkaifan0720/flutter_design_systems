@@ -94,7 +94,7 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => RetroDesktopScaffold(
-    topBar: const RetroDesktopAppBar(title: 'Documents'),
+    appBar: const RetroDesktopAppBar(title: 'Documents'),
     body: RetroDesktopCard(
       title: 'Your workspace',
       child: RetroDesktopButton('Create document', isDefaultAction: true, onPressed: () {}),
@@ -165,9 +165,9 @@ Row(
 
 ```dart
 RetroDesktopTextField(
-  label: 'Name',
-  hint: 'Your full name',
-  helper: 'As it appears on the card',
+  labelText: 'Name',
+  hintText: 'Your full name',
+  helperText: 'As it appears on the card',
   onChanged: (name) {},
 );
 ```
@@ -176,7 +176,7 @@ RetroDesktopTextField(
 
 ```dart
 RetroDesktopSelect<String>(
-  label: 'Sort by',
+  labelText: 'Sort by',
   value: sort,
   options: const [
     RetroDesktopOption('name', 'Name'),

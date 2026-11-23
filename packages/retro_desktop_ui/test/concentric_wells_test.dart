@@ -84,7 +84,9 @@ void main() {
             bool outside(int x, int y) =>
                 x < 0 || y < 0 || x >= w || y >= h || rgba[at(x, y) + 3] < 128;
             final c = theme.colors;
-            final ground = c.dark ? c.bevelDark : c.platinumDark;
+            final ground = c.brightness == Brightness.dark
+                ? c.bevelDark
+                : c.platinumDark;
             final g8 = [
               (ground.r * 255).round(),
               (ground.g * 255).round(),

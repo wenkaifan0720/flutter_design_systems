@@ -184,8 +184,8 @@ Widget retroDesktopFieldNote(
   String text, {
   required bool error,
 }) {
-  if (!error) return Text(text, style: t.type.meta);
-  final style = t.type.meta.copyWith(color: t.colors.text);
+  if (!error) return Text(text, style: t.textTheme.meta);
+  final style = t.textTheme.meta.copyWith(color: t.colors.text);
   final size = (style.fontSize ?? 12) + 2;
   return Row(
     crossAxisAlignment: CrossAxisAlignment.start,
@@ -206,7 +206,7 @@ Widget retroDesktopFieldNote(
 /// greyed the white box until the button came up. By night the box is darker
 /// than the face, so it lifts to the lighter grey.
 Color retroDesktopChiselHeldBox(RetroDesktopColors c) =>
-    c.dark ? c.platinumLight : c.platinum;
+    c.brightness == Brightness.dark ? c.platinumLight : c.platinum;
 
 /// The one flat tone a part's [gradient] stands for: its colour half way along. No part fades (the material law); a
 /// part keeps its tones as a gradient so a pressed face and a default face read as they did, and paints this one.
@@ -315,7 +315,7 @@ Widget retroDesktopJoinedRing({
 /// so a row has one top and one bottom.
 double retroDesktopButtonFaceHeight(BuildContext context) {
   final t = RetroDesktopTheme.of(context);
-  final style = t.type.chrome;
+  final style = t.textTheme.chrome;
   final line =
       MediaQuery.textScalerOf(context).scale(style.fontSize ?? 14) *
       (style.height ?? 1.2);
@@ -335,7 +335,7 @@ double retroDesktopButtonFaceHeight(BuildContext context) {
 /// stands beside one (a month head's arrows beside its Today) shows it too.
 double retroDesktopSmallButtonFaceHeight(BuildContext context) {
   final t = RetroDesktopTheme.of(context);
-  final style = t.type.chrome;
+  final style = t.textTheme.chrome;
   final line =
       MediaQuery.textScalerOf(context).scale(style.fontSize ?? 14) *
       (style.height ?? 1.2);
@@ -404,7 +404,7 @@ retroDesktopChiselEdge(
 }) {
   // By night hi sits barely above the grey (1.7:1), and a Chisel button read
   // as a flat slab; its light step leans halfway to the control line instead.
-  final light = c.dark
+  final light = c.brightness == Brightness.dark
       ? Color.lerp(c.bevelLight, c.control, .5)!
       : c.bevelLight;
   return sunken
@@ -559,7 +559,7 @@ class _Face extends StatelessWidget {
         less(g.bottom),
       );
     }
-    final textStyle = theme.type.body
+    final textStyle = theme.textTheme.body
         .merge(slot((s) => s.textStyle))
         .copyWith(color: ink);
     // Cache only while a decoration changes. Once it settles, paint on the
@@ -657,7 +657,12 @@ class _Face extends StatelessWidget {
                 // left, and falls to the frame's black below and right: a light line all round read as a glow, not
                 // a part lit from the top left. Pressed, it turns in with the bevel: black above and left, lit below
                 // and right (a light line all round read as the plate going flat, not in).
-                outlineShade: c.dark && !chisel && bevel && !sunken && !keepSide
+                outlineShade:
+                    c.brightness == Brightness.dark &&
+                        !chisel &&
+                        bevel &&
+                        !sunken &&
+                        !keepSide
                     ? c.outline
                     : null,
                 outlineIn: down,
@@ -765,7 +770,9 @@ class _Face extends StatelessWidget {
           ring,
           theme.chisel ? 0 : 1,
           ringColor ??
-              (theme.colors.dark ? theme.colors.control : theme.colors.outline),
+              (theme.colors.brightness == Brightness.dark
+                  ? theme.colors.control
+                  : theme.colors.outline),
           Directionality.of(context),
         ),
         child: face,
@@ -1083,14 +1090,14 @@ class _BevelPainter extends RetroDesktopPixelPainter {
 class RetroDesktopArrowButtonPainter extends RetroDesktopPixelPainter {
   /// Creates a [RetroDesktopArrowButtonPainter].
   const RetroDesktopArrowButtonPainter(
-    this.c,
+    this.colors,
     this.down,
     this.outer,
     this.inner,
   );
 
   /// The theme's colours.
-  final RetroDesktopColors c;
+  final RetroDesktopColors colors;
 
   /// Whether the button is held.
   final bool down;
@@ -1101,11 +1108,11 @@ class RetroDesktopArrowButtonPainter extends RetroDesktopPixelPainter {
   void paint(RetroDesktopPixelGrid px, Size size) {
     final rect = px.snap(Offset.zero & size);
     if (rect.isEmpty) return;
-    px.canvas.drawRect(rect, Paint()..color = c.platinum);
+    px.canvas.drawRect(rect, Paint()..color = colors.platinum);
     retroDesktopPaintChiselRect(
       px.canvas,
       rect,
-      retroDesktopChiselEdge(c, pressed: down),
+      retroDesktopChiselEdge(colors, pressed: down),
       outer: px.extent(outer),
       inner: px.extent(inner),
     );
@@ -1119,13 +1126,13 @@ class RetroDesktopArrowButtonPainter extends RetroDesktopPixelPainter {
         Offset(x + w, y),
         Offset(x + w / 2, y + h),
       ], true),
-      Paint()..color = c.text,
+      Paint()..color = colors.text,
     );
   }
 
   @override
   bool shouldRepaint(RetroDesktopArrowButtonPainter old) =>
-      c != old.c ||
+      colors != old.colors ||
       down != old.down ||
       outer != old.outer ||
       inner != old.inner;

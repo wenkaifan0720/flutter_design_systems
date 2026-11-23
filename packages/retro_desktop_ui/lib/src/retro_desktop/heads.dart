@@ -11,7 +11,7 @@ import 'tokens.dart';
 /// Text that sets `*words*` in italic, and keeps all else as given: a sentence with one title in it.
 ///
 /// ```dart
-/// RetroDesktopText('Read *The Lamp Room*, ch. 3 to 4', style: t.type.row)
+/// RetroDesktopText('Read *The Lamp Room*, ch. 3 to 4', style: t.textTheme.row)
 /// ```
 class RetroDesktopText extends StatelessWidget {
   /// Creates a [RetroDesktopText].
@@ -99,7 +99,7 @@ class RetroDesktopEyebrow extends StatelessWidget {
     final t = RetroDesktopTheme.of(context);
     return Text(
       text,
-      style: t.type.caption.copyWith(color: t.colors.textTertiary),
+      style: t.textTheme.caption.copyWith(color: t.colors.textTertiary),
     );
   }
 
@@ -123,7 +123,7 @@ class RetroDesktopHeadline extends StatelessWidget {
   final String text;
   @override
   Widget build(BuildContext context) =>
-      Text(text, style: RetroDesktopTheme.of(context).type.head);
+      Text(text, style: RetroDesktopTheme.of(context).textTheme.head);
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -135,14 +135,14 @@ class RetroDesktopHeadline extends StatelessWidget {
 /// A small head in the system face, with its line: inside a window, over what belongs to it.
 ///
 /// ```dart
-/// RetroDesktopSectionHeader('Storage and sync', note: 'All changes saved', trailing: RetroDesktopButton('Manage', size: RetroDesktopButtonSize.small))
+/// RetroDesktopSectionHeader('Storage and sync', subtitle: 'All changes saved', trailing: RetroDesktopButton('Manage', size: RetroDesktopButtonSize.small))
 /// ```
 class RetroDesktopSectionHeader extends StatelessWidget {
   /// Creates a [RetroDesktopSectionHeader].
   const RetroDesktopSectionHeader(
     this.title, {
     super.key,
-    this.note,
+    this.subtitle,
     this.trailing,
     this.leading,
   });
@@ -151,7 +151,7 @@ class RetroDesktopSectionHeader extends StatelessWidget {
   final String title;
 
   /// Supporting text shown with the main content.
-  final String? note;
+  final String? subtitle;
 
   /// Optional content after the main content in reading order.
   final Widget? trailing;
@@ -164,11 +164,17 @@ class RetroDesktopSectionHeader extends StatelessWidget {
     final text = RetroDesktopColumn(
       gap: 2,
       children: [
-        Text(title, style: t.type.pixel(18, 18)),
-        if (note != null)
+        // A heading to a screen reader, as a page's section heading is: the
+        // title alone, the note under it read after it.
+        Semantics(
+          container: true,
+          header: true,
+          child: Text(title, style: t.textTheme.pixel(18, 18)),
+        ),
+        if (subtitle != null)
           Text(
-            note!,
-            style: t.type.meta.copyWith(color: t.colors.textSecondary),
+            subtitle!,
+            style: t.textTheme.meta.copyWith(color: t.colors.textSecondary),
           ),
       ],
     );
@@ -189,27 +195,32 @@ class RetroDesktopSectionHeader extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(StringProperty('title', title))
-      ..add(StringProperty('note', note, defaultValue: null));
+      ..add(StringProperty('subtitle', subtitle, defaultValue: null));
   }
 }
 
-/// A small head over what follows inside a window: a triangle if [open] says it can fold, a small note at its end.
+/// A small head over what follows inside a window: a triangle if [isExpanded] says it can fold, a small note at its end.
 ///
 /// ```dart
-/// RetroDesktopPartHead('Next 12 hours', note: 'sky, °C, rain %', open: true)
+/// RetroDesktopPartHead('Next 12 hours', subtitle: 'sky, °C, rain %', isExpanded: true)
 /// ```
 class RetroDesktopPartHead extends StatelessWidget {
   /// Creates a [RetroDesktopPartHead].
-  const RetroDesktopPartHead(this.title, {super.key, this.note, this.open});
+  const RetroDesktopPartHead(
+    this.title, {
+    super.key,
+    this.subtitle,
+    this.isExpanded,
+  });
 
   /// The heading displayed above the content.
   final String title;
 
   /// Supporting text shown with the main content.
-  final String? note;
+  final String? subtitle;
 
   /// Whether the part under the head is open: a triangle pointing down, or right when false; null draws none.
-  final bool? open;
+  final bool? isExpanded;
   @override
   Widget build(BuildContext context) {
     final t = RetroDesktopTheme.of(context);
@@ -228,9 +239,9 @@ class RetroDesktopPartHead extends StatelessWidget {
         children: [
           Row(
             children: [
-              if (open != null) ...[
+              if (isExpanded != null) ...[
                 RetroDesktopTriangleMark(
-                  open!
+                  isExpanded!
                       ? AxisDirection.down
                       : (rtl ? AxisDirection.left : AxisDirection.right),
                 ),
@@ -239,7 +250,7 @@ class RetroDesktopPartHead extends StatelessWidget {
               Expanded(
                 child: Text(
                   title,
-                  style: t.type.pixel(18, 18),
+                  style: t.textTheme.pixel(18, 18),
                   maxLines: 1,
                   softWrap: false,
                   overflow: TextOverflow.ellipsis,
@@ -247,10 +258,10 @@ class RetroDesktopPartHead extends StatelessWidget {
               ),
             ],
           ),
-          if (note != null)
+          if (subtitle != null)
             Text(
-              note!,
-              style: t.type.caption.copyWith(color: t.colors.textTertiary),
+              subtitle!,
+              style: t.textTheme.caption.copyWith(color: t.colors.textTertiary),
               maxLines: 1,
               softWrap: false,
               overflow: TextOverflow.ellipsis,
@@ -265,8 +276,10 @@ class RetroDesktopPartHead extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(StringProperty('title', title))
-      ..add(StringProperty('note', note, defaultValue: null))
-      ..add(DiagnosticsProperty<bool>('open', open, defaultValue: null));
+      ..add(StringProperty('subtitle', subtitle, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<bool>('isExpanded', isExpanded, defaultValue: null),
+      );
   }
 }
 
@@ -283,7 +296,7 @@ class RetroDesktopLabel extends StatelessWidget {
   final String text;
   @override
   Widget build(BuildContext context) =>
-      Text(text, style: RetroDesktopTheme.of(context).type.caption);
+      Text(text, style: RetroDesktopTheme.of(context).textTheme.caption);
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -311,7 +324,7 @@ class RetroDesktopMonogram extends StatelessWidget {
     final t = RetroDesktopTheme.of(context);
     T? slot<T>(WidgetStateProperty<T?>? Function(RetroDesktopStyle) get) =>
         RetroDesktopStyle.first([style, t.avatarTheme], get, const {});
-    final text = t.type
+    final text = t.textTheme
         .pixel(15, 15, color: t.colors.paper)
         .merge(slot((s) => s.textStyle))
         .copyWith(color: slot((s) => s.foreground));

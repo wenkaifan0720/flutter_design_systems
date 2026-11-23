@@ -37,8 +37,12 @@ void main() {
   });
   test('each appearance draws its own corners: Chisel square everywhere, '
       'Platinum rounding only its buttons', () {
-    final chisel = RetroDesktopShapes.of(RetroDesktopAppearance.chisel);
-    final platinum = RetroDesktopShapes.of(RetroDesktopAppearance.platinum);
+    final chisel = RetroDesktopShapes.forAppearance(
+      RetroDesktopAppearance.chisel,
+    );
+    final platinum = RetroDesktopShapes.forAppearance(
+      RetroDesktopAppearance.platinum,
+    );
     for (final shapes in [chisel, platinum]) {
       for (final role in [
         shapes.small,

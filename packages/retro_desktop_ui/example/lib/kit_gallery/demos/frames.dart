@@ -167,7 +167,7 @@ Widget kitSpecimenSubHead() => kitAction(
   'Storage settings opened',
   (press) => RetroDesktopSectionHeader(
     'Storage',
-    note: 'All saved',
+    subtitle: 'All saved',
     trailing: RetroDesktopButton(
       'Manage',
       size: RetroDesktopButtonSize.small,
@@ -181,7 +181,7 @@ Widget kitSpecimenSubHead() => kitAction(
 Widget kitSpecimenPartHead() => const RetroDesktopColumn(
   gap: 6,
   children: [
-    RetroDesktopPartHead('Next 4 hours', note: 'sky, °C, rain %'),
+    RetroDesktopPartHead('Next 4 hours', subtitle: 'sky, °C, rain %'),
     RetroDesktopHourStrip(
       hours: [
         RetroDesktopHour(
@@ -223,9 +223,9 @@ Widget kitSpecimenPartHead() => const RetroDesktopColumn(
 Widget kitSpecimenLabel() => const RetroDesktopLabel('Folder');
 
 Widget kitSpecimenLabelled() => const RetroDesktopFormField(
-  label: 'Name',
-  help: 'Only for your receipts',
-  child: RetroDesktopTextField(hint: 'Your name'),
+  labelText: 'Name',
+  helperText: 'Only for your receipts',
+  child: RetroDesktopTextField(hintText: 'Your name'),
 );
 
 Widget kitSpecimenMonogram() => const RetroDesktopMonogram('AB');

@@ -17,7 +17,7 @@ class ShelfPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = RetroDesktopTheme.of(context);
     return RetroDesktopScaffold(
-      topBar: const RetroDesktopAppBar(title: 'All things'),
+      appBar: const RetroDesktopAppBar(title: 'All things'),
       body: RetroDesktopDesktop(
         active: 'All things',
         tiles: [
@@ -33,7 +33,7 @@ class ShelfPage extends StatelessWidget {
                     RetroDesktopFolder(
                       'First kind',
                       icon: LucideIcons.star,
-                      note: '6 things',
+                      subtitle: '6 things',
                       selected: true,
                       onPressed: onOpen,
                       art: const RetroDesktopFolderArt(
@@ -44,7 +44,7 @@ class ShelfPage extends StatelessWidget {
                     RetroDesktopFolder(
                       'Second kind',
                       icon: LucideIcons.bookOpen,
-                      note: '4 things',
+                      subtitle: '4 things',
                       onPressed: onOpen,
                       art: const RetroDesktopFolderArt(
                         selected: false,
@@ -54,7 +54,7 @@ class ShelfPage extends StatelessWidget {
                     RetroDesktopFolder(
                       'Third kind',
                       icon: LucideIcons.house,
-                      note: '2 things',
+                      subtitle: '2 things',
                       onPressed: onOpen,
                       art: const RetroDesktopFolderArt(
                         selected: false,
@@ -64,7 +64,7 @@ class ShelfPage extends StatelessWidget {
                     RetroDesktopFolder(
                       'Fourth kind',
                       icon: LucideIcons.mail,
-                      note: '5 things',
+                      subtitle: '5 things',
                       onPressed: onOpen,
                       art: const RetroDesktopFolderArt(
                         selected: false,
@@ -74,7 +74,7 @@ class ShelfPage extends StatelessWidget {
                     RetroDesktopFolder(
                       'Fifth kind',
                       icon: LucideIcons.pencil,
-                      note: '3 things',
+                      subtitle: '3 things',
                       onPressed: onOpen,
                       art: const RetroDesktopFolderArt(
                         selected: false,
@@ -84,7 +84,7 @@ class ShelfPage extends StatelessWidget {
                     RetroDesktopFolder(
                       'Sixth kind',
                       icon: LucideIcons.hammer,
-                      note: '1 thing',
+                      subtitle: '1 thing',
                       onPressed: onOpen,
                       art: const RetroDesktopFolderArt(
                         selected: false,

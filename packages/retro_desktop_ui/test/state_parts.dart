@@ -110,10 +110,10 @@ final Map<String, Widget? Function(String)> stateParts = {
       : SizedBox(
           width: 240,
           child: RetroDesktopTextField(
-            label: 'Name',
+            labelText: 'Name',
             initial: 'Alex Lee',
             enabled: s != 'disabled',
-            error: s == 'error' ? 'Enter your name' : null,
+            errorText: s == 'error' ? 'Enter your name' : null,
           ),
         ),
   'Search field': (s) => s == 'selected' || s == 'pressed'
@@ -121,32 +121,32 @@ final Map<String, Widget? Function(String)> stateParts = {
       : SizedBox(
           width: 240,
           child: RetroDesktopSearchField(
-            hint: 'Search files',
+            hintText: 'Search files',
             enabled: s != 'disabled',
-            error: s == 'error' ? 'Nothing found' : null,
+            errorText: s == 'error' ? 'Nothing found' : null,
           ),
         ),
   'Code field': (s) => s == 'selected' || s == 'pressed'
       ? null
       : RetroDesktopInputOtp(
-          label: 'Code',
+          labelText: 'Code',
           length: 4,
           enabled: s != 'disabled',
-          error: s == 'error' ? 'Wrong code' : null,
+          errorText: s == 'error' ? 'Wrong code' : null,
         ),
   'Select': (s) => s == 'selected' || s == 'pressed'
       ? null
       : SizedBox(
           width: 240,
           child: RetroDesktopSelect<String>(
-            label: 'Size',
+            labelText: 'Size',
             value: 'm',
             options: const [
               RetroDesktopOption('s', 'Small'),
               RetroDesktopOption('m', 'Medium'),
             ],
             onChanged: s == 'disabled' ? null : _take,
-            error: s == 'error' ? 'Pick a size' : null,
+            errorText: s == 'error' ? 'Pick a size' : null,
           ),
         ),
   'Checkbox': (s) => RetroDesktopCheckbox(
@@ -156,9 +156,9 @@ final Map<String, Widget? Function(String)> stateParts = {
     onChanged: s == 'disabled' ? null : _take,
   ),
   'Radio group': (s) => RetroDesktopRadioGroup<int>(
-    label: 'Delivery',
+    labelText: 'Delivery',
     value: s == 'selected' ? 1 : null,
-    error: s == 'error' ? 'Choose one' : null,
+    errorText: s == 'error' ? 'Choose one' : null,
     onChanged: s == 'disabled' ? null : _take,
     options: const [
       RetroDesktopRadio(1, 'Standard'),
@@ -177,7 +177,7 @@ final Map<String, Widget? Function(String)> stateParts = {
       : RetroDesktopChip(
           'Draft',
           selected: s == 'selected',
-          enabled: s != 'disabled',
+          isEnabled: s != 'disabled',
           onPressed: _noop,
         ),
   'Segmented': (s) => s == 'error' || s == 'selected'
@@ -205,7 +205,7 @@ final Map<String, Widget? Function(String)> stateParts = {
   'Stepper': (s) => s == 'error' || s == 'selected'
       ? null
       : RetroDesktopNumberField(
-          label: 'Copies',
+          labelText: 'Copies',
           value: 3,
           max: 9,
           onChanged: s == 'disabled' ? null : _take,
@@ -282,10 +282,10 @@ final Map<String, Widget? Function(String)> stateParts = {
       : SizedBox(
           width: 280,
           child: RetroDesktopTextArea(
-            label: 'Notes',
+            labelText: 'Notes',
             initial: 'For the next reader',
             enabled: s != 'disabled',
-            error: s == 'error' ? 'Too long' : null,
+            errorText: s == 'error' ? 'Too long' : null,
           ),
         ),
   'Password field': (s) => s == 'selected' || s == 'pressed'
@@ -293,9 +293,9 @@ final Map<String, Widget? Function(String)> stateParts = {
       : SizedBox(
           width: 280,
           child: RetroDesktopPasswordField(
-            label: 'Password',
+            labelText: 'Password',
             enabled: s != 'disabled',
-            error: s == 'error' ? 'Too short' : null,
+            errorText: s == 'error' ? 'Too short' : null,
           ),
         ),
   'Input group': (s) => s == 'selected' || s == 'pressed'
@@ -303,12 +303,12 @@ final Map<String, Widget? Function(String)> stateParts = {
       : SizedBox(
           width: 300,
           child: RetroDesktopInputGroup(
-            label: 'Site',
+            labelText: 'Site',
             prefix: 'https://',
             suffix: '.example.com',
-            hint: 'studio',
+            hintText: 'studio',
             enabled: s != 'disabled',
-            error: s == 'error' ? 'Taken' : null,
+            errorText: s == 'error' ? 'Taken' : null,
           ),
         ),
   'Form field': (s) => s == 'selected' || s == 'pressed'
@@ -316,13 +316,13 @@ final Map<String, Widget? Function(String)> stateParts = {
       : SizedBox(
           width: 280,
           child: RetroDesktopFormField(
-            label: 'Email',
-            help: 'The receipt goes here',
+            labelText: 'Email',
+            helperText: 'The receipt goes here',
             required: true,
             enabled: s != 'disabled',
-            error: s == 'error' ? 'Enter your email' : null,
+            errorText: s == 'error' ? 'Enter your email' : null,
             child: RetroDesktopTextField(
-              hint: 'name@example.com',
+              hintText: 'name@example.com',
               enabled: s != 'disabled',
             ),
           ),
@@ -332,11 +332,11 @@ final Map<String, Widget? Function(String)> stateParts = {
       : SizedBox(
           width: 280,
           child: RetroDesktopCombobox<String>(
-            label: 'Country',
-            hint: 'Type a country',
+            labelText: 'Country',
+            hintText: 'Type a country',
             options: const ['Austria', 'Belgium'],
             enabled: s != 'disabled',
-            error: s == 'error' ? 'Pick a country' : null,
+            errorText: s == 'error' ? 'Pick a country' : null,
             onSelected: _take,
           ),
         ),
@@ -371,7 +371,7 @@ final Map<String, Widget? Function(String)> stateParts = {
       : SizedBox(
           width: 320,
           child: RetroDesktopDateRangePicker(
-            label: 'Stay',
+            labelText: 'Stay',
             firstDate: _june,
             lastDate: _september,
             initialMonth: _june,

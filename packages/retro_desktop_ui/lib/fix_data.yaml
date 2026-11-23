@@ -1,7 +1,1039 @@
-# retro_desktop_ui's data-driven fixes: `dart fix --apply` moves callers off what a version deprecates.
-# Each transform has its pair under test_fixes/ (`dart fix --compare-to-golden test_fixes`).
+# retro_desktop_ui's data-driven fixes: `dart fix --apply` moves callers across a rename. look:package writes this
+# file to the package's lib/fix_data.yaml; package/test_fixes/ holds each fix's before and after
+# (`dart fix --compare-to-golden test_fixes`).
 version: 1
 transforms:
+  # 0.5.0: Flutter's names for Flutter's ideas (InputDecoration's field words, ListTile's subtitle, Checkbox.isError,
+  # TextField.obscureText, ExpansionPanel.isExpanded, Tooltip.waitDuration, Scaffold.appBar, ThemeData.textTheme,
+  # FilterChip.isEnabled, showDatePicker's dates).
+  - title: "Use RetroDesktopCheckRow's new parameter names"
+    date: 2026-11-23
+    element:
+      uris: &uris ['retro_desktop_ui.dart', 'retro_desktop_parts.dart', 'retro_desktop_host.dart']
+      constructor: ''
+      inClass: 'RetroDesktopCheckRow'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'isError'
+      - kind: 'renameParameter'
+        oldName: 'note'
+        newName: 'subtitle'
+  - title: "Rename to 'isError'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'error'
+      inClass: 'RetroDesktopCheckRow'
+    changes:
+      - kind: 'rename'
+        newName: 'isError'
+  - title: "Rename to 'subtitle'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'note'
+      inClass: 'RetroDesktopCheckRow'
+    changes:
+      - kind: 'rename'
+        newName: 'subtitle'
+  - title: "Use RetroDesktopPressable's new parameter names"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'RetroDesktopPressable'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'isError'
+  - title: "Rename to 'isError'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'error'
+      inClass: 'RetroDesktopPressable'
+    changes:
+      - kind: 'rename'
+        newName: 'isError'
+  - title: "Use RetroDesktopSearchField's new parameter names"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'RetroDesktopSearchField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'error'
+      inClass: 'RetroDesktopSearchField'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'hint'
+      inClass: 'RetroDesktopSearchField'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'helper'
+      inClass: 'RetroDesktopSearchField'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+  - title: "Use RetroDesktopInputOtp's new parameter names"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'RetroDesktopInputOtp'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+      - kind: 'renameParameter'
+        oldName: 'obscure'
+        newName: 'obscureText'
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'error'
+      inClass: 'RetroDesktopInputOtp'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+  - title: "Rename to 'obscureText'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'obscure'
+      inClass: 'RetroDesktopInputOtp'
+    changes:
+      - kind: 'rename'
+        newName: 'obscureText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'RetroDesktopInputOtp'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'helper'
+      inClass: 'RetroDesktopInputOtp'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+  - title: "Use RetroDesktopSelect's new parameter names"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'RetroDesktopSelect'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'error'
+      inClass: 'RetroDesktopSelect'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'RetroDesktopSelect'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'helper'
+      inClass: 'RetroDesktopSelect'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+  - title: "Use RetroDesktopRadioGroup's new parameter names"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'RetroDesktopRadioGroup'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'error'
+      inClass: 'RetroDesktopRadioGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'RetroDesktopRadioGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Use RetroDesktopPasswordField's new parameter names"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'RetroDesktopPasswordField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'error'
+      inClass: 'RetroDesktopPasswordField'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'RetroDesktopPasswordField'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'hint'
+      inClass: 'RetroDesktopPasswordField'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'helper'
+      inClass: 'RetroDesktopPasswordField'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+  - title: "Use RetroDesktopInputGroup's new parameter names"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'RetroDesktopInputGroup'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'error'
+      inClass: 'RetroDesktopInputGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'RetroDesktopInputGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'hint'
+      inClass: 'RetroDesktopInputGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'helper'
+      inClass: 'RetroDesktopInputGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+  - title: "Use RetroDesktopCombobox's new parameter names"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'RetroDesktopCombobox'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'error'
+      inClass: 'RetroDesktopCombobox'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'RetroDesktopCombobox'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'hint'
+      inClass: 'RetroDesktopCombobox'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'helper'
+      inClass: 'RetroDesktopCombobox'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+  - title: "Use RetroDesktopDatePicker's new parameter names"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'RetroDesktopDatePicker'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'first'
+        newName: 'firstDate'
+      - kind: 'renameParameter'
+        oldName: 'last'
+        newName: 'lastDate'
+  - title: "Rename to 'firstDate'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'first'
+      inClass: 'RetroDesktopDatePicker'
+    changes:
+      - kind: 'rename'
+        newName: 'firstDate'
+  - title: "Rename to 'lastDate'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'last'
+      inClass: 'RetroDesktopDatePicker'
+    changes:
+      - kind: 'rename'
+        newName: 'lastDate'
+  - title: "Use RetroDesktopPartHead's new parameter names"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'RetroDesktopPartHead'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'open'
+        newName: 'isExpanded'
+      - kind: 'renameParameter'
+        oldName: 'note'
+        newName: 'subtitle'
+  - title: "Rename to 'isExpanded'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'open'
+      inClass: 'RetroDesktopPartHead'
+    changes:
+      - kind: 'rename'
+        newName: 'isExpanded'
+  - title: "Rename to 'subtitle'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'note'
+      inClass: 'RetroDesktopPartHead'
+    changes:
+      - kind: 'rename'
+        newName: 'subtitle'
+  - title: "Use RetroDesktopTreeRow's new parameter names"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'RetroDesktopTreeRow'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'open'
+        newName: 'isExpanded'
+  - title: "Rename to 'isExpanded'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'open'
+      inClass: 'RetroDesktopTreeRow'
+    changes:
+      - kind: 'rename'
+        newName: 'isExpanded'
+  - title: "Use RetroDesktopSwitchRow's new parameter names"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'RetroDesktopSwitchRow'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'note'
+        newName: 'subtitle'
+  - title: "Rename to 'subtitle'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'note'
+      inClass: 'RetroDesktopSwitchRow'
+    changes:
+      - kind: 'rename'
+        newName: 'subtitle'
+  - title: "Use RetroDesktopRadio's new parameter names"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'RetroDesktopRadio'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'note'
+        newName: 'subtitle'
+  - title: "Rename to 'subtitle'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'note'
+      inClass: 'RetroDesktopRadio'
+    changes:
+      - kind: 'rename'
+        newName: 'subtitle'
+  - title: "Use RetroDesktopListTableRow's new parameter names"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'RetroDesktopListTableRow'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'note'
+        newName: 'subtitle'
+  - title: "Rename to 'subtitle'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'note'
+      inClass: 'RetroDesktopListTableRow'
+    changes:
+      - kind: 'rename'
+        newName: 'subtitle'
+  - title: "Use RetroDesktopDisclosure's new parameter names"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'RetroDesktopDisclosure'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'note'
+        newName: 'subtitle'
+  - title: "Rename to 'subtitle'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'note'
+      inClass: 'RetroDesktopDisclosure'
+    changes:
+      - kind: 'rename'
+        newName: 'subtitle'
+  - title: "Use RetroDesktopSectionHeader's new parameter names"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'RetroDesktopSectionHeader'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'note'
+        newName: 'subtitle'
+  - title: "Rename to 'subtitle'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'note'
+      inClass: 'RetroDesktopSectionHeader'
+    changes:
+      - kind: 'rename'
+        newName: 'subtitle'
+  - title: "Use RetroDesktopFolder's new parameter names"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'RetroDesktopFolder'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'note'
+        newName: 'subtitle'
+  - title: "Rename to 'subtitle'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'note'
+      inClass: 'RetroDesktopFolder'
+    changes:
+      - kind: 'rename'
+        newName: 'subtitle'
+  - title: "Use RetroDesktopFile's new parameter names"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'RetroDesktopFile'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'note'
+        newName: 'subtitle'
+  - title: "Rename to 'subtitle'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'note'
+      inClass: 'RetroDesktopFile'
+    changes:
+      - kind: 'rename'
+        newName: 'subtitle'
+  - title: "Use RetroDesktopFigureHero's new parameter names"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'RetroDesktopFigureHero'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'note'
+        newName: 'subtitle'
+  - title: "Rename to 'subtitle'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'note'
+      inClass: 'RetroDesktopFigureHero'
+    changes:
+      - kind: 'rename'
+        newName: 'subtitle'
+  - title: "Use RetroDesktopReadingHead's new parameter names"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'RetroDesktopReadingHead'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'note'
+        newName: 'subtitle'
+  - title: "Rename to 'subtitle'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'note'
+      inClass: 'RetroDesktopReadingHead'
+    changes:
+      - kind: 'rename'
+        newName: 'subtitle'
+  - title: "Use RetroDesktopChoice's new parameter names"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'RetroDesktopChoice'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'note'
+        newName: 'subtitle'
+  - title: "Rename to 'subtitle'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'note'
+      inClass: 'RetroDesktopChoice'
+    changes:
+      - kind: 'rename'
+        newName: 'subtitle'
+  - title: "Use RetroDesktopNumberField's new parameter names"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'RetroDesktopNumberField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'note'
+        newName: 'helperText'
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'note'
+      inClass: 'RetroDesktopNumberField'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'RetroDesktopNumberField'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Use RetroDesktopScaffold's new parameter names"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'RetroDesktopScaffold'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'topBar'
+        newName: 'appBar'
+      - kind: 'renameParameter'
+        oldName: 'who'
+        newName: 'initials'
+  - title: "Rename to 'appBar'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'topBar'
+      inClass: 'RetroDesktopScaffold'
+    changes:
+      - kind: 'rename'
+        newName: 'appBar'
+  - title: "Rename to 'initials'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'who'
+      inClass: 'RetroDesktopScaffold'
+    changes:
+      - kind: 'rename'
+        newName: 'initials'
+  - title: "Rename to 'colors'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'c'
+      inClass: 'RetroDesktopArrowButtonPainter'
+    changes:
+      - kind: 'rename'
+        newName: 'colors'
+  - title: "Rename to 'colors'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'c'
+      inClass: 'RetroDesktopDeskPainter'
+    changes:
+      - kind: 'rename'
+        newName: 'colors'
+  - title: "Use RetroDesktopChip's new parameter names"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'RetroDesktopChip'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'enabled'
+        newName: 'isEnabled'
+  - title: "Use RetroDesktopChip's new parameter names"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      constructor: 'outlined'
+      inClass: 'RetroDesktopChip'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'enabled'
+        newName: 'isEnabled'
+  - title: "Rename to 'isEnabled'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'enabled'
+      inClass: 'RetroDesktopChip'
+    changes:
+      - kind: 'rename'
+        newName: 'isEnabled'
+  - title: "Use RetroDesktopTooltip's new parameter names"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'RetroDesktopTooltip'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'wait'
+        newName: 'waitDuration'
+  - title: "Rename to 'waitDuration'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'wait'
+      inClass: 'RetroDesktopTooltip'
+    changes:
+      - kind: 'rename'
+        newName: 'waitDuration'
+  - title: "Use RetroDesktopTextField's new parameter names"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'RetroDesktopTextField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'RetroDesktopTextField'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'hint'
+      inClass: 'RetroDesktopTextField'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'helper'
+      inClass: 'RetroDesktopTextField'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'error'
+      inClass: 'RetroDesktopTextField'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+  - title: "Use RetroDesktopTextArea's new parameter names"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'RetroDesktopTextArea'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'RetroDesktopTextArea'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'hint'
+      inClass: 'RetroDesktopTextArea'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'helper'
+      inClass: 'RetroDesktopTextArea'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'error'
+      inClass: 'RetroDesktopTextArea'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+  - title: "Use RetroDesktopFormField's new parameter names"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'RetroDesktopFormField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+      - kind: 'renameParameter'
+        oldName: 'help'
+        newName: 'helperText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'help'
+      inClass: 'RetroDesktopFormField'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'RetroDesktopFormField'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'error'
+      inClass: 'RetroDesktopFormField'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+  - title: "Use RetroDesktopInput's new parameter names"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'RetroDesktopInput'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'RetroDesktopInput'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'hint'
+      inClass: 'RetroDesktopInput'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  - title: "Use RetroDesktopDateRangePicker's new parameter names"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'RetroDesktopDateRangePicker'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'RetroDesktopDateRangePicker'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'textTheme'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'type'
+      inClass: 'RetroDesktopThemeData'
+    changes:
+      - kind: 'rename'
+        newName: 'textTheme'
+  - title: "Rename to 'forAppearance'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      method: 'of'
+      inClass: 'RetroDesktopShapes'
+    changes:
+      - kind: 'rename'
+        newName: 'forAppearance'
+  - title: "Use showRetroDesktopDatePicker's new parameter names"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      function: 'showRetroDesktopDatePicker'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'first'
+        newName: 'firstDate'
+      - kind: 'renameParameter'
+        oldName: 'last'
+        newName: 'lastDate'
+  # 0.5.0: a notice keeps clear of the navigation bar and a page's footer by itself (ui_core's RawToasterKeepClear).
+  - title: "Remove 'bottom'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      function: 'showRetroDesktopSnackBar'
+    changes:
+      - kind: 'removeParameter'
+        name: 'bottom'
   # 0.2.0: the look's motion is its own (instant, as the period was), not a setting.
   - title: "Remove 'motion'"
     date: 2026-11-14

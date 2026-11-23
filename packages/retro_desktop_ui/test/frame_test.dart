@@ -173,7 +173,7 @@ void main() {
           tester,
           width,
           const RetroDesktopScaffold(
-            topBar: RetroDesktopAppBar(title: 'A page'),
+            appBar: RetroDesktopAppBar(title: 'A page'),
             body: Text('Words'),
           ),
         );

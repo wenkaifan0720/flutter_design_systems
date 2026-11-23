@@ -39,9 +39,9 @@ class RetroDesktopEmpty extends StatelessWidget {
             art!,
             const SizedBox(height: RetroDesktopSpacing.s8),
           ],
-          Text(title, textAlign: TextAlign.center, style: t.type.small),
+          Text(title, textAlign: TextAlign.center, style: t.textTheme.small),
           const SizedBox(height: RetroDesktopSpacing.s4),
-          Text(body, textAlign: TextAlign.center, style: t.type.note),
+          Text(body, textAlign: TextAlign.center, style: t.textTheme.note),
         ],
       ),
     );

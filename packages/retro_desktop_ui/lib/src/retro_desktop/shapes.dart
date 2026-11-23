@@ -168,7 +168,7 @@ class RetroDesktopShapes {
       _button = const RetroDesktopBorder.square();
 
   /// The outlines [appearance] draws.
-  static RetroDesktopShapes of(RetroDesktopAppearance appearance) =>
+  static RetroDesktopShapes forAppearance(RetroDesktopAppearance appearance) =>
       switch (appearance) {
         RetroDesktopAppearance.chisel => const RetroDesktopShapes._chisel(),
         RetroDesktopAppearance.platinum => const RetroDesktopShapes._platinum(),

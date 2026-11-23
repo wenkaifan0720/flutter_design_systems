@@ -168,12 +168,14 @@ class RetroDesktopDayTile extends StatelessWidget {
     final baseW = small ? 72.0 : (t.desk ? 156.0 : 132.0);
     final figure =
         (small
-                ? t.type.pixel(52, 40)
-                : (t.desk ? t.type.pixel(150, 108) : t.type.pixel(120, 88)))
+                ? t.textTheme.pixel(52, 40)
+                : (t.desk
+                      ? t.textTheme.pixel(150, 108)
+                      : t.textTheme.pixel(120, 88)))
             .merge(slot((s) => s.textStyle))
             .copyWith(color: c.text);
     final step = small ? 2.0 : 3.0;
-    final onBand = t.type.chrome
+    final onBand = t.textTheme.chrome
         .merge(slot((s) => s.textStyle))
         .copyWith(color: slot((s) => s.foreground) ?? c.text);
     final hasYear = !small && year != null;
@@ -311,7 +313,7 @@ class RetroDesktopDayTile extends StatelessWidget {
                           ),
                           child: Text(
                             weekday!,
-                            style: t.type.chrome
+                            style: t.textTheme.chrome
                                 .merge(slot((s) => s.textStyle))
                                 .copyWith(color: c.textSecondary),
                             softWrap: true,
@@ -367,10 +369,10 @@ class RetroDesktopBigFigure extends StatelessWidget {
     final small = retroDesktopCompactHere(context);
     final size = small ? 64.0 : (t.desk ? 170.0 : 128.0);
     final line = small ? 52.0 : (t.desk ? 120.0 : 92.0);
-    final figure = t.type
+    final figure = t.textTheme
         .pixel(size, line)
         .copyWith(letterSpacing: -.02 * size);
-    final rest = t.type
+    final rest = t.textTheme
         .pixel(size * .5, size * .25)
         .copyWith(letterSpacing: -.02 * size);
     return Padding(
@@ -538,7 +540,7 @@ class RetroDesktopHeroHeader extends StatelessWidget {
 /// it in a row on a desktop; on a phone the sentence and readings go under.
 ///
 /// ```dart
-/// RetroDesktopFigureHero(value: '8', unit: '°', title: 'Showers', note: 'Clearing by 14:00', reads: const [('High', '11°', null)], summary: 'Dry and bright from 14:00.')
+/// RetroDesktopFigureHero(value: '8', unit: '°', title: 'Showers', subtitle: 'Clearing by 14:00', reads: const [('High', '11°', null)], summary: 'Dry and bright from 14:00.')
 /// ```
 class RetroDesktopFigureHero extends StatelessWidget {
   /// Creates a [RetroDesktopFigureHero].
@@ -547,7 +549,7 @@ class RetroDesktopFigureHero extends StatelessWidget {
     required this.value,
     required this.title,
     this.unit,
-    this.note,
+    this.subtitle,
     this.reads = const [],
     this.summary,
   });
@@ -562,7 +564,7 @@ class RetroDesktopFigureHero extends StatelessWidget {
   final String? unit;
 
   /// Supporting text shown with the main content.
-  final String? note;
+  final String? subtitle;
 
   /// An optional accessible summary in place of the generated one.
   final String? summary;
@@ -574,8 +576,8 @@ class RetroDesktopFigureHero extends StatelessWidget {
     final t = RetroDesktopTheme.of(context);
     final small = retroDesktopCompactHere(context);
     final head = small
-        ? t.type.head
-        : (t.desk ? t.type.pixel(56, 50) : t.type.pixel(44, 40));
+        ? t.textTheme.head
+        : (t.desk ? t.textTheme.pixel(56, 50) : t.textTheme.pixel(44, 40));
     final figure = RetroDesktopBigFigure(value, unit: unit);
     // As wide as its words: the row beside it takes the rest.
     final meaning = Column(
@@ -584,10 +586,10 @@ class RetroDesktopFigureHero extends StatelessWidget {
       spacing: RetroDesktopSpacing.s4,
       children: [
         Text(title, style: head),
-        if (note != null)
+        if (subtitle != null)
           Text(
-            note!,
-            style: t.type.text(
+            subtitle!,
+            style: t.textTheme.text(
               14,
               18,
               weight: FontWeight.w600,
@@ -651,7 +653,7 @@ class RetroDesktopFigureHero extends StatelessWidget {
       ..add(StringProperty('value', value))
       ..add(StringProperty('title', title))
       ..add(StringProperty('unit', unit, defaultValue: null))
-      ..add(StringProperty('note', note, defaultValue: null))
+      ..add(StringProperty('subtitle', subtitle, defaultValue: null))
       ..add(StringProperty('summary', summary, defaultValue: null))
       ..add(
         IterableProperty<(String, String, String?)>(
@@ -666,7 +668,7 @@ class RetroDesktopFigureHero extends StatelessWidget {
 /// A reading in a window that isn't the hero: the figure beside what it means. It stays this size in any window.
 ///
 /// ```dart
-/// RetroDesktopReadingHead(value: '28', title: 'Good', note: 'Main pollutant: ozone.')
+/// RetroDesktopReadingHead(value: '28', title: 'Good', subtitle: 'Main pollutant: ozone.')
 /// ```
 class RetroDesktopReadingHead extends StatelessWidget {
   /// Creates a [RetroDesktopReadingHead].
@@ -674,7 +676,7 @@ class RetroDesktopReadingHead extends StatelessWidget {
     super.key,
     required this.value,
     required this.title,
-    this.note,
+    this.subtitle,
   });
 
   /// The current value to display or edit.
@@ -684,21 +686,21 @@ class RetroDesktopReadingHead extends StatelessWidget {
   final String title;
 
   /// Supporting text shown with the main content.
-  final String? note;
+  final String? subtitle;
   @override
   Widget build(BuildContext context) {
     final t = RetroDesktopTheme.of(context);
     return RetroDesktopBeside(
-      object: Text(value, style: t.type.pixel(64, 52), maxLines: 1),
+      object: Text(value, style: t.textTheme.pixel(64, 52), maxLines: 1),
       gap: 14,
       child: RetroDesktopColumn(
         gap: 2,
         children: [
-          Text(title, style: t.type.big),
-          if (note != null)
+          Text(title, style: t.textTheme.big),
+          if (subtitle != null)
             Text(
-              note!,
-              style: t.type.text(13, 18, color: t.colors.textSecondary),
+              subtitle!,
+              style: t.textTheme.text(13, 18, color: t.colors.textSecondary),
             ),
         ],
       ),
@@ -711,7 +713,7 @@ class RetroDesktopReadingHead extends StatelessWidget {
     properties
       ..add(StringProperty('value', value))
       ..add(StringProperty('title', title))
-      ..add(StringProperty('note', note, defaultValue: null));
+      ..add(StringProperty('subtitle', subtitle, defaultValue: null));
   }
 }
 
@@ -728,7 +730,7 @@ class _Summary extends StatelessWidget {
         RetroDesktopSpacing.s10 + RetroDesktopSpacing.px,
         RetroDesktopSpacing.s8 + RetroDesktopSpacing.px,
       ),
-      child: Text(text, style: t.type.text(16, 24)),
+      child: Text(text, style: t.textTheme.text(16, 24)),
     );
   }
 }

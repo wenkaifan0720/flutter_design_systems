@@ -183,7 +183,7 @@ class _ChartState extends State<RetroDesktopChart> {
     final words = RetroDesktopLocalizations.of(context);
     T? slot<T>(WidgetStateProperty<T?>? Function(RetroDesktopStyle) get) =>
         RetroDesktopStyle.first([style, theme.chartTheme], get, const {});
-    final note = theme.type.note
+    final note = theme.textTheme.note
         .merge(slot((s) => s.textStyle))
         .copyWith(color: slot((s) => s.foreground));
     // The scale stands half a value's line inside the plate at its top and
@@ -316,7 +316,7 @@ class _ChartState extends State<RetroDesktopChart> {
                                 child: Text(
                                   read,
                                   textAlign: TextAlign.center,
-                                  style: theme.type.meta,
+                                  style: theme.textTheme.meta,
                                 ),
                               ),
                             ),

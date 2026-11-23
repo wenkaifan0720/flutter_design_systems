@@ -62,6 +62,7 @@ const _onCore = {
   'RetroDesktopCombobox',
   'RetroDesktopRangeSlider',
   'RetroDesktopCalendar',
+  'RetroDesktopColorPicker',
   'RetroDesktopDateRangePicker',
   'RetroDesktopDataTable',
   'RetroDesktopResizable',

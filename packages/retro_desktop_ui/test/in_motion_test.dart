@@ -112,7 +112,7 @@ void main() {
             SizedBox(
               width: width >= 768 ? 640 : 340,
               child: RetroDesktopDateRangePicker(
-                label: 'Stay',
+                labelText: 'Stay',
                 firstDate: DateTime(2026, 6),
                 lastDate: DateTime(2026, 9, 30),
                 initialMonth: DateTime(2026, 6),

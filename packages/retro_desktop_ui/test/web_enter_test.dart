@@ -50,7 +50,7 @@ void main() {
       await tester.pumpWidget(
         _host(
           RetroDesktopCombobox<String>(
-            label: 'Country',
+            labelText: 'Country',
             options: _countries,
             onSelected: taken.add,
           ),
@@ -88,7 +88,7 @@ void main() {
     (tester) async {
       final said = <String>[];
       await tester.pumpWidget(
-        _host(RetroDesktopTextField(label: 'Name', onSubmitted: said.add)),
+        _host(RetroDesktopTextField(labelText: 'Name', onSubmitted: said.add)),
       );
       await tester.showKeyboard(find.byType(EditableText));
       await tester.enterText(find.byType(EditableText), 'Ada');

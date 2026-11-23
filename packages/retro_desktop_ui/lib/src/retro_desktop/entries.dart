@@ -19,6 +19,7 @@ import 'raised.dart';
 import 'theme.dart';
 import 'shapes.dart';
 import 'internal/caps.dart';
+import 'internal/field_hooks.dart';
 import 'tokens.dart';
 
 Widget _labelled(
@@ -37,7 +38,7 @@ Widget _labelled(
       if (label != null)
         Padding(
           padding: const EdgeInsets.only(bottom: RetroDesktopSpacing.s6),
-          child: Text(label, style: t.type.body),
+          child: Text(label, style: t.textTheme.body),
         ),
       child,
       if (error != null || helper != null)
@@ -59,14 +60,14 @@ Widget _labelled(
 /// A search editor whose clear action preserves the editor's focus.
 ///
 /// ```dart
-/// RetroDesktopSearchField(hint: 'Search documents', onChanged: (_) {})
+/// RetroDesktopSearchField(hintText: 'Search documents', onChanged: (_) {})
 /// ```
 class RetroDesktopSearchField extends StatefulWidget {
   /// Creates a [RetroDesktopSearchField].
   const RetroDesktopSearchField({
     super.key,
     this.style,
-    required this.hint,
+    required this.hintText,
     this.controller,
     this.focusNode,
     this.onChanged,
@@ -74,11 +75,9 @@ class RetroDesktopSearchField extends StatefulWidget {
     this.clearLabel,
     this.name,
     this.autofocus = false,
-    this.decorate,
     this.onEditingComplete,
-    this.error,
-    this.helper,
-    this.failureLine,
+    this.errorText,
+    this.helperText,
     this.inputFormatters,
     this.keyboardType,
     this.textInputAction = TextInputAction.search,
@@ -86,7 +85,7 @@ class RetroDesktopSearchField extends StatefulWidget {
   });
 
   /// Placeholder text shown while the input has no value.
-  final String hint;
+  final String hintText;
 
   /// {@macro retro_desktop.style}
   final RetroDesktopStyle? style;
@@ -110,13 +109,10 @@ class RetroDesktopSearchField extends StatefulWidget {
   final String? name;
 
   /// The validation error, when the value needs attention.
-  final String? error;
+  final String? errorText;
 
   /// Supporting text shown below the input.
-  final String? helper;
-
-  /// Wraps the validation message, for example to add a live region.
-  final Widget Function(Widget error)? failureLine;
+  final String? helperText;
 
   /// Input transformations applied before a value is accepted.
   final List<TextInputFormatter>? inputFormatters;
@@ -130,9 +126,6 @@ class RetroDesktopSearchField extends StatefulWidget {
   /// Whether this input requests focus when first mounted.
   final bool autofocus;
 
-  /// Decorates only the editable, keeping trailing actions separate.
-  final Widget Function(Widget editable)? decorate;
-
   /// Called when the platform completes the editing operation.
   final VoidCallback? onEditingComplete;
 
@@ -145,7 +138,7 @@ class RetroDesktopSearchField extends StatefulWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('hint', hint))
+      ..add(StringProperty('hintText', hintText))
       ..add(
         DiagnosticsProperty<RetroDesktopStyle>(
           'style',
@@ -178,14 +171,8 @@ class RetroDesktopSearchField extends StatefulWidget {
       )
       ..add(StringProperty('clearLabel', clearLabel, defaultValue: null))
       ..add(StringProperty('name', name, defaultValue: null))
-      ..add(StringProperty('error', error, defaultValue: null))
-      ..add(StringProperty('helper', helper, defaultValue: null))
-      ..add(
-        ObjectFlagProperty<Widget Function(Widget error)>.has(
-          'failureLine',
-          failureLine,
-        ),
-      )
+      ..add(StringProperty('errorText', errorText, defaultValue: null))
+      ..add(StringProperty('helperText', helperText, defaultValue: null))
       ..add(
         IterableProperty<TextInputFormatter>(
           'inputFormatters',
@@ -208,12 +195,6 @@ class RetroDesktopSearchField extends StatefulWidget {
         ),
       )
       ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
-      ..add(
-        ObjectFlagProperty<Widget Function(Widget editable)>.has(
-          'decorate',
-          decorate,
-        ),
-      )
       ..add(
         ObjectFlagProperty<VoidCallback>.has(
           'onEditingComplete',
@@ -255,15 +236,27 @@ class _SearchState extends State<RetroDesktopSearchField> {
   }
 
   @override
-  Widget build(BuildContext context) => RetroDesktopTextField(
+  Widget build(BuildContext context) {
+    final hooks = RetroDesktopFieldHooks.maybeOf(context);
+    return RetroDesktopFieldHooks(
+      nameOnly: true,
+      decorate:
+          hooks?.decorate ??
+          (editable) => Semantics(
+            label: widget.name ?? widget.hintText,
+            // Its error, else its help, read on the text field itself.
+            hint: widget.errorText ?? widget.helperText,
+            child: editable,
+          ),
+      failureLine: hooks?.failureLine,
+      child: _field(context),
+    );
+  }
+
+  Widget _field(BuildContext context) => RetroDesktopTextField(
     style: widget.style,
-    hint: widget.hint,
-    nameOnly: true,
+    hintText: widget.hintText,
     autofocus: widget.autofocus,
-    decorate:
-        widget.decorate ??
-        (editable) =>
-            Semantics(label: widget.name ?? widget.hint, child: editable),
     onEditingComplete: widget.onEditingComplete,
     enabled: widget.enabled,
     controller: _text,
@@ -272,9 +265,8 @@ class _SearchState extends State<RetroDesktopSearchField> {
     textInputAction: widget.textInputAction,
     keyboardType: widget.keyboardType,
     inputFormatters: widget.inputFormatters,
-    error: widget.error,
-    helper: widget.helper,
-    failureLine: widget.failureLine,
+    errorText: widget.errorText,
+    helperText: widget.helperText,
     onChanged: widget.onChanged,
     onSubmitted: widget.onSubmitted,
     trailing: _text.text.isEmpty
@@ -303,35 +295,33 @@ class _SearchState extends State<RetroDesktopSearchField> {
 /// the next character goes in carries the appearance's focus mark.
 ///
 /// ```dart
-/// RetroDesktopInputOtp(label: 'Verification code', length: 6, onCompleted: (_) {})
+/// RetroDesktopInputOtp(labelText: 'Verification code', length: 6, onCompleted: (_) {})
 /// ```
 class RetroDesktopInputOtp extends StatefulWidget {
   /// Creates a [RetroDesktopInputOtp].
   const RetroDesktopInputOtp({
     super.key,
     this.style,
-    required this.label,
+    required this.labelText,
     this.length = 6,
     this.controller,
     this.focusNode,
     this.onChanged,
     this.onSubmitted,
-    this.helper,
-    this.error,
+    this.helperText,
+    this.errorText,
     this.enabled = true,
     this.autofocus = false,
-    this.obscure = false,
+    this.obscureText = false,
     this.textInputAction = TextInputAction.done,
     this.onCompleted,
     this.onEditingComplete,
     this.inputFormatters = const [],
     this.autofillHints = const [AutofillHints.oneTimeCode],
-    this.decorate,
-    this.failureLine,
   }) : assert(length > 0);
 
   /// The visible or accessible name of this part.
-  final String label;
+  final String labelText;
 
   /// Run before the code's own filter and length (upper-casing letters, say).
   final List<TextInputFormatter> inputFormatters;
@@ -359,10 +349,10 @@ class RetroDesktopInputOtp extends StatefulWidget {
   final ValueChanged<String>? onSubmitted;
 
   /// Supporting text shown below the input.
-  final String? helper;
+  final String? helperText;
 
   /// The validation error, when the value needs attention.
-  final String? error;
+  final String? errorText;
 
   /// Whether the part accepts user interaction.
   final bool enabled;
@@ -371,7 +361,7 @@ class RetroDesktopInputOtp extends StatefulWidget {
   final bool autofocus;
 
   /// Whether the characters show as dots (a PIN).
-  final bool obscure;
+  final bool obscureText;
 
   /// The action offered by the platform keyboard.
   final TextInputAction textInputAction;
@@ -383,13 +373,6 @@ class RetroDesktopInputOtp extends StatefulWidget {
   /// of the focus.
   final VoidCallback? onEditingComplete;
 
-  /// Wraps the boxes and their input, for integrations that attach editing
-  /// behaviour and name the input themselves.
-  final Widget Function(Widget editable)? decorate;
-
-  /// Wraps the validation message, for example to add a live region.
-  final Widget Function(Widget error)? failureLine;
-
   @override
   State<RetroDesktopInputOtp> createState() => _InputOtpState();
 
@@ -397,7 +380,7 @@ class RetroDesktopInputOtp extends StatefulWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('label', label))
+      ..add(StringProperty('labelText', labelText))
       ..add(
         IterableProperty<TextInputFormatter>(
           'inputFormatters',
@@ -443,11 +426,13 @@ class RetroDesktopInputOtp extends StatefulWidget {
           onSubmitted,
         ),
       )
-      ..add(StringProperty('helper', helper, defaultValue: null))
-      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(StringProperty('helperText', helperText, defaultValue: null))
+      ..add(StringProperty('errorText', errorText, defaultValue: null))
       ..add(FlagProperty('enabled', value: enabled, ifFalse: 'enabled: false'))
       ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
-      ..add(FlagProperty('obscure', value: obscure, ifTrue: 'obscure'))
+      ..add(
+        FlagProperty('obscureText', value: obscureText, ifTrue: 'obscureText'),
+      )
       ..add(
         EnumProperty<TextInputAction>(
           'textInputAction',
@@ -465,18 +450,6 @@ class RetroDesktopInputOtp extends StatefulWidget {
         ObjectFlagProperty<VoidCallback>.has(
           'onEditingComplete',
           onEditingComplete,
-        ),
-      )
-      ..add(
-        ObjectFlagProperty<Widget Function(Widget editable)>.has(
-          'decorate',
-          decorate,
-        ),
-      )
-      ..add(
-        ObjectFlagProperty<Widget Function(Widget error)>.has(
-          'failureLine',
-          failureLine,
         ),
       );
   }
@@ -507,11 +480,12 @@ class _InputOtpState extends State<RetroDesktopInputOtp> {
 
   @override
   Widget build(BuildContext context) {
+    final hooks = RetroDesktopFieldHooks.maybeOf(context);
     final t = RetroDesktopTheme.of(context);
     final c = t.colors;
-    final error = widget.error, helper = widget.helper;
+    final error = widget.errorText, helper = widget.helperText;
     final enabled = widget.enabled;
-    final digit = t.type.text(16, 20);
+    final digit = t.textTheme.text(16, 20);
     final line = MediaQuery.textScalerOf(context).scale(16) * 1.25;
     // A box is a one-line field's height: drawn 30 tall and reaching the
     // pointer's least on a phone.
@@ -527,8 +501,8 @@ class _InputOtpState extends State<RetroDesktopInputOtp> {
       autofocus: widget.autofocus,
       enabled: enabled,
       isError: error != null,
-      obscureText: widget.obscure,
-      semanticLabel: widget.decorate != null ? null : widget.label,
+      obscureText: widget.obscureText,
+      semanticLabel: hooks?.decorate != null ? null : widget.labelText,
       textInputAction: widget.textInputAction,
       inputFormatters: widget.inputFormatters,
       autofillHints: widget.autofillHints,
@@ -602,7 +576,15 @@ class _InputOtpState extends State<RetroDesktopInputOtp> {
         );
       },
     );
-    if (widget.decorate != null) field = widget.decorate!(field);
+    final decorate = hooks?.decorate;
+    if (decorate != null) {
+      field = decorate(field);
+    } else if (error != null || helper != null) {
+      // Its error, else its help, read on the code's own node.
+      field = MergeSemantics(
+        child: Semantics(hint: error ?? helper, child: field),
+      );
+    }
     Widget? message;
     if (error != null || helper != null) {
       final drawn = retroDesktopFieldNote(
@@ -611,7 +593,7 @@ class _InputOtpState extends State<RetroDesktopInputOtp> {
         error: error != null,
       );
       message = error != null
-          ? widget.failureLine?.call(drawn) ??
+          ? hooks?.failureLine?.call(drawn) ??
                 Semantics(liveRegion: true, child: drawn)
           : ExcludeSemantics(child: drawn);
     }
@@ -622,7 +604,7 @@ class _InputOtpState extends State<RetroDesktopInputOtp> {
         Padding(
           padding: const EdgeInsets.only(bottom: RetroDesktopSpacing.s6),
           child: ExcludeSemantics(
-            child: Text(widget.label, style: t.type.body),
+            child: Text(widget.labelText, style: t.textTheme.body),
           ),
         ),
         Align(
@@ -669,7 +651,7 @@ class RetroDesktopOption<T> {
 /// A controlled value picker with a real keyboard menu.
 ///
 /// ```dart
-/// RetroDesktopSelect(label: 'Sort by', value: 'name', options: const [RetroDesktopOption('name', 'Name'), RetroDesktopOption('date', 'Date')], onChanged: (_) {})
+/// RetroDesktopSelect(labelText: 'Sort by', value: 'name', options: const [RetroDesktopOption('name', 'Name'), RetroDesktopOption('date', 'Date')], onChanged: (_) {})
 /// ```
 class RetroDesktopSelect<T> extends StatefulWidget {
   /// Creates a [RetroDesktopSelect].
@@ -678,10 +660,10 @@ class RetroDesktopSelect<T> extends StatefulWidget {
     required this.options,
     this.value,
     this.onChanged,
-    this.label,
+    this.labelText,
     this.prompt,
-    this.helper,
-    this.error,
+    this.helperText,
+    this.errorText,
     this.style,
     this.focusNode,
     this.autofocus = false,
@@ -697,16 +679,16 @@ class RetroDesktopSelect<T> extends StatefulWidget {
   final ValueChanged<T>? onChanged;
 
   /// The visible or accessible name of this part.
-  final String? label;
+  final String? labelText;
 
   /// The text displayed before a value is selected.
   final String? prompt;
 
   /// Supporting text shown below the input.
-  final String? helper;
+  final String? helperText;
 
   /// The validation error, when the value needs attention.
-  final String? error;
+  final String? errorText;
 
   /// {@macro retro_desktop.style}
   final RetroDesktopStyle? style;
@@ -727,10 +709,10 @@ class RetroDesktopSelect<T> extends StatefulWidget {
       ..add(IterableProperty<RetroDesktopOption<T>>('options', options))
       ..add(DiagnosticsProperty<T>('value', value, defaultValue: null))
       ..add(ObjectFlagProperty<ValueChanged<T>>.has('onChanged', onChanged))
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
       ..add(StringProperty('prompt', prompt, defaultValue: null))
-      ..add(StringProperty('helper', helper, defaultValue: null))
-      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(StringProperty('helperText', helperText, defaultValue: null))
+      ..add(StringProperty('errorText', errorText, defaultValue: null))
       ..add(
         DiagnosticsProperty<RetroDesktopStyle>(
           'style',
@@ -761,7 +743,7 @@ class _SelectState<T> extends State<RetroDesktopSelect<T>> {
         anchorContext,
         anchor: box.localToGlobal(Offset.zero) & box.size,
         matchWidth: true,
-        label: widget.label,
+        label: widget.labelText,
         items: [
           for (final o in widget.options)
             RetroDesktopMenuItem(
@@ -804,9 +786,9 @@ class _SelectState<T> extends State<RetroDesktopSelect<T>> {
       builder: (context) => RetroDesktopPressable(
         focusNode: widget.focusNode,
         autofocus: widget.autofocus,
-        label: widget.label ?? shown,
+        label: widget.labelText ?? shown,
         value: selected?.label,
-        error: widget.error != null,
+        isError: widget.errorText != null,
         onPressed:
             widget.onChanged == null || !widget.options.any((o) => o.enabled)
             ? null
@@ -912,9 +894,9 @@ class _SelectState<T> extends State<RetroDesktopSelect<T>> {
               ),
             )
           : press,
-      label: widget.label,
-      helper: widget.helper,
-      error: widget.error,
+      label: widget.labelText,
+      helper: widget.helperText,
+      error: widget.errorText,
     );
   }
 }
@@ -1149,7 +1131,7 @@ class RetroDesktopSwitch extends StatelessWidget {
 /// The entire setting row toggles; the lever adds no second semantics node.
 ///
 /// ```dart
-/// RetroDesktopSwitchRow(label: 'Notifications', value: true, note: 'Show desktop alerts', onChanged: (_) {})
+/// RetroDesktopSwitchRow(label: 'Notifications', value: true, subtitle: 'Show desktop alerts', onChanged: (_) {})
 /// ```
 class RetroDesktopSwitchRow extends StatelessWidget {
   /// Creates a [RetroDesktopSwitchRow].
@@ -1157,7 +1139,7 @@ class RetroDesktopSwitchRow extends StatelessWidget {
     super.key,
     required this.label,
     required this.value,
-    this.note,
+    this.subtitle,
     this.onChanged,
     this.focusNode,
     this.autofocus = false,
@@ -1174,7 +1156,7 @@ class RetroDesktopSwitchRow extends StatelessWidget {
   final String label;
 
   /// Supporting text shown with the main content.
-  final String? note;
+  final String? subtitle;
 
   /// Whether the switch is on.
   final bool value;
@@ -1189,7 +1171,7 @@ class RetroDesktopSwitchRow extends StatelessWidget {
     label: label,
     focusNode: focusNode,
     autofocus: autofocus,
-    hint: note,
+    hint: subtitle,
     button: false,
     toggled: value,
     onPressed: onChanged == null ? null : () => onChanged!(!value),
@@ -1208,9 +1190,15 @@ class RetroDesktopSwitchRow extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(label, style: RetroDesktopTheme.of(context).type.body),
-                if (note != null)
-                  Text(note!, style: RetroDesktopTheme.of(context).type.meta),
+                Text(
+                  label,
+                  style: RetroDesktopTheme.of(context).textTheme.body,
+                ),
+                if (subtitle != null)
+                  Text(
+                    subtitle!,
+                    style: RetroDesktopTheme.of(context).textTheme.meta,
+                  ),
               ],
             ),
           ),
@@ -1234,7 +1222,7 @@ class RetroDesktopSwitchRow extends StatelessWidget {
       )
       ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
       ..add(StringProperty('label', label))
-      ..add(StringProperty('note', note, defaultValue: null))
+      ..add(StringProperty('subtitle', subtitle, defaultValue: null))
       ..add(DiagnosticsProperty<bool>('value', value))
       ..add(ObjectFlagProperty<ValueChanged<bool>>.has('onChanged', onChanged))
       ..add(
@@ -1254,7 +1242,7 @@ class RetroDesktopRadio<T> {
   const RetroDesktopRadio(
     this.value,
     this.label, {
-    this.note,
+    this.subtitle,
     this.enabled = true,
   });
 
@@ -1265,7 +1253,7 @@ class RetroDesktopRadio<T> {
   final String label;
 
   /// Supporting text shown with the main content.
-  final String? note;
+  final String? subtitle;
 
   /// Whether the part accepts user interaction.
   final bool enabled;
@@ -1302,17 +1290,17 @@ class RetroDesktopButtonSegment<T> {
 /// One tab stop for the group; arrow keys choose the next enabled radio.
 ///
 /// ```dart
-/// RetroDesktopRadioGroup(label: 'Appearance', value: 'day', options: const [RetroDesktopRadio('day', 'Day'), RetroDesktopRadio('night', 'Night')], onChanged: (_) {})
+/// RetroDesktopRadioGroup(labelText: 'Appearance', value: 'day', options: const [RetroDesktopRadio('day', 'Day'), RetroDesktopRadio('night', 'Night')], onChanged: (_) {})
 /// ```
 class RetroDesktopRadioGroup<T> extends StatelessWidget {
   /// Creates a [RetroDesktopRadioGroup].
   const RetroDesktopRadioGroup({
     super.key,
-    required this.label,
+    required this.labelText,
     required this.options,
     this.value,
     this.onChanged,
-    this.error,
+    this.errorText,
     this.style,
     this.showLabel = true,
     this.rowSegmentWidth = 120,
@@ -1325,7 +1313,7 @@ class RetroDesktopRadioGroup<T> extends StatelessWidget {
   final double rowSegmentWidth;
 
   /// The visible or accessible name of this part.
-  final String label;
+  final String labelText;
 
   /// The selectable options in reading order.
   final List<RetroDesktopRadio<T>> options;
@@ -1337,7 +1325,7 @@ class RetroDesktopRadioGroup<T> extends StatelessWidget {
   final ValueChanged<T>? onChanged;
 
   /// The validation error, when the value needs attention.
-  final String? error;
+  final String? errorText;
 
   /// {@macro retro_desktop.style}
   final RetroDesktopStyle? style;
@@ -1351,7 +1339,7 @@ class RetroDesktopRadioGroup<T> extends StatelessWidget {
     return _labelled(
       context,
       Semantics(
-        label: showLabel ? null : label,
+        label: showLabel ? null : labelText,
         container: true,
         explicitChildNodes: true,
         // Flutter's radio group: one Tab stop, on the chosen option or else
@@ -1378,7 +1366,7 @@ class RetroDesktopRadioGroup<T> extends StatelessWidget {
                       option: option,
                       chosen: option.value == value,
                       enabled: option.enabled && takesChoice,
-                      error: error != null,
+                      error: errorText != null,
                       style: style,
                     ),
                 ],
@@ -1387,8 +1375,8 @@ class RetroDesktopRadioGroup<T> extends StatelessWidget {
           ),
         ),
       ),
-      label: showLabel ? label : null,
-      error: error,
+      label: showLabel ? labelText : null,
+      error: errorText,
     );
   }
 
@@ -1406,11 +1394,11 @@ class RetroDesktopRadioGroup<T> extends StatelessWidget {
       ..add(
         DoubleProperty('rowSegmentWidth', rowSegmentWidth, defaultValue: 120),
       )
-      ..add(StringProperty('label', label))
+      ..add(StringProperty('labelText', labelText))
       ..add(IterableProperty<RetroDesktopRadio<T>>('options', options))
       ..add(DiagnosticsProperty<T>('value', value, defaultValue: null))
       ..add(ObjectFlagProperty<ValueChanged<T>>.has('onChanged', onChanged))
-      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(StringProperty('errorText', errorText, defaultValue: null))
       ..add(
         DiagnosticsProperty<RetroDesktopStyle>(
           'style',
@@ -1662,7 +1650,7 @@ class _RadioOptionState<T> extends State<_RadioOption<T>> {
           };
           return Semantics(
             label: option.label,
-            hint: option.note,
+            hint: option.subtitle,
             child: ExcludeSemantics(
               // All of it takes a press, its gaps too, as RawRadio's
               // detector finds only what the face paints.
@@ -1682,7 +1670,7 @@ class _RadioOptionState<T> extends State<_RadioOption<T>> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         RetroDesktopOnCaps(
-                          style: t.type.body,
+                          style: t.textTheme.body,
                           child: SizedBox.square(
                             dimension: 18,
                             // Chisel: a sunken white disc, greyed while the
@@ -1738,12 +1726,15 @@ class _RadioOptionState<T> extends State<_RadioOption<T>> {
                               if (t.chisel)
                                 _WordsFocus(
                                   states: states,
-                                  child: Text(option.label, style: t.type.body),
+                                  child: Text(
+                                    option.label,
+                                    style: t.textTheme.body,
+                                  ),
                                 )
                               else
-                                Text(option.label, style: t.type.body),
-                              if (option.note != null)
-                                Text(option.note!, style: t.type.meta),
+                                Text(option.label, style: t.textTheme.body),
+                              if (option.subtitle != null)
+                                Text(option.subtitle!, style: t.textTheme.meta),
                             ],
                           ),
                         ),
@@ -1871,7 +1862,7 @@ class _ChoiceState<T> extends State<_ChoiceGroup<T>> {
         ? frameShape
         : RetroDesktopShapes.inset(frameShape, rim);
     final count = widget.options.length;
-    final labelStyle = t.type.body.merge(
+    final labelStyle = t.textTheme.body.merge(
       RetroDesktopStyle.first<TextStyle>(
         [widget.style, t.segmentedButtonTheme],
         (s) => s.textStyle,
@@ -2321,8 +2312,8 @@ class _SliderState extends State<RetroDesktopSlider> {
                 Wrap(
                   alignment: WrapAlignment.spaceBetween,
                   children: [
-                    Text(widget.label, style: t.type.body),
-                    Text(_words(widget.value), style: t.type.meta),
+                    Text(widget.label, style: t.textTheme.body),
+                    Text(_words(widget.value), style: t.textTheme.meta),
                   ],
                 ),
               Focus(
@@ -2532,7 +2523,9 @@ class _SliderPainter extends CustomPainter {
         ..color =
             slot((s) => s.foreground) ??
             (held
-                ? (colors.dark ? colors.platinum : colors.platinumDark)
+                ? (colors.brightness == Brightness.dark
+                      ? colors.platinum
+                      : colors.platinumDark)
                 : colors.platinumLight),
     );
     shape.paint(canvas, thumb);

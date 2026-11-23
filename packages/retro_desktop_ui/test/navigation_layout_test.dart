@@ -140,7 +140,11 @@ void main() {
         await tester.pumpAndSettle();
         expect(find.text('Preview body'), findsOneWidget);
         expect(observed!.id, 'lagoon');
-        expect(observed!.dark, dark, reason: presentation.name);
+        expect(
+          observed!.brightness,
+          dark ? Brightness.dark : Brightness.light,
+          reason: presentation.name,
+        );
         expect(tester.takeException(), isNull);
       }
     }

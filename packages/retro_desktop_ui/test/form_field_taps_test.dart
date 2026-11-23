@@ -36,7 +36,7 @@ class _FormState extends State<_Form> {
     spacing: 12,
     children: [
       RetroDesktopFormField(
-        label: 'Priority',
+        labelText: 'Priority',
         child: RetroDesktopSegmentedButton<String>(
           label: 'Priority',
           showLabel: false,
@@ -53,7 +53,7 @@ class _FormState extends State<_Form> {
         ),
       ),
       RetroDesktopFormField(
-        label: 'Labels',
+        labelText: 'Labels',
         child: Wrap(
           spacing: 8,
           children: [
@@ -74,9 +74,9 @@ class _FormState extends State<_Form> {
         ),
       ),
       RetroDesktopFormField(
-        label: 'Size',
+        labelText: 'Size',
         child: RetroDesktopRadioGroup<String>(
-          label: 'Size',
+          labelText: 'Size',
           showLabel: false,
           value: _size,
           options: const [
@@ -90,7 +90,7 @@ class _FormState extends State<_Form> {
         ),
       ),
       RetroDesktopFormField(
-        label: 'Days',
+        labelText: 'Days',
         child: Padding(
           padding: EdgeInsets.zero,
           child: Row(
@@ -112,8 +112,8 @@ class _FormState extends State<_Form> {
         ),
       ),
       RetroDesktopFormField(
-        label: 'Reminder',
-        help: 'A nudge before it is due',
+        labelText: 'Reminder',
+        helperText: 'A nudge before it is due',
         child: Align(
           alignment: AlignmentDirectional.centerStart,
           child: RetroDesktopSwitch(
@@ -127,9 +127,9 @@ class _FormState extends State<_Form> {
         ),
       ),
       RetroDesktopFormField(
-        label: 'Estimate',
+        labelText: 'Estimate',
         child: RetroDesktopNumberField(
-          label: 'Estimate',
+          labelText: 'Estimate',
           value: _estimate,
           min: 5,
           max: 480,
@@ -141,11 +141,11 @@ class _FormState extends State<_Form> {
         ),
       ),
       const RetroDesktopFormField(
-        label: 'Password',
+        labelText: 'Password',
         child: RetroDesktopPasswordField(),
       ),
       RetroDesktopFormField(
-        label: 'Done',
+        labelText: 'Done',
         child: Align(
           alignment: AlignmentDirectional.centerStart,
           child: RetroDesktopCheckbox(

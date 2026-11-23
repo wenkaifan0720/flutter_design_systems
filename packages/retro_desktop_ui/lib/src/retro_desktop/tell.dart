@@ -363,7 +363,9 @@ class RetroDesktopSkeleton extends StatelessWidget {
     // on a dark ground.
     final ink =
         slot((s) => s.fill) ??
-        (t.colors.dark ? t.colors.bevelLight : t.colors.bevelDark);
+        (t.colors.brightness == Brightness.dark
+            ? t.colors.bevelLight
+            : t.colors.bevelDark);
     return Semantics(
       label: label ?? RawWidgetsLocalizations.of(context).loadingLabel,
       child: ExcludeSemantics(
@@ -472,14 +474,14 @@ class RetroDesktopSuccessState extends StatelessWidget {
             child ??
                 Icon(RetroDesktopGlyphs.check, size: 40, color: t.colors.text),
             const SizedBox(height: RetroDesktopSpacing.s12),
-            Text(title, textAlign: TextAlign.center, style: t.type.head),
+            Text(title, textAlign: TextAlign.center, style: t.textTheme.head),
             if (message != null)
               Padding(
                 padding: const EdgeInsets.only(top: RetroDesktopSpacing.s8),
                 child: Text(
                   message!,
                   textAlign: TextAlign.center,
-                  style: t.type.body,
+                  style: t.textTheme.body,
                 ),
               ),
             if (action != null)
@@ -545,14 +547,14 @@ class RetroDesktopEmptyState extends StatelessWidget {
               color: t.colors.textSecondary,
             ),
           const SizedBox(height: RetroDesktopSpacing.s12),
-          Text(title, textAlign: TextAlign.center, style: t.type.head),
+          Text(title, textAlign: TextAlign.center, style: t.textTheme.head),
           if (message != null)
             Padding(
               padding: const EdgeInsets.only(top: RetroDesktopSpacing.s8),
               child: Text(
                 message!,
                 textAlign: TextAlign.center,
-                style: t.type.body,
+                style: t.textTheme.body,
               ),
             ),
           if (action != null)

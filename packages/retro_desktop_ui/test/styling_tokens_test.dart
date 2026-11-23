@@ -101,11 +101,11 @@ void main() {
       // The corners follow the appearance; no setting of their own.
       expect(
         custom.shapes,
-        RetroDesktopShapes.of(RetroDesktopAppearance.chisel),
+        RetroDesktopShapes.forAppearance(RetroDesktopAppearance.chisel),
       );
       expect(
         base.shapes,
-        RetroDesktopShapes.of(RetroDesktopAppearance.platinum),
+        RetroDesktopShapes.forAppearance(RetroDesktopAppearance.platinum),
       );
       expect(custom.focus.width, 1);
       expect(
@@ -113,11 +113,11 @@ void main() {
         3,
       );
       // The sizes are the look's; only the faces change.
-      expect(custom.type.body.fontSize, base.type.body.fontSize);
-      expect(custom.type.body.fontFamily, 'Application Body');
-      expect(custom.type.pixel(20, 24).fontSize, 20);
-      expect(custom.type.mono(10, 12).fontFamily, 'Application Mono');
-      expect(custom.type.text(10, 12).fontSize, 10);
+      expect(custom.textTheme.body.fontSize, base.textTheme.body.fontSize);
+      expect(custom.textTheme.body.fontFamily, 'Application Body');
+      expect(custom.textTheme.pixel(20, 24).fontSize, 20);
+      expect(custom.textTheme.mono(10, 12).fontFamily, 'Application Mono');
+      expect(custom.textTheme.text(10, 12).fontSize, 10);
       expect(
         custom.density.apply(
           const EdgeInsetsDirectional.fromSTEB(10, 20, 30, 40),
@@ -185,7 +185,7 @@ void main() {
             );
             final c = theme.colors;
             _chartReads(c);
-            expect(theme.dark, brightness == Brightness.dark);
+            expect(theme.brightness, brightness);
             expect(theme.id, 'custom');
             final grounds = [
               c.platinum,

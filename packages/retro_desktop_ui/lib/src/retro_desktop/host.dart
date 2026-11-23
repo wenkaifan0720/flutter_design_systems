@@ -14,6 +14,7 @@ import 'package:ui_core/host.dart';
 import 'theme.dart';
 import 'behavior.dart';
 import 'chrome.dart';
+import 'raised.dart' show RetroDesktopToaster;
 
 /// A small fact at the menu bar's end: synced, an hour. On a phone an item with an icon shows only the icon. [highlighted] gives the
 /// icon the highlight.
@@ -145,7 +146,8 @@ class RetroDesktopHost extends StatelessWidget {
         child: Builder(
           builder: (context) => ColoredBox(
             color: RetroDesktopTheme.of(context).colors.desktop,
-            child: child,
+            // The look's notices stand over the app, above its bars (showRetroDesktopSnackBar).
+            child: RetroDesktopToaster(child: child),
           ),
         ),
       ),

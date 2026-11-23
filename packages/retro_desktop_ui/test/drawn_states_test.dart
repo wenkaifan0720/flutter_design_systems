@@ -168,7 +168,7 @@ void main() {
             f.value,
             b,
             RetroDesktopNumberField(
-              label: 'Copies',
+              labelText: 'Copies',
               value: value,
               max: 9,
               onChanged: _take,
@@ -185,7 +185,7 @@ void main() {
           tester,
           f.value,
           b,
-          const RetroDesktopNumberField(label: 'Copies', value: 3, max: 9),
+          const RetroDesktopNumberField(labelText: 'Copies', value: 3, max: 9),
         );
         final dim = tester.widget<AnimatedOpacity>(
           find
@@ -206,7 +206,7 @@ void main() {
             onChanged: _take,
           ),
           const RetroDesktopRadioGroup<int>(
-            label: 'Delivery',
+            labelText: 'Delivery',
             onChanged: _take,
             options: [
               RetroDesktopRadio(1, 'Standard'),

@@ -30,10 +30,11 @@ final _parts = {
 };
 
 /// The parts a finger drives through ui_core's detectors, not a press (the rating's stars, ui_core's `RawRating`:
-/// a tap or a sweep along the row); and the list table, one focus stop whose rows take a finger as the
+/// a tap or a sweep along the row; the colour picker's field and strips); and the list table, one focus stop whose rows take a finger as the
 /// period's lists did.
 const _byPointer = {
   'RetroDesktopRangeSlider',
+  'RetroDesktopColorPicker',
   'RetroDesktopRating',
   'RetroDesktopResizable',
   'RetroDesktopTreeView',

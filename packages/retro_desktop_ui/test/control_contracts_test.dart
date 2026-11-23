@@ -99,7 +99,7 @@ void main() {
           child: SizedBox(
             width: 120,
             child: RetroDesktopTextField(
-              label: 'Document',
+              labelText: 'Document',
               leading: const Icon(Icons.search),
               controller: controller,
               trailing: RetroDesktopButton(
@@ -163,14 +163,16 @@ void main() {
         addTearDown(controller.dispose);
         await tester.pumpWidget(
           _host(
-            RetroDesktopTextField(
-              label: 'Password',
-              password: true,
+            RetroDesktopPasswordField(
+              labelText: 'Password',
               focusNode: focus,
               controller: controller,
             ),
           ),
         );
+        // Typing in it: the toggle keeps the focus where it is.
+        focus.requestFocus();
+        await tester.pump();
         expect(
           tester.widget<EditableText>(find.byType(EditableText)).obscureText,
           isTrue,
@@ -266,7 +268,7 @@ void main() {
         _host(
           StatefulBuilder(
             builder: (context, change) => RetroDesktopNumberField(
-              label: 'Quantity',
+              labelText: 'Quantity',
               unit: 'items',
               value: value,
               min: 4,

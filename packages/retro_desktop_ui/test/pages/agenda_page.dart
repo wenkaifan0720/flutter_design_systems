@@ -11,7 +11,7 @@ class AgendaPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return RetroDesktopScaffold(
-      topBar: const RetroDesktopAppBar(title: 'Today'),
+      appBar: const RetroDesktopAppBar(title: 'Today'),
       body: RetroDesktopDesktop(
         active: 'Today',
         tiles: [

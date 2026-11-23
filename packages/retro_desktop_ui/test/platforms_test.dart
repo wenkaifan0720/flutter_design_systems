@@ -137,7 +137,7 @@ void main() {
                   ),
                 ),
                 RetroDesktopSelect<String>(
-                  label: 'Save to',
+                  labelText: 'Save to',
                   value: 'disk',
                   options: const [
                     RetroDesktopOption('computer', 'This computer'),

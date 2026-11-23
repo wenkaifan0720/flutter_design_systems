@@ -27,7 +27,7 @@ class _DeskArtPainter extends RetroDesktopPixelPainter {
   void paint(RetroDesktopPixelGrid px, Size s) {
     // The marks keep their own inks by night (the pictures law): light bodies, a near-black edge. In the night's greys
     // they would stand as dark shapes on the dark desk, the bin almost gone.
-    final c = this.c.dark
+    final c = this.c.brightness == Brightness.dark
         ? this.c.copyWith(
             platinum: const Color(0xFFCCCCCC),
             platinumLight: const Color(0xFFDDDDDD),
@@ -40,7 +40,7 @@ class _DeskArtPainter extends RetroDesktopPixelPainter {
           )
         : this.c;
     final canvas = px.canvas;
-    final edge = c.dark ? c.control : c.outline;
+    final edge = c.brightness == Brightness.dark ? c.control : c.outline;
     final u = s.width / 48;
     void box(double x, double y, double w, double h, Color color) =>
         px.fill(Rect.fromLTWH(x * u, y * u, w * u, h * u), color);
@@ -181,7 +181,7 @@ class RetroDesktopDeskMarks extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 4),
               child: Text(
                 m.$2,
-                style: t.type.text(12, 15, weight: FontWeight.w600),
+                style: t.textTheme.text(12, 15, weight: FontWeight.w600),
                 maxLines: 1,
                 softWrap: false,
                 overflow: TextOverflow.ellipsis,
@@ -240,7 +240,7 @@ class _FolderPainter extends RetroDesktopPixelPainter {
   @override
   void paint(RetroDesktopPixelGrid px, Size s) {
     final canvas = px.canvas;
-    final line = c.dark ? c.shade : c.outline;
+    final line = c.brightness == Brightness.dark ? c.shade : c.outline;
     final back = selected ? c.highlightDark : c.highlightMid;
     final front = selected ? c.highlight : c.highlightContainer;
     final tab = Path()
@@ -300,7 +300,7 @@ class _FilePainter extends RetroDesktopPixelPainter {
     final canvas = px.canvas;
     canvas.save();
     canvas.translate(2, 1);
-    final line = c.dark ? c.control : c.outline;
+    final line = c.brightness == Brightness.dark ? c.control : c.outline;
     final page = Path()
       ..addPolygon(const [
         Offset(4.5, 1.5),
@@ -519,7 +519,9 @@ class RetroDesktopFolderArt extends StatelessWidget {
                     size: 16,
                     color: selected
                         ? c.onHighlight
-                        : (c.dark ? c.text : c.highlightDark),
+                        : (c.brightness == Brightness.dark
+                              ? c.text
+                              : c.highlightDark),
                   ),
                 ),
               ),

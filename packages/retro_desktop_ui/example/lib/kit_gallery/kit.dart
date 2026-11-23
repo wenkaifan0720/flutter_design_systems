@@ -106,7 +106,7 @@ Widget kitScreen({
 }) => _kitApp(
   brightness: brightness,
   home: RetroDesktopScaffold(
-    topBar: RetroDesktopAppBar(title: title),
+    appBar: RetroDesktopAppBar(title: title),
     footer: footer,
     fullBleed: bare || desk || maxWindowWidth != null,
     body: desk
@@ -177,7 +177,7 @@ Widget kitFilledScreen({
   brightness: brightness,
   home: RetroDesktopScaffold(
     scroll: false,
-    topBar: RetroDesktopAppBar(title: title),
+    appBar: RetroDesktopAppBar(title: title),
     body: body,
   ),
 );

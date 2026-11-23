@@ -126,7 +126,7 @@ class _BoxPainter extends RetroDesktopPixelPainter {
   void paint(RetroDesktopPixelGrid px, Size s) {
     final canvas = px.canvas;
     final r = px.snap(Offset.zero & s);
-    final line = c.dark ? c.control : c.outline;
+    final line = c.brightness == Brightness.dark ? c.control : c.outline;
     final h = px.hair, w = px.hairX;
     final outline = shape.copyWith(
       side: BorderSide(color: line, width: w),
@@ -353,7 +353,7 @@ class _TitleBar extends StatelessWidget {
             : active || strong
             ? c.text
             : c.textTertiary);
-    final wordsStyle = t.type.chrome
+    final wordsStyle = t.textTheme.chrome
         .merge(
           RetroDesktopStyle.first(
             [style, t.windowTheme],
@@ -729,7 +729,9 @@ class _CaptionPainter extends RetroDesktopPixelPainter {
 List<BoxShadow> _shadows(RetroDesktopColors c, bool active) => [
   BoxShadow(
     color: c.shade.withValues(
-      alpha: c.dark ? (active ? .95 : .85) : (active ? .8 : .55),
+      alpha: c.brightness == Brightness.dark
+          ? (active ? .95 : .85)
+          : (active ? .8 : .55),
     ),
     offset: const Offset(2, 2),
   ),
@@ -1023,7 +1025,7 @@ class _InfoStrip extends StatelessWidget {
                     constraints: BoxConstraints(maxWidth: box.maxWidth),
                     child: Text(
                       info ?? '',
-                      style: t.type.caption,
+                      style: t.textTheme.caption,
                       maxLines: 1,
                       softWrap: false,
                       overflow: TextOverflow.ellipsis,
@@ -1051,7 +1053,11 @@ class _InfoStrip extends StatelessWidget {
                                   ),
                                   child: Text(
                                     flag!,
-                                    style: t.type.pixel(15, 14, color: c.paper),
+                                    style: t.textTheme.pixel(
+                                      15,
+                                      14,
+                                      color: c.paper,
+                                    ),
                                     maxLines: 1,
                                     softWrap: false,
                                     overflow: TextOverflow.ellipsis,
@@ -1065,7 +1071,7 @@ class _InfoStrip extends StatelessWidget {
                             Flexible(
                               child: Text(
                                 end!,
-                                style: t.type.caption,
+                                style: t.textTheme.caption,
                                 maxLines: 1,
                                 softWrap: false,
                                 overflow: TextOverflow.ellipsis,
@@ -1096,7 +1102,7 @@ class _Status extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = RetroDesktopTheme.of(context);
     final c = t.colors;
-    final strong = t.type.caption.copyWith(
+    final strong = t.textTheme.caption.copyWith(
       color: c.text,
       fontWeight: FontWeight.w700,
     );
@@ -1132,7 +1138,11 @@ class _Status extends StatelessWidget {
                     for (var i = 0; i < status.length; i++) ...[
                       if (i > 0 || action != null) ...[
                         const SizedBox(width: RetroDesktopSpacing.s10),
-                        _StatusRule(c.dark ? c.bevelLight : c.bevelDark),
+                        _StatusRule(
+                          c.brightness == Brightness.dark
+                              ? c.bevelLight
+                              : c.bevelDark,
+                        ),
                         const SizedBox(width: RetroDesktopSpacing.s10),
                       ],
                       // Each as wide as its words while they fit. Past that they give way in proportion to their words,
@@ -1141,7 +1151,7 @@ class _Status extends StatelessWidget {
                         flex: 1000 + status[i].length * 40,
                         child: Text.rich(
                           TextSpan(
-                            style: t.type.caption,
+                            style: t.textTheme.caption,
                             children: _starred(status[i], strong),
                           ),
                         ),
@@ -1260,7 +1270,7 @@ class RetroDesktopWell extends StatelessWidget implements RetroDesktopFlush {
 /// `Spacer` where it parts. With no `Expanded`, the controls before the `Spacer` wrap rather than overflow.
 ///
 /// ```dart
-/// RetroDesktopToolbar(children: [Expanded(child: RetroDesktopTextField(hint: 'Search')), RetroDesktopButton('New', isDefaultAction: true, icon: RetroDesktopGlyphs.plus, onPressed: () {})])
+/// RetroDesktopToolbar(children: [Expanded(child: RetroDesktopTextField(hintText: 'Search')), RetroDesktopButton('New', isDefaultAction: true, icon: RetroDesktopGlyphs.plus, onPressed: () {})])
 /// ```
 class RetroDesktopToolbar extends StatelessWidget {
   /// Creates a [RetroDesktopToolbar].
@@ -1425,7 +1435,7 @@ class RetroDesktopToolNote extends StatelessWidget {
             Icon(icon, size: 14, color: t.colors.textSecondary),
             const SizedBox(width: RetroDesktopSpacing.s6),
           ],
-          Text(text, style: t.type.caption, maxLines: 1, softWrap: false),
+          Text(text, style: t.textTheme.caption, maxLines: 1, softWrap: false),
         ],
       ),
     );
@@ -1556,7 +1566,7 @@ class _RetroDesktopDeskIconState extends State<RetroDesktopDeskIcon> {
               ),
               child: _IconName(
                 widget.name,
-                t.type
+                t.textTheme
                     .text(12, 15, weight: FontWeight.w600)
                     .copyWith(color: lit ? c.onHighlight : null),
                 // The plate's room: the icon's width, less the plate's 4 a side.
@@ -1858,7 +1868,7 @@ class RetroDesktopAlert extends StatelessWidget {
             children: [
               LayoutBuilder(
                 builder: (context, room) {
-                  final titleStyle = t.type.sub
+                  final titleStyle = t.textTheme.sub
                       .merge(words)
                       .copyWith(color: ink);
                   // The picture opens the box beside the title's top; once the title's first line grows taller than the
@@ -1915,7 +1925,9 @@ class RetroDesktopAlert extends StatelessWidget {
                         const SizedBox(height: RetroDesktopSpacing.s4),
                         Text(
                           body!,
-                          style: t.type.note.merge(words).copyWith(color: ink),
+                          style: t.textTheme.note
+                              .merge(words)
+                              .copyWith(color: ink),
                         ),
                       ],
                     ],
@@ -1948,7 +1960,9 @@ class RetroDesktopAlert extends StatelessWidget {
                       ? const SizedBox.shrink()
                       : Text(
                           meta!,
-                          style: t.type.caption.copyWith(color: c.textTertiary),
+                          style: t.textTheme.caption.copyWith(
+                            color: c.textTertiary,
+                          ),
                           maxLines: 1,
                         ),
                   end: Wrap(

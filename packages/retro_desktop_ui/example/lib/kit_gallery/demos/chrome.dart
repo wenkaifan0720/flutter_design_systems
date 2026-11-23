@@ -107,10 +107,10 @@ Widget kitSpecimenButton() => kitAction(
   (press) => RetroDesktopButton('A plain button', wide: true, onPressed: press),
 );
 
-Widget kitSpecimenInput() => const RetroDesktopInput(hint: 'A plain input');
+Widget kitSpecimenInput() => const RetroDesktopInput(hintText: 'A plain input');
 
 Widget kitSpecimenScreen() => const RetroDesktopScaffold(
-  topBar: RetroDesktopAppBar(title: 'A page'),
+  appBar: RetroDesktopAppBar(title: 'A page'),
   body: RetroDesktopDesktop(
     tiles: [
       RetroDesktopWindowColumn(

@@ -376,20 +376,22 @@ void retroDesktopDiagonal(
 /// The desktop: the ground, the weave and the light from the top left.
 class RetroDesktopDeskPainter extends CustomPainter {
   /// Creates a [RetroDesktopDeskPainter].
-  RetroDesktopDeskPainter(this.c);
+  RetroDesktopDeskPainter(this.colors);
 
   /// The colors used by this painter.
-  final RetroDesktopColors c;
+  final RetroDesktopColors colors;
   @override
   void paint(Canvas canvas, Size s) {
     final r = Offset.zero & s;
-    canvas.drawRect(r, Paint()..color = c.desktop);
+    canvas.drawRect(r, Paint()..color = colors.desktop);
     retroDesktopDiagonal(
       canvas,
       r,
       12,
       1,
-      c.desktopThreadDark.withValues(alpha: c.desktopThreadDark.a * .12),
+      colors.desktopThreadDark.withValues(
+        alpha: colors.desktopThreadDark.a * .12,
+      ),
       down: true,
     );
     retroDesktopDiagonal(
@@ -397,13 +399,15 @@ class RetroDesktopDeskPainter extends CustomPainter {
       r,
       12,
       1,
-      c.desktopThreadLight.withValues(alpha: c.desktopThreadLight.a * .16),
+      colors.desktopThreadLight.withValues(
+        alpha: colors.desktopThreadLight.a * .16,
+      ),
     );
     // No glow: the desk is one flat ground and its weave (the material law).
   }
 
   @override
-  bool shouldRepaint(RetroDesktopDeskPainter o) => o.c != c;
+  bool shouldRepaint(RetroDesktopDeskPainter o) => o.colors != colors;
 }
 
 /// Draws a pixel-aligned directional triangle.

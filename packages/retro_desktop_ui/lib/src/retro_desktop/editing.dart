@@ -301,7 +301,7 @@ class RetroDesktopTextContextMenu extends StatelessWidget {
                 child: ExcludeSemantics(
                   child: Text(
                     labelOf(context, item),
-                    style: t.type.text(
+                    style: t.textTheme.text(
                       13,
                       16,
                       weight: FontWeight.w500,

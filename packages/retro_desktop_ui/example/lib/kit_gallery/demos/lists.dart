@@ -39,17 +39,17 @@ Widget kitSpecimenListView() => kitValue<int>(
     rows: const [
       RetroDesktopListTableRow(
         title: 'The one from this morning',
-        note: 'First folder',
+        subtitle: 'First folder',
         cells: [('09:14', 'today')],
       ),
       RetroDesktopListTableRow(
         title: 'Something from yesterday',
-        note: 'Second folder',
+        subtitle: 'Second folder',
         cells: [('18:05', 'yesterday')],
       ),
       RetroDesktopListTableRow(
         title: 'One from earlier this week',
-        note: 'Third folder',
+        subtitle: 'Third folder',
         cells: [('16:30', 'Thursday')],
       ),
     ],
@@ -82,7 +82,7 @@ Widget kitSpecimenFolderGrid() => kitValue(
         RetroDesktopFolder(
           entry.$1,
           icon: entry.$2,
-          note: entry.$3,
+          subtitle: entry.$3,
           selected: value == index,
           onPressed: () => change(index),
           art: RetroDesktopFolderArt(selected: value == index, icon: entry.$2),
@@ -103,7 +103,7 @@ Widget kitSpecimenFileGrid() => kitValue(
         RetroDesktopFile(
           entry.$1,
           kind: entry.$2,
-          note: entry.$3,
+          subtitle: entry.$3,
           selected: value == index,
           onPressed: () => change(index),
           art: RetroDesktopFilePageArt(
@@ -117,12 +117,12 @@ Widget kitSpecimenFileGrid() => kitValue(
 
 Widget kitSpecimenTreeBars() => const RetroDesktopTreeBars(
   rows: [
-    RetroDesktopTreeRow('First part', '310', share: .48, open: true),
+    RetroDesktopTreeRow('First part', '310', share: .48, isExpanded: true),
     RetroDesktopTreeRow('A piece of it', '190', share: .3, level: 1),
     RetroDesktopTreeRow('Another piece', '120', share: .18, level: 1),
-    RetroDesktopTreeRow('Second part', '220', share: .34, open: false),
+    RetroDesktopTreeRow('Second part', '220', share: .34, isExpanded: false),
     // The parts add up to the total.
-    RetroDesktopTreeRow('Third part', '110', share: .17, open: false),
+    RetroDesktopTreeRow('Third part', '110', share: .17, isExpanded: false),
   ],
   totalName: 'Total',
   total: '640',

@@ -75,7 +75,7 @@ void main() {
           try {
             await tester.pumpWidget(
               host(
-                const RetroDesktopTextField(label: 'Name'),
+                const RetroDesktopTextField(labelText: 'Name'),
                 RetroDesktopThemeData.classic().copyWith(density: density),
                 scale: sizeScale,
               ),
@@ -418,8 +418,8 @@ void main() {
               const RetroDesktopWindow(
                 title: 'A longer window title',
                 child: RetroDesktopTextField(
-                  label: 'Search',
-                  hint: 'Search files',
+                  labelText: 'Search',
+                  hintText: 'Search files',
                 ),
               ),
               RetroDesktopTabBar(

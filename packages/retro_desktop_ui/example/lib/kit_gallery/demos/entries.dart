@@ -25,17 +25,17 @@ Widget kitEntriesDemo(Brightness brightness) => kitScreen(
   ],
 );
 Widget kitSpecimenSearchField() => const RetroDesktopSearchField(
-  hint: 'Search documents',
+  hintText: 'Search documents',
   name: 'Search documents',
 );
 Widget kitSpecimenCodeField() => const RetroDesktopInputOtp(
-  label: 'Verification code',
-  helper: 'Enter the six digits from your message.',
+  labelText: 'Verification code',
+  helperText: 'Enter the six digits from your message.',
 );
 Widget kitSpecimenSelect() => kitValue(
   'local',
   (value, change) => RetroDesktopSelect<String>(
-    label: 'Destination',
+    labelText: 'Destination',
     value: value,
     onChanged: change,
     options: const [
@@ -54,7 +54,7 @@ Widget kitSpecimenSwitchRow() => kitValue(
   true,
   (value, change) => RetroDesktopSwitchRow(
     label: 'Keep a local copy',
-    note: 'Available when you are offline',
+    subtitle: 'Available when you are offline',
     value: value,
     onChanged: change,
   ),
@@ -62,7 +62,7 @@ Widget kitSpecimenSwitchRow() => kitValue(
 Widget kitSpecimenRadioGroup() => kitValue(
   'ask',
   (value, change) => RetroDesktopRadioGroup<String>(
-    label: 'When a file exists',
+    labelText: 'When a file exists',
     value: value,
     onChanged: change,
     options: const [
@@ -98,8 +98,8 @@ Widget kitSpecimenDatePicker() => kitValue(
   (value, change) => RetroDesktopDatePicker(
     value: value,
     onChanged: change,
-    first: DateTime(2026),
-    last: DateTime(2027),
+    firstDate: DateTime(2026),
+    lastDate: DateTime(2027),
   ),
 );
 Widget kitSpecimenTimePicker() => kitValue(

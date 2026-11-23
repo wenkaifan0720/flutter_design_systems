@@ -66,14 +66,14 @@ void main() {
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
                             RetroDesktopSelect<String>(
-                              label: 'Save new documents to',
+                              labelText: 'Save new documents to',
                               value: 'here',
                               options: _options,
                               onChanged: (_) {},
                             ),
                             const SizedBox(height: 16),
                             RetroDesktopCombobox<String>(
-                              label: 'Country',
+                              labelText: 'Country',
                               options: const ['Austria', 'Belgium', 'Chile'],
                               onSelected: (_) {},
                             ),
@@ -181,14 +181,14 @@ void main() {
                           title: 'Where to keep it',
                           children: [
                             RetroDesktopSelect<String>(
-                              label: 'Save new documents to',
+                              labelText: 'Save new documents to',
                               value: 'here',
                               options: _options,
                               onChanged: (_) {},
                             ),
                             RetroDesktopCombobox<String>(
-                              label: 'Country',
-                              hint: 'Choose a country',
+                              labelText: 'Country',
+                              hintText: 'Choose a country',
                               options: const ['Austria', 'Belgium', 'Chile'],
                               onSelected: (_) {},
                             ),
@@ -304,7 +304,7 @@ void main() {
                     Brightness.light,
                   ).copyWith(appearance: appearance.value).atWidth(view),
                   child: RetroDesktopSelect<String>(
-                    label: 'Save new documents to',
+                    labelText: 'Save new documents to',
                     value: 'here',
                     options: const [
                       RetroDesktopOption('here', 'This computer'),

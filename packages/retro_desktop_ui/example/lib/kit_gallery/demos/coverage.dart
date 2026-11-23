@@ -129,22 +129,22 @@ Widget kitSpecimenSplitButton() => kitAction(
   ),
 );
 Widget kitSpecimenTextArea() => const RetroDesktopTextArea(
-  label: 'Notes',
-  hint: 'Anything the next reader should know',
+  labelText: 'Notes',
+  hintText: 'Anything the next reader should know',
 );
 Widget kitSpecimenPasswordField() =>
-    const RetroDesktopPasswordField(label: 'Password');
+    const RetroDesktopPasswordField(labelText: 'Password');
 Widget kitSpecimenInputGroup() => const RetroDesktopInputGroup(
-  label: 'Site',
+  labelText: 'Site',
   prefix: 'https://',
   suffix: '.example.com',
-  hint: 'studio',
+  hintText: 'studio',
 );
 Widget kitSpecimenFormField() => const RetroDesktopFormField(
-  label: 'Email',
-  help: 'The receipt goes here',
+  labelText: 'Email',
+  helperText: 'The receipt goes here',
   required: true,
-  child: RetroDesktopTextField(hint: 'name@example.com'),
+  child: RetroDesktopTextField(hintText: 'name@example.com'),
 );
 Widget kitSpecimenRangeSlider() => kitValue(
   const RawRangeValues(20, 80),
@@ -167,9 +167,9 @@ const _countries = [
 ];
 Widget kitSpecimenCombobox() => Builder(
   builder: (context) => RetroDesktopCombobox<String>(
-    label: 'Country',
-    hint: 'Type a country',
-    helper: 'Words no country fits say so in the list',
+    labelText: 'Country',
+    hintText: 'Type a country',
+    helperText: 'Words no country fits say so in the list',
     options: _countries,
     onSelected: (country) =>
         showRetroDesktopSnackBar(context, 'Chose $country'),
@@ -187,7 +187,7 @@ Widget kitSpecimenCalendar() => _Held(
 Widget kitSpecimenDateRangePicker() => kitValue<RawDateRange?>(
   RawDateRange(DateTime(2026, 6, 14), DateTime(2026, 6, 18)),
   (value, change) => RetroDesktopDateRangePicker(
-    label: 'Stay',
+    labelText: 'Stay',
     firstDate: DateTime(2026, 6),
     lastDate: DateTime(2026, 9, 30),
     initialMonth: DateTime(2026, 6),
@@ -419,7 +419,7 @@ class _SheetFiltersState extends State<_SheetFilters> {
         onChanged: (v) => setState(() => _pictures = v),
       ),
       RetroDesktopSelect<String>(
-        label: 'Changed',
+        labelText: 'Changed',
         value: _since,
         options: const [
           RetroDesktopOption('week', 'This week'),

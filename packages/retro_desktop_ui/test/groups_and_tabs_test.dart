@@ -78,7 +78,7 @@ void main() {
                           for (final name in reversed ? ['B', 'A'] : ['A', 'B'])
                             RetroDesktopTextField(
                               key: ValueKey(name),
-                              label: name,
+                              labelText: name,
                               initial: name,
                             ),
                         ],
@@ -154,13 +154,13 @@ void main() {
                   children: [
                     RetroDesktopSwitchRow(
                       label: 'Save automatically',
-                      note: 'Keep your work as you make changes.',
+                      subtitle: 'Keep your work as you make changes.',
                       value: true,
                       onChanged: (_) {},
                     ),
                     RetroDesktopSwitchRow(
                       label: 'Keep an offline copy',
-                      note: 'Open your documents without a connection.',
+                      subtitle: 'Open your documents without a connection.',
                       value: false,
                       onChanged: (_) {},
                     ),

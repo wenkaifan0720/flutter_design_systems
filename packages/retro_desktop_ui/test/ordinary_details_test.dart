@@ -136,9 +136,9 @@ void main() {
         );
         expect(heading.fontSize!, greaterThan(body.fontSize!));
         expect(body.fontSize, greaterThanOrEqualTo(16));
-        expect(theme.type.chrome.fontSize, greaterThanOrEqualTo(20));
-        expect(theme.type.caption.fontSize, greaterThanOrEqualTo(14));
-        expect(theme.type.meta.fontSize, greaterThanOrEqualTo(14));
+        expect(theme.textTheme.chrome.fontSize, greaterThanOrEqualTo(20));
+        expect(theme.textTheme.caption.fontSize, greaterThanOrEqualTo(14));
+        expect(theme.textTheme.meta.fontSize, greaterThanOrEqualTo(14));
         expect(
           tester.getTopLeft(find.text('Website refresh')).dx,
           tester.getTopLeft(find.text('Design and content')).dx,

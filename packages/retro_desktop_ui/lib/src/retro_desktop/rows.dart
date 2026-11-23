@@ -77,7 +77,9 @@ class _RowFrame extends StatelessWidget {
               selected
                   ? c.highlight
                   : held && !t.chisel
-                  ? (c.dark ? c.platinumLight : c.platinumDark)
+                  ? (c.brightness == Brightness.dark
+                        ? c.platinumLight
+                        : c.platinumDark)
                   : const Color(0x00000000),
             ),
             side: const WidgetStatePropertyAll(BorderSide.none),
@@ -300,7 +302,7 @@ class RetroDesktopListTile extends StatelessWidget {
           ) => RetroDesktopStyle.first([style, t.listTileTheme], get, states);
           final ink = slot((s) => s.foreground);
           final appearance = slot((s) => s.textStyle);
-          final titleStyle = t.type
+          final titleStyle = t.textTheme
               .text(16, 22, weight: FontWeight.w600)
               .merge(appearance)
               .copyWith(color: ink);
@@ -320,7 +322,7 @@ class RetroDesktopListTile extends StatelessWidget {
               // middle, beside the leading glyph's.
               if (subtitle == null && note == null)
                 RetroDesktopCaps(
-                  style: t.type.text(16, 22, weight: FontWeight.w600),
+                  style: t.textTheme.text(16, 22, weight: FontWeight.w600),
                   named,
                 )
               else
@@ -328,13 +330,17 @@ class RetroDesktopListTile extends StatelessWidget {
               if (subtitle != null)
                 RetroDesktopText(
                   subtitle!,
-                  style: t.type.meta.merge(appearance).copyWith(color: ink),
+                  style: t.textTheme.meta
+                      .merge(appearance)
+                      .copyWith(color: ink),
                 ),
               if (note != null) ...[
                 const SizedBox(height: RetroDesktopSpacing.s4),
                 RetroDesktopText(
                   note!,
-                  style: t.type.meta.merge(appearance).copyWith(color: ink),
+                  style: t.textTheme.meta
+                      .merge(appearance)
+                      .copyWith(color: ink),
                 ),
               ],
             ],
@@ -343,7 +349,7 @@ class RetroDesktopListTile extends StatelessWidget {
               ? null
               : Text(
                   figure!,
-                  style: t.type.pixel(28, 24),
+                  style: t.textTheme.pixel(28, 24),
                   maxLines: 1,
                   softWrap: false,
                 );
@@ -550,13 +556,13 @@ class RetroDesktopTaskRow extends StatelessWidget {
           final name = RetroDesktopText(
             title,
             style: value
-                ? t.type.body.copyWith(
+                ? t.textTheme.body.copyWith(
                     color: c.textTertiary,
                     decoration: TextDecoration.lineThrough,
                     decorationThickness: 1,
                     decorationColor: c.textTertiary,
                   )
-                : t.type.row,
+                : t.textTheme.row,
             maxLines: t.desk ? 1 : null,
             overflow: t.desk ? TextOverflow.ellipsis : null,
           );
@@ -564,7 +570,7 @@ class RetroDesktopTaskRow extends StatelessWidget {
               ? null
               : Text(
                   subtitle!,
-                  style: t.type.meta,
+                  style: t.textTheme.meta,
                   maxLines: 1,
                   softWrap: false,
                   overflow: TextOverflow.ellipsis,
@@ -579,7 +585,7 @@ class RetroDesktopTaskRow extends StatelessWidget {
               Flexible(
                 child: Text(
                   time!,
-                  style: t.type.mono(
+                  style: t.textTheme.mono(
                     12,
                     16,
                     weight: FontWeight.w600,
@@ -594,7 +600,7 @@ class RetroDesktopTaskRow extends StatelessWidget {
               Flexible(
                 child: Text(
                   flexibleTime!,
-                  style: t.type.caption.copyWith(color: c.textTertiary),
+                  style: t.textTheme.caption.copyWith(color: c.textTertiary),
                   maxLines: 1,
                   softWrap: false,
                   overflow: TextOverflow.ellipsis,
@@ -818,7 +824,7 @@ class RetroDesktopDescriptionList extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = RetroDesktopTheme.of(context);
     final c = t.colors;
-    final label = t.type.caption;
+    final label = t.textTheme.caption;
     if (leaders) {
       final scaler = MediaQuery.textScalerOf(context);
       var labels = 0.0, values = 0.0;
@@ -827,7 +833,10 @@ class RetroDesktopDescriptionList extends StatelessWidget {
           labels,
           _lineWidth(f.label, label, scaler) + (f.icon == null ? 0 : 20),
         );
-        values = math.max(values, _lineWidth(f.value, t.type.figure, scaler));
+        values = math.max(
+          values,
+          _lineWidth(f.value, t.textTheme.figure, scaler),
+        );
       }
       return LayoutBuilder(
         builder: (context, box) {
@@ -851,7 +860,7 @@ class RetroDesktopDescriptionList extends StatelessWidget {
                           Text(fact.label, style: label),
                         ],
                       ),
-                      Text(fact.value, style: t.type.figure),
+                      Text(fact.value, style: t.textTheme.figure),
                     ],
                   ),
               ],
@@ -901,7 +910,11 @@ class RetroDesktopDescriptionList extends StatelessWidget {
                       child: SizedBox(
                         height: 3,
                         child: RetroDesktopPixelPaint(
-                          painter: _Dotted(c.dark ? c.bevelLight : c.bevelDark),
+                          painter: _Dotted(
+                            c.brightness == Brightness.dark
+                                ? c.bevelLight
+                                : c.bevelDark,
+                          ),
                         ),
                       ),
                     ),
@@ -910,7 +923,7 @@ class RetroDesktopDescriptionList extends StatelessWidget {
                       width: valueW,
                       child: Text(
                         f.value,
-                        style: t.type.figure,
+                        style: t.textTheme.figure,
                         textAlign: TextAlign.end,
                         maxLines: 1,
                         softWrap: false,
@@ -965,8 +978,8 @@ class RetroDesktopDescriptionList extends StatelessWidget {
                       child: Text(
                         f.value,
                         style: f.figures
-                            ? t.type.mono(14, 18, weight: FontWeight.w600)
-                            : t.type.text(14, 18),
+                            ? t.textTheme.mono(14, 18, weight: FontWeight.w600)
+                            : t.textTheme.text(14, 18),
                       ),
                     ),
                   ],
@@ -1037,7 +1050,7 @@ class RetroDesktopStats extends StatelessWidget {
       children: [
         Text(
           s.$1,
-          style: t.type.caption.copyWith(color: c.textTertiary),
+          style: t.textTheme.caption.copyWith(color: c.textTertiary),
           maxLines: 1,
           softWrap: false,
           overflow: TextOverflow.ellipsis,
@@ -1049,12 +1062,12 @@ class RetroDesktopStats extends StatelessWidget {
           child: Text.rich(
             TextSpan(
               text: s.$2,
-              style: t.type.big,
+              style: t.textTheme.big,
               children: [
                 if (s.$3 != null)
                   TextSpan(
                     text: ' ${s.$3}',
-                    style: t.type.chrome.copyWith(color: c.textSecondary),
+                    style: t.textTheme.chrome.copyWith(color: c.textSecondary),
                   ),
               ],
             ),
@@ -1079,7 +1092,7 @@ class RetroDesktopStats extends StatelessWidget {
                 _widestLine(
                   context,
                   [for (final s in stats) s.$1],
-                  t.type.caption,
+                  t.textTheme.caption,
                   74,
                 );
             final columns = holds ? n : math.max(1, n ~/ 2);
@@ -1157,7 +1170,7 @@ class RetroDesktopReadings extends StatelessWidget {
             _widestLine(
               context,
               [for (final r in reads) r.$1],
-              t.type.caption,
+              t.textTheme.caption,
               74,
             );
         final columns = holds ? n : math.max(1, n ~/ 2);
@@ -1188,7 +1201,9 @@ class RetroDesktopReadings extends StatelessWidget {
                     children: [
                       Text(
                         reads[i].$1,
-                        style: t.type.caption.copyWith(color: c.textTertiary),
+                        style: t.textTheme.caption.copyWith(
+                          color: c.textTertiary,
+                        ),
                         maxLines: 1,
                         softWrap: false,
                         overflow: TextOverflow.ellipsis,
@@ -1200,12 +1215,12 @@ class RetroDesktopReadings extends StatelessWidget {
                         child: Text.rich(
                           TextSpan(
                             text: reads[i].$2,
-                            style: t.type.big,
+                            style: t.textTheme.big,
                             children: [
                               if (reads[i].$3 != null)
                                 TextSpan(
                                   text: ' ${reads[i].$3}',
-                                  style: t.type.pixel(
+                                  style: t.textTheme.pixel(
                                     16,
                                     16,
                                     color: c.textSecondary,
@@ -1309,10 +1324,10 @@ class RetroDesktopMeasures extends StatelessWidget {
     for (final m in items) {
       widest = math.max(
         widest,
-        widthOf(m.$1, t.type.text(13, 18, weight: FontWeight.w700)) +
+        widthOf(m.$1, t.textTheme.text(13, 18, weight: FontWeight.w700)) +
             6 +
-            widthOf(m.$2, t.type.figure) +
-            (m.$3 == null ? 0 : widthOf(' ${m.$3}', t.type.mono(12, 16))) +
+            widthOf(m.$2, t.textTheme.figure) +
+            (m.$3 == null ? 0 : widthOf(' ${m.$3}', t.textTheme.mono(12, 16))) +
             16 +
             4,
       );
@@ -1350,8 +1365,8 @@ class RetroDesktopMeasures extends StatelessWidget {
                     Text.rich(
                       _subscripted(
                         m.$1,
-                        t.type.text(13, 18, weight: FontWeight.w700),
-                        t.type.text(10, 10, weight: FontWeight.w700),
+                        t.textTheme.text(13, 18, weight: FontWeight.w700),
+                        t.textTheme.text(10, 10, weight: FontWeight.w700),
                       ),
                       maxLines: 1,
                       softWrap: false,
@@ -1360,14 +1375,18 @@ class RetroDesktopMeasures extends StatelessWidget {
                     Text.rich(
                       TextSpan(
                         text: m.$2,
-                        style: t.type.figure,
+                        style: t.textTheme.figure,
                         children: [
                           if (m.$3 != null)
                             TextSpan(
                               // The micro sign (U+00B5) as its compatibility
                               // form, Greek mu, which the bundled faces carry.
                               text: ' ${m.$3!.replaceAll('\u00b5', '\u03bc')}',
-                              style: t.type.mono(12, 16, color: c.textTertiary),
+                              style: t.textTheme.mono(
+                                12,
+                                16,
+                                color: c.textTertiary,
+                              ),
                             ),
                         ],
                       ),

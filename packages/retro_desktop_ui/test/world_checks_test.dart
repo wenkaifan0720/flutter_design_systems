@@ -4,6 +4,7 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:retro_desktop_ui/retro_desktop_ui.dart';
+import 'package:ui_core_review/ui_core_review.dart' show DesignOverflowCheck;
 
 // ignore_for_file: avoid_relative_lib_imports — the example app's pages are what this test checks; example/ is not a dependency of the package.
 import '../example/lib/kit_gallery/theme.dart' show kitPreset;
@@ -42,7 +43,7 @@ final _parts = <(String, Widget, List<Finder> Function())>[
   (
     'a text field',
     const RetroDesktopTextField(
-      hint: 'Find',
+      hintText: 'Find',
       leading: Icon(RetroDesktopGlyphs.search),
     ),
     () => [find.byIcon(RetroDesktopGlyphs.search)],
@@ -52,7 +53,7 @@ final _parts = <(String, Widget, List<Finder> Function())>[
     const RetroDesktopInputGroup(
       prefix: 'https://',
       suffix: '.com',
-      hint: 'studio',
+      hintText: 'studio',
     ),
     () => [find.text('https://'), find.text('.com')],
   ),
@@ -150,6 +151,13 @@ void main() {
   });
 
   group('twice the text size', () {
+    // ui_core's overflow check: no row or column past its box, read from the
+    // layout as a release build lays it out.
+    void expectNothingPastItsBox(WidgetTester tester, Widget app) =>
+        const DesignOverflowCheck(look: 'Retro Desktop')
+            .check(tester.element(find.byWidget(app)))
+            .verify();
+
     for (final page in galleryPages) {
       testWidgets('${page.id}: nothing overflows', (tester) async {
         tester.view.physicalSize = const Size(galleryWidth, 844);
@@ -161,6 +169,7 @@ void main() {
           child: page.build(Brightness.light),
         );
         await expectNoOverflowAtTextScale(tester, app);
+        expectNothingPastItsBox(tester, app);
         // Then the whole page at once, the view as tall as the page has grown.
         final scrollables = tester
             .stateList<ScrollableState>(find.byType(Scrollable))
@@ -171,7 +180,12 @@ void main() {
         if (extent > 0) {
           tester.view.physicalSize = Size(galleryWidth, 844 + extent);
           await expectNoOverflowAtTextScale(tester, app);
+          expectNothingPastItsBox(tester, app);
         }
+        // And on a desk.
+        tester.view.physicalSize = const Size(1440, 900);
+        await expectNoOverflowAtTextScale(tester, app);
+        expectNothingPastItsBox(tester, app);
       });
     }
   });

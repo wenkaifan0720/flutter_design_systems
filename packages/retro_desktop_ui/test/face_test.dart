@@ -49,17 +49,20 @@ void main() {
     testWidgets('the system face asked for ${weight.value} stays itself', (
       tester,
     ) async {
-      final plain = await _ink(tester, t.type.big);
-      final asked = await _ink(tester, t.type.big.copyWith(fontWeight: weight));
+      final plain = await _ink(tester, t.textTheme.big);
+      final asked = await _ink(
+        tester,
+        t.textTheme.big.copyWith(fontWeight: weight),
+      );
       expect(asked, plain);
     }, tags: const ['goldens']);
   }
 
   testWidgets('the system face asked for italic stays itself', (tester) async {
-    final plain = await _ink(tester, t.type.big);
+    final plain = await _ink(tester, t.textTheme.big);
     final asked = await _ink(
       tester,
-      t.type.big.copyWith(fontStyle: FontStyle.italic),
+      t.textTheme.big.copyWith(fontStyle: FontStyle.italic),
     );
     expect(asked, plain);
   }, tags: const ['goldens']);
@@ -68,12 +71,12 @@ void main() {
     tester,
   ) async {
     for (final s in [
-      t.type.chrome,
-      t.type.small,
-      t.type.sub,
-      t.type.big,
-      t.type.head,
-      t.type.title,
+      t.textTheme.chrome,
+      t.textTheme.small,
+      t.textTheme.sub,
+      t.textTheme.big,
+      t.textTheme.head,
+      t.textTheme.title,
     ]) {
       expect(s.fontFamily, retroDesktopFontFamily('Jersey15'));
       expect(s.fontWeight, FontWeight.w400);
@@ -81,16 +84,16 @@ void main() {
   });
 
   testWidgets('the reading face has a real bold: it changes', (tester) async {
-    final plain = await _ink(tester, t.type.body);
+    final plain = await _ink(tester, t.textTheme.body);
     final bold = await _ink(
       tester,
-      t.type.body.copyWith(fontWeight: FontWeight.w700),
+      t.textTheme.body.copyWith(fontWeight: FontWeight.w700),
     );
     expect(bold, isNot(plain));
   }, tags: const ['goldens']);
 
   testWidgets('the reading face stays legible at phone sizes', (tester) async {
-    final phone = t.atWidth(390).type;
+    final phone = t.atWidth(390).textTheme;
     expect(phone.body.fontSize, greaterThanOrEqualTo(15));
     expect(phone.read.fontSize, greaterThanOrEqualTo(16));
     expect(phone.meta.fontSize, greaterThanOrEqualTo(12));

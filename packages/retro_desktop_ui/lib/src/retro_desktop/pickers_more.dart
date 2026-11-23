@@ -66,7 +66,7 @@ class _Grip extends CustomPainter {
       shape.getOuterPath(box),
       Paint()
         ..color = held
-            ? (c.dark ? c.platinum : c.platinumDark)
+            ? (c.brightness == Brightness.dark ? c.platinum : c.platinumDark)
             : c.platinumLight,
     );
     shape.paint(canvas, box);
@@ -226,7 +226,7 @@ class RetroDesktopRangeSlider extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        ExcludeSemantics(child: Text(label!, style: t.type.body)),
+        ExcludeSemantics(child: Text(label!, style: t.textTheme.body)),
         const SizedBox(height: RetroDesktopSpacing.s4),
         ranged,
       ],
@@ -263,20 +263,40 @@ class RetroDesktopRangeSlider extends StatelessWidget {
 /// (and an opacity strip with [showAlpha]), the swatch and its hex. ui_core's
 /// colour picker carries the channels, their keys and semantics.
 ///
+/// Give it a [value] and an [onChanged], or hand in a [controller] to set and
+/// read the colour from outside.
+///
 /// ```dart
-/// RetroDesktopColorPicker(controller: RawColorController(RetroDesktopTheme.of(context).colors.highlight))
+/// RetroDesktopColorPicker(value: RetroDesktopTheme.of(context).colors.highlight, onChanged: (color) {})
 /// ```
 class RetroDesktopColorPicker extends StatelessWidget {
   /// Creates a [RetroDesktopColorPicker].
   const RetroDesktopColorPicker({
     super.key,
-    required this.controller,
+    this.controller,
+    this.value,
+    this.onChanged,
     this.showAlpha = false,
     this.areaHeight = 160,
-  });
+  }) : assert(
+         controller == null || value == null,
+         'A controller holds the colour: give the colour to the controller.',
+       );
 
-  /// The colour being chosen; the caller disposes it.
-  final RawColorController controller;
+  /// The colour being chosen, for a caller that sets or reads it from
+  /// outside. The caller makes it and disposes it; the picker only listens.
+  /// Null: the picker keeps a controller of its own, starting at [value], and
+  /// disposes it.
+  final RawColorController? controller;
+
+  /// The colour shown when no [controller] is handed in; a new value moves the
+  /// picker to it. Null starts at black.
+  final Color? value;
+
+  /// Called with the colour each time it changes: the user's picks, and with a
+  /// [controller], any change made to it. Moving to a new [value] is not
+  /// reported.
+  final ValueChanged<Color>? onChanged;
 
   /// Whether an opacity strip shows.
   final bool showAlpha;
@@ -285,7 +305,10 @@ class RetroDesktopColorPicker extends StatelessWidget {
   final double areaHeight;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => _ColorPickerHost(this);
+
+  // The picker over [controller], the handed-in one or its own.
+  Widget _draw(BuildContext context, RawColorController controller) {
     final t = RetroDesktopTheme.of(context);
     final c = t.colors;
     Widget well(Widget child) => DecoratedBox(
@@ -415,7 +438,7 @@ class RetroDesktopColorPicker extends StatelessWidget {
               const SizedBox(width: RetroDesktopSpacing.s8),
               Text(
                 controller.hex,
-                style: t.type.mono(13, 16).copyWith(color: c.text),
+                style: t.textTheme.mono(13, 16).copyWith(color: c.text),
               ),
             ],
           ),
@@ -440,10 +463,89 @@ class RetroDesktopColorPicker extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(DiagnosticsProperty<RawColorController>('controller', controller))
+      ..add(
+        DiagnosticsProperty<RawColorController>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(ColorProperty('value', value, defaultValue: null))
+      ..add(ObjectFlagProperty<ValueChanged<Color>>.has('onChanged', onChanged))
       ..add(FlagProperty('showAlpha', value: showAlpha, ifTrue: 'showAlpha'))
       ..add(DoubleProperty('areaHeight', areaHeight, defaultValue: 160));
   }
+}
+
+// A colour picker's controller: the handed-in one, or one of its own made from
+// the picker's value and disposed with it. Reports each change to onChanged.
+class _ColorPickerHost extends StatefulWidget {
+  const _ColorPickerHost(this.picker);
+
+  final RetroDesktopColorPicker picker;
+
+  @override
+  State<_ColorPickerHost> createState() => _ColorPickerHostState();
+}
+
+class _ColorPickerHostState extends State<_ColorPickerHost> {
+  RawColorController? _own;
+  // Set while the picker moves to a new value, which is not reported.
+  bool _following = false;
+
+  RawColorController get _controller => widget.picker.controller ?? _own!;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.picker.controller == null) {
+      _own = RawColorController(widget.picker.value ?? const Color(0xFF000000));
+    }
+    _controller.addListener(_changed);
+  }
+
+  @override
+  void didUpdateWidget(_ColorPickerHost oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final handed = widget.picker.controller;
+    if (handed != oldWidget.picker.controller) {
+      final old = oldWidget.picker.controller ?? _own!;
+      old.removeListener(_changed);
+      if (handed == null) {
+        // Its own starts where the handed-in one was, unless a value is given.
+        _own = RawColorController(widget.picker.value ?? old.color);
+      } else {
+        _own?.dispose();
+        _own = null;
+      }
+      _controller.addListener(_changed);
+    }
+    final own = _own;
+    final value = widget.picker.value;
+    if (own != null &&
+        value != null &&
+        value != oldWidget.picker.value &&
+        value != own.color) {
+      _following = true;
+      own.color = value;
+      _following = false;
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.removeListener(_changed);
+    _own?.dispose();
+    super.dispose();
+  }
+
+  void _changed() {
+    if (!_following) widget.picker.onChanged?.call(_controller.color);
+  }
+
+  @override
+  Widget build(BuildContext context) =>
+      widget.picker._draw(context, _controller);
 }
 
 /// A month's day in the calendar's grid: the chosen day (and a range's ends)
@@ -493,10 +595,10 @@ Widget _day(
           child: FittedBox(
             fit: BoxFit.scaleDown,
             child: RetroDesktopCaps(
-              style: t.type.body,
+              style: t.textTheme.body,
               Text(
                 words.formatInteger(day.date.day),
-                style: t.type.body.copyWith(color: ink),
+                style: t.textTheme.body.copyWith(color: ink),
                 maxLines: 1,
                 softWrap: false,
               ),
@@ -504,9 +606,9 @@ Widget _day(
           ),
         );
         if (!box.hasBoundedWidth) return number;
-        final widest = _widestDay(context, t.type.body);
+        final widest = _widestDay(context, t.textTheme.body);
         final room = box.maxWidth - 2 * _dayGap;
-        final size = t.type.body.fontSize ?? 14;
+        final size = t.textTheme.body.fontSize ?? 14;
         final scale = MediaQuery.textScalerOf(context).scale(size) / size;
         if (widest > 0 && widest * scale > room) {
           number = MediaQuery.withClampedTextScaling(
@@ -530,6 +632,7 @@ Widget _day(
     shape: const RoundedRectangleBorder(),
     focused: states.contains(WidgetState.focused),
     inside: true,
+    insideColor: lit ? ink : null,
     child: SizedBox(
       height: math.max(32, RetroDesktopReach.least(context)),
       child: cell,
@@ -578,7 +681,7 @@ Widget _monthHead(
               child: Text(
                 h.label,
                 textAlign: TextAlign.center,
-                style: t.type.chrome.copyWith(color: t.colors.text),
+                style: t.textTheme.chrome.copyWith(color: t.colors.text),
               ),
             ),
           ),
@@ -626,7 +729,7 @@ double _widestDay(BuildContext context, TextStyle style) {
 
 Widget _weekday(BuildContext context, int weekday, String label) {
   final t = RetroDesktopTheme.of(context);
-  final style = t.type.small.copyWith(color: t.colors.textSecondary);
+  final style = t.textTheme.small.copyWith(color: t.colors.textSecondary);
   // The week's names show their first letters, all seven, once any of them
   // is wider than its column, as the date picker's do (twice the text size
   // on a phone broke "Su" into "S" over "u"; chosen name by name, the head
@@ -667,28 +770,56 @@ Widget _weekday(BuildContext context, int weekday, String label) {
 /// chosen with the pointer or the arrows. ui_core's calendar carries the
 /// keys, the selection and the announcements.
 ///
+/// For one day, give it [firstDate], [lastDate], a [value] and an
+/// [onChanged]. For a range or a set of days, or to turn the month from
+/// outside, hand in a [controller].
+///
 /// ```dart
-/// RetroDesktopCalendar(controller: RawCalendarController(firstDate: DateTime(2026), lastDate: DateTime(2027)))
+/// RetroDesktopCalendar(firstDate: DateTime(2026), lastDate: DateTime(2027), value: DateTime(2026, 11, 6), onChanged: (day) {})
 /// ```
 class RetroDesktopCalendar extends StatelessWidget {
   /// Creates a [RetroDesktopCalendar].
   const RetroDesktopCalendar({
     super.key,
-    required this.controller,
+    this.controller,
+    this.firstDate,
+    this.lastDate,
+    this.value,
     this.months = 1,
     this.onChanged,
     this.firstWeekday,
     this.minDayWidth = 36,
-  }) : assert(minDayWidth > 0);
+  }) : assert(minDayWidth > 0),
+       assert(
+         controller != null || (firstDate != null && lastDate != null),
+         'Without a controller, a calendar takes a firstDate and a lastDate.',
+       ),
+       assert(
+         controller == null ||
+             (firstDate == null && lastDate == null && value == null),
+         'A controller holds the limits and the choice: give them to it.',
+       );
 
-  /// What is chosen, the month shown and the limits; the caller disposes it.
-  final RawCalendarController controller;
+  /// What is chosen, the month shown and the limits, for a caller that sets or
+  /// reads them from outside (a range, a set of days). The caller makes it and
+  /// disposes it; the calendar only listens. Null: the calendar keeps a
+  /// controller of its own for one day between [firstDate] and [lastDate], and
+  /// disposes it.
+  final RawCalendarController? controller;
+
+  /// The first and last days that can be chosen, when no [controller] is
+  /// handed in.
+  final DateTime? firstDate, lastDate;
+
+  /// The chosen day when no [controller] is handed in; a new value chooses it
+  /// and turns to its month.
+  final DateTime? value;
 
   /// How many months stand side by side.
   final int months;
 
-  /// Called with the day the user chooses; read the whole choice (a range,
-  /// the days) from [controller].
+  /// Called with the day the user chooses. With a [controller], read the
+  /// whole choice (a range, the days) from it.
   final ValueChanged<DateTime>? onChanged;
 
   /// The week's first day (`DateTime.monday`..`sunday`); null starts it where
@@ -702,7 +833,10 @@ class RetroDesktopCalendar extends StatelessWidget {
   static const double _monthGap = 16;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => _CalendarHost(this);
+
+  // The calendar over [controller], the handed-in one or its own.
+  Widget _draw(BuildContext context, RawCalendarController controller) {
     final t = RetroDesktopTheme.of(context);
     // Seven days reach a finger's width on a phone only with a narrow margin.
     final pad = RetroDesktopReach.least(context) >= 44 ? 4.0 : 8.0;
@@ -773,8 +907,23 @@ class RetroDesktopCalendar extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(
-        DiagnosticsProperty<RawCalendarController>('controller', controller),
+        DiagnosticsProperty<RawCalendarController>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
       )
+      ..add(
+        DiagnosticsProperty<DateTime>(
+          'firstDate',
+          firstDate,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<DateTime>('lastDate', lastDate, defaultValue: null),
+      )
+      ..add(DiagnosticsProperty<DateTime>('value', value, defaultValue: null))
       ..add(IntProperty('months', months, defaultValue: 1))
       ..add(
         ObjectFlagProperty<ValueChanged<DateTime>>.has('onChanged', onChanged),
@@ -784,11 +933,90 @@ class RetroDesktopCalendar extends StatelessWidget {
   }
 }
 
+// A calendar's controller: the handed-in one, or one of its own for a single
+// day between the calendar's first and last dates, disposed with it.
+class _CalendarHost extends StatefulWidget {
+  const _CalendarHost(this.calendar);
+
+  final RetroDesktopCalendar calendar;
+
+  @override
+  State<_CalendarHost> createState() => _CalendarHostState();
+}
+
+class _CalendarHostState extends State<_CalendarHost> {
+  RawCalendarController? _own;
+
+  RawCalendarController get _controller => widget.calendar.controller ?? _own!;
+
+  RawCalendarController _make(DateTime? chosen, {DateTime? month}) =>
+      RawCalendarController(
+        firstDate: widget.calendar.firstDate!,
+        lastDate: widget.calendar.lastDate!,
+        selectedDate: chosen,
+        initialMonth: month,
+      );
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.calendar.controller == null) {
+      _own = _make(widget.calendar.value);
+    }
+  }
+
+  @override
+  void didUpdateWidget(_CalendarHost oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final now = widget.calendar, was = oldWidget.calendar;
+    final own = _own;
+    if (now.controller != null) {
+      own?.dispose();
+      _own = null;
+      return;
+    }
+    if (own == null ||
+        now.firstDate != was.firstDate ||
+        now.lastDate != was.lastDate) {
+      // A new one of its own for the new limits, keeping the choice and the
+      // shown month; a new value is chosen and shown instead.
+      final from = was.controller ?? own!;
+      final moved = !DateUtils.isSameDay(now.value, was.value);
+      _own = _make(
+        moved ? now.value : from.selectedDate,
+        month: moved ? now.value ?? from.month : from.month,
+      );
+      own?.dispose();
+      return;
+    }
+    final value = now.value;
+    if (!DateUtils.isSameDay(value, was.value) &&
+        !DateUtils.isSameDay(value, own.selectedDate)) {
+      if (value == null) {
+        own.clear();
+      } else {
+        own.focus(value, months: now.months);
+        own.select(value);
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _own?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) =>
+      widget.calendar._draw(context, _controller);
+}
+
 /// A stretch of days: the range read out above two months (one on a phone),
 /// its ends lit and the days between tinted, the hover's range previewed.
 ///
 /// ```dart
-/// RetroDesktopDateRangePicker(label: 'Stay', firstDate: DateTime(2026), lastDate: DateTime(2027), onChanged: (_) {})
+/// RetroDesktopDateRangePicker(labelText: 'Stay', firstDate: DateTime(2026), lastDate: DateTime(2027), onChanged: (_) {})
 /// ```
 class RetroDesktopDateRangePicker extends StatefulWidget {
   /// Creates a [RetroDesktopDateRangePicker].
@@ -798,7 +1026,7 @@ class RetroDesktopDateRangePicker extends StatefulWidget {
     required this.lastDate,
     this.value,
     this.onChanged,
-    this.label,
+    this.labelText,
     this.initialMonth,
   });
 
@@ -812,7 +1040,7 @@ class RetroDesktopDateRangePicker extends StatefulWidget {
   final ValueChanged<RawDateRange?>? onChanged;
 
   /// The words above the readout.
-  final String? label;
+  final String? labelText;
 
   /// The month shown first.
   final DateTime? initialMonth;
@@ -835,7 +1063,7 @@ class RetroDesktopDateRangePicker extends StatefulWidget {
           onChanged,
         ),
       )
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
       ..add(
         DiagnosticsProperty<DateTime>(
           'initialMonth',
@@ -879,9 +1107,9 @@ class _RangePickerState extends State<RetroDesktopDateRangePicker> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              if (widget.label != null)
+              if (widget.labelText != null)
                 ExcludeSemantics(
-                  child: Text(widget.label!, style: t.type.body),
+                  child: Text(widget.labelText!, style: t.textTheme.body),
                 ),
               Padding(
                 padding: const EdgeInsets.symmetric(
@@ -891,7 +1119,7 @@ class _RangePickerState extends State<RetroDesktopDateRangePicker> {
                   liveRegion: true,
                   child: Text(
                     readout,
-                    style: t.type.chrome.copyWith(color: t.colors.text),
+                    style: t.textTheme.chrome.copyWith(color: t.colors.text),
                   ),
                 ),
               ),

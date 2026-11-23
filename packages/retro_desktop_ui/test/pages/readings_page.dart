@@ -13,7 +13,7 @@ class ReadingsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = RetroDesktopTheme.of(context);
     return RetroDesktopScaffold(
-      topBar: const RetroDesktopAppBar(title: 'Right now'),
+      appBar: const RetroDesktopAppBar(title: 'Right now'),
       body: RetroDesktopDesktop(
         active: 'Right now',
         tiles: [
@@ -82,7 +82,7 @@ class ReadingsPage extends StatelessWidget {
                     RetroDesktopReadingHead(
                       value: '28',
                       title: 'Good',
-                      note: 'Nothing to mention today.',
+                      subtitle: 'Nothing to mention today.',
                     ),
                     RetroDesktopScaleBar(
                       at: .14,
@@ -94,7 +94,7 @@ class ReadingsPage extends StatelessWidget {
                       ],
                     ),
                     RetroDesktopDivider.etched(),
-                    RetroDesktopPartHead('Last 5 days', note: 'index'),
+                    RetroDesktopPartHead('Last 5 days', subtitle: 'index'),
                     RetroDesktopDayBars(
                       values: [41, 52, 33, 24, 28],
                       labels: [
@@ -127,7 +127,7 @@ class ReadingsPage extends StatelessWidget {
                       value: '8',
                       unit: '°',
                       title: 'Showers',
-                      note: 'Clearing by 14:00',
+                      subtitle: 'Clearing by 14:00',
                       reads: [
                         ('High', '11°', null),
                         ('Low', '4°', null),
@@ -146,8 +146,8 @@ class ReadingsPage extends StatelessWidget {
                         children: [
                           RetroDesktopPartHead(
                             'Next 6 hours',
-                            note: 'sky, °C, rain %',
-                            open: true,
+                            subtitle: 'sky, °C, rain %',
+                            isExpanded: true,
                           ),
                           RetroDesktopHourStrip(
                             hours: [

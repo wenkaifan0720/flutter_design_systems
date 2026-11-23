@@ -130,8 +130,11 @@ void main() {
           ),
         ),
         'Code field': (
-          (enabled) =>
-              RetroDesktopInputOtp(label: 'Code', length: 4, enabled: enabled),
+          (enabled) => RetroDesktopInputOtp(
+            labelText: 'Code',
+            length: 4,
+            enabled: enabled,
+          ),
           find.descendant(
             of: find.byType(RetroDesktopInputOtp),
             matching: find.byType(Center),

@@ -68,7 +68,7 @@ void main() {
       'row, long',
       () => RetroDesktopCheckRow(
         label: long,
-        note: longLine,
+        subtitle: longLine,
         value: true,
         onChanged: (_) {},
       ),
@@ -200,9 +200,9 @@ void main() {
       'with notes',
       () => const RetroDesktopChoices(
         options: [
-          RetroDesktopChoice('Near Mint', note: 'Minimal sleeve lines'),
-          RetroDesktopChoice('Light Marks', note: 'Sharp corners'),
-          RetroDesktopChoice('Play Wear', note: 'Some'),
+          RetroDesktopChoice('Near Mint', subtitle: 'Minimal sleeve lines'),
+          RetroDesktopChoice('Light Marks', subtitle: 'Sharp corners'),
+          RetroDesktopChoice('Play Wear', subtitle: 'Some'),
         ],
         value: 'Play Wear',
       ),
@@ -252,7 +252,7 @@ void main() {
       () => const RetroDesktopNumberField(
         value: 1204,
         unit: 'people',
-        note: longLine,
+        helperText: longLine,
         max: 1204,
       ),
     );
@@ -340,7 +340,7 @@ void main() {
       tester,
       390,
       const RetroDesktopTextField(
-        hint: 'A name',
+        hintText: 'A name',
         trailing: Icon(LucideIcons.search, size: 18),
       ),
     );

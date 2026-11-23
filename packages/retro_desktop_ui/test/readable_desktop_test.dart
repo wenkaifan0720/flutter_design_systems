@@ -111,9 +111,9 @@ void main() {
                       onChanged: (value) => update(() => chosen = value),
                     ),
                     const RetroDesktopInputGroup(
-                      label: 'Site',
+                      labelText: 'Site',
                       prefix: 'https://',
-                      hint: 'studio',
+                      hintText: 'studio',
                       suffix: '.example.com',
                     ),
                   ],
@@ -211,7 +211,7 @@ void main() {
       );
       final email = find.descendant(
         of: find.byWidgetPredicate(
-          (w) => w is RetroDesktopTextField && w.label == 'Email address',
+          (w) => w is RetroDesktopTextField && w.labelText == 'Email address',
         ),
         matching: find.byType(EditableText),
       );

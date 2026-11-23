@@ -20,6 +20,7 @@ export 'src/retro_desktop/frames.dart';
 export 'src/retro_desktop/internal/actions.dart';
 export 'src/retro_desktop/internal/caps.dart';
 export 'src/retro_desktop/internal/face.dart';
+export 'src/retro_desktop/internal/field_hooks.dart';
 export 'src/retro_desktop/internal/marks.dart';
 export 'src/retro_desktop/internal/modal.dart';
 export 'src/retro_desktop/internal/parts.dart';

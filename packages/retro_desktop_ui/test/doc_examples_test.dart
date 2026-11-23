@@ -141,7 +141,7 @@ void main() {
         const Widget hero = SizedBox();
         const Widget list = SizedBox();
         return const RetroDesktopScaffold(
-          topBar: RetroDesktopAppBar(title: 'Today'),
+          appBar: RetroDesktopAppBar(title: 'Today'),
           body: RetroDesktopDesktop(
             active: 'Today',
             tiles: [
@@ -168,7 +168,7 @@ void main() {
       ),
       'RetroDesktopInput': (context) => RetroDesktopInput(
         key: const ValueKey('name'),
-        hint: 'Your name',
+        hintText: 'Your name',
         onChanged: (text) {},
       ),
       'RetroDesktopMedia': (context) => const RetroDesktopMedia(
@@ -220,7 +220,7 @@ void main() {
         onPressed: () {},
       ),
       'RetroDesktopTextField': (context) => const RetroDesktopTextField(
-        hint: 'Search 40 notes',
+        hintText: 'Search 40 notes',
         leading: Icon(RetroDesktopGlyphs.search),
         trailing: RetroDesktopKbd('/'),
       ),
@@ -239,7 +239,7 @@ void main() {
         void setState(VoidCallback change) => change();
         return RetroDesktopCheckRow(
           label: 'Sync on start',
-          note: 'Over any network',
+          subtitle: 'Over any network',
           value: on,
           onChanged: (v) => setState(() => on = v),
         );
@@ -259,10 +259,14 @@ void main() {
       'RetroDesktopDisclosure': (context) {
         const Widget table = SizedBox();
         return const RetroDesktopDisclosure(
-          note: '18 parts',
+          subtitle: '18 parts',
           title: 'Cut list',
           child: table,
         );
+      },
+      'RetroDesktopToaster': (context) {
+        const Widget app = SizedBox();
+        return const RetroDesktopToaster(child: app);
       },
       'RetroDesktopChoiceBox': (context) => RetroDesktopChoiceBox(
         onPressed: () {},
@@ -272,7 +276,7 @@ void main() {
       'RetroDesktopChoices': (context) => RetroDesktopChoices(
         options: const [
           RetroDesktopChoice('All'),
-          RetroDesktopChoice('Near mint', note: 'Sharp corners'),
+          RetroDesktopChoice('Near mint', subtitle: 'Sharp corners'),
         ],
         onChanged: (v) {},
         value: 'All',
@@ -316,15 +320,17 @@ void main() {
           contextMenuBuilder: RetroDesktopTextContextMenu.editable,
         ),
       ),
-      'RetroDesktopSearchField': (context) =>
-          RetroDesktopSearchField(hint: 'Search documents', onChanged: (_) {}),
+      'RetroDesktopSearchField': (context) => RetroDesktopSearchField(
+        hintText: 'Search documents',
+        onChanged: (_) {},
+      ),
       'RetroDesktopInputOtp': (context) => RetroDesktopInputOtp(
-        label: 'Verification code',
+        labelText: 'Verification code',
         length: 6,
         onCompleted: (_) {},
       ),
       'RetroDesktopSelect': (context) => RetroDesktopSelect(
-        label: 'Sort by',
+        labelText: 'Sort by',
         value: 'name',
         options: const [
           RetroDesktopOption('name', 'Name'),
@@ -340,11 +346,11 @@ void main() {
       'RetroDesktopSwitchRow': (context) => RetroDesktopSwitchRow(
         label: 'Notifications',
         value: true,
-        note: 'Show desktop alerts',
+        subtitle: 'Show desktop alerts',
         onChanged: (_) {},
       ),
       'RetroDesktopRadioGroup': (context) => RetroDesktopRadioGroup(
-        label: 'Appearance',
+        labelText: 'Appearance',
         value: 'day',
         options: const [
           RetroDesktopRadio('day', 'Day'),
@@ -364,28 +370,28 @@ void main() {
       'RetroDesktopSlider': (context) =>
           RetroDesktopSlider(label: 'Volume', value: .5, onChanged: (_) {}),
       'RetroDesktopTextArea': (context) => const RetroDesktopTextArea(
-        label: 'Notes',
-        hint: 'Anything the courier should know',
+        labelText: 'Notes',
+        hintText: 'Anything the courier should know',
         lines: 4,
       ),
       'RetroDesktopPasswordField': (context) =>
-          RetroDesktopPasswordField(label: 'Password', onChanged: (_) {}),
+          RetroDesktopPasswordField(labelText: 'Password', onChanged: (_) {}),
       'RetroDesktopInputGroup': (context) => const RetroDesktopInputGroup(
-        label: 'Site',
+        labelText: 'Site',
         prefix: 'https://',
         suffix: '.example.com',
-        hint: 'studio',
+        hintText: 'studio',
       ),
       'RetroDesktopCombobox': (context) => RetroDesktopCombobox<String>(
-        label: 'Country',
+        labelText: 'Country',
         options: const ['Austria', 'Belgium', 'Chile'],
         onSelected: (_) {},
       ),
       'RetroDesktopFormField': (context) => const RetroDesktopFormField(
-        label: 'Email',
-        help: 'We send the receipt here',
+        labelText: 'Email',
+        helperText: 'We send the receipt here',
         required: true,
-        child: RetroDesktopTextField(hint: 'name@example.com'),
+        child: RetroDesktopTextField(hintText: 'name@example.com'),
       ),
       'Text': (context) => Text(RetroDesktopFormat.number(1200)),
       'RetroDesktopWindowScope': (context) => const RetroDesktopWindowScope(
@@ -409,7 +415,7 @@ void main() {
       },
       'RetroDesktopToolbar': (context) => RetroDesktopToolbar(
         children: [
-          const Expanded(child: RetroDesktopTextField(hint: 'Search')),
+          const Expanded(child: RetroDesktopTextField(hintText: 'Search')),
           RetroDesktopButton(
             'New',
             isDefaultAction: true,
@@ -473,7 +479,7 @@ void main() {
         final t = RetroDesktopTheme.of(context);
         return RetroDesktopText(
           'Read *The Lamp Room*, ch. 3 to 4',
-          style: t.type.row,
+          style: t.textTheme.row,
         );
       },
       'RetroDesktopEyebrow': (context) =>
@@ -482,7 +488,7 @@ void main() {
           const RetroDesktopHeadline('4 left today'),
       'RetroDesktopSectionHeader': (context) => const RetroDesktopSectionHeader(
         'Storage and sync',
-        note: 'All changes saved',
+        subtitle: 'All changes saved',
         trailing: RetroDesktopButton(
           'Manage',
           size: RetroDesktopButtonSize.small,
@@ -490,8 +496,8 @@ void main() {
       ),
       'RetroDesktopPartHead': (context) => const RetroDesktopPartHead(
         'Next 12 hours',
-        note: 'sky, °C, rain %',
-        open: true,
+        subtitle: 'sky, °C, rain %',
+        isExpanded: true,
       ),
       'RetroDesktopLabel': (context) => const RetroDesktopLabel('Notebook'),
       'RetroDesktopMonogram': (context) => const RetroDesktopMonogram('AC'),
@@ -584,7 +590,7 @@ void main() {
           const RetroDesktopPreview(child: Text('A page preview')),
       'RetroDesktopScaffold 2': (context) => const RetroDesktopScaffold(
         scroll: false,
-        topBar: RetroDesktopAppBar(title: 'Components'),
+        appBar: RetroDesktopAppBar(title: 'Components'),
         body: RetroDesktopInventoryGallery(),
       ),
       'RetroDesktopReach': (context) =>
@@ -622,7 +628,7 @@ void main() {
       ),
       'RetroDesktopBalancedText': (context) => RetroDesktopBalancedText(
         'A carefully balanced heading',
-        style: RetroDesktopTheme.of(context).type.head,
+        style: RetroDesktopTheme.of(context).textTheme.head,
       ),
       'RetroDesktopBeside': (context) => RetroDesktopBeside(
         object: const Icon(RetroDesktopGlyphs.folder),
@@ -682,27 +688,18 @@ void main() {
         max: 100,
         onChanged: (_) {},
       ),
-      'RetroDesktopColorPicker': (context) {
-        final example = RetroDesktopColorPicker(
-          controller: RawColorController(
-            RetroDesktopTheme.of(context).colors.highlight,
-          ),
-        );
-        addTearDown(example.controller.dispose);
-        return example;
-      },
-      'RetroDesktopCalendar': (context) {
-        final example = RetroDesktopCalendar(
-          controller: RawCalendarController(
-            firstDate: DateTime(2026),
-            lastDate: DateTime(2027),
-          ),
-        );
-        addTearDown(example.controller.dispose);
-        return example;
-      },
+      'RetroDesktopColorPicker': (context) => RetroDesktopColorPicker(
+        value: RetroDesktopTheme.of(context).colors.highlight,
+        onChanged: (color) {},
+      ),
+      'RetroDesktopCalendar': (context) => RetroDesktopCalendar(
+        firstDate: DateTime(2026),
+        lastDate: DateTime(2027),
+        value: DateTime(2026, 11, 6),
+        onChanged: (day) {},
+      ),
       'RetroDesktopDateRangePicker': (context) => RetroDesktopDateRangePicker(
-        label: 'Stay',
+        labelText: 'Stay',
         firstDate: DateTime(2026),
         lastDate: DateTime(2027),
         onChanged: (_) {},
@@ -993,7 +990,7 @@ void main() {
         rows: [
           RetroDesktopListTableRow(
             title: 'A note',
-            note: 'Where it is',
+            subtitle: 'Where it is',
             cells: [('09:14', 'today')],
           ),
         ],
@@ -1015,17 +1012,22 @@ void main() {
           RetroDesktopFolder(
             'Workshop',
             icon: RetroDesktopGlyphs.hammer,
-            note: '9 notes',
+            subtitle: '9 notes',
             selected: true,
           ),
         ],
       ),
       'RetroDesktopFileGrid': (context) => const RetroDesktopFileGrid(
-        items: [RetroDesktopFile('plan.pdf', kind: 'PDF', note: '2 pages')],
+        items: [RetroDesktopFile('plan.pdf', kind: 'PDF', subtitle: '2 pages')],
       ),
       'RetroDesktopTreeBars': (context) => const RetroDesktopTreeBars(
         rows: [
-          RetroDesktopTreeRow('Pictures', '538 MB', share: .39, open: true),
+          RetroDesktopTreeRow(
+            'Pictures',
+            '538 MB',
+            share: .39,
+            isExpanded: true,
+          ),
           RetroDesktopTreeRow('Scans', '412 MB', share: .3, level: 1),
         ],
         totalName: 'Total',
@@ -1070,14 +1072,14 @@ void main() {
         value: '8',
         unit: '°',
         title: 'Showers',
-        note: 'Clearing by 14:00',
+        subtitle: 'Clearing by 14:00',
         reads: [('High', '11°', null)],
         summary: 'Dry and bright from 14:00.',
       ),
       'RetroDesktopReadingHead': (context) => const RetroDesktopReadingHead(
         value: '28',
         title: 'Good',
-        note: 'Main pollutant: ozone.',
+        subtitle: 'Main pollutant: ozone.',
       ),
       'RetroDesktopBanner': (context) => const RetroDesktopBanner(
         title: 'Saved',

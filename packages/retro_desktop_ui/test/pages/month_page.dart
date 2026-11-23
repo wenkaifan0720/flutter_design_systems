@@ -12,7 +12,7 @@ class MonthPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return RetroDesktopScaffold(
-      topBar: const RetroDesktopAppBar(title: 'March 2026'),
+      appBar: const RetroDesktopAppBar(title: 'March 2026'),
       body: RetroDesktopDesktop(
         active: 'March 2026',
         tiles: [

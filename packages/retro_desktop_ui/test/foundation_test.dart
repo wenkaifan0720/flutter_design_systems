@@ -5,6 +5,7 @@ import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:retro_desktop_ui/retro_desktop_ui.dart';
+import 'package:retro_desktop_ui/src/retro_desktop/internal/field_hooks.dart';
 
 // The focus rings a part's highlight painters will draw (claimed fallbacks
 // excluded): the ring follows the part's outline, outside it.
@@ -155,7 +156,7 @@ void main() {
           return const Center(
             child: SizedBox(
               width: 220,
-              child: RetroDesktopTextField(hint: 'Name'),
+              child: RetroDesktopTextField(hintText: 'Name'),
             ),
           );
         },
@@ -204,10 +205,7 @@ void main() {
               child: Center(
                 child: SizedBox(
                   width: 320,
-                  child: RetroDesktopTextField(
-                    label: 'Drawn title',
-                    hint: 'Drawn placeholder',
-                    error: 'Error words',
+                  child: RetroDesktopFieldHooks(
                     nameOnly: true,
                     decorate: (input) => Semantics(
                       key: inputKey,
@@ -219,11 +217,16 @@ void main() {
                       liveRegion: true,
                       child: error,
                     ),
-                    onEditingComplete: () => completed++,
-                    trailing: RetroDesktopIconButton(
-                      Icons.clear,
-                      label: 'Separate action',
-                      onPressed: () {},
+                    child: RetroDesktopTextField(
+                      labelText: 'Drawn title',
+                      hintText: 'Drawn placeholder',
+                      errorText: 'Error words',
+                      onEditingComplete: () => completed++,
+                      trailing: RetroDesktopIconButton(
+                        Icons.clear,
+                        label: 'Separate action',
+                        onPressed: () {},
+                      ),
                     ),
                   ),
                 ),
@@ -387,7 +390,7 @@ void main() {
             child: RetroDesktopPressable(
               onPressed: () {},
               selected: true,
-              error: true,
+              isError: true,
               statesController: states,
               builder: (context, value) {
                 seen = value;
@@ -466,7 +469,10 @@ void main() {
             child: Center(
               child: SizedBox(
                 width: 300,
-                child: RetroDesktopTextField(label: 'Name', focusNode: focus),
+                child: RetroDesktopTextField(
+                  labelText: 'Name',
+                  focusNode: focus,
+                ),
               ),
             ),
           ),

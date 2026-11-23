@@ -23,7 +23,8 @@ const appearances = <String, RetroDesktopAppearance>{
 
 /// Each appearance's shapes, by the appearance's name.
 final families = <String, RetroDesktopShapes>{
-  for (final f in appearances.entries) f.key: RetroDesktopShapes.of(f.value),
+  for (final f in appearances.entries)
+    f.key: RetroDesktopShapes.forAppearance(f.value),
 };
 
 // The source barrel is scanned, rather than a gallery-only inventory. A newly
@@ -237,11 +238,11 @@ final helpers = <String, Widget Function(BuildContext)>{
     children: [
       RetroDesktopText(
         'Ordinary *text*',
-        style: RetroDesktopTheme.of(context).type.body,
+        style: RetroDesktopTheme.of(context).textTheme.body,
       ),
       RetroDesktopBalancedText(
         'Balanced heading',
-        style: RetroDesktopTheme.of(context).type.head,
+        style: RetroDesktopTheme.of(context).textTheme.head,
       ),
       const RetroDesktopEqualRow(
         flex: [1, 1],
@@ -346,7 +347,7 @@ void main() {
                     onChanged: (_) {},
                   ),
                   RetroDesktopRadioGroup<String>(
-                    label: 'Save',
+                    labelText: 'Save',
                     value: 'local',
                     options: const [
                       RetroDesktopRadio('local', 'Local'),
@@ -490,7 +491,7 @@ void main() {
               child: SizedBox(
                 width: 320,
                 child: RetroDesktopSelect<String>(
-                  label: 'Storage',
+                  labelText: 'Storage',
                   value: 'local',
                   onChanged: (_) {},
                   options: const [

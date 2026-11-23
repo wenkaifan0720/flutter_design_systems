@@ -68,7 +68,7 @@ class _Type extends StatelessWidget {
   const _Type();
   @override
   Widget build(BuildContext context) {
-    final t = RetroDesktopTheme.of(context).type;
+    final t = RetroDesktopTheme.of(context).textTheme;
     return RetroDesktopColumn(
       gap: 8,
       children: [
@@ -101,7 +101,7 @@ class _Swatches extends StatelessWidget {
       ('Ink', c.text),
     ];
     // As many columns as the longest name fits whole (at twice the text size four broke "Window" in two).
-    final meta = RetroDesktopTheme.of(context).type.meta;
+    final meta = RetroDesktopTheme.of(context).textTheme.meta;
     final scaler = MediaQuery.textScalerOf(context);
     final widest = colours.fold(0.0, (w, e) {
       final p = TextPainter(

@@ -98,7 +98,7 @@ void main() {
 
       test('$name builds its own appearance, the same value each time', () {
         expect(t.id, id);
-        expect(t.dark, b == Brightness.dark);
+        expect(t.brightness, b);
         expect(identical(t, RetroDesktopThemeData.preset(id, b)), isTrue);
       });
 
@@ -137,7 +137,7 @@ void main() {
       test('$name edges and marks read on the page', () {
         _reads('edges', {'ctl': c.control}, page, _edge);
         // By night a window's frame is ctl: its edge is the shadow around it.
-        if (!c.dark) {
+        if (c.brightness != Brightness.dark) {
           expect(
             _contrast(c.outline, c.platinum),
             greaterThanOrEqualTo(_edge),

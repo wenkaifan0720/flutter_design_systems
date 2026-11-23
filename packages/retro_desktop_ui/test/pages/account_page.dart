@@ -12,7 +12,7 @@ class AccountPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return RetroDesktopScaffold(
-      topBar: const RetroDesktopAppBar(title: 'Your details'),
+      appBar: const RetroDesktopAppBar(title: 'Your details'),
       body: RetroDesktopDesktop(
         active: 'Your details',
         tiles: [
@@ -29,7 +29,7 @@ class AccountPage extends StatelessWidget {
                       object: const RetroDesktopMonogram('YN'),
                       child: const RetroDesktopSectionHeader(
                         'Your name',
-                        note: 'Member since 2019',
+                        subtitle: 'Member since 2019',
                       ),
                     ),
                     RetroDesktopGroupBox(
@@ -39,19 +39,19 @@ class AccountPage extends StatelessWidget {
                         gap: 12,
                         children: [
                           const RetroDesktopFormField(
-                            label: 'Name',
+                            labelText: 'Name',
                             child: RetroDesktopTextField(initial: 'Your name'),
                           ),
                           const RetroDesktopFormField(
-                            label: 'Email',
-                            help: 'Only for your receipts',
+                            labelText: 'Email',
+                            helperText: 'Only for your receipts',
                             child: RetroDesktopTextField(
-                              hint: 'you@example.com',
+                              hintText: 'you@example.com',
                               leading: Icon(LucideIcons.mail),
                             ),
                           ),
                           RetroDesktopFormField(
-                            label: 'Region',
+                            labelText: 'Region',
                             child: RetroDesktopPopupButton(
                               'Pick one',
                               onPressed: onSave,
@@ -64,9 +64,15 @@ class AccountPage extends StatelessWidget {
                       title: 'How often',
                       child: RetroDesktopChoices(
                         options: const [
-                          RetroDesktopChoice('Every day', note: 'At nine'),
-                          RetroDesktopChoice('Every week', note: 'On Monday'),
-                          RetroDesktopChoice('Never', note: 'Only when asked'),
+                          RetroDesktopChoice('Every day', subtitle: 'At nine'),
+                          RetroDesktopChoice(
+                            'Every week',
+                            subtitle: 'On Monday',
+                          ),
+                          RetroDesktopChoice(
+                            'Never',
+                            subtitle: 'Only when asked',
+                          ),
                         ],
                         onChanged: (_) {},
                         value: 'Every week',
@@ -96,7 +102,7 @@ class AccountPage extends StatelessWidget {
                   children: [
                     RetroDesktopCheckRow(
                       label: 'Before something is due',
-                      note: 'An hour ahead',
+                      subtitle: 'An hour ahead',
                       value: true,
                       onChanged: (_) {},
                     ),
@@ -109,7 +115,7 @@ class AccountPage extends StatelessWidget {
                     const RetroDesktopNumberField(
                       value: 2,
                       unit: 'reminders a day',
-                      note: 'Up to 5',
+                      helperText: 'Up to 5',
                     ),
                   ],
                 ),

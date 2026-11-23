@@ -41,7 +41,7 @@ void main() {
                         child: SizedBox(
                           width: 320,
                           child: RetroDesktopTextField(
-                            label: 'Name',
+                            labelText: 'Name',
                             initial: 'Ada Lovelace',
                           ),
                         ),

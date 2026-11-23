@@ -454,7 +454,7 @@ class _MenuBarSampleState extends State<_MenuBarSample> {
           ),
       ],
       child: RetroDesktopScaffold(
-        topBar: RetroDesktopAppBar(title: kitTabs[_active].label),
+        appBar: RetroDesktopAppBar(title: kitTabs[_active].label),
         body: Text('The ${kitTabs[_active].label} page, under the menu bar.'),
       ),
     ),
@@ -521,9 +521,7 @@ class _ThemeChangeState extends State<_ThemeChange> {
   @override
   Widget build(BuildContext context) {
     final base = RetroDesktopTheme.of(context);
-    final berry = RetroDesktopThemeData.berry(
-      base.colors.dark ? Brightness.dark : Brightness.light,
-    ).colors;
+    final berry = RetroDesktopThemeData.berry(base.colors.brightness).colors;
     // At once (its default), as every state of the look changes: a colour that fades between two themes
     // half-animates.
     return AnimatedRetroDesktopTheme(
@@ -557,9 +555,9 @@ class _PagePreview extends StatelessWidget {
       child: RetroDesktopPreview(
         light: kitTheme(Brightness.light),
         dark: kitTheme(Brightness.dark),
-        brightness: t.colors.dark ? Brightness.dark : Brightness.light,
+        brightness: t.colors.brightness,
         child: const RetroDesktopScaffold(
-          topBar: RetroDesktopAppBar(title: 'Notes'),
+          appBar: RetroDesktopAppBar(title: 'Notes'),
           body: Column(
             children: [
               RetroDesktopListTile(title: 'Project notes', subtitle: 'Today'),
@@ -955,7 +953,7 @@ class CustomizePanel extends StatelessWidget {
             SizedBox(
               width: 200,
               child: RetroDesktopSelect<String>(
-                label: 'Preset',
+                labelText: 'Preset',
                 value: preset,
                 options: [
                   for (final id in RetroDesktopThemeData.presets)
@@ -1025,7 +1023,7 @@ class CustomizePanel extends StatelessWidget {
           SizedBox(
             width: 240,
             child: RetroDesktopSelect<String>(
-              label: 'Your own colours',
+              labelText: 'Your own colours',
               value: c.colours?.name ?? '',
               options: [
                 const RetroDesktopOption('', 'The preset'),
@@ -1064,7 +1062,10 @@ class _Labelled extends StatelessWidget {
         ExcludeSemantics(
           child: Padding(
             padding: const EdgeInsets.only(bottom: 6),
-            child: Text(text, style: RetroDesktopTheme.of(context).type.body),
+            child: Text(
+              text,
+              style: RetroDesktopTheme.of(context).textTheme.body,
+            ),
           ),
         ),
         ConstrainedBox(

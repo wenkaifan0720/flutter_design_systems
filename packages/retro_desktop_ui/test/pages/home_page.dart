@@ -18,7 +18,7 @@ class HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = RetroDesktopTheme.of(context);
     return RetroDesktopScaffold(
-      who: 'YN',
+      initials: 'YN',
       utility: const [
         RetroDesktopUtility(
           'Saved 09:18',
@@ -27,7 +27,7 @@ class HomePage extends StatelessWidget {
         ),
         RetroDesktopUtility('Wed 09:20'),
       ],
-      topBar: const RetroDesktopAppBar(title: 'Today'),
+      appBar: const RetroDesktopAppBar(title: 'Today'),
       body: RetroDesktopDesktop(
         active: 'Today',
         whole: true,
@@ -63,7 +63,7 @@ class HomePage extends StatelessWidget {
                     RetroDesktopFolder(
                       'First folder',
                       icon: LucideIcons.star,
-                      note: '12 items',
+                      subtitle: '12 items',
                       onPressed: onOpen,
                       art: const RetroDesktopFolderArt(
                         selected: false,
@@ -73,7 +73,7 @@ class HomePage extends StatelessWidget {
                     RetroDesktopFolder(
                       'Second folder',
                       icon: LucideIcons.hammer,
-                      note: '9 items',
+                      subtitle: '9 items',
                       selected: true,
                       onPressed: onOpen,
                       art: const RetroDesktopFolderArt(
@@ -84,7 +84,7 @@ class HomePage extends StatelessWidget {
                     RetroDesktopFolder(
                       'Third folder',
                       icon: LucideIcons.mail,
-                      note: '7 items',
+                      subtitle: '7 items',
                       onPressed: onOpen,
                       art: const RetroDesktopFolderArt(
                         selected: false,
@@ -94,7 +94,7 @@ class HomePage extends StatelessWidget {
                     RetroDesktopFolder(
                       'Fourth folder',
                       icon: LucideIcons.bookOpen,
-                      note: '5 items',
+                      subtitle: '5 items',
                       onPressed: onOpen,
                       art: const RetroDesktopFolderArt(
                         selected: false,
@@ -104,7 +104,7 @@ class HomePage extends StatelessWidget {
                     RetroDesktopFolder(
                       'Fifth folder',
                       icon: LucideIcons.house,
-                      note: '4 items',
+                      subtitle: '4 items',
                       onPressed: onOpen,
                       art: const RetroDesktopFolderArt(
                         selected: false,
@@ -114,7 +114,7 @@ class HomePage extends StatelessWidget {
                     RetroDesktopFolder(
                       'Sixth folder',
                       icon: LucideIcons.pencil,
-                      note: '3 items',
+                      subtitle: '3 items',
                       onPressed: onOpen,
                       art: const RetroDesktopFolderArt(
                         selected: false,
@@ -130,7 +130,7 @@ class HomePage extends StatelessWidget {
                   children: [
                     const RetroDesktopSectionHeader(
                       'Your files',
-                      note: 'All changes saved',
+                      subtitle: 'All changes saved',
                       leading: RetroDesktopDeskArt(
                         RetroDesktopDeskMark.disk,
                         size: 40,
@@ -172,7 +172,7 @@ class HomePage extends StatelessWidget {
                   children: [
                     const Expanded(
                       child: RetroDesktopTextField(
-                        hint: 'Search everything',
+                        hintText: 'Search everything',
                         leading: Icon(LucideIcons.search),
                         trailing: RetroDesktopKbd('Ctrl K'),
                       ),
@@ -323,7 +323,7 @@ class HomePage extends StatelessWidget {
                   rows: [
                     RetroDesktopListTableRow(
                       title: 'A pinned item',
-                      note: 'First folder',
+                      subtitle: 'First folder',
                       icon: LucideIcons.pin,
                       selected: true,
                       cells: const [('Pinned', null)],
@@ -331,19 +331,19 @@ class HomePage extends StatelessWidget {
                     ),
                     RetroDesktopListTableRow(
                       title: 'The one from this morning',
-                      note: 'Second folder',
+                      subtitle: 'Second folder',
                       cells: const [('09:14', 'today')],
                       onPressed: onOpen,
                     ),
                     RetroDesktopListTableRow(
                       title: 'Something from yesterday',
-                      note: 'Third folder',
+                      subtitle: 'Third folder',
                       cells: const [('18:05', 'yesterday')],
                       onPressed: onOpen,
                     ),
                     RetroDesktopListTableRow(
                       title: 'One from earlier this week',
-                      note: 'First folder',
+                      subtitle: 'First folder',
                       cells: const [('16:30', 'Thursday')],
                       onPressed: onOpen,
                     ),

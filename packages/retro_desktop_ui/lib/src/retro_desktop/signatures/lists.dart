@@ -241,7 +241,7 @@ class RetroDesktopListTableRow {
   /// Creates a [RetroDesktopListTableRow].
   const RetroDesktopListTableRow({
     required this.title,
-    this.note,
+    this.subtitle,
     this.icon = RetroDesktopGlyphs.fileText,
     this.selected = false,
     this.cells = const [],
@@ -253,7 +253,7 @@ class RetroDesktopListTableRow {
   final String title;
 
   /// Supporting text shown with the main content.
-  final String? note;
+  final String? subtitle;
 
   /// The glyph shown with the content.
   final IconData icon;
@@ -285,7 +285,7 @@ class _HeadPainter extends RetroDesktopPixelPainter {
       r.bottom - px.hair,
       r.right,
       r.bottom,
-      c.dark ? c.shade : c.bevelDarker,
+      c.brightness == Brightness.dark ? c.shade : c.bevelDarker,
     );
     px.fillExact(
       r.right - px.hairX,
@@ -388,8 +388,9 @@ class _ColumnHeadState extends State<_ColumnHead> {
       child: SizedBox(
         height: math.max(
           math.max(widget.height, least),
-          MediaQuery.textScalerOf(context).scale(t.type.chrome.fontSize ?? 16) *
-                  (t.type.chrome.height ?? 1) +
+          MediaQuery.textScalerOf(context)
+                      .scale(t.textTheme.chrome.fontSize ?? 16) *
+                  (t.textTheme.chrome.height ?? 1) +
               4,
         ),
         child: Padding(
@@ -401,10 +402,10 @@ class _ColumnHeadState extends State<_ColumnHead> {
             gap: 6,
             children: [
               RetroDesktopCaps(
-                style: t.type.chrome,
+                style: t.textTheme.chrome,
                 Text(
                   label,
-                  style: t.type.chrome.copyWith(
+                  style: t.textTheme.chrome.copyWith(
                     color: sorted ? c.text : c.textSecondary,
                   ),
                   textAlign: end ? TextAlign.end : TextAlign.start,
@@ -463,8 +464,8 @@ class _ScrollBarPainter extends RetroDesktopPixelPainter {
         canvas,
         const Size(9, 9),
         dir,
-        c.dark ? c.textTertiary : c.bevelDarker,
-        c.dark ? c.shade : c.outline,
+        c.brightness == Brightness.dark ? c.textTertiary : c.bevelDarker,
+        c.brightness == Brightness.dark ? c.shade : c.outline,
       );
       canvas.restore();
     }
@@ -558,7 +559,7 @@ class _CellTint extends RetroDesktopPixelPainter {
 /// the order over, which [ascending] shows.
 ///
 /// ```dart
-/// RetroDesktopListTable(columns: const [RetroDesktopListTableColumn('Name'), RetroDesktopListTableColumn('Edited', width: 100, sorted: true)], rows: [RetroDesktopListTableRow(title: 'A note', note: 'Where it is', cells: const [('09:14', 'today')])], total: 40)
+/// RetroDesktopListTable(columns: const [RetroDesktopListTableColumn('Name'), RetroDesktopListTableColumn('Edited', width: 100, sorted: true)], rows: [RetroDesktopListTableRow(title: 'A note', subtitle: 'Where it is', cells: const [('09:14', 'today')])], total: 40)
 /// ```
 class RetroDesktopListTable extends StatefulWidget
     implements RetroDesktopFlush {
@@ -761,7 +762,9 @@ class _RetroDesktopListTableState extends State<RetroDesktopListTable> {
                         Text(
                           r.cells[k - 1].$1,
                           style:
-                              (columns[k].figures ? t.type.figure : t.type.body)
+                              (columns[k].figures
+                                      ? t.textTheme.figure
+                                      : t.textTheme.body)
                                   .copyWith(color: ink),
                           textAlign: columns[k].end
                               ? TextAlign.end
@@ -773,7 +776,7 @@ class _RetroDesktopListTableState extends State<RetroDesktopListTable> {
                         if (r.cells[k - 1].$2 != null)
                           Text(
                             r.cells[k - 1].$2!,
-                            style: t.type.meta.copyWith(color: ink),
+                            style: t.textTheme.meta.copyWith(color: ink),
                             textAlign: columns[k].end
                                 ? TextAlign.end
                                 : TextAlign.start,
@@ -839,17 +842,17 @@ class _RetroDesktopListTableState extends State<RetroDesktopListTable> {
                           children: [
                             Text(
                               r.title,
-                              style: t.type
+                              style: t.textTheme
                                   .text(14, 19, weight: FontWeight.w600)
                                   .copyWith(color: ink),
                               maxLines: 1,
                               softWrap: false,
                               overflow: TextOverflow.ellipsis,
                             ),
-                            if (r.note != null)
+                            if (r.subtitle != null)
                               Text(
-                                r.note!,
-                                style: t.type.meta.copyWith(color: ink),
+                                r.subtitle!,
+                                style: t.textTheme.meta.copyWith(color: ink),
                                 maxLines: 1,
                                 softWrap: false,
                                 overflow: TextOverflow.ellipsis,
@@ -1069,11 +1072,14 @@ class RetroDesktopTable extends StatelessWidget implements RetroDesktopFlush {
       for (final (k, col) in columns.indexed)
         [
           ?col.width,
-          measure(col.label, t.type.chrome) + 17,
+          measure(col.label, t.textTheme.chrome) + 17,
           if (col.figures)
             for (final line in [...rows, ?total])
               if (k < line.length)
-                measure(line[k], t.type.mono(12, 18, weight: FontWeight.w700)) +
+                measure(
+                      line[k],
+                      t.textTheme.mono(12, 18, weight: FontWeight.w700),
+                    ) +
                     17,
         ].fold(0.0, math.max).ceilToDouble(),
     ];
@@ -1088,11 +1094,11 @@ class RetroDesktopTable extends StatelessWidget implements RetroDesktopFlush {
                 inlineWidth:
                     measure(
                       amount.$1,
-                      t.type.text(14, 18, weight: FontWeight.w700),
+                      t.textTheme.text(14, 18, weight: FontWeight.w700),
                     ) +
                     measure(
                       amount.$2,
-                      t.type.mono(18, 22, weight: FontWeight.w700),
+                      t.textTheme.mono(18, 22, weight: FontWeight.w700),
                     ) +
                     RetroDesktopSpacing.s12,
               ),
@@ -1148,13 +1154,13 @@ class RetroDesktopTable extends StatelessWidget implements RetroDesktopFlush {
             final col = columns[k];
             final style = sum
                 ? (col.figures
-                      ? t.type.mono(12, 18, weight: FontWeight.w700)
-                      : t.type.text(14, 18, weight: FontWeight.w700))
+                      ? t.textTheme.mono(12, 18, weight: FontWeight.w700)
+                      : t.textTheme.text(14, 18, weight: FontWeight.w700))
                 : col.figures
-                ? t.type.mono(12, 18, weight: FontWeight.w600)
+                ? t.textTheme.mono(12, 18, weight: FontWeight.w600)
                 : k == 0
-                ? t.type.text(14, 18, weight: FontWeight.w600)
-                : t.type.text(14, 18);
+                ? t.textTheme.text(14, 18, weight: FontWeight.w600)
+                : t.textTheme.text(14, 18);
             return SizedBox(
               width: widths[k],
               child: Padding(
@@ -1271,7 +1277,9 @@ class _Due extends StatelessWidget {
     final t = RetroDesktopTheme.of(context);
     final c = t.colors;
     return RetroDesktopPixelPaint(
-      painter: _DoubleRule(c.dark ? c.textSecondary : c.outline),
+      painter: _DoubleRule(
+        c.brightness == Brightness.dark ? c.textSecondary : c.outline,
+      ),
       child: Padding(
         padding: const EdgeInsets.fromLTRB(
           RetroDesktopSpacing.s8,
@@ -1283,11 +1291,11 @@ class _Due extends StatelessWidget {
           builder: (context, room) {
             final name = Text(
               label,
-              style: t.type.text(14, 18, weight: FontWeight.w700),
+              style: t.textTheme.text(14, 18, weight: FontWeight.w700),
             );
             final price = Text(
               figure,
-              style: t.type.mono(18, 22, weight: FontWeight.w700),
+              style: t.textTheme.mono(18, 22, weight: FontWeight.w700),
             );
             if (room.maxWidth >= inlineWidth) {
               return Row(
@@ -1332,7 +1340,7 @@ class RetroDesktopFolder {
     this.name, {
     this.icon,
     this.art,
-    this.note,
+    this.subtitle,
     this.selected = false,
     this.onPressed,
     this.key,
@@ -1348,7 +1356,7 @@ class RetroDesktopFolder {
   final Widget? art;
 
   /// Supporting text shown with the main content.
-  final String? note;
+  final String? subtitle;
 
   /// Whether the part represents the current selection.
   final bool selected;
@@ -1364,7 +1372,7 @@ class RetroDesktopFolder {
 /// selected one's name takes the highlight; an app's own [RetroDesktopFolder.art] may show it on the folder too.
 ///
 /// ```dart
-/// RetroDesktopFolderGrid(items: const [RetroDesktopFolder('Workshop', icon: RetroDesktopGlyphs.hammer, note: '9 notes', selected: true)])
+/// RetroDesktopFolderGrid(items: const [RetroDesktopFolder('Workshop', icon: RetroDesktopGlyphs.hammer, subtitle: '9 notes', selected: true)])
 /// ```
 class RetroDesktopFolderGrid extends StatelessWidget
     implements RetroDesktopFlush {
@@ -1383,7 +1391,7 @@ class RetroDesktopFolderGrid extends StatelessWidget
     Widget item(RetroDesktopFolder f) {
       final name = Text(
         f.name,
-        style: t.type.text(
+        style: t.textTheme.text(
           13,
           17,
           weight: FontWeight.w600,
@@ -1423,11 +1431,11 @@ class RetroDesktopFolderGrid extends StatelessWidget
               child: name,
             ),
           ),
-          if (f.note != null) ...[
+          if (f.subtitle != null) ...[
             const SizedBox(height: RetroDesktopSpacing.s4),
             Text(
-              f.note!,
-              style: t.type.text(12, 15, color: c.textTertiary),
+              f.subtitle!,
+              style: t.textTheme.text(12, 15, color: c.textTertiary),
               maxLines: 1,
               softWrap: false,
               overflow: TextOverflow.ellipsis,
@@ -1505,7 +1513,7 @@ class RetroDesktopFile {
   const RetroDesktopFile(
     this.name, {
     required this.kind,
-    this.note,
+    this.subtitle,
     this.art,
     this.selected = false,
     this.onPressed,
@@ -1519,7 +1527,7 @@ class RetroDesktopFile {
   final String kind;
 
   /// Supporting text shown with the main content.
-  final String? note;
+  final String? subtitle;
 
   /// Any app-supplied image or drawing; the fallback is a file glyph.
   final Widget? art;
@@ -1538,7 +1546,7 @@ class RetroDesktopFile {
 /// many to a row as fit.
 ///
 /// ```dart
-/// RetroDesktopFileGrid(items: const [RetroDesktopFile('plan.pdf', kind: 'PDF', note: '2 pages')])
+/// RetroDesktopFileGrid(items: const [RetroDesktopFile('plan.pdf', kind: 'PDF', subtitle: '2 pages')])
 /// ```
 class RetroDesktopFileGrid extends StatelessWidget
     implements RetroDesktopFlush {
@@ -1555,7 +1563,7 @@ class RetroDesktopFileGrid extends StatelessWidget
     final t = RetroDesktopTheme.of(context);
     final c = t.colors;
     Widget item(RetroDesktopFile f, double room) {
-      final nameStyle = t.type.text(
+      final nameStyle = t.textTheme.text(
         12,
         15,
         weight: FontWeight.w600,
@@ -1636,7 +1644,7 @@ class RetroDesktopFileGrid extends StatelessWidget
                       ),
                       child: Text(
                         f.kind,
-                        style: t.type
+                        style: t.textTheme
                             .pixel(15, 14, color: c.paper)
                             .copyWith(letterSpacing: 15 * .03),
                         maxLines: 1,
@@ -1663,14 +1671,14 @@ class RetroDesktopFileGrid extends StatelessWidget
               child: nameText,
             ),
           ),
-          if (f.note != null) ...[
+          if (f.subtitle != null) ...[
             const SizedBox(
               height: RetroDesktopSpacing.s4 + RetroDesktopSpacing.px,
             ),
             Text(
-              f.note!,
+              f.subtitle!,
               textAlign: TextAlign.center,
-              style: t.type.text(12, 15, color: c.textTertiary),
+              style: t.textTheme.text(12, 15, color: c.textTertiary),
             ),
           ],
         ],
@@ -1802,7 +1810,7 @@ class _HatchTrack extends RetroDesktopPixelPainter {
       o.c != c || o.share != share || o.track != track || o.rtl != rtl;
 }
 
-/// A row of a `RetroDesktopTreeBars`. [open] draws a triangle (null none); [level] 1 is indented and lighter.
+/// A row of a `RetroDesktopTreeBars`. [isExpanded] draws a triangle (null none); [level] 1 is indented and lighter.
 class RetroDesktopTreeRow {
   /// Creates a [RetroDesktopTreeRow].
   const RetroDesktopTreeRow(
@@ -1810,7 +1818,7 @@ class RetroDesktopTreeRow {
     this.value, {
     required this.share,
     this.level = 0,
-    this.open,
+    this.isExpanded,
   }) : assert(level >= 0);
 
   /// The name identifying this item.
@@ -1826,13 +1834,13 @@ class RetroDesktopTreeRow {
   final int level;
 
   /// Whether the row is open: a triangle pointing down, or right when false; null draws none.
-  final bool? open;
+  final bool? isExpanded;
 }
 
 /// What takes the room: a tree of names, each with a hatched bar for its share and its figure at the end, a total under them.
 ///
 /// ```dart
-/// RetroDesktopTreeBars(rows: const [RetroDesktopTreeRow('Pictures', '538 MB', share: .39, open: true), RetroDesktopTreeRow('Scans', '412 MB', share: .3, level: 1)], totalName: 'Total', total: '950 MB')
+/// RetroDesktopTreeBars(rows: const [RetroDesktopTreeRow('Pictures', '538 MB', share: .39, isExpanded: true), RetroDesktopTreeRow('Scans', '412 MB', share: .3, level: 1)], totalName: 'Total', total: '950 MB')
 /// ```
 class RetroDesktopTreeBars extends StatelessWidget {
   /// Creates a [RetroDesktopTreeBars].
@@ -1856,8 +1864,8 @@ class RetroDesktopTreeBars extends StatelessWidget {
     final t = RetroDesktopTheme.of(context);
     final c = t.colors;
     final rtl = Directionality.of(context) == TextDirection.rtl;
-    final value = t.type.figure;
-    final bold = t.type.mono(12, 16, weight: FontWeight.w700);
+    final value = t.textTheme.figure;
+    final bold = t.textTheme.mono(12, 16, weight: FontWeight.w700);
     double widthOf(String s, TextStyle style) {
       final tp = TextPainter(
         text: TextSpan(text: s, style: style),
@@ -1919,8 +1927,8 @@ class RetroDesktopTreeBars extends StatelessWidget {
                       child: Text(
                         name,
                         style: level > 0
-                            ? t.type.text(12, 16, color: c.textSecondary)
-                            : t.type.text(
+                            ? t.textTheme.text(12, 16, color: c.textSecondary)
+                            : t.textTheme.text(
                                 12,
                                 16,
                                 weight: sum ? FontWeight.w700 : FontWeight.w600,
@@ -1969,7 +1977,7 @@ class RetroDesktopTreeBars extends StatelessWidget {
           gap: 4,
           children: [
             for (final r in rows)
-              row(r.name, r.value, r.share, r.level, r.open),
+              row(r.name, r.value, r.share, r.level, r.isExpanded),
             if (total != null)
               Padding(
                 padding: const EdgeInsets.only(top: RetroDesktopSpacing.s2),
@@ -2142,7 +2150,7 @@ class RetroDesktopChecklist extends StatelessWidget {
               RetroDesktopLinearProgressIndicator(value: share, label: title),
               Text(
                 RetroDesktopLocalizations.of(context).formatPercent(share),
-                style: t.type.pixel(18, 16),
+                style: t.textTheme.pixel(18, 16),
               ),
             ],
           ),
@@ -2188,7 +2196,11 @@ class _CheckLine extends StatelessWidget {
     final c = t.colors;
     final words = Text(
       item.text,
-      style: t.type.text(15, 21, color: item.value ? c.textTertiary : c.text),
+      style: t.textTheme.text(
+        15,
+        21,
+        color: item.value ? c.textTertiary : c.text,
+      ),
     );
     final chips = item.chips.isEmpty
         ? null
@@ -2217,7 +2229,7 @@ class _CheckLine extends StatelessWidget {
       // Its middle on the first line's capitals as the engine draws them, on the baseline it rounds to a whole pixel
       // (the line's middle left it a device pixel high).
       check = RetroDesktopOnCaps(
-        style: t.type.text(15, 21),
+        style: t.textTheme.text(15, 21),
         child: retroDesktopCheckFace(context, item.value),
       );
     } else {
@@ -2335,7 +2347,7 @@ class RetroDesktopDocument extends StatelessWidget
     final t = RetroDesktopTheme.of(context);
     final c = t.colors;
     final digit = TextPainter(
-      text: TextSpan(text: '0', style: t.type.body),
+      text: TextSpan(text: '0', style: t.textTheme.body),
       textDirection: TextDirection.ltr,
       // The measure is counted in the reader's characters.
       textScaler: MediaQuery.textScalerOf(context),
@@ -2352,7 +2364,7 @@ class RetroDesktopDocument extends StatelessWidget
             RetroDesktopBreadcrumb(
               items: [for (final p in path) RetroDesktopBreadcrumbItem(p)],
             ),
-          RetroDesktopBalancedText(title, style: t.type.title),
+          RetroDesktopBalancedText(title, style: t.textTheme.title),
           if (meta.isNotEmpty)
             Wrap(
               spacing: RetroDesktopSpacing.s12,
@@ -2361,12 +2373,12 @@ class RetroDesktopDocument extends StatelessWidget
                 for (final m in meta)
                   Text.rich(
                     TextSpan(
-                      style: t.type.meta,
+                      style: t.textTheme.meta,
                       children: [
                         if (m.$1.isNotEmpty) TextSpan(text: '${m.$1} '),
                         TextSpan(
                           text: m.$2,
-                          style: t.type.text(
+                          style: t.textTheme.text(
                             12,
                             16,
                             weight: FontWeight.w600,
@@ -2400,7 +2412,7 @@ class RetroDesktopDocument extends StatelessWidget
               child: RetroDesktopColumn(
                 gap: 14,
                 children: [
-                  for (final p in paragraphs) Text(p, style: t.type.read),
+                  for (final p in paragraphs) Text(p, style: t.textTheme.read),
                 ],
               ),
             ),
