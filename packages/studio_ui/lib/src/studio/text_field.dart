@@ -8,6 +8,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:ui_core/ui_core.dart';
 
+import 'internal/field_frame.dart';
 import 'surface.dart';
 import 'theme.dart';
 
@@ -72,6 +73,7 @@ class StudioFieldMessage extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(top: StudioSpacing.small),
       child: Semantics(
+        container: error != null,
         liveRegion: error != null,
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -96,19 +98,19 @@ class StudioFieldMessage extends StatelessWidget {
 
 /// A text field: a recessed window of glass in the metal, its words on the
 /// glass. Focused, the window's rim lights and the caret glows; with an
-/// [error], the rim lights red and the error stands under it beside a lamp.
+/// [errorText], the rim lights red and the error stands under it beside a lamp.
 ///
 /// It takes Flutter's `TextField` words: [controller] (yours to dispose; it
 /// makes and disposes its own when none is given), [onChanged],
-/// [onSubmitted], [obscureText], [keyboardType]. [label] stands above it,
-/// [hint] in it while it is empty (a format, never the label), [helper] or
-/// [error] under it. [enabled] false dims it.
+/// [onSubmitted], [obscureText], [keyboardType]. [labelText] stands above it,
+/// [hintText] in it while it is empty (a format, never the label), [helperText] or
+/// [errorText] under it. [enabled] false dims it.
 ///
 /// Reads [style]'s `fill`, `foreground`, `edge` (the lit rim), `minimumSize`
 /// and `textStyle`, then [StudioThemeData.textFieldStyle].
 ///
 /// ```dart
-/// StudioTextField(label: 'Episode title', hint: 'Season 2, episode 4', onChanged: (v) => title = v)
+/// StudioTextField(labelText: 'Episode title', hintText: 'Season 2, episode 4', onChanged: (v) => title = v)
 /// ```
 class StudioTextField extends StatefulWidget {
   /// A field.
@@ -116,10 +118,10 @@ class StudioTextField extends StatefulWidget {
     super.key,
     this.controller,
     this.focusNode,
-    this.label,
-    this.hint,
-    this.helper,
-    this.error,
+    this.labelText,
+    this.hintText,
+    this.helperText,
+    this.errorText,
     this.prefixIcon,
     this.suffix,
     this.onChanged,
@@ -147,16 +149,16 @@ class StudioTextField extends StatefulWidget {
   final FocusNode? focusNode;
 
   /// The label above it.
-  final String? label;
+  final String? labelText;
 
   /// What shows in it while it is empty: a format or an example.
-  final String? hint;
+  final String? hintText;
 
   /// A note under it.
-  final String? helper;
+  final String? helperText;
 
   /// What is wrong, under it in place of the helper.
-  final String? error;
+  final String? errorText;
 
   /// A glyph at its start (a search field's lens).
   final Widget? prefixIcon;
@@ -206,7 +208,7 @@ class StudioTextField extends StatefulWidget {
   /// Its fewest lines.
   final int? minLines;
 
-  /// What a screen reader calls it, when not its [label].
+  /// What a screen reader calls it, when not its [labelText].
   final String? semanticLabel;
 
   /// Its style, over [StudioThemeData.textFieldStyle].
@@ -219,9 +221,9 @@ class StudioTextField extends StatefulWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('label', label, defaultValue: null))
-      ..add(StringProperty('hint', hint, defaultValue: null))
-      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(StringProperty('label', labelText, defaultValue: null))
+      ..add(StringProperty('hint', hintText, defaultValue: null))
+      ..add(StringProperty('error', errorText, defaultValue: null))
       ..add(FlagProperty('enabled', value: enabled, ifFalse: 'disabled'))
       ..add(IntProperty('maxLines', maxLines, defaultValue: 1));
   }
@@ -276,7 +278,7 @@ class _StudioTextFieldState extends State<StudioTextField> {
     final states = <WidgetState>{
       if (!widget.enabled) WidgetState.disabled,
       if (focused) WidgetState.focused,
-      if (widget.error != null) WidgetState.error,
+      if (widget.errorText != null) WidgetState.error,
     };
     final layered = DesignStyleOf([widget.style, theme.textFieldStyle], states);
     final words = layered
@@ -288,7 +290,7 @@ class _StudioTextFieldState extends State<StudioTextField> {
               (widget.enabled ? c.onDisplay : c.disabled),
         );
     final oneLine = widget.maxLines == 1;
-    final rim = widget.error != null
+    final rim = widget.errorText != null
         ? c.danger
         : focused
         ? c.indicator.withValues(alpha: 0.9)
@@ -309,10 +311,10 @@ class _StudioTextFieldState extends State<StudioTextField> {
       minHeight: layered.minimumSize?.height ?? theme.controlHeight,
       controller: _controller,
       maxLines: widget.maxLines,
-      hint: widget.hint == null
+      hint: widget.hintText == null
           ? null
           : Text(
-              widget.hint!,
+              widget.hintText!,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: words.copyWith(
@@ -345,11 +347,20 @@ class _StudioTextFieldState extends State<StudioTextField> {
         ),
       ),
     );
+    // A field with words of its own is framed: the frame reads them on the
+    // entry's node (a key at its end, a password's reveal, keeps a node of
+    // its own in it). A bare window (a combobox's, a palette's search) is a
+    // node of its own.
+    final error = widget.errorText;
+    final framed =
+        widget.labelText != null ||
+        widget.helperText != null ||
+        (error != null && error.isNotEmpty);
     final entry = Semantics(
-      container: true,
+      container: !framed,
       child: Semantics(
-        label: widget.semanticLabel ?? widget.label,
-        hint: widget.hint,
+        label: widget.semanticLabel ?? widget.labelText,
+        hint: widget.hintText,
         child: entryBox,
       ),
     );
@@ -415,16 +426,22 @@ class _StudioTextFieldState extends State<StudioTextField> {
         ),
       ),
     );
+    if (framed) {
+      return StudioFieldFrame(
+        labelText: widget.labelText,
+        helperText: widget.helperText,
+        errorText: error,
+        enabled: widget.enabled,
+        focusNode: _focus,
+        child: box,
+      );
+    }
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        if (widget.label != null)
-          ExcludeSemantics(
-            child: StudioFieldLabel(widget.label!, enabled: widget.enabled),
-          ),
         box,
-        StudioFieldMessage(helper: widget.helper, error: widget.error),
+        StudioFieldMessage(error: error),
       ],
     );
   }

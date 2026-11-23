@@ -126,22 +126,22 @@ class _RoomtonePublishPageState extends State<RoomtonePublishPage>
           const StudioSectionHeader('Details'),
           StudioTextField(
             controller: _title,
-            label: 'Title',
-            error: _titleError,
+            labelText: 'Title',
+            errorText: _titleError,
             textCapitalization: TextCapitalization.sentences,
           ),
           const SizedBox(height: StudioSpacing.regular),
           StudioTextField(
             controller: _notes,
-            label: 'Show notes',
-            helper: 'Listeners read these under the player.',
+            labelText: 'Show notes',
+            helperText: 'Listeners read these under the player.',
             minLines: 3,
             maxLines: 6,
             textCapitalization: TextCapitalization.sentences,
           ),
           const SizedBox(height: StudioSpacing.regular),
           StudioSelect<String>(
-            label: 'Show',
+            labelText: 'Show',
             value: _show,
             items: [
               for (final s in roomtoneShows)
@@ -151,8 +151,8 @@ class _RoomtonePublishPageState extends State<RoomtonePublishPage>
           ),
           roomtoneGroupGap,
           StudioFileDrop(
-            label: 'Cover',
-            hint: 'Square, at least 1400 px',
+            labelText: 'Cover',
+            hintText: 'Square, at least 1400 px',
             multiple: false,
             files: _coverChosen
                 ? const [StudioFile(name: 'harbour-wall.jpg', bytes: 820000)]
@@ -176,7 +176,7 @@ class _RoomtonePublishPageState extends State<RoomtonePublishPage>
           if (_scheduled) ...[
             const SizedBox(height: StudioSpacing.regular),
             StudioDatePicker(
-              label: 'Day',
+              labelText: 'Day',
               value: _day,
               firstDate: first,
               lastDate: DateTime(2027, 6, 30),

@@ -29,7 +29,7 @@ class _FormState extends State<_Form> {
     crossAxisAlignment: CrossAxisAlignment.stretch,
     children: [
       StudioFormField(
-        label: 'Priority',
+        labelText: 'Priority',
         child: StudioSegmentedButton<String>(
           semanticLabel: 'Priority',
           segments: const [
@@ -45,7 +45,7 @@ class _FormState extends State<_Form> {
         ),
       ),
       StudioFormField(
-        label: 'Labels',
+        labelText: 'Labels',
         child: Wrap(
           spacing: 8,
           children: [
@@ -66,7 +66,7 @@ class _FormState extends State<_Form> {
         ),
       ),
       StudioFormField(
-        label: 'Estimate (minutes)',
+        labelText: 'Estimate (minutes)',
         child: StudioStepper(
           value: _estimate,
           min: 5,
@@ -80,8 +80,8 @@ class _FormState extends State<_Form> {
         ),
       ),
       StudioFormField(
-        label: 'Reminder',
-        helper: 'A nudge before it is due',
+        labelText: 'Reminder',
+        helperText: 'A nudge before it is due',
         child: Align(
           alignment: AlignmentDirectional.centerStart,
           child: StudioSwitch(
@@ -94,7 +94,7 @@ class _FormState extends State<_Form> {
         ),
       ),
       StudioFormField(
-        label: 'Done',
+        labelText: 'Done',
         child: Align(
           alignment: AlignmentDirectional.centerStart,
           child: StudioCheckbox(

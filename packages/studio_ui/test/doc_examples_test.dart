@@ -131,8 +131,8 @@ final Map<String, DocExample> _examples = {
   'StudioFieldMessage': (context) =>
       const StudioFieldMessage(error: 'Give the episode a title.'),
   'StudioTextField': (context) => StudioTextField(
-    label: 'Episode title',
-    hint: 'Season 2, episode 4',
+    labelText: 'Episode title',
+    hintText: 'Season 2, episode 4',
     onChanged: (v) => title = v,
   ),
   // words.dart
@@ -237,7 +237,7 @@ final Map<String, DocExample> _examples = {
   'StudioSelect': (context) {
     String? q = 'hi';
     return StudioSelect<String>(
-      label: 'Quality',
+      labelText: 'Quality',
       value: q,
       items: const [StudioSelectItem(value: 'hi', label: 'High')],
       onChanged: (v) => setState(() => q = v),
@@ -609,7 +609,7 @@ final Map<String, DocExample> _examples = {
   },
   'StudioStepProgress': (context) => const StudioStepProgress(
     steps: ['Record', 'Edit', 'Publish'],
-    current: 1,
+    currentStep: 1,
   ),
   'StudioPageDots': (context) {
     const page = 0;
@@ -634,7 +634,7 @@ final Map<String, DocExample> _examples = {
   'StudioDatePicker': (context) {
     DateTime? day = DateTime(2026, 11, 16);
     return StudioDatePicker(
-      label: 'Release date',
+      labelText: 'Release date',
       value: day,
       firstDate: DateTime(2026),
       lastDate: DateTime(2027),
@@ -644,7 +644,7 @@ final Map<String, DocExample> _examples = {
   'StudioDateRangePicker': (context) {
     StudioDateRange? span;
     return StudioDateRangePicker(
-      label: 'Recording days',
+      labelText: 'Recording days',
       value: span,
       firstDate: DateTime(2026),
       lastDate: DateTime(2027),
@@ -702,8 +702,8 @@ final Map<String, DocExample> _examples = {
     final files = [const StudioFile(name: 'take-3.wav', bytes: 48200000)];
     void pick() {}
     return StudioFileDrop(
-      label: 'Audio',
-      hint: 'WAV or MP3, up to 500 MB',
+      labelText: 'Audio',
+      hintText: 'WAV or MP3, up to 500 MB',
       files: files,
       onChoose: pick,
       onRemove: (f) => setState(() => files.remove(f)),
@@ -874,7 +874,7 @@ final Map<String, DocExample> _examples = {
   },
   'StudioInput': (context) {
     void search(String words) {}
-    return StudioInput(hint: 'Search episodes', onSubmitted: search);
+    return StudioInput(hintText: 'Search episodes', onSubmitted: search);
   },
   // surface.dart
   'StudioSurface': (context) {
@@ -935,15 +935,17 @@ final Map<String, DocExample> _examples = {
   },
   // entry.dart
   'StudioSearchField': (context) => StudioSearchField(
-    hint: 'Search episodes',
+    hintText: 'Search episodes',
     onChanged: (q) => setState(() => query = q),
   ),
-  'StudioPasswordField': (context) =>
-      StudioPasswordField(label: 'Password', onChanged: (v) => password = v),
+  'StudioPasswordField': (context) => StudioPasswordField(
+    labelText: 'Password',
+    onChanged: (v) => password = v,
+  ),
   'StudioInputGroup': (context) => StudioInputGroup(
-    label: 'Feed address',
+    labelText: 'Feed address',
     leading: const Text('https://'),
-    hint: 'roomtone.example/feed',
+    hintText: 'roomtone.example/feed',
     onChanged: (v) => feed = v,
   ),
   'StudioCodeField': (context) {
@@ -968,8 +970,8 @@ final Map<String, DocExample> _examples = {
     const time = StudioTime(hour: 7, minute: 0);
     void setTime(StudioTime to) {}
     return StudioFormField(
-      label: 'Publish at',
-      helper: "Your listeners' time",
+      labelText: 'Publish at',
+      helperText: "Your listeners' time",
       child: StudioTimePicker(
         value: time,
         semanticLabel: 'Publish at',
@@ -981,7 +983,7 @@ final Map<String, DocExample> _examples = {
     const shows = ['Night Desk', 'Field Notes'];
     String? show;
     return StudioCombobox<String>(
-      label: 'Show',
+      labelText: 'Show',
       options: shows,
       labelOf: (s) => s,
       value: show,
@@ -992,7 +994,7 @@ final Map<String, DocExample> _examples = {
     const allTopics = ['Sound', 'Rooms', 'Craft'];
     var topics = ['Sound'];
     return StudioTagInput<String>(
-      label: 'Topics',
+      labelText: 'Topics',
       values: topics,
       options: allTopics,
       labelOf: (t) => t,

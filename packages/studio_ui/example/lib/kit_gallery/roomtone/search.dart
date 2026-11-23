@@ -95,7 +95,7 @@ class _RoomtoneSearchPageState extends State<RoomtoneSearchPage> {
       children: [
         StudioSearchField(
           controller: _query,
-          hint: 'Shows, hosts, episodes',
+          hintText: 'Shows, hosts, episodes',
           semanticLabel: 'Search the library',
         ),
         roomtoneGroupGap,

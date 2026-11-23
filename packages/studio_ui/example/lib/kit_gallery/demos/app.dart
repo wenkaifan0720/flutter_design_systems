@@ -168,7 +168,7 @@ Widget kitSpecimenErrorState() => Builder(
 
 Widget kitSpecimenInput() => Builder(
   builder: (context) => StudioInput(
-    hint: 'Search episodes',
+    hintText: 'Search episodes',
     onSubmitted: (text) => kitFeedback(context, 'Searching for "$text".'),
   ),
 );

@@ -1,9 +1,11 @@
 // A dialog's actions stand in one row while their labels fit, and stack
-// full width at one height, the main action first, when they do not.
+// full width at one height, the main action first, when they do not; ui_core
+// reads them so too on phones from 320 to 390.
 import 'package:material_ui/material_ui.dart' show MaterialApp;
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:studio_ui/studio_ui.dart';
+import 'package:ui_core_test/ui_core_test.dart';
 
 void _none() {}
 
@@ -122,4 +124,26 @@ void main() {
     expect(keys['Keep']!.width, moreOrLessEquals(keys['Discard']!.width));
     expect(keys['Keep']!.right, lessThan(keys['Discard']!.left));
   });
+
+  // ui_core_test's DesignDialogActionsCheck on phones from 320 to 390, at
+  // their text size and twice it.
+  for (final width in [320.0, 390.0]) {
+    for (final scale in [1.0, 2.0]) {
+      testWidgets("at $width, text at ${scale}x, the actions pass ui_core's "
+          'dialog actions check', (tester) async {
+        await _show(
+          tester,
+          width: width,
+          direction: TextDirection.ltr,
+          scale: scale,
+          labels: three,
+        );
+        final report = const DesignDialogActionsCheck(
+          look: 'studio',
+          actions: three,
+        ).check(tester.element(find.byType(StudioDialog)));
+        expect(report.problems, isEmpty);
+      });
+    }
+  }
 }

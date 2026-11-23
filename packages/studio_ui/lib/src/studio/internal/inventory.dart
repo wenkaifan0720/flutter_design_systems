@@ -110,23 +110,32 @@ DesignInventory _registry() => DesignInventory(
       ),
     ),
     // Inputs.
-    _row('TextField', (_) => const StudioTextField(label: 'Episode title')),
+    _row('TextField', (_) => const StudioTextField(labelText: 'Episode title')),
     _row(
       'TextArea',
-      (_) =>
-          const StudioTextField(label: 'Show notes', maxLines: 5, minLines: 3),
+      (_) => const StudioTextField(
+        labelText: 'Show notes',
+        maxLines: 5,
+        minLines: 3,
+      ),
     ),
-    _row('SearchField', (_) => const StudioSearchField(hint: 'Search shows')),
-    _row('PasswordField', (_) => const StudioPasswordField(label: 'Password')),
+    _row(
+      'SearchField',
+      (_) => const StudioSearchField(hintText: 'Search shows'),
+    ),
+    _row(
+      'PasswordField',
+      (_) => const StudioPasswordField(labelText: 'Password'),
+    ),
     _row(
       'InputGroup',
       (_) => const StudioInputGroup(
-        label: 'Feed address',
+        labelText: 'Feed address',
         leading: Text('https://'),
-        hint: 'roomtone.example/feed',
+        hintText: 'roomtone.example/feed',
       ),
     ),
-    _row('InputOtp', (_) => const StudioCodeField(label: 'Sign-in code')),
+    _row('InputOtp', (_) => const StudioCodeField(labelText: 'Sign-in code')),
     _row(
       'NumberField',
       (_) => const StudioStepper(
@@ -138,7 +147,7 @@ DesignInventory _registry() => DesignInventory(
     _row(
       'Select',
       (_) => const StudioSelect<String>(
-        label: 'Quality',
+        labelText: 'Quality',
         value: 'High',
         items: [
           StudioSelectItem(value: 'Standard', label: 'Standard'),
@@ -150,7 +159,7 @@ DesignInventory _registry() => DesignInventory(
     _row(
       'Combobox',
       (_) => StudioCombobox<String>(
-        label: 'Show',
+        labelText: 'Show',
         options: const ['Night Desk', 'Field Notes', 'Long Table'],
         labelOf: (s) => s,
         onSelected: _ignore,
@@ -159,7 +168,7 @@ DesignInventory _registry() => DesignInventory(
     _row(
       'MultiSelect',
       (_) => StudioTagInput<String>(
-        label: 'Topics',
+        labelText: 'Topics',
         values: const ['Interviews'],
         options: const ['Interviews', 'Science', 'Music'],
         labelOf: (s) => s,
@@ -252,8 +261,8 @@ DesignInventory _registry() => DesignInventory(
     _row(
       'FileUpload',
       (_) => const StudioFileDrop(
-        label: 'Audio',
-        hint: 'WAV or MP3, up to 500 MB',
+        labelText: 'Audio',
+        hintText: 'WAV or MP3, up to 500 MB',
         onChoose: _none,
         files: [StudioFile(name: 'take-3.wav', bytes: 48200000, progress: 0.4)],
       ),
@@ -261,7 +270,7 @@ DesignInventory _registry() => DesignInventory(
     _row(
       'DatePicker',
       (_) => StudioDatePicker(
-        label: 'Release date',
+        labelText: 'Release date',
         value: DateTime(2026, 11, 20),
         firstDate: _first,
         lastDate: _last,
@@ -271,7 +280,7 @@ DesignInventory _registry() => DesignInventory(
     _row(
       'DateRangePicker',
       (_) => StudioDateRangePicker(
-        label: 'Recording days',
+        labelText: 'Recording days',
         value: StudioDateRange(
           start: DateTime(2026, 11, 14),
           end: DateTime(2026, 11, 16),
@@ -322,8 +331,8 @@ DesignInventory _registry() => DesignInventory(
     _row(
       'FormField',
       (_) => const StudioFormField(
-        label: 'Episode type',
-        helper: 'Trailers play before the first episode.',
+        labelText: 'Episode type',
+        helperText: 'Trailers play before the first episode.',
         child: StudioSegmentedButton<int>(
           semanticLabel: 'Episode type',
           segments: [
@@ -394,7 +403,7 @@ DesignInventory _registry() => DesignInventory(
       'StepProgress',
       (_) => const StudioStepProgress(
         steps: ['Record', 'Edit', 'Publish'],
-        current: 1,
+        currentStep: 1,
       ),
     ),
     _row(

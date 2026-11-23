@@ -181,7 +181,7 @@ void main() {
           SizedBox(
             width: 320,
             child: StudioSelect<String>(
-              label: 'Audio quality',
+              labelText: 'Audio quality',
               value: 'high',
               items: const [
                 StudioSelectItem(value: 'standard', label: 'Standard'),

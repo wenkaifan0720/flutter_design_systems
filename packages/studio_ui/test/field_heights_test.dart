@@ -31,12 +31,12 @@ void main() {
                 children: [
                   KeyedSubtree(
                     key: keys[0],
-                    child: const StudioTextField(label: 'Title'),
+                    child: const StudioTextField(labelText: 'Title'),
                   ),
                   KeyedSubtree(
                     key: keys[1],
                     child: StudioSelect<int>(
-                      label: 'Project',
+                      labelText: 'Project',
                       value: 1,
                       items: const [
                         StudioSelectItem(value: 1, label: 'Open studio'),
@@ -47,7 +47,7 @@ void main() {
                   KeyedSubtree(
                     key: keys[2],
                     child: StudioCombobox<String>(
-                      label: 'Assignee',
+                      labelText: 'Assignee',
                       options: const ['Maya Reed'],
                       labelOf: (s) => s,
                       onSelected: (_) {},
@@ -56,7 +56,7 @@ void main() {
                   KeyedSubtree(
                     key: keys[3],
                     child: StudioDatePicker(
-                      label: 'Due date',
+                      labelText: 'Due date',
                       value: DateTime(2026, 11, 20),
                       firstDate: DateTime(2026),
                       lastDate: DateTime(2027),

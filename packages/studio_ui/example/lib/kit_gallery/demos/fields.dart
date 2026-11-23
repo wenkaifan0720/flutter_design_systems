@@ -13,22 +13,28 @@ Widget kitFieldsDemo(Brightness brightness) => kitScreen(
       title: 'Text fields',
       note: 'Focused, the window\'s rim lights and the caret glows.',
       children: [
-        StudioTextField(label: 'Episode title', hint: 'Season 2, episode 4'),
         StudioTextField(
-          label: 'Description',
-          hint: 'What is this episode about?',
+          labelText: 'Episode title',
+          hintText: 'Season 2, episode 4',
+        ),
+        StudioTextField(
+          labelText: 'Description',
+          hintText: 'What is this episode about?',
           maxLines: 4,
           minLines: 3,
         ),
         StudioTextField(
-          label: 'Search',
-          hint: 'Shows and episodes',
+          labelText: 'Search',
+          hintText: 'Shows and episodes',
           prefixIcon: Icon(LucideIcons.search),
         ),
-        StudioTextField(label: 'Title', error: 'Give the episode a title.'),
         StudioTextField(
-          label: 'Feed address',
-          hint: 'Set by your host',
+          labelText: 'Title',
+          errorText: 'Give the episode a title.',
+        ),
+        StudioTextField(
+          labelText: 'Feed address',
+          hintText: 'Set by your host',
           enabled: false,
         ),
       ],
@@ -40,7 +46,7 @@ Widget kitFieldsDemo(Brightness brightness) => kitScreen(
         kitState<String>(
           'high',
           (context, v, set) => StudioSelect<String>(
-            label: 'Audio quality',
+            labelText: 'Audio quality',
             value: v,
             items: const [
               StudioSelectItem(value: 'standard', label: 'Standard, 64 kbps'),
@@ -51,9 +57,9 @@ Widget kitFieldsDemo(Brightness brightness) => kitScreen(
           ),
         ),
         const StudioSelect<String>(
-          label: 'Host',
+          labelText: 'Host',
           value: null,
-          hint: 'Choose a host',
+          hintText: 'Choose a host',
           items: [],
           onChanged: null,
         ),
@@ -63,18 +69,18 @@ Widget kitFieldsDemo(Brightness brightness) => kitScreen(
       title: 'Search, password and groups',
       note: 'The same display window, with a lens, a show key or plates at its ends.',
       children: [
-        StudioSearchField(hint: 'Search shows'),
-        StudioPasswordField(label: 'Password'),
+        StudioSearchField(hintText: 'Search shows'),
+        StudioPasswordField(labelText: 'Password'),
         StudioInputGroup(
-          label: 'Feed address',
+          labelText: 'Feed address',
           leading: Text('https://'),
-          hint: 'roomtone.example/feed',
+          hintText: 'roomtone.example/feed',
         ),
         StudioInputGroup(
-          label: 'Bit rate',
+          labelText: 'Bit rate',
           trailing: Text('kbps'),
-          hint: '128',
-          error: 'Between 64 and 320.',
+          hintText: '128',
+          errorText: 'Between 64 and 320.',
         ),
       ],
     ),
@@ -82,7 +88,7 @@ Widget kitFieldsDemo(Brightness brightness) => kitScreen(
       title: 'Codes and steppers',
       note: 'One window per character; a readout between two keys.',
       children: [
-        const StudioCodeField(label: 'Sign-in code'),
+        const StudioCodeField(labelText: 'Sign-in code'),
         kitState<int>(
           2,
           (context, v, set) => StudioStepper(
@@ -101,7 +107,7 @@ Widget kitFieldsDemo(Brightness brightness) => kitScreen(
       children: [
         Builder(
           builder: (context) => StudioCombobox<String>(
-            label: 'Show',
+            labelText: 'Show',
             options: const [
               'Night Desk',
               'Night Shift',
@@ -115,7 +121,7 @@ Widget kitFieldsDemo(Brightness brightness) => kitScreen(
         kitState<List<String>>(
           const ['Interviews'],
           (context, v, set) => StudioTagInput<String>(
-            label: 'Topics',
+            labelText: 'Topics',
             values: v,
             options: const ['Interviews', 'Science', 'Music', 'History'],
             labelOf: (s) => s,
@@ -131,8 +137,8 @@ Widget kitFieldsDemo(Brightness brightness) => kitScreen(
         kitState<int>(
           0,
           (context, v, set) => StudioFormField(
-            label: 'Episode type',
-            helper: 'Trailers play before the first episode.',
+            labelText: 'Episode type',
+            helperText: 'Trailers play before the first episode.',
             isRequired: true,
             child: StudioSegmentedButton<int>(
               semanticLabel: 'Episode type',

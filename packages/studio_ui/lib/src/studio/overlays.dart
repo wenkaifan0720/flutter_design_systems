@@ -140,8 +140,9 @@ class _Rise extends StatelessWidget {
 ///
 /// Actions stand in one row while their labels fit: sharing the width
 /// equally on a phone, at the trailing edge on a wider screen. When they do
-/// not fit, they stack full width at one height, the main action first and
-/// the rest after it in reverse, so a quiet Cancel comes last.
+/// not fit, they stack in one column of one width, the main action first
+/// and the rest after it in reverse, so a quiet Cancel comes last (ui_core's
+/// RawActionBar).
 ///
 /// Reads [style]'s `fill`, `foreground` and `padding`, then
 /// [StudioThemeData.dialogStyle].
@@ -229,10 +230,21 @@ class StudioDialog extends StatelessWidget {
                   ],
                   if (actions.isNotEmpty) ...[
                     const SizedBox(height: StudioSpacing.large),
-                    _DialogActions(
-                      share: narrow,
-                      textDirection: Directionality.of(context),
-                      children: actions,
+                    RawActionBar(
+                      expanded: narrow,
+                      spacing: StudioSpacing.medium,
+                      overflowSpacing: StudioSpacing.small,
+                      children: [
+                        // At the trailing edge each key is at least a
+                        // key's width.
+                        for (final action in actions)
+                          ConstrainedBox(
+                            constraints: BoxConstraints(
+                              minWidth: narrow ? 0 : _leastActionWidth,
+                            ),
+                            child: action,
+                          ),
+                      ],
                     ),
                   ],
                 ],
@@ -255,184 +267,7 @@ class StudioDialog extends StatelessWidget {
   }
 }
 
-// A dialog's keys: one row while every label fits (sharing the width
-// equally when [share], else at the trailing edge, each at least a key's
-// width), or else a stack, full width and one height, the main key (the
-// last) first.
-class _DialogActions extends MultiChildRenderObjectWidget {
-  const _DialogActions({
-    required this.share,
-    required this.textDirection,
-    required super.children,
-  });
-
-  final bool share;
-  final TextDirection textDirection;
-
-  @override
-  RenderObject createRenderObject(BuildContext context) =>
-      _RenderDialogActions(share, textDirection);
-
-  @override
-  void updateRenderObject(
-    BuildContext context,
-    _RenderDialogActions renderObject,
-  ) {
-    renderObject
-      ..share = share
-      ..textDirection = textDirection;
-  }
-}
-
-class _ActionsParentData extends ContainerBoxParentData<RenderBox> {}
-
-class _RenderDialogActions extends RenderBox
-    with
-        ContainerRenderObjectMixin<RenderBox, _ActionsParentData>,
-        RenderBoxContainerDefaultsMixin<RenderBox, _ActionsParentData> {
-  _RenderDialogActions(this._share, this._textDirection);
-
-  static const double _gap = StudioSpacing.medium;
-  static const double _stackGap = StudioSpacing.small;
-  static const double _least = 112;
-
-  bool get share => _share;
-  bool _share;
-  set share(bool value) {
-    if (value == _share) return;
-    _share = value;
-    markNeedsLayout();
-  }
-
-  TextDirection get textDirection => _textDirection;
-  TextDirection _textDirection;
-  set textDirection(TextDirection value) {
-    if (value == _textDirection) return;
-    _textDirection = value;
-    markNeedsLayout();
-  }
-
-  @override
-  void setupParentData(RenderBox child) {
-    if (child.parentData is! _ActionsParentData) {
-      child.parentData = _ActionsParentData();
-    }
-  }
-
-  List<RenderBox> get _keys => getChildrenAsList();
-
-  // Each key's width in a row, or null when they do not fit in [width].
-  List<double>? _row(double width) {
-    final keys = _keys;
-    final room = width - _gap * (keys.length - 1);
-    final wants = [
-      for (final k in keys) k.getMaxIntrinsicWidth(double.infinity),
-    ];
-    if (share) {
-      final each = room / keys.length;
-      return wants.every((w) => w <= each + 0.01)
-          ? List.filled(keys.length, each)
-          : null;
-    }
-    final widths = [for (final w in wants) math.max(w, _least)];
-    return widths.fold<double>(0, (a, b) => a + b) <= room + 0.01
-        ? widths
-        : null;
-  }
-
-  Size _layout(BoxConstraints constraints, {required bool dry}) {
-    final keys = _keys;
-    if (keys.isEmpty) return constraints.smallest;
-    final width = constraints.maxWidth;
-    Size measure(RenderBox k, BoxConstraints c) =>
-        dry ? k.getDryLayout(c) : (k..layout(c, parentUsesSize: true)).size;
-    final row = width.isFinite ? _row(width) : null;
-    if (row != null) {
-      var height = 0.0;
-      for (var i = 0; i < keys.length; i++) {
-        height = math.max(height, keys[i].getMinIntrinsicHeight(row[i]));
-      }
-      final total =
-          row.fold<double>(0, (a, b) => a + b) + _gap * (keys.length - 1);
-      var x = width - total;
-      for (var i = 0; i < keys.length; i++) {
-        final size = measure(
-          keys[i],
-          BoxConstraints.tightFor(width: row[i], height: height),
-        );
-        if (!dry) {
-          final left = textDirection == TextDirection.rtl
-              ? width - x - size.width
-              : x;
-          (keys[i].parentData! as _ActionsParentData).offset = Offset(left, 0);
-        }
-        x += row[i] + _gap;
-      }
-      return constraints.constrain(Size(width, height));
-    }
-    // A stack: the main key (the last) first, then the rest in reverse.
-    final full = width.isFinite
-        ? width
-        : keys.fold<double>(
-            0,
-            (a, k) => math.max(a, k.getMaxIntrinsicWidth(double.infinity)),
-          );
-    var height = 0.0;
-    for (final k in keys) {
-      height = math.max(height, k.getMinIntrinsicHeight(full));
-    }
-    var y = 0.0;
-    for (final k in keys.reversed) {
-      measure(k, BoxConstraints.tightFor(width: full, height: height));
-      if (!dry) {
-        (k.parentData! as _ActionsParentData).offset = Offset(0, y);
-      }
-      y += height + _stackGap;
-    }
-    return constraints.constrain(Size(full, y - _stackGap));
-  }
-
-  @override
-  void performLayout() => size = _layout(constraints, dry: false);
-
-  @override
-  Size computeDryLayout(BoxConstraints constraints) =>
-      _layout(constraints, dry: true);
-
-  @override
-  double computeMinIntrinsicWidth(double height) => _keys.fold(
-    0.0,
-    (a, k) => math.max(a, k.getMinIntrinsicWidth(double.infinity)),
-  );
-
-  @override
-  double computeMaxIntrinsicWidth(double height) {
-    final keys = _keys;
-    if (keys.isEmpty) return 0;
-    return keys.fold<double>(
-          0,
-          (a, k) =>
-              a + math.max(k.getMaxIntrinsicWidth(double.infinity), _least),
-        ) +
-        _gap * (keys.length - 1);
-  }
-
-  @override
-  double computeMinIntrinsicHeight(double width) =>
-      getDryLayout(BoxConstraints(maxWidth: width)).height;
-
-  @override
-  double computeMaxIntrinsicHeight(double width) =>
-      computeMinIntrinsicHeight(width);
-
-  @override
-  void paint(PaintingContext context, Offset offset) =>
-      defaultPaint(context, offset);
-
-  @override
-  bool hitTestChildren(BoxHitTestResult result, {required Offset position}) =>
-      defaultHitTestChildren(result, position: position);
-}
+const double _leastActionWidth = 112;
 
 /// Raises [builder]'s content in a [StudioSheet] from the bottom edge on
 /// ui_core's RawBottomSheetRoute: a drawer of metal sliding out on its

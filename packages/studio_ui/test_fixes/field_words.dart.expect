@@ -1,0 +1,161 @@
+// The names studio_ui 0.3.0 renames: field_words.dart calls them as before `dart fix --apply`,
+// field_words.dart.expect as after.
+import 'package:flutter/widgets.dart';
+import 'package:studio_ui/studio_ui.dart';
+
+void calls(BuildContext context) {
+  final v1 = StudioTextField(
+    labelText: 'Text',
+    hintText: 'Text',
+    helperText: 'Text',
+    errorText: 'Text',
+  );
+  print(v1.labelText);
+  print(v1.hintText);
+  print(v1.helperText);
+  print(v1.errorText);
+  final v2 = StudioPasswordField(labelText: 'Text', helperText: 'Text', errorText: 'Text');
+  print(v2.labelText);
+  print(v2.helperText);
+  print(v2.errorText);
+  final v3 = StudioInputGroup(
+    labelText: 'Text',
+    hintText: 'Text',
+    helperText: 'Text',
+    errorText: 'Text',
+  );
+  print(v3.labelText);
+  print(v3.hintText);
+  print(v3.helperText);
+  print(v3.errorText);
+  final v4 = StudioCodeField(labelText: 'Text', errorText: 'Text');
+  print(v4.labelText);
+  print(v4.errorText);
+  final v5 = StudioFormField(
+    labelText: 'Text',
+    helperText: 'Text',
+    errorText: 'Text',
+    child: const SizedBox(),
+  );
+  print(v5.labelText);
+  print(v5.helperText);
+  print(v5.errorText);
+  final v6 = StudioCombobox<String>(
+    labelOf: (v) => v,
+    labelText: 'Text',
+    hintText: 'Text',
+    helperText: 'Text',
+    errorText: 'Text',
+  );
+  print(v6.labelText);
+  print(v6.hintText);
+  print(v6.helperText);
+  print(v6.errorText);
+  final v7 = StudioTagInput<String>(
+    values: const [],
+    onChanged: (_) {},
+    labelOf: (v) => v,
+    labelText: 'Text',
+    hintText: 'Text',
+    helperText: 'Text',
+    errorText: 'Text',
+  );
+  print(v7.labelText);
+  print(v7.hintText);
+  print(v7.helperText);
+  print(v7.errorText);
+  final v8 = StudioDatePicker(
+    value: DateTime(2026),
+    onChanged: (_) {},
+    firstDate: DateTime(2026),
+    lastDate: DateTime(2026),
+    labelText: 'Text',
+    hintText: 'Text',
+    helperText: 'Text',
+    errorText: 'Text',
+  );
+  print(v8.labelText);
+  print(v8.hintText);
+  print(v8.helperText);
+  print(v8.errorText);
+  final v9 = StudioDateRangePicker(
+    value: null,
+    onChanged: (_) {},
+    firstDate: DateTime(2026),
+    lastDate: DateTime(2026),
+    labelText: 'Text',
+    hintText: 'Text',
+    helperText: 'Text',
+    errorText: 'Text',
+  );
+  print(v9.labelText);
+  print(v9.hintText);
+  print(v9.helperText);
+  print(v9.errorText);
+  final v10 = StudioSelect<String>(
+    items: const [],
+    value: 'a',
+    onChanged: (_) {},
+    labelText: 'Text',
+    hintText: 'Text',
+    helperText: 'Text',
+    errorText: 'Text',
+  );
+  print(v10.labelText);
+  print(v10.hintText);
+  print(v10.helperText);
+  print(v10.errorText);
+  final v11 = StudioInput(
+    hintText: 'Text',
+    labelText: 'Text',
+    errorText: 'Text',
+    obscureText: true,
+  );
+  print(v11.labelText);
+  print(v11.hintText);
+  print(v11.errorText);
+  print(v11.obscureText);
+  final v12 = StudioSearchField(hintText: 'Text');
+  print(v12.hintText);
+  final v13 = StudioHost(theme: null, darkTheme: null, child: const SizedBox());
+  print(v13.theme);
+  print(v13.darkTheme);
+  final v14 = StudioPreview(
+    theme: null,
+    darkTheme: null,
+    selectedIndex: 1,
+    child: const SizedBox(),
+  );
+  print(v14.theme);
+  print(v14.darkTheme);
+  print(v14.selectedIndex);
+  final v15 = StudioStepProgress(steps: const [], currentStep: 1);
+  print(v15.currentStep);
+  final v16 = StudioFileDrop(
+    onChoose: () {},
+    labelText: 'Text',
+    hintText: 'Text',
+    errorText: 'Text',
+  );
+  print(v16.labelText);
+  print(v16.hintText);
+  print(v16.errorText);
+  print([
+    v1,
+    v2,
+    v3,
+    v4,
+    v5,
+    v6,
+    v7,
+    v8,
+    v9,
+    v10,
+    v11,
+    v12,
+    v13,
+    v14,
+    v15,
+    v16,
+  ]);
+}

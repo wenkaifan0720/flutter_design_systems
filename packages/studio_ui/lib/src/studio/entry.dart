@@ -19,6 +19,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'button.dart';
 import 'feedback.dart' show StudioSpinner;
 import 'internal/control_light.dart';
+import 'internal/field_frame.dart';
 import 'internal/stepper_glyph.dart';
 import 'select.dart';
 import 'surface.dart';
@@ -167,7 +168,7 @@ class _WindowKey extends StatelessWidget {
 /// [StudioThemeData.textFieldStyle].
 ///
 /// ```dart
-/// StudioSearchField(hint: 'Search episodes', onChanged: (q) => setState(() => query = q))
+/// StudioSearchField(hintText: 'Search episodes', onChanged: (q) => setState(() => query = q))
 /// ```
 class StudioSearchField extends StatefulWidget {
   /// A search field.
@@ -175,7 +176,7 @@ class StudioSearchField extends StatefulWidget {
     super.key,
     this.controller,
     this.focusNode,
-    this.hint = 'Search',
+    this.hintText = 'Search',
     this.onChanged,
     this.onSubmitted,
     this.enabled = true,
@@ -192,7 +193,7 @@ class StudioSearchField extends StatefulWidget {
   final FocusNode? focusNode;
 
   /// What it says while empty.
-  final String hint;
+  final String hintText;
 
   /// Called as the words change (cleared included).
   final ValueChanged<String>? onChanged;
@@ -206,7 +207,7 @@ class StudioSearchField extends StatefulWidget {
   /// {@macro design.autofocus}
   final bool autofocus;
 
-  /// What a screen reader calls it; its [hint] when null.
+  /// What a screen reader calls it; its [hintText] when null.
   final String? semanticLabel;
 
   /// The clear key's name.
@@ -222,7 +223,7 @@ class StudioSearchField extends StatefulWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('hint', hint))
+      ..add(StringProperty('hint', hintText))
       ..add(FlagProperty('enabled', value: enabled, ifFalse: 'disabled'));
   }
 }
@@ -265,8 +266,8 @@ class _StudioSearchFieldState extends State<StudioSearchField> {
   Widget build(BuildContext context) => StudioTextField(
     controller: _controller,
     focusNode: widget.focusNode,
-    hint: widget.hint,
-    semanticLabel: widget.semanticLabel ?? widget.hint,
+    hintText: widget.hintText,
+    semanticLabel: widget.semanticLabel ?? widget.hintText,
     enabled: widget.enabled,
     autofocus: widget.autofocus,
     textInputAction: TextInputAction.search,
@@ -298,7 +299,7 @@ class _StudioSearchFieldState extends State<StudioSearchField> {
 /// [StudioTextField] does.
 ///
 /// ```dart
-/// StudioPasswordField(label: 'Password', onChanged: (v) => password = v)
+/// StudioPasswordField(labelText: 'Password', onChanged: (v) => password = v)
 /// ```
 class StudioPasswordField extends StatelessWidget {
   /// A password field.
@@ -306,9 +307,9 @@ class StudioPasswordField extends StatelessWidget {
     super.key,
     this.controller,
     this.focusNode,
-    this.label,
-    this.helper,
-    this.error,
+    this.labelText,
+    this.helperText,
+    this.errorText,
     this.onChanged,
     this.onSubmitted,
     this.enabled = true,
@@ -325,13 +326,13 @@ class StudioPasswordField extends StatelessWidget {
   final FocusNode? focusNode;
 
   /// The label above it.
-  final String? label;
+  final String? labelText;
 
   /// A note under it.
-  final String? helper;
+  final String? helperText;
 
   /// What is wrong, under it.
-  final String? error;
+  final String? errorText;
 
   /// Called as the words change.
   final ValueChanged<String>? onChanged;
@@ -363,9 +364,9 @@ class StudioPasswordField extends StatelessWidget {
     builder: (context, password) => StudioTextField(
       controller: controller,
       focusNode: focusNode,
-      label: label,
-      helper: helper,
-      error: error,
+      labelText: labelText,
+      helperText: helperText,
+      errorText: errorText,
       enabled: enabled,
       obscureText: password.obscured,
       autofillHints: autofillHints,
@@ -385,7 +386,7 @@ class StudioPasswordField extends StatelessWidget {
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
-    properties.add(StringProperty('label', label, defaultValue: null));
+    properties.add(StringProperty('label', labelText, defaultValue: null));
   }
 }
 
@@ -398,7 +399,7 @@ class StudioPasswordField extends StatelessWidget {
 /// then [StudioThemeData.textFieldStyle].
 ///
 /// ```dart
-/// StudioInputGroup(label: 'Feed address', leading: const Text('https://'), hint: 'roomtone.example/feed', onChanged: (v) => feed = v)
+/// StudioInputGroup(labelText: 'Feed address', leading: const Text('https://'), hintText: 'roomtone.example/feed', onChanged: (v) => feed = v)
 /// ```
 class StudioInputGroup extends StatefulWidget {
   /// A field with add-ons.
@@ -408,10 +409,10 @@ class StudioInputGroup extends StatefulWidget {
     this.focusNode,
     this.leading,
     this.trailing,
-    this.label,
-    this.hint,
-    this.helper,
-    this.error,
+    this.labelText,
+    this.hintText,
+    this.helperText,
+    this.errorText,
     this.onChanged,
     this.onSubmitted,
     this.keyboardType,
@@ -433,16 +434,16 @@ class StudioInputGroup extends StatefulWidget {
   final Widget? trailing;
 
   /// The label above it.
-  final String? label;
+  final String? labelText;
 
   /// What it says while empty.
-  final String? hint;
+  final String? hintText;
 
   /// A note under it.
-  final String? helper;
+  final String? helperText;
 
   /// What is wrong, under it.
-  final String? error;
+  final String? errorText;
 
   /// Called as the words change.
   final ValueChanged<String>? onChanged;
@@ -469,7 +470,7 @@ class StudioInputGroup extends StatefulWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('label', labelText, defaultValue: null))
       ..add(FlagProperty('enabled', value: enabled, ifFalse: 'disabled'));
   }
 }
@@ -520,65 +521,61 @@ class _StudioInputGroupState extends State<StudioInputGroup> {
   Widget build(BuildContext context) {
     final theme = StudioTheme.of(context);
     final c = theme.colors;
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        if (widget.label != null)
-          ExcludeSemantics(
-            child: StudioFieldLabel(widget.label!, enabled: widget.enabled),
-          ),
-        DesignInputGroup(
-          focusNode: _focus,
-          enabled: widget.enabled,
-          isError: widget.error != null,
-          builder: (context, states, child) {
-            final layered = DesignStyleOf([
-              widget.style,
-              theme.textFieldStyle,
-            ], states);
-            return AnimatedStudioSurface(
-              face: layered.on(_window(theme, states)),
-              stiffness: StudioMotion.lampStiffness,
-              child: child,
-            );
-          },
-          child: IntrinsicHeight(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                if (widget.leading != null) ...[
-                  ExcludeSemantics(child: _plate(context, widget.leading!)),
-                  _groove(c),
-                ],
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: StudioSpacing.medium + StudioSpacing.hair,
-                    ),
-                    child: _Entry(
-                      controller: _controller,
-                      focusNode: _focus,
-                      hint: widget.hint,
-                      enabled: widget.enabled,
-                      semanticLabel: widget.label,
-                      onChanged: widget.onChanged,
-                      onSubmitted: widget.onSubmitted,
-                      keyboardType: widget.keyboardType,
-                      inputFormatters: widget.inputFormatters,
-                    ),
+    return StudioFieldFrame(
+      labelText: widget.labelText,
+      helperText: widget.helperText,
+      errorText: widget.errorText,
+      enabled: widget.enabled,
+      focusNode: _focus,
+      child: DesignInputGroup(
+        focusNode: _focus,
+        enabled: widget.enabled,
+        isError: widget.errorText != null,
+        builder: (context, states, child) {
+          final layered = DesignStyleOf([
+            widget.style,
+            theme.textFieldStyle,
+          ], states);
+          return AnimatedStudioSurface(
+            face: layered.on(_window(theme, states)),
+            stiffness: StudioMotion.lampStiffness,
+            child: child,
+          );
+        },
+        child: IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              if (widget.leading != null) ...[
+                ExcludeSemantics(child: _plate(context, widget.leading!)),
+                _groove(c),
+              ],
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: StudioSpacing.medium + StudioSpacing.hair,
+                  ),
+                  child: _Entry(
+                    controller: _controller,
+                    focusNode: _focus,
+                    hint: widget.hintText,
+                    enabled: widget.enabled,
+                    semanticLabel: widget.labelText,
+                    onChanged: widget.onChanged,
+                    onSubmitted: widget.onSubmitted,
+                    keyboardType: widget.keyboardType,
+                    inputFormatters: widget.inputFormatters,
                   ),
                 ),
-                if (widget.trailing != null) ...[
-                  _groove(c),
-                  ExcludeSemantics(child: _plate(context, widget.trailing!)),
-                ],
+              ),
+              if (widget.trailing != null) ...[
+                _groove(c),
+                ExcludeSemantics(child: _plate(context, widget.trailing!)),
               ],
-            ),
+            ],
           ),
         ),
-        StudioFieldMessage(helper: widget.helper, error: widget.error),
-      ],
+      ),
     );
   }
 }
@@ -602,9 +599,9 @@ class StudioCodeField extends StatelessWidget {
     this.focusNode,
     this.onChanged,
     this.onCompleted,
-    this.label,
+    this.labelText,
     this.semanticLabel,
-    this.error,
+    this.errorText,
     this.enabled = true,
     this.obscureText = false,
     this.autofocus = false,
@@ -626,13 +623,13 @@ class StudioCodeField extends StatelessWidget {
   final ValueChanged<String>? onCompleted;
 
   /// The label above it.
-  final String? label;
+  final String? labelText;
 
-  /// What a screen reader calls it; [label] when null.
+  /// What a screen reader calls it; [labelText] when null.
   final String? semanticLabel;
 
   /// What is wrong, under it.
-  final String? error;
+  final String? errorText;
 
   /// Whether it takes figures.
   final bool enabled;
@@ -647,74 +644,72 @@ class StudioCodeField extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = StudioTheme.of(context);
     final c = theme.colors;
-    return Column(
-      mainAxisSize: MainAxisSize.min,
+    return StudioFieldFrame(
+      labelText: labelText,
+      errorText: errorText,
+      enabled: enabled,
+      focusNode: focusNode,
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (label != null)
-          ExcludeSemantics(child: StudioFieldLabel(label!, enabled: enabled)),
-        RawOtpField(
-          length: length,
-          controller: controller,
-          focusNode: focusNode,
-          onChanged: onChanged,
-          onCompleted: onCompleted,
-          enabled: enabled,
-          isError: error != null,
-          obscureText: obscureText,
-          autofocus: autofocus,
-          semanticLabel: semanticLabel ?? label,
-          layoutBuilder: (context, slots) => Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              for (final (i, slot) in slots.indexed) ...[
-                if (i > 0)
-                  SizedBox(
-                    width: length == 6 && i == 3
-                        ? StudioSpacing.large
-                        : StudioSpacing.small,
-                  ),
-                slot,
-              ],
-            ],
-          ),
-          slotBuilder: (context, slot) {
-            final figure = slot.character;
-            return SizedBox(
-              width: 40,
-              height: 52,
-              child: AnimatedStudioSurface(
-                stiffness: StudioMotion.lampStiffness,
-                face: c.readoutFace.copyWith(
-                  radius: StudioRadii.small,
-                  rim: slot.isError
-                      ? c.danger
-                      : slot.active && slot.focused
-                      ? c.readoutLit.withValues(alpha: 0.9)
-                      : c.readoutLit.withValues(alpha: 0),
+      child: RawOtpField(
+        length: length,
+        controller: controller,
+        focusNode: focusNode,
+        onChanged: onChanged,
+        onCompleted: onCompleted,
+        enabled: enabled,
+        isError: errorText != null,
+        obscureText: obscureText,
+        autofocus: autofocus,
+        semanticLabel: semanticLabel ?? labelText,
+        layoutBuilder: (context, slots) => Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            for (final (i, slot) in slots.indexed) ...[
+              if (i > 0)
+                SizedBox(
+                  width: length == 6 && i == 3
+                      ? StudioSpacing.large
+                      : StudioSpacing.small,
                 ),
-                child: Center(
-                  child: Text(
-                    figure.isEmpty
-                        ? ''
-                        : slot.obscured
-                        ? '•'
-                        : figure,
-                    style: theme.textTheme.readout.copyWith(
-                      fontSize: 24,
-                      color: slot.enabled ? c.readoutLit : c.disabled,
-                      shadows: slot.enabled
-                          ? c.readoutGlow(c.readoutLit, alpha: 0.5)
-                          : null,
-                    ),
+              slot,
+            ],
+          ],
+        ),
+        slotBuilder: (context, slot) {
+          final figure = slot.character;
+          return SizedBox(
+            width: 40,
+            height: 52,
+            child: AnimatedStudioSurface(
+              stiffness: StudioMotion.lampStiffness,
+              face: c.readoutFace.copyWith(
+                radius: StudioRadii.small,
+                rim: slot.isError
+                    ? c.danger
+                    : slot.active && slot.focused
+                    ? c.readoutLit.withValues(alpha: 0.9)
+                    : c.readoutLit.withValues(alpha: 0),
+              ),
+              child: Center(
+                child: Text(
+                  figure.isEmpty
+                      ? ''
+                      : slot.obscured
+                      ? '•'
+                      : figure,
+                  style: theme.textTheme.readout.copyWith(
+                    fontSize: 24,
+                    color: slot.enabled ? c.readoutLit : c.disabled,
+                    shadows: slot.enabled
+                        ? c.readoutGlow(c.readoutLit, alpha: 0.5)
+                        : null,
                   ),
                 ),
               ),
-            );
-          },
-        ),
-        StudioFieldMessage(error: error),
-      ],
+            ),
+          );
+        },
+      ),
     );
   }
 
@@ -919,16 +914,16 @@ class StudioStepper extends StatelessWidget {
 /// and needs none.
 ///
 /// ```dart
-/// StudioFormField(label: 'Publish at', helper: "Your listeners' time", child: StudioTimePicker(value: time, semanticLabel: 'Publish at', onChanged: setTime))
+/// StudioFormField(labelText: 'Publish at', helperText: "Your listeners' time", child: StudioTimePicker(value: time, semanticLabel: 'Publish at', onChanged: setTime))
 /// ```
 class StudioFormField extends StatelessWidget {
   /// [child] as a field.
   const StudioFormField({
     super.key,
     required this.child,
-    this.label,
-    this.helper,
-    this.error,
+    this.labelText,
+    this.helperText,
+    this.errorText,
     this.isRequired = false,
     this.enabled = true,
     this.mergeSemantics,
@@ -938,13 +933,13 @@ class StudioFormField extends StatelessWidget {
   final Widget child;
 
   /// Its label.
-  final String? label;
+  final String? labelText;
 
   /// A note under it.
-  final String? helper;
+  final String? helperText;
 
   /// What is wrong, in the help's place.
-  final String? error;
+  final String? errorText;
 
   /// Whether it must be filled in (a screen reader says so).
   final bool isRequired;
@@ -962,9 +957,9 @@ class StudioFormField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => RawInputDecorator(
-    labelText: label,
-    helperText: helper,
-    errorText: error,
+    labelText: labelText,
+    helperText: helperText,
+    errorText: errorText,
     required: isRequired,
     enabled: enabled,
     mergeSemantics: mergeSemantics,
@@ -1017,9 +1012,9 @@ class StudioFormField extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('label', label, defaultValue: null))
-      ..add(StringProperty('helper', helper, defaultValue: null))
-      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(StringProperty('label', labelText, defaultValue: null))
+      ..add(StringProperty('helper', helperText, defaultValue: null))
+      ..add(StringProperty('error', errorText, defaultValue: null))
       ..add(FlagProperty('isRequired', value: isRequired, ifTrue: 'required'))
       ..add(FlagProperty('enabled', value: enabled, ifFalse: 'disabled'))
       ..add(
@@ -1192,7 +1187,7 @@ Widget _failed(BuildContext context, RawSearchError error) {
 /// typing after it.
 ///
 /// ```dart
-/// StudioCombobox<String>(label: 'Show', options: shows, labelOf: (s) => s, value: show, onSelected: (s) => setState(() => show = s))
+/// StudioCombobox<String>(labelText: 'Show', options: shows, labelOf: (s) => s, value: show, onSelected: (s) => setState(() => show = s))
 /// ```
 class StudioCombobox<T extends Object> extends StatelessWidget {
   /// A combobox over [options].
@@ -1204,10 +1199,10 @@ class StudioCombobox<T extends Object> extends StatelessWidget {
     required this.labelOf,
     this.value,
     this.onSelected,
-    this.label,
-    this.hint,
-    this.helper,
-    this.error,
+    this.labelText,
+    this.hintText,
+    this.helperText,
+    this.errorText,
     this.emptyText = 'Nothing matches',
     this.requireSelection = true,
     this.enabled = true,
@@ -1235,16 +1230,16 @@ class StudioCombobox<T extends Object> extends StatelessWidget {
   final ValueChanged<T>? onSelected;
 
   /// The label above it.
-  final String? label;
+  final String? labelText;
 
   /// What it says while empty.
-  final String? hint;
+  final String? hintText;
 
   /// A note under it.
-  final String? helper;
+  final String? helperText;
 
   /// What is wrong, under it.
-  final String? error;
+  final String? errorText;
 
   /// What the list says when nothing matches.
   final String emptyText;
@@ -1264,32 +1259,35 @@ class StudioCombobox<T extends Object> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = StudioTheme.of(context).colors;
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        if (label != null)
-          ExcludeSemantics(child: StudioFieldLabel(label!, enabled: enabled)),
-        RawCombobox<T>(
-          options: options,
-          search: search,
-          debounceDuration: debounceDuration,
-          loadingBuilder: _searching,
-          errorBuilder: _failed,
-          displayStringForOption: labelOf,
-          value: value,
-          onSelected: onSelected,
-          requireSelection: requireSelection,
-          isOptionEnabled: isOptionEnabled,
-          // One lit slot: the pointer's row is the keys' row.
-          highlightFollowsPointer: true,
-          semanticLabel: label,
-          fieldBuilder: (context, field) => StudioTextField(
+    return StudioFieldFrame(
+      labelText: labelText,
+      helperText: helperText,
+      errorText: errorText,
+      enabled: enabled,
+      child: RawCombobox<T>(
+        options: options,
+        search: search,
+        debounceDuration: debounceDuration,
+        loadingBuilder: _searching,
+        errorBuilder: _failed,
+        displayStringForOption: labelOf,
+        value: value,
+        onSelected: onSelected,
+        requireSelection: requireSelection,
+        isOptionEnabled: isOptionEnabled,
+        // One lit slot: the pointer's row is the keys' row.
+        highlightFollowsPointer: true,
+        semanticLabel: labelText,
+        // The entry says whether its list is expanded, as a select's
+        // window does.
+        fieldBuilder: (context, field) => Semantics(
+          expanded: field.isOpen,
+          child: StudioTextField(
             controller: field.controller,
             focusNode: field.focusNode,
-            hint: hint,
-            error: error == null ? null : '',
-            semanticLabel: label,
+            hintText: hintText,
+            errorText: errorText == null ? null : '',
+            semanticLabel: labelText,
             enabled: enabled,
             style: style,
             textCapitalization: TextCapitalization.none,
@@ -1306,26 +1304,25 @@ class StudioCombobox<T extends Object> extends StatelessWidget {
               ),
             ),
           ),
-          optionBuilder: (context, option, states) => StudioMenuRow(
-            label: labelOf(option),
-            states: states,
-            // Opened on its value by a pointer, the list marks the value as
-            // chosen only (its lamp, heavier words), as a select's list does,
-            // until a key or the pointer moves: lit, it would read as the
-            // keys parked on it.
-            highlighted:
-                states.contains(WidgetState.selected) &&
-                    !_OpenedList.movedOf(context)
-                ? false
-                : null,
-            showLamp: true,
-          ),
-          surfaceBuilder: (context, list) =>
-              _OpenedList(child: _suggestions(context, list)),
-          emptyBuilder: (context) => _nothing(context, emptyText),
         ),
-        StudioFieldMessage(helper: helper, error: error),
-      ],
+        optionBuilder: (context, option, states) => StudioMenuRow(
+          label: labelOf(option),
+          states: states,
+          // Opened on its value by a pointer, the list marks the value as
+          // chosen only (its lamp, heavier words), as a select's list does,
+          // until a key or the pointer moves: lit, it would read as the
+          // keys parked on it.
+          highlighted:
+              states.contains(WidgetState.selected) &&
+                  !_OpenedList.movedOf(context)
+              ? false
+              : null,
+          showLamp: true,
+        ),
+        surfaceBuilder: (context, list) =>
+            _OpenedList(child: _suggestions(context, list)),
+        emptyBuilder: (context) => _nothing(context, emptyText),
+      ),
     );
   }
 
@@ -1334,7 +1331,7 @@ class StudioCombobox<T extends Object> extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(DiagnosticsProperty<T>('value', value, defaultValue: null))
-      ..add(StringProperty('label', label, defaultValue: null));
+      ..add(StringProperty('label', labelText, defaultValue: null));
   }
 }
 
@@ -1350,7 +1347,7 @@ class StudioCombobox<T extends Object> extends StatelessWidget {
 /// editing-complete (never its submit), so on the web typing carries on.
 ///
 /// ```dart
-/// StudioTagInput<String>(label: 'Topics', values: topics, options: allTopics, labelOf: (t) => t, onChanged: (next) => setState(() => topics = next))
+/// StudioTagInput<String>(labelText: 'Topics', values: topics, options: allTopics, labelOf: (t) => t, onChanged: (next) => setState(() => topics = next))
 /// ```
 class StudioTagInput<T extends Object> extends StatefulWidget {
   /// Tags over [values].
@@ -1363,10 +1360,10 @@ class StudioTagInput<T extends Object> extends StatefulWidget {
     this.debounceDuration,
     required this.labelOf,
     this.onCreate,
-    this.label,
-    this.hint,
-    this.helper,
-    this.error,
+    this.labelText,
+    this.hintText,
+    this.helperText,
+    this.errorText,
     this.maxTags,
     this.enabled = true,
     this.isOptionEnabled,
@@ -1397,16 +1394,16 @@ class StudioTagInput<T extends Object> extends StatefulWidget {
   final T? Function(String words)? onCreate;
 
   /// The label above it.
-  final String? label;
+  final String? labelText;
 
   /// What it says while it holds nothing.
-  final String? hint;
+  final String? hintText;
 
   /// A note under it.
-  final String? helper;
+  final String? helperText;
 
   /// What is wrong, under it.
-  final String? error;
+  final String? errorText;
 
   /// The most values it takes.
   final int? maxTags;
@@ -1431,7 +1428,7 @@ class StudioTagInput<T extends Object> extends StatefulWidget {
     super.debugFillProperties(properties);
     properties
       ..add(IterableProperty<T>('values', values))
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('label', labelText, defaultValue: null))
       ..add(FlagProperty('enabled', value: enabled, ifFalse: 'disabled'));
   }
 }
@@ -1460,103 +1457,103 @@ class _StudioTagInputState<T extends Object> extends State<StudioTagInput<T>> {
     final theme = StudioTheme.of(context);
     final states = <WidgetState>{
       if (!widget.enabled) WidgetState.disabled,
-      if (widget.error != null) WidgetState.error,
+      if (widget.errorText != null) WidgetState.error,
       if (_focus.hasFocus) WidgetState.focused,
     };
     final layered = DesignStyleOf([widget.style, theme.textFieldStyle], states);
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        if (widget.label != null)
-          ExcludeSemantics(
-            child: StudioFieldLabel(widget.label!, enabled: widget.enabled),
-          ),
-        RawTagInput<T>(
-          values: widget.values,
-          onChanged: widget.onChanged,
-          options: widget.options,
-          search: widget.search,
-          debounceDuration: widget.debounceDuration,
-          loadingBuilder: _searching,
-          errorBuilder: _failed,
-          displayStringForOption: widget.labelOf,
-          onCreate: widget.onCreate,
-          maxTags: widget.maxTags,
-          isOptionEnabled: widget.isOptionEnabled,
-          highlightFollowsPointer: true,
-          focusNode: _focus,
-          semanticLabel: widget.label,
-          deleteLabel: widget.removeLabel,
-          layoutBuilder: (context, tags, field) => MouseRegion(
-            cursor: widget.enabled
-                ? SystemMouseCursors.text
-                : SystemMouseCursors.basic,
-            // A press anywhere in the window gives the entry the keyboard:
-            // the pointer's convenience; a screen reader focuses the entry.
-            child: GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              excludeFromSemantics: true,
-              onTap: widget.enabled ? _focus.requestFocus : null,
-              child: AnimatedStudioSurface(
-                stiffness: StudioMotion.lampStiffness,
-                face: layered.on(
-                  _window(theme, states).copyWith(
-                    radius: StudioRadii.small + StudioMetrics.recessInset,
-                  ),
+    return StudioFieldFrame(
+      labelText: widget.labelText,
+      helperText: widget.helperText,
+      errorText: widget.errorText,
+      enabled: widget.enabled,
+      child: RawTagInput<T>(
+        values: widget.values,
+        onChanged: widget.onChanged,
+        options: widget.options,
+        search: widget.search,
+        debounceDuration: widget.debounceDuration,
+        loadingBuilder: _searching,
+        errorBuilder: _failed,
+        displayStringForOption: widget.labelOf,
+        onCreate: widget.onCreate,
+        maxTags: widget.maxTags,
+        isOptionEnabled: widget.isOptionEnabled,
+        highlightFollowsPointer: true,
+        focusNode: _focus,
+        semanticLabel: widget.labelText,
+        deleteLabel: widget.removeLabel,
+        layoutBuilder: (context, tags, field) => MouseRegion(
+          cursor: widget.enabled
+              ? SystemMouseCursors.text
+              : SystemMouseCursors.basic,
+          // A press anywhere in the window gives the entry the keyboard:
+          // the pointer's convenience; a screen reader focuses the entry.
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            excludeFromSemantics: true,
+            onTap: widget.enabled ? _focus.requestFocus : null,
+            child: AnimatedStudioSurface(
+              stiffness: StudioMotion.lampStiffness,
+              face: layered.on(
+                _window(theme, states).copyWith(
+                  radius: StudioRadii.small + StudioMetrics.recessInset,
                 ),
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(minHeight: theme.controlHeight),
-                  child: Padding(
-                    padding: const EdgeInsets.all(StudioMetrics.recessInset),
-                    child: Wrap(
-                      spacing: StudioSpacing.tight,
-                      runSpacing: StudioSpacing.tight,
-                      crossAxisAlignment: WrapCrossAlignment.center,
-                      children: [
-                        ...tags,
-                        ConstrainedBox(
-                          constraints: const BoxConstraints(
-                            minWidth: 120,
-                            maxWidth: 240,
-                          ),
-                          child: IntrinsicWidth(child: field),
+              ),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: theme.controlHeight),
+                child: Padding(
+                  padding: const EdgeInsets.all(StudioMetrics.recessInset),
+                  child: Wrap(
+                    spacing: StudioSpacing.tight,
+                    runSpacing: StudioSpacing.tight,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      ...tags,
+                      ConstrainedBox(
+                        constraints: const BoxConstraints(
+                          minWidth: 120,
+                          maxWidth: 240,
                         ),
-                      ],
-                    ),
+                        child: IntrinsicWidth(child: field),
+                      ),
+                    ],
                   ),
                 ),
               ),
             ),
           ),
-          fieldBuilder: (context, field) => Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: StudioSpacing.small - StudioSpacing.hair,
-            ),
+        ),
+        fieldBuilder: (context, field) => Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: StudioSpacing.small - StudioSpacing.hair,
+          ),
+          // The entry says whether its list is expanded, as a select's
+          // window does.
+          child: Semantics(
+            expanded: field.isOpen,
             child: _Entry(
               controller: field.controller,
               focusNode: field.focusNode,
               enabled: widget.enabled,
-              hint: widget.values.isEmpty ? widget.hint : null,
-              semanticLabel: widget.label,
+              hint: widget.values.isEmpty ? widget.hintText : null,
+              semanticLabel: widget.labelText,
               textStyle: layered.textStyle,
               // Enter takes a tag and leaves the keyboard here for the next.
               onEditingComplete: field.submit,
             ),
           ),
-          tagBuilder: (context, value, tag) => _Plate(
-            label: widget.labelOf(value),
-            focused: tag.focused,
-            enabled: widget.enabled,
-            removeLabel: '${widget.removeLabel} ${widget.labelOf(value)}',
-            onDeleted: tag.onDeleted,
-          ),
-          optionBuilder: (context, option, states) =>
-              StudioMenuRow(label: widget.labelOf(option), states: states),
-          surfaceBuilder: _suggestions,
         ),
-        StudioFieldMessage(helper: widget.helper, error: widget.error),
-      ],
+        tagBuilder: (context, value, tag) => _Plate(
+          label: widget.labelOf(value),
+          focused: tag.focused,
+          enabled: widget.enabled,
+          removeLabel: '${widget.removeLabel} ${widget.labelOf(value)}',
+          onDeleted: tag.onDeleted,
+        ),
+        optionBuilder: (context, option, states) =>
+            StudioMenuRow(label: widget.labelOf(option), states: states),
+        surfaceBuilder: _suggestions,
+      ),
     );
   }
 }

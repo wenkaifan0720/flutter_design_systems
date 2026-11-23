@@ -67,9 +67,9 @@ class RoomtoneSettings extends StatelessWidget {
           roomtoneGroupGap,
           const StudioSectionHeader('Downloads'),
           StudioSelect<String>(
-            label: 'Audio quality',
+            labelText: 'Audio quality',
             value: prefs.quality,
-            helper: 'Higher quality takes more room on the device.',
+            helperText: 'Higher quality takes more room on the device.',
             items: const [
               StudioSelectItem(value: 'standard', label: 'Standard, 64 kbps'),
               StudioSelectItem(value: 'high', label: 'High, 128 kbps'),

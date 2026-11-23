@@ -68,6 +68,9 @@ void main() {
         // ("Tab 1 of 4").
         final places = <String>{};
         void visit(SemanticsNode node) {
+          // A node merged into its parent is read as part of it, never on
+          // its own.
+          if (node.isMergedIntoParent) return;
           final data = node.getSemanticsData();
           final lines = data.label
               .split('\n')

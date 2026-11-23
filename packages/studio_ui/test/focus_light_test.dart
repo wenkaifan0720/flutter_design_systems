@@ -279,7 +279,7 @@ void main() {
     ),
     'text field': SizedBox(
       width: 300,
-      child: StudioTextField(label: 'Title', onChanged: (_) {}),
+      child: StudioTextField(labelText: 'Title', onChanged: (_) {}),
     ),
     'search field': SizedBox(
       width: 300,
@@ -288,7 +288,7 @@ void main() {
     'input group': SizedBox(
       width: 300,
       child: StudioInputGroup(
-        label: 'Feed address',
+        labelText: 'Feed address',
         leading: const Text('https://'),
         onChanged: (_) {},
       ),
@@ -296,7 +296,7 @@ void main() {
     'tag input': SizedBox(
       width: 300,
       child: StudioTagInput<String>(
-        label: 'Guests',
+        labelText: 'Guests',
         values: const [],
         onChanged: (_) {},
         labelOf: (v) => v,
@@ -305,7 +305,7 @@ void main() {
     'select': SizedBox(
       width: 300,
       child: StudioSelect<String>(
-        label: 'Quality',
+        labelText: 'Quality',
         value: 'High',
         items: const [
           StudioSelectItem(value: 'High', label: 'High'),
@@ -628,7 +628,7 @@ void main() {
         tester,
         SizedBox(
           width: 300,
-          child: StudioTextField(label: 'Title', onChanged: (_) {}),
+          child: StudioTextField(labelText: 'Title', onChanged: (_) {}),
         ),
         brightness,
       );

@@ -62,7 +62,7 @@ class _ListState extends State<_List> {
               child: SizedBox(
                 width: 320,
                 child: StudioCombobox<String>(
-                  label: 'Show',
+                  labelText: 'Show',
                   options: _shows,
                   labelOf: (s) => s,
                   value: null,

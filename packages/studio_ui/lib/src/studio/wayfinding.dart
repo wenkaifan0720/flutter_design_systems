@@ -242,26 +242,26 @@ class StudioPagination extends StatelessWidget {
 }
 
 /// Steps along an engraved line, each a lamp with its name printed under
-/// it: the steps done lit, the [current] one lit with a ring round it and
+/// it: the steps done lit, the [currentStep] one lit with a ring round it and
 /// its name heavier, the ones to come dark. Read to a screen reader as
 /// "Step 2 of 3, Details".
 ///
 /// ```dart
-/// StudioStepProgress(steps: const ['Record', 'Edit', 'Publish'], current: 1)
+/// StudioStepProgress(steps: const ['Record', 'Edit', 'Publish'], currentStep: 1)
 /// ```
 class StudioStepProgress extends StatelessWidget {
-  /// Progress through [steps], at [current] (from 0).
+  /// Progress through [steps], at [currentStep] (from 0).
   const StudioStepProgress({
     super.key,
     required this.steps,
-    required this.current,
+    required this.currentStep,
   });
 
   /// The steps' names, in order.
   final List<String> steps;
 
   /// The step you are on, from 0.
-  final int current;
+  final int currentStep;
 
   @override
   Widget build(BuildContext context) {
@@ -271,8 +271,8 @@ class StudioStepProgress extends StatelessWidget {
     return Semantics(
       container: true,
       label:
-          'Step ${current + 1} of ${steps.length}, '
-          '${steps[current.clamp(0, steps.length - 1)]}',
+          'Step ${currentStep + 1} of ${steps.length}, '
+          '${steps[currentStep.clamp(0, steps.length - 1)]}',
       excludeSemantics: true,
       child: LayoutBuilder(
         builder: (context, constraints) {
@@ -297,7 +297,7 @@ class StudioStepProgress extends StatelessWidget {
                       ),
                       FractionallySizedBox(
                         alignment: AlignmentDirectional.centerStart,
-                        widthFactor: (current / (n - 1)).clamp(0.0, 1.0),
+                        widthFactor: (currentStep / (n - 1)).clamp(0.0, 1.0),
                         child: Container(
                           height: 2,
                           decoration: BoxDecoration(
@@ -329,7 +329,7 @@ class StudioStepProgress extends StatelessWidget {
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
                                   border: Border.all(
-                                    color: i == current
+                                    color: i == currentStep
                                         ? c.indicator.withValues(alpha: 0.7)
                                         : c.indicator.withValues(alpha: 0),
                                     width: 1.5,
@@ -339,7 +339,10 @@ class StudioStepProgress extends StatelessWidget {
                                   padding: const EdgeInsets.all(
                                     StudioMetrics.lip,
                                   ),
-                                  child: StudioLamp(on: i <= current, size: 10),
+                                  child: StudioLamp(
+                                    on: i <= currentStep,
+                                    size: 10,
+                                  ),
                                 ),
                               ),
                             ),
@@ -351,8 +354,10 @@ class StudioStepProgress extends StatelessWidget {
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                             style: theme.textTheme.caption.copyWith(
-                              color: i <= current ? c.legend : c.legendMuted,
-                              fontWeight: i == current
+                              color: i <= currentStep
+                                  ? c.legend
+                                  : c.legendMuted,
+                              fontWeight: i == currentStep
                                   ? FontWeight.w700
                                   : FontWeight.w500,
                             ),
@@ -374,7 +379,7 @@ class StudioStepProgress extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(IterableProperty<String>('steps', steps))
-      ..add(IntProperty('current', current));
+      ..add(IntProperty('current', currentStep));
   }
 }
 

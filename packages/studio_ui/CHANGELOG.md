@@ -1,3 +1,31 @@
+## 0.3.0
+
+- Needs ui_core 0.5.1.
+- Under a toaster, a heading and the text after it are read as two nodes again, the heading as a header; ui_core
+  0.5.0's keyboard shortcuts over the whole app merged them into one.
+- While a page covers a screen's navigation bar, a toast stands over the screen's foot, and over the bar again
+  as the page goes.
+- A field's words take Flutter's names: `label`, `hint`, `helper` and `error` are `labelText`, `hintText`,
+  `helperText` and `errorText` on `StudioTextField`, `StudioPasswordField`, `StudioInputGroup`,
+  `StudioCodeField`, `StudioFormField`, `StudioCombobox`, `StudioTagInput`, `StudioDatePicker`,
+  `StudioDateRangePicker`, `StudioSelect`, `StudioInput`, `StudioSearchField` and `StudioFileDrop`.
+  `dart fix --apply` moves your code.
+- More of Flutter's names, each moved by `dart fix --apply`: `StudioInput.obscure` is `obscureText`;
+  `StudioHost`'s and `StudioPreview`'s `light` and `dark` are `theme` and `darkTheme`, as `MaterialApp`'s;
+  `StudioPreview.activeIndex` is `selectedIndex`; `StudioStepProgress.current` is `currentStep`, as
+  `Stepper`'s.
+- A field's label, help and error are ui_core's `DesignField` (`RawInputDecorator`): a screen reader hears them on
+  the field's control, and an error where the platform makes no announcements. An `errorText` of `''` marks the
+  field invalid with no words under it, as `InputDecoration`'s does.
+- `StudioDialog` lays its keys out with ui_core's `RawActionBar`: in one row while they fit, else stacked in one
+  column of one width, the main key on top.
+- `StudioCombobox` and `StudioTagInput` say on their input whether their list is expanded.
+- `StudioSelect` opens with the focus on its chosen option (none chosen: its first), and `StudioDatePicker` on its
+  chosen day, from the first frame.
+- `StudioDatePicker` and `StudioDateRangePicker` ask for their whole month (`RawPopoverFit.whole`).
+- At twice the text on a phone a `StudioSectionHeader`'s legend wraps within its line, leaving its groove a
+  stub, rather than run past the line's end. `StudioLegend.maxLines` (one by default; null wraps) sets it.
+
 ## 0.2.1
 
 - Needs ui_core 0.4.1.

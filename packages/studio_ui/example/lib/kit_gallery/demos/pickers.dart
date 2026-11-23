@@ -19,7 +19,7 @@ Widget kitPickersDemo(Brightness brightness) => kitScreen(
         kitState<DateTime?>(
           DateTime(2026, 11, 20),
           (context, v, set) => StudioDatePicker(
-            label: 'Release date',
+            labelText: 'Release date',
             value: v,
             firstDate: _first,
             lastDate: _last,
@@ -30,7 +30,7 @@ Widget kitPickersDemo(Brightness brightness) => kitScreen(
         kitState<StudioDateRange?>(
           null,
           (context, v, set) => StudioDateRangePicker(
-            label: 'Recording days',
+            labelText: 'Recording days',
             value: v,
             firstDate: _first,
             lastDate: _last,
@@ -168,8 +168,8 @@ Widget kitPickersDemo(Brightness brightness) => kitScreen(
       children: [
         Builder(
           builder: (context) => StudioFileDrop(
-            label: 'Audio',
-            hint: 'WAV or MP3, up to 500 MB',
+            labelText: 'Audio',
+            hintText: 'WAV or MP3, up to 500 MB',
             onChoose: () => kitFeedback(context, 'Choose a file'),
             onRemove: (_) => kitFeedback(context, 'Removed'),
             files: const [
@@ -179,9 +179,9 @@ Widget kitPickersDemo(Brightness brightness) => kitScreen(
           ),
         ),
         const StudioFileDrop(
-          label: 'Cover',
+          labelText: 'Cover',
           onChoose: null,
-          error: 'The cover must be square.',
+          errorText: 'The cover must be square.',
         ),
       ],
     ),
