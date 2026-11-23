@@ -421,7 +421,7 @@ class SimmerFrameState extends State<SimmerFrame> {
     return GlossScaffold(
       destinations: _places,
       selectedIndex: _place.index,
-      onSelected: (i) => go(SimmerPlace.values[i]),
+      onDestinationSelected: (i) => go(SimmerPlace.values[i]),
       brand: width >= 1024
           ? const Text('Simmer')
           : Text(

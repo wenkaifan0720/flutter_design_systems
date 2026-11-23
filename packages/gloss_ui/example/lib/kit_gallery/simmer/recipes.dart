@@ -141,7 +141,7 @@ class _SimmerRecipesState extends State<SimmerRecipes> {
     );
     // The same round-ended search well as the search page's.
     final search = GlossSearchField(
-      hint: 'Search recipes',
+      hintText: 'Search recipes',
       onChanged: (v) => setState(() => _query = v),
     );
     final count = Padding(
@@ -488,7 +488,7 @@ class _SimmerRecipePageState extends State<SimmerRecipePage> {
             GlossTabBar(
               tabs: const ['Ingredients', 'Method'],
               selectedIndex: _tab,
-              onSelected: (i) => setState(() => _tab = i),
+              onTap: (i) => setState(() => _tab = i),
             ),
             const SizedBox(height: GlossSpacing.large),
             if (_tab == 0) ingredients else method,
@@ -507,7 +507,7 @@ class _SimmerRecipePageState extends State<SimmerRecipePage> {
               _saved ? 'Saved to your recipes' : 'Removed from your recipes',
             );
           },
-          selected: _saved,
+          isSelected: _saved,
           tooltip: 'Save',
           icon: const Icon(LucideIcons.heart),
         ),

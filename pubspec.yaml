@@ -17,6 +17,8 @@ workspace:
   - packages/ui_core_review/example
   - packages/civic_ui
   - packages/civic_ui/example
+  - packages/gloss_ui
+  - packages/gloss_ui/example
 
 dev_dependencies:
   flutter_lints: ^6.0.0

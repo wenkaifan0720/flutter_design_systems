@@ -87,14 +87,14 @@ class _BarsState extends State<_Bars> {
         GlossTabBar(
           tabs: const ['Ingredients', 'Method', 'Notes'],
           selectedIndex: _tab,
-          onSelected: (i) => setState(() => _tab = i),
+          onTap: (i) => setState(() => _tab = i),
         ),
         const SizedBox(height: GlossSpacing.large),
         framed(
           GlossNavigationBar(
             destinations: _places,
             selectedIndex: _place,
-            onSelected: (i) => setState(() => _place = i),
+            onDestinationSelected: (i) => setState(() => _place = i),
           ),
         ),
         const SizedBox(height: GlossSpacing.large),
@@ -107,7 +107,7 @@ class _BarsState extends State<_Bars> {
                 GlossNavigationRail(
                   destinations: _places,
                   selectedIndex: _place,
-                  onSelected: (i) => setState(() => _place = i),
+                  onDestinationSelected: (i) => setState(() => _place = i),
                 ),
               ),
               const SizedBox(width: GlossSpacing.large),
@@ -118,7 +118,7 @@ class _BarsState extends State<_Bars> {
                     header: const Text('Simmer'),
                     destinations: _places,
                     selectedIndex: _place,
-                    onSelected: (i) => setState(() => _place = i),
+                    onDestinationSelected: (i) => setState(() => _place = i),
                   ),
                 ),
               ),
@@ -155,7 +155,7 @@ class _TrailState extends State<_Trail> {
       GlossPagination(
         page: _page,
         pageCount: 9,
-        onChanged: (p) => setState(() => _page = p),
+        onPageChanged: (p) => setState(() => _page = p),
       ),
     ],
   );
@@ -180,7 +180,7 @@ class _StepsState extends State<_Steps> {
         constraints: const BoxConstraints(maxWidth: 420),
         child: GlossStepProgress(
           steps: const ['Prep', 'Cook', 'Rest', 'Serve'],
-          current: _step,
+          currentStep: _step,
         ),
       ),
       const SizedBox(height: GlossSpacing.medium),
@@ -190,9 +190,9 @@ class _StepsState extends State<_Steps> {
       ),
       const SizedBox(height: GlossSpacing.large),
       GlossPageDots(
-        count: 4,
-        index: _dot,
-        onChanged: (i) => setState(() => _dot = i),
+        pageCount: 4,
+        page: _dot,
+        onPageChanged: (i) => setState(() => _dot = i),
       ),
     ],
   );
@@ -227,7 +227,7 @@ class _Palette extends StatelessWidget {
   Widget build(BuildContext context) => ConstrainedBox(
     constraints: const BoxConstraints(maxWidth: 420, maxHeight: 320),
     child: GlossCommandPalette(
-      hint: 'Type a command',
+      hintText: 'Type a command',
       commands: [
         GlossCommand(
           label: 'Find a recipe',

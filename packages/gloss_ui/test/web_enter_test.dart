@@ -88,7 +88,7 @@ void main() {
         GlossDestination(icon: _glyph, label: 'List'),
       ],
       selectedIndex: 1,
-      onSelected: (_) => hit(),
+      onDestinationSelected: (_) => hit(),
     ),
   };
   for (final MapEntry(key: name, value: build) in parts.entries) {
@@ -108,7 +108,7 @@ void main() {
       GlossTabBar(
         tabs: const ['Ingredients', 'Method'],
         selectedIndex: 0,
-        onSelected: chosen.add,
+        onTap: chosen.add,
       ),
     );
     expect(chosen, isEmpty);

@@ -170,15 +170,16 @@ Widget kitDisplayDemo(Brightness brightness) => kitScreen(
               SizedBox(height: GlossSpacing.large),
               GlossDivider(),
               SizedBox(height: GlossSpacing.large),
-              SizedBox(
-                height: 40,
+              // As tall as the words, 40 at least, the rule their height.
+              IntrinsicHeight(
                 child: Row(
                   children: [
-                    Text('Lunch'),
+                    SizedBox(height: 40),
+                    Flexible(child: Text('Lunch')),
                     SizedBox(width: GlossSpacing.regular),
                     GlossDivider.vertical(),
                     SizedBox(width: GlossSpacing.regular),
-                    Text('Dinner'),
+                    Flexible(child: Text('Dinner')),
                   ],
                 ),
               ),

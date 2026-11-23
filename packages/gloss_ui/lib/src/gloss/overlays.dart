@@ -24,8 +24,8 @@ class GlossDialogAction {
   const GlossDialogAction({
     required this.label,
     required this.onPressed,
-    this.primary = false,
-    this.destructive = false,
+    this.isDefaultAction = false,
+    this.isDestructiveAction = false,
   });
 
   /// Its words.
@@ -35,11 +35,11 @@ class GlossDialogAction {
   final VoidCallback? onPressed;
 
   /// Whether it is the dialog's one action: a gel key (ruby when
-  /// [destructive]).
-  final bool primary;
+  /// [isDestructiveAction]).
+  final bool isDefaultAction;
 
   /// Whether it destroys something.
-  final bool destructive;
+  final bool isDestructiveAction;
 }
 
 /// A Gloss dialog: a raised porcelain panel rounded 24, its [title], its
@@ -49,7 +49,7 @@ class GlossDialogAction {
 /// opens, focus goes to the safe key (Keep, beside a Delete).
 ///
 /// ```dart
-/// GlossDialog(title: 'Delete this week’s plan?', content: const Text('The 7 dinners in it go back to your recipes.'), actions: [GlossDialogAction(label: 'Keep', onPressed: () {}), GlossDialogAction(label: 'Delete', onPressed: () {}, primary: true, destructive: true)])
+/// GlossDialog(title: 'Delete this week’s plan?', content: const Text('The 7 dinners in it go back to your recipes.'), actions: [GlossDialogAction(label: 'Keep', onPressed: () {}), GlossDialogAction(label: 'Delete', onPressed: () {}, isDefaultAction: true, isDestructiveAction: true)])
 /// ```
 class GlossDialog extends StatelessWidget {
   /// A dialog titled [title].
@@ -99,8 +99,8 @@ class GlossDialog extends StatelessWidget {
           RawDialogAction(
             label: a.label,
             onPressed: a.onPressed,
-            isDefaultAction: a.primary,
-            isDestructiveAction: a.destructive,
+            isDefaultAction: a.isDefaultAction,
+            isDestructiveAction: a.isDestructiveAction,
           ),
       ],
       insetPadding: routed
@@ -754,16 +754,17 @@ class _Sheet extends StatelessWidget {
           ),
       ],
     );
-    // A phone's panel runs a corner's height past the screen's foot, so only
-    // its top corners show.
+    // A phone's panel stands on the screen's foot, round at its top corners
+    // only.
     final sheet = GlossSurface(
-      face: _panel(c),
-      child: framed
-          ? panel
-          : Padding(
-              padding: const EdgeInsets.only(bottom: GlossMetrics.panelRadius),
-              child: panel,
+      face: framed
+          ? _panel(c)
+          : _panel(c).copyWith(
+              corners: const BorderRadius.vertical(
+                top: Radius.circular(GlossMetrics.panelRadius),
+              ),
             ),
+      child: panel,
     );
     // The route names it for a screen reader (its title).
     return ConstrainedBox(
@@ -777,12 +778,7 @@ class _Sheet extends StatelessWidget {
           left: framed ? GlossSpacing.large : 0,
           right: framed ? GlossSpacing.large : 0,
         ),
-        child: framed
-            ? sheet
-            : Transform.translate(
-                offset: const Offset(0, GlossMetrics.panelRadius),
-                child: sheet,
-              ),
+        child: sheet,
       ),
     );
   }
@@ -917,16 +913,17 @@ class _PageSheet extends StatelessWidget {
         if (drawer) Flexible(child: child) else Expanded(child: child),
       ],
     );
-    // A phone's panel runs a corner's height past the screen's foot, so only
-    // its top corners show.
+    // A phone's panel stands on the screen's foot, round at its top corners
+    // only.
     final sheet = GlossSurface(
-      face: _panel(c),
-      child: framed
-          ? panel
-          : Padding(
-              padding: const EdgeInsets.only(bottom: GlossMetrics.panelRadius),
-              child: panel,
+      face: framed
+          ? _panel(c)
+          : _panel(c).copyWith(
+              corners: const BorderRadius.vertical(
+                top: Radius.circular(GlossMetrics.panelRadius),
+              ),
             ),
+      child: panel,
     );
     final body = ConstrainedBox(
       constraints: BoxConstraints(
@@ -939,12 +936,7 @@ class _PageSheet extends StatelessWidget {
           left: framed ? GlossSpacing.large : 0,
           right: framed ? GlossSpacing.large : 0,
         ),
-        child: framed
-            ? sheet
-            : Transform.translate(
-                offset: const Offset(0, GlossMetrics.panelRadius),
-                child: sheet,
-              ),
+        child: sheet,
       ),
     );
     return body;

@@ -172,7 +172,7 @@ void main() {
           GlossTabBar(
             tabs: const ['Method', 'Ingredients', 'Notes'],
             selectedIndex: end ? 2 : 0,
-            onSelected: (_) {},
+            onTap: (_) {},
           ),
         );
         final seats = _seats(tester, find.byType(GlossTabBar));
@@ -239,10 +239,10 @@ void main() {
         children: [
           GlossTagInput<String>(
             values: const [],
-            hint: 'Add a tag',
+            hintText: 'Add a tag',
             onChanged: (_) {},
           ),
-          const GlossTextField(hint: 'A name'),
+          const GlossTextField(hintText: 'A name'),
         ],
       ),
     );

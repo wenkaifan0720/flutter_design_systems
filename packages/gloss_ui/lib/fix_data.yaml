@@ -1,0 +1,1484 @@
+# gloss_ui's data-driven fixes: `dart fix --apply` moves a caller to each name 0.3.0 renames. test_fixes/ holds
+# their before and after (`dart fix --compare-to-golden test_fixes`).
+version: 1
+transforms:
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      constructor: ''
+      inClass: 'GlossInput'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      field: 'hint'
+      inClass: 'GlossInput'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      constructor: ''
+      inClass: 'GlossInput'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      field: 'label'
+      inClass: 'GlossInput'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      constructor: ''
+      inClass: 'GlossInput'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      field: 'error'
+      inClass: 'GlossInput'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+
+  - title: "Rename to 'obscureText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      constructor: ''
+      inClass: 'GlossInput'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'obscure'
+        newName: 'obscureText'
+
+  - title: "Rename to 'obscureText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      field: 'obscure'
+      inClass: 'GlossInput'
+    changes:
+      - kind: 'rename'
+        newName: 'obscureText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      constructor: ''
+      inClass: 'GlossSearchField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      field: 'hint'
+      inClass: 'GlossSearchField'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      constructor: ''
+      inClass: 'GlossPasswordField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      field: 'label'
+      inClass: 'GlossPasswordField'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      constructor: ''
+      inClass: 'GlossPasswordField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      field: 'hint'
+      inClass: 'GlossPasswordField'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      constructor: ''
+      inClass: 'GlossPasswordField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      field: 'helper'
+      inClass: 'GlossPasswordField'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      constructor: ''
+      inClass: 'GlossPasswordField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      field: 'error'
+      inClass: 'GlossPasswordField'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      constructor: ''
+      inClass: 'GlossInputGroup'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      field: 'label'
+      inClass: 'GlossInputGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      constructor: ''
+      inClass: 'GlossInputGroup'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      field: 'hint'
+      inClass: 'GlossInputGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      constructor: ''
+      inClass: 'GlossInputGroup'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      field: 'helper'
+      inClass: 'GlossInputGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      constructor: ''
+      inClass: 'GlossInputGroup'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      field: 'error'
+      inClass: 'GlossInputGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      constructor: ''
+      inClass: 'GlossTextArea'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      field: 'label'
+      inClass: 'GlossTextArea'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      constructor: ''
+      inClass: 'GlossTextArea'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      field: 'hint'
+      inClass: 'GlossTextArea'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      constructor: ''
+      inClass: 'GlossTextArea'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      field: 'helper'
+      inClass: 'GlossTextArea'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      constructor: ''
+      inClass: 'GlossTextArea'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      field: 'error'
+      inClass: 'GlossTextArea'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      constructor: ''
+      inClass: 'GlossCombobox'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      field: 'label'
+      inClass: 'GlossCombobox'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      constructor: ''
+      inClass: 'GlossCombobox'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      field: 'hint'
+      inClass: 'GlossCombobox'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      constructor: ''
+      inClass: 'GlossCombobox'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      field: 'helper'
+      inClass: 'GlossCombobox'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      constructor: ''
+      inClass: 'GlossCombobox'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      field: 'error'
+      inClass: 'GlossCombobox'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      constructor: ''
+      inClass: 'GlossTagInput'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      field: 'label'
+      inClass: 'GlossTagInput'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      constructor: ''
+      inClass: 'GlossTagInput'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      field: 'hint'
+      inClass: 'GlossTagInput'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      constructor: ''
+      inClass: 'GlossTagInput'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      field: 'helper'
+      inClass: 'GlossTagInput'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      constructor: ''
+      inClass: 'GlossTagInput'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      field: 'error'
+      inClass: 'GlossTagInput'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      constructor: ''
+      inClass: 'GlossDatePicker'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      field: 'label'
+      inClass: 'GlossDatePicker'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      constructor: ''
+      inClass: 'GlossDatePicker'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      field: 'hint'
+      inClass: 'GlossDatePicker'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      constructor: ''
+      inClass: 'GlossDatePicker'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      field: 'helper'
+      inClass: 'GlossDatePicker'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      constructor: ''
+      inClass: 'GlossDatePicker'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      field: 'error'
+      inClass: 'GlossDatePicker'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      constructor: ''
+      inClass: 'GlossDateRangePicker'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      field: 'label'
+      inClass: 'GlossDateRangePicker'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      constructor: ''
+      inClass: 'GlossDateRangePicker'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      field: 'hint'
+      inClass: 'GlossDateRangePicker'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      constructor: ''
+      inClass: 'GlossDateRangePicker'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      field: 'helper'
+      inClass: 'GlossDateRangePicker'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      constructor: ''
+      inClass: 'GlossDateRangePicker'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      field: 'error'
+      inClass: 'GlossDateRangePicker'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      constructor: ''
+      inClass: 'GlossSelect'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      field: 'label'
+      inClass: 'GlossSelect'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      constructor: ''
+      inClass: 'GlossSelect'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      field: 'hint'
+      inClass: 'GlossSelect'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      constructor: ''
+      inClass: 'GlossSelect'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      field: 'helper'
+      inClass: 'GlossSelect'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      constructor: ''
+      inClass: 'GlossSelect'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      field: 'error'
+      inClass: 'GlossSelect'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      constructor: ''
+      inClass: 'GlossTextField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      field: 'label'
+      inClass: 'GlossTextField'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      constructor: ''
+      inClass: 'GlossTextField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      field: 'hint'
+      inClass: 'GlossTextField'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      constructor: ''
+      inClass: 'GlossTextField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      field: 'helper'
+      inClass: 'GlossTextField'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      constructor: ''
+      inClass: 'GlossTextField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      field: 'error'
+      inClass: 'GlossTextField'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      constructor: ''
+      inClass: 'GlossFieldMessage'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      field: 'helper'
+      inClass: 'GlossFieldMessage'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      constructor: ''
+      inClass: 'GlossFieldMessage'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      field: 'error'
+      inClass: 'GlossFieldMessage'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      constructor: ''
+      inClass: 'GlossFileDrop'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      field: 'label'
+      inClass: 'GlossFileDrop'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      constructor: ''
+      inClass: 'GlossFileDrop'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      field: 'hint'
+      inClass: 'GlossFileDrop'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      constructor: ''
+      inClass: 'GlossCommandPalette'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      field: 'hint'
+      inClass: 'GlossCommandPalette'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      function: 'showGlossCommandPalette'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+
+  - title: "Rename to 'theme'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      constructor: ''
+      inClass: 'GlossHost'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'light'
+        newName: 'theme'
+
+  - title: "Rename to 'theme'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      field: 'light'
+      inClass: 'GlossHost'
+    changes:
+      - kind: 'rename'
+        newName: 'theme'
+
+  - title: "Rename to 'darkTheme'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      constructor: ''
+      inClass: 'GlossHost'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'dark'
+        newName: 'darkTheme'
+
+  - title: "Rename to 'darkTheme'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      field: 'dark'
+      inClass: 'GlossHost'
+    changes:
+      - kind: 'rename'
+        newName: 'darkTheme'
+
+  - title: "Rename to 'theme'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      constructor: ''
+      inClass: 'GlossPreview'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'light'
+        newName: 'theme'
+
+  - title: "Rename to 'theme'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      field: 'light'
+      inClass: 'GlossPreview'
+    changes:
+      - kind: 'rename'
+        newName: 'theme'
+
+  - title: "Rename to 'darkTheme'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      constructor: ''
+      inClass: 'GlossPreview'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'dark'
+        newName: 'darkTheme'
+
+  - title: "Rename to 'darkTheme'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      field: 'dark'
+      inClass: 'GlossPreview'
+    changes:
+      - kind: 'rename'
+        newName: 'darkTheme'
+
+  - title: "Rename to 'selectedIndex'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      constructor: ''
+      inClass: 'GlossPreview'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'activeIndex'
+        newName: 'selectedIndex'
+
+  - title: "Rename to 'selectedIndex'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      field: 'activeIndex'
+      inClass: 'GlossPreview'
+    changes:
+      - kind: 'rename'
+        newName: 'selectedIndex'
+
+  - title: "Rename to 'onDestinationSelected'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      constructor: ''
+      inClass: 'GlossAppShell'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'onSelected'
+        newName: 'onDestinationSelected'
+
+  - title: "Rename to 'onDestinationSelected'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      field: 'onSelected'
+      inClass: 'GlossAppShell'
+    changes:
+      - kind: 'rename'
+        newName: 'onDestinationSelected'
+
+  - title: "Rename to 'onDestinationSelected'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      constructor: ''
+      inClass: 'GlossNavigationBar'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'onSelected'
+        newName: 'onDestinationSelected'
+
+  - title: "Rename to 'onDestinationSelected'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      field: 'onSelected'
+      inClass: 'GlossNavigationBar'
+    changes:
+      - kind: 'rename'
+        newName: 'onDestinationSelected'
+
+  - title: "Rename to 'onDestinationSelected'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      constructor: ''
+      inClass: 'GlossNavigationRail'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'onSelected'
+        newName: 'onDestinationSelected'
+
+  - title: "Rename to 'onDestinationSelected'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      field: 'onSelected'
+      inClass: 'GlossNavigationRail'
+    changes:
+      - kind: 'rename'
+        newName: 'onDestinationSelected'
+
+  - title: "Rename to 'onDestinationSelected'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      constructor: ''
+      inClass: 'GlossSidebar'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'onSelected'
+        newName: 'onDestinationSelected'
+
+  - title: "Rename to 'onDestinationSelected'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      field: 'onSelected'
+      inClass: 'GlossSidebar'
+    changes:
+      - kind: 'rename'
+        newName: 'onDestinationSelected'
+
+  - title: "Rename to 'onDestinationSelected'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      constructor: ''
+      inClass: 'GlossScaffold'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'onSelected'
+        newName: 'onDestinationSelected'
+
+  - title: "Rename to 'onDestinationSelected'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      field: 'onSelected'
+      inClass: 'GlossScaffold'
+    changes:
+      - kind: 'rename'
+        newName: 'onDestinationSelected'
+
+  - title: "Rename to 'onTap'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      constructor: ''
+      inClass: 'GlossTabBar'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'onSelected'
+        newName: 'onTap'
+
+  - title: "Rename to 'onTap'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      field: 'onSelected'
+      inClass: 'GlossTabBar'
+    changes:
+      - kind: 'rename'
+        newName: 'onTap'
+
+  - title: "Rename to 'isDefaultAction'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      constructor: ''
+      inClass: 'GlossDialogAction'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'primary'
+        newName: 'isDefaultAction'
+
+  - title: "Rename to 'isDefaultAction'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      field: 'primary'
+      inClass: 'GlossDialogAction'
+    changes:
+      - kind: 'rename'
+        newName: 'isDefaultAction'
+
+  - title: "Rename to 'isDestructiveAction'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      constructor: ''
+      inClass: 'GlossDialogAction'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'destructive'
+        newName: 'isDestructiveAction'
+
+  - title: "Rename to 'isDestructiveAction'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      field: 'destructive'
+      inClass: 'GlossDialogAction'
+    changes:
+      - kind: 'rename'
+        newName: 'isDestructiveAction'
+
+  - title: "Rename to 'isDestructiveAction'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      constructor: ''
+      inClass: 'GlossListTile'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'destructive'
+        newName: 'isDestructiveAction'
+
+  - title: "Rename to 'isDestructiveAction'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      field: 'destructive'
+      inClass: 'GlossListTile'
+    changes:
+      - kind: 'rename'
+        newName: 'isDestructiveAction'
+
+  - title: "Rename to 'isSelected'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      constructor: ''
+      inClass: 'GlossIconButton'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'selected'
+        newName: 'isSelected'
+
+  - title: "Rename to 'isSelected'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      constructor: 'plain'
+      inClass: 'GlossIconButton'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'selected'
+        newName: 'isSelected'
+
+  - title: "Rename to 'isSelected'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      field: 'selected'
+      inClass: 'GlossIconButton'
+    changes:
+      - kind: 'rename'
+        newName: 'isSelected'
+
+  - title: "Rename to 'onExpansionChanged'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      constructor: ''
+      inClass: 'GlossDisclosure'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'onChanged'
+        newName: 'onExpansionChanged'
+
+  - title: "Rename to 'onExpansionChanged'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      field: 'onChanged'
+      inClass: 'GlossDisclosure'
+    changes:
+      - kind: 'rename'
+        newName: 'onExpansionChanged'
+
+  - title: "Rename to 'currentStep'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      constructor: ''
+      inClass: 'GlossStepProgress'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'current'
+        newName: 'currentStep'
+
+  - title: "Rename to 'currentStep'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      field: 'current'
+      inClass: 'GlossStepProgress'
+    changes:
+      - kind: 'rename'
+        newName: 'currentStep'
+
+  - title: "Rename to 'pageCount'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      constructor: ''
+      inClass: 'GlossPageDots'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'count'
+        newName: 'pageCount'
+
+  - title: "Rename to 'pageCount'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      field: 'count'
+      inClass: 'GlossPageDots'
+    changes:
+      - kind: 'rename'
+        newName: 'pageCount'
+
+  - title: "Rename to 'page'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      constructor: ''
+      inClass: 'GlossPageDots'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'index'
+        newName: 'page'
+
+  - title: "Rename to 'page'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      field: 'index'
+      inClass: 'GlossPageDots'
+    changes:
+      - kind: 'rename'
+        newName: 'page'
+
+  - title: "Rename to 'onPageChanged'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      constructor: ''
+      inClass: 'GlossPageDots'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'onChanged'
+        newName: 'onPageChanged'
+
+  - title: "Rename to 'onPageChanged'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      field: 'onChanged'
+      inClass: 'GlossPageDots'
+    changes:
+      - kind: 'rename'
+        newName: 'onPageChanged'
+
+  - title: "Rename to 'onPageChanged'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      constructor: ''
+      inClass: 'GlossPagination'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'onChanged'
+        newName: 'onPageChanged'
+
+  - title: "Rename to 'onPageChanged'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      field: 'onChanged'
+      inClass: 'GlossPagination'
+    changes:
+      - kind: 'rename'
+        newName: 'onPageChanged'
+
+  - title: "Rename to 'maxCount'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      constructor: ''
+      inClass: 'GlossBadge'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'max'
+        newName: 'maxCount'
+
+  - title: "Rename to 'maxCount'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      field: 'max'
+      inClass: 'GlossBadge'
+    changes:
+      - kind: 'rename'
+        newName: 'maxCount'
+
+  - title: "Rename to 'from'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      constructor: 'of'
+      inClass: 'GlossTextTheme'
+    changes:
+      - kind: 'rename'
+        newName: 'from'
+
+  - title: "Rename to 'groupValue'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      constructor: ''
+      inClass: 'GlossRadioGroup'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'value'
+        newName: 'groupValue'
+
+  - title: "Rename to 'groupValue'"
+    date: 2026-11-22
+    element:
+      uris: ['gloss_ui.dart']
+      field: 'value'
+      inClass: 'GlossRadioGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'groupValue'

@@ -14,10 +14,10 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import 'button.dart';
 import 'fonts.dart';
+import 'internal/field_frame.dart';
 import 'internal/menu_parts.dart';
 import 'popovers.dart';
 import 'surface.dart';
-import 'text_field.dart';
 import 'theme.dart';
 
 DateTime _day(DateTime d) => DateTime(d.year, d.month, d.day);
@@ -570,15 +570,12 @@ Widget _fieldColumn({
   required Widget box,
   required String? helper,
   required String? error,
-}) => Column(
-  mainAxisSize: MainAxisSize.min,
-  crossAxisAlignment: CrossAxisAlignment.stretch,
-  children: [
-    if (label != null)
-      ExcludeSemantics(child: GlossFieldLabel(label, enabled: enabled)),
-    box,
-    GlossFieldMessage(helper: helper, error: error),
-  ],
+}) => GlossFieldFrame(
+  labelText: label,
+  helperText: helper,
+  errorText: error,
+  enabled: enabled,
+  child: box,
 );
 
 // The calendar's panel, no taller than the room on its side ([info]), the
@@ -603,7 +600,7 @@ Widget _calendarPanel(
 /// closes the panel and calls [onChanged].
 ///
 /// ```dart
-/// GlossDatePicker(label: 'Cook on', value: DateTime(2026, 11, 18), firstDate: DateTime(2026), lastDate: DateTime(2027), onChanged: (day) {})
+/// GlossDatePicker(labelText: 'Cook on', value: DateTime(2026, 11, 18), firstDate: DateTime(2026), lastDate: DateTime(2027), onChanged: (day) {})
 /// ```
 class GlossDatePicker extends StatelessWidget {
   /// A date field at [value].
@@ -613,10 +610,10 @@ class GlossDatePicker extends StatelessWidget {
     required this.onChanged,
     required this.firstDate,
     required this.lastDate,
-    this.label,
-    this.hint,
-    this.helper,
-    this.error,
+    this.labelText,
+    this.hintText,
+    this.helperText,
+    this.errorText,
     this.currentDate,
   });
 
@@ -633,16 +630,16 @@ class GlossDatePicker extends StatelessWidget {
   final DateTime lastDate;
 
   /// The words above the well.
-  final String? label;
+  final String? labelText;
 
   /// What the empty well says.
-  final String? hint;
+  final String? hintText;
 
   /// Help under the well.
-  final String? helper;
+  final String? helperText;
 
   /// What is wrong, under the well.
-  final String? error;
+  final String? errorText;
 
   /// Today; null: the clock's.
   final DateTime? currentDate;
@@ -652,12 +649,12 @@ class GlossDatePicker extends StatelessWidget {
     final words = RawWidgetsLocalizations.of(context);
     final enabled = onChanged != null;
     return _fieldColumn(
-      label: label,
+      label: labelText,
       enabled: enabled,
-      helper: helper,
-      error: error,
+      helper: helperText,
+      error: errorText,
       box: RawPopover(
-        semanticLabel: label,
+        semanticLabel: labelText,
         // The calendar opens where its whole month fits: below while below
         // holds it, else above; it shrinks and scrolls only where neither
         // side does.
@@ -665,18 +662,20 @@ class GlossDatePicker extends StatelessWidget {
           gap: GlossSpacing.small,
           margin: GlossSpacing.small,
           matchAnchorWidth: false,
-          preferredExtent: double.infinity,
+          fit: RawPopoverFit.whole,
         ),
         dampingRatio: GlossMotion.panelDamping,
         stiffness: GlossMotion.panelStiffness,
         anchorBuilder: (context, anchor) => _PickerField(
           anchor: anchor,
           text: value == null ? null : words.formatFullDate(value!),
-          hint: hint,
+          hint: hintText,
           icon: LucideIcons.calendar,
           enabled: enabled,
-          error: error != null,
-          semanticLabel: label ?? hint,
+          error: errorText != null,
+          // Named by its field (ui_core's RawInputDecorator), or else by
+          // its hint.
+          semanticLabel: labelText == null ? hintText : null,
         ),
         overlayBuilder: (context, info) => glossPanelArrival(
           info,
@@ -705,7 +704,7 @@ class GlossDatePicker extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(DiagnosticsProperty<DateTime>('value', value))
-      ..add(StringProperty('label', label, defaultValue: null));
+      ..add(StringProperty('labelText', labelText, defaultValue: null));
   }
 }
 
@@ -713,7 +712,7 @@ class GlossDatePicker extends StatelessWidget {
 /// and an end day to close the panel and receive the range in [onChanged].
 ///
 /// ```dart
-/// GlossDateRangePicker(label: 'Plan', value: null, firstDate: DateTime(2026), lastDate: DateTime(2027), onChanged: (range) {})
+/// GlossDateRangePicker(labelText: 'Plan', value: null, firstDate: DateTime(2026), lastDate: DateTime(2027), onChanged: (range) {})
 /// ```
 class GlossDateRangePicker extends StatelessWidget {
   /// A date-range field at [value].
@@ -723,10 +722,10 @@ class GlossDateRangePicker extends StatelessWidget {
     required this.onChanged,
     required this.firstDate,
     required this.lastDate,
-    this.label,
-    this.hint,
-    this.helper,
-    this.error,
+    this.labelText,
+    this.hintText,
+    this.helperText,
+    this.errorText,
     this.currentDate,
   });
 
@@ -743,16 +742,16 @@ class GlossDateRangePicker extends StatelessWidget {
   final DateTime lastDate;
 
   /// The words above the well.
-  final String? label;
+  final String? labelText;
 
   /// What the empty well says.
-  final String? hint;
+  final String? hintText;
 
   /// Help under the well.
-  final String? helper;
+  final String? helperText;
 
   /// What is wrong, under the well.
-  final String? error;
+  final String? errorText;
 
   /// Today; null: the clock's.
   final DateTime? currentDate;
@@ -763,12 +762,12 @@ class GlossDateRangePicker extends StatelessWidget {
     final enabled = onChanged != null;
     final wide = MediaQuery.sizeOf(context).width >= 760;
     return _fieldColumn(
-      label: label,
+      label: labelText,
       enabled: enabled,
-      helper: helper,
-      error: error,
+      helper: helperText,
+      error: errorText,
       box: RawPopover(
-        semanticLabel: label,
+        semanticLabel: labelText,
         // The calendar opens where its whole month fits: below while below
         // holds it, else above; it shrinks and scrolls only where neither
         // side does.
@@ -776,7 +775,7 @@ class GlossDateRangePicker extends StatelessWidget {
           gap: GlossSpacing.small,
           margin: GlossSpacing.small,
           matchAnchorWidth: false,
-          preferredExtent: double.infinity,
+          fit: RawPopoverFit.whole,
         ),
         dampingRatio: GlossMotion.panelDamping,
         stiffness: GlossMotion.panelStiffness,
@@ -786,11 +785,13 @@ class GlossDateRangePicker extends StatelessWidget {
               ? null
               : '${words.formatFullDate(value!.start)} – '
                     '${words.formatFullDate(value!.end)}',
-          hint: hint,
+          hint: hintText,
           icon: LucideIcons.calendarRange,
           enabled: enabled,
-          error: error != null,
-          semanticLabel: label ?? hint,
+          error: errorText != null,
+          // Named by its field (ui_core's RawInputDecorator), or else by
+          // its hint.
+          semanticLabel: labelText == null ? hintText : null,
         ),
         overlayBuilder: (context, info) => glossPanelArrival(
           info,

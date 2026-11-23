@@ -134,7 +134,7 @@ void main() {
         addTearDown(focus.dispose);
         await _pump(
           tester,
-          GlossTextField(label: 'Title', focusNode: focus),
+          GlossTextField(labelText: 'Title', focusNode: focus),
           brightness: brightness,
         );
         final field = find.byType(GlossTextField);

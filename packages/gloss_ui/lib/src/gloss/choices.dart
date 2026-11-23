@@ -321,14 +321,14 @@ class _RadioSocket extends StatelessWidget {
 /// does.
 ///
 /// ```dart
-/// GlossRadioGroup<String>(options: const ['metric', 'imperial'], value: units, labelOf: (u) => u == 'metric' ? 'Metric' : 'Imperial', onChanged: (u) {})
+/// GlossRadioGroup<String>(options: const ['metric', 'imperial'], groupValue: units, labelOf: (u) => u == 'metric' ? 'Metric' : 'Imperial', onChanged: (u) {})
 /// ```
 class GlossRadioGroup<T> extends StatelessWidget {
-  /// A group of [options], [value] chosen.
+  /// A group of [options], [groupValue] chosen.
   const GlossRadioGroup({
     super.key,
     required this.options,
-    required this.value,
+    required this.groupValue,
     required this.labelOf,
     required this.onChanged,
     this.isEnabled,
@@ -341,7 +341,7 @@ class GlossRadioGroup<T> extends StatelessWidget {
   final List<T> options;
 
   /// The one chosen; none when null.
-  final T? value;
+  final T? groupValue;
 
   /// The words beside a choice's socket, which a screen reader says too.
   final String Function(T value) labelOf;
@@ -370,7 +370,7 @@ class GlossRadioGroup<T> extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(IterableProperty<T>('options', options))
-      ..add(DiagnosticsProperty<T>('value', value))
+      ..add(DiagnosticsProperty<T>('groupValue', groupValue))
       ..add(
         FlagProperty('enabled', value: onChanged != null, ifFalse: 'disabled'),
       );
@@ -408,7 +408,7 @@ class _GlossRadioGroupBodyState<T> extends State<_GlossRadioGroupBody<T>> {
     ];
     if (open.isEmpty) return;
     final option = last ? open.last : open.first;
-    if (option != group.value) change(option);
+    if (option != group.groupValue) change(option);
     _nodeFor(option).requestFocus();
   }
 
@@ -424,7 +424,7 @@ class _GlossRadioGroupBodyState<T> extends State<_GlossRadioGroupBody<T>> {
   Widget build(BuildContext context) {
     final group = widget.group;
     final options = group.options;
-    final value = group.value;
+    final value = group.groupValue;
     final labelOf = group.labelOf;
     final direction = group.direction;
     final style = group.style;
@@ -1458,27 +1458,35 @@ class GlossStepper extends StatelessWidget {
           children: [
             key(LucideIcons.minus, -step),
             const SizedBox(width: GlossSpacing.small),
-            ConstrainedBox(
-              constraints: BoxConstraints(minWidth: theme.controlHeight + 16),
-              child: SizedBox(
-                height: height,
-                child: AnimatedGlossSurface(
-                  face: GlossFace.well(c, radius: GlossMetrics.fieldRadius)
-                      .copyWith(
-                        lift: enabled ? -1 : -0.5,
-                        focus: glossGlazeOf(c, states),
+            // Where the row is narrower than the beads and the words (large
+            // text on a phone), the window gives way and its words shrink
+            // to it, whole.
+            Flexible(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minWidth: theme.controlHeight + 16),
+                child: SizedBox(
+                  height: height,
+                  child: AnimatedGlossSurface(
+                    face: GlossFace.well(c, radius: GlossMetrics.fieldRadius)
+                        .copyWith(
+                          lift: enabled ? -1 : -0.5,
+                          focus: glossGlazeOf(c, states),
+                        ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: GlossSpacing.medium,
                       ),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: GlossSpacing.medium,
-                    ),
-                    child: Center(
-                      widthFactor: 1,
-                      child: _Rolling(
-                        value: value,
-                        child: DesignCapCenter(
-                          capHeightFactor: glossCapHeightFactor,
-                          child: Text(words, maxLines: 1, style: figure),
+                      child: Center(
+                        widthFactor: 1,
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: _Rolling(
+                            value: value,
+                            child: DesignCapCenter(
+                              capHeightFactor: glossCapHeightFactor,
+                              child: Text(words, maxLines: 1, style: figure),
+                            ),
+                          ),
                         ),
                       ),
                     ),

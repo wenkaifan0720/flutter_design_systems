@@ -175,7 +175,7 @@ class GlossListTile extends StatelessWidget {
     this.onTap,
     this.selected = false,
     this.showChevron,
-    this.destructive = false,
+    this.isDestructiveAction = false,
     this.enabled = true,
     this.semanticLabel,
     this.style,
@@ -208,7 +208,7 @@ class GlossListTile extends StatelessWidget {
   final bool? showChevron;
 
   /// Whether the row destroys something: ruby words.
-  final bool destructive;
+  final bool isDestructiveAction;
 
   /// Whether the row takes presses.
   final bool enabled;
@@ -238,7 +238,7 @@ class GlossListTile extends StatelessWidget {
           layered.foreground ??
           (disabled
               ? c.inkDisabled
-              : destructive
+              : isDestructiveAction
               ? c.danger
               : c.ink);
       final muted = disabled ? c.inkDisabled : c.inkSecondary;
@@ -246,7 +246,7 @@ class GlossListTile extends StatelessWidget {
           ? c.inkDisabled
           : selected
           ? c.jadeInk
-          : destructive
+          : isDestructiveAction
           ? c.danger
           : c.inkSecondary;
       final chevron = showChevron ?? (onTap != null && trailing == null);
@@ -423,7 +423,11 @@ class GlossListTile extends StatelessWidget {
       ..add(FlagProperty('selected', value: selected, ifTrue: 'selected'))
       ..add(FlagProperty('enabled', value: enabled, ifFalse: 'disabled'))
       ..add(
-        FlagProperty('destructive', value: destructive, ifTrue: 'destructive'),
+        FlagProperty(
+          'isDestructiveAction',
+          value: isDestructiveAction,
+          ifTrue: 'destructive',
+        ),
       );
   }
 }

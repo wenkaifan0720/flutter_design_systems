@@ -176,7 +176,7 @@ class _SimmerShoppingState extends State<SimmerShopping> {
         const SizedBox(height: GlossSpacing.large),
         GlossTextField(
           controller: _adding,
-          hint: 'Add a thing to buy',
+          hintText: 'Add a thing to buy',
           semanticLabel: 'Add a thing to buy',
           textInputAction: TextInputAction.done,
           onSubmitted: (_) => _add(),

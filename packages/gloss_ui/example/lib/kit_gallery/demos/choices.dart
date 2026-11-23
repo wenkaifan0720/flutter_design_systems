@@ -45,11 +45,13 @@ class _AllState extends State<_All> {
       children: [
         control,
         const SizedBox(width: GlossSpacing.small),
-        Text(
-          label,
-          style: off
-              ? t.body.copyWith(color: context.glossTheme.colors.inkDisabled)
-              : t.body,
+        Flexible(
+          child: Text(
+            label,
+            style: off
+                ? t.body.copyWith(color: context.glossTheme.colors.inkDisabled)
+                : t.body,
+          ),
         ),
       ],
     );
@@ -94,7 +96,7 @@ class _AllState extends State<_All> {
         const SizedBox(height: GlossSpacing.large),
         GlossRadioGroup<String>(
           options: const ['Day', 'Week', 'Month', 'Year'],
-          value: _radio,
+          groupValue: _radio,
           labelOf: (v) => v,
           isEnabled: (v) => v != 'Year',
           direction: Axis.horizontal,
@@ -213,8 +215,8 @@ class _MoreState extends State<_More> {
         ),
         const SizedBox(height: GlossSpacing.regular),
         GlossFileDrop(
-          label: 'Photos and notes',
-          hint: 'A photo of the dish, or the method',
+          labelText: 'Photos and notes',
+          hintText: 'A photo of the dish, or the method',
           onChoose: () {},
           files: _files,
           onRemove: (f) => setState(() => _files = [..._files]..remove(f)),

@@ -71,7 +71,7 @@ void main() {
     await tester.pumpWidget(
       _app(
         GlossCombobox<String>(
-          label: 'Ingredient',
+          labelText: 'Ingredient',
           options: const ['Basil', 'Bay leaf', 'Butter'],
           onSelected: taken.add,
         ),
@@ -90,7 +90,7 @@ void main() {
       _app(
         StatefulBuilder(
           builder: (context, setState) => GlossTagInput<String>(
-            label: 'Tags',
+            labelText: 'Tags',
             values: tags,
             options: const ['Quick', 'Batch', 'Freezer', 'Vegan'],
             onChanged: (next) => setState(() => tags = next),

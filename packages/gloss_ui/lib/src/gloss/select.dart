@@ -8,9 +8,9 @@ import 'package:ui_core/ui_core.dart';
 
 import 'fonts.dart';
 import 'internal/chevron.dart';
+import 'internal/field_frame.dart';
 import 'internal/menu_parts.dart';
 import 'surface.dart';
-import 'text_field.dart';
 import 'theme.dart';
 
 /// One choice of a [GlossSelect].
@@ -43,7 +43,7 @@ class GlossSelectItem<T> {
 /// chooses, Escape closes and gives focus back to the field.
 ///
 /// ```dart
-/// GlossSelect<String>(label: 'Units', value: 'metric', items: const [GlossSelectItem(value: 'metric', label: 'Metric'), GlossSelectItem(value: 'us', label: 'US cups')], onChanged: (value) {})
+/// GlossSelect<String>(labelText: 'Units', value: 'metric', items: const [GlossSelectItem(value: 'metric', label: 'Metric'), GlossSelectItem(value: 'us', label: 'US cups')], onChanged: (value) {})
 /// ```
 class GlossSelect<T> extends StatelessWidget {
   /// A select over [items], [value] chosen.
@@ -52,10 +52,10 @@ class GlossSelect<T> extends StatelessWidget {
     required this.items,
     required this.value,
     required this.onChanged,
-    this.label,
-    this.hint,
-    this.helper,
-    this.error,
+    this.labelText,
+    this.hintText,
+    this.helperText,
+    this.errorText,
     this.focusNode,
     this.style,
   });
@@ -63,23 +63,23 @@ class GlossSelect<T> extends StatelessWidget {
   /// The choices.
   final List<GlossSelectItem<T>> items;
 
-  /// The chosen value; [hint] shows when null.
+  /// The chosen value; [hintText] shows when null.
   final T? value;
 
   /// Called with the value chosen; null turns it off.
   final ValueChanged<T>? onChanged;
 
   /// The label above the field.
-  final String? label;
+  final String? labelText;
 
   /// What the field says while nothing is chosen.
-  final String? hint;
+  final String? hintText;
 
   /// Help under the field.
-  final String? helper;
+  final String? helperText;
 
   /// What is wrong, under the field in ruby.
-  final String? error;
+  final String? errorText;
 
   /// {@macro design.focusNode}
   final FocusNode? focusNode;
@@ -103,12 +103,12 @@ class GlossSelect<T> extends StatelessWidget {
       focusNode: focusNode,
       // A field that cannot open says nothing of opening.
       expanded: enabled ? open : null,
-      semanticLabel: label,
+      // Named by its field (ui_core's RawInputDecorator), with its help.
       semanticValue: chosen?.label,
       builder: (context, states, _) {
         final layered = DesignStyleOf(
           [style, theme.selectStyle],
-          {...states, if (error != null) WidgetState.error},
+          {...states, if (errorText != null) WidgetState.error},
         );
         final pressed = states.contains(WidgetState.pressed);
         var well = GlossFace.well(c, radius: GlossMetrics.fieldRadius);
@@ -117,10 +117,10 @@ class GlossSelect<T> extends StatelessWidget {
         // text field's does: that one mark, no reflection along its floor
         // as well.
         final keyed = states.contains(WidgetState.focused);
-        final lit = keyed && error == null;
+        final lit = keyed && errorText == null;
         well = well.copyWith(
           lift: enabled ? -1 : -0.45,
-          edge: error != null
+          edge: errorText != null
               ? c.danger
               : layered.edge ?? (keyed ? c.focus : null),
           glow: lit ? glossFocusGlow(c) : null,
@@ -145,7 +145,7 @@ class GlossSelect<T> extends StatelessWidget {
                     child: DesignCapCenter(
                       capHeightFactor: glossCapHeightFactor,
                       child: Text(
-                        chosen?.label ?? hint ?? '',
+                        chosen?.label ?? hintText ?? '',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: theme.textTheme.body.copyWith(
@@ -181,7 +181,7 @@ class GlossSelect<T> extends StatelessWidget {
         ? anchorField(null, false)
         : RawPopover(
             arrowKeyNavigation: true,
-            semanticLabel: label,
+            semanticLabel: labelText,
             placement: const RawPopoverPlacement(margin: GlossSpacing.small),
             dampingRatio: GlossMotion.panelDamping,
             stiffness: GlossMotion.panelStiffness,
@@ -219,15 +219,12 @@ class GlossSelect<T> extends StatelessWidget {
           );
     // From 600 up a select takes its words' room, never its column's.
     final narrow = MediaQuery.sizeOf(context).width < 600;
-    final field = Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        if (label != null)
-          ExcludeSemantics(child: GlossFieldLabel(label!, enabled: enabled)),
-        box,
-        GlossFieldMessage(helper: helper, error: error),
-      ],
+    final field = GlossFieldFrame(
+      labelText: labelText,
+      helperText: helperText,
+      errorText: errorText,
+      enabled: enabled,
+      child: box,
     );
     if (narrow) return field;
     return Align(
@@ -246,7 +243,7 @@ class GlossSelect<T> extends StatelessWidget {
     properties
       ..add(DiagnosticsProperty<T>('value', value))
       ..add(IntProperty('items', items.length))
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
       ..add(
         FlagProperty('enabled', value: onChanged != null, ifFalse: 'disabled'),
       );
@@ -280,21 +277,6 @@ class _SelectListState<T> extends State<_SelectList<T>> {
     for (final item in widget.items)
       FocusNode(debugLabel: 'GlossSelect ${item.label}'),
   ];
-  final GlobalKey _chosenKey = GlobalKey();
-
-  @override
-  void initState() {
-    super.initState();
-    // A long list opens on its value: the chosen row is in view from the
-    // first frame.
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final row = _chosenKey.currentContext;
-      if (row != null && mounted) {
-        Scrollable.ensureVisible(row, alignment: 0.5);
-      }
-    });
-  }
-
   @override
   void dispose() {
     for (final node in _nodes) {
@@ -351,9 +333,10 @@ class _SelectListState<T> extends State<_SelectList<T>> {
       // keys go on from it and never light a second row.
       onEnter: item.enabled ? (_) => _nodes[i].requestFocus() : null,
       child: RawButton(
-        key: isChosen ? _chosenKey : null,
         focusNode: _nodes[i],
         onPressed: item.enabled ? () => widget.onChosen(item.value) : null,
+        // A long list opens on its value: the chosen row takes the keys and
+        // the popover keeps it in view from the first frame.
         autofocus: isChosen,
         selected: isChosen,
         semanticSelected: isChosen,

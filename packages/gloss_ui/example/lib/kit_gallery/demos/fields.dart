@@ -18,7 +18,7 @@ Widget kitFieldsDemo(Brightness brightness) => kitScreen(
       children: [
         _Filled(label: 'Recipe name', text: 'Miso aubergine'),
         GlossTextField(
-          hint: 'Search recipes',
+          hintText: 'Search recipes',
           prefixIcon: Icon(LucideIcons.search),
         ),
         _Filled(
@@ -37,7 +37,11 @@ Widget kitFieldsDemo(Brightness brightness) => kitScreen(
           text: 'Kept by the shared plan',
           enabled: false,
         ),
-        GlossTextField(label: 'Method', hint: 'One step a line', maxLines: 4),
+        GlossTextField(
+          labelText: 'Method',
+          hintText: 'One step a line',
+          maxLines: 4,
+        ),
       ],
     ),
     KitSection(title: 'Selects', maxWidth: 480, children: [_Selects()]),
@@ -79,10 +83,10 @@ class _FilledState extends State<_Filled> {
   @override
   Widget build(BuildContext context) => GlossTextField(
     controller: _controller,
-    label: widget.label,
+    labelText: widget.label,
     suffix: widget.suffix,
-    helper: widget.helper,
-    error: widget.error,
+    helperText: widget.helper,
+    errorText: widget.error,
     enabled: widget.enabled,
   );
 }
@@ -103,7 +107,7 @@ class _SelectsState extends State<_Selects> {
     crossAxisAlignment: CrossAxisAlignment.stretch,
     children: [
       GlossSelect<String>(
-        label: 'Units',
+        labelText: 'Units',
         value: _units,
         items: const [
           GlossSelectItem(value: 'metric', label: 'Metric (g, ml)'),
@@ -114,8 +118,8 @@ class _SelectsState extends State<_Selects> {
       ),
       const SizedBox(height: GlossSpacing.regular),
       GlossSelect<String>(
-        label: 'Week starts on',
-        hint: 'Choose a day',
+        labelText: 'Week starts on',
+        hintText: 'Choose a day',
         value: _week,
         items: const [
           GlossSelectItem(value: 'mon', label: 'Monday'),
@@ -126,7 +130,7 @@ class _SelectsState extends State<_Selects> {
       ),
       const SizedBox(height: GlossSpacing.regular),
       const GlossSelect<String>(
-        label: 'Household',
+        labelText: 'Household',
         value: 'a',
         items: [GlossSelectItem(value: 'a', label: 'Set by the owner')],
         onChanged: null,
@@ -152,14 +156,17 @@ class _EntryState extends State<_Entry> {
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const GlossSearchField(hint: 'Search recipes'),
+        const GlossSearchField(hintText: 'Search recipes'),
         const SizedBox(height: GlossSpacing.regular),
-        const GlossTextArea(label: 'Notes', hint: 'What to change next time'),
+        const GlossTextArea(
+          labelText: 'Notes',
+          hintText: 'What to change next time',
+        ),
         const SizedBox(height: GlossSpacing.regular),
-        const GlossPasswordField(label: 'Password'),
+        const GlossPasswordField(labelText: 'Password'),
         const SizedBox(height: GlossSpacing.regular),
         const GlossInputGroup(
-          label: 'Weight',
+          labelText: 'Weight',
           prefixText: '≈',
           suffixText: 'g',
           keyboardType: TextInputType.number,
@@ -169,15 +176,15 @@ class _EntryState extends State<_Entry> {
         const GlossOtpField(semanticLabel: 'One-time code'),
         const SizedBox(height: GlossSpacing.regular),
         GlossCombobox<String>(
-          label: 'Herb',
-          hint: 'Type to find one',
+          labelText: 'Herb',
+          hintText: 'Type to find one',
           options: const ['Basil', 'Bay leaf', 'Chives', 'Coriander', 'Dill'],
           value: _herb,
           onSelected: (h) => setState(() => _herb = h),
         ),
         const SizedBox(height: GlossSpacing.regular),
         GlossTagInput<String>(
-          label: 'Tags',
+          labelText: 'Tags',
           values: _tags,
           options: const ['Quick', 'Batch', 'Freezer', 'Vegan', 'Weeknight'],
           onChanged: (next) => setState(() => _tags = next),

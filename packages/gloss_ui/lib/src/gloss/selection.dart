@@ -476,7 +476,7 @@ String _size(int bytes) {
 /// ([onChoose]).
 ///
 /// ```dart
-/// GlossFileDrop(label: 'Photos', onChoose: () {}, files: const [GlossFile(name: 'risotto.jpg', bytes: 240000)])
+/// GlossFileDrop(labelText: 'Photos', onChoose: () {}, files: const [GlossFile(name: 'risotto.jpg', bytes: 240000)])
 /// ```
 class GlossFileDrop extends StatelessWidget {
   /// A file drop.
@@ -485,8 +485,8 @@ class GlossFileDrop extends StatelessWidget {
     required this.onChoose,
     this.files = const [],
     this.onRemove,
-    this.label,
-    this.hint,
+    this.labelText,
+    this.hintText,
     this.chooseLabel = 'Choose files',
   });
 
@@ -500,10 +500,10 @@ class GlossFileDrop extends StatelessWidget {
   final ValueChanged<GlossFile>? onRemove;
 
   /// The words above the tray.
-  final String? label;
+  final String? labelText;
 
   /// What the tray says.
-  final String? hint;
+  final String? hintText;
 
   /// The key's words.
   final String chooseLabel;
@@ -518,7 +518,7 @@ class GlossFileDrop extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        if (label != null) GlossFieldLabel(label!, enabled: enabled),
+        if (labelText != null) GlossFieldLabel(labelText!, enabled: enabled),
         GlossSurface(
           face: GlossFace.well(c, radius: GlossMetrics.wellRadius),
           child: Padding(
@@ -537,10 +537,10 @@ class GlossFileDrop extends StatelessWidget {
                     ),
                   ],
                 ),
-                if (hint != null) ...[
+                if (hintText != null) ...[
                   const SizedBox(height: GlossSpacing.small),
                   Text(
-                    hint!,
+                    hintText!,
                     textAlign: TextAlign.center,
                     style: glossLetterpress(theme.textTheme.secondary, c),
                   ),
