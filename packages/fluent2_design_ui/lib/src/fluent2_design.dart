@@ -5,10 +5,15 @@ library;
 export 'fluent2_design/components/accordion/accordion.dart';
 export 'fluent2_design/components/action_bar/action_bar.dart';
 export 'fluent2_design/components/avatar/avatar.dart';
-export 'fluent2_design/components/badge/badge.dart';
+export 'fluent2_design/components/badge/badge.dart' hide Fluent2BadgeFace;
 export 'fluent2_design/components/beside.dart';
 export 'fluent2_design/components/breadcrumb/breadcrumb.dart';
-export 'fluent2_design/components/button/button.dart';
+export 'fluent2_design/components/button/button.dart'
+    hide
+        Fluent2ActsFill,
+        Fluent2ButtonBox,
+        Fluent2ButtonFace,
+        Fluent2ButtonLook;
 export 'fluent2_design/components/button/groups.dart';
 export 'fluent2_design/components/card/card.dart';
 export 'fluent2_design/components/charts/charts.dart';
@@ -35,7 +40,7 @@ export 'fluent2_design/components/list/list_section.dart';
 export 'fluent2_design/components/acrylic.dart';
 export 'fluent2_design/components/menu/menu.dart';
 export 'fluent2_design/components/message_bar/message_bar.dart';
-export 'fluent2_design/components/nav_bar.dart';
+export 'fluent2_design/components/nav_bar.dart' hide fluent2BarAllowance;
 export 'fluent2_design/components/nav_pane.dart';
 export 'fluent2_design/components/navigation.dart';
 export 'fluent2_design/components/page_motion.dart';
@@ -64,7 +69,7 @@ export 'fluent2_design/components/swipe/swipe.dart';
 export 'fluent2_design/components/switch/switch.dart';
 export 'fluent2_design/components/table/table.dart';
 export 'fluent2_design/components/tabs/tabs.dart';
-export 'fluent2_design/components/tag/tag.dart';
+export 'fluent2_design/components/tag/tag.dart' hide Fluent2TagFace;
 export 'fluent2_design/components/tag_picker/tag_picker.dart';
 export 'fluent2_design/components/toast.dart';
 export 'fluent2_design/components/toolbar/toolbar.dart';
@@ -77,8 +82,8 @@ export 'fluent2_design/fonts.dart';
 export 'fluent2_design/format.dart';
 export 'fluent2_design/icons.dart';
 export 'fluent2_design/localizations.dart';
-export 'fluent2_design/styled.dart';
-export 'fluent2_design/theme.dart';
+export 'fluent2_design/styled.dart' hide fluent2EasedInks;
+export 'fluent2_design/theme.dart' hide fluent2CssShadow;
 
 // The shared kit's values the look's parts take and hand back: a range, a
 // date range and its calendar, a colour, a table's rows and columns, a code,

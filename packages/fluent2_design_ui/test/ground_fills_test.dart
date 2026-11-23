@@ -13,8 +13,12 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fluent2_design_ui/fluent2_design_ui.dart';
 import 'package:fluent2_design_ui/fluent2_design_host.dart';
+import 'package:fluent2_design_ui/src/fluent2_design/components/badge/badge.dart'
+    show Fluent2BadgeFace;
 import 'package:fluent2_design_ui/src/fluent2_design/components/input/field_core.dart'
     show fluent2PlaceholderInk;
+import 'package:fluent2_design_ui/src/fluent2_design/components/tag/tag.dart'
+    show Fluent2TagFace;
 import 'package:fluent2_design_ui/src/fluent2_design/internal/well.dart';
 
 Widget _host(Fluent2ThemeData theme, Widget child) => MaterialApp(

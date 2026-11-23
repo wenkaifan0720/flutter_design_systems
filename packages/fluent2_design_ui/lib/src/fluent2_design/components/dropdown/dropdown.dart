@@ -478,7 +478,7 @@ class _Fluent2SelectState<T> extends State<Fluent2Select<T>> {
 /// calls [onChanged]; null draws it disabled. Read as a text field named [label].
 ///
 /// ```dart
-/// Fluent2Combobox<String>(label: 'Assignee', hint: 'Type a name', value: owner, options: [for (final p in people) Fluent2Option(p.id, p.name)], onChanged: (v) => setState(() => owner = v))
+/// Fluent2Combobox<String>(label: 'Assignee', hintText: 'Type a name', value: owner, options: [for (final p in people) Fluent2Option(p.id, p.name)], onChanged: (v) => setState(() => owner = v))
 /// ```
 class Fluent2Combobox<T> extends StatefulWidget {
   /// A combobox of [options]: a field that filters them as the user types.
@@ -487,7 +487,7 @@ class Fluent2Combobox<T> extends StatefulWidget {
     required this.value,
     required this.onChanged,
     this.label,
-    this.hint,
+    this.hintText,
     this.appearance = Fluent2InputAppearance.outline,
     this.size = Fluent2InputSize.medium,
     this.invalid = false,
@@ -519,7 +519,7 @@ class Fluent2Combobox<T> extends StatefulWidget {
   final String? label;
 
   /// The words shown while it is empty.
-  final String? hint;
+  final String? hintText;
 
   /// {@macro fluent2.appearance}
   final Fluent2InputAppearance appearance;
@@ -565,7 +565,7 @@ class Fluent2Combobox<T> extends StatefulWidget {
       ..add(DiagnosticsProperty<T>('value', value, defaultValue: null))
       ..add(ObjectFlagProperty<ValueChanged<T>?>.has('onChanged', onChanged))
       ..add(StringProperty('label', label, defaultValue: null))
-      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
       ..add(
         EnumProperty<Fluent2InputAppearance>(
           'appearance',
@@ -677,7 +677,7 @@ class _Fluent2ComboboxState<T> extends State<Fluent2Combobox<T>> {
         2 +
         start +
         fluent2WordsWidth(context, [
-          ?widget.hint,
+          ?widget.hintText,
           for (final o in widget.options) o.label,
         ], type) +
         glyphGap +
@@ -745,6 +745,7 @@ class _Fluent2ComboboxState<T> extends State<Fluent2Combobox<T>> {
               Expanded(
                 child: Semantics(
                   label: widget.label ?? scope?.label,
+                  expanded: field.isOpen,
                   child: Fluent2FieldEditor(
                     autofocus: widget.autofocus,
                     controller: field.controller,
@@ -757,7 +758,7 @@ class _Fluent2ComboboxState<T> extends State<Fluent2Combobox<T>> {
                     style: type.c(
                       live ? c.neutralForeground1 : c.neutralForegroundDisabled,
                     ),
-                    hint: widget.hint,
+                    hint: widget.hintText,
                     hintStyle: type.c(
                       live
                           ? fluent2PlaceholderInk(t, widget.appearance)

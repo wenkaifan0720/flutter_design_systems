@@ -45,7 +45,7 @@ Widget kitComposerDemo(Brightness brightness) => kitScreen(
                   for (final line in sent)
                     Text(line, style: t.body1.c(t.textPrimary)),
                   Fluent2Composer(
-                    hint: kitW('Message Design'),
+                    hintText: kitW('Message Design'),
                     onAttach: () {},
                     onEmoji: () {},
                     onSend: (text) => set([
@@ -66,7 +66,7 @@ Widget kitComposerDemo(Brightness brightness) => kitScreen(
       'Messages, disabled',
       children: [
         Fluent2Composer(
-          hint: kitW("You can't reply in this channel"),
+          hintText: kitW("You can't reply in this channel"),
           onSend: null,
         ),
       ],
@@ -76,7 +76,7 @@ Widget kitComposerDemo(Brightness brightness) => kitScreen(
 );
 
 Widget kitSpecimenComposer() => Fluent2Composer(
-  hint: kitW('Message Design'),
+  hintText: kitW('Message Design'),
   onAttach: () {},
   onEmoji: () {},
   onSend: (_) {},
@@ -91,7 +91,7 @@ Widget kitSpecimenComposerDraft() => KitOwned(
   ),
   (context, draft) => Fluent2Composer(
     controller: draft,
-    hint: kitW('Message Design'),
+    hintText: kitW('Message Design'),
     onAttach: () {},
     onEmoji: () {},
     onSend: (_) {},
@@ -101,7 +101,7 @@ Widget kitSpecimenComposerDraft() => KitOwned(
 Widget kitSpecimenComposerAssistant() => Fluent2Composer(
   style: Fluent2ComposerAppearance.assistant,
   label: kitW('Ask the assistant'),
-  hint: kitW('Ask about your files, chats and meetings'),
+  hintText: kitW('Ask about your files, chats and meetings'),
   onAttach: () {},
   actions: [
     Fluent2IconButton(

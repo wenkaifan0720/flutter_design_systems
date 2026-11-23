@@ -48,9 +48,9 @@ Widget kitDateDemo(Brightness brightness) => kitScreen(
         _Live<DateTime?>(
           null,
           (v, set) => Fluent2FormField(
-            label: 'Launch date',
+            labelText: 'Launch date',
             required: true,
-            helper: 'The launch deck goes out the day before.',
+            helperText: 'The launch deck goes out the day before.',
             validationMessage: v == null ? 'Choose a launch date.' : null,
             child: Fluent2DatePicker(
               value: v,

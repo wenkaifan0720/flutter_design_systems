@@ -83,7 +83,7 @@ Widget kitInputsDemo(Brightness brightness) => kitScreen(
               '',
               (v, set) => Fluent2TextField(
                 label: 'Project name, ${kitSay(size)}',
-                hint: kitSay(size),
+                hintText: kitSay(size),
                 value: v,
                 size: size,
                 onChanged: set,
@@ -114,7 +114,7 @@ Widget kitSpecimenInputAppearances() => _atFieldWidth(
           '',
           (v, set) => Fluent2TextField(
             label: 'Project name, ${kitSay(appearance)}',
-            hint: switch (appearance) {
+            hintText: switch (appearance) {
               Fluent2InputAppearance.outline => 'Outline',
               Fluent2InputAppearance.underline => 'Underline',
               Fluent2InputAppearance.filledDarker => 'Filled darker',
@@ -182,7 +182,7 @@ Widget kitSpecimenTextarea() => _atFieldWidth(
         '',
         (v, set) => Fluent2TextArea(
           label: 'Meeting notes',
-          hint: 'What did the team decide?',
+          hintText: 'What did the team decide?',
           value: v,
           onChanged: set,
         ),
@@ -210,12 +210,12 @@ Widget kitSpecimenSearchBox() => Column(
     _Live<String>(
       '',
       (v, set) =>
-          Fluent2SearchBox(hint: 'Search files', value: v, onChanged: set),
+          Fluent2SearchBox(hintText: 'Search files', value: v, onChanged: set),
     ),
     _Live<String>(
       'launch deck',
       (v, set) => Fluent2SearchBox(
-        hint: 'Search files',
+        hintText: 'Search files',
         value: v,
         appearance: Fluent2InputAppearance.filledDarker,
         onChanged: set,
@@ -230,9 +230,9 @@ Widget kitSpecimenSearchEntry() => Column(
   crossAxisAlignment: CrossAxisAlignment.stretch,
   spacing: Fluent2Spacing.m,
   children: [
-    Fluent2SearchEntry(hint: 'Search Northwind', onPressed: () {}),
+    Fluent2SearchEntry(hintText: 'Search Northwind', onPressed: () {}),
     Fluent2SearchEntry(
-      hint: 'Search files',
+      hintText: 'Search files',
       query: 'launch deck',
       appearance: Fluent2InputAppearance.filledDarker,
       onPressed: () {},
@@ -284,7 +284,7 @@ Widget kitSpecimenCombobox() => Column(
       'harbor',
       (v, set) => Fluent2Combobox<String>(
         label: 'Room',
-        hint: 'Find a room',
+        hintText: 'Find a room',
         options: _rooms,
         value: v,
         // Words that match no room say so in the list.
@@ -296,7 +296,7 @@ Widget kitSpecimenCombobox() => Column(
       null,
       (v, set) => Fluent2Combobox<String>(
         label: 'Room',
-        hint: 'Find a room',
+        hintText: 'Find a room',
         options: _rooms,
         value: v,
         invalid: true,
@@ -324,7 +324,7 @@ Widget kitSpecimenTagPicker() => Column(
       const [],
       (v, set) => Fluent2MultiSelect<String>(
         label: 'Reviewers',
-        hint: 'Add reviewers',
+        hintText: 'Add reviewers',
         options: _people,
         selected: v,
         size: Fluent2MultiSelectSize.large,

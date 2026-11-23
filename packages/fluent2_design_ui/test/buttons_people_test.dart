@@ -6,6 +6,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fluent2_design_ui/fluent2_design_ui.dart';
 import 'package:fluent2_design_ui/fluent2_design_host.dart';
+import 'package:fluent2_design_ui/src/fluent2_design/components/button/button.dart'
+    show Fluent2ButtonBox;
 import 'package:fluent2_design_ui/src/fluent2_design/components/input/field_core.dart'
     show Fluent2FieldFrame;
 import 'package:fluent2_design_ui/src/fluent2_design/internal/well.dart'

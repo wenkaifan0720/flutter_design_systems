@@ -197,7 +197,7 @@ void main() {
     for (final brightness in Brightness.values) {
       await _pump(
         t,
-        const Fluent2Composer(onSend: null, hint: reason),
+        const Fluent2Composer(onSend: null, hintText: reason),
         scale: 2,
         brightness: brightness,
       );

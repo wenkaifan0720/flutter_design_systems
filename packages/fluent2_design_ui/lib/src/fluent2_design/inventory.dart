@@ -171,7 +171,7 @@ final DesignInventory fluent2Inventory = DesignInventory(
     ),
     DesignInventoryEntry.present(
       'SearchField',
-      (_) => Fluent2SearchBox(hint: 'Find a file', onChanged: (_) {}),
+      (_) => Fluent2SearchBox(hintText: 'Find a file', onChanged: (_) {}),
     ),
     DesignInventoryEntry.present(
       'PasswordField',
@@ -354,10 +354,13 @@ final DesignInventory fluent2Inventory = DesignInventory(
     DesignInventoryEntry.present(
       'FormField',
       (_) => Fluent2FormField(
-        label: 'Email',
-        helper: 'The link goes here',
+        labelText: 'Email',
+        helperText: 'The link goes here',
         required: true,
-        child: Fluent2TextField(hint: 'name@example.com', onChanged: (_) {}),
+        child: Fluent2TextField(
+          hintText: 'name@example.com',
+          onChanged: (_) {},
+        ),
       ),
     ),
     // Navigation

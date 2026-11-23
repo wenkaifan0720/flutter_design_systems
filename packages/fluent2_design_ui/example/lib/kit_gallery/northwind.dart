@@ -442,7 +442,7 @@ class _FilesState extends State<_Files> {
           _measured(
             400,
             Fluent2SearchBox(
-              hint: kitW('Search files'),
+              hintText: kitW('Search files'),
               value: _query,
               onChanged: (v) => setState(() => _query = v),
               onClear: () => setState(() => _query = ''),
@@ -671,20 +671,20 @@ class _RequestState extends State<_Request> {
             title: kitW('What you need'),
             children: [
               Fluent2FormField(
-                label: kitW('Title'),
+                labelText: kitW('Title'),
                 required: true,
                 validationMessage: _tried && _missingTitle
                     ? kitW('Give the request a title.')
                     : null,
                 child: Fluent2TextField(
                   value: _title,
-                  hint: kitW('For example, a second monitor'),
+                  hintText: kitW('For example, a second monitor'),
                   invalid: _tried && _missingTitle,
                   onChanged: (v) => setState(() => _title = v),
                 ),
               ),
               Fluent2FormField(
-                label: kitW('Type'),
+                labelText: kitW('Type'),
                 child: Fluent2Select<String>(
                   prompt: kitW('Choose a type'),
                   options: _kinds,
@@ -693,7 +693,7 @@ class _RequestState extends State<_Request> {
                 ),
               ),
               Fluent2FormField(
-                label: kitW('Priority'),
+                labelText: kitW('Priority'),
                 child: Align(
                   alignment: AlignmentDirectional.centerStart,
                   child: Fluent2SegmentedButton<String>(
@@ -705,13 +705,13 @@ class _RequestState extends State<_Request> {
                 ),
               ),
               Fluent2FormField(
-                label: kitW('Details'),
-                helper: kitW(
+                labelText: kitW('Details'),
+                helperText: kitW(
                   'What it is for, and anything the team should know.',
                 ),
                 child: Fluent2TextArea(
                   value: _details,
-                  hint: kitW('Add details'),
+                  hintText: kitW('Add details'),
                   onChanged: (v) => setState(() => _details = v),
                 ),
               ),
@@ -722,7 +722,7 @@ class _RequestState extends State<_Request> {
             title: kitW('When and who'),
             children: [
               Fluent2FormField(
-                label: kitW('Needed by'),
+                labelText: kitW('Needed by'),
                 required: true,
                 validationMessage: _tried && _missingBy
                     ? kitW('Choose when you need it.')
@@ -735,7 +735,7 @@ class _RequestState extends State<_Request> {
                 ),
               ),
               Fluent2FormField(
-                label: kitW('Approver'),
+                labelText: kitW('Approver'),
                 child: Fluent2Select<String>(
                   prompt: kitW('Choose an approver'),
                   options: _approvers,

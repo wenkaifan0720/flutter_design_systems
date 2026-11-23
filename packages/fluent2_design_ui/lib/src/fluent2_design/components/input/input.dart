@@ -95,7 +95,7 @@ class _Editor extends StatelessWidget {
 /// Inside a `Fluent2FormField`, the parent supplies the label and validation.
 ///
 /// ```dart
-/// Fluent2TextField(label: 'Project name', hint: 'Northwind launch', value: name, onChanged: (v) => setState(() => name = v))
+/// Fluent2TextField(label: 'Project name', hintText: 'Northwind launch', value: name, onChanged: (v) => setState(() => name = v))
 /// ```
 class Fluent2TextField extends StatefulWidget {
   /// A text field, Fluent's Input.
@@ -106,7 +106,7 @@ class Fluent2TextField extends StatefulWidget {
     this.onSubmitted,
     this.controller,
     this.focusNode,
-    this.hint,
+    this.hintText,
     this.appearance = Fluent2InputAppearance.outline,
     this.size = Fluent2InputSize.medium,
     this.prefixIcon,
@@ -149,7 +149,7 @@ class Fluent2TextField extends StatefulWidget {
   final FocusNode? focusNode;
 
   /// What the empty field says, in the fourth ink.
-  final String? hint;
+  final String? hintText;
 
   /// {@macro fluent2.appearance}
   final Fluent2InputAppearance appearance;
@@ -230,7 +230,7 @@ class Fluent2TextField extends StatefulWidget {
           defaultValue: null,
         ),
       )
-      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
       ..add(
         EnumProperty<Fluent2InputAppearance>(
           'appearance',
@@ -378,7 +378,7 @@ class _Fluent2TextFieldState extends State<Fluent2TextField>
                 style: Fluent2FieldMetrics.typeOf(t, widget.size),
                 enabled: enabled,
                 label: widget.label ?? scope?.label,
-                placeholder: widget.hint,
+                placeholder: widget.hintText,
                 onChanged: widget.onChanged,
                 onSubmitted: widget.onSubmitted,
                 readOnly: widget.readOnly,
@@ -397,18 +397,12 @@ class _Fluent2TextFieldState extends State<Fluent2TextField>
       ),
     );
     // Under a Fluent2FormField (the caller's, or the one a validation
-    // message brings) the frame leaves its node to the field. With a button
-    // at its end the field keeps each control's own node, and the entry's
-    // is still the frame's size, not its 20-tall line's.
-    final field = scope != null || validationMessage != null;
-    final framed = field && after.isNotEmpty
-        ? Semantics(container: true, child: input)
-        : input;
-    if (validationMessage == null) return framed;
-    return Fluent2FormField(
-      validationMessage: validationMessage,
-      child: framed,
-    );
+    // message brings) the frame leaves its node to the field: the entry's
+    // node is the field's, its label, help and error read on it, and a
+    // button at its end (a password's reveal) keeps a node of its own in
+    // it, as Material's text field with a suffix button.
+    if (validationMessage == null) return input;
+    return Fluent2FormField(validationMessage: validationMessage, child: input);
   }
 }
 
@@ -420,7 +414,7 @@ class _Fluent2TextFieldState extends State<Fluent2TextField>
 /// [onChanged], or a [controller]; with neither it is disabled.
 ///
 /// ```dart
-/// Fluent2TextArea(label: 'Notes', hint: 'What should the team know?', value: notes, onChanged: (v) => setState(() => notes = v))
+/// Fluent2TextArea(label: 'Notes', hintText: 'What should the team know?', value: notes, onChanged: (v) => setState(() => notes = v))
 /// ```
 class Fluent2TextArea extends StatefulWidget {
   /// A text area for several lines, Fluent's Textarea.
@@ -431,7 +425,7 @@ class Fluent2TextArea extends StatefulWidget {
     this.controller,
     this.focusNode,
     this.autofocus = false,
-    this.hint,
+    this.hintText,
     this.appearance = Fluent2InputAppearance.outline,
     this.size = Fluent2InputSize.medium,
     this.invalid = false,
@@ -468,7 +462,7 @@ class Fluent2TextArea extends StatefulWidget {
   final bool autofocus;
 
   /// The words shown while it is empty.
-  final String? hint;
+  final String? hintText;
 
   /// {@macro fluent2.appearance}
   final Fluent2InputAppearance appearance;
@@ -512,7 +506,7 @@ class Fluent2TextArea extends StatefulWidget {
         ),
       )
       ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
-      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
       ..add(
         EnumProperty<Fluent2InputAppearance>(
           'appearance',
@@ -575,7 +569,7 @@ class _Fluent2TextareaState extends State<Fluent2TextArea>
           style: Fluent2FieldMetrics.typeOf(t, widget.size),
           enabled: enabled,
           label: widget.label ?? scope?.label,
-          placeholder: widget.hint,
+          placeholder: widget.hintText,
           onChanged: widget.onChanged,
           readOnly: widget.readOnly,
           multiline: true,
@@ -593,7 +587,7 @@ class _Fluent2TextareaState extends State<Fluent2TextArea>
 /// [controller] it is disabled.
 ///
 /// ```dart
-/// Fluent2SearchBox(hint: 'Search files', value: query, onChanged: (v) => setState(() => query = v))
+/// Fluent2SearchBox(hintText: 'Search files', value: query, onChanged: (v) => setState(() => query = v))
 /// ```
 class Fluent2SearchBox extends StatefulWidget {
   /// A search box, Fluent's SearchBox.
@@ -604,7 +598,7 @@ class Fluent2SearchBox extends StatefulWidget {
     this.onClear,
     this.controller,
     this.focusNode,
-    this.hint,
+    this.hintText,
     this.label,
     this.appearance = Fluent2InputAppearance.outline,
     this.size = Fluent2InputSize.medium,
@@ -637,9 +631,9 @@ class Fluent2SearchBox extends StatefulWidget {
   final FocusNode? focusNode;
 
   /// The empty words; null is "Search" in the app's language.
-  final String? hint;
+  final String? hintText;
 
-  /// The spoken name; null says [hint].
+  /// The spoken name; null says [hintText].
   final String? label;
 
   /// {@macro fluent2.appearance}
@@ -686,7 +680,7 @@ class Fluent2SearchBox extends StatefulWidget {
           defaultValue: null,
         ),
       )
-      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
       ..add(StringProperty('label', label, defaultValue: null))
       ..add(
         EnumProperty<Fluent2InputAppearance>(
@@ -741,7 +735,7 @@ class _Fluent2SearchBoxState extends State<Fluent2SearchBox>
         : t.colors.neutralForegroundDisabled;
     final filled = fieldController.text.isNotEmpty;
     final hint =
-        widget.hint ?? RawWidgetsLocalizations.of(context).searchFieldLabel;
+        widget.hintText ?? RawWidgetsLocalizations.of(context).searchFieldLabel;
     final frame = Fluent2FieldFrame(
       appearance: widget.appearance,
       style: widget.style,
@@ -808,19 +802,19 @@ class _Fluent2SearchBoxState extends State<Fluent2SearchBox>
 }
 
 /// A way into search drawn as Fluent's SearchBox: the same field face and
-/// search glyph with its [hint] in the fourth ink, or the [query]
+/// search glyph with its [hintText] in the fourth ink, or the [query]
 /// the page already holds in the first; the whole field is one button
 /// that opens the search ([onPressed]). [onFilter] stands a filter button
 /// beside it. Null [onPressed] draws it disabled.
 ///
 /// ```dart
-/// Fluent2SearchEntry(hint: 'Search Northwind', onPressed: () => Navigator.of(context).pushNamed('/search'))
+/// Fluent2SearchEntry(hintText: 'Search Northwind', onPressed: () => Navigator.of(context).pushNamed('/search'))
 /// ```
 class Fluent2SearchEntry extends StatelessWidget {
   /// A search box's face that opens a search page when pressed.
   const Fluent2SearchEntry({
     required this.onPressed,
-    this.hint,
+    this.hintText,
     this.query,
     this.onFilter,
     this.appearance = Fluent2InputAppearance.outline,
@@ -832,7 +826,7 @@ class Fluent2SearchEntry extends StatelessWidget {
   final VoidCallback? onPressed;
 
   /// The empty words; null is "Search" in the app's language.
-  final String? hint;
+  final String? hintText;
 
   /// The query the page holds, drawn in place of the placeholder.
   final String? query;
@@ -859,7 +853,7 @@ class Fluent2SearchEntry extends StatelessWidget {
     final words = query;
     final own = Fluent2Localizations.of(context);
     final hint =
-        this.hint ?? RawWidgetsLocalizations.of(context).searchFieldLabel;
+        hintText ?? RawWidgetsLocalizations.of(context).searchFieldLabel;
     final entry = TapTargetPadding(
       minSize: Fluent2Layout.tapFloorOf(context),
       child: Fluent2Pressable(
@@ -948,7 +942,7 @@ class Fluent2SearchEntry extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(ObjectFlagProperty<VoidCallback?>.has('onPressed', onPressed))
-      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
       ..add(StringProperty('query', query, defaultValue: null))
       ..add(ObjectFlagProperty<VoidCallback?>.has('onFilter', onFilter))
       ..add(

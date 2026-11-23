@@ -119,9 +119,21 @@ class _Plot extends StatelessWidget {
       return w;
     }
 
-    final ticks = [top, top / 2, 0.0].map((v) => _say(context, v)).toList();
+    // Fluent's three lines label the value axis; ui_core measures their
+    // words and keeps that room at the reading start.
+    final yTicks = [
+      for (final v in [top, top / 2, 0.0])
+        DesignScaleTick(value: v, position: v, label: _say(context, v)),
+    ];
+    final ticks = [for (final y in yTicks) y.label];
     final left =
-        ticks.map((w) => widthOf(w, tick)).reduce(math.max) + Fluent2Spacing.s;
+        DesignScaleTick.widestLabel(
+          yTicks,
+          style: tick,
+          textScaler: scaler,
+          textDirection: dir,
+        ) +
+        Fluent2Spacing.s;
     final direct = series.length >= 2 && series.length <= 4;
     final summary = [
       for (final s in series)
@@ -194,7 +206,8 @@ class _Plot extends StatelessWidget {
                       : fluent2Figure(context, x);
                 },
                 formatY: (v) => _say(context, v),
-                padding: EdgeInsetsDirectional.only(start: left, end: room),
+                padding: EdgeInsetsDirectional.only(end: room),
+                yLabelGutter: (_) => left,
                 builder: (context, chart) {
                   final at = chart.active?.index;
                   final drawn = [

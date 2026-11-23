@@ -710,7 +710,7 @@ void main() {
           children: [
             Fluent2TextField(
               label: 'Project name',
-              hint: 'Northwind launch',
+              hintText: 'Northwind launch',
               onChanged: (v) => got = v,
             ),
             const Fluent2TextField(label: 'Workspace', value: 'Northwind'),
@@ -757,7 +757,7 @@ void main() {
         tester,
         Fluent2TextField(
           label: 'Password',
-          hint: 'At least 8 characters',
+          hintText: 'At least 8 characters',
           obscureText: true,
           validationMessage: 'Too short',
           onChanged: (_) {},
@@ -777,9 +777,9 @@ void main() {
       await pump(
         tester,
         Fluent2FormField(
-          label: 'Email',
+          labelText: 'Email',
           required: true,
-          helper: 'We send the invite here.',
+          helperText: 'We send the invite here.',
           validationMessage: 'Enter an email address.',
           child: Fluent2TextField(onChanged: (_) {}),
         ),
@@ -816,7 +816,7 @@ void main() {
         StatefulBuilder(
           builder: (context, set) => Fluent2SearchBox(
             value: value,
-            hint: 'Search files',
+            hintText: 'Search files',
             onChanged: (v) => set(() => value = v),
           ),
         ),
@@ -837,7 +837,7 @@ void main() {
       await pump(
         tester,
         Fluent2SearchEntry(
-          hint: 'Search Northwind',
+          hintText: 'Search Northwind',
           onPressed: () => opened++,
           onFilter: () => filtered++,
         ),
@@ -1061,7 +1061,7 @@ void main() {
         Column(
           children: [
             Fluent2FormField(
-              label: 'Retention',
+              labelText: 'Retention',
               info: 'Files in the bin are deleted after 30 days.',
               validationMessage: 'Already taken.',
               validationState: Fluent2ValidationState.warning,
@@ -1092,7 +1092,7 @@ void main() {
           description: 'How Northwind reaches you about files and chats.',
           children: [
             Fluent2FormField(
-              label: 'A long display name label for the workspace',
+              labelText: 'A long display name label for the workspace',
               orientation: Fluent2FieldOrientation.horizontal,
               child: Fluent2TextField(onChanged: (_) {}),
             ),
@@ -1316,7 +1316,7 @@ void main() {
             onChanged: (_) {},
           ),
           Fluent2SearchEntry(
-            hint: 'Search Northwind',
+            hintText: 'Search Northwind',
             query: 'launch deck review notes',
             onPressed: () {},
             onFilter: () {},

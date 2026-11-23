@@ -107,7 +107,7 @@ Show a validation message below a text field.
 ```dart
 Fluent2TextField(
   label: 'Email',
-  hint: 'name@example.com',
+  hintText: 'name@example.com',
   onChanged: (value) => setState(() => email = value),
   validationMessage: email.contains('@') ? null : 'Enter an email address',
 );

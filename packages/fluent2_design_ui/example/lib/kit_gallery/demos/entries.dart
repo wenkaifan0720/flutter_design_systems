@@ -55,14 +55,14 @@ Widget kitSpecimenInputGroup() => const Column(
         label: 'Website',
         prefix: 'https://',
         suffix: '.com',
-        hint: 'northwind',
+        hintText: 'northwind',
       ),
     ),
     Fluent2InputGroup(
       label: 'Budget',
       prefix: r'$',
       suffix: 'per month',
-      hint: '0',
+      hintText: '0',
     ),
   ],
 );
