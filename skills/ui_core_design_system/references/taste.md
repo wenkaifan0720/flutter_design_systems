@@ -324,7 +324,11 @@ no clipped descender; fixed-height parts grow, or cap where Material caps.
 
 **Scripts:** the look works with any reasonable font; set
 `fontFamilyFallback` so Arabic, Hebrew, CJK and Devanagari render; shortcut
-symbols (⌘⌥⇧⌃) have glyphs.
+symbols (⌘⌥⇧⌃) have glyphs. For CJK and other large scripts, never fetch
+whole Noto CJK families at run time through google_fonts: each is several
+MB, google_fonts hashes every download synchronously, and on the web
+every load registers all fonts again. Rely on the look's fonts and the
+platform's CJK fallback, or bundle a subset as assets.
 
 **Words:** every word a part says comes from `RawWidgetsLocalizations` or the
 look's own localizations; dates, times and numbers follow the locale (digits,

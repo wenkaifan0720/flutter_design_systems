@@ -227,7 +227,9 @@ navigation, containers, overlays, feedback and charts. For each part:
    a combobox's, a menu's) is one surface with one kind of row; every raised
    panel is one material. A part that looks like a cousin of its neighbour
    reads as a fault. [taste.md](references/taste.md) section 8 has the
-   pairs that must match.
+   pairs that must match. A face two parts share (a resting panel, a well,
+   a chosen row) is named once, on the face's class or the theme, and both
+   use it; a face spelled out in three parts is one the theme is missing.
 5. Write its test (step 7) before moving on.
 
 ### 6. Raise things the look's way

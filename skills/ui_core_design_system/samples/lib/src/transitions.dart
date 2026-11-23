@@ -32,7 +32,8 @@ class LookPageTransitionsBuilder extends PageTransitionsBuilder {
 
 /// The look's push on every platform, for an app's
 /// `PageTransitionsTheme(builders: lookPageTransitions)`. On iOS it keeps
-/// the swipe back from the screen's leading edge.
+/// the swipe back from the screen's leading edge. A page route that wraps
+/// the swipe back itself takes [LookPageTransitionsBuilder] instead.
 const Map<TargetPlatform, PageTransitionsBuilder> lookPageTransitions = {
   TargetPlatform.android: LookPageTransitionsBuilder(),
   TargetPlatform.iOS: SwipeBackPageTransitionsBuilder(

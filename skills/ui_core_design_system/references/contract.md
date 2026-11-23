@@ -642,13 +642,18 @@ fieldBuilder: (context, field) {
 A look owns its push and pop. It writes a `PageTransitionsBuilder` and gives
 apps a map for `PageTransitionsTheme(builders:)`, keeping the iOS swipe back
 with `SwipeBackPageTransitionsBuilder` (or `designSwipeBack(map)`, which wraps
-a map's iOS entry):
+a map's iOS entry and leaves one already wrapped alone):
 
 ```dart
 TargetPlatform.iOS: SwipeBackPageTransitionsBuilder(
   LookPageTransitionsBuilder(),
 ),
 ```
+
+Swipe back is wrapped once, on iOS only. Export the bare builder beside the
+map: an app's own page route that wraps `SwipeBackPageTransitionsBuilder`
+round the look's push (a go_router `Page`, say) takes the bare builder,
+never the map's iOS entry, or the page answers the edge swipe twice.
 
 Drive transitions with `animation.drive(...)` rather than a
 `CurvedAnimation` made in `buildTransitions`: a `CurvedAnimation` must be
