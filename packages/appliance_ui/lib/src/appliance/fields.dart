@@ -17,6 +17,7 @@ import 'internal/glyphs.dart';
 import 'material.dart';
 import 'text_field.dart';
 import 'theme.dart';
+import 'internal/field_frame.dart';
 
 /// A small key standing inside a well's end: a search's clear key, a
 /// password's eye. Its target reaches the floor round it.
@@ -89,7 +90,7 @@ class _WellKey extends StatelessWidget {
 /// as the words change, for a search as you type.
 ///
 /// ```dart
-/// ApplianceSearchField(hint: 'Search the shop', onSubmitted: (words) {})
+/// ApplianceSearchField(hintText: 'Search the shop', onSubmitted: (words) {})
 /// ```
 class ApplianceSearchField extends StatefulWidget {
   /// A search field.
@@ -97,7 +98,7 @@ class ApplianceSearchField extends StatefulWidget {
     super.key,
     this.controller,
     this.focusNode,
-    this.hint,
+    this.hintText,
     this.semanticLabel = 'Search',
     this.clearLabel = 'Clear',
     this.onChanged,
@@ -114,7 +115,7 @@ class ApplianceSearchField extends StatefulWidget {
   final FocusNode? focusNode;
 
   /// What the well says while it is empty.
-  final String? hint;
+  final String? hintText;
 
   /// The field's name for a screen reader.
   final String semanticLabel;
@@ -144,7 +145,7 @@ class ApplianceSearchField extends StatefulWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
       ..add(FlagProperty('enabled', value: enabled, ifFalse: 'disabled'));
   }
 }
@@ -195,7 +196,7 @@ class _ApplianceSearchFieldState extends State<ApplianceSearchField> {
   Widget build(BuildContext context) => ApplianceTextField(
     controller: _controller,
     focusNode: _focus,
-    hint: widget.hint,
+    hintText: widget.hintText,
     semanticLabel: widget.semanticLabel,
     leading: const ApplianceGlyph(ApplianceLensPainter.new),
     trailing: _controller.text.isEmpty || !widget.enabled
@@ -258,7 +259,7 @@ class _EyePainter extends CustomPainter {
 /// [hideOnBlur] hides them again when the field loses the focus.
 ///
 /// ```dart
-/// AppliancePasswordField(label: 'Password', onChanged: (words) {})
+/// AppliancePasswordField(labelText: 'Password', onChanged: (words) {})
 /// ```
 class AppliancePasswordField extends StatelessWidget {
   /// A password field.
@@ -266,9 +267,9 @@ class AppliancePasswordField extends StatelessWidget {
     super.key,
     this.controller,
     this.focusNode,
-    this.label = 'Password',
-    this.helper,
-    this.error,
+    this.labelText = 'Password',
+    this.helperText,
+    this.errorText,
     this.onChanged,
     this.onSubmitted,
     this.textInputAction,
@@ -285,13 +286,13 @@ class AppliancePasswordField extends StatelessWidget {
   final FocusNode? focusNode;
 
   /// The words over the well.
-  final String? label;
+  final String? labelText;
 
   /// Help under the well.
-  final String? helper;
+  final String? helperText;
 
   /// What is wrong, under the well.
-  final String? error;
+  final String? errorText;
 
   /// Called as the words change.
   final ValueChanged<String>? onChanged;
@@ -321,9 +322,9 @@ class AppliancePasswordField extends StatelessWidget {
     builder: (context, password) => ApplianceTextField(
       controller: controller,
       focusNode: focusNode,
-      label: label,
-      helper: helper,
-      error: error,
+      labelText: labelText,
+      helperText: helperText,
+      errorText: errorText,
       obscureText: password.obscured,
       autofillHints: autofillHints,
       keyboardType: TextInputType.visiblePassword,
@@ -345,7 +346,7 @@ class AppliancePasswordField extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
       ..add(FlagProperty('enabled', value: enabled, ifFalse: 'disabled'));
   }
 }
@@ -356,7 +357,7 @@ class AppliancePasswordField extends StatelessWidget {
 /// one bezel lights round the whole while the words have the focus.
 ///
 /// ```dart
-/// ApplianceInputGroup(label: 'Weight', suffix: 'kg', keyboardType: TextInputType.number)
+/// ApplianceInputGroup(labelText: 'Weight', suffix: 'kg', keyboardType: TextInputType.number)
 /// ```
 class ApplianceInputGroup extends StatefulWidget {
   /// A well with [prefix] and [suffix].
@@ -364,10 +365,10 @@ class ApplianceInputGroup extends StatefulWidget {
     super.key,
     this.controller,
     this.focusNode,
-    this.label,
-    this.hint,
-    this.helper,
-    this.error,
+    this.labelText,
+    this.hintText,
+    this.helperText,
+    this.errorText,
     this.semanticLabel,
     this.prefix,
     this.suffix,
@@ -386,18 +387,18 @@ class ApplianceInputGroup extends StatefulWidget {
   final FocusNode? focusNode;
 
   /// The words over the well.
-  final String? label;
+  final String? labelText;
 
   /// What the well says while it is empty.
-  final String? hint;
+  final String? hintText;
 
   /// Help under the well.
-  final String? helper;
+  final String? helperText;
 
   /// What is wrong, under the well.
-  final String? error;
+  final String? errorText;
 
-  /// The field's name for a screen reader, when [label] is not shown.
+  /// The field's name for a screen reader, when [labelText] is not shown.
   final String? semanticLabel;
 
   /// What stands before the words ("£", "https://").
@@ -459,7 +460,7 @@ class _ApplianceInputGroupState extends State<ApplianceInputGroup> {
   Widget build(BuildContext context) {
     final theme = ApplianceTheme.of(context);
     final c = theme.colors;
-    final error = widget.error != null;
+    final error = widget.errorText != null;
     Widget addOn(String words, {required bool start}) {
       final side = BorderSide(color: c.seamShade, width: 1);
       return DecoratedBox(
@@ -490,99 +491,93 @@ class _ApplianceInputGroupState extends State<ApplianceInputGroup> {
       );
     }
 
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        if (widget.label != null)
-          ExcludeSemantics(
-            child: ApplianceFieldLabel(widget.label!, enabled: widget.enabled),
-          ),
-        DesignInputGroup(
-          focusNode: _focus,
-          enabled: widget.enabled,
-          isError: error,
-          builder: (context, states, child) {
-            final layered = DesignStyleOf([
-              widget.style,
-              theme.textFieldStyle,
-            ], states);
-            final face = layered.on(
-              ApplianceFace.well(c).copyWith(
-                lift: widget.enabled ? -1 : -0.5,
-                edge: error ? c.danger : null,
-                focus: states.contains(WidgetState.focused)
-                    ? (error ? c.danger : c.focus)
-                    : c.focus.withValues(alpha: 0),
-              ),
-            );
-            return AnimatedApplianceSurface(
-              face: face,
-              child: ClipRRect(borderRadius: face.radius, child: child),
-            );
-          },
-          child: SizedBox(
-            height: theme.controlHeight,
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                if (widget.prefix != null) addOn(widget.prefix!, start: true),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: ApplianceSpacing.medium,
-                    ),
-                    child: DesignCapCenter(
-                      capHeightFactor: theme.capHeightFactor,
-                      child: Semantics(
-                        container: true,
-                        label: widget.semanticLabel ?? widget.label,
-                        child: DesignTextEntryBox(
-                          minHeight: theme.controlHeight,
-                          controller: _controller,
-                          maxLines: 1,
-                          hint: widget.hint == null
-                              ? null
-                              : Text(
-                                  widget.hint!,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: theme.textTheme.body.copyWith(
-                                    color: c.printMuted,
-                                  ),
+    return applianceFieldFrame(
+      labelText: widget.labelText,
+      semanticLabel: widget.semanticLabel,
+      helperText: widget.helperText,
+      errorText: widget.errorText,
+      enabled: widget.enabled,
+      control: DesignInputGroup(
+        focusNode: _focus,
+        enabled: widget.enabled,
+        isError: error,
+        builder: (context, states, child) {
+          final layered = DesignStyleOf([
+            widget.style,
+            theme.textFieldStyle,
+          ], states);
+          final face = layered.on(
+            ApplianceFace.well(c).copyWith(
+              lift: widget.enabled ? -1 : -0.5,
+              edge: error ? c.danger : null,
+              focus: states.contains(WidgetState.focused)
+                  ? (error ? c.danger : c.focus)
+                  : c.focus.withValues(alpha: 0),
+            ),
+          );
+          return AnimatedApplianceSurface(
+            face: face,
+            child: ClipRRect(borderRadius: face.radius, child: child),
+          );
+        },
+        child: SizedBox(
+          height: theme.controlHeight,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              if (widget.prefix != null) addOn(widget.prefix!, start: true),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: ApplianceSpacing.medium,
+                  ),
+                  child: DesignCapCenter(
+                    capHeightFactor: theme.capHeightFactor,
+                    child: Semantics(
+                      container: true,
+                      label: widget.semanticLabel ?? widget.labelText,
+                      child: DesignTextEntryBox(
+                        minHeight: theme.controlHeight,
+                        controller: _controller,
+                        maxLines: 1,
+                        hint: widget.hintText == null
+                            ? null
+                            : Text(
+                                widget.hintText!,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: theme.textTheme.body.copyWith(
+                                  color: c.printMuted,
                                 ),
-                          child: Material(
-                            type: MaterialType.transparency,
-                            child: TextField(
-                              controller: _controller,
-                              focusNode: _focus,
-                              decoration: null,
-                              style: theme.textTheme.body.copyWith(
-                                color: widget.enabled
-                                    ? c.print
-                                    : c.printDisabled,
                               ),
-                              cursorColor: c.signal,
-                              cursorWidth: 2,
-                              keyboardType: widget.keyboardType,
-                              inputFormatters: widget.inputFormatters,
-                              onChanged: widget.onChanged,
-                              onSubmitted: widget.onSubmitted,
-                              enabled: widget.enabled,
+                        child: Material(
+                          type: MaterialType.transparency,
+                          child: TextField(
+                            controller: _controller,
+                            focusNode: _focus,
+                            decoration: null,
+                            style: theme.textTheme.body.copyWith(
+                              color: widget.enabled ? c.print : c.printDisabled,
                             ),
+                            cursorColor: c.signal,
+                            cursorWidth: 2,
+                            keyboardType: widget.keyboardType,
+                            inputFormatters: widget.inputFormatters,
+                            onChanged: widget.onChanged,
+                            onSubmitted: widget.onSubmitted,
+                            enabled: widget.enabled,
                           ),
                         ),
                       ),
                     ),
                   ),
                 ),
-                if (widget.suffix != null) addOn(widget.suffix!, start: false),
-              ],
-            ),
+              ),
+              if (widget.suffix != null) addOn(widget.suffix!, start: false),
+            ],
           ),
         ),
-        ApplianceFieldMessage(helper: widget.helper, error: widget.error),
-      ],
+      ),
     );
   }
 }
@@ -794,7 +789,7 @@ class ApplianceField extends StatelessWidget {
   final bool? mergeSemantics;
 
   @override
-  Widget build(BuildContext context) => RawInputDecorator(
+  Widget build(BuildContext context) => applianceFieldFrame(
     labelText: labelText,
     helperText: helperText,
     errorText: errorText,
@@ -802,56 +797,7 @@ class ApplianceField extends StatelessWidget {
     enabled: enabled,
     focusNode: focusNode,
     mergeSemantics: mergeSemantics,
-    builder: (context, parts) {
-      final theme = ApplianceTheme.of(context);
-      final c = theme.colors;
-      final label = parts.labelText;
-      return Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          if (label != null)
-            ExcludeSemantics(
-              child: ApplianceFieldLabel(
-                parts.required ? '$label *' : label,
-                enabled: parts.enabled,
-              ),
-            ),
-          parts.control,
-          if (parts.error != null)
-            Padding(
-              padding: const EdgeInsets.only(top: ApplianceSpacing.small),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(top: ApplianceSpacing.tight),
-                    child: ApplianceLamp(lit: true, color: c.danger),
-                  ),
-                  const SizedBox(width: ApplianceSpacing.small),
-                  Expanded(
-                    child: DefaultTextStyle(
-                      style: theme.textTheme.secondary.copyWith(
-                        color: c.danger,
-                      ),
-                      child: parts.error!,
-                    ),
-                  ),
-                ],
-              ),
-            )
-          else if (parts.helper != null)
-            Padding(
-              padding: const EdgeInsets.only(top: ApplianceSpacing.small),
-              child: DefaultTextStyle(
-                style: theme.textTheme.secondary.copyWith(color: c.printMuted),
-                child: parts.helper!,
-              ),
-            ),
-        ],
-      );
-    },
-    child: child,
+    control: child,
   );
 
   @override

@@ -53,7 +53,7 @@ void main() {
             pageBuilder: (context, animation, secondary) =>
                 const ApplianceScreen(
                   body: ApplianceCombobox<String>(
-                    label: 'Assignee',
+                    labelText: 'Assignee',
                     options: ['Ada Brook', 'Sam Lee'],
                   ),
                 ),

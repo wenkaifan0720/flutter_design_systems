@@ -20,6 +20,7 @@ class ApplianceBareField extends StatelessWidget {
     required this.minHeight,
     this.hint,
     this.semanticLabel,
+    this.expanded,
     this.enabled = true,
     this.onChanged,
     this.onEditingComplete,
@@ -42,6 +43,10 @@ class ApplianceBareField extends StatelessWidget {
 
   /// Its name for a screen reader (the part's label, shown above it).
   final String? semanticLabel;
+
+  /// Whether the list it opens is showing, said on its node; null for a
+  /// line that opens none.
+  final bool? expanded;
 
   /// Whether it takes words.
   final bool enabled;
@@ -76,6 +81,7 @@ class ApplianceBareField extends StatelessWidget {
       container: true,
       child: Semantics(
         label: semanticLabel,
+        expanded: expanded,
         child: DesignTextEntryBox(
           minHeight: minHeight,
           controller: controller,

@@ -97,7 +97,7 @@ class _Anchored extends StatelessWidget {
                     ApplianceSheetAction('Track the order', onPressed: () {}),
                     ApplianceSheetAction(
                       'Cancel the order',
-                      destructive: true,
+                      isDestructiveAction: true,
                       onPressed: () {},
                     ),
                   ],
@@ -122,7 +122,7 @@ class _Anchored extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const ApplianceTextField(label: 'Note', maxLines: 3),
+                    const ApplianceTextField(labelText: 'Note', maxLines: 3),
                     const SizedBox(height: ApplianceSpacing.medium),
                     ApplianceButton.filled('Save', onPressed: close),
                   ],
@@ -193,18 +193,18 @@ class _Anchored extends StatelessWidget {
                 ApplianceMenuRow(
                   label: 'Sort by price',
                   states: {},
-                  chosen: true,
+                  selected: true,
                 ),
                 ApplianceMenuRow(
                   label: 'Sort by name',
                   states: {},
-                  chosen: false,
+                  selected: false,
                 ),
                 ApplianceMenuRow(label: 'Archive', states: {}, enabled: false),
                 ApplianceMenuRow(
                   label: 'Cancel the order',
                   states: {},
-                  destructive: true,
+                  isDestructiveAction: true,
                 ),
               ],
             ),

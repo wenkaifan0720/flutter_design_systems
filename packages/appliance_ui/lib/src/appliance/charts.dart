@@ -64,12 +64,10 @@ List<Color> _traces(ApplianceColors c) => _lcd(c)
 Color _faint(ApplianceColors c, double night) =>
     c.onDisplay.withValues(alpha: _lcd(c) ? math.max(night, 0.76) : night);
 
-/// A figure with no needless decimals, in the reader's digits.
-String _plain(BuildContext context, double v) =>
-    RawWidgetsLocalizations.of(context).formatDecimal(
-      v,
-      fractionDigits: v == v.roundToDouble() || v.abs() >= 10 ? 0 : 1,
-    );
+/// How the charts write a value with no words of the caller's: in the
+/// reader's digits, at its scale's decimals on the axis and its own (up to
+/// three) in the readout.
+const DesignChartValueFormat _values = DesignChartValueFormat();
 
 /// The window a chart stands in, and what it shows while loading or empty.
 class _Window extends StatelessWidget {
@@ -230,7 +228,9 @@ class _SeriesChartState extends State<_SeriesChart> {
     super.dispose();
   }
 
-  String _text(double v) => widget.valueText?.call(v) ?? _plain(context, v);
+  String _text(double v) =>
+      widget.valueText?.call(v) ??
+      _values.format(v, RawWidgetsLocalizations.of(context));
 
   int get _count => widget.labels.length;
 
@@ -274,18 +274,6 @@ class _SeriesChartState extends State<_SeriesChart> {
     final line = applianceLabelSize(context, '0', axisStyle).height;
     final factor = scale.scale(axisStyle.fontSize!) / axisStyle.fontSize!;
     final foot = math.max(18.0, line + 2);
-    final values = widget.series.expand((s) => s.values.take(_count));
-    final gutter = math.max(
-      34 * factor,
-      [
-        for (final value in [
-          values.reduce(math.min),
-          values.reduce(math.max),
-          0.0,
-        ])
-          applianceLabelSize(context, _text(value), axisStyle).width + 8,
-      ].reduce(math.max),
-    );
     final labelSpacing = widget.labels.fold<double>(
       44 * factor,
       (width, label) => math.max(
@@ -313,11 +301,22 @@ class _SeriesChartState extends State<_SeriesChart> {
         final i = x.round();
         return i >= 0 && i < _count ? widget.labels[i] : '';
       },
-      formatY: _text,
+      formatY: widget.valueText,
+      valueFormat: _values,
       tickCount: 4,
-      // The scale's figures at the start, the labels at the foot.
+      // The scale's figures at the start, as wide as the widest of them
+      // needs; the labels at the foot.
+      yLabelGutter: (ticks) => math.max(
+        34 * factor,
+        DesignScaleTick.widestLabel(
+              ticks,
+              style: axisStyle,
+              textScaler: scale,
+              textDirection: Directionality.of(context),
+            ) +
+            8,
+      ),
       padding: EdgeInsetsDirectional.only(
-        start: gutter,
         top: 4 + (line - 16).clamp(0.0, double.infinity) / 2,
         bottom: foot,
       ),
@@ -900,7 +899,9 @@ class _ApplianceDonutChartState extends State<ApplianceDonutChart> {
       RawWidgetsLocalizations.of(context)
           .formatPercent(_total <= 0 ? 0 : v / _total);
 
-  String _text(double v) => widget.valueText?.call(v) ?? _plain(context, v);
+  String _text(double v) =>
+      widget.valueText?.call(v) ??
+      _values.format(v, RawWidgetsLocalizations.of(context));
 
   @override
   Widget build(BuildContext context) {

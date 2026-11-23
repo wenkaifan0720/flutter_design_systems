@@ -778,7 +778,7 @@ class ApplianceCommandPalette extends StatelessWidget {
     super.key,
     required this.commands,
     this.onSelected,
-    this.hint = 'Type a command',
+    this.hintText = 'Type a command',
     this.emptyLabel = 'No command matches',
     this.autofocus = false,
     this.maxHeight = 320,
@@ -792,7 +792,7 @@ class ApplianceCommandPalette extends StatelessWidget {
   final ValueChanged<RawCommand>? onSelected;
 
   /// What the well says while empty.
-  final String hint;
+  final String hintText;
 
   /// What the list says when nothing matches.
   final String emptyLabel;
@@ -826,7 +826,7 @@ class ApplianceCommandPalette extends StatelessWidget {
       ),
       fieldBuilder: (context, field) => ListenableBuilder(
         listenable: field.focusNode,
-        builder: (context, _) => _PaletteWell(field: field, hint: hint),
+        builder: (context, _) => _PaletteWell(field: field, hint: hintText),
       ),
       groupBuilder: (context, group) => Padding(
         padding: const EdgeInsetsDirectional.only(

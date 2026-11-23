@@ -70,7 +70,7 @@ WidgetsApp(
 Controls take a value and an `onChanged`, and buttons an `onPressed`; leave the callback null to disable one.
 
 ```dart
-ApplianceTextField(label: 'Postcode', hint: 'e.g. EH3 9DR', controller: postcode);
+ApplianceTextField(labelText: 'Postcode', hintText: 'e.g. EH3 9DR', controller: postcode);
 
 ApplianceSwitch(
   value: notify,

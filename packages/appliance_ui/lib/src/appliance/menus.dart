@@ -14,10 +14,10 @@ import 'theme.dart';
 
 /// One row of an open menu, painted for its [states]. A command is a key:
 /// under the pointer or the keys its legend lights, and it sinks into the
-/// plate only while held. A choice (a [chosen] row) the pointer or the keys
+/// plate only while held. A choice (a [selected] row) the pointer or the keys
 /// are on sits down as a pressed key, as a select's lit row does, so every
 /// list of options in a form marks its lit row one way.
-/// [chosen] lights its lamp at the row's end. A row that does nothing stands
+/// [selected] lights its lamp at the row's end. A row that does nothing stands
 /// greyed.
 ///
 /// It paints; the menu that holds it presses, focuses and closes.
@@ -32,8 +32,8 @@ class ApplianceMenuRow extends StatelessWidget {
     required this.label,
     required this.states,
     this.enabled = true,
-    this.chosen,
-    this.destructive = false,
+    this.selected,
+    this.isDestructiveAction = false,
     this.leading,
     this.trailing,
     this.style,
@@ -50,10 +50,10 @@ class ApplianceMenuRow extends StatelessWidget {
 
   /// For a choice: whether it is the one chosen (its lamp lit); null for an
   /// action, which has no lamp.
-  final bool? chosen;
+  final bool? selected;
 
   /// Whether the action destroys something: printed in the danger colour.
-  final bool destructive;
+  final bool isDestructiveAction;
 
   /// A glyph before the words.
   final Widget? leading;
@@ -69,7 +69,7 @@ class ApplianceMenuRow extends StatelessWidget {
     final theme = ApplianceTheme.of(context);
     final c = theme.colors;
     final on = enabled && !states.contains(WidgetState.disabled);
-    final choice = chosen != null;
+    final choice = selected != null;
     final lit =
         states.contains(WidgetState.focused) ||
         states.contains(WidgetState.hovered);
@@ -81,7 +81,7 @@ class ApplianceMenuRow extends StatelessWidget {
         row.foreground ??
         (!on
             ? c.printDisabled
-            : destructive
+            : isDestructiveAction
             ? c.danger
             : c.print);
     final face = ApplianceFace(
@@ -123,7 +123,7 @@ class ApplianceMenuRow extends StatelessWidget {
                         decoration: lamp > 0 ? TextDecoration.underline : null,
                         decorationColor: c.signal.withValues(alpha: lamp),
                         decorationThickness: 1.5,
-                        fontWeight: chosen ?? false
+                        fontWeight: selected ?? false
                             ? FontWeight.w600
                             : FontWeight.w400,
                       ),
@@ -140,9 +140,9 @@ class ApplianceMenuRow extends StatelessWidget {
                   child: trailing!,
                 ),
               ],
-              if (chosen != null) ...[
+              if (selected != null) ...[
                 const SizedBox(width: ApplianceSpacing.medium),
-                ApplianceControlLamp(lit: chosen!, states: states),
+                ApplianceControlLamp(lit: selected!, states: states),
               ],
             ],
           ),
@@ -158,6 +158,8 @@ class ApplianceMenuRow extends StatelessWidget {
       ..add(StringProperty('label', label))
       ..add(IterableProperty<WidgetState>('states', states))
       ..add(FlagProperty('enabled', value: enabled, ifFalse: 'disabled'))
-      ..add(DiagnosticsProperty<bool>('chosen', chosen, defaultValue: null));
+      ..add(
+        DiagnosticsProperty<bool>('selected', selected, defaultValue: null),
+      );
   }
 }

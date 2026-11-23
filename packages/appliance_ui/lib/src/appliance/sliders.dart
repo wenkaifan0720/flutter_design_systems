@@ -177,7 +177,7 @@ class ApplianceSlider extends StatefulWidget {
     this.max = 1,
     this.divisions,
     this.semanticLabel,
-    this.valueText,
+    this.semanticFormatterCallback,
     this.onChangeStart,
     this.onChangeEnd,
     this.focusNode,
@@ -204,7 +204,7 @@ class ApplianceSlider extends StatefulWidget {
   final String? semanticLabel;
 
   /// How a value is said to a screen reader ("40%"); its number otherwise.
-  final String Function(double value)? valueText;
+  final String Function(double value)? semanticFormatterCallback;
 
   /// Called as a drag starts.
   final ValueChanged<double>? onChangeStart;
@@ -349,7 +349,8 @@ class _ApplianceSliderState extends State<ApplianceSlider> {
                           step: widget.divisions == null ? span / 100 : null,
                           dragging: _dragging,
                           semanticLabel: widget.semanticLabel,
-                          semanticFormatterCallback: widget.valueText ?? _plain,
+                          semanticFormatterCallback:
+                              widget.semanticFormatterCallback ?? _plain,
                           focusNode: widget.focusNode,
                           autofocus: widget.autofocus,
                           minimumSize: Size(_capReach, theme.controlHeight),

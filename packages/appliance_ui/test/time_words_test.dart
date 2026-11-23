@@ -51,7 +51,7 @@ void main() {
         tester,
         locale,
         ApplianceTimePicker(
-          value: const ApplianceTime(18, 30),
+          value: const RawTimeOfDay(hour: 18, minute: 30),
           twentyFourHour: false,
           onChanged: (_) {},
         ),
@@ -85,7 +85,7 @@ void main() {
           tester,
           locale,
           ApplianceTimePicker(
-            value: const ApplianceTime(18, 5),
+            value: const RawTimeOfDay(hour: 18, minute: 5),
             twentyFourHour: twentyFour,
             onChanged: (_) {},
           ),
@@ -111,7 +111,7 @@ void main() {
       ApplianceField(
         labelText: 'Erinnern um',
         child: ApplianceTimePicker(
-          value: const ApplianceTime(18, 5),
+          value: const RawTimeOfDay(hour: 18, minute: 5),
           onChanged: (_) {},
         ),
       ),

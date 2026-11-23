@@ -25,7 +25,8 @@ ApplianceThemeData Function(Brightness brightness)? kitShownTheme;
 
 /// The shown theme in either appearance.
 ApplianceThemeData kitTheme(Brightness brightness) =>
-    kitShownTheme?.call(brightness) ?? ApplianceThemeData.of(brightness);
+    kitShownTheme?.call(brightness) ??
+    ApplianceThemeData.from(brightness: brightness);
 
 /// Marks pages that share the example's app and navigator.
 class KitGalleryScope extends InheritedWidget {

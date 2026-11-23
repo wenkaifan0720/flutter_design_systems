@@ -118,7 +118,9 @@ void main() {
     addTearDown(mouse.removePointer);
     await mouse.moveTo(tester.getCenter(find.text('13')));
     await tester.pump(const Duration(milliseconds: 300));
-    final trough = ApplianceThemeData.of(Brightness.light).colors.trough;
+    final trough = ApplianceThemeData.from(brightness: Brightness.light)
+        .colors
+        .trough;
     final bands = find.byWidgetPredicate(
       (w) =>
           w is Container &&

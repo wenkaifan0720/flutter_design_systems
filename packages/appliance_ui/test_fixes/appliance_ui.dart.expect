@@ -1,0 +1,131 @@
+// Each name appliance_ui 0.3.0 renamed, used once; dart fix renames it (appliance_ui.dart.expect).
+import 'package:appliance_ui/appliance_ui.dart';
+import 'package:flutter/widgets.dart';
+
+dynamic any;
+
+void constructors() {
+  ApplianceListTile(title: any, isDestructiveAction: any);
+  ApplianceMenuRow(label: any, states: any, isDestructiveAction: any, selected: any);
+  ApplianceSheetAction(any, onPressed: any, isDestructiveAction: any);
+  ApplianceTextField(labelText: any, hintText: any, helperText: any, errorText: any);
+  AppliancePasswordField(labelText: any, helperText: any, errorText: any);
+  ApplianceSearchField(hintText: any);
+  ApplianceInputGroup(labelText: any, hintText: any, helperText: any, errorText: any);
+  ApplianceSelect<String>(
+    items: any,
+    value: any,
+    onChanged: any,
+    labelText: any,
+    hintText: any,
+    helperText: any,
+    errorText: any,
+  );
+  ApplianceCombobox<String>(labelText: any, hintText: any, helperText: any, errorText: any);
+  ApplianceTagInput<String>(
+    values: any,
+    onChanged: any,
+    labelText: any,
+    hintText: any,
+    helperText: any,
+    errorText: any,
+  );
+  ApplianceDatePicker(
+    value: any,
+    onChanged: any,
+    firstDate: any,
+    lastDate: any,
+    labelText: any,
+    hintText: any,
+    helperText: any,
+    errorText: any,
+  );
+  ApplianceDateRangePicker(
+    value: any,
+    onChanged: any,
+    firstDate: any,
+    lastDate: any,
+    labelText: any,
+    hintText: any,
+    helperText: any,
+    errorText: any,
+  );
+  ApplianceInput(labelText: any, hintText: any, errorText: any, obscureText: any);
+  ApplianceFieldMessage(helperText: any, errorText: any);
+  ApplianceCommandPalette(commands: any, hintText: any);
+  ApplianceSlider(value: any, onChanged: any, semanticFormatterCallback: any);
+  AppliancePreview(child: any, selectedIndex: any);
+}
+
+void fields(
+  ApplianceListTile listTile,
+  ApplianceMenuRow menuRow,
+  ApplianceSheetAction sheetAction,
+  ApplianceTextField textField,
+  AppliancePasswordField passwordField,
+  ApplianceSearchField searchField,
+  ApplianceInputGroup inputGroup,
+  ApplianceSelect<String> select,
+  ApplianceCombobox<String> combobox,
+  ApplianceTagInput<String> tagInput,
+  ApplianceDatePicker datePicker,
+  ApplianceDateRangePicker dateRangePicker,
+  ApplianceInput input,
+  ApplianceFieldMessage fieldMessage,
+  ApplianceCommandPalette commandPalette,
+  ApplianceSlider slider,
+  AppliancePreview preview,
+) {
+  listTile.isDestructiveAction;
+  menuRow.isDestructiveAction;
+  menuRow.selected;
+  sheetAction.isDestructiveAction;
+  textField.labelText;
+  textField.hintText;
+  textField.helperText;
+  textField.errorText;
+  passwordField.labelText;
+  passwordField.helperText;
+  passwordField.errorText;
+  searchField.hintText;
+  inputGroup.labelText;
+  inputGroup.hintText;
+  inputGroup.helperText;
+  inputGroup.errorText;
+  select.labelText;
+  select.hintText;
+  select.helperText;
+  select.errorText;
+  combobox.labelText;
+  combobox.hintText;
+  combobox.helperText;
+  combobox.errorText;
+  tagInput.labelText;
+  tagInput.hintText;
+  tagInput.helperText;
+  tagInput.errorText;
+  datePicker.labelText;
+  datePicker.hintText;
+  datePicker.helperText;
+  datePicker.errorText;
+  dateRangePicker.labelText;
+  dateRangePicker.hintText;
+  dateRangePicker.helperText;
+  dateRangePicker.errorText;
+  input.labelText;
+  input.hintText;
+  input.errorText;
+  input.obscureText;
+  fieldMessage.helperText;
+  fieldMessage.errorText;
+  commandPalette.hintText;
+  slider.semanticFormatterCallback;
+  preview.selectedIndex;
+}
+
+void moves(ApplianceColors colors) {
+  const time = RawTimeOfDay(hour: 9, minute: 30);
+  time.replacing(hour: 10);
+  ApplianceThemeData.from(brightness: Brightness.dark, density: any);
+  ApplianceTextTheme.from(colors);
+}

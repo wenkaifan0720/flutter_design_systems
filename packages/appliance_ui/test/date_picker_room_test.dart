@@ -48,14 +48,14 @@ void main() {
 
   final pickers = <String, Widget>{
     'date': ApplianceDatePicker(
-      label: 'Due',
+      labelText: 'Due',
       value: DateTime(2026, 11, 20),
       firstDate: DateTime(2026),
       lastDate: DateTime(2027, 12, 31),
       onChanged: (_) {},
     ),
     'date range': ApplianceDateRangePicker(
-      label: 'Away',
+      labelText: 'Away',
       value: RawDateRange(DateTime(2026, 11, 20), DateTime(2026, 11, 24)),
       firstDate: DateTime(2026),
       lastDate: DateTime(2027, 12, 31),

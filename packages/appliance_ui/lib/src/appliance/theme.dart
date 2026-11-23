@@ -79,13 +79,6 @@ abstract final class ApplianceMetrics {
   /// How far a pressed key travels into the panel.
   static const double pressTravel = 1.5;
 
-  /// The room a focus ring once kept round a face.
-  @Deprecated(
-    'Focus lights the part\'s own rim from inside since 0.1.2; nothing is '
-    'drawn round it.',
-  )
-  static const double focusGap = 2;
-
   /// The width of a focused part's lit rim, inside its edge.
   static const double focusWidth = 1.5;
 
@@ -106,13 +99,6 @@ abstract final class ApplianceMetrics {
 
   /// The widest a form, a dialog or a reading column stands.
   static const double readingWidth = 560;
-
-  /// The corner a focus ring once had round a face of corner [radius].
-  @Deprecated(
-    'Focus lights the part\'s own rim from inside since 0.1.2; nothing is '
-    'drawn round it.',
-  )
-  static double focusRadius(double radius) => radius + 3;
 }
 
 /// Appliance's spacing, on a 4 px grid ([DesignSpacingScope] declares it).
@@ -719,7 +705,7 @@ class ApplianceTextTheme with Diagnosticable {
 
   /// Appliance's styles in [colors], set in [family] (Barlow by default)
   /// from [package].
-  factory ApplianceTextTheme.of(
+  factory ApplianceTextTheme.from(
     ApplianceColors colors, {
     String family = applianceFontFamily,
     String? package = applianceFontPackage,
@@ -922,7 +908,7 @@ class ApplianceThemeData with Diagnosticable {
     this.chartStyle,
     this.avatarStyle,
     this.calendarStyle,
-  }) : textTheme = textTheme ?? ApplianceTextTheme.of(colors),
+  }) : textTheme = textTheme ?? ApplianceTextTheme.from(colors),
        density = density ?? DesignDensity.adaptivePlatformDensity;
 
   /// Warm-white plastic by day.
@@ -932,15 +918,6 @@ class ApplianceThemeData with Diagnosticable {
   /// The same plastic in a dim room.
   factory ApplianceThemeData.dark({DesignDensity? density}) =>
       ApplianceThemeData(colors: ApplianceColors.dark, density: density);
-
-  /// [brightness]'s theme: [ApplianceThemeData.light] or
-  /// [ApplianceThemeData.dark].
-  factory ApplianceThemeData.of(
-    Brightness brightness, {
-    DesignDensity? density,
-  }) => brightness == Brightness.light
-      ? ApplianceThemeData.light(density: density)
-      : ApplianceThemeData.dark(density: density);
 
   /// The look's presets by name: one, `warm` (light and dark).
   static const List<String> presets = ['warm'];
@@ -955,12 +932,14 @@ class ApplianceThemeData with Diagnosticable {
       presets.contains(name),
       'Appliance has no preset $name; it offers ${presets.join(', ')}.',
     );
-    return ApplianceThemeData.of(brightness);
+    return ApplianceThemeData.from(brightness: brightness);
   }
 
-  /// A brand's Appliance: the plastic tinted toward [finish] and the signal
-  /// in [signal] ([ApplianceColors.from]), set in [fontFamily] when given.
-  /// Corners, light and depth stay the look's.
+  /// [brightness]'s Appliance, or a brand's: the plastic tinted toward
+  /// [finish] and the signal in [signal] ([ApplianceColors.from]), set in
+  /// [fontFamily] when given. Given none of the three, it is
+  /// [ApplianceThemeData.light] or [ApplianceThemeData.dark]. Corners, light
+  /// and depth stay the look's.
   ///
   /// ```dart
   /// ApplianceThemeData.from(brightness: Brightness.light, signal: const Color(0xFF2F7D5B))
@@ -982,7 +961,7 @@ class ApplianceThemeData with Diagnosticable {
       colors: colors,
       textTheme: fontFamily == null
           ? null
-          : ApplianceTextTheme.of(
+          : ApplianceTextTheme.from(
               colors,
               family: fontFamily,
               package: fontPackage,
@@ -1098,12 +1077,6 @@ class ApplianceThemeData with Diagnosticable {
 
   /// The typeface's cap height as a fraction of its size.
   double get capHeightFactor => applianceCapHeightFactor;
-
-  /// A page's first heading: the [ApplianceTextTheme.title] style.
-  TextStyle get h1 => textTheme.title;
-
-  /// Running copy: the [ApplianceTextTheme.body] style.
-  TextStyle get body => textTheme.body;
 
   /// A copy with the given settings replaced. New [colors] with no
   /// [textTheme] recolour the text theme, keeping its face and sizes.

@@ -87,7 +87,7 @@ class _LarderSearchPageState extends State<LarderSearchPage> {
       maxWidth: larderDeskWidth,
       barBottom: ApplianceSearchField(
         controller: _query,
-        hint: 'Pots, kettles, jars',
+        hintText: 'Pots, kettles, jars',
         autofocus: widget.initialQuery.isEmpty,
         onChanged: (_) => setState(() {}),
       ),

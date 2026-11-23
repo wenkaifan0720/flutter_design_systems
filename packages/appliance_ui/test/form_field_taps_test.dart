@@ -20,7 +20,7 @@ class _FormState extends State<_Form> {
   var _estimate = 45;
   var _reminder = false;
   var _done = false;
-  var _time = const ApplianceTime(9, 30);
+  var _time = const RawTimeOfDay(hour: 9, minute: 30);
 
   void _say(String what) => widget.log.add(what);
 

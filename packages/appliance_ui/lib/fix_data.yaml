@@ -1,0 +1,749 @@
+# appliance_ui's renames, which `dart fix` makes: Flutter's names for Flutter's ideas (0.3.0).
+version: 1
+transforms:
+  - title: "Use ApplianceListTile's new parameter names"
+    date: 2026-11-23
+    element:
+      uris: &uris ['appliance_ui.dart', 'appliance_parts.dart']
+      constructor: ''
+      inClass: 'ApplianceListTile'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'destructive'
+        newName: 'isDestructiveAction'
+  - title: "Rename to 'isDestructiveAction'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'destructive'
+      inClass: 'ApplianceListTile'
+    changes:
+      - kind: 'rename'
+        newName: 'isDestructiveAction'
+  - title: "Use ApplianceMenuRow's new parameter names"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'ApplianceMenuRow'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'destructive'
+        newName: 'isDestructiveAction'
+      - kind: 'renameParameter'
+        oldName: 'chosen'
+        newName: 'selected'
+  - title: "Rename to 'isDestructiveAction'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'destructive'
+      inClass: 'ApplianceMenuRow'
+    changes:
+      - kind: 'rename'
+        newName: 'isDestructiveAction'
+  - title: "Rename to 'selected'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'chosen'
+      inClass: 'ApplianceMenuRow'
+    changes:
+      - kind: 'rename'
+        newName: 'selected'
+  - title: "Use ApplianceSheetAction's new parameter names"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'ApplianceSheetAction'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'destructive'
+        newName: 'isDestructiveAction'
+  - title: "Rename to 'isDestructiveAction'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'destructive'
+      inClass: 'ApplianceSheetAction'
+    changes:
+      - kind: 'rename'
+        newName: 'isDestructiveAction'
+  - title: "Use ApplianceTextField's new parameter names"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'ApplianceTextField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'ApplianceTextField'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'hint'
+      inClass: 'ApplianceTextField'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'helper'
+      inClass: 'ApplianceTextField'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'error'
+      inClass: 'ApplianceTextField'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+  - title: "Use AppliancePasswordField's new parameter names"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'AppliancePasswordField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'AppliancePasswordField'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'helper'
+      inClass: 'AppliancePasswordField'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'error'
+      inClass: 'AppliancePasswordField'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+  - title: "Use ApplianceSearchField's new parameter names"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'ApplianceSearchField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'hint'
+      inClass: 'ApplianceSearchField'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  - title: "Use ApplianceInputGroup's new parameter names"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'ApplianceInputGroup'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'ApplianceInputGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'hint'
+      inClass: 'ApplianceInputGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'helper'
+      inClass: 'ApplianceInputGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'error'
+      inClass: 'ApplianceInputGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+  - title: "Use ApplianceSelect's new parameter names"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'ApplianceSelect'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'ApplianceSelect'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'hint'
+      inClass: 'ApplianceSelect'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'helper'
+      inClass: 'ApplianceSelect'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'error'
+      inClass: 'ApplianceSelect'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+  - title: "Use ApplianceCombobox's new parameter names"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'ApplianceCombobox'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'ApplianceCombobox'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'hint'
+      inClass: 'ApplianceCombobox'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'helper'
+      inClass: 'ApplianceCombobox'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'error'
+      inClass: 'ApplianceCombobox'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+  - title: "Use ApplianceTagInput's new parameter names"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'ApplianceTagInput'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'ApplianceTagInput'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'hint'
+      inClass: 'ApplianceTagInput'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'helper'
+      inClass: 'ApplianceTagInput'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'error'
+      inClass: 'ApplianceTagInput'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+  - title: "Use ApplianceDatePicker's new parameter names"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'ApplianceDatePicker'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'ApplianceDatePicker'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'hint'
+      inClass: 'ApplianceDatePicker'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'helper'
+      inClass: 'ApplianceDatePicker'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'error'
+      inClass: 'ApplianceDatePicker'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+  - title: "Use ApplianceDateRangePicker's new parameter names"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'ApplianceDateRangePicker'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'ApplianceDateRangePicker'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'hint'
+      inClass: 'ApplianceDateRangePicker'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'helper'
+      inClass: 'ApplianceDateRangePicker'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'error'
+      inClass: 'ApplianceDateRangePicker'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+  - title: "Use ApplianceInput's new parameter names"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'ApplianceInput'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+      - kind: 'renameParameter'
+        oldName: 'obscure'
+        newName: 'obscureText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'ApplianceInput'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'hint'
+      inClass: 'ApplianceInput'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'error'
+      inClass: 'ApplianceInput'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+  - title: "Rename to 'obscureText'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'obscure'
+      inClass: 'ApplianceInput'
+    changes:
+      - kind: 'rename'
+        newName: 'obscureText'
+  - title: "Use ApplianceFieldMessage's new parameter names"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'ApplianceFieldMessage'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'helper'
+      inClass: 'ApplianceFieldMessage'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'error'
+      inClass: 'ApplianceFieldMessage'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+  - title: "Use ApplianceCommandPalette's new parameter names"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'ApplianceCommandPalette'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'hint'
+      inClass: 'ApplianceCommandPalette'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  - title: "Use ApplianceSlider's new parameter names"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'ApplianceSlider'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'valueText'
+        newName: 'semanticFormatterCallback'
+  - title: "Rename to 'semanticFormatterCallback'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'valueText'
+      inClass: 'ApplianceSlider'
+    changes:
+      - kind: 'rename'
+        newName: 'semanticFormatterCallback'
+  - title: "Use AppliancePreview's new parameter names"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'AppliancePreview'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'activeIndex'
+        newName: 'selectedIndex'
+  - title: "Rename to 'selectedIndex'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      field: 'activeIndex'
+      inClass: 'AppliancePreview'
+    changes:
+      - kind: 'rename'
+        newName: 'selectedIndex'
+  - title: "Migrate to 'RawTimeOfDay'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      class: 'ApplianceTime'
+    changes:
+      - kind: 'rename'
+        newName: 'RawTimeOfDay'
+  - title: "Migrate to 'RawTimeOfDay'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'ApplianceTime'
+    changes:
+      - kind: 'addParameter'
+        index: 0
+        name: 'hour'
+        style: required_named
+        argumentValue:
+          expression: '{% hour %}'
+          variables:
+            hour:
+              kind: 'fragment'
+              value: 'arguments[0]'
+      - kind: 'addParameter'
+        index: 1
+        name: 'minute'
+        style: required_named
+        argumentValue:
+          expression: '{% minute %}'
+          variables:
+            minute:
+              kind: 'fragment'
+              value: 'arguments[1]'
+      - kind: 'removeParameter'
+        index: 0
+      - kind: 'removeParameter'
+        index: 1
+  - title: "Rename to 'replacing'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      method: 'copyWith'
+      inClass: 'ApplianceTime'
+    changes:
+      - kind: 'rename'
+        newName: 'replacing'
+  - title: "Rename to 'replacing'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      method: 'copyWith'
+      inClass: 'RawTimeOfDay'
+    changes:
+      - kind: 'rename'
+        newName: 'replacing'
+  - title: "Migrate to 'ApplianceThemeData.from'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      constructor: 'of'
+      inClass: 'ApplianceThemeData'
+    changes:
+      - kind: 'rename'
+        newName: 'from'
+      - kind: 'addParameter'
+        index: 0
+        name: 'brightness'
+        style: required_named
+        argumentValue:
+          expression: '{% brightness %}'
+          variables:
+            brightness:
+              kind: 'fragment'
+              value: 'arguments[0]'
+      - kind: 'removeParameter'
+        index: 0
+  - title: "Migrate to 'ApplianceTextTheme.from'"
+    date: 2026-11-23
+    element:
+      uris: *uris
+      constructor: 'of'
+      inClass: 'ApplianceTextTheme'
+    changes:
+      - kind: 'rename'
+        newName: 'from'

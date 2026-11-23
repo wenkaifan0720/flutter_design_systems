@@ -25,12 +25,12 @@ import 'theme.dart';
 /// hit target (a test finds and presses it by that key).
 ///
 /// ```dart
-/// ApplianceTab(LucideIcons.house, 'Home', ValueKey('open-home'))
+/// ApplianceTab(LucideIcons.house, 'Home', key: ValueKey('open-home'))
 /// ```
 @immutable
 class ApplianceTab {
   /// The tab [label], marked by [icon].
-  const ApplianceTab(this.icon, this.label, [this.key]);
+  const ApplianceTab(this.icon, this.label, {this.key});
 
   /// Its glyph.
   final IconData icon;
@@ -155,39 +155,39 @@ class ApplianceErrorState extends StatelessWidget {
 }
 
 /// A one-line field in short form: an [ApplianceTextField] with its
-/// [label] or [hint], hidden letters when [obscure], and an [error] under
-/// its well.
+/// [labelText] or [hintText], hidden letters when [obscureText], and an
+/// [errorText] under its well.
 ///
 /// ```dart
-/// ApplianceInput(key: const ValueKey('postcode'), label: 'Postcode', onChanged: (text) {})
+/// ApplianceInput(key: const ValueKey('postcode'), labelText: 'Postcode', onChanged: (text) {})
 /// ```
 class ApplianceInput extends StatelessWidget {
   /// A field.
   const ApplianceInput({
     super.key,
-    this.label,
-    this.hint,
+    this.labelText,
+    this.hintText,
     this.controller,
-    this.obscure = false,
-    this.error,
+    this.obscureText = false,
+    this.errorText,
     this.onChanged,
     this.onSubmitted,
   });
 
   /// Its name, over the well.
-  final String? label;
+  final String? labelText;
 
   /// What it asks for, in the empty well.
-  final String? hint;
+  final String? hintText;
 
   /// Its text, owned by the caller; null: its own.
   final TextEditingController? controller;
 
   /// Whether its letters are hidden (a password).
-  final bool obscure;
+  final bool obscureText;
 
   /// What is wrong with what was typed; null: nothing.
-  final String? error;
+  final String? errorText;
 
   /// Called with the text as it changes.
   final ValueChanged<String>? onChanged;
@@ -197,11 +197,11 @@ class ApplianceInput extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => ApplianceTextField(
-    label: label,
-    hint: hint,
+    labelText: labelText,
+    hintText: hintText,
     controller: controller,
-    obscureText: obscure,
-    error: error,
+    obscureText: obscureText,
+    errorText: errorText,
     onChanged: onChanged,
     onSubmitted: onSubmitted,
   );
@@ -210,8 +210,8 @@ class ApplianceInput extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('label', label, defaultValue: null))
-      ..add(FlagProperty('obscure', value: obscure, ifTrue: 'obscure'));
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
+      ..add(FlagProperty('obscureText', value: obscureText, ifTrue: 'obscure'));
   }
 }
 
@@ -243,7 +243,7 @@ class AppliancePreview extends StatelessWidget {
     this.dark,
     this.presentation = AppliancePresentation.root,
     this.tabs = const [],
-    this.activeIndex = 0,
+    this.selectedIndex = 0,
     this.action,
     this.drawer = false,
     this.platform = PreviewPlatform.android,
@@ -266,7 +266,7 @@ class AppliancePreview extends StatelessWidget {
   final List<ApplianceTab> tabs;
 
   /// The place the page is.
-  final int activeIndex;
+  final int selectedIndex;
 
   /// The app's act, beside its places.
   final ShellAction? action;
@@ -286,7 +286,7 @@ class AppliancePreview extends StatelessWidget {
         ? page
         : ApplianceScaffold(
             destinations: [for (final tab in tabs) tab.destination],
-            selectedIndex: activeIndex,
+            selectedIndex: selectedIndex,
             onSelected: (_) {},
             action: action,
             body: page,
@@ -320,7 +320,9 @@ class AppliancePreview extends StatelessWidget {
             AppliancePresentation.sheet => PreviewStage(
               route: (context, page) => ApplianceSheetPage<void>(
                 key: const ValueKey<String>('appliance-preview'),
-                drawer: drawer,
+                size: drawer
+                    ? ApplianceSheetSize.drawer
+                    : ApplianceSheetSize.standard,
                 child: page,
               ).createRoute(context),
               child: child,

@@ -46,7 +46,7 @@ void main() {
         DateTime? selected;
         final picker = range
             ? ApplianceDateRangePicker(
-                label: 'Dates',
+                labelText: 'Dates',
                 value: null,
                 firstDate: start,
                 lastDate: end,
@@ -54,7 +54,7 @@ void main() {
                 onChanged: (v) => selected = v.end,
               )
             : ApplianceDatePicker(
-                label: 'Dates',
+                labelText: 'Dates',
                 value: current,
                 firstDate: start,
                 lastDate: end,

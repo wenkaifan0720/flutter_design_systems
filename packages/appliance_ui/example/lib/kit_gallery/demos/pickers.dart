@@ -42,8 +42,8 @@ class _PickersState extends State<_Pickers> {
   final List<String> _picked = ['Kettles', 'Teapots'];
   DateTime? _day = DateTime(2026, 11, 20);
   RawDateRange? _away;
-  ApplianceTime _time = const ApplianceTime(18, 30);
-  ApplianceTime _alarm = const ApplianceTime(7, 15);
+  RawTimeOfDay _time = const RawTimeOfDay(hour: 18, minute: 30);
+  RawTimeOfDay _alarm = const RawTimeOfDay(hour: 7, minute: 15);
   bool _over = false;
   final _calendar = RawCalendarController(
     firstDate: DateTime(2026, 11),
@@ -70,34 +70,35 @@ class _PickersState extends State<_Pickers> {
         note: 'Type and the plate opens; Enter takes the lit row and keeps typing.',
         children: [
           ApplianceCombobox<String>(
-            label: 'Town',
+            labelText: 'Town',
             value: _town,
             onSelected: (t) => setState(() => _town = t),
             options: const ['Leith', 'Portobello', 'Musselburgh', 'Dalkeith'],
-            helper: 'Where we deliver',
+            helperText: 'Where we deliver',
           ),
           ApplianceTagInput<String>(
-            label: 'Rooms',
+            labelText: 'Rooms',
             values: _rooms,
             onChanged: (r) => setState(() => _rooms = r),
             options: const ['Kitchen', 'Hall', 'Garden', 'Larder', 'Bathroom'],
             onCreate: (text) => text.trim().isEmpty ? null : text.trim(),
-            hint: 'Add a room',
+            hintText: 'Add a room',
           ),
           const ApplianceCombobox<String>(
-            label: 'Town (off)',
+            labelText: 'Town (off)',
             options: ['Leith'],
             enabled: false,
           ),
           ApplianceCombobox<String>(
-            label: 'Stockist',
-            helper: 'Looked up as you type: the plate says so while it looks',
+            labelText: 'Stockist',
+            helperText:
+                'Looked up as you type: the plate says so while it looks',
             debounceDuration: const Duration(milliseconds: 250),
             search: _stockists,
           ),
           ApplianceCombobox<String>(
-            label: 'Stockist (offline)',
-            helper:
+            labelText: 'Stockist (offline)',
+            helperText:
                 'The lookup fails: the plate says so, with a row to try again',
             search: _offline,
           ),
@@ -137,17 +138,17 @@ class _PickersState extends State<_Pickers> {
         note: 'Chosen days are lit keys; the days between them a trough.',
         children: [
           ApplianceDatePicker(
-            label: 'Delivery day',
+            labelText: 'Delivery day',
             value: _day,
             firstDate: DateTime(2026, 11, 16),
             lastDate: DateTime(2027, 2, 28),
             currentDate: DateTime(2026, 11, 16),
             selectable: (d) => d.weekday != DateTime.sunday,
-            helper: 'No deliveries on Sundays',
+            helperText: 'No deliveries on Sundays',
             onChanged: (d) => setState(() => _day = d),
           ),
           ApplianceDateRangePicker(
-            label: 'Away',
+            labelText: 'Away',
             value: _away,
             firstDate: DateTime(2026, 11, 16),
             lastDate: DateTime(2027, 2, 28),

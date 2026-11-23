@@ -251,7 +251,10 @@ class _LarderAppState extends State<LarderApp> {
               LarderAppearance.system => platform,
             };
             Widget app = AnimatedApplianceTheme(
-              data: ApplianceThemeData.of(brightness, density: _prefs.density),
+              data: ApplianceThemeData.from(
+                brightness: brightness,
+                density: _prefs.density,
+              ),
               child: KitGalleryScope(
                 child: ApplianceToaster(
                   child: child ?? const SizedBox.shrink(),

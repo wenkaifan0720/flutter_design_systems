@@ -16,8 +16,8 @@ import 'actions.dart';
 import 'lists.dart';
 import 'material.dart';
 import 'select.dart';
-import 'text_field.dart';
 import 'theme.dart';
+import 'internal/field_frame.dart';
 
 // The ui_core types this part's API takes, through the look's barrel.
 export 'package:ui_core/ui_core.dart'
@@ -175,7 +175,15 @@ Widget _weekday(BuildContext context, int weekday, String label) {
     child: Center(
       child: FittedBox(
         fit: BoxFit.scaleDown,
-        child: Text(label, maxLines: 1, softWrap: false, style: style),
+        // Visible: the legend's tracking runs past its last letter, where
+        // nothing is drawn to cut.
+        child: Text(
+          label,
+          maxLines: 1,
+          softWrap: false,
+          overflow: TextOverflow.visible,
+          style: style,
+        ),
       ),
     ),
   );
@@ -339,16 +347,18 @@ class _DayKey extends StatelessWidget {
 /// with them.
 ///
 /// [controller] holds the month, the selection and its mode (one day, a
-/// range, several days).
+/// range, several days). With none, the calendar holds its own: one day
+/// chosen, from 1900 through 2100, opening on today's month; [onChanged]
+/// says which.
 ///
 /// ```dart
-/// ApplianceCalendar(controller: RawCalendarController(firstDate: DateTime(2026), lastDate: DateTime(2027)))
+/// ApplianceCalendar(onChanged: (day) {})
 /// ```
-class ApplianceCalendar extends StatelessWidget {
+class ApplianceCalendar extends StatefulWidget {
   /// A calendar over [controller].
   const ApplianceCalendar({
     super.key,
-    required this.controller,
+    this.controller,
     this.onChanged,
     this.months = 1,
     this.focusNode,
@@ -356,8 +366,9 @@ class ApplianceCalendar extends StatelessWidget {
     this.style,
   });
 
-  /// The month shown and the selection; yours to dispose.
-  final RawCalendarController controller;
+  /// The month shown and the selection; yours to dispose. Null: the
+  /// calendar makes its own (one day, 1900 through 2100) and disposes it.
+  final RawCalendarController? controller;
 
   /// Called with the day chosen, after [controller] took it.
   final ValueChanged<DateTime>? onChanged;
@@ -374,6 +385,48 @@ class ApplianceCalendar extends StatelessWidget {
   /// Its style, over [ApplianceThemeData.calendarStyle]: fill, foreground, textStyle (each day).
   final ApplianceStyle? style;
 
+  @override
+  State<ApplianceCalendar> createState() => _ApplianceCalendarState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(IntProperty('months', months, defaultValue: 1));
+  }
+}
+
+class _ApplianceCalendarState extends State<ApplianceCalendar> {
+  // The calendar's own controller, while none is handed in.
+  RawCalendarController? _own;
+
+  RawCalendarController _make() => RawCalendarController(
+    firstDate: DateTime(1900),
+    lastDate: DateTime(2100, 12, 31),
+  );
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.controller == null) _own = _make();
+  }
+
+  @override
+  void didUpdateWidget(ApplianceCalendar old) {
+    super.didUpdateWidget(old);
+    if (widget.controller == null && _own == null) {
+      _own = _make();
+    } else if (widget.controller != null && _own != null) {
+      _own!.dispose();
+      _own = null;
+    }
+  }
+
+  @override
+  void dispose() {
+    _own?.dispose();
+    super.dispose();
+  }
+
   // The days grow with the text up to 2x, as Material's calendar's do, and
   // their keys with them.
   @override
@@ -383,12 +436,13 @@ class ApplianceCalendar extends StatelessWidget {
   );
 
   Widget _month(BuildContext context) {
+    final style = widget.style;
     return RawCalendarDatePicker(
-      controller: controller,
-      onChanged: onChanged,
-      months: months,
-      focusNode: focusNode,
-      autofocus: autofocus,
+      controller: widget.controller ?? _own!,
+      onChanged: widget.onChanged,
+      months: widget.months,
+      focusNode: widget.focusNode,
+      autofocus: widget.autofocus,
       minDayWidth: _dayHeight,
       headerBuilder: _header,
       weekdayBuilder: _weekday,
@@ -403,12 +457,6 @@ class ApplianceCalendar extends StatelessWidget {
         ],
       ),
     );
-  }
-
-  @override
-  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
-    super.debugFillProperties(properties);
-    properties.add(IntProperty('months', months, defaultValue: 1));
   }
 }
 
@@ -444,7 +492,7 @@ class _PickerKey extends StatelessWidget {
       return RawButton(
         onPressed: anchor?.toggle,
         expanded: anchor?.isOpen,
-        semanticLabel: semanticLabel,
+        // The field names the key; the label names the plate it opens.
         semanticValue: semanticValue,
         excludeSemantics: true,
         builder: (context, states, _) {
@@ -528,6 +576,7 @@ class _PickerKey extends StatelessWidget {
         preferredExtent: 380,
         matchAnchorWidth: false,
         maxWidth: 340,
+        fit: RawPopoverFit.whole,
       ),
       dampingRatio: ApplianceMotion.lid.dampingRatio,
       stiffness: ApplianceMotion.lid.stiffness,
@@ -616,7 +665,7 @@ class _CalendarPlateState extends State<_CalendarPlate> {
 /// plate under it. Choosing a day closes it.
 ///
 /// ```dart
-/// ApplianceDatePicker(label: 'Delivery day', value: DateTime(2026, 11, 20), firstDate: DateTime(2026, 11, 16), lastDate: DateTime(2027), onChanged: (day) {})
+/// ApplianceDatePicker(labelText: 'Delivery day', value: DateTime(2026, 11, 20), firstDate: DateTime(2026, 11, 16), lastDate: DateTime(2027), onChanged: (day) {})
 /// ```
 class ApplianceDatePicker extends StatelessWidget {
   /// A picker of a day between [firstDate] and [lastDate].
@@ -626,10 +675,10 @@ class ApplianceDatePicker extends StatelessWidget {
     required this.onChanged,
     required this.firstDate,
     required this.lastDate,
-    this.label,
-    this.hint = 'Choose a day',
-    this.helper,
-    this.error,
+    this.labelText,
+    this.hintText = 'Choose a day',
+    this.helperText,
+    this.errorText,
     this.semanticLabel,
     this.selectable,
     this.currentDate,
@@ -649,18 +698,18 @@ class ApplianceDatePicker extends StatelessWidget {
   final DateTime lastDate;
 
   /// The words over the key.
-  final String? label;
+  final String? labelText;
 
   /// What the key says before a day is chosen.
-  final String hint;
+  final String hintText;
 
   /// Help under the key.
-  final String? helper;
+  final String? helperText;
 
   /// What is wrong, under the key.
-  final String? error;
+  final String? errorText;
 
-  /// The picker's name for a screen reader, when [label] is not shown.
+  /// The picker's name for a screen reader, when [labelText] is not shown.
   final String? semanticLabel;
 
   /// Whether a day can be chosen; null: every day between the two.
@@ -677,40 +726,36 @@ class ApplianceDatePicker extends StatelessWidget {
     final enabled = onChanged != null;
     final chosen = value;
     final words = RawWidgetsLocalizations.of(context);
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        if (label != null)
-          ExcludeSemantics(
-            child: ApplianceFieldLabel(label!, enabled: enabled),
+    return applianceFieldFrame(
+      labelText: labelText,
+      semanticLabel: semanticLabel,
+      helperText: helperText,
+      errorText: errorText,
+      enabled: enabled,
+      control: _PickerKey(
+        text: chosen == null ? hintText : _dateLabel(words, chosen),
+        empty: chosen == null,
+        enabled: enabled,
+        error: errorText != null,
+        semanticLabel: semanticLabel ?? labelText,
+        semanticValue: chosen == null ? null : words.formatFullDate(chosen),
+        style: style,
+        plate: (context, close) => _CalendarPlate(
+          make: () => RawCalendarController(
+            firstDate: firstDate,
+            lastDate: lastDate,
+            selectedDate: chosen,
+            selectable: selectable,
+            currentDate: currentDate,
           ),
-        _PickerKey(
-          text: chosen == null ? hint : _dateLabel(words, chosen),
-          empty: chosen == null,
-          enabled: enabled,
-          error: error != null,
-          semanticLabel: semanticLabel ?? label,
-          semanticValue: chosen == null ? null : words.formatFullDate(chosen),
-          style: style,
-          plate: (context, close) => _CalendarPlate(
-            make: () => RawCalendarController(
-              firstDate: firstDate,
-              lastDate: lastDate,
-              selectedDate: chosen,
-              selectable: selectable,
-              currentDate: currentDate,
-            ),
-            onChanged: (controller) {
-              final day = controller.selectedDate;
-              if (day == null) return;
-              close();
-              onChanged?.call(day);
-            },
-          ),
+          onChanged: (controller) {
+            final day = controller.selectedDate;
+            if (day == null) return;
+            close();
+            onChanged?.call(day);
+          },
         ),
-        ApplianceFieldMessage(helper: helper, error: error),
-      ],
+      ),
     );
   }
 
@@ -718,7 +763,7 @@ class ApplianceDatePicker extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
       ..add(DiagnosticsProperty<DateTime>('value', value, defaultValue: null));
   }
 }
@@ -729,7 +774,7 @@ class ApplianceDatePicker extends StatelessWidget {
 /// when both are chosen.
 ///
 /// ```dart
-/// ApplianceDateRangePicker(label: 'Away', value: RawDateRange(DateTime(2026, 12, 20), DateTime(2026, 12, 28)), firstDate: DateTime(2026, 11, 16), lastDate: DateTime(2027), onChanged: (range) {})
+/// ApplianceDateRangePicker(labelText: 'Away', value: RawDateRange(DateTime(2026, 12, 20), DateTime(2026, 12, 28)), firstDate: DateTime(2026, 11, 16), lastDate: DateTime(2027), onChanged: (range) {})
 /// ```
 class ApplianceDateRangePicker extends StatelessWidget {
   /// A picker of two days between [firstDate] and [lastDate].
@@ -739,10 +784,10 @@ class ApplianceDateRangePicker extends StatelessWidget {
     required this.onChanged,
     required this.firstDate,
     required this.lastDate,
-    this.label,
-    this.hint = 'Choose the days',
-    this.helper,
-    this.error,
+    this.labelText,
+    this.hintText = 'Choose the days',
+    this.helperText,
+    this.errorText,
     this.semanticLabel,
     this.currentDate,
     this.style,
@@ -761,18 +806,18 @@ class ApplianceDateRangePicker extends StatelessWidget {
   final DateTime lastDate;
 
   /// The words over the key.
-  final String? label;
+  final String? labelText;
 
   /// What the key says before the days are chosen.
-  final String hint;
+  final String hintText;
 
   /// Help under the key.
-  final String? helper;
+  final String? helperText;
 
   /// What is wrong, under the key.
-  final String? error;
+  final String? errorText;
 
-  /// The picker's name for a screen reader, when [label] is not shown.
+  /// The picker's name for a screen reader, when [labelText] is not shown.
   final String? semanticLabel;
 
   /// Today, for the calendar's mark; the clock's otherwise.
@@ -795,47 +840,43 @@ class ApplianceDateRangePicker extends StatelessWidget {
       return last == null ? start : '$start – ${_dateLabel(words, last)}';
     }
 
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        if (label != null)
-          ExcludeSemantics(
-            child: ApplianceFieldLabel(label!, enabled: enabled),
+    return applianceFieldFrame(
+      labelText: labelText,
+      semanticLabel: semanticLabel,
+      helperText: helperText,
+      errorText: errorText,
+      enabled: enabled,
+      control: _PickerKey(
+        text: range == null ? hintText : rangeText(range),
+        empty: range == null,
+        enabled: enabled,
+        error: errorText != null,
+        semanticLabel: semanticLabel ?? labelText,
+        semanticValue: range == null
+            ? null
+            : end == null
+            ? words.formatFullDate(range.start)
+            : words.chartRangeLabel(
+                words.formatFullDate(range.start),
+                words.formatFullDate(end),
+              ),
+        style: style,
+        plate: (context, close) => _CalendarPlate(
+          make: () => RawCalendarController(
+            firstDate: firstDate,
+            lastDate: lastDate,
+            mode: RawCalendarMode.range,
+            selectedRange: range,
+            currentDate: currentDate,
           ),
-        _PickerKey(
-          text: range == null ? hint : rangeText(range),
-          empty: range == null,
-          enabled: enabled,
-          error: error != null,
-          semanticLabel: semanticLabel ?? label,
-          semanticValue: range == null
-              ? null
-              : end == null
-              ? words.formatFullDate(range.start)
-              : words.chartRangeLabel(
-                  words.formatFullDate(range.start),
-                  words.formatFullDate(end),
-                ),
-          style: style,
-          plate: (context, close) => _CalendarPlate(
-            make: () => RawCalendarController(
-              firstDate: firstDate,
-              lastDate: lastDate,
-              mode: RawCalendarMode.range,
-              selectedRange: range,
-              currentDate: currentDate,
-            ),
-            onChanged: (controller) {
-              final chosen = controller.selectedRange;
-              if (chosen == null || !chosen.isComplete) return;
-              close();
-              onChanged?.call(chosen);
-            },
-          ),
+          onChanged: (controller) {
+            final chosen = controller.selectedRange;
+            if (chosen == null || !chosen.isComplete) return;
+            close();
+            onChanged?.call(chosen);
+          },
         ),
-        ApplianceFieldMessage(helper: helper, error: error),
-      ],
+      ),
     );
   }
 
@@ -843,41 +884,11 @@ class ApplianceDateRangePicker extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
       ..add(
         DiagnosticsProperty<RawDateRange>('value', value, defaultValue: null),
       );
   }
-}
-
-/// A time of day, to the minute.
-@immutable
-class ApplianceTime {
-  /// [hour] (0 to 23) and [minute] (0 to 59).
-  const ApplianceTime(this.hour, this.minute)
-    : assert(hour >= 0 && hour < 24),
-      assert(minute >= 0 && minute < 60);
-
-  /// The hour, 0 to 23.
-  final int hour;
-
-  /// The minute, 0 to 59.
-  final int minute;
-
-  /// This time with [hour] or [minute] changed.
-  ApplianceTime copyWith({int? hour, int? minute}) =>
-      ApplianceTime(hour ?? this.hour, minute ?? this.minute);
-
-  @override
-  bool operator ==(Object other) =>
-      other is ApplianceTime && other.hour == hour && other.minute == minute;
-
-  @override
-  int get hashCode => Object.hash(hour, minute);
-
-  @override
-  String toString() =>
-      '${hour.toString().padLeft(2, '0')}:${minute.toString().padLeft(2, '0')}';
 }
 
 /// One of a time's figures in the window, with its up and down keys:
@@ -1014,7 +1025,7 @@ class _TimeDigits extends StatelessWidget {
 /// Material's time picker's do, the window with them.
 ///
 /// ```dart
-/// ApplianceTimePicker(value: const ApplianceTime(18, 30), onChanged: (time) {})
+/// ApplianceTimePicker(value: const RawTimeOfDay(hour: 18, minute: 30), onChanged: (time) {})
 /// ```
 class ApplianceTimePicker extends StatelessWidget {
   /// A picker of [value].
@@ -1029,10 +1040,10 @@ class ApplianceTimePicker extends StatelessWidget {
   }) : assert(minuteStep > 0 && minuteStep <= 30);
 
   /// The time shown.
-  final ApplianceTime value;
+  final RawTimeOfDay value;
 
   /// Called with the new time; null shows it only.
-  final ValueChanged<ApplianceTime>? onChanged;
+  final ValueChanged<RawTimeOfDay>? onChanged;
 
   /// How far a minute's key or arrow moves it.
   final int minuteStep;
@@ -1095,7 +1106,7 @@ class ApplianceTimePicker extends StatelessWidget {
               fill: look.fill ?? c.display,
               onChanged: change == null
                   ? null
-                  : (h) => change(value.copyWith(hour: h)),
+                  : (h) => change(value.replacing(hour: h)),
             ),
             ExcludeSemantics(
               child: Text(
@@ -1114,7 +1125,7 @@ class ApplianceTimePicker extends StatelessWidget {
               fill: look.fill ?? c.display,
               onChanged: change == null
                   ? null
-                  : (m) => change(value.copyWith(minute: m)),
+                  : (m) => change(value.replacing(minute: m)),
             ),
           ],
         ),
@@ -1137,7 +1148,7 @@ class ApplianceTimePicker extends StatelessWidget {
                 onChanged: change == null
                     ? null
                     : (afternoon) => change(
-                        value.copyWith(
+                        value.replacing(
                           hour: value.hour % 12 + (afternoon ? 12 : 0),
                         ),
                       ),
@@ -1153,7 +1164,7 @@ class ApplianceTimePicker extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(DiagnosticsProperty<ApplianceTime>('value', value))
+      ..add(DiagnosticsProperty<RawTimeOfDay>('value', value))
       ..add(IntProperty('minuteStep', minuteStep, defaultValue: 5));
   }
 }

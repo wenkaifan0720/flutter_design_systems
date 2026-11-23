@@ -48,7 +48,7 @@ void main() {
 
       await _show(
         tester,
-        ApplianceChip('Vegan', enabled: false, onSelected: (_) {}),
+        const ApplianceChip('Vegan', selected: false),
         brightness,
       );
       expect(_lamps(tester).single.lit, isFalse);
@@ -126,7 +126,7 @@ void main() {
       await _show(
         tester,
         const ApplianceTimePicker(
-          value: ApplianceTime(9, 30),
+          value: RawTimeOfDay(hour: 9, minute: 30),
           onChanged: null,
           twentyFourHour: false,
         ),

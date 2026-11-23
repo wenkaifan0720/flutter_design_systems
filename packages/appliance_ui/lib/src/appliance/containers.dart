@@ -587,21 +587,27 @@ class ApplianceDataTable<R> extends StatelessWidget {
 /// in it showing where you are; drag the slider, or press the slot to jump.
 /// It focuses, and the arrows and Page keys scroll it.
 ///
+/// With no [controller] it makes its own and hands it to [child] as its
+/// [PrimaryScrollController]: a scroll view along [axis] with no controller
+/// of its own (and `primary` left null) takes it.
+///
 /// ```dart
-/// ApplianceScrollArea(controller: ScrollController(), child: ListView(children: const [Text('Flour')]))
+/// ApplianceScrollArea(child: ListView(children: const [Text('Flour')]))
 /// ```
-class ApplianceScrollArea extends StatelessWidget {
+class ApplianceScrollArea extends StatefulWidget {
   /// A scroll area round [child], scrolled by [controller].
   const ApplianceScrollArea({
     super.key,
-    required this.controller,
+    this.controller,
     required this.child,
     this.axis = Axis.vertical,
     this.semanticLabel,
   });
 
-  /// [child]'s scroll controller; yours to dispose.
-  final ScrollController controller;
+  /// [child]'s scroll controller, which [child] must scroll on too; yours
+  /// to dispose. Null: the area makes one, gives it to [child] as its
+  /// [PrimaryScrollController], and disposes it.
+  final ScrollController? controller;
 
   /// The scroll view.
   final Widget child;
@@ -613,13 +619,62 @@ class ApplianceScrollArea extends StatelessWidget {
   final String? semanticLabel;
 
   @override
+  State<ApplianceScrollArea> createState() => _ApplianceScrollAreaState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<ScrollController>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(EnumProperty<Axis>('axis', axis, defaultValue: Axis.vertical));
+  }
+}
+
+class _ApplianceScrollAreaState extends State<ApplianceScrollArea> {
+  // The area's own controller, while none is handed in.
+  ScrollController? _own;
+
+  ScrollController get _controller => widget.controller ?? _own!;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.controller == null) _own = ScrollController();
+  }
+
+  @override
+  void didUpdateWidget(ApplianceScrollArea old) {
+    super.didUpdateWidget(old);
+    if (widget.controller == null && _own == null) {
+      _own = ScrollController();
+    } else if (widget.controller != null && _own != null) {
+      _own!.dispose();
+      _own = null;
+    }
+  }
+
+  @override
+  void dispose() {
+    _own?.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final c = ApplianceTheme.of(context).colors;
+    final controller = _controller;
+    final axis = widget.axis;
     return RawScrollArea(
       controller: controller,
       axis: axis,
       thickness: 10,
-      semanticLabel: semanticLabel,
+      semanticLabel: widget.semanticLabel,
       trackBuilder: (context, thumb) => AnimatedOpacity(
         opacity: thumb.visible ? 1 : 0,
         duration: const Duration(milliseconds: 160),
@@ -658,7 +713,14 @@ class ApplianceScrollArea extends StatelessWidget {
         ),
         child: area,
       ),
-      child: child,
+      child: _own == null
+          ? widget.child
+          : PrimaryScrollController(
+              controller: controller,
+              automaticallyInheritForPlatforms: TargetPlatform.values.toSet(),
+              scrollDirection: axis,
+              child: widget.child,
+            ),
     );
   }
 }

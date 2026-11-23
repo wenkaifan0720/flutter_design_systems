@@ -180,42 +180,41 @@ class _TickPainter extends CustomPainter {
       old.t != t || old.color != color || old.mixed != mixed;
 }
 
-/// A radio: a round preset key, one of a bank. The chosen one stays down
-/// with its lamp lit; the rest stand up with their lamps out. Choosing one
-/// lets the last one up.
-///
-/// A null [onChanged] disables it. Reads [style]'s `fill` and `edge` in its
-/// states, then [ApplianceThemeData.toggleStyle]'s.
+/// A round preset key, one of a [RadioGroup]: down with its lamp lit while
+/// it is the group's choice. As Flutter's `Radio` does, it reads the group
+/// above it for the choice and makes its own there when pressed; the group
+/// takes one Tab stop and the arrows move along it. Outside a group, or with
+/// [enabled] false, it takes no presses.
 ///
 /// ```dart
-/// ApplianceRadio<String>(value: 'standard', groupValue: delivery, onChanged: (value) => setState(() => delivery = value), semanticLabel: 'Standard delivery')
+/// RadioGroup<String>(groupValue: delivery, onChanged: (value) => setState(() => delivery = value!), child: const ApplianceRadio<String>(value: 'standard', semanticLabel: 'Standard delivery'))
 /// ```
-class ApplianceRadio<T> extends StatelessWidget {
-  /// The radio for [value] in a group at [groupValue].
+class ApplianceRadio<T> extends StatefulWidget {
+  /// The radio for [value] in the [RadioGroup] above it.
   const ApplianceRadio({
     super.key,
     required this.value,
-    required this.groupValue,
-    required this.onChanged,
+    this.enabled = true,
     this.semanticLabel,
     this.focusNode,
+    this.autofocus = false,
     this.style,
   });
 
   /// This radio's value.
   final T value;
 
-  /// The group's chosen value.
-  final T? groupValue;
-
-  /// Called with [value] when chosen; null disables it.
-  final ValueChanged<T>? onChanged;
+  /// Whether it takes presses, in a group that takes them.
+  final bool enabled;
 
   /// Its name for a screen reader.
   final String? semanticLabel;
 
   /// {@macro design.focusNode}
   final FocusNode? focusNode;
+
+  /// Whether it takes the focus as it mounts.
+  final bool autofocus;
 
   /// Its style, over [ApplianceThemeData.toggleStyle].
   final ApplianceStyle? style;
@@ -224,32 +223,66 @@ class ApplianceRadio<T> extends StatelessWidget {
   static const double size = 24;
 
   @override
-  Widget build(BuildContext context) {
-    final chosen = value == groupValue;
-    return RawButton(
-      onPressed: onChanged == null ? null : () => onChanged!(value),
-      focusNode: focusNode,
-      // A radio, not a button, as Flutter's Radio reads.
-      button: false,
-      checked: chosen,
-      inMutuallyExclusiveGroup: true,
-      semanticLabel: semanticLabel,
-      excludeSemantics: true,
-      builder: (context, states, _) => TapTargetPadding(
-        child: _PresetKey(chosen: chosen, style: style, states: states),
-      ),
-    );
-  }
+  State<ApplianceRadio<T>> createState() => _ApplianceRadioState<T>();
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
       ..add(DiagnosticsProperty<T>('value', value))
-      ..add(DiagnosticsProperty<T>('groupValue', groupValue))
-      ..add(
-        FlagProperty('enabled', value: onChanged != null, ifFalse: 'disabled'),
-      );
+      ..add(FlagProperty('enabled', value: enabled, ifFalse: 'disabled'));
+  }
+}
+
+class _ApplianceRadioState<T> extends State<ApplianceRadio<T>> {
+  FocusNode? _own;
+
+  FocusNode get _focus =>
+      widget.focusNode ?? (_own ??= FocusNode(debugLabel: 'ApplianceRadio'));
+
+  @override
+  void dispose() {
+    _own?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final group = RadioGroup.maybeOf<T>(context);
+    return MergeSemantics(
+      child: RawRadio<T>(
+        value: widget.value,
+        mouseCursor: WidgetStateMouseCursor.clickable,
+        toggleable: false,
+        focusNode: _focus,
+        autofocus: widget.autofocus,
+        groupRegistry: group,
+        enabled: widget.enabled && group != null,
+        builder: (context, radio) {
+          final states = {
+            ...radio.states,
+            if (radio.downPosition != null) WidgetState.pressed,
+          };
+          return Semantics(
+            label: widget.semanticLabel,
+            child: ExcludeSemantics(
+              // All of its target takes a press: RawRadio's detector finds
+              // only what the key paints.
+              child: Listener(
+                behavior: HitTestBehavior.opaque,
+                child: TapTargetPadding(
+                  child: _PresetKey(
+                    chosen: states.contains(WidgetState.selected),
+                    style: widget.style,
+                    states: states,
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
   }
 }
 

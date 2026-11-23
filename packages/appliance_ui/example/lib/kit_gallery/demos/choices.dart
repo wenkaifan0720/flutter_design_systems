@@ -188,7 +188,7 @@ class _FadersState extends State<_Faders> {
             value: _volume,
             onChanged: (v) => setState(() => _volume = v),
             semanticLabel: 'Volume',
-            valueText: (v) => '${(v * 100).round()}%',
+            semanticFormatterCallback: (v) => '${(v * 100).round()}%',
           ),
           ApplianceSlider(
             value: _steps,

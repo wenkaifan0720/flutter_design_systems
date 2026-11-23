@@ -33,26 +33,26 @@ ApplianceFace _face(WidgetTester tester, Key chip) => tester
     )
     .face;
 
+// How far a chip's key stands out (lift) and has travelled in (travel).
+({double lift, double travel}) _sunk(WidgetTester tester, Key chip) {
+  final face = _face(tester, chip);
+  return (lift: face.lift, travel: face.travel);
+}
+
 void main() {
   setUpAll(applianceLoadFonts);
 
   testWidgets('a selected chip with no onSelected stands latched down, '
-      'as a selected chip turned off does', (tester) async {
+      'apart from a chip shown only', (tester) async {
     const held = ValueKey('held');
-    const off = ValueKey('off');
+    const down = ValueKey('down');
     const plain = ValueKey('plain');
     await _show(tester, [
       const ApplianceChip('Vegan', key: held, selected: true),
-      ApplianceChip(
-        'Vegan',
-        key: off,
-        selected: true,
-        enabled: false,
-        onSelected: (_) {},
-      ),
+      ApplianceChip('Vegan', key: down, selected: true, onSelected: (_) {}),
       const ApplianceChip('Vegan', key: plain),
     ]);
-    expect(_face(tester, held), _face(tester, off));
+    expect(_sunk(tester, held), _sunk(tester, down));
     expect(_face(tester, held), isNot(_face(tester, plain)));
   });
 

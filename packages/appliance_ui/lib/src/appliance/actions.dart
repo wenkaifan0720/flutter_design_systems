@@ -209,14 +209,13 @@ class ApplianceToggleGroup<T> extends StatelessWidget {
           labelOf: (v) => byValue[v]?.label ?? '$v',
           semanticLabel: semanticLabel,
           minimumSize: Size(height, theme.controlHeight),
-          layoutBuilder: (context, items) => Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              for (final (i, item) in items.indexed) ...[
-                if (i > 0) const SizedBox(width: ApplianceMetrics.capInset),
-                item,
-              ],
-            ],
+          // One row while the keys fit; with large words, a second row of
+          // keys in the same strip rather than keys past its end.
+          layoutBuilder: (context, items) => Wrap(
+            spacing: ApplianceMetrics.capInset,
+            runSpacing: ApplianceMetrics.capInset,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: items,
           ),
           itemBuilder: (context, value, states) {
             final option = byValue[value]!;

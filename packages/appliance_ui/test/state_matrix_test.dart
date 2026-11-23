@@ -57,11 +57,14 @@ final _specs = <_Spec>[
   ),
   (
     name: 'radio',
-    build: (on) => ApplianceRadio<String>(
-      value: 'a',
+    build: (on) => RadioGroup<String>(
       groupValue: 'b',
-      semanticLabel: 'Standard',
-      onChanged: on ? (_) {} : null,
+      onChanged: (_) {},
+      child: ApplianceRadio<String>(
+        value: 'a',
+        semanticLabel: 'Standard',
+        enabled: on,
+      ),
     ),
   ),
   (
@@ -74,7 +77,8 @@ final _specs = <_Spec>[
   ),
   (
     name: 'chip',
-    build: (on) => ApplianceChip('Clay', enabled: on, onSelected: (_) {}),
+    build: (on) =>
+        ApplianceChip('Clay', selected: false, onSelected: on ? (_) {} : null),
   ),
   (
     name: 'list row',
@@ -92,7 +96,7 @@ final _specs = <_Spec>[
     build: (on) => SizedBox(
       width: 280,
       child: ApplianceSelect<String>(
-        label: 'Finish',
+        labelText: 'Finish',
         items: const [
           ApplianceSelectItem(value: 'chalk', label: 'Chalk'),
           ApplianceSelectItem(value: 'clay', label: 'Clay'),
@@ -300,9 +304,9 @@ void main() {
         Widget field({String? error, bool enabled = true}) => SizedBox(
           width: 320,
           child: ApplianceTextField(
-            label: 'Postcode',
-            helper: error == null ? 'As on your letters' : null,
-            error: error,
+            labelText: 'Postcode',
+            helperText: error == null ? 'As on your letters' : null,
+            errorText: error,
             enabled: enabled,
           ),
         );

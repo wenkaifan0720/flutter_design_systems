@@ -38,7 +38,7 @@ Future<void> _show(WidgetTester tester, Locale locale, Widget date) async {
 }
 
 ApplianceDatePicker _date() => ApplianceDatePicker(
-  label: 'Due date',
+  labelText: 'Due date',
   value: _due,
   firstDate: DateTime(2020),
   lastDate: DateTime(2040),
@@ -73,7 +73,10 @@ void main() {
       expect(centerOf('نوفمبر'), greaterThan(centerOf('٢٠٢٦')));
       final words = RawWidgetsLocalizations.of(tester.element(text));
       expect(
-        tester.getSemantics(find.bySemanticsLabel('Due date')).value,
+        tester
+            .getSemantics(find.bySemanticsLabel('Due date'))
+            .getSemanticsData()
+            .value,
         words.formatFullDate(_due),
       );
     },
@@ -107,7 +110,7 @@ void main() {
           tester,
           const Locale('ar'),
           ApplianceDateRangePicker(
-            label: 'Period',
+            labelText: 'Period',
             value: RawDateRange(_due, end),
             firstDate: DateTime(2020),
             lastDate: DateTime(2040),
@@ -117,6 +120,7 @@ void main() {
         expect(find.text(expected), findsOneWidget);
         final spoken = tester
             .getSemantics(find.bySemanticsLabel('Period'))
+            .getSemanticsData()
             .value;
         expect(
           spoken,

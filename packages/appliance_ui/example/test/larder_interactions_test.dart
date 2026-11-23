@@ -21,7 +21,7 @@ Finder _row(String title) =>
     find.byWidgetPredicate((w) => w is ApplianceListTile && w.title == title);
 Finder _field(String label) => find.descendant(
   of: find.byWidgetPredicate(
-    (w) => w is ApplianceTextField && w.label == label,
+    (w) => w is ApplianceTextField && w.labelText == label,
   ),
   matching: find.byType(EditableText),
 );

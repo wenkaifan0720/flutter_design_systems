@@ -1,3 +1,32 @@
+## 0.3.0
+
+- Needs ui_core 0.5.1.
+- Field words take `InputDecoration`'s names: `label` is `labelText`, `hint` is `hintText`, `helper` is `helperText`, `error` is `errorText`, on `ApplianceTextField`, `AppliancePasswordField`, `ApplianceSearchField`, `ApplianceInputGroup`, `ApplianceSelect`, `ApplianceCombobox`, `ApplianceTagInput`, `ApplianceDatePicker`, `ApplianceDateRangePicker`, `ApplianceInput`, `ApplianceFieldMessage` and `ApplianceCommandPalette`, as `ApplianceField` already names them. `dart fix` renames them.
+- `ApplianceListTile`, `ApplianceMenuRow` and `ApplianceSheetAction`: `destructive` is `isDestructiveAction`, as Flutter names it. `dart fix` renames it.
+- `ApplianceMenuRow`: `chosen` is `selected`, as Flutter names it. `dart fix` renames it.
+- `ApplianceInput`: `obscure` is `obscureText`, as Flutter names it. `dart fix` renames it.
+- `ApplianceSlider`: `valueText` is `semanticFormatterCallback`, as `Slider` names it: only a screen reader hears it. `dart fix` renames it.
+- `AppliancePreview`: `activeIndex` is `selectedIndex`, as Flutter names it. `dart fix` renames it.
+- `ApplianceTime` goes: `ApplianceTimePicker` takes ui_core's `RawTimeOfDay(hour:, minute:)`, whose `replacing` is `ApplianceTime.copyWith`. `dart fix` makes the move.
+- `ApplianceThemeData.of(brightness)` is `ApplianceThemeData.from(brightness: brightness)`, the same theme, and `ApplianceTextTheme.of` is `ApplianceTextTheme.from`: in Flutter `of` looks a value up in a `BuildContext`. `dart fix` makes the move.
+- `ApplianceTab` takes its `key` by name, `ApplianceTab(icon, label, key: ...)`, as every widget does. A positional key no longer compiles; the analyzer offers to name it.
+- `ApplianceSheetPage(drawer:, fullScreen:)` is `ApplianceSheetPage(size:)`, an `ApplianceSheetSize` (`standard`, `drawer`, `fullScreen`), one choice where two flags could contradict.
+- `ApplianceThemeData.h1` and `ApplianceThemeData.body` go: read `textTheme.title` and `textTheme.body`.
+- `ApplianceMetrics.focusGap` and `ApplianceMetrics.focusRadius` go, deprecated since 0.1.2: focus lights the part's own rim.
+- `ApplianceRadio` reads the `RadioGroup` above it, as Flutter's `Radio` does: its `groupValue` and `onChanged` move to a `RadioGroup<T>` round the radios, which gives them one Tab stop and the arrow keys. `ApplianceRadio.enabled` turns one radio off.
+- `ApplianceChip.enabled` goes: a null `onSelected` puts a chip out of use, as `FilterChip`'s does. `selected` may be null: a chip given neither `selected` nor `onSelected` is shown only, as `Chip` is, and one given `selected` latches, as `FilterChip` does.
+- `ApplianceTagInput.enabled` goes, and `onChanged` may be null: a null `onChanged` puts the field out of use.
+- `ApplianceScrollArea`, `ApplianceCalendar` and `ApplianceColorPicker` take an optional `controller`: with none, each makes its own and disposes it, and a controller handed in is never disposed. The scroll area hands its own to its child as the `PrimaryScrollController`; the calendar's chooses one day, 1900 through 2100. `ApplianceColorPicker.onChanged` says each new colour.
+- `ApplianceCombobox` and `ApplianceTagInput` say on their text input whether their list is open, as a select's key does.
+- `ApplianceDatePicker` and `ApplianceDateRangePicker` open their month whole: on a phone, a field low on the screen opens it above rather than in a strip that scrolls.
+- `ApplianceDialog`'s keys and the footer keys of `ApplianceSheet` and `ApplianceSideSheet` stand on ui_core's `RawActionBar`: side by side while they fit, else one column of one width, the main key on top. A sheet's footer stacks where it squeezed its keys before.
+- Every field reads its label, help and error on its control's own node (ui_core's `RawInputDecorator`), the error announced as it appears, and a select's or a date picker's key is named by its field. `ApplianceFieldMessage(parts)` draws a decorator's `helper` and `error`; `ApplianceFieldMessage(helperText:, errorText:)` no longer compiles: put the control in an `ApplianceField`.
+- On a phone a toast stands above `ApplianceScaffold`'s key strip, and at the screen's foot while a page covers the strip.
+- `ApplianceToggleGroup` runs its keys onto a second row of the strip when large words no longer fit one.
+- A key's words run onto a second line, centred, where one line can't hold them (an ellipsis cut them before).
+- Charts write their values with ui_core's `DesignChartValueFormat`: the scale at its decimals, the readout at the value's own (up to three), and the scale takes the room its widest figure needs.
+- `ApplianceMedia` takes an `image` (an `ImageProvider`), shown over `slotId` when both are given; `slotId` is optional when there is an image.
+
 ## 0.2.1
 
 - Stands on ui_core 0.4.1. A menu entry marked `isDestructiveAction` (Delete, Remove) prints its words in the danger ink, in `ApplianceMenu`, `ApplianceContextMenu` and `ApplianceMenuBar`, as an action sheet's destructive row does. An all-zero chart counts up from zero, its bars flat on the floor; it was scaled from −1 to 1.

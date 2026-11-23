@@ -1,5 +1,6 @@
-// An avatar shows a picture an app hands it as an ImageProvider (a network
-// or an asset image), over its media slot when both are given.
+// An avatar and a media window show a picture an app hands them as an
+// ImageProvider (a network or an asset image), over a media slot when both
+// are given, and a media window needs no slot with one.
 import 'dart:typed_data';
 
 import 'package:appliance_ui/appliance_ui.dart';
@@ -59,5 +60,32 @@ void main() {
     );
     expect(_shown(tester, ApplianceAvatar), same(picture));
     expect(find.byType(MediaSlotImage), findsNothing);
+  });
+
+  testWidgets('a media window shows the image it is given, with no slot', (
+    tester,
+  ) async {
+    final picture = MemoryImage(_png);
+    await _show(
+      tester,
+      ApplianceMedia(image: picture, semanticLabel: 'A cream kettle'),
+    );
+    expect(_shown(tester, ApplianceMedia), same(picture));
+
+    await _show(
+      tester,
+      ApplianceMedia(
+        image: picture,
+        slotId: 'kettle',
+        semanticLabel: 'A cream kettle',
+      ),
+    );
+    expect(_shown(tester, ApplianceMedia), same(picture));
+    expect(find.byType(MediaSlotImage), findsNothing);
+  });
+
+  test('a media window needs an image or a slot', () {
+    final label = 'A cream kettle'.trim();
+    expect(() => ApplianceMedia(semanticLabel: label), throwsAssertionError);
   });
 }

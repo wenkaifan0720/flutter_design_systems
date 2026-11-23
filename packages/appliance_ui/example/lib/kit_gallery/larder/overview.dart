@@ -111,24 +111,26 @@ class _LarderOverviewState extends State<LarderOverview> {
           'The lamp',
           'A small lamp says what is on: the current place, the chosen '
               'preset, a switch that is on. Nothing is said by a tint alone.',
-          Row(
-            children: [
-              for (var i = 0; i < 4; i++) ...[
-                if (i > 0) const SizedBox(width: ApplianceSpacing.medium),
-                Column(
-                  children: [
-                    ApplianceRadio<int>(
-                      value: i,
-                      groupValue: _preset,
-                      semanticLabel: 'Preset ${i + 1}',
-                      onChanged: (v) => setState(() => _preset = v),
-                    ),
-                    const SizedBox(height: ApplianceSpacing.small),
-                    Text('P${i + 1}', style: t.legend),
-                  ],
-                ),
+          RadioGroup<int>(
+            groupValue: _preset,
+            onChanged: (v) => setState(() => _preset = v!),
+            child: Row(
+              children: [
+                for (var i = 0; i < 4; i++) ...[
+                  if (i > 0) const SizedBox(width: ApplianceSpacing.medium),
+                  Column(
+                    children: [
+                      ApplianceRadio<int>(
+                        value: i,
+                        semanticLabel: 'Preset ${i + 1}',
+                      ),
+                      const SizedBox(height: ApplianceSpacing.small),
+                      Text('P${i + 1}', style: t.legend),
+                    ],
+                  ),
+                ],
               ],
-            ],
+            ),
           ),
         ),
         const SizedBox(height: ApplianceSpacing.medium),

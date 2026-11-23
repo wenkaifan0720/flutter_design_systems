@@ -346,8 +346,8 @@ class _MenuRows extends StatelessWidget {
                         label: entry.label,
                         states: states,
                         enabled: entry.onPressed != null,
-                        chosen: entry.checked,
-                        destructive: entry.isDestructiveAction,
+                        selected: entry.checked,
+                        isDestructiveAction: entry.isDestructiveAction,
                         trailing: entry.shortcut == null
                             ? null
                             : Text(entry.shortcut!),

@@ -113,28 +113,12 @@ class ApplianceDialog extends StatelessWidget {
                 ],
                 if (actions.isNotEmpty) ...[
                   const SizedBox(height: ApplianceSpacing.large),
-                  LayoutBuilder(
-                    builder: (context, box) {
-                      const gap = ApplianceSpacing.small;
-                      final share = narrow
-                          ? math.max(
-                              0.0,
-                              (box.maxWidth - gap * (actions.length - 1)) /
-                                  actions.length,
-                            )
-                          : 0.0;
-                      return _DialogKeys(
-                        gap: gap,
-                        share: narrow,
-                        children: [
-                          for (final action in actions)
-                            ConstrainedBox(
-                              constraints: BoxConstraints(minWidth: share),
-                              child: action,
-                            ),
-                        ],
-                      );
-                    },
+                  RawActionBar(
+                    spacing: ApplianceSpacing.small,
+                    overflowSpacing: ApplianceSpacing.small,
+                    // A phone spreads the keys over the dialog's width.
+                    expanded: narrow,
+                    children: actions,
                   ),
                 ],
               ],
@@ -152,169 +136,6 @@ class ApplianceDialog extends StatelessWidget {
       ..add(StringProperty('title', title, defaultValue: null))
       ..add(IntProperty('actions', actions.length));
   }
-}
-
-/// A dialog's keys. Side by side when they fit, as an [OverflowBar] lays
-/// them: spread over the width on a phone ([share]), at the end elsewhere.
-/// When they do not fit, stacked, each as wide as the dialog, the main key
-/// (the last) on top, [gap] apart.
-class _DialogKeys extends MultiChildRenderObjectWidget {
-  const _DialogKeys({
-    required this.gap,
-    required this.share,
-    required super.children,
-  });
-
-  final double gap;
-  final bool share;
-
-  @override
-  _RenderDialogKeys createRenderObject(BuildContext context) =>
-      _RenderDialogKeys(gap, share, Directionality.of(context));
-
-  @override
-  void updateRenderObject(
-    BuildContext context,
-    _RenderDialogKeys renderObject,
-  ) => renderObject
-    ..gap = gap
-    ..share = share
-    ..textDirection = Directionality.of(context);
-}
-
-class _DialogKeysParentData extends ContainerBoxParentData<RenderBox> {}
-
-class _RenderDialogKeys extends RenderBox
-    with
-        ContainerRenderObjectMixin<RenderBox, _DialogKeysParentData>,
-        RenderBoxContainerDefaultsMixin<RenderBox, _DialogKeysParentData> {
-  _RenderDialogKeys(this._gap, this._share, this._textDirection);
-
-  double _gap;
-  set gap(double value) {
-    if (value == _gap) return;
-    _gap = value;
-    markNeedsLayout();
-  }
-
-  bool _share;
-  set share(bool value) {
-    if (value == _share) return;
-    _share = value;
-    markNeedsLayout();
-  }
-
-  TextDirection _textDirection;
-  set textDirection(TextDirection value) {
-    if (value == _textDirection) return;
-    _textDirection = value;
-    markNeedsLayout();
-  }
-
-  @override
-  void setupParentData(RenderBox child) {
-    if (child.parentData is! _DialogKeysParentData) {
-      child.parentData = _DialogKeysParentData();
-    }
-  }
-
-  List<RenderBox> get _keys => [
-    for (RenderBox? k = firstChild; k != null; k = childAfter(k)) k,
-  ];
-
-  double get _gaps => _gap * math.max(0, childCount - 1);
-
-  @override
-  double computeMinIntrinsicWidth(double height) => _keys.fold(
-    0,
-    (widest, k) => math.max(widest, k.getMinIntrinsicWidth(double.infinity)),
-  );
-
-  @override
-  double computeMaxIntrinsicWidth(double height) =>
-      _keys.fold(
-        0.0,
-        (sum, k) => sum + k.getMaxIntrinsicWidth(double.infinity),
-      ) +
-      _gaps;
-
-  @override
-  double computeMinIntrinsicHeight(double width) =>
-      _height(width, (k, w) => k.getMinIntrinsicHeight(w));
-
-  @override
-  double computeMaxIntrinsicHeight(double width) =>
-      _height(width, (k, w) => k.getMaxIntrinsicHeight(w));
-
-  double _height(double width, double Function(RenderBox, double) measure) {
-    if (computeMaxIntrinsicWidth(double.infinity) <= width) {
-      return _keys.fold(
-        0,
-        (tallest, k) => math.max(tallest, measure(k, double.infinity)),
-      );
-    }
-    return _keys.fold(0.0, (sum, k) => sum + measure(k, width)) + _gaps;
-  }
-
-  @override
-  Size computeDryLayout(BoxConstraints constraints) =>
-      _layout(constraints, (k, c) => k.getDryLayout(c), place: false);
-
-  @override
-  void performLayout() {
-    size = _layout(constraints, (k, c) {
-      k.layout(c, parentUsesSize: true);
-      return k.size;
-    }, place: true);
-  }
-
-  Size _layout(
-    BoxConstraints constraints,
-    Size Function(RenderBox, BoxConstraints) lay, {
-    required bool place,
-  }) {
-    final keys = _keys;
-    if (keys.isEmpty) return constraints.smallest;
-    final sizes = [for (final k in keys) lay(k, constraints.loosen())];
-    final row = sizes.fold(0.0, (sum, s) => sum + s.width) + _gaps;
-    final width = constraints.maxWidth;
-    if (row <= width) {
-      final tallest = sizes.fold(0.0, (h, s) => math.max(h, s.height));
-      final size = constraints.constrain(Size(width, tallest));
-      if (place) {
-        final rtl = _textDirection == TextDirection.rtl;
-        final spacing = _share && keys.length > 1
-            ? (size.width - (row - _gaps)) / (keys.length - 1)
-            : _gap;
-        // From the start edge: spread from it on a phone, else at the end.
-        var along = _share ? 0.0 : size.width - row;
-        for (final (i, k) in keys.indexed) {
-          final w = sizes[i].width;
-          (k.parentData! as _DialogKeysParentData).offset = Offset(
-            rtl ? size.width - along - w : along,
-            (tallest - sizes[i].height) / 2,
-          );
-          along += w + spacing;
-        }
-      }
-      return size;
-    }
-    var y = 0.0;
-    for (final k in keys.reversed) {
-      final s = lay(k, BoxConstraints.tightFor(width: width));
-      if (place) (k.parentData! as _DialogKeysParentData).offset = Offset(0, y);
-      y += s.height + _gap;
-    }
-    return constraints.constrain(Size(width, y - _gap));
-  }
-
-  @override
-  bool hitTestChildren(BoxHitTestResult result, {required Offset position}) =>
-      defaultHitTestChildren(result, position: position);
-
-  @override
-  void paint(PaintingContext context, Offset offset) =>
-      defaultPaint(context, offset);
 }
 
 /// A lid: a raised plate with a soft, wide shade under it, as a hinged lid
@@ -623,14 +444,11 @@ class ApplianceSheet extends StatelessWidget {
                           ApplianceSpacing.large,
                           ApplianceSpacing.large,
                         ),
-                        child: Row(
-                          children: [
-                            for (final (i, a) in footer.indexed) ...[
-                              if (i > 0)
-                                const SizedBox(width: ApplianceSpacing.small),
-                              Expanded(child: a),
-                            ],
-                          ],
+                        child: RawActionBar(
+                          spacing: ApplianceSpacing.small,
+                          overflowSpacing: ApplianceSpacing.small,
+                          expanded: true,
+                          children: footer,
                         ),
                       ),
                   ],
@@ -1106,14 +924,11 @@ class ApplianceSideSheet extends StatelessWidget {
                       ApplianceSpacing.large,
                       ApplianceSpacing.large,
                     ),
-                    child: Row(
-                      children: [
-                        for (final (i, a) in footer.indexed) ...[
-                          if (i > 0)
-                            const SizedBox(width: ApplianceSpacing.small),
-                          Expanded(child: a),
-                        ],
-                      ],
+                    child: RawActionBar(
+                      spacing: ApplianceSpacing.small,
+                      overflowSpacing: ApplianceSpacing.small,
+                      expanded: true,
+                      children: footer,
                     ),
                   ),
               ],
@@ -1176,7 +991,7 @@ class ApplianceSheetAction {
   const ApplianceSheetAction(
     this.label, {
     required this.onPressed,
-    this.destructive = false,
+    this.isDestructiveAction = false,
   });
 
   /// Its words.
@@ -1186,7 +1001,7 @@ class ApplianceSheetAction {
   final VoidCallback onPressed;
 
   /// Whether it destroys something: printed in the danger colour.
-  final bool destructive;
+  final bool isDestructiveAction;
 }
 
 /// An action sheet: a short lid risen from the screen's foot with a few
@@ -1194,7 +1009,7 @@ class ApplianceSheetAction {
 /// to cancel.
 ///
 /// ```dart
-/// ApplianceActionSheet(title: 'Order 1042', actions: [ApplianceSheetAction('Cancel the order', destructive: true, onPressed: () {})], onCancel: () => Navigator.pop(context))
+/// ApplianceActionSheet(title: 'Order 1042', actions: [ApplianceSheetAction('Cancel the order', isDestructiveAction: true, onPressed: () {})], onCancel: () => Navigator.pop(context))
 /// ```
 class ApplianceActionSheet extends StatelessWidget {
   /// An action sheet of [actions].
@@ -1282,7 +1097,7 @@ class ApplianceActionSheet extends StatelessWidget {
                     builder: (context, states, _) => ApplianceMenuRow(
                       label: a.label,
                       states: states,
-                      destructive: a.destructive,
+                      isDestructiveAction: a.isDestructiveAction,
                     ),
                   ),
                 const SizedBox(height: ApplianceSpacing.regular),
@@ -1308,7 +1123,7 @@ class ApplianceActionSheet extends StatelessWidget {
 /// a choice closes it and then runs.
 ///
 /// ```dart
-/// showApplianceActionSheet(context: context, title: 'Order 1042', actions: [ApplianceSheetAction('Cancel the order', destructive: true, onPressed: () {})])
+/// showApplianceActionSheet(context: context, title: 'Order 1042', actions: [ApplianceSheetAction('Cancel the order', isDestructiveAction: true, onPressed: () {})])
 /// ```
 Future<void> showApplianceActionSheet({
   required BuildContext context,
@@ -1327,7 +1142,7 @@ Future<void> showApplianceActionSheet({
       for (final a in actions)
         ApplianceSheetAction(
           a.label,
-          destructive: a.destructive,
+          isDestructiveAction: a.isDestructiveAction,
           onPressed: () {
             Navigator.of(context).pop();
             a.onPressed();
@@ -1338,22 +1153,33 @@ Future<void> showApplianceActionSheet({
   ),
 );
 
+/// How tall an [ApplianceSheetPage] stands.
+enum ApplianceSheetSize {
+  /// Nine tenths of the screen's height.
+  standard,
+
+  /// A drawer: a little over half the screen's height.
+  drawer,
+
+  /// The whole screen, its corners square.
+  fullScreen,
+}
+
 /// The router's page for a sheet, raised on the root navigator over the
 /// app's frame: a lid rising from the screen's foot, 560 px wide at its
-/// middle on a wider screen, nine tenths of its height (a [drawer] a little
-/// over half, [fullScreen] all of it). The page inside is told it stands as
+/// middle on a wider screen, as tall as its [size] says: nine tenths of the
+/// screen by default, a drawer a little over half, full screen all of it. The page inside is told it stands as
 /// a sheet, so its bar's way out is a close key
 /// ([ApplianceAppBar.autoLeading]).
 ///
 /// ```dart
-/// Navigator(pages: const [ApplianceSheetPage<void>(key: ValueKey('filter'), drawer: true, child: FilterPage())], onDidRemovePage: (page) {})
+/// Navigator(pages: const [ApplianceSheetPage<void>(key: ValueKey('filter'), size: ApplianceSheetSize.drawer, child: FilterPage())], onDidRemovePage: (page) {})
 /// ```
 class ApplianceSheetPage<T> extends Page<T> {
   /// A sheet of [child].
   const ApplianceSheetPage({
     required this.child,
-    this.drawer = false,
-    this.fullScreen = false,
+    this.size = ApplianceSheetSize.standard,
     super.key,
     super.name,
   });
@@ -1361,11 +1187,8 @@ class ApplianceSheetPage<T> extends Page<T> {
   /// The page in the sheet.
   final Widget child;
 
-  /// Whether it stands only a little over half the screen's height.
-  final bool drawer;
-
-  /// Whether it takes the whole screen.
-  final bool fullScreen;
+  /// How tall it stands.
+  final ApplianceSheetSize size;
 
   @override
   Route<T> createRoute(BuildContext context) {
@@ -1373,11 +1196,11 @@ class ApplianceSheetPage<T> extends Page<T> {
     return RawBottomSheetRoute<T>(
       settings: this,
       snapSizes: [
-        fullScreen
-            ? 1
-            : drawer
-            ? 0.6
-            : 0.9,
+        switch (size) {
+          ApplianceSheetSize.standard => 0.9,
+          ApplianceSheetSize.drawer => 0.6,
+          ApplianceSheetSize.fullScreen => 1,
+        },
       ],
       barrierColor: theme.colors.scrim,
       dampingRatio: ApplianceMotion.slide.dampingRatio,
@@ -1399,7 +1222,7 @@ class ApplianceSheetPage<T> extends Page<T> {
                 width: width,
                 height: room.maxHeight,
                 child: ClipRRect(
-                  borderRadius: fullScreen
+                  borderRadius: size == ApplianceSheetSize.fullScreen
                       ? BorderRadius.zero
                       : const BorderRadius.vertical(
                           top: Radius.circular(ApplianceMetrics.lidRadius),
@@ -1407,7 +1230,7 @@ class ApplianceSheetPage<T> extends Page<T> {
                   child: MediaQuery(
                     data: media.copyWith(
                       size: Size(width, room.maxHeight),
-                      padding: fullScreen
+                      padding: size == ApplianceSheetSize.fullScreen
                           ? media.padding
                           : media.padding.copyWith(top: 0),
                     ),

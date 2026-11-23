@@ -515,24 +515,26 @@ class _LarderCheckoutPageState extends State<LarderCheckoutPage> {
       onPressed: placeOrder,
     );
     final form = <Widget>[
-      ApplianceListGroup(
-        header: 'Delivery',
-        children: [
-          for (final (value, title, note) in const [
-            ('standard', 'Standard', '3 to 5 days, free over £40'),
-            ('next', 'Next day', 'Order by 8 pm, £6.50'),
-          ])
-            ApplianceListTile(
-              title: title,
-              subtitle: note,
-              trailing: ApplianceRadio<String>(
-                value: value,
-                groupValue: _delivery,
-                semanticLabel: '$title, $note',
-                onChanged: (v) => setState(() => _delivery = v),
+      RadioGroup<String>(
+        groupValue: _delivery,
+        onChanged: (v) => setState(() => _delivery = v!),
+        child: ApplianceListGroup(
+          header: 'Delivery',
+          children: [
+            for (final (value, title, note) in const [
+              ('standard', 'Standard', '3 to 5 days, free over £40'),
+              ('next', 'Next day', 'Order by 8 pm, £6.50'),
+            ])
+              ApplianceListTile(
+                title: title,
+                subtitle: note,
+                trailing: ApplianceRadio<String>(
+                  value: value,
+                  semanticLabel: '$title, $note',
+                ),
               ),
-            ),
-        ],
+          ],
+        ),
       ),
       gap,
       const ApplianceSectionHeader('Address'),
@@ -541,9 +543,9 @@ class _LarderCheckoutPageState extends State<LarderCheckoutPage> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             ApplianceTextField(
-              label: 'Full name',
+              labelText: 'Full name',
               controller: _name,
-              error: _submitted && _name.text.trim().isEmpty
+              errorText: _submitted && _name.text.trim().isEmpty
                   ? 'Enter the recipient’s name.'
                   : null,
               onChanged: (_) {
@@ -553,9 +555,9 @@ class _LarderCheckoutPageState extends State<LarderCheckoutPage> {
             ),
             gap,
             ApplianceTextField(
-              label: 'Address',
+              labelText: 'Address',
               controller: _address,
-              error: _submitted && _address.text.trim().isEmpty
+              errorText: _submitted && _address.text.trim().isEmpty
                   ? 'Enter a street address.'
                   : null,
               onChanged: (_) {
@@ -565,9 +567,9 @@ class _LarderCheckoutPageState extends State<LarderCheckoutPage> {
             ),
             gap,
             ApplianceTextField(
-              label: 'Postcode',
+              labelText: 'Postcode',
               controller: _postcode,
-              error: _submitted && _postcode.text.trim().isEmpty
+              errorText: _submitted && _postcode.text.trim().isEmpty
                   ? 'Enter a postcode.'
                   : null,
               onChanged: (_) {
@@ -586,9 +588,9 @@ class _LarderCheckoutPageState extends State<LarderCheckoutPage> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             ApplianceTextField(
-              label: 'Card number',
-              hint: 'Use saved card ending ${account.cardLast4}',
-              error: _submitted && invalidCard
+              labelText: 'Card number',
+              hintText: 'Use saved card ending ${account.cardLast4}',
+              errorText: _submitted && invalidCard
                   ? 'Enter 12 to 19 digits.'
                   : null,
               onChanged: (_) => setState(() {}),

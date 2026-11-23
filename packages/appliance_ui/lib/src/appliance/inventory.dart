@@ -8,6 +8,7 @@ library;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
 import 'package:ui_core/inventory.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
@@ -258,20 +259,20 @@ final DesignInventory applianceInventory = DesignInventory(
     // Inputs
     DesignInventoryEntry.present(
       'TextField',
-      (_) => const ApplianceTextField(label: 'Name', hint: 'Ada Brook'),
+      (_) => const ApplianceTextField(labelText: 'Name', hintText: 'Ada Brook'),
     ),
     DesignInventoryEntry.present(
       'TextArea',
       (_) => const ApplianceTextField(
-        label: 'Delivery note',
-        hint: 'Leave by the back door',
+        labelText: 'Delivery note',
+        hintText: 'Leave by the back door',
         maxLines: 4,
         minLines: 3,
       ),
     ),
     DesignInventoryEntry.present(
       'SearchField',
-      (_) => const ApplianceSearchField(hint: 'Search the shop'),
+      (_) => const ApplianceSearchField(hintText: 'Search the shop'),
     ),
     DesignInventoryEntry.present(
       'PasswordField',
@@ -280,7 +281,7 @@ final DesignInventory applianceInventory = DesignInventory(
     DesignInventoryEntry.present(
       'InputGroup',
       (_) => const ApplianceInputGroup(
-        label: 'Budget',
+        labelText: 'Budget',
         prefix: '£',
         suffix: 'a month',
       ),
@@ -304,7 +305,7 @@ final DesignInventory applianceInventory = DesignInventory(
       (_) => _Held<String>(
         'standard',
         (context, v, set) => ApplianceSelect<String>(
-          label: 'Delivery',
+          labelText: 'Delivery',
           value: v,
           onChanged: set,
           items: const [
@@ -320,7 +321,7 @@ final DesignInventory applianceInventory = DesignInventory(
       (_) => _Held<String?>(
         null,
         (context, v, set) => ApplianceCombobox<String>(
-          label: 'Town',
+          labelText: 'Town',
           value: v,
           onSelected: set,
           options: const ['Leith', 'Portobello', 'Musselburgh', 'Dalkeith'],
@@ -332,7 +333,7 @@ final DesignInventory applianceInventory = DesignInventory(
       (_) => _Held<List<String>>(
         const ['Kitchen'],
         (context, v, set) => ApplianceTagInput<String>(
-          label: 'Rooms',
+          labelText: 'Rooms',
           values: v,
           onChanged: set,
           options: const ['Kitchen', 'Hall', 'Garden', 'Larder'],
@@ -382,7 +383,7 @@ final DesignInventory applianceInventory = DesignInventory(
           value: v,
           onChanged: set,
           semanticLabel: 'Volume',
-          valueText: (value) => '${(value * 100).round()}%',
+          semanticFormatterCallback: (value) => '${(value * 100).round()}%',
         ),
       ),
     ),
@@ -449,7 +450,7 @@ final DesignInventory applianceInventory = DesignInventory(
       (_) => _Held<DateTime?>(
         DateTime(2026, 11, 20),
         (context, v, set) => ApplianceDatePicker(
-          label: 'Delivery day',
+          labelText: 'Delivery day',
           value: v,
           firstDate: DateTime(2026, 11, 16),
           lastDate: DateTime(2027, 2, 28),
@@ -463,7 +464,7 @@ final DesignInventory applianceInventory = DesignInventory(
       (_) => _Held<RawDateRange?>(
         RawDateRange(DateTime(2026, 12, 20), DateTime(2026, 12, 28)),
         (context, v, set) => ApplianceDateRangePicker(
-          label: 'Away',
+          labelText: 'Away',
           value: v,
           firstDate: DateTime(2026, 11, 16),
           lastDate: DateTime(2027, 2, 28),
@@ -474,8 +475,8 @@ final DesignInventory applianceInventory = DesignInventory(
     ),
     DesignInventoryEntry.present(
       'TimePicker',
-      (_) => _Held<ApplianceTime>(
-        const ApplianceTime(18, 30),
+      (_) => _Held<RawTimeOfDay>(
+        const RawTimeOfDay(hour: 18, minute: 30),
         (context, v, set) => ApplianceTimePicker(value: v, onChanged: set),
       ),
     ),
@@ -938,7 +939,7 @@ final DesignInventory applianceInventory = DesignInventory(
           ApplianceSheetAction('Track the order', onPressed: _none),
           ApplianceSheetAction(
             'Cancel the order',
-            destructive: true,
+            isDestructiveAction: true,
             onPressed: _none,
           ),
         ],

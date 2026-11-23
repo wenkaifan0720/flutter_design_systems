@@ -213,7 +213,7 @@ void main() {
           child: SizedBox(
             width: 320,
             child: ApplianceCombobox<String>(
-              label: 'Stockist',
+              labelText: 'Stockist',
               search: (words) {
                 asked++;
                 return Future<Iterable<String>>.error(

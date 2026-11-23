@@ -18,8 +18,8 @@ import 'internal/control_light.dart';
 import 'material.dart';
 import 'menus.dart';
 import 'select.dart';
-import 'text_field.dart';
 import 'theme.dart';
+import 'internal/field_frame.dart';
 
 // The ui_core types this part's API takes, through the look's barrel.
 export 'package:ui_core/ui_core.dart' show RawColorController;
@@ -139,7 +139,7 @@ Widget _failed(BuildContext context, RawSearchError error) {
 /// when the field is left on something else.
 ///
 /// ```dart
-/// ApplianceCombobox<String>(label: 'Town', options: const ['Leith', 'Portobello'], onSelected: (town) {})
+/// ApplianceCombobox<String>(labelText: 'Town', options: const ['Leith', 'Portobello'], onSelected: (town) {})
 /// ```
 class ApplianceCombobox<T extends Object> extends StatefulWidget {
   /// A combobox over [options].
@@ -151,10 +151,10 @@ class ApplianceCombobox<T extends Object> extends StatefulWidget {
     this.value,
     this.onSelected,
     this.displayStringForOption,
-    this.label,
-    this.hint,
-    this.helper,
-    this.error,
+    this.labelText,
+    this.hintText,
+    this.helperText,
+    this.errorText,
     this.semanticLabel,
     this.emptyLabel = 'Nothing matches',
     this.requireSelection = false,
@@ -183,18 +183,18 @@ class ApplianceCombobox<T extends Object> extends StatefulWidget {
   final String Function(T option)? displayStringForOption;
 
   /// The words over the well.
-  final String? label;
+  final String? labelText;
 
   /// What the well says while it is empty.
-  final String? hint;
+  final String? hintText;
 
   /// Help under the well.
-  final String? helper;
+  final String? helperText;
 
   /// What is wrong, under the well.
-  final String? error;
+  final String? errorText;
 
-  /// The field's name for a screen reader, when [label] is not shown.
+  /// The field's name for a screen reader, when [labelText] is not shown.
   final String? semanticLabel;
 
   /// What the list says when nothing fits the words.
@@ -222,7 +222,7 @@ class ApplianceCombobox<T extends Object> extends StatefulWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
       ..add(DiagnosticsProperty<T>('value', value, defaultValue: null))
       ..add(FlagProperty('enabled', value: enabled, ifFalse: 'disabled'));
   }
@@ -266,83 +266,81 @@ class _ApplianceComboboxState<T extends Object>
   Widget build(BuildContext context) {
     final theme = ApplianceTheme.of(context);
     final c = theme.colors;
-    final error = widget.error != null;
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        if (widget.label != null)
-          ExcludeSemantics(
-            child: ApplianceFieldLabel(widget.label!, enabled: widget.enabled),
-          ),
-        RawCombobox<T>(
-          options: widget.options,
-          search: widget.search,
-          debounceDuration: widget.debounceDuration,
-          loadingBuilder: _looking,
-          errorBuilder: _failed,
-          value: widget.value,
-          onSelected: widget.onSelected,
-          displayStringForOption: _words,
-          requireSelection: widget.requireSelection,
-          highlightFollowsPointer: true,
-          controller: widget.controller,
-          focusNode: _focus,
-          semanticLabel: widget.semanticLabel ?? widget.label,
-          surfaceBuilder: _plate,
-          emptyBuilder: (context) => _nothing(context, widget.emptyLabel),
-          optionBuilder: (context, option, states) => ApplianceMenuRow(
-            style: _onTheWords,
-            label: _words(option),
-            states: states,
-            chosen: option == widget.value,
-          ),
-          fieldBuilder: (context, field) {
-            final states = <WidgetState>{
-              if (!widget.enabled) WidgetState.disabled,
-              if (field.focusNode.hasFocus) WidgetState.focused,
-              if (error) WidgetState.error,
-            };
-            final layered = DesignStyleOf([
-              widget.style,
-              theme.textFieldStyle,
-            ], states);
-            return MouseRegion(
-              cursor: widget.enabled
-                  ? SystemMouseCursors.text
-                  : SystemMouseCursors.basic,
-              child: AnimatedApplianceSurface(
-                face: layered.on(_wellFace(c, states, error: error)),
-                child: Padding(
-                  padding: const EdgeInsetsDirectional.only(
-                    start: ApplianceSpacing.medium,
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: DesignCapCenter(
-                          capHeightFactor: theme.capHeightFactor,
-                          child: ApplianceBareField(
-                            controller: field.controller,
-                            focusNode: field.focusNode,
-                            minHeight: theme.controlHeight,
-                            hint: widget.hint,
-                            semanticLabel: widget.semanticLabel ?? widget.label,
-                            enabled: widget.enabled,
-                            onEditingComplete: field.submit,
-                          ),
+    final error = widget.errorText != null;
+    return applianceFieldFrame(
+      labelText: widget.labelText,
+      semanticLabel: widget.semanticLabel,
+      helperText: widget.helperText,
+      errorText: widget.errorText,
+      enabled: widget.enabled,
+      control: RawCombobox<T>(
+        options: widget.options,
+        search: widget.search,
+        debounceDuration: widget.debounceDuration,
+        loadingBuilder: _looking,
+        errorBuilder: _failed,
+        value: widget.value,
+        onSelected: widget.onSelected,
+        displayStringForOption: _words,
+        requireSelection: widget.requireSelection,
+        highlightFollowsPointer: true,
+        controller: widget.controller,
+        focusNode: _focus,
+        semanticLabel: widget.semanticLabel ?? widget.labelText,
+        surfaceBuilder: _plate,
+        emptyBuilder: (context) => _nothing(context, widget.emptyLabel),
+        optionBuilder: (context, option, states) => ApplianceMenuRow(
+          style: _onTheWords,
+          label: _words(option),
+          states: states,
+          selected: option == widget.value,
+        ),
+        fieldBuilder: (context, field) {
+          final states = <WidgetState>{
+            if (!widget.enabled) WidgetState.disabled,
+            if (field.focusNode.hasFocus) WidgetState.focused,
+            if (error) WidgetState.error,
+          };
+          final layered = DesignStyleOf([
+            widget.style,
+            theme.textFieldStyle,
+          ], states);
+          return MouseRegion(
+            cursor: widget.enabled
+                ? SystemMouseCursors.text
+                : SystemMouseCursors.basic,
+            child: AnimatedApplianceSurface(
+              face: layered.on(_wellFace(c, states, error: error)),
+              child: Padding(
+                padding: const EdgeInsetsDirectional.only(
+                  start: ApplianceSpacing.medium,
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: DesignCapCenter(
+                        capHeightFactor: theme.capHeightFactor,
+                        child: ApplianceBareField(
+                          controller: field.controller,
+                          focusNode: field.focusNode,
+                          minHeight: theme.controlHeight,
+                          hint: widget.hintText,
+                          semanticLabel:
+                              widget.semanticLabel ?? widget.labelText,
+                          expanded: field.isOpen,
+                          enabled: widget.enabled,
+                          onEditingComplete: field.submit,
                         ),
                       ),
-                      _ListLegend(field: field, enabled: widget.enabled),
-                    ],
-                  ),
+                    ),
+                    _ListLegend(field: field, enabled: widget.enabled),
+                  ],
                 ),
               ),
-            );
-          },
-        ),
-        ApplianceFieldMessage(helper: widget.helper, error: widget.error),
-      ],
+            ),
+          );
+        },
+      ),
     );
   }
 }
@@ -396,7 +394,7 @@ class _ListLegend extends StatelessWidget {
 /// next. Backspace in an empty field removes the last.
 ///
 /// ```dart
-/// ApplianceTagInput<String>(label: 'Rooms', values: const ['Kitchen'], options: const ['Kitchen', 'Hall', 'Garden'], onChanged: (rooms) {})
+/// ApplianceTagInput<String>(labelText: 'Rooms', values: const ['Kitchen'], options: const ['Kitchen', 'Hall', 'Garden'], onChanged: (rooms) {})
 /// ```
 class ApplianceTagInput<T extends Object> extends StatefulWidget {
   /// A tag input holding [values].
@@ -409,22 +407,21 @@ class ApplianceTagInput<T extends Object> extends StatefulWidget {
     this.debounceDuration,
     this.onCreate,
     this.displayStringForOption,
-    this.label,
-    this.hint,
-    this.helper,
-    this.error,
+    this.labelText,
+    this.hintText,
+    this.helperText,
+    this.errorText,
     this.semanticLabel,
     this.deleteLabel,
     this.maxTags,
-    this.enabled = true,
     this.style,
   });
 
   /// The choices made.
   final List<T> values;
 
-  /// Called with the choices after a change.
-  final ValueChanged<List<T>> onChanged;
+  /// Called with the choices after a change; null puts it out of use.
+  final ValueChanged<List<T>>? onChanged;
 
   /// What can be chosen.
   final List<T> options;
@@ -442,18 +439,18 @@ class ApplianceTagInput<T extends Object> extends StatefulWidget {
   final String Function(T option)? displayStringForOption;
 
   /// The words over the well.
-  final String? label;
+  final String? labelText;
 
   /// What the well says while it is empty.
-  final String? hint;
+  final String? hintText;
 
   /// Help under the well.
-  final String? helper;
+  final String? helperText;
 
   /// What is wrong, under the well.
-  final String? error;
+  final String? errorText;
 
-  /// The field's name for a screen reader, when [label] is not shown.
+  /// The field's name for a screen reader, when [labelText] is not shown.
   final String? semanticLabel;
 
   /// A remove key's name for a screen reader; "Remove" otherwise.
@@ -461,9 +458,6 @@ class ApplianceTagInput<T extends Object> extends StatefulWidget {
 
   /// The most choices.
   final int? maxTags;
-
-  /// Whether it takes choices.
-  final bool enabled;
 
   /// The well's style, over [ApplianceThemeData.textFieldStyle].
   final ApplianceStyle? style;
@@ -476,7 +470,9 @@ class ApplianceTagInput<T extends Object> extends StatefulWidget {
     super.debugFillProperties(properties);
     properties
       ..add(IterableProperty<T>('values', values))
-      ..add(FlagProperty('enabled', value: enabled, ifFalse: 'disabled'));
+      ..add(
+        FlagProperty('enabled', value: onChanged != null, ifFalse: 'disabled'),
+      );
   }
 }
 
@@ -491,6 +487,10 @@ class _ApplianceTagInputState<T extends Object>
     super.dispose();
   }
 
+  bool get _enabled => widget.onChanged != null;
+
+  void _keep(List<T> values) {}
+
   String _words(T option) =>
       widget.displayStringForOption?.call(option) ?? option.toString();
 
@@ -498,112 +498,109 @@ class _ApplianceTagInputState<T extends Object>
   Widget build(BuildContext context) {
     final theme = ApplianceTheme.of(context);
     final c = theme.colors;
-    final error = widget.error != null;
+    final error = widget.errorText != null;
     final states = <WidgetState>{
-      if (!widget.enabled) WidgetState.disabled,
+      if (!_enabled) WidgetState.disabled,
       if (_within) WidgetState.focused,
       if (error) WidgetState.error,
     };
     final layered = DesignStyleOf([widget.style, theme.textFieldStyle], states);
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        if (widget.label != null)
-          ExcludeSemantics(
-            child: ApplianceFieldLabel(widget.label!, enabled: widget.enabled),
+    return applianceFieldFrame(
+      labelText: widget.labelText,
+      semanticLabel: widget.semanticLabel,
+      helperText: widget.helperText,
+      errorText: widget.errorText,
+      enabled: _enabled,
+      control: Focus(
+        canRequestFocus: false,
+        skipTraversal: true,
+        onFocusChange: (inside) => setState(() => _within = inside),
+        child: RawTagInput<T>(
+          values: widget.values,
+          onChanged: _enabled ? widget.onChanged! : _keep,
+          options: widget.options,
+          search: widget.search,
+          debounceDuration: widget.debounceDuration,
+          loadingBuilder: _looking,
+          errorBuilder: _failed,
+          onCreate: widget.onCreate,
+          displayStringForOption: _words,
+          highlightFollowsPointer: true,
+          maxTags: widget.maxTags,
+          focusNode: _focus,
+          semanticLabel: widget.semanticLabel ?? widget.labelText,
+          deleteLabel: widget.deleteLabel,
+          surfaceBuilder: _plate,
+          optionBuilder: (context, option, states) => ApplianceMenuRow(
+            style: _onTheWords,
+            label: _words(option),
+            states: states,
+            selected: widget.values.contains(option),
           ),
-        Focus(
-          canRequestFocus: false,
-          skipTraversal: true,
-          onFocusChange: (inside) => setState(() => _within = inside),
-          child: RawTagInput<T>(
-            values: widget.values,
-            onChanged: widget.onChanged,
-            options: widget.options,
-            search: widget.search,
-            debounceDuration: widget.debounceDuration,
-            loadingBuilder: _looking,
-            errorBuilder: _failed,
-            onCreate: widget.onCreate,
-            displayStringForOption: _words,
-            highlightFollowsPointer: true,
-            maxTags: widget.maxTags,
-            focusNode: _focus,
-            semanticLabel: widget.semanticLabel ?? widget.label,
-            deleteLabel: widget.deleteLabel,
-            surfaceBuilder: _plate,
-            optionBuilder: (context, option, states) => ApplianceMenuRow(
-              style: _onTheWords,
-              label: _words(option),
-              states: states,
-              chosen: widget.values.contains(option),
-            ),
-            layoutBuilder: (context, tags, field) => GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              // The tags and the entry say what they are; the box's tap
-              // only focuses the entry (as a button it took their names).
-              excludeFromSemantics: true,
-              onTap: widget.enabled ? _focus.requestFocus : null,
-              child: MouseRegion(
-                cursor: widget.enabled
-                    ? SystemMouseCursors.text
-                    : SystemMouseCursors.basic,
-                child: AnimatedApplianceSurface(
-                  face: layered.on(_wellFace(c, states, error: error)),
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(minHeight: theme.controlHeight),
-                    // A row of tags is a finger's reach high (the keys
-                    // drawn smaller in it), so the well's inset is the rest.
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: ApplianceSpacing.small,
-                        vertical: ApplianceSpacing.nudge,
-                      ),
-                      child: Wrap(
-                        spacing: ApplianceSpacing.small,
-                        crossAxisAlignment: WrapCrossAlignment.center,
-                        children: [
-                          ...tags,
-                          ConstrainedBox(
-                            constraints: const BoxConstraints(
-                              minWidth: 96,
-                              maxWidth: 240,
-                            ),
-                            child: IntrinsicWidth(child: field),
+          layoutBuilder: (context, tags, field) => GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            // The tags and the entry say what they are; the box's tap
+            // only focuses the entry (as a button it took their names).
+            excludeFromSemantics: true,
+            onTap: _enabled ? _focus.requestFocus : null,
+            child: MouseRegion(
+              cursor: _enabled
+                  ? SystemMouseCursors.text
+                  : SystemMouseCursors.basic,
+              child: AnimatedApplianceSurface(
+                face: layered.on(_wellFace(c, states, error: error)),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: theme.controlHeight),
+                  // A row of tags is a finger's reach high (the keys
+                  // drawn smaller in it), so the well's inset is the rest.
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: ApplianceSpacing.small,
+                      vertical: ApplianceSpacing.nudge,
+                    ),
+                    child: Wrap(
+                      spacing: ApplianceSpacing.small,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      children: [
+                        ...tags,
+                        ConstrainedBox(
+                          constraints: const BoxConstraints(
+                            minWidth: 96,
+                            maxWidth: 240,
                           ),
-                        ],
-                      ),
+                          child: IntrinsicWidth(child: field),
+                        ),
+                      ],
                     ),
                   ),
                 ),
               ),
             ),
-            tagBuilder: (context, value, tag) => _TagKey(
-              label: _words(value),
-              focused: tag.focused,
-              enabled: widget.enabled,
-              removeLabel: '${widget.deleteLabel ?? 'Remove'} ${_words(value)}',
-              onRemove: widget.enabled ? tag.onDeleted : null,
+          ),
+          tagBuilder: (context, value, tag) => _TagKey(
+            label: _words(value),
+            focused: tag.focused,
+            enabled: _enabled,
+            removeLabel: '${widget.deleteLabel ?? 'Remove'} ${_words(value)}',
+            onRemove: _enabled ? tag.onDeleted : null,
+          ),
+          fieldBuilder: (context, field) => Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: ApplianceSpacing.tight,
             ),
-            fieldBuilder: (context, field) => Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: ApplianceSpacing.tight,
-              ),
-              child: ApplianceBareField(
-                controller: field.controller,
-                focusNode: field.focusNode,
-                minHeight: theme.controlHeight - 2 * ApplianceSpacing.nudge,
-                hint: widget.values.isEmpty ? widget.hint : null,
-                semanticLabel: widget.semanticLabel ?? widget.label,
-                enabled: widget.enabled,
-                onEditingComplete: field.submit,
-              ),
+            child: ApplianceBareField(
+              controller: field.controller,
+              focusNode: field.focusNode,
+              minHeight: theme.controlHeight - 2 * ApplianceSpacing.nudge,
+              hint: widget.values.isEmpty ? widget.hintText : null,
+              semanticLabel: widget.semanticLabel ?? widget.labelText,
+              expanded: field.isOpen,
+              enabled: _enabled,
+              onEditingComplete: field.submit,
             ),
           ),
         ),
-        ApplianceFieldMessage(helper: widget.helper, error: widget.error),
-      ],
+      ),
     );
   }
 }
@@ -701,11 +698,12 @@ class _TagKey extends StatelessWidget {
   }
 }
 
-/// A chip: a small key. With [onSelected] it latches (a filter, a choice):
-/// down, its lamp lit, until pressed again. With [onDeleted] it carries a
-/// remove key (a choice made, a recipient). A chip with neither is shown
-/// only; a [selected] one with no [onSelected] stays latched down and takes
-/// no presses, as a disabled `FilterChip` keeps its selected state.
+/// A chip: a small key. Given [selected] or [onSelected] it latches (a
+/// filter, a choice), as a `FilterChip` does: down, its lamp lit, until
+/// pressed again; with [selected] given and a null [onSelected] it is out of
+/// use and keeps its state. With [onDeleted] it carries a remove key (a
+/// choice made, a recipient). A chip with no [selected] and no [onSelected]
+/// is shown only, as a `Chip` is.
 ///
 /// ```dart
 /// ApplianceChip('In stock', selected: true, onSelected: (on) {})
@@ -715,10 +713,9 @@ class ApplianceChip extends StatelessWidget {
   const ApplianceChip(
     this.label, {
     super.key,
-    this.selected = false,
+    this.selected,
     this.onSelected,
     this.onDeleted,
-    this.enabled = true,
     this.deleteLabel,
     this.icon,
     this.style,
@@ -727,11 +724,13 @@ class ApplianceChip extends StatelessWidget {
   /// Its words.
   final String label;
 
-  /// Whether it is latched down, whether or not it takes presses.
-  final bool selected;
+  /// Whether it is latched down, whether or not it takes presses; null: a
+  /// chip that does not latch, unless [onSelected] is given (then up).
+  final bool? selected;
 
   /// Called with its new state when pressed; null: it takes no presses (a
-  /// [selected] chip stays down, disabled; any other is shown only).
+  /// chip given [selected] is out of use, keeping its state; any other is
+  /// shown only).
   final ValueChanged<bool>? onSelected;
 
   /// Removes it; null: no remove key.
@@ -745,10 +744,6 @@ class ApplianceChip extends StatelessWidget {
 
   /// Its style, over [ApplianceThemeData.chipStyle].
   final ApplianceStyle? style;
-
-  /// Whether a chip that latches takes presses; off, it shows disabled at
-  /// the same size.
-  final bool enabled;
 
   @override
   Widget build(BuildContext context) {
@@ -772,8 +767,10 @@ class ApplianceChip extends StatelessWidget {
       words.height + 2 * ApplianceSpacing.tight,
     );
     words.dispose();
-    // A selected chip keeps its latched key even when it takes no presses.
-    final latches = onSelected != null || selected;
+    // A chip given its state keeps its latched key even when it takes no
+    // presses.
+    final latches = onSelected != null || this.selected != null;
+    final selected = this.selected ?? false;
     Widget body(Set<WidgetState> states) {
       final layered = DesignStyleOf([style, theme.chipStyle], states);
       final down =
@@ -895,9 +892,7 @@ class ApplianceChip extends StatelessWidget {
       );
     }
     return RawButton(
-      onPressed: enabled && onSelected != null
-          ? () => onSelected!(!selected)
-          : null,
+      onPressed: onSelected == null ? null : () => onSelected!(!selected),
       selected: selected,
       // A button that is selected, as a Material filter chip reads.
       semanticSelected: selected,
@@ -912,7 +907,14 @@ class ApplianceChip extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(StringProperty('label', label))
-      ..add(FlagProperty('selected', value: selected, ifTrue: 'selected'));
+      ..add(
+        FlagProperty(
+          'selected',
+          value: selected,
+          ifTrue: 'selected',
+          ifFalse: 'not selected',
+        ),
+      );
   }
 }
 
@@ -1159,21 +1161,30 @@ class _ChannelPainter extends CustomPainter {
 /// down) behind smoked glass, a ring marking the colour, and faders for its
 /// hue (and, with [showAlpha], how solid it is) under it.
 ///
+/// With no [controller] it holds its own colour, black to start;
+/// [onChanged] says each new one.
+///
 /// ```dart
-/// ApplianceColorPicker(controller: RawColorController(const Color(0xFFEE6A26)))
+/// ApplianceColorPicker(onChanged: (colour) {})
 /// ```
-class ApplianceColorPicker extends StatelessWidget {
+class ApplianceColorPicker extends StatefulWidget {
   /// A picker for [controller]'s colour.
   const ApplianceColorPicker({
     super.key,
-    required this.controller,
+    this.controller,
+    this.onChanged,
     this.showAlpha = false,
     this.areaHeight = 160,
     this.style,
   });
 
-  /// The colour; yours to dispose.
-  final RawColorController controller;
+  /// The colour; yours to dispose. Null: the picker makes its own (black
+  /// to start) and disposes it.
+  final RawColorController? controller;
+
+  /// Called with the colour each time it changes, by the picker or through
+  /// [controller].
+  final ValueChanged<Color>? onChanged;
 
   /// Whether a fader sets how solid it is.
   final bool showAlpha;
@@ -1185,18 +1196,66 @@ class ApplianceColorPicker extends StatelessWidget {
   final ApplianceStyle? style;
 
   @override
+  State<ApplianceColorPicker> createState() => _ApplianceColorPickerState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(
+      FlagProperty('showAlpha', value: showAlpha, ifTrue: 'alpha'),
+    );
+  }
+}
+
+class _ApplianceColorPickerState extends State<ApplianceColorPicker> {
+  // The picker's own controller, while none is handed in.
+  RawColorController? _own;
+
+  RawColorController get _controller => widget.controller ?? _own!;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.controller == null) _own = RawColorController();
+    _controller.addListener(_changed);
+  }
+
+  @override
+  void didUpdateWidget(ApplianceColorPicker old) {
+    super.didUpdateWidget(old);
+    if (widget.controller == old.controller) return;
+    (old.controller ?? _own)?.removeListener(_changed);
+    if (widget.controller == null) {
+      _own = RawColorController();
+    } else {
+      _own?.dispose();
+      _own = null;
+    }
+    _controller.addListener(_changed);
+  }
+
+  @override
+  void dispose() {
+    _controller.removeListener(_changed);
+    _own?.dispose();
+    super.dispose();
+  }
+
+  void _changed() => widget.onChanged?.call(_controller.color);
+
+  @override
   Widget build(BuildContext context) {
     final look = DesignStyleOf([
-      style,
+      widget.style,
       ApplianceTheme.of(context).displayStyle,
     ], const {});
     final theme = ApplianceTheme.of(context);
     final c = theme.colors;
     final rtl = Directionality.of(context) == TextDirection.rtl;
     return RawColorPicker(
-      controller: controller,
-      showAlpha: showAlpha,
-      areaHeight: areaHeight,
+      controller: _controller,
+      showAlpha: widget.showAlpha,
+      areaHeight: widget.areaHeight,
       layoutBuilder: (context, parts) => Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -1267,14 +1326,6 @@ class ApplianceColorPicker extends StatelessWidget {
           ),
         );
       },
-    );
-  }
-
-  @override
-  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
-    super.debugFillProperties(properties);
-    properties.add(
-      FlagProperty('showAlpha', value: showAlpha, ifTrue: 'alpha'),
     );
   }
 }

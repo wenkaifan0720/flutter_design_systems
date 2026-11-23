@@ -26,8 +26,8 @@ Widget applianceMenuEntryRow(
     label: entry.label,
     states: states,
     enabled: entry.enabled,
-    chosen: entry.checked,
-    destructive: entry.isDestructiveAction,
+    selected: entry.checked,
+    isDestructiveAction: entry.isDestructiveAction,
     trailing: entry.isSubmenu
         ? MenuChevron(color: c.printMuted)
         : entry.shortcut == null

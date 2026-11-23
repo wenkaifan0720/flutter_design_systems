@@ -121,7 +121,7 @@ class _LarderShopState extends State<LarderShop> {
     final shown = _shown;
     final wide = MediaQuery.sizeOf(context).width >= 600;
     final shelf = ApplianceSelect<LarderCategory?>(
-      label: 'Shelf',
+      labelText: 'Shelf',
       value: _shelf,
       items: [
         const ApplianceSelectItem(value: null, label: 'All goods'),
@@ -131,7 +131,7 @@ class _LarderShopState extends State<LarderShop> {
       onChanged: (v) => setState(() => _shelf = v),
     );
     final sort = ApplianceSelect<LarderSort>(
-      label: 'Sort by',
+      labelText: 'Sort by',
       value: _sort,
       items: [
         for (final s in LarderSort.values)
@@ -310,24 +310,26 @@ class _FilterSheetState extends State<_FilterSheet> {
             ],
           ),
           const SizedBox(height: ApplianceSpacing.large),
-          ApplianceListGroup(
-            header: 'Price',
-            children: [
-              for (final (label, value) in const [
-                ('Any price', null),
-                ('Under £25', 2500),
-                ('Under £50', 5000),
-              ])
-                ApplianceListTile(
-                  title: label,
-                  trailing: ApplianceRadio<int?>(
-                    value: value,
-                    groupValue: _under,
-                    semanticLabel: label,
-                    onChanged: (v) => setState(() => _under = v),
+          RadioGroup<int?>(
+            groupValue: _under,
+            onChanged: (v) => setState(() => _under = v),
+            child: ApplianceListGroup(
+              header: 'Price',
+              children: [
+                for (final (label, value) in const [
+                  ('Any price', null),
+                  ('Under £25', 2500),
+                  ('Under £50', 5000),
+                ])
+                  ApplianceListTile(
+                    title: label,
+                    trailing: ApplianceRadio<int?>(
+                      value: value,
+                      semanticLabel: label,
+                    ),
                   ),
-                ),
-            ],
+              ],
+            ),
           ),
         ],
       ),

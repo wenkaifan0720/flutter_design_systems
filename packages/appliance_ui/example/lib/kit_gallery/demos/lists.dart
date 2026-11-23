@@ -64,7 +64,7 @@ class _ListsState extends State<_Lists> {
             const ApplianceListTile(title: 'Disabled', enabled: false),
             ApplianceListTile(
               title: 'Delete account',
-              destructive: true,
+              isDestructiveAction: true,
               showChevron: false,
               onTap: () {},
             ),

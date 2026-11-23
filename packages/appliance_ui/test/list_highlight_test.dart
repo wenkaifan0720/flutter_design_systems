@@ -57,7 +57,7 @@ void main() {
     await _show(
       tester,
       ApplianceSelect<String>(
-        label: 'Project',
+        labelText: 'Project',
         value: _projects.first,
         items: [
           for (final p in _projects) ApplianceSelectItem(value: p, label: p),
@@ -81,7 +81,7 @@ void main() {
     await _show(
       tester,
       ApplianceCombobox<String>(
-        label: 'Project',
+        labelText: 'Project',
         options: _projects,
         value: _projects.first,
         onSelected: (_) {},

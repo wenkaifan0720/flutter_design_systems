@@ -66,7 +66,7 @@ class _States extends StatelessWidget {
           onRetry: () => showApplianceToast(context, 'Trying again'),
         ),
       ),
-      const ApplianceInput(label: 'Order number', hint: 'Six figures'),
+      const ApplianceInput(labelText: 'Order number', hintText: 'Six figures'),
     ],
   );
 }
@@ -194,7 +194,7 @@ class _PagesState extends State<_Pages> {
                   if (_open == 'filter')
                     ApplianceSheetPage<void>(
                       key: const ValueKey<String>('filter'),
-                      drawer: true,
+                      size: ApplianceSheetSize.drawer,
                       child: _page('Filter', const [
                         ApplianceListGroup(
                           children: [

@@ -1,7 +1,7 @@
 /// Appliance's text entry: [ApplianceTextField], a sunken well with the
 /// caret in signal orange; its [ApplianceFieldLabel] above and its
 /// [ApplianceFieldMessage] (help, or an error beside a red fault lamp)
-/// below, which the select shares.
+/// below, which every field of Appliance's shares.
 library;
 
 import 'package:flutter/foundation.dart';
@@ -14,6 +14,7 @@ import 'package:ui_core/ui_core.dart';
 import 'internal/control_light.dart';
 import 'material.dart';
 import 'theme.dart';
+import 'internal/field_frame.dart';
 
 /// The words over a field: printed on the panel, 14 px medium, 8 px above
 /// the well.
@@ -55,59 +56,59 @@ class ApplianceFieldLabel extends StatelessWidget {
   }
 }
 
-/// What stands under a field: its [error] beside a lit red fault lamp,
-/// announced as it appears, or else its [helper]; nothing when neither.
+/// A field's help, or its error beside a red fault lamp, under its control:
+/// a [RawInputDecorator]'s [RawInputDecoratorDetails.helper] and
+/// [RawInputDecoratorDetails.error], which a screen reader hears on the
+/// control's own node (the error announced as it appears). An empty error
+/// marks the well alone.
 ///
 /// ```dart
-/// const ApplianceFieldMessage(error: 'Enter a postcode')
+/// RawInputDecorator(helperText: 'We ring before we come', builder: (context, parts) => Column(children: [parts.control, ApplianceFieldMessage(parts)]), child: const ApplianceTextField())
 /// ```
 class ApplianceFieldMessage extends StatelessWidget {
-  /// A field's message.
-  const ApplianceFieldMessage({super.key, this.helper, this.error});
+  /// The help or the error of [parts].
+  const ApplianceFieldMessage(this.parts, {super.key});
 
-  /// Help under the field.
-  final String? helper;
-
-  /// What is wrong; an empty string marks the well alone.
-  final String? error;
+  /// The field's parts, from its [RawInputDecorator].
+  final RawInputDecoratorDetails parts;
 
   @override
   Widget build(BuildContext context) {
     final theme = ApplianceTheme.of(context);
     final style = theme.textTheme.secondary;
-    final error = this.error;
-    if (error != null) {
-      if (error.isEmpty) return const SizedBox.shrink();
+    final error = parts.error;
+    if (parts.errorText != null) {
+      if (parts.errorText!.isEmpty || error == null) {
+        return const SizedBox.shrink();
+      }
       final lineHeight = (style.fontSize ?? 14) * (style.height ?? 1);
       return Padding(
         padding: const EdgeInsets.only(top: ApplianceSpacing.small),
-        child: Semantics(
-          liveRegion: true,
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(
-                height: lineHeight,
-                child: Center(
-                  child: ApplianceLamp(lit: true, color: theme.colors.danger),
-                ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(
+              height: lineHeight,
+              child: Center(
+                child: ApplianceLamp(lit: true, color: theme.colors.danger),
               ),
-              const SizedBox(width: ApplianceSpacing.small),
-              Expanded(
-                child: Text(
-                  error,
-                  style: style.copyWith(color: theme.colors.danger),
-                ),
+            ),
+            const SizedBox(width: ApplianceSpacing.small),
+            Expanded(
+              child: DefaultTextStyle(
+                style: style.copyWith(color: theme.colors.danger),
+                child: error,
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       );
     }
+    final helper = parts.helper;
     if (helper != null) {
       return Padding(
         padding: const EdgeInsets.only(top: ApplianceSpacing.small),
-        child: Text(helper!, style: style),
+        child: DefaultTextStyle(style: style, child: helper),
       );
     }
     return const SizedBox.shrink();
@@ -117,14 +118,14 @@ class ApplianceFieldMessage extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('helper', helper, defaultValue: null))
-      ..add(StringProperty('error', error, defaultValue: null));
+      ..add(StringProperty('helperText', parts.helperText, defaultValue: null))
+      ..add(StringProperty('errorText', parts.errorText, defaultValue: null));
   }
 }
 
 /// A text field: a sunken well in the panel, the words printed in it, the
 /// caret in signal orange. Focused, the well keeps its own fill and an
-/// orange bezel lights round it; with an [error], its rim and the message
+/// orange bezel lights round it; with an [errorText], its rim and the message
 /// under it turn red.
 ///
 /// It is a bare `TextField` (no decoration) in the look's own box, one line
@@ -139,7 +140,7 @@ class ApplianceFieldMessage extends StatelessWidget {
 /// [ApplianceThemeData.textFieldStyle]'s.
 ///
 /// ```dart
-/// ApplianceTextField(label: 'Postcode', hint: 'e.g. EH3 9DR', controller: postcode)
+/// ApplianceTextField(labelText: 'Postcode', hintText: 'e.g. EH3 9DR', controller: postcode)
 /// ```
 class ApplianceTextField extends StatefulWidget {
   /// A text field.
@@ -147,10 +148,10 @@ class ApplianceTextField extends StatefulWidget {
     super.key,
     this.controller,
     this.focusNode,
-    this.label,
-    this.hint,
-    this.helper,
-    this.error,
+    this.labelText,
+    this.hintText,
+    this.helperText,
+    this.errorText,
     this.semanticLabel,
     this.leading,
     this.trailing,
@@ -179,18 +180,18 @@ class ApplianceTextField extends StatefulWidget {
   final FocusNode? focusNode;
 
   /// The words over the well.
-  final String? label;
+  final String? labelText;
 
   /// What the well says while it is empty: a format, never the label.
-  final String? hint;
+  final String? hintText;
 
   /// Help under the well.
-  final String? helper;
+  final String? helperText;
 
   /// What is wrong, under the well beside a red lamp.
-  final String? error;
+  final String? errorText;
 
-  /// The field's name for a screen reader, when [label] is not shown.
+  /// The field's name for a screen reader, when [labelText] is not shown.
   final String? semanticLabel;
 
   /// A glyph at the well's start (a search's lens).
@@ -251,9 +252,9 @@ class ApplianceTextField extends StatefulWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('label', label, defaultValue: null))
-      ..add(StringProperty('hint', hint, defaultValue: null))
-      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
+      ..add(StringProperty('errorText', errorText, defaultValue: null))
       ..add(FlagProperty('enabled', value: enabled, ifFalse: 'disabled'))
       ..add(FlagProperty('obscureText', value: obscureText, ifTrue: 'obscured'))
       ..add(IntProperty('maxLines', maxLines, defaultValue: 1));
@@ -306,7 +307,7 @@ class _ApplianceTextFieldState extends State<ApplianceTextField> {
       if (!widget.enabled) WidgetState.disabled,
       if (focused) WidgetState.focused,
       if (_hovered) WidgetState.hovered,
-      if (widget.error != null) WidgetState.error,
+      if (widget.errorText != null) WidgetState.error,
     };
     final layered = DesignStyleOf([widget.style, theme.textFieldStyle], states);
     final words = layered
@@ -321,8 +322,8 @@ class _ApplianceTextFieldState extends State<ApplianceTextField> {
       ApplianceFace.well(c).copyWith(
         lift: widget.enabled ? -1 : -0.5,
         foreground: words.color,
-        edge: widget.error != null ? c.danger : null,
-        focus: (widget.error != null ? c.danger : c.signal).withValues(
+        edge: widget.errorText != null ? c.danger : null,
+        focus: (widget.errorText != null ? c.danger : c.signal).withValues(
           alpha: applianceControlLight(states),
         ),
       ),
@@ -332,10 +333,10 @@ class _ApplianceTextFieldState extends State<ApplianceTextField> {
       minHeight: height,
       controller: _controller,
       maxLines: widget.maxLines,
-      hint: widget.hint == null
+      hint: widget.hintText == null
           ? null
           : Text(
-              widget.hint!,
+              widget.hintText!,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: words.copyWith(color: c.printMuted),
@@ -366,13 +367,12 @@ class _ApplianceTextFieldState extends State<ApplianceTextField> {
         ),
       ),
     );
+    // The field's node is the entry's (its decorator's, beside a key in
+    // the well): no node of its own between them.
     final named = Semantics(
-      container: true,
-      child: Semantics(
-        label: widget.semanticLabel ?? widget.label,
-        hint: widget.hint,
-        child: editable,
-      ),
+      label: widget.semanticLabel ?? widget.labelText,
+      hint: widget.hintText,
+      child: editable,
     );
     final Widget well = MouseRegion(
       onEnter: (_) => setState(() => _hovered = true),
@@ -436,17 +436,13 @@ class _ApplianceTextFieldState extends State<ApplianceTextField> {
         ),
       ),
     );
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        if (widget.label != null)
-          ExcludeSemantics(
-            child: ApplianceFieldLabel(widget.label!, enabled: widget.enabled),
-          ),
-        well,
-        ApplianceFieldMessage(helper: widget.helper, error: widget.error),
-      ],
+    return applianceFieldFrame(
+      labelText: widget.labelText,
+      semanticLabel: widget.semanticLabel,
+      helperText: widget.helperText,
+      errorText: widget.errorText,
+      enabled: widget.enabled,
+      control: well,
     );
   }
 }

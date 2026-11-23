@@ -146,7 +146,10 @@ class ApplianceButton extends StatelessWidget {
               decorationThickness: 1.5,
             ),
           ),
-          maxLines: 1,
+          // A key's words are what it does: a second line, centred, reads
+          // better than an ellipsis where one line can't hold them.
+          textAlign: TextAlign.center,
+          maxLines: 2,
           overflow: TextOverflow.ellipsis,
           child: DesignCapCenter(
             capHeightFactor: theme.capHeightFactor,

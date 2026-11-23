@@ -326,25 +326,34 @@ class ApplianceTag extends StatelessWidget {
 }
 
 /// A picture behind a window: sunk in the panel with a thin frame, the
-/// picture from its media slot filling it; until it comes, the window's
-/// floor and [placeholder] (a glyph) stand in.
+/// picture ([image], or its media slot's) filling it; until it comes, the
+/// window's floor and [placeholder] (a glyph) stand in.
 ///
 /// ```dart
 /// const ApplianceMedia(slotId: 'kettle', semanticLabel: 'A cream kettle', aspectRatio: 4 / 3)
 /// ```
 class ApplianceMedia extends StatelessWidget {
-  /// A window on [slotId]'s picture.
+  /// A window on [image], or on [slotId]'s picture.
   const ApplianceMedia({
     super.key,
-    required this.slotId,
+    this.image,
+    this.slotId,
     required this.semanticLabel,
     this.aspectRatio = 16 / 9,
     this.placeholder,
     this.style,
-  });
+  }) : assert(
+         image != null || slotId != null,
+         'ApplianceMedia needs an image or a slotId.',
+       );
 
-  /// The picture's media slot.
-  final String slotId;
+  /// The picture (a `NetworkImage`, an `AssetImage`); over [slotId] when
+  /// both are given.
+  final ImageProvider? image;
+
+  /// The picture's media slot (`assets/media/<slotId>.jpg`), when there is
+  /// no [image].
+  final String? slotId;
 
   /// What it shows, for a screen reader.
   final String semanticLabel;
@@ -388,7 +397,9 @@ class ApplianceMedia extends StatelessWidget {
                 borderRadius: BorderRadius.circular(
                   ApplianceMetrics.wellRadius - ApplianceMetrics.windowInset,
                 ),
-                child: MediaSlotImage(slotId: slotId, fallback: floor),
+                child: image != null
+                    ? _picture(image!, floor)
+                    : MediaSlotImage(slotId: slotId!, fallback: floor),
               ),
             ),
           ),
@@ -401,7 +412,10 @@ class ApplianceMedia extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('slotId', slotId))
+      ..add(
+        DiagnosticsProperty<ImageProvider>('image', image, defaultValue: null),
+      )
+      ..add(StringProperty('slotId', slotId, defaultValue: null))
       ..add(DoubleProperty('aspectRatio', aspectRatio));
   }
 }

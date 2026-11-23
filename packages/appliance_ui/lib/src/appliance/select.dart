@@ -14,8 +14,8 @@ import 'internal/glyphs.dart';
 import 'internal/keep_in_view.dart';
 import 'internal/type_ahead.dart';
 import 'material.dart';
-import 'text_field.dart';
 import 'theme.dart';
+import 'internal/field_frame.dart';
 
 /// One choice in an [ApplianceSelect].
 @immutable
@@ -38,8 +38,8 @@ class ApplianceSelectItem<T> {
 }
 
 /// A choice of one from a short list: a key printed with the chosen value
-/// and a small up-and-down legend at its end, its [label] above and its
-/// [helper] or [error] below, as a field's.
+/// and a small up-and-down legend at its end, its [labelText] above and its
+/// [helperText] or [errorText] below, as a field's.
 ///
 /// Its list rises on a faceplate under the key, as wide as the key (wider
 /// only as far as its longest option needs). Down the list's start runs a
@@ -68,7 +68,7 @@ class ApplianceSelectItem<T> {
 /// [ApplianceThemeData.menuStyle].
 ///
 /// ```dart
-/// ApplianceSelect<String>(label: 'Sort by', value: sort, items: const [ApplianceSelectItem(value: 'new', label: 'Newest'), ApplianceSelectItem(value: 'low', label: 'Price, low to high')], onChanged: (value) => setState(() => sort = value))
+/// ApplianceSelect<String>(labelText: 'Sort by', value: sort, items: const [ApplianceSelectItem(value: 'new', label: 'Newest'), ApplianceSelectItem(value: 'low', label: 'Price, low to high')], onChanged: (value) => setState(() => sort = value))
 /// ```
 class ApplianceSelect<T> extends StatefulWidget {
   /// A select over [items].
@@ -77,11 +77,11 @@ class ApplianceSelect<T> extends StatefulWidget {
     required this.items,
     required this.value,
     required this.onChanged,
-    this.label,
+    this.labelText,
     this.semanticLabel,
-    this.hint,
-    this.helper,
-    this.error,
+    this.hintText,
+    this.helperText,
+    this.errorText,
     this.focusNode,
     this.style,
   });
@@ -89,26 +89,26 @@ class ApplianceSelect<T> extends StatefulWidget {
   /// The choices.
   final List<ApplianceSelectItem<T>> items;
 
-  /// The chosen value, or null for none (the [hint] shows).
+  /// The chosen value, or null for none (the [hintText] shows).
   final T? value;
 
   /// Called with the value chosen; null disables the select.
   final ValueChanged<T>? onChanged;
 
   /// The words over the key.
-  final String? label;
+  final String? labelText;
 
-  /// The select's name for a screen reader when [label] is not shown.
+  /// The select's name for a screen reader when [labelText] is not shown.
   final String? semanticLabel;
 
   /// What the key says while nothing is chosen.
-  final String? hint;
+  final String? hintText;
 
   /// Help under the key.
-  final String? helper;
+  final String? helperText;
 
   /// What is wrong, under the key beside a red lamp.
-  final String? error;
+  final String? errorText;
 
   /// {@macro design.focusNode}
   final FocusNode? focusNode;
@@ -128,8 +128,8 @@ class ApplianceSelect<T> extends StatefulWidget {
     properties
       ..add(DiagnosticsProperty<T>('value', value))
       ..add(IntProperty('items', items.length))
-      ..add(StringProperty('label', label, defaultValue: null))
-      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
+      ..add(StringProperty('errorText', errorText, defaultValue: null))
       ..add(
         FlagProperty('enabled', value: onChanged != null, ifFalse: 'disabled'),
       );
@@ -159,10 +159,10 @@ class _ApplianceSelectState<T> extends State<ApplianceSelect<T>> {
       :items,
       :value,
       :onChanged,
-      :label,
-      :hint,
-      :helper,
-      :error,
+      :labelText,
+      :hintText,
+      :helperText,
+      :errorText,
       :style,
     ) = widget;
     final theme = ApplianceTheme.of(context);
@@ -210,13 +210,13 @@ class _ApplianceSelectState<T> extends State<ApplianceSelect<T>> {
                 },
           focusNode: _focus,
           expanded: anchor?.isOpen,
-          semanticLabel: widget.semanticLabel ?? label,
+          // The field names the key (its label, or the semantic label).
           semanticValue: chosen?.label,
           excludeSemantics: true,
           builder: (context, states, _) {
             final layered = DesignStyleOf(
               [style, theme.selectStyle],
-              {...states, if (error != null) WidgetState.error},
+              {...states, if (errorText != null) WidgetState.error},
             );
             final disabled = !enabled;
             final down = states.contains(WidgetState.pressed) || open;
@@ -229,9 +229,9 @@ class _ApplianceSelectState<T> extends State<ApplianceSelect<T>> {
             final f = layered.on(
               base.copyWith(
                 foreground: ink,
-                edge: error != null ? c.danger : null,
+                edge: errorText != null ? c.danger : null,
                 focus: states.contains(WidgetState.focused) && !open
-                    ? (error != null ? c.danger : c.focus)
+                    ? (errorText != null ? c.danger : c.focus)
                     : c.focus.withValues(alpha: 0),
               ),
             );
@@ -253,7 +253,7 @@ class _ApplianceSelectState<T> extends State<ApplianceSelect<T>> {
                           child: DesignCapCenter(
                             capHeightFactor: theme.capHeightFactor,
                             child: Text(
-                              chosen?.label ?? hint ?? '',
+                              chosen?.label ?? hintText ?? '',
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: layered.text(
@@ -290,7 +290,7 @@ class _ApplianceSelectState<T> extends State<ApplianceSelect<T>> {
         ? face(null)
         : RawPopover(
             arrowKeyNavigation: true,
-            semanticLabel: widget.semanticLabel ?? label,
+            semanticLabel: widget.semanticLabel ?? labelText,
             placement: const RawPopoverPlacement(
               gap: ApplianceSpacing.tight + 2,
               margin: ApplianceSpacing.small,
@@ -315,15 +315,13 @@ class _ApplianceSelectState<T> extends State<ApplianceSelect<T>> {
             ),
           );
     final narrow = MediaQuery.sizeOf(context).width < 600;
-    final field = Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        if (label != null)
-          ExcludeSemantics(child: ApplianceFieldLabel(label, enabled: enabled)),
-        box,
-        ApplianceFieldMessage(helper: helper, error: error),
-      ],
+    final field = applianceFieldFrame(
+      labelText: labelText,
+      semanticLabel: widget.semanticLabel,
+      helperText: helperText,
+      errorText: errorText,
+      enabled: enabled,
+      control: box,
     );
     if (narrow) return field;
     return Align(

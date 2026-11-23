@@ -12,8 +12,8 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 const _exit = ValueKey('exit');
 
 const _tabs = [
-  ApplianceTab(LucideIcons.house, 'Home', ValueKey('open-home')),
-  ApplianceTab(LucideIcons.store, 'Shop', ValueKey('open-shop')),
+  ApplianceTab(LucideIcons.house, 'Home', key: ValueKey('open-home')),
+  ApplianceTab(LucideIcons.store, 'Shop', key: ValueKey('open-shop')),
 ];
 
 Widget _page(String title) => Builder(
@@ -212,7 +212,7 @@ void main() {
                 message: 'Check the connection.',
                 onRetry: () => tries++,
               ),
-              const ApplianceInput(label: 'Order number'),
+              const ApplianceInput(labelText: 'Order number'),
             ],
           ),
         ),

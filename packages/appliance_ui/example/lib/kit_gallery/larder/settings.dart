@@ -38,7 +38,7 @@ class LarderSettings extends StatelessWidget {
       ),
     );
     final density = ApplianceSelect<ApplianceDensity>(
-      label: 'Density',
+      labelText: 'Density',
       value: prefs.density,
       items: const [
         ApplianceSelectItem(
@@ -54,7 +54,7 @@ class LarderSettings extends StatelessWidget {
       onChanged: (v) => prefs.update((p) => p.density = v),
     );
     final direction = ApplianceSelect<TextDirection>(
-      label: 'Reading direction',
+      labelText: 'Reading direction',
       value: prefs.direction,
       items: const [
         ApplianceSelectItem(value: TextDirection.ltr, label: 'Left to right'),
@@ -186,7 +186,7 @@ class LarderSettings extends StatelessWidget {
           ),
           ApplianceListTile(
             title: 'Sign out',
-            destructive: true,
+            isDestructiveAction: true,
             showChevron: false,
             onTap: frame.signOut,
           ),
@@ -428,9 +428,9 @@ class _SettingsPageState extends State<_SettingsPage> {
                 const SizedBox(height: ApplianceSpacing.regular),
               ],
               ApplianceTextField(
-                label: label,
+                labelText: label,
                 controller: _value,
-                helper: contact ? 'Messages are saved in this demo.' : null,
+                helperText: contact ? 'Messages are saved in this demo.' : null,
                 maxLines: contact ? 4 : 1,
                 keyboardType: setting == _Setting.cards
                     ? TextInputType.number
@@ -438,16 +438,16 @@ class _SettingsPageState extends State<_SettingsPage> {
                 inputFormatters: setting == _Setting.cards
                     ? [FilteringTextInputFormatter.digitsOnly]
                     : null,
-                error: _submitted ? error() : null,
+                errorText: _submitted ? error() : null,
                 onChanged: revalidate,
               ),
               if (setting == _Setting.address) ...[
                 const SizedBox(height: ApplianceSpacing.regular),
                 ApplianceTextField(
-                  label: 'Postcode',
+                  labelText: 'Postcode',
                   controller: _postcode,
                   textCapitalization: TextCapitalization.characters,
-                  error: _submitted && _postcode.text.trim().isEmpty
+                  errorText: _submitted && _postcode.text.trim().isEmpty
                       ? 'Enter a postcode.'
                       : null,
                   onChanged: revalidate,

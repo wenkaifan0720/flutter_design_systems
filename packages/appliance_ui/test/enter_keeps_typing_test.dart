@@ -58,7 +58,7 @@ void main() {
           builder: (context, setState) => SizedBox(
             width: 320,
             child: ApplianceCombobox<String>(
-              label: 'Finish',
+              labelText: 'Finish',
               options: const ['Chalk', 'Clay', 'Slate'],
               value: chosen,
               onSelected: (v) => setState(() => chosen = v),
@@ -82,7 +82,7 @@ void main() {
           builder: (context, setState) => SizedBox(
             width: 320,
             child: ApplianceTagInput<String>(
-              label: 'Materials',
+              labelText: 'Materials',
               values: tags,
               options: const ['Oak', 'Ash', 'Walnut', 'Linen'],
               onCreate: (text) => text.trim().isEmpty ? null : text.trim(),

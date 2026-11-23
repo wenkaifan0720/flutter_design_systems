@@ -23,9 +23,9 @@ Future<void> _form(WidgetTester tester) async {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              ApplianceTextField(label: 'Title', onChanged: (_) {}),
+              ApplianceTextField(labelText: 'Title', onChanged: (_) {}),
               ApplianceSelect<String>(
-                label: 'Project',
+                labelText: 'Project',
                 value: _projects.first,
                 items: [
                   for (final p in _projects)
@@ -34,7 +34,7 @@ Future<void> _form(WidgetTester tester) async {
                 onChanged: (_) {},
               ),
               ApplianceCombobox<String>(
-                label: 'Assignee',
+                labelText: 'Assignee',
                 options: _projects,
                 value: _projects.first,
                 onSelected: (_) {},

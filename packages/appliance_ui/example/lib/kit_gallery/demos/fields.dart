@@ -31,25 +31,28 @@ class _FieldsState extends State<_Fields> {
         note: 'A sunken well; focused, an orange bezel lights round it.',
         gap: ApplianceSpacing.large,
         children: [
-          ApplianceTextField(label: 'Full name', hint: 'As on the door'),
           ApplianceTextField(
-            label: 'Search',
-            hint: 'Pots, tins, kettles',
+            labelText: 'Full name',
+            hintText: 'As on the door',
+          ),
+          ApplianceTextField(
+            labelText: 'Search',
+            hintText: 'Pots, tins, kettles',
             leading: Icon(LucideIcons.search),
           ),
           ApplianceTextField(
-            label: 'Postcode',
-            error: 'Enter a postcode we deliver to',
+            labelText: 'Postcode',
+            errorText: 'Enter a postcode we deliver to',
           ),
           ApplianceTextField(
-            label: 'Gift note',
-            helper: 'Up to 200 letters',
+            labelText: 'Gift note',
+            helperText: 'Up to 200 letters',
             maxLines: 3,
           ),
           ApplianceTextField(
-            label: 'Account',
+            labelText: 'Account',
             enabled: false,
-            hint: 'Rosa Lind',
+            hintText: 'Rosa Lind',
           ),
         ],
       ),
@@ -60,7 +63,7 @@ class _FieldsState extends State<_Fields> {
         gap: ApplianceSpacing.large,
         children: [
           ApplianceSelect<String?>(
-            label: 'Shelf',
+            labelText: 'Shelf',
             value: _shelf,
             items: const [
               ApplianceSelectItem(value: null, label: 'All goods'),
@@ -73,9 +76,9 @@ class _FieldsState extends State<_Fields> {
             onChanged: (v) => setState(() => _shelf = v),
           ),
           ApplianceSelect<String>(
-            label: 'Sort by',
+            labelText: 'Sort by',
             value: _sort,
-            helper: 'Featured puts the new season first',
+            helperText: 'Featured puts the new season first',
             items: const [
               ApplianceSelectItem(value: 'featured', label: 'Featured'),
               ApplianceSelectItem(value: 'low', label: 'Price, low to high'),
@@ -84,9 +87,9 @@ class _FieldsState extends State<_Fields> {
             onChanged: (v) => setState(() => _sort = v),
           ),
           const ApplianceSelect<String>(
-            label: 'Size',
+            labelText: 'Size',
             value: null,
-            hint: 'Choose a size',
+            hintText: 'Choose a size',
             items: [ApplianceSelectItem(value: 's', label: 'Small')],
             onChanged: null,
           ),
@@ -109,13 +112,13 @@ class _MoreFields extends StatelessWidget {
         title: 'Search and password',
         note: 'A lens at the start; a clear key once typed. An eye key shows the words.',
         children: [
-          ApplianceSearchField(hint: 'Search the shop'),
-          AppliancePasswordField(helper: 'At least 12 letters'),
+          ApplianceSearchField(hintText: 'Search the shop'),
+          AppliancePasswordField(helperText: 'At least 12 letters'),
           AppliancePasswordField(
-            label: 'Old password',
-            error: 'That is not it',
+            labelText: 'Old password',
+            errorText: 'That is not it',
           ),
-          ApplianceSearchField(hint: 'Search (off)', enabled: false),
+          ApplianceSearchField(hintText: 'Search (off)', enabled: false),
         ],
       ),
       SizedBox(height: ApplianceSpacing.extraLarge),
@@ -123,11 +126,15 @@ class _MoreFields extends StatelessWidget {
         title: 'Units and codes',
         note: 'Units moulded at the well\'s ends; a code in display-window cells.',
         children: [
-          ApplianceInputGroup(label: 'Budget', prefix: '£', suffix: 'a month'),
           ApplianceInputGroup(
-            label: 'Weight',
+            labelText: 'Budget',
+            prefix: '£',
+            suffix: 'a month',
+          ),
+          ApplianceInputGroup(
+            labelText: 'Weight',
             suffix: 'kg',
-            error: 'At most 30 kg',
+            errorText: 'At most 30 kg',
           ),
           ApplianceOtpField(),
           ApplianceOtpField(isError: true, semanticLabel: 'Code, wrong'),

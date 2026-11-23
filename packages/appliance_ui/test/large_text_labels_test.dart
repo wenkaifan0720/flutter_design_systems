@@ -178,17 +178,20 @@ void main() {
         ApplianceChartSeries('Orders', [5, 20]),
       ],
     );
+    // The room beside the plot for a scale figure, and the band under it.
+    (double, double) room() {
+      final c = tester.widget<DesignChart>(find.byType(DesignChart));
+      final beside = c.yLabelGutter!(const [
+        DesignScaleTick(value: 20, position: 0, label: '20'),
+      ]);
+      return (beside, c.padding.resolve(TextDirection.ltr).bottom);
+    }
+
     await _show(tester, chart, scale: 1);
-    final normal = tester
-        .widget<DesignChart>(find.byType(DesignChart))
-        .padding
-        .resolve(TextDirection.ltr);
+    final normal = room();
     await _show(tester, chart);
-    final large = tester
-        .widget<DesignChart>(find.byType(DesignChart))
-        .padding
-        .resolve(TextDirection.ltr);
-    expect(large.left, greaterThan(normal.left));
-    expect(large.bottom, greaterThan(normal.bottom));
+    final large = room();
+    expect(large.$1, greaterThan(normal.$1));
+    expect(large.$2, greaterThan(normal.$2));
   });
 }

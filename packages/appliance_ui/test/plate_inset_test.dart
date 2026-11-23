@@ -218,7 +218,11 @@ void main() {
           await _stage(
             t,
             width,
-            ApplianceRadio(value: 1, groupValue: 1, onChanged: (_) {}),
+            RadioGroup<int>(
+              groupValue: 1,
+              onChanged: (_) {},
+              child: const ApplianceRadio<int>(value: 1),
+            ),
             keys.copyWith(
               keyDownTop: _outer,
               keyDownBottom: _outer,

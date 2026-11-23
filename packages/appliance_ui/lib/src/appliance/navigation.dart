@@ -1136,11 +1136,15 @@ class ApplianceScaffold extends StatelessWidget {
               child: page,
             ),
           ),
-          ApplianceNavigationBar(
-            destinations: destinations,
-            selectedIndex: selectedIndex,
-            onSelected: onSelected,
-            trailing: act == null ? null : _ActKey(action: act),
+          // Toasts stand above the strip, and drop to the screen's foot
+          // while a page covers it.
+          RawToasterKeepClear(
+            child: ApplianceNavigationBar(
+              destinations: destinations,
+              selectedIndex: selectedIndex,
+              onSelected: onSelected,
+              trailing: act == null ? null : _ActKey(action: act),
+            ),
           ),
         ],
       );

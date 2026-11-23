@@ -27,7 +27,7 @@ void main() {
                 child: Directionality(
                   textDirection: direction,
                   child: ApplianceTheme(
-                    data: ApplianceThemeData.of(brightness),
+                    data: ApplianceThemeData.from(brightness: brightness),
                     child: app!,
                   ),
                 ),

@@ -138,7 +138,11 @@ void main() {
   final parts = <String, Widget>{
     'key': ApplianceButton('Save', onPressed: () {}),
     'signal key': ApplianceButton.filled('Add entry', onPressed: () {}),
-    'radio': ApplianceRadio<int>(value: 1, groupValue: 1, onChanged: (_) {}),
+    'radio': RadioGroup<int>(
+      groupValue: 1,
+      onChanged: (_) {},
+      child: const ApplianceRadio<int>(value: 1),
+    ),
     'checkbox': ApplianceCheckbox(value: false, onChanged: (_) {}),
     'switch, on': ApplianceSwitch(value: true, onChanged: (_) {}),
     'chip': ApplianceChip('Planning', selected: true, onSelected: (_) {}),
@@ -157,7 +161,7 @@ void main() {
     'field': const SizedBox(width: 300, child: ApplianceTextField()),
     'stepper': ApplianceStepper(value: 45, min: 5, max: 480, onChanged: (_) {}),
     'time picker': ApplianceTimePicker(
-      value: const ApplianceTime(9, 30),
+      value: const RawTimeOfDay(hour: 9, minute: 30),
       onChanged: (_) {},
     ),
   };
@@ -305,10 +309,10 @@ void main() {
         onChanged: (_) {},
       ),
     ),
-    'chosen radio': ApplianceRadio<int>(
-      value: 1,
+    'chosen radio': RadioGroup<int>(
       groupValue: 1,
       onChanged: (_) {},
+      child: const ApplianceRadio<int>(value: 1),
     ),
     'chosen preset in a group': ApplianceRadioGroup<String>(
       options: const ['standard', 'next'],

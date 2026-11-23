@@ -128,7 +128,7 @@ void main() {
           await _show(
             tester,
             ApplianceTimePicker(
-              value: const ApplianceTime(9, 30),
+              value: const RawTimeOfDay(hour: 9, minute: 30),
               twentyFourHour: twentyFour,
               onChanged: (_) {},
             ),
@@ -207,7 +207,7 @@ void main() {
           SizedBox(
             width: 358,
             child: ApplianceDatePicker(
-              label: 'Due date',
+              labelText: 'Due date',
               value: DateTime(2026, 11, 20),
               firstDate: DateTime(2026),
               lastDate: DateTime(2027),

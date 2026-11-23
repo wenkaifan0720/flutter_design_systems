@@ -106,11 +106,13 @@ void main() {
             label: 'Flutter checkbox',
             child: Checkbox(value: true, onChanged: (_) {}),
           ),
-          ApplianceRadio<String>(
-            value: 'a',
+          RadioGroup<String>(
             groupValue: 'a',
             onChanged: (_) {},
-            semanticLabel: 'Appliance radio',
+            child: const ApplianceRadio<String>(
+              value: 'a',
+              semanticLabel: 'Appliance radio',
+            ),
           ),
           ApplianceCheckbox(
             value: true,
@@ -606,12 +608,14 @@ void main() {
     addTearDown(second.dispose);
     var told = 0;
     first.addListener(() => told++);
-    Widget radio(FocusNode node) => ApplianceRadio<String>(
-      value: 'metric',
+    Widget radio(FocusNode node) => RadioGroup<String>(
       groupValue: 'metric',
-      semanticLabel: 'Metric',
-      focusNode: node,
       onChanged: (_) {},
+      child: ApplianceRadio<String>(
+        value: 'metric',
+        semanticLabel: 'Metric',
+        focusNode: node,
+      ),
     );
 
     await _show(tester, radio(first));
