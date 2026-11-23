@@ -7,9 +7,13 @@
 /// not exported.
 library;
 
+import 'dart:math' as math;
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
+
+import '../tap_target.dart';
 
 /// Whether the platform reads a node's required flag aloud. In Flutter
 /// 3.47 the web does: it writes `aria-required` on the node's element, a
@@ -126,6 +130,7 @@ class DesignFieldWordsEntry extends SingleChildRenderObjectWidget {
         invalid,
         required,
         Directionality.maybeOf(context),
+        DesignTapTargets.of(context).floorOn(),
       );
 
   @override
@@ -139,6 +144,7 @@ class DesignFieldWordsEntry extends SingleChildRenderObjectWidget {
       ..invalid = invalid
       ..required = required
       ..textDirection = Directionality.maybeOf(context)
+      ..floor = DesignTapTargets.of(context).floorOn()
       // What the entry holds may change (a label of its own, a clear key)
       // while the words stay: describe it again.
       ..markNeedsSemanticsUpdate();
@@ -146,16 +152,159 @@ class DesignFieldWordsEntry extends SingleChildRenderObjectWidget {
 }
 
 /// The render object of [DesignFieldWordsEntry].
+///
+/// Its node spans the entry's reach ([reach]), which may be larger than the
+/// entry's box: a short entry beside its tags (a bare text line) is still a
+/// touch target tall, as a lone text field is. A tap in the reach that no
+/// tag takes reaches the entry ([DesignFieldWordsRoom]).
 class RenderDesignFieldWordsEntry extends RenderProxyBox {
   /// The node for a field's name and hint round its child: invalid and
-  /// required as given, its words read in the text direction given.
+  /// required as given, its words read in the text direction given, at
+  /// least [floor] large.
   RenderDesignFieldWordsEntry(
     this._name,
     this._hint,
     this._invalid,
     this._required,
     this._textDirection,
+    this._floor,
   );
+
+  Size _floor;
+
+  /// The least size of the entry's node and of the area a tap on it
+  /// reaches ([DesignTapTargets.floorOn]).
+  Size get floor => _floor;
+  set floor(Size value) {
+    if (value == _floor) return;
+    _floor = value;
+    markNeedsSemanticsUpdate();
+  }
+
+  /// The area the entry's node spans and a tap reaches, in its own units:
+  /// its box, and any larger node a descendant it merges declares (a look's
+  /// own lane round its line), grown to [floor] about its middle; kept
+  /// inside the [DesignFieldWordsRoom] round the tags and the entry, and off
+  /// every tag's box, so a tag keeps its own taps and its own node.
+  Rect get reach {
+    if (!hasSize) return Rect.zero;
+    final own = Offset.zero & size;
+    final declared = _declared(own);
+    // Where nothing round it says how far a tap reaches, the node keeps to
+    // what it is given.
+    final room = _room;
+    if (room == null || !room.hasSize) return declared;
+    final toEntry = _transformFrom(room);
+    if (toEntry == null) return declared;
+    final bounds = MatrixUtils.transformRect(toEntry, Offset.zero & room.size);
+    final tags = <Rect>[
+      for (final tag in room.tags)
+        if (tag.hasSize && tag.attached)
+          if (_transformFrom(tag) case final toTag?)
+            MatrixUtils.transformRect(toTag, Offset.zero & tag.size),
+    ];
+    // Across first: the room's width less the tags on the entry's line.
+    var start = bounds.left;
+    var end = bounds.right;
+    for (final t in tags) {
+      if (t.bottom <= own.top || t.top >= own.bottom) continue;
+      if (t.right <= own.left) start = math.max(start, t.right);
+      if (t.left >= own.right) end = math.min(end, t.left);
+    }
+    final across = _place(own.left, own.right, floor.width, start, end);
+    // Then down: the room's height less the tags above and below that span.
+    var top = bounds.top;
+    var bottom = bounds.bottom;
+    for (final t in tags) {
+      if (t.right <= across.$1 || t.left >= across.$2) continue;
+      if (t.bottom <= own.top) top = math.max(top, t.bottom);
+      if (t.top >= own.bottom) bottom = math.min(bottom, t.top);
+    }
+    final down = _place(own.top, own.bottom, floor.height, top, bottom);
+    return Rect.fromLTRB(
+      across.$1,
+      down.$1,
+      across.$2,
+      down.$2,
+    ).expandToInclude(declared);
+  }
+
+  // A span from [from] to [to] grown to [least] about its middle, slid
+  // inside [min] to [max] (cut to them where it can't fit); never smaller
+  // than the span itself.
+  static (double, double) _place(
+    double from,
+    double to,
+    double least,
+    double min,
+    double max,
+  ) {
+    final length = math.max(to - from, least);
+    var a = (from + to) / 2 - length / 2;
+    var b = a + length;
+    if (a < min) {
+      b = math.min(max, b + (min - a));
+      a = min;
+    }
+    if (b > max) {
+      a = math.max(min, a - (b - max));
+      b = max;
+    }
+    return (math.min(a, from), math.max(b, to));
+  }
+
+  // The transform from [box]'s units to this one's; null where none is.
+  Matrix4? _transformFrom(RenderObject box) {
+    final toBox = getTransformTo(box);
+    return toBox.invert() == 0 ? null : toBox;
+  }
+
+  // The nodes this one merges that declare a larger area than their box (a
+  // look's lane round its line): their union with [own], in its units.
+  Rect _declared(Rect own) {
+    if (_holdsAnotherControl()) return own;
+    var area = own;
+    void visit(RenderObject n) {
+      if (n is RenderExcludeSemantics && n.excluding) return;
+      if (n is RenderBox && n.hasSize) {
+        final bounds = n.semanticBounds;
+        if (bounds != Offset.zero & n.size) {
+          final toEntry = n.getTransformTo(this);
+          area = area.expandToInclude(
+            MatrixUtils.transformRect(toEntry, bounds),
+          );
+        }
+      }
+      n.visitChildrenForSemantics(visit);
+    }
+
+    visitChildrenForSemantics(visit);
+    return area;
+  }
+
+  RenderDesignFieldWordsRoom? get _room {
+    for (var node = parent; node != null; node = node.parent) {
+      if (node is RenderDesignFieldWordsRoom) return node;
+    }
+    return null;
+  }
+
+  Rect? _reported;
+
+  @override
+  Rect get semanticBounds => reach;
+
+  @override
+  void paint(PaintingContext context, Offset offset) {
+    // The tags and the room move without this entry laying out again: its
+    // node follows its reach.
+    final reach = this.reach;
+    if (_reported != reach) {
+      _reported = reach;
+      markNeedsSemanticsUpdate();
+    }
+    super.paint(context, offset);
+  }
 
   String? _name;
   set name(String? value) {
@@ -290,5 +439,90 @@ class RenderDesignFieldWordsEntry extends RenderProxyBox {
           p.onDecrease != null;
     }
     return false;
+  }
+}
+
+/// The tags and the entry of a tag input in a field, as it lays them out:
+/// a tap in the entry's reach ([RenderDesignFieldWordsEntry.reach]) that
+/// nothing under it takes goes to the entry, on its middle row across from
+/// the tap.
+class DesignFieldWordsRoom extends SingleChildRenderObjectWidget {
+  /// The room round [child], the tags and the entry.
+  const DesignFieldWordsRoom({super.key, required super.child});
+
+  @override
+  RenderDesignFieldWordsRoom createRenderObject(BuildContext context) =>
+      RenderDesignFieldWordsRoom();
+}
+
+/// One tag in a [DesignFieldWordsRoom]: the entry's reach stays off it.
+class DesignFieldWordsTag extends SingleChildRenderObjectWidget {
+  /// Marks [child] as a tag.
+  const DesignFieldWordsTag({super.key, required super.child});
+
+  @override
+  RenderProxyBox createRenderObject(BuildContext context) => _RenderTag();
+}
+
+class _RenderTag extends RenderProxyBox {}
+
+/// The render object of [DesignFieldWordsRoom].
+class RenderDesignFieldWordsRoom extends RenderProxyBox {
+  /// The tags under it, in paint order.
+  List<RenderBox> get tags {
+    final found = <RenderBox>[];
+    void visit(RenderObject n) {
+      if (n is RenderDesignFieldWordsRoom) return;
+      if (n is _RenderTag) {
+        found.add(n);
+        return;
+      }
+      n.visitChildren(visit);
+    }
+
+    visitChildren(visit);
+    return found;
+  }
+
+  // The entry under it: the first one not in a room of its own.
+  RenderDesignFieldWordsEntry? _entry() {
+    RenderDesignFieldWordsEntry? found;
+    void visit(RenderObject n) {
+      if (found != null || n is RenderDesignFieldWordsRoom) return;
+      if (n is RenderDesignFieldWordsEntry) {
+        found = n;
+        return;
+      }
+      n.visitChildren(visit);
+    }
+
+    visitChildren(visit);
+    return found;
+  }
+
+  @override
+  bool hitTest(BoxHitTestResult result, {required Offset position}) {
+    if (super.hitTest(result, position: position)) return true;
+    if (!size.contains(position)) return false;
+    final entry = _entry();
+    if (entry == null || !entry.hasSize || !entry.attached) return false;
+    final toRoom = entry.getTransformTo(this);
+    if (!MatrixUtils.transformRect(toRoom, entry.reach).contains(position)) {
+      return false;
+    }
+    final toEntry = Matrix4.copy(toRoom);
+    if (toEntry.invert() == 0) return false;
+    // Onto the entry's middle row, where its text line stands, across from
+    // the tap.
+    final at = MatrixUtils.transformPoint(toEntry, position);
+    final onEntry = Offset(
+      at.dx.clamp(0.0, math.max(0.0, entry.size.width - 0.5)),
+      entry.size.height / 2,
+    );
+    return result.addWithRawTransform(
+      transform: toEntry,
+      position: position,
+      hitTest: (result, _) => entry.hitTest(result, position: onEntry),
+    );
   }
 }

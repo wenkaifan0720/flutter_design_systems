@@ -18,7 +18,7 @@ The package it builds starts from:
 
 ```text
 flutter create --template=package <name>_ui
-flutter pub add ui_core:^0.5.2 material_ui
+flutter pub add ui_core:^0.5.3 material_ui
 flutter pub add 'dev:ui_core_test:^0.3.0' dev:leak_tracker_flutter_testing dev:flutter_lints
 ```
 
@@ -86,7 +86,7 @@ leave it plainer. See [taste.md](references/taste.md).
   README.md  CHANGELOG.md  LICENSE
 ```
 
-Depend on `ui_core: ^0.5.2` and, for the text editing and the localizations a
+Depend on `ui_core: ^0.5.3` and, for the text editing and the localizations a
 look reuses, `material_ui`; dev-depend on `ui_core_test: ^0.3.0`,
 `leak_tracker_flutter_testing` and `flutter_lints`. Turn on `strict-casts`,
 `strict-inference`, `strict-raw-types` and `public_member_api_docs`, and leak

@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/gestures.dart';
-import 'package:flutter/semantics.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -626,6 +626,190 @@ void main() {
     });
   });
 
+  group('in a RawInputDecorator, the entry\'s node and its tap reach a '
+      'touch target', () {
+    const entryKey = ValueKey('entry');
+
+    // A tag input in a field: tags 44 tall, a text line [line] tall, laid
+    // out in a Wrap [pad] in from the field's edges; [floor] the look's
+    // touch target, [lane] the look's own node round the line (as tall as
+    // it, more above and below), if any.
+    Future<void> pumpField(
+      WidgetTester tester,
+      List<String> tags, {
+      double line = 24,
+      double pad = 12,
+      Size? floor,
+      double? lane,
+      List<String>? removed,
+    }) {
+      Widget entryLine(Widget text) => SizedBox(
+        key: entryKey,
+        height: line,
+        child: Align(
+          alignment: AlignmentDirectional.centerStart,
+          widthFactor: 1,
+          child: text,
+        ),
+      );
+      final field = RawInputDecorator(
+        labelText: 'Colours',
+        builder: (context, parts) => Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [?parts.label, parts.control],
+        ),
+        child: RawTagInput<String>(
+          values: tags,
+          options: _colours,
+          onChanged: (values) =>
+              removed?.addAll(tags.where((tag) => !values.contains(tag))),
+          fieldBuilder: (context, field) {
+            final text = plainField(
+              controller: field.controller,
+              focusNode: field.focusNode,
+              width: 120,
+            );
+            return entryLine(
+              lane == null ? text : _LaneNode(reach: lane, child: text),
+            );
+          },
+          layoutBuilder: (context, tags, entry) => Padding(
+            padding: EdgeInsets.symmetric(horizontal: 8, vertical: pad),
+            child: Wrap(
+              spacing: 4,
+              runSpacing: 4,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [...tags, entry],
+            ),
+          ),
+          optionBuilder: (context, option, states) => Text(option),
+          tagBuilder: (context, value, tag) => Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('tag $value'),
+              RawButton(
+                onPressed: tag.onDeleted,
+                semanticLabel: 'Remove $value',
+                excludeSemantics: true,
+                minimumSize: const Size(44, 44),
+                builder: (context, states, _) => const Text('x'),
+              ),
+            ],
+          ),
+        ),
+      );
+      return tester.pumpWidget(
+        _page(
+          SizedBox(
+            width: 360,
+            child: floor == null
+                ? field
+                : DesignTapTargetScope(
+                    targets: DesignTapTargets(touch: floor),
+                    child: field,
+                  ),
+          ),
+        ),
+      );
+    }
+
+    // The entry's node, in global units.
+    Rect node(WidgetTester tester) {
+      final entry = tester.getSemantics(find.byType(EditableText));
+      expect(entry.getSemanticsData().label, 'Colours');
+      return entry.rect.shift(tester.getTopLeft(find.byKey(entryKey)));
+    }
+
+    Rect tagInput(WidgetTester tester) =>
+        tester.getRect(find.byType(RawTagInput<String>));
+
+    Rect tag(WidgetTester tester, String value) => tester.getRect(
+      find.ancestor(of: find.text('tag $value'), matching: find.byType(Row)),
+    );
+
+    testWidgets('a line shorter than the touch target: the node is the '
+        'target, about the line, and a tap in it reaches the field', (
+      tester,
+    ) async {
+      final semantics = tester.ensureSemantics();
+      for (final tags in [
+        const <String>[],
+        const ['Red'],
+      ]) {
+        await pumpField(tester, tags);
+        final line = tester.getRect(find.byKey(entryKey));
+        expect(line.height, 24);
+        final reach = node(tester);
+        expect(reach.size, const Size(120, 44), reason: '${tags.length} tags');
+        expect(reach.center, line.center);
+        expect(tagInput(tester).expandToInclude(reach), tagInput(tester));
+        // Under the line, inside the target: the tap reaches the text.
+        final hits = tester.hitTestOnBinding(
+          line.bottomCenter + const Offset(0, 8),
+        );
+        expect(
+          hits.path.any((entry) => entry.target is RenderEditable),
+          isTrue,
+          reason: '${tags.length} tags',
+        );
+      }
+      semantics.dispose();
+    });
+
+    testWidgets("a look's own larger target: a 44 line in a 48 floor is 48", (
+      tester,
+    ) async {
+      final semantics = tester.ensureSemantics();
+      await pumpField(
+        tester,
+        const ['Red'],
+        line: 44,
+        pad: 2,
+        floor: const Size.square(48),
+      );
+      final reach = node(tester);
+      expect(reach.height, 48);
+      expect(reach.center, tester.getRect(find.byKey(entryKey)).center);
+      semantics.dispose();
+    });
+
+    testWidgets("a look's own lane round the line is kept, larger than the "
+        'floor', (tester) async {
+      final semantics = tester.ensureSemantics();
+      await pumpField(tester, const ['Red'], lane: 64, pad: 20);
+      final line = tester.getRect(find.byKey(entryKey));
+      final reach = node(tester);
+      expect(reach.height, 64);
+      expect(reach.center.dy, line.center.dy);
+      semantics.dispose();
+    });
+
+    testWidgets('the tags keep their own taps and nodes: the target stops '
+        'at them, inside the field', (tester) async {
+      final semantics = tester.ensureSemantics();
+      final removed = <String>[];
+      // A narrow field: the tags fill the first row, the line the second,
+      // with little room under it.
+      await pumpField(
+        tester,
+        const ['Red', 'Green', 'Blue'],
+        pad: 4,
+        removed: removed,
+      );
+      final reach = node(tester);
+      for (final value in const ['Red', 'Green', 'Blue']) {
+        expect(reach.overlaps(tag(tester, value)), isFalse, reason: value);
+      }
+      expect(tagInput(tester).expandToInclude(reach), tagInput(tester));
+      expect(reach.height, greaterThan(24));
+      await tester.tap(find.bySemanticsLabel('Remove Blue'));
+      await tester.pump();
+      expect(removed, ['Blue']);
+      semantics.dispose();
+    });
+  });
+
   testWidgets('the field\'s node is its frame, not the words or tags beside '
       'it', (tester) async {
     final semantics = tester.ensureSemantics();
@@ -771,4 +955,34 @@ void main() {
     },
     variant: TargetPlatformVariant.only(TargetPlatform.android),
   );
+}
+
+// A look's own node round its text line (Frosted's lane): as wide as the
+// line, [reach] tall about its middle.
+class _LaneNode extends SingleChildRenderObjectWidget {
+  const _LaneNode({required this.reach, required super.child});
+
+  final double reach;
+
+  @override
+  RenderObject createRenderObject(BuildContext context) =>
+      _RenderLaneNode(reach);
+}
+
+class _RenderLaneNode extends RenderProxyBox {
+  _RenderLaneNode(this.reach);
+
+  final double reach;
+
+  @override
+  Rect get semanticBounds {
+    final grow = (reach - size.height) / 2;
+    return Rect.fromLTRB(0, -grow, size.width, size.height + grow);
+  }
+
+  @override
+  void describeSemanticsConfiguration(SemanticsConfiguration config) {
+    super.describeSemanticsConfiguration(config);
+    config.isSemanticBoundary = true;
+  }
 }

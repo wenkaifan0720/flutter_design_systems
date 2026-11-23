@@ -439,6 +439,54 @@ void main() {
     expect(await top(0.5), closeTo(roboto - (_roboto - 0.5) * 16 / 2, 1e-9));
   });
 
+  testWidgets('a label that lays out again in a box of fixed size, without '
+      'the cap center, moves as a fresh one does: its text, its size, its '
+      'scale', (tester) async {
+    Widget label(String text, double size, double scale) => Directionality(
+      textDirection: TextDirection.ltr,
+      child: MediaQuery(
+        data: MediaQueryData(textScaler: TextScaler.linear(scale)),
+        child: Center(
+          child: DesignCapCenter(
+            capHeightFactor: _roboto,
+            // A box of fixed size: the label lays out in it alone.
+            child: SizedBox(
+              width: 240,
+              height: 64,
+              child: Center(child: Text(text, style: _style(size, size * 1.5))),
+            ),
+          ),
+        ),
+      ),
+    );
+    double shift() {
+      final cap = tester.renderObject<RenderDesignCapCenter>(
+        find.byType(DesignCapCenter),
+      );
+      final m = Matrix4.identity();
+      cap.applyPaintTransform(cap.child!, m);
+      return m.getTranslation().y;
+    }
+
+    final shifts = <double>{};
+    await tester.pumpWidget(label('Save', 16, 1));
+    for (final (text, size, scale) in const [
+      ('Gave', 16.0, 1.0),
+      ('Gave', 21.0, 1.0),
+      ('Gave', 21.0, 1.3),
+      ('Save', 15.0, 1.0),
+    ]) {
+      await tester.pumpWidget(label(text, size, scale));
+      final kept = shift();
+      // The cap center laid out again (a new one): measured afresh.
+      await tester.pumpWidget(const SizedBox());
+      await tester.pumpWidget(label(text, size, scale));
+      expect(kept, shift(), reason: '$text $size $scale');
+      shifts.add(kept);
+    }
+    expect(shifts.length, greaterThan(1));
+  });
+
   testWidgets('a tap lands where the label is drawn', (tester) async {
     var taps = 0;
     await tester.pumpWidget(

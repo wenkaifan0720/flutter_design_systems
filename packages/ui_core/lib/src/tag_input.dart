@@ -72,7 +72,11 @@ typedef RawTagLayoutBuilder = Widget Function(
 /// own node, with its name and its remove action. An entry that is a field
 /// of its own (built on a [RawInputDecorator]) and holds another control
 /// beside its text (a clear key) is not merged: the words are read on the
-/// entry's node, round the text field's node and the control's.
+/// entry's node, round the text field's node and the control's. The entry's
+/// node, and the area a tap on it reaches, is at least a touch target
+/// (`DesignTapTargets.floorOn`) about the entry's middle, inside the tag
+/// input and off the tags: a look's entry may be a text line as short as
+/// its tags' labels.
 ///
 /// ```dart
 /// RawTagInput<String>(values: const ['red'], onChanged: (values) {}, onCreate: (text) => text, fieldBuilder: (context, field) => EditableText(controller: field.controller, focusNode: field.focusNode, style: const TextStyle(), cursorColor: const Color(0xFF000000), backgroundCursorColor: const Color(0xFF808080), onEditingComplete: field.submit), optionBuilder: (context, option, states) => Text(option), tagBuilder: (context, value, tag) => Text(value))
@@ -538,23 +542,26 @@ class _DesignTagInputState<T extends Object> extends State<RawTagInput<T>> {
             : (_focusedTag == index ? null : _focusedTag),
       ),
       onKeyEvent: (node, event) => _tagKey(index, event),
-      child: Semantics(
-        container: true,
-        customSemanticsActions: {
-          CustomSemanticsAction(
-            label:
-                widget.deleteLabel ??
-                RawWidgetsLocalizations.of(context).tagInputDeleteLabel,
-          ): () =>
-              _remove(index),
-        },
-        child: widget.tagBuilder(
-          context,
-          value,
-          RawTagDetails(
-            focused: _focusedTag == index,
-            onDeleted: () => _remove(index),
-            index: index,
+      // The entry's reach stays off each tag.
+      child: DesignFieldWordsTag(
+        child: Semantics(
+          container: true,
+          customSemanticsActions: {
+            CustomSemanticsAction(
+              label:
+                  widget.deleteLabel ??
+                  RawWidgetsLocalizations.of(context).tagInputDeleteLabel,
+            ): () =>
+                _remove(index),
+          },
+          child: widget.tagBuilder(
+            context,
+            value,
+            RawTagDetails(
+              focused: _focusedTag == index,
+              onDeleted: () => _remove(index),
+              index: index,
+            ),
           ),
         ),
       ),
@@ -675,18 +682,21 @@ class _DesignTagInputState<T extends Object> extends State<RawTagInput<T>> {
         final tags = [
           for (var i = 0; i < widget.values.length; i++) _tag(context, i),
         ];
+        final laid =
+            widget.layoutBuilder?.call(context, tags, entry) ??
+            Wrap(
+              spacing: 4,
+              runSpacing: 4,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [...tags, entry],
+            );
         // Explicit child nodes, as RawCombobox's: the OverlayPortal's
         // annotation would otherwise stretch the field's node over the tags.
+        // In a field, the room round the tags and the entry lets the entry
+        // reach a touch target's size where no tag stands.
         return Semantics(
           explicitChildNodes: true,
-          child:
-              widget.layoutBuilder?.call(context, tags, entry) ??
-              Wrap(
-                spacing: 4,
-                runSpacing: 4,
-                crossAxisAlignment: WrapCrossAlignment.center,
-                children: [...tags, entry],
-              ),
+          child: words == null ? laid : DesignFieldWordsRoom(child: laid),
         );
       },
       optionsViewBuilder: (context, onSelected, options) => DesignListSide(

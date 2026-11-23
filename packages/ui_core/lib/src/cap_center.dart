@@ -104,8 +104,12 @@ class DesignCapCenter extends SingleChildRenderObjectWidget {
 ///
 /// The move is worked out where it is used (paint, hit testing, transforms),
 /// after any layout of the label below it: a label whose text changes inside
-/// a box of fixed size lays out again without this one.
-class RenderDesignCapCenter extends RenderProxyBox {
+/// a box of fixed size lays out again without this one. The label's baseline
+/// is measured once for each layout of its line and kept between those uses;
+/// this box lays out again when the system's fonts change, as the label
+/// does.
+class RenderDesignCapCenter extends RenderProxyBox
+    with RelayoutWhenSystemFontsChangeMixin {
   /// Draws its child's label with its capitals on its middle, at
   /// [capHeightFactor] of its font size.
   RenderDesignCapCenter(this._capHeightFactor);
@@ -118,6 +122,7 @@ class RenderDesignCapCenter extends RenderProxyBox {
   set capHeightFactor(double value) {
     if (value == _capHeightFactor) return;
     _capHeightFactor = value;
+    _forget();
     markNeedsPaint();
     markNeedsSemanticsUpdate();
   }
@@ -128,6 +133,81 @@ class RenderDesignCapCenter extends RenderProxyBox {
     properties.add(DoubleProperty('capHeightFactor', capHeightFactor));
   }
 
+  // The label's capitals as last measured, and what its line laid its words
+  // out from then: kept between paints, hit tests and transforms while the
+  // line lays out the same (a fresh measure lays the words out again each
+  // time). A label whose text, style or box changes lays out again, maybe
+  // without this box: it is measured afresh. This box lays out again when
+  // the system's fonts change (a web font arriving), as the label does, and
+  // forgets them.
+  RenderBox? _line;
+  InlineSpan? _text;
+  Object? _layout;
+  ({double top, double baseline})? _caps;
+
+  ({double top, double baseline})? _capsOf(RenderBox line) {
+    final text = switch (line) {
+      RenderParagraph(:final text) => text,
+      RenderEditable(:final text) => text,
+      _ => null,
+    };
+    final layout = _layoutOf(line);
+    if (identical(line, _line) && identical(text, _text) && layout == _layout) {
+      return _caps;
+    }
+    _line = line;
+    _text = text;
+    _layout = layout;
+    return _caps = drawnCaps(line, capHeightFactor);
+  }
+
+  void _forget() {
+    _line = null;
+    _text = null;
+    _layout = null;
+    _caps = null;
+  }
+
+  // What a line's baseline is measured from besides its text (`laidBaseline`
+  // lays its words out from these), its constraints and the size it took.
+  static Object _layoutOf(RenderBox line) => switch (line) {
+    final RenderParagraph p => (
+      p.textAlign,
+      p.textDirection,
+      p.textScaler,
+      p.maxLines,
+      p.overflow,
+      p.softWrap,
+      p.locale,
+      p.strutStyle,
+      p.textWidthBasis,
+      p.textHeightBehavior,
+      p.childCount,
+      p.constraints,
+      p.size,
+    ),
+    final RenderEditable e => (
+      e.textAlign,
+      e.textDirection,
+      e.textScaler,
+      e.maxLines,
+      e.locale,
+      e.strutStyle,
+      e.textWidthBasis,
+      e.textHeightBehavior,
+      e.cursorWidth,
+      e.constraints,
+      e.size,
+    ),
+    _ => (line.constraints, line.size),
+  };
+
+  @override
+  void performLayout() {
+    _forget();
+    super.performLayout();
+  }
+
   // How far down to draw the child: the box's middle less the middle of the
   // label's capitals as the engine will draw them, in this box's units.
   double get _shift {
@@ -135,7 +215,7 @@ class RenderDesignCapCenter extends RenderProxyBox {
     if (child == null || !child.hasSize || !hasSize) return 0;
     final p = labelLine(child);
     if (p == null || !isOneLine(p)) return 0;
-    final caps = drawnCaps(p, capHeightFactor);
+    final caps = _capsOf(p);
     if (caps == null) return 0;
     // The child is at this box's top left.
     final toChild = p.getTransformTo(child);

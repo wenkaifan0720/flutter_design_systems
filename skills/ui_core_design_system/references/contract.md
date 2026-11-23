@@ -2,7 +2,7 @@
 
 ui_core gives a look every behaviour a part needs and no paint. A look
 wraps each part's ui_core widget, reads the states it reports, and draws the
-look's face for them. This page lists what ui_core 0.5.2 carries, how to
+look's face for them. This page lists what ui_core 0.5.3 carries, how to
 wire each kind of part, and the three shims a look puts in place until
 Flutter's own fixes reach its minimum version.
 
@@ -288,6 +288,12 @@ everything round it.
   joins; a screen reader loses its place, and on the web the browser's
   input is replaced, losing the keys typed meanwhile.
   `DesignFieldNodesCheck` catches it.
+- **A tag input's entry is a line, not a lane.** In a `RawInputDecorator`,
+  `RawTagInput` reads the field's words on its text entry, on one node
+  beside the tags' own, and stands that node and the area a tap on it
+  reaches at least a touch target about the entry's middle, inside the tag
+  input and off the tags. Lay the entry out at its text's height: it needs
+  no box of the floor's height round it for its node.
 
 ```dart
 if (Material.maybeOf(context) == null) {
