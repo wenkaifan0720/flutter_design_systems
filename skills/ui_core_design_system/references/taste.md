@@ -20,7 +20,11 @@ Material.
 
 *Check:* for any part, you can name the law it follows. A Material control
 in the look's colours is the failure: a slider's thumb, a checkbox's tick and
-a dialog's frame are where taste shows.
+a dialog's frame are where taste shows. Then search `lib` for each colour a
+law gives a meaning to (an accent kept for danger, for the main action, for
+choice) and read every use: each one carries that meaning and no other. A
+calendar's today, a badge's count and a chart's series are where a second
+meaning creeps in.
 
 **Name the language.** Either follow an established language faithfully
 (say which, and keep its proportions, idioms and behaviour), or make one of
@@ -77,7 +81,11 @@ classic desktop's dotted rectangle).
 indicator (a 2 px outline on fields). A look that follows a language whose
 spec ring is heavier keeps that ring: Material 3 Expressive's 3 dp ring with
 a 2 dp offset. Never stack a halo on a ring, or a ring on a part that already
-changes its edge for focus (a field's rule or underline).
+changes its edge for focus (a field's rule or underline). Weigh a thickened
+rule as Material weighs its field: the rule grows by 1 px, to 2 px. A look
+whose rule is already 2 px or heavier grows it by no more than 1 px and
+shows the rest of the change in ink or a line cut inside, not in more weight.
+Measure the focused edge in the focus shot at 1x.
 
 **Focus is visible and findable.** Keyboard focus must be visible (WCAG
 2.4.7) and findable at a glance in the look's material. Judge it side by side
@@ -147,7 +155,9 @@ centre their children; never bottom-align a row of controls.
 stepper or a segmented control keeps its content's width; a select and a
 combobox keep the width of their label and widest option, so neither jumps
 as the choice changes. A text field fills what it is given, and a form sets
-one width for all its fields.
+one width for all its fields. A chart keeps the bar and gap widths of its
+own grid and a width capped like a card's; a wider column leaves room
+beside it, never fatter bars or longer lines.
 
 **Chosen fills cover the whole cell.** A chosen day, segment, tab or row
 fills its cell edge to edge; nested shapes are concentric with their

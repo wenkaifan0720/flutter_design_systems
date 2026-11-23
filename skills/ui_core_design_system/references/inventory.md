@@ -33,6 +33,10 @@ ui_core release. Read `DesignInventoryRow.all` from the version you depend on;
 - **Every size and reader**: 390, 768, 1024 and 1440 wide; right to left;
   twice the text size; Reduce Motion.
 - **Its specimen**: a gallery tile and an inventory entry, and a widget test.
+  A specimen sits as an app would place the part: a field, a date field or a
+  drop zone in the width a form gives it (one width for every field), a
+  chart or a card in a card's width. A 1440-wide gallery that draws a field
+  1400 px wide shows a fault no app would ship.
 
 Absent rows need a designer's reason, written for the person choosing the
 look: "Material vocabulary; the page's main action sits in its top bar" is a

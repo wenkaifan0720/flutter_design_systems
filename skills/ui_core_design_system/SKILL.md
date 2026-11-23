@@ -351,6 +351,7 @@ const DesignInventoryEntry.absent(
 - **Drawing a ring for focus because it is easy.** Focus speaks the look's
   material: a rule that thickens, a shadow that deepens, a lamp that lights.
   A part that already changes its edge gets nothing more. No halo on a ring.
+  A thickened rule grows by 1 px at most, as Material's field rule does.
 - **A hover wash on every part.** Outside Material-like looks, hover is the
   cursor and, at most, a quiet change the material allows.
 - **Faces at different heights in one row.** One control height per density;
