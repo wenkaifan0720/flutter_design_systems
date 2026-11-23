@@ -111,7 +111,7 @@ final stateParts = <StatePart>[
       child: FrostedToggleGroup<String>(
         segments: const [..._segments, FrostedButtonSegment('m', 'Month')],
         selected: const {'d'},
-        onChanged: on ? _drop : null,
+        onSelectionChanged: on ? _drop : null,
       ),
     ),
   ),
@@ -163,13 +163,13 @@ final stateParts = <StatePart>[
   _p(
     'Radio group',
     (on, wrong) => FrostedRadioGroup<String>(
-      label: 'Plan',
+      labelText: 'Plan',
       value: 'a',
       options: [
         FrostedRadio('a', 'Monthly', enabled: on),
         FrostedRadio('b', 'Yearly', enabled: on),
       ],
-      error: wrong ? 'Pick a plan' : null,
+      errorText: wrong ? 'Pick a plan' : null,
       onChanged: _drop,
     ),
     error: true,
@@ -276,10 +276,10 @@ final stateParts = <StatePart>[
     (on, wrong) => SizedBox(
       width: 280,
       child: FrostedTextField(
-        label: 'Name',
+        labelText: 'Name',
         value: 'Maya',
         enabled: on,
-        error: wrong ? 'Enter your name' : null,
+        errorText: wrong ? 'Enter your name' : null,
       ),
     ),
     press: false,
@@ -291,10 +291,10 @@ final stateParts = <StatePart>[
     (on, wrong) => SizedBox(
       width: 280,
       child: FrostedTextArea(
-        label: 'Notes',
+        labelText: 'Notes',
         value: 'Maya',
         enabled: on,
-        error: wrong ? 'Too long' : null,
+        errorText: wrong ? 'Too long' : null,
       ),
     ),
     press: false,
@@ -306,10 +306,10 @@ final stateParts = <StatePart>[
     (on, wrong) => SizedBox(
       width: 280,
       child: FrostedPasswordField(
-        label: 'Password',
+        labelText: 'Password',
         value: 'secret',
         enabled: on,
-        error: wrong ? 'Too short' : null,
+        errorText: wrong ? 'Too short' : null,
       ),
     ),
     press: false,
@@ -321,11 +321,11 @@ final stateParts = <StatePart>[
     (on, wrong) => SizedBox(
       width: 280,
       child: FrostedInputGroup(
-        label: 'Website',
+        labelText: 'Website',
         prefix: const Text('https://'),
         value: 'maya',
         enabled: on,
-        error: wrong ? 'Not a site' : null,
+        errorText: wrong ? 'Not a site' : null,
       ),
     ),
     press: false,
@@ -338,9 +338,9 @@ final stateParts = <StatePart>[
       width: 320,
       child: FrostedInputOtp(
         length: 4,
-        label: 'Code',
+        labelText: 'Code',
         enabled: on,
-        error: wrong ? 'That code has expired' : null,
+        errorText: wrong ? 'That code has expired' : null,
       ),
     ),
     press: false,
@@ -352,10 +352,10 @@ final stateParts = <StatePart>[
     (on, wrong) => SizedBox(
       width: 280,
       child: FrostedSelect<String>(
-        label: 'Size',
+        labelText: 'Size',
         value: 'm',
         options: _sizes,
-        error: wrong ? 'Pick a size' : null,
+        errorText: wrong ? 'Pick a size' : null,
         onChanged: on ? _drop : null,
       ),
     ),
@@ -367,7 +367,7 @@ final stateParts = <StatePart>[
     'Number field',
     (on, _) => FrostedNumberField(
       value: 2,
-      label: 'Guests',
+      labelText: 'Guests',
       onChanged: on ? _drop : null,
     ),
     press: false,
@@ -378,8 +378,8 @@ final stateParts = <StatePart>[
     (on, wrong) => SizedBox(
       width: 320,
       child: FrostedFileUpload(
-        label: 'Attachments',
-        error: wrong ? 'Too large' : null,
+        labelText: 'Attachments',
+        errorText: wrong ? 'Too large' : null,
         onPressed: on ? _noop : null,
       ),
     ),
@@ -388,8 +388,8 @@ final stateParts = <StatePart>[
   _p(
     'Form field',
     (on, wrong) => FrostedFormField(
-      label: 'Notify me',
-      error: wrong ? 'Pick one' : null,
+      labelText: 'Notify me',
+      errorText: wrong ? 'Pick one' : null,
       enabled: on,
       child: FrostedChip('Email', onPressed: _noop, isEnabled: on),
     ),
@@ -436,8 +436,10 @@ final stateParts = <StatePart>[
   ),
   _p(
     'Search field',
-    (on, _) =>
-        const SizedBox(width: 280, child: FrostedSearchField(hint: 'Search')),
+    (on, _) => const SizedBox(
+      width: 280,
+      child: FrostedSearchField(hintText: 'Search'),
+    ),
     press: false,
     disable: false,
     why: 'search is how an app finds what it holds; none turns it off',
@@ -595,7 +597,7 @@ Widget _radios(String kind, String? initial, FocusNode before) {
             width: 320,
             child: kind == 'delivery'
                 ? FrostedRadioGroup<String>(
-                    label: 'Delivery',
+                    labelText: 'Delivery',
                     value: chosen,
                     onChanged: choose,
                     options: const [
@@ -614,7 +616,7 @@ Widget _radios(String kind, String? initial, FocusNode before) {
                       FrostedButtonSegment('D', 'D'),
                     ],
                     selected: {?chosen},
-                    onChanged: (next) => choose(next.single),
+                    onSelectionChanged: (next) => choose(next.single),
                   ),
           ),
           const Focus(child: Text('After')),

@@ -35,7 +35,7 @@ void main() {
     await _pump(
       t,
       FrostedCombobox<String>(
-        label: 'City',
+        labelText: 'City',
         options: const ['Lisbon', 'London', 'Madrid'],
         onSelected: chosen.add,
       ),
@@ -55,7 +55,7 @@ void main() {
     await _pump(
       t,
       const FrostedCombobox<String>(
-        label: 'City',
+        labelText: 'City',
         options: ['Lisbon', 'London', 'Madrid'],
       ),
     );
@@ -69,7 +69,7 @@ void main() {
     final done = <String>[];
     await _pump(
       t,
-      FrostedInputOtp(label: 'Code', length: 4, onCompleted: done.add),
+      FrostedInputOtp(labelText: 'Code', length: 4, onCompleted: done.add),
     );
     await t.enterText(find.byType(EditableText), '4321');
     await t.pump();
@@ -82,7 +82,7 @@ void main() {
   ) async {
     await _pump(
       t,
-      const FrostedPasswordField(label: 'Password', value: 'secret'),
+      const FrostedPasswordField(labelText: 'Password', value: 'secret'),
     );
     bool hidden() =>
         t.widget<EditableText>(find.byType(EditableText)).obscureText;
@@ -99,13 +99,13 @@ void main() {
       t,
       FrostedToggleGroup<String>(
         label: 'Text style',
-        multiple: true,
+        multiSelectionEnabled: true,
         segments: const [
           FrostedButtonSegment('b', 'Bold'),
           FrostedButtonSegment('i', 'Italic'),
         ],
         selected: const {'b'},
-        onChanged: seen.add,
+        onSelectionChanged: seen.add,
       ),
     );
     await t.tap(find.text('Italic'));

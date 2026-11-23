@@ -563,7 +563,7 @@ class FrostedFormRow extends StatelessWidget {
 /// (a goal's Target beside its Date).
 ///
 /// ```dart
-/// FrostedFieldPair(FrostedAmountField(label: 'Target', size: FrostedAmountFieldSize.small, value: target, onChanged: setTarget), FrostedTextField(label: 'Date', hint: 'Month and year', value: date, onChanged: setDate))
+/// FrostedFieldPair(FrostedAmountField(labelText: 'Target', size: FrostedAmountFieldSize.small, value: target, onChanged: setTarget), FrostedTextField(labelText: 'Date', hintText: 'Month and year', value: date, onChanged: setDate))
 /// ```
 class FrostedFieldPair extends StatelessWidget {
   /// Creates a [FrostedFieldPair].

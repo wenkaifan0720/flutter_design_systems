@@ -400,7 +400,7 @@ void main() {
         ],
       ),
       'FrostedRadioGroup': (context) => FrostedRadioGroup<String>(
-        label: 'Plan',
+        labelText: 'Plan',
         value: plan,
         onChanged: setPlan,
         options: const [
@@ -409,7 +409,7 @@ void main() {
         ],
       ),
       'FrostedRadio': (context) => FrostedRadioGroup<String>(
-        label: 'Pay with',
+        labelText: 'Pay with',
         value: 'card',
         options: [
           FrostedRadio(
@@ -422,7 +422,7 @@ void main() {
         ],
       ),
       'FrostedRadioGroup 2': (context) => FrostedRadioGroup<String>(
-        label: 'Delivery',
+        labelText: 'Delivery',
         value: speed,
         onChanged: (v) => setState(() => speed = v),
         options: const [
@@ -464,8 +464,8 @@ void main() {
         size: 16,
       ),
       'FrostedFileUpload': (context) => FrostedFileUpload(
-        label: 'Attachments',
-        hint: 'PDF or images, up to 10 MB',
+        labelText: 'Attachments',
+        hintText: 'PDF or images, up to 10 MB',
         onPressed: pick,
         files: files,
         onRemoved: (f) => setState(() => files.remove(f)),
@@ -491,13 +491,13 @@ void main() {
         onChanged: (c) => setState(() => tint = c),
       ),
       'FrostedCombobox': (context) => FrostedCombobox<String>(
-        label: 'Country',
+        labelText: 'Country',
         options: countries,
         value: country,
         onSelected: (v) => setState(() => country = v),
       ),
       'FrostedMultiSelect': (context) => FrostedMultiSelect<String>(
-        label: 'Tags',
+        labelText: 'Tags',
         options: tags,
         values: chosen,
         onChanged: (v) => setState(() => chosen = v),
@@ -552,7 +552,7 @@ void main() {
         return null;
       },
       'FrostedComposer': (context) => FrostedComposer(
-        hint: 'Message Maren',
+        hintText: 'Message Maren',
         onSend: send,
         onAttach: attach,
       ),
@@ -723,32 +723,34 @@ void main() {
         ),
       ),
       'FrostedPasswordField': (context) => FrostedPasswordField(
-        label: 'Password',
+        labelText: 'Password',
         value: password,
         onChanged: (v) => setState(() => password = v),
       ),
       'FrostedInputGroup': (context) => FrostedInputGroup(
-        label: 'Website',
+        labelText: 'Website',
         prefix: Text('https://'),
         suffix: Text('.com'),
         value: site,
         onChanged: (v) => setState(() => site = v),
       ),
-      'FrostedInputOtp': (context) =>
-          FrostedInputOtp(label: 'Code from your text', onCompleted: verify),
+      'FrostedInputOtp': (context) => FrostedInputOtp(
+        labelText: 'Code from your text',
+        onCompleted: verify,
+      ),
       'FrostedFormField': (context) => FrostedFormField(
-        label: 'Notify me',
-        helper: 'Pick at least one',
+        labelText: 'Notify me',
+        helperText: 'Pick at least one',
         child: Row(children: [chipA, chipB]),
       ),
       'FrostedTextField': (context) => FrostedTextField(
-        label: 'Name',
-        hint: 'What are you saving for?',
+        labelText: 'Name',
+        hintText: 'What are you saving for?',
         value: name,
         onChanged: (v) => setState(() => name = v),
       ),
       'FrostedTextField 2': (context) => FrostedTextField(
-        label: 'Name',
+        labelText: 'Name',
         value: name,
         onChanged: setName,
         style: FrostedStyle(
@@ -760,23 +762,23 @@ void main() {
         ),
       ),
       'FrostedTextArea': (context) => FrostedTextArea(
-        label: 'Notes',
-        hint: 'Anything the team should know',
+        labelText: 'Notes',
+        hintText: 'Anything the team should know',
         value: notes,
         onChanged: (v) => setState(() => notes = v),
       ),
       'FrostedAmountField': (context) => FrostedAmountField(
-        label: 'Amount',
+        labelText: 'Amount',
         value: amount,
         onChanged: (v) => setState(() => amount = v),
       ),
       'FrostedSearchField': (context) => FrostedSearchField(
-        hint: 'Search activity',
+        hintText: 'Search activity',
         value: query,
         onChanged: (v) => setState(() => query = v),
       ),
       'FrostedSearchLink': (context) => FrostedSearchLink(
-        hint: 'Search activity',
+        hintText: 'Search activity',
         onPressed: () => Navigator.of(context).pushNamed('/activity/search'),
       ),
       'FrostedPickerRow': (context) => FrostedPickerRow(
@@ -791,14 +793,14 @@ void main() {
       'FrostedNumberField': (context) => FrostedNumberField(
         value: guests,
         onChanged: (v) => setState(() => guests = v),
-        label: 'Guests',
+        labelText: 'Guests',
         min: 1,
         max: 12,
         step: 1,
         unit: (n) => n == 1 ? 'person' : 'people',
       ),
       'FrostedSelect': (context) => FrostedSelect<String>(
-        label: 'Room',
+        labelText: 'Room',
         options: const [
           FrostedSelectOption('k', 'Kitchen'),
           FrostedSelectOption('s', 'Study'),
@@ -837,14 +839,14 @@ void main() {
       ),
       'FrostedFieldPair': (context) => FrostedFieldPair(
         FrostedAmountField(
-          label: 'Target',
+          labelText: 'Target',
           size: FrostedAmountFieldSize.small,
           value: target,
           onChanged: setTarget,
         ),
         FrostedTextField(
-          label: 'Date',
-          hint: 'Month and year',
+          labelText: 'Date',
+          hintText: 'Month and year',
           value: date,
           onChanged: setDate,
         ),
@@ -1248,7 +1250,7 @@ void main() {
       'FrostedPageDots': (context) {
         final controller = own(PageController());
         return FrostedPageDots(
-          count: 4,
+          pageCount: 4,
           selectedIndex: page,
           label: 'Welcome',
           onChanged: (i) => controller.animateToPage(i, duration: d, curve: c),
@@ -1300,8 +1302,8 @@ void main() {
       },
       'FrostedDatePicker': (context) => FrostedDatePicker(
         value: due,
-        first: DateTime(2026),
-        last: DateTime(2027, 12, 31),
+        firstDate: DateTime(2026),
+        lastDate: DateTime(2027, 12, 31),
         onChanged: (d) => setState(() => due = d),
       ),
       'showFrostedDatePicker': (context) {
@@ -1369,7 +1371,7 @@ void main() {
               title: 'Delete this note?',
               confirmLabel: 'Delete',
               cancelLabel: 'Cancel',
-              destructive: true,
+              isDestructiveAction: true,
               onConfirm: () => Navigator.pop(context, true),
               onCancel: () => Navigator.pop(context, false),
             ),
@@ -1413,7 +1415,7 @@ void main() {
                 FrostedActionSheetAction('Share', onPressed: share),
                 FrostedActionSheetAction(
                   'Delete',
-                  destructive: true,
+                  isDestructiveAction: true,
                   onPressed: delete,
                 ),
               ],
@@ -1885,13 +1887,13 @@ void main() {
       ),
       'FrostedToggleGroup': (context) => FrostedToggleGroup<String>(
         label: 'Text style',
-        multiple: true,
+        multiSelectionEnabled: true,
         segments: const [
           FrostedButtonSegment('b', 'Bold'),
           FrostedButtonSegment('i', 'Italic'),
         ],
         selected: styles,
-        onChanged: (v) => setState(() => styles = v),
+        onSelectionChanged: (v) => setState(() => styles = v),
       ),
       'FrostedSplitButton': (context) => FrostedSplitButton(
         label: 'Save',

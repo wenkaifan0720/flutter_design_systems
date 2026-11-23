@@ -22,7 +22,7 @@ Future<void> _pump(
     MaterialApp(
       debugShowCheckedModeBanner: false,
       builder: (BuildContext context, Widget? page) =>
-          FrostedHost(brightness: Brightness.light, light: theme, child: page!),
+          FrostedHost(brightness: Brightness.light, theme: theme, child: page!),
       home: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20),
         child: Column(
@@ -182,7 +182,7 @@ void main() {
         SizedBox(
           width: 300,
           child: FrostedTextField(
-            label: 'Name',
+            labelText: 'Name',
             value: '',
             onChanged: (_) {},
             style: FrostedStyle(

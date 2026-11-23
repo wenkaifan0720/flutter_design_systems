@@ -416,20 +416,6 @@ class FrostedFocusRing extends StatelessWidget {
         borderRadius: BorderRadius.circular(math.max(0, radius)),
       );
 
-  /// Nothing: focus no longer draws over a face. Wrap the face in a
-  /// [FrostedFocusRing] instead, which clears the frost under it.
-  @Deprecated(
-    'Focus no longer draws over a face; wrap the face in a FrostedFocusRing. '
-    'This will be removed in 0.4.0.',
-  )
-  static List<Widget> layers(
-    BuildContext context, {
-    double radius = 0,
-    OutlinedBorder? shape,
-    EdgeInsetsGeometry insets = EdgeInsets.zero,
-    bool inside = false,
-  }) => const <Widget>[];
-
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);

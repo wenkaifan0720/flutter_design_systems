@@ -172,14 +172,14 @@ class _Phone extends StatelessWidget {
               width: 390,
               height: 844,
               child: FrostedPreview(
-                light: kitTheme(Brightness.light),
-                dark: kitTheme(Brightness.dark),
+                theme: kitTheme(Brightness.light),
+                darkTheme: kitTheme(Brightness.dark),
                 brightness: brightness,
                 presentation: presentation,
                 tabs: presentation == FrostedPresentation.root
                     ? sampleTabs
                     : const [],
-                activeIndex: 1,
+                selectedIndex: 1,
                 child: FrostedAccountScope(account: kitMaren, child: child),
               ),
             ),

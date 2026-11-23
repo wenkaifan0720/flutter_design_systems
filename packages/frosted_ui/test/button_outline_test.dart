@@ -70,8 +70,8 @@ Future<_Read> _shot(WidgetTester tester) async {
 Widget _app(FrostedThemeData t, Widget home) => MaterialApp(
   debugShowCheckedModeBanner: false,
   builder: (context, page) => FrostedHost(
-    light: t,
-    dark: t,
+    theme: t,
+    darkTheme: t,
     brightness: t.isDark ? Brightness.dark : Brightness.light,
     child: RepaintBoundary(key: _stage, child: page!),
   ),
@@ -201,7 +201,7 @@ void main() {
                     message: 'Your cards stop working today.',
                     confirmLabel: 'Close',
                     cancelLabel: 'Keep it',
-                    destructive: true,
+                    isDestructiveAction: true,
                   ),
                 ),
               ),

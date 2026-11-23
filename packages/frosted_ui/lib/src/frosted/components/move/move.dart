@@ -611,32 +611,32 @@ class FrostedStepProgress extends StatelessWidget {
   }
 }
 
-/// Which of a few pages is shown: [count] dots, the selected one a short
+/// Which of a few pages is shown: [pageCount] dots, the selected one a short
 /// capsule in the ink, the rest small rounds of the strong hairline. With
 /// [onChanged] each dot takes a press (in a 44 or 48 target) and the arrow
 /// keys move along them; read aloud as [label] and the page's place. Given
 /// a [position], the capsule moves with the pages as they slide.
 ///
 /// ```dart
-/// FrostedPageDots(count: 4, selectedIndex: page, label: 'Welcome', onChanged: (i) => controller.animateToPage(i, duration: d, curve: c))
+/// FrostedPageDots(pageCount: 4, selectedIndex: page, label: 'Welcome', onChanged: (i) => controller.animateToPage(i, duration: d, curve: c))
 /// ```
 class FrostedPageDots extends StatelessWidget {
-  /// [count] dots, [selectedIndex] (from 0) lit.
+  /// [pageCount] dots, [selectedIndex] (from 0) lit.
   const FrostedPageDots({
-    required this.count,
+    required this.pageCount,
     required this.selectedIndex,
     required this.label,
     this.onChanged,
     this.position,
     super.key,
-  }) : assert(count > 0, 'Page dots stand for at least one page.'),
+  }) : assert(pageCount > 0, 'Page dots stand for at least one page.'),
        assert(
-         selectedIndex >= 0 && selectedIndex < count,
+         selectedIndex >= 0 && selectedIndex < pageCount,
          'The page shown is one of the pages.',
        );
 
   /// How many pages.
-  final int count;
+  final int pageCount;
 
   /// The page shown, from 0.
   final int selectedIndex;
@@ -672,8 +672,11 @@ class FrostedPageDots extends StatelessWidget {
       if (where != null) {
         // How near the pages stand to this dot, 1 on it, 0 a page away (the
         // last and the first are neighbours).
-        final d = (where - i).abs() % count;
-        final near = (1 - (d < count - d ? d : count - d)).clamp(0.0, 1.0);
+        final d = (where - i).abs() % pageCount;
+        final near = (1 - (d < pageCount - d ? d : pageCount - d)).clamp(
+          0.0,
+          1.0,
+        );
         return SizedBox(
           width: 6 + 12 * near,
           height: 6,
@@ -706,12 +709,12 @@ class FrostedPageDots extends StatelessWidget {
     if (live == null) {
       return Semantics(
         label: label,
-        value: words.page(selectedIndex + 1, count),
+        value: words.page(selectedIndex + 1, pageCount),
         excludeSemantics: true,
         child: Row(
           mainAxisSize: MainAxisSize.min,
           spacing: FrostedSpacing.s6,
-          children: [for (var i = 0; i < count; i++) dot(i)],
+          children: [for (var i = 0; i < pageCount; i++) dot(i)],
         ),
       );
     }
@@ -723,10 +726,10 @@ class FrostedPageDots extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          for (var i = 0; i < count; i++)
+          for (var i = 0; i < pageCount; i++)
             FrostedPressable(
               onPressed: () => live(i),
-              label: words.page(i + 1, count),
+              label: words.page(i + 1, pageCount),
               selected: i == selectedIndex,
               radius: 3,
               child: SizedBox(
@@ -744,7 +747,7 @@ class FrostedPageDots extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(IntProperty('count', count))
+      ..add(IntProperty('pageCount', pageCount))
       ..add(IntProperty('selectedIndex', selectedIndex))
       ..add(StringProperty('label', label))
       ..add(ObjectFlagProperty<ValueChanged<int>>.has('onChanged', onChanged))

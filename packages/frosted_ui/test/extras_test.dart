@@ -408,7 +408,7 @@ void main() {
       await _pump(
         t,
         FrostedComposer(
-          hint: 'Message Maren',
+          hintText: 'Message Maren',
           onSend: sent.add,
           onVoice: () {},
           onAttach: () {},
@@ -471,7 +471,7 @@ void main() {
       message: 'Payments stop.',
       confirmLabel: 'Freeze',
       cancelLabel: 'Cancel',
-      destructive: destructive,
+      isDestructiveAction: destructive,
     );
     var answer = ask();
     await t.pumpAndSettle();
@@ -509,7 +509,7 @@ void main() {
           title: 'Freeze this card?',
           confirmLabel: confirm,
           cancelLabel: 'Cancel',
-          destructive: true,
+          isDestructiveAction: true,
           onConfirm: () {},
           onCancel: () {},
         ),
@@ -866,7 +866,7 @@ void main() {
         FrostedButtonSegment('r', 'Right'),
       ],
       selected: const {'l'},
-      onChanged: (_) {},
+      onSelectionChanged: (_) {},
     );
     await _pump(t, SizedBox(width: 350, child: strip));
     // The strip's stack: its wash fills it.

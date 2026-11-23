@@ -164,15 +164,7 @@ class _FrostedArabic extends FrostedLocalizationsEn {
   @override
   String get move => 'نقل';
   @override
-  String get cut => 'قص';
-  @override
-  String get copy => 'نسخ';
-  @override
-  String get paste => 'لصق';
-  @override
   String get selectAll => 'تحديد الكل';
-  @override
-  String get share => 'مشاركة';
   @override
   String get cardPayment => 'دفع بالبطاقة';
   @override

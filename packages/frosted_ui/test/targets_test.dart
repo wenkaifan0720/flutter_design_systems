@@ -66,4 +66,40 @@ void main() {
     expect(rung, 1);
     semantics.dispose();
   });
+  // ui_core reads the field's words on a tag input's entry, on one node
+  // round the entry's box: that box is its lane, a touch target tall, and
+  // the entry names nothing itself, so the field's name is read once.
+  testWidgets("a multi-select's entry beside its tags is one node a touch "
+      'target tall, its field named once', (t) async {
+    final semantics = t.ensureSemantics();
+    t.view.physicalSize = const Size(390, 844);
+    t.view.devicePixelRatio = 1;
+    addTearDown(t.view.reset);
+    await t.pumpWidget(
+      MaterialApp(
+        debugShowCheckedModeBanner: false,
+        builder: (BuildContext context, Widget? page) =>
+            FrostedHost(brightness: Brightness.light, child: page!),
+        home: Align(
+          alignment: Alignment.topCenter,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: FrostedMultiSelect<String>(
+              labelText: 'Tags',
+              options: const ['Design', 'Research', 'Review'],
+              values: const ['Design', 'Review'],
+              onChanged: (_) {},
+            ),
+          ),
+        ),
+      ),
+    );
+    expect(t.takeException(), isNull);
+    final entry = t.getSemantics(find.byType(EditableText));
+    expect(entry.getSemanticsData().label, 'Tags');
+    expect(entry.rect.height, FrostedBreakpoints.touchHitTarget);
+    await expectLater(t, meetsGuideline(androidTapTargetGuideline));
+    await expectLater(t, meetsGuideline(iOSTapTargetGuideline));
+    semantics.dispose();
+  });
 }

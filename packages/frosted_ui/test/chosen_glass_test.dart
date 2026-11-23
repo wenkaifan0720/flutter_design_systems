@@ -24,7 +24,7 @@ final _parts = <String, Widget Function(bool on)>{
   'switch': (on) => FrostedSwitch(value: on, label: 'Share', onChanged: _drop),
   'check': (on) => FrostedCheckbox(value: on, label: 'Walk', onChanged: _drop),
   'radio': (on) => FrostedRadioGroup<String>(
-    label: 'Plan',
+    labelText: 'Plan',
     value: on ? 'free' : null,
     onChanged: _drop,
     options: const [FrostedRadio('free', 'Free'), FrostedRadio('pro', 'Pro')],

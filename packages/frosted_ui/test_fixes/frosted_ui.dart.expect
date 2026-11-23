@@ -1,0 +1,200 @@
+// Each name frosted_ui 0.5.0 renamed, used once; dart fix renames it (frosted_ui.dart.expect).
+import 'package:frosted_ui/frosted_parts.dart';
+
+dynamic d;
+
+void constructors() {
+  FrostedTextField(labelText: d, hintText: d, helperText: d, errorText: d);
+  FrostedTextArea(labelText: d, hintText: d, helperText: d, errorText: d);
+  FrostedPasswordField(labelText: d, hintText: d, helperText: d, errorText: d);
+  FrostedInputGroup(labelText: d, hintText: d, helperText: d, errorText: d);
+  FrostedInputOtp(labelText: d, errorText: d, helperText: d, obscureText: d);
+  FrostedFormField(child: d, labelText: d, helperText: d, errorText: d);
+  FrostedAmountField(labelText: d, hintText: d, helperText: d);
+  FrostedSearchField(hintText: d, labelText: d);
+  FrostedSearchLink(hintText: d, onPressed: d, labelText: d);
+  FrostedNumberField(value: d, onChanged: d, labelText: d);
+  FrostedSelect<Object>(options: d, labelText: d, hintText: d, helperText: d, errorText: d);
+  FrostedCombobox<Object>(
+    labelText: d,
+    displayStringForOption: d,
+    hintText: d,
+    helperText: d,
+    errorText: d,
+  );
+  FrostedMultiSelect<Object>(
+    labelText: d,
+    values: d,
+    onChanged: d,
+    displayStringForOption: d,
+    hintText: d,
+    helperText: d,
+    errorText: d,
+  );
+  FrostedFileUpload(labelText: d, hintText: d, errorText: d);
+  FrostedRadioGroup<Object>(options: d, labelText: d, errorText: d);
+  FrostedBareField(controller: d, focusNode: d, hintText: d, labelText: d);
+  FrostedCommand(commands: d, hintText: d, labelText: d);
+  FrostedCommand.show(d, commands: d, hintText: d);
+  FrostedComposer(hintText: d);
+  FrostedHost(child: d, theme: d, darkTheme: d);
+  FrostedPreview(child: d, theme: d, darkTheme: d, selectedIndex: d);
+  FrostedToggleGroup<Object>(
+    segments: d,
+    selected: d,
+    onSelectionChanged: d,
+    multiSelectionEnabled: d,
+    emptySelectionAllowed: d,
+  );
+  FrostedDatePicker(firstDate: d, lastDate: d);
+  FrostedPageDots(pageCount: d, selectedIndex: d, label: d);
+  FrostedMenuItem<Object>(d, d, isDestructiveAction: d);
+  FrostedActionSheetAction<Object>(d, isDestructiveAction: d);
+  FrostedPanelRow(label: d, states: d, isDestructiveAction: d);
+  FrostedDialog(title: d, isDestructiveAction: d);
+  FrostedDialog.show(d, title: d, isDestructiveAction: d);
+}
+
+void fields(
+  FrostedTextField a0,
+  FrostedTextField a1,
+  FrostedTextField a2,
+  FrostedTextField a3,
+  FrostedTextArea a4,
+  FrostedTextArea a5,
+  FrostedTextArea a6,
+  FrostedTextArea a7,
+  FrostedPasswordField a8,
+  FrostedPasswordField a9,
+  FrostedPasswordField a10,
+  FrostedPasswordField a11,
+  FrostedInputGroup a12,
+  FrostedInputGroup a13,
+  FrostedInputGroup a14,
+  FrostedInputGroup a15,
+  FrostedInputOtp a16,
+  FrostedInputOtp a17,
+  FrostedInputOtp a18,
+  FrostedInputOtp a19,
+  FrostedFormField a20,
+  FrostedFormField a21,
+  FrostedFormField a22,
+  FrostedAmountField a23,
+  FrostedAmountField a24,
+  FrostedAmountField a25,
+  FrostedSearchField a26,
+  FrostedSearchField a27,
+  FrostedSearchLink a28,
+  FrostedSearchLink a29,
+  FrostedNumberField a30,
+  FrostedSelect<Object> a31,
+  FrostedSelect<Object> a32,
+  FrostedSelect<Object> a33,
+  FrostedSelect<Object> a34,
+  FrostedCombobox<Object> a35,
+  FrostedCombobox<Object> a36,
+  FrostedCombobox<Object> a37,
+  FrostedCombobox<Object> a38,
+  FrostedCombobox<Object> a39,
+  FrostedMultiSelect<Object> a40,
+  FrostedMultiSelect<Object> a41,
+  FrostedMultiSelect<Object> a42,
+  FrostedMultiSelect<Object> a43,
+  FrostedMultiSelect<Object> a44,
+  FrostedFileUpload a45,
+  FrostedFileUpload a46,
+  FrostedFileUpload a47,
+  FrostedRadioGroup<Object> a48,
+  FrostedRadioGroup<Object> a49,
+  FrostedBareField a50,
+  FrostedBareField a51,
+  FrostedCommand a52,
+  FrostedCommand a53,
+  FrostedComposer a54,
+  FrostedHost a55,
+  FrostedHost a56,
+  FrostedPreview a57,
+  FrostedPreview a58,
+  FrostedPreview a59,
+  FrostedToggleGroup<Object> a60,
+  FrostedToggleGroup<Object> a61,
+  FrostedToggleGroup<Object> a62,
+  FrostedDatePicker a63,
+  FrostedDatePicker a64,
+  FrostedPageDots a65,
+  FrostedMenuItem<Object> a66,
+  FrostedActionSheetAction<Object> a67,
+  FrostedPanelRow a68,
+  FrostedDialog a69,
+) {
+  a0.labelText;
+  a1.hintText;
+  a2.helperText;
+  a3.errorText;
+  a4.labelText;
+  a5.hintText;
+  a6.helperText;
+  a7.errorText;
+  a8.labelText;
+  a9.hintText;
+  a10.helperText;
+  a11.errorText;
+  a12.labelText;
+  a13.hintText;
+  a14.helperText;
+  a15.errorText;
+  a16.labelText;
+  a17.helperText;
+  a18.errorText;
+  a19.obscureText;
+  a20.labelText;
+  a21.helperText;
+  a22.errorText;
+  a23.labelText;
+  a24.hintText;
+  a25.helperText;
+  a26.labelText;
+  a27.hintText;
+  a28.labelText;
+  a29.hintText;
+  a30.labelText;
+  a31.labelText;
+  a32.hintText;
+  a33.helperText;
+  a34.errorText;
+  a35.labelText;
+  a36.hintText;
+  a37.helperText;
+  a38.errorText;
+  a39.displayStringForOption;
+  a40.labelText;
+  a41.hintText;
+  a42.helperText;
+  a43.errorText;
+  a44.displayStringForOption;
+  a45.labelText;
+  a46.hintText;
+  a47.errorText;
+  a48.labelText;
+  a49.errorText;
+  a50.labelText;
+  a51.hintText;
+  a52.labelText;
+  a53.hintText;
+  a54.hintText;
+  a55.theme;
+  a56.darkTheme;
+  a57.theme;
+  a58.darkTheme;
+  a59.selectedIndex;
+  a60.multiSelectionEnabled;
+  a61.emptySelectionAllowed;
+  a62.onSelectionChanged;
+  a63.firstDate;
+  a64.lastDate;
+  a65.pageCount;
+  a66.isDestructiveAction;
+  a67.isDestructiveAction;
+  a68.isDestructiveAction;
+  a69.isDestructiveAction;
+}

@@ -90,7 +90,7 @@ void main() {
       children: [
         FrostedChip('Design', selected: true, onPressed: () {}),
         FrostedMultiSelect<String>(
-          label: 'Tags',
+          labelText: 'Tags',
           values: const ['Review'],
           onChanged: (_) {},
         ),
@@ -179,7 +179,7 @@ void main() {
         title: 'Delete Lisbon in May?',
         confirmLabel: 'Delete',
         cancelLabel: 'Keep',
-        destructive: true,
+        isDestructiveAction: true,
         onConfirm: () {},
         onCancel: () {},
       ),
@@ -206,7 +206,7 @@ void main() {
           FrostedButtonSegment('r', 'Right'),
         ],
         selected: const {'l'},
-        onChanged: (_) {},
+        onSelectionChanged: (_) {},
       ),
       scale: 2,
     );

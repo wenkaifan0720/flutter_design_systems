@@ -73,31 +73,31 @@ Widget kitComboboxDemo(Brightness brightness) => kitScreen(
         KitHeld<String?>(
           'Lisbon',
           (city, set) => FrostedCombobox<String>(
-            label: 'City',
+            labelText: 'City',
             options: _cities,
             value: city,
             onSelected: set,
-            hint: 'Search cities',
+            hintText: 'Search cities',
           ),
         ),
         const FrostedCombobox<String>(
-          label: 'City',
+          labelText: 'City',
           options: _cities,
           requireSelection: true,
-          hint: 'Search cities',
-          helper: 'Only a listed city',
+          hintText: 'Search cities',
+          helperText: 'Only a listed city',
         ),
         const FrostedCombobox<String>(
-          label: 'City',
+          labelText: 'City',
           options: _cities,
-          hint: 'Try Atlantis',
-          helper: 'Words no city fits say so in the list',
+          hintText: 'Try Atlantis',
+          helperText: 'Words no city fits say so in the list',
         ),
         const FrostedCombobox<String>(
-          label: 'City',
+          labelText: 'City',
           options: _cities,
-          hint: 'Search cities',
-          error: 'Choose a city',
+          hintText: 'Search cities',
+          errorText: 'Choose a city',
         ),
       ],
     ),
@@ -107,23 +107,23 @@ Widget kitComboboxDemo(Brightness brightness) => kitScreen(
         KitHeld<List<String>>(
           const ['Design', 'Review'],
           (chosen, set) => FrostedMultiSelect<String>(
-            label: 'Tags',
+            labelText: 'Tags',
             options: _tags,
             values: chosen,
             onChanged: set,
             onCreate: (text) => text.trim().isEmpty ? null : text.trim(),
-            hint: 'Add a tag',
+            hintText: 'Add a tag',
           ),
         ),
         KitHeld<List<String>>(
           const ['Jonah Reyes'],
           (chosen, set) => FrostedMultiSelect<String>(
-            label: 'Reviewers',
+            labelText: 'Reviewers',
             options: _people,
             values: chosen,
             onChanged: set,
             maxTags: 2,
-            helper: 'Up to two',
+            helperText: 'Up to two',
           ),
         ),
       ],
@@ -134,11 +134,11 @@ Widget kitComboboxDemo(Brightness brightness) => kitScreen(
         KitHeld<String?>(
           'Switzerland',
           (country, set) => FrostedCombobox<String>(
-            label: 'Country',
+            labelText: 'Country',
             options: _countries,
             value: country,
             onSelected: set,
-            hint: 'Search countries',
+            hintText: 'Search countries',
           ),
         ),
       ],
@@ -148,7 +148,7 @@ Widget kitComboboxDemo(Brightness brightness) => kitScreen(
 
 /// A country, typed or chosen.
 Widget kitSpecimenCombobox() => FrostedCombobox<String>(
-  label: 'Country',
+  labelText: 'Country',
   options: const ['Portugal', 'Spain', 'France'],
   value: 'Portugal',
   onSelected: (_) {},
@@ -156,7 +156,7 @@ Widget kitSpecimenCombobox() => FrostedCombobox<String>(
 
 /// Two tags chosen of three.
 Widget kitSpecimenMultiSelect() => FrostedMultiSelect<String>(
-  label: 'Tags',
+  labelText: 'Tags',
   options: const ['Travel', 'Food', 'Home'],
   values: const ['Travel', 'Food'],
   onChanged: (_) {},

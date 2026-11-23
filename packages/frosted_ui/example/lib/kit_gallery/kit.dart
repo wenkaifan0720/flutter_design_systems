@@ -144,8 +144,8 @@ Widget _kitApp({required Brightness brightness, required Widget home}) =>
           Directionality(
             textDirection: kitShownDirection,
             child: FrostedHost(
-              light: kitTheme(Brightness.light),
-              dark: kitTheme(Brightness.dark),
+              theme: kitTheme(Brightness.light),
+              darkTheme: kitTheme(Brightness.dark),
               brightness: brightness,
               child: FrostedAccountScope(
                 account: kitMaren,
@@ -205,8 +205,8 @@ Widget kitRouterApp({
       Directionality(
         textDirection: kitShownDirection,
         child: FrostedHost(
-          light: kitTheme(Brightness.light),
-          dark: kitTheme(Brightness.dark),
+          theme: kitTheme(Brightness.light),
+          darkTheme: kitTheme(Brightness.dark),
           brightness: brightness,
           child: FrostedAccountScope(
             account: kitMaren,
@@ -290,8 +290,8 @@ Widget kitSpecimenStage({
       Directionality(
         textDirection: kitShownDirection,
         child: FrostedHost(
-          light: FrostedThemeData.preset(style, Brightness.light),
-          dark: FrostedThemeData.preset(style, Brightness.dark),
+          theme: FrostedThemeData.preset(style, Brightness.light),
+          darkTheme: FrostedThemeData.preset(style, Brightness.dark),
           brightness: brightness,
           child: FrostedAccountScope(
             account: kitMaren,

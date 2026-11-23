@@ -1,9 +1,10 @@
 // Large text: every gallery page at 200% text (WCAG's resize-text criterion, the host's ceiling) lays out with
 // nothing overflowing: controls grow taller rather than cutting words, and long words wrap or ellipsize on purpose.
-// A RenderFlex overflow, or any other layout error, fails the page. The everyday tier takes the inventory, every
+// A RenderFlex overflow, or any other layout error, fails the page, and so does ui_core's DesignOverflowCheck. The everyday tier takes the inventory, every
 // component on one page; the sweep the rest.
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:ui_core_test/ui_core_test.dart';
 
 import 'gallery_support.dart';
 import 'tiers.dart';
@@ -37,6 +38,10 @@ void main() {
             ...over,
           ].join('\n'),
         );
+        // What ui_core's check reads from the layout, past what Flutter reports.
+        const DesignOverflowCheck(look: 'Frosted')
+            .check(tester.binding.rootElement!)
+            .verify();
       },
     );
   }

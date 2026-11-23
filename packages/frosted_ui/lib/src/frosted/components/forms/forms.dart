@@ -22,6 +22,7 @@ import '../../internal/face.dart';
 import '../../internal/well.dart';
 import '../../internal/field_owner.dart';
 import '../../internal/styled.dart';
+import '../../internal/bare_field.dart';
 import '../../internal/hit_slop.dart';
 import '../../internal/measure.dart';
 import '../../theme.dart';
@@ -73,29 +74,29 @@ BoxShadow _edge(FrostedThemeData t) =>
 /// placeholder in the tertiary ink, an optional help line 8 under
 /// (`.field-h`). The page owns the text through [value] and [onChanged],
 /// or hands a [controller]; with neither callback nor controller the
-/// field is read only. A screen reader hears a text field named [label].
+/// field is read only. A screen reader hears a text field named [labelText].
 ///
 /// ```dart
-/// FrostedTextField(label: 'Name', hint: 'What are you saving for?', value: name, onChanged: (v) => setState(() => name = v))
+/// FrostedTextField(labelText: 'Name', hintText: 'What are you saving for?', value: name, onChanged: (v) => setState(() => name = v))
 /// ```
 class FrostedTextField extends StatefulWidget {
   /// Creates a [FrostedTextField].
   const FrostedTextField({
-    required this.label,
+    required this.labelText,
     this.value,
     this.onChanged,
     this.onSubmitted,
     this.onEditingComplete,
     this.controller,
     this.focusNode,
-    this.hint,
-    this.helper,
+    this.hintText,
+    this.helperText,
     this.leading,
     this.trailing,
     this.keyboardType,
     this.textInputAction,
     this.autofocus = false,
-    this.error,
+    this.errorText,
     this.enabled = true,
     this.obscureText = false,
     this.autofillHints,
@@ -109,7 +110,7 @@ class FrostedTextField extends StatefulWidget {
   });
 
   /// The label over the well, and the field's spoken name.
-  final String label;
+  final String labelText;
 
   /// The direction the words are typed in; null follows the page. Codes,
   /// addresses and hex values read left to right in any language
@@ -125,8 +126,8 @@ class FrostedTextField extends StatefulWidget {
   final int? maxLines;
 
   /// What is wrong with the text: drawn under the well in the over ink, in
-  /// place of [helper], with the well's edge in the same ink.
-  final String? error;
+  /// place of [helperText], with the well's edge in the same ink.
+  final String? errorText;
 
   /// Whether the field takes text; a disabled field stands at half strength
   /// and takes no focus.
@@ -168,10 +169,10 @@ class FrostedTextField extends StatefulWidget {
   final FocusNode? focusNode;
 
   /// What the empty well says (What are you saving for?).
-  final String? hint;
+  final String? hintText;
 
   /// {@macro frosted.helper}
-  final String? helper;
+  final String? helperText;
 
   /// A glyph or word before the text, drawn in the tertiary ink.
   final Widget? leading;
@@ -190,7 +191,7 @@ class FrostedTextField extends StatefulWidget {
   ///
   /// ```dart
   /// FrostedTextField(
-  ///   label: 'Name',
+  ///   labelText: 'Name',
   ///   value: name,
   ///   onChanged: setName,
   ///   style: FrostedStyle(
@@ -217,7 +218,7 @@ class FrostedTextField extends StatefulWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('label', label))
+      ..add(StringProperty('labelText', labelText))
       ..add(
         EnumProperty<TextDirection>(
           'textDirection',
@@ -227,7 +228,7 @@ class FrostedTextField extends StatefulWidget {
       )
       ..add(IntProperty('minLines', minLines, defaultValue: null))
       ..add(IntProperty('maxLines', maxLines, defaultValue: 1))
-      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(StringProperty('errorText', errorText, defaultValue: null))
       ..add(FlagProperty('enabled', value: enabled, ifFalse: 'enabled: false'))
       ..add(
         FlagProperty('obscureText', value: obscureText, ifTrue: 'obscureText'),
@@ -277,8 +278,8 @@ class FrostedTextField extends StatefulWidget {
           defaultValue: null,
         ),
       )
-      ..add(StringProperty('hint', hint, defaultValue: null))
-      ..add(StringProperty('helper', helper, defaultValue: null))
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
+      ..add(StringProperty('helperText', helperText, defaultValue: null))
       ..add(
         DiagnosticsProperty<TextInputType>(
           'keyboardType',
@@ -321,7 +322,7 @@ class _FrostedTextFieldState extends State<FrostedTextField>
     final style = layers
         .at({
           if (fieldFocus.hasFocus) WidgetState.focused,
-          if (widget.error != null) WidgetState.error,
+          if (widget.errorText != null) WidgetState.error,
           if (!widget.enabled) WidgetState.disabled,
         })
         .words(t.textTheme.bodyLarge.line(19.2));
@@ -337,48 +338,55 @@ class _FrostedTextFieldState extends State<FrostedTextField>
         ? ((FrostedChromeMetrics.field - line) / 2).clamp(0.0, double.infinity)
         : 0.0;
     final maxLength = widget.maxLength;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      mainAxisSize: MainAxisSize.min,
-      spacing: FrostedChromeMetrics.fieldLabelGap,
-      children: [
-        FrostedFieldLabel(widget.label),
-        ConstrainedBox(
-          constraints: const BoxConstraints(
-            minHeight: FrostedChromeMetrics.field,
+    // The label, help and error are read on the field's one node; what is
+    // drawn of them stays out of the tree.
+    return RawInputDecorator(
+      labelText: widget.labelText,
+      helperText: widget.helperText,
+      errorText: widget.errorText,
+      enabled: widget.enabled,
+      focusNode: fieldFocus,
+      builder: frostedFieldColumn,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(
+          minHeight: FrostedChromeMetrics.field,
+        ),
+        child: FrostedWell(
+          layers: layers,
+          focused: fieldFocus.hasFocus,
+          error: widget.errorText != null,
+          enabled: widget.enabled,
+          padding: EdgeInsets.symmetric(
+            horizontal: FrostedChromeMetrics.fieldInset,
+            vertical: over,
           ),
-          child: FrostedWell(
-            layers: layers,
-            focused: fieldFocus.hasFocus,
-            error: widget.error != null,
-            enabled: widget.enabled,
-            padding: EdgeInsets.symmetric(
-              horizontal: FrostedChromeMetrics.fieldInset,
-              vertical: over,
-            ),
-            // The line answers taps from the well's top to its bottom.
-            child: FrostedFieldRoom(
-              child: Row(
-                spacing: FrostedSpacing.s8,
-                crossAxisAlignment: multi
-                    ? CrossAxisAlignment.start
-                    : CrossAxisAlignment.center,
-                children: [
-                  if (widget.leading case final leading?)
-                    DefaultTextStyle.merge(
-                      style: style.c(t.colorScheme.textTertiary),
-                      child: IconTheme.merge(
-                        data: IconThemeData(
-                          size: FrostedIconSize.i18,
-                          color: t.colorScheme.textTertiary,
-                        ),
-                        child: leading,
+          // The line answers taps from the well's top to its bottom.
+          child: FrostedFieldRoom(
+            child: Row(
+              spacing: FrostedSpacing.s8,
+              crossAxisAlignment: multi
+                  ? CrossAxisAlignment.start
+                  : CrossAxisAlignment.center,
+              children: [
+                if (widget.leading case final leading?)
+                  DefaultTextStyle.merge(
+                    style: style.c(t.colorScheme.textTertiary),
+                    child: IconTheme.merge(
+                      data: IconThemeData(
+                        size: FrostedIconSize.i18,
+                        color: t.colorScheme.textTertiary,
                       ),
+                      child: leading,
                     ),
-                  Expanded(
-                    child: FrostedFieldTarget(
-                      label: widget.label,
-                      child: Material(
+                  ),
+                Expanded(
+                  child: FrostedFieldTarget(
+                    label: widget.labelText,
+                    // The field round it names the node.
+                    ownNode: false,
+                    child: frostedOpenEntry(
+                      context,
+                      Material(
                         type: MaterialType.transparency,
                         child: frostedCapCentredEntry(
                           style,
@@ -417,7 +425,7 @@ class _FrostedTextFieldState extends State<FrostedTextField>
                             style: style,
                             cursorColor: t.colorScheme.textPrimary,
                             decoration: _bareDecoration(
-                              hint: widget.hint,
+                              hint: widget.hintText,
                               hintStyle: style.c(t.colorScheme.textTertiary),
                             ),
                           ),
@@ -425,22 +433,20 @@ class _FrostedTextFieldState extends State<FrostedTextField>
                       ),
                     ),
                   ),
-                  // A trailing key keeps to the field's end keyline.
-                  if (widget.trailing case final trailing?)
-                    FrostedTargetSide(
-                      alignment: AlignmentDirectional.centerEnd,
-                      child: trailing,
-                    ),
-                ],
-              ),
+                ),
+                // A trailing key keeps to the field's end keyline.
+                // A key beside the entry (a password's reveal) keeps a node
+                // of its own, so the entry's node stays the field's.
+                if (widget.trailing case final trailing?)
+                  FrostedTargetSide(
+                    alignment: AlignmentDirectional.centerEnd,
+                    child: Semantics(container: true, child: trailing),
+                  ),
+              ],
             ),
           ),
         ),
-        if (widget.error case final error?)
-          FrostedFieldHint(error, error: true)
-        else if (widget.helper case final helper?)
-          FrostedFieldHint(helper),
-      ],
+      ),
     );
   }
 }
@@ -451,19 +457,19 @@ class _FrostedTextFieldState extends State<FrostedTextField>
 /// under it. Return starts a new line.
 ///
 /// ```dart
-/// FrostedTextArea(label: 'Notes', hint: 'Anything the team should know', value: notes, onChanged: (v) => setState(() => notes = v))
+/// FrostedTextArea(labelText: 'Notes', hintText: 'Anything the team should know', value: notes, onChanged: (v) => setState(() => notes = v))
 /// ```
 class FrostedTextArea extends StatelessWidget {
-  /// A text area labelled [label].
+  /// A text area labelled [labelText].
   const FrostedTextArea({
-    required this.label,
+    required this.labelText,
     this.value,
     this.onChanged,
     this.controller,
     this.focusNode,
-    this.hint,
-    this.helper,
-    this.error,
+    this.hintText,
+    this.helperText,
+    this.errorText,
     this.enabled = true,
     this.autofocus = false,
     this.maxLength,
@@ -473,7 +479,7 @@ class FrostedTextArea extends StatelessWidget {
   });
 
   /// The label over the well, and the field's spoken name.
-  final String label;
+  final String labelText;
 
   /// The text, when the page owns it.
   final String? value;
@@ -488,13 +494,13 @@ class FrostedTextArea extends StatelessWidget {
   final FocusNode? focusNode;
 
   /// The words in the empty well.
-  final String? hint;
+  final String? hintText;
 
   /// One line of help under the well.
-  final String? helper;
+  final String? helperText;
 
-  /// What is wrong with the text, in place of [helper].
-  final String? error;
+  /// What is wrong with the text, in place of [helperText].
+  final String? errorText;
 
   /// Whether it takes text.
   final bool enabled;
@@ -513,14 +519,14 @@ class FrostedTextArea extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => FrostedTextField(
-    label: label,
+    labelText: labelText,
     value: value,
     onChanged: onChanged,
     controller: controller,
     focusNode: focusNode,
-    hint: hint,
-    helper: helper,
-    error: error,
+    hintText: hintText,
+    helperText: helperText,
+    errorText: errorText,
     enabled: enabled,
     autofocus: autofocus,
     maxLength: maxLength,
@@ -532,7 +538,7 @@ class FrostedTextArea extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('label', label))
+      ..add(StringProperty('labelText', labelText))
       ..add(StringProperty('value', value, defaultValue: null))
       ..add(
         ObjectFlagProperty<ValueChanged<String>>.has('onChanged', onChanged),
@@ -551,9 +557,9 @@ class FrostedTextArea extends StatelessWidget {
           defaultValue: null,
         ),
       )
-      ..add(StringProperty('hint', hint, defaultValue: null))
-      ..add(StringProperty('helper', helper, defaultValue: null))
-      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
+      ..add(StringProperty('helperText', helperText, defaultValue: null))
+      ..add(StringProperty('errorText', errorText, defaultValue: null))
       ..add(FlagProperty('enabled', value: enabled, ifFalse: 'enabled: false'))
       ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
       ..add(IntProperty('maxLength', maxLength, defaultValue: null))
@@ -587,15 +593,15 @@ enum FrostedAmountFieldSize {
 /// figure given three characters' room. [showLabel] false drops the label,
 /// keeping it as the spoken name. Takes digits and one point; the page owns the text
 /// through [value] and [onChanged], or a [controller]; with neither it is
-/// read only. A screen reader hears a text field named [label].
+/// read only. A screen reader hears a text field named [labelText].
 ///
 /// ```dart
-/// FrostedAmountField(label: 'Amount', value: amount, onChanged: (v) => setState(() => amount = v))
+/// FrostedAmountField(labelText: 'Amount', value: amount, onChanged: (v) => setState(() => amount = v))
 /// ```
 class FrostedAmountField extends StatefulWidget {
   /// Creates a [FrostedAmountField].
   const FrostedAmountField({
-    required this.label,
+    required this.labelText,
     this.value,
     this.onChanged,
     this.onSubmitted,
@@ -604,8 +610,8 @@ class FrostedAmountField extends StatefulWidget {
     this.focusNode,
     this.inputFormatters,
     this.keyboardType,
-    this.hint = '0',
-    this.helper,
+    this.hintText = '0',
+    this.helperText,
     this.sign = r'$',
     this.suffix,
     this.size = FrostedAmountFieldSize.regular,
@@ -616,7 +622,7 @@ class FrostedAmountField extends StatefulWidget {
   });
 
   /// The label over the well, and the field's spoken name.
-  final String label;
+  final String labelText;
 
   /// The figure's text, when the page owns it (500.00).
   final String? value;
@@ -644,7 +650,7 @@ class FrostedAmountField extends StatefulWidget {
   final FocusNode? focusNode;
 
   /// What the empty well shows after the sign.
-  final String hint;
+  final String hintText;
 
   /// The currency sign before the figure, in the quiet ink; null, none (a
   /// plain number).
@@ -655,7 +661,7 @@ class FrostedAmountField extends StatefulWidget {
   final String? suffix;
 
   /// {@macro frosted.helper}
-  final String? helper;
+  final String? helperText;
 
   /// How large the field stands: the 64 well, or the form's 48
   /// (`.amount-in--sm`).
@@ -664,7 +670,7 @@ class FrostedAmountField extends StatefulWidget {
   /// The sign and figure on the well's centre (`.amount-in--c`).
   final bool centered;
 
-  /// Whether the [label] stands over the well; without it the label stays
+  /// Whether the [labelText] stands over the well; without it the label stays
   /// the spoken name.
   final bool showLabel;
 
@@ -678,7 +684,7 @@ class FrostedAmountField extends StatefulWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('label', label))
+      ..add(StringProperty('labelText', labelText))
       ..add(StringProperty('value', value, defaultValue: null))
       ..add(StringProperty('sign', sign, defaultValue: r'$'))
       ..add(StringProperty('suffix', suffix, defaultValue: null))
@@ -725,8 +731,8 @@ class FrostedAmountField extends StatefulWidget {
           defaultValue: null,
         ),
       )
-      ..add(StringProperty('hint', hint, defaultValue: '0'))
-      ..add(StringProperty('helper', helper, defaultValue: null))
+      ..add(StringProperty('hintText', hintText, defaultValue: '0'))
+      ..add(StringProperty('helperText', helperText, defaultValue: null))
       ..add(
         EnumProperty<FrostedAmountFieldSize>(
           'size',
@@ -785,7 +791,10 @@ class _FrostedAmountFieldState extends State<FrostedAmountField>
           );
     final readOnly = widget.onChanged == null && widget.controller == null;
     Widget input = FrostedFieldTarget(
-      label: widget.label,
+      label: widget.labelText,
+      // Under its shown label the decorator names the field, and the line
+      // joins that node; with the label hidden, the line names it.
+      ownNode: !widget.showLabel,
       child: Material(
         type: MaterialType.transparency,
         child: frostedCapCentredEntry(
@@ -809,7 +818,7 @@ class _FrostedAmountFieldState extends State<FrostedAmountField>
             style: style,
             cursorColor: t.colorScheme.textPrimary,
             decoration: _bareDecoration(
-              hint: widget.hint,
+              hint: widget.hintText,
               hintStyle: style.c(placeholderInk),
             ),
           ),
@@ -936,16 +945,13 @@ class _FrostedAmountFieldState extends State<FrostedAmountField>
         ),
       ),
     );
-    if (!widget.showLabel && widget.helper == null) return well;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      mainAxisSize: MainAxisSize.min,
-      spacing: FrostedChromeMetrics.fieldLabelGap,
-      children: [
-        if (widget.showLabel) FrostedFieldLabel(widget.label),
-        well,
-        if (widget.helper case final helper?) FrostedFieldHint(helper),
-      ],
+    if (!widget.showLabel && widget.helperText == null) return well;
+    return RawInputDecorator(
+      labelText: widget.showLabel ? widget.labelText : null,
+      helperText: widget.helperText,
+      focusNode: fieldFocus,
+      builder: frostedFieldColumn,
+      child: well,
     );
   }
 }
@@ -1054,21 +1060,21 @@ class _SearchPill extends StatelessWidget {
 /// through [value] and [onChanged], or hands a [controller]. [onClear]
 /// makes the clear a link of the page's (back to the plain list); without
 /// it the clear empties the field. A screen reader hears a search field
-/// named [label] (else [hint]) and a button, [clearLabel] (Clear).
+/// named [labelText] (else [hintText]) and a button, [clearLabel] (Clear).
 ///
 /// ```dart
-/// FrostedSearchField(hint: 'Search activity', value: query, onChanged: (v) => setState(() => query = v))
+/// FrostedSearchField(hintText: 'Search activity', value: query, onChanged: (v) => setState(() => query = v))
 /// ```
 class FrostedSearchField extends StatefulWidget {
   /// Creates a [FrostedSearchField].
   const FrostedSearchField({
-    required this.hint,
+    required this.hintText,
     this.value,
     this.onChanged,
     this.onSubmitted,
     this.controller,
     this.focusNode,
-    this.label,
+    this.labelText,
     this.autofocus = false,
     this.onClear,
     this.clearLabel,
@@ -1077,7 +1083,7 @@ class FrostedSearchField extends StatefulWidget {
   });
 
   /// What the empty pill says (Search activity).
-  final String hint;
+  final String hintText;
 
   /// The query, when the page owns it.
   final String? value;
@@ -1094,8 +1100,8 @@ class FrostedSearchField extends StatefulWidget {
   /// The field's focus, when the page keeps one.
   final FocusNode? focusNode;
 
-  /// The field's spoken name; null speaks [hint].
-  final String? label;
+  /// The field's spoken name; null speaks [hintText].
+  final String? labelText;
 
   /// Whether it takes focus when it first shows.
   final bool autofocus;
@@ -1117,7 +1123,7 @@ class FrostedSearchField extends StatefulWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('hint', hint))
+      ..add(StringProperty('hintText', hintText))
       ..add(StringProperty('value', value, defaultValue: null))
       ..add(
         ObjectFlagProperty<ValueChanged<String>>.has('onChanged', onChanged),
@@ -1142,7 +1148,7 @@ class FrostedSearchField extends StatefulWidget {
           defaultValue: null,
         ),
       )
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
       ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
       ..add(ObjectFlagProperty<VoidCallback>.has('onClear', onClear))
       ..add(StringProperty('clearLabel', clearLabel, defaultValue: null))
@@ -1220,7 +1226,7 @@ class _FrostedSearchFieldState extends State<FrostedSearchField>
           children: [
             Expanded(
               child: FrostedFieldTarget(
-                label: widget.label ?? widget.hint,
+                label: widget.labelText ?? widget.hintText,
                 child: Material(
                   type: MaterialType.transparency,
                   child: frostedCapCentredEntry(
@@ -1239,7 +1245,7 @@ class _FrostedSearchFieldState extends State<FrostedSearchField>
                       style: style.c(t.colorScheme.textPrimary),
                       cursorColor: t.colorScheme.textPrimary,
                       decoration: _bareDecoration(
-                        hint: widget.hint,
+                        hint: widget.hintText,
                         hintStyle: style.c(t.colorScheme.textTertiary),
                       ),
                     ),
@@ -1256,27 +1262,27 @@ class _FrostedSearchFieldState extends State<FrostedSearchField>
 }
 
 /// The search pill as a way in (`<a class="search">`): the same face and
-/// glyph with [hint] in the tertiary ink, or [value], a query the
+/// glyph with [hintText] in the tertiary ink, or [value], a query the
 /// page already holds, in the ink on the brightened pill; one link that
 /// opens the search. A null [onPressed] leaves it inert.
 ///
 /// ```dart
-/// FrostedSearchLink(hint: 'Search activity', onPressed: () => Navigator.of(context).pushNamed('/activity/search'))
+/// FrostedSearchLink(hintText: 'Search activity', onPressed: () => Navigator.of(context).pushNamed('/activity/search'))
 /// ```
 class FrostedSearchLink extends StatelessWidget {
   /// Creates a [FrostedSearchLink].
   const FrostedSearchLink({
-    required this.hint,
+    required this.hintText,
     required this.onPressed,
     this.value,
-    this.label,
+    this.labelText,
     this.focusNode,
     this.autofocus = false,
     super.key,
   });
 
   /// What the pill says with no query (Search activity).
-  final String hint;
+  final String hintText;
 
   /// Opens the search; null leaves the pill inert.
   final VoidCallback? onPressed;
@@ -1290,8 +1296,8 @@ class FrostedSearchLink extends StatelessWidget {
   /// A query the page already holds, shown in the ink.
   final String? value;
 
-  /// The link's spoken name; null speaks [hint].
-  final String? label;
+  /// The link's spoken name; null speaks [hintText].
+  final String? labelText;
 
   @override
   Widget build(BuildContext context) {
@@ -1301,7 +1307,7 @@ class FrostedSearchLink extends StatelessWidget {
       focusNode: focusNode,
       autofocus: autofocus,
       onPressed: onPressed,
-      label: label ?? hint,
+      label: labelText ?? hintText,
       value: typed ? value : null,
       role: FrostedPressRole.link,
       radius: FrostedChromeMetrics.search / 2,
@@ -1311,7 +1317,7 @@ class FrostedSearchLink extends StatelessWidget {
           alignment: AlignmentDirectional.centerStart,
           child: frostedCapCentred(
             Text(
-              typed ? value! : hint,
+              typed ? value! : hintText,
               maxLines: 1,
               softWrap: false,
               overflow: TextOverflow.ellipsis,
@@ -1333,7 +1339,7 @@ class FrostedSearchLink extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('hint', hint))
+      ..add(StringProperty('hintText', hintText))
       ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
       ..add(
         DiagnosticsProperty<FocusNode>(
@@ -1344,7 +1350,7 @@ class FrostedSearchLink extends StatelessWidget {
       )
       ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
       ..add(StringProperty('value', value, defaultValue: null))
-      ..add(StringProperty('label', label, defaultValue: null));
+      ..add(StringProperty('labelText', labelText, defaultValue: null));
   }
 }
 
@@ -1617,19 +1623,19 @@ class FrostedSwapButton extends StatelessWidget {
 /// [min] and [max] (so a Save beside it reads it), and as it is taken
 /// (Return, or the focus leaving) clamped to them; one that does not read
 /// puts the value back. Up and Down in the well step too. A null [onChanged]
-/// leaves it inert. A screen reader hears a text field named [label] that
+/// leaves it inert. A screen reader hears a text field named [labelText] that
 /// steps up and down; the rounds are for the eye and the finger. ui_core's
 /// [RawNumberField] is the behaviour.
 ///
 /// ```dart
-/// FrostedNumberField(value: guests, onChanged: (v) => setState(() => guests = v), label: 'Guests', min: 1, max: 12, step: 1, unit: (n) => n == 1 ? 'person' : 'people')
+/// FrostedNumberField(value: guests, onChanged: (v) => setState(() => guests = v), labelText: 'Guests', min: 1, max: 12, step: 1, unit: (n) => n == 1 ? 'person' : 'people')
 /// ```
 class FrostedNumberField extends StatelessWidget {
   /// Creates a [FrostedNumberField].
   const FrostedNumberField({
     required this.value,
     required this.onChanged,
-    required this.label,
+    required this.labelText,
     this.step = 10,
     this.min = 0,
     this.max,
@@ -1662,7 +1668,7 @@ class FrostedNumberField extends StatelessWidget {
   final bool autofocus;
 
   /// What the rounds and the well are named by (the budget).
-  final String label;
+  final String labelText;
 
   /// How far one press moves the value.
   final int step;
@@ -1707,7 +1713,7 @@ class FrostedNumberField extends StatelessWidget {
       fractionDigits: 0,
       focusNode: focusNode,
       autofocus: autofocus,
-      semanticLabel: label,
+      semanticLabel: labelText,
       // Inert, the well dims with its rounds, as a disabled field does, and
       // shows its value alone.
       // The figure is the stepping node's value too. ui_core's field merges
@@ -1724,7 +1730,7 @@ class FrostedNumberField extends StatelessWidget {
           off: !live,
           child: FrostedAmountField(
             focusNode: field.focusNode,
-            label: label,
+            labelText: labelText,
             controller: live ? field.controller : null,
             value: live ? null : '$value',
             onEditingComplete: field.onEditingComplete,
@@ -1805,7 +1811,7 @@ class FrostedNumberField extends StatelessWidget {
         ),
       )
       ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
-      ..add(StringProperty('label', label))
+      ..add(StringProperty('labelText', labelText))
       ..add(IntProperty('step', step, defaultValue: 10))
       ..add(IntProperty('min', min, defaultValue: 0))
       ..add(IntProperty('max', max, defaultValue: null))
@@ -2013,17 +2019,17 @@ class FrostedSelectOption<T> {
 }
 
 /// One value of a few, chosen from a menu (Material's `DropdownMenu`): the
-/// [label] 8 over a 48 well like a text field's, the chosen option's words
-/// in it (or the [prompt] in the tertiary ink) and a 16 chevron down at its
+/// [labelText] 8 over a 48 well like a text field's, the chosen option's words
+/// in it (or the [hintText] in the tertiary ink) and a 16 chevron down at its
 /// end; a press drops a [FrostedMenu] of the [options] from the well, the
-/// chosen one checked. The [helper] or the [error] (the well ringed in the
+/// chosen one checked. The [helperText] or the [errorText] (the well ringed in the
 /// over ink) stands 8 under, fading out while the list drops over it. A null
 /// [onChanged] leaves it faded and inert.
-/// A screen reader hears a button named [label] with the chosen words as
+/// A screen reader hears a button named [labelText] with the chosen words as
 /// its value.
 ///
 /// ```dart
-/// FrostedSelect<String>(label: 'Room', options: const [FrostedSelectOption('k', 'Kitchen'), FrostedSelectOption('s', 'Study')], value: room, onChanged: (v) => setState(() => room = v))
+/// FrostedSelect<String>(labelText: 'Room', options: const [FrostedSelectOption('k', 'Kitchen'), FrostedSelectOption('s', 'Study')], value: room, onChanged: (v) => setState(() => room = v))
 /// ```
 class FrostedSelect<T> extends StatefulWidget {
   /// A select over [options]; a null [onChanged] disables it.
@@ -2031,10 +2037,10 @@ class FrostedSelect<T> extends StatefulWidget {
     required this.options,
     this.value,
     this.onChanged,
-    this.label,
-    this.prompt,
-    this.helper,
-    this.error,
+    this.labelText,
+    this.hintText,
+    this.helperText,
+    this.errorText,
     this.style,
     this.focusNode,
     this.autofocus = false,
@@ -2044,7 +2050,7 @@ class FrostedSelect<T> extends StatefulWidget {
   /// The choices, in the menu's order.
   final List<FrostedSelectOption<T>> options;
 
-  /// The chosen value; null shows the [prompt].
+  /// The chosen value; null shows the [hintText].
   final T? value;
 
   /// Hands over the value chosen in the menu.
@@ -2057,16 +2063,16 @@ class FrostedSelect<T> extends StatefulWidget {
   final bool autofocus;
 
   /// The words over the well.
-  final String? label;
+  final String? labelText;
 
   /// What the well says before anything is chosen (Select, by default).
-  final String? prompt;
+  final String? hintText;
 
   /// A help line under the well.
-  final String? helper;
+  final String? helperText;
 
-  /// What is wrong, under the well in place of the [helper].
-  final String? error;
+  /// What is wrong, under the well in place of the [helperText].
+  final String? errorText;
 
   /// This select's own style, over `FrostedThemeData.components.textField`
   /// (a select wears a field's well): the well's fill, ring, shape,
@@ -2091,10 +2097,10 @@ class FrostedSelect<T> extends StatefulWidget {
         ),
       )
       ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
-      ..add(StringProperty('label', label, defaultValue: null))
-      ..add(StringProperty('prompt', prompt, defaultValue: null))
-      ..add(StringProperty('helper', helper, defaultValue: null))
-      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
+      ..add(StringProperty('helperText', helperText, defaultValue: null))
+      ..add(StringProperty('errorText', errorText, defaultValue: null))
       ..add(
         DiagnosticsProperty<FrostedStyle>('style', style, defaultValue: null),
       );
@@ -2113,10 +2119,10 @@ class _FrostedSelectState<T> extends State<FrostedSelect<T>> {
       :options,
       :value,
       :onChanged,
-      :label,
-      :prompt,
-      :helper,
-      :error,
+      labelText: label,
+      hintText: prompt,
+      helperText: helper,
+      errorText: error,
       :style,
     ) = widget;
     final t = context.frostedTheme;
@@ -2174,7 +2180,10 @@ class _FrostedSelectState<T> extends State<FrostedSelect<T>> {
           autofocus: widget.autofocus,
           onPressed: change == null ? null : () => open(anchor, change),
           expanded: change == null ? null : _open,
-          label: label ?? words.select,
+          // Under its label the field names the press (ui_core's decorator:
+          // a button's own name is not the field's, so both would be read);
+          // with no label the press names itself.
+          label: label == null ? words.select : null,
           value: chosen?.label,
           radius: FrostedCorners.r12,
           child: ConstrainedBox(
@@ -2192,24 +2201,33 @@ class _FrostedSelectState<T> extends State<FrostedSelect<T>> {
                 spacing: FrostedSpacing.s8,
                 children: [
                   Expanded(
-                    child: frostedCapCentred(
-                      Text(
-                        shown,
-                        maxLines: 1,
-                        softWrap: false,
-                        overflow: TextOverflow.ellipsis,
-                        style: chosen == null
-                            ? t.textTheme.bodyLarge
-                                  .line(19.2)
-                                  .c(t.colorScheme.textTertiary)
-                            : t.textTheme.bodyLarge.line(19.2),
+                    // The press says the chosen option as its value.
+                    child: ExcludeSemantics(
+                      child: frostedCapCentred(
+                        Text(
+                          shown,
+                          maxLines: 1,
+                          softWrap: false,
+                          overflow: TextOverflow.ellipsis,
+                          style: chosen == null
+                              ? t.textTheme.bodyLarge
+                                    .line(19.2)
+                                    .c(t.colorScheme.textTertiary)
+                              : t.textTheme.bodyLarge.line(19.2),
+                        ),
                       ),
                     ),
                   ),
-                  Icon(
-                    FrostedGlyphs.chevronDown,
-                    size: FrostedChromeMetrics.pickerGlyph,
-                    color: t.colorScheme.textTertiary,
+                  // The chevron turns while the list stands open.
+                  AnimatedRotation(
+                    turns: _open ? .5 : 0,
+                    duration: FrostedMotion.of(context).base,
+                    curve: FrostedMotion.of(context).curve,
+                    child: Icon(
+                      FrostedGlyphs.chevronDown,
+                      size: FrostedChromeMetrics.pickerGlyph,
+                      color: t.colorScheme.textTertiary,
+                    ),
                   ),
                 ],
               ),
@@ -2221,22 +2239,22 @@ class _FrostedSelectState<T> extends State<FrostedSelect<T>> {
     // From 600 up the select stands at most 320 wide at its column's start:
     // one word never runs the width of a page.
     return FrostedControlMeasure(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        mainAxisSize: MainAxisSize.min,
-        spacing: FrostedChromeMetrics.fieldLabelGap,
-        children: [
-          if (label case final label?) FrostedFieldLabel(label),
-          field,
-          if (wrong != null || help != null)
-            AnimatedOpacity(
-              opacity: _open ? 0 : 1,
-              duration: FrostedMotion.of(context).fast,
-              child: wrong != null
-                  ? FrostedFieldHint(wrong, error: true)
-                  : FrostedFieldHint(help!),
-            ),
-        ],
+      child: RawInputDecorator(
+        labelText: label,
+        helperText: help,
+        errorText: wrong,
+        enabled: change != null,
+        focusNode: widget.focusNode,
+        builder: (context, parts) => frostedFieldColumn(
+          context,
+          parts,
+          hintBuilder: (hint) => AnimatedOpacity(
+            opacity: _open ? 0 : 1,
+            duration: FrostedMotion.of(context).fast,
+            child: hint,
+          ),
+        ),
+        child: field,
       ),
     );
   }

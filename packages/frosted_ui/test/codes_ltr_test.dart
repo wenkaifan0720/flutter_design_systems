@@ -35,7 +35,7 @@ void main() {
         child: Column(
           children: [
             FrostedInputGroup(
-              label: 'Website',
+              labelText: 'Website',
               prefix: const Text('https://'),
               suffix: const Text('.com'),
               value: 'example',

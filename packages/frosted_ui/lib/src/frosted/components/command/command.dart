@@ -188,7 +188,7 @@ Widget _menuRow(
     child: FrostedPanelRow(
       label: entry.label,
       followsPointer: true,
-      destructive: entry.isDestructiveAction,
+      isDestructiveAction: entry.isDestructiveAction,
       states: {...states, if (entry.checked ?? false) WidgetState.selected},
       checkable: entry.checked != null,
       trailing: entry.isSubmenu
@@ -325,10 +325,10 @@ class FrostedCommand extends StatelessWidget {
   const FrostedCommand({
     required this.commands,
     this.onSelected,
-    this.hint,
+    this.hintText,
     this.width = 520,
     this.maxHeight = 360,
-    this.label,
+    this.labelText,
     super.key,
   });
 
@@ -339,7 +339,7 @@ class FrostedCommand extends StatelessWidget {
   final ValueChanged<RawCommand>? onSelected;
 
   /// The field's placeholder ("Type a command or search" when null).
-  final String? hint;
+  final String? hintText;
 
   /// The palette's width.
   final double width;
@@ -348,14 +348,14 @@ class FrostedCommand extends StatelessWidget {
   final double maxHeight;
 
   /// What a screen reader calls the palette.
-  final String? label;
+  final String? labelText;
 
   /// Raises a palette of [commands] over the whole app, a third of the way
   /// down, over the scrim; running a command closes it and runs it.
   static Future<void> show(
     BuildContext context, {
     required List<RawCommand> commands,
-    String? hint,
+    String? hintText,
   }) {
     final t = context.frostedTheme;
     final navigator = FrostedHost.navigatorOf(context);
@@ -373,7 +373,7 @@ class FrostedCommand extends StatelessWidget {
         context,
         commands: commands,
         onSelected: run,
-        hint: hint,
+        hint: hintText,
         maxHeight: 360,
         label: null,
       ),
@@ -422,8 +422,8 @@ class FrostedCommand extends StatelessWidget {
                   child: FrostedBareField(
                     controller: field.controller,
                     focusNode: field.focusNode,
-                    hint: hint ?? words.searchCommands,
-                    label: label ?? words.searchCommands,
+                    hintText: hint ?? words.searchCommands,
+                    labelText: label ?? words.searchCommands,
                     // Return runs the command and the search keeps the
                     // focus, as the combobox's.
                     onEditingComplete: field.submit,
@@ -487,9 +487,9 @@ class FrostedCommand extends StatelessWidget {
       context,
       commands: commands,
       onSelected: onSelected,
-      hint: hint,
+      hint: hintText,
       maxHeight: maxHeight,
-      label: label,
+      label: labelText,
     ),
   );
 
@@ -504,9 +504,9 @@ class FrostedCommand extends StatelessWidget {
           onSelected,
         ),
       )
-      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
       ..add(DoubleProperty('width', width, defaultValue: 520))
       ..add(DoubleProperty('maxHeight', maxHeight, defaultValue: 360))
-      ..add(StringProperty('label', label, defaultValue: null));
+      ..add(StringProperty('labelText', labelText, defaultValue: null));
   }
 }

@@ -1,0 +1,1354 @@
+# frosted_ui's renames in 0.5.0, which `dart fix` makes. Each lists the package's libraries, as dart fix renames a
+# name only where it is imported through a listed library.
+version: 1
+transforms:
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: &uris ['frosted_ui.dart', 'package:frosted_ui/frosted_parts.dart', 'package:frosted_ui/frosted_host.dart']
+      constructor: ''
+      inClass: 'FrostedTextField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'FrostedTextField'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedTextField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'hint'
+      inClass: 'FrostedTextField'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedTextField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'helper'
+      inClass: 'FrostedTextField'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedTextField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'error'
+      inClass: 'FrostedTextField'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedTextArea'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'FrostedTextArea'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedTextArea'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'hint'
+      inClass: 'FrostedTextArea'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedTextArea'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'helper'
+      inClass: 'FrostedTextArea'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedTextArea'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'error'
+      inClass: 'FrostedTextArea'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedPasswordField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'FrostedPasswordField'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedPasswordField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'hint'
+      inClass: 'FrostedPasswordField'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedPasswordField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'helper'
+      inClass: 'FrostedPasswordField'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedPasswordField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'error'
+      inClass: 'FrostedPasswordField'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedInputGroup'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'FrostedInputGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedInputGroup'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'hint'
+      inClass: 'FrostedInputGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedInputGroup'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'helper'
+      inClass: 'FrostedInputGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedInputGroup'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'error'
+      inClass: 'FrostedInputGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedInputOtp'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'FrostedInputOtp'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedInputOtp'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'helper'
+      inClass: 'FrostedInputOtp'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedInputOtp'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'error'
+      inClass: 'FrostedInputOtp'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+  - title: "Rename to 'obscureText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedInputOtp'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'obscure'
+        newName: 'obscureText'
+  - title: "Rename to 'obscureText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'obscure'
+      inClass: 'FrostedInputOtp'
+    changes:
+      - kind: 'rename'
+        newName: 'obscureText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedFormField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'FrostedFormField'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedFormField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'helper'
+      inClass: 'FrostedFormField'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedFormField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'error'
+      inClass: 'FrostedFormField'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedAmountField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'FrostedAmountField'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedAmountField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'hint'
+      inClass: 'FrostedAmountField'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedAmountField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'helper'
+      inClass: 'FrostedAmountField'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedSearchField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'FrostedSearchField'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedSearchField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'hint'
+      inClass: 'FrostedSearchField'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedSearchLink'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'FrostedSearchLink'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedSearchLink'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'hint'
+      inClass: 'FrostedSearchLink'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedNumberField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'FrostedNumberField'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedSelect'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'FrostedSelect'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedSelect'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'prompt'
+        newName: 'hintText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'prompt'
+      inClass: 'FrostedSelect'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedSelect'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'helper'
+      inClass: 'FrostedSelect'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedSelect'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'error'
+      inClass: 'FrostedSelect'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedCombobox'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'FrostedCombobox'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedCombobox'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'hint'
+      inClass: 'FrostedCombobox'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedCombobox'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'helper'
+      inClass: 'FrostedCombobox'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedCombobox'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'error'
+      inClass: 'FrostedCombobox'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+  - title: "Rename to 'displayStringForOption'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedCombobox'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'displayString'
+        newName: 'displayStringForOption'
+  - title: "Rename to 'displayStringForOption'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'displayString'
+      inClass: 'FrostedCombobox'
+    changes:
+      - kind: 'rename'
+        newName: 'displayStringForOption'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedMultiSelect'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'FrostedMultiSelect'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedMultiSelect'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'hint'
+      inClass: 'FrostedMultiSelect'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedMultiSelect'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'helper'
+      inClass: 'FrostedMultiSelect'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedMultiSelect'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'error'
+      inClass: 'FrostedMultiSelect'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+  - title: "Rename to 'displayStringForOption'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedMultiSelect'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'displayString'
+        newName: 'displayStringForOption'
+  - title: "Rename to 'displayStringForOption'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'displayString'
+      inClass: 'FrostedMultiSelect'
+    changes:
+      - kind: 'rename'
+        newName: 'displayStringForOption'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedFileUpload'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'FrostedFileUpload'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedFileUpload'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'hint'
+      inClass: 'FrostedFileUpload'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedFileUpload'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'error'
+      inClass: 'FrostedFileUpload'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedRadioGroup'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'FrostedRadioGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedRadioGroup'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'error'
+      inClass: 'FrostedRadioGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedBareField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'FrostedBareField'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedBareField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'hint'
+      inClass: 'FrostedBareField'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedCommand'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'FrostedCommand'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedCommand'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'hint'
+      inClass: 'FrostedCommand'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      method: 'show'
+      inClass: 'FrostedCommand'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedComposer'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'hint'
+      inClass: 'FrostedComposer'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  - title: "Rename to 'theme'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedHost'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'light'
+        newName: 'theme'
+  - title: "Rename to 'theme'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'light'
+      inClass: 'FrostedHost'
+    changes:
+      - kind: 'rename'
+        newName: 'theme'
+  - title: "Rename to 'darkTheme'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedHost'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'dark'
+        newName: 'darkTheme'
+  - title: "Rename to 'darkTheme'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'dark'
+      inClass: 'FrostedHost'
+    changes:
+      - kind: 'rename'
+        newName: 'darkTheme'
+  - title: "Rename to 'theme'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedPreview'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'light'
+        newName: 'theme'
+  - title: "Rename to 'theme'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'light'
+      inClass: 'FrostedPreview'
+    changes:
+      - kind: 'rename'
+        newName: 'theme'
+  - title: "Rename to 'darkTheme'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedPreview'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'dark'
+        newName: 'darkTheme'
+  - title: "Rename to 'darkTheme'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'dark'
+      inClass: 'FrostedPreview'
+    changes:
+      - kind: 'rename'
+        newName: 'darkTheme'
+  - title: "Rename to 'selectedIndex'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedPreview'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'activeIndex'
+        newName: 'selectedIndex'
+  - title: "Rename to 'selectedIndex'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'activeIndex'
+      inClass: 'FrostedPreview'
+    changes:
+      - kind: 'rename'
+        newName: 'selectedIndex'
+  - title: "Rename to 'multiSelectionEnabled'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedToggleGroup'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'multiple'
+        newName: 'multiSelectionEnabled'
+  - title: "Rename to 'multiSelectionEnabled'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'multiple'
+      inClass: 'FrostedToggleGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'multiSelectionEnabled'
+  - title: "Rename to 'emptySelectionAllowed'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedToggleGroup'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'allowEmpty'
+        newName: 'emptySelectionAllowed'
+  - title: "Rename to 'emptySelectionAllowed'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'allowEmpty'
+      inClass: 'FrostedToggleGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'emptySelectionAllowed'
+  - title: "Rename to 'onSelectionChanged'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedToggleGroup'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'onChanged'
+        newName: 'onSelectionChanged'
+  - title: "Rename to 'onSelectionChanged'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'onChanged'
+      inClass: 'FrostedToggleGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'onSelectionChanged'
+  - title: "Rename to 'firstDate'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedDatePicker'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'first'
+        newName: 'firstDate'
+  - title: "Rename to 'firstDate'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'first'
+      inClass: 'FrostedDatePicker'
+    changes:
+      - kind: 'rename'
+        newName: 'firstDate'
+  - title: "Rename to 'lastDate'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedDatePicker'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'last'
+        newName: 'lastDate'
+  - title: "Rename to 'lastDate'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'last'
+      inClass: 'FrostedDatePicker'
+    changes:
+      - kind: 'rename'
+        newName: 'lastDate'
+  - title: "Rename to 'pageCount'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedPageDots'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'count'
+        newName: 'pageCount'
+  - title: "Rename to 'pageCount'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'count'
+      inClass: 'FrostedPageDots'
+    changes:
+      - kind: 'rename'
+        newName: 'pageCount'
+  - title: "Rename to 'isDestructiveAction'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedMenuItem'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'destructive'
+        newName: 'isDestructiveAction'
+  - title: "Rename to 'isDestructiveAction'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'destructive'
+      inClass: 'FrostedMenuItem'
+    changes:
+      - kind: 'rename'
+        newName: 'isDestructiveAction'
+  - title: "Rename to 'isDestructiveAction'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedActionSheetAction'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'destructive'
+        newName: 'isDestructiveAction'
+  - title: "Rename to 'isDestructiveAction'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'destructive'
+      inClass: 'FrostedActionSheetAction'
+    changes:
+      - kind: 'rename'
+        newName: 'isDestructiveAction'
+  - title: "Rename to 'isDestructiveAction'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedPanelRow'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'destructive'
+        newName: 'isDestructiveAction'
+  - title: "Rename to 'isDestructiveAction'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'destructive'
+      inClass: 'FrostedPanelRow'
+    changes:
+      - kind: 'rename'
+        newName: 'isDestructiveAction'
+  - title: "Rename to 'isDestructiveAction'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'FrostedDialog'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'destructive'
+        newName: 'isDestructiveAction'
+  - title: "Rename to 'isDestructiveAction'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'destructive'
+      inClass: 'FrostedDialog'
+    changes:
+      - kind: 'rename'
+        newName: 'isDestructiveAction'
+  - title: "Rename to 'isDestructiveAction'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      method: 'show'
+      inClass: 'FrostedDialog'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'destructive'
+        newName: 'isDestructiveAction'

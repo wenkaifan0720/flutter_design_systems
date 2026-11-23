@@ -19,8 +19,8 @@ import 'package:frosted_ui/src/frosted/internal/panel.dart';
 Widget _host(FrostedThemeData t, Widget child) => MaterialApp(
   debugShowCheckedModeBanner: false,
   builder: (context, page) => FrostedHost(
-    light: t,
-    dark: t,
+    theme: t,
+    darkTheme: t,
     brightness: t.isDark ? Brightness.dark : Brightness.light,
     child: page!,
   ),
@@ -57,7 +57,7 @@ void main() {
           t,
           FrostedCard(
             child: FrostedCombobox<String>(
-              label: 'Assignee',
+              labelText: 'Assignee',
               options: const ['Maya Reed', 'Sam Okafor', 'Noor Haddad'],
               value: 'Maya Reed',
               onSelected: (_) {},
@@ -137,7 +137,11 @@ void main() {
                 anchor,
                 items: const [
                   FrostedMenuItem('done', 'Mark done'),
-                  FrostedMenuItem('delete', 'Delete', destructive: true),
+                  FrostedMenuItem(
+                    'delete',
+                    'Delete',
+                    isDestructiveAction: true,
+                  ),
                 ],
               ),
             ),
@@ -235,8 +239,8 @@ void main() {
         MaterialApp(
           debugShowCheckedModeBanner: false,
           builder: (context, page) => FrostedHost(
-            light: t,
-            dark: t,
+            theme: t,
+            darkTheme: t,
             brightness: brightness,
             child: page!,
           ),

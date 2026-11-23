@@ -37,7 +37,7 @@ enum FrostedPresentation {
 /// a blank stage so its exit renders as it does live; a preview is looked
 /// at, not walked out of, so the exit leaves the page standing. A root
 /// stands over the tab bar on a phone; at desktop width a root and a pushed
-/// page stand beside the sidebar ([tabs], [activeIndex] its current), as
+/// page stand beside the sidebar ([tabs], [selectedIndex] its current), as
 /// the shell stands every page there. Given the page's [location], the
 /// sidebar marks the account's foot when the page is its profile.
 ///
@@ -51,11 +51,11 @@ class FrostedPreview extends StatelessWidget {
   /// Creates a [FrostedPreview].
   const FrostedPreview({
     required this.child,
-    this.light,
-    this.dark,
+    this.theme,
+    this.darkTheme,
     this.presentation = FrostedPresentation.root,
     this.tabs = const <FrostedNavItem>[],
-    this.activeIndex = 0,
+    this.selectedIndex = 0,
     this.action,
     this.brand,
     this.drawer = false,
@@ -72,20 +72,20 @@ class FrostedPreview extends StatelessWidget {
   final Widget child;
 
   /// The light and dark themes; null is the default preset's.
-  final FrostedThemeData? light;
+  final FrostedThemeData? theme;
 
   /// The dark theme; null is the light theme's twin.
-  final FrostedThemeData? dark;
+  final FrostedThemeData? darkTheme;
 
   /// How the page stands in the app.
   final FrostedPresentation presentation;
 
   /// The shell's tabs when the page is a nav root: the bar renders with
-  /// [activeIndex] selected; empty renders no bar.
+  /// [selectedIndex] selected; empty renders no bar.
   final List<FrostedNavItem> tabs;
 
   /// The current tab, on a root.
-  final int activeIndex;
+  final int selectedIndex;
 
   /// The shell's act, the ink pill in the bar's middle.
   final ShellAction? action;
@@ -139,8 +139,8 @@ class FrostedPreview extends StatelessWidget {
         builder: (_, app) => Directionality(
           textDirection: Directionality.maybeOf(context) ?? TextDirection.ltr,
           child: FrostedHost(
-            light: light,
-            dark: dark,
+            theme: theme,
+            darkTheme: darkTheme,
             brightness: brightness,
             child: app ?? const SizedBox.shrink(),
           ),
@@ -148,7 +148,7 @@ class FrostedPreview extends StatelessWidget {
         home: switch (presentation) {
           FrostedPresentation.root => _Root(
             tabs: tabs,
-            activeIndex: activeIndex,
+            activeIndex: selectedIndex,
             action: action,
             brand: brand,
             location: location,
@@ -164,7 +164,7 @@ class FrostedPreview extends StatelessWidget {
             ).createRoute(context),
             child: _Beside(
               tabs: tabs,
-              activeIndex: activeIndex,
+              activeIndex: selectedIndex,
               action: action,
               brand: brand,
               location: location,
@@ -192,13 +192,17 @@ class FrostedPreview extends StatelessWidget {
     properties
       ..add(
         DiagnosticsProperty<FrostedThemeData>(
-          'light',
-          light,
+          'theme',
+          theme,
           defaultValue: null,
         ),
       )
       ..add(
-        DiagnosticsProperty<FrostedThemeData>('dark', dark, defaultValue: null),
+        DiagnosticsProperty<FrostedThemeData>(
+          'darkTheme',
+          darkTheme,
+          defaultValue: null,
+        ),
       )
       ..add(
         EnumProperty<FrostedPresentation>(
@@ -214,7 +218,7 @@ class FrostedPreview extends StatelessWidget {
           defaultValue: const <FrostedNavItem>[],
         ),
       )
-      ..add(IntProperty('activeIndex', activeIndex, defaultValue: 0))
+      ..add(IntProperty('selectedIndex', selectedIndex, defaultValue: 0))
       ..add(
         DiagnosticsProperty<ShellAction>('action', action, defaultValue: null),
       )

@@ -31,7 +31,7 @@ class _FormState extends State<_Form> {
     spacing: 16,
     children: [
       FrostedFormField(
-        label: 'Priority',
+        labelText: 'Priority',
         child: FrostedSegmentedButton<String>(
           label: 'Priority',
           segments: const [
@@ -47,7 +47,7 @@ class _FormState extends State<_Form> {
         ),
       ),
       FrostedFormField(
-        label: 'Labels',
+        labelText: 'Labels',
         child: Wrap(
           spacing: 8,
           children: [
@@ -68,8 +68,8 @@ class _FormState extends State<_Form> {
         ),
       ),
       FrostedFormField(
-        label: 'Reminder',
-        helper: 'A nudge before it is due',
+        labelText: 'Reminder',
+        helperText: 'A nudge before it is due',
         child: Align(
           alignment: AlignmentDirectional.centerStart,
           child: FrostedSwitch(
@@ -83,7 +83,7 @@ class _FormState extends State<_Form> {
         ),
       ),
       FrostedFormField(
-        label: 'Done',
+        labelText: 'Done',
         child: Align(
           alignment: AlignmentDirectional.centerStart,
           child: FrostedCheckbox(

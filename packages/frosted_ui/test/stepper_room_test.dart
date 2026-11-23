@@ -28,7 +28,7 @@ Future<void> _pump(
           children: [
             FrostedNumberField(
               value: 250,
-              label: 'the budget',
+              labelText: 'the budget',
               note: 'a month',
               money: true,
               onChanged: (_) {},

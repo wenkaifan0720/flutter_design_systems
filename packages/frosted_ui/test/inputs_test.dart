@@ -118,11 +118,14 @@ void main() {
       t,
       Column(
         children: [
-          FrostedSearchLink(hint: 'Search activity', onPressed: () => opens++),
+          FrostedSearchLink(
+            hintText: 'Search activity',
+            onPressed: () => opens++,
+          ),
           const FrostedSearchLink(
-            hint: 'Search',
+            hintText: 'Search',
             value: 'Blue Fern',
-            label: 'Search, Blue Fern typed',
+            labelText: 'Search, Blue Fern typed',
             onPressed: null,
           ),
         ],
@@ -158,7 +161,7 @@ void main() {
         'Blue Fern',
         (value, set) => FrostedSearchField(
           value: value,
-          hint: 'Search activity',
+          hintText: 'Search activity',
           onChanged: set,
         ),
         seen: seen,
@@ -188,7 +191,7 @@ void main() {
       t,
       FrostedSearchField(
         value: 'Blue Fern',
-        hint: 'Search activity',
+        hintText: 'Search activity',
         onChanged: seen.add,
         onClear: () => cleared++,
         clearKey: key,
@@ -993,12 +996,15 @@ void main() {
       Column(
         children: [
           FrostedTextField(
-            label: 'Note',
-            hint: 'What it is for',
-            helper: 'Shows on the statement',
+            labelText: 'Note',
+            hintText: 'What it is for',
+            helperText: 'Shows on the statement',
             onChanged: seen.add,
           ),
-          const FrostedTextField(label: 'Account', value: 'Checking ·· 4821'),
+          const FrostedTextField(
+            labelText: 'Account',
+            value: 'Checking ·· 4821',
+          ),
         ],
       ),
     );
@@ -1032,9 +1038,9 @@ void main() {
       t,
       Column(
         children: [
-          FrostedAmountField(label: 'Amount', onChanged: seen.add),
+          FrostedAmountField(labelText: 'Amount', onChanged: seen.add),
           const FrostedAmountField(
-            label: 'Target',
+            labelText: 'Target',
             value: '1200',
             size: FrostedAmountFieldSize.small,
           ),
@@ -1047,7 +1053,8 @@ void main() {
     expect(find.text('1200'), findsOneWidget);
     expect(
       t.getSemantics(find.byType(TextField).first),
-      isSemantics(label: 'Amount\n0', isTextField: true),
+      // One node for the field: its label, the sign and the hint.
+      isSemantics(label: 'Amount\n\$\n0', isTextField: true),
     );
     final wells = find.byType(FrostedWell);
     expect(t.getSize(wells.first).height, 64);
@@ -1131,7 +1138,7 @@ void main() {
         250,
         (value, set) => FrostedNumberField(
           value: value,
-          label: 'the budget',
+          labelText: 'the budget',
           note: 'a month',
           max: 260,
           money: true,
@@ -1212,7 +1219,11 @@ void main() {
     expect(seen.last, 25);
     await _pump(
       t,
-      FrostedNumberField(value: 0, label: 'the budget', onChanged: seen.add),
+      FrostedNumberField(
+        value: 0,
+        labelText: 'the budget',
+        onChanged: seen.add,
+      ),
     );
     final floor = _stepper(t, 'the budget')!.getSemanticsData();
     expect(floor.hasAction(SemanticsAction.decrease), isFalse);
@@ -1268,14 +1279,14 @@ void main() {
         FrostedFormSection(
           title: 'New goal',
           children: [
-            const FrostedTextField(label: 'Name', value: 'Lisbon'),
+            const FrostedTextField(labelText: 'Name', value: 'Lisbon'),
             const FrostedFieldPair(
               FrostedAmountField(
-                label: 'Target',
+                labelText: 'Target',
                 value: '1200',
                 size: FrostedAmountFieldSize.small,
               ),
-              FrostedTextField(label: 'Date', value: 'May 2027'),
+              FrostedTextField(labelText: 'Date', value: 'May 2027'),
             ),
             FrostedPickerRow(
               label: 'From',
@@ -1307,7 +1318,9 @@ void main() {
         t,
         const FrostedFormSection(
           bare: true,
-          children: [FrostedTextField(label: 'Note', value: 'November top-up')],
+          children: [
+            FrostedTextField(labelText: 'Note', value: 'November top-up'),
+          ],
         ),
       );
       expect(find.byType(FrostedCard), findsNothing);

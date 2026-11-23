@@ -151,65 +151,9 @@ abstract class FrostedLocalizations {
   /// A move between accounts.
   String get move;
 
-  /// The menu over a selection: cut. No longer read: the text menu says
-  /// Material's word, in the app's language.
-  @Deprecated(
-    'Use MaterialLocalizations.of(context).cutButtonLabel instead. '
-    'This feature was deprecated after v0.2.0.',
-  )
-  String get cut;
-
-  /// Copy. No longer read: the text menu says Material's word, in the
-  /// app's language.
-  @Deprecated(
-    'Use MaterialLocalizations.of(context).copyButtonLabel instead. '
-    'This feature was deprecated after v0.2.0.',
-  )
-  String get copy;
-
-  /// Paste. No longer read: the text menu says Material's word, in the
-  /// app's language.
-  @Deprecated(
-    'Use MaterialLocalizations.of(context).pasteButtonLabel instead. '
-    'This feature was deprecated after v0.2.0.',
-  )
-  String get paste;
-
   /// Select all: a table's checkbox over every row. (The text menu says
   /// Material's word, in the app's language.)
   String get selectAll;
-
-  /// Look up. No longer read: the text menu says Material's word, in the
-  /// app's language.
-  @Deprecated(
-    'Use MaterialLocalizations.of(context).lookUpButtonLabel instead. '
-    'This feature was deprecated after v0.2.0.',
-  )
-  String get lookUp;
-
-  /// Search the web. No longer read: the text menu says Material's word, in the
-  /// app's language.
-  @Deprecated(
-    'Use MaterialLocalizations.of(context).searchWebButtonLabel instead. '
-    'This feature was deprecated after v0.2.0.',
-  )
-  String get searchWeb;
-
-  /// Share. No longer read: the text menu says Material's word, in the
-  /// app's language.
-  @Deprecated(
-    'Use MaterialLocalizations.of(context).shareButtonLabel instead. '
-    'This feature was deprecated after v0.2.0.',
-  )
-  String get share;
-
-  /// Scan text with the camera. No longer read: the text menu says Material's word, in the
-  /// app's language.
-  @Deprecated(
-    'Use MaterialLocalizations.of(context).scanTextButtonLabel instead. '
-    'This feature was deprecated after v0.2.0.',
-  )
-  String get scanText;
 
   /// A payment by card.
   String get cardPayment;
@@ -475,28 +419,7 @@ class FrostedLocalizationsEn extends FrostedLocalizations {
   String get move => 'Move';
 
   @override
-  String get cut => 'Cut';
-
-  @override
-  String get copy => 'Copy';
-
-  @override
-  String get paste => 'Paste';
-
-  @override
   String get selectAll => 'Select all';
-
-  @override
-  String get lookUp => 'Look up';
-
-  @override
-  String get searchWeb => 'Search the web';
-
-  @override
-  String get share => 'Share';
-
-  @override
-  String get scanText => 'Scan text';
 
   @override
   String get cardPayment => 'Card payment';

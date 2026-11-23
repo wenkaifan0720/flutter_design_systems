@@ -14,7 +14,6 @@ import '../glass.dart';
 import '../button/button.dart';
 import '../host.dart';
 import '../pressable/pressable.dart';
-import '../sheet.dart';
 import '../../internal/dim.dart';
 import '../../internal/cap.dart';
 import '../../internal/act_row.dart';
@@ -24,12 +23,14 @@ import '../../internal/act_row.dart';
 /// the dialog's shadow), centred over the scrim at most 320 wide, 24 in at
 /// every side. Its [title] (the h1) and [message] stand centred; under them
 /// [cancelLabel] (a glass act) and [confirmLabel] (the ink act, or the danger fill
-/// when the act is [destructive]: Delete, Remove) share the row as the
+/// when the act is [isDestructiveAction]: Delete, Remove) share the row as the
 /// sheet's foot sets them; words too long for half the width, or text set
-/// large, stack them as wide acts instead, the confirm first. Without a
+/// large, stack them as wide acts instead, the confirm on top. Without a
 /// cancel there is one wide act and nothing to decide. [actions] (the
-/// page's own buttons) take the acts' place: two share the row, three or
-/// more stack, the first on top. This is the card;
+/// page's own buttons, the dismissive one first and the confirming one
+/// last) take the acts' place the same way: side by side while they fit,
+/// else stacked with the last on top, as ui_core's `RawActionBar` lays
+/// them out. This is the card;
 /// [FrostedDialog.show] raises it over the whole app and completes with
 /// whether it was confirmed (null when dismissed). Captured on the desktop
 /// (the Freeze sheet: Cancel / Freeze); on a phone the same card over the
@@ -49,7 +50,7 @@ class FrostedDialog extends StatelessWidget {
     this.cancelLabel,
     this.onConfirm,
     this.onCancel,
-    this.destructive = false,
+    this.isDestructiveAction = false,
     this.style,
     super.key,
   });
@@ -79,7 +80,7 @@ class FrostedDialog extends StatelessWidget {
   final VoidCallback? onCancel;
 
   /// Whether confirming is a loss, set in the danger fill.
-  final bool destructive;
+  final bool isDestructiveAction;
 
   /// This dialog's own style, over `FrostedThemeData.components.dialog`: its
   /// fill (a flat colour in place of the sheet's face), the edge's colour or
@@ -106,7 +107,7 @@ class FrostedDialog extends StatelessWidget {
     Widget? content,
     String? confirmLabel,
     String? cancelLabel,
-    bool destructive = false,
+    bool isDestructiveAction = false,
   }) {
     final t = context.frostedTheme;
     final navigator = FrostedHost.navigatorOf(context);
@@ -132,7 +133,7 @@ class FrostedDialog extends StatelessWidget {
                   content: content,
                   confirmLabel: confirmLabel,
                   cancelLabel: cancelLabel,
-                  destructive: destructive,
+                  isDestructiveAction: isDestructiveAction,
                   onConfirm: () => Navigator.of(dialogContext).pop(true),
                   onCancel: () => Navigator.of(dialogContext).pop(false),
                 ),
@@ -144,7 +145,8 @@ class FrostedDialog extends StatelessWidget {
     );
   }
 
-  Widget _confirmAct(String label, {required bool expand}) => destructive
+  Widget _confirmAct(String label, {required bool expand}) =>
+      isDestructiveAction
       ? _DangerAct(label, onTap: onConfirm, expand: expand)
       : FrostedButton(label, expand: expand, onPressed: onConfirm);
 
@@ -219,44 +221,14 @@ class FrostedDialog extends StatelessWidget {
                     child: content,
                   ),
                 const SizedBox(height: FrostedChromeMetrics.dialogActsGap),
-                LayoutBuilder(
-                  builder: (context, room) {
-                    if (actions case final acts?) {
-                      if (acts.length <= 2) {
-                        return FrostedSheetShell.footOf(acts);
-                      }
-                      return Column(
-                        spacing: FrostedBreakpoints.gap(context),
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: acts,
-                      );
-                    }
-                    if (decline == null) {
-                      return _confirmAct(confirmLabel, expand: true);
-                    }
-                    if (_share(context, room.maxWidth, [
-                      decline,
-                      confirmLabel,
-                    ])) {
-                      return FrostedSheetShell.footOf([
-                        FrostedButton.glass(decline, onPressed: onCancel),
-                        _confirmAct(confirmLabel, expand: false),
-                      ]);
-                    }
-                    return Column(
-                      spacing: FrostedBreakpoints.gap(context),
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        _confirmAct(confirmLabel, expand: true),
-                        FrostedButton.glass(
-                          decline,
-                          expand: true,
-                          onPressed: onCancel,
-                        ),
-                      ],
-                    );
-                  },
-                ),
+                switch ((actions, decline)) {
+                  (final acts?, _) => FrostedActBar(acts),
+                  (null, null) => _confirmAct(confirmLabel, expand: true),
+                  (null, final decline?) => FrostedActBar([
+                    FrostedButton.glass(decline, onPressed: onCancel),
+                    _confirmAct(confirmLabel, expand: false),
+                  ]),
+                },
               ],
             ),
           ),
@@ -277,35 +249,16 @@ class FrostedDialog extends StatelessWidget {
       ..add(ObjectFlagProperty<VoidCallback>.has('onConfirm', onConfirm))
       ..add(ObjectFlagProperty<VoidCallback>.has('onCancel', onCancel))
       ..add(
-        FlagProperty('destructive', value: destructive, ifTrue: 'destructive'),
+        FlagProperty(
+          'isDestructiveAction',
+          value: isDestructiveAction,
+          ifTrue: 'destructive',
+        ),
       )
       ..add(
         DiagnosticsProperty<FrostedStyle>('style', style, defaultValue: null),
       );
   }
-}
-
-/// Whether [words] fit one act each across [width], the foot's gap apart,
-/// as a button sets its word: on one line between its insets, at the
-/// text's scale.
-bool _share(BuildContext context, double width, List<String> words) {
-  final t = context.frostedTheme;
-  final each =
-      (width - FrostedBreakpoints.gap(context) * (words.length - 1)) /
-      words.length;
-  final room = each - 2 * FrostedChromeMetrics.buttonInset;
-  for (final word in words) {
-    final line = TextPainter(
-      text: TextSpan(text: word, style: t.textTheme.labelLarge),
-      textDirection: Directionality.of(context),
-      textScaler: MediaQuery.textScalerOf(context),
-      maxLines: 1,
-    )..layout();
-    final fits = line.width <= room;
-    line.dispose();
-    if (!fits) return false;
-  }
-  return true;
 }
 
 /// The confirming act of a loss: the button's shape in the danger fill, its

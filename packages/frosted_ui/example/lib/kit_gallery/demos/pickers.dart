@@ -18,8 +18,8 @@ Widget kitPickersDemo(Brightness brightness) => kitScreen(
         KitHeld<String?>(
           null,
           (v, set) => FrostedSelect<String>(
-            label: 'Room',
-            helper: 'Where the meeting is held',
+            labelText: 'Room',
+            helperText: 'Where the meeting is held',
             value: v,
             onChanged: set,
             options: const [
@@ -34,8 +34,8 @@ Widget kitPickersDemo(Brightness brightness) => kitScreen(
         KitHeld<String?>(
           null,
           (v, set) => FrostedSelect<String>(
-            label: 'Team',
-            error: v == null ? 'Choose a team' : null,
+            labelText: 'Team',
+            errorText: v == null ? 'Choose a team' : null,
             value: v,
             onChanged: set,
             options: const [
@@ -45,8 +45,8 @@ Widget kitPickersDemo(Brightness brightness) => kitScreen(
           ),
         ),
         const FrostedSelect<String>(
-          label: 'Building',
-          helper: 'Set by your office',
+          labelText: 'Building',
+          helperText: 'Set by your office',
           value: 'n',
           options: [FrostedSelectOption('n', 'North wing')],
           onChanged: null,
@@ -61,8 +61,8 @@ Widget kitPickersDemo(Brightness brightness) => kitScreen(
           (v, set) => FrostedDatePicker(
             value: v,
             currentDate: kitToday,
-            first: DateTime(2026, 11, 3),
-            last: DateTime(2027, 6, 30),
+            firstDate: DateTime(2026, 11, 3),
+            lastDate: DateTime(2027, 6, 30),
             onChanged: set,
           ),
         ),
@@ -130,8 +130,8 @@ Widget kitPickersDemo(Brightness brightness) => kitScreen(
 /// A due date on its wheels.
 Widget kitSpecimenDatePicker() => FrostedDatePicker(
   value: DateTime(2026, 10, 30),
-  first: DateTime(2026),
-  last: DateTime(2027, 12, 31),
+  firstDate: DateTime(2026),
+  lastDate: DateTime(2027, 12, 31),
   currentDate: DateTime(2026, 10, 28),
   onChanged: (_) {},
 );

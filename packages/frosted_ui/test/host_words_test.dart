@@ -121,7 +121,7 @@ void main() {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const FrostedTextField(label: 'Name', value: 'Ada'),
+                      const FrostedTextField(labelText: 'Name', value: 'Ada'),
                       FrostedDatePicker(
                         value: DateTime(2026, 11, 14),
                         onChanged: (_) {},
@@ -163,16 +163,22 @@ void main() {
   ]) {
     final fields = <String, Widget>{
       'text field': const FrostedTextField(
-        label: 'Name',
+        labelText: 'Name',
         value: 'Ada Lovelace',
       ),
-      'text area': const FrostedTextArea(label: 'Note', value: 'Ada Lovelace'),
-      'amount field': const FrostedAmountField(label: 'Amount', value: '500'),
+      'text area': const FrostedTextArea(
+        labelText: 'Note',
+        value: 'Ada Lovelace',
+      ),
+      'amount field': const FrostedAmountField(
+        labelText: 'Amount',
+        value: '500',
+      ),
       'password field': const FrostedPasswordField(
-        label: 'Password',
+        labelText: 'Password',
         value: 'secret words',
       ),
-      'search field': const FrostedSearchField(hint: 'Search'),
+      'search field': const FrostedSearchField(hintText: 'Search'),
     };
     for (final MapEntry(key: name, value: field) in fields.entries) {
       testWidgets(
@@ -248,7 +254,10 @@ void main() {
             child: Center(
               child: SizedBox(
                 width: 340,
-                child: FrostedTextField(label: 'Name', value: 'Ada Lovelace'),
+                child: FrostedTextField(
+                  labelText: 'Name',
+                  value: 'Ada Lovelace',
+                ),
               ),
             ),
           ),

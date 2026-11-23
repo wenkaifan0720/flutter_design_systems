@@ -26,7 +26,7 @@ import '../../internal/cap.dart';
 /// group it stands in.
 ///
 /// ```dart
-/// FrostedRadioGroup<String>(label: 'Plan', value: plan, onChanged: setPlan, options: const [FrostedRadio('free', 'Free'), FrostedRadio('pro', 'Pro', note: 'Billed yearly')])
+/// FrostedRadioGroup<String>(labelText: 'Plan', value: plan, onChanged: setPlan, options: const [FrostedRadio('free', 'Free'), FrostedRadio('pro', 'Pro', note: 'Billed yearly')])
 /// ```
 class FrostedRadio<T> extends StatelessWidget {
   /// A choice of [value], named [label].
@@ -278,23 +278,23 @@ class _RadioScope<T> extends InheritedWidget {
 /// round bead of glass before its words (the chosen one's a little clearer,
 /// a dot printed at its centre), the whole row its target. The page owns
 /// [value]; a null [onChanged] leaves them inert. A screen reader hears
-/// [label] over a group of radio buttons, each checked or not. Flutter's
+/// [labelText] over a group of radio buttons, each checked or not. Flutter's
 /// [RadioGroup] is the behaviour, each option a [RawRadio], with ui_core's
 /// [RadioGroupKeyboardFix] inside: one Tab stop, on the chosen option (else
 /// the first that can be chosen), and the four arrows choose as they move,
 /// in reading order, wrapping and passing over a disabled option.
 ///
 /// ```dart
-/// FrostedRadioGroup<String>(label: 'Delivery', value: speed, onChanged: (v) => setState(() => speed = v), options: const [FrostedRadio('standard', 'Standard', note: '3 to 5 days'), FrostedRadio('express', 'Express', note: 'Tomorrow')])
+/// FrostedRadioGroup<String>(labelText: 'Delivery', value: speed, onChanged: (v) => setState(() => speed = v), options: const [FrostedRadio('standard', 'Standard', note: '3 to 5 days'), FrostedRadio('express', 'Express', note: 'Tomorrow')])
 /// ```
 class FrostedRadioGroup<T> extends StatelessWidget {
   /// The [options], [value] chosen.
   const FrostedRadioGroup({
     required this.options,
-    required this.label,
+    required this.labelText,
     this.value,
     this.onChanged,
-    this.error,
+    this.errorText,
     super.key,
   });
 
@@ -308,10 +308,10 @@ class FrostedRadioGroup<T> extends StatelessWidget {
   final ValueChanged<T>? onChanged;
 
   /// The group's name, printed over it and spoken.
-  final String label;
+  final String labelText;
 
   /// What is wrong with the choice, under it in the over ink.
-  final String? error;
+  final String? errorText;
 
   @override
   Widget build(BuildContext context) {
@@ -319,7 +319,7 @@ class FrostedRadioGroup<T> extends StatelessWidget {
     final onChanged = this.onChanged;
     return Semantics(
       container: true,
-      label: label,
+      label: labelText,
       explicitChildNodes: true,
       child: RadioGroup<T>(
         groupValue: value,
@@ -334,7 +334,7 @@ class FrostedRadioGroup<T> extends StatelessWidget {
             children: [
               ExcludeSemantics(
                 child: Text(
-                  label,
+                  labelText,
                   style: t.textTheme.labelMedium.c(t.colorScheme.textSecondary),
                 ),
               ),
@@ -345,7 +345,7 @@ class FrostedRadioGroup<T> extends StatelessWidget {
                   takesChoice: onChanged != null,
                   child: option,
                 ),
-              if (error case final error?)
+              if (errorText case final error?)
                 Semantics(
                   liveRegion: true,
                   child: Text(
@@ -367,8 +367,8 @@ class FrostedRadioGroup<T> extends StatelessWidget {
       ..add(IterableProperty<FrostedRadio<T>>('options', options))
       ..add(DiagnosticsProperty<T>('value', value, defaultValue: null))
       ..add(ObjectFlagProperty<ValueChanged<T>>.has('onChanged', onChanged))
-      ..add(StringProperty('label', label))
-      ..add(StringProperty('error', error, defaultValue: null));
+      ..add(StringProperty('labelText', labelText))
+      ..add(StringProperty('errorText', errorText, defaultValue: null));
   }
 }
 
@@ -933,27 +933,27 @@ class FrostedUploadFile {
 /// package picks no files itself: [onPressed] opens the app's picker, and an
 /// app that takes drops sets [dragging] while one is over it (the well's
 /// rim brightens and glows by day, takes the accent by night, as a field
-/// holding focus does; with an [error] it warms to the over hue). Read
-/// aloud as [label].
+/// holding focus does; with an [errorText] it warms to the over hue). Read
+/// aloud as [labelText].
 ///
 /// ```dart
-/// FrostedFileUpload(label: 'Attachments', hint: 'PDF or images, up to 10 MB', onPressed: pick, files: files, onRemoved: (f) => setState(() => files.remove(f)))
+/// FrostedFileUpload(labelText: 'Attachments', hintText: 'PDF or images, up to 10 MB', onPressed: pick, files: files, onRemoved: (f) => setState(() => files.remove(f)))
 /// ```
 class FrostedFileUpload extends StatelessWidget {
-  /// A place for files, called [label].
+  /// A place for files, called [labelText].
   const FrostedFileUpload({
-    required this.label,
+    required this.labelText,
     this.onPressed,
     this.files = const [],
     this.onRemoved,
-    this.hint,
+    this.hintText,
     this.dragging = false,
-    this.error,
+    this.errorText,
     super.key,
   });
 
   /// What the files are for, printed over the well and spoken.
-  final String label;
+  final String labelText;
 
   /// Opens the app's file picker; null makes it inert.
   final VoidCallback? onPressed;
@@ -965,13 +965,13 @@ class FrostedFileUpload extends StatelessWidget {
   final ValueChanged<FrostedUploadFile>? onRemoved;
 
   /// What it takes ("PDF or images, up to 10 MB").
-  final String? hint;
+  final String? hintText;
 
   /// Whether a dragged file is over it.
   final bool dragging;
 
   /// What is wrong, under it in the over ink.
-  final String? error;
+  final String? errorText;
 
   @override
   Widget build(BuildContext context) {
@@ -980,7 +980,7 @@ class FrostedFileUpload extends StatelessWidget {
     final well = FrostedWell(
       radius: FrostedCorners.r18,
       focused: dragging,
-      error: error != null,
+      error: errorText != null,
       child: Padding(
         padding: const EdgeInsets.all(FrostedSpacing.s20),
         child: Center(
@@ -1007,7 +1007,7 @@ class FrostedFileUpload extends StatelessWidget {
                   Text(words.dropFile, style: t.textTheme.bodySmall),
                 ],
               ),
-              if (hint case final hint?)
+              if (hintText case final hint?)
                 Text(
                   hint,
                   textAlign: TextAlign.center,
@@ -1020,7 +1020,7 @@ class FrostedFileUpload extends StatelessWidget {
     );
     return Semantics(
       container: true,
-      label: label,
+      label: labelText,
       explicitChildNodes: true,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -1029,7 +1029,7 @@ class FrostedFileUpload extends StatelessWidget {
         children: [
           ExcludeSemantics(
             child: Text(
-              label,
+              labelText,
               style: t.textTheme.labelMedium.c(t.colorScheme.textSecondary),
             ),
           ),
@@ -1039,7 +1039,7 @@ class FrostedFileUpload extends StatelessWidget {
               file: file,
               onRemoved: onRemoved == null ? null : () => onRemoved!(file),
             ),
-          if (error case final error?)
+          if (errorText case final error?)
             Semantics(
               liveRegion: true,
               child: Text(
@@ -1056,7 +1056,7 @@ class FrostedFileUpload extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('label', label))
+      ..add(StringProperty('labelText', labelText))
       ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
       ..add(
         IterableProperty<FrostedUploadFile>(
@@ -1071,9 +1071,9 @@ class FrostedFileUpload extends StatelessWidget {
           onRemoved,
         ),
       )
-      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
       ..add(FlagProperty('dragging', value: dragging, ifTrue: 'dragging'))
-      ..add(StringProperty('error', error, defaultValue: null));
+      ..add(StringProperty('errorText', errorText, defaultValue: null));
   }
 }
 

@@ -18,7 +18,7 @@ Widget _group(
   ValueChanged<Set<String>>? changedSet,
 }) => switch (kind) {
   'radios' => FrostedRadioGroup<String>(
-    label: 'Delivery',
+    labelText: 'Delivery',
     value: value,
     onChanged: changed,
     options: const [
@@ -30,7 +30,7 @@ Widget _group(
   ),
   _ => FrostedToggleGroup<String>(
     label: 'Alignment',
-    allowEmpty: allowEmpty,
+    emptySelectionAllowed: allowEmpty,
     segments: const [
       FrostedButtonSegment('A', 'A'),
       FrostedButtonSegment('B', 'B'),
@@ -38,7 +38,7 @@ Widget _group(
       FrostedButtonSegment('D', 'D'),
     ],
     selected: {?value},
-    onChanged:
+    onSelectionChanged:
         changedSet ?? (changed == null ? null : (next) => changed(next.single)),
   ),
 };

@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
 
 import '../chrome_metrics.dart';
 import '../components/pressable/pressable.dart' show FrostedFocusRing;
@@ -53,6 +54,44 @@ class FrostedFieldHint extends StatelessWidget {
     );
     return error ? Semantics(liveRegion: true, child: line) : line;
   }
+}
+
+/// A field laid out from ui_core's [RawInputDecorator]: its [parts]' label
+/// over its control and its error, else its help, under it, as
+/// [FrostedFieldLabel] and [FrostedFieldHint] draw them. The decorator reads
+/// the words on the control's node; what is drawn of them stays out of the
+/// tree. [hint] false leaves the help and error undrawn (a list open over
+/// them). Plumbing of the components.
+Widget frostedFieldColumn(
+  BuildContext context,
+  RawInputDecoratorDetails parts, {
+  bool hint = true,
+  Widget Function(Widget hint)? hintBuilder,
+}) {
+  final t = context.frostedTheme;
+  final words = parts.error ?? parts.helper;
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    mainAxisSize: MainAxisSize.min,
+    spacing: FrostedChromeMetrics.fieldLabelGap,
+    children: [
+      if (parts.label case final label?)
+        DefaultTextStyle.merge(
+          style: t.textTheme.labelSmall.line(15.6),
+          child: label,
+        ),
+      parts.control,
+      if (words != null && hint)
+        (hintBuilder ?? (w) => w)(
+          DefaultTextStyle.merge(
+            style: parts.error != null
+                ? t.textTheme.bodySmall.line(15.6).c(t.colorScheme.over)
+                : t.textTheme.bodySmall.line(15.6),
+            child: words,
+          ),
+        ),
+    ],
+  );
 }
 
 /// The recessed glass a field stands in (`.inp`, `.amount-in`, `.pick-r`):
@@ -185,17 +224,4 @@ class _WellRingState extends State<_WellRing> {
       child: widget.child,
     ),
   );
-}
-
-/// The over hue as an edge: the hue itself by night (3:1 on the dark well),
-/// by day the lit rim warmed a fifth of the way toward the over ink.
-@Deprecated(
-  'Wells and code boxes keep a neutral rim when wrong; the message carries '
-  'the warning. Will be removed in 0.4.0.',
-)
-Color frostedErrorEdge(FrostedThemeData t) {
-  final hue = t.colorScheme.overTint.withValues(alpha: 1);
-  return t.isDark
-      ? hue
-      : Color.lerp(FrostedChromeMetrics.litEdge, t.colorScheme.over, .8)!;
 }

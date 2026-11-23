@@ -15,7 +15,8 @@ abstract final class FrostedLastInput {
   static bool _watching = false;
 
   /// Counts the keys pressed since [watch].
-  static final ValueNotifier<int> keys = _KeyCount();
+  static final ValueListenable<int> keys = _keys;
+  static final _KeyCount _keys = _KeyCount();
 
   /// Whether the last input was a key (else the pointer, or nothing).
   static bool get keyed => _keyed;
@@ -36,7 +37,7 @@ abstract final class FrostedLastInput {
   static bool _key(KeyEvent event) {
     if (event is KeyDownEvent) {
       _keyed = true;
-      keys.value++;
+      _keys.count();
     }
     return false;
   }
@@ -49,45 +50,27 @@ abstract final class FrostedLastInput {
 }
 
 /// The app's key count: it lives as long as the app, so it is never
-/// disposed. It is a [ValueNotifier] by its interface, not a
-/// [ChangeNotifier] by descent, whose creation a leak-tracked test reports:
-/// an app's own tests that open a menu stay leak free.
-class _KeyCount implements ValueNotifier<int> {
+/// disposed, and it is no [ChangeNotifier] (whose creation a leak-tracked
+/// test reports): an app's own tests that open a menu stay leak free.
+class _KeyCount implements ValueListenable<int> {
   final List<VoidCallback> _listeners = [];
   int _value = 0;
 
   @override
   int get value => _value;
 
-  @override
-  set value(int newValue) {
-    if (_value == newValue) return;
-    _value = newValue;
-    notifyListeners();
+  void count() {
+    _value++;
+    for (final listener in List.of(_listeners)) {
+      if (_listeners.contains(listener)) listener();
+    }
   }
-
-  @override
-  bool get hasListeners => _listeners.isNotEmpty;
 
   @override
   void addListener(VoidCallback listener) => _listeners.add(listener);
 
   @override
   void removeListener(VoidCallback listener) => _listeners.remove(listener);
-
-  @override
-  void notifyListeners() {
-    for (final listener in List.of(_listeners)) {
-      if (_listeners.contains(listener)) listener();
-    }
-  }
-
-  /// Does nothing: the count lives as long as the app.
-  @override
-  void dispose() {}
-
-  @override
-  String toString() => '${describeIdentity(this)}($value)';
 }
 
 /// A menu ui_core raises, which gives its first row the focus however it

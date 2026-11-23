@@ -1,5 +1,3 @@
-import 'dart:math' as math;
-
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
@@ -8,30 +6,27 @@ import '../components/toast.dart';
 import '../localizations.dart';
 import '../theme.dart';
 
-/// What a Frosted toast carries past its words: its [tone], its [icon], and
-/// how far over the screen's bottom edge it stands ([bottom]: over the tab
-/// bar, over a route's footer), measured where it was raised.
+/// What a Frosted toast carries past its words: its [tone] and its [icon].
 @immutable
 class FrostedToastLook {
   /// A toast's look.
-  const FrostedToastLook({required this.tone, required this.bottom, this.icon});
+  const FrostedToastLook({required this.tone, this.icon});
 
   /// The mark's ink and glyph.
   final FrostedTone tone;
 
   /// The mark's glyph; null is the tone's.
   final IconData? icon;
-
-  /// The card's bottom edge, up from the screen's.
-  final double bottom;
 }
 
 /// The toasts' layer over the app, which [FrostedHost] mounts above the
 /// navigator: ui_core's [RawToaster] (the queue, the timer that pauses
 /// under a pointer or focus, the swipe and Escape that dismiss, F6 to reach
 /// it, the live region), one toast at a time, each painted as a
-/// [FrostedSnackBar] rising from below. On a phone it spans the row 16 in;
-/// at desktop width it stands 380 wide at the bottom end, 32 in.
+/// [FrostedSnackBar] rising from below. On a phone it spans the row 16 in,
+/// 12 over what stands at the foot (the tab bar, a route's footer, kept
+/// clear by ui_core's [RawToasterKeepClear]) or over the screen's safe
+/// inset; at desktop width it stands 380 wide at the bottom end, 32 in.
 class FrostedToaster extends StatelessWidget {
   /// A layer of toasts over [child].
   const FrostedToaster({required this.child, super.key});
@@ -50,9 +45,13 @@ class FrostedToaster extends StatelessWidget {
       padding: wide
           ? const EdgeInsetsDirectional.only(
               end: FrostedChromeMetrics.toastWideEdge,
+              bottom: FrostedChromeMetrics.toastWideEdge,
             )
-          : const EdgeInsets.symmetric(
-              horizontal: FrostedChromeMetrics.toastSide,
+          : const EdgeInsets.fromLTRB(
+              FrostedChromeMetrics.toastSide,
+              0,
+              FrostedChromeMetrics.toastSide,
+              FrostedChromeMetrics.toastOverBar,
             ),
       constraints: wide
           ? const BoxConstraints.tightFor(
@@ -70,12 +69,7 @@ class FrostedToaster extends StatelessWidget {
     final data = toast.data;
     final look = data is FrostedToastLook
         ? data
-        : FrostedToastLook(
-            tone: FrostedTone.success,
-            bottom: FrostedBreakpoints.isWide(context)
-                ? FrostedChromeMetrics.toastWideEdge
-                : FrostedChromeMetrics.toastBottom,
-          );
+        : const FrostedToastLook(tone: FrostedTone.success);
     final card = FrostedSnackBar(
       toast.message,
       title: toast.title,
@@ -100,12 +94,6 @@ class FrostedToaster extends StatelessWidget {
               );
             },
           );
-    // The layer stands inside the safe area; the toast's own height over
-    // the edge already counts it.
-    final safe = MediaQuery.paddingOf(context).bottom;
-    return Padding(
-      padding: EdgeInsets.only(bottom: math.max(0, look.bottom - safe)),
-      child: face,
-    );
+    return face;
   }
 }

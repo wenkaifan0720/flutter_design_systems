@@ -3602,11 +3602,10 @@ class FrostedThemeData with Diagnosticable {
   /// `ThemeData.copyWith`. A new [typeface] sets every style of [textTheme]
   /// in its faces and at its scale, unless a [textTheme] is given too.
   ///
-  /// [shadows], [glass], [pearl] and [sheens] are deprecated: a free shadow
-  /// can make Frosted's soft lift a hard one (depth is thickness), and an
-  /// opaque or dark tint turns glass into paint. A preset keeps them in the
-  /// look; [opaqueMaterials] is the sanctioned solid form, for high
-  /// contrast.
+  /// A preset keeps its shadows, glass, pearl and sheens in the look: a free
+  /// shadow can make Frosted's soft lift a hard one (depth is thickness), and
+  /// an opaque or dark tint turns glass into paint. [opaqueMaterials] is the
+  /// sanctioned solid form, for high contrast.
   ///
   /// ```dart
   /// final theme = FrostedThemeData.opal().copyWith(
@@ -3619,34 +3618,10 @@ class FrostedThemeData with Diagnosticable {
     Brightness? brightness,
     FrostedColorScheme? colorScheme,
     FrostedTextTheme? textTheme,
-    @Deprecated(
-      'Use a preset\'s shadows (FrostedThemeData.preset) or opaqueMaterials '
-      'instead: a free shadow can make Frosted\'s soft lift a hard one. '
-      'This feature was deprecated after v0.2.0.',
-    )
-    FrostedShadows? shadows,
-    @Deprecated(
-      'Use opaqueMaterials instead, the sanctioned solid form for high '
-      'contrast: a free glass tint can turn Frosted\'s glass into paint. '
-      'This feature was deprecated after v0.2.0.',
-    )
-    FrostedGlassColors? glass,
-    @Deprecated(
-      'Use opaqueMaterials instead, the sanctioned solid form for high '
-      'contrast: a free pearl tint can turn Frosted\'s glass into paint. '
-      'This feature was deprecated after v0.2.0.',
-    )
-    FrostedPearlColors? pearl,
     FrostedToastColors? toast,
     FrostedHues? hues,
     FrostedLights? lights,
     FrostedChartInks? charts,
-    @Deprecated(
-      'Use opaqueMaterials instead, the sanctioned solid form for high '
-      'contrast: a free sheen tint can turn Frosted\'s glass into paint. '
-      'This feature was deprecated after v0.2.0.',
-    )
-    FrostedSheens? sheens,
     FrostedDensity? density,
     FrostedTypeface? typeface,
     FrostedComponentThemes? components,
@@ -3664,14 +3639,14 @@ class FrostedThemeData with Diagnosticable {
           (to == from
               ? this.textTheme
               : this.textTheme._map((style) => _retyped(style, from, to))),
-      shadows: shadows ?? this.shadows,
-      glass: glass ?? this.glass,
-      pearl: pearl ?? this.pearl,
+      shadows: shadows,
+      glass: glass,
+      pearl: pearl,
       toast: toast ?? this.toast,
       hues: hues ?? this.hues,
       lights: lights ?? this.lights,
       charts: charts ?? this.charts,
-      sheens: sheens ?? this.sheens,
+      sheens: sheens,
       density: density ?? _density,
       typeface: typeface ?? this.typeface,
       components: components ?? this.components,

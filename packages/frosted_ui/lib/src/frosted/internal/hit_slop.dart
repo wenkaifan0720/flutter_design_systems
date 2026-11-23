@@ -84,25 +84,36 @@ class FrostedTargetSide extends InheritedWidget {
 /// field's one node, named [label], spans the same box, so the box a
 /// screen reader outlines is the box a tap reaches. The editable's words,
 /// flags and actions gather in that node. Nothing lays out differently.
-/// Without a room round it the line answers over its own box. Plumbing of
-/// the components.
+/// Without a room round it the line answers over its own box. Inside a
+/// field that names it (ui_core's `RawInputDecorator`, [ownNode] false) the
+/// line makes no node: the editable joins the field's, which spans the
+/// well and carries its name, help and error. Plumbing of the components.
 class FrostedFieldTarget extends SingleChildRenderObjectWidget {
   /// Creates a [FrostedFieldTarget].
-  const FrostedFieldTarget({required Widget child, this.label, super.key})
-    : super(child: child);
+  const FrostedFieldTarget({
+    required Widget child,
+    this.label,
+    this.ownNode = true,
+    super.key,
+  }) : super(child: child);
 
   /// The field's name.
   final String? label;
 
+  /// Whether the line makes the field's node; false where a field round it
+  /// makes it.
+  final bool ownNode;
+
   @override
   RenderObject createRenderObject(BuildContext context) =>
-      _RenderFieldLine(label, Directionality.maybeOf(context));
+      _RenderFieldLine(label, Directionality.maybeOf(context), ownNode);
 
   @override
   void updateRenderObject(BuildContext context, RenderObject renderObject) {
     (renderObject as _RenderFieldLine)
       ..label = label
-      ..textDirection = Directionality.maybeOf(context);
+      ..textDirection = Directionality.maybeOf(context)
+      ..ownNode = ownNode;
   }
 }
 
@@ -273,7 +284,14 @@ class _RenderLaneKey extends RenderProxyBox {
 }
 
 class _RenderFieldLine extends RenderProxyBox {
-  _RenderFieldLine(this._label, this._textDirection);
+  _RenderFieldLine(this._label, this._textDirection, this._ownNode);
+
+  bool _ownNode;
+  set ownNode(bool value) {
+    if (value == _ownNode) return;
+    _ownNode = value;
+    markNeedsSemanticsUpdate();
+  }
 
   String? _label;
   set label(String? value) {
@@ -360,6 +378,7 @@ class _RenderFieldLine extends RenderProxyBox {
   @override
   void describeSemanticsConfiguration(SemanticsConfiguration config) {
     super.describeSemanticsConfiguration(config);
+    if (!_ownNode) return;
     config.isSemanticBoundary = true;
     final label = _label;
     if (label != null && label.isNotEmpty) {

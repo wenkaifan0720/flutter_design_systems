@@ -34,20 +34,20 @@ import '../../internal/dim.dart';
 /// ui_core's [RawPasswordReveal] is the behaviour.
 ///
 /// ```dart
-/// FrostedPasswordField(label: 'Password', value: password, onChanged: (v) => setState(() => password = v))
+/// FrostedPasswordField(labelText: 'Password', value: password, onChanged: (v) => setState(() => password = v))
 /// ```
 class FrostedPasswordField extends StatelessWidget {
-  /// A password field named [label].
+  /// A password field named [labelText].
   const FrostedPasswordField({
-    required this.label,
+    required this.labelText,
     this.value,
     this.onChanged,
     this.onSubmitted,
     this.controller,
     this.focusNode,
-    this.hint,
-    this.helper,
-    this.error,
+    this.hintText,
+    this.helperText,
+    this.errorText,
     this.enabled = true,
     this.autofocus = false,
     this.newPassword = false,
@@ -55,7 +55,7 @@ class FrostedPasswordField extends StatelessWidget {
   });
 
   /// The field's name, over its well.
-  final String label;
+  final String labelText;
 
   /// The password, when the page owns it.
   final String? value;
@@ -73,13 +73,13 @@ class FrostedPasswordField extends StatelessWidget {
   final FocusNode? focusNode;
 
   /// The placeholder.
-  final String? hint;
+  final String? hintText;
 
   /// {@macro frosted.helper}
-  final String? helper;
+  final String? helperText;
 
   /// {@macro frosted.error}
-  final String? error;
+  final String? errorText;
 
   /// Whether it takes input.
   final bool enabled;
@@ -97,15 +97,15 @@ class FrostedPasswordField extends StatelessWidget {
       showLabel: RawWidgetsLocalizations.of(context).showPasswordLabel,
       hideLabel: RawWidgetsLocalizations.of(context).hidePasswordLabel,
       builder: (context, password) => FrostedTextField(
-        label: label,
+        labelText: labelText,
         value: value,
         onChanged: onChanged,
         onSubmitted: onSubmitted,
         controller: controller,
         focusNode: focusNode,
-        hint: hint,
-        helper: helper,
-        error: error,
+        hintText: hintText,
+        helperText: helperText,
+        errorText: errorText,
         enabled: enabled,
         autofocus: autofocus,
         obscureText: password.obscured,
@@ -127,7 +127,7 @@ class FrostedPasswordField extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('label', label))
+      ..add(StringProperty('labelText', labelText))
       ..add(StringProperty('value', value, defaultValue: null))
       ..add(
         ObjectFlagProperty<ValueChanged<String>>.has('onChanged', onChanged),
@@ -152,9 +152,9 @@ class FrostedPasswordField extends StatelessWidget {
           defaultValue: null,
         ),
       )
-      ..add(StringProperty('hint', hint, defaultValue: null))
-      ..add(StringProperty('helper', helper, defaultValue: null))
-      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
+      ..add(StringProperty('helperText', helperText, defaultValue: null))
+      ..add(StringProperty('errorText', errorText, defaultValue: null))
       ..add(FlagProperty('enabled', value: enabled, ifFalse: 'enabled: false'))
       ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
       ..add(
@@ -176,12 +176,12 @@ class FrostedPasswordField extends StatelessWidget {
 /// [DesignInputGroup] is the behaviour.
 ///
 /// ```dart
-/// FrostedInputGroup(label: 'Website', prefix: Text('https://'), suffix: Text('.com'), value: site, onChanged: (v) => setState(() => site = v))
+/// FrostedInputGroup(labelText: 'Website', prefix: Text('https://'), suffix: Text('.com'), value: site, onChanged: (v) => setState(() => site = v))
 /// ```
 class FrostedInputGroup extends StatefulWidget {
-  /// A field named [label] between [prefix] and [suffix].
+  /// A field named [labelText] between [prefix] and [suffix].
   const FrostedInputGroup({
-    required this.label,
+    required this.labelText,
     this.prefix,
     this.suffix,
     this.value,
@@ -189,9 +189,9 @@ class FrostedInputGroup extends StatefulWidget {
     this.onSubmitted,
     this.controller,
     this.focusNode,
-    this.hint,
-    this.helper,
-    this.error,
+    this.hintText,
+    this.helperText,
+    this.errorText,
     this.enabled = true,
     this.keyboardType,
     this.inputFormatters,
@@ -200,7 +200,7 @@ class FrostedInputGroup extends StatefulWidget {
   });
 
   /// The field's name, over its well.
-  final String label;
+  final String labelText;
 
   /// The add-on at the well's start.
   final Widget? prefix;
@@ -227,13 +227,13 @@ class FrostedInputGroup extends StatefulWidget {
   final FocusNode? focusNode;
 
   /// The placeholder.
-  final String? hint;
+  final String? hintText;
 
   /// {@macro frosted.helper}
-  final String? helper;
+  final String? helperText;
 
   /// {@macro frosted.error}
-  final String? error;
+  final String? errorText;
 
   /// Whether it takes input.
   final bool enabled;
@@ -251,7 +251,7 @@ class FrostedInputGroup extends StatefulWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('label', label))
+      ..add(StringProperty('labelText', labelText))
       ..add(StringProperty('value', value, defaultValue: null))
       ..add(
         ObjectFlagProperty<ValueChanged<String>>.has('onChanged', onChanged),
@@ -277,9 +277,9 @@ class FrostedInputGroup extends StatefulWidget {
           defaultValue: null,
         ),
       )
-      ..add(StringProperty('hint', hint, defaultValue: null))
-      ..add(StringProperty('helper', helper, defaultValue: null))
-      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
+      ..add(StringProperty('helperText', helperText, defaultValue: null))
+      ..add(StringProperty('errorText', errorText, defaultValue: null))
       ..add(FlagProperty('enabled', value: enabled, ifFalse: 'enabled: false'))
       ..add(
         DiagnosticsProperty<TextInputType>(
@@ -345,83 +345,79 @@ class _FrostedInputGroupState extends State<FrostedInputGroup>
 
   @override
   Widget build(BuildContext context) {
-    final error = widget.error;
-    final helper = widget.helper;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      mainAxisSize: MainAxisSize.min,
-      spacing: FrostedChromeMetrics.fieldLabelGap,
-      children: [
-        FrostedFieldLabel(widget.label),
-        DesignInputGroup(
-          focusNode: fieldFocus,
-          enabled: widget.enabled,
-          isError: error != null,
-          // At least the field's height, growing with larger text; the
-          // add-ons stand as tall as the well, the line on its centre.
-          builder: (context, states, child) => ConstrainedBox(
-            constraints: const BoxConstraints(
-              minHeight: FrostedChromeMetrics.field,
-            ),
-            child: FrostedWell(
-              focused: states.contains(WidgetState.focused),
-              error: states.contains(WidgetState.error),
-              enabled: widget.enabled,
-              child: child,
-            ),
+    final error = widget.errorText;
+    return RawInputDecorator(
+      labelText: widget.labelText,
+      helperText: widget.helperText,
+      errorText: error,
+      enabled: widget.enabled,
+      focusNode: fieldFocus,
+      builder: frostedFieldColumn,
+      child: DesignInputGroup(
+        focusNode: fieldFocus,
+        enabled: widget.enabled,
+        isError: error != null,
+        // At least the field's height, growing with larger text; the
+        // add-ons stand as tall as the well, the line on its centre.
+        builder: (context, states, child) => ConstrainedBox(
+          constraints: const BoxConstraints(
+            minHeight: FrostedChromeMetrics.field,
           ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(FrostedCorners.r12),
-            // The well reads left to right in any language, as the amount
-            // well does: its add-ons are a value's parts (https:// and .com,
-            // a currency, a unit). Under a right-to-left page the website
-            // would read "com. | example | //:https".
-            child: Directionality(
-              textDirection: TextDirection.ltr,
-              // The line answers taps from the well's top to its bottom.
-              child: IntrinsicHeight(
-                child: FrostedFieldRoom(
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      if (widget.prefix case final prefix?)
-                        _addOn(context, prefix, start: true),
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: FrostedChromeMetrics.fieldInset,
-                          ),
-                          child: Align(
-                            alignment: AlignmentDirectional.centerStart,
-                            child: FrostedBareField(
-                              autofocus: widget.autofocus,
-                              controller: fieldController,
-                              focusNode: fieldFocus,
-                              label: widget.label,
-                              hint: widget.hint,
-                              enabled: widget.enabled,
-                              onChanged: widget.onChanged,
-                              onSubmitted: widget.onSubmitted,
-                              keyboardType: widget.keyboardType,
-                              inputFormatters: widget.inputFormatters,
-                            ),
+          child: FrostedWell(
+            focused: states.contains(WidgetState.focused),
+            error: states.contains(WidgetState.error),
+            enabled: widget.enabled,
+            child: child,
+          ),
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(FrostedCorners.r12),
+          // The well reads left to right in any language, as the amount
+          // well does: its add-ons are a value's parts (https:// and .com,
+          // a currency, a unit). Under a right-to-left page the website
+          // would read "com. | example | //:https".
+          child: Directionality(
+            textDirection: TextDirection.ltr,
+            // The line answers taps from the well's top to its bottom.
+            child: IntrinsicHeight(
+              child: FrostedFieldRoom(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    if (widget.prefix case final prefix?)
+                      _addOn(context, prefix, start: true),
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: FrostedChromeMetrics.fieldInset,
+                        ),
+                        child: Align(
+                          alignment: AlignmentDirectional.centerStart,
+                          child: FrostedBareField(
+                            autofocus: widget.autofocus,
+                            controller: fieldController,
+                            focusNode: fieldFocus,
+                            labelText: widget.labelText,
+                            ownNode: false,
+                            hintText: widget.hintText,
+                            enabled: widget.enabled,
+                            onChanged: widget.onChanged,
+                            onSubmitted: widget.onSubmitted,
+                            keyboardType: widget.keyboardType,
+                            inputFormatters: widget.inputFormatters,
                           ),
                         ),
                       ),
-                      if (widget.suffix case final suffix?)
-                        _addOn(context, suffix, start: false),
-                    ],
-                  ),
+                    ),
+                    if (widget.suffix case final suffix?)
+                      _addOn(context, suffix, start: false),
+                  ],
                 ),
               ),
             ),
           ),
         ),
-        if (error != null)
-          FrostedFieldHint(error, error: true)
-        else if (helper != null)
-          FrostedFieldHint(helper),
-      ],
+      ),
     );
   }
 }
@@ -433,27 +429,27 @@ class _FrostedInputGroupState extends State<FrostedInputGroup>
 /// A one-time code in a row of boxes (shadcn's InputOTP): [length] wells
 /// 48 wide and 56 tall, 8 apart, each holding one figure; the box the next
 /// figure goes in rings in the accent while the field has focus, every box
-/// takes the over ink when [error] says what is wrong. One real input
+/// takes the over ink when [errorText] says what is wrong. One real input
 /// stands under the boxes, so a paste, the code from a message and
 /// Backspace all just work. [onCompleted] hears the code once every box
 /// is full. ui_core's [RawOtpField] is the behaviour.
 ///
 /// ```dart
-/// FrostedInputOtp(label: 'Code from your text', onCompleted: verify)
+/// FrostedInputOtp(labelText: 'Code from your text', onCompleted: verify)
 /// ```
 class FrostedInputOtp extends StatelessWidget {
   /// A code of [length] figures.
   const FrostedInputOtp({
     this.length = 6,
-    this.label,
+    this.labelText,
     this.onChanged,
     this.onCompleted,
     this.onSubmitted,
     this.controller,
     this.focusNode,
-    this.error,
-    this.helper,
-    this.obscure = false,
+    this.errorText,
+    this.helperText,
+    this.obscureText = false,
     this.autofocus = false,
     this.enabled = true,
     this.keyboardType = TextInputType.number,
@@ -467,7 +463,7 @@ class FrostedInputOtp extends StatelessWidget {
 
   /// The label over the boxes; a screen reader hears it as the field's
   /// name (the look's "One-time code" when null).
-  final String? label;
+  final String? labelText;
 
   /// Called as the code changes.
   final ValueChanged<String>? onChanged;
@@ -491,13 +487,13 @@ class FrostedInputOtp extends StatelessWidget {
   final FocusNode? focusNode;
 
   /// What is wrong, under the boxes.
-  final String? error;
+  final String? errorText;
 
   /// The help line under the boxes.
-  final String? helper;
+  final String? helperText;
 
   /// Whether each figure shows as a dot.
-  final bool obscure;
+  final bool obscureText;
 
   /// Whether it takes focus on its first frame.
   final bool autofocus;
@@ -512,9 +508,9 @@ class FrostedInputOtp extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.frostedTheme;
     final words = FrostedLocalizations.of(context);
-    final error = this.error;
-    final helper = this.helper;
-    final label = this.label;
+    final error = errorText;
+    final helper = helperText;
+    final label = labelText;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
@@ -531,7 +527,7 @@ class FrostedInputOtp extends StatelessWidget {
           autofocus: autofocus,
           enabled: enabled,
           isError: error != null,
-          obscureText: obscure,
+          obscureText: obscureText,
           keyboardType: keyboardType,
           inputFormatters: inputFormatters,
           autofillHints: autofillHints,
@@ -611,7 +607,7 @@ class FrostedInputOtp extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(IntProperty('length', length, defaultValue: 6))
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
       ..add(
         ObjectFlagProperty<ValueChanged<String>>.has('onChanged', onChanged),
       )
@@ -655,9 +651,9 @@ class FrostedInputOtp extends StatelessWidget {
           defaultValue: null,
         ),
       )
-      ..add(StringProperty('error', error, defaultValue: null))
-      ..add(StringProperty('helper', helper, defaultValue: null))
-      ..add(FlagProperty('obscure', value: obscure, ifTrue: 'obscure'))
+      ..add(StringProperty('errorText', errorText, defaultValue: null))
+      ..add(StringProperty('helperText', helperText, defaultValue: null))
+      ..add(FlagProperty('obscureText', value: obscureText, ifTrue: 'obscure'))
       ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
       ..add(FlagProperty('enabled', value: enabled, ifFalse: 'enabled: false'))
       ..add(
@@ -676,7 +672,7 @@ class FrostedInputOtp extends StatelessWidget {
 
 /// A control with its label over it and its help or error under it, wired
 /// as one (shadcn's Field, Material's FormField frame): a screen reader
-/// hears the control named by [label], "required" when [required], then
+/// hears the control named by [labelText], "required" when [required], then
 /// the help or the error, and the error is announced as it appears. Use
 /// it round a control that has no label of its own (a slider, a switch, a
 /// set of chips, a segmented button, a switch row's group);
@@ -686,15 +682,15 @@ class FrostedInputOtp extends StatelessWidget {
 /// ui_core's [RawInputDecorator] is the behaviour.
 ///
 /// ```dart
-/// FrostedFormField(label: 'Notify me', helper: 'Pick at least one', child: Row(children: [chipA, chipB]))
+/// FrostedFormField(labelText: 'Notify me', helperText: 'Pick at least one', child: Row(children: [chipA, chipB]))
 /// ```
 class FrostedFormField extends StatelessWidget {
-  /// [child] labelled [label].
+  /// [child] labelled [labelText].
   const FrostedFormField({
     required this.child,
-    this.label,
-    this.helper,
-    this.error,
+    this.labelText,
+    this.helperText,
+    this.errorText,
     this.required = false,
     this.enabled = true,
     this.focusNode,
@@ -740,8 +736,8 @@ class FrostedFormField extends StatelessWidget {
   // The name a group gives its own node, seen through the same wrappers.
   static String? _ownName(Widget w) => switch (w) {
     FrostedSegmentedButton(:final label) => label,
-    FrostedRadioGroup(:final label) => label,
-    FrostedNumberField(:final label) => label,
+    FrostedRadioGroup(labelText: final label) => label,
+    FrostedNumberField(labelText: final label) => label,
     FrostedChoices(:final label) => label,
     FrostedToggleGroup(:final label) => label,
     FrostedButtonGroup(:final label) => label,
@@ -755,13 +751,13 @@ class FrostedFormField extends StatelessWidget {
   };
 
   /// The control's name, over it.
-  final String? label;
+  final String? labelText;
 
   /// The help line under it.
-  final String? helper;
+  final String? helperText;
 
   /// {@macro frosted.error}
-  final String? error;
+  final String? errorText;
 
   /// Whether the control must be filled: a mark after the label.
   final bool required;
@@ -781,11 +777,11 @@ class FrostedFormField extends StatelessWidget {
     // "Priority, Priority" (ui_core 0.3.2's rule, which applies when a field
     // decides for itself).
     final own = merge ? null : _ownName(child)?.trim().toLowerCase();
-    final heard = own != null && own == label?.trim().toLowerCase();
+    final heard = own != null && own == labelText?.trim().toLowerCase();
     return RawInputDecorator(
-      labelText: heard ? null : label,
-      helperText: helper,
-      errorText: error,
+      labelText: heard ? null : labelText,
+      helperText: helperText,
+      errorText: errorText,
       required: required,
       enabled: enabled,
       focusNode: focusNode,
@@ -794,7 +790,7 @@ class FrostedFormField extends StatelessWidget {
       builder: (context, parts) {
         final head =
             parts.label ??
-            (heard ? ExcludeSemantics(child: Text(label!)) : null);
+            (heard ? ExcludeSemantics(child: Text(labelText!)) : null);
         final hint = parts.error ?? parts.helper;
         final column = Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -846,9 +842,9 @@ class FrostedFormField extends StatelessWidget {
           ifFalse: 'mergeSemantics: false',
         ),
       )
-      ..add(StringProperty('label', label, defaultValue: null))
-      ..add(StringProperty('helper', helper, defaultValue: null))
-      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
+      ..add(StringProperty('helperText', helperText, defaultValue: null))
+      ..add(StringProperty('errorText', errorText, defaultValue: null))
       ..add(FlagProperty('required', value: required, ifTrue: 'required'))
       ..add(FlagProperty('enabled', value: enabled, ifFalse: 'enabled: false'))
       ..add(

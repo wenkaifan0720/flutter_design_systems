@@ -64,7 +64,7 @@ class _DetailState extends State<_Detail> {
             SizedBox(
               width: 320,
               child: FrostedSelect<String>(
-                label: 'Room',
+                labelText: 'Room',
                 value: _room,
                 onChanged: (v) => setState(() => _room = v),
                 options: const [
@@ -76,7 +76,7 @@ class _DetailState extends State<_Detail> {
             const SizedBox(
               width: 320,
               child: FrostedCombobox<String>(
-                label: 'City',
+                labelText: 'City',
                 options: ['Lisbon', 'Madrid'],
               ),
             ),

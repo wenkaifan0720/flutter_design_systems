@@ -509,20 +509,20 @@ bool _sameDay(DateTime a, DateTime b) =>
 /// name between a step back and a step on, the weekdays' two letters in the
 /// quiet caption, then the days in rows of seven from the words' first day
 /// of the week. The chosen day stands on the ink act's light, today in a
-/// hairline ring, a day outside [first] to [last] faded and inert. Each day
+/// hairline ring, a day outside [firstDate] to [lastDate] faded and inert. Each day
 /// is a button read as its full date; the month's name is announced as it
 /// turns. [showFrostedDatePicker] raises it in a card with Cancel and OK.
 ///
 /// ```dart
-/// FrostedDatePicker(value: due, first: DateTime(2026), last: DateTime(2027, 12, 31), onChanged: (d) => setState(() => due = d))
+/// FrostedDatePicker(value: due, firstDate: DateTime(2026), lastDate: DateTime(2027, 12, 31), onChanged: (d) => setState(() => due = d))
 /// ```
 class FrostedDatePicker extends StatefulWidget {
   /// A month standing on [value] (or today's month).
   const FrostedDatePicker({
     this.value,
     this.onChanged,
-    this.first,
-    this.last,
+    this.firstDate,
+    this.lastDate,
     this.currentDate,
     super.key,
   });
@@ -534,10 +534,10 @@ class FrostedDatePicker extends StatefulWidget {
   final ValueChanged<DateTime>? onChanged;
 
   /// The earliest day that can be chosen; null sets no floor.
-  final DateTime? first;
+  final DateTime? firstDate;
 
   /// The latest day that can be chosen; null sets no ceiling.
-  final DateTime? last;
+  final DateTime? lastDate;
 
   /// Today, for its ring; null asks the device's clock.
   final DateTime? currentDate;
@@ -553,8 +553,16 @@ class FrostedDatePicker extends StatefulWidget {
       ..add(
         ObjectFlagProperty<ValueChanged<DateTime>>.has('onChanged', onChanged),
       )
-      ..add(DiagnosticsProperty<DateTime>('first', first, defaultValue: null))
-      ..add(DiagnosticsProperty<DateTime>('last', last, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<DateTime>(
+          'firstDate',
+          firstDate,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<DateTime>('lastDate', lastDate, defaultValue: null),
+      )
       ..add(
         DiagnosticsProperty<DateTime>(
           'currentDate',
@@ -580,8 +588,8 @@ class _FrostedDatePickerState extends State<FrostedDatePicker> {
   }
 
   bool _allowed(DateTime day) {
-    final first = widget.first;
-    final last = widget.last;
+    final first = widget.firstDate;
+    final last = widget.lastDate;
     if (first != null && day.isBefore(_day(first))) return false;
     if (last != null && day.isAfter(_day(last))) return false;
     return true;
@@ -594,8 +602,8 @@ class _FrostedDatePickerState extends State<FrostedDatePicker> {
   Widget build(BuildContext context) {
     final t = context.frostedTheme;
     final today = _day(widget.currentDate ?? DateTime.now());
-    final first = widget.first;
-    final last = widget.last;
+    final first = widget.firstDate;
+    final last = widget.lastDate;
     final canBack = first == null || _month.isAfter(_monthOf(first));
     final canOn = last == null || _month.isBefore(_monthOf(last));
     final days = DateTime(_month.year, _month.month + 1, 0).day;
@@ -834,8 +842,8 @@ Future<DateTime?> showFrostedDatePicker(
             : () => Navigator.of(dialogContext).pop(chosen),
         child: FrostedDatePicker(
           value: chosen,
-          first: first,
-          last: last,
+          firstDate: first,
+          lastDate: last,
           currentDate: currentDate,
           onChanged: (d) => setState(() => chosen = d),
         ),

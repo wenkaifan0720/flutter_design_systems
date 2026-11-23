@@ -16,8 +16,8 @@ Future<void> _pump(WidgetTester tester, String preset, Brightness b) async {
     MaterialApp(
       debugShowCheckedModeBanner: false,
       builder: (context, page) => FrostedHost(
-        light: FrostedThemeData.preset(preset, Brightness.light),
-        dark: FrostedThemeData.preset(preset, Brightness.dark),
+        theme: FrostedThemeData.preset(preset, Brightness.light),
+        darkTheme: FrostedThemeData.preset(preset, Brightness.dark),
         brightness: b,
         child: page!,
       ),

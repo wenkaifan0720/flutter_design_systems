@@ -1,6 +1,8 @@
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
 
 import '../components/button/button.dart';
+import '../theme.dart';
 
 /// The sizes an act shows, smallest first.
 enum FrostedActSize {
@@ -64,4 +66,43 @@ class FrostedActRow extends InheritedWidget {
 
   @override
   bool updateShouldNotify(FrostedActRow oldWidget) => oldWidget.size != size;
+}
+
+/// A sheet's or a dialog's acts, on ui_core's [RawActionBar]: side by side
+/// and sharing the row while every act fits its share, each at the size the
+/// largest asks for; else stacked, each a wide act across the foot, the
+/// confirming one (the last given) on top. Give [acts] in reading order, the
+/// dismissive one first. Plumbing of the components.
+class FrostedActBar extends StatefulWidget {
+  /// A bar of [acts].
+  const FrostedActBar(this.acts, {super.key});
+
+  /// The acts, the dismissive one first and the confirming one last.
+  final List<Widget> acts;
+
+  @override
+  State<FrostedActBar> createState() => _FrostedActBarState();
+}
+
+class _FrostedActBarState extends State<FrostedActBar> {
+  bool _stacked = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final gap = FrostedBreakpoints.gap(context);
+    return RawActionBar(
+      expanded: true,
+      spacing: gap,
+      overflowSpacing: gap,
+      onStackedChanged: (stacked) {
+        if (stacked != _stacked) setState(() => _stacked = stacked);
+      },
+      children: _stacked
+          ? [
+              for (final act in widget.acts)
+                FrostedActRow(size: FrostedActSize.wide, child: act),
+            ]
+          : FrostedActRow.wrap(widget.acts),
+    );
+  }
 }

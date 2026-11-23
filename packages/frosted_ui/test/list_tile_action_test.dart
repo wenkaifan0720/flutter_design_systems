@@ -19,8 +19,8 @@ void main() {
           MaterialApp(
             debugShowCheckedModeBanner: false,
             builder: (context, page) => FrostedHost(
-              light: t,
-              dark: t,
+              theme: t,
+              darkTheme: t,
               brightness: brightness,
               child: page!,
             ),

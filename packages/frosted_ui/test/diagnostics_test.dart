@@ -124,18 +124,18 @@ void main() {
       'a number field below its min': () => FrostedNumberField(
         value: -10,
         onChanged: _changed,
-        label: 'the budget',
+        labelText: 'the budget',
       ),
       'a number field of no step': () => FrostedNumberField(
         value: 10,
         step: 0,
         onChanged: _changed,
-        label: 'the budget',
+        labelText: 'the budget',
       ),
       'a page past the last': () =>
           FrostedPagination(pageCount: 3, selectedIndex: 3),
       'page dots past the last': () =>
-          FrostedPageDots(count: 4, selectedIndex: 4, label: 'Welcome'),
+          FrostedPageDots(pageCount: 4, selectedIndex: 4, label: 'Welcome'),
       'a pane share past whole': () => FrostedResizable(
         first: const SizedBox(),
         second: const SizedBox(),

@@ -242,8 +242,8 @@ class _GalleryAppState extends State<GalleryApp> {
               },
             ),
             child: FrostedHost(
-              light: custom.theme(_preset, Brightness.light),
-              dark: custom.theme(_preset, Brightness.dark),
+              theme: custom.theme(_preset, Brightness.light),
+              darkTheme: custom.theme(_preset, Brightness.dark),
               brightness: _brightness,
               child: child!,
             ),
@@ -746,7 +746,7 @@ class CustomizePanel extends StatelessWidget {
         children: [
           if (preset case final preset?)
             FrostedSelect<String>(
-              label: 'Preset',
+              labelText: 'Preset',
               value: preset,
               options: [
                 for (final id in FrostedThemeData.presets)
@@ -791,7 +791,7 @@ class CustomizePanel extends StatelessWidget {
                 onChanged(c.copyWith(textScale: () => v == 1 ? null : v)),
           ),
           FrostedSelect<String>(
-            label: 'Your own accent',
+            labelText: 'Your own accent',
             value: c.accent?.name ?? '',
             options: [
               const FrostedSelectOption('', "The preset's"),

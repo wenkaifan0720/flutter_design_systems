@@ -91,7 +91,7 @@ Widget kitMoveDemo(Brightness brightness) => kitScreen(
           child: KitHeld<int>(
             1,
             (i, set) => FrostedPageDots(
-              count: 5,
+              pageCount: 5,
               selectedIndex: i,
               label: 'Welcome pages',
               onChanged: set,
@@ -126,7 +126,7 @@ Widget kitSpecimenNavigationRail() => Align(
 Widget kitSpecimenPageDots() => Center(
   heightFactor: 1,
   child: FrostedPageDots(
-    count: 4,
+    pageCount: 4,
     selectedIndex: 1,
     label: 'Welcome',
     onChanged: (_) {},

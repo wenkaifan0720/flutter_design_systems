@@ -1,21 +1,16 @@
-import 'dart:math' as math;
-
 import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart' show Material, MaterialType;
 import 'package:flutter/widgets.dart';
-import 'package:ui_core/host.dart';
 import 'package:ui_core/ui_core.dart';
 
 import '../glyphs.dart';
 
 import '../chrome_metrics.dart';
 import '../internal/face.dart';
-import '../internal/footer_band.dart';
 import '../internal/ink_on.dart';
 import '../internal/styled.dart';
 import '../internal/toaster.dart';
 import '../theme.dart';
-import 'host.dart';
 import 'pressable/pressable.dart';
 
 /// A short confirmation over the page, as the source raises one (Moved to
@@ -39,6 +34,8 @@ abstract final class FrostedToast {
   /// tap on the action dismisses it. The host's toaster (ui_core's
   /// [RawToaster]) holds it: its time stops while a pointer rests on it
   /// or focus is in it, a swipe or Escape dismisses it, and F6 reaches it.
+  /// It stands 12 over the tab bar or a route's footer, which keep it clear
+  /// ([RawToasterKeepClear]), and follows them as they move.
   static void show(
     BuildContext context,
     String message, {
@@ -51,28 +48,6 @@ abstract final class FrostedToast {
     final toaster = RawToaster.maybeOf(context);
     assert(toaster != null, 'FrostedToast.show needs a FrostedHost above it');
     if (toaster == null) return;
-    final double bottom;
-    if (FrostedBreakpoints.isWide(context)) {
-      bottom = FrostedChromeMetrics.toastWideEdge;
-    } else {
-      // Measured against the app's ROOT overlay (its root navigator's), the
-      // box the toaster stands over.
-      final overlay = FrostedHost.navigatorOf(context).overlay!;
-      final stands = math.max(
-        ShellInsets.of(context),
-        FrostedBottomStand.reachOf(
-          context,
-          overlay.context.findRenderObject()! as RenderBox,
-        ),
-      );
-      bottom = stands > 0
-          ? stands + FrostedChromeMetrics.toastOverBar
-          : math.max(
-              FrostedChromeMetrics.toastBottom,
-              MediaQuery.paddingOf(overlay.context).bottom +
-                  FrostedChromeMetrics.toastOverBar,
-            );
-    }
     toaster.show(
       RawToast(
         id: _id,
@@ -83,7 +58,7 @@ abstract final class FrostedToast {
         duration: actionLabel == null
             ? FrostedChromeMetrics.toastDwell
             : FrostedChromeMetrics.toastDwellAction,
-        data: FrostedToastLook(tone: tone, icon: icon, bottom: bottom),
+        data: FrostedToastLook(tone: tone, icon: icon),
       ),
     );
   }
