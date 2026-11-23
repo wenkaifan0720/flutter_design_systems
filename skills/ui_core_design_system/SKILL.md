@@ -225,7 +225,8 @@ navigation, containers, overlays, feedback and charts. For each part:
 4. Reuse what an earlier part decided: a select and a combobox stand on the
    text field's face and end in the same sign; every open list (a select's,
    a combobox's, a menu's) is one surface with one kind of row; every raised
-   panel is one material. A part that looks like a cousin of its neighbour
+   panel is one material (the samples' select and date field share one
+   `LookFieldTrigger`). A part that looks like a cousin of its neighbour
    reads as a fault. [taste.md](references/taste.md) section 8 has the
    pairs that must match. A face two parts share (a resting panel, a well,
    a chosen row) is named once, on the face's class or the theme, and both

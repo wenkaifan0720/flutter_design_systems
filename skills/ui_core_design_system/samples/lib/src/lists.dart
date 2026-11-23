@@ -65,6 +65,90 @@ class LookListSign extends StatelessWidget {
   }
 }
 
+/// The closed face of a field that opens a list or a month (a select, a date
+/// field): the text field's face, [value] at its start and the list sign at
+/// its end. Every such field stands on this one, so they match the text field
+/// and each other.
+class LookFieldTrigger extends StatelessWidget {
+  /// A field showing [value].
+  const LookFieldTrigger({
+    super.key,
+    required this.value,
+    required this.open,
+    required this.onPressed,
+  });
+
+  /// What the field holds, as shown and as a screen reader hears it; null:
+  /// nothing yet.
+  final String? value;
+
+  /// Whether its list or month is open; the field shows focus meanwhile.
+  final bool open;
+
+  /// Opens or closes it; null turns the field off.
+  final VoidCallback? onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = LookTheme.of(context);
+    return TapTargetPadding(
+      child: RawButton(
+        onPressed: onPressed,
+        semanticValue: value,
+        expanded: open,
+        builder: (context, states, _) => AnimatedLookSurface(
+          face: lookFieldFace(
+            theme,
+            focused: states.contains(WidgetState.focused) || open,
+            enabled: onPressed != null,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(theme.radius),
+          ),
+          child: Padding(
+            padding: const EdgeInsetsDirectional.only(start: 12, end: 8),
+            child: DesignControlBox(
+              minHeight: theme.density.height(theme.controlHeight),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: DesignCapCenter(
+                      capHeightFactor: theme.capHeightFactor,
+                      child: Text(
+                        value ?? '',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.body.copyWith(height: 1.2),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  LookListSign(open: open),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('value', value))
+      ..add(FlagProperty('open', value: open, ifTrue: 'open'))
+      ..add(
+        ObjectFlagProperty<VoidCallback>(
+          'onPressed',
+          onPressed,
+          ifNull: 'disabled',
+        ),
+      );
+  }
+}
+
 class _ChevronPainter extends CustomPainter {
   const _ChevronPainter(this.color);
 
@@ -305,43 +389,10 @@ class LookSelect<T extends Object> extends StatelessWidget {
       child: RawPopover(
         arrowKeyNavigation: true,
         semanticLabel: labelText,
-        anchorBuilder: (context, anchor) => TapTargetPadding(
-          child: RawButton(
-            onPressed: change == null ? null : anchor.toggle,
-            semanticValue: chosen == null ? null : optionLabel(chosen),
-            expanded: anchor.isOpen,
-            builder: (context, states, _) => AnimatedLookSurface(
-              face: lookFieldFace(
-                theme,
-                focused: states.contains(WidgetState.focused) || anchor.isOpen,
-                enabled: change != null,
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(theme.radius),
-              ),
-              child: Padding(
-                padding: const EdgeInsetsDirectional.only(start: 12, end: 8),
-                child: DesignControlBox(
-                  minHeight: theme.density.height(theme.controlHeight),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: DesignCapCenter(
-                          capHeightFactor: theme.capHeightFactor,
-                          child: Text(
-                            chosen == null ? '' : optionLabel(chosen),
-                            style: theme.body.copyWith(height: 1.2),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      LookListSign(open: anchor.isOpen),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
+        anchorBuilder: (context, anchor) => LookFieldTrigger(
+          value: chosen == null ? null : optionLabel(chosen),
+          open: anchor.isOpen,
+          onPressed: change == null ? null : anchor.toggle,
         ),
         overlayBuilder: (context, info) => LookListSurface(
           child: SingleChildScrollView(

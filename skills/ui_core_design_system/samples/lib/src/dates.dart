@@ -92,7 +92,7 @@ class _LookDateFieldState extends State<LookDateField> {
     final words = RawWidgetsLocalizations.of(context);
     final change = widget.onChanged;
     final value = widget.value;
-    final shown = value == null ? '' : words.formatFullDate(value);
+    final shown = value == null ? null : words.formatFullDate(value);
     return RawInputDecorator(
       labelText: widget.labelText,
       enabled: change != null,
@@ -117,45 +117,10 @@ class _LookDateFieldState extends State<LookDateField> {
           fit: RawPopoverFit.whole,
           matchAnchorWidth: false,
         ),
-        anchorBuilder: (context, anchor) => TapTargetPadding(
-          child: RawButton(
-            onPressed: change == null ? null : anchor.toggle,
-            semanticValue: value == null ? null : shown,
-            expanded: anchor.isOpen,
-            builder: (context, states, _) => AnimatedLookSurface(
-              face: lookFieldFace(
-                theme,
-                focused: states.contains(WidgetState.focused) || anchor.isOpen,
-                enabled: change != null,
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(theme.radius),
-              ),
-              child: Padding(
-                padding: const EdgeInsetsDirectional.only(start: 12, end: 8),
-                child: DesignControlBox(
-                  minHeight: theme.density.height(theme.controlHeight),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: DesignCapCenter(
-                          capHeightFactor: theme.capHeightFactor,
-                          child: Text(
-                            shown,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: theme.body.copyWith(height: 1.2),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      LookListSign(open: anchor.isOpen),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
+        anchorBuilder: (context, anchor) => LookFieldTrigger(
+          value: shown,
+          open: anchor.isOpen,
+          onPressed: change == null ? null : anchor.toggle,
         ),
         overlayBuilder: (context, info) => LookListSurface(
           child: Padding(
