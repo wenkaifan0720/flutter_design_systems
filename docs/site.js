@@ -103,6 +103,8 @@ async function renderLook(id) {
   document.querySelector('#swatch').style.background = option.dataset.swatch;
   gallery.href = gallery.dataset.galleries + '/' + id + '/';
   gallery.textContent = option.dataset.name + ' gallery ↗';
+  // Flutter's own libraries have no gallery of ours.
+  gallery.hidden = option.dataset.gallery === 'false';
   for (const viewport of specimens.querySelectorAll('.viewport')) {
     const iframe = viewport.querySelector('iframe');
     followFrame(iframe);

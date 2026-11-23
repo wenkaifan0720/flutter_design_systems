@@ -1,0 +1,97 @@
+<section class="example" id="navigate-workspace" data-example="navigate-workspace">
+  <div class="section-title"><h2>Navigate a workspace</h2><a class="permalink" href="#navigate-workspace" aria-label="Link to Navigate a workspace">#</a></div>
+  <p>Choose Search, then switch between phone and desktop. Observe where the look places navigation and whether the current page stays selected.</p>
+
+  <p class="keyboard-note" hidden></p>
+  <div class="workbench">
+    <div class="example-tabs" role="tablist" aria-label="Navigate a workspace example">
+      <button type="button" role="tab" id="navigate-workspace-preview-tab" aria-selected="true" aria-controls="navigate-workspace-preview">Preview</button>
+      <button type="button" role="tab" id="navigate-workspace-code-tab" aria-selected="false" aria-controls="navigate-workspace-code" tabindex="-1">Code</button>
+    </div>
+    <div role="tabpanel" id="navigate-workspace-preview" aria-labelledby="navigate-workspace-preview-tab">
+    <div class="tools" aria-label="Preview settings">
+      <div class="frame-options" role="group" aria-label="Frame width">
+        <button type="button" data-width="1440" aria-pressed="true" title="Use the available preview width"><i class="monitor" aria-hidden="true"></i>Desktop</button>
+        <button type="button" data-width="390" aria-pressed="false" title="390 px phone frame"><i class="phone" aria-hidden="true"></i>Phone</button>
+      </div>
+      <div class="environment">
+        <button type="button" data-setting="theme" aria-label="Night theme" aria-pressed="false"><span aria-hidden="true" class="sun"></span><span data-value>Day</span></button>
+        <button type="button" data-setting="dir" aria-label="Right-to-left direction" aria-pressed="false"><span data-value>LTR</span></button>
+        <button type="button" data-setting="scale" aria-label="Double text size" aria-pressed="false"><span aria-hidden="true" class="type-icon">Aa</span><span data-value>100%</span></button>
+      </div>
+    </div>
+    <div class="stage"><div class="viewport"><div class="frame"><iframe loading="lazy" title="Material (Flutter) App shell interactive example"></iframe></div></div></div>
+    <div class="caption"><span><i class="status-dot" aria-hidden="true"></i>Flutter preview <span class="frame-size"></span></span><a class="open-preview" target="_blank" rel="noopener">Open preview <span aria-hidden="true">↗</span></a></div>
+    </div>
+    <div class="source" role="tabpanel" id="navigate-workspace-code" aria-labelledby="navigate-workspace-code-tab" hidden>
+      <div class="source-head"><span class="filename">components&#47;app-shell&#47;material&#47;navigate_workspace.dart</span><button type="button" class="copy">Copy code</button></div>
+      <pre tabindex="0" aria-label="Dart source"><code><span class="hljs-keyword">import</span> <span class="hljs-string">'package:material_ui/material_ui.dart'</span>;
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">NavigateWorkspace</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">StatefulWidget</span> </span>{
+  <span class="hljs-keyword">const</span> NavigateWorkspace({<span class="hljs-keyword">super</span>.key});
+  <span class="hljs-meta">@override</span>
+  State&lt;NavigateWorkspace&gt; createState() =&gt; _NavigateWorkspaceState();
+}
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">_NavigateWorkspaceState</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">State</span>&lt;<span class="hljs-title">NavigateWorkspace</span>&gt; </span>{
+  <span class="hljs-built_in">int</span> selected = <span class="hljs-number">0</span>;
+  <span class="hljs-keyword">static</span> <span class="hljs-keyword">const</span> destinations = [
+    NavigationDestination(
+      icon: Icon(Icons.home_outlined),
+      selectedIcon: Icon(Icons.home),
+      label: <span class="hljs-string">'Home'</span>,
+    ),
+    NavigationDestination(icon: Icon(Icons.search), label: <span class="hljs-string">'Search'</span>),
+  ];
+  <span class="hljs-keyword">static</span> <span class="hljs-keyword">const</span> railDestinations = [
+    NavigationRailDestination(
+      icon: Icon(Icons.home_outlined),
+      selectedIcon: Icon(Icons.home),
+      label: Text(<span class="hljs-string">'Home'</span>),
+    ),
+    NavigationRailDestination(icon: Icon(Icons.search), label: Text(<span class="hljs-string">'Search'</span>)),
+  ];
+
+  <span class="hljs-meta">@override</span>
+  Widget build(BuildContext context) =&gt; LayoutBuilder(
+    builder: (context, constraints) {
+      <span class="hljs-keyword">final</span> page = Center(
+        child: Text(selected == <span class="hljs-number">0</span> ? <span class="hljs-string">'Home page'</span> : <span class="hljs-string">'Search page'</span>),
+      );
+      <span class="hljs-keyword">void</span> select(<span class="hljs-built_in">int</span> next) =&gt; setState(() =&gt; selected = next);
+      <span class="hljs-comment">// A phone gets a bar along the bottom, a wider window a rail.</span>
+      <span class="hljs-keyword">if</span> (constraints.maxWidth &lt; <span class="hljs-number">600</span>) {
+        <span class="hljs-keyword">return</span> Scaffold(
+          body: page,
+          bottomNavigationBar: NavigationBar(
+            selectedIndex: selected,
+            onDestinationSelected: select,
+            destinations: destinations,
+          ),
+        );
+      }
+      <span class="hljs-keyword">return</span> Scaffold(
+        body: Row(
+          children: [
+            NavigationRail(
+              selectedIndex: selected,
+              onDestinationSelected: select,
+              labelType: NavigationRailLabelType.all,
+              destinations: railDestinations,
+            ),
+            <span class="hljs-keyword">const</span> VerticalDivider(width: <span class="hljs-number">1</span>),
+            Expanded(child: page),
+          ],
+        ),
+      );
+    },
+  );
+}
+</code></pre>
+    </div>
+  </div>
+</section>
+<section class="reference" id="parameters">
+  <div class="section-title"><h2>Parameters</h2><a class="api" href="https:&#47;&#47;pub.dev&#47;documentation&#47;material_ui&#47;latest&#47;material_ui&#47;Scaffold-class.html">Scaffold API ↗</a></div>
+  <dl><div><dt><code>body</code></dt><dd>The screen&#39;s content.</dd></div><div><dt><code>appBar</code></dt><dd>The bar across the top, usually an AppBar.</dd></div><div><dt><code>bottomNavigationBar</code></dt><dd>The bar along the bottom, usually a NavigationBar.</dd></div><div><dt><code>drawer</code></dt><dd>A panel that slides in from the start edge, usually a NavigationDrawer.</dd></div><div><dt><code>floatingActionButton</code></dt><dd>The screen&#39;s main action.</dd></div></dl>
+</section>

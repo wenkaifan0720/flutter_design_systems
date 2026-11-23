@@ -1,0 +1,72 @@
+<section class="example" id="set-due-date" data-example="set-due-date">
+  <div class="section-title"><h2>Set a due date</h2><a class="permalink" href="#set-due-date" aria-label="Link to Set a due date">#</a></div>
+  <p>Set a due date in November. Some looks open a calendar from a field, others display it in place, and Civic takes the date as three numbers.</p>
+
+  <p class="keyboard-note" hidden></p>
+  <div class="workbench">
+    <div class="example-tabs" role="tablist" aria-label="Set a due date example">
+      <button type="button" role="tab" id="set-due-date-preview-tab" aria-selected="true" aria-controls="set-due-date-preview">Preview</button>
+      <button type="button" role="tab" id="set-due-date-code-tab" aria-selected="false" aria-controls="set-due-date-code" tabindex="-1">Code</button>
+    </div>
+    <div role="tabpanel" id="set-due-date-preview" aria-labelledby="set-due-date-preview-tab">
+    <div class="tools" aria-label="Preview settings">
+      <div class="frame-options" role="group" aria-label="Frame width">
+        <button type="button" data-width="1440" aria-pressed="true" title="Use the available preview width"><i class="monitor" aria-hidden="true"></i>Desktop</button>
+        <button type="button" data-width="390" aria-pressed="false" title="390 px phone frame"><i class="phone" aria-hidden="true"></i>Phone</button>
+      </div>
+      <div class="environment">
+        <button type="button" data-setting="theme" aria-label="Night theme" aria-pressed="false"><span aria-hidden="true" class="sun"></span><span data-value>Day</span></button>
+        <button type="button" data-setting="dir" aria-label="Right-to-left direction" aria-pressed="false"><span data-value>LTR</span></button>
+        <button type="button" data-setting="scale" aria-label="Double text size" aria-pressed="false"><span aria-hidden="true" class="type-icon">Aa</span><span data-value>100%</span></button>
+      </div>
+    </div>
+    <div class="stage"><div class="viewport" data-height="640"><div class="frame"><iframe loading="lazy" title="Clay Date picker interactive example"></iframe></div></div></div>
+    <div class="caption"><span><i class="status-dot" aria-hidden="true"></i>Flutter preview <span class="frame-size"></span></span><a class="open-preview" target="_blank" rel="noopener">Open preview <span aria-hidden="true">↗</span></a></div>
+    </div>
+    <div class="source" role="tabpanel" id="set-due-date-code" aria-labelledby="set-due-date-code-tab" hidden>
+      <div class="source-head"><span class="filename">components&#47;date-picker&#47;clay&#47;set_due_date.dart</span><button type="button" class="copy">Copy code</button></div>
+      <pre tabindex="0" aria-label="Dart source"><code><span class="hljs-keyword">import</span> <span class="hljs-string">'package:flutter/widgets.dart'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-string">'package:material_ui/material_ui.dart'</span> <span class="hljs-keyword">show</span> MaterialLocalizations;
+<span class="hljs-keyword">import</span> <span class="hljs-string">'package:clay_ui/clay_ui.dart'</span>;
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">SetDueDate</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">StatefulWidget</span> </span>{
+  <span class="hljs-keyword">const</span> SetDueDate({<span class="hljs-keyword">super</span>.key});
+  <span class="hljs-meta">@override</span>
+  State&lt;SetDueDate&gt; createState() =&gt; _SetDueDateState();
+}
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">_SetDueDateState</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">State</span>&lt;<span class="hljs-title">SetDueDate</span>&gt; </span>{
+  <span class="hljs-keyword">var</span> due = <span class="hljs-built_in">DateTime</span>(<span class="hljs-number">2026</span>, <span class="hljs-number">11</span>, <span class="hljs-number">12</span>);
+
+  <span class="hljs-meta">@override</span>
+  Widget build(BuildContext context) =&gt; ConstrainedBox(
+    constraints: <span class="hljs-keyword">const</span> BoxConstraints(maxWidth: <span class="hljs-number">400</span>),
+    child: SingleChildScrollView(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ClayDatePicker(
+            firstDate: <span class="hljs-built_in">DateTime</span>(<span class="hljs-number">2026</span>, <span class="hljs-number">11</span>),
+            lastDate: <span class="hljs-built_in">DateTime</span>(<span class="hljs-number">2026</span>, <span class="hljs-number">12</span>, <span class="hljs-number">31</span>),
+            label: <span class="hljs-string">'Due date'</span>,
+            value: due,
+            onChanged: (next) =&gt; setState(() =&gt; due = next),
+            currentDate: <span class="hljs-built_in">DateTime</span>(<span class="hljs-number">2026</span>, <span class="hljs-number">11</span>, <span class="hljs-number">12</span>),
+          ),
+          <span class="hljs-keyword">const</span> SizedBox(height: <span class="hljs-number">12</span>),
+          Text(
+            <span class="hljs-string">'Due: <span class="hljs-subst">${MaterialLocalizations.of(context).formatCompactDate(due)}</span>'</span>,
+          ),
+        ],
+      ),
+    ),
+  );
+}
+</code></pre>
+    </div>
+  </div>
+</section>
+<section class="reference" id="parameters">
+  <div class="section-title"><h2>Parameters</h2><a class="api" href="https:&#47;&#47;pub.dev&#47;documentation&#47;clay_ui&#47;latest&#47;clay_ui&#47;ClayDatePicker-class.html">ClayDatePicker API ↗</a></div>
+  <dl><div><dt><code>value</code></dt><dd>The chosen day.</dd></div><div><dt><code>firstDate</code></dt><dd>The first day it offers.</dd></div><div><dt><code>lastDate</code></dt><dd>The last day it offers.</dd></div><div><dt><code>onChanged</code></dt><dd>A day chosen; null disables it.</dd></div><div><dt><code>label</code></dt><dd>The words above the well.</dd></div><div><dt><code>currentDate</code></dt><dd>Today; null: the clock&#39;s.</dd></div></dl>
+</section>

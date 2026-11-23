@@ -1,0 +1,68 @@
+<section class="example" id="save-options" data-example="save-options">
+  <div class="section-title"><h2>Choose how to save</h2><a class="permalink" href="#save-options" aria-label="Link to Choose how to save">#</a></div>
+  <p>Choose Save for the current draft. Open the adjacent menu and choose Save a copy to see a different confirmation.</p>
+
+  <p class="keyboard-note" hidden></p>
+  <div class="workbench">
+    <div class="example-tabs" role="tablist" aria-label="Choose how to save example">
+      <button type="button" role="tab" id="save-options-preview-tab" aria-selected="true" aria-controls="save-options-preview">Preview</button>
+      <button type="button" role="tab" id="save-options-code-tab" aria-selected="false" aria-controls="save-options-code" tabindex="-1">Code</button>
+    </div>
+    <div role="tabpanel" id="save-options-preview" aria-labelledby="save-options-preview-tab">
+    <div class="tools" aria-label="Preview settings">
+      <div class="frame-options" role="group" aria-label="Frame width">
+        <button type="button" data-width="1440" aria-pressed="true" title="Use the available preview width"><i class="monitor" aria-hidden="true"></i>Desktop</button>
+        <button type="button" data-width="390" aria-pressed="false" title="390 px phone frame"><i class="phone" aria-hidden="true"></i>Phone</button>
+      </div>
+      <div class="environment">
+        <button type="button" data-setting="theme" aria-label="Night theme" aria-pressed="false"><span aria-hidden="true" class="sun"></span><span data-value>Day</span></button>
+        <button type="button" data-setting="dir" aria-label="Right-to-left direction" aria-pressed="false"><span data-value>LTR</span></button>
+        <button type="button" data-setting="scale" aria-label="Double text size" aria-pressed="false"><span aria-hidden="true" class="type-icon">Aa</span><span data-value>100%</span></button>
+      </div>
+    </div>
+    <div class="stage"><div class="viewport"><div class="frame"><iframe loading="lazy" title="Keycap Split button interactive example"></iframe></div></div></div>
+    <div class="caption"><span><i class="status-dot" aria-hidden="true"></i>Flutter preview <span class="frame-size"></span></span><a class="open-preview" target="_blank" rel="noopener">Open preview <span aria-hidden="true">↗</span></a></div>
+    </div>
+    <div class="source" role="tabpanel" id="save-options-code" aria-labelledby="save-options-code-tab" hidden>
+      <div class="source-head"><span class="filename">components&#47;split-button&#47;keycap&#47;save_options.dart</span><button type="button" class="copy">Copy code</button></div>
+      <pre tabindex="0" aria-label="Dart source"><code><span class="hljs-keyword">import</span> <span class="hljs-string">'package:flutter/widgets.dart'</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-string">'package:keycap_ui/keycap_ui.dart'</span>;
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">SaveOptions</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">StatefulWidget</span> </span>{
+  <span class="hljs-keyword">const</span> SaveOptions({<span class="hljs-keyword">super</span>.key});
+
+  <span class="hljs-meta">@override</span>
+  State&lt;SaveOptions&gt; createState() =&gt; _SaveOptionsState();
+}
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">_SaveOptionsState</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">State</span>&lt;<span class="hljs-title">SaveOptions</span>&gt; </span>{
+  <span class="hljs-built_in">String</span> result = <span class="hljs-string">'Unsaved draft'</span>;
+
+  <span class="hljs-meta">@override</span>
+  Widget build(BuildContext context) =&gt; Column(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      KeycapSplitButton(
+        label: <span class="hljs-string">'Save'</span>,
+        onPressed: () =&gt; setState(() =&gt; result = <span class="hljs-string">'Draft saved'</span>),
+        menuLabel: <span class="hljs-string">'Save options'</span>,
+        actions: [
+          RawSplitAction(
+            label: <span class="hljs-string">'Save a copy'</span>,
+            onPressed: () =&gt; setState(() =&gt; result = <span class="hljs-string">'Copy saved'</span>),
+          ),
+        ],
+      ),
+      <span class="hljs-keyword">const</span> SizedBox(height: <span class="hljs-number">12</span>),
+      Text(result),
+    ],
+  );
+}
+</code></pre>
+    </div>
+  </div>
+</section>
+<section class="reference" id="parameters">
+  <div class="section-title"><h2>Parameters</h2><a class="api" href="https:&#47;&#47;pub.dev&#47;documentation&#47;keycap_ui&#47;latest&#47;keycap_ui&#47;KeycapSplitButton-class.html">KeycapSplitButton API ↗</a></div>
+  <dl><div><dt><code>label</code></dt><dd>The main action&#39;s words.</dd></div><div><dt><code>onPressed</code></dt><dd>The main action; null turns the main key off (the menu key stays).</dd></div><div><dt><code>actions</code></dt><dd>The menu&#39;s actions.</dd></div><div><dt><code>menuLabel</code></dt><dd>What a screen reader calls the menu key.</dd></div></dl>
+</section>

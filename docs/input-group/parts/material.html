@@ -1,0 +1,67 @@
+<section class="example" id="weigh-parcel" data-example="weigh-parcel">
+  <div class="section-title"><h2>Weigh a parcel</h2><a class="permalink" href="#weigh-parcel" aria-label="Link to Weigh a parcel">#</a></div>
+  <p>Enter the weight of a parcel. The kilogram unit stays in place when you edit the number or clear the field.</p>
+
+  <p class="keyboard-note" hidden></p>
+  <div class="workbench">
+    <div class="example-tabs" role="tablist" aria-label="Weigh a parcel example">
+      <button type="button" role="tab" id="weigh-parcel-preview-tab" aria-selected="true" aria-controls="weigh-parcel-preview">Preview</button>
+      <button type="button" role="tab" id="weigh-parcel-code-tab" aria-selected="false" aria-controls="weigh-parcel-code" tabindex="-1">Code</button>
+    </div>
+    <div role="tabpanel" id="weigh-parcel-preview" aria-labelledby="weigh-parcel-preview-tab">
+    <div class="tools" aria-label="Preview settings">
+      <div class="frame-options" role="group" aria-label="Frame width">
+        <button type="button" data-width="1440" aria-pressed="true" title="Use the available preview width"><i class="monitor" aria-hidden="true"></i>Desktop</button>
+        <button type="button" data-width="390" aria-pressed="false" title="390 px phone frame"><i class="phone" aria-hidden="true"></i>Phone</button>
+      </div>
+      <div class="environment">
+        <button type="button" data-setting="theme" aria-label="Night theme" aria-pressed="false"><span aria-hidden="true" class="sun"></span><span data-value>Day</span></button>
+        <button type="button" data-setting="dir" aria-label="Right-to-left direction" aria-pressed="false"><span data-value>LTR</span></button>
+        <button type="button" data-setting="scale" aria-label="Double text size" aria-pressed="false"><span aria-hidden="true" class="type-icon">Aa</span><span data-value>100%</span></button>
+      </div>
+    </div>
+    <div class="stage"><div class="viewport"><div class="frame"><iframe loading="lazy" title="Material (Flutter) Input group interactive example"></iframe></div></div></div>
+    <div class="caption"><span><i class="status-dot" aria-hidden="true"></i>Flutter preview <span class="frame-size"></span></span><a class="open-preview" target="_blank" rel="noopener">Open preview <span aria-hidden="true">↗</span></a></div>
+    </div>
+    <div class="source" role="tabpanel" id="weigh-parcel-code" aria-labelledby="weigh-parcel-code-tab" hidden>
+      <div class="source-head"><span class="filename">components&#47;input-group&#47;material&#47;weigh_parcel.dart</span><button type="button" class="copy">Copy code</button></div>
+      <pre tabindex="0" aria-label="Dart source"><code><span class="hljs-keyword">import</span> <span class="hljs-string">'package:material_ui/material_ui.dart'</span>;
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">WeighParcel</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">StatefulWidget</span> </span>{
+  <span class="hljs-keyword">const</span> WeighParcel({<span class="hljs-keyword">super</span>.key});
+  <span class="hljs-meta">@override</span>
+  State&lt;WeighParcel&gt; createState() =&gt; _WeighParcelState();
+}
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">_WeighParcelState</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">State</span>&lt;<span class="hljs-title">WeighParcel</span>&gt; </span>{
+  <span class="hljs-built_in">String</span> weight = <span class="hljs-string">''</span>;
+
+  <span class="hljs-meta">@override</span>
+  Widget build(BuildContext context) =&gt; ConstrainedBox(
+    constraints: <span class="hljs-keyword">const</span> BoxConstraints(maxWidth: <span class="hljs-number">360</span>),
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        TextField(
+          keyboardType: <span class="hljs-keyword">const</span> TextInputType.numberWithOptions(decimal: <span class="hljs-keyword">true</span>),
+          decoration: <span class="hljs-keyword">const</span> InputDecoration(
+            labelText: <span class="hljs-string">'Parcel weight'</span>,
+            suffixText: <span class="hljs-string">'kg'</span>,
+            border: OutlineInputBorder(),
+          ),
+          onChanged: (value) =&gt; setState(() =&gt; weight = value.trim()),
+        ),
+        <span class="hljs-keyword">const</span> SizedBox(height: <span class="hljs-number">12</span>),
+        Text(weight.isEmpty ? <span class="hljs-string">'Parcel not weighed'</span> : <span class="hljs-string">'Entered: <span class="hljs-subst">$weight</span> kg'</span>),
+      ],
+    ),
+  );
+}
+</code></pre>
+    </div>
+  </div>
+</section>
+<section class="reference" id="parameters">
+  <div class="section-title"><h2>Parameters</h2><a class="api" href="https:&#47;&#47;pub.dev&#47;documentation&#47;material_ui&#47;latest&#47;material_ui&#47;InputDecoration-class.html">InputDecoration API ↗</a></div>
+  <dl><div><dt><code>suffixText</code></dt><dd>Words after the input, such as a unit; they stay while the user edits.</dd></div><div><dt><code>prefixText</code></dt><dd>Words before the input, such as a currency sign.</dd></div><div><dt><code>suffixIcon</code></dt><dd>A widget at the end of the field, such as a button.</dd></div><div><dt><code>prefixIcon</code></dt><dd>A widget at the start of the field.</dd></div><div><dt><code>labelText</code></dt><dd>The field&#39;s name, which floats above the input once it has focus.</dd></div></dl>
+</section>
