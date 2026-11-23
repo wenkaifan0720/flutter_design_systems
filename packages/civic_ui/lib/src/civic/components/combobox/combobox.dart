@@ -12,7 +12,7 @@ import '../text-field/text_field.dart';
 
 /// One answer from a long list, found by typing: a [CivicTextField] ending
 /// in the select's chevron, whose words narrow the [options] in a list
-/// under the box, on the field's own edge, as a select's list is: the chosen row on
+/// under the box at its width, floating as a select's list does: the chosen row on
 /// the inset rule in the action colour, bold and ticked, a row under the
 /// pointer grey. The arrow keys walk the list, the row reached lies on the
 /// yellow plate, Enter or a press takes it, Escape closes the list; after

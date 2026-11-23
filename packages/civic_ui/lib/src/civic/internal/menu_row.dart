@@ -140,9 +140,9 @@ class CivicMenuRow extends StatelessWidget {
   }
 }
 
-/// The panel a menu's rows stand on: the page's face floating on a hairline
-/// and the soft shadow, as an open list does, [minWidth] to [maxWidth] wide.
-/// Its rows reach the panel's edges.
+/// The panel a menu's rows stand on: the page's face (by night the raised
+/// band) floating on a hairline and the soft shadow, as an open list does,
+/// [minWidth] to [maxWidth] wide. Its rows reach the panel's edges.
 class CivicMenuPanel extends StatelessWidget {
   /// A panel round [child].
   const CivicMenuPanel({
@@ -170,11 +170,12 @@ class CivicMenuPanel extends StatelessWidget {
     final t = context.civicTheme;
     final so = DesignStyleOf([style, t.menuStyle], const {});
     const inset = 1.0;
+    final face = so.fill ?? (t.isDark ? t.surface : t.background);
     return ConstrainedBox(
       constraints: BoxConstraints(minWidth: minWidth, maxWidth: maxWidth),
       child: DecoratedBox(
         decoration: civicFloating(
-          face: so.fill ?? t.background,
+          face: face,
           hairline: so.edge ?? t.rule,
           dark: t.isDark,
         ),
@@ -183,8 +184,14 @@ class CivicMenuPanel extends StatelessWidget {
             vertical: CivicSpacing.s4,
             horizontal: inset,
           ),
-          // As wide as its widest row, within its bounds.
-          child: ClipRect(child: IntrinsicWidth(child: child)),
+          // As wide as its widest row, within its bounds; the rows take the
+          // panel's face for their page.
+          child: ClipRect(
+            child: CivicTheme(
+              data: t.copyWith(background: face),
+              child: IntrinsicWidth(child: child),
+            ),
+          ),
         ),
       ),
     );

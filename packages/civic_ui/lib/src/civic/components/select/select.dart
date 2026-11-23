@@ -33,8 +33,10 @@ class CivicSelectItem<T> {
 }
 
 /// One answer from a list too long for radios: the field's box with the
-/// answer in it and a chevron, opening the list under it on the field's own
-/// 2 pt ink edge. The chosen row stands on the inset rule in the
+/// answer in it and a chevron, opening the list under it at its width,
+/// floating as a menu does (the field's face on a hairline and the soft
+/// shadow; by night on the raised band). The chosen row stands on the inset
+/// rule in the
 /// action colour, bold and ticked; a pointer greys a row; the focused row
 /// stands on the yellow plate. From 600 wide it keeps to 320 points: a
 /// select is as wide as its answers.

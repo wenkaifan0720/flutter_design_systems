@@ -1,3 +1,12 @@
+## 0.5.1
+
+- By night a toast stands on the raised band inside an edge that reads at 3:1 against the page, so it reads as its own surface. It stood on the top bar's night band, about as dark as the page, with no edge.
+- A date picker's Choose date button and the typed date beside it stand one height, as controls in a row do, at any text size. On a touch screen the button stood 48 beside a 52 field, and at twice the text it stood taller than the field. A date range's button and its two fields likewise.
+- A calendar's header centres the month's name, with the way to the month before at the start and the way to the month after at the end. The name stood at the start with both arrows at the end.
+- By night a popover, a date picker's calendar, a menu, an open list and a dialog stand on the raised band inside an edge that reads at 3:1 against the page. The popover and the calendar stood on the page's own face (about 1.1:1 against the page) on a faint hairline.
+- The list a `CivicSelect`, `CivicCombobox` or `CivicMultiSelect` opens floats as a popover, a menu, the date picker's calendar and a dialog do: rounded, on a hairline, with the soft shadow under it. The 2 pt ink edge is a field's alone again; 0.4.1 had squared the list onto it.
+- A date picker's calendar opens clear of the whole field, its label and help too, as Material's menus open clear of their field. Low on a window it opened above the typed date, over the field's label.
+
 ## 0.5.0
 
 - Needs ui_core 0.5.1.

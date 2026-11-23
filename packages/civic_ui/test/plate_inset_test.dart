@@ -201,7 +201,7 @@ void main() {
             final menu = find
                 .ancestor(
                   of: find.text('A3'),
-                  // The list's surface: the field's own square ink edge.
+                  // The list's surface, inside its hairline.
                   matching: find.byWidgetPredicate(
                     (w) =>
                         w is DecoratedBox &&
@@ -215,16 +215,15 @@ void main() {
             // Measured from the end: a highlighted row's ink notch stands at
             // its start, against the rim.
             double start(double d) => rtl ? box.left + d : box.right - d;
-            // The list's 2 pt ink edge, as its field's: the first option
-            // fills the square inside it and never paints over it.
-            const edge = 2.0;
-            final inset = color(start(edge + 1.25), box.top + 9.25);
-            expect(color(start(edge - .75), box.top + 9.25), isNot(inset));
-            expect(
-              color(start(edge + .75), box.top + edge - .75),
-              isNot(inset),
-            );
-            expect(color(start(edge + .75), box.top + edge + .75), inset);
+            // The list's hairline, as round everything that floats: the
+            // first option fills its row inside it and never paints over
+            // it, at the side or along the top.
+            const edge = 1.0;
+            final row = box.top + 20;
+            final inset = color(start(edge + 1.25), row);
+            expect(color(start(edge - .75), row), isNot(inset));
+            expect(color(start(edge + .25), row), inset);
+            expect(color(start(24), box.top + .25), isNot(inset));
           },
         );
       }

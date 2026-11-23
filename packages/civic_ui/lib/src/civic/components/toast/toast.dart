@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+import '../../internal/paint.dart';
 import '../../theme.dart';
 import '../icon-button/icon_button.dart';
 import '../link/link.dart';
@@ -15,9 +16,10 @@ import '../top-bar/top_bar.dart';
 /// toast at twice the text, or one leaving as the next comes), they scroll,
 /// the newest in sight at the foot, rather than run off it.
 ///
-/// Its toasts read [CivicStyle]'s fill (the band), foreground (the words
-/// and the glyph) and textStyle: its `style:`, then
-/// [CivicThemeData.toastStyle]. Keep the words at 7:1 on the band.
+/// Its toasts read [CivicStyle]'s fill (the band), edge (its hairline by
+/// night), foreground (the words and the glyph) and textStyle: its
+/// `style:`, then [CivicThemeData.toastStyle]. Keep the words at 7:1 on the
+/// band.
 ///
 /// In an app's `builder:`, under its theme:
 /// `builder: (context, child) => CivicTheme(data: CivicThemeData.light(), child: CivicToaster(child: child!))`.
@@ -64,9 +66,10 @@ class CivicToaster extends StatelessWidget {
 }
 
 /// A short word that something happened (Saved, Link copied), on the ink
-/// band at the foot of the screen, read out by a screen reader. Never the
-/// only place something important is said: a change that matters is on
-/// the page.
+/// band at the foot of the screen (by night, where the band is as dark as
+/// the page, on the raised band inside a hairline that reads, as what floats
+/// stands), read out by a screen reader. Never the only place something
+/// important is said: a change that matters is on the page.
 ///
 /// ```dart
 /// CivicToast.show(context, 'Your answers have been saved');
@@ -107,7 +110,11 @@ class _CivicToastView extends StatelessWidget {
     final t = context.civicTheme;
     final text = context.civicText;
     final so = DesignStyleOf([style, t.toastStyle], const {});
-    final band = so.fill ?? CivicTopBar.bandOf(t);
+    // By night the top bar's band is as dark as the page under it: the
+    // toast stands on the raised band inside the floating hairline instead,
+    // so it reads as its own surface over the page.
+    final night = t.isDark;
+    final band = so.fill ?? (night ? t.surface : CivicTopBar.bandOf(t));
     final onBand = so.foreground ?? CivicTopBar.onBandOf(t);
     final words = text.label.merge(so.textStyle).copyWith(color: onBand);
     final a = details.animation.drive(
@@ -119,8 +126,15 @@ class _CivicToastView extends StatelessWidget {
       child: Semantics(
         container: true,
         liveRegion: true,
-        child: ColoredBox(
-          color: band,
+        child: DecoratedBox(
+          decoration: night
+              ? civicFloating(
+                  face: band,
+                  hairline: so.edge ?? t.rule,
+                  dark: true,
+                  radius: 0,
+                )
+              : BoxDecoration(color: band),
           child: Padding(
             padding: const EdgeInsetsDirectional.fromSTEB(
               CivicSpacing.s20,

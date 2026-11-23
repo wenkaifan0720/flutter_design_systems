@@ -185,48 +185,51 @@ class _CivicCalendarState extends State<CivicCalendar> {
             ),
         ],
       ),
-      headerBuilder: (context, header) => Padding(
-        padding: const EdgeInsets.only(bottom: CivicSpacing.s8),
-        child: Row(
-          children: [
-            Expanded(
-              child: Semantics(
-                header: true,
-                liveRegion: true,
-                child: Text(
-                  header.label,
-                  style: text.headingS.copyWith(color: t.textPrimary),
+      // The month's name centred between the ways to the month before (at
+      // the start, over the first weekday) and after (at the end, over the
+      // last): the header stands as even as the grid under it.
+      headerBuilder: (context, header) {
+        final arrows = header.previous != null || header.next != null;
+        return Padding(
+          padding: const EdgeInsets.only(bottom: CivicSpacing.s8),
+          child: IconTheme.merge(
+            data: IconThemeData(color: t.textPrimary),
+            child: Row(
+              children: [
+                if (arrows)
+                  CivicIconButton(
+                    icon: rtl
+                        ? LucideIcons.chevronRight
+                        : LucideIcons.chevronLeft,
+                    semanticLabel: words.previousMonthTooltip,
+                    tooltip: words.previousMonthTooltip,
+                    onPressed: header.previous,
+                  ),
+                Expanded(
+                  child: Semantics(
+                    header: true,
+                    liveRegion: true,
+                    child: Text(
+                      header.label,
+                      textAlign: TextAlign.center,
+                      style: text.headingS.copyWith(color: t.textPrimary),
+                    ),
+                  ),
                 ),
-              ),
+                if (arrows)
+                  CivicIconButton(
+                    icon: rtl
+                        ? LucideIcons.chevronLeft
+                        : LucideIcons.chevronRight,
+                    semanticLabel: words.nextMonthTooltip,
+                    tooltip: words.nextMonthTooltip,
+                    onPressed: header.next,
+                  ),
+              ],
             ),
-            if (header.previous != null || header.next != null)
-              IconTheme.merge(
-                data: IconThemeData(color: t.textPrimary),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    CivicIconButton(
-                      icon: rtl
-                          ? LucideIcons.chevronRight
-                          : LucideIcons.chevronLeft,
-                      semanticLabel: words.previousMonthTooltip,
-                      tooltip: words.previousMonthTooltip,
-                      onPressed: header.previous,
-                    ),
-                    CivicIconButton(
-                      icon: rtl
-                          ? LucideIcons.chevronLeft
-                          : LucideIcons.chevronRight,
-                      semanticLabel: words.nextMonthTooltip,
-                      tooltip: words.nextMonthTooltip,
-                      onPressed: header.next,
-                    ),
-                  ],
-                ),
-              ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
       weekdayBuilder: (context, weekday, label) => Padding(
         padding: const EdgeInsets.only(bottom: CivicSpacing.s4),
         child: Text(
