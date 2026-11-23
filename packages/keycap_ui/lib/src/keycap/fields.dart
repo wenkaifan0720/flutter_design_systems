@@ -28,7 +28,7 @@ export 'package:ui_core/ui_core.dart' show RawOtpController;
 /// search field.
 ///
 /// ```dart
-/// KeycapSearchField(hint: 'Search notes', onChanged: search)
+/// KeycapSearchField(hintText: 'Search notes', onChanged: search)
 /// ```
 class KeycapSearchField extends StatefulWidget {
   /// A search field.
@@ -36,7 +36,7 @@ class KeycapSearchField extends StatefulWidget {
     super.key,
     this.controller,
     this.focusNode,
-    this.hint,
+    this.hintText,
     this.semanticLabel,
     this.onChanged,
     this.onSubmitted,
@@ -52,7 +52,7 @@ class KeycapSearchField extends StatefulWidget {
   final FocusNode? focusNode;
 
   /// The words in the empty field.
-  final String? hint;
+  final String? hintText;
 
   /// The field's name for a screen reader; the kit's "Search" when null.
   final String? semanticLabel;
@@ -79,7 +79,7 @@ class KeycapSearchField extends StatefulWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
       ..add(FlagProperty('enabled', value: enabled, ifFalse: 'disabled'));
   }
 }
@@ -124,7 +124,7 @@ class _KeycapSearchFieldState extends State<KeycapSearchField> {
       child: KeycapTextField(
         controller: _controller,
         focusNode: widget.focusNode,
-        hint: widget.hint,
+        hintText: widget.hintText,
         semanticLabel: widget.semanticLabel ?? words.searchFieldLabel,
         leading: const Icon(LucideIcons.search),
         trailing: empty || !widget.enabled
@@ -152,7 +152,7 @@ class _KeycapSearchFieldState extends State<KeycapSearchField> {
 /// shows them while it is latched. Built on ui_core's `RawPasswordReveal`.
 ///
 /// ```dart
-/// KeycapPasswordField(label: 'Password', onChanged: setPassword)
+/// KeycapPasswordField(labelText: 'Password', onChanged: setPassword)
 /// ```
 class KeycapPasswordField extends StatelessWidget {
   /// A password field.
@@ -161,10 +161,10 @@ class KeycapPasswordField extends StatelessWidget {
     this.controller,
     this.focusNode,
     this.passwordController,
-    this.label,
-    this.hint,
-    this.helper,
-    this.error,
+    this.labelText,
+    this.hintText,
+    this.helperText,
+    this.errorText,
     this.onChanged,
     this.onSubmitted,
     this.autofillHints = const [AutofillHints.password],
@@ -182,16 +182,16 @@ class KeycapPasswordField extends StatelessWidget {
   final RawPasswordController? passwordController;
 
   /// The words over the field.
-  final String? label;
+  final String? labelText;
 
   /// The words in the empty field.
-  final String? hint;
+  final String? hintText;
 
   /// Help under the field.
-  final String? helper;
+  final String? helperText;
 
   /// What is wrong, under the field.
-  final String? error;
+  final String? errorText;
 
   /// Called as the words change.
   final ValueChanged<String>? onChanged;
@@ -215,10 +215,10 @@ class KeycapPasswordField extends StatelessWidget {
     builder: (context, password) => KeycapTextField(
       controller: controller,
       focusNode: focusNode,
-      label: label,
-      hint: hint,
-      helper: helper,
-      error: error,
+      labelText: labelText,
+      hintText: hintText,
+      helperText: helperText,
+      errorText: errorText,
       obscureText: password.obscured,
       autofillHints: autofillHints,
       keyboardType: TextInputType.visiblePassword,
@@ -239,8 +239,8 @@ class KeycapPasswordField extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('label', label, defaultValue: null))
-      ..add(StringProperty('error', error, defaultValue: null));
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
+      ..add(StringProperty('errorText', errorText, defaultValue: null));
   }
 }
 
@@ -250,21 +250,21 @@ class KeycapPasswordField extends StatelessWidget {
 /// ui_core's `DesignInputGroup`.
 ///
 /// ```dart
-/// KeycapInputGroup(label: 'Goal', suffix: 'words a day', keyboardType: TextInputType.number)
+/// KeycapInputGroup(labelText: 'Goal', suffixText: 'words a day', keyboardType: TextInputType.number)
 /// ```
 class KeycapInputGroup extends StatefulWidget {
-  /// A field with a [prefix], a [suffix] or both.
+  /// A field with a [prefixText], a [suffixText] or both.
   const KeycapInputGroup({
     super.key,
     this.controller,
     this.focusNode,
-    this.label,
-    this.hint,
-    this.helper,
-    this.error,
+    this.labelText,
+    this.hintText,
+    this.helperText,
+    this.errorText,
     this.semanticLabel,
-    this.prefix,
-    this.suffix,
+    this.prefixText,
+    this.suffixText,
     this.onChanged,
     this.onSubmitted,
     this.keyboardType,
@@ -280,25 +280,25 @@ class KeycapInputGroup extends StatefulWidget {
   final FocusNode? focusNode;
 
   /// The words over the field.
-  final String? label;
+  final String? labelText;
 
   /// The words in the empty entry.
-  final String? hint;
+  final String? hintText;
 
   /// Help under the field.
-  final String? helper;
+  final String? helperText;
 
   /// What is wrong, under the field.
-  final String? error;
+  final String? errorText;
 
-  /// The field's name for a screen reader, when there is no [label].
+  /// The field's name for a screen reader, when there is no [labelText].
   final String? semanticLabel;
 
   /// Words printed before the entry.
-  final String? prefix;
+  final String? prefixText;
 
   /// Words printed after it.
-  final String? suffix;
+  final String? suffixText;
 
   /// Called as the words change.
   final ValueChanged<String>? onChanged;
@@ -325,9 +325,9 @@ class KeycapInputGroup extends StatefulWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('label', label, defaultValue: null))
-      ..add(StringProperty('prefix', prefix, defaultValue: null))
-      ..add(StringProperty('suffix', suffix, defaultValue: null));
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
+      ..add(StringProperty('prefixText', prefixText, defaultValue: null))
+      ..add(StringProperty('suffixText', suffixText, defaultValue: null));
   }
 }
 
@@ -353,7 +353,7 @@ class _KeycapInputGroupState extends State<KeycapInputGroup> {
   Widget build(BuildContext context) {
     final theme = KeycapTheme.of(context);
     final c = theme.colors;
-    final wrong = widget.error != null;
+    final wrong = widget.errorText != null;
     final pad = KeycapSpacing.medium + theme.density.paddingDelta / 2;
     final ink = widget.enabled ? c.ink : c.inkDisabled;
     final printed = theme.textTheme.body.copyWith(
@@ -372,7 +372,7 @@ class _KeycapInputGroupState extends State<KeycapInputGroup> {
       );
       final drawn = DefaultTextStyle.of(context).style.merge(printed);
       var words = 0.0;
-      for (final text in [?widget.prefix, ?widget.suffix]) {
+      for (final text in [?widget.prefixText, ?widget.suffixText]) {
         painter
           ..text = TextSpan(text: text, style: drawn)
           ..layout();
@@ -380,8 +380,8 @@ class _KeycapInputGroupState extends State<KeycapInputGroup> {
       }
       painter.dispose();
       final ends =
-          (widget.prefix == null ? 0 : 2 * pad + 1) +
-          (widget.suffix == null ? 0 : 2 * pad + 1);
+          (widget.prefixText == null ? 0 : 2 * pad + 1) +
+          (widget.suffixText == null ? 0 : 2 * pad + 1);
       final room = width * 2 / 3 - ends;
       if (words <= room || words <= 0 || room <= 1) return scaler;
       final size = drawn.fontSize ?? 14;
@@ -419,117 +419,113 @@ class _KeycapInputGroupState extends State<KeycapInputGroup> {
         ],
       ),
     );
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        if (widget.label != null)
-          ExcludeSemantics(
-            child: KeycapFieldLabel(widget.label!, enabled: widget.enabled),
+    return KeycapField(
+      labelText: widget.labelText,
+      helperText: widget.helperText,
+      errorText: widget.errorText,
+      enabled: widget.enabled,
+      focusNode: _focus,
+      child: DesignInputGroup(
+        focusNode: _focus,
+        enabled: widget.enabled,
+        isError: wrong,
+        builder: (context, states, child) {
+          final layered = DesignStyleOf([
+            widget.style,
+            theme.textFieldStyle,
+          ], states);
+          final focused = states.contains(WidgetState.focused);
+          return KeycapWell(
+            radius: BorderRadius.circular(KeycapMetrics.fieldRadius),
+            floor:
+                layered.fill ??
+                (widget.enabled ? null : Color.lerp(c.well, c.ground, 0.6)),
+            rim: focused
+                ? (wrong ? c.dangerInk : c.focus)
+                : wrong
+                ? c.dangerInk.withValues(alpha: 0.55)
+                : null,
+            rimWidth: focused ? KeycapMetrics.focusWidth : 1,
+            child: child,
+          );
+        },
+        child: SizedBox(
+          height: KeycapMetrics.grown(
+            context,
+            theme.controlHeight,
+            theme.textTheme.body,
           ),
-        DesignInputGroup(
-          focusNode: _focus,
-          enabled: widget.enabled,
-          isError: wrong,
-          builder: (context, states, child) {
-            final layered = DesignStyleOf([
-              widget.style,
-              theme.textFieldStyle,
-            ], states);
-            final focused = states.contains(WidgetState.focused);
-            return KeycapWell(
-              radius: BorderRadius.circular(KeycapMetrics.fieldRadius),
-              floor:
-                  layered.fill ??
-                  (widget.enabled ? null : Color.lerp(c.well, c.ground, 0.6)),
-              rim: focused
-                  ? (wrong ? c.dangerInk : c.focus)
-                  : wrong
-                  ? c.dangerInk.withValues(alpha: 0.55)
-                  : null,
-              rimWidth: focused ? KeycapMetrics.focusWidth : 1,
-              child: child,
-            );
-          },
-          child: SizedBox(
-            height: KeycapMetrics.grown(
-              context,
-              theme.controlHeight,
-              theme.textTheme.body,
-            ),
-            child: LayoutBuilder(
-              builder: (context, box) {
-                final scaler = addOnScaler(box.maxWidth);
-                final most = box.maxWidth * 2 / 3;
-                return Row(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    if (widget.prefix != null)
-                      addOn(
-                        widget.prefix!,
-                        start: true,
-                        most: most,
-                        scaler: scaler,
-                      ),
-                    Expanded(
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(horizontal: pad),
-                        child: DesignCapCenter(
-                          capHeightFactor: theme.capHeightFactor,
-                          child: Semantics(
-                            container: true,
-                            label: widget.semanticLabel ?? widget.label,
-                            child: DesignTextEntryBox(
-                              minHeight: theme.controlHeight,
-                              controller: _controller,
-                              hint: widget.hint == null
-                                  ? null
-                                  : Text(
-                                      widget.hint!,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: theme.textTheme.body.copyWith(
-                                        color: c.inkMuted,
-                                      ),
+          child: LayoutBuilder(
+            builder: (context, box) {
+              final scaler = addOnScaler(box.maxWidth);
+              final most = box.maxWidth * 2 / 3;
+              return Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  if (widget.prefixText != null)
+                    addOn(
+                      widget.prefixText!,
+                      start: true,
+                      most: most,
+                      scaler: scaler,
+                    ),
+                  Expanded(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: pad),
+                      child: DesignCapCenter(
+                        capHeightFactor: theme.capHeightFactor,
+                        child: Semantics(
+                          container: true,
+                          label: widget.semanticLabel ?? widget.labelText,
+                          child: DesignTextEntryBox(
+                            minHeight: theme.controlHeight,
+                            controller: _controller,
+                            hint: widget.hintText == null
+                                ? null
+                                : Text(
+                                    widget.hintText!,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: theme.textTheme.body.copyWith(
+                                      color: c.inkMuted,
                                     ),
-                              child: Material(
-                                type: MaterialType.transparency,
-                                child: TextField(
-                                  controller: _controller,
-                                  focusNode: _focus,
-                                  decoration: null,
-                                  style: theme.textTheme.body.copyWith(
-                                    color: ink,
                                   ),
-                                  cursorColor: c.accent.top,
-                                  cursorWidth: 2,
-                                  keyboardType: widget.keyboardType,
-                                  inputFormatters: widget.inputFormatters,
-                                  onChanged: widget.onChanged,
-                                  onSubmitted: widget.onSubmitted,
-                                  enabled: widget.enabled,
+                            child: Material(
+                              type: MaterialType.transparency,
+                              child: TextField(
+                                controller: _controller,
+                                focusNode: _focus,
+                                decoration: null,
+                                style: theme.textTheme.body.copyWith(
+                                  color: ink,
                                 ),
+                                cursorColor: c.accent.top,
+                                cursorWidth: 2,
+                                keyboardType: widget.keyboardType,
+                                inputFormatters: widget.inputFormatters,
+                                onChanged: widget.onChanged,
+                                onSubmitted: widget.onSubmitted,
+                                enabled: widget.enabled,
                               ),
                             ),
                           ),
                         ),
                       ),
                     ),
-                    if (widget.suffix != null)
-                      addOn(
-                        widget.suffix!,
-                        start: false,
-                        most: most,
-                        scaler: scaler,
-                      ),
-                  ],
-                );
-              },
-            ),
+                  ),
+                  if (widget.suffixText != null)
+                    addOn(
+                      widget.suffixText!,
+                      start: false,
+                      most: most,
+                      scaler: scaler,
+                    ),
+                ],
+              );
+            },
           ),
         ),
-        KeycapFieldMessage(helper: widget.helper, error: widget.error),
-      ],
+      ),
     );
   }
 }
@@ -907,6 +903,7 @@ class KeycapField extends StatelessWidget {
     this.labelText,
     this.helperText,
     this.errorText,
+    this.invalid = false,
     this.required = false,
     this.enabled = true,
     this.focusNode,
@@ -922,8 +919,13 @@ class KeycapField extends StatelessWidget {
   /// Help under it.
   final String? helperText;
 
-  /// What is wrong, under it.
+  /// What is wrong, under it; an empty string marks it wrong without words,
+  /// as [invalid] does.
   final String? errorText;
+
+  /// Whether its value is wrong with no words to say why: a screen reader
+  /// hears it invalid and the help gives way, as with [errorText].
+  final bool invalid;
 
   /// Whether an answer is required: said to a screen reader, and marked.
   final bool required;
@@ -943,7 +945,8 @@ class KeycapField extends StatelessWidget {
   Widget build(BuildContext context) => RawInputDecorator(
     labelText: labelText,
     helperText: helperText,
-    errorText: errorText,
+    errorText: errorText == '' ? null : errorText,
+    invalid: invalid || errorText == '',
     required: required,
     enabled: enabled,
     focusNode: focusNode,
@@ -966,7 +969,7 @@ class KeycapField extends StatelessWidget {
               ),
             ),
           parts.control,
-          if (parts.error != null && (parts.errorText ?? '').isNotEmpty)
+          if (parts.error != null)
             Padding(
               padding: const EdgeInsets.only(top: KeycapSpacing.small),
               child: Row(
@@ -992,7 +995,7 @@ class KeycapField extends StatelessWidget {
                 ],
               ),
             )
-          else if (parts.helper != null && parts.errorText == null)
+          else if (parts.helper != null && !parts.invalid)
             Padding(
               padding: const EdgeInsets.only(top: KeycapSpacing.small),
               child: DefaultTextStyle(style: secondary, child: parts.helper!),
@@ -1008,7 +1011,10 @@ class KeycapField extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(StringProperty('labelText', labelText, defaultValue: null))
+      ..add(StringProperty('helperText', helperText, defaultValue: null))
       ..add(StringProperty('errorText', errorText, defaultValue: null))
-      ..add(FlagProperty('required', value: required, ifTrue: 'required'));
+      ..add(FlagProperty('invalid', value: invalid, ifTrue: 'invalid'))
+      ..add(FlagProperty('required', value: required, ifTrue: 'required'))
+      ..add(FlagProperty('enabled', value: enabled, ifFalse: 'disabled'));
   }
 }

@@ -62,13 +62,14 @@ List<Color> _inks(KeycapColors c) => c.brightness == Brightness.light
         c.inkMuted,
       ];
 
-/// A figure with no needless decimals, in the reader's digits (Arabic's
-/// Arabic-Indic, German's decimal comma).
+/// How a chart writes its figures when the app gives no words for them: in
+/// the reader's digits (Arabic's Arabic-Indic, German's decimal comma), a
+/// scale's ticks at its decimals.
+const _figures = DesignChartValueFormat();
+
+/// [v] as [_figures] writes it.
 String _plain(BuildContext context, double v) =>
-    RawWidgetsLocalizations.of(context).formatDecimal(
-      v,
-      fractionDigits: v == v.roundToDouble() || v.abs() >= 10 ? 0 : 1,
-    );
+    _figures.format(v, RawWidgetsLocalizations.of(context));
 
 /// The size [s] takes in [style] at the reader's text size.
 Size _measure(BuildContext context, String s, TextStyle style) {
@@ -266,14 +267,6 @@ class _SeriesChartState extends State<_SeriesChart> {
     final line = _measure(context, '0', axis).height;
     final factor = scaler.scale(axis.fontSize!) / axis.fontSize!;
     final foot = math.max(20.0, line + 4);
-    final values = widget.series.expand((s) => s.values.take(_count));
-    final gutter = math.max(
-      32 * factor,
-      [
-        for (final v in [values.reduce(math.min), values.reduce(math.max), 0.0])
-          _measure(context, _text(v), axis).width + KeycapSpacing.small,
-      ].reduce(math.max),
-    );
     final labelSpacing = widget.labels.fold<double>(
       44 * factor,
       (width, label) => math.max(
@@ -301,13 +294,21 @@ class _SeriesChartState extends State<_SeriesChart> {
         final i = x.round();
         return i >= 0 && i < _count ? widget.labels[i] : '';
       },
-      formatY: _text,
+      formatY: widget.valueText,
+      valueFormat: _figures,
       tickCount: 4,
-      padding: EdgeInsetsDirectional.only(
-        start: gutter,
-        top: line / 2,
-        bottom: foot,
+      // The scale's figures stand beside the plot, as wide as the widest.
+      yLabelGutter: (ticks) => math.max(
+        32 * factor,
+        DesignScaleTick.widestLabel(
+              ticks,
+              style: axis,
+              textScaler: scaler,
+              textDirection: Directionality.of(context),
+            ) +
+            KeycapSpacing.small,
       ),
+      padding: EdgeInsetsDirectional.only(top: line / 2, bottom: foot),
       focusNode: _focus,
       dampingRatio: KeycapMotion.panel.dampingRatio,
       stiffness: KeycapMotion.panel.stiffness,
@@ -942,7 +943,8 @@ class _KeycapDonutChartState extends State<KeycapDonutChart> {
             DesignPieSlice(label: label, value: math.max(0.0, value)),
         ],
         holeRadius: 0.62,
-        formatValue: _text,
+        formatValue: widget.valueText,
+        valueFormat: _figures,
         focusNode: _focus,
         dampingRatio: KeycapMotion.panel.dampingRatio,
         stiffness: KeycapMotion.panel.stiffness,

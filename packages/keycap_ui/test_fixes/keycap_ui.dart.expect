@@ -1,0 +1,199 @@
+// The names keycap_ui 0.3.0 renames: keycap_ui.dart calls them as before `dart fix --apply`,
+// keycap_ui.dart.expect as after.
+import 'package:flutter/widgets.dart';
+import 'package:keycap_ui/keycap_ui.dart';
+
+void calls(BuildContext context) {
+  final v1 = const KeycapTextField(
+    labelText: 'Text',
+    hintText: 'Text',
+    helperText: 'Text',
+    errorText: 'Text',
+  );
+  print(v1.labelText);
+  print(v1.hintText);
+  print(v1.helperText);
+  print(v1.errorText);
+  final v2 = const KeycapPasswordField(
+    labelText: 'Text',
+    hintText: 'Text',
+    helperText: 'Text',
+    errorText: 'Text',
+  );
+  print(v2.labelText);
+  print(v2.hintText);
+  print(v2.helperText);
+  print(v2.errorText);
+  final v3 = const KeycapInputGroup(
+    labelText: 'Text',
+    hintText: 'Text',
+    helperText: 'Text',
+    errorText: 'Text',
+    prefixText: 'Text',
+    suffixText: 'Text',
+  );
+  print(v3.labelText);
+  print(v3.hintText);
+  print(v3.helperText);
+  print(v3.errorText);
+  print(v3.prefixText);
+  print(v3.suffixText);
+  final v4 = const KeycapCombobox<String>(
+    labelText: 'Text',
+    hintText: 'Text',
+    helperText: 'Text',
+    errorText: 'Text',
+  );
+  print(v4.labelText);
+  print(v4.hintText);
+  print(v4.helperText);
+  print(v4.errorText);
+  final v5 = KeycapTagInput<String>(
+    values: const [],
+    onChanged: (_) {},
+    labelText: 'Text',
+    hintText: 'Text',
+    helperText: 'Text',
+    errorText: 'Text',
+  );
+  print(v5.labelText);
+  print(v5.hintText);
+  print(v5.helperText);
+  print(v5.errorText);
+  final v6 = KeycapSelect<int>(
+    items: const [],
+    value: null,
+    onChanged: (_) {},
+    labelText: 'Text',
+    hintText: 'Text',
+    helperText: 'Text',
+    errorText: 'Text',
+  );
+  print(v6.labelText);
+  print(v6.hintText);
+  print(v6.helperText);
+  print(v6.errorText);
+  final v7 = KeycapDatePicker(
+    value: null,
+    onChanged: (_) {},
+    firstDate: DateTime(2026),
+    lastDate: DateTime(2026),
+    labelText: 'Text',
+    hintText: 'Text',
+    helperText: 'Text',
+    errorText: 'Text',
+  );
+  print(v7.labelText);
+  print(v7.hintText);
+  print(v7.helperText);
+  print(v7.errorText);
+  final v8 = KeycapDateRangePicker(
+    value: null,
+    onChanged: (_) {},
+    firstDate: DateTime(2026),
+    lastDate: DateTime(2026),
+    labelText: 'Text',
+    hintText: 'Text',
+    helperText: 'Text',
+    errorText: 'Text',
+  );
+  print(v8.labelText);
+  print(v8.hintText);
+  print(v8.helperText);
+  print(v8.errorText);
+  final v9 = KeycapTimePicker(
+    value: null,
+    onChanged: (_) {},
+    labelText: 'Text',
+    hintText: 'Text',
+    helperText: 'Text',
+    errorText: 'Text',
+  );
+  print(v9.labelText);
+  print(v9.hintText);
+  print(v9.helperText);
+  print(v9.errorText);
+  final v10 = const KeycapSearchField(hintText: 'Text');
+  print(v10.hintText);
+  final v11 = const KeycapCommandPalette(commands: [], hintText: 'Text');
+  print(v11.hintText);
+  final v12 = const KeycapFieldMessage(helperText: 'Text', errorText: 'Text');
+  print(v12.helperText);
+  print(v12.errorText);
+  final v13 = KeycapHost(
+    theme: KeycapThemeData.light(),
+    darkTheme: KeycapThemeData.light(),
+    child: const SizedBox(),
+  );
+  print(v13.theme);
+  print(v13.darkTheme);
+  final v14 = const KeycapStepProgress(steps: ['One', 'Two'], currentStep: 1);
+  print(v14.currentStep);
+  final v15 = const KeycapListTile(title: 'Text', isDestructiveAction: true);
+  print(v15.isDestructiveAction);
+  final v16 = const KeycapMenuRow(label: 'Text', height: 40, isDestructiveAction: true);
+  print(v16.isDestructiveAction);
+  final v17 = KeycapSheetAction(
+    label: 'Text',
+    onPressed: () {},
+    isDestructiveAction: true,
+  );
+  print(v17.isDestructiveAction);
+  final v18 = KeycapScaffold(
+    destinations: const [],
+    selectedIndex: 1,
+    body: const SizedBox(),
+    onDestinationSelected: (_) {},
+  );
+  print(v18.onDestinationSelected);
+  final v19 = KeycapNavigationBar(
+    destinations: const [],
+    selectedIndex: 1,
+    onDestinationSelected: (_) {},
+  );
+  print(v19.onDestinationSelected);
+  final v20 = KeycapNavigationRail(
+    destinations: const [],
+    selectedIndex: 1,
+    onDestinationSelected: (_) {},
+  );
+  print(v20.onDestinationSelected);
+  final v21 = KeycapSideNavigation(
+    destinations: const [],
+    selectedIndex: 1,
+    onDestinationSelected: (_) {},
+  );
+  print(v21.onDestinationSelected);
+  final v22 = KeycapIconButton(
+    icon: const SizedBox(),
+    semanticLabel: 'Text',
+    onPressed: () {},
+    isSelected: true,
+  );
+  print(v22.isSelected);
+  final v23 = KeycapDisclosure(
+    title: 'Text',
+    expanded: true,
+    initiallyExpanded: true,
+    onExpansionChanged: (_) {},
+    child: const SizedBox(),
+  );
+  print(v23.expanded);
+  print(v23.initiallyExpanded);
+  print(v23.onExpansionChanged);
+  final v24 = KeycapRadioGroup<String>(
+    options: const ['One', 'Two'],
+    labelOf: (v) => v,
+    onChanged: (_) {},
+    groupValue: 'Text',
+  );
+  print(v24.groupValue);
+  final v25 = KeycapPagination(page: 1, pageCount: 1, onPageChanged: (_) {});
+  print(v25.onPageChanged);
+  final v26 = KeycapPageDots(pageCount: 1, page: 1, onPageChanged: (_) {});
+  print(v26.pageCount);
+  print(v26.page);
+  print(v26.onPageChanged);
+  showKeycapCommandPalette(context: context, commands: const [], hintText: 'Text');
+  print(KeycapTextTheme.from(KeycapColors.light));
+}

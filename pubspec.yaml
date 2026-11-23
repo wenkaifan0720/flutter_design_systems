@@ -21,6 +21,8 @@ workspace:
   - packages/gloss_ui/example
   - packages/clay_ui
   - packages/clay_ui/example
+  - packages/keycap_ui
+  - packages/keycap_ui/example
 
 dev_dependencies:
   flutter_lints: ^6.0.0

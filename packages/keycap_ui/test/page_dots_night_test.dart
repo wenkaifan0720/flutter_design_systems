@@ -24,7 +24,7 @@ void main() {
           home: Builder(
             builder: (context) {
               ground = KeycapTheme.of(context).colors.ground;
-              return const Center(child: KeycapPageDots(count: 4, index: 1));
+              return const Center(child: KeycapPageDots(pageCount: 4, page: 1));
             },
           ),
         ),

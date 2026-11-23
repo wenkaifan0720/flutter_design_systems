@@ -37,7 +37,7 @@ void main() {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               KeycapSelect<String>(
-                label: 'Folder',
+                labelText: 'Folder',
                 value: 'Work',
                 items: const [
                   KeycapSelectItem(value: 'Work', label: 'Work'),
@@ -47,7 +47,7 @@ void main() {
                 onChanged: (_) {},
               ),
               const SizedBox(height: 24),
-              const KeycapTextField(label: 'Notes'),
+              const KeycapTextField(labelText: 'Notes'),
             ],
           ),
         ),

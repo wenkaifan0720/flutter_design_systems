@@ -655,9 +655,9 @@ class KeycapTextTheme with Diagnosticable {
   /// [package].
   ///
   /// ```dart
-  /// final text = KeycapTextTheme.of(KeycapColors.light);
+  /// final text = KeycapTextTheme.from(KeycapColors.light);
   /// ```
-  factory KeycapTextTheme.of(
+  factory KeycapTextTheme.from(
     KeycapColors colors, {
     String family = keycapFontFamily,
     String? package = keycapFontPackage,
@@ -999,7 +999,7 @@ class KeycapThemeData with Diagnosticable {
     this.calendarStyle,
     this.chartStyle,
     this.avatarStyle,
-  }) : textTheme = textTheme ?? KeycapTextTheme.of(colors),
+  }) : textTheme = textTheme ?? KeycapTextTheme.from(colors),
        density = density ?? DesignDensity.adaptivePlatformDensity;
 
   /// The classic colourway in daylight.
@@ -1056,7 +1056,7 @@ class KeycapThemeData with Diagnosticable {
       colors: colors,
       textTheme: fontFamily == null
           ? null
-          : KeycapTextTheme.of(
+          : KeycapTextTheme.from(
               colors,
               family: fontFamily,
               package: fontPackage,
@@ -1213,7 +1213,7 @@ class KeycapThemeData with Diagnosticable {
     colors: colors ?? this.colors,
     textTheme:
         textTheme ??
-        (colors == null ? this.textTheme : KeycapTextTheme.of(colors)),
+        (colors == null ? this.textTheme : KeycapTextTheme.from(colors)),
     density: density ?? this.density,
     backlight: backlight ?? this.backlight,
     buttonStyle: buttonStyle ?? this.buttonStyle,

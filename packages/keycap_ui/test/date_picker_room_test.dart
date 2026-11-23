@@ -9,14 +9,14 @@ import 'package:material_ui/material_ui.dart' show MaterialApp;
 void main() {
   final pickers = <String, Widget>{
     'date': KeycapDatePicker(
-      label: 'Remind me on',
+      labelText: 'Remind me on',
       value: DateTime(2026, 11, 20),
       firstDate: DateTime(2026),
       lastDate: DateTime(2027, 12, 31),
       onChanged: (_) {},
     ),
     'date range': KeycapDateRangePicker(
-      label: 'Show notes from',
+      labelText: 'Show notes from',
       value: RawDateRange(DateTime(2026, 11, 20), DateTime(2026, 11, 24)),
       firstDate: DateTime(2026),
       lastDate: DateTime(2027, 12, 31),

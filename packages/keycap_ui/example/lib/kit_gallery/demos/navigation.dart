@@ -76,7 +76,7 @@ class _BarsState extends State<_Bars> {
             child: KeycapNavigationBar(
               destinations: _places,
               selectedIndex: _at,
-              onSelected: (i) => setState(() => _at = i),
+              onDestinationSelected: (i) => setState(() => _at = i),
             ),
           ),
         ],
@@ -98,7 +98,7 @@ class _BarsState extends State<_Bars> {
                   child: KeycapNavigationRail(
                     destinations: _places,
                     selectedIndex: _at,
-                    onSelected: (i) => setState(() => _at = i),
+                    onDestinationSelected: (i) => setState(() => _at = i),
                   ),
                 ),
                 const SizedBox(width: KeycapSpacing.large),
@@ -110,7 +110,7 @@ class _BarsState extends State<_Bars> {
                     child: KeycapSideNavigation(
                       destinations: _places,
                       selectedIndex: _at,
-                      onSelected: (i) => setState(() => _at = i),
+                      onDestinationSelected: (i) => setState(() => _at = i),
                     ),
                   ),
                 ),

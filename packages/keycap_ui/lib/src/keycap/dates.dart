@@ -20,7 +20,7 @@ import 'internal/field_width.dart';
 import 'internal/small_key.dart';
 import 'select.dart';
 import 'sliders.dart';
-import 'text_field.dart';
+import 'fields.dart' show KeycapField;
 import 'theme.dart';
 
 // The ui_core types these parts' APIs take, through the look's barrel.
@@ -436,7 +436,7 @@ class _PickerKey extends StatelessWidget {
             placement: const RawPopoverPlacement(
               gap: KeycapSpacing.tight + 2,
               margin: KeycapSpacing.small,
-              preferredExtent: double.infinity,
+              fit: RawPopoverFit.whole,
               matchAnchorWidth: false,
               maxWidth: 340,
             ),
@@ -493,7 +493,7 @@ class _CalendarPanelState extends State<_CalendarPanel> {
 /// a [KeycapCalendar] over the keyboard; choosing a day closes it.
 ///
 /// ```dart
-/// KeycapDatePicker(label: 'Remind me on', value: day, firstDate: DateTime(2026), lastDate: DateTime(2027), onChanged: (d) => setState(() => day = d))
+/// KeycapDatePicker(labelText: 'Remind me on', value: day, firstDate: DateTime(2026), lastDate: DateTime(2027), onChanged: (d) => setState(() => day = d))
 /// ```
 class KeycapDatePicker extends StatelessWidget {
   /// A date picker.
@@ -503,10 +503,10 @@ class KeycapDatePicker extends StatelessWidget {
     required this.onChanged,
     required this.firstDate,
     required this.lastDate,
-    this.label,
-    this.hint = 'Choose a day',
-    this.helper,
-    this.error,
+    this.labelText,
+    this.hintText = 'Choose a day',
+    this.helperText,
+    this.errorText,
     this.semanticLabel,
     this.selectable,
     this.currentDate,
@@ -526,18 +526,18 @@ class KeycapDatePicker extends StatelessWidget {
   final DateTime lastDate;
 
   /// The words over the key.
-  final String? label;
+  final String? labelText;
 
   /// What the key says before a day is chosen.
-  final String hint;
+  final String hintText;
 
   /// Help under it.
-  final String? helper;
+  final String? helperText;
 
   /// What is wrong, under it.
-  final String? error;
+  final String? errorText;
 
-  /// Its name, for a screen reader, when there is no [label].
+  /// Its name, for a screen reader, when there is no [labelText].
   final String? semanticLabel;
 
   /// Which days can be chosen; every day when null.
@@ -554,39 +554,36 @@ class KeycapDatePicker extends StatelessWidget {
     final enabled = onChanged != null;
     final chosen = value;
     final words = RawWidgetsLocalizations.of(context);
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        if (label != null)
-          ExcludeSemantics(child: KeycapFieldLabel(label!, enabled: enabled)),
-        _PickerKey(
-          text: chosen == null ? hint : _dateLabel(words, chosen),
-          empty: chosen == null,
-          enabled: enabled,
-          error: error != null,
-          icon: LucideIcons.calendar,
-          semanticLabel: semanticLabel ?? label,
-          semanticValue: chosen == null ? null : words.formatFullDate(chosen),
-          style: style,
-          panel: (context, close) => _CalendarPanel(
-            make: () => RawCalendarController(
-              firstDate: firstDate,
-              lastDate: lastDate,
-              selectedDate: chosen,
-              selectable: selectable,
-              currentDate: currentDate,
-            ),
-            onChanged: (controller) {
-              final day = controller.selectedDate;
-              if (day == null) return;
-              close();
-              onChanged?.call(day);
-            },
+    return KeycapField(
+      labelText: labelText,
+      helperText: helperText,
+      errorText: errorText,
+      enabled: enabled,
+      child: _PickerKey(
+        text: chosen == null ? hintText : _dateLabel(words, chosen),
+        empty: chosen == null,
+        enabled: enabled,
+        error: errorText != null,
+        icon: LucideIcons.calendar,
+        semanticLabel: semanticLabel ?? labelText,
+        semanticValue: chosen == null ? null : words.formatFullDate(chosen),
+        style: style,
+        panel: (context, close) => _CalendarPanel(
+          make: () => RawCalendarController(
+            firstDate: firstDate,
+            lastDate: lastDate,
+            selectedDate: chosen,
+            selectable: selectable,
+            currentDate: currentDate,
           ),
+          onChanged: (controller) {
+            final day = controller.selectedDate;
+            if (day == null) return;
+            close();
+            onChanged?.call(day);
+          },
         ),
-        KeycapFieldMessage(helper: helper, error: error),
-      ],
+      ),
     );
   }
 
@@ -594,7 +591,7 @@ class KeycapDatePicker extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
       ..add(DiagnosticsProperty<DateTime>('value', value, defaultValue: null));
   }
 }
@@ -604,7 +601,7 @@ class KeycapDatePicker extends StatelessWidget {
 /// and closes the month.
 ///
 /// ```dart
-/// KeycapDateRangePicker(label: 'Show notes from', value: range, firstDate: DateTime(2025), lastDate: DateTime(2027), onChanged: (r) => setState(() => range = r))
+/// KeycapDateRangePicker(labelText: 'Show notes from', value: range, firstDate: DateTime(2025), lastDate: DateTime(2027), onChanged: (r) => setState(() => range = r))
 /// ```
 class KeycapDateRangePicker extends StatelessWidget {
   /// A date range picker.
@@ -614,10 +611,10 @@ class KeycapDateRangePicker extends StatelessWidget {
     required this.onChanged,
     required this.firstDate,
     required this.lastDate,
-    this.label,
-    this.hint = 'Choose the days',
-    this.helper,
-    this.error,
+    this.labelText,
+    this.hintText = 'Choose the days',
+    this.helperText,
+    this.errorText,
     this.semanticLabel,
     this.currentDate,
     this.style,
@@ -636,18 +633,18 @@ class KeycapDateRangePicker extends StatelessWidget {
   final DateTime lastDate;
 
   /// The words over the key.
-  final String? label;
+  final String? labelText;
 
   /// What the key says before days are chosen.
-  final String hint;
+  final String hintText;
 
   /// Help under it.
-  final String? helper;
+  final String? helperText;
 
   /// What is wrong, under it.
-  final String? error;
+  final String? errorText;
 
-  /// Its name, for a screen reader, when there is no [label].
+  /// Its name, for a screen reader, when there is no [labelText].
   final String? semanticLabel;
 
   /// Today; the clock's when null.
@@ -670,53 +667,50 @@ class KeycapDateRangePicker extends StatelessWidget {
       return last == null ? start : '$start – ${_dateLabel(words, last)}';
     }
 
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        if (label != null)
-          ExcludeSemantics(child: KeycapFieldLabel(label!, enabled: enabled)),
-        _PickerKey(
-          text: range == null ? hint : rangeText(range),
-          empty: range == null,
-          enabled: enabled,
-          error: error != null,
-          icon: LucideIcons.calendarRange,
-          semanticLabel: semanticLabel ?? label,
-          semanticValue: range == null
-              ? null
-              : end == null
-              ? words.formatFullDate(range.start)
-              : words.chartRangeLabel(
-                  words.formatFullDate(range.start),
-                  words.formatFullDate(end),
-                ),
-          style: style,
-          panel: (context, close) => _CalendarPanel(
-            make: () => RawCalendarController(
-              firstDate: firstDate,
-              lastDate: lastDate,
-              mode: RawCalendarMode.range,
-              selectedRange: range,
-              currentDate: currentDate,
-            ),
-            onChanged: (controller) {
-              final chosen = controller.selectedRange;
-              if (chosen == null || !chosen.isComplete) return;
-              close();
-              onChanged?.call(chosen);
-            },
+    return KeycapField(
+      labelText: labelText,
+      helperText: helperText,
+      errorText: errorText,
+      enabled: enabled,
+      child: _PickerKey(
+        text: range == null ? hintText : rangeText(range),
+        empty: range == null,
+        enabled: enabled,
+        error: errorText != null,
+        icon: LucideIcons.calendarRange,
+        semanticLabel: semanticLabel ?? labelText,
+        semanticValue: range == null
+            ? null
+            : end == null
+            ? words.formatFullDate(range.start)
+            : words.chartRangeLabel(
+                words.formatFullDate(range.start),
+                words.formatFullDate(end),
+              ),
+        style: style,
+        panel: (context, close) => _CalendarPanel(
+          make: () => RawCalendarController(
+            firstDate: firstDate,
+            lastDate: lastDate,
+            mode: RawCalendarMode.range,
+            selectedRange: range,
+            currentDate: currentDate,
           ),
+          onChanged: (controller) {
+            final chosen = controller.selectedRange;
+            if (chosen == null || !chosen.isComplete) return;
+            close();
+            onChanged?.call(chosen);
+          },
         ),
-        KeycapFieldMessage(helper: helper, error: error),
-      ],
+      ),
     );
   }
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
-    properties.add(StringProperty('label', label, defaultValue: null));
+    properties.add(StringProperty('labelText', labelText, defaultValue: null));
   }
 }
 
@@ -725,7 +719,7 @@ class KeycapDateRangePicker extends StatelessWidget {
 /// a key that sets it. In the locale's 12 or 24 hour clock.
 ///
 /// ```dart
-/// KeycapTimePicker(label: 'Remind me at', value: const RawTimeOfDay(hour: 9, minute: 0), onChanged: (t) => setState(() => at = t))
+/// KeycapTimePicker(labelText: 'Remind me at', value: const RawTimeOfDay(hour: 9, minute: 0), onChanged: (t) => setState(() => at = t))
 /// ```
 class KeycapTimePicker extends StatelessWidget {
   /// A time picker.
@@ -733,10 +727,10 @@ class KeycapTimePicker extends StatelessWidget {
     super.key,
     required this.value,
     required this.onChanged,
-    this.label,
-    this.hint = 'Choose a time',
-    this.helper,
-    this.error,
+    this.labelText,
+    this.hintText = 'Choose a time',
+    this.helperText,
+    this.errorText,
     this.semanticLabel,
     this.minuteStep = 5,
     this.style,
@@ -749,18 +743,18 @@ class KeycapTimePicker extends StatelessWidget {
   final ValueChanged<RawTimeOfDay>? onChanged;
 
   /// The words over the key.
-  final String? label;
+  final String? labelText;
 
   /// What the key says before a time is chosen.
-  final String hint;
+  final String hintText;
 
   /// Help under it.
-  final String? helper;
+  final String? helperText;
 
   /// What is wrong, under it.
-  final String? error;
+  final String? errorText;
 
-  /// Its name, for a screen reader, when there is no [label].
+  /// Its name, for a screen reader, when there is no [labelText].
   final String? semanticLabel;
 
   /// The minutes' step.
@@ -786,40 +780,37 @@ class KeycapTimePicker extends StatelessWidget {
 
     String words(RawTimeOfDay v) =>
         h24 ? '${two(v.hour)}:${two(v.minute)}' : label12(v);
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        if (label != null)
-          ExcludeSemantics(child: KeycapFieldLabel(label!, enabled: enabled)),
-        _PickerKey(
-          text: t == null ? hint : words(t),
-          empty: t == null,
-          enabled: enabled,
-          error: error != null,
-          icon: LucideIcons.clock,
-          semanticLabel: semanticLabel ?? label,
-          semanticValue: t == null ? null : words(t),
-          style: style,
-          panel: (context, close) => _TimePanel(
-            initial: t ?? const RawTimeOfDay(hour: 9, minute: 0),
-            minuteStep: minuteStep,
-            h24: h24,
-            onSet: (v) {
-              close();
-              onChanged?.call(v);
-            },
-          ),
+    return KeycapField(
+      labelText: labelText,
+      helperText: helperText,
+      errorText: errorText,
+      enabled: enabled,
+      child: _PickerKey(
+        text: t == null ? hintText : words(t),
+        empty: t == null,
+        enabled: enabled,
+        error: errorText != null,
+        icon: LucideIcons.clock,
+        semanticLabel: semanticLabel ?? labelText,
+        semanticValue: t == null ? null : words(t),
+        style: style,
+        panel: (context, close) => _TimePanel(
+          initial: t ?? const RawTimeOfDay(hour: 9, minute: 0),
+          minuteStep: minuteStep,
+          h24: h24,
+          onSet: (v) {
+            close();
+            onChanged?.call(v);
+          },
         ),
-        KeycapFieldMessage(helper: helper, error: error),
-      ],
+      ),
     );
   }
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
-    properties.add(StringProperty('label', label, defaultValue: null));
+    properties.add(StringProperty('labelText', labelText, defaultValue: null));
   }
 }
 

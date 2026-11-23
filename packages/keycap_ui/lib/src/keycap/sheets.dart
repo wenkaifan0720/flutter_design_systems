@@ -206,7 +206,7 @@ class KeycapSheetAction {
   const KeycapSheetAction(
     this.label, {
     required this.onPressed,
-    this.destructive = false,
+    this.isDestructiveAction = false,
     this.icon,
   });
 
@@ -217,7 +217,7 @@ class KeycapSheetAction {
   final VoidCallback onPressed;
 
   /// Whether it destroys something (printed in the danger ink).
-  final bool destructive;
+  final bool isDestructiveAction;
 
   /// A glyph before the words.
   final IconData? icon;
@@ -314,7 +314,7 @@ class KeycapActionSheet extends StatelessWidget {
                     builder: (context, states, _) => KeycapMenuRow(
                       label: a.label,
                       height: theme.controlHeight,
-                      destructive: a.destructive,
+                      isDestructiveAction: a.isDestructiveAction,
                       leading: a.icon == null ? null : Icon(a.icon),
                       lit:
                           states.contains(WidgetState.focused) ||
@@ -346,7 +346,7 @@ class KeycapActionSheet extends StatelessWidget {
 /// action closes it before it runs.
 ///
 /// ```dart
-/// showKeycapActionSheet(context: context, title: 'Garden plan', actions: [KeycapSheetAction('Delete', destructive: true, onPressed: delete)])
+/// showKeycapActionSheet(context: context, title: 'Garden plan', actions: [KeycapSheetAction('Delete', isDestructiveAction: true, onPressed: delete)])
 /// ```
 Future<void> showKeycapActionSheet({
   required BuildContext context,
@@ -366,7 +366,7 @@ Future<void> showKeycapActionSheet({
       for (final a in actions)
         KeycapSheetAction(
           a.label,
-          destructive: a.destructive,
+          isDestructiveAction: a.isDestructiveAction,
           icon: a.icon,
           onPressed: () {
             Navigator.of(sheetContext).pop();

@@ -31,33 +31,37 @@ class _Fields extends StatelessWidget {
     note: 'Focus lights a band inside the well\'s edge.',
     gap: KeycapSpacing.large,
     children: [
-      const KeycapTextField(label: 'Folder name', hint: 'Garden'),
+      const KeycapTextField(labelText: 'Folder name', hintText: 'Garden'),
       const KeycapTextField(
-        label: 'Search',
+        labelText: 'Search',
         semanticLabel: 'Search notes',
-        hint: 'Search notes',
+        hintText: 'Search notes',
         leading: Icon(LucideIcons.search),
       ),
       const KeycapTextField(
-        label: 'Email',
-        helper: 'Where shared notes are sent from',
+        labelText: 'Email',
+        helperText: 'Where shared notes are sent from',
         keyboardType: TextInputType.emailAddress,
       ),
       const KeycapTextField(
-        label: 'Folder name',
-        error: 'There is already a folder called Work.',
+        labelText: 'Folder name',
+        errorText: 'There is already a folder called Work.',
       ),
-      const KeycapTextField(label: 'Disabled', hint: 'Not now', enabled: false),
       const KeycapTextField(
-        label: 'Description',
-        hint: 'What goes in this folder',
+        labelText: 'Disabled',
+        hintText: 'Not now',
+        enabled: false,
+      ),
+      const KeycapTextField(
+        labelText: 'Description',
+        hintText: 'What goes in this folder',
         maxLines: 4,
         minLines: 3,
       ),
       Row(
         children: [
           const Expanded(
-            child: KeycapTextField(semanticLabel: 'Tag', hint: 'Add a tag'),
+            child: KeycapTextField(semanticLabel: 'Tag', hintText: 'Add a tag'),
           ),
           const SizedBox(width: KeycapSpacing.small),
           KeycapButton(onPressed: () {}, child: const Text('Add')),
@@ -85,7 +89,7 @@ class _SelectsState extends State<_Selects> {
     gap: KeycapSpacing.large,
     children: [
       KeycapSelect<String>(
-        label: 'Export as',
+        labelText: 'Export as',
         value: _format,
         items: const [
           KeycapSelectItem(value: 'md', label: 'Markdown'),
@@ -96,8 +100,8 @@ class _SelectsState extends State<_Selects> {
         onChanged: (v) => setState(() => _format = v),
       ),
       KeycapSelect<String>(
-        label: 'Folder',
-        hint: 'Choose a folder',
+        labelText: 'Folder',
+        hintText: 'Choose a folder',
         value: _folder,
         items: const [
           KeycapSelectItem(value: 'inbox', label: 'Inbox'),
@@ -108,7 +112,7 @@ class _SelectsState extends State<_Selects> {
         onChanged: (v) => setState(() => _folder = v),
       ),
       const KeycapSelect<String>(
-        label: 'Disabled',
+        labelText: 'Disabled',
         value: 'a',
         items: [KeycapSelectItem(value: 'a', label: 'Markdown')],
         onChanged: null,

@@ -23,10 +23,10 @@ void main() {
                 padding: EdgeInsets.all(24),
                 child: Column(
                   children: [
-                    KeycapTextField(label: 'Live', hint: 'Garden'),
+                    KeycapTextField(labelText: 'Live', hintText: 'Garden'),
                     KeycapTextField(
-                      label: 'Disabled',
-                      hint: 'Not now',
+                      labelText: 'Disabled',
+                      hintText: 'Not now',
                       enabled: false,
                     ),
                   ],

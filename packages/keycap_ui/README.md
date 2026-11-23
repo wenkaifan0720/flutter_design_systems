@@ -81,10 +81,10 @@ A form: a field, a select and a key to save.
 Column(
   crossAxisAlignment: CrossAxisAlignment.stretch,
   children: [
-    KeycapTextField(label: 'Title', controller: title),
+    KeycapTextField(labelText: 'Title', controller: title),
     const SizedBox(height: 24),
     KeycapSelect<String>(
-      label: 'Folder',
+      labelText: 'Folder',
       value: folder,
       items: const [
         KeycapSelectItem(value: 'work', label: 'Work'),

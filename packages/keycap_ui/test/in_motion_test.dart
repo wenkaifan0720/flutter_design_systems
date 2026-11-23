@@ -235,7 +235,7 @@ void main() {
           StatefulBuilder(
             builder: (context, set) {
               turn = set;
-              return KeycapPageDots(count: 4, index: page);
+              return KeycapPageDots(pageCount: 4, page: page);
             },
           ),
         ),
@@ -310,7 +310,7 @@ void main() {
           SizedBox(
             width: 280,
             child: KeycapSelect<String>(
-              label: 'Sort by',
+              labelText: 'Sort by',
               value: 'edited',
               onChanged: (_) {},
               items: const [

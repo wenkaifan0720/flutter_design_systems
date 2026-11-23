@@ -81,7 +81,7 @@ class _GroupsState extends State<_Groups> {
           KeycapListTile(
             leading: const Icon(LucideIcons.trash2),
             title: 'Empty Recently deleted',
-            destructive: true,
+            isDestructiveAction: true,
             showChevron: false,
             onTap: () {},
           ),

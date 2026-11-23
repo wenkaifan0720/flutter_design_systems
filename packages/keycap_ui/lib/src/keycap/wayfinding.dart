@@ -179,7 +179,7 @@ class _Crumb extends StatelessWidget {
 /// 600 wide, "Page 3 of 12" between the two arrow keys.
 ///
 /// ```dart
-/// KeycapPagination(page: page, pageCount: 12, onChanged: (p) => setState(() => page = p))
+/// KeycapPagination(page: page, pageCount: 12, onPageChanged: (p) => setState(() => page = p))
 /// ```
 class KeycapPagination extends StatelessWidget {
   /// Pagination at [page] (from 1) of [pageCount].
@@ -187,7 +187,7 @@ class KeycapPagination extends StatelessWidget {
     super.key,
     required this.page,
     required this.pageCount,
-    required this.onChanged,
+    required this.onPageChanged,
     this.semanticLabel,
   }) : assert(page >= 1 && page <= pageCount);
 
@@ -198,7 +198,7 @@ class KeycapPagination extends StatelessWidget {
   final int pageCount;
 
   /// Called with the page to go to; null turns it off.
-  final ValueChanged<int>? onChanged;
+  final ValueChanged<int>? onPageChanged;
 
   /// Its name, for a screen reader.
   final String? semanticLabel;
@@ -227,7 +227,7 @@ class KeycapPagination extends StatelessWidget {
     final words = RawWidgetsLocalizations.of(context);
     final rtl = Directionality.of(context) == TextDirection.rtl;
     final narrow = MediaQuery.sizeOf(context).width < 600;
-    final go = onChanged;
+    final go = onPageChanged;
     final prev = KeycapSmallKey(
       icon: rtl ? LucideIcons.chevronRight : LucideIcons.chevronLeft,
       semanticLabel: words.previousPageTooltip,
@@ -376,21 +376,21 @@ class _PageKey extends StatelessWidget {
 /// it from 600 wide; below, only the current one's, beside the count.
 ///
 /// ```dart
-/// KeycapStepProgress(steps: const ['Format', 'Contents', 'Share'], current: 1)
+/// KeycapStepProgress(steps: const ['Format', 'Contents', 'Share'], currentStep: 1)
 /// ```
 class KeycapStepProgress extends StatelessWidget {
-  /// Progress through [steps], at [current] (from 0).
+  /// Progress through [steps], at [currentStep] (from 0).
   const KeycapStepProgress({
     super.key,
     required this.steps,
-    required this.current,
+    required this.currentStep,
   });
 
   /// Each step's name.
   final List<String> steps;
 
   /// The step under way (from 0); [steps]' length once all are done.
-  final int current;
+  final int currentStep;
 
   @override
   Widget build(BuildContext context) {
@@ -398,14 +398,14 @@ class KeycapStepProgress extends StatelessWidget {
     final c = theme.colors;
     final words = RawWidgetsLocalizations.of(context);
     assert(
-      current >= 0 && current <= steps.length,
+      currentStep >= 0 && currentStep <= steps.length,
       'current is a step (or steps.length when all are done).',
     );
     final wide = MediaQuery.sizeOf(context).width >= 600;
     final dot = KeycapMetrics.grown(context, 28, theme.textTheme.figure);
     Widget mark(int i) {
-      final done = i < current;
-      final here = i == current;
+      final done = i < currentStep;
+      final here = i == currentStep;
       final Widget inner = done
           ? DecoratedBox(
               decoration: BoxDecoration(
@@ -449,7 +449,7 @@ class KeycapStepProgress extends StatelessWidget {
           height: 4,
           child: DecoratedBox(
             decoration: BoxDecoration(
-              color: i < current ? c.accent.top : c.well,
+              color: i < currentStep ? c.accent.top : c.well,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -457,11 +457,11 @@ class KeycapStepProgress extends StatelessWidget {
       ),
     );
 
-    final label = current >= steps.length ? steps.last : steps[current];
+    final label = currentStep >= steps.length ? steps.last : steps[currentStep];
     return Semantics(
       container: true,
       label: words.positionLabel(
-        (current + 1).clamp(1, steps.length),
+        (currentStep + 1).clamp(1, steps.length),
         steps.length,
       ),
       value: label,
@@ -493,8 +493,8 @@ class KeycapStepProgress extends StatelessWidget {
                           : TextAlign.center,
                       maxLines: 2,
                       style: theme.textTheme.secondary.copyWith(
-                        color: i == current ? c.ink : c.inkMuted,
-                        fontWeight: i == current
+                        color: i == currentStep ? c.ink : c.inkMuted,
+                        fontWeight: i == currentStep
                             ? FontWeight.w500
                             : FontWeight.w400,
                       ),
@@ -504,7 +504,7 @@ class KeycapStepProgress extends StatelessWidget {
             )
           else
             Text(
-              '${words.positionLabel((current + 1).clamp(1, steps.length), steps.length)} · $label',
+              '${words.positionLabel((currentStep + 1).clamp(1, steps.length), steps.length)} · $label',
               style: theme.textTheme.secondary.copyWith(color: c.ink),
             ),
         ],
@@ -517,36 +517,36 @@ class KeycapStepProgress extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(IterableProperty<String>('steps', steps))
-      ..add(IntProperty('current', current));
+      ..add(IntProperty('currentStep', currentStep));
   }
 }
 
 /// Which of a few pages shows (a carousel's, a first run's): small wells
 /// in a row, the current page's stretched and holding a tab of accent
-/// plastic. With [onChanged] the row is one control, at least 44 high: a
+/// plastic. With [onPageChanged] the row is one control, at least 44 high: a
 /// tap on either side steps a page that way, the arrow keys (and Home and
 /// End) step it, and a screen reader adjusts it.
 ///
 /// ```dart
-/// KeycapPageDots(count: 4, index: page, onChanged: (i) => controller.animateToPage(i))
+/// KeycapPageDots(pageCount: 4, page: page, onPageChanged: (i) => controller.animateToPage(i))
 /// ```
 class KeycapPageDots extends StatelessWidget {
-  /// Dots for [count] pages at [index].
+  /// Dots for [pageCount] pages at [page].
   const KeycapPageDots({
     super.key,
-    required this.count,
-    required this.index,
-    this.onChanged,
-  }) : assert(index >= 0 && index < count);
+    required this.pageCount,
+    required this.page,
+    this.onPageChanged,
+  }) : assert(page >= 0 && page < pageCount);
 
   /// How many pages.
-  final int count;
+  final int pageCount;
 
   /// The page showing, from 0.
-  final int index;
+  final int page;
 
   /// Goes to a page; the dots only show when null.
-  final ValueChanged<int>? onChanged;
+  final ValueChanged<int>? onPageChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -556,7 +556,7 @@ class KeycapPageDots extends StatelessWidget {
     // the case (the plastic's wall shade): a darker one vanished into it.
     final rest = c.brightness == Brightness.dark ? c.alpha.wall : c.wellPressed;
     Widget dot(int i) => KeycapSpringValue(
-      value: i == index ? 1 : 0,
+      value: i == page ? 1 : 0,
       spring: KeycapMotion.latch,
       builder: (context, t, _) => SizedBox(
         width: 8 + 12 * t.clamp(0.0, 1.0),
@@ -576,15 +576,15 @@ class KeycapPageDots extends StatelessWidget {
         ),
       ),
     );
-    final go = onChanged;
+    final go = onPageChanged;
     if (go == null) {
       return Semantics(
-        label: words.positionLabel(index + 1, count),
+        label: words.positionLabel(page + 1, pageCount),
         excludeSemantics: true,
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            for (var i = 0; i < count; i++) ...[
+            for (var i = 0; i < pageCount; i++) ...[
               if (i > 0) const SizedBox(width: KeycapSpacing.small),
               dot(i),
             ],
@@ -593,13 +593,13 @@ class KeycapPageDots extends StatelessWidget {
       );
     }
     return _DotsStepper(
-      count: count,
-      index: index,
+      count: pageCount,
+      index: page,
       onChanged: go,
       dots: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          for (var i = 0; i < count; i++) ...[
+          for (var i = 0; i < pageCount; i++) ...[
             if (i > 0) const SizedBox(width: KeycapSpacing.small),
             dot(i),
           ],
@@ -612,8 +612,8 @@ class KeycapPageDots extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(IntProperty('count', count))
-      ..add(IntProperty('index', index));
+      ..add(IntProperty('pageCount', pageCount))
+      ..add(IntProperty('page', page));
   }
 }
 

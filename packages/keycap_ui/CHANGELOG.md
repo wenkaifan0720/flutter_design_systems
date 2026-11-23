@@ -1,3 +1,24 @@
+## 0.3.0
+
+- Needs ui_core 0.5.1.
+- **Breaking:** parameters and fields take the names Flutter's widgets give the same jobs. `dart fix --apply` moves each call and read below; the old names are gone.
+- Fields: `label`, `hint`, `helper` and `error` are `labelText`, `hintText`, `helperText` and `errorText`, as on `InputDecoration`: `KeycapTextField`, `KeycapPasswordField`, `KeycapInputGroup`, `KeycapSelect`, `KeycapCombobox`, `KeycapTagInput`, `KeycapDatePicker`, `KeycapDateRangePicker`, `KeycapTimePicker`, `KeycapSearchField`, `KeycapFieldMessage`, `KeycapCommandPalette` and `showKeycapCommandPalette`. `KeycapInputGroup`'s `prefix` and `suffix` are `prefixText` and `suffixText`.
+- `KeycapHost`: `light` and `dark` are `theme` and `darkTheme`, as on `MaterialApp`.
+- `KeycapScaffold`, `KeycapNavigationBar`, `KeycapNavigationRail` and `KeycapSideNavigation`: `onSelected` is `onDestinationSelected`, as on `NavigationBar`.
+- `KeycapListTile`, `KeycapSheetAction` and `KeycapMenuRow`: `destructive` is `isDestructiveAction`, as on `CupertinoDialogAction` and `RawMenuEntry`.
+- `KeycapIconButton.selected` is `isSelected` (`IconButton`), `KeycapStepProgress.current` is `currentStep` (`Stepper`), and `KeycapRadioGroup.value` is `groupValue` (`RadioGroup`). `KeycapDisclosure`'s `open`, `initiallyOpen` and `onChanged` are `expanded`, `initiallyExpanded` and `onExpansionChanged` (`ExpansionTile`).
+- `KeycapPageDots`: `count`, `index` and `onChanged` are `pageCount`, `page` and `onPageChanged`, the names `KeycapPagination` takes. `KeycapPagination.onChanged` is `onPageChanged` (`PageView`).
+- `KeycapTextTheme.of` is `KeycapTextTheme.from`: in Flutter, `of` looks a value up from a `BuildContext`.
+- **Breaking:** `KeycapMenu.destructive`, deprecated in 0.2.1, is removed, with no `dart fix`: mark the entry instead, `RawMenuEntry(isDestructiveAction: true)`.
+- Every field stands in `KeycapField`, on ui_core's `RawInputDecorator`: the label over it and the help or error under it are drawn as before, and a screen reader hears the help and error on the field's own node, not as words of their own after it. A password field's input is that node, beside its reveal key.
+- `KeycapField.invalid` marks a field wrong without words, and an empty `errorText` on a field does the same: a screen reader hears it invalid and the help stays hidden; a text field's rim takes the danger ink.
+- `KeycapCombobox` and `KeycapTagInput` read as expanded while their list shows, and the combobox's chevron turns on the panel's spring as it opens and closes.
+- A tag input holding tags reads its label, help and error on its typing line, as with none; each tag keeps its own name and remove action.
+- A date picker opened from the keys puts the focus on its chosen day. It stayed on the field.
+- `KeycapDialog`'s keys and `KeycapSheet`'s footer stand in ui_core's `RawActionBar`, laid out as in every look: side by side while each fits at its own width, else stacked as wide as the panel, the confirming key on top. Whether they fit is read from their words at the reader's text size.
+- A toast stands above a phone's `KeycapNavigationBar` in `KeycapScaffold` rather than over its places, and at the screen's foot on a page pushed over the bar.
+- A chart writes its figures at its scale's decimals, in the reader's digits (ui_core's `DesignChartValueFormat`), and its value axis is as wide as its widest tick at the reader's text size. The axis was measured from the data's lowest and highest values, so a wider tick could be cut.
+
 ## 0.2.1
 
 - Needs ui_core 0.4.1.

@@ -38,9 +38,9 @@ Future<void> _show(
 }
 
 const _group = KeycapInputGroup(
-  label: 'Address',
-  prefix: 'https://',
-  suffix: '.notes',
+  labelText: 'Address',
+  prefixText: 'https://',
+  suffixText: '.notes',
 );
 
 final _palette = SizedBox(

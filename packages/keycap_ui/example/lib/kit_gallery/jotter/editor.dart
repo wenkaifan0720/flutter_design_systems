@@ -122,7 +122,7 @@ class _EditorState extends State<_Editor> {
         KeycapIconButton(
           icon: Icon(k.icon),
           semanticLabel: k.label,
-          selected: _on.contains(k.id),
+          isSelected: _on.contains(k.id),
           onPressed: () => setState(() {
             if (!_on.remove(k.id)) _on.add(k.id);
           }),

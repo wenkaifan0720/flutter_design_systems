@@ -377,11 +377,11 @@ class _FocusBand extends CustomPainter {
 }
 
 /// A square key with a glyph for its legend: a top bar's back key, a
-/// toolbar's formatting keys. With [selected] it latches: it stays part way
+/// toolbar's formatting keys. With [isSelected] it latches: it stays part way
 /// down, in the modifier plastic, until pressed again.
 ///
 /// ```dart
-/// KeycapIconButton(icon: const Icon(LucideIcons.bold), semanticLabel: 'Bold', selected: bold, onPressed: toggleBold)
+/// KeycapIconButton(icon: const Icon(LucideIcons.bold), semanticLabel: 'Bold', isSelected: bold, onPressed: toggleBold)
 /// ```
 class KeycapIconButton extends StatelessWidget {
   /// A square key with [icon].
@@ -390,7 +390,7 @@ class KeycapIconButton extends StatelessWidget {
     required this.icon,
     required this.semanticLabel,
     required this.onPressed,
-    this.selected,
+    this.isSelected,
     this.accent = false,
     this.style,
     this.focusNode,
@@ -407,7 +407,7 @@ class KeycapIconButton extends StatelessWidget {
   final VoidCallback? onPressed;
 
   /// Whether the key is latched down; null for a key that does not latch.
-  final bool? selected;
+  final bool? isSelected;
 
   /// Whether this is the screen's main action, moulded in the accent.
   final bool accent;
@@ -432,16 +432,16 @@ class KeycapIconButton extends StatelessWidget {
       semanticLabel: semanticLabel,
       // A toggle button: a button, selected while on, as Flutter's
       // `IconButton(isSelected:)` says it.
-      semanticSelected: selected,
+      semanticSelected: isSelected,
       excludeSemantics: true,
-      selected: selected ?? false,
+      selected: isSelected ?? false,
       builder: (context, states, _) {
         final layered = DesignStyleOf([style, theme.iconButtonStyle], states);
         var face = keycapKeyFace(
           theme,
           accent ? KeycapKind.accent : KeycapKind.alpha,
           states,
-          latched: selected ?? false,
+          latched: isSelected ?? false,
           backlit: backlit,
         );
         face = layered.on(face);
@@ -477,7 +477,7 @@ class KeycapIconButton extends StatelessWidget {
         FlagProperty('enabled', value: onPressed != null, ifFalse: 'disabled'),
       )
       ..add(
-        DiagnosticsProperty<bool>('selected', selected, defaultValue: null),
+        DiagnosticsProperty<bool>('isSelected', isSelected, defaultValue: null),
       );
   }
 }
