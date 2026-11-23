@@ -33,16 +33,16 @@ class LedgerFile {
 }
 
 /// Files attached to an entry: a slip ruled round in the dashed rule, a
-/// paperclip and [hint] on it, that opens the app's picker ([onPick]) when
+/// paperclip and [hintText] on it, that opens the app's picker ([onPick]) when
 /// pressed (its rule turns to the ink under a pointer, the stamp's sink
 /// while held, the double rule with focus); then each of [files] on a line
 /// of its own, its name in the medium and its size in the mono, a rule
 /// filling under it in the ink as it goes up, its error in the vermilion,
-/// and the cross that takes it off ([onRemove]). Its [label] in the small
+/// and the cross that takes it off ([onRemove]). Its [labelText] in the small
 /// capitals over the slip. [onPick] null holds the slip in the third ink.
 ///
 /// ```dart
-/// LedgerFileUpload(label: 'Receipts', files: const [LedgerFile('Blue Fern.jpg', bytes: 182000)], onPick: () {}, onRemove: (f) {})
+/// LedgerFileUpload(labelText: 'Receipts', files: const [LedgerFile('Blue Fern.jpg', bytes: 182000)], onPick: () {}, onRemove: (f) {})
 /// ```
 class LedgerFileUpload extends StatelessWidget {
   /// A slip to attach files, and [files] under it.
@@ -50,8 +50,8 @@ class LedgerFileUpload extends StatelessWidget {
     required this.onPick,
     this.files = const [],
     this.onRemove,
-    this.label,
-    this.hint = 'Attach a photo or a PDF',
+    this.labelText,
+    this.hintText = 'Attach a photo or a PDF',
     this.note = 'Up to 10 MB each',
     super.key,
   });
@@ -66,10 +66,10 @@ class LedgerFileUpload extends StatelessWidget {
   final ValueChanged<LedgerFile>? onRemove;
 
   /// The small capitals over the slip.
-  final String? label;
+  final String? labelText;
 
   /// The slip's words.
-  final String hint;
+  final String hintText;
 
   /// The note under the slip's words, in the mono.
   final String? note;
@@ -83,8 +83,8 @@ class LedgerFileUpload extends StatelessWidget {
       ..add(
         ObjectFlagProperty<ValueChanged<LedgerFile>>.has('onRemove', onRemove),
       )
-      ..add(StringProperty('label', label, defaultValue: null))
-      ..add(StringProperty('hint', hint))
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
+      ..add(StringProperty('hintText', hintText))
       ..add(StringProperty('note', note, defaultValue: null));
   }
 
@@ -96,7 +96,7 @@ class LedgerFileUpload extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       spacing: LedgerSpacing.s8,
       children: [
-        if (label case final l?)
+        if (labelText case final l?)
           ExcludeSemantics(
             child: Text(
               l.toUpperCase(),
@@ -105,7 +105,7 @@ class LedgerFileUpload extends StatelessWidget {
           ),
         LedgerPressable(
           onTap: onPick,
-          label: label == null ? hint : '$label: $hint',
+          label: labelText == null ? hintText : '$labelText: $hintText',
           radius: t.controlRadius,
           child: Builder(
             builder: (context) {
@@ -139,7 +139,7 @@ class LedgerFileUpload extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             spacing: LedgerSpacing.s2,
                             children: [
-                              Text(hint, style: t.rowTitle.colored(s.ink)),
+                              Text(hintText, style: t.rowTitle.colored(s.ink)),
                               if (note case final n?)
                                 Text(
                                   n.toUpperCase(),

@@ -58,9 +58,9 @@ void main() {
             const Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                LedgerTextField(label: 'Name'),
-                LedgerPasswordField(label: 'Password'),
-                LedgerTextArea(label: 'Memo'),
+                LedgerTextField(labelText: 'Name'),
+                LedgerPasswordField(labelText: 'Password'),
+                LedgerTextArea(labelText: 'Memo'),
               ],
             ),
           ),
@@ -150,7 +150,7 @@ void main() {
           direction,
           LedgerStepper(
             size: LedgerStepperSize.field,
-            label: 'Minuten',
+            labelText: 'Minuten',
             value: 45,
             min: 5,
             max: 480,
@@ -182,7 +182,7 @@ void main() {
           Builder(
             builder: (context) {
               words = RawWidgetsLocalizations.of(context);
-              return const LedgerTextField(label: 'Name');
+              return const LedgerTextField(labelText: 'Name');
             },
           ),
         ),
@@ -212,7 +212,7 @@ void main() {
             child: Center(
               child: SizedBox(
                 width: 340,
-                child: LedgerTextField(label: 'Name'),
+                child: LedgerTextField(labelText: 'Name'),
               ),
             ),
           ),

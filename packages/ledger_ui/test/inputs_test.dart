@@ -743,7 +743,7 @@ void main() {
       await _everywhere(
         t,
         LedgerSearchField(
-          hint: 'Search merchants and categories',
+          hintText: 'Search merchants and categories',
           semanticLabel: "Search October's activity",
           onTap: () => taps++,
         ),
@@ -776,7 +776,7 @@ void main() {
       await _everywhere(
         t,
         LedgerSearchField(
-          hint: 'Search merchants and categories',
+          hintText: 'Search merchants and categories',
           semanticLabel: 'Search activity',
           controller: controller,
           onChanged: typed.add,
@@ -812,9 +812,9 @@ void main() {
       addTearDown(controller.dispose);
       final typed = <String>[];
       final field = LedgerField(
-        label: 'Note',
+        labelText: 'Note',
         controller: controller,
-        hint: 'What it is for',
+        hintText: 'What it is for',
         onChanged: typed.add,
       );
       await _everywhere(t, field, (wide, theme) {
@@ -843,7 +843,7 @@ void main() {
         t,
         StatefulBuilder(
           builder: (context, setState) => LedgerField(
-            label: 'When',
+            labelText: 'When',
             child: LedgerSegmentedControl(
               options: const ['Today', 'Later'],
               value: when,
@@ -960,7 +960,7 @@ void main() {
       await _everywhere(
         t,
         const LedgerChequeAmount(
-          label: 'Amount',
+          labelText: 'Amount',
           words: _transferWords,
           unit: 'dollars',
           amount: _transferAmount,
@@ -982,7 +982,7 @@ void main() {
       await _everywhere(
         t,
         LedgerChequeAmount(
-          label: 'Amount',
+          labelText: 'Amount',
           words: _transferWords,
           unit: 'dollars',
           controller: controller,
@@ -1007,7 +1007,7 @@ void main() {
         t,
         LedgerStepper(
           value: _diningBudget,
-          label: 'Monthly budget',
+          labelText: 'Monthly budget',
           format: _dollars,
           onChanged: moves.add,
         ),
@@ -1049,7 +1049,7 @@ void main() {
         t,
         LedgerStepper(
           value: _diningBudget,
-          label: 'Monthly budget',
+          labelText: 'Monthly budget',
           format: _dollars,
           min: _diningBudget,
           onChanged: moves.add,
@@ -1079,7 +1079,7 @@ void main() {
         t,
         const LedgerStepper(
           value: _diningBudget,
-          label: 'Monthly budget',
+          labelText: 'Monthly budget',
           format: _dollars,
         ),
         (wide, theme) {
@@ -1103,7 +1103,7 @@ void main() {
         t,
         LedgerStepper(
           value: _diningBudget,
-          label: 'Monthly budget',
+          labelText: 'Monthly budget',
           format: _dollars,
           lowerLabel: 'Lower the budget',
           raiseLabel: 'Raise the budget',
@@ -1123,7 +1123,7 @@ void main() {
         t,
         LedgerStepper(
           value: _diningBudget,
-          label: 'Monthly budget',
+          labelText: 'Monthly budget',
           format: _dollars,
           max: _diningBudget,
           onChanged: moves.add,
@@ -1160,12 +1160,12 @@ void main() {
     }) => StatefulBuilder(
       builder: (context, setState) => LedgerStepper(
         size: LedgerStepperSize.field,
-        label: label,
+        labelText: label,
         value: value,
         min: 5,
         max: 480,
         format: (minutes) => '$minutes minutes',
-        error: error,
+        errorText: error,
         onChanged: (v) => setState(() {
           moves.add(v);
           value = v;
@@ -1296,7 +1296,7 @@ void main() {
                           const Expanded(
                             child: LedgerTextField(
                               key: ValueKey<String>('title'),
-                              label: 'Title',
+                              labelText: 'Title',
                             ),
                           ),
                           const SizedBox(width: 24),
@@ -1359,12 +1359,12 @@ void main() {
         Column(
           children: [
             const LedgerPasswordField(
-              label: 'Password',
-              helper: 'At least 12 characters',
+              labelText: 'Password',
+              helperText: 'At least 12 characters',
               isRequired: true,
             ),
             LedgerTextField(
-              label: 'Account number',
+              labelText: 'Account number',
               trailing: LedgerIconButton(
                 LucideIcons.copy,
                 semanticLabel: 'Copy the account number',

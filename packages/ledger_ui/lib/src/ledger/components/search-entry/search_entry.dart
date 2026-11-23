@@ -9,7 +9,7 @@ import '../inputs/inputs.dart';
 import '../pressable/pressable.dart';
 
 /// The way into a search: the search field drawn as a link, its glyph and
-/// [hint] in a round of the raised paper that opens the search page when
+/// [hintText] in a round of the raised paper that opens the search page when
 /// pressed ([onTap]), and with [onFilterPressed] a square beside it that opens
 /// the filters, carrying the green count of those in force ([filterCount]). It
 /// takes no words itself; the page it opens does. One a page, over its first
@@ -17,13 +17,13 @@ import '../pressable/pressable.dart';
 /// and the filter by [filterLabel] and how many are in force.
 ///
 /// ```dart
-/// LedgerSearchEntry(hint: 'Search entries', onTap: () => open('/search'), onFilterPressed: openFilters, filterCount: 2)
+/// LedgerSearchEntry(hintText: 'Search entries', onTap: () => open('/search'), onFilterPressed: openFilters, filterCount: 2)
 /// ```
 class LedgerSearchEntry extends StatelessWidget {
-  /// The way into a search, worded [hint].
+  /// The way into a search, worded [hintText].
   const LedgerSearchEntry({
     required this.onTap,
-    this.hint,
+    this.hintText,
     this.semanticLabel,
     this.onFilterPressed,
     this.filterLabel = 'Filters',
@@ -38,9 +38,9 @@ class LedgerSearchEntry extends StatelessWidget {
 
   /// The words on the link (Search transactions); null is the shared words'
   /// Search, as on a [LedgerSearchField].
-  final String? hint;
+  final String? hintText;
 
-  /// What a screen reader says the link is; null says the [hint].
+  /// What a screen reader says the link is; null says the [hintText].
   final String? semanticLabel;
 
   /// Opens the filters; the square is left out without it.
@@ -64,7 +64,7 @@ class LedgerSearchEntry extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(ObjectFlagProperty<VoidCallback>.has('onTap', onTap))
-      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
       ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(
         ObjectFlagProperty<VoidCallback>.has(
@@ -92,7 +92,7 @@ class LedgerSearchEntry extends StatelessWidget {
       children: [
         Expanded(
           child: LedgerSearchField(
-            hint: hint,
+            hintText: hintText,
             semanticLabel: semanticLabel,
             onTap: onTap,
             focusNode: focusNode,

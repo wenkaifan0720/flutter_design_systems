@@ -37,7 +37,7 @@ enum LedgerPresentation {
 /// a blank stage so its exit renders as it does live; a preview is looked
 /// at, not walked out of, so the exit leaves the page standing. A root
 /// stands over the tab bar on a phone; at desktop width a root and a pushed
-/// page stand beside the sidebar ([tabs], [activeIndex] its current), as
+/// page stand beside the sidebar ([tabs], [selectedIndex] its current), as
 /// the shell stands every page there. Given the page's [location], the
 /// sidebar marks the account's foot when the page is its profile.
 ///
@@ -51,11 +51,11 @@ class LedgerPreview extends StatelessWidget {
   /// A preview of [child], standing as [presentation] says.
   const LedgerPreview({
     required this.child,
-    this.light,
-    this.dark,
+    this.theme,
+    this.darkTheme,
     this.presentation = LedgerPresentation.root,
     this.tabs = const <LedgerNavItem>[],
-    this.activeIndex = 0,
+    this.selectedIndex = 0,
     this.action,
     this.brand,
     this.drawer = false,
@@ -72,20 +72,20 @@ class LedgerPreview extends StatelessWidget {
   final Widget child;
 
   /// The light and dark themes; null is the default preset's.
-  final LedgerThemeData? light;
+  final LedgerThemeData? theme;
 
   /// The dark theme; null is the default preset's.
-  final LedgerThemeData? dark;
+  final LedgerThemeData? darkTheme;
 
   /// How the page stands in the app.
   final LedgerPresentation presentation;
 
   /// The shell's tabs when the page is a nav root: the bar renders with
-  /// [activeIndex] selected; empty renders no bar.
+  /// [selectedIndex] selected; empty renders no bar.
   final List<LedgerNavItem> tabs;
 
   /// The index of the current tab.
-  final int activeIndex;
+  final int selectedIndex;
 
   /// The shell's act, the disc in the bar's middle.
   final ShellAction? action;
@@ -128,17 +128,21 @@ class LedgerPreview extends StatelessWidget {
     properties
       ..add(
         DiagnosticsProperty<LedgerThemeData>(
-          'light',
-          light,
+          'theme',
+          theme,
           defaultValue: null,
         ),
       )
       ..add(
-        DiagnosticsProperty<LedgerThemeData>('dark', dark, defaultValue: null),
+        DiagnosticsProperty<LedgerThemeData>(
+          'darkTheme',
+          darkTheme,
+          defaultValue: null,
+        ),
       )
       ..add(EnumProperty<LedgerPresentation>('presentation', presentation))
       ..add(IterableProperty<LedgerNavItem>('tabs', tabs))
-      ..add(IntProperty('activeIndex', activeIndex))
+      ..add(IntProperty('selectedIndex', selectedIndex))
       ..add(
         DiagnosticsProperty<ShellAction>('action', action, defaultValue: null),
       )
@@ -171,15 +175,15 @@ class LedgerPreview extends StatelessWidget {
         title: brand ?? '',
         debugShowCheckedModeBanner: false,
         builder: (context, app) => LedgerHost(
-          light: light,
-          dark: dark,
+          theme: theme,
+          darkTheme: darkTheme,
           brightness: brightness,
           child: app ?? const SizedBox.shrink(),
         ),
         home: switch (presentation) {
           LedgerPresentation.root => _Root(
             tabs: tabs,
-            activeIndex: activeIndex,
+            activeIndex: selectedIndex,
             action: action,
             brand: brand,
             location: location,
@@ -195,7 +199,7 @@ class LedgerPreview extends StatelessWidget {
             ).createRoute(context),
             child: _Beside(
               tabs: tabs,
-              activeIndex: activeIndex,
+              activeIndex: selectedIndex,
               action: action,
               brand: brand,
               location: location,

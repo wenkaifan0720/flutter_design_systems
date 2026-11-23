@@ -1,0 +1,1220 @@
+# ledger_ui's renames in 0.5.0, which `dart fix` makes. Each lists the package's libraries, as dart fix renames a
+# name only where it is imported through a listed library.
+version: 1
+transforms:
+  - title: "Rename to 'theme'"
+    date: 2026-11-22
+    element:
+      uris: &uris ['ledger_ui.dart', 'package:ledger_ui/ledger_parts.dart', 'package:ledger_ui/ledger_host.dart']
+      constructor: ''
+      inClass: 'LedgerHost'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'light'
+        newName: 'theme'
+  - title: "Rename to 'theme'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'light'
+      inClass: 'LedgerHost'
+    changes:
+      - kind: 'rename'
+        newName: 'theme'
+  - title: "Rename to 'darkTheme'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'LedgerHost'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'dark'
+        newName: 'darkTheme'
+  - title: "Rename to 'darkTheme'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'dark'
+      inClass: 'LedgerHost'
+    changes:
+      - kind: 'rename'
+        newName: 'darkTheme'
+  - title: "Rename to 'theme'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'LedgerPreview'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'light'
+        newName: 'theme'
+  - title: "Rename to 'theme'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'light'
+      inClass: 'LedgerPreview'
+    changes:
+      - kind: 'rename'
+        newName: 'theme'
+  - title: "Rename to 'darkTheme'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'LedgerPreview'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'dark'
+        newName: 'darkTheme'
+  - title: "Rename to 'darkTheme'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'dark'
+      inClass: 'LedgerPreview'
+    changes:
+      - kind: 'rename'
+        newName: 'darkTheme'
+  - title: "Rename to 'selectedIndex'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'LedgerPreview'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'activeIndex'
+        newName: 'selectedIndex'
+  - title: "Rename to 'selectedIndex'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'activeIndex'
+      inClass: 'LedgerPreview'
+    changes:
+      - kind: 'rename'
+        newName: 'selectedIndex'
+  - title: "Rename to 'darkData'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'LedgerTheme'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'dark'
+        newName: 'darkData'
+  - title: "Rename to 'darkData'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'dark'
+      inClass: 'LedgerTheme'
+    changes:
+      - kind: 'rename'
+        newName: 'darkData'
+  - title: "Rename to 'darkData'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'AnimatedLedgerTheme'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'dark'
+        newName: 'darkData'
+  - title: "Rename to 'darkData'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'dark'
+      inClass: 'AnimatedLedgerTheme'
+    changes:
+      - kind: 'rename'
+        newName: 'darkData'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'LedgerTextInput'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'placeholder'
+        newName: 'hintText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'placeholder'
+      inClass: 'LedgerTextInput'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  - title: "Rename to 'hintStyle'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'LedgerTextInput'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'placeholderStyle'
+        newName: 'hintStyle'
+  - title: "Rename to 'hintStyle'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'placeholderStyle'
+      inClass: 'LedgerTextInput'
+    changes:
+      - kind: 'rename'
+        newName: 'hintStyle'
+  - title: "Rename to 'isDestructiveAction'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'LedgerSheetAct'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'destructive'
+        newName: 'isDestructiveAction'
+  - title: "Rename to 'isDestructiveAction'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'destructive'
+      inClass: 'LedgerSheetAct'
+    changes:
+      - kind: 'rename'
+        newName: 'isDestructiveAction'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'LedgerDatePicker'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'LedgerDatePicker'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'currentDate'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'LedgerDatePicker'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'today'
+        newName: 'currentDate'
+  - title: "Rename to 'currentDate'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'today'
+      inClass: 'LedgerDatePicker'
+    changes:
+      - kind: 'rename'
+        newName: 'currentDate'
+  - title: "Rename to 'currentDate'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'LedgerDateRangePicker'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'today'
+        newName: 'currentDate'
+  - title: "Rename to 'currentDate'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'today'
+      inClass: 'LedgerDateRangePicker'
+    changes:
+      - kind: 'rename'
+        newName: 'currentDate'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'LedgerCodeField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'LedgerCodeField'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'LedgerCodeField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'helper'
+      inClass: 'LedgerCodeField'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'LedgerCodeField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'error'
+      inClass: 'LedgerCodeField'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'LedgerCombobox'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'LedgerCombobox'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'LedgerCombobox'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'hint'
+      inClass: 'LedgerCombobox'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'LedgerCombobox'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'helper'
+      inClass: 'LedgerCombobox'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'LedgerCombobox'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'error'
+      inClass: 'LedgerCombobox'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+  - title: "Rename to 'displayStringForOption'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'LedgerCombobox'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'labelOf'
+        newName: 'displayStringForOption'
+  - title: "Rename to 'displayStringForOption'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'labelOf'
+      inClass: 'LedgerCombobox'
+    changes:
+      - kind: 'rename'
+        newName: 'displayStringForOption'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'LedgerCommandPalette'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'hint'
+      inClass: 'LedgerCommandPalette'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'LedgerComposer'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'hint'
+      inClass: 'LedgerComposer'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'LedgerFileUpload'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'LedgerFileUpload'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'LedgerFileUpload'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'hint'
+      inClass: 'LedgerFileUpload'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'LedgerInputGroup'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'LedgerInputGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'LedgerInputGroup'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'hint'
+      inClass: 'LedgerInputGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'LedgerInputGroup'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'helper'
+      inClass: 'LedgerInputGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'LedgerInputGroup'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'error'
+      inClass: 'LedgerInputGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'LedgerSearchField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'hint'
+      inClass: 'LedgerSearchField'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'LedgerSearchEntry'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'hint'
+      inClass: 'LedgerSearchEntry'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'LedgerField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'LedgerField'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'LedgerField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'hint'
+      inClass: 'LedgerField'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'LedgerChequeAmount'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'LedgerChequeAmount'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'LedgerStepper'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'LedgerStepper'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'LedgerStepper'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'helper'
+      inClass: 'LedgerStepper'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'LedgerStepper'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'error'
+      inClass: 'LedgerStepper'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'LedgerMultiSelect'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'LedgerMultiSelect'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'LedgerMultiSelect'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'hint'
+      inClass: 'LedgerMultiSelect'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'LedgerMultiSelect'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'helper'
+      inClass: 'LedgerMultiSelect'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'LedgerMultiSelect'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'error'
+      inClass: 'LedgerMultiSelect'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+  - title: "Rename to 'displayStringForOption'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'LedgerMultiSelect'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'labelOf'
+        newName: 'displayStringForOption'
+  - title: "Rename to 'displayStringForOption'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'labelOf'
+      inClass: 'LedgerMultiSelect'
+    changes:
+      - kind: 'rename'
+        newName: 'displayStringForOption'
+  - title: "Rename to 'pageCount'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'LedgerPageDots'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'count'
+        newName: 'pageCount'
+  - title: "Rename to 'pageCount'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'count'
+      inClass: 'LedgerPageDots'
+    changes:
+      - kind: 'rename'
+        newName: 'pageCount'
+  - title: "Rename to 'page'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'LedgerPageDots'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'index'
+        newName: 'page'
+  - title: "Rename to 'page'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'index'
+      inClass: 'LedgerPageDots'
+    changes:
+      - kind: 'rename'
+        newName: 'page'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'LedgerPasswordField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'LedgerPasswordField'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'LedgerPasswordField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'hint'
+      inClass: 'LedgerPasswordField'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'LedgerPasswordField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'helper'
+      inClass: 'LedgerPasswordField'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'LedgerPasswordField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'error'
+      inClass: 'LedgerPasswordField'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'LedgerSelect'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'LedgerSelect'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'LedgerSelect'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'hint'
+      inClass: 'LedgerSelect'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'LedgerSelect'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'helper'
+      inClass: 'LedgerSelect'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'LedgerSelect'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'error'
+      inClass: 'LedgerSelect'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+  - title: "Rename to 'currentStep'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'LedgerStepProgress'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'current'
+        newName: 'currentStep'
+  - title: "Rename to 'currentStep'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'current'
+      inClass: 'LedgerStepProgress'
+    changes:
+      - kind: 'rename'
+        newName: 'currentStep'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'LedgerTextArea'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'LedgerTextArea'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'LedgerTextArea'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'hint'
+      inClass: 'LedgerTextArea'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'LedgerTextArea'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'helper'
+      inClass: 'LedgerTextArea'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'LedgerTextArea'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'error'
+      inClass: 'LedgerTextArea'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'LedgerTextField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'LedgerTextField'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'LedgerTextField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'hint'
+      inClass: 'LedgerTextField'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'LedgerTextField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'helper'
+      inClass: 'LedgerTextField'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'LedgerTextField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'error'
+      inClass: 'LedgerTextField'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+  - title: "Rename to 'multiSelectionEnabled'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'LedgerToggleGroup'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'multiple'
+        newName: 'multiSelectionEnabled'
+  - title: "Rename to 'multiSelectionEnabled'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'multiple'
+      inClass: 'LedgerToggleGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'multiSelectionEnabled'
+  - title: "Rename to 'emptySelectionAllowed'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'LedgerToggleGroup'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'allowEmpty'
+        newName: 'emptySelectionAllowed'
+  - title: "Rename to 'emptySelectionAllowed'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'allowEmpty'
+      inClass: 'LedgerToggleGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'emptySelectionAllowed'
+  - title: "Rename to 'onSelectionChanged'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'LedgerToggleGroup'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'onChanged'
+        newName: 'onSelectionChanged'
+  - title: "Rename to 'onSelectionChanged'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'onChanged'
+      inClass: 'LedgerToggleGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'onSelectionChanged'

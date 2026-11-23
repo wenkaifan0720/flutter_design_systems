@@ -21,18 +21,18 @@ import '../../theme.dart';
 /// row: each its own ring of the light paper, a chosen one in the ink. One
 /// choice is a group of radios: the Tab stop is the chosen pill, and all
 /// four arrows move and choose, round the ends and past one turned off;
-/// with [multiple] each pill toggles on its own (a register's columns
+/// with [multiSelectionEnabled] each pill toggles on its own (a register's columns
 /// shown), the arrows moving along it, mirrored right to left. Home and End
 /// go to its ends; Space and Enter press. A hover takes the ring to the
 /// strong rule, a press sinks the pill, the keyboard's focus rules the
 /// double rule under it. Each pill lays out at the tap floor round its 32 face
 /// (44 for a finger, 24 for a pointer), so a tap anywhere in that room
 /// reaches it. [labelOf] names
-/// each option (its words and its spoken name); [onChanged] null shows the
+/// each option (its words and its spoken name); [onSelectionChanged] null shows the
 /// row without letting it change.
 ///
 /// ```dart
-/// LedgerToggleGroup<String>(label: 'Show', options: const ['day', 'week', 'month'], labelOf: (v) => v, selected: const {'week'}, onChanged: (next) {})
+/// LedgerToggleGroup<String>(label: 'Show', options: const ['day', 'week', 'month'], labelOf: (v) => v, selected: const {'week'}, onSelectionChanged: (next) {})
 /// ```
 class LedgerToggleGroup<T> extends StatelessWidget {
   /// Pills for [options], [selected] chosen.
@@ -41,9 +41,9 @@ class LedgerToggleGroup<T> extends StatelessWidget {
     required this.selected,
     required this.label,
     required this.labelOf,
-    this.onChanged,
-    this.multiple = false,
-    this.allowEmpty = false,
+    this.onSelectionChanged,
+    this.multiSelectionEnabled = false,
+    this.emptySelectionAllowed = false,
     this.isEnabled,
     this.style,
     super.key,
@@ -63,14 +63,14 @@ class LedgerToggleGroup<T> extends StatelessWidget {
 
   /// Called with the new choice; null shows the row without letting it
   /// change.
-  final ValueChanged<Set<T>>? onChanged;
+  final ValueChanged<Set<T>>? onSelectionChanged;
 
   /// Whether any number may be chosen (each pill a toggle).
-  final bool multiple;
+  final bool multiSelectionEnabled;
 
   /// Whether one choice may be left with none (a press on the chosen pill
   /// clears it).
-  final bool allowEmpty;
+  final bool emptySelectionAllowed;
 
   /// Whether a value can be pressed; null: every one.
   final bool Function(T value)? isEnabled;
@@ -90,10 +90,25 @@ class LedgerToggleGroup<T> extends StatelessWidget {
       ..add(IterableProperty<T>('selected', selected))
       ..add(StringProperty('label', label))
       ..add(
-        ObjectFlagProperty<ValueChanged<Set<T>>>.has('onChanged', onChanged),
+        ObjectFlagProperty<ValueChanged<Set<T>>>.has(
+          'onSelectionChanged',
+          onSelectionChanged,
+        ),
       )
-      ..add(FlagProperty('multiple', value: multiple, ifTrue: 'multiple'))
-      ..add(FlagProperty('allowEmpty', value: allowEmpty, ifTrue: 'allowEmpty'))
+      ..add(
+        FlagProperty(
+          'multiSelectionEnabled',
+          value: multiSelectionEnabled,
+          ifTrue: 'multiple',
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'emptySelectionAllowed',
+          value: emptySelectionAllowed,
+          ifTrue: 'allowEmpty',
+        ),
+      )
       ..add(
         DiagnosticsProperty<LedgerStyle>('style', style, defaultValue: null),
       );
@@ -103,7 +118,7 @@ class LedgerToggleGroup<T> extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.ledgerTheme;
     final words = t.meta.medium.sized(_words).line(_line).tracked(_track);
-    final change = onChanged;
+    final change = onSelectionChanged;
     final minimumSize = DesignTapTargets.of(context).floorOn();
     Widget layout(BuildContext context, List<Widget> items) =>
         Wrap(spacing: _gap, children: items);
@@ -175,16 +190,16 @@ class LedgerToggleGroup<T> extends StatelessWidget {
       );
     }
 
-    if (!multiple && !allowEmpty) {
+    if (!multiSelectionEnabled && !emptySelectionAllowed) {
       return _radios(minimumSize, pill, layout);
     }
     return RawSegmentedButton<T>(
       options: options,
       selected: selected,
       onSelectionChanged: change,
-      multiSelectionEnabled: multiple,
-      emptySelectionAllowed: allowEmpty,
-      selectFollowsFocus: !multiple,
+      multiSelectionEnabled: multiSelectionEnabled,
+      emptySelectionAllowed: emptySelectionAllowed,
+      selectFollowsFocus: !multiSelectionEnabled,
       isEnabled: change == null ? (_) => false : isEnabled,
       labelOf: labelOf,
       semanticLabel: label,
@@ -195,7 +210,7 @@ class LedgerToggleGroup<T> extends StatelessWidget {
   }
 
   bool _enabled(T value) =>
-      onChanged != null && (isEnabled?.call(value) ?? true);
+      onSelectionChanged != null && (isEnabled?.call(value) ?? true);
 
   // One choice that is never empty: Flutter's RadioGroup, each pill a
   // RawRadio laid out at the tap floor, as RawSegmentedButton lays its out.
@@ -256,7 +271,7 @@ class _PillRadiosState<T> extends State<_PillRadios<T>> {
   }
 
   void _choose(T value) {
-    if (value != _chosen) widget.group.onChanged?.call({value});
+    if (value != _chosen) widget.group.onSelectionChanged?.call({value});
   }
 
   // Home and End choose the first and the last that can be chosen.

@@ -126,8 +126,8 @@ class LedgerCarousel extends StatelessWidget {
               Expanded(
                 child: Center(
                   child: LedgerPageDots(
-                    count: controls.count,
-                    index: controls.page,
+                    pageCount: controls.count,
+                    page: controls.page,
                     onChanged: controls.goToPage,
                   ),
                 ),

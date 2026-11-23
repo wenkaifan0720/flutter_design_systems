@@ -25,19 +25,19 @@ import '../text-field/text_field.dart';
 /// ringed in the ink. [maxTags] stops it taking more.
 ///
 /// ```dart
-/// LedgerMultiSelect<String>(label: 'Split with', values: const ['Maren'], options: const ['Maren', 'Theo', 'Ana'], onChanged: (v) {})
+/// LedgerMultiSelect<String>(labelText: 'Split with', values: const ['Maren'], options: const ['Maren', 'Theo', 'Ana'], onChanged: (v) {})
 /// ```
 class LedgerMultiSelect<T extends Object> extends StatefulWidget {
-  /// A tag field named [label] holding [values].
+  /// A tag field named [labelText] holding [values].
   const LedgerMultiSelect({
     required this.values,
     required this.onChanged,
     this.options = const [],
-    this.label,
-    this.hint,
-    this.helper,
-    this.error,
-    this.labelOf,
+    this.labelText,
+    this.hintText,
+    this.helperText,
+    this.errorText,
+    this.displayStringForOption,
     this.onCreate,
     this.maxTags,
     this.enabled = true,
@@ -55,19 +55,19 @@ class LedgerMultiSelect<T extends Object> extends StatefulWidget {
   final Iterable<T> options;
 
   /// The small capitals over the line.
-  final String? label;
+  final String? labelText;
 
   /// Words in the third ink while it is empty.
-  final String? hint;
+  final String? hintText;
 
   /// The note under the rule.
-  final String? helper;
+  final String? helperText;
 
-  /// What is wrong, in the vermilion; it replaces [helper].
-  final String? error;
+  /// What is wrong, in the vermilion; it replaces [helperText].
+  final String? errorText;
 
   /// Each value's words; null: its `toString`.
-  final String Function(T value)? labelOf;
+  final String Function(T value)? displayStringForOption;
 
   /// Makes a value of typed words; null: only options are taken.
   final T? Function(String text)? onCreate;
@@ -84,7 +84,12 @@ class LedgerMultiSelect<T extends Object> extends StatefulWidget {
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
-    properties.add(ObjectFlagProperty<Object?>.has('labelOf', labelOf));
+    properties.add(
+      ObjectFlagProperty<Object?>.has(
+        'displayStringForOption',
+        displayStringForOption,
+      ),
+    );
     properties.add(ObjectFlagProperty<Object?>.has('onCreate', onCreate));
     properties
       ..add(IterableProperty<T>('values', values))
@@ -92,10 +97,10 @@ class LedgerMultiSelect<T extends Object> extends StatefulWidget {
         ObjectFlagProperty<ValueChanged<List<T>>>.has('onChanged', onChanged),
       )
       ..add(IterableProperty<T>('options', options))
-      ..add(StringProperty('label', label, defaultValue: null))
-      ..add(StringProperty('hint', hint, defaultValue: null))
-      ..add(StringProperty('helper', helper, defaultValue: null))
-      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
+      ..add(StringProperty('helperText', helperText, defaultValue: null))
+      ..add(StringProperty('errorText', errorText, defaultValue: null))
       ..add(IntProperty('maxTags', maxTags, defaultValue: null))
       ..add(FlagProperty('enabled', value: enabled, ifTrue: 'enabled'))
       ..add(
@@ -123,7 +128,8 @@ class _LedgerMultiSelectState<T extends Object>
     super.dispose();
   }
 
-  String _words(T value) => widget.labelOf?.call(value) ?? value.toString();
+  String _words(T value) =>
+      widget.displayStringForOption?.call(value) ?? value.toString();
 
   @override
   Widget build(BuildContext context) {
@@ -142,10 +148,12 @@ class _LedgerMultiSelectState<T extends Object>
       onCreate: widget.onCreate,
       maxTags: widget.maxTags,
       focusNode: _focus,
-      semanticLabel: widget.label,
+      semanticLabel: widget.labelText,
       optionsMaxHeight: _paper,
       fieldBuilder: (context, field) => Semantics(
-        label: widget.label,
+        label: widget.labelText,
+        // Whether its list of suggestions stands open.
+        expanded: field.isOpen,
         child: Material(
           type: MaterialType.transparency,
           child: TextField(
@@ -198,10 +206,10 @@ class _LedgerMultiSelectState<T extends Object>
                   child: Stack(
                     alignment: AlignmentDirectional.centerStart,
                     children: [
-                      if (widget.values.isEmpty && widget.hint != null)
+                      if (widget.values.isEmpty && widget.hintText != null)
                         ExcludeSemantics(
                           child: Text(
-                            widget.hint!,
+                            widget.hintText!,
                             maxLines: 1,
                             style: words
                                 .copyWith(fontWeight: FontWeight.w400)
@@ -219,14 +227,13 @@ class _LedgerMultiSelectState<T extends Object>
       ),
     );
     return RawInputDecorator(
-      mergeSemantics: false,
-      helperText: widget.helper,
-      errorText: widget.error,
+      helperText: widget.helperText,
+      errorText: widget.errorText,
       enabled: enabled,
       focusNode: _focus,
       builder: (context, parts) => LedgerFieldFrame(
         parts: parts,
-        displayLabel: widget.label,
+        displayLabel: widget.labelText,
         focusNode: _focus,
         labelCursor: SystemMouseCursors.text,
         line: parts.control,

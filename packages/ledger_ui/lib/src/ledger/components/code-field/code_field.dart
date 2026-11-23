@@ -13,7 +13,7 @@ import '../../theme.dart';
 
 /// A one-time code (a bank's six figures, a card's PIN): each figure in the
 /// serif on its own short rule, the code's halves parted by a wider gap,
-/// its [label] in the small capitals over them and its [helper] or [error]
+/// its [labelText] in the small capitals over them and its [helperText] or [errorText]
 /// under, as every Ledger field. The slot the next figure goes in rules the
 /// accountant's double rule while the field has focus, drawn in from the
 /// reading start as a pen draws it, with the caret standing on it; an
@@ -24,15 +24,15 @@ import '../../theme.dart';
 /// bead for each figure (a PIN).
 ///
 /// ```dart
-/// LedgerCodeField(label: 'Code from your bank', length: 6, onCompleted: (code) {})
+/// LedgerCodeField(labelText: 'Code from your bank', length: 6, onCompleted: (code) {})
 /// ```
 class LedgerCodeField extends StatefulWidget {
   /// A code field of [length] slots.
   const LedgerCodeField({
     this.length = 6,
-    this.label,
-    this.helper,
-    this.error,
+    this.labelText,
+    this.helperText,
+    this.errorText,
     this.controller,
     this.focusNode,
     this.enabled = true,
@@ -48,13 +48,13 @@ class LedgerCodeField extends StatefulWidget {
   final int length;
 
   /// The small capitals over the slots.
-  final String? label;
+  final String? labelText;
 
   /// The note under the slots.
-  final String? helper;
+  final String? helperText;
 
-  /// What is wrong, in the vermilion; it replaces [helper].
-  final String? error;
+  /// What is wrong, in the vermilion; it replaces [helperText].
+  final String? errorText;
 
   /// The code; null: the field's own.
   final RawOtpController? controller;
@@ -71,7 +71,7 @@ class LedgerCodeField extends StatefulWidget {
   /// {@macro ledger.autofocus}
   final bool autofocus;
 
-  /// What a screen reader calls it; null: the [label], else "One-time code".
+  /// What a screen reader calls it; null: the [labelText], else "One-time code".
   final String? semanticLabel;
 
   /// Called as the code changes.
@@ -85,9 +85,9 @@ class LedgerCodeField extends StatefulWidget {
     super.debugFillProperties(properties);
     properties
       ..add(IntProperty('length', length))
-      ..add(StringProperty('label', label, defaultValue: null))
-      ..add(StringProperty('helper', helper, defaultValue: null))
-      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
+      ..add(StringProperty('helperText', helperText, defaultValue: null))
+      ..add(StringProperty('errorText', errorText, defaultValue: null))
       ..add(
         DiagnosticsProperty<RawOtpController>(
           'controller',
@@ -149,10 +149,11 @@ class _LedgerCodeFieldState extends State<LedgerCodeField> {
       controller: widget.controller,
       focusNode: _focus,
       enabled: widget.enabled,
-      isError: widget.error != null,
+      isError: widget.errorText != null,
       obscureText: widget.obscureText,
       autofocus: widget.autofocus,
-      semanticLabel: widget.semanticLabel ?? widget.label ?? 'One-time code',
+      semanticLabel:
+          widget.semanticLabel ?? widget.labelText ?? 'One-time code',
       onChanged: widget.onChanged,
       onCompleted: widget.onCompleted,
       layoutBuilder: (context, slots) => Row(
@@ -223,13 +224,13 @@ class _LedgerCodeFieldState extends State<LedgerCodeField> {
       },
     );
     return RawInputDecorator(
-      helperText: widget.helper,
-      errorText: widget.error,
+      helperText: widget.helperText,
+      errorText: widget.errorText,
       enabled: widget.enabled,
       focusNode: _focus,
       builder: (context, parts) => LedgerFieldFrame(
         parts: parts,
-        displayLabel: widget.label,
+        displayLabel: widget.labelText,
         focusNode: _focus,
         labelCursor: SystemMouseCursors.text,
         ruled: false,

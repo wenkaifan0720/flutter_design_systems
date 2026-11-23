@@ -541,7 +541,7 @@ void main() {
       ),
       'LedgerComposer': (context) => LedgerComposer(
         controller: reply,
-        hint: 'Write a reply',
+        hintText: 'Write a reply',
         onAttachPressed: pick,
         onSubmitted: () => send(reply.text),
       ),
@@ -573,12 +573,12 @@ void main() {
         child: Text('Money in'),
       ),
       'LedgerTextArea': (context) => LedgerTextArea(
-        label: 'Memo',
-        hint: 'What it was for',
+        labelText: 'Memo',
+        hintText: 'What it was for',
         maxLength: 280,
       ),
       'LedgerMultiSelect': (context) => LedgerMultiSelect<String>(
-        label: 'Split with',
+        labelText: 'Split with',
         values: const ['Maren'],
         options: const ['Maren', 'Theo', 'Ana'],
         onChanged: (v) {},
@@ -695,7 +695,7 @@ void main() {
         child: ListView(children: rows),
       ),
       'LedgerCombobox': (context) => LedgerCombobox<String>(
-        label: 'Payee',
+        labelText: 'Payee',
         options: const ['Blue Fern Café', 'Corner Market'],
         onSelected: (v) {},
       ),
@@ -704,7 +704,7 @@ void main() {
         options: const ['day', 'week', 'month'],
         labelOf: (v) => v,
         selected: const {'week'},
-        onChanged: (next) {},
+        onSelectionChanged: (next) {},
       ),
       'LedgerNoteRow': (context) => LedgerNoteRow(
         icon: LucideIcons.receipt,
@@ -754,10 +754,10 @@ void main() {
         child: Text('Your balance less bills due before payday.'),
       ),
       'LedgerInputGroup': (context) => LedgerInputGroup(
-        label: 'Shop address',
+        labelText: 'Shop address',
         before: 'https://',
         after: '.ledger.app',
-        hint: 'your-shop',
+        hintText: 'your-shop',
       ),
       'LedgerRegister': (context) => LedgerRegister(
         heads: const ['Time', 'Merchant', 'Category', 'Account', 'Amount'],
@@ -859,7 +859,7 @@ void main() {
             mask: '··4821',
           ),
           LedgerChequeAmount(
-            label: 'Amount',
+            labelText: 'Amount',
             words: 'Two hundred and 00/100',
             unit: 'dollars',
             amount: 200,
@@ -910,7 +910,7 @@ void main() {
       'LedgerButton.text': (context) =>
           LedgerButton.text('View all', onPressed: () {}),
       'LedgerDatePicker': (context) => LedgerDatePicker(
-        label: 'Due',
+        labelText: 'Due',
         value: due,
         mode: LedgerDatePickerMode.dateAndTime,
         onChanged: setDue,
@@ -925,10 +925,10 @@ void main() {
       ),
       'LedgerStepProgress': (context) => LedgerStepProgress(
         steps: const ['Payee', 'Amount', 'Review'],
-        current: 1,
+        currentStep: 1,
       ),
       'LedgerPageDots': (context) =>
-          LedgerPageDots(count: 5, index: 1, onChanged: (i) {}),
+          LedgerPageDots(pageCount: 5, page: 1, onChanged: (i) {}),
       'LedgerFigure': (context) =>
           LedgerFigure(78182.56, size: LedgerFigureSize.hero),
       'LedgerFigure 2': (context) => LedgerFigure(
@@ -948,7 +948,7 @@ void main() {
       ),
       'LedgerDivider': (context) => LedgerDivider(label: 'Earlier'),
       'LedgerFileUpload': (context) => LedgerFileUpload(
-        label: 'Receipts',
+        labelText: 'Receipts',
         files: const [LedgerFile('Blue Fern.jpg', bytes: 182000)],
         onPick: () {},
         onRemove: (f) {},
@@ -981,7 +981,7 @@ void main() {
         ],
       ),
       'LedgerCodeField': (context) => LedgerCodeField(
-        label: 'Code from your bank',
+        labelText: 'Code from your bank',
         length: 6,
         onCompleted: (code) {},
       ),
@@ -991,8 +991,8 @@ void main() {
         onTap: () {},
       ),
       'LedgerPasswordField': (context) => LedgerPasswordField(
-        label: 'Password',
-        helper: 'At least 12 characters',
+        labelText: 'Password',
+        helperText: 'At least 12 characters',
         controller: password,
       ),
       'LedgerCommandPalette': (context) => LedgerCommandPalette(
@@ -1001,25 +1001,25 @@ void main() {
         ],
       ),
       'LedgerTextField': (context) => LedgerTextField(
-        label: 'Name',
-        hint: 'As it is on the account',
+        labelText: 'Name',
+        hintText: 'As it is on the account',
         controller: name,
       ),
       'LedgerTextField 2': (context) => LedgerTextField(
-        label: 'Amount',
+        labelText: 'Amount',
         prefix: r'$',
-        hint: '0.00',
+        hintText: '0.00',
         keyboardType: const TextInputType.numberWithOptions(decimal: true),
       ),
       'LedgerTextField 3': (context) => LedgerTextField(
-        label: 'Email',
-        error: 'Enter an email address',
+        labelText: 'Email',
+        errorText: 'Enter an email address',
         onChanged: (v) {},
       ),
       'LedgerCounter': (context) =>
           LedgerCounter(streak, format: (v) => '\$v days'),
       'LedgerSelect': (context) => LedgerSelect<String>(
-        label: 'Currency',
+        labelText: 'Currency',
         value: 'USD',
         items: const [
           LedgerSelectItem(value: 'USD', label: 'US dollar'),
@@ -1143,7 +1143,7 @@ void main() {
         pill: LedgerPill('+3.86%'),
       ),
       'LedgerSearchEntry': (context) => LedgerSearchEntry(
-        hint: 'Search entries',
+        hintText: 'Search entries',
         onTap: () => open('/search'),
         onFilterPressed: openFilters,
         filterCount: 2,
@@ -1220,13 +1220,16 @@ void main() {
         subtitle: 'US dollar',
       ),
       'LedgerSearchField': (context) => LedgerSearchField(
-        hint: 'Search merchants and categories',
+        hintText: 'Search merchants and categories',
         onTap: () => open('/activity/search'),
       ),
-      'LedgerField': (context) =>
-          LedgerField(label: 'Note', controller: note, hint: 'What it is for'),
+      'LedgerField': (context) => LedgerField(
+        labelText: 'Note',
+        controller: note,
+        hintText: 'What it is for',
+      ),
       'LedgerField 2': (context) => LedgerField(
-        label: 'When',
+        labelText: 'When',
         child: LedgerSegmentedControl(
           options: const ['Today', 'Later'],
           value: when,
@@ -1234,7 +1237,7 @@ void main() {
         ),
       ),
       'LedgerField 3': (context) =>
-          LedgerField(label: 'Note', value: 'November top-up'),
+          LedgerField(labelText: 'Note', value: 'November top-up'),
       'LedgerPickLine': (context) => LedgerPickLine(
         label: 'From',
         icon: LucideIcons.wallet,
@@ -1254,13 +1257,13 @@ void main() {
         showChevron: true,
       ),
       'LedgerChequeAmount': (context) => LedgerChequeAmount(
-        label: 'Amount',
+        labelText: 'Amount',
         words: 'Five hundred and 00/100',
         unit: 'dollars',
         amount: 500,
       ),
       'LedgerChequeAmount 2': (context) => LedgerChequeAmount(
-        label: 'Amount',
+        labelText: 'Amount',
         words: 'Five hundred and 00/100',
         unit: 'dollars',
         amount: 500,
@@ -1268,13 +1271,13 @@ void main() {
       ),
       'LedgerStepper': (context) => LedgerStepper(
         value: 250,
-        label: 'Monthly budget',
+        labelText: 'Monthly budget',
         format: (v) => LedgerFormat.money(v, showCents: false),
         onChanged: (v) {},
       ),
       'LedgerStepper 2': (context) => LedgerStepper(
         value: 250,
-        label: 'Monthly budget',
+        labelText: 'Monthly budget',
         format: (v) => LedgerFormat.money(v, showCents: false),
         lowerLabel: 'Lower the budget',
         raiseLabel: 'Raise the budget',
@@ -1282,14 +1285,14 @@ void main() {
       ),
       'LedgerStepper 3': (context) => LedgerStepper(
         value: 110,
-        label: 'Amount to add',
+        labelText: 'Amount to add',
         step: 1,
         showRings: false,
         format: (v) => LedgerFormat.money(v, showCents: false),
       ),
       'LedgerStepper 4': (context) => LedgerStepper(
         size: LedgerStepperSize.field,
-        label: 'Estimate (minutes)',
+        labelText: 'Estimate (minutes)',
         value: 45,
         min: 5,
         max: 480,
@@ -1379,7 +1382,9 @@ Future<void> _compiledOnly(BuildContext context) async {
   final act = await showLedgerActionSheet<String>(
     context,
     title: 'Receipt',
-    acts: const [LedgerSheetAct('Delete', value: 'delete', destructive: true)],
+    acts: const [
+      LedgerSheetAct('Delete', value: 'delete', isDestructiveAction: true),
+    ],
   );
   final ok = await LedgerDialog.show(
     context,

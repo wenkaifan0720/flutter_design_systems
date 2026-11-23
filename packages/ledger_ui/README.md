@@ -122,10 +122,10 @@ LedgerButton('Cancel', onPressed: () => Navigator.pop(context));
 Text fields and selects share the same labelled underline.
 
 ```dart
-LedgerTextField(label: 'Note', hint: 'What it is for', controller: note);
+LedgerTextField(labelText: 'Note', hintText: 'What it is for', controller: note);
 
 LedgerSelect<String>(
-  label: 'Currency',
+  labelText: 'Currency',
   value: currency,
   items: const [
     LedgerSelectItem(value: 'USD', label: 'US dollar'),

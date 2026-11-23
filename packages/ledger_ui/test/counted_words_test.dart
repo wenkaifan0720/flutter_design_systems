@@ -54,7 +54,7 @@ Future<void> _area(
   String typed,
 ) async {
   await t.pumpWidget(
-    _app(locale, LedgerTextArea(label: 'Memo', maxLength: maxLength)),
+    _app(locale, LedgerTextArea(labelText: 'Memo', maxLength: maxLength)),
   );
   await t.pumpAndSettle();
   await t.enterText(find.byType(EditableText), typed);

@@ -114,8 +114,8 @@ Widget _kitApp({required Brightness brightness, required Widget home}) =>
                 localizationsDelegates: galleryDelegates,
                 supportedLocales: RawWidgetsLocalizations.supportedLocales,
                 builder: (context, child) => LedgerHost(
-                  light: kitTheme(Brightness.light),
-                  dark: kitTheme(Brightness.dark),
+                  theme: kitTheme(Brightness.light),
+                  darkTheme: kitTheme(Brightness.dark),
                   brightness: brightness,
                   child: LedgerAccountScope(
                     account: kitMaren,
@@ -178,8 +178,8 @@ Widget kitRouterApp({
   title: 'Wren',
   routerConfig: router,
   builder: (context, child) => LedgerHost(
-    light: kitTheme(Brightness.light),
-    dark: kitTheme(Brightness.dark),
+    theme: kitTheme(Brightness.light),
+    darkTheme: kitTheme(Brightness.dark),
     brightness: brightness,
     child: LedgerAccountScope(
       account: kitMaren,
@@ -366,8 +366,8 @@ Widget kitSpecimenStage({
     localizationsDelegates: galleryDelegates,
     supportedLocales: RawWidgetsLocalizations.supportedLocales,
     builder: (context, home) => LedgerHost(
-      light: _atKitDensity(LedgerThemeData.preset(style, Brightness.light)),
-      dark: _atKitDensity(LedgerThemeData.preset(style, Brightness.dark)),
+      theme: _atKitDensity(LedgerThemeData.preset(style, Brightness.light)),
+      darkTheme: _atKitDensity(LedgerThemeData.preset(style, Brightness.dark)),
       brightness: brightness,
       child: LedgerAccountScope(
         account: kitMaren,

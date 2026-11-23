@@ -267,7 +267,7 @@ final DesignInventory ledgerInventory = DesignInventory(
           options: const ['Week', 'Month', 'Year'],
           labelOf: (o) => o,
           selected: v,
-          onChanged: set,
+          onSelectionChanged: set,
         ),
       ),
     ),
@@ -300,48 +300,49 @@ final DesignInventory ledgerInventory = DesignInventory(
     // Inputs
     DesignInventoryEntry.present(
       'TextField',
-      (_) => const LedgerTextField(label: 'Payee', hint: 'Who was paid'),
+      (_) =>
+          const LedgerTextField(labelText: 'Payee', hintText: 'Who was paid'),
     ),
     DesignInventoryEntry.present(
       'SearchField',
-      (_) => const LedgerSearchField(hint: 'Search entries'),
+      (_) => const LedgerSearchField(hintText: 'Search entries'),
     ),
     DesignInventoryEntry.present(
       'PasswordField',
       (_) => const LedgerPasswordField(
-        label: 'Password',
-        helper: 'At least 12 characters',
+        labelText: 'Password',
+        helperText: 'At least 12 characters',
       ),
     ),
     DesignInventoryEntry.present(
       'TextArea',
       (_) => const LedgerTextArea(
-        label: 'Memo',
-        hint: 'What it was for',
+        labelText: 'Memo',
+        hintText: 'What it was for',
         maxLength: 280,
       ),
     ),
     DesignInventoryEntry.present(
       'InputGroup',
       (_) => const LedgerInputGroup(
-        label: 'Shop address',
+        labelText: 'Shop address',
         before: 'https://',
         after: '.ledger.app',
-        hint: 'your-shop',
+        hintText: 'your-shop',
       ),
     ),
     DesignInventoryEntry.present(
       'InputOtp',
       (_) => const LedgerCodeField(
-        label: 'Code from your bank',
-        helper: 'Six figures, sent by text',
+        labelText: 'Code from your bank',
+        helperText: 'Six figures, sent by text',
       ),
     ),
     DesignInventoryEntry.present(
       'Combobox',
       (_) => const LedgerCombobox<String>(
-        label: 'Payee',
-        hint: 'Who was paid',
+        labelText: 'Payee',
+        hintText: 'Who was paid',
         options: _payees,
       ),
     ),
@@ -350,7 +351,7 @@ final DesignInventory ledgerInventory = DesignInventory(
       (_) => _Held<List<String>>(
         const ['Maren'],
         (context, v, set) => LedgerMultiSelect<String>(
-          label: 'Split with',
+          labelText: 'Split with',
           values: v,
           options: const ['Maren', 'Theo', 'Ana', 'Jun'],
           onChanged: set,
@@ -360,7 +361,7 @@ final DesignInventory ledgerInventory = DesignInventory(
     DesignInventoryEntry.present(
       'FileUpload',
       (_) => LedgerFileUpload(
-        label: 'Receipts',
+        labelText: 'Receipts',
         files: const [
           LedgerFile('Blue Fern Café.jpg', bytes: 182000),
           LedgerFile('October statement.pdf', bytes: 1240000, progress: .6),
@@ -376,7 +377,7 @@ final DesignInventory ledgerInventory = DesignInventory(
         (context, v, set) => LedgerDateRangePicker(
           firstDate: DateTime(2026),
           lastDate: DateTime(2027, 12, 31),
-          today: _day,
+          currentDate: _day,
           value: v,
           onChanged: set,
         ),
@@ -402,14 +403,15 @@ final DesignInventory ledgerInventory = DesignInventory(
       'StepProgress',
       (_) => const LedgerStepProgress(
         steps: ['Payee', 'Amount', 'Review'],
-        current: 1,
+        currentStep: 1,
       ),
     ),
     DesignInventoryEntry.present(
       'PageDots',
       (_) => _Held<int>(
         1,
-        (context, v, set) => LedgerPageDots(count: 4, index: v, onChanged: set),
+        (context, v, set) =>
+            LedgerPageDots(pageCount: 4, page: v, onChanged: set),
       ),
     ),
     DesignInventoryEntry.present(
@@ -528,7 +530,7 @@ final DesignInventory ledgerInventory = DesignInventory(
         message: 'Corner Market, Oct 27',
         acts: const [
           LedgerSheetAct('Download', value: 'download'),
-          LedgerSheetAct('Delete', value: 'delete', destructive: true),
+          LedgerSheetAct('Delete', value: 'delete', isDestructiveAction: true),
         ],
         onSelected: (_) {},
       ),
@@ -622,7 +624,7 @@ final DesignInventory ledgerInventory = DesignInventory(
         (context, value, set) => LedgerStepper(
           size: LedgerStepperSize.field,
           value: value,
-          label: 'Copies',
+          labelText: 'Copies',
           min: 1,
           max: 20,
           step: 1,
@@ -635,7 +637,7 @@ final DesignInventory ledgerInventory = DesignInventory(
       (_) => _Held<String>(
         'Everyday',
         (context, v, set) => LedgerSelect<String>(
-          label: 'Account',
+          labelText: 'Account',
           value: v,
           onChanged: set,
           items: const [
@@ -748,9 +750,9 @@ final DesignInventory ledgerInventory = DesignInventory(
       (_) => _Held<DateTime>(
         _day,
         (context, v, set) => LedgerDatePicker(
-          label: 'Day',
+          labelText: 'Day',
           value: v,
-          today: _day,
+          currentDate: _day,
           onChanged: set,
         ),
       ),
@@ -760,10 +762,10 @@ final DesignInventory ledgerInventory = DesignInventory(
       (_) => _Held<DateTime>(
         _day.add(const Duration(hours: 8, minutes: 12)),
         (context, v, set) => LedgerDatePicker(
-          label: 'Time',
+          labelText: 'Time',
           value: v,
           mode: LedgerDatePickerMode.time,
-          today: _day,
+          currentDate: _day,
           onChanged: set,
         ),
       ),
@@ -773,10 +775,10 @@ final DesignInventory ledgerInventory = DesignInventory(
       (_) => _Held<DateTime>(
         _day,
         (context, v, set) => LedgerDatePicker(
-          label: 'Day',
+          labelText: 'Day',
           value: v,
           presentation: LedgerDatePickerPresentation.inline,
-          today: _day,
+          currentDate: _day,
           onChanged: set,
         ),
       ),
@@ -786,10 +788,10 @@ final DesignInventory ledgerInventory = DesignInventory(
       (_) => _Held<DateTime>(
         _day,
         (context, v, set) => LedgerDatePicker(
-          label: 'Day',
+          labelText: 'Day',
           value: v,
           presentation: LedgerDatePickerPresentation.wheel,
-          today: _day,
+          currentDate: _day,
           onChanged: set,
         ),
       ),
@@ -802,10 +804,10 @@ final DesignInventory ledgerInventory = DesignInventory(
     DesignInventoryEntry.present(
       'FormField',
       (_) => const LedgerTextField(
-        label: 'Amount',
-        hint: '0.00',
-        helper: 'What was paid, in dollars',
-        error: 'Enter what was paid',
+        labelText: 'Amount',
+        hintText: '0.00',
+        helperText: 'What was paid, in dollars',
+        errorText: 'Enter what was paid',
         isRequired: true,
       ),
     ),

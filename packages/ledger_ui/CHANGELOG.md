@@ -1,3 +1,35 @@
+## 0.5.0
+
+- Needs ui_core 0.5.1.
+- Parameters take the names Flutter gives the same thing. A field's words are named as `InputDecoration` names them: `labelText`, `hintText`, `helperText` and `errorText`. Each parameter's field takes the new name too. `dart fix --apply` makes every rename below; `ledger_ui`'s `lib/fix_data.yaml` holds them.
+  - `light` → `theme`: `LedgerHost`, `LedgerPreview`
+  - `dark` → `darkTheme`: `LedgerHost`, `LedgerPreview`
+  - `activeIndex` → `selectedIndex`: `LedgerPreview`
+  - `dark` → `darkData`: `LedgerTheme`, `AnimatedLedgerTheme`
+  - `placeholder` → `hintText`: `LedgerTextInput`
+  - `placeholderStyle` → `hintStyle`: `LedgerTextInput`
+  - `destructive` → `isDestructiveAction`: `LedgerSheetAct`
+  - `label` → `labelText`: `LedgerDatePicker`, `LedgerCodeField`, `LedgerCombobox`, `LedgerFileUpload`, `LedgerInputGroup`, `LedgerField`, `LedgerChequeAmount`, `LedgerStepper`, `LedgerMultiSelect`, `LedgerPasswordField`, `LedgerSelect`, `LedgerTextArea`, `LedgerTextField`
+  - `today` → `currentDate`: `LedgerDatePicker`, `LedgerDateRangePicker`
+  - `helper` → `helperText`: `LedgerCodeField`, `LedgerCombobox`, `LedgerInputGroup`, `LedgerStepper`, `LedgerMultiSelect`, `LedgerPasswordField`, `LedgerSelect`, `LedgerTextArea`, `LedgerTextField`
+  - `error` → `errorText`: `LedgerCodeField`, `LedgerCombobox`, `LedgerInputGroup`, `LedgerStepper`, `LedgerMultiSelect`, `LedgerPasswordField`, `LedgerSelect`, `LedgerTextArea`, `LedgerTextField`
+  - `hint` → `hintText`: `LedgerCombobox`, `LedgerCommandPalette`, `LedgerComposer`, `LedgerFileUpload`, `LedgerInputGroup`, `LedgerSearchField`, `LedgerSearchEntry`, `LedgerField`, `LedgerMultiSelect`, `LedgerPasswordField`, `LedgerSelect`, `LedgerTextArea`, `LedgerTextField`
+  - `labelOf` → `displayStringForOption`: `LedgerCombobox`, `LedgerMultiSelect`
+  - `count` → `pageCount`: `LedgerPageDots`
+  - `index` → `page`: `LedgerPageDots`
+  - `current` → `currentStep`: `LedgerStepProgress`
+  - `multiple` → `multiSelectionEnabled`: `LedgerToggleGroup`
+  - `allowEmpty` → `emptySelectionAllowed`: `LedgerToggleGroup`
+  - `onChanged` → `onSelectionChanged`: `LedgerToggleGroup`
+- Removes the members deprecated since 0.2.0 and 0.4.1, which the package no longer used. No `dart fix` moves them; each deprecation named its replacement.
+  - `LedgerChromeMetrics.sheetCloseHang`, `emptyBodyTop`, `emptyBodyLine`, `emptyActTop` and `pressSink`.
+  - `LedgerHitSlop`: use ui_core's `DesignTapTarget(minSize: Size.square(target), child: child)`.
+- A multi-select's help and error are read on its field: its entry joins the field's node, with its name. A combobox's and a multi-select's entry says whether its list stands open (expanded or collapsed). The parts' `LedgerEntryOpen` carries it to a text field's entry.
+- A select opened from the keys focuses its chosen option as the option mounts, and the list keeps it in view, with no post-frame focus.
+- A field marked invalid with no words to say why (ui_core's `RawInputDecorator.invalid`) is ruled in the danger red, as one with an error is.
+- A pushed page's masthead on the desktop keeps its title under the crumb at a text scale under 1. The gap under the crumb gave up more than it had, a negative height that threw in debug builds.
+- Diagnostics name `displayStringForOption` and `onSelectionChanged` as the parameters are named.
+
 ## 0.4.1
 
 - Needs ui_core 0.4.1.

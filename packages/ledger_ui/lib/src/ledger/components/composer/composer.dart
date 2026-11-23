@@ -36,13 +36,13 @@ enum LedgerComposerStyle {
 /// name.
 ///
 /// ```dart
-/// LedgerComposer(controller: reply, hint: 'Write a reply', onAttachPressed: pick, onSubmitted: () => send(reply.text))
+/// LedgerComposer(controller: reply, hintText: 'Write a reply', onAttachPressed: pick, onSubmitted: () => send(reply.text))
 /// ```
 class LedgerComposer extends StatefulWidget {
   /// A message input that sends its words with [onSubmitted].
   const LedgerComposer({
     this.controller,
-    this.hint = 'Write a message',
+    this.hintText = 'Write a message',
     this.style = LedgerComposerStyle.messages,
     this.onSubmitted,
     this.onStopPressed,
@@ -61,7 +61,7 @@ class LedgerComposer extends StatefulWidget {
   final TextEditingController? controller;
 
   /// What stands in the field while it is empty.
-  final String hint;
+  final String hintText;
 
   /// How the composer sits.
   final LedgerComposerStyle style;
@@ -107,7 +107,7 @@ class LedgerComposer extends StatefulWidget {
           defaultValue: null,
         ),
       )
-      ..add(StringProperty('hint', hint))
+      ..add(StringProperty('hintText', hintText))
       ..add(EnumProperty<LedgerComposerStyle>('style', style))
       ..add(ObjectFlagProperty<VoidCallback>.has('onSubmitted', onSubmitted))
       ..add(
@@ -170,7 +170,7 @@ class _LedgerComposerState extends State<LedgerComposer> {
     final assistant = widget.style == LedgerComposerStyle.assistant;
     return Semantics(
       container: true,
-      label: widget.semanticLabel ?? widget.hint,
+      label: widget.semanticLabel ?? widget.hintText,
       child: ValueListenableBuilder<TextEditingValue>(
         valueListenable: _controller,
         builder: (context, value, _) {
@@ -188,9 +188,9 @@ class _LedgerComposerState extends State<LedgerComposer> {
           final words = value.text.trim().isNotEmpty;
           final field = LedgerTextInput(
             controller: _controller,
-            placeholder: widget.hint,
+            hintText: widget.hintText,
             style: t.body.colored(t.textPrimary),
-            placeholderStyle: t.body.colored(t.textTertiary),
+            hintStyle: t.body.colored(t.textTertiary),
             focusNode: widget.focusNode,
             autofocus: widget.autofocus,
             maxLines: assistant ? _assistantLines : _messageLines,

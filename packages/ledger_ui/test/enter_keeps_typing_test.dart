@@ -68,7 +68,7 @@ void main() {
     await _pump(
       t,
       LedgerCombobox<String>(
-        label: 'Payee',
+        labelText: 'Payee',
         options: const ['Corner Market', 'Cedar Books', 'City Water'],
         onSelected: taken.add,
       ),
@@ -86,7 +86,7 @@ void main() {
       t,
       StatefulBuilder(
         builder: (context, setState) => LedgerMultiSelect<String>(
-          label: 'Split with',
+          labelText: 'Split with',
           values: people,
           options: const ['Maren', 'Theo', 'Ana'],
           onChanged: (v) => setState(() => people = v),
@@ -134,7 +134,7 @@ void main() {
       t,
       LedgerComposer(
         controller: reply,
-        hint: 'Write a reply',
+        hintText: 'Write a reply',
         onSubmitted: () {
           sent.add(reply.text);
           reply.clear();
@@ -152,7 +152,10 @@ void main() {
     final sent = <String>[];
     await _pump(
       t,
-      LedgerComposer(hint: 'Write a reply', onSubmitted: () => sent.add('')),
+      LedgerComposer(
+        hintText: 'Write a reply',
+        onSubmitted: () => sent.add(''),
+      ),
     );
     await _typeAndEnter(t, '', action: TextInputAction.send);
     expect(sent, isEmpty);

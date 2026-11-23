@@ -20,7 +20,7 @@ class LedgerSheetAct<T> {
     this.label, {
     required this.value,
     this.icon,
-    this.destructive = false,
+    this.isDestructiveAction = false,
   });
 
   /// Its words.
@@ -33,7 +33,7 @@ class LedgerSheetAct<T> {
   final IconData? icon;
 
   /// Whether it cannot be taken back: set in the vermilion.
-  final bool destructive;
+  final bool isDestructiveAction;
 }
 
 /// The acts of an action sheet (what to do with a receipt: Replace the
@@ -93,7 +93,7 @@ class LedgerActionSheet<T> extends StatelessWidget {
             child: Builder(
               builder: (context) {
                 final hot = LedgerPressStates.isHot(context);
-                final ink = a.destructive ? t.danger : t.textPrimary;
+                final ink = a.isDestructiveAction ? t.danger : t.textPrimary;
                 return Container(
                   constraints: BoxConstraints(
                     minHeight: t.density.height(_line),
@@ -131,7 +131,7 @@ class LedgerActionSheet<T> extends StatelessWidget {
 /// value of the act chosen; null when it is cancelled or dismissed.
 ///
 /// ```dart
-/// final act = await showLedgerActionSheet<String>(context, title: 'Receipt', acts: const [LedgerSheetAct('Delete', value: 'delete', destructive: true)]);
+/// final act = await showLedgerActionSheet<String>(context, title: 'Receipt', acts: const [LedgerSheetAct('Delete', value: 'delete', isDestructiveAction: true)]);
 /// ```
 Future<T?> showLedgerActionSheet<T>(
   BuildContext context, {

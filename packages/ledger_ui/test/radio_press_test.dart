@@ -93,7 +93,7 @@ void main() {
                       options: span,
                       labelOf: (v) => v,
                       selected: {value},
-                      onChanged: (next) => pill.value = next.single,
+                      onSelectionChanged: (next) => pill.value = next.single,
                     ),
                   ),
                 ],

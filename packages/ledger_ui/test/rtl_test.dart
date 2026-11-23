@@ -138,7 +138,11 @@ void main() {
 
   testWidgets("a field: its label at the reading start; a sum typed after "
       "its sign reads left to right", (t) async {
-    const field = LedgerTextField(label: 'Amount', prefix: r'$', hint: '0.00');
+    const field = LedgerTextField(
+      labelText: 'Amount',
+      prefix: r'$',
+      hintText: '0.00',
+    );
     Future<(Rect, Rect, Rect, Rect)> parts(TextDirection direction) async {
       await _pump(t, field, direction: direction);
       return (
@@ -195,7 +199,7 @@ void main() {
       t,
       LedgerStepper(
         value: 250,
-        label: 'Monthly budget',
+        labelText: 'Monthly budget',
         format: _dollars,
         onChanged: (_) {},
       ),

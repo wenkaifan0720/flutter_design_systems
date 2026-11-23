@@ -71,7 +71,7 @@ final List<_List> _lists = [
   (
     'a select',
     LedgerSelect<String>(
-      label: 'Currency',
+      labelText: 'Currency',
       value: 'USD',
       items: const [
         LedgerSelectItem(value: 'USD', label: 'US dollar'),
@@ -95,7 +95,7 @@ final List<_List> _lists = [
   (
     'a combobox',
     LedgerCombobox<String>(
-      label: 'Payee',
+      labelText: 'Payee',
       value: 'Cedar Books',
       options: const ['Corner Market', 'Cedar Books', 'Blue Fern Café'],
       onSelected: (_) {},

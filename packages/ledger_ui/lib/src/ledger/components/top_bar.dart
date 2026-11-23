@@ -725,15 +725,20 @@ class LedgerTopBar extends StatelessWidget {
         if (words != null) ...[
           SizedBox(
             height: meta != null || crumb != null
-                ? (heading != null
-                          // `.monthbar`: 10 under the desktop's meta (or
-                          // its crumb), none on a phone.
-                          ? (wide || crumb != null ? _headingGapWide : 0)
-                          : wide || crumb != null
-                          ? LedgerChromeMetrics.titleGapWide
-                          : LedgerChromeMetrics.titleGap) -
-                      // What the crumb's reach took of the gap.
-                      (crumb == null ? 0 : reach - eyebrow)
+                ? math.max(
+                    0.0,
+                    (heading != null
+                            // `.monthbar`: 10 under the desktop's meta (or
+                            // its crumb), none on a phone.
+                            ? (wide || crumb != null ? _headingGapWide : 0)
+                            : wide || crumb != null
+                            ? LedgerChromeMetrics.titleGapWide
+                            : LedgerChromeMetrics.titleGap) -
+                        // What the crumb's reach took of the gap, and no
+                        // more than the gap: under a small text scale the
+                        // meta's line is shorter than the reach.
+                        (crumb == null ? 0 : reach - eyebrow),
+                  )
                 : 0,
           ),
           words,

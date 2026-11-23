@@ -15,42 +15,43 @@ import '../../theme.dart';
 /// come ringed in the light rule round theirs; the rule inked up to the
 /// step at hand. Each step's name in the mono capitals under its mark (the
 /// one at hand in the ink). A screen reader hears it as one line: "Step 2
-/// of 3, Amount". The marks move in Ledger's one motion as [current]
+/// of 3, Amount". The marks move in Ledger's one motion as [currentStep]
 /// changes. On a phone with more steps than fit, the names under the marks
 /// give way to the step at hand's name alone.
 ///
 /// ```dart
-/// LedgerStepProgress(steps: const ['Payee', 'Amount', 'Review'], current: 1)
+/// LedgerStepProgress(steps: const ['Payee', 'Amount', 'Review'], currentStep: 1)
 /// ```
 class LedgerStepProgress extends StatelessWidget {
-  /// [steps], [current] the one at hand (from 0).
+  /// [steps], [currentStep] the one at hand (from 0).
   const LedgerStepProgress({
     required this.steps,
-    required this.current,
+    required this.currentStep,
     super.key,
-  }) : assert(current >= 0);
+  }) : assert(currentStep >= 0);
 
   /// The steps' names.
   final List<String> steps;
 
   /// The step at hand, from 0.
-  final int current;
+  final int currentStep;
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
       ..add(IterableProperty<String>('steps', steps))
-      ..add(IntProperty('current', current));
+      ..add(IntProperty('currentStep', currentStep));
   }
 
   @override
   Widget build(BuildContext context) {
-    assert(steps.length > 1 && current < steps.length);
+    assert(steps.length > 1 && currentStep < steps.length);
     final t = context.ledgerTheme;
     return Semantics(
       container: true,
-      label: 'Step ${current + 1} of ${steps.length}, ${steps[current]}',
+      label:
+          'Step ${currentStep + 1} of ${steps.length}, ${steps[currentStep]}',
       excludeSemantics: true,
       child: LayoutBuilder(
         builder: (context, box) {
@@ -79,7 +80,7 @@ class LedgerStepProgress extends StatelessWidget {
                       height: 2,
                       width: (box.maxWidth - each),
                       child: LedgerEase(
-                        value: current / (steps.length - 1),
+                        value: currentStep / (steps.length - 1),
                         builder: (context, at, _) => FractionallySizedBox(
                           alignment: AlignmentDirectional.centerStart,
                           widthFactor: at.clamp(0.0, 1.0),
@@ -92,7 +93,7 @@ class LedgerStepProgress extends StatelessWidget {
                         for (var i = 0; i < steps.length; i++)
                           Expanded(
                             child: Center(
-                              child: _Mark(n: i + 1, at: i - current),
+                              child: _Mark(n: i + 1, at: i - currentStep),
                             ),
                           ),
                       ],
@@ -109,11 +110,11 @@ class LedgerStepProgress extends StatelessWidget {
                         child: Text(
                           steps[i].toUpperCase(),
                           textAlign: TextAlign.center,
-                          style: (i == current ? t.meta.medium : t.meta)
+                          style: (i == currentStep ? t.meta.medium : t.meta)
                               .colored(
-                                i == current
+                                i == currentStep
                                     ? t.textPrimary
-                                    : i < current
+                                    : i < currentStep
                                     ? t.textSecondary
                                     : t.textTertiary,
                               ),
@@ -123,7 +124,7 @@ class LedgerStepProgress extends StatelessWidget {
                 )
               else
                 Text(
-                  '${LedgerFormat.isolated('${current + 1} / ${steps.length}')} · ${steps[current]}'
+                  '${LedgerFormat.isolated('${currentStep + 1} / ${steps.length}')} · ${steps[currentStep]}'
                       .toUpperCase(),
                   textAlign: TextAlign.center,
                   style: t.meta.medium.colored(t.textPrimary),

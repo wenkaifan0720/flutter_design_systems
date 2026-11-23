@@ -29,7 +29,7 @@ Future<void> _pump(WidgetTester t, {String? value = 'EUR'}) async {
       home: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: LedgerSelect<String>(
-          label: 'Currency',
+          labelText: 'Currency',
           value: value,
           items: _options,
           onChanged: (v) => _chose = v,

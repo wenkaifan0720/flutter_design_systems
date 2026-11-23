@@ -78,8 +78,8 @@ Widget _phone(Brightness brightness, double height, Widget screen) => Align(
       width: 390,
       height: height,
       child: LedgerPreview(
-        light: kitTheme(Brightness.light),
-        dark: kitTheme(Brightness.dark),
+        theme: kitTheme(Brightness.light),
+        darkTheme: kitTheme(Brightness.dark),
         brightness: brightness,
         child: LedgerAccountScope(account: kitMaren, child: screen),
       ),

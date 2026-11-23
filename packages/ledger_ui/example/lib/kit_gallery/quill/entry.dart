@@ -236,21 +236,21 @@ class _QuillEntryPageState extends State<QuillEntryPage> {
         _pair(
           paired,
           LedgerTextField(
-            label: context.say('Amount'),
+            labelText: context.say('Amount'),
             prefix: r'$',
-            hint: '0.00',
+            hintText: '0.00',
             controller: _amount,
             isRequired: true,
-            error: _amountError == null ? null : context.say(_amountError!),
+            errorText: _amountError == null ? null : context.say(_amountError!),
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
             textInputAction: TextInputAction.next,
           ),
           LedgerTextField(
-            label: context.say('Payee'),
-            hint: context.say('Who was paid'),
+            labelText: context.say('Payee'),
+            hintText: context.say('Who was paid'),
             controller: _payee,
             isRequired: true,
-            error: _payeeError == null ? null : context.say(_payeeError!),
+            errorText: _payeeError == null ? null : context.say(_payeeError!),
             textCapitalization: TextCapitalization.words,
             textInputAction: TextInputAction.next,
           ),
@@ -259,19 +259,21 @@ class _QuillEntryPageState extends State<QuillEntryPage> {
         _pair(
           paired,
           LedgerSelect<String>(
-            label: context.say('Category'),
-            hint: context.say('Choose one'),
+            labelText: context.say('Category'),
+            hintText: context.say('Choose one'),
             value: _category,
             items: _said(_categories),
             isRequired: true,
-            error: _categoryError == null ? null : context.say(_categoryError!),
+            errorText: _categoryError == null
+                ? null
+                : context.say(_categoryError!),
             onChanged: (v) => setState(() {
               _category = v;
               _categoryError = null;
             }),
           ),
           LedgerSelect<String>(
-            label: context.say('Account'),
+            labelText: context.say('Account'),
             value: _account,
             items: _said(_accounts),
             onChanged: (v) => setState(() => _account = v),
@@ -281,13 +283,13 @@ class _QuillEntryPageState extends State<QuillEntryPage> {
         _pair(
           paired,
           LedgerSelect<String>(
-            label: context.say('Day'),
+            labelText: context.say('Day'),
             value: _day,
             items: _said(_days),
             onChanged: (v) => setState(() => _day = v),
           ),
           LedgerSelect<String>(
-            label: context.say('Repeat'),
+            labelText: context.say('Repeat'),
             value: _repeat,
             items: _said(_repeats),
             onChanged: (v) => setState(() => _repeat = v),
@@ -295,8 +297,8 @@ class _QuillEntryPageState extends State<QuillEntryPage> {
         ),
         _fieldGap,
         LedgerTextField(
-          label: context.say('Note'),
-          hint: context.say('What it was for'),
+          labelText: context.say('Note'),
+          hintText: context.say('What it was for'),
           controller: _note,
           maxLines: 4,
           minLines: 2,

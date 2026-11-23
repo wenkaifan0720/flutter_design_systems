@@ -1613,7 +1613,7 @@ void main() {
               mask: '··9015',
             ),
             LedgerChequeAmount(
-              label: 'Amount',
+              labelText: 'Amount',
               words: 'Five hundred and 00/100',
               unit: 'dollars',
               amount: 500,

@@ -215,7 +215,7 @@ void main() {
               child: SizedBox(
                 width: 320,
                 child: LedgerCombobox<String>(
-                  label: 'Payee',
+                  labelText: 'Payee',
                   search: (query) async {
                     calls++;
                     if (failing) throw StateError('offline');
@@ -254,7 +254,7 @@ void main() {
           child: Center(
             child: StatefulBuilder(
               builder: (context, set) => LedgerDatePicker(
-                label: 'Due',
+                labelText: 'Due',
                 value: value,
                 mode: LedgerDatePickerMode.time,
                 presentation: LedgerDatePickerPresentation.wheel,

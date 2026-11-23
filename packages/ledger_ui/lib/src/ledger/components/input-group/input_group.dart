@@ -22,15 +22,15 @@ import '../text-field/text_field.dart';
 /// help or error, its focus rule as every Ledger field's.
 ///
 /// ```dart
-/// LedgerInputGroup(label: 'Shop address', before: 'https://', after: '.ledger.app', hint: 'your-shop')
+/// LedgerInputGroup(labelText: 'Shop address', before: 'https://', after: '.ledger.app', hintText: 'your-shop')
 /// ```
 class LedgerInputGroup extends StatefulWidget {
-  /// A field named [label] between its add-ons.
+  /// A field named [labelText] between its add-ons.
   const LedgerInputGroup({
-    this.label,
-    this.hint,
-    this.helper,
-    this.error,
+    this.labelText,
+    this.hintText,
+    this.helperText,
+    this.errorText,
     this.before,
     this.after,
     this.action,
@@ -45,16 +45,16 @@ class LedgerInputGroup extends StatefulWidget {
   });
 
   /// The small capitals over the line.
-  final String? label;
+  final String? labelText;
 
   /// Words in the third ink while it is empty.
-  final String? hint;
+  final String? hintText;
 
   /// The note under the rule.
-  final String? helper;
+  final String? helperText;
 
-  /// What is wrong, in the vermilion; it replaces [helper].
-  final String? error;
+  /// What is wrong, in the vermilion; it replaces [helperText].
+  final String? errorText;
 
   /// The add-on before the words.
   final String? before;
@@ -90,10 +90,10 @@ class LedgerInputGroup extends StatefulWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('label', label, defaultValue: null))
-      ..add(StringProperty('hint', hint, defaultValue: null))
-      ..add(StringProperty('helper', helper, defaultValue: null))
-      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
+      ..add(StringProperty('helperText', helperText, defaultValue: null))
+      ..add(StringProperty('errorText', errorText, defaultValue: null))
       ..add(StringProperty('before', before, defaultValue: null))
       ..add(StringProperty('after', after, defaultValue: null))
       ..add(
@@ -156,7 +156,7 @@ class _LedgerInputGroupState extends State<LedgerInputGroup> {
     final enabled = widget.enabled;
     final words = LedgerTextField.wordsOf(t);
     final height = LedgerTextField.heightOf(t);
-    final hint = widget.hint;
+    final hint = widget.hintText;
     final box = DesignTextEntryBox(
       minHeight: height,
       controller: hint == null ? null : _controller,
@@ -209,7 +209,7 @@ class _LedgerInputGroupState extends State<LedgerInputGroup> {
     final group = DesignInputGroup(
       focusNode: _focus,
       enabled: enabled,
-      isError: widget.error != null,
+      isError: widget.errorText != null,
       builder: (context, states, field) => LedgerFace(
         style: LedgerFaceStyle(
           ink: !enabled
@@ -252,9 +252,9 @@ class _LedgerInputGroupState extends State<LedgerInputGroup> {
       child: typed,
     );
     return RawInputDecorator(
-      labelText: widget.label,
-      helperText: widget.helper,
-      errorText: widget.error,
+      labelText: widget.labelText,
+      helperText: widget.helperText,
+      errorText: widget.errorText,
       required: widget.isRequired,
       enabled: enabled,
       focusNode: _focus,

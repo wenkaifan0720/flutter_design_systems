@@ -33,9 +33,9 @@ class _SplitState extends State<_Split> {
 
   @override
   Widget build(BuildContext context) => LedgerMultiSelect<String>(
-    label: 'Split with',
-    hint: 'Add a person',
-    helper: 'Each pays an even share',
+    labelText: 'Split with',
+    hintText: 'Add a person',
+    helperText: 'Each pays an even share',
     values: _with,
     options: _people,
     onCreate: (text) => text.trim().isEmpty ? null : text.trim(),
@@ -56,9 +56,9 @@ class _PayeeState extends State<_Payee> {
 
   @override
   Widget build(BuildContext context) => LedgerCombobox<String>(
-    label: 'Payee',
-    hint: 'Who was paid',
-    helper: 'From the payees you have paid before',
+    labelText: 'Payee',
+    hintText: 'Who was paid',
+    helperText: 'From the payees you have paid before',
     options: _payees,
     value: _payee,
     noteOf: (p) => p == 'Blue Fern Café' ? '12 visits' : null,
@@ -109,7 +109,7 @@ class _PeriodState extends State<_Period> {
   Widget build(BuildContext context) => LedgerDateRangePicker(
     firstDate: DateTime(2026),
     lastDate: DateTime(2027, 12, 31),
-    today: DateTime(2026, 10, 28),
+    currentDate: DateTime(2026, 10, 28),
     value: _period,
     months: LedgerLayout.isWide(context) ? 2 : 1,
     onChanged: (r) => setState(() => _period = r),
@@ -137,7 +137,7 @@ class _ReceiptsState extends State<_Receipts> {
 
   @override
   Widget build(BuildContext context) => LedgerFileUpload(
-    label: 'Receipts',
+    labelText: 'Receipts',
     files: _files,
     onPick: () {},
     onRemove: (f) => setState(
@@ -157,30 +157,30 @@ Widget kitFieldsDemo(Brightness brightness) => kitScreen(
       'Password',
       children: const [
         LedgerPasswordField(
-          label: 'Password',
-          helper: 'At least 12 characters',
+          labelText: 'Password',
+          helperText: 'At least 12 characters',
           isRequired: true,
         ),
         LedgerPasswordField(
-          label: 'Current password',
-          error: 'That is not the password on the account',
+          labelText: 'Current password',
+          errorText: 'That is not the password on the account',
         ),
-        LedgerPasswordField(label: 'Locked', enabled: false),
+        LedgerPasswordField(labelText: 'Locked', enabled: false),
       ],
     ),
     kitSection(
       'Memo, on ruled paper',
       children: const [
         LedgerTextArea(
-          label: 'Memo',
-          hint: 'What it was for',
-          helper: 'Only you see it',
+          labelText: 'Memo',
+          hintText: 'What it was for',
+          helperText: 'Only you see it',
           maxLength: 280,
         ),
         LedgerTextArea(
-          label: 'Note to the budget',
+          labelText: 'Note to the budget',
           minLines: 3,
-          error: 'Write a line or leave it empty',
+          errorText: 'Write a line or leave it empty',
         ),
       ],
     ),
@@ -188,22 +188,22 @@ Widget kitFieldsDemo(Brightness brightness) => kitScreen(
       'With add-ons',
       children: [
         const LedgerInputGroup(
-          label: 'Shop address',
+          labelText: 'Shop address',
           before: 'https://',
           after: '.ledger.app',
-          hint: 'your-shop',
-          helper: 'Where your receipts link to',
+          hintText: 'your-shop',
+          helperText: 'Where your receipts link to',
         ),
         const LedgerInputGroup(
-          label: 'Weight of the parcel',
+          labelText: 'Weight of the parcel',
           after: 'kg',
-          hint: '0.0',
+          hintText: '0.0',
           keyboardType: TextInputType.numberWithOptions(decimal: true),
         ),
         LedgerInputGroup(
-          label: 'Account number',
+          labelText: 'Account number',
           before: 'IBAN',
-          hint: 'GB00 0000 0000',
+          hintText: 'GB00 0000 0000',
           action: LedgerIconButton(
             LucideIcons.copy,
             semanticLabel: 'Copy the account number',
@@ -213,9 +213,9 @@ Widget kitFieldsDemo(Brightness brightness) => kitScreen(
           ),
         ),
         const LedgerInputGroup(
-          label: 'Held',
+          labelText: 'Held',
           before: 'https://',
-          hint: 'your-shop',
+          hintText: 'your-shop',
           enabled: false,
         ),
       ],
@@ -224,14 +224,18 @@ Widget kitFieldsDemo(Brightness brightness) => kitScreen(
       'Codes',
       children: [
         LedgerCodeField(
-          label: 'Code from your bank',
-          helper: 'Six figures, sent by text',
+          labelText: 'Code from your bank',
+          helperText: 'Six figures, sent by text',
           onCompleted: (_) {},
         ),
-        const LedgerCodeField(label: 'Card PIN', length: 4, obscureText: true),
         const LedgerCodeField(
-          label: 'Code from your bank',
-          error: 'That code has run out; ask for another',
+          labelText: 'Card PIN',
+          length: 4,
+          obscureText: true,
+        ),
+        const LedgerCodeField(
+          labelText: 'Code from your bank',
+          errorText: 'That code has run out; ask for another',
         ),
       ],
     ),
@@ -241,7 +245,7 @@ Widget kitFieldsDemo(Brightness brightness) => kitScreen(
         const _Payee(),
         const _Split(),
         const LedgerMultiSelect<String>(
-          label: 'Held',
+          labelText: 'Held',
           values: ['Maren'],
           onChanged: _ignore,
           enabled: false,
@@ -252,7 +256,7 @@ Widget kitFieldsDemo(Brightness brightness) => kitScreen(
       'Attachments',
       children: const [
         _Receipts(),
-        LedgerFileUpload(label: 'Held', onPick: null),
+        LedgerFileUpload(labelText: 'Held', onPick: null),
       ],
     ),
     kitSection('A period', children: const [_Period()]),

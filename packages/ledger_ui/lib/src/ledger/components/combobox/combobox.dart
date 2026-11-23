@@ -9,6 +9,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../internal/option_paper.dart';
 import '../../theme.dart';
+import '../../internal/entry_open.dart';
 import '../text-field/text_field.dart';
 
 /// A payee, a category or a shop typed in and taken from what it suggests:
@@ -18,7 +19,7 @@ import '../text-field/text_field.dart';
 /// its words semibold and ticked in the accent. A pointer underlines a
 /// line's words and the keyboard's line doubles the rule under them, on
 /// that line alone. Up and down walk the list, Enter takes the line,
-/// Escape closes it; with nothing matching the paper says so. [labelOf]
+/// Escape closes it; with nothing matching the paper says so. [displayStringForOption]
 /// words each option (its `toString` otherwise) and [noteOf] puts a note
 /// at its end (a count, a balance). [requireSelection] holds the field to
 /// an option, giving back the chosen words on blur. With a [search] in
@@ -28,20 +29,20 @@ import '../text-field/text_field.dart';
 /// it; [debounceDuration] waits for the typing to rest.
 ///
 /// ```dart
-/// LedgerCombobox<String>(label: 'Payee', options: const ['Blue Fern Café', 'Corner Market'], onSelected: (v) {})
+/// LedgerCombobox<String>(labelText: 'Payee', options: const ['Blue Fern Café', 'Corner Market'], onSelected: (v) {})
 /// ```
 class LedgerCombobox<T extends Object> extends StatelessWidget {
-  /// A field named [label] suggesting from [options].
+  /// A field named [labelText] suggesting from [options].
   const LedgerCombobox({
     this.options = const [],
     this.search,
     this.debounceDuration,
-    this.label,
-    this.hint,
-    this.helper,
-    this.error,
+    this.labelText,
+    this.hintText,
+    this.helperText,
+    this.errorText,
     this.value,
-    this.labelOf,
+    this.displayStringForOption,
     this.noteOf,
     this.onSelected,
     this.requireSelection = false,
@@ -62,22 +63,22 @@ class LedgerCombobox<T extends Object> extends StatelessWidget {
   final Duration? debounceDuration;
 
   /// The small capitals over the line.
-  final String? label;
+  final String? labelText;
 
   /// Words in the third ink while it is empty.
-  final String? hint;
+  final String? hintText;
 
   /// The note under the rule.
-  final String? helper;
+  final String? helperText;
 
-  /// What is wrong, in the vermilion; it replaces [helper].
-  final String? error;
+  /// What is wrong, in the vermilion; it replaces [helperText].
+  final String? errorText;
 
   /// The option taken, ticked on the paper.
   final T? value;
 
   /// Each option's words; null: its `toString`.
-  final String Function(T option)? labelOf;
+  final String Function(T option)? displayStringForOption;
 
   /// A note at an option's end, in the mono; null: none.
   final String? Function(T option)? noteOf;
@@ -97,12 +98,18 @@ class LedgerCombobox<T extends Object> extends StatelessWidget {
   /// Whether it takes words.
   final bool enabled;
 
-  String _words(T option) => labelOf?.call(option) ?? option.toString();
+  String _words(T option) =>
+      displayStringForOption?.call(option) ?? option.toString();
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
-    properties.add(ObjectFlagProperty<Object?>.has('labelOf', labelOf));
+    properties.add(
+      ObjectFlagProperty<Object?>.has(
+        'displayStringForOption',
+        displayStringForOption,
+      ),
+    );
     properties.add(ObjectFlagProperty<Object?>.has('noteOf', noteOf));
     properties
       ..add(IterableProperty<T>('options', options))
@@ -114,10 +121,10 @@ class LedgerCombobox<T extends Object> extends StatelessWidget {
           defaultValue: null,
         ),
       )
-      ..add(StringProperty('label', label, defaultValue: null))
-      ..add(StringProperty('hint', hint, defaultValue: null))
-      ..add(StringProperty('helper', helper, defaultValue: null))
-      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
+      ..add(StringProperty('helperText', helperText, defaultValue: null))
+      ..add(StringProperty('errorText', errorText, defaultValue: null))
       ..add(DiagnosticsProperty<T>('value', value, defaultValue: null))
       ..add(ObjectFlagProperty<ValueChanged<T>>.has('onSelected', onSelected))
       ..add(
@@ -161,25 +168,30 @@ class LedgerCombobox<T extends Object> extends StatelessWidget {
       requireSelection: requireSelection,
       controller: controller,
       focusNode: focusNode,
-      semanticLabel: label,
+      semanticLabel: labelText,
       optionsMaxHeight: _paper,
-      fieldBuilder: (context, field) => LedgerTextField(
-        controller: field.controller,
-        focusNode: field.focusNode,
-        label: label,
-        hint: hint,
-        helper: helper,
-        error: error,
-        enabled: enabled,
-        // Enter takes the lit option and the field keeps the focus: in
-        // onEditingComplete, never onSubmitted, whose submit restarts the text input of a field that
-        // keeps the focus (a browser's then takes no typing).
-        onEditingComplete: field.submit,
-        trailing: ExcludeSemantics(
-          child: Icon(
-            LucideIcons.chevronsUpDown,
-            size: _glyph,
-            color: enabled ? t.textSecondary : t.textTertiary,
+      // The entry says whether its list stands open. Its sign (the two
+      // chevrons, up and down) stands the same either way.
+      fieldBuilder: (context, field) => LedgerEntryOpen(
+        open: field.isOpen,
+        child: LedgerTextField(
+          controller: field.controller,
+          focusNode: field.focusNode,
+          labelText: labelText,
+          hintText: hintText,
+          helperText: helperText,
+          errorText: errorText,
+          enabled: enabled,
+          // Enter takes the lit option and the field keeps the focus: in
+          // onEditingComplete, never onSubmitted, whose submit restarts the text input of a field that
+          // keeps the focus (a browser's then takes no typing).
+          onEditingComplete: field.submit,
+          trailing: ExcludeSemantics(
+            child: Icon(
+              LucideIcons.chevronsUpDown,
+              size: _glyph,
+              color: enabled ? t.textSecondary : t.textTertiary,
+            ),
           ),
         ),
       ),

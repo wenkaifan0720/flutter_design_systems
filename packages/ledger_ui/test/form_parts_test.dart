@@ -272,7 +272,7 @@ void main() {
         t,
         LedgerChequeAmount(
           key: const ValueKey('amount'),
-          label: 'Amount',
+          labelText: 'Amount',
           words: _transferWords,
           unit: 'dollars',
           controller: sum,
@@ -295,7 +295,7 @@ void main() {
       await _everywhere(
         t,
         const LedgerChequeAmount(
-          label: 'Amount',
+          labelText: 'Amount',
           words: _transferWords,
           unit: 'dollars',
           amount: _transferAmount,
@@ -497,7 +497,7 @@ void main() {
             ),
             LedgerSearchField(
               controller: words,
-              hint: 'Search merchants and categories',
+              hintText: 'Search merchants and categories',
               onCleared: () => cleared++,
               clearKey: const ValueKey('clear'),
             ),
@@ -654,13 +654,13 @@ void main() {
           children: [
             LedgerField(
               key: ValueKey('off'),
-              label: 'Note',
+              labelText: 'Note',
               value: _transferNote,
             ),
             LedgerOnCheque(
               child: LedgerField(
                 key: ValueKey('on'),
-                label: 'Memo',
+                labelText: 'Memo',
                 value: _transferNote,
               ),
             ),
@@ -708,14 +708,14 @@ void main() {
             LedgerStepper(
               key: const ValueKey('rings'),
               value: 250,
-              label: 'Monthly budget',
+              labelText: 'Monthly budget',
               format: _dollars,
               onChanged: (_) {},
             ),
             LedgerStepper(
               key: const ValueKey('alone'),
               value: 110,
-              label: 'Amount to add',
+              labelText: 'Amount to add',
               format: _dollars,
               showRings: false,
               onChanged: (_) {},

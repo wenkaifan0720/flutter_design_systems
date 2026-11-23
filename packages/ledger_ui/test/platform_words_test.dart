@@ -26,7 +26,7 @@ Widget _app(Locale locale, TextDirection direction, {bool design = true}) =>
               pageBuilder: (_, _, _) => const Center(
                 child: SizedBox(
                   width: 340,
-                  child: LedgerTextField(label: 'Name'),
+                  child: LedgerTextField(labelText: 'Name'),
                 ),
               ),
             ),

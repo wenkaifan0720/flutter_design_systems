@@ -1,0 +1,190 @@
+// Each name ledger_ui 0.5.0 renamed, used once; dart fix renames it (ledger_ui.dart.expect).
+import 'package:ledger_ui/ledger_parts.dart';
+
+dynamic d;
+
+void constructors() {
+  LedgerHost(child: d, theme: d, darkTheme: d);
+  LedgerPreview(child: d, theme: d, darkTheme: d, selectedIndex: d);
+  LedgerTheme(data: d, child: d, darkData: d);
+  AnimatedLedgerTheme(data: d, child: d, darkData: d);
+  LedgerTextInput(style: d, hintStyle: d, hintText: d);
+  LedgerSheetAct<Object>(d, value: d, isDestructiveAction: d);
+  LedgerDatePicker(value: d, onChanged: d, labelText: d, currentDate: d);
+  LedgerDateRangePicker(firstDate: d, lastDate: d, onChanged: d, currentDate: d);
+  LedgerCodeField(labelText: d, helperText: d, errorText: d);
+  LedgerCombobox<Object>(labelText: d, hintText: d, helperText: d, errorText: d, displayStringForOption: d);
+  LedgerCommandPalette(commands: d, hintText: d);
+  LedgerComposer(hintText: d);
+  LedgerFileUpload(onPick: d, labelText: d, hintText: d);
+  LedgerInputGroup(labelText: d, hintText: d, helperText: d, errorText: d);
+  LedgerSearchField(hintText: d);
+  LedgerSearchEntry(onTap: d, hintText: d);
+  LedgerField(labelText: d, hintText: d);
+  LedgerChequeAmount(labelText: d, words: d, unit: d);
+  LedgerStepper(value: d, labelText: d, helperText: d, errorText: d);
+  LedgerMultiSelect<Object>(
+    values: d,
+    onChanged: d,
+    labelText: d,
+    hintText: d,
+    helperText: d,
+    errorText: d,
+    displayStringForOption: d,
+  );
+  LedgerPageDots(pageCount: d, page: d);
+  LedgerPasswordField(labelText: d, hintText: d, helperText: d, errorText: d);
+  LedgerSelect<Object>(
+    items: d,
+    value: d,
+    onChanged: d,
+    labelText: d,
+    hintText: d,
+    helperText: d,
+    errorText: d,
+  );
+  LedgerStepProgress(steps: d, currentStep: d);
+  LedgerTextArea(labelText: d, hintText: d, helperText: d, errorText: d);
+  LedgerTextField(labelText: d, hintText: d, helperText: d, errorText: d);
+  LedgerToggleGroup<Object>(
+    options: d,
+    selected: d,
+    label: d,
+    labelOf: d,
+    onSelectionChanged: d,
+    multiSelectionEnabled: d,
+    emptySelectionAllowed: d,
+  );
+}
+
+void fields(
+  LedgerHost a0,
+  LedgerHost a1,
+  LedgerPreview a2,
+  LedgerPreview a3,
+  LedgerPreview a4,
+  LedgerTheme a5,
+  AnimatedLedgerTheme a6,
+  LedgerTextInput a7,
+  LedgerTextInput a8,
+  LedgerSheetAct<Object> a9,
+  LedgerDatePicker a10,
+  LedgerDatePicker a11,
+  LedgerDateRangePicker a12,
+  LedgerCodeField a13,
+  LedgerCodeField a14,
+  LedgerCodeField a15,
+  LedgerCombobox<Object> a16,
+  LedgerCombobox<Object> a17,
+  LedgerCombobox<Object> a18,
+  LedgerCombobox<Object> a19,
+  LedgerCombobox<Object> a20,
+  LedgerCommandPalette a21,
+  LedgerComposer a22,
+  LedgerFileUpload a23,
+  LedgerFileUpload a24,
+  LedgerInputGroup a25,
+  LedgerInputGroup a26,
+  LedgerInputGroup a27,
+  LedgerInputGroup a28,
+  LedgerSearchField a29,
+  LedgerSearchEntry a30,
+  LedgerField a31,
+  LedgerField a32,
+  LedgerChequeAmount a33,
+  LedgerStepper a34,
+  LedgerStepper a35,
+  LedgerStepper a36,
+  LedgerMultiSelect<Object> a37,
+  LedgerMultiSelect<Object> a38,
+  LedgerMultiSelect<Object> a39,
+  LedgerMultiSelect<Object> a40,
+  LedgerMultiSelect<Object> a41,
+  LedgerPageDots a42,
+  LedgerPageDots a43,
+  LedgerPasswordField a44,
+  LedgerPasswordField a45,
+  LedgerPasswordField a46,
+  LedgerPasswordField a47,
+  LedgerSelect<Object> a48,
+  LedgerSelect<Object> a49,
+  LedgerSelect<Object> a50,
+  LedgerSelect<Object> a51,
+  LedgerStepProgress a52,
+  LedgerTextArea a53,
+  LedgerTextArea a54,
+  LedgerTextArea a55,
+  LedgerTextArea a56,
+  LedgerTextField a57,
+  LedgerTextField a58,
+  LedgerTextField a59,
+  LedgerTextField a60,
+  LedgerToggleGroup<Object> a61,
+  LedgerToggleGroup<Object> a62,
+  LedgerToggleGroup<Object> a63,
+) {
+  a0.theme;
+  a1.darkTheme;
+  a2.theme;
+  a3.darkTheme;
+  a4.selectedIndex;
+  a5.darkData;
+  a6.darkData;
+  a7.hintText;
+  a8.hintStyle;
+  a9.isDestructiveAction;
+  a10.labelText;
+  a11.currentDate;
+  a12.currentDate;
+  a13.labelText;
+  a14.helperText;
+  a15.errorText;
+  a16.labelText;
+  a17.hintText;
+  a18.helperText;
+  a19.errorText;
+  a20.displayStringForOption;
+  a21.hintText;
+  a22.hintText;
+  a23.labelText;
+  a24.hintText;
+  a25.labelText;
+  a26.hintText;
+  a27.helperText;
+  a28.errorText;
+  a29.hintText;
+  a30.hintText;
+  a31.labelText;
+  a32.hintText;
+  a33.labelText;
+  a34.labelText;
+  a35.helperText;
+  a36.errorText;
+  a37.labelText;
+  a38.hintText;
+  a39.helperText;
+  a40.errorText;
+  a41.displayStringForOption;
+  a42.pageCount;
+  a43.page;
+  a44.labelText;
+  a45.hintText;
+  a46.helperText;
+  a47.errorText;
+  a48.labelText;
+  a49.hintText;
+  a50.helperText;
+  a51.errorText;
+  a52.currentStep;
+  a53.labelText;
+  a54.hintText;
+  a55.helperText;
+  a56.errorText;
+  a57.labelText;
+  a58.hintText;
+  a59.helperText;
+  a60.errorText;
+  a61.multiSelectionEnabled;
+  a62.emptySelectionAllowed;
+  a63.onSelectionChanged;
+}

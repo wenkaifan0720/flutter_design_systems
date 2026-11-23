@@ -92,14 +92,14 @@ void main() {
           children: [
             LedgerStepper(
               value: 2,
-              label: 'Copies',
+              labelText: 'Copies',
               step: 1,
               min: 1,
               onChanged: (_) {},
             ),
             LedgerStepper(
               size: LedgerStepperSize.field,
-              label: 'Estimate (minutes)',
+              labelText: 'Estimate (minutes)',
               value: 45,
               min: 5,
               max: 480,
@@ -205,7 +205,7 @@ void main() {
         children: [
           LedgerStepper(
             value: 250,
-            label: 'Monthly budget',
+            labelText: 'Monthly budget',
             format: _dollars,
             onChanged: (_) {},
           ),

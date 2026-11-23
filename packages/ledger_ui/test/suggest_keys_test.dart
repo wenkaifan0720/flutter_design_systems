@@ -37,7 +37,7 @@ class _PayeeState extends State<_Payee> {
 
   @override
   Widget build(BuildContext context) => LedgerCombobox<String>(
-    label: 'Payee',
+    labelText: 'Payee',
     options: _payees,
     value: _value,
     onSelected: (v) => setState(() => _value = _taken = v),
@@ -54,7 +54,7 @@ class _Split extends StatefulWidget {
 class _SplitState extends State<_Split> {
   @override
   Widget build(BuildContext context) => LedgerMultiSelect<String>(
-    label: 'Split with',
+    labelText: 'Split with',
     values: _split,
     options: _people,
     onChanged: (v) => setState(() => _split = v),

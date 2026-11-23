@@ -322,7 +322,7 @@ void main() {
               children: [
                 SizedBox(
                   width: 300,
-                  child: LedgerTextField(label: 'Note', focusNode: field),
+                  child: LedgerTextField(labelText: 'Note', focusNode: field),
                 ),
                 const SizedBox(height: 24),
                 slip(),

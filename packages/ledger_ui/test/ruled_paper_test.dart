@@ -240,8 +240,8 @@ void main() {
     await t.pumpWidget(
       _host(
         const LedgerTextArea(
-          label: 'Work note',
-          hint: 'What did you work on?',
+          labelText: 'Work note',
+          hintText: 'What did you work on?',
           minLines: 2,
           maxLines: 5,
         ),

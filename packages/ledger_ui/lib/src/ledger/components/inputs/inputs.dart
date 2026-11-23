@@ -885,17 +885,17 @@ class LedgerSettingRow extends StatelessWidget {
 
 /// The search field (`.search`), a round field of the light paper 46
 /// tall: as a link ([onTap]: Activity's, leading to the search) its glyph
-/// and [hint]; live (no onTap) ringed in the ink, the words typed
+/// and [hintText]; live (no onTap) ringed in the ink, the words typed
 /// in the medium, a round clear at its end when [onCleared] is set and it
 /// holds words ([clearKey] keys it). Says its [semanticLabel].
 ///
 /// ```dart
-/// LedgerSearchField(hint: 'Search merchants and categories', onTap: () => open('/activity/search'))
+/// LedgerSearchField(hintText: 'Search merchants and categories', onTap: () => open('/activity/search'))
 /// ```
 class LedgerSearchField extends StatelessWidget {
   /// A link to the search with [onTap], else a live field.
   const LedgerSearchField({
-    this.hint,
+    this.hintText,
     this.semanticLabel,
     this.onTap,
     this.controller,
@@ -911,9 +911,9 @@ class LedgerSearchField extends StatelessWidget {
 
   /// The words shown while it is empty; null is the shared words' Search
   /// ([RawWidgetsLocalizations.searchFieldLabel]).
-  final String? hint;
+  final String? hintText;
 
-  /// What a screen reader says; null says the [hint].
+  /// What a screen reader says; null says the [hintText].
   final String? semanticLabel;
 
   /// Makes the field a link to the search.
@@ -949,7 +949,7 @@ class LedgerSearchField extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
       ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(ObjectFlagProperty<VoidCallback>.has('onTap', onTap))
       ..add(
@@ -985,7 +985,7 @@ class LedgerSearchField extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.ledgerTheme;
     final words = RawWidgetsLocalizations.of(context);
-    final hint = this.hint ?? words.searchFieldLabel;
+    final hint = hintText ?? words.searchFieldLabel;
     final live = onTap == null;
     final glyph = Icon(
       LucideIcons.search,
@@ -1114,8 +1114,8 @@ class LedgerSearchField extends StatelessWidget {
   static const double _clearGlyph = 14;
 }
 
-/// A form's field (`.field`): its [label] in the small capitals, then on
-/// the ink rule the words typed (the medium at 16; the [hint] in
+/// A form's field (`.field`): its [labelText] in the small capitals, then on
+/// the ink rule the words typed (the medium at 16; the [hintText] in
 /// the third ink) after an optional serif [prefix] ($), its [note] under
 /// it. 16 above it. Says its label. A [child] stands in the typed line's
 /// place, a control rather than words (a cheque's When and its chips: 4
@@ -1125,23 +1125,23 @@ class LedgerSearchField extends StatelessWidget {
 /// (`.cheque .field-box`), the ink off one.
 ///
 /// ```dart
-/// LedgerField(label: 'Note', controller: note, hint: 'What it is for')
+/// LedgerField(labelText: 'Note', controller: note, hintText: 'What it is for')
 /// ```
 ///
 /// ```dart
-/// LedgerField(label: 'When', child: LedgerSegmentedControl(options: const ['Today', 'Later'], value: when, onChanged: pick))
+/// LedgerField(labelText: 'When', child: LedgerSegmentedControl(options: const ['Today', 'Later'], value: when, onChanged: pick))
 /// ```
 ///
 /// ```dart
-/// LedgerField(label: 'Note', value: 'November top-up')
+/// LedgerField(labelText: 'Note', value: 'November top-up')
 /// ```
 class LedgerField extends StatelessWidget {
-  /// A field named [label]: typed with a [controller], a [child] control, or a
+  /// A field named [labelText]: typed with a [controller], a [child] control, or a
   /// read-only [value].
   const LedgerField({
-    required this.label,
+    required this.labelText,
     this.controller,
-    this.hint,
+    this.hintText,
     this.prefix,
     this.note,
     this.onChanged,
@@ -1157,14 +1157,14 @@ class LedgerField extends StatelessWidget {
        );
 
   /// The field's name, in the small capitals over it.
-  final String label;
+  final String labelText;
 
   /// The words typed; the field makes its own when none is given, and never
   /// disposes one it was given.
   final TextEditingController? controller;
 
   /// The words shown while it is empty.
-  final String? hint;
+  final String? hintText;
 
   /// Words in the serif before the typed ones (`$`).
   final String? prefix;
@@ -1194,7 +1194,7 @@ class LedgerField extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('label', label))
+      ..add(StringProperty('labelText', labelText))
       ..add(
         DiagnosticsProperty<TextEditingController>(
           'controller',
@@ -1202,7 +1202,7 @@ class LedgerField extends StatelessWidget {
           defaultValue: null,
         ),
       )
-      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
       ..add(StringProperty('prefix', prefix, defaultValue: null))
       ..add(StringProperty('note', note, defaultValue: null))
       ..add(
@@ -1237,7 +1237,7 @@ class LedgerField extends StatelessWidget {
       readOnly: shown != null,
       value: shown,
       container: control != null,
-      label: label,
+      label: labelText,
       child: Padding(
         padding: const EdgeInsets.only(top: LedgerSpacing.s16),
         child: Column(
@@ -1246,7 +1246,7 @@ class LedgerField extends StatelessWidget {
           children: [
             ExcludeSemantics(
               child: Text(
-                label.toUpperCase(),
+                labelText.toUpperCase(),
                 style: t.label.colored(t.textSecondary),
               ),
             ),
@@ -1310,9 +1310,9 @@ class LedgerField extends StatelessWidget {
                             : LedgerTextInput(
                                 autofocus: autofocus,
                                 controller: controller,
-                                placeholder: hint,
+                                hintText: hintText,
                                 style: words.colored(t.textPrimary),
-                                placeholderStyle: words
+                                hintStyle: words
                                     .copyWith(fontWeight: FontWeight.w400)
                                     .colored(t.textTertiary),
                                 onChanged: onChanged,
@@ -1543,7 +1543,7 @@ class LedgerPickLine extends StatelessWidget {
   }
 }
 
-/// A cheque's amount (`.amount-row`): its [label], then in a box ruled in the
+/// A cheque's amount (`.amount-row`): its [labelText], then in a box ruled in the
 /// ink the sum in the serif after its `$` (typed live with a [controller], else
 /// read back as the engraved [amount]), and under it the sum in [words] on the
 /// cheque's line with its [unit] (DOLLARS). The typed line stands as Chrome
@@ -1553,16 +1553,16 @@ class LedgerPickLine extends StatelessWidget {
 /// ("500.00" after its `$`), a sum shown that no one types here (the form's).
 ///
 /// ```dart
-/// LedgerChequeAmount(label: 'Amount', words: 'Five hundred and 00/100', unit: 'dollars', amount: 500)
+/// LedgerChequeAmount(labelText: 'Amount', words: 'Five hundred and 00/100', unit: 'dollars', amount: 500)
 /// ```
 ///
 /// ```dart
-/// LedgerChequeAmount(label: 'Amount', words: 'Five hundred and 00/100', unit: 'dollars', amount: 500, typed: true)
+/// LedgerChequeAmount(labelText: 'Amount', words: 'Five hundred and 00/100', unit: 'dollars', amount: 500, typed: true)
 /// ```
 class LedgerChequeAmount extends StatelessWidget {
   /// A cheque's sum: typed with a [controller], else read back as [amount].
   const LedgerChequeAmount({
-    required this.label,
+    required this.labelText,
     required this.words,
     required this.unit,
     this.amount,
@@ -1579,7 +1579,7 @@ class LedgerChequeAmount extends StatelessWidget {
        assert(!typed || amount != null, 'a typed sum shows its amount');
 
   /// The sum's name (Amount).
-  final String label;
+  final String labelText;
 
   /// The sum in words, on the cheque's line.
   final String words;
@@ -1610,7 +1610,7 @@ class LedgerChequeAmount extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('label', label))
+      ..add(StringProperty('labelText', labelText))
       ..add(StringProperty('words', words))
       ..add(StringProperty('unit', unit))
       ..add(DiagnosticsProperty<num>('amount', amount, defaultValue: null))
@@ -1667,7 +1667,7 @@ class LedgerChequeAmount extends StatelessWidget {
         // Shown as typed, read as the sum: "Amount, $500.00".
         ? Semantics(
             container: true,
-            label: label,
+            label: labelText,
             value: LedgerFormat.money(amount!),
             excludeSemantics: true,
             child: Row(
@@ -1704,7 +1704,7 @@ class LedgerChequeAmount extends StatelessWidget {
         // Read back, the sum says what it is: "Amount, $500.00".
         ? MergeSemantics(
             child: Semantics(
-              label: label,
+              label: labelText,
               child: LedgerFigure(amount!, size: LedgerFigureSize.entry),
             ),
           )
@@ -1716,7 +1716,7 @@ class LedgerChequeAmount extends StatelessWidget {
               Expanded(
                 child: Semantics(
                   textField: true,
-                  label: label,
+                  label: labelText,
                   // An engraved figure, already large: it keeps its size at
                   // any text size, as the read-back figure does, rather
                   // than run past its box.
@@ -1726,7 +1726,7 @@ class LedgerChequeAmount extends StatelessWidget {
                       autofocus: autofocus,
                       controller: controller,
                       style: typedStyle,
-                      placeholderStyle: t.figure
+                      hintStyle: t.figure
                           .sized(figure)
                           .line((figure * _normalLine).roundToDouble())
                           .colored(t.textTertiary),
@@ -1762,7 +1762,7 @@ class LedgerChequeAmount extends StatelessWidget {
                 bottom: _bodyLine - _labelLine - _labelDrop,
               ),
               child: Text(
-                label.toUpperCase(),
+                labelText.toUpperCase(),
                 style: t.label.colored(t.textSecondary),
               ),
             ),
@@ -1857,15 +1857,15 @@ enum LedgerStepperSize {
 ///
 /// [size] [LedgerStepperSize.field] is a form's number (an estimate in
 /// minutes, a count of copies): written on the text field's rule, at its
-/// height, so it stands level with a field beside it; [label] in the small
-/// capitals over the line, [helper] or [error] under it. The number takes
+/// height, so it stands level with a field beside it; [labelText] in the small
+/// capitals over the line, [helperText] or [errorText] under it. The number takes
 /// typing in the reader's digits, read as Enter is pressed or the focus
 /// leaves and kept within [min] and [max]; while a typed number is outside
 /// them the field says so in its error ('From 5 to 480'; in another language
-/// the range in its digits, '٥–٤٨٠'; [error] given says that instead).
+/// the range in its digits, '٥–٤٨٠'; [errorText] given says that instead).
 /// Up and Down step it, Page Up and Page Down by ten steps; the rings step
 /// once on a press and repeat while held. A screen reader hears one
-/// adjustable number named [label]. [format] says the number to a screen
+/// adjustable number named [labelText]. [format] says the number to a screen
 /// reader ('45 minutes'); the line shows the plain number.
 ///
 /// [LedgerStepperSize.figure], the default, is the budget's stepper
@@ -1874,7 +1874,7 @@ enum LedgerStepperSize {
 /// the plain number unless [format] says otherwise (a budget passes whole
 /// dollars, `format: (v) => LedgerFormat.money(v, showCents: false)`); each ring says
 /// its [lowerLabel] or [raiseLabel] whole ('Lower the budget'), or, left
-/// unset, Lower or Raise and the [label]. The sum stands on its input's
+/// unset, Lower or Raise and the [labelText]. The sum stands on its input's
 /// own line, 1.05 of its size (75.6 at 72, 92.4 at 88, as the budget and
 /// add money sheets measure). [showRings]
 /// false shows the sum alone, chosen from elsewhere (the add sheet's
@@ -1883,25 +1883,25 @@ enum LedgerStepperSize {
 /// slot's start from 600, as the rings are.
 ///
 /// ```dart
-/// LedgerStepper(value: 250, label: 'Monthly budget', format: (v) => LedgerFormat.money(v, showCents: false), onChanged: (v) {})
+/// LedgerStepper(value: 250, labelText: 'Monthly budget', format: (v) => LedgerFormat.money(v, showCents: false), onChanged: (v) {})
 /// ```
 ///
 /// ```dart
-/// LedgerStepper(value: 250, label: 'Monthly budget', format: (v) => LedgerFormat.money(v, showCents: false), lowerLabel: 'Lower the budget', raiseLabel: 'Raise the budget', onChanged: (v) {})
+/// LedgerStepper(value: 250, labelText: 'Monthly budget', format: (v) => LedgerFormat.money(v, showCents: false), lowerLabel: 'Lower the budget', raiseLabel: 'Raise the budget', onChanged: (v) {})
 /// ```
 ///
 /// ```dart
-/// LedgerStepper(value: 110, label: 'Amount to add', step: 1, showRings: false, format: (v) => LedgerFormat.money(v, showCents: false))
+/// LedgerStepper(value: 110, labelText: 'Amount to add', step: 1, showRings: false, format: (v) => LedgerFormat.money(v, showCents: false))
 /// ```
 ///
 /// ```dart
-/// LedgerStepper(size: LedgerStepperSize.field, label: 'Estimate (minutes)', value: 45, min: 5, max: 480, step: 5, format: (minutes) => '$minutes minutes', onChanged: (v) {})
+/// LedgerStepper(size: LedgerStepperSize.field, labelText: 'Estimate (minutes)', value: 45, min: 5, max: 480, step: 5, format: (minutes) => '$minutes minutes', onChanged: (v) {})
 /// ```
 class LedgerStepper extends StatelessWidget {
-  /// A [value] named [label], lowered and raised by [step].
+  /// A [value] named [labelText], lowered and raised by [step].
   const LedgerStepper({
     required this.value,
-    required this.label,
+    required this.labelText,
     this.step = 5,
     this.min = 0,
     this.max,
@@ -1909,8 +1909,8 @@ class LedgerStepper extends StatelessWidget {
     this.format,
     this.lowerLabel,
     this.raiseLabel,
-    this.helper,
-    this.error,
+    this.helperText,
+    this.errorText,
     this.onChanged,
     this.showRings = true,
     super.key,
@@ -1921,7 +1921,7 @@ class LedgerStepper extends StatelessWidget {
   final num value;
 
   /// What the sum is, for a screen reader.
-  final String label;
+  final String labelText;
 
   /// How much a ring lowers or raises the sum.
   final num step;
@@ -1943,22 +1943,22 @@ class LedgerStepper extends StatelessWidget {
   /// way.
   final String Function(num value)? format;
 
-  /// The lower ring's words; null reads 'Lower' and the [label].
+  /// The lower ring's words; null reads 'Lower' and the [labelText].
   final String? lowerLabel;
 
-  /// The raise ring's words; null reads 'Raise' and the [label].
+  /// The raise ring's words; null reads 'Raise' and the [labelText].
   final String? raiseLabel;
 
   /// Called with the new sum; null holds it.
   final ValueChanged<num>? onChanged;
 
   /// A field's help under its rule.
-  final String? helper;
+  final String? helperText;
 
   /// What is wrong with a field's number, under its rule in the danger
   /// red; null while it is fine (a typed number outside [min] and [max]
   /// says so itself).
-  final String? error;
+  final String? errorText;
 
   /// Whether a figure's lower and raise rings stand at its ends.
   final bool showRings;
@@ -1968,7 +1968,7 @@ class LedgerStepper extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(DiagnosticsProperty<num>('value', value))
-      ..add(StringProperty('label', label))
+      ..add(StringProperty('labelText', labelText))
       ..add(DiagnosticsProperty<num>('step', step))
       ..add(DiagnosticsProperty<num>('min', min))
       ..add(DiagnosticsProperty<num>('max', max, defaultValue: null))
@@ -1976,8 +1976,8 @@ class LedgerStepper extends StatelessWidget {
       ..add(ObjectFlagProperty<Object?>.has('format', format))
       ..add(StringProperty('lowerLabel', lowerLabel, defaultValue: null))
       ..add(StringProperty('raiseLabel', raiseLabel, defaultValue: null))
-      ..add(StringProperty('helper', helper, defaultValue: null))
-      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(StringProperty('helperText', helperText, defaultValue: null))
+      ..add(StringProperty('errorText', errorText, defaultValue: null))
       ..add(ObjectFlagProperty<ValueChanged<num>>.has('onChanged', onChanged))
       ..add(FlagProperty('showRings', value: showRings, ifTrue: 'showRings'));
   }
@@ -2044,7 +2044,7 @@ class LedgerStepper extends StatelessWidget {
         );
     return Semantics(
       container: true,
-      label: label,
+      label: labelText,
       value: words,
       increasedValue: canRaise ? display(value + step) : null,
       decreasedValue: canLower ? display(value - step) : null,
@@ -2065,13 +2065,13 @@ class LedgerStepper extends StatelessWidget {
                   children: [
                     ring(
                       LucideIcons.minus,
-                      lowerLabel ?? 'Lower $label',
+                      lowerLabel ?? 'Lower $labelText',
                       canLower ? () => onChanged!(value - step) : null,
                     ),
                     Expanded(child: sum),
                     ring(
                       LucideIcons.plus,
-                      raiseLabel ?? 'Raise $label',
+                      raiseLabel ?? 'Raise $labelText',
                       canRaise ? () => onChanged!(value + step) : null,
                     ),
                   ],
@@ -2183,7 +2183,7 @@ class _StepperFieldState extends State<_StepperField> {
     final whole = _whole;
     num taken(double v) => whole ? v.round() : v;
     String say(num n) => s.format?.call(n) ?? l.formatDecimal(n);
-    final error = s.error ?? _wrong;
+    final error = s.errorText ?? _wrong;
     final so = LedgerStyleOf(
       [t.components.textField],
       {
@@ -2244,7 +2244,7 @@ class _StepperFieldState extends State<_StepperField> {
       fractionDigits: whole ? 0 : null,
       controller: _controller,
       focusNode: _focus,
-      semanticLabel: s.label,
+      semanticLabel: s.labelText,
       semanticFormatterCallback: (v) => say(taken(v)),
       fieldBuilder: (context, field) {
         final input = Material(
@@ -2300,13 +2300,13 @@ class _StepperFieldState extends State<_StepperField> {
     final framed = RawInputDecorator(
       // The number field names itself; the frame shows the label.
       mergeSemantics: false,
-      helperText: s.helper,
+      helperText: s.helperText,
       errorText: error,
       enabled: enabled,
       focusNode: _focus,
       builder: (context, parts) => LedgerFieldFrame(
         parts: parts,
-        displayLabel: s.label,
+        displayLabel: s.labelText,
         focusNode: _focus,
         labelCursor: SystemMouseCursors.text,
         line: parts.control,

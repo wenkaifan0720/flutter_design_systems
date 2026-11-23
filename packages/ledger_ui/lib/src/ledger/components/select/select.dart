@@ -38,7 +38,7 @@ class LedgerSelectItem<T> {
 }
 
 /// A choice among [items], written on a rule as [LedgerTextField] is: the
-/// chosen item's words on the line (its [hint] in the third ink while none
+/// chosen item's words on the line (its [hintText] in the third ink while none
 /// is), a chevron at the end. A press opens the list under it on the raised
 /// paper, ruled between its rows, the chosen one on the menu's paper and
 /// ticked in the accent. Enter, Space or Down opens it too; open, the
@@ -55,7 +55,7 @@ class LedgerSelectItem<T> {
 /// in from the field's.
 ///
 /// ```dart
-/// LedgerSelect<String>(label: 'Currency', value: 'USD', items: const [LedgerSelectItem(value: 'USD', label: 'US dollar'), LedgerSelectItem(value: 'EUR', label: 'Euro')], onChanged: (v) {})
+/// LedgerSelect<String>(labelText: 'Currency', value: 'USD', items: const [LedgerSelectItem(value: 'USD', label: 'US dollar'), LedgerSelectItem(value: 'EUR', label: 'Euro')], onChanged: (v) {})
 /// ```
 class LedgerSelect<T> extends StatefulWidget {
   /// A choice among [items], [value] chosen.
@@ -63,10 +63,10 @@ class LedgerSelect<T> extends StatefulWidget {
     required this.items,
     required this.value,
     required this.onChanged,
-    this.label,
-    this.hint,
-    this.helper,
-    this.error,
+    this.labelText,
+    this.hintText,
+    this.helperText,
+    this.errorText,
     this.isRequired = false,
     this.focusNode,
     this.autofocus = false,
@@ -83,17 +83,17 @@ class LedgerSelect<T> extends StatefulWidget {
   final ValueChanged<T>? onChanged;
 
   /// What it chooses, over the line in the small capitals; its spoken name.
-  final String? label;
+  final String? labelText;
 
   /// Shown while nothing is chosen; "Choose one" when null (in English:
   /// the shared words have no such prompt).
-  final String? hint;
+  final String? hintText;
 
   /// Help under the rule.
-  final String? helper;
+  final String? helperText;
 
   /// What is wrong, under the rule in the danger red.
-  final String? error;
+  final String? errorText;
 
   /// Whether a choice must be made.
   final bool isRequired;
@@ -111,10 +111,10 @@ class LedgerSelect<T> extends StatefulWidget {
       ..add(IterableProperty<LedgerSelectItem<T>>('items', items))
       ..add(DiagnosticsProperty<T>('value', value, defaultValue: null))
       ..add(ObjectFlagProperty<ValueChanged<T>>.has('onChanged', onChanged))
-      ..add(StringProperty('label', label, defaultValue: null))
-      ..add(StringProperty('hint', hint, defaultValue: null))
-      ..add(StringProperty('helper', helper, defaultValue: null))
-      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
+      ..add(StringProperty('helperText', helperText, defaultValue: null))
+      ..add(StringProperty('errorText', errorText, defaultValue: null))
       ..add(FlagProperty('isRequired', value: isRequired, ifTrue: 'isRequired'))
       ..add(
         DiagnosticsProperty<FocusNode>(
@@ -153,13 +153,13 @@ class _LedgerSelectState<T> extends State<LedgerSelect<T>> {
     final words = LedgerTextField.wordsOf(t);
     final enabled = widget.onChanged != null;
     final chosen = _chosen;
-    final hint = widget.hint ?? 'Choose one';
+    final hint = widget.hintText ?? 'Choose one';
     return LedgerLayout.measured(
       context,
       RawInputDecorator(
-        labelText: widget.label,
-        helperText: widget.helper,
-        errorText: widget.error,
+        labelText: widget.labelText,
+        helperText: widget.helperText,
+        errorText: widget.errorText,
         required: widget.isRequired,
         enabled: enabled,
         focusNode: _focus,
@@ -170,7 +170,7 @@ class _LedgerSelectState<T> extends State<LedgerSelect<T>> {
         ),
         child: RawPopover(
           arrowKeyNavigation: true,
-          semanticLabel: widget.label,
+          semanticLabel: widget.labelText,
           placement: const RawPopoverPlacement(
             gap: 6,
             matchAnchorWidth: true,
@@ -187,10 +187,10 @@ class _LedgerSelectState<T> extends State<LedgerSelect<T>> {
               onTap: enabled ? anchor.toggle : null,
               focusNode: _focus,
               autofocus: widget.autofocus,
-              label: widget.label == null ? hint : null,
+              label: widget.labelText == null ? hint : null,
               value: chosen?.label,
               expanded: anchor.isOpen,
-              isError: widget.error != null,
+              isError: widget.errorText != null,
               child: SizedBox(
                 height: LedgerTextField.heightOf(t),
                 child: Row(
@@ -296,25 +296,6 @@ class _SelectListState<T> extends State<_SelectList<T>> {
   }
 
   @override
-  void initState() {
-    super.initState();
-    // The overlay moves the keyboard to the list's first option once it has
-    // built, in this frame's end; the chosen option takes it after, so a
-    // list opens on what is chosen.
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      final chosen = widget.items.indexWhere(
-        (item) => item.enabled && item.value == widget.value,
-      );
-      if (chosen < 0) return;
-      final node = _nodes[chosen]..requestFocus();
-      // A long list opens with the chosen one in the middle of its view.
-      final at = node.context;
-      if (at != null) Scrollable.ensureVisible(at, alignment: 0.5);
-    });
-  }
-
-  @override
   void didUpdateWidget(_SelectList<T> oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.items.length != widget.items.length) {
@@ -410,6 +391,9 @@ class _SelectListState<T> extends State<_SelectList<T>> {
                     LedgerPressable(
                       onTap: item.enabled ? () => onChosen(item.value) : null,
                       focusNode: _nodes[i],
+                      // A list opens on what is chosen: the popover leaves
+                      // the focus on it as it mounts and keeps it in view.
+                      autofocus: item.enabled && item.value == value,
                       label: item.label,
                       selected: item.value == value,
                       radius: 0,

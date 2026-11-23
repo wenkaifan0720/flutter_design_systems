@@ -201,7 +201,7 @@ class _QuillRegisterState extends State<QuillRegister> {
           // Nothing to search or filter in a register that did not load.
           if (!_offline) ...[
             LedgerSearchField(
-              hint: context.say('Search entries'),
+              hintText: context.say('Search entries'),
               controller: _search,
               onChanged: (_) => setState(() {}),
               onCleared: () => setState(_search.clear),
