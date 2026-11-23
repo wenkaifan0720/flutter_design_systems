@@ -401,6 +401,231 @@ void main() {
     expect(field.focusNode.hasPrimaryFocus, isTrue, reason: 'back to typing');
   });
 
+  group('in a RawInputDecorator, the entry reads the field\'s words', () {
+    // What a screen reader reads, node by node in its order: each node's
+    // label, its hint, whether it is the text field or invalid, and its own
+    // actions' names.
+    List<String> walk() {
+      final read = <String>[];
+      void visit(SemanticsNode n) {
+        // A node merged into its parent is read with it.
+        if (n.isMergedIntoParent) return;
+        final d = n.getSemanticsData();
+        final actions = [
+          for (final id in d.customSemanticsActionIds ?? const <int>[])
+            CustomSemanticsAction.getAction(id)!.label,
+        ];
+        final text = [
+          if (d.label.isNotEmpty) d.label,
+          if (d.hint.isNotEmpty) 'hint: ${d.hint}',
+          if (d.flagsCollection.isTextField) 'text field',
+          if (d.flagsCollection.isButton) 'button',
+          if (d.validationResult == SemanticsValidationResult.invalid)
+            'invalid',
+          for (final a in actions) 'action: $a',
+        ];
+        if (text.isNotEmpty) read.add(text.join(' | '));
+        for (final c in n.debugListChildrenInOrder(
+          DebugSemanticsDumpOrder.traversalOrder,
+        )) {
+          visit(c);
+        }
+      }
+
+      visit(semanticsOwner().rootSemanticsNode!);
+      return read;
+    }
+
+    Future<void> pumpField(
+      WidgetTester tester,
+      List<String> tags, {
+      String? error,
+      bool decorated = false,
+      String? entryLabel,
+      bool clearKey = false,
+    }) => tester.pumpWidget(
+      _page(
+        SizedBox(
+          width: 360,
+          child: RawInputDecorator(
+            labelText: 'Colours',
+            helperText: 'Pick a few',
+            errorText: error,
+            builder: (context, parts) => Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ?parts.label,
+                parts.control,
+                ?parts.error,
+                ?parts.helper,
+              ],
+            ),
+            child: RawTagInput<String>(
+              values: tags,
+              options: _colours,
+              onChanged: (_) {},
+              fieldBuilder: (context, field) {
+                final text = plainField(
+                  controller: field.controller,
+                  focusNode: field.focusNode,
+                  width: 120,
+                );
+                // A look's entry that is a field of its own: a text field
+                // built on a RawInputDecorator, whose node is a boundary.
+                final entry = decorated
+                    ? RawInputDecorator(
+                        labelText: entryLabel,
+                        builder: (context, parts) => parts.control,
+                        child: text,
+                      )
+                    : text;
+                // A clear key beside the text, inside the entry.
+                return clearKey
+                    ? Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          entry,
+                          RawButton(
+                            onPressed: () {},
+                            semanticLabel: 'Clear',
+                            excludeSemantics: true,
+                            minimumSize: const Size(44, 44),
+                            builder: (context, states, _) => const Text('c'),
+                          ),
+                        ],
+                      )
+                    : entry;
+              },
+              optionBuilder: (context, option, states) => Text(option),
+              tagBuilder: (context, value, tag) => Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text('tag $value'),
+                  RawButton(
+                    onPressed: tag.onDeleted,
+                    semanticLabel: 'Remove $value',
+                    excludeSemantics: true,
+                    minimumSize: const Size(44, 44),
+                    builder: (context, states, _) => const Text('x'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    List<String> tagged(String value) => [
+      'tag $value | action: Remove',
+      'Remove $value | button',
+    ];
+
+    for (final tags in [
+      const <String>[],
+      const ['Red'],
+      const ['Red', 'Green', 'Blue'],
+    ]) {
+      testWidgets('${tags.length} tags: the label and the help on the text '
+          'entry; each tag its name and its remove action', (tester) async {
+        final semantics = tester.ensureSemantics();
+        await pumpField(tester, tags);
+        expect(walk(), [
+          for (final t in tags) ...tagged(t),
+          'Colours | hint: Pick a few | text field',
+        ]);
+        semantics.dispose();
+      });
+    }
+
+    testWidgets('an error: read first in the hint, and the entry invalid', (
+      tester,
+    ) async {
+      final semantics = tester.ensureSemantics();
+      await pumpField(tester, const ['Red'], error: 'Pick one more');
+      expect(walk(), [
+        ...tagged('Red'),
+        'Colours | hint: Pick one more. Pick a few | text field | invalid',
+      ]);
+      semantics.dispose();
+    });
+
+    for (final tags in [
+      const <String>[],
+      const ['Red'],
+      const ['Red', 'Green', 'Blue'],
+    ]) {
+      testWidgets('${tags.length} tags, an entry that is a field of its own: '
+          'its text field carries the words, with no unnamed text field and '
+          'no words apart', (tester) async {
+        final semantics = tester.ensureSemantics();
+        await pumpField(tester, tags, decorated: true);
+        expect(walk(), [
+          for (final t in tags) ...tagged(t),
+          'Colours | hint: Pick a few | text field',
+        ]);
+        semantics.dispose();
+      });
+
+      testWidgets('${tags.length} tags, an entry that is a field of its own, '
+          'an error: the text field reads it, invalid', (tester) async {
+        final semantics = tester.ensureSemantics();
+        await pumpField(tester, tags, error: 'Pick one more', decorated: true);
+        expect(walk(), [
+          for (final t in tags) ...tagged(t),
+          'Colours | hint: Pick one more. Pick a few | text field | invalid',
+        ]);
+        semantics.dispose();
+      });
+    }
+
+    testWidgets('an entry with a clear key is not merged: the key keeps its '
+        'node and its action, the words stay on the text field', (
+      tester,
+    ) async {
+      final semantics = tester.ensureSemantics();
+      await pumpField(tester, const ['Red'], clearKey: true);
+      expect(walk(), [
+        ...tagged('Red'),
+        'Colours | hint: Pick a few | text field',
+        'Clear | button',
+      ]);
+      semantics.dispose();
+    });
+
+    testWidgets('an entry that is a field of its own and holds a clear key is '
+        'not merged: the words stay on the entry\'s node, round the text '
+        'field\'s and the key\'s', (tester) async {
+      final semantics = tester.ensureSemantics();
+      await pumpField(tester, const ['Red'], decorated: true, clearKey: true);
+      expect(walk(), [
+        ...tagged('Red'),
+        'Colours | hint: Pick a few',
+        'text field',
+        'Clear | button',
+      ]);
+      semantics.dispose();
+    });
+
+    testWidgets('an entry that says the field\'s name itself reads it once', (
+      tester,
+    ) async {
+      final semantics = tester.ensureSemantics();
+      await pumpField(
+        tester,
+        const ['Red'],
+        decorated: true,
+        entryLabel: 'Colours',
+      );
+      expect(walk(), [
+        ...tagged('Red'),
+        'Colours | hint: Pick a few | text field',
+      ]);
+      semantics.dispose();
+    });
+  });
+
   testWidgets('the field\'s node is its frame, not the words or tags beside '
       'it', (tester) async {
     final semantics = tester.ensureSemantics();

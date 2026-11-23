@@ -107,6 +107,9 @@ class PaneCycleState extends State<PaneCycle> {
         forward: false,
       ),
     },
+    // The keys alone: no semantics node of its own, which would merge the
+    // nodes of what it holds (a heading and the text under it) into one.
+    includeSemantics: false,
     child: Actions(
       actions: {_MovePaneIntent: _MovePaneAction(this)},
       child: _PaneCycleScope(state: this, child: widget.child),

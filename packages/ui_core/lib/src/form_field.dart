@@ -115,7 +115,9 @@ typedef RawInputDecoratorBuilder = Widget Function(
 /// control under it; the label names them as a group. When the child
 /// already says the label (a stepper named as its field, or a group that
 /// names itself on its own node), the label is not added again, so it is
-/// read once.
+/// read once. ui_core's number field and tag input carry the label, error
+/// and help on their text entry's own node, beside their step buttons and
+/// tags, and the field's node says none of them.
 ///
 /// A text entry keeps its node as controls come and go beside it (a clear
 /// key that shows with the first letter): on the web that node is the
@@ -576,7 +578,8 @@ class _DesignFormScope extends InheritedWidget {
 // letter) moves it to a node of its own, which on the web is a new input.
 // A look keeps the entry's node by leaving its line's tap out of the
 // semantics tree. A control of ui_core's that carries the field's words on its own
-// node (a number field's entry) leaves the field's node saying nothing.
+// node (a number field's entry, a tag input's) leaves the field's node
+// saying nothing.
 // The label is left out when a control already says it (a button's name
 // aside); a required field then says it is required first in its hint,
 // unless the control says that too.
@@ -613,7 +616,7 @@ class _FieldSemantics extends SingleChildRenderObjectWidget {
       ..needed = needed
       ..hint = hint
       ..invalid = invalid
-      ..textDirection = textDirection
+      ..wordsDirection = textDirection
       // A rebuild may change what the child says (a control named as the
       // field, or no longer) and leave the field's size as it was: read the
       // child again in the layout that follows, once it is built.
@@ -621,14 +624,15 @@ class _FieldSemantics extends SingleChildRenderObjectWidget {
   }
 }
 
-class _RenderFieldSemantics extends RenderDesignSemanticsProxy {
+class _RenderFieldSemantics extends RenderDesignSemanticsProxy
+    implements DesignFieldSays {
   _RenderFieldSemantics(
     this._label,
     this._words,
     this._needed,
     this._hint,
     this._invalid,
-    this._textDirection,
+    this._wordsDirection,
   );
 
   String? _label;
@@ -668,16 +672,25 @@ class _RenderFieldSemantics extends RenderDesignSemanticsProxy {
     markNeedsSemanticsUpdate();
   }
 
-  TextDirection? _textDirection;
-  set textDirection(TextDirection? value) {
-    if (value == _textDirection) return;
-    _textDirection = value;
+  // The direction of the words it adds (its label and hint).
+  TextDirection? _wordsDirection;
+  set wordsDirection(TextDirection? value) {
+    if (value == _wordsDirection) return;
+    _wordsDirection = value;
     markNeedsSemanticsUpdate();
   }
 
   // The controls under the field as last described, to describe it again
   // when a layout or a rebuild changes them.
   _FieldShape? _shape;
+
+  // What it says on its node, for a node over it that carries the same
+  // words (a tag input's entry) not to say them again.
+  @override
+  String? get saysLabel => (_shape?.carried ?? false) ? null : _label;
+
+  @override
+  String? get saysHint => (_shape?.carried ?? false) ? null : _hint;
 
   @override
   void performLayout() {
@@ -712,7 +725,7 @@ class _RenderFieldSemantics extends RenderDesignSemanticsProxy {
     ];
     if (hint.isNotEmpty) config.hint = hint.join(', ');
     if (config.label.isNotEmpty || config.hint.isNotEmpty) {
-      config.textDirection = _textDirection;
+      config.textDirection = _wordsDirection;
     }
     config.validationResult = _invalid
         ? SemanticsValidationResult.invalid
@@ -824,6 +837,10 @@ class _RenderFieldSemantics extends RenderDesignSemanticsProxy {
     // field's own is): the controls under one are counted one by one.
     void visit(RenderObject n, bool below, int presses) {
       if (n is RenderExcludeSemantics && n.excluding) return;
+      // A control of ui_core's marks its entry's node as the one that
+      // carries the words, above or below the presses round it (a tag
+      // input's entry, a number field's).
+      if (n is RenderDesignFieldWordsCarried) carried = true;
       final bounded = below || _bounds(n);
       if (_pressOnly(n) && holdsEntry(n)) {
         carried = carried || _carries(n);

@@ -126,7 +126,7 @@ through its accessibility nodes and change appearance with Arabic text at twice 
 | Swipe actions, from outside | `RawSwipeActionsController` | |
 | Tabs | `RawTabController`, `RawTabBar`, `RawTabBarView`; `RawTabGroup<T>`, `RawTabGroupTab<T>` round tabs the caller lays out | `TabController`, `TabBar`, `TabBarView` |
 | A group's arrows (one tab stop) | `RawRovingFocusGroup`, `RawRovingFocusItem`, `RawRovingFocusIntent` | `RadioGroup`'s, `TabBar`'s |
-| Semantics-only proxies, by one type | `RenderDesignSemanticsProxy` | `RenderMergeSemantics` |
+| Semantics-only proxies, by one type | `RenderDesignSemanticsProxy`, a `RenderSemanticsAnnotations` | `RenderSemanticsAnnotations`, `RenderMergeSemantics` |
 | Adaptive shell | `DesignAdaptiveShell`, `DesignWindowSizeClass`, `DesignNavigationMode` | `NavigationBar`, `NavigationRail`, `NavigationDrawer` |
 | List and detail | `DesignListDetail` | |
 | Wheel picker | `RawPicker`, `RawPickerColumn` | `CupertinoPicker` |

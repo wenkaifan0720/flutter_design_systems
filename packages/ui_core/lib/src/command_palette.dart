@@ -11,6 +11,7 @@ import 'package:flutter/widgets.dart';
 
 import 'barrier.dart';
 import 'combobox.dart';
+import 'form_field.dart';
 import 'internal/announce.dart';
 import 'internal/option_list.dart';
 import 'internal/painted_barrier.dart';
@@ -406,6 +407,8 @@ class _DesignCommandPaletteState extends State<RawCommandPalette> {
         SingleActivator(LogicalKeyboardKey.enter): _RunIntent(),
         SingleActivator(LogicalKeyboardKey.numpadEnter): _RunIntent(),
       },
+      // The keys alone: no semantics node of its own.
+      includeSemantics: false,
       child: Actions(
         actions: {
           _MoveIntent: CallbackAction<_MoveIntent>(
@@ -413,14 +416,20 @@ class _DesignCommandPaletteState extends State<RawCommandPalette> {
           ),
           _RunIntent: CallbackAction<_RunIntent>(onInvoke: (_) => _run()),
         },
-        child: widget.fieldBuilder(
-          context,
-          DesignComboboxField(
-            controller: _text,
-            focusNode: _focus,
-            submit: _run,
-            // The palette's list always shows.
-            isOpen: true,
+        // A field's node, as a RawInputDecorator's: the words the look draws
+        // beside its text field (a "Search" before it) name the text field
+        // on its one node, read once.
+        child: RawInputDecorator(
+          builder: (context, parts) => parts.control,
+          child: widget.fieldBuilder(
+            context,
+            DesignComboboxField(
+              controller: _text,
+              focusNode: _focus,
+              submit: _run,
+              // The palette's list always shows.
+              isOpen: true,
+            ),
           ),
         ),
       ),
@@ -601,9 +610,24 @@ class RawCommandShortcut extends StatelessWidget {
   /// The keys.
   final List<ShortcutActivator> activators;
 
+  // CallbackShortcuts' keys, on a Focus that adds no semantics node of its
+  // own: CallbackShortcuts' would merge the nodes of the app under it (a
+  // heading and the text under it) into one.
   @override
-  Widget build(BuildContext context) => CallbackShortcuts(
-    bindings: {for (final a in activators) a: onOpen},
+  Widget build(BuildContext context) => Focus(
+    canRequestFocus: false,
+    skipTraversal: true,
+    includeSemantics: false,
+    onKeyEvent: (node, event) {
+      var handled = false;
+      for (final activator in activators) {
+        if (activator.accepts(event, HardwareKeyboard.instance)) {
+          onOpen();
+          handled = true;
+        }
+      }
+      return handled ? KeyEventResult.handled : KeyEventResult.ignored;
+    },
     child: child,
   );
 

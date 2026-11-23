@@ -767,6 +767,9 @@ class RawToasterState extends State<RawToaster> with TickerProviderStateMixin {
     if (shortcut != null) {
       app = Shortcuts(
         shortcuts: {shortcut: const _JumpToToastIntent()},
+        // The keys alone: no semantics node of its own, which would merge the
+        // nodes of what it holds (a heading and the text under it) into one.
+        includeSemantics: false,
         child: Actions(
           actions: {
             _JumpToToastIntent: CallbackAction<_JumpToToastIntent>(
@@ -817,7 +820,12 @@ class RawToasterState extends State<RawToaster> with TickerProviderStateMixin {
 /// `Scaffold` keeps a snackbar above its bottom navigation bar. It reads how
 /// much of the toaster's bottom or top edge [child] covers each frame it is
 /// laid out or painted, so the toasts follow a bar that springs in or away,
-/// and lets go as it leaves the tree. A part that reaches neither edge, or
+/// and lets go as it leaves the tree. It lets go too while tickers are off
+/// where it stands ([TickerMode]): on a route an opaque one covers, as the
+/// [Overlay] turns them off there, and in a hidden branch of a shell; it
+/// keeps clear again as they come back on. A route under one that is not
+/// opaque (a dialog) keeps its bar in sight, and its toasts clear of it. A
+/// part that reaches neither edge, or
 /// both (a rail, a sidebar), keeps nothing clear. The covered edge takes
 /// the place of the screen's safe inset there (a bar takes that inset
 /// itself); [RawToaster.padding] stays between the bar and the toasts.
@@ -841,17 +849,21 @@ class RawToasterKeepClear extends SingleChildRenderObjectWidget {
   const RawToasterKeepClear({super.key, super.child});
 
   @override
-  RenderObject createRenderObject(BuildContext context) =>
-      _RenderKeepClear(RawToaster.maybeOf(context));
+  RenderObject createRenderObject(BuildContext context) => _RenderKeepClear(
+    RawToaster.maybeOf(context),
+    TickerMode.valuesOf(context).enabled,
+  );
 
   @override
   void updateRenderObject(BuildContext context, RenderObject renderObject) {
-    (renderObject as _RenderKeepClear).toaster = RawToaster.maybeOf(context);
+    (renderObject as _RenderKeepClear)
+      ..toaster = RawToaster.maybeOf(context)
+      ..onstage = TickerMode.valuesOf(context).enabled;
   }
 }
 
 class _RenderKeepClear extends RenderProxyBox {
-  _RenderKeepClear(this._toaster);
+  _RenderKeepClear(this._toaster, this._onstage);
 
   RawToasterState? _toaster;
   set toaster(RawToasterState? value) {
@@ -859,6 +871,20 @@ class _RenderKeepClear extends RenderProxyBox {
     _toaster?._letGo(this);
     _toaster = value;
     _measure();
+  }
+
+  // Whether tickers are on where it stands. Off, it is out of sight (on a
+  // covered route, which may still be laid out as it rebuilds): it keeps
+  // nothing clear.
+  bool _onstage;
+  set onstage(bool value) {
+    if (value == _onstage) return;
+    _onstage = value;
+    if (value) {
+      _measure();
+    } else {
+      _toaster?._letGo(this);
+    }
   }
 
   bool _measuring = false;
@@ -875,6 +901,7 @@ class _RenderKeepClear extends RenderProxyBox {
 
   void _report() {
     final toaster = _toaster;
+    if (!_onstage) return;
     if (toaster == null || !toaster.mounted || !attached || !hasSize) return;
     final area = toaster.context.findRenderObject();
     if (area is! RenderBox || !area.hasSize || !area.attached) return;

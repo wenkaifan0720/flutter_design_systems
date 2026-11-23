@@ -14,6 +14,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
 import 'combobox.dart';
+import 'internal/field_words.dart';
 import 'internal/focus_visible.dart';
 import 'internal/list_side.dart';
 import 'internal/option_list.dart';
@@ -65,6 +66,13 @@ typedef RawTagLayoutBuilder = Widget Function(
 /// suggestions open from the whole layout (the face round the tags and the
 /// field, when the layout draws one), as wide as it and on its leading
 /// edge, not from the field after the tags.
+///
+/// In a [RawInputDecorator], the text entry reads the field's label, error
+/// and help on its own node, as a lone text field does; each tag keeps its
+/// own node, with its name and its remove action. An entry that is a field
+/// of its own (built on a [RawInputDecorator]) and holds another control
+/// beside its text (a clear key) is not merged: the words are read on the
+/// entry's node, round the text field's node and the control's.
 ///
 /// ```dart
 /// RawTagInput<String>(values: const ['red'], onChanged: (values) {}, onCreate: (text) => text, fieldBuilder: (context, field) => EditableText(controller: field.controller, focusNode: field.focusNode, style: const TextStyle(), cursorColor: const Color(0xFF000000), backgroundCursorColor: const Color(0xFF808080), onEditingComplete: field.submit), optionBuilder: (context, option, states) => Text(option), tagBuilder: (context, value, tag) => Text(value))
@@ -595,6 +603,8 @@ class _DesignTagInputState<T extends Object> extends State<RawTagInput<T>> {
 
   @override
   Widget build(BuildContext context) {
+    // The words of a RawInputDecorator round it, which the entry carries.
+    final words = DesignFieldWords.maybeOf(context);
     final field = RawAutocomplete<Object>(
       // Below the tags and the field, as a combobox's list, unless only
       // above has room for them.
@@ -647,6 +657,21 @@ class _DesignTagInputState<T extends Object> extends State<RawTagInput<T>> {
             ),
           ),
         );
+        // In a field, the entry reads the field's name, error and help on
+        // one node with its text field, as a lone text field's merged node
+        // does, even where the look's entry is a field with a node of its
+        // own; the tags beside it keep theirs, each with its remove action.
+        final entry = words == null
+            ? field
+            : DesignFieldWordsCarried(
+                child: DesignFieldWordsEntry(
+                  name: words.name,
+                  hint: words.hint,
+                  invalid: words.invalid,
+                  required: words.required,
+                  child: field,
+                ),
+              );
         final tags = [
           for (var i = 0; i < widget.values.length; i++) _tag(context, i),
         ];
@@ -655,12 +680,12 @@ class _DesignTagInputState<T extends Object> extends State<RawTagInput<T>> {
         return Semantics(
           explicitChildNodes: true,
           child:
-              widget.layoutBuilder?.call(context, tags, field) ??
+              widget.layoutBuilder?.call(context, tags, entry) ??
               Wrap(
                 spacing: 4,
                 runSpacing: 4,
                 crossAxisAlignment: WrapCrossAlignment.center,
-                children: [...tags, field],
+                children: [...tags, entry],
               ),
         );
       },

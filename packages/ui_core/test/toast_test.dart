@@ -116,6 +116,137 @@ void main() {
     expect(toast().top, 24 + 16, reason: 'the safe inset again');
   });
 
+  group('RawToaster keeps the nodes of what it holds', () {
+    Widget toaster(Widget child, {bool f6 = true}) => RawToaster(
+      toastBuilder: (context, details) => Text(details.toast.message),
+      focusShortcut: f6 ? const SingleActivator(LogicalKeyboardKey.f6) : null,
+      child: child,
+    );
+
+    for (final f6 in [true, false]) {
+      testWidgets('a heading and the text under it stay two nodes, F6 '
+          '${f6 ? 'on' : 'off'}', (tester) async {
+        final semantics = tester.ensureSemantics();
+        await tester.pumpWidget(harness(toaster(headingAndText(), f6: f6)));
+        expectHeadingAndTextApart(tester);
+        semantics.dispose();
+      });
+    }
+
+    testWidgets('on the page of a pushed route too', (tester) async {
+      final semantics = tester.ensureSemantics();
+      await tester.pumpWidget(harness(const Text('Home')));
+      unawaited(
+        tester
+            .state<NavigatorState>(find.byType(Navigator))
+            .push(
+              PageRouteBuilder<void>(
+                pageBuilder: (context, _, _) => toaster(headingAndText()),
+              ),
+            ),
+      );
+      await tester.pumpAndSettle();
+      expectHeadingAndTextApart(tester);
+      semantics.dispose();
+    });
+  });
+
+  group('RawToasterKeepClear on a route', () {
+    final toaster = GlobalKey<RawToasterState>();
+    late StateSetter setPage;
+    var barHeight = 80.0;
+    NavigatorState navigator(WidgetTester tester) =>
+        tester.state<NavigatorState>(find.byType(Navigator));
+    Rect toast(WidgetTester tester) =>
+        tester.getRect(find.byKey(const ValueKey('toast')));
+
+    // A page with a bar along the bottom, under a toaster over the navigator.
+    Future<void> pumpPage(WidgetTester tester) async {
+      tester.view.physicalSize = const Size(390, 700);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      barHeight = 80;
+      await tester.pumpWidget(
+        harness(
+          StatefulBuilder(
+            builder: (context, setState) {
+              setPage = setState;
+              return Column(
+                children: [
+                  const Expanded(child: SizedBox.expand()),
+                  RawToasterKeepClear(
+                    child: SizedBox(height: barHeight, width: double.infinity),
+                  ),
+                ],
+              );
+            },
+          ),
+          wrap: (context, navigator) => RawToaster(
+            key: toaster,
+            toastBuilder: (context, details) => SizedBox(
+              key: const ValueKey('toast'),
+              height: 40,
+              child: Text(details.toast.message),
+            ),
+            child: navigator!,
+          ),
+        ),
+      );
+      toaster.currentState!.show(
+        const RawToast(message: 'Saved', duration: null),
+      );
+      await tester.pumpAndSettle();
+      expect(toast(tester).bottom, 700 - 80 - 16, reason: 'above the bar');
+    }
+
+    PageRouteBuilder<void> opaque() => PageRouteBuilder<void>(
+      pageBuilder: (context, _, _) => const SizedBox.expand(),
+    );
+
+    testWidgets('an opaque route over the bar lets the toasts go, and they '
+        'keep clear of it again as the route pops', (tester) async {
+      await pumpPage(tester);
+      unawaited(navigator(tester).push(opaque()));
+      await tester.pumpAndSettle();
+      expect(
+        toast(tester).bottom,
+        700 - 16,
+        reason: 'the bar is under the pushed page, out of sight',
+      );
+      navigator(tester).pop();
+      await tester.pumpAndSettle();
+      expect(toast(tester).bottom, 700 - 80 - 16, reason: 'the bar is back');
+    });
+
+    testWidgets('a dialog over the page leaves its bar in sight, and the '
+        'toasts clear of it', (tester) async {
+      await pumpPage(tester);
+      unawaited(
+        navigator(tester).push(
+          RawDialogRoute<void>(
+            pageBuilder: (context, _, _) =>
+                const SizedBox(width: 200, height: 100),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(toast(tester).bottom, 700 - 80 - 16);
+    });
+
+    testWidgets('a bar that rebuilds while covered keeps nothing clear, and '
+        'is read afresh as it comes back', (tester) async {
+      await pumpPage(tester);
+      unawaited(navigator(tester).push(opaque()));
+      await tester.pumpAndSettle();
+      setPage(() => barHeight = 96);
+      await tester.pumpAndSettle();
+      expect(toast(tester).bottom, 700 - 16);
+      navigator(tester).pop();
+      await tester.pumpAndSettle();
+      expect(toast(tester).bottom, 700 - 96 - 16);
+    });
+  });
+
   var undone = 0;
   final page = FocusNode(debugLabel: 'page');
   tearDownAll(page.dispose);

@@ -385,12 +385,12 @@ class _TabBarSemantics extends SingleChildRenderObjectWidget {
   ) {
     renderObject
       ..label = label
-      ..textDirection = textDirection;
+      ..wordsDirection = textDirection;
   }
 }
 
 class _RenderTabBarSemantics extends RenderDesignSemanticsProxy {
-  _RenderTabBarSemantics(this._label, this._textDirection);
+  _RenderTabBarSemantics(this._label, this._wordsDirection);
 
   String? _label;
   set label(String? value) {
@@ -399,10 +399,11 @@ class _RenderTabBarSemantics extends RenderDesignSemanticsProxy {
     markNeedsSemanticsUpdate();
   }
 
-  TextDirection? _textDirection;
-  set textDirection(TextDirection? value) {
-    if (value == _textDirection) return;
-    _textDirection = value;
+  // The direction of the words it adds (its label).
+  TextDirection? _wordsDirection;
+  set wordsDirection(TextDirection? value) {
+    if (value == _wordsDirection) return;
+    _wordsDirection = value;
     markNeedsSemanticsUpdate();
   }
 
@@ -416,7 +417,7 @@ class _RenderTabBarSemantics extends RenderDesignSemanticsProxy {
     if (label != null) {
       config
         ..label = label
-        ..textDirection = _textDirection;
+        ..textDirection = _wordsDirection;
     }
   }
 

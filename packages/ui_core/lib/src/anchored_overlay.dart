@@ -1186,6 +1186,9 @@ class _DesignAnchoredOverlayState extends State<RawPopover>
     };
     surface = Shortcuts(
       shortcuts: shortcuts,
+      // The keys alone: no empty semantics node of its own round the
+      // surface's.
+      includeSemantics: false,
       child: Actions(
         actions: {
           DismissIntent: CallbackAction<DismissIntent>(
