@@ -1,0 +1,1495 @@
+# Data-driven fixes for `dart fix`: what moves callers off the names a release renames. look:package writes this file
+# to the package's lib/fix_data.yaml; package/test_fixes/ holds each fix's before and after
+# (`dart fix --compare-to-golden test_fixes`).
+version: 1
+transforms:
+  # 0.3.0: a field's words are its labelText, hintText, helperText and errorText, as InputDecoration's are.
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      constructor: ''
+      inClass: 'ClayInput'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      field: 'label'
+      inClass: 'ClayInput'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      constructor: ''
+      inClass: 'ClayInput'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      field: 'hint'
+      inClass: 'ClayInput'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      constructor: ''
+      inClass: 'ClayInput'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      field: 'error'
+      inClass: 'ClayInput'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+  # 0.3.0: TextField's obscureText.
+  - title: "Rename to 'obscureText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      constructor: ''
+      inClass: 'ClayInput'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'obscure'
+        newName: 'obscureText'
+  - title: "Rename to 'obscureText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      field: 'obscure'
+      inClass: 'ClayInput'
+    changes:
+      - kind: 'rename'
+        newName: 'obscureText'
+  # 0.3.0: a field's words are its labelText, hintText, helperText and errorText, as InputDecoration's are.
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      constructor: ''
+      inClass: 'ClayTextField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      field: 'label'
+      inClass: 'ClayTextField'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      constructor: ''
+      inClass: 'ClayTextField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      field: 'hint'
+      inClass: 'ClayTextField'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      constructor: ''
+      inClass: 'ClayTextField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      field: 'helper'
+      inClass: 'ClayTextField'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      constructor: ''
+      inClass: 'ClayTextField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      field: 'error'
+      inClass: 'ClayTextField'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      constructor: ''
+      inClass: 'ClayTextArea'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      field: 'label'
+      inClass: 'ClayTextArea'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      constructor: ''
+      inClass: 'ClayTextArea'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      field: 'hint'
+      inClass: 'ClayTextArea'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      constructor: ''
+      inClass: 'ClayTextArea'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      field: 'helper'
+      inClass: 'ClayTextArea'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      constructor: ''
+      inClass: 'ClayTextArea'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      field: 'error'
+      inClass: 'ClayTextArea'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      constructor: ''
+      inClass: 'ClayPasswordField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      field: 'label'
+      inClass: 'ClayPasswordField'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      constructor: ''
+      inClass: 'ClayPasswordField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      field: 'hint'
+      inClass: 'ClayPasswordField'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      constructor: ''
+      inClass: 'ClayPasswordField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      field: 'helper'
+      inClass: 'ClayPasswordField'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      constructor: ''
+      inClass: 'ClayPasswordField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      field: 'error'
+      inClass: 'ClayPasswordField'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      constructor: ''
+      inClass: 'ClayInputGroup'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      field: 'label'
+      inClass: 'ClayInputGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      constructor: ''
+      inClass: 'ClayInputGroup'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      field: 'hint'
+      inClass: 'ClayInputGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      constructor: ''
+      inClass: 'ClayInputGroup'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      field: 'helper'
+      inClass: 'ClayInputGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      constructor: ''
+      inClass: 'ClayInputGroup'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      field: 'error'
+      inClass: 'ClayInputGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      constructor: ''
+      inClass: 'ClayCombobox'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      field: 'label'
+      inClass: 'ClayCombobox'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      constructor: ''
+      inClass: 'ClayCombobox'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      field: 'hint'
+      inClass: 'ClayCombobox'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      constructor: ''
+      inClass: 'ClayCombobox'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      field: 'helper'
+      inClass: 'ClayCombobox'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      constructor: ''
+      inClass: 'ClayCombobox'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      field: 'error'
+      inClass: 'ClayCombobox'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      constructor: ''
+      inClass: 'ClayTagInput'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      field: 'label'
+      inClass: 'ClayTagInput'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      constructor: ''
+      inClass: 'ClayTagInput'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      field: 'hint'
+      inClass: 'ClayTagInput'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      constructor: ''
+      inClass: 'ClayTagInput'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      field: 'helper'
+      inClass: 'ClayTagInput'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      constructor: ''
+      inClass: 'ClayTagInput'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      field: 'error'
+      inClass: 'ClayTagInput'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      constructor: ''
+      inClass: 'ClaySelect'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      field: 'label'
+      inClass: 'ClaySelect'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      constructor: ''
+      inClass: 'ClaySelect'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      field: 'hint'
+      inClass: 'ClaySelect'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      constructor: ''
+      inClass: 'ClaySelect'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      field: 'helper'
+      inClass: 'ClaySelect'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      constructor: ''
+      inClass: 'ClaySelect'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      field: 'error'
+      inClass: 'ClaySelect'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      constructor: ''
+      inClass: 'ClayDatePicker'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      field: 'label'
+      inClass: 'ClayDatePicker'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      constructor: ''
+      inClass: 'ClayDatePicker'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      field: 'hint'
+      inClass: 'ClayDatePicker'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      constructor: ''
+      inClass: 'ClayDatePicker'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      field: 'helper'
+      inClass: 'ClayDatePicker'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      constructor: ''
+      inClass: 'ClayDatePicker'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      field: 'error'
+      inClass: 'ClayDatePicker'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      constructor: ''
+      inClass: 'ClayDateRangePicker'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      field: 'label'
+      inClass: 'ClayDateRangePicker'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      constructor: ''
+      inClass: 'ClayDateRangePicker'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      field: 'hint'
+      inClass: 'ClayDateRangePicker'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      constructor: ''
+      inClass: 'ClayDateRangePicker'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      field: 'helper'
+      inClass: 'ClayDateRangePicker'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      constructor: ''
+      inClass: 'ClayDateRangePicker'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      field: 'error'
+      inClass: 'ClayDateRangePicker'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      constructor: ''
+      inClass: 'ClayTimeField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      field: 'label'
+      inClass: 'ClayTimeField'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      constructor: ''
+      inClass: 'ClayTimeField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      field: 'helper'
+      inClass: 'ClayTimeField'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      constructor: ''
+      inClass: 'ClayTimeField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      field: 'error'
+      inClass: 'ClayTimeField'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      constructor: ''
+      inClass: 'ClaySearchField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      field: 'hint'
+      inClass: 'ClaySearchField'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      constructor: ''
+      inClass: 'ClayCommandPalette'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      field: 'hint'
+      inClass: 'ClayCommandPalette'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      constructor: ''
+      inClass: 'ClayFieldMessage'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      field: 'helper'
+      inClass: 'ClayFieldMessage'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      constructor: ''
+      inClass: 'ClayFieldMessage'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      field: 'error'
+      inClass: 'ClayFieldMessage'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      constructor: ''
+      inClass: 'ClayEntryText'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      field: 'hint'
+      inClass: 'ClayEntryText'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  # 0.3.0: the shell's selectedIndex, as NavigationBar's.
+  - title: "Rename to 'selectedIndex'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      constructor: ''
+      inClass: 'ClayPreview'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'activeIndex'
+        newName: 'selectedIndex'
+  - title: "Rename to 'selectedIndex'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      field: 'activeIndex'
+      inClass: 'ClayPreview'
+    changes:
+      - kind: 'rename'
+        newName: 'selectedIndex'
+  # 0.3.0: MaterialApp's theme and darkTheme.
+  - title: "Rename to 'theme'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      constructor: ''
+      inClass: 'ClayPreview'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'light'
+        newName: 'theme'
+  - title: "Rename to 'theme'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      field: 'light'
+      inClass: 'ClayPreview'
+    changes:
+      - kind: 'rename'
+        newName: 'theme'
+  - title: "Rename to 'darkTheme'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      constructor: ''
+      inClass: 'ClayPreview'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'dark'
+        newName: 'darkTheme'
+  - title: "Rename to 'darkTheme'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      field: 'dark'
+      inClass: 'ClayPreview'
+    changes:
+      - kind: 'rename'
+        newName: 'darkTheme'
+  - title: "Rename to 'theme'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      constructor: ''
+      inClass: 'ClayHost'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'light'
+        newName: 'theme'
+  - title: "Rename to 'theme'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      field: 'light'
+      inClass: 'ClayHost'
+    changes:
+      - kind: 'rename'
+        newName: 'theme'
+  - title: "Rename to 'darkTheme'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      constructor: ''
+      inClass: 'ClayHost'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'dark'
+        newName: 'darkTheme'
+  - title: "Rename to 'darkTheme'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      field: 'dark'
+      inClass: 'ClayHost'
+    changes:
+      - kind: 'rename'
+        newName: 'darkTheme'
+  # 0.3.0: Stepper's currentStep.
+  - title: "Rename to 'currentStep'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      constructor: ''
+      inClass: 'ClayStepProgress'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'current'
+        newName: 'currentStep'
+  - title: "Rename to 'currentStep'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      field: 'current'
+      inClass: 'ClayStepProgress'
+    changes:
+      - kind: 'rename'
+        newName: 'currentStep'
+  # 0.3.0: CupertinoDialogAction's isDefaultAction.
+  - title: "Rename to 'isDefaultAction'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      constructor: ''
+      inClass: 'ClayDialogAction'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'primary'
+        newName: 'isDefaultAction'
+  - title: "Rename to 'isDefaultAction'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      field: 'primary'
+      inClass: 'ClayDialogAction'
+    changes:
+      - kind: 'rename'
+        newName: 'isDefaultAction'
+  # 0.3.0: isDestructiveAction, as Clay's other actions and CupertinoDialogAction say it.
+  - title: "Rename to 'isDestructiveAction'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      constructor: ''
+      inClass: 'ClayDialogAction'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'destructive'
+        newName: 'isDestructiveAction'
+  - title: "Rename to 'isDestructiveAction'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      field: 'destructive'
+      inClass: 'ClayDialogAction'
+    changes:
+      - kind: 'rename'
+        newName: 'isDestructiveAction'
+  - title: "Rename to 'isDestructiveAction'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      constructor: ''
+      inClass: 'ClayListTile'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'destructive'
+        newName: 'isDestructiveAction'
+  - title: "Rename to 'isDestructiveAction'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      field: 'destructive'
+      inClass: 'ClayListTile'
+    changes:
+      - kind: 'rename'
+        newName: 'isDestructiveAction'
+  - title: "Rename to 'isDestructiveAction'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      constructor: ''
+      inClass: 'ClayMenuEntry'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'destructive'
+        newName: 'isDestructiveAction'
+  - title: "Rename to 'isDestructiveAction'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      field: 'destructive'
+      inClass: 'ClayMenuEntry'
+    changes:
+      - kind: 'rename'
+        newName: 'isDestructiveAction'
+  - title: "Rename to 'isDestructiveAction'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      constructor: ''
+      inClass: 'ClayMenuRow'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'destructive'
+        newName: 'isDestructiveAction'
+  - title: "Rename to 'isDestructiveAction'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      field: 'destructive'
+      inClass: 'ClayMenuRow'
+    changes:
+      - kind: 'rename'
+        newName: 'isDestructiveAction'
+  # 0.3.0: the palette's hintText, as ClayCommandPalette's.
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      function: 'showClayCommandPalette'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+  # 0.3.0: the shells' and the navigation's onDestinationSelected, as on NavigationBar.
+  - title: "Rename to 'onDestinationSelected'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      constructor: ''
+      inClass: 'ClayAppShell'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'onSelected'
+        newName: 'onDestinationSelected'
+  - title: "Rename to 'onDestinationSelected'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      field: 'onSelected'
+      inClass: 'ClayAppShell'
+    changes:
+      - kind: 'rename'
+        newName: 'onDestinationSelected'
+  - title: "Rename to 'onDestinationSelected'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      constructor: ''
+      inClass: 'ClayScaffold'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'onSelected'
+        newName: 'onDestinationSelected'
+  - title: "Rename to 'onDestinationSelected'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      field: 'onSelected'
+      inClass: 'ClayScaffold'
+    changes:
+      - kind: 'rename'
+        newName: 'onDestinationSelected'
+  - title: "Rename to 'onDestinationSelected'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      constructor: ''
+      inClass: 'ClayNavigationBar'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'onSelected'
+        newName: 'onDestinationSelected'
+  - title: "Rename to 'onDestinationSelected'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      field: 'onSelected'
+      inClass: 'ClayNavigationBar'
+    changes:
+      - kind: 'rename'
+        newName: 'onDestinationSelected'
+  - title: "Rename to 'onDestinationSelected'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      constructor: ''
+      inClass: 'ClayNavigationRail'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'onSelected'
+        newName: 'onDestinationSelected'
+  - title: "Rename to 'onDestinationSelected'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      field: 'onSelected'
+      inClass: 'ClayNavigationRail'
+    changes:
+      - kind: 'rename'
+        newName: 'onDestinationSelected'
+  - title: "Rename to 'onDestinationSelected'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      constructor: ''
+      inClass: 'ClaySidebar'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'onSelected'
+        newName: 'onDestinationSelected'
+  - title: "Rename to 'onDestinationSelected'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      field: 'onSelected'
+      inClass: 'ClaySidebar'
+    changes:
+      - kind: 'rename'
+        newName: 'onDestinationSelected'
+  # 0.3.0: ClayTabBar's onTap, as on TabBar.
+  - title: "Rename to 'onTap'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      constructor: ''
+      inClass: 'ClayTabBar'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'onSelected'
+        newName: 'onTap'
+  - title: "Rename to 'onTap'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      field: 'onSelected'
+      inClass: 'ClayTabBar'
+    changes:
+      - kind: 'rename'
+        newName: 'onTap'
+  # 0.3.0: ClayIconButton's isSelected, as on IconButton.
+  - title: "Rename to 'isSelected'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      constructor: ''
+      inClass: 'ClayIconButton'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'selected'
+        newName: 'isSelected'
+  - title: "Rename to 'isSelected'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      constructor: 'plain'
+      inClass: 'ClayIconButton'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'selected'
+        newName: 'isSelected'
+  - title: "Rename to 'isSelected'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      field: 'selected'
+      inClass: 'ClayIconButton'
+    changes:
+      - kind: 'rename'
+        newName: 'isSelected'
+  # 0.3.0: ClayDisclosure's onExpansionChanged, as on ExpansionTile.
+  - title: "Rename to 'onExpansionChanged'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      constructor: ''
+      inClass: 'ClayDisclosure'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'onChanged'
+        newName: 'onExpansionChanged'
+  - title: "Rename to 'onExpansionChanged'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      field: 'onChanged'
+      inClass: 'ClayDisclosure'
+    changes:
+      - kind: 'rename'
+        newName: 'onExpansionChanged'
+  # 0.3.0: ClayBadge's maxCount, as on Badge.count.
+  - title: "Rename to 'maxCount'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      constructor: ''
+      inClass: 'ClayBadge'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'max'
+        newName: 'maxCount'
+  - title: "Rename to 'maxCount'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      field: 'max'
+      inClass: 'ClayBadge'
+    changes:
+      - kind: 'rename'
+        newName: 'maxCount'
+  # 0.3.0: ClayRadioGroup's groupValue, as on RadioGroup.
+  - title: "Rename to 'groupValue'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      constructor: ''
+      inClass: 'ClayRadioGroup'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'value'
+        newName: 'groupValue'
+  - title: "Rename to 'groupValue'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      field: 'value'
+      inClass: 'ClayRadioGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'groupValue'
+  # 0.3.0: the page names: pageCount, page and onPageChanged (PageView).
+  - title: "Rename to 'pageCount'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      constructor: ''
+      inClass: 'ClayPagination'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'count'
+        newName: 'pageCount'
+  - title: "Rename to 'pageCount'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      field: 'count'
+      inClass: 'ClayPagination'
+    changes:
+      - kind: 'rename'
+        newName: 'pageCount'
+  - title: "Rename to 'onPageChanged'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      constructor: ''
+      inClass: 'ClayPagination'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'onChanged'
+        newName: 'onPageChanged'
+  - title: "Rename to 'onPageChanged'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      field: 'onChanged'
+      inClass: 'ClayPagination'
+    changes:
+      - kind: 'rename'
+        newName: 'onPageChanged'
+  - title: "Rename to 'pageCount'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      constructor: ''
+      inClass: 'ClayPageDots'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'count'
+        newName: 'pageCount'
+  - title: "Rename to 'pageCount'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      field: 'count'
+      inClass: 'ClayPageDots'
+    changes:
+      - kind: 'rename'
+        newName: 'pageCount'
+  - title: "Rename to 'page'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      constructor: ''
+      inClass: 'ClayPageDots'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'index'
+        newName: 'page'
+  - title: "Rename to 'page'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      field: 'index'
+      inClass: 'ClayPageDots'
+    changes:
+      - kind: 'rename'
+        newName: 'page'
+  - title: "Rename to 'onPageChanged'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      constructor: ''
+      inClass: 'ClayPageDots'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'onChanged'
+        newName: 'onPageChanged'
+  - title: "Rename to 'onPageChanged'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      field: 'onChanged'
+      inClass: 'ClayPageDots'
+    changes:
+      - kind: 'rename'
+        newName: 'onPageChanged'
+  # 0.3.0: ClayTextTheme.from; in Flutter, of looks a value up from a BuildContext.
+  - title: "Rename to 'ClayTextTheme.from'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      constructor: 'of'
+      inClass: 'ClayTextTheme'
+    changes:
+      - kind: 'rename'
+        newName: 'from'
+  # 0.3.0: ClayFileDrop's labelText and hintText, as the fields'.
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      constructor: ''
+      inClass: 'ClayFileDrop'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      field: 'label'
+      inClass: 'ClayFileDrop'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      constructor: ''
+      inClass: 'ClayFileDrop'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: ['clay_ui.dart', 'clay_parts.dart']
+      field: 'hint'
+      inClass: 'ClayFileDrop'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'

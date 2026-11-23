@@ -35,7 +35,7 @@ class ClayDisclosure extends StatefulWidget {
     this.subtitle,
     this.expanded,
     this.initiallyExpanded = false,
-    this.onChanged,
+    this.onExpansionChanged,
     this.style,
   });
 
@@ -55,7 +55,7 @@ class ClayDisclosure extends StatefulWidget {
   final bool initiallyExpanded;
 
   /// It opened (true) or closed.
-  final ValueChanged<bool>? onChanged;
+  final ValueChanged<bool>? onExpansionChanged;
 
   /// This disclosure's own style, over [ClayThemeData.disclosureStyle]:
   /// `fill` the card.
@@ -81,7 +81,7 @@ class _ClayDisclosureState extends State<ClayDisclosure> {
   void _toggle() {
     final next = !_expanded;
     if (widget.expanded == null) setState(() => _open = next);
-    widget.onChanged?.call(next);
+    widget.onExpansionChanged?.call(next);
   }
 
   @override
@@ -876,7 +876,7 @@ class ClayBadge extends StatelessWidget {
     super.key,
     required this.count,
     this.child,
-    this.max = 99,
+    this.maxCount = 99,
     this.semanticLabel,
     this.style,
   });
@@ -888,7 +888,7 @@ class ClayBadge extends StatelessWidget {
   final Widget? child;
 
   /// The most it shows before "+".
-  final int max;
+  final int maxCount;
 
   /// What a screen reader says; null: "[count] new".
   final String? semanticLabel;
@@ -903,7 +903,7 @@ class ClayBadge extends StatelessWidget {
     final c = theme.colors;
     final layered = DesignStyleOf([style, theme.badgeStyle], const {});
     final fill = layered.fill ?? c.accent;
-    final words = count > max ? '$max+' : '$count';
+    final words = count > maxCount ? '$maxCount+' : '$count';
     final pill = count <= 0
         ? null
         : ConstrainedBox(

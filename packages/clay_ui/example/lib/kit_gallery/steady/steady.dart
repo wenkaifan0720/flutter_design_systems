@@ -494,7 +494,7 @@ class SteadyFrameState extends State<SteadyFrame> {
     return ClayScaffold(
       destinations: _places,
       selectedIndex: _place.index,
-      onSelected: (i) => go(SteadyPlace.values[i]),
+      onDestinationSelected: (i) => go(SteadyPlace.values[i]),
       brand: width >= ClayMetrics.sidebarBreakpoint
           ? const SteadyMark(withName: true)
           : const SteadyMark(),

@@ -154,8 +154,8 @@ class _SteadyEditorState extends State<SteadyEditor> {
           ),
           ClayDialogAction(
             label: 'Delete',
-            primary: true,
-            destructive: true,
+            isDefaultAction: true,
+            isDestructiveAction: true,
             onPressed: () => Navigator.of(context).pop(true),
           ),
         ],
@@ -207,9 +207,9 @@ class _SteadyEditorState extends State<SteadyEditor> {
       children: [
         ClayTextField(
           controller: _name,
-          label: 'Name',
-          hint: 'Drink water',
-          error: _nameError,
+          labelText: 'Name',
+          hintText: 'Drink water',
+          errorText: _nameError,
           textCapitalization: TextCapitalization.sentences,
           onChanged: (_) {
             if (_nameError != null) setState(() => _nameError = null);
@@ -265,7 +265,7 @@ class _SteadyEditorState extends State<SteadyEditor> {
                       for (final g in _glyphs)
                         ClayIconButton(
                           onPressed: () => setState(() => _icon = g),
-                          selected: g == _icon,
+                          isSelected: g == _icon,
                           icon: Icon(g),
                           tooltip: 'Glyph ${_glyphs.indexOf(g) + 1}',
                         ),
@@ -289,7 +289,7 @@ class _SteadyEditorState extends State<SteadyEditor> {
         ),
         steadyGroupGap,
         ClaySelect<String>(
-          label: 'Repeat',
+          labelText: 'Repeat',
           value: _repeat,
           items: [
             for (final e in steadyRepeats.entries)
@@ -300,8 +300,8 @@ class _SteadyEditorState extends State<SteadyEditor> {
         steadyGroupGap,
         ClayTextField(
           controller: _goal,
-          label: 'Daily goal',
-          helper: '1 for a yes-or-no habit',
+          labelText: 'Daily goal',
+          helperText: '1 for a yes-or-no habit',
           keyboardType: TextInputType.number,
           // Two digits at most, without a count: '1/2' under a number
           // reads as a half.
@@ -370,7 +370,7 @@ class _Swatch extends StatelessWidget {
   @override
   Widget build(BuildContext context) => ClayIconButton(
     onPressed: onPressed,
-    selected: chosen,
+    isSelected: chosen,
     tooltip: label,
     style: ClayStyle(fill: WidgetStatePropertyAll(color)),
     icon: chosen
@@ -417,7 +417,7 @@ class _ReminderSheetState extends State<_ReminderSheet> {
           ),
           ClayDialogAction(
             label: 'Set reminder',
-            primary: true,
+            isDefaultAction: true,
             onPressed: () =>
                 Navigator.of(context).pop(_time.hour * 60 + _time.minute),
           ),

@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:ui_core/ui_core.dart';
 
 import 'fonts.dart';
+import 'internal/entry_parts.dart' show ClayFieldDecorator;
 import 'surface.dart';
 import 'theme.dart';
 
@@ -81,20 +82,20 @@ class ClayFieldLabel extends StatelessWidget {
   }
 }
 
-/// What stands under a field: its [error] in the danger ink (said as it
-/// appears), or else its [helper], its words under the field's own
+/// What stands under a field: its [errorText] in the danger ink (said as it
+/// appears), or else its [helperText], its words under the field's own
 /// ([ClayMetrics.fieldInset] in); [inset] false starts them at the edge,
 /// under parts that start there.
 ///
 /// ```dart
-/// const ClayFieldMessage(helper: 'Shown on Today')
+/// const ClayFieldMessage(helperText: 'Shown on Today')
 /// ```
 class ClayFieldMessage extends StatelessWidget {
-  /// The [helper] or the [error] under a field.
+  /// The [helperText] or the [errorText] under a field.
   const ClayFieldMessage({
     super.key,
-    this.helper,
-    this.error,
+    this.helperText,
+    this.errorText,
     this.inset = true,
     this.style,
   });
@@ -104,10 +105,10 @@ class ClayFieldMessage extends StatelessWidget {
   final bool inset;
 
   /// Help under the field.
-  final String? helper;
+  final String? helperText;
 
-  /// What is wrong; it replaces [helper].
-  final String? error;
+  /// What is wrong; it replaces [helperText].
+  final String? errorText;
 
   /// Its own style, over [ClayThemeData.fieldMessageStyle]: `foreground`
   /// the help (an error keeps the danger ink), `textStyle` the words' face.
@@ -119,11 +120,11 @@ class ClayFieldMessage extends StatelessWidget {
     final c = theme.colors;
     final layered = DesignStyleOf(
       [this.style, theme.fieldMessageStyle],
-      {if (error != null) WidgetState.error},
+      {if (errorText != null) WidgetState.error},
     );
     final style = theme.textTheme.secondary.merge(layered.textStyle);
     final side = inset ? ClayMetrics.fieldInset : 0.0;
-    if (error != null) {
+    if (errorText != null) {
       return Padding(
         padding: EdgeInsetsDirectional.only(
           top: ClaySpacing.small,
@@ -132,11 +133,11 @@ class ClayFieldMessage extends StatelessWidget {
         ),
         child: Semantics(
           liveRegion: true,
-          child: Text(error!, style: style.copyWith(color: c.dangerInk)),
+          child: Text(errorText!, style: style.copyWith(color: c.dangerInk)),
         ),
       );
     }
-    if (helper != null) {
+    if (helperText != null) {
       return Padding(
         padding: EdgeInsetsDirectional.only(
           top: ClaySpacing.small,
@@ -144,7 +145,7 @@ class ClayFieldMessage extends StatelessWidget {
           end: side,
         ),
         child: Text(
-          helper!,
+          helperText!,
           style: layered.foreground == null
               ? style
               : style.copyWith(color: layered.foreground),
@@ -158,33 +159,33 @@ class ClayFieldMessage extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('helper', helper, defaultValue: null))
-      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(StringProperty('helperText', helperText, defaultValue: null))
+      ..add(StringProperty('errorText', errorText, defaultValue: null))
       ..add(FlagProperty('inset', value: inset, ifFalse: 'at the edge'));
   }
 }
 
 /// A Clay text field: a well pressed into the ground, rounded 16, the words
 /// on its floor. Focus brings a 2 px rim of the focus colour up inside the
-/// well's edge; an [error] rims it in the danger colour and says itself
+/// well's edge; an [errorText] rims it in the danger colour and says itself
 /// under it.
 ///
 /// The caller owns a [controller] or [focusNode] it passes; without one the
 /// field makes its own and disposes it.
 ///
 /// ```dart
-/// ClayTextField(label: 'Habit name', hint: 'Drink water', onChanged: (value) {})
+/// ClayTextField(labelText: 'Habit name', hintText: 'Drink water', onChanged: (value) {})
 /// ```
 class ClayTextField extends StatefulWidget {
-  /// A field, [label] above it.
+  /// A field, [labelText] above it.
   const ClayTextField({
     super.key,
     this.controller,
     this.focusNode,
-    this.label,
-    this.hint,
-    this.helper,
-    this.error,
+    this.labelText,
+    this.hintText,
+    this.helperText,
+    this.errorText,
     this.prefixIcon,
     this.suffix,
     this.obscureText = false,
@@ -212,16 +213,16 @@ class ClayTextField extends StatefulWidget {
   final FocusNode? focusNode;
 
   /// The label above the field.
-  final String? label;
+  final String? labelText;
 
   /// A format or an example in the empty field; never the label.
-  final String? hint;
+  final String? hintText;
 
   /// Help under the field.
-  final String? helper;
+  final String? helperText;
 
   /// What is wrong with the words, under the field in the danger ink.
-  final String? error;
+  final String? errorText;
 
   /// A glyph at the field's start (a search's lens).
   final Widget? prefixIcon;
@@ -273,7 +274,7 @@ class ClayTextField extends StatefulWidget {
   /// only (a number field takes its limit without a count).
   final int? maxLength;
 
-  /// What a screen reader calls the field, when not its [label].
+  /// What a screen reader calls the field, when not its [labelText].
   final String? semanticLabel;
 
   /// This field's own style, over [ClayThemeData.textFieldStyle].
@@ -286,9 +287,9 @@ class ClayTextField extends StatefulWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('label', label, defaultValue: null))
-      ..add(StringProperty('hint', hint, defaultValue: null))
-      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
+      ..add(StringProperty('errorText', errorText, defaultValue: null))
       ..add(FlagProperty('enabled', value: enabled, ifFalse: 'disabled'))
       ..add(FlagProperty('obscureText', value: obscureText, ifTrue: 'obscured'))
       ..add(IntProperty('maxLines', maxLines, defaultValue: 1))
@@ -349,12 +350,12 @@ class _ClayTextFieldState extends State<ClayTextField> {
     final theme = ClayTheme.of(context);
     final c = theme.colors;
     final focused = _focus.hasFocus;
-    final error = widget.error != null;
+    final errorText = widget.errorText != null;
     final states = <WidgetState>{
       if (!widget.enabled) WidgetState.disabled,
       if (focused) WidgetState.focused,
       if (_hovered && widget.enabled) WidgetState.hovered,
-      if (error) WidgetState.error,
+      if (errorText) WidgetState.error,
     };
     final layered = DesignStyleOf([widget.style, theme.textFieldStyle], states);
     final words = theme.textTheme.body
@@ -366,17 +367,17 @@ class _ClayTextFieldState extends State<ClayTextField> {
     face = face.copyWith(
       // Off, the well fills nearly level with the ground.
       shadeOpacity: widget.enabled ? null : face.shadeOpacity * 0.4,
-      focusColor: error ? c.danger : (layered.edge ?? c.focus),
-      focus: focused || error ? 1 : 0,
+      focusColor: errorText ? c.danger : (layered.edge ?? c.focus),
+      focus: focused || errorText ? 1 : 0,
     );
     final entry = DesignTextEntryBox(
       minHeight: theme.controlHeight,
       controller: _controller,
       maxLines: widget.maxLines,
-      hint: widget.hint == null
+      hint: widget.hintText == null
           ? null
           : Text(
-              widget.hint!,
+              widget.hintText!,
               maxLines: oneLine ? 1 : null,
               overflow: oneLine ? TextOverflow.ellipsis : null,
               style: words.copyWith(
@@ -387,8 +388,8 @@ class _ClayTextFieldState extends State<ClayTextField> {
       // never spread onto what holds it.
       child: MergeSemantics(
         child: Semantics(
-          label: widget.semanticLabel ?? widget.label,
-          hint: widget.hint,
+          label: widget.semanticLabel ?? widget.labelText,
+          hint: widget.hintText,
           child: Material(
             type: MaterialType.transparency,
             child: TextField(
@@ -495,38 +496,23 @@ class _ClayTextFieldState extends State<ClayTextField> {
     final count = widget.maxLength == null || number
         ? null
         : '${_controller.text.characters.length}/${widget.maxLength}';
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        if (widget.label != null)
-          ExcludeSemantics(
-            child: ClayFieldLabel(widget.label!, enabled: widget.enabled),
-          ),
-        box,
-        if (count == null)
-          ClayFieldMessage(helper: widget.helper, error: widget.error)
-        else
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: ClayFieldMessage(
-                  helper: widget.helper,
-                  error: widget.error,
-                ),
+    return ClayFieldDecorator(
+      labelText: widget.labelText,
+      helperText: widget.helperText,
+      errorText: widget.errorText,
+      enabled: widget.enabled,
+      focusNode: _focus,
+      end: count == null
+          ? null
+          : Padding(
+              // The count ends where the field's words do.
+              padding: const EdgeInsetsDirectional.only(
+                top: ClaySpacing.small,
+                end: ClayMetrics.fieldInset,
               ),
-              Padding(
-                // The count ends where the field's words do.
-                padding: const EdgeInsetsDirectional.only(
-                  top: ClaySpacing.small,
-                  end: ClayMetrics.fieldInset,
-                ),
-                child: Text(count, style: theme.textTheme.secondary),
-              ),
-            ],
-          ),
-      ],
+              child: Text(count, style: theme.textTheme.secondary),
+            ),
+      child: box,
     );
   }
 }

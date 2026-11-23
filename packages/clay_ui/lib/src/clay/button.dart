@@ -466,7 +466,7 @@ enum _IconKind { clay, filled, plain }
 
 /// A round Clay ball holding a glyph: white clay by default, coral with
 /// [ClayIconButton.filled], or a bare glyph with [ClayIconButton.plain] (on
-/// a bar, beside a field). [selected] holds a toggling ball on: it warms
+/// a bar, beside a field). [isSelected] holds a toggling ball on: it warms
 /// toward the accent.
 ///
 /// ```dart
@@ -479,7 +479,7 @@ class ClayIconButton extends StatelessWidget {
     required this.onPressed,
     required this.icon,
     required this.tooltip,
-    this.selected,
+    this.isSelected,
     this.style,
     this.focusNode,
     this.autofocus = false,
@@ -494,7 +494,7 @@ class ClayIconButton extends StatelessWidget {
     this.style,
     this.focusNode,
     this.autofocus = false,
-  }) : selected = null,
+  }) : isSelected = null,
        _kind = _IconKind.filled;
 
   /// A bare glyph: on a top bar, at a field's end.
@@ -503,7 +503,7 @@ class ClayIconButton extends StatelessWidget {
     required this.onPressed,
     required this.icon,
     required this.tooltip,
-    this.selected,
+    this.isSelected,
     this.style,
     this.focusNode,
     this.autofocus = false,
@@ -520,7 +520,7 @@ class ClayIconButton extends StatelessWidget {
 
   /// Whether a toggling ball is on (warmed toward the accent); null for a
   /// ball that does not toggle, as `IconButton.isSelected`.
-  final bool? selected;
+  final bool? isSelected;
 
   /// This ball's own style, over [ClayThemeData.iconButtonStyle].
   final ClayStyle? style;
@@ -541,8 +541,8 @@ class ClayIconButton extends StatelessWidget {
       onPressed: onPressed,
       focusNode: focusNode,
       autofocus: autofocus,
-      selected: selected ?? false,
-      semanticSelected: selected,
+      selected: isSelected ?? false,
+      semanticSelected: isSelected,
       semanticLabel: tooltip,
       excludeSemantics: true,
       builder: (context, states, _) {
@@ -550,7 +550,7 @@ class ClayIconButton extends StatelessWidget {
         final disabled = states.contains(WidgetState.disabled);
         final pressed = states.contains(WidgetState.pressed);
         final focused = states.contains(WidgetState.focused);
-        final on = selected ?? false;
+        final on = isSelected ?? false;
         final side = layered.minimumSize?.height ?? theme.controlHeight - 4;
         final glyph = layered.iconSize ?? 20;
         if (_kind == _IconKind.plain) {
@@ -643,7 +643,7 @@ class ClayIconButton extends StatelessWidget {
         FlagProperty('enabled', value: onPressed != null, ifFalse: 'disabled'),
       )
       ..add(
-        DiagnosticsProperty<bool>('selected', selected, defaultValue: null),
+        DiagnosticsProperty<bool>('isSelected', isSelected, defaultValue: null),
       );
   }
 }

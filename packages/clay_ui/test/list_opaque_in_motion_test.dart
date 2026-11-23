@@ -31,7 +31,7 @@ void main() {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               ClaySelect<String>(
-                label: 'Repeat',
+                labelText: 'Repeat',
                 value: 'Every day',
                 items: const [
                   ClaySelectItem(value: 'Every day', label: 'Every day'),
@@ -41,7 +41,7 @@ void main() {
                 onChanged: (_) {},
               ),
               const SizedBox(height: 24),
-              const ClayTextField(label: 'Notes'),
+              const ClayTextField(labelText: 'Notes'),
             ],
           ),
         ),

@@ -75,7 +75,7 @@ class _Dates extends StatelessWidget {
       KitLive<DateTime?>(
         DateTime(2026, 11, 23),
         (context, day, set) => ClayDatePicker(
-          label: 'Starts on',
+          labelText: 'Starts on',
           value: day,
           firstDate: _first,
           lastDate: _last,
@@ -90,8 +90,8 @@ class _Dates extends StatelessWidget {
           end: DateTime(2026, 12, 28),
         ),
         (context, range, set) => ClayDateRangePicker(
-          label: 'A break',
-          helper: 'Streaks pause over these days.',
+          labelText: 'A break',
+          helperText: 'Streaks pause over these days.',
           value: range,
           firstDate: _first,
           lastDate: _last,
@@ -173,7 +173,7 @@ class _Times extends StatelessWidget {
             child: KitLive<ClayTime?>(
               const ClayTime(hour: 21, minute: 0),
               (context, time, set) => ClayTimeField(
-                label: 'Remind me at',
+                labelText: 'Remind me at',
                 value: time,
                 onChanged: set,
               ),

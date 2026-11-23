@@ -56,7 +56,7 @@ void main() {
               onPressed: () {},
               icon: const Icon(IconData(0x41)),
               tooltip: 'Pin',
-              selected: selected,
+              isSelected: selected,
             ),
           ),
         ),

@@ -361,8 +361,8 @@ class ClayDataTable<R> extends StatelessWidget {
                 ),
                 ClayPagination(
                   page: controller.page + 1,
-                  count: controller.pageCount,
-                  onChanged: (p) => controller.goToPage(p - 1),
+                  pageCount: controller.pageCount,
+                  onPageChanged: (p) => controller.goToPage(p - 1),
                 ),
               ],
             ),
@@ -741,9 +741,9 @@ class ClayCarousel extends StatelessWidget {
               Expanded(
                 child: Center(
                   child: ClayPageDots(
-                    count: controls.count,
-                    index: controls.page,
-                    onChanged: controls.goToPage,
+                    pageCount: controls.count,
+                    page: controls.page,
+                    onPageChanged: controls.goToPage,
                   ),
                 ),
               ),

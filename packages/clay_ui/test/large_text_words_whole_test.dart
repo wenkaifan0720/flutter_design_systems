@@ -171,7 +171,7 @@ void main() {
           width: 300,
           child: ClayStepProgress(
             steps: ['Habit', 'Schedule', 'Reminder'],
-            current: 1,
+            currentStep: 1,
           ),
         ),
         direction: direction,
@@ -199,7 +199,7 @@ void main() {
                 ClayDestination(icon: LucideIcons.settings, label: 'Settings'),
               ],
               selectedIndex: 0,
-              onSelected: (_) {},
+              onDestinationSelected: (_) {},
               action: ClayIconButton.filled(
                 onPressed: () {},
                 icon: const Icon(LucideIcons.plus),
@@ -233,10 +233,10 @@ void main() {
         tester,
         const Column(
           children: [
-            ClayInputGroup(label: 'Goal', suffixText: 'glasses a day'),
+            ClayInputGroup(labelText: 'Goal', suffixText: 'glasses a day'),
             SizedBox(height: 16),
             ClayInputGroup(
-              label: 'Address',
+              labelText: 'Address',
               prefixText: 'https://',
               suffixText: '.habits',
             ),
@@ -261,7 +261,7 @@ void main() {
     await _phone(
       tester,
       const ClayInputGroup(
-        label: 'Address',
+        labelText: 'Address',
         prefixText: 'https://',
         suffixText: '.habits',
       ),

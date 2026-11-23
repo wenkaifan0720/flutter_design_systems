@@ -133,7 +133,7 @@ void main() {
                 message: 'Check your connection.',
                 onRetry: () => tries++,
               ),
-              const ClayInput(label: 'Password', obscure: true),
+              const ClayInput(labelText: 'Password', obscureText: true),
             ],
           ),
         ),

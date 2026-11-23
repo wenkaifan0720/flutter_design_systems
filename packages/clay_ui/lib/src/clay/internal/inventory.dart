@@ -132,13 +132,19 @@ DesignInventory _registry() => DesignInventory(
       ),
     ),
     // Inputs.
-    _row('TextField', (_) => const ClayTextField(label: 'Habit name')),
-    _row('TextArea', (_) => const ClayTextArea(label: 'Note')),
-    _row('SearchField', (_) => const ClaySearchField(hint: 'Search habits')),
-    _row('PasswordField', (_) => const ClayPasswordField(label: 'Password')),
+    _row('TextField', (_) => const ClayTextField(labelText: 'Habit name')),
+    _row('TextArea', (_) => const ClayTextArea(labelText: 'Note')),
+    _row(
+      'SearchField',
+      (_) => const ClaySearchField(hintText: 'Search habits'),
+    ),
+    _row(
+      'PasswordField',
+      (_) => const ClayPasswordField(labelText: 'Password'),
+    ),
     _row(
       'InputGroup',
-      (_) => const ClayInputGroup(label: 'Goal', suffixText: 'glasses'),
+      (_) => const ClayInputGroup(labelText: 'Goal', suffixText: 'glasses'),
     ),
     _row('InputOtp', (_) => const ClayOtpField(semanticLabel: 'Code')),
     _row(
@@ -159,7 +165,7 @@ DesignInventory _registry() => DesignInventory(
       (_) => _Live<String>(
         'daily',
         (context, v, set) => ClaySelect<String>(
-          label: 'Repeat',
+          labelText: 'Repeat',
           value: v,
           items: const [
             ClaySelectItem(value: 'daily', label: 'Every day'),
@@ -173,7 +179,7 @@ DesignInventory _registry() => DesignInventory(
     _row(
       'Combobox',
       (_) => const ClayCombobox<String>(
-        label: 'Category',
+        labelText: 'Category',
         options: ['Health', 'Mind', 'Home', 'Work'],
       ),
     ),
@@ -182,7 +188,7 @@ DesignInventory _registry() => DesignInventory(
       (_) => _Live<List<String>>(
         const ['Morning'],
         (context, tags, set) => ClayTagInput<String>(
-          label: 'Tags',
+          labelText: 'Tags',
           values: tags,
           options: const ['Morning', 'Outdoors', 'Quick', 'With friends'],
           onChanged: set,
@@ -203,7 +209,7 @@ DesignInventory _registry() => DesignInventory(
         'morning',
         (context, v, set) => ClayRadioGroup<String>(
           options: const ['morning', 'evening'],
-          value: v,
+          groupValue: v,
           labelOf: (o) => o == 'morning' ? 'Morning' : 'Evening',
           onChanged: set,
         ),
@@ -275,8 +281,8 @@ DesignInventory _registry() => DesignInventory(
     _row(
       'FileUpload',
       (_) => const ClayFileDrop(
-        label: 'Photo',
-        hint: 'A picture for this habit, up to 5 MB',
+        labelText: 'Photo',
+        hintText: 'A picture for this habit, up to 5 MB',
         onChoose: _none,
       ),
     ),
@@ -285,7 +291,7 @@ DesignInventory _registry() => DesignInventory(
       (_) => _Live<DateTime?>(
         DateTime(2026, 11, 23),
         (context, v, set) => ClayDatePicker(
-          label: 'Starts on',
+          labelText: 'Starts on',
           value: v,
           firstDate: _first,
           lastDate: _last,
@@ -298,7 +304,7 @@ DesignInventory _registry() => DesignInventory(
       (_) => _Live<ClayDateRange?>(
         null,
         (context, v, set) => ClayDateRangePicker(
-          label: 'A break',
+          labelText: 'A break',
           value: v,
           firstDate: _first,
           lastDate: _last,
@@ -311,7 +317,7 @@ DesignInventory _registry() => DesignInventory(
       (_) => _Live<ClayTime?>(
         const ClayTime(hour: 7, minute: 30),
         (context, v, set) =>
-            ClayTimeField(label: 'Remind me at', value: v, onChanged: set),
+            ClayTimeField(labelText: 'Remind me at', value: v, onChanged: set),
       ),
     ),
     _row(
@@ -367,7 +373,7 @@ DesignInventory _registry() => DesignInventory(
         (context, i, set) => ClayNavigationBar(
           destinations: _places,
           selectedIndex: i,
-          onSelected: set,
+          onDestinationSelected: set,
         ),
       ),
     ),
@@ -380,7 +386,7 @@ DesignInventory _registry() => DesignInventory(
           (context, i, set) => ClayNavigationRail(
             destinations: _places,
             selectedIndex: i,
-            onSelected: set,
+            onDestinationSelected: set,
           ),
         ),
       ),
@@ -394,7 +400,7 @@ DesignInventory _registry() => DesignInventory(
           (context, i, set) => ClaySidebar(
             destinations: _places,
             selectedIndex: i,
-            onSelected: set,
+            onDestinationSelected: set,
           ),
         ),
       ),
@@ -406,7 +412,7 @@ DesignInventory _registry() => DesignInventory(
         (context, i, set) => ClayTabBar(
           tabs: const ['Week', 'Month', 'Year'],
           selectedIndex: i,
-          onSelected: set,
+          onTap: set,
         ),
       ),
     ),
@@ -423,21 +429,23 @@ DesignInventory _registry() => DesignInventory(
       'Pagination',
       (_) => _Live<int>(
         3,
-        (context, p, set) => ClayPagination(page: p, count: 12, onChanged: set),
+        (context, p, set) =>
+            ClayPagination(page: p, pageCount: 12, onPageChanged: set),
       ),
     ),
     _row(
       'StepProgress',
       (_) => const ClayStepProgress(
         steps: ['Habit', 'Schedule', 'Reminder'],
-        current: 1,
+        currentStep: 1,
       ),
     ),
     _row(
       'PageDots',
       (_) => _Live<int>(
         1,
-        (context, i, set) => ClayPageDots(count: 4, index: i, onChanged: set),
+        (context, i, set) =>
+            ClayPageDots(pageCount: 4, page: i, onPageChanged: set),
       ),
     ),
     _row(
@@ -493,7 +501,7 @@ DesignInventory _registry() => DesignInventory(
             topBar: const ClayTopBar(title: 'Today'),
             destinations: _places,
             selectedIndex: i,
-            onSelected: set,
+            onDestinationSelected: set,
             body: const SizedBox.expand(),
           ),
         ),
@@ -655,8 +663,8 @@ DesignInventory _registry() => DesignInventory(
             ClayDialogAction(
               label: 'Delete',
               onPressed: _none,
-              primary: true,
-              destructive: true,
+              isDefaultAction: true,
+              isDestructiveAction: true,
             ),
           ],
         ),

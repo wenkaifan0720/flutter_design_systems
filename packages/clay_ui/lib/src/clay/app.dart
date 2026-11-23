@@ -31,21 +31,21 @@ const double _pageWidth = 1080;
 /// MaterialApp(builder: (context, child) => ClayHost(child: child!))
 /// ```
 class ClayHost extends StatelessWidget {
-  /// Hosts [child] in [light] or [dark], as [brightness] (or the platform)
+  /// Hosts [child] in [theme] or [darkTheme], as [brightness] (or the platform)
   /// asks; either left out is the clay preset in that brightness.
   const ClayHost({
     super.key,
-    this.light,
-    this.dark,
+    this.theme,
+    this.darkTheme,
     this.brightness,
     required this.child,
   });
 
   /// The theme by day.
-  final ClayThemeData? light;
+  final ClayThemeData? theme;
 
   /// The theme by night.
-  final ClayThemeData? dark;
+  final ClayThemeData? darkTheme;
 
   /// The brightness to draw in; null follows the preview's or the
   /// platform's.
@@ -61,7 +61,7 @@ class ClayHost extends StatelessWidget {
         PreviewFrame.maybeOf(context)?.brightness ??
         MediaQuery.platformBrightnessOf(context);
     final data =
-        (wanted == Brightness.dark ? dark : light) ??
+        (wanted == Brightness.dark ? darkTheme : theme) ??
         ClayThemeData.preset(ClayThemeData.presets.first, wanted);
     return ClayTheme(
       data: data,
@@ -76,10 +76,14 @@ class ClayHost extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(
-        DiagnosticsProperty<ClayThemeData>('light', light, defaultValue: null),
+        DiagnosticsProperty<ClayThemeData>('theme', theme, defaultValue: null),
       )
       ..add(
-        DiagnosticsProperty<ClayThemeData>('dark', dark, defaultValue: null),
+        DiagnosticsProperty<ClayThemeData>(
+          'darkTheme',
+          darkTheme,
+          defaultValue: null,
+        ),
       )
       ..add(
         DiagnosticsProperty<Brightness>(
@@ -376,12 +380,12 @@ class ClayPreview extends StatelessWidget {
   const ClayPreview({
     super.key,
     required this.child,
-    this.light,
-    this.dark,
+    this.theme,
+    this.darkTheme,
     this.brightness = Brightness.light,
     this.presentation = ClayPresentation.root,
     this.tabs = const [],
-    this.activeIndex = 0,
+    this.selectedIndex = 0,
     this.action,
     this.brand,
     this.drawer = false,
@@ -392,10 +396,10 @@ class ClayPreview extends StatelessWidget {
   final Widget child;
 
   /// The theme by day.
-  final ClayThemeData? light;
+  final ClayThemeData? theme;
 
   /// The theme by night.
-  final ClayThemeData? dark;
+  final ClayThemeData? darkTheme;
 
   /// The brightness to draw in.
   final Brightness brightness;
@@ -407,7 +411,7 @@ class ClayPreview extends StatelessWidget {
   final List<ClayTab> tabs;
 
   /// The place the page is.
-  final int activeIndex;
+  final int selectedIndex;
 
   /// The app's one act, on a root.
   final ShellAction? action;
@@ -427,8 +431,8 @@ class ClayPreview extends StatelessWidget {
         ? page
         : ClayAppShell(
             tabs: tabs,
-            selectedIndex: activeIndex,
-            onSelected: (_) {},
+            selectedIndex: selectedIndex,
+            onDestinationSelected: (_) {},
             action: action,
             brand: brand,
             child: page,
@@ -449,8 +453,8 @@ class ClayPreview extends StatelessWidget {
             DefaultWidgetsLocalizations.delegate,
           ],
           builder: (context, app) => ClayHost(
-            light: light,
-            dark: dark,
+            theme: theme,
+            darkTheme: darkTheme,
             brightness: brightness,
             child: app ?? const SizedBox.shrink(),
           ),
@@ -482,15 +486,19 @@ class ClayPreview extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(
-        DiagnosticsProperty<ClayThemeData>('light', light, defaultValue: null),
+        DiagnosticsProperty<ClayThemeData>('theme', theme, defaultValue: null),
       )
       ..add(
-        DiagnosticsProperty<ClayThemeData>('dark', dark, defaultValue: null),
+        DiagnosticsProperty<ClayThemeData>(
+          'darkTheme',
+          darkTheme,
+          defaultValue: null,
+        ),
       )
       ..add(DiagnosticsProperty<Brightness>('brightness', brightness))
       ..add(DiagnosticsProperty<ClayPresentation>('presentation', presentation))
       ..add(IterableProperty<ClayTab>('tabs', tabs))
-      ..add(IntProperty('activeIndex', activeIndex))
+      ..add(IntProperty('selectedIndex', selectedIndex))
       ..add(
         DiagnosticsProperty<ShellAction>('action', action, defaultValue: null),
       )
@@ -508,7 +516,7 @@ class ClayPreview extends StatelessWidget {
 /// through `ClayShell`; a preview mounts it directly.
 ///
 /// ```dart
-/// ClayAppShell(tabs: const [ClayTab(LucideIcons.sun, 'Today'), ClayTab(LucideIcons.listChecks, 'Habits')], selectedIndex: 0, onSelected: (i) {}, child: const TodayPage())
+/// ClayAppShell(tabs: const [ClayTab(LucideIcons.sun, 'Today'), ClayTab(LucideIcons.listChecks, 'Habits')], selectedIndex: 0, onDestinationSelected: (i) {}, child: const TodayPage())
 /// ```
 class ClayAppShell extends StatelessWidget {
   /// [child] with the app's [tabs].
@@ -516,7 +524,7 @@ class ClayAppShell extends StatelessWidget {
     super.key,
     required this.tabs,
     required this.selectedIndex,
-    required this.onSelected,
+    required this.onDestinationSelected,
     required this.child,
     this.action,
     this.brand,
@@ -530,7 +538,7 @@ class ClayAppShell extends StatelessWidget {
   final int selectedIndex;
 
   /// Called with the place chosen.
-  final ValueChanged<int> onSelected;
+  final ValueChanged<int> onDestinationSelected;
 
   /// The page.
   final Widget child;
@@ -555,7 +563,7 @@ class ClayAppShell extends StatelessWidget {
           ClayDestination(icon: tab.icon, label: tab.label, key: tab.key),
       ],
       selectedIndex: selectedIndex,
-      onSelected: tabs.isNotEmpty ? onSelected : null,
+      onDestinationSelected: tabs.isNotEmpty ? onDestinationSelected : null,
       showNavigation: showPlaces,
       brand: name == null || name.isEmpty ? null : _Brand(name),
       action: act == null ? null : _ActKey(act),
@@ -569,7 +577,12 @@ class ClayAppShell extends StatelessWidget {
     properties
       ..add(IterableProperty<ClayTab>('tabs', tabs))
       ..add(IntProperty('selectedIndex', selectedIndex))
-      ..add(ObjectFlagProperty<ValueChanged<int>>.has('onSelected', onSelected))
+      ..add(
+        ObjectFlagProperty<ValueChanged<int>>.has(
+          'onDestinationSelected',
+          onDestinationSelected,
+        ),
+      )
       ..add(
         DiagnosticsProperty<ShellAction>('action', action, defaultValue: null),
       )
@@ -794,16 +807,16 @@ class ClayErrorState extends StatelessWidget {
 /// page you write, use [ClayTextField], which says more.
 ///
 /// ```dart
-/// ClayInput(hint: 'Search habits', onSubmitted: search)
+/// ClayInput(hintText: 'Search habits', onSubmitted: search)
 /// ```
 class ClayInput extends StatelessWidget {
-  /// A field hinting [hint], or named [label].
+  /// A field hinting [hintText], or named [labelText].
   const ClayInput({
     super.key,
-    this.hint,
-    this.label,
-    this.error,
-    this.obscure = false,
+    this.hintText,
+    this.labelText,
+    this.errorText,
+    this.obscureText = false,
     this.controller,
     this.onChanged,
     this.onSubmitted,
@@ -811,16 +824,16 @@ class ClayInput extends StatelessWidget {
   });
 
   /// What it is for, until something is typed.
-  final String? hint;
+  final String? hintText;
 
   /// Its name, over it.
-  final String? label;
+  final String? labelText;
 
   /// What is wrong with what was typed; null when nothing is.
-  final String? error;
+  final String? errorText;
 
   /// Whether its words are hidden (a password).
-  final bool obscure;
+  final bool obscureText;
 
   /// Its text's controller.
   final TextEditingController? controller;
@@ -837,11 +850,11 @@ class ClayInput extends StatelessWidget {
   @override
   Widget build(BuildContext context) => ClayTextField(
     controller: controller,
-    label: label,
-    hint: hint,
-    error: error,
-    obscureText: obscure,
-    semanticLabel: label ?? hint,
+    labelText: labelText,
+    hintText: hintText,
+    errorText: errorText,
+    obscureText: obscureText,
+    semanticLabel: labelText ?? hintText,
     onChanged: onChanged,
     onSubmitted: onSubmitted,
     enabled: enabled,
@@ -851,10 +864,10 @@ class ClayInput extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('hint', hint, defaultValue: null))
-      ..add(StringProperty('label', label, defaultValue: null))
-      ..add(StringProperty('error', error, defaultValue: null))
-      ..add(FlagProperty('obscure', value: obscure, ifTrue: 'obscure'))
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
+      ..add(StringProperty('errorText', errorText, defaultValue: null))
+      ..add(FlagProperty('obscureText', value: obscureText, ifTrue: 'obscure'))
       ..add(
         DiagnosticsProperty<TextEditingController>(
           'controller',

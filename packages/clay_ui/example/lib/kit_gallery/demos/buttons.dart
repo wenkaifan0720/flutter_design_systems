@@ -159,7 +159,7 @@ class _ToggleState extends State<_Toggle> {
   @override
   Widget build(BuildContext context) => ClayIconButton(
     onPressed: () => setState(() => _on = !_on),
-    selected: _on,
+    isSelected: _on,
     icon: const Icon(LucideIcons.bell),
     tooltip: 'Reminders',
   );

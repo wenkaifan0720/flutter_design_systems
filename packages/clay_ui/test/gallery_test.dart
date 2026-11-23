@@ -1,8 +1,9 @@
 // Every page of Clay's gallery builds and lays out on a phone and a desk, by day and by night, and at 200% text on a
-// phone, with nothing thrown and nothing leaked.
+// phone, with nothing thrown and nothing leaked; at 200% nothing overflows its row or column (DesignOverflowCheck).
 // ignore_for_file: avoid_relative_lib_imports
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:ui_core_test/ui_core_test.dart';
 
 import '../example/lib/gallery_pages.dart';
 
@@ -22,19 +23,28 @@ void main() {
         tester.platformDispatcher.textScaleFactorTestValue = c.scale;
         addTearDown(tester.view.reset);
         addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
-        await tester.pumpWidget(
-          page.build(c.dark ? Brightness.dark : Brightness.light),
-        );
+        final built = page.build(c.dark ? Brightness.dark : Brightness.light);
+        await tester.pumpWidget(built);
+        // At 200% text nothing overflows its row or column, down the page.
+        void noOverflow() {
+          if (c.scale < 2) return;
+          const DesignOverflowCheck(look: 'Clay')
+              .check(tester.element(find.byWidget(built)))
+              .verify();
+        }
+
         // A skeleton breathes and a spinner turns for ever: a second lays
         // everything out without waiting for them to settle.
         await tester.pump(const Duration(seconds: 1));
         expect(tester.takeException(), isNull);
+        noOverflow();
         // Down the page: every section lays out as it scrolls into view.
         final scrollable = find.byType(Scrollable).first;
         for (var i = 0; i < 12; i++) {
           await tester.drag(scrollable, const Offset(0, -700));
           await tester.pump(const Duration(milliseconds: 300));
           expect(tester.takeException(), isNull);
+          noOverflow();
         }
       });
     }

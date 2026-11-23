@@ -88,7 +88,7 @@ final _parts = <_Part>[
     (s, d, e) => ClayIconButton(
       icon: const Icon(LucideIcons.heart),
       tooltip: 'Save',
-      selected: s,
+      isSelected: s,
       onPressed: d ? null : _none,
     ),
     states: _noStates,
@@ -172,7 +172,7 @@ final _parts = <_Part>[
     (s, d, e) => ClayTabBar(
       tabs: const ['Week', 'Month'],
       selectedIndex: s ? 1 : 0,
-      onSelected: (_) {},
+      onTap: (_) {},
     ),
     states: {'idle', 'hovered', 'pressed', 'focused', 'selected'},
     target: () => find.text('Month'),
@@ -188,7 +188,7 @@ final _parts = <_Part>[
         ClayDestination(icon: LucideIcons.settings, label: 'Settings'),
       ],
       selectedIndex: s ? 1 : 0,
-      onSelected: (_) {},
+      onDestinationSelected: (_) {},
     ),
     states: {'idle', 'hovered', 'pressed', 'focused', 'selected'},
     target: () => find.text('Habits'),
@@ -225,7 +225,7 @@ final _parts = <_Part>[
     (s, d, e) => ClayDisclosure(
       title: 'Why it matters',
       expanded: s,
-      onChanged: d ? null : (_) {},
+      onExpansionChanged: d ? null : (_) {},
       child: const Text('A glass before coffee sets the day.'),
     ),
     states: _noStates,
@@ -234,9 +234,9 @@ final _parts = <_Part>[
   _Part(
     'Text field',
     (s, d, e) => ClayTextField(
-      label: 'Habit name',
-      hint: 'Drink water',
-      error: e ? 'Give the habit a name.' : null,
+      labelText: 'Habit name',
+      hintText: 'Drink water',
+      errorText: e ? 'Give the habit a name.' : null,
       enabled: !d,
       onChanged: (_) {},
     ),
@@ -245,17 +245,20 @@ final _parts = <_Part>[
   ),
   _Part(
     'Search field',
-    (s, d, e) =>
-        ClaySearchField(hint: 'Search habits', enabled: !d, onChanged: (_) {}),
+    (s, d, e) => ClaySearchField(
+      hintText: 'Search habits',
+      enabled: !d,
+      onChanged: (_) {},
+    ),
     states: {'idle', 'hovered', 'focused', 'disabled'},
     width: 340,
   ),
   _Part(
     'Select',
     (s, d, e) => ClaySelect<String>(
-      label: 'Repeat',
+      labelText: 'Repeat',
       value: 'daily',
-      error: e ? 'Pick how often.' : null,
+      errorText: e ? 'Pick how often.' : null,
       items: const [
         ClaySelectItem(value: 'daily', label: 'Every day'),
         ClaySelectItem(value: 'weekdays', label: 'Weekdays'),
@@ -307,7 +310,7 @@ final _parts = <_Part>[
   _Part(
     'Pagination',
     (s, d, e) =>
-        ClayPagination(page: 1, count: 5, onChanged: d ? null : (_) {}),
+        ClayPagination(page: 1, pageCount: 5, onPageChanged: d ? null : (_) {}),
     target: () => find.text('3'),
     width: 380,
   ),

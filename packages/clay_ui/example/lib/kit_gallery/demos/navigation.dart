@@ -100,7 +100,7 @@ class _TabsState extends State<_Tabs> {
   Widget build(BuildContext context) => ClayTabBar(
     tabs: const ['Week', 'Month', 'Year'],
     selectedIndex: _tab,
-    onSelected: (i) => setState(() => _tab = i),
+    onTap: (i) => setState(() => _tab = i),
   );
 }
 
@@ -121,7 +121,7 @@ class _DockState extends State<_Dock> {
     child: ClayNavigationBar(
       destinations: _places,
       selectedIndex: _place,
-      onSelected: (i) => setState(() => _place = i),
+      onDestinationSelected: (i) => setState(() => _place = i),
       action: ClayIconButton.filled(
         onPressed: () {},
         icon: const Icon(LucideIcons.plus),
@@ -153,7 +153,7 @@ class _SideState extends State<_Side> {
           ClayNavigationRail(
             destinations: _places,
             selectedIndex: _place,
-            onSelected: (i) => setState(() => _place = i),
+            onDestinationSelected: (i) => setState(() => _place = i),
           ),
           const SizedBox(width: ClaySpacing.regular),
           Expanded(
@@ -163,7 +163,7 @@ class _SideState extends State<_Side> {
                 child: ClaySidebar(
                   destinations: _places,
                   selectedIndex: _place,
-                  onSelected: (i) => setState(() => _place = i),
+                  onDestinationSelected: (i) => setState(() => _place = i),
                   header: const Text('Steady'),
                 ),
               ),
@@ -198,7 +198,7 @@ class _Frame extends StatelessWidget {
         child: ClayScaffold(
           topBar: const ClayTopBar(title: 'Today'),
           destinations: _places,
-          onSelected: (_) {},
+          onDestinationSelected: (_) {},
           body: const Center(child: Text('A page')),
         ),
       ),
@@ -223,7 +223,8 @@ class _Wayfinding extends StatelessWidget {
       const SizedBox(height: ClaySpacing.large),
       KitLive<int>(
         3,
-        (context, p, set) => ClayPagination(page: p, count: 12, onChanged: set),
+        (context, p, set) =>
+            ClayPagination(page: p, pageCount: 12, onPageChanged: set),
       ),
       const SizedBox(height: ClaySpacing.large),
       KitLive<int>(
@@ -233,7 +234,7 @@ class _Wayfinding extends StatelessWidget {
           children: [
             ClayStepProgress(
               steps: const ['Habit', 'Schedule', 'Reminder'],
-              current: step,
+              currentStep: step,
             ),
             const SizedBox(height: ClaySpacing.regular),
             Row(
@@ -255,7 +256,8 @@ class _Wayfinding extends StatelessWidget {
       const SizedBox(height: ClaySpacing.large),
       KitLive<int>(
         1,
-        (context, i, set) => ClayPageDots(count: 4, index: i, onChanged: set),
+        (context, i, set) =>
+            ClayPageDots(pageCount: 4, page: i, onPageChanged: set),
       ),
     ],
   );
@@ -298,7 +300,7 @@ class _Commands extends StatelessWidget {
       SizedBox(
         height: 340,
         child: ClayCommandPalette(
-          hint: 'Type a command',
+          hintText: 'Type a command',
           commands: [
             ClayCommand(
               label: 'New habit',

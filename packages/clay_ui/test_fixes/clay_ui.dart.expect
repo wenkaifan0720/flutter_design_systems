@@ -1,0 +1,244 @@
+// The names clay_ui 0.3.0 renames: clay_ui.dart calls them as before `dart fix --apply`,
+// clay_ui.dart.expect as after.
+import 'package:flutter/widgets.dart';
+import 'package:clay_ui/clay_ui.dart';
+
+void calls(BuildContext context) {
+  final v1 = const ClayInput(
+    labelText: 'Text',
+    hintText: 'Text',
+    errorText: 'Text',
+    obscureText: true,
+  );
+  print(v1.labelText);
+  print(v1.hintText);
+  print(v1.errorText);
+  print(v1.obscureText);
+  final v2 = const ClayTextField(
+    labelText: 'Text',
+    hintText: 'Text',
+    helperText: 'Text',
+    errorText: 'Text',
+  );
+  print(v2.labelText);
+  print(v2.hintText);
+  print(v2.helperText);
+  print(v2.errorText);
+  final v3 = const ClayTextArea(
+    labelText: 'Text',
+    hintText: 'Text',
+    helperText: 'Text',
+    errorText: 'Text',
+  );
+  print(v3.labelText);
+  print(v3.hintText);
+  print(v3.helperText);
+  print(v3.errorText);
+  final v4 = const ClayPasswordField(
+    labelText: 'Text',
+    hintText: 'Text',
+    helperText: 'Text',
+    errorText: 'Text',
+  );
+  print(v4.labelText);
+  print(v4.hintText);
+  print(v4.helperText);
+  print(v4.errorText);
+  final v5 = const ClayInputGroup(
+    labelText: 'Text',
+    hintText: 'Text',
+    helperText: 'Text',
+    errorText: 'Text',
+  );
+  print(v5.labelText);
+  print(v5.hintText);
+  print(v5.helperText);
+  print(v5.errorText);
+  final v6 = const ClayCombobox<String>(
+    labelText: 'Text',
+    hintText: 'Text',
+    helperText: 'Text',
+    errorText: 'Text',
+  );
+  print(v6.labelText);
+  print(v6.hintText);
+  print(v6.helperText);
+  print(v6.errorText);
+  final v7 = ClayTagInput<String>(
+    values: const [],
+    onChanged: (_) {},
+    labelText: 'Text',
+    hintText: 'Text',
+    helperText: 'Text',
+    errorText: 'Text',
+  );
+  print(v7.labelText);
+  print(v7.hintText);
+  print(v7.helperText);
+  print(v7.errorText);
+  final v8 = ClaySelect<int>(
+    items: const [],
+    value: null,
+    onChanged: (_) {},
+    labelText: 'Text',
+    hintText: 'Text',
+    helperText: 'Text',
+    errorText: 'Text',
+  );
+  print(v8.labelText);
+  print(v8.hintText);
+  print(v8.helperText);
+  print(v8.errorText);
+  final v9 = ClayDatePicker(
+    value: null,
+    onChanged: (_) {},
+    firstDate: DateTime(2026),
+    lastDate: DateTime(2026),
+    labelText: 'Text',
+    hintText: 'Text',
+    helperText: 'Text',
+    errorText: 'Text',
+  );
+  print(v9.labelText);
+  print(v9.hintText);
+  print(v9.helperText);
+  print(v9.errorText);
+  final v10 = ClayDateRangePicker(
+    value: null,
+    onChanged: (_) {},
+    firstDate: DateTime(2026),
+    lastDate: DateTime(2026),
+    labelText: 'Text',
+    hintText: 'Text',
+    helperText: 'Text',
+    errorText: 'Text',
+  );
+  print(v10.labelText);
+  print(v10.hintText);
+  print(v10.helperText);
+  print(v10.errorText);
+  final v11 = ClayTimeField(
+    value: null,
+    onChanged: (_) {},
+    labelText: 'Text',
+    helperText: 'Text',
+    errorText: 'Text',
+  );
+  print(v11.labelText);
+  print(v11.helperText);
+  print(v11.errorText);
+  final v12 = const ClaySearchField(hintText: 'Text');
+  print(v12.hintText);
+  final v13 = const ClayCommandPalette(commands: [], hintText: 'Text');
+  print(v13.hintText);
+  final v14 = const ClayFieldMessage(helperText: 'Text', errorText: 'Text');
+  print(v14.helperText);
+  print(v14.errorText);
+  final v15 = ClayPreview(
+    selectedIndex: 1,
+    theme: ClayThemeData.clay(Brightness.light),
+    darkTheme: ClayThemeData.clay(Brightness.light),
+    child: const SizedBox(),
+  );
+  print(v15.selectedIndex);
+  print(v15.theme);
+  print(v15.darkTheme);
+  final v16 = ClayHost(
+    theme: ClayThemeData.clay(Brightness.light),
+    darkTheme: ClayThemeData.clay(Brightness.light),
+    child: const SizedBox(),
+  );
+  print(v16.theme);
+  print(v16.darkTheme);
+  final v17 = const ClayStepProgress(steps: ['One', 'Two'], currentStep: 1);
+  print(v17.currentStep);
+  final v18 = ClayDialogAction(
+    label: 'Text',
+    onPressed: () {},
+    isDefaultAction: true,
+    isDestructiveAction: true,
+  );
+  print(v18.isDefaultAction);
+  print(v18.isDestructiveAction);
+  final v19 = const ClayListTile(title: 'Text', isDestructiveAction: true);
+  print(v19.isDestructiveAction);
+  showClayCommandPalette(context, commands: const [], hintText: 'Text');
+  final v101 = ClayAppShell(
+    tabs: const [],
+    selectedIndex: 1,
+    child: const SizedBox(),
+    onDestinationSelected: (_) {},
+  );
+  print(v101.onDestinationSelected);
+  final v102 = ClayScaffold(body: const SizedBox(), onDestinationSelected: (_) {});
+  print(v102.onDestinationSelected);
+  final v103 = ClayNavigationBar(
+    destinations: const [],
+    selectedIndex: 1,
+    onDestinationSelected: (_) {},
+  );
+  print(v103.onDestinationSelected);
+  final v104 = ClayNavigationRail(
+    destinations: const [],
+    selectedIndex: 1,
+    onDestinationSelected: (_) {},
+  );
+  print(v104.onDestinationSelected);
+  final v105 = ClaySidebar(
+    destinations: const [],
+    selectedIndex: 1,
+    onDestinationSelected: (_) {},
+  );
+  print(v105.onDestinationSelected);
+  final v106 = ClayTabBar(
+    tabs: const ['One', 'Two'],
+    selectedIndex: 1,
+    onTap: (_) {},
+  );
+  print(v106.onTap);
+  final v107 = ClayIconButton(
+    onPressed: () {},
+    icon: const SizedBox(),
+    tooltip: 'Text',
+    isSelected: true,
+  );
+  print(v107.isSelected);
+  final v108 = ClayDisclosure(
+    title: 'Text',
+    child: const SizedBox(),
+    onExpansionChanged: (_) {},
+  );
+  print(v108.onExpansionChanged);
+  final v109 = const ClayBadge(count: 1, maxCount: 1);
+  print(v109.maxCount);
+  final v110 = ClayRadioGroup<String>(
+    options: const ['One', 'Two'],
+    labelOf: (v) => v,
+    onChanged: (_) {},
+    groupValue: 'Text',
+  );
+  print(v110.groupValue);
+  final v111 = ClayPagination(page: 1, pageCount: 1, onPageChanged: (_) {});
+  print(v111.pageCount);
+  print(v111.onPageChanged);
+  final v112 = ClayPageDots(pageCount: 1, page: 1, onPageChanged: (_) {});
+  print(v112.pageCount);
+  print(v112.page);
+  print(v112.onPageChanged);
+  final vPlain = const ClayIconButton.plain(
+    onPressed: null,
+    icon: SizedBox(),
+    tooltip: 'Text',
+    isSelected: true,
+  );
+  print(vPlain.isSelected);
+  print(
+    ClayTextTheme.from(
+      ink: const Color(0xFF000000),
+      secondaryInk: const Color(0xFF000000),
+    ),
+  );
+  final v201 = ClayFileDrop(onChoose: () {}, labelText: 'Text', hintText: 'Text');
+  print(v201.labelText);
+  print(v201.hintText);
+}

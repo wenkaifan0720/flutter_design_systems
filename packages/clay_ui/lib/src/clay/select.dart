@@ -7,9 +7,9 @@ import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
 import 'fonts.dart';
+import 'internal/entry_parts.dart' show ClayFieldDecorator;
 import 'internal/menu.dart';
 import 'surface.dart';
-import 'text_field.dart';
 import 'theme.dart';
 
 /// One choice of a [ClaySelect].
@@ -46,7 +46,7 @@ class ClaySelectItem<T> {
 /// Down move, Enter chooses, Escape closes and gives focus back.
 ///
 /// ```dart
-/// ClaySelect<String>(label: 'Repeat', value: 'daily', items: const [ClaySelectItem(value: 'daily', label: 'Every day'), ClaySelectItem(value: 'weekdays', label: 'Weekdays')], onChanged: (value) {})
+/// ClaySelect<String>(labelText: 'Repeat', value: 'daily', items: const [ClaySelectItem(value: 'daily', label: 'Every day'), ClaySelectItem(value: 'weekdays', label: 'Weekdays')], onChanged: (value) {})
 /// ```
 class ClaySelect<T> extends StatelessWidget {
   /// A select over [items], [value] chosen.
@@ -55,10 +55,10 @@ class ClaySelect<T> extends StatelessWidget {
     required this.items,
     required this.value,
     required this.onChanged,
-    this.label,
-    this.hint,
-    this.helper,
-    this.error,
+    this.labelText,
+    this.hintText,
+    this.helperText,
+    this.errorText,
     this.focusNode,
     this.style,
   });
@@ -66,23 +66,23 @@ class ClaySelect<T> extends StatelessWidget {
   /// The choices.
   final List<ClaySelectItem<T>> items;
 
-  /// The chosen value; [hint] shows when null.
+  /// The chosen value; [hintText] shows when null.
   final T? value;
 
   /// Called with the value chosen; null turns it off.
   final ValueChanged<T>? onChanged;
 
   /// The label above the key.
-  final String? label;
+  final String? labelText;
 
   /// What the key says while nothing is chosen.
-  final String? hint;
+  final String? hintText;
 
   /// Help under the key.
-  final String? helper;
+  final String? helperText;
 
   /// What is wrong, under the key in the danger ink.
-  final String? error;
+  final String? errorText;
 
   /// {@macro design.focusNode}
   final FocusNode? focusNode;
@@ -104,12 +104,12 @@ class ClaySelect<T> extends StatelessWidget {
       onPressed: toggle,
       focusNode: focusNode,
       expanded: enabled ? open : null,
-      semanticLabel: label,
+      semanticLabel: labelText,
       semanticValue: chosen?.label,
       builder: (context, states, _) {
         final layered = DesignStyleOf(
           [style, theme.selectStyle],
-          {...states, if (error != null) WidgetState.error},
+          {...states, if (errorText != null) WidgetState.error},
         );
         final radius = clayRadiusOf(layered.shape, ClayRadius.control);
         final fill = layered.fill ?? c.clay;
@@ -119,8 +119,10 @@ class ClaySelect<T> extends StatelessWidget {
         face = face.copyWith(
           press: states.contains(WidgetState.pressed) || open ? 1 : 0,
           lift: states.contains(WidgetState.hovered) ? 0.6 : 0,
-          focus: states.contains(WidgetState.focused) || error != null ? 1 : 0,
-          focusColor: error != null ? c.danger : null,
+          focus: states.contains(WidgetState.focused) || errorText != null
+              ? 1
+              : 0,
+          focusColor: errorText != null ? c.danger : null,
         );
         final ink = !enabled
             ? c.inkDisabled
@@ -167,7 +169,7 @@ class ClaySelect<T> extends StatelessWidget {
                     child: DesignCapCenter(
                       capHeightFactor: clayCapHeightFactor,
                       child: Text(
-                        chosen?.label ?? hint ?? '',
+                        chosen?.label ?? hintText ?? '',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: theme.textTheme.body
@@ -202,7 +204,7 @@ class ClaySelect<T> extends StatelessWidget {
         ? anchorKey(null, false)
         : RawPopover(
             arrowKeyNavigation: true,
-            semanticLabel: label,
+            semanticLabel: labelText,
             placement: const RawPopoverPlacement(
               gap: ClaySpacing.small,
               margin: ClaySpacing.small,
@@ -234,15 +236,13 @@ class ClaySelect<T> extends StatelessWidget {
               ),
             ),
           );
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        if (label != null)
-          ExcludeSemantics(child: ClayFieldLabel(label!, enabled: enabled)),
-        box,
-        ClayFieldMessage(helper: helper, error: error),
-      ],
+    return ClayFieldDecorator(
+      labelText: labelText,
+      helperText: helperText,
+      errorText: errorText,
+      enabled: enabled,
+      focusNode: focusNode,
+      child: box,
     );
   }
 
@@ -252,7 +252,7 @@ class ClaySelect<T> extends StatelessWidget {
     properties
       ..add(DiagnosticsProperty<T>('value', value))
       ..add(IntProperty('items', items.length))
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
       ..add(
         FlagProperty('enabled', value: onChanged != null, ifFalse: 'disabled'),
       );

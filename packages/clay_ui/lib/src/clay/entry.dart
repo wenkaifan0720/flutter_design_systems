@@ -50,29 +50,29 @@ mixin _OwnsEntry<W extends StatefulWidget> on State<W> {
   }
 }
 
-/// A label above a field and its help or error under it, round [field].
+/// A label above a field and its help or error under it, round [field],
+/// read with it.
 Widget _labelled({
   required String? label,
   required bool enabled,
   required Widget field,
   String? helper,
   String? error,
-}) => Column(
-  mainAxisSize: MainAxisSize.min,
-  crossAxisAlignment: CrossAxisAlignment.stretch,
-  children: [
-    if (label != null)
-      ExcludeSemantics(child: ClayFieldLabel(label, enabled: enabled)),
-    field,
-    ClayFieldMessage(helper: helper, error: error),
-  ],
+  FocusNode? focusNode,
+}) => ClayFieldDecorator(
+  labelText: label,
+  helperText: helper,
+  errorText: error,
+  enabled: enabled,
+  focusNode: focusNode,
+  child: field,
 );
 
 /// A field for a few lines of words (a note, why a habit matters): the
 /// text field's well, growing from [minLines] as the words run on.
 ///
 /// ```dart
-/// ClayTextArea(label: 'Note', hint: 'What helps you keep it')
+/// ClayTextArea(labelText: 'Note', hintText: 'What helps you keep it')
 /// ```
 class ClayTextArea extends StatelessWidget {
   /// A text area.
@@ -80,10 +80,10 @@ class ClayTextArea extends StatelessWidget {
     super.key,
     this.controller,
     this.focusNode,
-    this.label,
-    this.hint,
-    this.helper,
-    this.error,
+    this.labelText,
+    this.hintText,
+    this.helperText,
+    this.errorText,
     this.onChanged,
     this.enabled = true,
     this.readOnly = false,
@@ -101,16 +101,16 @@ class ClayTextArea extends StatelessWidget {
   final FocusNode? focusNode;
 
   /// The words above the well.
-  final String? label;
+  final String? labelText;
 
   /// What the empty area says.
-  final String? hint;
+  final String? hintText;
 
   /// Help under the well.
-  final String? helper;
+  final String? helperText;
 
   /// What is wrong, under the well, in the danger ink.
-  final String? error;
+  final String? errorText;
 
   /// Each change of the words.
   final ValueChanged<String>? onChanged;
@@ -137,10 +137,10 @@ class ClayTextArea extends StatelessWidget {
   Widget build(BuildContext context) => ClayTextField(
     controller: controller,
     focusNode: focusNode,
-    label: label,
-    hint: hint,
-    helper: helper,
-    error: error,
+    labelText: labelText,
+    hintText: hintText,
+    helperText: helperText,
+    errorText: errorText,
     onChanged: onChanged,
     enabled: enabled,
     readOnly: readOnly,
@@ -158,7 +158,7 @@ class ClayTextArea extends StatelessWidget {
 /// clears it once there are words.
 ///
 /// ```dart
-/// ClaySearchField(hint: 'Search habits', onChanged: (query) {})
+/// ClaySearchField(hintText: 'Search habits', onChanged: (query) {})
 /// ```
 class ClaySearchField extends StatefulWidget {
   /// A search field.
@@ -166,7 +166,7 @@ class ClaySearchField extends StatefulWidget {
     super.key,
     this.controller,
     this.focusNode,
-    this.hint,
+    this.hintText,
     this.onChanged,
     this.onSubmitted,
     this.enabled = true,
@@ -183,7 +183,7 @@ class ClaySearchField extends StatefulWidget {
   final FocusNode? focusNode;
 
   /// What the empty field says; null: "Search".
-  final String? hint;
+  final String? hintText;
 
   /// Each change of the query, and '' when it is cleared.
   final ValueChanged<String>? onChanged;
@@ -197,7 +197,7 @@ class ClaySearchField extends StatefulWidget {
   /// Whether it takes the focus when it first shows.
   final bool autofocus;
 
-  /// What a screen reader calls it; null: [hint].
+  /// What a screen reader calls it; null: [hintText].
   final String? semanticLabel;
 
   /// This field's own style, over [ClayThemeData.searchFieldStyle].
@@ -224,7 +224,7 @@ class _ClaySearchFieldState extends State<ClaySearchField>
   Widget build(BuildContext context) {
     final theme = ClayTheme.of(context);
     final words = RawWidgetsLocalizations.of(context);
-    final hint = widget.hint ?? words.searchFieldLabel;
+    final hintText = widget.hintText ?? words.searchFieldLabel;
     return ClayOnFocus(
       focusNode: focusNode,
       builder: (context, focused) {
@@ -261,11 +261,11 @@ class _ClaySearchFieldState extends State<ClaySearchField>
           child: ClayEntryText(
             controller: controller,
             focusNode: focusNode,
-            hint: hint,
+            hintText: hintText,
             enabled: widget.enabled,
             autofocus: widget.autofocus,
             textInputAction: TextInputAction.search,
-            semanticLabel: widget.semanticLabel ?? hint,
+            semanticLabel: widget.semanticLabel ?? hintText,
             onChanged: widget.onChanged,
             onSubmitted: widget.onSubmitted,
             textStyle: layered.textStyle,
@@ -280,7 +280,7 @@ class _ClaySearchFieldState extends State<ClaySearchField>
 /// hides the words, the caret staying where it was.
 ///
 /// ```dart
-/// ClayPasswordField(label: 'Password', onChanged: (value) {})
+/// ClayPasswordField(labelText: 'Password', onChanged: (value) {})
 /// ```
 class ClayPasswordField extends StatefulWidget {
   /// A password field.
@@ -288,10 +288,10 @@ class ClayPasswordField extends StatefulWidget {
     super.key,
     this.controller,
     this.focusNode,
-    this.label,
-    this.hint,
-    this.helper,
-    this.error,
+    this.labelText,
+    this.hintText,
+    this.helperText,
+    this.errorText,
     this.onChanged,
     this.onSubmitted,
     this.enabled = true,
@@ -307,16 +307,16 @@ class ClayPasswordField extends StatefulWidget {
   final FocusNode? focusNode;
 
   /// The words above the well.
-  final String? label;
+  final String? labelText;
 
   /// What the empty field says.
-  final String? hint;
+  final String? hintText;
 
   /// Help under the well.
-  final String? helper;
+  final String? helperText;
 
   /// What is wrong, under the well.
-  final String? error;
+  final String? errorText;
 
   /// Each change of the password.
   final ValueChanged<String>? onChanged;
@@ -349,10 +349,10 @@ class _ClayPasswordFieldState extends State<ClayPasswordField>
   Widget build(BuildContext context) {
     final theme = ClayTheme.of(context);
     return _labelled(
-      label: widget.label,
+      label: widget.labelText,
       enabled: widget.enabled,
-      helper: widget.helper,
-      error: widget.error,
+      helper: widget.helperText,
+      error: widget.errorText,
       field: RawPasswordReveal(
         focusNode: focusNode,
         builder: (context, password) => ClayOnFocus(
@@ -361,7 +361,7 @@ class _ClayPasswordFieldState extends State<ClayPasswordField>
             final states = {
               if (!widget.enabled) WidgetState.disabled,
               if (focused) WidgetState.focused,
-              if (widget.error != null) WidgetState.error,
+              if (widget.errorText != null) WidgetState.error,
             };
             final layered = DesignStyleOf([
               widget.style,
@@ -379,7 +379,7 @@ class _ClayPasswordFieldState extends State<ClayPasswordField>
               trailing: ClayIconButton.plain(
                 onPressed: widget.enabled ? password.toggle : null,
                 tooltip: password.toggleLabel,
-                selected: !password.obscured,
+                isSelected: !password.obscured,
                 style: _wellKey,
                 icon: Icon(
                   password.obscured ? LucideIcons.eye : LucideIcons.eyeOff,
@@ -388,12 +388,15 @@ class _ClayPasswordFieldState extends State<ClayPasswordField>
               child: ClayEntryText(
                 controller: controller,
                 focusNode: focusNode,
-                hint: widget.hint,
+                hintText: widget.hintText,
                 obscureText: password.obscured,
                 enabled: widget.enabled,
                 autofillHints: widget.autofillHints,
                 keyboardType: TextInputType.visiblePassword,
-                semanticLabel: widget.label,
+                semanticLabel: widget.labelText,
+                // The reveal key stands beside it: the input is the field's
+                // node, which the decorator names.
+                mergeSemantics: false,
                 onChanged: widget.onChanged,
                 onSubmitted: widget.onSubmitted,
                 textStyle: layered.textStyle,
@@ -410,7 +413,7 @@ class _ClayPasswordFieldState extends State<ClayPasswordField>
 /// groove at the well's ends (ml, min), or a glyph, a key.
 ///
 /// ```dart
-/// ClayInputGroup(label: 'Goal', suffixText: 'glasses', keyboardType: TextInputType.number)
+/// ClayInputGroup(labelText: 'Goal', suffixText: 'glasses', keyboardType: TextInputType.number)
 /// ```
 class ClayInputGroup extends StatefulWidget {
   /// A field with add-ons.
@@ -418,10 +421,10 @@ class ClayInputGroup extends StatefulWidget {
     super.key,
     this.controller,
     this.focusNode,
-    this.label,
-    this.hint,
-    this.helper,
-    this.error,
+    this.labelText,
+    this.hintText,
+    this.helperText,
+    this.errorText,
     this.prefixText,
     this.suffixText,
     this.leading,
@@ -442,16 +445,16 @@ class ClayInputGroup extends StatefulWidget {
   final FocusNode? focusNode;
 
   /// The words above the well.
-  final String? label;
+  final String? labelText;
 
   /// What the empty field says.
-  final String? hint;
+  final String? hintText;
 
   /// Help under the well.
-  final String? helper;
+  final String? helperText;
 
   /// What is wrong, under the well.
-  final String? error;
+  final String? errorText;
 
   /// Words at the well's start, behind a groove (https://).
   final String? prefixText;
@@ -564,14 +567,14 @@ class _ClayInputGroupState extends State<ClayInputGroup>
   Widget build(BuildContext context) {
     final theme = ClayTheme.of(context);
     return _labelled(
-      label: widget.label,
+      label: widget.labelText,
       enabled: widget.enabled,
-      helper: widget.helper,
-      error: widget.error,
+      helper: widget.helperText,
+      error: widget.errorText,
       field: DesignInputGroup(
         focusNode: focusNode,
         enabled: widget.enabled,
-        isError: widget.error != null,
+        isError: widget.errorText != null,
         builder: (context, states, child) {
           final layered = DesignStyleOf([
             widget.style,
@@ -632,11 +635,11 @@ class _ClayInputGroupState extends State<ClayInputGroup>
                     child: ClayEntryText(
                       controller: controller,
                       focusNode: focusNode,
-                      hint: widget.hint,
+                      hintText: widget.hintText,
                       enabled: widget.enabled,
                       keyboardType: widget.keyboardType,
                       inputFormatters: widget.inputFormatters,
-                      semanticLabel: widget.label,
+                      semanticLabel: widget.labelText,
                       onChanged: widget.onChanged,
                       onSubmitted: widget.onSubmitted,
                     ),
@@ -1079,7 +1082,7 @@ Widget _failed(BuildContext context, RawSearchError error) {
 /// the focus in the field.
 ///
 /// ```dart
-/// ClayCombobox<String>(label: 'Category', options: const ['Health', 'Mind', 'Home'], onSelected: (category) {})
+/// ClayCombobox<String>(labelText: 'Category', options: const ['Health', 'Mind', 'Home'], onSelected: (category) {})
 /// ```
 class ClayCombobox<T extends Object> extends StatelessWidget {
   /// A combobox over [options].
@@ -1095,10 +1098,10 @@ class ClayCombobox<T extends Object> extends StatelessWidget {
     this.debounceDuration,
     this.controller,
     this.focusNode,
-    this.label,
-    this.hint,
-    this.helper,
-    this.error,
+    this.labelText,
+    this.hintText,
+    this.helperText,
+    this.errorText,
     this.enabled = true,
     this.semanticLabel,
     this.style,
@@ -1136,21 +1139,21 @@ class ClayCombobox<T extends Object> extends StatelessWidget {
   final FocusNode? focusNode;
 
   /// The words above the well.
-  final String? label;
+  final String? labelText;
 
   /// What the empty field says.
-  final String? hint;
+  final String? hintText;
 
   /// Help under the well.
-  final String? helper;
+  final String? helperText;
 
   /// What is wrong, under the well.
-  final String? error;
+  final String? errorText;
 
   /// Whether it takes words.
   final bool enabled;
 
-  /// What a screen reader calls it; null: [label].
+  /// What a screen reader calls it; null: [labelText].
   final String? semanticLabel;
 
   /// This field's own style, over [ClayThemeData.comboboxStyle].
@@ -1163,10 +1166,10 @@ class ClayCombobox<T extends Object> extends StatelessWidget {
     final words = displayStringForOption ?? _words;
     ClayKeysShown.watch();
     return _labelled(
-      label: label,
+      label: labelText,
       enabled: enabled,
-      helper: helper,
-      error: error,
+      helper: helperText,
+      error: errorText,
       field: RawCombobox<T>(
         options: options,
         search: search,
@@ -1181,14 +1184,14 @@ class ClayCombobox<T extends Object> extends StatelessWidget {
         // after a key (ClayKeysShown), so a list a press opened marks its
         // chosen option alone, as a select's does.
         highlightFollowsPointer: false,
-        semanticLabel: semanticLabel ?? label,
+        semanticLabel: semanticLabel ?? labelText,
         fieldBuilder: (context, field) => ClayOnFocus(
           focusNode: field.focusNode,
           builder: (context, focused) {
             final states = {
               if (!enabled) WidgetState.disabled,
               if (focused) WidgetState.focused,
-              if (error != null) WidgetState.error,
+              if (errorText != null) WidgetState.error,
             };
             final layered = DesignStyleOf([style, theme.comboboxStyle], states);
             return ClayEntryWell(
@@ -1200,30 +1203,39 @@ class ClayCombobox<T extends Object> extends StatelessWidget {
                 fill: layered.fill,
                 edge: layered.edge,
               ),
+              // The chevron turns as the list opens, as the select's does.
               trailing: Padding(
                 padding: const EdgeInsetsDirectional.only(
                   end: ClaySpacing.medium,
                 ),
-                child: SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CustomPaint(
-                    painter: ClayChevronPainter(
-                      enabled ? c.inkSecondary : c.inkDisabled,
-                      focused ? 1 : 0,
+                child: TweenAnimationBuilder<double>(
+                  tween: Tween(end: field.isOpen ? 1 : 0),
+                  duration: const Duration(milliseconds: 220),
+                  curve: Curves.easeOutCubic,
+                  builder: (context, t, _) => SizedBox.square(
+                    dimension: 20,
+                    child: CustomPaint(
+                      painter: ClayChevronPainter(
+                        enabled ? c.inkSecondary : c.inkDisabled,
+                        t,
+                      ),
                     ),
                   ),
                 ),
               ),
-              // Enter takes the lit option and keeps the focus here.
-              child: ClayEntryText(
-                controller: field.controller,
-                focusNode: field.focusNode,
-                hint: hint,
-                enabled: enabled,
-                semanticLabel: semanticLabel ?? label,
-                onEditingComplete: field.submit,
-                textStyle: layered.textStyle,
+              // Enter takes the lit option and keeps the focus here. The
+              // input says whether its list is open.
+              child: Semantics(
+                expanded: field.isOpen,
+                child: ClayEntryText(
+                  controller: field.controller,
+                  focusNode: field.focusNode,
+                  hintText: hintText,
+                  enabled: enabled,
+                  semanticLabel: semanticLabel ?? labelText,
+                  onEditingComplete: field.submit,
+                  textStyle: layered.textStyle,
+                ),
               ),
             );
           },
@@ -1260,7 +1272,7 @@ double _tagInset(ClayThemeData theme) =>
 /// words a tag and keeps the focus for the next.
 ///
 /// ```dart
-/// ClayTagInput<String>(label: 'Tags', values: const ['Morning'], onChanged: (values) {}, onCreate: (text) => text)
+/// ClayTagInput<String>(labelText: 'Tags', values: const ['Morning'], onChanged: (values) {}, onCreate: (text) => text)
 /// ```
 class ClayTagInput<T extends Object> extends StatelessWidget {
   /// A tag input over [values].
@@ -1277,10 +1289,10 @@ class ClayTagInput<T extends Object> extends StatelessWidget {
     this.debounceDuration,
     this.controller,
     this.focusNode,
-    this.label,
-    this.hint,
-    this.helper,
-    this.error,
+    this.labelText,
+    this.hintText,
+    this.helperText,
+    this.errorText,
     this.enabled = true,
     this.semanticLabel,
     this.style,
@@ -1320,21 +1332,21 @@ class ClayTagInput<T extends Object> extends StatelessWidget {
   final FocusNode? focusNode;
 
   /// The words above the well.
-  final String? label;
+  final String? labelText;
 
   /// What the empty field says.
-  final String? hint;
+  final String? hintText;
 
   /// Help under the well.
-  final String? helper;
+  final String? helperText;
 
   /// What is wrong, under the well.
-  final String? error;
+  final String? errorText;
 
   /// Whether it takes words.
   final bool enabled;
 
-  /// What a screen reader calls it; null: [label].
+  /// What a screen reader calls it; null: [labelText].
   final String? semanticLabel;
 
   /// This input's own style, over [ClayThemeData.tagInputStyle].
@@ -1360,7 +1372,7 @@ class ClayTagInput<T extends Object> extends StatelessWidget {
       // As the combobox: the pointer lights its row, the keys' ring
       // shows after a key.
       highlightFollowsPointer: false,
-      semanticLabel: semanticLabel ?? label,
+      semanticLabel: semanticLabel ?? labelText,
       // The typing line: its whole slot takes a tap, and alone in the well
       // its words stand where every field's do. Beside tags it is a short
       // line after the last, so the tags and the line share a row.
@@ -1381,14 +1393,21 @@ class ClayTagInput<T extends Object> extends StatelessWidget {
             child: SizedBox(
               height: _tagSlot,
               // Enter makes a tag and keeps the focus for the next one.
-              child: ClayEntryText(
-                controller: field.controller,
-                focusNode: field.focusNode,
-                hint: values.isEmpty ? hint : null,
-                enabled: enabled,
-                semanticLabel: semanticLabel ?? label,
-                minHeight: _tagSlot,
-                onEditingComplete: field.submit,
+              // The input says whether its list is open. Its node is the one
+              // ui_core gives the field's label, help and error, beside the
+              // tags' own: it merges into that one rather than its own.
+              child: Semantics(
+                expanded: field.isOpen,
+                child: ClayEntryText(
+                  controller: field.controller,
+                  focusNode: field.focusNode,
+                  hintText: values.isEmpty ? hintText : null,
+                  enabled: enabled,
+                  semanticLabel: semanticLabel,
+                  mergeSemantics: false,
+                  minHeight: _tagSlot,
+                  onEditingComplete: field.submit,
+                ),
               ),
             ),
           ),
@@ -1406,17 +1425,17 @@ class ClayTagInput<T extends Object> extends StatelessWidget {
       errorBuilder: _failed,
       layoutBuilder: (context, tags, field) => _TagWell(
         enabled: enabled,
-        error: error != null,
+        error: errorText != null,
         style: style,
         tags: tags,
         field: field,
       ),
     );
     return _labelled(
-      label: label,
+      label: labelText,
       enabled: enabled,
-      helper: helper,
-      error: error,
+      helper: helperText,
+      error: errorText,
       field: DefaultTextStyle.merge(
         style: TextStyle(color: c.ink),
         child: input,

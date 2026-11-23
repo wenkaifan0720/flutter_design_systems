@@ -130,7 +130,7 @@ class ClayMenu extends StatelessWidget {
                     label: item.label,
                     leading: item.icon == null ? null : Icon(item.icon),
                     enabled: item.onPressed != null,
-                    destructive: item.isDestructiveAction,
+                    isDestructiveAction: item.isDestructiveAction,
                   ),
               ],
               rowHeight: theme.controlHeight,
@@ -205,7 +205,7 @@ class ClayContextMenu extends StatelessWidget {
       return ClayMenuRow(
         label: entry.label,
         leading: item?.icon == null ? null : Icon(item!.icon),
-        destructive: entry.isDestructiveAction,
+        isDestructiveAction: entry.isDestructiveAction,
         states: states,
         trailing: entry.shortcut == null ? null : Text(entry.shortcut!),
       );

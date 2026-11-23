@@ -125,7 +125,7 @@ class _RowsState extends State<_Rows> {
           const ClayListTile(title: 'Version', trailingText: '2.4.0'),
           ClayListTile(
             title: 'Delete all data',
-            destructive: true,
+            isDestructiveAction: true,
             onTap: () {},
           ),
           const ClayListTile(
