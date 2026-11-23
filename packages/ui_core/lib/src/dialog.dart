@@ -1,6 +1,7 @@
 /// A dialog, headless: a modal route that opens and closes on a spring,
 /// traps focus and gives it back to whatever held it, closes on Escape and
-/// Android's back, and tells a screen reader it is a dialog or an alert; and
+/// Android's back, and tells a screen reader it is a dialog or an alert (or,
+/// as a [RawModalRoute], states no role and lets its page name it); and
 /// an alert's layout, its words scrolling under actions that stay put and
 /// stack when they don't fit side by side, the safe action focused first.
 library;
@@ -24,33 +25,243 @@ typedef DesignDialogBuilder = Widget Function(
   DesignDialogDetails details,
 );
 
-/// What a [DesignDialogRoute]'s builder paints from.
-@immutable
-class DesignDialogDetails {
-  /// The route's details; the route makes them.
-  const DesignDialogDetails({
-    required this.animation,
-    required this.isAlert,
-    required this.close,
-  });
+/// Builds a [RawModalRoute]'s page: what the look paints over the barrier,
+/// which [details] lets it move as the route opens and closes.
+typedef RawModalBuilder = Widget Function(
+  BuildContext context,
+  RawModalDetails details,
+);
 
-  /// The dialog's presence on the route's spring: 0 gone, 1 open, for the
-  /// look's own scale or fade. An underdamped token passes 1 before it
-  /// rests: clamp it before an `Opacity`, which asserts outside 0 to 1, and
-  /// let it overshoot only in a scale or a move. Under Reduce Motion it
-  /// stays at 1 and the route fades the whole dialog itself.
+/// What a [RawModalRoute]'s builder paints from.
+@immutable
+class RawModalDetails {
+  /// The route's details; the route makes them.
+  const RawModalDetails({required this.animation, required this.close});
+
+  /// The page's presence on the route's spring: 0 gone, 1 open, for the
+  /// look's own scale, slide or fade. An underdamped token passes 1 before
+  /// it rests: clamp it before an `Opacity`, which asserts outside 0 to 1,
+  /// and let it overshoot only in a scale or a move. Under Reduce Motion it
+  /// stays at 1 and the route fades the whole page itself.
   final Animation<double> animation;
 
-  /// Whether the route is an alert ([DesignDialogRoute.isAlert]).
-  final bool isAlert;
-
-  /// Closes the dialog through `Navigator.maybePop`, so a `PopScope` in it
+  /// Closes the route through `Navigator.maybePop`, so a `PopScope` in it
   /// may refuse: for a close button.
   final VoidCallback close;
 }
 
+/// What a [DesignDialogRoute]'s builder paints from: a [RawModalDetails]
+/// that says whether the dialog is an alert.
+@immutable
+class DesignDialogDetails extends RawModalDetails {
+  /// The route's details; the route makes them.
+  const DesignDialogDetails({
+    required super.animation,
+    required this.isAlert,
+    required super.close,
+  });
+
+  /// Whether the route is an alert ([DesignDialogRoute.isAlert]).
+  final bool isAlert;
+}
+
+/// A modal route whose page states no role: a sheet, a lightbox, a page laid
+/// over the page, where a screen reader hears the page's own words and no
+/// dialog. Push it with `Navigator.push`; its page is `builder`'s, over a
+/// barrier.
+///
+/// It is the route [DesignDialogRoute] builds on, without the dialog. It
+/// opens on a spring ([dampingRatio], [stiffness]) and closes on the same
+/// one, or on its own ([closeDampingRatio], [closeStiffness]), from wherever
+/// it is when it turns; under Reduce Motion it fades instead
+/// (`designReduceMotionOf`). As it opens it takes focus and keeps Tab
+/// inside it, on the web too, where a route lets Tab leave the page by
+/// default; as it closes, focus goes back to the node that held it when it
+/// was pushed.
+///
+/// Escape, Android's back, a barrier tap (when [barrierDismissible]) and
+/// [RawModalDetails.close] all close it through `Navigator.maybePop`, so a
+/// `PopScope` in it may refuse any of them.
+///
+/// To a screen reader it is a route: a scope that keeps the page under it out
+/// of reach while it is open, with no role, named as its page names it (a
+/// `Semantics` with `namesRoute` round its title). Flutter's
+/// `RawDialogRoute` states no role either: a dialog says so from the widget
+/// on its page, as [DesignDialogRoute] does from this route.
+///
+/// A recipe laid over the page from the bottom, pushed with
+/// `Navigator.of(context).push(route)`:
+///
+/// ```dart
+/// RawModalRoute<void>(
+///   builder: (context, details) => Align(
+///     alignment: Alignment.bottomCenter,
+///     child: Semantics(
+///       namesRoute: true,
+///       header: true,
+///       child: const Text('Lemon tart'),
+///     ),
+///   ),
+/// )
+/// ```
+class RawModalRoute<T> extends PopupRoute<T> {
+  /// A modal route whose page [builder] paints.
+  RawModalRoute({
+    required RawModalBuilder builder,
+    this.dampingRatio = 1,
+    this.stiffness = 1400,
+    this.closeDampingRatio,
+    this.closeStiffness,
+    Color barrierColor = const Color(0x66000000),
+    this.barrierBuilder,
+    String? barrierLabel,
+    bool barrierDismissible = true,
+    this.anchorPoint,
+    super.settings,
+  }) : assert(dampingRatio > 0 && stiffness > 0),
+       assert((closeDampingRatio ?? 1) > 0 && (closeStiffness ?? 1) > 0),
+       _page = builder,
+       _scrim = barrierColor,
+       _givenBarrierLabel = barrierLabel,
+       _dismissOnBarrier = barrierDismissible,
+       _spring = RouteSpring(
+         dampingRatio: dampingRatio,
+         stiffness: stiffness,
+         closeDampingRatio: closeDampingRatio,
+         closeStiffness: closeStiffness,
+       );
+
+  /// The open spring's damping ratio (ζ), and the close spring's unless
+  /// [closeDampingRatio] is given. Defaults to 1.
+  final double dampingRatio;
+
+  /// The open spring's stiffness (k), and the close spring's unless
+  /// [closeStiffness] is given. Defaults to 1400.
+  final double stiffness;
+
+  /// The close spring's damping ratio (ζ); null: [dampingRatio]. A look
+  /// whose page falls away on a spring of its own sets it with
+  /// [closeStiffness].
+  final double? closeDampingRatio;
+
+  /// The close spring's stiffness (k); null: [stiffness].
+  final double? closeStiffness;
+
+  /// Paints the barrier in place of the barrier colour (a look's own
+  /// screen); null: the colour.
+  final DesignBarrierBuilder? barrierBuilder;
+
+  /// Which half of a folding screen it opens on: the half nearest this
+  /// point (`DisplayFeatureSubScreen`); null: the reading start's.
+  final Offset? anchorPoint;
+
+  final RawModalBuilder _page;
+  final Color _scrim;
+  final String? _givenBarrierLabel;
+  final bool _dismissOnBarrier;
+  final RouteSpring _spring;
+  final RouteFocusReturn _focus = RouteFocusReturn();
+
+  /// What a screen reader calls the barrier; null:
+  /// [RawWidgetsLocalizations.modalBarrierDismissLabel].
+  @override
+  String? get barrierLabel {
+    final context = navigator?.context;
+    return _givenBarrierLabel ??
+        (context == null
+            ? null
+            : RawWidgetsLocalizations.of(context).modalBarrierDismissLabel);
+  }
+
+  /// The barrier's colour; null while [barrierBuilder] paints it.
+  @override
+  Color? get barrierColor => barrierBuilder == null ? _scrim : null;
+
+  /// Whether a barrier tap closes it. Defaults to true.
+  @override
+  bool get barrierDismissible => _dismissOnBarrier;
+
+  /// Focus stays inside it: Tab from its last stop goes to its first.
+  @override
+  TraversalEdgeBehavior get traversalEdgeBehavior =>
+      TraversalEdgeBehavior.closedLoop;
+
+  /// Nominal: the spring decides how long it takes ([createSimulation]).
+  @override
+  Duration get transitionDuration => const Duration(milliseconds: 300);
+
+  @override
+  Widget buildModalBarrier() {
+    final barrier = super.buildModalBarrier();
+    final paint = barrierBuilder;
+    return paint == null ? barrier : paintedBarrier(paint, animation!, barrier);
+  }
+
+  @override
+  void install() {
+    _focus.capture();
+    super.install();
+    _spring.attach(controller!);
+  }
+
+  /// The spring from where the page is to open or gone.
+  @override
+  Simulation createSimulation({required bool forward}) =>
+      _spring.simulation(navigator!.context, to: forward ? 1 : 0);
+
+  @override
+  bool didPop(T? result) {
+    final popped = super.didPop(result);
+    _focus.giveBack();
+    return popped;
+  }
+
+  // The route's node round its page: a scope with no role, named as the
+  // page names it. A dialog states its role here.
+  Widget _scope(Widget page) =>
+      Semantics(scopesRoute: true, explicitChildNodes: true, child: page);
+
+  @override
+  Widget buildPage(
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+  ) {
+    final reduced = _spring.reduced;
+    return DisplayFeatureSubScreen(
+      anchorPoint: anchorPoint,
+      child: escapeCloses(
+        context,
+        _scope(
+          Builder(
+            builder: (context) => _page(
+              context,
+              RawModalDetails(
+                animation: reduced
+                    ? kAlwaysCompleteAnimation
+                    : _spring.presence,
+                close: () => Navigator.of(context).maybePop(),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget buildTransitions(
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+    Widget child,
+  ) => _spring.reduced
+      ? FadeTransition(opacity: animation, child: child)
+      : child;
+}
+
 /// A modal dialog or alert. Push it with `Navigator.push`; its page is
-/// [builder]'s, over a barrier.
+/// [builder]'s, over a barrier. It is a [RawModalRoute] that says dialog.
 ///
 /// It opens on a spring ([dampingRatio], [stiffness]) and closes on the
 /// same one, or on its own ([closeDampingRatio], [closeStiffness]), from
@@ -92,32 +303,33 @@ class DesignDialogDetails {
 ///   ),
 /// )
 /// ```
-class DesignDialogRoute<T> extends PopupRoute<T> {
-  /// A dialog whose page [builder] paints.
+class DesignDialogRoute<T> extends RawModalRoute<T> {
+  /// A dialog whose page [builder] paints. A barrier tap closes a dialog,
+  /// and an alert only when [barrierDismissible] is true.
   DesignDialogRoute({
     required this.builder,
     this.isAlert = false,
     this.semanticLabel,
-    this.dampingRatio = 1,
-    this.stiffness = 1400,
-    this.closeDampingRatio,
-    this.closeStiffness,
-    Color barrierColor = const Color(0x66000000),
-    this.barrierBuilder,
-    String? barrierLabel,
+    super.dampingRatio = 1,
+    super.stiffness = 1400,
+    super.closeDampingRatio,
+    super.closeStiffness,
+    super.barrierColor = const Color(0x66000000),
+    super.barrierBuilder,
+    super.barrierLabel,
     bool? barrierDismissible,
-    this.anchorPoint,
+    super.anchorPoint,
     super.settings,
-  }) : assert(dampingRatio > 0 && stiffness > 0),
-       assert((closeDampingRatio ?? 1) > 0 && (closeStiffness ?? 1) > 0),
-       _scrim = barrierColor,
-       _givenBarrierLabel = barrierLabel,
-       _dismissOnBarrier = barrierDismissible ?? !isAlert,
-       _spring = RouteSpring(
-         dampingRatio: dampingRatio,
-         stiffness: stiffness,
-         closeDampingRatio: closeDampingRatio,
-         closeStiffness: closeStiffness,
+  }) : super(
+         builder: (context, details) => builder(
+           context,
+           DesignDialogDetails(
+             animation: details.animation,
+             isAlert: isAlert,
+             close: details.close,
+           ),
+         ),
+         barrierDismissible: barrierDismissible ?? !isAlert,
        );
 
   /// Paints the dialog's page, which fills the screen: a [RawAlertDialog]
@@ -136,139 +348,19 @@ class DesignDialogRoute<T> extends PopupRoute<T> {
   /// [RawWidgetsLocalizations.alertDialogLabel].
   final String? semanticLabel;
 
-  /// The open spring's damping ratio (ζ), and the close spring's unless
-  /// [closeDampingRatio] is given. Defaults to 1.
-  final double dampingRatio;
-
-  /// The open spring's stiffness (k), and the close spring's unless
-  /// [closeStiffness] is given. Defaults to 1400.
-  final double stiffness;
-
-  /// The close spring's damping ratio (ζ); null: [dampingRatio]. A look
-  /// whose dialog falls away on a spring of its own sets it with
-  /// [closeStiffness].
-  final double? closeDampingRatio;
-
-  /// The close spring's stiffness (k); null: [stiffness].
-  final double? closeStiffness;
-
-  /// Paints the barrier in place of the barrier colour (a look's own
-  /// screen); null: the colour.
-  final DesignBarrierBuilder? barrierBuilder;
-
-  /// Which half of a folding screen it opens on: the half nearest this
-  /// point (`DisplayFeatureSubScreen`); null: the reading start's.
-  final Offset? anchorPoint;
-
-  final Color _scrim;
-  final String? _givenBarrierLabel;
-  final bool _dismissOnBarrier;
-  final RouteSpring _spring;
-  final RouteFocusReturn _focus = RouteFocusReturn();
-
-  /// What a screen reader calls the barrier; null:
-  /// [RawWidgetsLocalizations.modalBarrierDismissLabel].
+  // The route's node, which says dialog (or alert) and the dialog's name.
   @override
-  String? get barrierLabel {
-    final context = navigator?.context;
-    return _givenBarrierLabel ??
-        (context == null
-            ? null
-            : RawWidgetsLocalizations.of(context).modalBarrierDismissLabel);
-  }
-
-  /// The barrier's colour; null while [barrierBuilder] paints it.
-  @override
-  Color? get barrierColor => barrierBuilder == null ? _scrim : null;
-
-  /// Whether a barrier tap closes it; defaults to true for a dialog and
-  /// false for an alert.
-  @override
-  bool get barrierDismissible => _dismissOnBarrier;
-
-  /// Focus stays inside it: Tab from its last stop goes to its first.
-  @override
-  TraversalEdgeBehavior get traversalEdgeBehavior =>
-      TraversalEdgeBehavior.closedLoop;
-
-  /// Nominal: the spring decides how long it takes ([createSimulation]).
-  @override
-  Duration get transitionDuration => const Duration(milliseconds: 300);
-
-  @override
-  Widget buildModalBarrier() {
-    final barrier = super.buildModalBarrier();
-    final paint = barrierBuilder;
-    return paint == null ? barrier : paintedBarrier(paint, animation!, barrier);
-  }
-
-  @override
-  void install() {
-    _focus.capture();
-    super.install();
-    _spring.attach(controller!);
-  }
-
-  /// The spring from where the dialog is to open or gone.
-  @override
-  Simulation createSimulation({required bool forward}) =>
-      _spring.simulation(navigator!.context, to: forward ? 1 : 0);
-
-  @override
-  bool didPop(T? result) {
-    final popped = super.didPop(result);
-    _focus.giveBack();
-    return popped;
-  }
-
-  @override
-  Widget buildPage(
-    BuildContext context,
-    Animation<double> animation,
-    Animation<double> secondaryAnimation,
-  ) {
-    final reduced = _spring.reduced;
+  Widget _scope(Widget page) {
     final labelled = semanticLabel != null;
-    return DisplayFeatureSubScreen(
-      anchorPoint: anchorPoint,
-      child: escapeCloses(
-        context,
-        Semantics(
-          role: isAlert ? SemanticsRole.alertDialog : SemanticsRole.dialog,
-          scopesRoute: true,
-          explicitChildNodes: true,
-          namesRoute: labelled ? true : null,
-          label: semanticLabel,
-          child: _DialogScope(
-            isAlert: isAlert,
-            labelled: labelled,
-            child: Builder(
-              builder: (context) => builder(
-                context,
-                DesignDialogDetails(
-                  animation: reduced
-                      ? kAlwaysCompleteAnimation
-                      : _spring.presence,
-                  isAlert: isAlert,
-                  close: () => Navigator.of(context).maybePop(),
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
+    return Semantics(
+      role: isAlert ? SemanticsRole.alertDialog : SemanticsRole.dialog,
+      scopesRoute: true,
+      explicitChildNodes: true,
+      namesRoute: labelled ? true : null,
+      label: semanticLabel,
+      child: _DialogScope(isAlert: isAlert, labelled: labelled, child: page),
     );
   }
-
-  @override
-  Widget buildTransitions(
-    BuildContext context,
-    Animation<double> animation,
-    Animation<double> secondaryAnimation,
-    Widget child,
-  ) => _spring.reduced
-      ? FadeTransition(opacity: animation, child: child)
-      : child;
 }
 
 // What a RawAlertDialog reads of the route round it.

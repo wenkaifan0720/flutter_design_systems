@@ -240,6 +240,7 @@ class DesignOverlayLayout extends SingleChildLayoutDelegate {
     required this.textDirection,
     required this.maxSize,
     this.placed,
+    this.placeAt,
   });
 
   /// The anchor's rectangle (a point for a surface opened at one).
@@ -262,6 +263,10 @@ class DesignOverlayLayout extends SingleChildLayoutDelegate {
 
   /// Told where the surface lands.
   final DesignSurfaceRect? placed;
+
+  /// Where the surface goes, from its size, in place of [designPlaceOverlay]'s
+  /// (a caller's `RawPopover.positionDelegate`); null: its own.
+  final Offset Function(Size childSize)? placeAt;
 
   /// Whether it is a list from a field: as wide as the anchor at least.
   bool get matchesAnchor => placement.matchAnchorWidth && side.isVertical;
@@ -286,19 +291,22 @@ class DesignOverlayLayout extends SingleChildLayoutDelegate {
 
   @override
   Offset getPositionForChild(Size size, Size childSize) {
-    final offset = designPlaceOverlay(
-      flipAlignment:
-          placement.flip &&
-          placement.matchAnchorWidth &&
-          placement.align == RawPopoverAlign.start,
-      anchor: anchor,
-      bounds: bounds,
-      size: childSize,
-      side: side,
-      align: placement.align,
-      gap: placement.gap,
-      textDirection: textDirection,
-    );
+    final at = placeAt;
+    final offset = at != null
+        ? at(childSize)
+        : designPlaceOverlay(
+            flipAlignment:
+                placement.flip &&
+                placement.matchAnchorWidth &&
+                placement.align == RawPopoverAlign.start,
+            anchor: anchor,
+            bounds: bounds,
+            size: childSize,
+            side: side,
+            align: placement.align,
+            gap: placement.gap,
+            textDirection: textDirection,
+          );
     placed?.value = offset & childSize;
     return offset;
   }
@@ -311,7 +319,8 @@ class DesignOverlayLayout extends SingleChildLayoutDelegate {
       placement != oldDelegate.placement ||
       textDirection != oldDelegate.textDirection ||
       maxSize != oldDelegate.maxSize ||
-      placed != oldDelegate.placed;
+      placed != oldDelegate.placed ||
+      placeAt != oldDelegate.placeAt;
 }
 
 /// Told a surface's own extent along its side's axis, as measured in the

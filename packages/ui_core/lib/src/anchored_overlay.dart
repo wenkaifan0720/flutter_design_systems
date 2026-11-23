@@ -292,6 +292,76 @@ class _NoSurfaceRect implements ValueListenable<Rect?> {
   void removeListener(VoidCallback listener) {}
 }
 
+/// Places a [RawPopover]'s surface where its caller says: the surface's
+/// top-left corner in the overlay, from [RawPopoverPositionContext].
+typedef RawPopoverPositionDelegate = Offset Function(
+  RawPopoverPositionContext context,
+);
+
+/// What a [RawPopoverPositionDelegate] places the surface from: the anchor,
+/// the surface's size and the room round them, in the overlay's coordinates.
+@immutable
+class RawPopoverPositionContext {
+  /// The context of a surface of [surfaceSize] anchored at [anchorRect].
+  const RawPopoverPositionContext({
+    required this.anchorRect,
+    required this.surfaceSize,
+    required this.overlaySize,
+    required this.bounds,
+    required this.side,
+    required this.textDirection,
+    this.position,
+  });
+
+  /// The anchor's rectangle in the overlay.
+  final Rect anchorRect;
+
+  /// The surface's size, laid out as when the popover places itself: within
+  /// the room on [side], by [RawPopoverPlacement.fit] and its widths.
+  final Size surfaceSize;
+
+  /// The overlay's size.
+  final Size overlaySize;
+
+  /// What the popover keeps to when it places itself: the overlay less the
+  /// safe area, the on-screen keyboard, a [RawPopoverPadding] and
+  /// [RawPopoverPlacement.margin]. A delegate may place the surface past it.
+  final Rect bounds;
+
+  /// The side the surface's room is on and [RawPopoverInfo.side] says: the
+  /// placement's side, or the other after a flip.
+  final RawPopoverSide side;
+
+  /// The reading direction at the popover.
+  final TextDirection textDirection;
+
+  /// The point it opened at, in the anchor's coordinates
+  /// ([RawPopoverInfo.position]); null when it opened from the anchor.
+  final Offset? position;
+
+  @override
+  bool operator ==(Object other) =>
+      other is RawPopoverPositionContext &&
+      other.anchorRect == anchorRect &&
+      other.surfaceSize == surfaceSize &&
+      other.overlaySize == overlaySize &&
+      other.bounds == bounds &&
+      other.side == side &&
+      other.textDirection == textDirection &&
+      other.position == position;
+
+  @override
+  int get hashCode => Object.hash(
+    anchorRect,
+    surfaceSize,
+    overlaySize,
+    bounds,
+    side,
+    textDirection,
+    position,
+  );
+}
+
 /// The edges a surface opened under it keeps clear of, beyond the screen's
 /// safe area and the on-screen keyboard: a look's own chrome over its pages,
 /// such as a desktop side bar a page's overlay runs under.
@@ -457,6 +527,9 @@ class _LeaveArrows extends Action<DirectionalFocusIntent> {
 /// from its start in reading order, above it or towards its other end where
 /// there is no room. [RawPopoverInfo.position] says so.
 ///
+/// [positionDelegate] places the surface where the caller says instead (a
+/// menu at the page's own place), the popover keeping all else.
+///
 /// ```dart
 /// RawPopover(anchorBuilder: (context, anchor) => GestureDetector(onTap: anchor.toggle, child: const Text('More')), overlayBuilder: (context, info) => const Text('Details'))
 /// ```
@@ -479,6 +552,7 @@ class RawPopover extends StatefulWidget {
     this.useRootOverlay = false,
     this.dampingRatio = 1,
     this.stiffness = 1400,
+    this.positionDelegate,
   }) : assert(dampingRatio > 0 && stiffness > 0);
 
   /// Paints the anchor; a press trigger calls [DesignOverlayAnchor.toggle].
@@ -541,6 +615,25 @@ class RawPopover extends StatefulWidget {
   /// The presence spring's stiffness (k).
   final double stiffness;
 
+  /// Places the surface where the caller says, as Flutter's
+  /// `RawTooltip.positionDelegate` places a tooltip: from the anchor, the
+  /// surface's size and the room round them, it returns the surface's
+  /// top-left corner in the overlay, which the popover keeps as given, in
+  /// either reading direction
+  /// ([RawPopoverPositionContext.textDirection] says which). Null: the
+  /// popover places itself by [placement].
+  ///
+  /// The popover keeps all else: it opens, closes and moves focus as before,
+  /// a screen reader hears the same, and it sizes the surface by [placement]
+  /// (its side's room, [RawPopoverPlacement.fit], its widths): a delegate
+  /// places a surface it does not size. [RawPopoverInfo.surfaceRect] says
+  /// where it landed.
+  ///
+  /// A menu 12 px under its anchor, its trailing edge on the anchor's:
+  /// `(c) => Offset(c.textDirection == TextDirection.ltr ? c.anchorRect.right -
+  /// c.surfaceSize.width : c.anchorRect.left, c.anchorRect.bottom + 12)`.
+  final RawPopoverPositionDelegate? positionDelegate;
+
   @override
   State<RawPopover> createState() => _DesignAnchoredOverlayState();
 
@@ -558,6 +651,12 @@ class RawPopover extends StatefulWidget {
         ObjectFlagProperty<RawPopoverOverlayBuilder>.has(
           'overlayBuilder',
           overlayBuilder,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<RawPopoverPositionDelegate>.has(
+          'positionDelegate',
+          positionDelegate,
         ),
       )
       ..add(
@@ -1222,6 +1321,7 @@ class _DesignAnchoredOverlayState extends State<RawPopover>
       onTapOutside: (_) => _close(),
       child: surface,
     );
+    final delegate = widget.positionDelegate;
     final layout = DesignOverlayLayout(
       anchor: anchor,
       bounds: bounds,
@@ -1230,6 +1330,20 @@ class _DesignAnchoredOverlayState extends State<RawPopover>
       textDirection: direction,
       maxSize: maxSize,
       placed: _placed,
+      // The caller's place, the surface sized as before.
+      placeAt: delegate == null
+          ? null
+          : (surfaceSize) => delegate(
+              RawPopoverPositionContext(
+                anchorRect: raw.anchorRect,
+                surfaceSize: surfaceSize,
+                overlaySize: raw.overlaySize,
+                bounds: bounds,
+                side: side,
+                textDirection: direction,
+                position: position,
+              ),
+            ),
     );
     return ConstrainedBox(
       constraints: BoxConstraints.loose(raw.overlaySize),

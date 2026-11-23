@@ -729,6 +729,16 @@ final Map<String, DocExample> _examples = {
       actionBuilder: (context, action, details) => Text(action.label),
     ),
   ),
+  'RawModalRoute': (context) => RawModalRoute<void>(
+    builder: (context, details) => Align(
+      alignment: Alignment.bottomCenter,
+      child: Semantics(
+        namesRoute: true,
+        header: true,
+        child: const Text('Lemon tart'),
+      ),
+    ),
+  ),
   'RawAlertDialog': (context) => RawAlertDialog(
     title: 'Discard changes?',
     content: const Text('Your edits to this note will be lost.'),
