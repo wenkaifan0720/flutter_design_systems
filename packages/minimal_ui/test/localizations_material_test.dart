@@ -31,16 +31,19 @@ Widget _app(Locale locale, Widget part) => WidgetsApp(
 );
 
 final Map<String, Widget Function()> _parts = {
-  'text field': () => const MinimalTextField(label: 'Name', hint: 'Your name'),
+  'text field': () =>
+      const MinimalTextField(labelText: 'Name', hintText: 'Your name'),
   'search field': () => const MinimalSearchField(),
   'composer': () => MinimalComposer(onSend: (_) {}),
-  'text area': () => const MinimalTextArea(hint: 'Notes'),
-  'password field': () => const MinimalPasswordField(label: 'Password'),
-  'combobox': () =>
-      const MinimalCombobox<String>(options: ['Bug', 'Feature'], label: 'Type'),
-  'code field': () => const MinimalInputOtp(label: 'Code'),
+  'text area': () => const MinimalTextArea(hintText: 'Notes'),
+  'password field': () => const MinimalPasswordField(labelText: 'Password'),
+  'combobox': () => const MinimalCombobox<String>(
+    options: ['Bug', 'Feature'],
+    labelText: 'Type',
+  ),
+  'code field': () => const MinimalInputOtp(labelText: 'Code'),
   'date picker': () => MinimalDatePicker(
-    label: 'Due',
+    labelText: 'Due',
     value: DateTime(2026, 11, 14),
     onChanged: (_) {},
   ),
@@ -124,7 +127,7 @@ void main() {
         Builder(
           builder: (context) {
             words = MinimalLocalizations.of(context);
-            return const MinimalTextField(label: 'Name');
+            return const MinimalTextField(labelText: 'Name');
           },
         ),
       ),

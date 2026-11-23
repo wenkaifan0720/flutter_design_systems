@@ -19,7 +19,7 @@ void main() {
       await tester.pumpWidget(
         scrollingHost(
           MinimalSearchField(
-            hint: 'Search habits',
+            hintText: 'Search habits',
             clearable: true,
             focusNode: focus,
             onChanged: typed.add,

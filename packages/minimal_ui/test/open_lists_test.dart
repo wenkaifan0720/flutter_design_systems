@@ -101,7 +101,7 @@ void main() {
       await tester.pumpWidget(
         _host(
           MinimalSelect(
-            label: 'Repeats',
+            labelText: 'Repeats',
             value: 'weekdays',
             options: _options,
             onChanged: (_) {},
@@ -120,7 +120,7 @@ void main() {
       await tester.pumpWidget(
         _host(
           MinimalSelect(
-            label: 'Repeats',
+            labelText: 'Repeats',
             value: 'weekdays',
             options: _options,
             presentation: MinimalSelectPresentation.sheet,
@@ -139,7 +139,7 @@ void main() {
       await tester.pumpWidget(
         _host(
           MinimalCombobox<String>(
-            label: 'City',
+            labelText: 'City',
             options: const ['Lisbon', 'London', 'Lyon'],
             value: 'London',
             onSelected: (_) {},

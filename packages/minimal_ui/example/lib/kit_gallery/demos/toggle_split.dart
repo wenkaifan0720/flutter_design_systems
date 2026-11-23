@@ -31,7 +31,7 @@ Widget kitToggleSplitDemo(Brightness brightness) => kitScreen(
             outlined: false,
             small: true,
             selected: {value},
-            onChanged: (s) => set(s.single),
+            onSelectionChanged: (s) => set(s.single),
             items: const [
               MinimalToggleItem('compact', label: 'Compact'),
               MinimalToggleItem('comfortable', label: 'Comfortable'),
@@ -93,7 +93,7 @@ List<MinimalMenuItem> _publish(BuildContext context) => [
   MinimalMenuItem(
     'Discard',
     icon: LucideIcons.trash2,
-    destructive: true,
+    isDestructiveAction: true,
     startsGroup: true,
     onPressed: () {},
   ),
@@ -119,7 +119,7 @@ class _ViewState extends State<_View> {
   Widget build(BuildContext context) => MinimalToggleGroup<String>(
     label: 'View',
     selected: {_view},
-    onChanged: (s) => setState(() => _view = s.single),
+    onSelectionChanged: (s) => setState(() => _view = s.single),
     items: _views,
   );
 }
@@ -137,10 +137,10 @@ class _MarksState extends State<_Marks> {
   @override
   Widget build(BuildContext context) => MinimalToggleGroup<String>(
     label: 'Text style',
-    multiple: true,
-    allowEmpty: true,
+    multiSelectionEnabled: true,
+    emptySelectionAllowed: true,
     selected: _on,
-    onChanged: (s) => setState(() => _on = s),
+    onSelectionChanged: (s) => setState(() => _on = s),
     items: const [
       MinimalToggleItem('bold', icon: LucideIcons.bold, semanticLabel: 'Bold'),
       MinimalToggleItem(
@@ -182,7 +182,7 @@ Widget kitSpecimenToggleGroup() => Center(
   child: MinimalToggleGroup<String>(
     label: 'View',
     selected: const {'board'},
-    onChanged: (_) {},
+    onSelectionChanged: (_) {},
     items: _views,
   ),
 );

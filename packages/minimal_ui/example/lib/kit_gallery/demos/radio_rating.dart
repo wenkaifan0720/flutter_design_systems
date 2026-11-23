@@ -40,22 +40,22 @@ class _LivePlanState extends State<_LivePlan> {
       MinimalRadioOption(
         value: 'free',
         label: 'Free',
-        description: 'Up to 3 projects',
+        subtitle: 'Up to 3 projects',
       ),
       MinimalRadioOption(
         value: 'pro',
         label: 'Pro',
-        description: 'Unlimited projects, \$12 a month',
+        subtitle: 'Unlimited projects, \$12 a month',
       ),
       MinimalRadioOption(
         value: 'team',
         label: 'Team',
-        description: 'Shared billing and roles',
+        subtitle: 'Shared billing and roles',
       ),
       MinimalRadioOption(
         value: 'ent',
         label: 'Enterprise',
-        description: 'Talk to sales',
+        subtitle: 'Talk to sales',
         enabled: false,
       ),
     ],
@@ -110,17 +110,17 @@ Widget kitSpecimenRadioGroupPlans() => MinimalRadioGroup<String>(
     MinimalRadioOption(
       value: 'free',
       label: 'Free',
-      description: 'Up to 3 projects',
+      subtitle: 'Up to 3 projects',
     ),
     MinimalRadioOption(
       value: 'pro',
       label: 'Pro',
-      description: 'Unlimited projects',
+      subtitle: 'Unlimited projects',
     ),
     MinimalRadioOption(
       value: 'team',
       label: 'Team',
-      description: 'Shared billing and roles',
+      subtitle: 'Shared billing and roles',
     ),
   ],
 );

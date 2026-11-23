@@ -6,8 +6,8 @@ import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
+import '../internal/chart_figures.dart';
 import '../internal/controls.dart';
-import '../internal/reader_digits.dart';
 import '../localizations.dart';
 import '../theme.dart';
 import 'pressable.dart';
@@ -71,9 +71,6 @@ class MinimalBarChart extends StatelessWidget {
   /// label and value at any size.
   static const double maxLabelScale = 1.3;
 
-  static String _figure(double v) =>
-      v == v.roundToDouble() ? v.toInt().toString() : v.toStringAsFixed(1);
-
   @override
   Widget build(BuildContext context) {
     final t = context.minimalTheme;
@@ -111,7 +108,7 @@ class MinimalBarChart extends StatelessWidget {
       final name = names != null && i < names.length ? names[i] : null;
       final announced =
           '${name ?? MinimalLocalizations.of(context).bar(i + 1)}: '
-          '${format?.call(v) ?? minimalReaderDigits(context, _figure(v))}';
+          '${format?.call(v) ?? minimalPlainFigure(context, v)}';
       final cell = Column(
         mainAxisSize: MainAxisSize.min,
         children: [

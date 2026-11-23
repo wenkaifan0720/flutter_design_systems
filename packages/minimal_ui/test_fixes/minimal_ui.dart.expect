@@ -1,0 +1,112 @@
+// Each name minimal_ui 0.5.0 renamed, used once; dart fix renames it (minimal_ui.dart.expect).
+import 'package:flutter/widgets.dart';
+import 'package:minimal_ui/minimal_ui.dart';
+
+dynamic any;
+
+void constructors() {
+  MinimalToggleGroup(
+    items: any,
+    selected: any,
+    onSelectionChanged: any,
+    multiSelectionEnabled: any,
+    emptySelectionAllowed: any,
+  );
+  MinimalDatePicker(value: any, firstDate: any, lastDate: any, currentDate: any, labelText: any);
+  MinimalCalendar(firstDate: any, lastDate: any, currentDate: any);
+  MinimalDateRangePicker(
+    firstDate: any,
+    lastDate: any,
+    currentDate: any,
+    labelText: any,
+    hintText: any,
+  );
+  MinimalCombobox(
+    displayStringForOption: any,
+    labelText: any,
+    hintText: any,
+    helperText: any,
+    errorText: any,
+  );
+  MinimalMultiSelect(
+    values: any,
+    displayStringForOption: any,
+    labelText: any,
+    hintText: any,
+    helperText: any,
+    errorText: any,
+  );
+  MinimalTextField(
+    onFocusChange: any,
+    labelText: any,
+    hintText: any,
+    helperText: any,
+    errorText: any,
+  );
+  MinimalSearchField(onFocusChange: any, hintText: any);
+  MinimalDisclosure(title: any, child: any, onExpansionChanged: any, icon: any);
+  MinimalPageDots(pageCount: any, page: any, onPageChanged: any);
+  MinimalComposer(variant: any, hintText: any);
+  MinimalFormField(child: any, helperText: any, labelText: any, errorText: any);
+  MinimalRadioOption(value: any, label: any, subtitle: any);
+  MinimalMenuItem(any, isDestructiveAction: any);
+  MinimalTextArea(labelText: any, hintText: any, helperText: any, errorText: any);
+  MinimalInputGroup(labelText: any, hintText: any, helperText: any, errorText: any);
+  MinimalPasswordField(labelText: any, hintText: any, helperText: any, errorText: any);
+  MinimalInputOtp(labelText: any, errorText: any);
+  MinimalInputRow(labelText: any, hintText: any, errorText: any);
+  MinimalTimePicker(value: any, labelText: any);
+  MinimalSelect(value: any, options: any, labelText: any, hintText: any);
+  MinimalNumberField(value: any, min: any, max: any, labelText: any);
+  MinimalCommand(actions: any, hintText: any);
+  MinimalComposerAction(variant: any);
+}
+
+Object? f0(MinimalToggleGroup w) => [w.onSelectionChanged, w.multiSelectionEnabled, w.emptySelectionAllowed];
+Object? f1(MinimalDatePicker w) => [w.firstDate, w.lastDate, w.currentDate, w.labelText];
+Object? f2(MinimalCalendar w) => [w.currentDate];
+Object? f3(MinimalDateRangePicker w) => [w.currentDate, w.labelText, w.hintText];
+Object? f4(MinimalCombobox w) => [
+  w.displayStringForOption,
+  w.labelText,
+  w.hintText,
+  w.helperText,
+  w.errorText,
+];
+Object? f5(MinimalMultiSelect w) => [
+  w.displayStringForOption,
+  w.labelText,
+  w.hintText,
+  w.helperText,
+  w.errorText,
+];
+Object? f6(MinimalTextField w) => [
+  w.onFocusChange,
+  w.labelText,
+  w.hintText,
+  w.helperText,
+  w.errorText,
+];
+Object? f7(MinimalSearchField w) => [w.onFocusChange, w.hintText];
+Object? f8(MinimalDisclosure w) => [w.onExpansionChanged, w.icon];
+Object? f9(MinimalPageDots w) => [w.pageCount, w.page, w.onPageChanged];
+Object? f10(MinimalComposer w) => [w.variant, w.hintText];
+Object? f11(MinimalFormField w) => [w.helperText, w.labelText, w.errorText];
+Object? f12(MinimalRadioOption w) => [w.subtitle];
+Object? f13(MinimalMenuItem w) => [w.isDestructiveAction];
+Object? f14(MinimalTextArea w) => [w.labelText, w.hintText, w.helperText, w.errorText];
+Object? f15(MinimalInputGroup w) => [w.labelText, w.hintText, w.helperText, w.errorText];
+Object? f16(MinimalPasswordField w) => [w.labelText, w.hintText, w.helperText, w.errorText];
+Object? f17(MinimalInputOtp w) => [w.labelText, w.errorText];
+Object? f18(MinimalInputRow w) => [w.labelText, w.hintText, w.errorText];
+Object? f19(MinimalTimePicker w) => [w.labelText];
+Object? f20(MinimalSelect w) => [w.labelText, w.hintText];
+Object? f21(MinimalNumberField w) => [w.labelText];
+Object? f22(MinimalCommand w) => [w.hintText];
+Object? f23(MinimalComposerAction w) => [w.variant];
+
+MinimalComposerVariant? v0 = MinimalComposerVariant.messages;
+MinimalTextTheme v1 = MinimalTextTheme.from(any);
+void command(BuildContext context) =>
+    MinimalCommand.show(context, actions: any, hintText: any);
+

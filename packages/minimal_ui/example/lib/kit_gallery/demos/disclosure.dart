@@ -93,13 +93,13 @@ Widget _disclosureSettings() => Builder(
         MinimalDisclosure(
           title: 'Reminders',
           subtitle: 'Times, sounds, quiet hours',
-          leading: LucideIcons.bell,
+          icon: LucideIcons.bell,
           child: answer('Each habit keeps its own reminder time.'),
         ),
         MinimalDisclosure(
           title: 'Advanced',
           subtitle: 'Webhooks, API keys, audit log',
-          leading: LucideIcons.settings2,
+          icon: LucideIcons.settings2,
           child: answer('Developer settings live here.'),
         ),
       ],

@@ -24,7 +24,7 @@ import 'screen.dart';
 /// chat or a quick reply rests in, the attach and send squares inside it;
 /// `assistant` is the issue-comment box — a taller writing area over its
 /// own toolbar (attach, a model or visibility pill, dictate, send).
-enum MinimalComposerStyle {
+enum MinimalComposerVariant {
   /// The one-line box of a chat or a quick reply.
   messages,
 
@@ -54,7 +54,7 @@ class MinimalComposer extends StatefulWidget {
   const MinimalComposer({
     super.key,
     this.controller,
-    this.hint,
+    this.hintText,
     this.onSend,
     this.onAttach,
     this.onVoice,
@@ -63,11 +63,11 @@ class MinimalComposer extends StatefulWidget {
     this.onModel,
     this.onRemoveAttachment,
     this.attachment,
-    this.model = 'Everyday',
+    this.model,
     this.busy = false,
     this.enabled = true,
     this.autofocus = false,
-    this.style = MinimalComposerStyle.messages,
+    this.variant = MinimalComposerVariant.messages,
     this.action,
     this.onChanged,
     this.focusNode,
@@ -77,13 +77,14 @@ class MinimalComposer extends StatefulWidget {
   final TextEditingController? controller;
 
   /// Unstated, "Message" (messages) or "Leave a comment…" (assistant).
-  final String? hint;
+  final String? hintText;
 
   /// A file riding with the draft, shown as a chip above the text.
   final String? attachment;
 
-  /// The assistant toolbar's pill label (a model, a visibility).
-  final String model;
+  /// The assistant toolbar's pill label (a model, a visibility); the pill
+  /// shows when this and [onModel] are both set.
+  final String? model;
 
   /// Sends the trimmed draft; the field then clears itself.
   final ValueChanged<String>? onSend;
@@ -121,7 +122,7 @@ class MinimalComposer extends StatefulWidget {
   final bool autofocus;
 
   /// Its register: messages (a chat) or assistant.
-  final MinimalComposerStyle style;
+  final MinimalComposerVariant variant;
 
   /// A flow-owned action in the send seat (usually a
   /// [MinimalComposerAction]); it owns its own enabled state.
@@ -144,9 +145,9 @@ class MinimalComposer extends StatefulWidget {
           defaultValue: null,
         ),
       )
-      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
       ..add(StringProperty('attachment', attachment, defaultValue: null))
-      ..add(StringProperty('model', model, defaultValue: 'Everyday'))
+      ..add(StringProperty('model', model, defaultValue: null))
       ..add(ObjectFlagProperty<ValueChanged<String>>.has('onSend', onSend))
       ..add(
         ObjectFlagProperty<ValueChanged<String>>.has('onChanged', onChanged),
@@ -166,10 +167,10 @@ class MinimalComposer extends StatefulWidget {
       ..add(FlagProperty('enabled', value: enabled, ifFalse: 'enabled: false'))
       ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
       ..add(
-        EnumProperty<MinimalComposerStyle>(
-          'style',
-          style,
-          defaultValue: MinimalComposerStyle.messages,
+        EnumProperty<MinimalComposerVariant>(
+          'variant',
+          variant,
+          defaultValue: MinimalComposerVariant.messages,
         ),
       )
       ..add(
@@ -258,7 +259,7 @@ class _MinimalComposerState extends State<MinimalComposer> {
   @override
   Widget build(BuildContext context) {
     final t = context.minimalTheme;
-    final assistant = widget.style == MinimalComposerStyle.assistant;
+    final assistant = widget.variant == MinimalComposerVariant.assistant;
     final enabled = widget.enabled;
 
     // One node whose reach is its outline, outermost: a tap past the line
@@ -282,7 +283,7 @@ class _MinimalComposerState extends State<MinimalComposer> {
           keyboardType: TextInputType.multiline,
           textInputAction: TextInputAction.newline,
           hint:
-              widget.hint ??
+              widget.hintText ??
               MinimalLocalizations.of(context)
                   .composerHint(assistant: assistant),
           hintStyle: t.body.c(t.mutedForeground),
@@ -358,7 +359,7 @@ class _MinimalComposerState extends State<MinimalComposer> {
                   ? MinimalComposerAction(
                       icon: MinimalComposerAction.stop,
                       label: MinimalLocalizations.of(context).stopResponse,
-                      style: widget.style,
+                      variant: widget.variant,
                       onPressed: _wire(widget.onStop),
                     )
                   : !ready && widget.onVoice != null
@@ -368,7 +369,7 @@ class _MinimalComposerState extends State<MinimalComposer> {
                       onPressed: _wire(widget.onVoice),
                     )
                   : MinimalComposerAction(
-                      style: widget.style,
+                      variant: widget.variant,
                       onPressed: !enabled
                           ? (widget.onSend == null ? null : _inert)
                           : ready && _live && widget.onSend != null
@@ -429,6 +430,7 @@ class _MinimalComposerState extends State<MinimalComposer> {
         }
 
         final onModel = widget.onModel;
+        final model = widget.model;
         return Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -458,11 +460,11 @@ class _MinimalComposerState extends State<MinimalComposer> {
                   Expanded(
                     child: Align(
                       alignment: AlignmentDirectional.centerStart,
-                      child: onModel == null
+                      child: onModel == null || model == null
                           ? const SizedBox.shrink()
                           : _quiet(
                               _ModelPill(
-                                label: widget.model,
+                                label: model,
                                 onPressed: _wire(onModel),
                               ),
                             ),
@@ -557,7 +559,7 @@ class MinimalComposerAction extends StatelessWidget {
     this.onPressed,
     this.icon = LucideIcons.arrowUp,
     this.label,
-    this.style = MinimalComposerStyle.messages,
+    this.variant = MinimalComposerVariant.messages,
     this.focusNode,
     this.autofocus = false,
   });
@@ -572,7 +574,7 @@ class MinimalComposerAction extends StatelessWidget {
   final String? label;
 
   /// The composer register it matches.
-  final MinimalComposerStyle style;
+  final MinimalComposerVariant variant;
 
   /// The stop seat's glyph: passed as [icon], the seat paints a filled
   /// square in the glyph's ink — an outline square at 16 px reads as a
@@ -598,7 +600,7 @@ class MinimalComposerAction extends StatelessWidget {
       onPressed: onPressed,
       fill: t.primary,
       glyph: t.primaryForeground,
-      small: style == MinimalComposerStyle.assistant,
+      small: variant == MinimalComposerVariant.assistant,
     );
   }
 
@@ -616,10 +618,10 @@ class MinimalComposerAction extends StatelessWidget {
       )
       ..add(StringProperty('label', label, defaultValue: null))
       ..add(
-        EnumProperty<MinimalComposerStyle>(
-          'style',
-          style,
-          defaultValue: MinimalComposerStyle.messages,
+        EnumProperty<MinimalComposerVariant>(
+          'variant',
+          variant,
+          defaultValue: MinimalComposerVariant.messages,
         ),
       )
       ..add(

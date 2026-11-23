@@ -74,28 +74,28 @@ enum MinimalSelectPresentation {
 /// `MinimalListSection`.
 ///
 /// ```dart
-/// MinimalSelect(label: 'Repeats', value: repeat, options: repeats, onChanged: setRepeat)
+/// MinimalSelect(labelText: 'Repeats', value: repeat, options: repeats, onChanged: setRepeat)
 /// ```
 class MinimalSelect<T> extends StatefulWidget {
   /// A form row choosing one of [options].
   const MinimalSelect({
     super.key,
-    required this.label,
+    required this.labelText,
     required this.value,
     required this.options,
     this.onChanged,
     this.presentation = MinimalSelectPresentation.menu,
-    this.prompt,
+    this.hintText,
     this.icon,
     this.focusNode,
     this.autofocus = false,
   });
 
   /// What it chooses.
-  final String label;
+  final String labelText;
 
   /// The chosen option's [MinimalSelectOption.value]; null prints
-  /// [prompt].
+  /// [hintText].
   final T? value;
 
   /// The choices, in order.
@@ -108,7 +108,7 @@ class MinimalSelect<T> extends StatefulWidget {
   final MinimalSelectPresentation presentation;
 
   /// What the row prints while nothing is chosen.
-  final String? prompt;
+  final String? hintText;
 
   /// A glyph before the label, the property-row register.
   final IconData? icon;
@@ -126,7 +126,7 @@ class MinimalSelect<T> extends StatefulWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('label', label))
+      ..add(StringProperty('labelText', labelText))
       ..add(DiagnosticsProperty<T>('value', value, defaultValue: null))
       ..add(IterableProperty<MinimalSelectOption<T>>('options', options))
       ..add(ObjectFlagProperty<ValueChanged<T>>.has('onChanged', onChanged))
@@ -137,7 +137,7 @@ class MinimalSelect<T> extends StatefulWidget {
           defaultValue: MinimalSelectPresentation.menu,
         ),
       )
-      ..add(StringProperty('prompt', prompt, defaultValue: null))
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
       ..add(DiagnosticsProperty<IconData>('icon', icon, defaultValue: null))
       ..add(
         DiagnosticsProperty<FocusNode>(
@@ -167,7 +167,7 @@ class _MinimalSelectState<T> extends State<MinimalSelect<T>> {
       await showMinimalMenu(
         context,
         anchor: box.localToGlobal(Offset.zero) & box.size,
-        label: widget.label,
+        label: widget.labelText,
         items: [
           for (final option in widget.options)
             MinimalMenuItem(
@@ -182,10 +182,11 @@ class _MinimalSelectState<T> extends State<MinimalSelect<T>> {
     }
     final result = await showMinimalBottomSheet<T>(
       context,
-      title: widget.label,
+      title: widget.labelText,
       builder: (sheetContext) => MinimalSelectionList<T>(
         value: widget.value,
         options: widget.options,
+        autofocus: true,
         onChanged: (v) => Navigator.of(sheetContext).pop(v),
       ),
     );
@@ -250,7 +251,10 @@ class _MinimalSelectState<T> extends State<MinimalSelect<T>> {
                     ],
                     Flexible(
                       child: minimalCapLabel(
-                        Text(widget.label, style: t.body.c(t.mutedForeground)),
+                        Text(
+                          widget.labelText,
+                          style: t.body.c(t.mutedForeground),
+                        ),
                       ),
                     ),
                   ],
@@ -270,7 +274,7 @@ class _MinimalSelectState<T> extends State<MinimalSelect<T>> {
                       child: minimalCapLabel(
                         Text(
                           chosen?.label ??
-                              widget.prompt ??
+                              widget.hintText ??
                               MinimalLocalizations.of(context).choose,
                           style: t.body.c(
                             chosen == null ? t.mutedForeground : valueInk,
@@ -312,6 +316,7 @@ class MinimalSelectionList<T> extends StatelessWidget {
     required this.options,
     this.onChanged,
     this.padding = EdgeInsets.zero,
+    this.autofocus = false,
   });
 
   /// The chosen option's value; null checks none.
@@ -328,6 +333,10 @@ class MinimalSelectionList<T> extends StatelessWidget {
   /// runs edge to edge.
   final EdgeInsetsGeometry padding;
 
+  /// Whether the chosen option takes the focus as the list mounts, as it does
+  /// in a select's sheet, so the keys go on from it.
+  final bool autofocus;
+
   @override
   Widget build(BuildContext context) {
     final onChanged = this.onChanged;
@@ -339,6 +348,7 @@ class MinimalSelectionList<T> extends StatelessWidget {
             title: option.label,
             subtitle: option.subtitle,
             selected: option.value == value,
+            autofocus: autofocus && option.value == value,
             leading: option.icon == null ? null : MinimalIcon(option.icon!),
             onPressed: option.enabled && onChanged != null
                 ? () => onChanged(option.value)
@@ -354,6 +364,7 @@ class MinimalSelectionList<T> extends StatelessWidget {
     properties
       ..add(DiagnosticsProperty<T>('value', value, defaultValue: null))
       ..add(IterableProperty<MinimalSelectOption<T>>('options', options))
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
       ..add(ObjectFlagProperty<ValueChanged<T>>.has('onChanged', onChanged))
       ..add(
         DiagnosticsProperty<EdgeInsetsGeometry>(

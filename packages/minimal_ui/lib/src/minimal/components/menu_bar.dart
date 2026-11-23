@@ -2,6 +2,8 @@
 /// menubar.
 library;
 
+import 'dart:math' as math;
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
@@ -103,9 +105,9 @@ class MinimalMenuEntry {
 /// A row of menus across a desktop app's top: File, Edit, View. A quiet
 /// strip on a hairline (its outline `shapes.small`), its menus' names in
 /// the control weight; an open menu's name stands on the quiet fill, and
-/// its menu is Minimal's card of 32 px items (a glyph, the words, the key
-/// caps or a chevron to a submenu, a check), the active item in the
-/// muted fill.
+/// its menu is Minimal's card of 32 px items, 44 on touch (a glyph, the
+/// words, the key caps or a chevron to a submenu, a check), the active item
+/// in the muted fill.
 ///
 /// The bar is one tab stop: Left and Right move along it, Down, Enter and
 /// Space open a menu; in a menu Up and Down move, Right opens a submenu or
@@ -177,24 +179,29 @@ class MinimalMenuBar extends StatelessWidget {
     Widget row(RawMenuEntry entry, Set<WidgetState> states) {
       final source = entry.data;
       final keys = source is MinimalMenuEntry ? source.shortcut : null;
-      return MinimalKitRow(
-        states: states,
-        label: entry.label,
-        icon: source is MinimalMenuEntry ? source.icon : null,
-        checked: entry.checked ?? false,
-        destructive: entry.isDestructiveAction,
-        ring: true,
-        trailing: entry.isSubmenu
-            ? MinimalIcon(
-                Directionality.of(context) == TextDirection.rtl
-                    ? LucideIcons.chevronLeft
-                    : LucideIcons.chevronRight,
-                size: MinimalIconSize.i16,
-                color: t.textTertiary,
-              )
-            : keys == null
-            ? null
-            : MinimalKbd.shortcut(keys),
+      // A finger tall on touch, as every Minimal menu's rows are; 32 under
+      // a pointer.
+      return ConstrainedBox(
+        constraints: BoxConstraints(minHeight: math.max(32, across)),
+        child: MinimalKitRow(
+          states: states,
+          label: entry.label,
+          icon: source is MinimalMenuEntry ? source.icon : null,
+          checked: entry.checked ?? false,
+          destructive: entry.isDestructiveAction,
+          ring: true,
+          trailing: entry.isSubmenu
+              ? MinimalIcon(
+                  Directionality.of(context) == TextDirection.rtl
+                      ? LucideIcons.chevronLeft
+                      : LucideIcons.chevronRight,
+                  size: MinimalIconSize.i16,
+                  color: t.textTertiary,
+                )
+              : keys == null
+              ? null
+              : MinimalKbd.shortcut(keys),
+        ),
       );
     }
 

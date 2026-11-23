@@ -32,11 +32,11 @@ Widget _host(double above, Widget picker) => MaterialApp(
 final _pickers = <String, (Widget, Finder Function())>{
   'date': (
     MinimalDatePicker(
-      label: 'Due',
+      labelText: 'Due',
       value: DateTime(2026, 11, 20),
       mode: MinimalDatePickerMode.date,
-      first: DateTime(2026),
-      last: DateTime(2027, 12, 31),
+      firstDate: DateTime(2026),
+      lastDate: DateTime(2027, 12, 31),
       onChanged: (_) {},
     ),
     // The open calendar: the inline picker inside the popover.
@@ -44,7 +44,7 @@ final _pickers = <String, (Widget, Finder Function())>{
   ),
   'date range': (
     MinimalDateRangePicker(
-      label: 'Stay',
+      labelText: 'Stay',
       firstDate: DateTime(2026),
       lastDate: DateTime(2027, 12, 31),
       onChanged: (_) {},

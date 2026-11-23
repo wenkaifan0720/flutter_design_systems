@@ -72,7 +72,7 @@ class MinimalToggleItem<T> {
 /// minimumSize (its height).
 ///
 /// ```dart
-/// MinimalToggleGroup<String>(items: const [MinimalToggleItem('b', icon: LucideIcons.bold, semanticLabel: 'Bold'), MinimalToggleItem('i', icon: LucideIcons.italic, semanticLabel: 'Italic')], selected: formats, multiple: true, onChanged: setFormats)
+/// MinimalToggleGroup<String>(items: const [MinimalToggleItem('b', icon: LucideIcons.bold, semanticLabel: 'Bold'), MinimalToggleItem('i', icon: LucideIcons.italic, semanticLabel: 'Italic')], selected: formats, multiSelectionEnabled: true, onSelectionChanged: setFormats)
 /// ```
 class MinimalToggleGroup<T> extends StatelessWidget {
   /// A group of [items], [selected] on.
@@ -80,9 +80,9 @@ class MinimalToggleGroup<T> extends StatelessWidget {
     super.key,
     required this.items,
     required this.selected,
-    this.onChanged,
-    this.multiple = false,
-    this.allowEmpty = false,
+    this.onSelectionChanged,
+    this.multiSelectionEnabled = false,
+    this.emptySelectionAllowed = false,
     this.label,
     this.small = false,
     this.outlined = true,
@@ -96,13 +96,13 @@ class MinimalToggleGroup<T> extends StatelessWidget {
   final Set<T> selected;
 
   /// A press's new set; null disables the group.
-  final ValueChanged<Set<T>>? onChanged;
+  final ValueChanged<Set<T>>? onSelectionChanged;
 
   /// Whether any number may be on.
-  final bool multiple;
+  final bool multiSelectionEnabled;
 
   /// Whether a one-choice group may be left with none on.
-  final bool allowEmpty;
+  final bool emptySelectionAllowed;
 
   /// What the group is about, announced before its toggles.
   final String? label;
@@ -119,7 +119,7 @@ class MinimalToggleGroup<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.minimalTheme;
-    final enabled = onChanged != null;
+    final enabled = onSelectionChanged != null;
     final layers = <MinimalStyle?>[style];
     final strip = MinimalStyleOf(layers, minimalStates(enabled: enabled));
     final height =
@@ -219,9 +219,9 @@ class MinimalToggleGroup<T> extends StatelessWidget {
     final group = RawSegmentedButton<T>(
       options: [for (final item in items) item.value],
       selected: selected,
-      onSelectionChanged: onChanged,
-      multiSelectionEnabled: multiple,
-      emptySelectionAllowed: allowEmpty,
+      onSelectionChanged: onSelectionChanged,
+      multiSelectionEnabled: multiSelectionEnabled,
+      emptySelectionAllowed: emptySelectionAllowed,
       semanticLabel: label,
       minimumSize: Size.zero,
       isEnabled: (v) => byValue[v]!.enabled,
@@ -277,10 +277,25 @@ class MinimalToggleGroup<T> extends StatelessWidget {
       ..add(IterableProperty<MinimalToggleItem<T>>('items', items))
       ..add(IterableProperty<T>('selected', selected))
       ..add(
-        ObjectFlagProperty<ValueChanged<Set<T>>>.has('onChanged', onChanged),
+        ObjectFlagProperty<ValueChanged<Set<T>>>.has(
+          'onSelectionChanged',
+          onSelectionChanged,
+        ),
       )
-      ..add(FlagProperty('multiple', value: multiple, ifTrue: 'multiple'))
-      ..add(FlagProperty('allowEmpty', value: allowEmpty, ifTrue: 'allowEmpty'))
+      ..add(
+        FlagProperty(
+          'multiSelectionEnabled',
+          value: multiSelectionEnabled,
+          ifTrue: 'multiSelectionEnabled',
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'emptySelectionAllowed',
+          value: emptySelectionAllowed,
+          ifTrue: 'emptySelectionAllowed',
+        ),
+      )
       ..add(StringProperty('label', label, defaultValue: null))
       ..add(FlagProperty('small', value: small, ifTrue: 'small'))
       ..add(

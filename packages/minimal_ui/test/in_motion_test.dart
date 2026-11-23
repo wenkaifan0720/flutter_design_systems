@@ -189,10 +189,10 @@ void main() {
       await tester.pumpWidget(
         _host(
           MinimalDateRangePicker(
-            label: 'Stay',
+            labelText: 'Stay',
             firstDate: DateTime(2026),
             lastDate: DateTime(2027),
-            today: DateTime(2026, 8, 3),
+            currentDate: DateTime(2026, 8, 3),
             onChanged: (_) {},
           ),
         ),

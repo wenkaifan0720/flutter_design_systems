@@ -14,12 +14,12 @@ void main() {
             children: [
               SizedBox(
                 width: 240,
-                child: MinimalInputRow(label: 'Name', hint: 'Stretch'),
+                child: MinimalInputRow(labelText: 'Name', hintText: 'Stretch'),
               ),
               MinimalInputRow(
-                label: 'Goal',
-                hint: '10',
-                error: 'Between 1 and 240 minutes.',
+                labelText: 'Goal',
+                hintText: '10',
+                errorText: 'Between 1 and 240 minutes.',
               ),
             ],
           ),

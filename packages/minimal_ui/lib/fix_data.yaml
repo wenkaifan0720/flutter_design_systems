@@ -1,0 +1,954 @@
+# minimal_ui's renames, which `dart fix` makes: Flutter's names for Flutter's ideas (0.5.0).
+version: 1
+transforms:
+  - title: "Use MinimalToggleGroup's new parameter names"
+    date: 2026-11-22
+    element:
+      uris: &uris ['minimal_ui.dart', 'minimal_parts.dart']
+      constructor: ''
+      inClass: 'MinimalToggleGroup'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'onChanged'
+        newName: 'onSelectionChanged'
+      - kind: 'renameParameter'
+        oldName: 'multiple'
+        newName: 'multiSelectionEnabled'
+      - kind: 'renameParameter'
+        oldName: 'allowEmpty'
+        newName: 'emptySelectionAllowed'
+  - title: "Rename to 'onSelectionChanged'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'onChanged'
+      inClass: 'MinimalToggleGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'onSelectionChanged'
+  - title: "Rename to 'multiSelectionEnabled'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'multiple'
+      inClass: 'MinimalToggleGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'multiSelectionEnabled'
+  - title: "Rename to 'emptySelectionAllowed'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'allowEmpty'
+      inClass: 'MinimalToggleGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'emptySelectionAllowed'
+  - title: "Use MinimalDatePicker's new parameter names"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'MinimalDatePicker'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'first'
+        newName: 'firstDate'
+      - kind: 'renameParameter'
+        oldName: 'last'
+        newName: 'lastDate'
+      - kind: 'renameParameter'
+        oldName: 'today'
+        newName: 'currentDate'
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+  - title: "Rename to 'firstDate'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'first'
+      inClass: 'MinimalDatePicker'
+    changes:
+      - kind: 'rename'
+        newName: 'firstDate'
+  - title: "Rename to 'lastDate'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'last'
+      inClass: 'MinimalDatePicker'
+    changes:
+      - kind: 'rename'
+        newName: 'lastDate'
+  - title: "Rename to 'currentDate'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'today'
+      inClass: 'MinimalDatePicker'
+    changes:
+      - kind: 'rename'
+        newName: 'currentDate'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'MinimalDatePicker'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Use MinimalCalendar's new parameter names"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'MinimalCalendar'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'today'
+        newName: 'currentDate'
+  - title: "Rename to 'currentDate'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'today'
+      inClass: 'MinimalCalendar'
+    changes:
+      - kind: 'rename'
+        newName: 'currentDate'
+  - title: "Use MinimalDateRangePicker's new parameter names"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'MinimalDateRangePicker'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'today'
+        newName: 'currentDate'
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+  - title: "Rename to 'currentDate'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'today'
+      inClass: 'MinimalDateRangePicker'
+    changes:
+      - kind: 'rename'
+        newName: 'currentDate'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'MinimalDateRangePicker'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'hint'
+      inClass: 'MinimalDateRangePicker'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  - title: "Use MinimalCombobox's new parameter names"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'MinimalCombobox'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'displayString'
+        newName: 'displayStringForOption'
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+  - title: "Rename to 'displayStringForOption'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'displayString'
+      inClass: 'MinimalCombobox'
+    changes:
+      - kind: 'rename'
+        newName: 'displayStringForOption'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'MinimalCombobox'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'hint'
+      inClass: 'MinimalCombobox'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'helper'
+      inClass: 'MinimalCombobox'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'error'
+      inClass: 'MinimalCombobox'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+  - title: "Use MinimalMultiSelect's new parameter names"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'MinimalMultiSelect'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'displayString'
+        newName: 'displayStringForOption'
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+  - title: "Rename to 'displayStringForOption'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'displayString'
+      inClass: 'MinimalMultiSelect'
+    changes:
+      - kind: 'rename'
+        newName: 'displayStringForOption'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'MinimalMultiSelect'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'hint'
+      inClass: 'MinimalMultiSelect'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'helper'
+      inClass: 'MinimalMultiSelect'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'error'
+      inClass: 'MinimalMultiSelect'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+  - title: "Use MinimalTextField's new parameter names"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'MinimalTextField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'onFocusChanged'
+        newName: 'onFocusChange'
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+  - title: "Rename to 'onFocusChange'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'onFocusChanged'
+      inClass: 'MinimalTextField'
+    changes:
+      - kind: 'rename'
+        newName: 'onFocusChange'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'MinimalTextField'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'hint'
+      inClass: 'MinimalTextField'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'helper'
+      inClass: 'MinimalTextField'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'error'
+      inClass: 'MinimalTextField'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+  - title: "Use MinimalSearchField's new parameter names"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'MinimalSearchField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'onFocusChanged'
+        newName: 'onFocusChange'
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+  - title: "Rename to 'onFocusChange'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'onFocusChanged'
+      inClass: 'MinimalSearchField'
+    changes:
+      - kind: 'rename'
+        newName: 'onFocusChange'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'hint'
+      inClass: 'MinimalSearchField'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  - title: "Use MinimalDisclosure's new parameter names"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'MinimalDisclosure'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'onChanged'
+        newName: 'onExpansionChanged'
+      - kind: 'renameParameter'
+        oldName: 'leading'
+        newName: 'icon'
+  - title: "Rename to 'onExpansionChanged'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'onChanged'
+      inClass: 'MinimalDisclosure'
+    changes:
+      - kind: 'rename'
+        newName: 'onExpansionChanged'
+  - title: "Rename to 'icon'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'leading'
+      inClass: 'MinimalDisclosure'
+    changes:
+      - kind: 'rename'
+        newName: 'icon'
+  - title: "Use MinimalPageDots's new parameter names"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'MinimalPageDots'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'count'
+        newName: 'pageCount'
+      - kind: 'renameParameter'
+        oldName: 'selectedIndex'
+        newName: 'page'
+      - kind: 'renameParameter'
+        oldName: 'onChanged'
+        newName: 'onPageChanged'
+  - title: "Rename to 'pageCount'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'count'
+      inClass: 'MinimalPageDots'
+    changes:
+      - kind: 'rename'
+        newName: 'pageCount'
+  - title: "Rename to 'page'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'selectedIndex'
+      inClass: 'MinimalPageDots'
+    changes:
+      - kind: 'rename'
+        newName: 'page'
+  - title: "Rename to 'onPageChanged'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'onChanged'
+      inClass: 'MinimalPageDots'
+    changes:
+      - kind: 'rename'
+        newName: 'onPageChanged'
+  - title: "Use MinimalComposer's new parameter names"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'MinimalComposer'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'style'
+        newName: 'variant'
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+  - title: "Rename to 'variant'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'style'
+      inClass: 'MinimalComposer'
+    changes:
+      - kind: 'rename'
+        newName: 'variant'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'hint'
+      inClass: 'MinimalComposer'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  - title: "Use MinimalFormField's new parameter names"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'MinimalFormField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'help'
+        newName: 'helperText'
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'help'
+      inClass: 'MinimalFormField'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'MinimalFormField'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'error'
+      inClass: 'MinimalFormField'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+  - title: "Use MinimalRadioOption's new parameter names"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'MinimalRadioOption'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'description'
+        newName: 'subtitle'
+  - title: "Rename to 'subtitle'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'description'
+      inClass: 'MinimalRadioOption'
+    changes:
+      - kind: 'rename'
+        newName: 'subtitle'
+  - title: "Use MinimalMenuItem's new parameter names"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'MinimalMenuItem'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'destructive'
+        newName: 'isDestructiveAction'
+  - title: "Rename to 'isDestructiveAction'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'destructive'
+      inClass: 'MinimalMenuItem'
+    changes:
+      - kind: 'rename'
+        newName: 'isDestructiveAction'
+  - title: "Use MinimalTextArea's new parameter names"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'MinimalTextArea'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'MinimalTextArea'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'hint'
+      inClass: 'MinimalTextArea'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'helper'
+      inClass: 'MinimalTextArea'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'error'
+      inClass: 'MinimalTextArea'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+  - title: "Use MinimalInputGroup's new parameter names"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'MinimalInputGroup'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'MinimalInputGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'hint'
+      inClass: 'MinimalInputGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'helper'
+      inClass: 'MinimalInputGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'error'
+      inClass: 'MinimalInputGroup'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+  - title: "Use MinimalPasswordField's new parameter names"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'MinimalPasswordField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+      - kind: 'renameParameter'
+        oldName: 'helper'
+        newName: 'helperText'
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'MinimalPasswordField'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'hint'
+      inClass: 'MinimalPasswordField'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'helper'
+      inClass: 'MinimalPasswordField'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'error'
+      inClass: 'MinimalPasswordField'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+  - title: "Use MinimalInputOtp's new parameter names"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'MinimalInputOtp'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'MinimalInputOtp'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'error'
+      inClass: 'MinimalInputOtp'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+  - title: "Use MinimalInputRow's new parameter names"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'MinimalInputRow'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'MinimalInputRow'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'hint'
+      inClass: 'MinimalInputRow'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'error'
+      inClass: 'MinimalInputRow'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+  - title: "Use MinimalTimePicker's new parameter names"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'MinimalTimePicker'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'MinimalTimePicker'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Use MinimalSelect's new parameter names"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'MinimalSelect'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+      - kind: 'renameParameter'
+        oldName: 'prompt'
+        newName: 'hintText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'MinimalSelect'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'prompt'
+      inClass: 'MinimalSelect'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  - title: "Use MinimalNumberField's new parameter names"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'MinimalNumberField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'MinimalNumberField'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Use MinimalCommand's new parameter names"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'MinimalCommand'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'
+  - title: "Rename to 'hintText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'hint'
+      inClass: 'MinimalCommand'
+    changes:
+      - kind: 'rename'
+        newName: 'hintText'
+  - title: "Use MinimalComposerAction's new parameter names"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'MinimalComposerAction'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'style'
+        newName: 'variant'
+  - title: "Rename to 'variant'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'style'
+      inClass: 'MinimalComposerAction'
+    changes:
+      - kind: 'rename'
+        newName: 'variant'
+  - title: "Rename to 'MinimalComposerVariant'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      enum: 'MinimalComposerStyle'
+    changes:
+      - kind: 'rename'
+        newName: 'MinimalComposerVariant'
+  - title: "Rename to 'from'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: 'of'
+      inClass: 'MinimalTextTheme'
+    changes:
+      - kind: 'rename'
+        newName: 'from'
+  - title: "Use MinimalCommand.show's new parameter names"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      method: 'show'
+      inClass: 'MinimalCommand'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'hint'
+        newName: 'hintText'

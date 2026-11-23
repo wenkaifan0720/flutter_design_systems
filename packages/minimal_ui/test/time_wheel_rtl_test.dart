@@ -12,7 +12,7 @@ void main() {
     await tester.pumpWidget(
       directionalPage(
         MinimalDatePicker(
-          label: 'Wake-up',
+          labelText: 'Wake-up',
           value: DateTime(2026, 8, 28, 7),
           mode: MinimalDatePickerMode.time,
           presentation: MinimalDatePickerPresentation.wheel,

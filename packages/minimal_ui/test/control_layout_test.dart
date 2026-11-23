@@ -250,7 +250,7 @@ void main() {
           MinimalToggleItem(2, icon: LucideIcons.underline, semanticLabel: 'U'),
         ],
         selected: const {0},
-        onChanged: (_) {},
+        onSelectionChanged: (_) {},
       ),
     };
     for (final MapEntry(key: name, value: build) in controls.entries) {

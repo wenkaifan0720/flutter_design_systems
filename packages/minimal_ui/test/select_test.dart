@@ -17,7 +17,7 @@ void main() {
       await tester.pumpWidget(
         scrollingHost(
           MinimalSelect(
-            label: 'Repeats',
+            labelText: 'Repeats',
             value: 'evening',
             options: selectOptions,
             onChanged: (v) => chosen = v,
@@ -59,7 +59,7 @@ void main() {
       await tester.pumpWidget(
         scrollingHost(
           MinimalSelect(
-            label: 'Repeats',
+            labelText: 'Repeats',
             value: 'daily',
             options: selectOptions,
             presentation: MinimalSelectPresentation.sheet,
@@ -83,7 +83,7 @@ void main() {
       await tester.pumpWidget(
         scrollingHost(
           const MinimalSelect(
-            label: 'Owner',
+            labelText: 'Owner',
             value: 'daily',
             options: selectOptions,
           ),
@@ -111,10 +111,10 @@ void main() {
       await tester.pumpWidget(
         scrollingHost(
           MinimalSelect(
-            label: 'Area',
+            labelText: 'Area',
             value: null,
             options: selectOptions,
-            prompt: 'None',
+            hintText: 'None',
             onChanged: (_) {},
           ),
         ),

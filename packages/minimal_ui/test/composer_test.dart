@@ -262,7 +262,7 @@ void main() {
           SizedBox(
             width: 360,
             child: MinimalComposer(
-              style: MinimalComposerStyle.assistant,
+              variant: MinimalComposerVariant.assistant,
               model: 'Team only',
               onModel: () => model += 1,
               onDictate: () => dictate += 1,

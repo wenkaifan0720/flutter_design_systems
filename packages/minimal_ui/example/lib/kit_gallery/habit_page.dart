@@ -149,7 +149,7 @@ class _HabitPageState extends State<KitHabitPage> {
               MinimalMenuItem(
                 ar('Archive', 'أرشفة'),
                 icon: LucideIcons.archive,
-                destructive: true,
+                isDestructiveAction: true,
                 startsGroup: true,
                 onPressed: () => _archive(habit),
               ),

@@ -18,14 +18,14 @@ import '../theme.dart';
 import 'pressable.dart';
 
 /// One option of a [MinimalRadioGroup]: the [value] it stands for, its
-/// [label], and a quiet [description] under it.
+/// [label], and a quiet [subtitle] under it.
 @immutable
 class MinimalRadioOption<T> {
   /// An option of a [MinimalRadioGroup].
   const MinimalRadioOption({
     required this.value,
     required this.label,
-    this.description,
+    this.subtitle,
     this.enabled = true,
   });
 
@@ -36,7 +36,7 @@ class MinimalRadioOption<T> {
   final String label;
 
   /// A line under the label.
-  final String? description;
+  final String? subtitle;
 
   /// False greys this option alone.
   final bool enabled;
@@ -51,7 +51,9 @@ class MinimalRadioOption<T> {
 /// walks them with the arrow keys; this alone is for a row that draws its
 /// own words. Such rows make one group in Flutter's [RadioGroup], with
 /// ui_core's [RadioGroupKeyboardFix] round them: each row a `RawRadio` that
-/// draws this radio, without [onPressed], as its mark. [style] dresses one radio, `components.radio` every one,
+/// draws [MinimalRadio.mark] as its mark. A null [onPressed] turns the radio
+/// off, as `Radio(onChanged: null)` does: it dims, takes no press and a
+/// screen reader hears it disabled. [style] dresses one radio, `components.radio` every one,
 /// resolved with [WidgetState.selected] when chosen: fill, foreground (the
 /// dot), edge or side, overlay and shape.
 ///
@@ -63,26 +65,42 @@ class MinimalRadio extends StatelessWidget {
   const MinimalRadio({
     super.key,
     required this.selected,
-    this.onPressed,
+    required this.onPressed,
     this.label,
-    this.enabled = true,
     this.size = 16,
     this.style,
     this.focusNode,
     this.autofocus = false,
-  });
+  }) : _mark = null;
+
+  /// The radio's circle alone, for a row that is the control: a `RawRadio`
+  /// row draws it as its mark, and the row takes the press, the focus and
+  /// what a screen reader hears. `enabled: false` paints the mark of a row
+  /// that is off, dimmed as an off radio is.
+  ///
+  /// ```dart
+  /// MinimalRadio.mark(selected: value == plan)
+  /// ```
+  const MinimalRadio.mark({
+    super.key,
+    required this.selected,
+    bool enabled = true,
+    this.size = 16,
+    this.style,
+  }) : onPressed = null,
+       label = null,
+       focusNode = null,
+       autofocus = false,
+       _mark = enabled;
 
   /// Whether this is the choice.
   final bool selected;
 
-  /// Choose this option; null makes it a mark, not a control.
+  /// Choose this option; null turns the radio off.
   final VoidCallback? onPressed;
 
   /// What a screen reader hears for it.
   final String? label;
-
-  /// False dims it and swallows taps.
-  final bool enabled;
 
   /// The circle's diameter.
   final double size;
@@ -95,6 +113,9 @@ class MinimalRadio extends StatelessWidget {
 
   /// {@macro minimal.autofocus}
   final bool autofocus;
+
+  // Null for the control; for a mark, whether its row is on.
+  final bool? _mark;
 
   @override
   Widget build(BuildContext context) {
@@ -135,14 +156,15 @@ class MinimalRadio extends StatelessWidget {
     }
 
     final press = onPressed;
-    return MinimalPressable(
-      onPressed: press == null || !enabled
+    final radio = MinimalPressable(
+      onPressed: press == null
           ? null
           : () {
               HapticFeedback.selectionClick();
               press();
             },
-      enabled: enabled,
+      // A mark leaves the press, the focus and the reading to its row.
+      enabled: _mark ?? press != null,
       shape: own,
       // A bare mark stands on its start keyline, its target growing
       // toward the end (a list row's trailing slot says the end).
@@ -159,6 +181,7 @@ class MinimalRadio extends StatelessWidget {
       builder: (context, states) =>
           mark({...states, if (selected) WidgetState.selected}),
     );
+    return _mark == null ? radio : ExcludeSemantics(child: radio);
   }
 
   @override
@@ -168,7 +191,6 @@ class MinimalRadio extends StatelessWidget {
       ..add(DiagnosticsProperty<bool>('selected', selected))
       ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
       ..add(StringProperty('label', label, defaultValue: null))
-      ..add(FlagProperty('enabled', value: enabled, ifFalse: 'enabled: false'))
       ..add(DoubleProperty('size', size, defaultValue: 16))
       ..add(
         DiagnosticsProperty<MinimalStyle>('style', style, defaultValue: null),
@@ -237,7 +259,7 @@ class MinimalRadioGroup<T> extends StatelessWidget {
     // Options that carry a description run taller than an option's least
     // height; space between them keeps each description with its own
     // label rather than halfway to the next.
-    final described = options.any((o) => o.description != null);
+    final described = options.any((o) => o.subtitle != null);
     final onChanged = this.onChanged;
     Widget layout(List<Widget> rows) => direction == Axis.vertical
         ? Column(
@@ -347,7 +369,7 @@ class _OptionState<T> extends State<_Option<T>> {
     final disabled = widget.disabled;
     final style = widget.style;
     final t = context.minimalTheme;
-    final description = option.description;
+    final description = option.subtitle;
     // The whole option is the control, as a radio list tile is: a tap, the
     // click cursor and the press wash anywhere on its mark or its words,
     // one node for a screen reader that reads its label and description.
@@ -373,7 +395,7 @@ class _OptionState<T> extends State<_Option<T>> {
               // The circle's centre on the label's first line.
               padding: const EdgeInsets.only(top: _Option._markDrop),
               child: ExcludeSemantics(
-                child: MinimalRadio(selected: selected, style: style),
+                child: MinimalRadio.mark(selected: selected, style: style),
               ),
             ),
             // The checkbox rows' gap: a form's words start on one edge, 28 in.

@@ -123,10 +123,11 @@ Widget kitPropertiesDemo(Brightness brightness) => kitScreen(
           subtitle: 'Habits',
           floating: true,
           closable: false,
-          leading: const MinimalSheetAction('Cancel'),
-          trailing: const MinimalSheetAction(
+          leading: const MinimalSheetAction.cancel('Cancel'),
+          trailing: MinimalSheetAction(
             'Create habit',
             isDefaultAction: true,
+            onPressed: () {},
           ),
           child: Builder(
             builder: (context) {

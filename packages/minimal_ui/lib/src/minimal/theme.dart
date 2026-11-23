@@ -822,7 +822,7 @@ class MinimalTextTheme with Diagnosticable {
 
   /// The look's scale in [typeface], inked in [colors]: the primary ink for
   /// every step but [caption] and [label], which take the quiet one.
-  factory MinimalTextTheme.of(
+  factory MinimalTextTheme.from(
     MinimalColors colors, [
     MinimalTypeface typeface = MinimalTypeface.look,
   ]) {
@@ -1092,7 +1092,7 @@ class MinimalThemeData with Diagnosticable {
          'thin.',
        ),
        _chosenDensity = density,
-       text = text ?? MinimalTextTheme.of(colors, typeface),
+       text = text ?? MinimalTextTheme.from(colors, typeface),
        shadowSm = shadowSm ?? _shadow(colors, 0),
        shadowMd = shadowMd ?? _shadow(colors, 1),
        shadowLg = shadowLg ?? _shadow(colors, 2);
@@ -1450,7 +1450,7 @@ class MinimalThemeData with Diagnosticable {
     if (text != null) {
       nextText = text;
     } else if (typeface != null && typeface != this.typeface) {
-      nextText = MinimalTextTheme.of(nextColors, nextFace);
+      nextText = MinimalTextTheme.from(nextColors, nextFace);
     } else {
       nextText = this.text.reinked(this.colors, nextColors);
     }
@@ -1479,26 +1479,30 @@ class MinimalThemeData with Diagnosticable {
     );
   }
 
-  /// Between this and [other]: colours, type, shadows, corners and sizes
-  /// blend; the preset id, the appearance and the faces flip at the middle.
-  /// `AnimatedMinimalTheme` animates with it.
-  MinimalThemeData lerp(MinimalThemeData? other, double t) {
-    if (other == null || identical(this, other)) return this;
+  /// Between [a] and [b]: colours, type, shadows, corners and sizes blend;
+  /// the preset id, the appearance and the faces flip at the middle, as
+  /// [ThemeData.lerp] does. `AnimatedMinimalTheme` animates with it.
+  static MinimalThemeData lerp(
+    MinimalThemeData a,
+    MinimalThemeData b,
+    double t,
+  ) {
+    if (identical(a, b)) return a;
     return MinimalThemeData(
-      id: t < .5 ? id : other.id,
-      colors: MinimalColors.lerp(colors, other.colors, t),
-      text: MinimalTextTheme.lerp(text, other.text, t),
-      shadowSm: BoxShadow.lerpList(shadowSm, other.shadowSm, t)!,
-      shadowMd: BoxShadow.lerpList(shadowMd, other.shadowMd, t)!,
-      shadowLg: BoxShadow.lerpList(shadowLg, other.shadowLg, t)!,
-      shapes: MinimalShapes.lerp(shapes, other.shapes, t),
-      density: _chosenDensity == null && other._chosenDensity == null
+      id: t < .5 ? a.id : b.id,
+      colors: MinimalColors.lerp(a.colors, b.colors, t),
+      text: MinimalTextTheme.lerp(a.text, b.text, t),
+      shadowSm: BoxShadow.lerpList(a.shadowSm, b.shadowSm, t)!,
+      shadowMd: BoxShadow.lerpList(a.shadowMd, b.shadowMd, t)!,
+      shadowLg: BoxShadow.lerpList(a.shadowLg, b.shadowLg, t)!,
+      shapes: MinimalShapes.lerp(a.shapes, b.shapes, t),
+      density: a._chosenDensity == null && b._chosenDensity == null
           ? null
-          : MinimalDensity.lerp(density, other.density, t),
-      typeface: MinimalTypeface.lerp(typeface, other.typeface, t),
-      components: MinimalComponentThemes.lerp(components, other.components, t),
+          : MinimalDensity.lerp(a.density, b.density, t),
+      typeface: MinimalTypeface.lerp(a.typeface, b.typeface, t),
+      components: MinimalComponentThemes.lerp(a.components, b.components, t),
       // An overshooting curve stays in the stroke's range.
-      iconStroke: lerpDouble(iconStroke, other.iconStroke, t)!.clamp(1.5, 2.0),
+      iconStroke: lerpDouble(a.iconStroke, b.iconStroke, t)!.clamp(1.5, 2.0),
     );
   }
 
@@ -1883,7 +1887,7 @@ class MinimalThemeDataTween extends Tween<MinimalThemeData> {
   MinimalThemeDataTween({super.begin, super.end});
 
   @override
-  MinimalThemeData lerp(double t) => begin!.lerp(end, t);
+  MinimalThemeData lerp(double t) => MinimalThemeData.lerp(begin!, end!, t);
 }
 
 /// How a scroll looks under Minimal: a thin bar in [thumb] on a desktop,

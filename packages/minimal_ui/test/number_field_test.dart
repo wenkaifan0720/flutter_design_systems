@@ -22,7 +22,7 @@ void main() {
               value: v,
               min: 1,
               max: 3,
-              label: 'Sets',
+              labelText: 'Sets',
               onChanged: (next) {
                 seen.add(next);
                 set(next);
@@ -82,7 +82,7 @@ void main() {
               value: v,
               min: 0,
               max: 20,
-              label: 'Pages',
+              labelText: 'Pages',
               onChanged: (next) {
                 seen.add(next);
                 set(next);
@@ -112,7 +112,7 @@ void main() {
             value: 1,
             min: 0,
             max: 3,
-            label: 'Rest',
+            labelText: 'Rest',
             onChanged: (_) => taps += 1,
           ),
         ),
@@ -123,7 +123,7 @@ void main() {
 
       await tester.pumpWidget(
         paddedHost(
-          const MinimalNumberField(value: 1, min: 0, max: 3, label: 'Rest'),
+          const MinimalNumberField(value: 1, min: 0, max: 3, labelText: 'Rest'),
         ),
       );
       await tester.tap(
@@ -154,7 +154,7 @@ void main() {
             min: 5,
             max: 50,
             step: 5,
-            label: 'Pages',
+            labelText: 'Pages',
             unit: 'pages',
             onChanged: (_) {},
           ),

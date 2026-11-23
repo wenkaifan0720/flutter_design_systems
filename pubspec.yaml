@@ -6,8 +6,8 @@ repository: https://github.com/wenkaifan0720/flutter_design_systems
 environment:
   sdk: ">=3.13.0 <4.0.0"
 
-# Every package, and every package's example app. While the looks move to ui_core 0.5.2 (11-20), a look joins this
-# list as its release goes out (a look still on an older ui_core can't resolve beside 0.5.2); then back to the globs.
+# Every package, and every package's example app. While the looks move to ui_core 0.5.3 (11-20), a look joins this
+# list as its release goes out (a look still on an older ui_core can't resolve beside 0.5.3); then back to the globs.
 workspace:
   - packages/ui_core
   - packages/ui_core/example
@@ -41,6 +41,8 @@ workspace:
   - packages/material_expressive_ui/example
   - packages/neumorphism_ui
   - packages/neumorphism_ui/example
+  - packages/minimal_ui
+  - packages/minimal_ui/example
   # The skill's samples, on the ui_core beside them: a core change that breaks the skill fails CI. This line stays
   # below the packages.
   - skills/ui_core_design_system/samples

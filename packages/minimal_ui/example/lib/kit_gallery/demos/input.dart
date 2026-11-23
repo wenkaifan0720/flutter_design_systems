@@ -19,17 +19,17 @@ Widget kitInputDemo(Brightness brightness) => kitScreen(
       'Field',
       children: [
         const MinimalTextField(
-          label: 'Name',
-          hint: 'Stretch before bed',
-          helper: 'Shown on Today and in reminders.',
+          labelText: 'Name',
+          hintText: 'Stretch before bed',
+          helperText: 'Shown on Today and in reminders.',
         ),
         _Filled(
           text: 'Morning run',
           builder: (c) => MinimalTextField(
-            label: 'Name',
+            labelText: 'Name',
             controller: c,
             clearable: true,
-            helper: 'Clearable: the glyph at the end empties it.',
+            helperText: 'Clearable: the glyph at the end empties it.',
           ),
         ),
       ],
@@ -40,27 +40,30 @@ Widget kitInputDemo(Brightness brightness) => kitScreen(
         _Filled(
           text: '05:30',
           builder: (c) => MinimalTextField(
-            label: 'Reminder',
+            labelText: 'Reminder',
             controller: c,
             mono: true,
             icon: LucideIcons.bell,
-            error: 'Pick a time after 06:00.',
+            errorText: 'Pick a time after 06:00.',
           ),
         ),
         _Filled(
           text: 'HAB-4',
           builder: (c) => MinimalTextField(
-            label: 'Identifier',
+            labelText: 'Identifier',
             controller: c,
             mono: true,
             readOnly: true,
-            helper: 'Read-only: select and copy, not edit.',
+            helperText: 'Read-only: select and copy, not edit.',
           ),
         ),
         _Filled(
           text: 'Habits',
-          builder: (c) =>
-              MinimalTextField(label: 'Team', controller: c, enabled: false),
+          builder: (c) => MinimalTextField(
+            labelText: 'Team',
+            controller: c,
+            enabled: false,
+          ),
         ),
       ],
     ),
@@ -68,15 +71,15 @@ Widget kitInputDemo(Brightness brightness) => kitScreen(
       'Registers',
       children: [
         const MinimalTextField(
-          label: 'Email',
-          hint: 'you@ritual.app',
+          labelText: 'Email',
+          hintText: 'you@ritual.app',
           icon: LucideIcons.mail,
           keyboardType: TextInputType.emailAddress,
         ),
         _Filled(
           text: 'correct horse',
           builder: (c) => MinimalTextField(
-            label: 'Password',
+            labelText: 'Password',
             controller: c,
             obscureText: true,
             icon: LucideIcons.lock,
@@ -85,7 +88,7 @@ Widget kitInputDemo(Brightness brightness) => kitScreen(
         _Filled(
           text: '20',
           builder: (c) => MinimalTextField(
-            label: 'Daily goal',
+            labelText: 'Daily goal',
             controller: c,
             mono: true,
             suffix: 'pages',
@@ -93,8 +96,8 @@ Widget kitInputDemo(Brightness brightness) => kitScreen(
           ),
         ),
         const MinimalTextField(
-          label: 'Note',
-          hint: 'Out the door before 8. Any distance counts.',
+          labelText: 'Note',
+          hintText: 'Out the door before 8. Any distance counts.',
           maxLines: 3,
         ),
       ],
@@ -114,7 +117,7 @@ Widget kitInputDemo(Brightness brightness) => kitScreen(
                       MinimalTextField(bare: true, controller: c, style: t.h1),
                 ),
                 const MinimalGap(MinimalSpacing.s4),
-                const MinimalTextField(bare: true, hint: 'Add a note…'),
+                const MinimalTextField(bare: true, hintText: 'Add a note…'),
               ],
             );
           },
@@ -179,14 +182,14 @@ class _RemindersState extends State<_Reminders> {
     footer: 'Reminders follow the device time zone.',
     children: [
       MinimalDatePicker(
-        label: 'Remind me at',
+        labelText: 'Remind me at',
         icon: LucideIcons.bell,
         value: _at,
         mode: MinimalDatePickerMode.time,
         onChanged: (v) => setState(() => _at = v),
       ),
       MinimalSelect(
-        label: 'Sound',
+        labelText: 'Sound',
         icon: LucideIcons.volume2,
         value: _sound,
         options: _sounds,
@@ -293,35 +296,35 @@ class _HabitFormState extends State<_HabitForm> {
           footer: 'Name and goal are required.',
           children: [
             MinimalInputRow(
-              label: 'Name',
+              labelText: 'Name',
               icon: LucideIcons.type,
               controller: _name,
-              hint: 'Stretch before bed',
-              error: _submitted ? _nameError : null,
+              hintText: 'Stretch before bed',
+              errorText: _submitted ? _nameError : null,
               onChanged: (_) => setState(() {}),
               textInputAction: TextInputAction.next,
             ),
             MinimalInputRow(
-              label: 'Goal',
+              labelText: 'Goal',
               icon: LucideIcons.target,
               controller: _goal,
-              hint: '10',
+              hintText: '10',
               mono: true,
               keyboardType: TextInputType.number,
-              error: _goalError,
+              errorText: _goalError,
               onChanged: (_) => setState(() {}),
             ),
             MinimalInputRow(
-              label: 'Note',
+              labelText: 'Note',
               icon: LucideIcons.notebookPen,
               controller: _note,
-              hint: 'Why it matters',
+              hintText: 'Why it matters',
               maxLines: 2,
             ),
             const MinimalInputRow(
-              label: 'Area',
+              labelText: 'Area',
               icon: LucideIcons.folder,
-              hint: 'Evening',
+              hintText: 'Evening',
               enabled: false,
             ),
           ],
@@ -343,16 +346,16 @@ class _HabitFormState extends State<_HabitForm> {
 
 /// A labelled field waiting for its value, with a helper line.
 Widget kitSpecimenInputField() => const MinimalTextField(
-  label: 'Name',
-  hint: 'Stretch before bed',
-  helper: 'Shown on Today and in reminders.',
+  labelText: 'Name',
+  hintText: 'Stretch before bed',
+  helperText: 'Shown on Today and in reminders.',
 );
 
 /// A filled password field, its glyph leading.
 Widget kitSpecimenInputPassword() => _Filled(
   text: 'correct horse',
   builder: (c) => MinimalTextField(
-    label: 'Password',
+    labelText: 'Password',
     controller: c,
     obscureText: true,
     icon: LucideIcons.lock,
@@ -363,11 +366,11 @@ Widget kitSpecimenInputPassword() => _Filled(
 Widget kitSpecimenInputError() => _Filled(
   text: '05:30',
   builder: (c) => MinimalTextField(
-    label: 'Reminder',
+    labelText: 'Reminder',
     controller: c,
     mono: true,
     icon: LucideIcons.bell,
-    error: 'Pick a time after 06:00.',
+    errorText: 'Pick a time after 06:00.',
   ),
 );
 
@@ -376,8 +379,12 @@ Widget kitSpecimenInputMultiline() => _Filled(
   text:
       'Out the door before 8. Any distance counts, even a walk round the '
       'block on a bad day.',
-  builder: (c) =>
-      MinimalTextField(label: 'Note', controller: c, maxLines: 3, minLines: 3),
+  builder: (c) => MinimalTextField(
+    labelText: 'Note',
+    controller: c,
+    maxLines: 3,
+    minLines: 3,
+  ),
 );
 
 /// Labelled fields inline in a form, the label column quiet.
@@ -387,11 +394,11 @@ Widget kitSpecimenInputRowForm() => _Body(
     children: [
       _Filled(
         text: 'Stretch before bed',
-        builder: (c) => MinimalInputRow(label: 'Name', controller: c),
+        builder: (c) => MinimalInputRow(labelText: 'Name', controller: c),
       ),
       const MinimalInputRow(
-        label: 'Goal',
-        hint: 'Minutes a day',
+        labelText: 'Goal',
+        hintText: 'Minutes a day',
         mono: true,
         keyboardType: TextInputType.number,
       ),
@@ -406,10 +413,10 @@ Widget kitSpecimenInputRowError() => _Body(
       _Filled(
         text: '0',
         builder: (c) => MinimalInputRow(
-          label: 'Goal',
+          labelText: 'Goal',
           controller: c,
           mono: true,
-          error: 'Between 1 and 240 minutes.',
+          errorText: 'Between 1 and 240 minutes.',
         ),
       ),
     ],
@@ -423,14 +430,14 @@ Widget kitSpecimenFormSectionReminders() => _Body(
     footer: 'Reminders follow the device time zone.',
     children: [
       MinimalDatePicker(
-        label: 'Remind me at',
+        labelText: 'Remind me at',
         icon: LucideIcons.bell,
         value: DateTime(2026, 8, 28, 21, 30),
         mode: MinimalDatePickerMode.time,
         onChanged: (_) {},
       ),
       MinimalSelect(
-        label: 'Sound',
+        labelText: 'Sound',
         icon: LucideIcons.volume2,
         value: 'chime',
         options: _sounds,

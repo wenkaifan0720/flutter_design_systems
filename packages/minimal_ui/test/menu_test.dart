@@ -21,7 +21,7 @@ void main() {
       const MinimalMenuItem('Move to…'),
       MinimalMenuItem(
         'Delete',
-        destructive: true,
+        isDestructiveAction: true,
         startsGroup: true,
         onPressed: () => log.add('delete'),
       ),

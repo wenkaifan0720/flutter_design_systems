@@ -18,7 +18,11 @@ void main() {
       final typed = <String>[];
       await tester.pumpWidget(
         scrollingHost(
-          MinimalTextField(label: 'Name', hint: 'Habit', onChanged: typed.add),
+          MinimalTextField(
+            labelText: 'Name',
+            hintText: 'Habit',
+            onChanged: typed.add,
+          ),
         ),
       );
       // The hint follows the label while the field is empty.
@@ -49,7 +53,7 @@ void main() {
       await tester.pumpWidget(
         scrollingHost(
           MinimalTextField(
-            label: 'Name',
+            labelText: 'Name',
             controller: controller,
             clearable: true,
             onChanged: typed.add,
@@ -70,7 +74,7 @@ void main() {
       final focus = <bool>[];
       await tester.pumpWidget(
         scrollingHost(
-          MinimalTextField(label: 'Name', onFocusChanged: focus.add),
+          MinimalTextField(labelText: 'Name', onFocusChange: focus.add),
         ),
       );
       await tester.tap(find.byType(TextField));
@@ -117,8 +121,8 @@ void main() {
         scrollingHost(
           const Column(
             children: [
-              MinimalTextField(label: 'Name'),
-              MinimalTextField(label: 'Identifier', readOnly: true),
+              MinimalTextField(labelText: 'Name'),
+              MinimalTextField(labelText: 'Identifier', readOnly: true),
             ],
           ),
         ),
@@ -138,27 +142,25 @@ void main() {
       expect(colors, containsAll([t.card, t.sunken]));
     });
 
-    testWidgets('an error prints under the field as a live region', (
-      tester,
-    ) async {
+    testWidgets('an error prints under the field in place of the help and '
+        "is read as the input's hint", (tester) async {
       final handle = tester.ensureSemantics();
       await tester.pumpWidget(
         scrollingHost(
           const MinimalTextField(
-            label: 'Reminder',
-            helper: 'Hidden by the error',
-            error: 'Pick a time after 06:00.',
+            labelText: 'Reminder',
+            helperText: 'Hidden by the error',
+            errorText: 'Pick a time after 06:00.',
           ),
         ),
       );
       expect(find.text('Hidden by the error'), findsNothing);
+      expect(find.text('Pick a time after 06:00.'), findsOneWidget);
+      final input = tester.getSemantics(find.byType(EditableText));
+      expect(input.getSemanticsData().label, 'Reminder');
       expect(
-        tester
-            .getSemantics(find.text('Pick a time after 06:00.'))
-            .getSemanticsData()
-            .flagsCollection
-            .isLiveRegion,
-        isTrue,
+        input.getSemanticsData().hint,
+        contains('Pick a time after 06:00.'),
       );
       handle.dispose();
     });
@@ -166,7 +168,9 @@ void main() {
     testWidgets('a disabled field says so and takes no text', (tester) async {
       final handle = tester.ensureSemantics();
       await tester.pumpWidget(
-        scrollingHost(const MinimalTextField(label: 'Team', enabled: false)),
+        scrollingHost(
+          const MinimalTextField(labelText: 'Team', enabled: false),
+        ),
       );
       final node = tester.getSemantics(find.bySemanticsLabel('Team'));
       expect(
@@ -182,8 +186,8 @@ void main() {
         scrollingHost(
           const Column(
             children: [
-              MinimalTextField(label: 'Goal', mono: true, suffix: 'pages'),
-              MinimalTextField(bare: true, hint: 'Add a note…'),
+              MinimalTextField(labelText: 'Goal', mono: true, suffix: 'pages'),
+              MinimalTextField(bare: true, hintText: 'Add a note…'),
             ],
           ),
         ),
@@ -202,7 +206,7 @@ void main() {
       final focus = FocusNode();
       addTearDown(focus.dispose);
       await tester.pumpWidget(
-        scrollingHost(MinimalTextField(label: 'Name', focusNode: focus)),
+        scrollingHost(MinimalTextField(labelText: 'Name', focusNode: focus)),
       );
       final node = tester.getSemantics(find.bySemanticsLabel('Name'));
       expect(node.getSemanticsData().flagsCollection.isTextField, isTrue);
@@ -232,7 +236,7 @@ void main() {
       await tester.pumpWidget(
         scrollingHost(
           MinimalTextField(
-            label: 'Code',
+            labelText: 'Code',
             mono: true,
             textInputAction: TextInputAction.next,
             inputFormatters: [
@@ -261,7 +265,7 @@ void main() {
         scrollingHost(
           StatefulBuilder(
             builder: (context, setState) => MinimalTextField(
-              label: 'Password',
+              labelText: 'Password',
               focusNode: focus,
               obscureText: !shown,
               trailing: MinimalIconButton(
@@ -371,8 +375,8 @@ void main() {
       await tester.pumpWidget(
         scrollingHost(
           const MinimalFormField(
-            label: 'Issue ID',
-            error: 'An issue ID ends in its number.',
+            labelText: 'Issue ID',
+            errorText: 'An issue ID ends in its number.',
             child: MinimalTextField(),
           ),
         ),
@@ -382,8 +386,8 @@ void main() {
       await tester.pumpWidget(
         scrollingHost(
           const MinimalFormField(
-            label: 'Issue ID',
-            help: 'Shown to your team.',
+            labelText: 'Issue ID',
+            helperText: 'Shown to your team.',
             child: MinimalTextField(),
           ),
         ),

@@ -16,8 +16,8 @@ Widget kitTextAreaDemo(Brightness brightness) => kitScreen(
         kitSpecimenTextAreaNotes(),
         // At the box's own three lines, as the notes box above rests.
         const MinimalTextArea(
-          label: 'Reason',
-          error: 'Say a few words about why.',
+          labelText: 'Reason',
+          errorText: 'Say a few words about why.',
         ),
       ],
     ),
@@ -66,9 +66,9 @@ class _LiveUploadState extends State<_LiveUpload> {
 
 /// A notes box with a line of help.
 Widget kitSpecimenTextAreaNotes() => const MinimalTextArea(
-  label: 'Notes',
-  hint: 'Anything the team should know',
-  helper: 'Visible to everyone on the project.',
+  labelText: 'Notes',
+  hintText: 'Anything the team should know',
+  helperText: 'Visible to everyone on the project.',
 );
 
 /// The zone, idle, with two files.

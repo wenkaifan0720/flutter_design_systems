@@ -10,7 +10,7 @@ void main() {
     await tester.pumpWidget(
       textScaleHost(
         MinimalTimePicker(
-          label: 'Remind me at',
+          labelText: 'Remind me at',
           value: DateTime(2026, 8, 28, 21, 30),
           wheel: true,
           onChanged: (_) {},

@@ -26,7 +26,10 @@ void main() {
             child: Center(
               child: SizedBox(
                 width: 320,
-                child: MinimalTextField(label: 'Name', controller: controller),
+                child: MinimalTextField(
+                  labelText: 'Name',
+                  controller: controller,
+                ),
               ),
             ),
           ),
@@ -79,13 +82,13 @@ void main() {
                       bare: true,
                       controller: name,
                       focusNode: nameFocus,
-                      hint: 'Habit name',
+                      hintText: 'Habit name',
                     ),
                     MinimalTextField(
                       bare: true,
                       controller: note,
                       focusNode: noteFocus,
-                      hint: 'Add a note…',
+                      hintText: 'Add a note…',
                     ),
                   ],
                 ),

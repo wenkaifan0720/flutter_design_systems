@@ -31,7 +31,7 @@ class _LiveTimeState extends State<_LiveTime> {
   @override
   Widget build(BuildContext context) {
     final picker = MinimalTimePicker(
-      label: 'Remind me at',
+      labelText: 'Remind me at',
       icon: LucideIcons.bell,
       value: _at,
       wheel: widget.wheel,
@@ -47,7 +47,7 @@ class _LiveTimeState extends State<_LiveTime> {
 
 /// The compact row: a reminder at 21:30.
 Widget kitSpecimenTimePickerRow() => MinimalTimePicker(
-  label: 'Remind me at',
+  labelText: 'Remind me at',
   icon: LucideIcons.bell,
   value: DateTime(2026, 1, 1, 21, 30),
   onChanged: (_) {},

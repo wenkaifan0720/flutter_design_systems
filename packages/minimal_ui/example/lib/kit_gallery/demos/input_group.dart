@@ -19,18 +19,18 @@ Widget kitInputGroupDemo(Brightness brightness) => kitScreen(
         // A URL is a code: its box reads left to right on any page.
         const _Code(
           MinimalInputGroup(
-            label: 'Website',
+            labelText: 'Website',
             prefixText: 'https://',
             suffixText: '.com',
-            hint: 'acme',
+            hintText: 'acme',
           ),
         ),
         const MinimalInputGroup(
-          label: 'Price',
+          labelText: 'Price',
           prefixText: '\$',
           suffixText: 'USD',
           mono: true,
-          hint: '0.00',
+          hintText: '0.00',
           keyboardType: TextInputType.numberWithOptions(decimal: true),
         ),
         // A value the field cannot take, typed: the error says what it
@@ -39,15 +39,15 @@ Widget kitInputGroupDemo(Brightness brightness) => kitScreen(
           text: 'HAB-',
           builder: (c) => _Code(
             MinimalInputGroup(
-              label: 'Blocked by',
+              labelText: 'Blocked by',
               controller: c,
               leading: const MinimalIcon(
                 LucideIcons.link,
                 size: MinimalIconSize.i16,
               ),
               mono: true,
-              hint: 'HAB-12',
-              error: 'An issue ID ends in its number, like HAB-12.',
+              hintText: 'HAB-12',
+              errorText: 'An issue ID ends in its number, like HAB-12.',
             ),
           ),
         ),
@@ -60,7 +60,7 @@ Widget kitInputGroupDemo(Brightness brightness) => kitScreen(
         _Filled(
           text: 'correct horse battery',
           builder: (c) => MinimalPasswordField(
-            label: 'Password',
+            labelText: 'Password',
             controller: c,
             newPassword: true,
           ),
@@ -71,13 +71,13 @@ Widget kitInputGroupDemo(Brightness brightness) => kitScreen(
       'One-time code',
       children: [
         MinimalInputOtp(
-          label: 'Code from your authenticator',
+          labelText: 'Code from your authenticator',
           groupSize: 3,
           onCompleted: (_) {},
         ),
         // The code takes no value from outside, so its error is the one an
         // empty code earns on Continue.
-        const MinimalInputOtp(length: 4, error: 'Enter all four digits.'),
+        const MinimalInputOtp(length: 4, errorText: 'Enter all four digits.'),
       ],
     ),
     kitSection('Form', children: const [_Form()]),
@@ -155,15 +155,15 @@ class _FormState extends State<_Form> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           MinimalFormField(
-            label: 'Workspace name',
-            help: 'Shown to everyone you invite.',
+            labelText: 'Workspace name',
+            helperText: 'Shown to everyone you invite.',
             required: true,
-            error: _tried && _name.text.trim().isEmpty
+            errorText: _tried && _name.text.trim().isEmpty
                 ? 'Give the workspace a name.'
                 : null,
             child: MinimalTextField(
               controller: _name,
-              hint: 'Acme',
+              hintText: 'Acme',
               onChanged: (_) => setState(() {}),
             ),
           ),
@@ -192,31 +192,31 @@ class _FormState extends State<_Form> {
 Widget kitSpecimenInputGroup() => const Padding(
   padding: EdgeInsets.all(MinimalSpacing.s16),
   child: MinimalInputGroup(
-    label: 'Website',
+    labelText: 'Website',
     prefixText: 'https://',
     suffixText: '.com',
-    hint: 'acme',
+    hintText: 'acme',
   ),
 );
 
 /// A six-digit code in two groups.
 Widget kitSpecimenInputOtp() => const Center(
-  child: MinimalInputOtp(label: 'Verification code', groupSize: 3),
+  child: MinimalInputOtp(labelText: 'Verification code', groupSize: 3),
 );
 
 /// A password with its show button.
 Widget kitSpecimenPasswordField() => const Padding(
   padding: EdgeInsets.all(MinimalSpacing.s16),
-  child: MinimalPasswordField(label: 'Password'),
+  child: MinimalPasswordField(labelText: 'Password'),
 );
 
 /// A labelled, required field with its help line.
 Widget kitSpecimenFormField() => const Padding(
   padding: EdgeInsets.all(MinimalSpacing.s16),
   child: MinimalFormField(
-    label: 'Workspace name',
-    help: 'Shown to everyone you invite.',
+    labelText: 'Workspace name',
+    helperText: 'Shown to everyone you invite.',
     required: true,
-    child: MinimalTextField(hint: 'Acme'),
+    child: MinimalTextField(hintText: 'Acme'),
   ),
 );

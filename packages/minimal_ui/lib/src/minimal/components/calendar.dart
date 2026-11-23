@@ -297,7 +297,7 @@ class MinimalCalendar extends StatefulWidget {
     required this.lastDate,
     this.value,
     this.onChanged,
-    this.today,
+    this.currentDate,
     this.months = 1,
     this.firstWeekday,
     this.selectable,
@@ -316,7 +316,7 @@ class MinimalCalendar extends StatefulWidget {
   final ValueChanged<DateTime>? onChanged;
 
   /// The day marked as today (a bar under its figure); the device's unstated.
-  final DateTime? today;
+  final DateTime? currentDate;
 
   /// How many months it shows: side by side where they fit, a 32 px gutter
   /// between them, stacked in a narrow column.
@@ -343,7 +343,13 @@ class MinimalCalendar extends StatefulWidget {
       ..add(
         ObjectFlagProperty<ValueChanged<DateTime>>.has('onChanged', onChanged),
       )
-      ..add(DiagnosticsProperty<DateTime>('today', today, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<DateTime>(
+          'currentDate',
+          currentDate,
+          defaultValue: null,
+        ),
+      )
       ..add(IntProperty('months', months, defaultValue: 1))
       ..add(IntProperty('firstWeekday', firstWeekday, defaultValue: null))
       ..add(
@@ -362,7 +368,7 @@ class _MinimalCalendarState extends State<MinimalCalendar> {
     firstDate: widget.firstDate,
     lastDate: widget.lastDate,
     selectedDate: widget.value,
-    currentDate: widget.today,
+    currentDate: widget.currentDate,
     selectable: widget.onChanged == null ? (_) => false : widget.selectable,
   );
 
@@ -371,7 +377,7 @@ class _MinimalCalendarState extends State<MinimalCalendar> {
     super.didUpdateWidget(old);
     if (old.firstDate != widget.firstDate ||
         old.lastDate != widget.lastDate ||
-        old.today != widget.today ||
+        old.currentDate != widget.currentDate ||
         old.selectable != widget.selectable ||
         (old.onChanged == null) != (widget.onChanged == null)) {
       _controller.dispose();
@@ -418,7 +424,7 @@ class _MinimalCalendarState extends State<MinimalCalendar> {
 /// paints it.
 ///
 /// ```dart
-/// MinimalDateRangePicker(label: 'Stay', firstDate: DateTime(2026), lastDate: DateTime(2027), value: stay, onChanged: setStay)
+/// MinimalDateRangePicker(labelText: 'Stay', firstDate: DateTime(2026), lastDate: DateTime(2027), value: stay, onChanged: setStay)
 /// ```
 class MinimalDateRangePicker extends StatefulWidget {
   /// A range picker between [firstDate] and [lastDate].
@@ -428,9 +434,9 @@ class MinimalDateRangePicker extends StatefulWidget {
     required this.lastDate,
     this.value,
     this.onChanged,
-    this.label,
-    this.hint,
-    this.today,
+    this.labelText,
+    this.hintText,
+    this.currentDate,
     this.firstWeekday,
     this.selectable,
   });
@@ -448,13 +454,13 @@ class MinimalDateRangePicker extends StatefulWidget {
   final ValueChanged<RawDateRange>? onChanged;
 
   /// The row's name, over the box; also its name for a screen reader.
-  final String? label;
+  final String? labelText;
 
   /// What the row shows with no range.
-  final String? hint;
+  final String? hintText;
 
   /// The day marked as today (a bar under its figure); the device's unstated.
-  final DateTime? today;
+  final DateTime? currentDate;
 
   /// The weekday a week starts on; null takes the locale's
   /// ([MinimalLocalizations.firstDayOfWeek]: Sunday in English).
@@ -481,9 +487,15 @@ class MinimalDateRangePicker extends StatefulWidget {
           onChanged,
         ),
       )
-      ..add(StringProperty('label', label, defaultValue: null))
-      ..add(StringProperty('hint', hint, defaultValue: null))
-      ..add(DiagnosticsProperty<DateTime>('today', today, defaultValue: null))
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<DateTime>(
+          'currentDate',
+          currentDate,
+          defaultValue: null,
+        ),
+      )
       ..add(IntProperty('firstWeekday', firstWeekday, defaultValue: null))
       ..add(
         ObjectFlagProperty<bool Function(DateTime day)>.has(
@@ -502,7 +514,7 @@ class _MinimalDateRangePickerState extends State<MinimalDateRangePicker> {
       lastDate: widget.lastDate,
       mode: RawCalendarMode.range,
       selectedRange: v,
-      currentDate: widget.today,
+      currentDate: widget.currentDate,
       selectable: widget.selectable,
     );
   }
@@ -530,9 +542,9 @@ class _MinimalDateRangePickerState extends State<MinimalDateRangePicker> {
     final words = MinimalLocalizations.of(context);
     final enabled = widget.onChanged != null;
     final value = widget.value;
-    final label = widget.label;
+    final label = widget.labelText;
     final text = value == null
-        ? (widget.hint ?? words.choose)
+        ? (widget.hintText ?? words.choose)
         : _range(words, value);
 
     final overlay = RawPopover(
@@ -543,7 +555,7 @@ class _MinimalDateRangePickerState extends State<MinimalDateRangePicker> {
       placement: const RawPopoverPlacement(
         gap: MinimalSpacing.s4,
         matchAnchorWidth: false,
-        preferredExtent: double.infinity,
+        fit: RawPopoverFit.whole,
       ),
       onOpenChanged: (open) {
         if (!open) {
@@ -599,7 +611,7 @@ class _MinimalDateRangePickerState extends State<MinimalDateRangePicker> {
                   ),
                 ),
                 MinimalIcon(
-                  LucideIcons.chevronDown,
+                  LucideIcons.chevronsUpDown,
                   size: MinimalIconSize.i16,
                   color: t.textTertiary,
                 ),

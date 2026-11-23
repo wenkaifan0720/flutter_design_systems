@@ -5,7 +5,6 @@ import 'package:material_ui/material_ui.dart';
 import 'package:ui_core/ui_core.dart';
 
 import '../chrome_metrics.dart';
-import '../internal/page_foot.dart';
 import '../theme.dart';
 import 'shell_frame.dart';
 import 'states.dart';
@@ -104,14 +103,15 @@ class MinimalScaffold extends StatelessWidget {
     );
 
     final inSheet = register == MinimalRouteChrome.sheet;
-    // Marked, so a toast shown from the page stands clear of its act.
+    // Kept clear of toasts (ui_core's RawToasterKeepClear), so a toast
+    // shown over the page never covers its act.
     final Widget? footerBar;
     if (footer == null) {
       footerBar = null;
     } else if (inSheet) {
       // The card's own footer: the hairline inset to the card's padding,
       // exactly as a [MinimalBottomSheet] draws it.
-      footerBar = MinimalPageFoot(
+      footerBar = RawToasterKeepClear(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(
             MinimalChromeMetrics.sheetPad,
@@ -127,7 +127,7 @@ class MinimalScaffold extends StatelessWidget {
         ),
       );
     } else {
-      footerBar = MinimalPageFoot(
+      footerBar = RawToasterKeepClear(
         child: Container(
           padding: const EdgeInsets.fromLTRB(
             MinimalChromeMetrics.gutter,

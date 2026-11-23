@@ -53,33 +53,4 @@ void main() {
     // The timer that would have cleared it finds it already gone.
     await tester.pump(MinimalChromeMetrics.toastWithAction);
   });
-
-  testWidgets('it stands above the shell\'s bar', (tester) async {
-    await tester.pumpWidget(
-      MaterialApp(
-        builder: (context, child) => MinimalHost(
-          light: MinimalThemeData.preset('standard', Brightness.light),
-          dark: MinimalThemeData.preset('standard', Brightness.dark),
-          child: child!,
-        ),
-        home: MinimalShellInsets(
-          allowance: 120,
-          child: MinimalScaffold(
-            body: Builder(
-              builder: (context) => MinimalButton(
-                'Go',
-                onPressed: () => showMinimalSnackBar(context, 'Saved'),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-    await tester.tap(find.text('Go'));
-    await tester.pumpAndSettle();
-    final screen = tester.getSize(find.byType(MaterialApp));
-    final toast = tester.getRect(find.text('Saved'));
-    expect(screen.height - toast.bottom, greaterThan(120));
-    await tester.pump(MinimalChromeMetrics.toast);
-  });
 }

@@ -11,6 +11,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../chrome_metrics.dart';
 import '../component_themes.dart';
+import '../internal/button_paint.dart';
 import '../internal/cap_label.dart';
 import '../internal/controls.dart';
 import '../internal/kit_paint.dart';
@@ -100,8 +101,8 @@ class MinimalSplitButton extends StatelessWidget {
       MinimalButtonVariant.secondary => (t.card, t.foreground, t.border),
       MinimalButtonVariant.ghost => (null, t.foreground, null),
       MinimalButtonVariant.destructive => (
-        t.destructive,
-        t.destructiveForeground,
+        minimalDangerFill(t).$1,
+        minimalDangerFill(t).$2,
         null,
       ),
     };
@@ -240,7 +241,7 @@ class MinimalSplitButton extends StatelessWidget {
           states: states,
           label: item.label,
           icon: item.icon,
-          destructive: item.destructive,
+          destructive: item.isDestructiveAction,
           trailing: keys == null ? null : MinimalKbd.shortcut(keys),
           ring: true,
         );

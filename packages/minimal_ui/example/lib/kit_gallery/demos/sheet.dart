@@ -31,7 +31,7 @@ Widget kitSheetDemo(Brightness brightness) => kitScreen(
                 title: 'New habit',
                 subtitle: 'Habits',
                 accessory: const _CreateAnother(),
-                leading: const MinimalSheetAction('Cancel'),
+                leading: const MinimalSheetAction.cancel('Cancel'),
                 trailing: MinimalSheetAction(
                   'Create habit',
                   isDefaultAction: true,
@@ -74,8 +74,12 @@ Widget kitSheetDemo(Brightness brightness) => kitScreen(
             subtitle: 'Habits',
             floating: true,
             accessory: _CreateAnother(),
-            leading: MinimalSheetAction('Cancel'),
-            trailing: MinimalSheetAction('Create habit', isDefaultAction: true),
+            leading: MinimalSheetAction.cancel('Cancel'),
+            trailing: MinimalSheetAction(
+              'Create habit',
+              isDefaultAction: true,
+              onPressed: _confirm,
+            ),
             child: _NewHabitForm(),
           ),
         ),
@@ -87,7 +91,11 @@ Widget kitSheetDemo(Brightness brightness) => kitScreen(
         _Afloat(
           MinimalBottomSheet(
             title: 'Filters',
-            trailing: MinimalSheetAction('Apply', isDefaultAction: true),
+            trailing: MinimalSheetAction(
+              'Apply',
+              isDefaultAction: true,
+              onPressed: _confirm,
+            ),
             child: _Filters(),
           ),
         ),
@@ -332,8 +340,12 @@ Widget kitSpecimenSheetFloating() => const _Raised(
     subtitle: 'Habits',
     floating: true,
     accessory: _CreateAnother(),
-    leading: MinimalSheetAction('Cancel'),
-    trailing: MinimalSheetAction('Create habit', isDefaultAction: true),
+    leading: MinimalSheetAction.cancel('Cancel'),
+    trailing: MinimalSheetAction(
+      'Create habit',
+      isDefaultAction: true,
+      onPressed: _confirm,
+    ),
     child: _NewHabitForm(),
   ),
 );
@@ -344,7 +356,11 @@ Widget kitSpecimenSheetDrawer() => const _Raised(
   child: MinimalBottomSheet(
     title: 'Filters',
     safe: true,
-    trailing: MinimalSheetAction('Apply', isDefaultAction: true),
+    trailing: MinimalSheetAction(
+      'Apply',
+      isDefaultAction: true,
+      onPressed: _confirm,
+    ),
     child: _Filters(),
   ),
 );
@@ -376,3 +392,6 @@ class _Raised extends StatelessWidget {
     );
   }
 }
+
+/// A sheet's confirming action that does nothing here.
+void _confirm() {}

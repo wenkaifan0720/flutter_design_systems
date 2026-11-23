@@ -141,12 +141,11 @@ class _KitNewHabitPageState extends State<KitNewHabitPage> {
           showLabel: true,
           onChanged: (on) => setState(() => _another = on),
         ),
-        leading: MinimalSheetAction(ar('Cancel', 'إلغاء')),
+        leading: MinimalSheetAction.cancel(ar('Cancel', 'إلغاء')),
         trailing: MinimalSheetAction(
           ar('Create habit', 'إنشاء العادة'),
           isDefaultAction: true,
-          enabled: named,
-          onPressed: _create,
+          onPressed: named ? _create : null,
         ),
       ),
       body: Column(
@@ -155,7 +154,7 @@ class _KitNewHabitPageState extends State<KitNewHabitPage> {
           MinimalTextField(
             bare: true,
             controller: _name,
-            hint: ar('Habit name', 'اسم العادة'),
+            hintText: ar('Habit name', 'اسم العادة'),
             style: t.h1,
             autofocus: widget.name.isEmpty,
             textCapitalization: TextCapitalization.sentences,
@@ -164,7 +163,7 @@ class _KitNewHabitPageState extends State<KitNewHabitPage> {
           MinimalTextField(
             bare: true,
             controller: _note,
-            hint: ar('Add a note…', 'أضف ملاحظة…'),
+            hintText: ar('Add a note…', 'أضف ملاحظة…'),
             style: t.body,
             minLines: 1,
             maxLines: 4,

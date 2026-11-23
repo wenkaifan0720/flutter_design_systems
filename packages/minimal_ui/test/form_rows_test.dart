@@ -55,9 +55,9 @@ void main() {
       await tester.pumpWidget(
         scrollingHost(
           MinimalInputRow(
-            label: 'Goal',
+            labelText: 'Goal',
             mono: true,
-            error: 'Between 1 and 240 minutes.',
+            errorText: 'Between 1 and 240 minutes.',
             onChanged: typed.add,
           ),
         ),

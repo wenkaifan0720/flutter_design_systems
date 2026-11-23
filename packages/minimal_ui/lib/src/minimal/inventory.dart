@@ -222,7 +222,7 @@ final DesignInventory minimalInventory = DesignInventory(
       (_) => MinimalToggleGroup<String>(
         label: 'View',
         selected: const {'list'},
-        onChanged: (_) {},
+        onSelectionChanged: (_) {},
         items: const [
           MinimalToggleItem('list', label: 'List'),
           MinimalToggleItem('board', label: 'Board'),
@@ -243,22 +243,23 @@ final DesignInventory minimalInventory = DesignInventory(
     ),
     _live('Kbd', (_) => const MinimalKbd('K')),
     // Inputs
-    _live('TextField', (_) => const MinimalTextField(label: 'Name')),
-    _live('TextArea', (_) => const MinimalTextArea(label: 'Notes')),
-    _live('SearchField', (_) => const MinimalSearchField(hint: 'Search')),
+    _live('TextField', (_) => const MinimalTextField(labelText: 'Name')),
+    _live('TextArea', (_) => const MinimalTextArea(labelText: 'Notes')),
+    _live('SearchField', (_) => const MinimalSearchField(hintText: 'Search')),
     _live(
       'PasswordField',
-      (_) => const MinimalPasswordField(label: 'Password'),
+      (_) => const MinimalPasswordField(labelText: 'Password'),
     ),
     _live(
       'InputGroup',
-      (_) => const MinimalInputGroup(label: 'Website', prefixText: 'https://'),
+      (_) =>
+          const MinimalInputGroup(labelText: 'Website', prefixText: 'https://'),
     ),
-    _live('InputOtp', (_) => const MinimalInputOtp(label: 'Code')),
+    _live('InputOtp', (_) => const MinimalInputOtp(labelText: 'Code')),
     _live(
       'NumberField',
       (_) => MinimalNumberField(
-        label: 'Guests',
+        labelText: 'Guests',
         value: 2,
         min: 1,
         max: 8,
@@ -268,7 +269,7 @@ final DesignInventory minimalInventory = DesignInventory(
     _live(
       'Select',
       (_) => MinimalSelect<String>(
-        label: 'Repeats',
+        labelText: 'Repeats',
         value: 'daily',
         options: const [
           MinimalSelectOption('daily', 'Every day'),
@@ -280,19 +281,19 @@ final DesignInventory minimalInventory = DesignInventory(
     _live(
       'Combobox',
       (_) => MinimalCombobox<String>(
-        label: 'City',
+        labelText: 'City',
         options: const ['Lisbon', 'London', 'Lyon'],
-        displayString: (c) => c,
+        displayStringForOption: (c) => c,
         onSelected: (_) {},
       ),
     ),
     _live(
       'MultiSelect',
       (_) => MinimalMultiSelect<String>(
-        label: 'Labels',
+        labelText: 'Labels',
         values: const ['Bug'],
         options: const ['Bug', 'Design', 'Docs'],
-        displayString: (l) => l,
+        displayStringForOption: (l) => l,
         onChanged: (_) {},
       ),
     ),
@@ -380,7 +381,7 @@ final DesignInventory minimalInventory = DesignInventory(
     _live(
       'DatePicker',
       (_) => MinimalDatePicker(
-        label: 'Due',
+        labelText: 'Due',
         value: DateTime(2026, 3, 12, 9),
         onChanged: (_) {},
       ),
@@ -388,7 +389,7 @@ final DesignInventory minimalInventory = DesignInventory(
     _live(
       'DateRangePicker',
       (_) => MinimalDateRangePicker(
-        label: 'Stay',
+        labelText: 'Stay',
         firstDate: DateTime(2026),
         lastDate: DateTime(2027),
         onChanged: (_) {},
@@ -397,7 +398,7 @@ final DesignInventory minimalInventory = DesignInventory(
     _live(
       'TimePicker',
       (_) => MinimalTimePicker(
-        label: 'Remind me at',
+        labelText: 'Remind me at',
         value: DateTime(2026, 1, 1, 7, 0),
         onChanged: (_) {},
       ),
@@ -407,7 +408,7 @@ final DesignInventory minimalInventory = DesignInventory(
       (_) => MinimalCalendar(
         firstDate: DateTime(2026),
         lastDate: DateTime(2027),
-        today: DateTime(2026, 3, 12),
+        currentDate: DateTime(2026, 3, 12),
         onChanged: (_) {},
       ),
     ),
@@ -426,9 +427,9 @@ final DesignInventory minimalInventory = DesignInventory(
       'FormField',
       // The error stands where the help would.
       (_) => const MinimalFormField(
-        label: 'Issue ID',
-        help: 'Shown to your team.',
-        error: 'An issue ID ends in its number, like HAB-12.',
+        labelText: 'Issue ID',
+        helperText: 'Shown to your team.',
+        errorText: 'An issue ID ends in its number, like HAB-12.',
         child: MinimalTextField(),
       ),
     ),
@@ -501,7 +502,7 @@ final DesignInventory minimalInventory = DesignInventory(
         current: 1,
       ),
     ),
-    _live('PageDots', (_) => const MinimalPageDots(count: 4, selectedIndex: 1)),
+    _live('PageDots', (_) => const MinimalPageDots(pageCount: 4, page: 1)),
     _live(
       'MenuBar',
       (_) => const MinimalMenuBar(
@@ -848,7 +849,10 @@ final DesignInventory minimalInventory = DesignInventory(
           onPressed: _none,
           isDefaultAction: true,
         ),
-        child: MinimalTextField(label: 'Name', hint: 'Stretch before bed'),
+        child: MinimalTextField(
+          labelText: 'Name',
+          hintText: 'Stretch before bed',
+        ),
       ),
     ),
     _live(

@@ -253,42 +253,42 @@ class _PageCell extends StatelessWidget {
 /// follow `shapes.pill`. The
 /// current dot grows into place in [MinimalMotion.base].
 ///
-/// With [onChanged] the dots are one control, as iOS's page control is: a
+/// With [onPageChanged] the dots are one control, as iOS's page control is: a
 /// tap before the current dot goes back a page, a tap after it on a page,
 /// the arrow keys step it, and a screen reader adjusts it (swipe up or
 /// down). The dots are too small to tap one by one; the control is laid
 /// out at the tap floor round them.
 ///
 /// ```dart
-/// MinimalPageDots(count: 4, selectedIndex: page, onChanged: controller.jumpToPage)
+/// MinimalPageDots(pageCount: 4, page: page, onPageChanged: controller.jumpToPage)
 /// ```
 class MinimalPageDots extends StatefulWidget {
-  /// A dot for each of [count] pages.
+  /// A dot for each of [pageCount] pages.
   const MinimalPageDots({
     super.key,
-    required this.count,
-    required this.selectedIndex,
-    this.onChanged,
+    required this.pageCount,
+    required this.page,
+    this.onPageChanged,
     this.position,
-  }) : assert(count > 0, 'dots for at least one page'),
+  }) : assert(pageCount > 0, 'dots for at least one page'),
        assert(
-         selectedIndex >= 0 && selectedIndex < count,
+         page >= 0 && page < pageCount,
          'selectedIndex counts from 0 to count - 1',
        );
 
   /// How many pages there are.
-  final int count;
+  final int pageCount;
 
   /// The current page, from 0.
-  final int selectedIndex;
+  final int page;
 
   /// Reports the page the control steps to; null leaves the dots still.
-  final ValueChanged<int>? onChanged;
+  final ValueChanged<int>? onPageChanged;
 
   /// Where the pages are while they move, in pages (1.5 is half way from the
   /// second to the third; past the last it runs on toward the first), so the
   /// long dot travels with a swipe instead of jumping when it ends. Null: the
-  /// dots ease to [selectedIndex] when it changes.
+  /// dots ease to [page] when it changes.
   final double? position;
 
   static const double _dot = 6;
@@ -305,9 +305,14 @@ class MinimalPageDots extends StatefulWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(IntProperty('count', count))
-      ..add(IntProperty('selectedIndex', selectedIndex))
-      ..add(ObjectFlagProperty<ValueChanged<int>>.has('onChanged', onChanged))
+      ..add(IntProperty('pageCount', pageCount))
+      ..add(IntProperty('page', page))
+      ..add(
+        ObjectFlagProperty<ValueChanged<int>>.has(
+          'onPageChanged',
+          onPageChanged,
+        ),
+      )
       ..add(DoubleProperty('position', position, defaultValue: null));
   }
 }
@@ -316,15 +321,15 @@ class _MinimalPageDotsState extends State<MinimalPageDots> {
   bool _focus = false;
 
   void _step(int by) {
-    final next = widget.selectedIndex + by;
-    if (next < 0 || next >= widget.count) return;
-    widget.onChanged?.call(next);
+    final next = widget.page + by;
+    if (next < 0 || next >= widget.pageCount) return;
+    widget.onPageChanged?.call(next);
   }
 
   // A tap before the current dot steps back, after it on.
   void _tapAt(Offset at, bool rtl) {
     const pitch = MinimalPageDots._pitch;
-    final start = widget.selectedIndex * pitch;
+    final start = widget.page * pitch;
     final end = start + MinimalPageDots._long + 2 * MinimalSpacing.s4;
     final x = rtl ? context.size!.width - at.dx : at.dx;
     if (x < start) _step(-1);
@@ -344,15 +349,15 @@ class _MinimalPageDotsState extends State<MinimalPageDots> {
   Widget _control(BuildContext context) {
     final t = context.minimalTheme;
     final l = MinimalLocalizations.of(context);
-    final count = widget.count;
-    final selected = widget.selectedIndex;
+    final count = widget.pageCount;
+    final selected = widget.page;
     final at = widget.position;
     // Followed frame by frame, the dots must not ease after it as well.
     final duration = context.minimalStill || at != null
         ? Duration.zero
         : MinimalMotion.base;
     final shape = t.shapes.pill;
-    final press = widget.onChanged;
+    final press = widget.onPageChanged;
     final rtl = Directionality.of(context) == TextDirection.rtl;
     // How much of the current page's long dot dot [i] wears: whole on the
     // page, none a page away, measured round the ring (the last page's

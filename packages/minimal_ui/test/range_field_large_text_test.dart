@@ -12,8 +12,8 @@ void main() {
       await tester.pumpWidget(
         directionalPage(
           MinimalDateRangePicker(
-            label: 'Stay',
-            hint: 'Choose',
+            labelText: 'Stay',
+            hintText: 'Choose',
             firstDate: DateTime(2026),
             lastDate: DateTime(2027),
             onChanged: (_) {},

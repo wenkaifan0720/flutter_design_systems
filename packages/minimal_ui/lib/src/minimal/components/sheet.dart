@@ -20,8 +20,9 @@ import 'icon_button.dart';
 /// One action in a sheet's footer row — `Cancel` beside `Create habit`.
 ///
 /// [isDefaultAction] is the confirming one: the accent button. The other is the
-/// bordered secondary. A null [onPressed] DISMISSES the sheet, which is what a
-/// Cancel does.
+/// bordered secondary. A null [onPressed] turns the action off (a Create that
+/// waits for a name): it dims and takes no press, as a Flutter button does.
+/// [MinimalSheetAction.cancel] dismisses the sheet.
 ///
 /// ```dart
 /// MinimalSheetAction('Create habit', onPressed: create, isDefaultAction: true)
@@ -31,24 +32,32 @@ class MinimalSheetAction {
   /// An action saying [label].
   const MinimalSheetAction(
     this.label, {
-    this.onPressed,
+    required this.onPressed,
     this.isDefaultAction = false,
-    this.enabled = true,
-  });
+  }) : _dismisses = false;
+
+  /// The dismissive action, saying [label]: it closes the sheet, as
+  /// `Navigator.maybePop` does.
+  ///
+  /// ```dart
+  /// MinimalSheetAction.cancel('Cancel')
+  /// ```
+  const MinimalSheetAction.cancel(this.label)
+    : onPressed = null,
+      isDefaultAction = false,
+      _dismisses = true;
 
   /// What it says.
   final String label;
 
-  /// What the button performs; dismissing the sheet when null.
+  /// What the button performs; null turns it off.
   final VoidCallback? onPressed;
 
   /// The confirming register: the accent button rather than the bordered
   /// one.
   final bool isDefaultAction;
 
-  /// False shows the action dimmed and inert (a Create that waits for a
-  /// name) — a null [onPressed] would dismiss instead.
-  final bool enabled;
+  final bool _dismisses;
 }
 
 /// A sheet card's footer line — what [MinimalBottomSheet] prints under its
@@ -56,12 +65,13 @@ class MinimalSheetAction {
 /// pass as its `footer:`: the [accessory] (a "create another"
 /// `MinimalSwitch(showLabel: true)`, a hint) at the leading edge, the
 /// [leading] secondary and [trailing] confirming actions at the trailing
-/// one. When the two do not share a line — a long label, a larger text
-/// scale — they stack, each keeping its own edge. An action with no
-/// `onPressed` dismisses the sheet.
+/// one. When the two do not share a line (a long label, a larger text
+/// scale) they stack in one column of one width, the confirming action on
+/// top, as ui_core's [RawActionBar] lays out every look's actions.
+/// [MinimalSheetAction.cancel] dismisses the sheet.
 ///
 /// ```dart
-/// MinimalScaffold(topBar: const MinimalAppBar(title: 'New habit'), footer: MinimalSheetFooter(accessory: MinimalSwitch(value: another, onChanged: setAnother, label: 'Create another', showLabel: true), leading: const MinimalSheetAction('Cancel'), trailing: MinimalSheetAction('Create habit', onPressed: create, isDefaultAction: true)), body: form)
+/// MinimalScaffold(topBar: const MinimalAppBar(title: 'New habit'), footer: MinimalSheetFooter(accessory: MinimalSwitch(value: another, onChanged: setAnother, label: 'Create another', showLabel: true), leading: const MinimalSheetAction.cancel('Cancel'), trailing: MinimalSheetAction('Create habit', onPressed: create, isDefaultAction: true)), body: form)
 /// ```
 class MinimalSheetFooter extends StatelessWidget {
   /// A sheet's footer line.
@@ -90,18 +100,17 @@ class MinimalSheetFooter extends StatelessWidget {
       variant: a.isDefaultAction
           ? MinimalButtonVariant.primary
           : MinimalButtonVariant.secondary,
-      onPressed: !a.enabled
-          ? null
-          : a.onPressed ?? () => Navigator.of(context).maybePop(),
+      onPressed: a._dismisses
+          ? () => Navigator.of(context).maybePop()
+          : a.onPressed,
     );
     return _footer(
       accessory: accessory,
-      // Two long labels at a large text scale stack as well, the
-      // confirming one lowest.
-      actions: OverflowBar(
+      // Two long labels at a large text scale stack, one width, the
+      // confirming one on top.
+      actions: RawActionBar(
         spacing: MinimalSpacing.s8,
         overflowSpacing: MinimalSpacing.s8,
-        overflowAlignment: OverflowBarAlignment.end,
         children: [
           if (leading != null) action(leading),
           if (trailing != null) action(trailing),
@@ -160,7 +169,7 @@ class MinimalSheetFooter extends StatelessWidget {
 /// corners only). The header, the actions and the content keep their own.
 ///
 /// ```dart
-/// MinimalBottomSheet(title: 'New habit', subtitle: 'Habits', floating: true, trailing: const MinimalSheetAction('Create habit', isDefaultAction: true), child: form)
+/// MinimalBottomSheet(title: 'New habit', subtitle: 'Habits', floating: true, trailing: MinimalSheetAction('Create habit', onPressed: create, isDefaultAction: true), child: form)
 /// ```
 class MinimalBottomSheet extends StatelessWidget {
   /// A sheet card around [child].
@@ -735,36 +744,53 @@ class _RenderFooterLine extends RenderBox
   }
 
   Size _measure(BoxConstraints constraints, {required bool dry}) {
+    Size lay(RenderBox child, BoxConstraints c) => dry
+        ? child.getDryLayout(c)
+        : (child..layout(c, parentUsesSize: true)).size;
     final loose = constraints.loosen();
-    final sizes = <Size>[
+    final children = <RenderBox>[
       for (var child = firstChild; child != null; child = childAfter(child))
-        dry
-            ? child.getDryLayout(loose)
-            : (child..layout(loose, parentUsesSize: true)).size,
+        child,
     ];
-    if (sizes.isEmpty) return constraints.smallest;
+    if (children.isEmpty) return constraints.smallest;
     final rtl = _textDirection == TextDirection.rtl;
-    final together =
-        sizes.fold<double>(0, (sum, s) => sum + s.width) +
-        _FooterLine._gap * (sizes.length - 1);
+    final first = children.first, last = children.last;
+    // The accessory at its own width; the actions at theirs side by side
+    // (their bar, given the room, takes all of it and stands them at its end).
+    final lead = lay(first, loose);
+    final natural = last.getMaxIntrinsicWidth(double.infinity);
+    final together = lead.width + _FooterLine._gap + natural;
     final width = constraints.hasBoundedWidth ? constraints.maxWidth : together;
-    final line = together <= width;
-    final height = line
-        ? sizes.map((s) => s.height).reduce(math.max)
-        : sizes.fold<double>(0, (sum, s) => sum + s.height) +
-              _FooterLine._gap * (sizes.length - 1);
+    if (children.length == 2 && together <= width) {
+      final room = width - lead.width - _FooterLine._gap;
+      final acts = lay(last, BoxConstraints(maxWidth: room));
+      final height = math.max(lead.height, acts.height);
+      if (!dry) {
+        (first.parentData! as _FooterLineParentData).offset = Offset(
+          rtl ? width - lead.width : 0,
+          (height - lead.height) / 2,
+        );
+        (last.parentData! as _FooterLineParentData).offset = Offset(
+          rtl ? 0 : width - acts.width,
+          (height - acts.height) / 2,
+        );
+      }
+      return constraints.constrain(Size(width, height));
+    }
+    // Stacked: the accessory keeps the leading edge, the actions under it
+    // at the trailing one.
+    final sizes = <Size>[lead, for (final c in children.skip(1)) lay(c, loose)];
+    final height =
+        sizes.fold<double>(0, (sum, s) => sum + s.height) +
+        _FooterLine._gap * (sizes.length - 1);
     if (!dry) {
       var y = 0.0;
-      var i = 0;
-      for (var child = firstChild; child != null; child = childAfter(child)) {
+      for (final (i, child) in children.indexed) {
         final s = sizes[i];
         // The first slot keeps the leading edge, the last the trailing one.
-        final leading = i == 0;
-        final x = leading == !rtl ? 0.0 : width - s.width;
-        final data = child.parentData! as _FooterLineParentData;
-        data.offset = Offset(x, line ? (height - s.height) / 2 : y);
+        final x = (i == 0) == !rtl ? 0.0 : width - s.width;
+        (child.parentData! as _FooterLineParentData).offset = Offset(x, y);
         y += s.height + _FooterLine._gap;
-        i += 1;
       }
     }
     return constraints.constrain(Size(width, height));

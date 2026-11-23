@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
 
 import '../chrome_metrics.dart';
 import '../internal/face.dart';
@@ -123,52 +124,58 @@ class MinimalNavigationBar extends StatelessWidget {
     final t = context.minimalTheme;
     final safeBottom = MediaQuery.paddingOf(context).bottom;
     final action = this.action;
-    return Container(
-      height: heightIn(safeBottom),
-      padding: EdgeInsets.only(bottom: safeBottom),
-      decoration: BoxDecoration(
-        color: t.background,
-        border: Border(top: t.rule),
-      ),
-      child: Row(
-        children: [
-          for (final (i, item) in items.indexed)
-            Expanded(
-              child: _Tab(
-                key: item.key,
-                item: item,
-                active: i == selectedIndex,
-                onPressed: onDestinationSelected == null
-                    ? null
-                    : () => onDestinationSelected!(i),
+    // Toasts stand above the bar (ui_core's RawToasterKeepClear), and follow
+    // it as it slides in or away.
+    return RawToasterKeepClear(
+      child: Container(
+        height: heightIn(safeBottom),
+        padding: EdgeInsets.only(bottom: safeBottom),
+        decoration: BoxDecoration(
+          color: t.background,
+          border: Border(top: t.rule),
+        ),
+        child: Row(
+          children: [
+            for (final (i, item) in items.indexed)
+              Expanded(
+                child: _Tab(
+                  key: item.key,
+                  item: item,
+                  active: i == selectedIndex,
+                  onPressed: onDestinationSelected == null
+                      ? null
+                      : () => onDestinationSelected!(i),
+                ),
               ),
-            ),
-          if (action != null)
-            SizedBox(
-              width: MinimalChromeMetrics.tabActionSlot,
-              child: Center(
-                child: MinimalPressable(
-                  key: actionKey,
-                  onPressed: onAction,
-                  enabled: onAction != null,
-                  semanticLabel:
-                      actionLabel ?? MinimalLocalizations.of(context).create,
-                  child: Container(
-                    width: MinimalChromeMetrics.tabAction,
-                    height: MinimalChromeMetrics.tabAction,
-                    decoration: minimalFrame(
-                      t.shapes.small,
-                      fill: actionAccent ? t.primary : t.foreground,
-                    ),
-                    child: MinimalIcon(
-                      action,
-                      color: actionAccent ? t.primaryForeground : t.background,
+            if (action != null)
+              SizedBox(
+                width: MinimalChromeMetrics.tabActionSlot,
+                child: Center(
+                  child: MinimalPressable(
+                    key: actionKey,
+                    onPressed: onAction,
+                    enabled: onAction != null,
+                    semanticLabel:
+                        actionLabel ?? MinimalLocalizations.of(context).create,
+                    child: Container(
+                      width: MinimalChromeMetrics.tabAction,
+                      height: MinimalChromeMetrics.tabAction,
+                      decoration: minimalFrame(
+                        t.shapes.small,
+                        fill: actionAccent ? t.primary : t.foreground,
+                      ),
+                      child: MinimalIcon(
+                        action,
+                        color: actionAccent
+                            ? t.primaryForeground
+                            : t.background,
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-        ],
+          ],
+        ),
       ),
     );
   }

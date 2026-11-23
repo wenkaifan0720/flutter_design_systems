@@ -17,7 +17,7 @@ import 'reveal.dart';
 /// its own bottom rule, so a column of them is an accordion.
 ///
 /// It keeps its own open state from [initiallyExpanded]; pass [expanded]
-/// and [onChanged] to hold it in the page instead (an accordion that
+/// and [onExpansionChanged] to hold it in the page instead (an accordion that
 /// closes the others). The whole row is the control, a full-bleed one: its
 /// press wash fills it and its focus ring runs inside its edge. A screen
 /// reader hears the title and whether it is expanded.
@@ -32,10 +32,10 @@ class MinimalDisclosure extends StatefulWidget {
     required this.title,
     required this.child,
     this.subtitle,
-    this.leading,
+    this.icon,
     this.initiallyExpanded = false,
     this.expanded,
-    this.onChanged,
+    this.onExpansionChanged,
     this.padding = const EdgeInsets.only(bottom: MinimalSpacing.s12),
     this.focusNode,
     this.autofocus = false,
@@ -48,7 +48,7 @@ class MinimalDisclosure extends StatefulWidget {
   final String? subtitle;
 
   /// A glyph before the title.
-  final IconData? leading;
+  final IconData? icon;
 
   /// What opens under the row.
   final Widget child;
@@ -60,7 +60,7 @@ class MinimalDisclosure extends StatefulWidget {
   final bool? expanded;
 
   /// Told when the row is pressed: the state to move to.
-  final ValueChanged<bool>? onChanged;
+  final ValueChanged<bool>? onExpansionChanged;
 
   /// The air around [child] under the row.
   final EdgeInsetsGeometry padding;
@@ -80,9 +80,7 @@ class MinimalDisclosure extends StatefulWidget {
     properties
       ..add(StringProperty('title', title))
       ..add(StringProperty('subtitle', subtitle, defaultValue: null))
-      ..add(
-        DiagnosticsProperty<IconData>('leading', leading, defaultValue: null),
-      )
+      ..add(DiagnosticsProperty<IconData>('icon', icon, defaultValue: null))
       ..add(
         FlagProperty(
           'initiallyExpanded',
@@ -91,7 +89,12 @@ class MinimalDisclosure extends StatefulWidget {
         ),
       )
       ..add(DiagnosticsProperty<bool>('expanded', expanded, defaultValue: null))
-      ..add(ObjectFlagProperty<ValueChanged<bool>>.has('onChanged', onChanged))
+      ..add(
+        ObjectFlagProperty<ValueChanged<bool>>.has(
+          'onExpansionChanged',
+          onExpansionChanged,
+        ),
+      )
       ..add(
         DiagnosticsProperty<EdgeInsetsGeometry>(
           'padding',
@@ -118,7 +121,7 @@ class _MinimalDisclosureState extends State<MinimalDisclosure> {
   void _toggle() {
     final next = !_expanded;
     if (widget.expanded == null) setState(() => _open = next);
-    widget.onChanged?.call(next);
+    widget.onExpansionChanged?.call(next);
   }
 
   @override
@@ -127,7 +130,7 @@ class _MinimalDisclosureState extends State<MinimalDisclosure> {
     final open = _expanded;
     final duration = context.minimalStill ? Duration.zero : MinimalMotion.base;
     final subtitle = widget.subtitle;
-    final leading = widget.leading;
+    final leading = widget.icon;
     final l = MinimalLocalizations.of(context);
     return DecoratedBox(
       decoration: BoxDecoration(border: Border(bottom: t.rule)),

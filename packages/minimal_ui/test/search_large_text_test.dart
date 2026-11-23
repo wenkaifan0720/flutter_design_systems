@@ -25,7 +25,7 @@ void main() {
       Future<double> face(double scale) async {
         await tester.pumpWidget(
           textScaleHost(
-            const MinimalSearchField(hint: 'Search habits'),
+            const MinimalSearchField(hintText: 'Search habits'),
             scale: scale,
           ),
         );

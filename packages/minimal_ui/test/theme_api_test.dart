@@ -89,16 +89,22 @@ void main() {
     });
 
     test('lerp lands on its ends and blends between', () {
-      expect(light.lerp(dark, 0), light);
-      expect(light.lerp(dark, 1), dark);
-      expect(light.lerp(null, .5), light);
-      final mid = light.lerp(dark, .5);
+      expect(MinimalThemeData.lerp(light, dark, 0), light);
+      expect(MinimalThemeData.lerp(light, dark, 1), dark);
+      expect(MinimalThemeData.lerp(light, light, .5), light);
+      final mid = MinimalThemeData.lerp(light, dark, .5);
       expect(mid.background, Color.lerp(light.background, dark.background, .5));
       expect(mid.body.color, Color.lerp(light.body.color, dark.body.color, .5));
-      expect(light.lerp(dark, .4).brightness, Brightness.light);
-      expect(light.lerp(dark, .6).brightness, Brightness.dark);
+      expect(
+        MinimalThemeData.lerp(light, dark, .4).brightness,
+        Brightness.light,
+      );
+      expect(
+        MinimalThemeData.lerp(light, dark, .6).brightness,
+        Brightness.dark,
+      );
       final rounder = light.copyWith(shapes: const MinimalShapes(radius: 16));
-      expect(light.lerp(rounder, .5).controlRadius, 12);
+      expect(MinimalThemeData.lerp(light, rounder, .5).controlRadius, 12);
     });
 
     test('equality is by value', () {
@@ -474,7 +480,7 @@ void main() {
 
     test('the tween is the lerp', () {
       final tween = MinimalThemeDataTween(begin: light, end: dark);
-      expect(tween.lerp(.5), light.lerp(dark, .5));
+      expect(tween.lerp(.5), MinimalThemeData.lerp(light, dark, .5));
     });
   });
 }

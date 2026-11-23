@@ -115,7 +115,7 @@ Widget kitOverlaysDemo(Brightness brightness) => kitScreen(
                 title: 'ORD-1042',
                 subtitle: 'Orders',
                 builder: _details,
-                leading: const MinimalSheetAction('Close'),
+                leading: const MinimalSheetAction.cancel('Close'),
                 trailing: MinimalSheetAction(
                   'Refund',
                   isDefaultAction: true,
@@ -159,8 +159,8 @@ Widget kitOverlaysDemo(Brightness brightness) => kitScreen(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const MinimalTextField(
-                  label: 'Link',
-                  hint: 'ritual.app/s/8f2k',
+                  labelText: 'Link',
+                  hintText: 'ritual.app/s/8f2k',
                 ),
                 const MinimalGap(MinimalSpacing.s12),
                 Align(
@@ -355,7 +355,11 @@ Widget kitSpecimenSideSheet() => Builder(
           title: 'ORD-1042',
           subtitle: 'Orders',
           onClose: () {},
-          trailing: const MinimalSheetAction('Refund', isDefaultAction: true),
+          trailing: MinimalSheetAction(
+            'Refund',
+            isDefaultAction: true,
+            onPressed: () {},
+          ),
           child: _details(context),
         ),
       ),

@@ -148,10 +148,10 @@ class MinimalCarouselView extends StatelessWidget {
                 ValueListenableBuilder<double>(
                   valueListenable: c.position,
                   builder: (context, at, _) => MinimalPageDots(
-                    count: c.count,
-                    selectedIndex: c.page,
+                    pageCount: c.count,
+                    page: c.page,
                     position: at,
-                    onChanged: c.goToPage,
+                    onPageChanged: c.goToPage,
                   ),
                 ),
                 Expanded(

@@ -242,7 +242,7 @@ class MinimalFormRow extends StatelessWidget {
 /// A labeled text field inline in a form: the label in the quiet ink in a
 /// column at the start, the boxless field in the ink beside it, and the
 /// row's own hairline under both — the accent while the field has focus,
-/// the danger with an [error], whose message prints under the row. Narrow
+/// the danger with an [errorText], whose message prints under the row. Narrow
 /// rows (under 280 px) stack the label over the field. `mono: true` sets the value in
 /// Geist Mono, for a number, an id or a time.
 ///
@@ -251,16 +251,16 @@ class MinimalFormRow extends StatelessWidget {
 /// a [MinimalFormSection], never in a `MinimalListSection`.
 ///
 /// ```dart
-/// MinimalInputRow(label: 'Name', controller: name, hint: 'Stretch before bed')
+/// MinimalInputRow(labelText: 'Name', controller: name, hintText: 'Stretch before bed')
 /// ```
 class MinimalInputRow extends StatefulWidget {
   /// A form row that edits text.
   const MinimalInputRow({
     super.key,
-    required this.label,
+    required this.labelText,
     this.controller,
-    this.hint,
-    this.error,
+    this.hintText,
+    this.errorText,
     this.focusNode,
     this.onChanged,
     this.onSubmitted,
@@ -276,16 +276,16 @@ class MinimalInputRow extends StatefulWidget {
   });
 
   /// What it edits.
-  final String label;
+  final String labelText;
 
   /// The text; null keeps its own.
   final TextEditingController? controller;
 
   /// What an empty field says.
-  final String? hint;
+  final String? hintText;
 
   /// What is wrong with it; null when nothing is.
-  final String? error;
+  final String? errorText;
 
   /// Its focus; null keeps its own.
   final FocusNode? focusNode;
@@ -334,7 +334,7 @@ class MinimalInputRow extends StatefulWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('label', label))
+      ..add(StringProperty('labelText', labelText))
       ..add(
         DiagnosticsProperty<TextEditingController>(
           'controller',
@@ -342,8 +342,8 @@ class MinimalInputRow extends StatefulWidget {
           defaultValue: null,
         ),
       )
-      ..add(StringProperty('hint', hint, defaultValue: null))
-      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
+      ..add(StringProperty('errorText', errorText, defaultValue: null))
       ..add(
         DiagnosticsProperty<FocusNode>(
           'focusNode',
@@ -415,7 +415,7 @@ class _MinimalInputRowState extends State<MinimalInputRow> {
   @override
   Widget build(BuildContext context) {
     final t = context.minimalTheme;
-    final error = widget.error;
+    final error = widget.errorText;
     final icon = widget.icon;
     final ruleColor = error != null
         ? t.destructive
@@ -423,12 +423,12 @@ class _MinimalInputRowState extends State<MinimalInputRow> {
         ? t.ring
         : t.border;
     final field = Semantics(
-      label: widget.label,
+      label: widget.labelText,
       child: MinimalTextField(
         bare: true,
         style: widget.mono ? t.monoValue : t.body,
         controller: widget.controller,
-        hint: widget.hint,
+        hintText: widget.hintText,
         focusNode: _focus,
         autofocus: widget.autofocus,
         onChanged: widget.onChanged,
@@ -439,7 +439,7 @@ class _MinimalInputRowState extends State<MinimalInputRow> {
         readOnly: widget.readOnly,
         obscureText: widget.obscureText,
         maxLines: widget.maxLines,
-        onFocusChanged: (focused) => setState(() => _focused = focused),
+        onFocusChange: (focused) => setState(() => _focused = focused),
       ),
     );
     final label = ExcludeSemantics(
@@ -450,7 +450,7 @@ class _MinimalInputRowState extends State<MinimalInputRow> {
             const MinimalGap(MinimalFieldMetrics.rowIconGap),
           ],
           Flexible(
-            child: Text(widget.label, style: t.body.c(t.mutedForeground)),
+            child: Text(widget.labelText, style: t.body.c(t.mutedForeground)),
           ),
         ],
       ),

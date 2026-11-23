@@ -61,7 +61,7 @@ MinimalDatePicker _picker(
   MinimalDatePickerMode mode = MinimalDatePickerMode.time,
   bool use24HourFormat = false,
 }) => MinimalDatePicker(
-  label: 'Starts',
+  labelText: 'Starts',
   value: DateTime(2026, 11, 20, 19, 30),
   mode: mode,
   presentation: presentation,

@@ -36,7 +36,7 @@ import 'pressable.dart';
 /// it. The hit area pads out to 44 whatever the control paints.
 ///
 /// ```dart
-/// MinimalNumberField(value: pages, min: 5, max: 50, step: 5, unit: 'pages', label: 'Pages', onChanged: setPages)
+/// MinimalNumberField(value: pages, min: 5, max: 50, step: 5, unit: 'pages', labelText: 'Pages', onChanged: setPages)
 /// ```
 class MinimalNumberField extends StatefulWidget {
   /// A number set with minus and plus.
@@ -47,7 +47,7 @@ class MinimalNumberField extends StatefulWidget {
     required this.max,
     this.step = 1,
     this.onChanged,
-    this.label,
+    this.labelText,
     this.format,
     this.unit,
   }) : assert(min <= max),
@@ -70,7 +70,7 @@ class MinimalNumberField extends StatefulWidget {
   final ValueChanged<int>? onChanged;
 
   /// What is being counted, for the buttons' announcements.
-  final String? label;
+  final String? labelText;
 
   /// How the figure prints; plain digits when omitted. Figures and symbols
   /// only (`3×`): a word goes in [unit].
@@ -92,7 +92,7 @@ class MinimalNumberField extends StatefulWidget {
       ..add(IntProperty('max', max))
       ..add(IntProperty('step', step, defaultValue: 1))
       ..add(ObjectFlagProperty<ValueChanged<int>>.has('onChanged', onChanged))
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
       ..add(ObjectFlagProperty<String Function(int)>.has('format', format))
       ..add(StringProperty('unit', unit, defaultValue: null));
   }
@@ -205,7 +205,7 @@ class _MinimalNumberFieldState extends State<MinimalNumberField> {
               ? widget.value > widget.min
               : widget.value < widget.max);
       final words = MinimalLocalizations.of(context);
-      final name = widget.label ?? words.quantity;
+      final name = widget.labelText ?? words.quantity;
       final action = direction < 0
           ? words.decrease(name)
           : words.increase(name);

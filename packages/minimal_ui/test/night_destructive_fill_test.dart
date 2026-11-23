@@ -1,6 +1,7 @@
-// By night a destructive button stands in a deep red under white words, as
-// it does by day: beside the indigo main action, Discard reads as an act to
-// take, never as a pastel that looks switched off. Danger words keep the
+// By night a destructive fill is the danger tone at 60% over the ground
+// (deeper where white words need it for 4.5:1): a red that reads as an act
+// to take, never a pastel that looks switched off, and quieter than the main
+// action beside it, so Discard is not as loud as Save. Danger words keep the
 // lighter red ink.
 import 'dart:math' as math;
 
@@ -20,9 +21,9 @@ double _contrast(Color a, Color b) {
   return (math.max(la, lb) + 0.05) / (math.min(la, lb) + 0.05);
 }
 
-Widget _host(Widget child) => MaterialApp(
+Widget _host(Widget child, {MinimalThemeData? theme}) => MaterialApp(
   builder: (context, navigator) =>
-      MinimalTheme(data: _night, child: navigator!),
+      MinimalTheme(data: theme ?? _night, child: navigator!),
   home: Scaffold(body: Center(child: child)),
 );
 
@@ -51,19 +52,33 @@ Color? _face(WidgetTester tester, String label) {
 Color? _words(WidgetTester tester, String label) =>
     tester.renderObject<RenderParagraph>(find.text(label)).text.style?.color;
 
-void _expectDangerFill(WidgetTester tester, String label) {
-  final colors = _night.colors;
-  final face = _face(tester, label);
-  final words = _words(tester, label);
-  expect(face, colors.destructive, reason: '$label stands on the danger fill');
-  expect(words, colors.destructiveForeground, reason: "$label's words");
+void _expectQuietDanger(
+  WidgetTester tester,
+  String label, {
+  MinimalThemeData? theme,
+}) {
+  final t = theme ?? _night;
+  final face = _face(tester, label)!;
+  final words = _words(tester, label)!;
+  expect(face.r, greaterThan(face.g), reason: '$label stands on a red');
+  expect(face.r, greaterThan(face.b), reason: '$label stands on a red');
   expect(
-    words!.computeLuminance(),
+    _contrast(face, t.background),
+    lessThan(_contrast(t.colors.destructive, t.background)),
+    reason: '$label stands quieter than the full danger tone',
+  );
+  expect(
+    _contrast(face, t.background),
+    lessThan(_contrast(t.primary, t.background)),
+    reason: '$label stands off the ground less than the main action',
+  );
+  expect(
+    words.computeLuminance(),
     closeTo(1, 0.001),
     reason: "$label's words are white",
   );
   expect(
-    _contrast(words, face!),
+    _contrast(words, face),
     greaterThanOrEqualTo(4.5),
     reason: "$label's words read on its face",
   );
@@ -79,7 +94,7 @@ Widget _opener(Widget Function(BuildContext context) dialog) => Builder(
 
 void main() {
   group('by night a destructive fill', () {
-    testWidgets('a destructive button stands in the deep red with white '
+    testWidgets('a destructive button stands in a quieter red with white '
         'words', (tester) async {
       await tester.pumpWidget(
         _host(
@@ -91,10 +106,10 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      _expectDangerFill(tester, 'Delete habit');
+      _expectQuietDanger(tester, 'Delete habit');
     });
 
-    testWidgets("a destructive dialog's confirm stands in the deep red with "
+    testWidgets("a destructive dialog's confirm stands in a quieter red with "
         'white words', (tester) async {
       await tester.pumpWidget(
         _host(
@@ -111,12 +126,39 @@ void main() {
       );
       await tester.tap(find.text('Open'));
       await tester.pumpAndSettle();
-      _expectDangerFill(tester, 'Delete');
+      _expectQuietDanger(tester, 'Delete');
     });
   });
 
+  group('by night in every preset', () {
+    for (final preset in MinimalThemeData.presets) {
+      testWidgets('in $preset a destructive button stands quieter than the '
+          'main one beside it, its words white', (tester) async {
+        final t = MinimalThemeData.preset(preset, Brightness.dark);
+        await tester.pumpWidget(
+          _host(
+            theme: t,
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                MinimalButton(
+                  'Discard',
+                  variant: MinimalButtonVariant.destructive,
+                  onPressed: () {},
+                ),
+                MinimalButton('Save', onPressed: () {}),
+              ],
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        _expectQuietDanger(tester, 'Discard', theme: t);
+      });
+    }
+  });
+
   group('by night among several actions', () {
-    testWidgets("a dialog's destructive action stands in the deep red with "
+    testWidgets("a dialog's destructive action stands in a quieter red with "
         'white words beside the main one', (tester) async {
       await tester.pumpWidget(
         _host(
@@ -146,7 +188,7 @@ void main() {
       );
       await tester.tap(find.text('Open'));
       await tester.pumpAndSettle();
-      _expectDangerFill(tester, 'Discard');
+      _expectQuietDanger(tester, 'Discard');
       expect(_face(tester, 'Save changes'), _night.primary);
     });
 

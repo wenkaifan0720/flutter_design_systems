@@ -14,7 +14,7 @@ flutter pub add minimal_ui
 
 ## Set up
 
-Wrap your app’s navigator in `MinimalTheme`. Add `MinimalToaster` if the app shows snack bars.
+Wrap your app’s navigator in `MinimalTheme`. Add `MinimalToaster` if the app shows snack bars. Toasts stand clear of the navigation bar, a screen's footer and any bar of your own wrapped in `RawToasterKeepClear`.
 
 ```dart
 import 'package:flutter/material.dart';
@@ -72,11 +72,11 @@ MinimalButton('Create habit', onPressed: create);
 MinimalButton('Cancel', variant: MinimalButtonVariant.secondary, onPressed: close);
 
 // A field: the label above, the hint inside, the error below.
-MinimalTextField(label: 'Name', hint: 'Stretch before bed', controller: name);
+MinimalTextField(labelText: 'Name', hintText: 'Stretch before bed', controller: name);
 
 // A select: a field-shaped row whose list opens on the field's edges.
 MinimalSelect(
-  label: 'Repeats',
+  labelText: 'Repeats',
   value: repeat,
   options: const [
     MinimalSelectOption('daily', 'Every day'),

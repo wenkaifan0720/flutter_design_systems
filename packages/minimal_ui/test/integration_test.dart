@@ -496,8 +496,12 @@ void main() {
         _app(
           const MinimalBottomSheet(
             title: 'New habit',
-            leading: MinimalSheetAction('Cancel'),
-            trailing: MinimalSheetAction('Create habit', isDefaultAction: true),
+            leading: MinimalSheetAction.cancel('Cancel'),
+            trailing: MinimalSheetAction(
+              'Create habit',
+              isDefaultAction: true,
+              onPressed: _confirm,
+            ),
             accessory: MinimalSwitch(
               value: false,
               label: 'Create another habit after this one',
@@ -634,3 +638,6 @@ void main() {
     });
   });
 }
+
+/// A sheet's confirming action that does nothing here.
+void _confirm() {}

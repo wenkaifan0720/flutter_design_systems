@@ -110,7 +110,7 @@ final List<_Case> _cases = [
     name: 'text field',
     build: (s) => SizedBox(
       width: 240,
-      child: MinimalTextField(hint: 'Name', fieldStyle: s),
+      child: MinimalTextField(hintText: 'Name', fieldStyle: s),
     ),
     themed: (s) => MinimalComponentThemes(textField: s),
     frame: 0,
@@ -283,7 +283,7 @@ void main() {
         0,
       ),
       'text field': (
-        const SizedBox(width: 240, child: MinimalTextField(hint: 'Name')),
+        const SizedBox(width: 240, child: MinimalTextField(hintText: 'Name')),
         BoxDecoration(
           color: t.card,
           borderRadius: BorderRadius.circular(8),

@@ -50,11 +50,11 @@ final Map<String, _Case> _cases = {
     mark: _icon,
   ),
   'MinimalTextField': (
-    part: const MinimalTextField(label: 'Name', icon: LucideIcons.user),
+    part: const MinimalTextField(labelText: 'Name', icon: LucideIcons.user),
     mark: _icon,
   ),
   'MinimalSearchField': (
-    part: const MinimalSearchField(hint: 'Search'),
+    part: const MinimalSearchField(hintText: 'Search'),
     mark: _icon,
   ),
   'MinimalChip': (
@@ -86,7 +86,7 @@ final Map<String, _Case> _cases = {
         MinimalToggleItem('c', label: 'Underline'),
       ],
       selected: {'a'},
-      onChanged: _ignore,
+      onSelectionChanged: _ignore,
     ),
     mark: () => find.text('Bold'),
   ),
@@ -169,7 +169,7 @@ void main() {
                 ),
               ],
               selected: {'bold'},
-              onChanged: _ignore,
+              onSelectionChanged: _ignore,
             ),
           ],
         ),

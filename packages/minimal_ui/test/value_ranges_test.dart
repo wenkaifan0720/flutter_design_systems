@@ -25,9 +25,9 @@ void main() {
       'pagination without pages': () =>
           MinimalPagination(page: 0, pageCount: _(0)),
       'page dots past the last': () =>
-          MinimalPageDots(count: 4, selectedIndex: _(4)),
+          MinimalPageDots(pageCount: 4, page: _(4)),
       'page dots without pages': () =>
-          MinimalPageDots(count: _(0), selectedIndex: 0),
+          MinimalPageDots(pageCount: _(0), page: 0),
       'rating above max': () => MinimalRating(value: _(6.0)),
       'rating below 0': () => MinimalRating(value: _(-1.0)),
       'rating without stars': () => MinimalRating(value: 0, max: _(0)),
@@ -44,7 +44,7 @@ void main() {
         divisions: _(0),
       ),
       'number field value past max': () =>
-          MinimalNumberField(label: 'Guests', value: _(9), min: 1, max: 8),
+          MinimalNumberField(labelText: 'Guests', value: _(9), min: 1, max: 8),
       'code without boxes': () => MinimalInputOtp(length: _(0)),
       'meter warning past 1': () =>
           MinimalMeter(label: 'Storage', value: 1, warningAt: _(1.5)),
@@ -88,7 +88,7 @@ void main() {
   testWidgets('the ends of each range build', (tester) async {
     for (final part in <Widget>[
       MinimalPagination(page: _(2), pageCount: 3),
-      MinimalPageDots(count: 4, selectedIndex: _(3)),
+      MinimalPageDots(pageCount: 4, page: _(3)),
       MinimalRating(value: _(5.0)),
       MinimalRating(value: _(0.0)),
       MinimalStepProgress(steps: const ['Account', 'Plan'], current: _(2)),

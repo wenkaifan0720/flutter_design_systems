@@ -12,13 +12,13 @@ import '../localizations.dart';
 import '../theme.dart';
 
 /// A control with its words round it: a select, a switch, a group of radios,
-/// a combobox, anything that brings no label of its own. The [label] over
+/// a combobox, anything that brings no label of its own. The [labelText] over
 /// it in the caption weight (a quiet asterisk after it when [required]),
-/// the [help] under it in the secondary ink, and the [error] in its place,
+/// the [helperText] under it in the secondary ink, and the [errorText] in its place,
 /// in the destructive ink, when the value is wrong.
 ///
 /// A screen reader hears the label as the control's name and the error and
-/// help as its hint, the control marked invalid while [error] is set (a
+/// help as its hint, the control marked invalid while [errorText] is set (a
 /// [MinimalTextField] or [MinimalInputGroup] in it draws its rule in the
 /// danger ink, as with an error of its own); a tap
 /// on the label focuses the control ([focusNode]). A group of controls
@@ -27,16 +27,16 @@ import '../theme.dart';
 /// [MinimalTextField] carries its own label and needs none of this.
 ///
 /// ```dart
-/// MinimalFormField(label: 'Plan', help: 'You can change it later', group: true, child: MinimalRadioGroup<String>(value: plan, onChanged: setPlan, options: const [MinimalRadioOption(value: 'free', label: 'Free'), MinimalRadioOption(value: 'pro', label: 'Pro')]))
+/// MinimalFormField(labelText: 'Plan', helperText: 'You can change it later', group: true, child: MinimalRadioGroup<String>(value: plan, onChanged: setPlan, options: const [MinimalRadioOption(value: 'free', label: 'Free'), MinimalRadioOption(value: 'pro', label: 'Pro')]))
 /// ```
 class MinimalFormField extends StatelessWidget {
   /// A field around [child].
   const MinimalFormField({
     super.key,
     required this.child,
-    this.label,
-    this.help,
-    this.error,
+    this.labelText,
+    this.helperText,
+    this.errorText,
     this.required = false,
     this.enabled = true,
     this.focusNode,
@@ -47,13 +47,13 @@ class MinimalFormField extends StatelessWidget {
   final Widget child;
 
   /// What the field is.
-  final String? label;
+  final String? labelText;
 
-  /// A quiet line under the control; the [error] replaces it.
-  final String? help;
+  /// A quiet line under the control; the [errorText] replaces it.
+  final String? helperText;
 
   /// What is wrong, or null.
-  final String? error;
+  final String? errorText;
 
   /// Whether it must be filled: an asterisk, and "required" said after the
   /// name.
@@ -74,9 +74,9 @@ class MinimalFormField extends StatelessWidget {
     final t = context.minimalTheme;
     final words = MinimalLocalizations.of(context);
     final field = RawInputDecorator(
-      labelText: label,
-      helperText: help,
-      errorText: error,
+      labelText: labelText,
+      helperText: helperText,
+      errorText: errorText,
       required: required,
       enabled: enabled,
       focusNode: focusNode,
@@ -85,7 +85,7 @@ class MinimalFormField extends StatelessWidget {
       child: child,
       builder: (context, parts) {
         final name = parts.label;
-        final help = parts.helper;
+        final helperText = parts.helper;
         final wrong = parts.error;
         return Column(
           mainAxisSize: MainAxisSize.min,
@@ -110,13 +110,13 @@ class MinimalFormField extends StatelessWidget {
               const MinimalGap(MinimalChromeMetrics.iconGap),
             ],
             MinimalFieldErrorScope(wrong: wrong != null, child: parts.control),
-            if (wrong != null || help != null) ...[
+            if (wrong != null || helperText != null) ...[
               const MinimalGap(MinimalChromeMetrics.iconGap),
               DefaultTextStyle(
                 style: t.caption.c(
                   wrong != null ? t.destructiveInk : t.mutedForeground,
                 ),
-                child: (wrong ?? help)!,
+                child: (wrong ?? helperText)!,
               ),
             ],
           ],
@@ -130,9 +130,9 @@ class MinimalFormField extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('label', label, defaultValue: null))
-      ..add(StringProperty('help', help, defaultValue: null))
-      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
+      ..add(StringProperty('helperText', helperText, defaultValue: null))
+      ..add(StringProperty('errorText', errorText, defaultValue: null))
       ..add(FlagProperty('required', value: required, ifTrue: 'required'))
       ..add(FlagProperty('enabled', value: enabled, ifFalse: 'enabled: false'))
       ..add(

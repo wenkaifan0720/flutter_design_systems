@@ -1,188 +1,149 @@
-// A dialog that asks more than yes or no (Unsaved changes: Cancel, Discard,
-// Save changes) takes a list of actions, as Material's AlertDialog does: in a
-// row at the end when they fit, stacked with the main one on top when they
-// don't, each answering the route itself, raised or in place.
+// A dialog's and a sheet's actions stand in one row while they fit, else in
+// one column of one width with the confirming action on top, raised and in
+// place, at 320 and 390 wide, at 1x and 2x text (DesignDialogActionsCheck).
 import 'package:material_ui/material_ui.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:ui_core_review/ui_core_review.dart';
 import 'package:minimal_ui/minimal_ui.dart';
 import 'package:minimal_ui/minimal_host.dart';
 
-List<RawDialogAction> _actions(BuildContext context, {VoidCallback? save}) => [
-  RawDialogAction(
-    label: 'Cancel',
-    onPressed: () => Navigator.of(context).pop('cancel'),
+Widget _app(void Function(BuildContext context) open) => MaterialApp(
+  builder: (context, app) => MinimalHost(
+    light: MinimalThemeData.preset('standard', Brightness.light),
+    dark: MinimalThemeData.preset('standard', Brightness.dark),
+    brightness: Brightness.light,
+    child: app!,
   ),
-  RawDialogAction(
-    label: 'Discard',
-    isDestructiveAction: true,
-    onPressed: () => Navigator.of(context).pop('discard'),
-  ),
-  RawDialogAction(
-    label: 'Save changes',
-    isDefaultAction: true,
-    onPressed: save ?? () => Navigator.of(context).pop('save'),
-  ),
-];
-
-Widget _app(Widget home, {double textScale = 1}) => MaterialApp(
-  debugShowCheckedModeBanner: false,
-  builder: (context, navigator) => MediaQuery(
-    data: MediaQuery.of(context)
-        .copyWith(textScaler: TextScaler.linear(textScale)),
-    child: MinimalHost(
-      light: MinimalThemeData.preset('standard', Brightness.light),
-      dark: MinimalThemeData.preset('standard', Brightness.dark),
-      brightness: Brightness.light,
-      child: navigator!,
+  home: Scaffold(
+    body: Builder(
+      builder: (context) =>
+          Center(child: MinimalButton('Open', onPressed: () => open(context))),
     ),
   ),
-  home: MinimalScaffold(padding: EdgeInsets.zero, body: home),
 );
 
-void _size(WidgetTester tester, double width) {
+void _view(WidgetTester tester, double width, double scale) {
+  tester.view.physicalSize = Size(width, 844);
   tester.view.devicePixelRatio = 1;
-  tester.view.physicalSize = Size(width, 800);
+  tester.platformDispatcher.textScaleFactorTestValue = scale;
   addTearDown(tester.view.reset);
+  addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
 }
 
 void main() {
-  setUpAll(minimalLoadFonts);
-
-  testWidgets('raised, three actions stand in a row and each answers', (
-    tester,
-  ) async {
-    _size(tester, 1440);
-    Object? answer = 'none';
-    await tester.pumpWidget(
-      _app(
-        Builder(
-          builder: (context) => TextButton(
-            onPressed: () async {
-              answer = await showMinimalDialog<String>(
+  const sets = [
+    ['Keep', 'Delete'],
+    ['Cancel', 'Discard', 'Save changes'],
+  ];
+  for (final actions in sets) {
+    for (final width in [320.0, 390.0]) {
+      for (final scale in [1.0, 2.0]) {
+        final at = '${width.round()} wide, ${scale}x text';
+        testWidgets('a dialog: ${actions.join(', ')} at $at', (tester) async {
+          _view(tester, width, scale);
+          await tester.pumpWidget(
+            _app(
+              (context) => showMinimalDialog<void>(
                 context,
                 builder: (context) => MinimalDialog(
-                  title: 'Unsaved changes',
-                  message: 'Save your changes before leaving this task?',
-                  actions: _actions(context),
-                ),
-              );
-            },
-            child: const Text('open'),
-          ),
-        ),
-      ),
-    );
-    await tester.tap(find.text('open'));
-    await tester.pumpAndSettle();
-    final cancel = tester.getRect(find.text('Cancel'));
-    final discard = tester.getRect(find.text('Discard'));
-    final save = tester.getRect(find.text('Save changes'));
-    // One row, in the order given, the main one at the end.
-    expect(discard.center.dy, closeTo(cancel.center.dy, 0.5));
-    expect(save.center.dy, closeTo(cancel.center.dy, 0.5));
-    expect(cancel.right, lessThan(discard.left));
-    expect(discard.right, lessThan(save.left));
-    // With a destructive answer, the focus opens on the safe one.
-    final focused = FocusManager.instance.primaryFocus!.context!;
-    expect(
-      find.descendant(
-        of: find.byWidget(focused.widget),
-        matching: find.text('Cancel'),
-      ),
-      findsOneWidget,
-    );
-    await tester.tap(find.text('Save changes'));
-    await tester.pumpAndSettle();
-    expect(answer, 'save');
-    expect(find.text('Unsaved changes'), findsNothing);
-  });
-
-  testWidgets(
-    'raised on a phone at large text, they stack, the main one on top',
-    (tester) async {
-      _size(tester, 390);
-      await tester.pumpWidget(
-        _app(
-          Builder(
-            builder: (context) => TextButton(
-              onPressed: () => showMinimalDialog<String>(
-                context,
-                builder: (context) => MinimalDialog(
-                  title: 'Unsaved changes',
-                  actions: _actions(context),
+                  title: 'Leave without saving?',
+                  message: 'Your changes to this habit go.',
+                  actions: [
+                    for (final (i, a) in actions.indexed)
+                      RawDialogAction(
+                        label: a,
+                        onPressed: () {},
+                        isDefaultAction: i == actions.length - 1,
+                        isDestructiveAction: a == 'Delete' || a == 'Discard',
+                      ),
+                  ],
                 ),
               ),
-              child: const Text('open'),
             ),
-          ),
-          textScale: 2,
-        ),
-      );
-      await tester.tap(find.text('open'));
-      await tester.pumpAndSettle();
-      final cancel = tester.getRect(find.text('Cancel'));
-      final discard = tester.getRect(find.text('Discard'));
-      final save = tester.getRect(find.text('Save changes'));
-      expect(save.bottom, lessThanOrEqualTo(discard.top));
-      expect(discard.bottom, lessThanOrEqualTo(cancel.top));
-      await tester.tap(find.text('Discard'));
-      await tester.pumpAndSettle();
-      expect(find.text('Unsaved changes'), findsNothing);
-    },
-  );
+          );
+          await tester.tap(find.text('Open'));
+          await tester.pumpAndSettle();
+          expect(tester.takeException(), isNull);
+          DesignDialogActionsCheck(
+            look: 'Minimal',
+            actions: actions,
+          ).check(tester.element(find.byType(MinimalDialog))).verify();
+        });
 
-  testWidgets('in place, each action wears its register and Enter saves', (
-    tester,
-  ) async {
-    _size(tester, 1440);
-    var saved = 0;
-    await tester.pumpWidget(
-      _app(
-        Center(
-          child: Builder(
-            builder: (context) => MinimalDialog(
-              title: 'Unsaved changes',
-              autofocus: true,
-              actions: _actions(context, save: () => saved++),
-            ),
-          ),
-        ),
-      ),
-    );
-    await tester.pumpAndSettle();
-    MinimalButtonVariant variant(String label) => tester
-        .widget<MinimalButton>(find.widgetWithText(MinimalButton, label))
-        .variant;
-    expect(variant('Cancel'), MinimalButtonVariant.secondary);
-    expect(variant('Discard'), MinimalButtonVariant.destructive);
-    expect(variant('Save changes'), MinimalButtonVariant.primary);
-    await tester.sendKeyEvent(LogicalKeyboardKey.enter);
-    await tester.pump();
-    expect(saved, 1);
-  });
-
-  testWidgets(
-    'in place, when they do not share a line, the main one is on top',
-    (tester) async {
-      _size(tester, 390);
-      await tester.pumpWidget(
-        _app(
-          Center(
-            child: Builder(
-              builder: (context) => MinimalDialog(
-                title: 'Unsaved changes',
-                actions: _actions(context, save: () {}),
+        testWidgets('a dialog in place: ${actions.join(', ')} at $at', (
+          tester,
+        ) async {
+          _view(tester, width, scale);
+          await tester.pumpWidget(
+            MaterialApp(
+              builder: (context, app) => MinimalHost(
+                light: MinimalThemeData.preset('standard', Brightness.light),
+                dark: MinimalThemeData.preset('standard', Brightness.dark),
+                brightness: Brightness.light,
+                child: app!,
+              ),
+              home: Scaffold(
+                body: Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: MinimalDialog(
+                      title: 'Leave without saving?',
+                      message: 'Your changes to this habit go.',
+                      actions: [
+                        for (final (i, a) in actions.indexed)
+                          RawDialogAction(
+                            label: a,
+                            onPressed: () {},
+                            isDefaultAction: i == actions.length - 1,
+                            isDestructiveAction:
+                                a == 'Delete' || a == 'Discard',
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
               ),
             ),
+          );
+          await tester.pumpAndSettle();
+          expect(tester.takeException(), isNull);
+          DesignDialogActionsCheck(
+            look: 'Minimal',
+            actions: actions,
+          ).check(tester.element(find.byType(MinimalDialog))).verify();
+        });
+      }
+    }
+  }
+
+  for (final width in [320.0, 390.0]) {
+    for (final scale in [1.0, 2.0]) {
+      final at = '${width.round()} wide, ${scale}x text';
+      testWidgets('a sheet: Cancel, Save changes at $at', (tester) async {
+        _view(tester, width, scale);
+        await tester.pumpWidget(
+          _app(
+            (context) => showMinimalBottomSheet<void>(
+              context,
+              title: 'Rename habit',
+              leading: const MinimalSheetAction.cancel('Cancel'),
+              trailing: MinimalSheetAction(
+                'Save changes',
+                isDefaultAction: true,
+                onPressed: () {},
+              ),
+              builder: (_) => const Text('Morning walk'),
+            ),
           ),
-          textScale: 2,
-        ),
-      );
-      await tester.pumpAndSettle();
-      final cancel = tester.getRect(find.text('Cancel'));
-      final save = tester.getRect(find.text('Save changes'));
-      expect(save.bottom, lessThanOrEqualTo(cancel.top));
-    },
-  );
+        );
+        await tester.tap(find.text('Open'));
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull);
+        const DesignDialogActionsCheck(
+          look: 'Minimal',
+          actions: ['Cancel', 'Save changes'],
+        ).check(tester.element(find.text('Morning walk'))).verify();
+      });
+    }
+  }
 }

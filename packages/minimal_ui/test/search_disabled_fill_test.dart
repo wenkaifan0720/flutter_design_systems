@@ -31,7 +31,7 @@ void main() {
       themedPage(
         const Column(
           children: [
-            MinimalSearchField(hint: 'Search archived', enabled: false),
+            MinimalSearchField(hintText: 'Search archived', enabled: false),
             MinimalSearchEntry(label: 'Search archive'),
           ],
         ),

@@ -4,6 +4,8 @@
 // face and lays the pressable's wash and ring over it. Not exported. It
 // names no type of button.dart's, so a copy of the button (renaming its
 // variant and size) still paints through it.
+import 'dart:math' as math;
+
 import 'package:flutter/widgets.dart';
 
 import '../chrome_metrics.dart';
@@ -41,6 +43,30 @@ enum MinimalButtonScale {
   large,
 }
 
+/// The destructive fill and the words on it. By day, the danger tone. By
+/// night the full tone stands off the dark ground as hard as the accent
+/// does, so a Discard would shout over the Save beside it: the fill is the
+/// tone at 60% over the ground, as shadcn's dark destructive is, deeper where
+/// that leaves white words under 4.5:1, and the words are white.
+(Color, Color) minimalDangerFill(MinimalThemeData t) {
+  if (t.isLightAppearance) return (t.destructive, t.destructiveForeground);
+  const white = Color(0xFFFFFFFF);
+  double contrast(Color a, Color b) {
+    final la = a.computeLuminance();
+    final lb = b.computeLuminance();
+    return (math.max(la, lb) + 0.05) / (math.min(la, lb) + 0.05);
+  }
+
+  for (var share = 0.6; share > 0.2; share -= 0.05) {
+    final fill = Color.alphaBlend(
+      t.destructive.withValues(alpha: share),
+      t.background,
+    );
+    if (contrast(white, fill) >= 4.5) return (fill, white);
+  }
+  return (t.destructive, t.destructiveForeground);
+}
+
 /// A `MinimalButton`'s paint for [tone], [scale] and [style], at the theme
 /// in force where it is made.
 class MinimalButtonPaint {
@@ -59,15 +85,12 @@ class MinimalButtonPaint {
       MinimalButtonTone.ghost => t.components.ghostButton,
       MinimalButtonTone.destructive => t.components.destructiveButton,
     };
+    final danger = minimalDangerFill(t);
     final (bg, fg, border) = switch (tone) {
       MinimalButtonTone.primary => (t.primary, t.primaryForeground, null),
       MinimalButtonTone.secondary => (t.card, t.foreground, t.border),
       MinimalButtonTone.ghost => (null, t.foreground, null),
-      MinimalButtonTone.destructive => (
-        t.destructive,
-        t.destructiveForeground,
-        null,
-      ),
+      MinimalButtonTone.destructive => (danger.$1, danger.$2, null),
     };
     final (height, hPad, iconSize, type) = switch (scale) {
       MinimalButtonScale.small => (

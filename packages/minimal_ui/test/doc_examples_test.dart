@@ -130,6 +130,7 @@ final RawDateRange stay = RawDateRange(
 );
 const Color colour = Color(0xFF2563EB);
 const String plan = 'free';
+const String value = 'pro';
 const String city = 'Lisbon';
 const String sort = 'Name';
 const List<MinimalMenuItem> sorts = [
@@ -335,7 +336,7 @@ final Map<String, DocExample> _examples = {
     );
   },
   'MinimalDateRangePicker': (context) => MinimalDateRangePicker(
-    label: 'Stay',
+    labelText: 'Stay',
     firstDate: DateTime(2026),
     lastDate: DateTime(2027),
     value: stay,
@@ -391,13 +392,13 @@ final Map<String, DocExample> _examples = {
     swatches: [Color(0xFF2563EB), Color(0xFF16A34A)],
   ),
   'MinimalCombobox': (context) => const MinimalCombobox<String>(
-    label: 'City',
+    labelText: 'City',
     options: ['Lisbon', 'London', 'Lyon'],
     value: city,
     onSelected: setCity,
   ),
   'MinimalMultiSelect': (context) => const MinimalMultiSelect<String>(
-    label: 'Labels',
+    labelText: 'Labels',
     values: labels,
     options: ['Bug', 'Design', 'Docs'],
     onChanged: setLabels,
@@ -460,7 +461,7 @@ final Map<String, DocExample> _examples = {
         onSelectionChanged: setChosen,
       ),
   'MinimalDatePicker': (context) => MinimalDatePicker(
-    label: 'Reminder',
+    labelText: 'Reminder',
     value: remindAt,
     mode: MinimalDatePickerMode.time,
     onChanged: setRemindAt,
@@ -550,14 +551,14 @@ final Map<String, DocExample> _examples = {
   'MinimalInputRow': (context) {
     final name = _own(TextEditingController());
     return MinimalInputRow(
-      label: 'Name',
+      labelText: 'Name',
       controller: name,
-      hint: 'Stretch before bed',
+      hintText: 'Stretch before bed',
     );
   },
   'MinimalFormField': (context) => const MinimalFormField(
-    label: 'Plan',
-    help: 'You can change it later',
+    labelText: 'Plan',
+    helperText: 'You can change it later',
     group: true,
     child: MinimalRadioGroup<String>(
       value: plan,
@@ -601,15 +602,15 @@ final Map<String, DocExample> _examples = {
   'MinimalTextField': (context) {
     final name = _own(TextEditingController());
     return MinimalTextField(
-      label: 'Name',
-      hint: 'Stretch before bed',
+      labelText: 'Name',
+      hintText: 'Stretch before bed',
       controller: name,
     );
   },
   'MinimalInputGroup': (context) {
     final site = _own(TextEditingController());
     return MinimalInputGroup(
-      label: 'Website',
+      labelText: 'Website',
       prefixText: 'https://',
       suffixText: '.com',
       controller: site,
@@ -618,14 +619,14 @@ final Map<String, DocExample> _examples = {
   'MinimalPasswordField': (context) {
     final password = _own(TextEditingController());
     return MinimalPasswordField(
-      label: 'Password',
+      labelText: 'Password',
       controller: password,
       onSubmitted: (_) => signIn(),
     );
   },
   'MinimalInputOtp': (context) => const MinimalInputOtp(
     length: 6,
-    label: 'Code from your email',
+    labelText: 'Code from your email',
     onCompleted: verify,
   ),
   'MinimalLink': (context) =>
@@ -787,9 +788,9 @@ final Map<String, DocExample> _examples = {
   'MinimalPageDots': (context) {
     final controller = _own(PageController());
     return MinimalPageDots(
-      count: 4,
-      selectedIndex: page,
-      onChanged: controller.jumpToPage,
+      pageCount: 4,
+      page: page,
+      onPageChanged: controller.jumpToPage,
     );
   },
   'MinimalStepProgress': (context) =>
@@ -806,7 +807,7 @@ final Map<String, DocExample> _examples = {
   'MinimalSelectOption': (context) =>
       const MinimalSelectOption('evening', 'Evening', icon: LucideIcons.moon),
   'MinimalSelect': (context) => const MinimalSelect(
-    label: 'Repeats',
+    labelText: 'Repeats',
     value: repeat,
     options: repeats,
     onChanged: setRepeat,
@@ -873,6 +874,8 @@ final Map<String, DocExample> _examples = {
     label: 'Pro',
     onPressed: () => setPlan('pro'),
   ),
+  'MinimalRadio.mark': (context) =>
+      const MinimalRadio.mark(selected: value == plan),
   'MinimalRadioGroup': (context) => const MinimalRadioGroup<String>(
     value: plan,
     onChanged: setPlan,
@@ -911,7 +914,7 @@ final Map<String, DocExample> _examples = {
   'MinimalSearchField': (context) {
     void filter(String query) {}
     return MinimalSearchField(
-      hint: 'Search habits',
+      hintText: 'Search habits',
       onChanged: filter,
       clearable: true,
     );
@@ -994,7 +997,7 @@ final Map<String, DocExample> _examples = {
         label: 'Create another',
         showLabel: true,
       ),
-      leading: MinimalSheetAction('Cancel'),
+      leading: MinimalSheetAction.cancel('Cancel'),
       trailing: MinimalSheetAction(
         'Create habit',
         onPressed: create,
@@ -1007,7 +1010,11 @@ final Map<String, DocExample> _examples = {
     title: 'New habit',
     subtitle: 'Habits',
     floating: true,
-    trailing: MinimalSheetAction('Create habit', isDefaultAction: true),
+    trailing: MinimalSheetAction(
+      'Create habit',
+      onPressed: create,
+      isDefaultAction: true,
+    ),
     child: form,
   ),
   'showMinimalBottomSheet': (context) => _later(() async {
@@ -1099,7 +1106,7 @@ final Map<String, DocExample> _examples = {
       max: 50,
       step: 5,
       unit: 'pages',
-      label: 'Pages',
+      labelText: 'Pages',
       onChanged: setPages,
     );
   },
@@ -1164,13 +1171,13 @@ final Map<String, DocExample> _examples = {
   'MinimalTextArea': (context) {
     final notes = _own(TextEditingController());
     return MinimalTextArea(
-      label: 'Notes',
-      hint: 'Anything the team should know',
+      labelText: 'Notes',
+      hintText: 'Anything the team should know',
       controller: notes,
     );
   },
   'MinimalTimePicker': (context) => MinimalTimePicker(
-    label: 'Remind me at',
+    labelText: 'Remind me at',
     value: remindAt,
     onChanged: (v) => setState(() => remindAt = v),
   ),
@@ -1205,8 +1212,8 @@ final Map<String, DocExample> _examples = {
       MinimalToggleItem('i', icon: LucideIcons.italic, semanticLabel: 'Italic'),
     ],
     selected: formats,
-    multiple: true,
-    onChanged: setFormats,
+    multiSelectionEnabled: true,
+    onSelectionChanged: setFormats,
   ),
   'MinimalTooltip': (context) => const MinimalTooltip(
     message: 'Archive',

@@ -47,13 +47,13 @@ enum MinimalSearchPresentation {
 /// whole 44 px touch target.
 ///
 /// ```dart
-/// MinimalSearchField(hint: 'Search habits', onChanged: filter, clearable: true)
+/// MinimalSearchField(hintText: 'Search habits', onChanged: filter, clearable: true)
 /// ```
 class MinimalSearchField extends StatefulWidget {
   /// A search field.
   const MinimalSearchField({
     super.key,
-    this.hint,
+    this.hintText,
     this.presentation = MinimalSearchPresentation.inline,
     this.controller,
     this.onChanged,
@@ -65,7 +65,7 @@ class MinimalSearchField extends StatefulWidget {
     this.showCancel = false,
     this.clearable = false,
     this.onCancel,
-    this.onFocusChanged,
+    this.onFocusChange,
     this.scopes = const <String>[],
     this.scopeIndex = 0,
     this.onScopeChanged,
@@ -73,7 +73,7 @@ class MinimalSearchField extends StatefulWidget {
   });
 
   /// What an empty field says.
-  final String? hint;
+  final String? hintText;
 
   /// Inline in a page, or in a bar with a Cancel.
   final MinimalSearchPresentation presentation;
@@ -116,7 +116,7 @@ class MinimalSearchField extends StatefulWidget {
   final VoidCallback? onCancel;
 
   /// Reports when it gains or loses focus.
-  final ValueChanged<bool>? onFocusChanged;
+  final ValueChanged<bool>? onFocusChange;
 
   /// What the search runs over (`All`, `Open`, `Done`): two or more print a
   /// tab row under the field.
@@ -141,7 +141,7 @@ class MinimalSearchField extends StatefulWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
       ..add(
         EnumProperty<MinimalSearchPresentation>(
           'presentation',
@@ -185,8 +185,8 @@ class MinimalSearchField extends StatefulWidget {
       ..add(ObjectFlagProperty<VoidCallback>.has('onCancel', onCancel))
       ..add(
         ObjectFlagProperty<ValueChanged<bool>>.has(
-          'onFocusChanged',
-          onFocusChanged,
+          'onFocusChange',
+          onFocusChange,
         ),
       )
       ..add(IterableProperty<String>('scopes', scopes))
@@ -210,7 +210,7 @@ class _MinimalSearchFieldState extends State<MinimalSearchField>
   FocusNode? get externalFocusNode => widget.focusNode;
 
   @override
-  void focusChanged(bool focused) => widget.onFocusChanged?.call(focused);
+  void focusChanged(bool focused) => widget.onFocusChange?.call(focused);
 
   @override
   void didUpdateWidget(MinimalSearchField old) {
@@ -266,7 +266,7 @@ class _MinimalSearchFieldState extends State<MinimalSearchField>
       autofocus: widget.autofocus,
       textInputAction: TextInputAction.search,
       style: t.body,
-      hint: widget.hint ?? MinimalLocalizations.of(context).search,
+      hint: widget.hintText ?? MinimalLocalizations.of(context).search,
       hintStyle: t.body.c(t.mutedForeground),
     );
     // The line by its capitals, as every label beside it: caret, hint and

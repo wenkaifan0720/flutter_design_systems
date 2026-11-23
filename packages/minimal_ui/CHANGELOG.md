@@ -1,3 +1,44 @@
+## 0.5.0
+
+- Needs ui_core 0.5.1.
+- Field words take `InputDecoration`'s names: `label` is `labelText`, `hint` is `hintText`, `helper` (and `MinimalFormField.help`) is `helperText`, `error` is `errorText`, and `MinimalSelect.prompt` is `hintText`, on `MinimalDatePicker`, `MinimalDateRangePicker`, `MinimalCombobox`, `MinimalMultiSelect`, `MinimalTextField`, `MinimalSearchField`, `MinimalComposer`, `MinimalFormField`, `MinimalTextArea`, `MinimalInputGroup`, `MinimalPasswordField`, `MinimalInputOtp`, `MinimalInputRow`, `MinimalTimePicker`, `MinimalSelect`, `MinimalNumberField`, `MinimalCommand`. `dart fix` renames them.
+- `MinimalToggleGroup`: `onChanged` is `onSelectionChanged`, `multiple` is `multiSelectionEnabled`, `allowEmpty` is `emptySelectionAllowed`, as Flutter names them. `dart fix` renames them.
+- `MinimalDatePicker`: `first` is `firstDate`, `last` is `lastDate`, `today` is `currentDate`, as Flutter names them. `dart fix` renames them.
+- `MinimalCalendar`: `today` is `currentDate`, as Flutter names it. `dart fix` renames it.
+- `MinimalDateRangePicker`: `today` is `currentDate`, as Flutter names it. `dart fix` renames it.
+- `MinimalCombobox`: `displayString` is `displayStringForOption`, as Flutter names it. `dart fix` renames it.
+- `MinimalMultiSelect`: `displayString` is `displayStringForOption`, as Flutter names it. `dart fix` renames it.
+- `MinimalTextField`: `onFocusChanged` is `onFocusChange`, as Flutter names it. `dart fix` renames it.
+- `MinimalSearchField`: `onFocusChanged` is `onFocusChange`, as Flutter names it. `dart fix` renames it.
+- `MinimalDisclosure`: `onChanged` is `onExpansionChanged`, `leading` is `icon`, as Flutter names them. `dart fix` renames them.
+- `MinimalPageDots`: `count` is `pageCount`, `selectedIndex` is `page`, `onChanged` is `onPageChanged`, as Flutter names them. `dart fix` renames them.
+- `MinimalComposer`: `style` is `variant`, as Flutter names it. `dart fix` renames it.
+- `MinimalRadioOption`: `description` is `subtitle`, as Flutter names it. `dart fix` renames it.
+- `MinimalMenuItem`: `destructive` is `isDestructiveAction`, as Flutter names it. `dart fix` renames it.
+- `MinimalComposerAction`: `style` is `variant`, as Flutter names it. `dart fix` renames it.
+- `MinimalComposerStyle` is `MinimalComposerVariant`, and `MinimalTextTheme.of` is `MinimalTextTheme.from`. `dart fix` renames them.
+- `MinimalThemeData.lerp` is static, `MinimalThemeData.lerp(a, b, t)`, as `ThemeData.lerp` is.
+- `MinimalSheetAction.onPressed` is required and may be null, as `ElevatedButton.onPressed` is: a null callback disables the action. An action that only closes its sheet is `MinimalSheetAction.cancel(label)`.
+- `MinimalRadio.onPressed` is required and may be null, and `enabled` is gone: a null `onPressed` disables the radio. The mark alone, for a row that takes the press itself, is `MinimalRadio.mark(selected: ...)`.
+- `MinimalMultiSelect.enabled` is gone: a null `onChanged` disables the field.
+- A sheet's actions sit side by side while they fit, on one line with its accessory (a "create another" switch) when there is room, and stack once they don't (ui_core's `RawActionBar`).
+- A dialog in place stacks its actions as wide as its card, the main one on top, as a raised one does (ui_core's `RawActionBar`). Before, stacked, each kept its own width at the card's end.
+- A field's label names it for a screen reader, and its error and help are its hint, with the field marked invalid while in error (ui_core's `RawInputDecorator`).
+- A combobox's and a multi-select's text input say whether their list is open (expanded).
+- The date range picker's calendar opens on the side where its whole month fits (`RawPopoverFit.whole`).
+- A select's sheet opens with its chosen option focused, so the keys go on from it, as its menu does; `MinimalSelectionList.autofocus` does the same for a list of your own.
+- A date picker's calendar, in its popover or its sheet, opens with the focus on its chosen day, so the arrow keys walk on from it; `MinimalDatePicker.autofocus` does the same for an inline one. Before, the focus stayed on the popover (or, in the sheet, nowhere).
+- A chart writes its figures in the reader's digits and separators (German's 1,5), its scale's gutter measured by ui_core (`DesignChartValueFormat`, `DesignScaleTick.widestLabel`); the line, area and pie charts still write thousands as 1.2k and 12k.
+- Toasts keep clear of whatever bar runs along the screen's foot (the navigation bar, a screen's footer) through ui_core's `RawToasterKeepClear`, rising and settling as the bar comes and goes. A bar of your own does the same wrapped in `RawToasterKeepClear`.
+- `MinimalPageFoot` goes: wrap a footer of your own in ui_core's `RawToasterKeepClear` to keep toasts clear of it; `MinimalScaffold.footer` already does.
+- By night a destructive fill is the danger tone at 60% over the ground (less where its white words need it for 4.5:1), quieter than the accent, so Discard is not as loud as Save.
+- A menu bar's items stand 44 px tall on touch; 32 with a pointer, as before.
+- A `MinimalMenu.button` in a `MinimalListTile`'s trailing slot is ghost: its glyph alone, in the row's quiet ink, with no hairline square at rest. Elsewhere it keeps the square.
+- The date range picker ends in the up-down chevron, as the select and the combobox do.
+- `MinimalMultiSelect.onChanged` may be null, which disables the field as `enabled: false` does: it dims, its tags lose their remove keys and it takes no typing.
+- `MinimalColorPicker.onChanged` may be null, which disables the picker: it dims, and its area, sliders, hex field and swatches take no press, drag, typing or focus.
+- `MinimalComposer.model` defaults to null: the comment box's pill shows only when `model` and `onModel` are both set, never a default "Everyday" label.
+
 ## 0.4.1
 
 - Stands on ui_core 0.4.1. `MinimalMenuEntry` takes `isDestructiveAction`: a menu bar command that destroys something (Delete) stands in the destructive ink, as a `MinimalMenuItem` marked `destructive` does.

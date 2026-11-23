@@ -12,7 +12,7 @@ void main() {
     await tester.pumpWidget(
       themedPage(
         MinimalDateRangePicker(
-          label: 'Stay',
+          labelText: 'Stay',
           firstDate: DateTime(2026),
           lastDate: DateTime(2027),
           onChanged: (_) {},

@@ -102,11 +102,11 @@ final DesignAlignmentMatrix minimalAlignment = DesignAlignmentMatrix(
         ),
         DesignAlignmentEntry(
           DesignInlineControl.textField,
-          (context, label) => MinimalTextField(hint: label),
+          (context, label) => MinimalTextField(hintText: label),
         ),
         DesignAlignmentEntry(
           DesignInlineControl.searchField,
-          (context, label) => MinimalSearchField(hint: label),
+          (context, label) => MinimalSearchField(hintText: label),
         ),
         DesignAlignmentEntry(
           DesignInlineControl.segmentedButton,
@@ -266,16 +266,16 @@ void main() {
       },
       entries: {
         'Text field': (context, controller, hint) =>
-            MinimalTextField(controller: controller, hint: hint),
+            MinimalTextField(controller: controller, hintText: hint),
         'Search field': (context, controller, hint) =>
-            MinimalSearchField(controller: controller, hint: hint),
+            MinimalSearchField(controller: controller, hintText: hint),
         'Composer': (context, controller, hint) =>
-            MinimalComposer(controller: controller, hint: hint),
+            MinimalComposer(controller: controller, hintText: hint),
         'Input group': (context, controller, hint) =>
-            MinimalInputGroup(controller: controller, hint: hint),
+            MinimalInputGroup(controller: controller, hintText: hint),
         'Combobox': (context, controller, hint) => MinimalCombobox<String>(
           controller: controller,
-          hint: hint,
+          hintText: hint,
           options: const ['Lisbon', 'London', 'Lyon'],
         ),
       },

@@ -140,7 +140,7 @@ void main() {
               ),
               MinimalToggleGroup<String>(
                 selected: const {'list'},
-                onChanged: (_) {},
+                onSelectionChanged: (_) {},
                 items: const [
                   MinimalToggleItem('list', label: 'List'),
                   MinimalToggleItem('board', label: 'Board'),
@@ -208,7 +208,7 @@ void main() {
     testWidgets('an input group\'s add-ons give way to its field in a narrow '
         'column, and it still sits in an IntrinsicWidth', (tester) async {
       const group = MinimalInputGroup(
-        hint: 'site',
+        hintText: 'site',
         prefixText: 'https://',
         suffixText: '.example.com',
       );
@@ -259,9 +259,9 @@ void main() {
       await tester.pumpWidget(
         _host(
           MinimalTextArea(
-            label: 'Notes',
-            hint: 'Anything to remember',
-            error: 'Too long',
+            labelText: 'Notes',
+            hintText: 'Anything to remember',
+            errorText: 'Too long',
             onChanged: typed.add,
           ),
         ),
@@ -354,7 +354,7 @@ void main() {
           MinimalRadioOption(
             value: 'pro',
             label: 'Pro',
-            description: 'Unlimited projects',
+            subtitle: 'Unlimited projects',
           ),
           MinimalRadioOption(value: 'team', label: 'Team', enabled: false),
         ],
@@ -541,7 +541,7 @@ void main() {
       await tester.pumpWidget(
         _host(
           MinimalTimePicker(
-            label: 'Reminder',
+            labelText: 'Reminder',
             value: DateTime(2026, 1, 1, 7, 5),
             onChanged: (_) {},
           ),
@@ -739,7 +739,7 @@ void main() {
       final handle = tester.ensureSemantics();
       final seen = <int>[];
       await tester.pumpWidget(
-        _host(MinimalPageDots(count: 4, selectedIndex: 1, onChanged: seen.add)),
+        _host(MinimalPageDots(pageCount: 4, page: 1, onPageChanged: seen.add)),
       );
       // One adjustable control, hugging its dots: its value is the page.
       final control = find
@@ -847,7 +847,7 @@ void main() {
         _host(
           MinimalDisclosure(
             title: 'Shipping',
-            onChanged: seen.add,
+            onExpansionChanged: seen.add,
             child: const Text('Two to four days.'),
           ),
           still: true,
@@ -1478,9 +1478,9 @@ void main() {
       'MinimalLink': () =>
           MinimalLink('Terms of service', onPressed: () {}, external: true),
       'MinimalTextArea': () => const MinimalTextArea(
-        label: 'Notes',
-        hint: 'Anything to remember',
-        helper: 'Only you can see these',
+        labelText: 'Notes',
+        hintText: 'Anything to remember',
+        helperText: 'Only you can see these',
       ),
       'MinimalFileUpload': () => MinimalFileUpload(
         title: 'Drop files here',
@@ -1500,14 +1500,14 @@ void main() {
           MinimalRadioOption(
             value: 'pro',
             label: 'Pro',
-            description: 'Unlimited projects and guests',
+            subtitle: 'Unlimited projects and guests',
           ),
         ],
       ),
       'MinimalRating': () =>
           MinimalRating(value: 3, label: 'Rating', onChanged: (_) {}),
       'MinimalTimePicker': () => MinimalTimePicker(
-        label: 'Reminder',
+        labelText: 'Reminder',
         value: DateTime(2026, 1, 1, 7, 30),
         onChanged: (_) {},
       ),
@@ -1532,7 +1532,7 @@ void main() {
       'MinimalPagination': () =>
           MinimalPagination(page: 4, pageCount: 12, onPageChanged: (_) {}),
       'MinimalPageDots': () =>
-          MinimalPageDots(count: 4, selectedIndex: 1, onChanged: (_) {}),
+          MinimalPageDots(pageCount: 4, page: 1, onPageChanged: (_) {}),
       'MinimalStepProgress': () => const MinimalStepProgress(
         steps: ['Account', 'Plan', 'Payment', 'Done'],
         current: 1,

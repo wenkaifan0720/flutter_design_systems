@@ -90,7 +90,7 @@ void main() {
         _host(
           StatefulBuilder(
             builder: (context, setState) => MinimalCombobox<String>(
-              label: 'Fruit',
+              labelText: 'Fruit',
               options: _fruit,
               value: value,
               onSelected: (o) => setState(() => value = o),
@@ -135,7 +135,7 @@ void main() {
       await tester.pumpWidget(
         _host(
           MinimalCombobox<String>(
-            label: 'Fruit',
+            labelText: 'Fruit',
             options: _fruit,
             value: 'Banana',
             onSelected: (_) {},
@@ -167,7 +167,7 @@ void main() {
       await tester.pumpWidget(
         _host(
           MinimalCombobox<String>(
-            label: 'Time zone',
+            labelText: 'Time zone',
             options: many,
             value: 'Zone 21',
             onSelected: (_) {},
@@ -191,7 +191,7 @@ void main() {
       await tester.pumpWidget(
         _host(
           MinimalCombobox<String>(
-            label: 'Fruit',
+            labelText: 'Fruit',
             options: _fruit,
             onSelected: (_) {},
           ),
@@ -214,7 +214,7 @@ void main() {
       _host(
         StatefulBuilder(
           builder: (context, setState) => MinimalMultiSelect<String>(
-            label: 'Colours',
+            labelText: 'Colours',
             values: values,
             options: _colours,
             onChanged: (v) => setState(() => values = v),

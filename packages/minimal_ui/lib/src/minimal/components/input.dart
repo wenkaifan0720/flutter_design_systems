@@ -7,6 +7,7 @@ import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
+import 'package:ui_core/ui_core.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../chrome_metrics.dart';
@@ -48,8 +49,8 @@ import 'pressable.dart';
 /// more, with no ring outside the box.
 ///
 /// A caller that prints and announces the field's name and failure itself
-/// (a form kit with its own announcement rules) passes no [label] and no
-/// [error]: [invalid] then paints the error register, the danger rule and
+/// (a form kit with its own announcement rules) passes no [labelText] and no
+/// [errorText]: [invalid] then paints the error register, the danger rule and
 /// ring, with no message of the field's own, and [fieldBuilder] wraps the
 /// input in what it says, inside the field's own node.
 ///
@@ -58,15 +59,15 @@ import 'pressable.dart';
 /// editor wants, in [style] (bodyLarge unless stated).
 ///
 /// ```dart
-/// MinimalTextField(label: 'Name', hint: 'Stretch before bed', controller: name)
+/// MinimalTextField(labelText: 'Name', hintText: 'Stretch before bed', controller: name)
 /// ```
 class MinimalTextField extends StatefulWidget {
   /// A boxed text field.
   const MinimalTextField({
     super.key,
-    this.label,
-    this.hint,
-    this.error,
+    this.labelText,
+    this.hintText,
+    this.errorText,
     this.icon,
     this.controller,
     this.obscureText = false,
@@ -86,9 +87,9 @@ class MinimalTextField extends StatefulWidget {
     this.textCapitalization = TextCapitalization.none,
     this.autocorrect = true,
     this.enableSuggestions,
-    this.helper,
+    this.helperText,
     this.clearable = false,
-    this.onFocusChanged,
+    this.onFocusChange,
     this.mono = false,
     this.suffix,
     this.inputFormatters,
@@ -109,8 +110,8 @@ class MinimalTextField extends StatefulWidget {
        ),
        assert(
          !bare ||
-             (label == null &&
-                 error == null &&
+             (labelText == null &&
+                 errorText == null &&
                  icon == null &&
                  trailing == null &&
                  !invalid),
@@ -123,13 +124,13 @@ class MinimalTextField extends StatefulWidget {
        );
 
   /// What it holds, over the box.
-  final String? label;
+  final String? labelText;
 
   /// What an empty field says.
-  final String? hint;
+  final String? hintText;
 
   /// The message under the field; also turns its rule to the destructive ink.
-  final String? error;
+  final String? errorText;
 
   /// A glyph at the field's start, in the tertiary ink.
   final IconData? icon;
@@ -193,14 +194,14 @@ class MinimalTextField extends StatefulWidget {
   /// hands it to the keyboard.
   final bool? enableSuggestions;
 
-  /// A quiet line under the field; the [error] replaces it.
-  final String? helper;
+  /// A quiet line under the field; the [errorText] replaces it.
+  final String? helperText;
 
   /// Show a clear glyph at the end while the field holds text.
   final bool clearable;
 
   /// Reports when it gains or loses focus.
-  final ValueChanged<bool>? onFocusChanged;
+  final ValueChanged<bool>? onFocusChange;
 
   /// Set the value (and hint) in Geist Mono with tabular figures.
   final bool mono;
@@ -229,7 +230,7 @@ class MinimalTextField extends StatefulWidget {
 
   /// Paint the error register — the danger rule and ring — without a
   /// message of the field's own, for a caller that prints the failure
-  /// itself. An [error] implies it, and so does a [MinimalFormField]'s
+  /// itself. An [errorText] implies it, and so does a [MinimalFormField]'s
   /// error round the field.
   final bool invalid;
 
@@ -250,9 +251,9 @@ class MinimalTextField extends StatefulWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('label', label, defaultValue: null))
-      ..add(StringProperty('hint', hint, defaultValue: null))
-      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
+      ..add(StringProperty('errorText', errorText, defaultValue: null))
       ..add(DiagnosticsProperty<IconData>('icon', icon, defaultValue: null))
       ..add(
         DiagnosticsProperty<TextEditingController>(
@@ -329,12 +330,12 @@ class MinimalTextField extends StatefulWidget {
           defaultValue: null,
         ),
       )
-      ..add(StringProperty('helper', helper, defaultValue: null))
+      ..add(StringProperty('helperText', helperText, defaultValue: null))
       ..add(FlagProperty('clearable', value: clearable, ifTrue: 'clearable'))
       ..add(
         ObjectFlagProperty<ValueChanged<bool>>.has(
-          'onFocusChanged',
-          onFocusChanged,
+          'onFocusChange',
+          onFocusChange,
         ),
       )
       ..add(FlagProperty('mono', value: mono, ifTrue: 'mono'))
@@ -378,7 +379,7 @@ class _MinimalTextFieldState extends State<MinimalTextField>
   FocusNode? get externalFocusNode => widget.focusNode;
 
   @override
-  void focusChanged(bool focused) => widget.onFocusChanged?.call(focused);
+  void focusChanged(bool focused) => widget.onFocusChange?.call(focused);
 
   @override
   void didUpdateWidget(MinimalTextField old) {
@@ -395,9 +396,9 @@ class _MinimalTextFieldState extends State<MinimalTextField>
   @override
   Widget build(BuildContext context) {
     final t = context.minimalTheme;
-    final label = widget.label;
-    final error = widget.error;
-    final helper = widget.helper;
+    final label = widget.labelText;
+    final error = widget.errorText;
+    final helper = widget.helperText;
     final icon = widget.icon;
     final suffix = widget.suffix;
     final bare = widget.bare;
@@ -432,15 +433,15 @@ class _MinimalTextFieldState extends State<MinimalTextField>
       maxLines: widget.maxLines,
       minLines: widget.minLines ?? widget.maxLines,
       style: valueStyle.c(ink),
-      hint: widget.hint,
+      hint: widget.hintText,
       hintStyle: valueStyle.c(t.mutedForeground),
     );
     // A one-line field's line by its capitals, as every label beside it:
     // caret, hint and taps move with it. A text area keeps its lines.
     if (widget.maxLines == 1) field = minimalCapLabel(field);
-    // The label is the field's name for a screen reader, not a node of its
-    // own.
-    if (label != null) field = Semantics(label: label, child: field);
+    // In a combobox, the input says whether the field's list is showing.
+    final open = MinimalFieldOpenScope.maybeOf(context);
+    if (open != null) field = Semantics(expanded: open, child: field);
     final fieldBuilder = widget.fieldBuilder;
     if (fieldBuilder != null) field = fieldBuilder(field);
     if (Material.maybeOf(context) == null) {
@@ -528,7 +529,9 @@ class _MinimalTextFieldState extends State<MinimalTextField>
             ),
             const MinimalGap(MinimalSpacing.s8),
           ],
-          Expanded(child: MinimalFieldTarget(child: field)),
+          // The decorator gives the input its node, beside a clear glyph or
+          // an eye too, so the field's words are read with the input.
+          Expanded(child: MinimalFieldTarget(node: false, child: field)),
           if (suffix != null) ...[
             const MinimalGap(MinimalSpacing.s8),
             Text(
@@ -551,7 +554,7 @@ class _MinimalTextFieldState extends State<MinimalTextField>
                 onPressed: _clear,
                 tapAlignment: AlignmentDirectional.centerEnd,
                 semanticLabel: MinimalLocalizations.of(context)
-                    .clear(label ?? widget.hint),
+                    .clear(label ?? widget.hintText),
                 shape: t.shapes.mark,
                 // As tall as the box inside its rim at most: a compact
                 // field (28) keeps its height with the glyph in it.
@@ -584,45 +587,60 @@ class _MinimalTextFieldState extends State<MinimalTextField>
       ),
     );
 
-    final message = error ?? helper;
-    final column = Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        if (label != null) ...[
-          ExcludeSemantics(
-            child: Text(label, style: t.caption.medium.c(t.foreground)),
-          ),
-          const MinimalGap(MinimalChromeMetrics.iconGap),
-        ],
-        // A tap anywhere on the box focuses the field (the field's own tap,
-        // placing the caret, and the clear glyph's win the arena where they
-        // land).
-        // At a finger the box stands in a band as tall as the floor, laid
-        // out: a tap in it lands on the box's nearest edge.
-        MinimalTapBand(
-          child: GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            // A pointer's convenience: the field's own node is the screen
-            // reader's.
-            excludeFromSemantics: true,
-            onTap: widget.enabled ? focusNode.requestFocus : null,
-            child: box,
-          ),
+    // ui_core's decorator names the value by the label and gives it the
+    // error and the help as its hint, marked invalid while in error, as
+    // Material's TextField reads; Minimal draws the words.
+    final column = RawInputDecorator(
+      labelText: label,
+      helperText: helper,
+      errorText: error,
+      invalid: widget.invalid,
+      enabled: widget.enabled,
+      focusNode: focusNode,
+      // A tap anywhere on the box focuses the field (the field's own tap,
+      // placing the caret, and the clear glyph's win the arena where they
+      // land).
+      // At a finger the box stands in a band as tall as the floor, laid
+      // out: a tap in it lands on the box's nearest edge.
+      child: MinimalTapBand(
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          // A pointer's convenience: the field's own node is the screen
+          // reader's.
+          excludeFromSemantics: true,
+          onTap: widget.enabled ? focusNode.requestFocus : null,
+          child: box,
         ),
-        if (message != null) ...[
-          const MinimalGap(MinimalChromeMetrics.iconGap),
-          Semantics(
-            liveRegion: error != null,
-            child: Text(
-              message,
-              style: t.caption.c(
-                error != null ? t.destructiveInk : t.mutedForeground,
+      ),
+      builder: (context, parts) {
+        final name = parts.label;
+        final message = parts.error ?? parts.helper;
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (name != null) ...[
+              DefaultTextStyle.merge(
+                style: t.caption.medium.c(t.foreground),
+                child: name,
               ),
-            ),
-          ),
-        ],
-      ],
+              const MinimalGap(MinimalChromeMetrics.iconGap),
+            ],
+            parts.control,
+            if (message != null) ...[
+              const MinimalGap(MinimalChromeMetrics.iconGap),
+              DefaultTextStyle.merge(
+                style: t.caption.c(
+                  parts.errorText != null
+                      ? t.destructiveInk
+                      : t.mutedForeground,
+                ),
+                child: message,
+              ),
+            ],
+          ],
+        );
+      },
     );
     return widget.enabled ? column : Opacity(opacity: 0.45, child: column);
   }

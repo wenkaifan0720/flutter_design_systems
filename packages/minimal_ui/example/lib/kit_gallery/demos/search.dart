@@ -30,17 +30,17 @@ Widget kitSearchDemo(Brightness brightness) => kitScreen(
         _Query(
           text: 'morning',
           builder: (c) => MinimalSearchField(
-            hint: 'Search habits',
+            hintText: 'Search habits',
             controller: c,
             clearable: true,
           ),
         ),
         const MinimalSearchField(
-          hint: 'Search habits',
+          hintText: 'Search habits',
           showCancel: true,
           shortcut: '⌘ K',
         ),
-        const MinimalSearchField(hint: 'Search archived', enabled: false),
+        const MinimalSearchField(hintText: 'Search archived', enabled: false),
         kitNote('The second field shows Cancel beside it while focused.'),
       ],
     ),
@@ -50,7 +50,7 @@ Widget kitSearchDemo(Brightness brightness) => kitScreen(
         _Query(
           text: 'read',
           builder: (c) => MinimalSearchField(
-            hint: 'Search everything',
+            hintText: 'Search everything',
             presentation: MinimalSearchPresentation.toolbar,
             controller: c,
             showCancel: true,
@@ -135,7 +135,7 @@ class _HabitSearchState extends State<_HabitSearch> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         MinimalSearchField(
-          hint: 'Search habits',
+          hintText: 'Search habits',
           shortcut: '/',
           clearable: true,
           scopes: const ['All', 'Open', 'Done'],
@@ -243,18 +243,21 @@ class _EntriesState extends State<_Entries> {
 
 /// The empty field, its shortcut's caps at the end.
 Widget kitSpecimenSearchFieldShortcut() =>
-    const MinimalSearchField(hint: 'Search habits', shortcut: '⌘ K');
+    const MinimalSearchField(hintText: 'Search habits', shortcut: '⌘ K');
 
 /// The field holding a query, the clear glyph at the end.
 Widget kitSpecimenSearchFieldQuery() => _Query(
   text: 'morning',
-  builder: (c) =>
-      MinimalSearchField(hint: 'Search habits', controller: c, clearable: true),
+  builder: (c) => MinimalSearchField(
+    hintText: 'Search habits',
+    controller: c,
+    clearable: true,
+  ),
 );
 
 /// The field with its scope filters printed under it.
 Widget kitSpecimenSearchFieldScopes() => const MinimalSearchField(
-  hint: 'Search habits',
+  hintText: 'Search habits',
   shortcut: '/',
   scopes: ['All', 'Open', 'Done'],
   scopeIndex: 1,

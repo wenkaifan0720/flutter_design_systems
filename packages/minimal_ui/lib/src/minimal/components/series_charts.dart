@@ -11,8 +11,8 @@ import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
 import '../internal/cap_label.dart';
+import '../internal/chart_figures.dart';
 import '../internal/controls.dart';
-import '../internal/reader_digits.dart';
 import '../internal/styled.dart';
 import '../localizations.dart';
 import '../theme.dart';
@@ -72,12 +72,6 @@ List<Color> minimalChartPalette(MinimalThemeData t) => [
   t.warning,
   t.destructive,
 ];
-
-String _figure(double v) {
-  if (v.abs() >= 10000) return '${(v / 1000).toStringAsFixed(0)}k';
-  if (v.abs() >= 1000) return '${(v / 1000).toStringAsFixed(1)}k';
-  return v == v.roundToDouble() ? v.toInt().toString() : v.toStringAsFixed(1);
-}
 
 /// A step of 1, 2 or 5 times a power of ten near [rough].
 double _nice(double rough) {
@@ -175,7 +169,7 @@ class MinimalLineChart extends StatelessWidget {
     loading: loading,
     emptyLabel: emptyLabel,
     semanticLabel: semanticLabel,
-    format: format ?? (v) => minimalReaderDigits(context, _figure(v)),
+    format: format,
     area: false,
   );
 
@@ -246,7 +240,7 @@ class MinimalAreaChart extends StatelessWidget {
     loading: loading,
     emptyLabel: emptyLabel,
     semanticLabel: semanticLabel,
-    format: format ?? (v) => minimalReaderDigits(context, _figure(v)),
+    format: format,
     area: true,
   );
 
@@ -274,7 +268,7 @@ class _SeriesChart extends StatefulWidget {
     required this.loading,
     required this.emptyLabel,
     required this.semanticLabel,
-    required this.format,
+    this.format,
     required this.area,
   });
 
@@ -284,7 +278,9 @@ class _SeriesChart extends StatefulWidget {
   final bool loading;
   final String? emptyLabel;
   final String? semanticLabel;
-  final String Function(double) format;
+
+  /// The caller's words for a value; null: [minimalChartValues].
+  final String Function(double)? format;
   final bool area;
 
   @override
@@ -302,6 +298,9 @@ class _SeriesChartState extends State<_SeriesChart> {
 
   int get _count =>
       widget.series.fold(0, (n, s) => math.max(n, s.values.length));
+
+  String _say(double v) =>
+      widget.format?.call(v) ?? minimalChartFigure(context, v);
 
   /// The scale's least width at the start edge.
   static const double _axis = 36;
@@ -335,34 +334,34 @@ class _SeriesChartState extends State<_SeriesChart> {
   /// figure needs (never less than [_axis]), at the end edge half the
   /// widest label, so the last label stands centred on its own point.
   ({double axis, double end}) _gutters(TextStyle figure, TextScaler scaler) {
-    double measure(String s) {
-      final tp = TextPainter(
-        text: TextSpan(text: s, style: figure),
-        textDirection: TextDirection.ltr,
-        textScaler: scaler,
-        maxLines: 1,
-      )..layout();
-      final w = tp.width;
-      tp.dispose();
-      return w;
-    }
-
     final scale = _scaleOf([for (final s in widget.series) s.values]);
-    var widest = 0.0;
-    for (
-      var v = scale.bottom;
-      v <= scale.top + scale.step / 2;
-      v += scale.step
-    ) {
-      widest = math.max(widest, measure(widget.format(v)));
-    }
+    final widest = DesignScaleTick.widestLabel(
+      [
+        for (
+          var v = scale.bottom;
+          v <= scale.top + scale.step / 2;
+          v += scale.step
+        )
+          DesignScaleTick(value: v, position: v, label: _say(v)),
+      ],
+      style: figure,
+      textScaler: scaler,
+    );
     final names = widget.labels;
     final label = names == null || names.isEmpty
         ? 0.0
-        : names
-              .take(_count)
-              .map(measure)
-              .fold<double>(0, (m, w) => math.max(m, w));
+        : DesignScaleTick.widestLabel(
+            [
+              for (final (i, name) in names.take(_count).indexed)
+                DesignScaleTick(
+                  value: i.toDouble(),
+                  position: i.toDouble(),
+                  label: name,
+                ),
+            ],
+            style: figure,
+            textScaler: scaler,
+          );
     return (
       axis: math.max(_axis, (widest + _figureGap).ceilToDouble()),
       end: (label / 2).ceilToDouble(),
@@ -460,6 +459,7 @@ class _SeriesChartState extends State<_SeriesChart> {
                 : '${i + 1}';
           },
           formatY: widget.format,
+          valueFormat: minimalChartValues,
           builder: (context, chart) {
             final at = chart.active?.index;
             final width = chart.size.width;
@@ -494,7 +494,7 @@ class _SeriesChartState extends State<_SeriesChart> {
                         labels: widget.labels,
                         area: widget.area,
                         at: at,
-                        format: widget.format,
+                        format: _say,
                         rule: t.border,
                         guide: t.textTertiary,
                         ground: t.card,
@@ -521,7 +521,7 @@ class _SeriesChartState extends State<_SeriesChart> {
                             if (at < widget.series[s].values.length)
                               (
                                 widget.series[s].name,
-                                widget.format(widget.series[s].values[at]),
+                                _say(widget.series[s].values[at]),
                                 colours[s],
                               ),
                         ],
@@ -1110,8 +1110,7 @@ class _MinimalPieChartState extends State<MinimalPieChart> {
   Widget build(BuildContext context) {
     final t = context.minimalTheme;
     final l = MinimalLocalizations.of(context);
-    final format =
-        widget.format ?? (v) => minimalReaderDigits(context, _figure(v));
+    final format = widget.format ?? (v) => minimalChartFigure(context, v);
     final palette = minimalChartPalette(t);
     final colours = [
       for (var i = 0; i < widget.slices.length; i++)

@@ -130,7 +130,7 @@ class MinimalCommand extends StatefulWidget {
     super.key,
     required this.actions,
     this.onSelected,
-    this.hint,
+    this.hintText,
     this.initialQuery = '',
     this.autofocus = true,
     this.focusNode,
@@ -148,7 +148,7 @@ class MinimalCommand extends StatefulWidget {
   final ValueChanged<MinimalCommandItem>? onSelected;
 
   /// The search field's placeholder.
-  final String? hint;
+  final String? hintText;
 
   /// The search the palette opens with.
   final String initialQuery;
@@ -174,7 +174,7 @@ class MinimalCommand extends StatefulWidget {
     required List<MinimalCommandItem> actions,
     String? title,
     String? subtitle,
-    String? hint,
+    String? hintText,
     String? emptyTitle,
     MinimalStyle? style,
   }) async {
@@ -189,7 +189,7 @@ class MinimalCommand extends StatefulWidget {
       palette: (run) => _palette(
         context,
         actions: actions,
-        hint: hint,
+        hint: hintText,
         emptyTitle: emptyTitle,
         style: style,
         label: title ?? words.commands,
@@ -225,7 +225,7 @@ class MinimalCommand extends StatefulWidget {
           onSelected,
         ),
       )
-      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
       ..add(StringProperty('initialQuery', initialQuery, defaultValue: ''))
       ..add(
         FlagProperty(
@@ -273,7 +273,7 @@ RawCommandPalette _palette(
       child: MinimalSearchField(
         controller: f.controller,
         focusNode: f.focusNode,
-        hint: hint ?? words.commandHint,
+        hintText: hint ?? words.commandHint,
         // Enter in onEditingComplete, with no onSubmitted: the field keeps the
         // focus, and Flutter restarts the text input of a field told of a submit
         // that still holds it, which in a browser then takes no typing.
@@ -329,7 +329,7 @@ class _MinimalCommandState extends State<MinimalCommand> {
     return _palette(
       context,
       actions: widget.actions,
-      hint: widget.hint,
+      hint: widget.hintText,
       emptyTitle: widget.emptyTitle,
       style: widget.style,
       controller: _query,

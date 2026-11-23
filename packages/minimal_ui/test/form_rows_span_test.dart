@@ -36,7 +36,7 @@ void main() {
             title: 'Task',
             children: [
               MinimalSelect<String>(
-                label: 'Priority',
+                labelText: 'Priority',
                 value: 'high',
                 options: const [
                   MinimalSelectOption('low', 'Low'),
@@ -45,13 +45,13 @@ void main() {
                 onChanged: (_) {},
               ),
               MinimalDatePicker(
-                label: 'Due date',
+                labelText: 'Due date',
                 value: DateTime(2026, 11, 20),
                 mode: MinimalDatePickerMode.date,
                 onChanged: (_) {},
               ),
               MinimalTimePicker(
-                label: 'Reminder time',
+                labelText: 'Reminder time',
                 value: DateTime(2026, 11, 20, 9, 30),
                 onChanged: (_) {},
               ),

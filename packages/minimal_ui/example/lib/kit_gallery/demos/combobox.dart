@@ -71,17 +71,17 @@ Widget kitComboboxDemo(Brightness brightness) => kitScreen(
       children: [
         // The pick the error turns down: the issue's own author.
         MinimalCombobox<String>(
-          label: 'Reviewer',
+          labelText: 'Reviewer',
           options: _people,
-          displayString: (p) => p,
+          displayStringForOption: (p) => p,
           value: _people[1],
-          error: 'Ben Okafor wrote this; pick another reviewer.',
+          errorText: 'Ben Okafor wrote this; pick another reviewer.',
           onSelected: (_) {},
         ),
         MinimalCombobox<String>(
-          label: 'Owner',
+          labelText: 'Owner',
           options: _people,
-          displayString: (p) => p,
+          displayStringForOption: (p) => p,
           value: _people.first,
           enabled: false,
         ),
@@ -112,11 +112,11 @@ class _AssigneeState extends State<_Assignee> {
 
   @override
   Widget build(BuildContext context) => MinimalCombobox<String>(
-    label: 'Assignee',
-    hint: 'Search people',
+    labelText: 'Assignee',
+    hintText: 'Search people',
     icon: LucideIcons.user,
     options: _people,
-    displayString: (p) => p,
+    displayStringForOption: (p) => p,
     value: _who,
     onSelected: (p) => setState(() => _who = p),
   );
@@ -134,10 +134,10 @@ class _ZoneState extends State<_Zone> {
 
   @override
   Widget build(BuildContext context) => MinimalCombobox<String>(
-    label: 'Time zone',
+    labelText: 'Time zone',
     icon: LucideIcons.globe,
     options: _zones,
-    displayString: (z) => z,
+    displayStringForOption: (z) => z,
     value: _zone,
     onSelected: (z) => setState(() => _zone = z),
   );
@@ -155,11 +155,11 @@ class _LabelsState extends State<_Labels> {
 
   @override
   Widget build(BuildContext context) => MinimalMultiSelect<String>(
-    label: 'Labels',
-    hint: 'Add a label',
-    helper: 'Backspace removes the last; a new word makes a new label.',
+    labelText: 'Labels',
+    hintText: 'Add a label',
+    helperText: 'Backspace removes the last; a new word makes a new label.',
     options: _labels,
-    displayString: (l) => l,
+    displayStringForOption: (l) => l,
     values: _on,
     onCreate: (text) => text.trim().isEmpty ? null : text.trim(),
     onChanged: (v) => setState(() => _on = v),
@@ -172,10 +172,10 @@ class _LabelsState extends State<_Labels> {
 Widget kitSpecimenCombobox() => Padding(
   padding: const EdgeInsets.all(MinimalSpacing.s16),
   child: MinimalCombobox<String>(
-    label: 'Assignee',
+    labelText: 'Assignee',
     icon: LucideIcons.user,
     options: _people,
-    displayString: (p) => p,
+    displayStringForOption: (p) => p,
     value: _people[2],
     onSelected: (_) {},
   ),
@@ -185,9 +185,9 @@ Widget kitSpecimenCombobox() => Padding(
 Widget kitSpecimenMultiSelect() => Padding(
   padding: const EdgeInsets.all(MinimalSpacing.s16),
   child: MinimalMultiSelect<String>(
-    label: 'Labels',
+    labelText: 'Labels',
     options: _labels,
-    displayString: (l) => l,
+    displayStringForOption: (l) => l,
     values: const ['design', 'web', 'mobile'],
     onChanged: (_) {},
   ),

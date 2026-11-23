@@ -236,7 +236,7 @@ void main() {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const MinimalTextField(bare: true, hint: 'Habit name'),
+                const MinimalTextField(bare: true, hintText: 'Habit name'),
                 for (final variant in MinimalButtonVariant.values)
                   MinimalButton(variant.name, variant: variant),
               ],
@@ -268,9 +268,9 @@ void main() {
   final prompts = <(String, Widget)>[
     (
       'Stretch before bed',
-      const MinimalTextField(label: 'Name', hint: 'Stretch before bed'),
+      const MinimalTextField(labelText: 'Name', hintText: 'Stretch before bed'),
     ),
-    ('Search habits', const MinimalSearchField(hint: 'Search habits')),
+    ('Search habits', const MinimalSearchField(hintText: 'Search habits')),
     (
       'Search tasks',
       MinimalSearchEntry(label: 'Search tasks', onPressed: () {}),
@@ -278,8 +278,8 @@ void main() {
     (
       'Pick a city',
       MinimalCombobox<String>(
-        label: 'City',
-        hint: 'Pick a city',
+        labelText: 'City',
+        hintText: 'Pick a city',
         options: const ['Lisbon', 'London'],
         onSelected: (_) {},
       ),
@@ -287,8 +287,8 @@ void main() {
     (
       'Add labels',
       MinimalMultiSelect<String>(
-        label: 'Labels',
-        hint: 'Add labels',
+        labelText: 'Labels',
+        hintText: 'Add labels',
         values: const [],
         options: const ['Bug', 'Docs'],
         onChanged: (_) {},
@@ -297,21 +297,24 @@ void main() {
     (
       'example',
       const MinimalInputGroup(
-        label: 'Website',
+        labelText: 'Website',
         prefixText: 'https://',
-        hint: 'example',
+        hintText: 'example',
       ),
     ),
     (
       'Your password',
-      const MinimalPasswordField(label: 'Password', hint: 'Your password'),
+      const MinimalPasswordField(
+        labelText: 'Password',
+        hintText: 'Your password',
+      ),
     ),
-    ('Write a note', MinimalComposer(hint: 'Write a note', onSend: (_) {})),
+    ('Write a note', MinimalComposer(hintText: 'Write a note', onSend: (_) {})),
     (
       'Pick your stay',
       MinimalDateRangePicker(
-        label: 'Stay',
-        hint: 'Pick your stay',
+        labelText: 'Stay',
+        hintText: 'Pick your stay',
         firstDate: DateTime(2026),
         lastDate: DateTime(2027),
         onChanged: (_) {},
@@ -333,14 +336,17 @@ void main() {
     (
       'Choose one',
       MinimalSelect<String>(
-        label: 'Repeats',
+        labelText: 'Repeats',
         value: null,
-        prompt: 'Choose one',
+        hintText: 'Choose one',
         options: const [MinimalSelectOption('daily', 'Daily')],
         onChanged: (_) {},
       ),
     ),
-    ('Morning run', const MinimalInputRow(label: 'Habit', hint: 'Morning run')),
+    (
+      'Morning run',
+      const MinimalInputRow(labelText: 'Habit', hintText: 'Morning run'),
+    ),
   ];
   for (final preset in MinimalThemeData.presets) {
     for (final light in Brightness.values) {
@@ -445,7 +451,7 @@ void main() {
             );
           }
           final (circle, dot) = await measure(
-            const MinimalRadio(
+            const MinimalRadio.mark(
               selected: true,
               style: MinimalStyle(
                 fill: WidgetStatePropertyAll(well),
@@ -618,7 +624,7 @@ void main() {
               t,
               MinimalInputOtp(
                 length: 4,
-                error: 'Invalid code',
+                errorText: 'Invalid code',
                 focusNode: node,
               ),
               theme,
@@ -727,25 +733,28 @@ void main() {
             // with a unit, search, chips, a combobox, a password, a text
             // area and the composer.
             final fields = <String, Widget>{
-              'text field': MinimalTextField(label: 'Name', focusNode: focus),
+              'text field': MinimalTextField(
+                labelText: 'Name',
+                focusNode: focus,
+              ),
               'add-ons': MinimalInputGroup(
-                label: 'Price',
+                labelText: 'Price',
                 prefixText: '\$',
                 suffixText: 'USD',
-                hint: '0.00',
+                hintText: '0.00',
                 mono: true,
                 focusNode: focus,
               ),
               'add-ons in error': MinimalInputGroup(
-                label: 'Price',
+                labelText: 'Price',
                 prefixText: '\$',
                 suffixText: 'USD',
-                hint: '0.00',
-                error: 'Enter a price',
+                hintText: '0.00',
+                errorText: 'Enter a price',
                 focusNode: focus,
               ),
               'figure and unit': MinimalTextField(
-                label: 'Daily goal',
+                labelText: 'Daily goal',
                 mono: true,
                 suffix: 'pages',
                 keyboardType: TextInputType.number,
@@ -759,16 +768,16 @@ void main() {
                 focusNode: focus,
               ),
               'combobox': MinimalCombobox<String>(
-                label: 'City',
+                labelText: 'City',
                 options: const ['Lisbon', 'London'],
                 onSelected: (_) {},
                 focusNode: focus,
               ),
               'password': MinimalPasswordField(
-                label: 'Password',
+                labelText: 'Password',
                 focusNode: focus,
               ),
-              'text area': MinimalTextArea(label: 'Note', focusNode: focus),
+              'text area': MinimalTextArea(labelText: 'Note', focusNode: focus),
               'composer': MinimalComposer(onSend: (_) {}, focusNode: focus),
             };
             // The rule's 1.5 px, in device pixels.
@@ -855,7 +864,7 @@ void main() {
               await _stage(
                 t,
                 MinimalSelect<int>(
-                  label: 'HH',
+                  labelText: 'HH',
                   value: 1,
                   options: const [MinimalSelectOption(1, 'II')],
                   onChanged: (_) {},

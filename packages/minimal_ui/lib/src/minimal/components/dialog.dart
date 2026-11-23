@@ -314,15 +314,13 @@ class MinimalDialog extends StatelessWidget {
             ],
           ),
         ),
-        // In a row at the end; stacked, the last given (the main one) on
-        // top, when they don't share a line, as a raised card's are.
+        // In a row at the end; when they don't share a line, stacked as wide
+        // as the card, the last given (the main one) on top, as a raised
+        // card's are.
         band(
-          OverflowBar(
-            alignment: MainAxisAlignment.end,
+          RawActionBar(
             spacing: MinimalSpacing.s8,
             overflowSpacing: MinimalSpacing.s8,
-            overflowAlignment: OverflowBarAlignment.end,
-            overflowDirection: VerticalDirection.up,
             children: [
               for (final action in answers)
                 MinimalButton(

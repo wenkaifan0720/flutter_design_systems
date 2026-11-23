@@ -51,7 +51,7 @@ void main() {
       await check(
         tester,
         const MinimalSelect<String>(
-          label: 'Repeats',
+          labelText: 'Repeats',
           value: 'daily',
           options: [MinimalSelectOption('daily', 'Every day')],
         ),
@@ -71,7 +71,7 @@ void main() {
       await check(
         tester,
         MinimalDatePicker(
-          label: 'Paused until',
+          labelText: 'Paused until',
           value: DateTime(2026, 9, 14, 7),
         ),
         'Paused until',
@@ -81,7 +81,7 @@ void main() {
     testWidgets('MinimalInputRow', (tester) async {
       await check(
         tester,
-        const MinimalInputRow(label: 'Name', enabled: false),
+        const MinimalInputRow(labelText: 'Name', enabled: false),
         'Name',
       );
     });

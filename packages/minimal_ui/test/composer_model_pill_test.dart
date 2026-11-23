@@ -1,5 +1,5 @@
-// The comment box's model pill shows the caller's words while onModel is
-// set; with no onModel there is no pill.
+// The comment box's model pill shows the caller's own words: with no
+// `model` it shows no pill, and no default label of its own.
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:minimal_ui/minimal_ui.dart';
@@ -22,6 +22,22 @@ final Finder _pill = find.byWidgetPredicate(
 );
 
 void main() {
+  testWidgets('with no model the comment box shows no pill', (tester) async {
+    var opened = 0;
+    await tester.pumpWidget(
+      _host(
+        MinimalComposer(
+          variant: MinimalComposerVariant.assistant,
+          onModel: () => opened += 1,
+          onSend: (_) {},
+        ),
+      ),
+    );
+    expect(_pill, findsNothing);
+    expect(find.text('Everyday'), findsNothing);
+    expect(opened, 0);
+  });
+
   testWidgets('a model and onModel show the pill in the given words', (
     tester,
   ) async {
@@ -29,7 +45,7 @@ void main() {
     await tester.pumpWidget(
       _host(
         MinimalComposer(
-          style: MinimalComposerStyle.assistant,
+          variant: MinimalComposerVariant.assistant,
           model: 'Team only',
           onModel: () => opened += 1,
           onSend: (_) {},
@@ -45,7 +61,7 @@ void main() {
     await tester.pumpWidget(
       _host(
         MinimalComposer(
-          style: MinimalComposerStyle.assistant,
+          variant: MinimalComposerVariant.assistant,
           model: 'Team only',
           onSend: (_) {},
         ),

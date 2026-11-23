@@ -25,7 +25,11 @@ Widget _host(TextDirection direction) => MaterialApp(
         label: 'Task actions',
         items: [
           MinimalMenuItem('Rename', onPressed: () {}),
-          MinimalMenuItem('Delete', destructive: true, onPressed: () {}),
+          MinimalMenuItem(
+            'Delete',
+            isDestructiveAction: true,
+            onPressed: () {},
+          ),
         ],
       ),
     ),

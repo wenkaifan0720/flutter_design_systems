@@ -18,16 +18,16 @@ import 'input.dart';
 /// (else `shapes.small`) and padding, focused and in error.
 ///
 /// ```dart
-/// MinimalTextArea(label: 'Notes', hint: 'Anything the team should know', controller: notes)
+/// MinimalTextArea(labelText: 'Notes', hintText: 'Anything the team should know', controller: notes)
 /// ```
 class MinimalTextArea extends StatelessWidget {
   /// A text field of several lines.
   const MinimalTextArea({
     super.key,
-    this.label,
-    this.hint,
-    this.helper,
-    this.error,
+    this.labelText,
+    this.hintText,
+    this.helperText,
+    this.errorText,
     this.controller,
     this.onChanged,
     this.minLines = 3,
@@ -40,16 +40,16 @@ class MinimalTextArea extends StatelessWidget {
   }) : assert(minLines > 0 && maxLines >= minLines);
 
   /// What it holds, over the box.
-  final String? label;
+  final String? labelText;
 
   /// What an empty field says.
-  final String? hint;
+  final String? hintText;
 
-  /// A quiet line under the box, when there is no [error].
-  final String? helper;
+  /// A quiet line under the box, when there is no [errorText].
+  final String? helperText;
 
   /// The message under the box; also turns its rule to the destructive ink.
-  final String? error;
+  final String? errorText;
 
   /// The text; null keeps its own.
   final TextEditingController? controller;
@@ -80,10 +80,10 @@ class MinimalTextArea extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => MinimalTextField(
-    label: label,
-    hint: hint,
-    helper: helper,
-    error: error,
+    labelText: labelText,
+    hintText: hintText,
+    helperText: helperText,
+    errorText: errorText,
     controller: controller,
     onChanged: onChanged,
     minLines: minLines,
@@ -102,10 +102,10 @@ class MinimalTextArea extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('label', label, defaultValue: null))
-      ..add(StringProperty('hint', hint, defaultValue: null))
-      ..add(StringProperty('helper', helper, defaultValue: null))
-      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
+      ..add(StringProperty('helperText', helperText, defaultValue: null))
+      ..add(StringProperty('errorText', errorText, defaultValue: null))
       ..add(
         DiagnosticsProperty<TextEditingController>(
           'controller',

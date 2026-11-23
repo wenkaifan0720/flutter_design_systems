@@ -38,7 +38,7 @@ Widget kitCalendarDemo(Brightness brightness) => kitScreen(
         MinimalCalendar(
           firstDate: _first,
           lastDate: _last,
-          today: _today,
+          currentDate: _today,
           months: 2,
           value: DateTime(2026, 8, 20),
           onChanged: (_) {},
@@ -67,7 +67,7 @@ class _DayState extends State<_Day> {
   Widget build(BuildContext context) => MinimalCalendar(
     firstDate: _first,
     lastDate: _last,
-    today: _today,
+    currentDate: _today,
     value: _day,
     selectable: (d) => d.weekday < DateTime.saturday,
     onChanged: (d) => setState(() => _day = d),
@@ -89,11 +89,11 @@ class _RangeState extends State<_Range> {
 
   @override
   Widget build(BuildContext context) => MinimalDateRangePicker(
-    label: 'Stay',
-    hint: 'Check-in – check-out',
+    labelText: 'Stay',
+    hintText: 'Check-in – check-out',
     firstDate: _first,
     lastDate: _last,
-    today: _today,
+    currentDate: _today,
     value: _stay,
     onChanged: (r) => setState(() => _stay = r),
   );
@@ -106,7 +106,7 @@ Widget kitSpecimenCalendar() => Center(
   child: MinimalCalendar(
     firstDate: _first,
     lastDate: _last,
-    today: _today,
+    currentDate: _today,
     value: DateTime(2026, 8, 31),
     onChanged: (_) {},
   ),
@@ -116,10 +116,10 @@ Widget kitSpecimenCalendar() => Center(
 Widget kitSpecimenDateRangePicker() => Padding(
   padding: const EdgeInsets.all(MinimalSpacing.s16),
   child: MinimalDateRangePicker(
-    label: 'Stay',
+    labelText: 'Stay',
     firstDate: _first,
     lastDate: _last,
-    today: _today,
+    currentDate: _today,
     value: RawDateRange(DateTime(2026, 8, 28), DateTime(2026, 9, 3)),
     onChanged: (_) {},
   ),

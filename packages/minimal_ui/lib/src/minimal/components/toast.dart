@@ -13,20 +13,21 @@ import '../component_themes.dart';
 import '../internal/cap_label.dart';
 import '../internal/controls.dart';
 import '../internal/kit_paint.dart';
-import '../internal/page_foot.dart';
 import '../internal/styled.dart';
 import '../localizations.dart';
 import '../shapes.dart';
 import '../theme.dart';
 import 'pressable.dart';
-import 'shell_frame.dart';
+import 'shell_frame.dart' show MinimalShellInsets;
 
 /// Transient bottom notification — a confirmation the page does not have to
 /// hold, with one optional inline action (the undo pattern). Minimal
 /// draws it as a compact card ([MinimalSnackBar]): the surface on a hairline
 /// with a menu's shadow, an optional glyph, 13 px text, the action in the
-/// accent's ink. It fades in and rises 4 px, and stands above the shell's
-/// bar and the keyboard. One toast stands at a time: a new one replaces the
+/// accent's ink. It fades in and rises 4 px, and stands above the keyboard
+/// and any bar along the foot (a [MinimalNavigationBar], a
+/// [MinimalScaffold.footer]), following a bar that slides in or away. One
+/// toast stands at a time: a new one replaces the
 /// one showing.
 ///
 /// [actionLabel] + [onAction] add ONE inline action — the undo pattern.
@@ -48,17 +49,13 @@ void showMinimalSnackBar(
   VoidCallback? onAction,
   MinimalStyle? style,
 }) {
-  // The shell publishes its bar's height through MinimalShellInsets, read
-  // here at the caller: the toaster stands above the navigator, where no
-  // shell is in sight. A page's own foot (its Create, its Save) lifts the
-  // toast too, so a toast never covers the act that raised it.
-  final lift = math.max(
-    MinimalShellInsets.of(context),
-    MinimalPageFoot.liftOf(context),
-  );
-  final show =
-      context.findAncestorStateOfType<_MinimalToasterState>()?._show ??
-      _rootToaster(context);
+  final toaster = context.findAncestorStateOfType<_MinimalToasterState>();
+  // A toaster above the page knows the bars along its foot (they report to it
+  // through RawToasterKeepClear). The root overlay's fallback is above no bar,
+  // so it stands over the shell's bar as the shell publishes it.
+  final show = toaster == null
+      ? _rootToaster(context, MinimalShellInsets.of(context))
+      : toaster._show;
   show(
     RawToast(
       message: message,
@@ -70,7 +67,6 @@ void showMinimalSnackBar(
       id: _oneAtATime,
       data: _ToastLook(icon, style),
     ),
-    lift,
   );
 }
 
@@ -90,7 +86,7 @@ class _ToastLook {
 /// [MinimalToaster] above it (a page composed without [MinimalHost]).
 final Expando<GlobalKey<_MinimalToasterState>> _fallbacks = Expando();
 
-void Function(RawToast toast, double lift) _rootToaster(BuildContext context) {
+void Function(RawToast toast) _rootToaster(BuildContext context, double floor) {
   final overlay = Overlay.of(context, rootOverlay: true);
   var key = _fallbacks[overlay];
   if (key == null) {
@@ -112,17 +108,19 @@ void Function(RawToast toast, double lift) _rootToaster(BuildContext context) {
     );
   }
   final known = key.currentState;
-  if (known != null) return known._show;
+  if (known != null) return (toast) => known._show(toast, floor);
   // The entry builds next frame; the first toast waits for it.
-  return (toast, lift) => WidgetsBinding.instance.addPostFrameCallback(
-    (_) => key?.currentState?._show(toast, lift),
+  return (toast) => WidgetsBinding.instance.addPostFrameCallback(
+    (_) => key?.currentState?._show(toast, floor),
   );
 }
 
 /// Hosts Minimal's toasts over [child]: [MinimalHost] installs one above
 /// the app's navigator, so a page needs nothing of its own. The toasts
 /// stand at the foot, centred, at most 560 px wide, inset by the gutter and
-/// lifted over the shell's bar and the keyboard. The behaviour is ui_core's
+/// lifted over the keyboard and over any bar along the foot that ui_core's
+/// `RawToasterKeepClear` marks (Minimal's navigation bar and scaffold
+/// footer are marked). The behaviour is ui_core's
 /// ([RawToaster]); Minimal paints each toast as a [MinimalSnackBar].
 ///
 /// ```dart
@@ -141,10 +139,13 @@ class MinimalToaster extends StatefulWidget {
 
 class _MinimalToasterState extends State<MinimalToaster> {
   final GlobalKey<RawToasterState> _toaster = GlobalKey();
-  double _lift = 0;
 
-  void _show(RawToast toast, double lift) {
-    if (lift != _lift) setState(() => _lift = lift);
+  // How far the fallback toaster's toasts stand up from the foot: the shell's
+  // bar, which reports to no toaster below it.
+  double _floor = 0;
+
+  void _show(RawToast toast, [double floor = 0]) {
+    if (floor != _floor) setState(() => _floor = floor);
     _toaster.currentState?.show(toast);
   }
 
@@ -196,11 +197,12 @@ class _MinimalToasterState extends State<MinimalToaster> {
   @override
   Widget build(BuildContext context) {
     final media = MediaQuery.of(context);
-    // The shell's allowance already spans the device inset, so the lift is
-    // a max of it and the keyboard, less the safe area the toaster keeps.
+    // A bar along the foot (a tab bar, a page's footer) keeps the toasts
+    // above it through ui_core's RawToasterKeepClear; the keyboard, less the
+    // safe area the toaster keeps, lifts them here.
     final bottom =
         math.max(
-          math.max(_lift, media.viewInsets.bottom) - media.padding.bottom,
+          math.max(_floor, media.viewInsets.bottom) - media.padding.bottom,
           0.0,
         ) +
         MinimalChromeMetrics.floatingGap;

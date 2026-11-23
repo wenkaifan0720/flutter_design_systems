@@ -197,6 +197,29 @@ class MinimalFieldErrorScope extends InheritedWidget {
       wrong != oldWidget.wrong;
 }
 
+/// Whether the list a combobox's field opens is showing, for the text
+/// input inside the field to say so to a screen reader (expanded).
+class MinimalFieldOpenScope extends InheritedWidget {
+  /// [open] for the text input in [child].
+  const MinimalFieldOpenScope({
+    super.key,
+    required this.open,
+    required super.child,
+  });
+
+  /// Whether the field's list is showing.
+  final bool open;
+
+  /// Whether the list of a combobox round [context] is showing; null
+  /// outside a combobox.
+  static bool? maybeOf(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<MinimalFieldOpenScope>()?.open;
+
+  @override
+  bool updateShouldNotify(MinimalFieldOpenScope oldWidget) =>
+      open != oldWidget.open;
+}
+
 /// A boxed field's value area as one screen-reader node — the text input
 /// and the name a caller puts on it — whose bounds are the band a tap lands
 /// in (the box grown to the band's tap floor, [minimalBandFloor],
@@ -205,19 +228,35 @@ class MinimalFieldErrorScope extends InheritedWidget {
 /// measures, is the one a finger or a pointer has.
 class MinimalFieldTarget extends SingleChildRenderObjectWidget {
   /// One screen-reader node around [child], the size of its touch target.
-  const MinimalFieldTarget({super.key, super.child});
+  /// With [node] false it makes no node of its own and only reaches taps
+  /// across the band: inside a field whose decorator gives the input its
+  /// node (beside a clear glyph or an eye), where a node of its own would
+  /// stand between the input and the field's words.
+  const MinimalFieldTarget({super.key, this.node = true, super.child});
+
+  /// Whether it makes the input's node, the size of the band.
+  final bool node;
 
   @override
   RenderObject createRenderObject(BuildContext context) =>
-      _RenderFieldTarget(minimalBandFloor(context));
+      _RenderFieldTarget(minimalBandFloor(context), node: node);
 
   @override
   void updateRenderObject(BuildContext context, RenderObject renderObject) =>
-      (renderObject as _RenderFieldTarget).floor = minimalBandFloor(context);
+      (renderObject as _RenderFieldTarget)
+        ..floor = minimalBandFloor(context)
+        ..node = node;
 }
 
 class _RenderFieldTarget extends RenderProxyBox {
-  _RenderFieldTarget(this._floor);
+  _RenderFieldTarget(this._floor, {required this._node});
+
+  bool _node;
+  set node(bool v) {
+    if (v == _node) return;
+    _node = v;
+    markNeedsSemanticsUpdate();
+  }
 
   double _floor;
   set floor(double v) {
@@ -229,6 +268,7 @@ class _RenderFieldTarget extends RenderProxyBox {
   @override
   void describeSemanticsConfiguration(SemanticsConfiguration config) {
     super.describeSemanticsConfiguration(config);
+    if (!_node) return;
     config
       ..isSemanticBoundary = true
       ..isMergingSemanticsOfDescendants = true;

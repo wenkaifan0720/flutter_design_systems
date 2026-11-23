@@ -17,13 +17,13 @@ import 'date_picker.dart';
 /// mode takes it: a change keeps [value]'s date and sets its clock.
 ///
 /// ```dart
-/// MinimalTimePicker(label: 'Remind me at', value: remindAt, onChanged: (v) => setState(() => remindAt = v))
+/// MinimalTimePicker(labelText: 'Remind me at', value: remindAt, onChanged: (v) => setState(() => remindAt = v))
 /// ```
 class MinimalTimePicker extends StatelessWidget {
   /// A picker of a time of day, showing [value].
   const MinimalTimePicker({
     super.key,
-    required this.label,
+    required this.labelText,
     required this.value,
     this.onChanged,
     this.wheel = false,
@@ -33,7 +33,7 @@ class MinimalTimePicker extends StatelessWidget {
   });
 
   /// What it picks.
-  final String label;
+  final String labelText;
 
   /// The time it shows: its hour and minute.
   final DateTime value;
@@ -59,7 +59,7 @@ class MinimalTimePicker extends StatelessWidget {
   Widget build(BuildContext context) {
     final change = onChanged;
     return MinimalDatePicker(
-      label: label,
+      labelText: labelText,
       value: value,
       mode: MinimalDatePickerMode.time,
       presentation: wheel
@@ -80,7 +80,7 @@ class MinimalTimePicker extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('label', label))
+      ..add(StringProperty('labelText', labelText))
       ..add(DiagnosticsProperty<DateTime>('value', value))
       ..add(
         ObjectFlagProperty<ValueChanged<DateTime>>.has('onChanged', onChanged),

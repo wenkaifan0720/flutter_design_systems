@@ -69,11 +69,11 @@ void main() {
       await _pump(
         t,
         MinimalDatePicker(
-          label: 'Due date',
+          labelText: 'Due date',
           value: DateTime(2026, 11, 20),
           mode: MinimalDatePickerMode.date,
-          first: DateTime(2020),
-          last: DateTime(2040, 12, 31),
+          firstDate: DateTime(2020),
+          lastDate: DateTime(2040, 12, 31),
           onChanged: (_) {},
         ),
         scale,

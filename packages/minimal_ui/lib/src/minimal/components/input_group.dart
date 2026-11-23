@@ -33,7 +33,7 @@ import 'pressable.dart';
 /// value (`https://`, `.com`, `kg`), a glyph, a button. The box is a
 /// [MinimalTextField]'s, and so are its states: its rule turns to the focus
 /// accent, 1.5 px in from the outline, while anything in it has focus, and
-/// the danger rule at rest when [error] says. A text add-on stands on the
+/// the danger rule at rest when [errorText] says. A text add-on stands on the
 /// quiet fill behind a hairline, as one part of the box. A tap on the box
 /// or a plain add-on puts the caret in the field.
 ///
@@ -42,16 +42,16 @@ import 'pressable.dart';
 /// `fieldStyle` does.
 ///
 /// ```dart
-/// MinimalInputGroup(label: 'Website', prefixText: 'https://', suffixText: '.com', controller: site)
+/// MinimalInputGroup(labelText: 'Website', prefixText: 'https://', suffixText: '.com', controller: site)
 /// ```
 class MinimalInputGroup extends StatefulWidget {
   /// A group around one field.
   const MinimalInputGroup({
     super.key,
-    this.label,
-    this.hint,
-    this.helper,
-    this.error,
+    this.labelText,
+    this.hintText,
+    this.helperText,
+    this.errorText,
     this.controller,
     this.focusNode,
     this.prefixText,
@@ -70,16 +70,16 @@ class MinimalInputGroup extends StatefulWidget {
   });
 
   /// The field's name, over the box.
-  final String? label;
+  final String? labelText;
 
   /// What the empty field shows.
-  final String? hint;
+  final String? hintText;
 
-  /// A quiet line under the box; the [error] replaces it.
-  final String? helper;
+  /// A quiet line under the box; the [errorText] replaces it.
+  final String? helperText;
 
   /// The message under the box; also turns its rule to the destructive ink.
-  final String? error;
+  final String? errorText;
 
   /// The field's text.
   final TextEditingController? controller;
@@ -133,10 +133,10 @@ class MinimalInputGroup extends StatefulWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('label', label, defaultValue: null))
-      ..add(StringProperty('hint', hint, defaultValue: null))
-      ..add(StringProperty('helper', helper, defaultValue: null))
-      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
+      ..add(StringProperty('helperText', helperText, defaultValue: null))
+      ..add(StringProperty('errorText', errorText, defaultValue: null))
       ..add(
         DiagnosticsProperty<TextEditingController>(
           'controller',
@@ -209,9 +209,8 @@ class _MinimalInputGroupState extends State<MinimalInputGroup>
   @override
   Widget build(BuildContext context) {
     final t = context.minimalTheme;
-    final label = widget.label;
-    final error = widget.error;
-    final message = error ?? widget.helper;
+    final label = widget.labelText;
+    final error = widget.errorText;
     final valueStyle = widget.mono ? t.monoValue : t.body;
     final ink = widget.enabled ? t.foreground : t.mutedForeground;
 
@@ -226,12 +225,11 @@ class _MinimalInputGroupState extends State<MinimalInputGroup>
       onChanged: widget.onChanged,
       onSubmitted: widget.onSubmitted,
       style: valueStyle.c(ink),
-      hint: widget.hint,
+      hint: widget.hintText,
       hintStyle: valueStyle.c(t.mutedForeground),
     );
     // The line by its capitals: caret, hint and taps move with it.
     field = minimalCapLabel(field);
-    if (label != null) field = Semantics(label: label, child: field);
     if (Material.maybeOf(context) == null) {
       field = Material(type: MaterialType.transparency, child: field);
     }
@@ -356,9 +354,10 @@ class _MinimalInputGroupState extends State<MinimalInputGroup>
     return _framed(
       t,
       label: label,
-      message: message,
-      error: error != null,
+      helper: widget.helperText,
+      error: error,
       enabled: widget.enabled,
+      focusNode: focusNode,
       // At a finger the group stands in a band as tall as the floor, its
       // add-ons a finger wide.
       child: minimalTapStrip(context, group),
@@ -367,37 +366,54 @@ class _MinimalInputGroupState extends State<MinimalInputGroup>
 }
 
 /// A field's label over it and its message under it, as a
-/// [MinimalTextField] sets them; dimmed whole when disabled.
+/// [MinimalTextField] sets them; dimmed whole when disabled. ui_core's
+/// decorator names the control by the label and gives it the error and the
+/// help as its hint; Minimal draws the words.
 Widget _framed(
   MinimalThemeData t, {
   required String? label,
-  required String? message,
-  required bool error,
+  required String? helper,
+  required String? error,
   required bool enabled,
   required Widget child,
+  FocusNode? focusNode,
+  bool invalid = false,
 }) {
-  final column = Column(
-    mainAxisSize: MainAxisSize.min,
-    crossAxisAlignment: CrossAxisAlignment.stretch,
-    children: [
-      if (label != null) ...[
-        ExcludeSemantics(
-          child: Text(label, style: t.caption.medium.c(t.foreground)),
-        ),
-        const MinimalGap(MinimalChromeMetrics.iconGap),
-      ],
-      child,
-      if (message != null) ...[
-        const MinimalGap(MinimalChromeMetrics.iconGap),
-        Semantics(
-          liveRegion: error,
-          child: Text(
-            message,
-            style: t.caption.c(error ? t.destructiveInk : t.mutedForeground),
-          ),
-        ),
-      ],
-    ],
+  final column = RawInputDecorator(
+    labelText: label,
+    helperText: helper,
+    errorText: error,
+    invalid: invalid,
+    enabled: enabled,
+    focusNode: focusNode,
+    child: child,
+    builder: (context, parts) {
+      final name = parts.label;
+      final message = parts.error ?? parts.helper;
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (name != null) ...[
+            DefaultTextStyle.merge(
+              style: t.caption.medium.c(t.foreground),
+              child: name,
+            ),
+            const MinimalGap(MinimalChromeMetrics.iconGap),
+          ],
+          parts.control,
+          if (message != null) ...[
+            const MinimalGap(MinimalChromeMetrics.iconGap),
+            DefaultTextStyle.merge(
+              style: t.caption.c(
+                parts.errorText != null ? t.destructiveInk : t.mutedForeground,
+              ),
+              child: message,
+            ),
+          ],
+        ],
+      );
+    },
   );
   return enabled ? column : Opacity(opacity: 0.45, child: column);
 }
@@ -412,16 +428,16 @@ Widget _framed(
 /// [fieldStyle] dresses the box over `components.textField`.
 ///
 /// ```dart
-/// MinimalPasswordField(label: 'Password', controller: password, onSubmitted: (_) => signIn())
+/// MinimalPasswordField(labelText: 'Password', controller: password, onSubmitted: (_) => signIn())
 /// ```
 class MinimalPasswordField extends StatefulWidget {
   /// A password field.
   const MinimalPasswordField({
     super.key,
-    this.label,
-    this.hint,
-    this.helper,
-    this.error,
+    this.labelText,
+    this.hintText,
+    this.helperText,
+    this.errorText,
     this.controller,
     this.focusNode,
     this.enabled = true,
@@ -435,17 +451,17 @@ class MinimalPasswordField extends StatefulWidget {
   });
 
   /// The field's name, over the box.
-  final String? label;
+  final String? labelText;
 
   /// What the empty field shows.
-  final String? hint;
+  final String? hintText;
 
   /// A quiet line under the box (the rules a new password keeps); the
-  /// [error] replaces it.
-  final String? helper;
+  /// [errorText] replaces it.
+  final String? helperText;
 
   /// The message under the box.
-  final String? error;
+  final String? errorText;
 
   /// The password.
   final TextEditingController? controller;
@@ -485,10 +501,10 @@ class MinimalPasswordField extends StatefulWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('label', label, defaultValue: null))
-      ..add(StringProperty('hint', hint, defaultValue: null))
-      ..add(StringProperty('helper', helper, defaultValue: null))
-      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
+      ..add(StringProperty('helperText', helperText, defaultValue: null))
+      ..add(StringProperty('errorText', errorText, defaultValue: null))
       ..add(
         DiagnosticsProperty<TextEditingController>(
           'controller',
@@ -555,10 +571,10 @@ class _MinimalPasswordFieldState extends State<MinimalPasswordField> {
       showLabel: words.showPassword,
       hideLabel: words.hidePassword,
       builder: (context, password) => MinimalTextField(
-        label: widget.label,
-        hint: widget.hint,
-        helper: widget.helper,
-        error: widget.error,
+        labelText: widget.labelText,
+        hintText: widget.hintText,
+        helperText: widget.helperText,
+        errorText: widget.errorText,
         controller: widget.controller,
         focusNode: _focus,
         enabled: widget.enabled,
@@ -593,7 +609,7 @@ class _MinimalPasswordFieldState extends State<MinimalPasswordField> {
 /// three for six), a short dash between groups: a group is one outline,
 /// its boxes split by single hairlines. A box prints its figure in Geist Mono; the box the next
 /// figure goes in wears the focus colour, with a caret while it is empty.
-/// [error] turns every rim to the destructive ink and prints its message under
+/// [errorText] turns every rim to the destructive ink and prints its message under
 /// the boxes. A long press or a secondary click offers Paste, in Minimal's
 /// menu, while the clipboard holds text.
 ///
@@ -601,7 +617,7 @@ class _MinimalPasswordFieldState extends State<MinimalPasswordField> {
 /// boxes read `components.textField` (fill, edge or side, shape).
 ///
 /// ```dart
-/// MinimalInputOtp(length: 6, label: 'Code from your email', onCompleted: verify)
+/// MinimalInputOtp(length: 6, labelText: 'Code from your email', onCompleted: verify)
 /// ```
 class MinimalInputOtp extends StatelessWidget {
   /// A code of [length] boxes.
@@ -609,8 +625,8 @@ class MinimalInputOtp extends StatelessWidget {
     super.key,
     this.length = 6,
     this.groupSize,
-    this.label,
-    this.error,
+    this.labelText,
+    this.errorText,
     this.focusNode,
     this.onChanged,
     this.onCompleted,
@@ -636,10 +652,10 @@ class MinimalInputOtp extends StatelessWidget {
   final int? groupSize;
 
   /// The code's name, over the boxes; also what a screen reader calls it.
-  final String? label;
+  final String? labelText;
 
   /// The message under the boxes; also turns their rims to the destructive ink.
-  final String? error;
+  final String? errorText;
 
   /// The input's focus.
   final FocusNode? focusNode;
@@ -688,9 +704,9 @@ class MinimalInputOtp extends StatelessWidget {
     final frame = MinimalStyleOf([
       style,
       t.components.textField,
-    ], minimalStates(enabled: enabled, error: error != null));
+    ], minimalStates(enabled: enabled, error: errorText != null));
     final whole = frame.shape ?? t.shapes.small;
-    final edge = frame.rim(error != null ? t.destructive : t.border, t.rim);
+    final edge = frame.rim(errorText != null ? t.destructive : t.border, t.rim);
 
     Widget slot(RawOtpSlot s) {
       final so = MinimalStyleOf(
@@ -759,10 +775,10 @@ class MinimalInputOtp extends StatelessWidget {
       autofillHints: autofillHints,
       enabled: enabled,
       autofocus: autofocus,
-      isError: error != null,
+      isError: errorText != null,
       obscureText: obscureText,
       keyboardType: keyboardType,
-      semanticLabel: label ?? words.oneTimeCode,
+      semanticLabel: labelText ?? words.oneTimeCode,
       contextMenuBuilder: (context, anchors, items) =>
           _CodeMenu(anchors: anchors, items: items),
       slotBuilder: (context, s) => slot(s),
@@ -796,10 +812,11 @@ class MinimalInputOtp extends StatelessWidget {
     );
     return _framed(
       t,
-      label: label,
-      message: error,
-      error: error != null,
+      label: labelText,
+      helper: null,
+      error: errorText,
       enabled: enabled,
+      focusNode: focusNode,
       child: Align(
         alignment: AlignmentDirectional.centerStart,
         child: MinimalTapBand(child: field),
@@ -813,8 +830,8 @@ class MinimalInputOtp extends StatelessWidget {
     properties
       ..add(IntProperty('length', length, defaultValue: 6))
       ..add(IntProperty('groupSize', groupSize, defaultValue: null))
-      ..add(StringProperty('label', label, defaultValue: null))
-      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
+      ..add(StringProperty('errorText', errorText, defaultValue: null))
       ..add(
         DiagnosticsProperty<FocusNode>(
           'focusNode',

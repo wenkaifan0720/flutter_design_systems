@@ -210,7 +210,11 @@ Widget kitSpecimenTopBarPushed() => _SpecimenRoute(
           label: 'Habit actions',
           items: [
             MinimalMenuItem('Rename', onPressed: () {}),
-            MinimalMenuItem('Archive', destructive: true, onPressed: () {}),
+            MinimalMenuItem(
+              'Archive',
+              isDestructiveAction: true,
+              onPressed: () {},
+            ),
           ],
         ),
       ],
@@ -361,7 +365,7 @@ Widget kitSpecimenScreenFloating() => MinimalScaffold(
     builder: (context) => SizedBox(
       width: MediaQuery.sizeOf(context).width - 2 * MinimalChromeMetrics.gutter,
       child: const MinimalSearchField(
-        hint: 'Search notes',
+        hintText: 'Search notes',
         presentation: MinimalSearchPresentation.toolbar,
       ),
     ),

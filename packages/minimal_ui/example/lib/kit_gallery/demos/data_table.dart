@@ -109,7 +109,7 @@ class _OrdersState extends State<_Orders> {
     crossAxisAlignment: CrossAxisAlignment.stretch,
     children: [
       MinimalSearchField(
-        hint: 'Filter orders',
+        hintText: 'Filter orders',
         clearable: true,
         onChanged: (q) => setState(() => _query = q),
       ),

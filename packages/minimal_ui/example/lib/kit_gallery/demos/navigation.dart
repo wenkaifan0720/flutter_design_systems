@@ -271,9 +271,9 @@ class _LiveDotsState extends State<_LiveDots> {
 
   @override
   Widget build(BuildContext context) => MinimalPageDots(
-    count: 4,
-    selectedIndex: _at,
-    onChanged: (i) => setState(() => _at = i),
+    pageCount: 4,
+    page: _at,
+    onPageChanged: (i) => setState(() => _at = i),
   );
 }
 
@@ -350,7 +350,7 @@ Widget kitSpecimenPagination() =>
 
 /// The second of four pages.
 Widget kitSpecimenPageDots() =>
-    MinimalPageDots(count: 4, selectedIndex: 1, onChanged: (_) {});
+    MinimalPageDots(pageCount: 4, page: 1, onPageChanged: (_) {});
 
 /// A checkout on its second step.
 Widget kitSpecimenStepProgress() => const MinimalStepProgress(

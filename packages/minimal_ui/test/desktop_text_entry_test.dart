@@ -67,19 +67,19 @@ void main() {
           ({Widget part, List<String> words, String? type, bool centred})
         >{
           'MinimalTextField': (
-            part: const MinimalTextField(hint: 'Ana Ruiz'),
+            part: const MinimalTextField(hintText: 'Ana Ruiz'),
             words: ['Ana Ruiz'],
             type: 'Bo',
             centred: true,
           ),
           'MinimalTextArea': (
-            part: const MinimalTextArea(hint: 'Anything'),
+            part: const MinimalTextArea(hintText: 'Anything'),
             words: ['Anything'],
             type: 'Bo',
             centred: false,
           ),
           'MinimalSearchField': (
-            part: const MinimalSearchField(hint: 'Search habits'),
+            part: const MinimalSearchField(hintText: 'Search habits'),
             words: ['Search habits'],
             type: 'Bo',
             centred: true,
@@ -87,20 +87,23 @@ void main() {
           'MinimalCombobox': (
             part: const MinimalCombobox<String>(
               options: ['Lisbon', 'London'],
-              hint: 'City',
+              hintText: 'City',
             ),
             words: ['City'],
             type: 'Bo',
             centred: true,
           ),
           'MinimalInputGroup': (
-            part: const MinimalInputGroup(hint: 'site', prefixText: 'https://'),
+            part: const MinimalInputGroup(
+              hintText: 'site',
+              prefixText: 'https://',
+            ),
             words: ['site', 'https://'],
             type: 'Bo',
             centred: true,
           ),
           'MinimalPasswordField': (
-            part: const MinimalPasswordField(hint: 'Password'),
+            part: const MinimalPasswordField(hintText: 'Password'),
             words: ['Password'],
             type: 'Bo',
             centred: true,
@@ -112,15 +115,15 @@ void main() {
             centred: true,
           ),
           'MinimalComposer': (
-            part: const MinimalComposer(hint: 'Comment on Morning run'),
+            part: const MinimalComposer(hintText: 'Comment on Morning run'),
             words: ['Comment on Morning run'],
             type: 'Bo',
             centred: true,
           ),
           'MinimalComposer assistant': (
             part: const MinimalComposer(
-              hint: 'Ask anything',
-              style: MinimalComposerStyle.assistant,
+              hintText: 'Ask anything',
+              variant: MinimalComposerVariant.assistant,
             ),
             words: ['Ask anything'],
             type: 'Bo',
@@ -138,14 +141,17 @@ void main() {
             centred: true,
           ),
           'MinimalInputRow': (
-            part: const MinimalInputRow(label: 'Name', hint: 'Ana Ruiz'),
+            part: const MinimalInputRow(
+              labelText: 'Name',
+              hintText: 'Ana Ruiz',
+            ),
             words: ['Ana Ruiz'],
             type: 'Bo',
             centred: true,
           ),
           'MinimalSelect': (
             part: MinimalSelect<String>(
-              label: 'Plan',
+              labelText: 'Plan',
               value: 'pro',
               options: const [
                 MinimalSelectOption('free', 'Free'),
@@ -161,7 +167,7 @@ void main() {
             part: MinimalMultiSelect<String>(
               values: const [],
               options: const ['Lisbon', 'London'],
-              hint: 'Add cities',
+              hintText: 'Add cities',
               onChanged: (_) {},
             ),
             words: ['Add cities'],

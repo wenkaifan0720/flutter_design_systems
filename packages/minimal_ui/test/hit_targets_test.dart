@@ -19,7 +19,7 @@ void main() {
       await tester.pumpWidget(
         scrollingHost(
           MinimalDatePicker(
-            label: 'Starts',
+            labelText: 'Starts',
             value: DateTime(2026, 8, 21),
             mode: MinimalDatePickerMode.date,
             onChanged: (_) {},
@@ -39,7 +39,7 @@ void main() {
       await tester.pumpWidget(
         scrollingHost(
           MinimalDatePicker(
-            label: 'Started',
+            labelText: 'Started',
             value: DateTime(2026, 8, 21),
             mode: MinimalDatePickerMode.date,
             presentation: MinimalDatePickerPresentation.inline,
@@ -73,8 +73,8 @@ void main() {
           Column(
             children: [
               MinimalTextField(
-                label: 'Name',
-                helper: 'Shown on Today.',
+                labelText: 'Name',
+                helperText: 'Shown on Today.',
                 controller: input,
                 clearable: true,
               ),

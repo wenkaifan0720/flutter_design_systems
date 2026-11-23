@@ -18,7 +18,7 @@ void main() {
             firstDate: DateTime(2026),
             lastDate: DateTime(2026, 12, 31),
             value: DateTime(2026, 3, 20),
-            today: day,
+            currentDate: day,
             onChanged: (_) {},
           ),
           scale: scale,

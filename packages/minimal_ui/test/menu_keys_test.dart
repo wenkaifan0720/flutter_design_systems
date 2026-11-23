@@ -46,7 +46,7 @@ final List<_Kind> _kinds = [
   (
     name: 'select',
     build: (value, onChanged) => MinimalSelect<String>(
-      label: 'Repeats',
+      labelText: 'Repeats',
       value: value,
       options: [
         for (final label in _labels)
@@ -360,7 +360,7 @@ void main() {
               MinimalMenuItem('Duplicate', onPressed: () => ran.add('dup')),
               MinimalMenuItem(
                 'Delete',
-                destructive: true,
+                isDestructiveAction: true,
                 startsGroup: true,
                 onPressed: () => ran.add('delete'),
               ),

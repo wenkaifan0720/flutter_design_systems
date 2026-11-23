@@ -18,10 +18,10 @@ void main() {
       await tester.pumpWidget(
         scrollingHost(
           MinimalDatePicker(
-            label: 'Starts',
+            labelText: 'Starts',
             value: DateTime(2026, 8, 21),
             mode: MinimalDatePickerMode.date,
-            today: today,
+            currentDate: today,
             onChanged: chosen.add,
           ),
         ),
@@ -43,12 +43,12 @@ void main() {
       await tester.pumpWidget(
         scrollingHost(
           MinimalDatePicker(
-            label: 'Started',
+            labelText: 'Started',
             value: DateTime(2026, 8, 21),
             mode: MinimalDatePickerMode.date,
             presentation: MinimalDatePickerPresentation.inline,
-            today: today,
-            first: DateTime(2026, 8, 3),
+            currentDate: today,
+            firstDate: DateTime(2026, 8, 3),
             onChanged: (_) {},
           ),
         ),
@@ -86,7 +86,7 @@ void main() {
       await tester.pumpWidget(
         scrollingHost(
           MinimalDatePicker(
-            label: 'Reminder',
+            labelText: 'Reminder',
             value: DateTime(2026, 8, 28, 21, 30),
             mode: MinimalDatePickerMode.time,
             presentation: MinimalDatePickerPresentation.wheel,
@@ -107,7 +107,7 @@ void main() {
       await tester.pumpWidget(
         scrollingHost(
           MinimalTimePicker(
-            label: 'Reminder',
+            labelText: 'Reminder',
             value: DateTime(2026, 8, 28, 7),
             wheel: true,
             onChanged: (_) {},
@@ -128,7 +128,7 @@ void main() {
       await tester.pumpWidget(
         scrollingHost(
           MinimalDatePicker(
-            label: 'Ends',
+            labelText: 'Ends',
             value: DateTime(2026, 12, 31, 23),
             mode: MinimalDatePickerMode.date,
             confirmSelection: true,
@@ -151,7 +151,7 @@ void main() {
       await tester.pumpWidget(
         scrollingHost(
           MinimalDatePicker(
-            label: 'Created',
+            labelText: 'Created',
             value: DateTime(2026, 6, 2, 7, 12),
           ),
         ),
@@ -181,19 +181,19 @@ void main() {
           Column(
             children: [
               MinimalDatePicker(
-                label: 'Started',
+                labelText: 'Started',
                 value: DateTime(2026, 8, 18),
                 mode: MinimalDatePickerMode.date,
                 presentation: MinimalDatePickerPresentation.inline,
-                last: DateTime(2026, 8, 20),
+                lastDate: DateTime(2026, 8, 20),
                 onChanged: chosen.add,
               ),
               MinimalDatePicker(
-                label: 'Reminder',
+                labelText: 'Reminder',
                 value: DateTime(2026, 8, 28, 10),
                 mode: MinimalDatePickerMode.time,
                 presentation: MinimalDatePickerPresentation.wheel,
-                first: DateTime(2026, 8, 28, 9),
+                firstDate: DateTime(2026, 8, 28, 9),
                 onChanged: chosen.add,
               ),
             ],
@@ -214,14 +214,14 @@ void main() {
           Column(
             children: [
               MinimalDatePicker(
-                label: 'Reminder',
+                labelText: 'Reminder',
                 value: DateTime(2026, 8, 28, 21, 30),
                 mode: MinimalDatePickerMode.time,
                 use24HourFormat: false,
                 onChanged: (_) {},
               ),
               MinimalDatePicker(
-                label: 'Reminder',
+                labelText: 'Reminder',
                 value: DateTime(2026, 8, 28, 21, 30),
                 mode: MinimalDatePickerMode.time,
                 presentation: MinimalDatePickerPresentation.wheel,
@@ -242,7 +242,7 @@ void main() {
       await tester.pumpWidget(
         scrollingHost(
           MinimalDatePicker(
-            label: 'Reminder',
+            labelText: 'Reminder',
             value: DateTime(2026, 8, 28, 21, 30),
             mode: MinimalDatePickerMode.time,
             presentation: MinimalDatePickerPresentation.wheel,
@@ -265,7 +265,7 @@ void main() {
       await tester.pumpWidget(
         scrollingHost(
           MinimalDatePicker(
-            label: 'Started',
+            labelText: 'Started',
             value: DateTime(2026, 8, 21),
             mode: MinimalDatePickerMode.date,
             presentation: MinimalDatePickerPresentation.inline,

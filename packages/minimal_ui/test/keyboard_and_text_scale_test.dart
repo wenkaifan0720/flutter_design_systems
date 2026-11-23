@@ -119,7 +119,7 @@ void main() {
         SizedBox(
           width: 310,
           child: MinimalSelect<String>(
-            label: label,
+            labelText: label,
             value: 'evening',
             options: [MinimalSelectOption('evening', value)],
             onChanged: (_) {},

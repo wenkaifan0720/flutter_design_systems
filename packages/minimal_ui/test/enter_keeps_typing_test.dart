@@ -84,7 +84,7 @@ void main() {
       await tester.pumpWidget(
         _page(
           MinimalCombobox<String>(
-            label: 'Port',
+            labelText: 'Port',
             options: const ['Porto', 'Porto Santo', 'Lisbon'],
             onSelected: taken.add,
           ),
@@ -113,7 +113,7 @@ void main() {
             builder: (context, setState) {
               set = setState;
               return MinimalMultiSelect<String>(
-                label: 'Labels',
+                labelText: 'Labels',
                 values: tags,
                 options: const ['Noir', 'Western', 'Horror'],
                 onCreate: (text) => text.trim().isEmpty ? null : text.trim(),
@@ -178,8 +178,8 @@ void main() {
     (tester) async {
       final said = <String>[];
       for (final field in <Widget>[
-        MinimalTextField(label: 'Name', onSubmitted: said.add),
-        MinimalSearchField(hint: 'Search habits', onSubmitted: said.add),
+        MinimalTextField(labelText: 'Name', onSubmitted: said.add),
+        MinimalSearchField(hintText: 'Search habits', onSubmitted: said.add),
       ]) {
         said.clear();
         await tester.pumpWidget(_page(field));

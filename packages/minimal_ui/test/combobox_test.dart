@@ -16,7 +16,7 @@ void main() {
           SizedBox(
             width: 280,
             child: MinimalCombobox<String>(
-              label: 'Assignee',
+              labelText: 'Assignee',
               options: const ['Ana Souza', 'Ben Okafor'],
               onSelected: taken.add,
             ),

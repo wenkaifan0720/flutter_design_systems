@@ -12,6 +12,7 @@ import '../internal/controls.dart';
 import '../internal/face.dart';
 import '../internal/styled.dart';
 import '../internal/tap_band.dart';
+import '../internal/row_trailing.dart';
 import '../internal/trailing_glyph.dart';
 import '../theme.dart';
 import 'card.dart';
@@ -115,7 +116,8 @@ class MinimalListTile extends StatelessWidget {
   /// share one keyline.
   final double? leadingWidth;
 
-  /// An accessory before [meta]: a tag, a toggle, a small chart.
+  /// An accessory before [meta]: a tag, a toggle, a small chart, the
+  /// row's menu key (a [MinimalMenu.button], ghost here).
   final Widget? trailing;
 
   /// The trailing figure, printed in mono in the quiet ink: `12d`, `09:30`,
@@ -195,7 +197,9 @@ class MinimalListTile extends StatelessWidget {
         : t.foreground;
     // At large text what follows the title (its trailing part and meta)
     // drops under it.
-    final trail = trailing;
+    final part = trailing;
+    // A menu key in the slot stands ghost (MinimalRowTrailing).
+    final trail = part == null ? null : MinimalRowTrailing(child: part);
     final stacked =
         (trail != null || meta != null) &&
         MediaQuery.textScalerOf(context).scale(10) / 10 >=

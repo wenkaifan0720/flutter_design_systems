@@ -57,7 +57,7 @@ class _PageTwo extends StatelessWidget {
           SizedBox(
             width: 280,
             child: MinimalSelect<String>(
-              label: 'Repeats',
+              labelText: 'Repeats',
               value: 'Every day',
               options: const [
                 MinimalSelectOption('Every day', 'Every day'),
@@ -224,7 +224,7 @@ void main() {
                               SizedBox(
                                 width: 280,
                                 child: MinimalCombobox<String>(
-                                  label: 'City',
+                                  labelText: 'City',
                                   options: const ['Lyon', 'London'],
                                   onSelected: (_) {},
                                 ),
@@ -232,7 +232,7 @@ void main() {
                               SizedBox(
                                 width: 280,
                                 child: MinimalMultiSelect<String>(
-                                  label: 'Colours',
+                                  labelText: 'Colours',
                                   values: const [],
                                   options: const ['Red', 'Green'],
                                   onChanged: (_) {},

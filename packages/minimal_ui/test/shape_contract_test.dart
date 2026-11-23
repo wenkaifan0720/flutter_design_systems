@@ -217,10 +217,16 @@ final Map<String, _Framed> _framed = {
     _medium,
     highlight: true,
   ),
-  'MinimalTextField': _f(() => const MinimalTextField(label: 'Name'), _small),
-  'MinimalTextArea': _f(() => const MinimalTextArea(label: 'Notes'), _small),
+  'MinimalTextField': _f(
+    () => const MinimalTextField(labelText: 'Name'),
+    _small,
+  ),
+  'MinimalTextArea': _f(
+    () => const MinimalTextArea(labelText: 'Notes'),
+    _small,
+  ),
   'MinimalSearchField': _f(
-    () => const MinimalSearchField(hint: 'Search'),
+    () => const MinimalSearchField(hintText: 'Search'),
     _small,
   ),
   'MinimalSegmentedButton': _f(
@@ -240,14 +246,14 @@ final Map<String, _Framed> _framed = {
       value: 2,
       min: 0,
       max: 9,
-      label: 'Guests',
+      labelText: 'Guests',
       onChanged: (_) {},
     ),
     _small,
   ),
   'MinimalDatePicker': _f(
     () => MinimalDatePicker(
-      label: 'Due',
+      labelText: 'Due',
       value: DateTime(2026, 11, 9, 9, 30),
       onChanged: (_) {},
     ),
@@ -269,7 +275,7 @@ final Map<String, _Framed> _framed = {
     highlight: true,
   ),
   'MinimalPageDots': _f(
-    () => const MinimalPageDots(count: 3, selectedIndex: 1),
+    () => const MinimalPageDots(pageCount: 3, page: 1),
     _pill,
   ),
   'MinimalStepProgress': _f(
@@ -322,7 +328,7 @@ final Map<String, _Framed> _framed = {
     () => MinimalToggleGroup<String>(
       label: 'View',
       selected: const {'list'},
-      onChanged: (_) {},
+      onSelectionChanged: (_) {},
       items: const [
         MinimalToggleItem('list', label: 'List'),
         MinimalToggleItem('board', label: 'Board'),
@@ -342,14 +348,14 @@ final Map<String, _Framed> _framed = {
   'MinimalInputGroup': _f(
     () => const SizedBox(
       width: 320,
-      child: MinimalInputGroup(label: 'Website', prefixText: 'https://'),
+      child: MinimalInputGroup(labelText: 'Website', prefixText: 'https://'),
     ),
     _small,
   ),
   'MinimalPasswordField': _f(
     () => const SizedBox(
       width: 320,
-      child: MinimalPasswordField(label: 'Password'),
+      child: MinimalPasswordField(labelText: 'Password'),
     ),
     _small,
   ),
@@ -357,9 +363,9 @@ final Map<String, _Framed> _framed = {
     () => SizedBox(
       width: 320,
       child: MinimalCombobox<String>(
-        label: 'City',
+        labelText: 'City',
         options: const ['Lisbon', 'London'],
-        displayString: (c) => c,
+        displayStringForOption: (c) => c,
         onSelected: (_) {},
       ),
     ),
@@ -369,10 +375,10 @@ final Map<String, _Framed> _framed = {
     () => SizedBox(
       width: 320,
       child: MinimalMultiSelect<String>(
-        label: 'Labels',
+        labelText: 'Labels',
         values: const ['Bug'],
         options: const ['Bug', 'Docs'],
-        displayString: (l) => l,
+        displayStringForOption: (l) => l,
         onChanged: (_) {},
       ),
     ),
@@ -394,7 +400,7 @@ final Map<String, _Framed> _framed = {
       child: MinimalCalendar(
         firstDate: DateTime(2026),
         lastDate: DateTime(2027),
-        today: DateTime(2026, 3, 12),
+        currentDate: DateTime(2026, 3, 12),
         onChanged: (_) {},
       ),
     ),
@@ -404,7 +410,7 @@ final Map<String, _Framed> _framed = {
     () => SizedBox(
       width: 320,
       child: MinimalDateRangePicker(
-        label: 'Stay',
+        labelText: 'Stay',
         firstDate: DateTime(2026),
         lastDate: DateTime(2027),
         onChanged: (_) {},
@@ -921,9 +927,9 @@ void main() {
         name: _framed[name]!.build(),
       'MinimalLink': const MinimalLink('Docs', onPressed: _tap),
       'MinimalPageDots': MinimalPageDots(
-        count: 3,
-        selectedIndex: 1,
-        onChanged: (_) {},
+        pageCount: 3,
+        page: 1,
+        onPageChanged: (_) {},
       ),
       'MinimalDisclosure': const SizedBox(
         width: 300,
@@ -1026,9 +1032,8 @@ void main() {
       'MinimalRadio': _stated(
         ({enabled = true, error}) => MinimalRadio(
           selected: false,
-          enabled: enabled,
           label: 'Pro',
-          onPressed: _tap,
+          onPressed: enabled ? _tap : null,
         ),
       ),
       'MinimalSwitch': _stated(
@@ -1064,10 +1069,10 @@ void main() {
       'MinimalTextField': _stated(
         ({enabled = true, error}) => sized(
           MinimalTextField(
-            label: 'Name',
-            hint: 'Ana Ruiz',
+            labelText: 'Name',
+            hintText: 'Ana Ruiz',
             enabled: enabled,
-            error: error,
+            errorText: error,
           ),
         ),
         press: null,
@@ -1076,7 +1081,7 @@ void main() {
       'MinimalSelect': _stated(
         ({enabled = true, error}) => sized(
           MinimalSelect<String>(
-            label: 'Plan',
+            labelText: 'Plan',
             value: 'pro',
             options: const [
               MinimalSelectOption('free', 'Free'),
@@ -1091,7 +1096,7 @@ void main() {
           value: 2,
           min: 0,
           max: 9,
-          label: 'Guests',
+          labelText: 'Guests',
           onChanged: enabled ? (_) {} : null,
         ),
         // On its + button: the value between the buttons takes no press.
@@ -1113,7 +1118,7 @@ void main() {
       'MinimalDatePicker': _stated(
         ({enabled = true, error}) => sized(
           MinimalDatePicker(
-            label: 'Due',
+            labelText: 'Due',
             value: DateTime(2026, 11, 9, 9, 30),
             onChanged: enabled ? (_) {} : null,
           ),
@@ -1146,10 +1151,10 @@ void main() {
       'MinimalToggleGroup': _stated(
         ({enabled = true, error}) => MinimalToggleGroup<String>(
           label: 'Text style',
-          multiple: true,
-          allowEmpty: true,
+          multiSelectionEnabled: true,
+          emptySelectionAllowed: true,
           selected: const {},
-          onChanged: enabled ? (_) {} : null,
+          onSelectionChanged: enabled ? (_) {} : null,
           items: const [
             MinimalToggleItem('b', label: 'B'),
             MinimalToggleItem('i', label: 'I'),
@@ -1164,10 +1169,10 @@ void main() {
       'MinimalToggleGroup on': _stated(
         ({enabled = true, error}) => MinimalToggleGroup<String>(
           label: 'Text style',
-          multiple: true,
-          allowEmpty: true,
+          multiSelectionEnabled: true,
+          emptySelectionAllowed: true,
           selected: const {'b'},
-          onChanged: enabled ? (_) {} : null,
+          onSelectionChanged: enabled ? (_) {} : null,
           items: const [
             MinimalToggleItem('b', label: 'B'),
             MinimalToggleItem('i', label: 'I'),
@@ -1225,9 +1230,8 @@ void main() {
       'MinimalRadio on': _stated(
         ({enabled = true, error}) => MinimalRadio(
           selected: true,
-          enabled: enabled,
           label: 'Pro',
-          onPressed: _tap,
+          onPressed: enabled ? _tap : null,
         ),
       ),
       'MinimalSwitch on': _stated(
@@ -1260,10 +1264,10 @@ void main() {
       'MinimalInputGroup': _stated(
         ({enabled = true, error}) => sized(
           MinimalInputGroup(
-            hint: 'site',
+            hintText: 'site',
             prefixText: 'https://',
             enabled: enabled,
-            error: error,
+            errorText: error,
           ),
         ),
         press: null,
@@ -1272,9 +1276,9 @@ void main() {
       'MinimalPasswordField': _stated(
         ({enabled = true, error}) => sized(
           MinimalPasswordField(
-            hint: 'Password',
+            hintText: 'Password',
             enabled: enabled,
-            error: error,
+            errorText: error,
           ),
         ),
         press: null,
@@ -1283,9 +1287,9 @@ void main() {
       'MinimalInputOtp': _stated(
         ({enabled = true, error}) => MinimalInputOtp(
           length: 4,
-          label: 'Code',
+          labelText: 'Code',
           enabled: enabled,
-          error: error,
+          errorText: error,
         ),
         press: null,
         errs: true,
@@ -1294,9 +1298,9 @@ void main() {
         ({enabled = true, error}) => sized(
           MinimalCombobox<String>(
             options: const ['Lisbon', 'London'],
-            hint: 'City',
+            hintText: 'City',
             enabled: enabled,
-            error: error,
+            errorText: error,
             onSelected: (_) {},
           ),
         ),

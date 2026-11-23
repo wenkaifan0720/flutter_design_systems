@@ -26,7 +26,7 @@ void main() {
       final codes = <String>[];
       await tester.pumpWidget(
         centredHost(
-          MinimalInputOtp(length: 4, label: 'Code', onCompleted: codes.add),
+          MinimalInputOtp(length: 4, labelText: 'Code', onCompleted: codes.add),
         ),
       );
       final press = tester.getCenter(find.byType(EditableText));

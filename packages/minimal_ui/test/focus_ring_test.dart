@@ -73,7 +73,6 @@ void main() {
         await tester.sendKeyEvent(LogicalKeyboardKey.tab);
         await tester.pumpAndSettle();
 
-        final face = inCard ? t.destructive : t.primary;
         final ground = inCard ? t.card : t.background;
         final line = await row(tester, shot);
         // From the start: the ground, then the ring, the gap, the face.
@@ -82,7 +81,15 @@ void main() {
         expect(near(line[ring + 1], t.ring), isTrue);
         expect(near(line[ring + 2], ground), isTrue);
         expect(near(line[ring + 3], ground), isTrue);
-        expect(near(line[ring + 4], face), isTrue);
+        final face = line[ring + 4];
+        expect(near(face, ground), isFalse);
+        if (inCard) {
+          // By night the danger fill is its tone over the ground: a red.
+          expect(face.r, greaterThan(face.g));
+          expect(face.r, greaterThan(face.b));
+        } else {
+          expect(near(face, t.primary), isTrue);
+        }
       }, tags: 'goldens');
     }
 
@@ -91,7 +98,7 @@ void main() {
     // pixel, as a list row's text stands inside its own fill.
     final rows = <String, Widget>{
       'MinimalSelect': MinimalSelect<String>(
-        label: 'Plan',
+        labelText: 'Plan',
         value: 'pro',
         options: const [
           MinimalSelectOption('free', 'Free'),

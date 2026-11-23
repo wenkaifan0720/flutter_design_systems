@@ -43,6 +43,10 @@ const double _band = _track + _gap;
 /// control that fills its column does. The behaviour is ui_core's
 /// ([RawColorPicker]); Minimal paints it.
 ///
+/// With no [onChanged] it is disabled: every part dims to the kit's 0.45,
+/// takes no press, drag, typing or focus, and the hex field and the
+/// swatches tell a screen reader they are disabled.
+///
 /// ```dart
 /// MinimalColorPicker(value: colour, onChanged: setColour, swatches: const [Color(0xFF2563EB), Color(0xFF16A34A)])
 /// ```
@@ -51,7 +55,7 @@ class MinimalColorPicker extends StatefulWidget {
   const MinimalColorPicker({
     super.key,
     required this.value,
-    required this.onChanged,
+    this.onChanged,
     this.showAlpha = false,
     this.swatches = const [],
     this.areaHeight = 160,
@@ -60,8 +64,8 @@ class MinimalColorPicker extends StatefulWidget {
   /// The colour.
   final Color value;
 
-  /// Called with the colour as it changes.
-  final ValueChanged<Color> onChanged;
+  /// Called with the colour as it changes; null disables the picker.
+  final ValueChanged<Color>? onChanged;
 
   /// Whether it offers an opacity slider (and the hex keeps its alpha).
   final bool showAlpha;
@@ -108,7 +112,7 @@ class _MinimalColorPickerState extends State<MinimalColorPicker> {
     }
     if (!_hexFocus.hasFocus) _hex.text = _colour.hex;
     final c = _colour.color;
-    if (c != widget.value) widget.onChanged(c);
+    if (c != widget.value) widget.onChanged?.call(c);
     setState(() {});
   }
 
@@ -135,6 +139,17 @@ class _MinimalColorPickerState extends State<MinimalColorPicker> {
     final t = context.minimalTheme;
     final words = MinimalLocalizations.of(context);
     final frame = t.shapes.small;
+    final enabled = widget.onChanged != null;
+
+    // ui_core's area and sliders have no disabled state of their own: off,
+    // they dim as the kit's disabled parts do and take no pointer, keys or
+    // screen reader actions.
+    Widget off(Widget part) => enabled
+        ? part
+        : Opacity(
+            opacity: 0.45,
+            child: IgnorePointer(child: ExcludeFocus(child: part)),
+          );
 
     Widget handle(Set<WidgetState> states, {Color? fill}) {
       final ring = t.focusWidth;
@@ -262,19 +277,20 @@ class _MinimalColorPickerState extends State<MinimalColorPicker> {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        picker,
+        off(picker),
         // The last strip's band ends half a gap under its track.
         const MinimalGap(_gap / 2),
         Row(
           children: [
-            ExcludeSemantics(child: swatch),
+            ExcludeSemantics(child: off(swatch)),
             const MinimalGap(MinimalSpacing.s8),
             Expanded(
               child: MinimalTextField(
                 controller: _hex,
                 focusNode: _hexFocus,
+                enabled: enabled,
                 mono: true,
-                hint: '#RRGGBB',
+                hintText: '#RRGGBB',
                 fieldBuilder: (field) =>
                     Semantics(label: words.hexColour, child: field),
                 onChanged: (text) {
@@ -285,7 +301,7 @@ class _MinimalColorPickerState extends State<MinimalColorPicker> {
                 onSubmitted: (text) {
                   if (!_colour.setHex(text)) _hex.text = _colour.hex;
                 },
-                onFocusChanged: (focused) {
+                onFocusChange: (focused) {
                   if (!focused) _hex.text = _colour.hex;
                 },
               ),
@@ -301,6 +317,7 @@ class _MinimalColorPickerState extends State<MinimalColorPicker> {
               for (final c in widget.swatches)
                 MinimalPressable(
                   onPressed: () => _colour.color = c,
+                  enabled: enabled,
                   shape: t.shapes.mark,
                   selected: c == _colour.color,
                   semanticLabel: _hexOf(c),

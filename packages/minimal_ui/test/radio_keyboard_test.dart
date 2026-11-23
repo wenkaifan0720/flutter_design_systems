@@ -528,7 +528,7 @@ void main() {
                                     child: Row(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        MinimalRadio(
+                                        MinimalRadio.mark(
                                           selected: radio.value ?? false,
                                           enabled: v != 'B',
                                         ),

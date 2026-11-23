@@ -77,15 +77,15 @@ Widget kitPickersDemo(Brightness brightness) => kitScreen(
         MinimalFormSection(
           children: [
             MinimalSelect(
-              label: 'Area',
+              labelText: 'Area',
               icon: LucideIcons.folder,
               value: null,
               options: _parts,
-              prompt: 'None',
+              hintText: 'None',
               onChanged: (_) {},
             ),
             const MinimalSelect(
-              label: 'Owner',
+              labelText: 'Owner',
               icon: LucideIcons.user,
               value: 'you',
               options: [MinimalSelectOption('you', 'You')],
@@ -112,12 +112,12 @@ Widget kitPickersDemo(Brightness brightness) => kitScreen(
           start: DateTime(2026, 8, 21),
           builder: (value, onChanged) => kitMonth(
             MinimalDatePicker(
-              label: 'Started',
+              labelText: 'Started',
               value: value,
               mode: MinimalDatePickerMode.date,
               presentation: MinimalDatePickerPresentation.inline,
-              today: _today,
-              first: DateTime(2026, 8, 3),
+              currentDate: _today,
+              firstDate: DateTime(2026, 8, 3),
               onChanged: onChanged,
             ),
           ),
@@ -134,7 +134,7 @@ Widget kitPickersDemo(Brightness brightness) => kitScreen(
         _Inline(
           start: DateTime(2026, 8, 28, 21, 30),
           builder: (value, onChanged) => MinimalDatePicker(
-            label: 'Reminder',
+            labelText: 'Reminder',
             value: value,
             mode: MinimalDatePickerMode.time,
             presentation: MinimalDatePickerPresentation.wheel,
@@ -150,10 +150,10 @@ Widget kitPickersDemo(Brightness brightness) => kitScreen(
           start: DateTime(2026, 9, 2, 7),
           builder: (value, onChanged) => kitMonth(
             MinimalDatePicker(
-              label: 'Next check-in',
+              labelText: 'Next check-in',
               value: value,
               presentation: MinimalDatePickerPresentation.inline,
-              today: _today,
+              currentDate: _today,
               onChanged: onChanged,
             ),
           ),
@@ -166,7 +166,7 @@ Widget kitPickersDemo(Brightness brightness) => kitScreen(
         _Inline(
           start: DateTime(2026, 8, 28, 7),
           builder: (value, onChanged) => MinimalDatePicker(
-            label: 'Wake-up',
+            labelText: 'Wake-up',
             value: value,
             mode: MinimalDatePickerMode.time,
             presentation: MinimalDatePickerPresentation.wheel,
@@ -207,14 +207,14 @@ class _ScheduleState extends State<_Schedule> {
   Widget build(BuildContext context) => MinimalFormSection(
     children: [
       MinimalSelect(
-        label: 'Repeats',
+        labelText: 'Repeats',
         icon: LucideIcons.repeat,
         value: _repeat,
         options: _repeats,
         onChanged: (v) => setState(() => _repeat = v),
       ),
       MinimalSelect(
-        label: 'Time of day',
+        labelText: 'Time of day',
         icon: LucideIcons.clock,
         value: _part,
         options: _parts,
@@ -243,30 +243,30 @@ class _DatesState extends State<_Dates> {
   Widget build(BuildContext context) => MinimalFormSection(
     children: [
       MinimalDatePicker(
-        label: 'Starts',
+        labelText: 'Starts',
         icon: LucideIcons.calendar,
         value: _starts,
         mode: MinimalDatePickerMode.date,
-        today: _today,
+        currentDate: _today,
         onChanged: (v) => setState(() => _starts = v),
       ),
       MinimalDatePicker(
-        label: 'Reminder',
+        labelText: 'Reminder',
         icon: LucideIcons.bell,
         value: _reminder,
         mode: MinimalDatePickerMode.time,
         onChanged: (v) => setState(() => _reminder = v),
       ),
       MinimalDatePicker(
-        label: 'Ends',
+        labelText: 'Ends',
         icon: LucideIcons.flag,
         value: _ends,
-        today: _today,
+        currentDate: _today,
         confirmSelection: true,
         onChanged: (v) => setState(() => _ends = v),
       ),
       MinimalDatePicker(
-        label: 'Paused until',
+        labelText: 'Paused until',
         icon: LucideIcons.pause,
         value: DateTime(2026, 9, 14, 7, 0),
       ),
@@ -374,7 +374,7 @@ class _MenusState extends State<_Menus> {
       MinimalMenuItem(
         'Delete',
         icon: LucideIcons.trash2,
-        destructive: true,
+        isDestructiveAction: true,
         shortcut: const SingleActivator(LogicalKeyboardKey.delete),
         onPressed: () => _did('Delete'),
       ),
@@ -465,7 +465,7 @@ Widget kitSpecimenPickerRowMenu() => _Body(
   child: MinimalFormSection(
     children: [
       MinimalSelect(
-        label: 'Repeats',
+        labelText: 'Repeats',
         icon: LucideIcons.repeat,
         value: 'evening',
         options: _repeats,
@@ -480,7 +480,7 @@ Widget kitSpecimenPickerRowSheet() => _Body(
   child: MinimalFormSection(
     children: [
       MinimalSelect(
-        label: 'Time of day',
+        labelText: 'Time of day',
         icon: LucideIcons.clock,
         value: 'morning',
         options: _parts,
@@ -505,10 +505,10 @@ Widget kitSpecimenDatePickerCompact() => _Body(
   child: MinimalFormSection(
     children: [
       MinimalDatePicker(
-        label: 'Starts',
+        labelText: 'Starts',
         icon: LucideIcons.calendar,
         value: DateTime(2026, 9, 1, 7, 0),
-        today: _today,
+        currentDate: _today,
         onChanged: (_) {},
       ),
     ],
@@ -517,18 +517,18 @@ Widget kitSpecimenDatePickerCompact() => _Body(
 
 /// The month calendar in place, the choice on the accent, today underlined.
 Widget kitSpecimenDatePickerInline() => MinimalDatePicker(
-  label: 'Started',
+  labelText: 'Started',
   value: DateTime(2026, 8, 21),
   mode: MinimalDatePickerMode.date,
   presentation: MinimalDatePickerPresentation.inline,
-  today: _today,
-  first: DateTime(2026, 8, 3),
+  currentDate: _today,
+  firstDate: DateTime(2026, 8, 3),
   onChanged: (_) {},
 );
 
 /// The hour and minute columns alone.
 Widget kitSpecimenDatePickerWheel() => MinimalDatePicker(
-  label: 'Reminder',
+  labelText: 'Reminder',
   value: DateTime(2026, 8, 28, 21, 30),
   mode: MinimalDatePickerMode.time,
   presentation: MinimalDatePickerPresentation.wheel,

@@ -57,7 +57,7 @@ enum MinimalDatePickerPresentation {
 /// the label in the quiet ink and the value as bordered mono pills — the
 /// date (`28 Aug 2026`), the clock (`21:30`) — each opening its own picker
 /// in an anchored popover: a month calendar with mono day numbers, the
-/// chosen day on the accent, [today] a bar under its figure; or two scrolling columns of
+/// chosen day on the accent, [currentDate] a bar under its figure; or two scrolling columns of
 /// hours and minutes. Choosing a day closes the calendar. With
 /// `confirmSelection` the picker rises in a sheet instead and commits only
 /// on Done. With no [onChanged] the whole row dims to the kit's 0.45, its
@@ -73,32 +73,33 @@ enum MinimalDatePickerPresentation {
 ///
 /// Minimal prints the 24-hour clock unless [use24HourFormat] is false. The
 /// calendar starts its weeks on Monday. Nothing here reads the clock: pass
-/// [today] to have it marked. [first] and [last] (the earliest and latest
+/// [currentDate] to have it marked. [firstDate] and [lastDate] (the earliest and latest
 /// moments that can be chosen) grey the days outside them and clamp every
 /// change into range.
 ///
 /// ```dart
-/// MinimalDatePicker(label: 'Reminder', value: remindAt, mode: MinimalDatePickerMode.time, onChanged: setRemindAt)
+/// MinimalDatePicker(labelText: 'Reminder', value: remindAt, mode: MinimalDatePickerMode.time, onChanged: setRemindAt)
 /// ```
 class MinimalDatePicker extends StatefulWidget {
   /// A picker of a date, a time or both, showing [value].
   const MinimalDatePicker({
     super.key,
-    required this.label,
+    required this.labelText,
     required this.value,
     this.onChanged,
     this.mode = MinimalDatePickerMode.dateAndTime,
     this.presentation = MinimalDatePickerPresentation.compact,
-    this.first,
-    this.last,
+    this.firstDate,
+    this.lastDate,
     this.use24HourFormat = true,
     this.confirmSelection = false,
-    this.today,
+    this.currentDate,
     this.icon,
+    this.autofocus = false,
   });
 
   /// What it picks.
-  final String label;
+  final String labelText;
 
   /// The moment it shows.
   final DateTime value;
@@ -113,10 +114,10 @@ class MinimalDatePicker extends StatefulWidget {
   final MinimalDatePickerPresentation presentation;
 
   /// The earliest moment it can pick.
-  final DateTime? first;
+  final DateTime? firstDate;
 
   /// The latest moment it can pick.
-  final DateTime? last;
+  final DateTime? lastDate;
 
   /// Whether it prints the 24-hour clock.
   final bool use24HourFormat;
@@ -125,10 +126,15 @@ class MinimalDatePicker extends StatefulWidget {
   final bool confirmSelection;
 
   /// The day the calendar outlines as today; none when null.
-  final DateTime? today;
+  final DateTime? currentDate;
 
   /// A glyph before the compact row's label.
   final IconData? icon;
+
+  /// Whether an inline calendar takes the focus as it mounts, on its chosen
+  /// day, so the arrow keys walk on from it. The calendar a compact picker
+  /// opens, in its popover or its sheet, always does.
+  final bool autofocus;
 
   @override
   State<MinimalDatePicker> createState() => _MinimalDatePickerState();
@@ -137,7 +143,7 @@ class MinimalDatePicker extends StatefulWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('label', label))
+      ..add(StringProperty('labelText', labelText))
       ..add(DiagnosticsProperty<DateTime>('value', value))
       ..add(
         ObjectFlagProperty<ValueChanged<DateTime>>.has('onChanged', onChanged),
@@ -156,8 +162,16 @@ class MinimalDatePicker extends StatefulWidget {
           defaultValue: MinimalDatePickerPresentation.compact,
         ),
       )
-      ..add(DiagnosticsProperty<DateTime>('first', first, defaultValue: null))
-      ..add(DiagnosticsProperty<DateTime>('last', last, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<DateTime>(
+          'firstDate',
+          firstDate,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<DateTime>('lastDate', lastDate, defaultValue: null),
+      )
       ..add(
         FlagProperty(
           'use24HourFormat',
@@ -172,8 +186,15 @@ class MinimalDatePicker extends StatefulWidget {
           ifTrue: 'confirmSelection',
         ),
       )
-      ..add(DiagnosticsProperty<DateTime>('today', today, defaultValue: null))
-      ..add(DiagnosticsProperty<IconData>('icon', icon, defaultValue: null));
+      ..add(
+        DiagnosticsProperty<DateTime>(
+          'currentDate',
+          currentDate,
+          defaultValue: null,
+        ),
+      )
+      ..add(DiagnosticsProperty<IconData>('icon', icon, defaultValue: null))
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
   }
 }
 
@@ -220,8 +241,8 @@ class _MinimalDatePickerState extends State<MinimalDatePicker> {
   }
 
   DateTime _clamp(DateTime v) {
-    final min = widget.first;
-    final max = widget.last;
+    final min = widget.firstDate;
+    final max = widget.lastDate;
     if (min != null && v.isBefore(min)) return min;
     if (max != null && v.isAfter(max)) return max;
     return v;
@@ -248,16 +269,17 @@ class _MinimalDatePickerState extends State<MinimalDatePicker> {
     DateTime value,
     ValueChanged<DateTime> onChanged,
   ) => MinimalDatePicker(
-    label: widget.label,
+    labelText: widget.labelText,
     value: value,
     mode: mode,
     presentation: mode == MinimalDatePickerMode.time
         ? MinimalDatePickerPresentation.wheel
         : MinimalDatePickerPresentation.inline,
-    first: widget.first,
-    last: widget.last,
+    firstDate: widget.firstDate,
+    lastDate: widget.lastDate,
     use24HourFormat: widget.use24HourFormat,
-    today: widget.today,
+    currentDate: widget.currentDate,
+    autofocus: mode != MinimalDatePickerMode.time,
     onChanged: onChanged,
   );
 
@@ -269,7 +291,7 @@ class _MinimalDatePickerState extends State<MinimalDatePicker> {
       await MinimalMenu.popover<void>(
         context,
         anchor: box.localToGlobal(Offset.zero) & box.size,
-        label: widget.label,
+        label: widget.labelText,
         width: mode == MinimalDatePickerMode.time
             ? _DateMetrics.timeWidth
             : _DateMetrics.calendarWidth,
@@ -291,8 +313,10 @@ class _MinimalDatePickerState extends State<MinimalDatePicker> {
     }
     final result = await showMinimalBottomSheet<DateTime>(
       context,
-      title: widget.label,
-      leading: MinimalSheetAction(MinimalLocalizations.of(context).cancel),
+      title: widget.labelText,
+      leading: MinimalSheetAction.cancel(
+        MinimalLocalizations.of(context).cancel,
+      ),
       trailing: MinimalSheetAction(
         MinimalLocalizations.of(context).done,
         isDefaultAction: true,
@@ -351,7 +375,7 @@ class _MinimalDatePickerState extends State<MinimalDatePicker> {
     final enabled = widget.onChanged != null;
     Widget pill(String text, MinimalDatePickerMode mode) {
       final label =
-          '${widget.label}, '
+          '${widget.labelText}, '
           '${mode == MinimalDatePickerMode.time ? 'time' : 'date'}';
       final face = Container(
         constraints: const BoxConstraints(
@@ -443,7 +467,7 @@ class _MinimalDatePickerState extends State<MinimalDatePicker> {
               Expanded(
                 child: minimalCapLabel(
                   Text(
-                    widget.label,
+                    widget.labelText,
                     style: t.body.c(t.mutedForeground),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
@@ -497,7 +521,7 @@ class _MinimalDatePickerState extends State<MinimalDatePicker> {
     bool shown(DateTime? d) =>
         d != null && d.year == _month.year && d.month == _month.month;
     if (shown(widget.value)) return widget.value.day;
-    final today = widget.today;
+    final today = widget.currentDate;
     if (today != null && shown(today)) return today.day;
     return 1;
   }
@@ -521,8 +545,8 @@ class _MinimalDatePickerState extends State<MinimalDatePicker> {
   /// Whether [day] can be chosen: the picker is live and the day touches
   /// the allowed range.
   bool _isOpen(DateTime day) {
-    final min = widget.first;
-    final max = widget.last;
+    final min = widget.firstDate;
+    final max = widget.lastDate;
     final start = DateTime(day.year, day.month, day.day);
     final end = DateTime(day.year, day.month, day.day, 23, 59, 59);
     return widget.onChanged != null &&
@@ -593,7 +617,7 @@ class _MinimalDatePickerState extends State<MinimalDatePicker> {
     final firstDay = words.firstDayOfWeek;
     final lead = (DateTime(_month.year, _month.month).weekday - firstDay) % 7;
     final rows = ((days + lead) / 7).ceil();
-    final today = widget.today;
+    final today = widget.currentDate;
     // The keyboard's day wears the focus ring while the grid holds
     // keyboard focus.
     final cursor =
@@ -731,6 +755,7 @@ class _MinimalDatePickerState extends State<MinimalDatePicker> {
         const MinimalGap(MinimalSpacing.s4),
         Focus(
           focusNode: _grid,
+          autofocus: widget.autofocus && enabled,
           canRequestFocus: enabled,
           includeSemantics: false,
           onKeyEvent: _onGridKey,

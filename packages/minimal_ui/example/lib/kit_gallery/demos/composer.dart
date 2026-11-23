@@ -36,7 +36,7 @@ Widget kitComposerDemo(Brightness brightness) => kitScreen(
       'Voice and attachment',
       children: [
         MinimalComposer(
-          hint: 'Message, or hold to talk',
+          hintText: 'Message, or hold to talk',
           onAttach: () {},
           onVoice: () {},
           onSend: (_) {},
@@ -64,7 +64,7 @@ Widget kitComposerDemo(Brightness brightness) => kitScreen(
           enabled: false,
           // Short enough for one line between the glyphs at the largest
           // text: a hint is a single line.
-          hint: 'Archived: no comments',
+          hintText: 'Archived: no comments',
           onAttach: () {},
           onSend: (_) {},
         ),
@@ -74,7 +74,7 @@ Widget kitComposerDemo(Brightness brightness) => kitScreen(
       'Comment box',
       children: [
         MinimalComposer(
-          style: MinimalComposerStyle.assistant,
+          variant: MinimalComposerVariant.assistant,
           model: 'Team only',
           onAttach: () {},
           onModel: () {},
@@ -82,7 +82,7 @@ Widget kitComposerDemo(Brightness brightness) => kitScreen(
           onSend: (_) {},
         ),
         const _Drafted(
-          style: MinimalComposerStyle.assistant,
+          style: MinimalComposerVariant.assistant,
           text:
               'Streak broke on the 19th because the reminder fired at '
               '20:15. Moved it to 07:00 so it lands before the run.',
@@ -93,7 +93,7 @@ Widget kitComposerDemo(Brightness brightness) => kitScreen(
       'Flow-owned action',
       children: [
         MinimalComposer(
-          hint: 'Reply to HAB-4',
+          hintText: 'Reply to HAB-4',
           onSend: (_) {},
           action: MinimalComposerAction(
             icon: LucideIcons.cornerDownLeft,
@@ -114,12 +114,12 @@ Widget kitComposerDemo(Brightness brightness) => kitScreen(
         const Row(
           children: [
             MinimalComposerAction(
-              style: MinimalComposerStyle.assistant,
+              variant: MinimalComposerVariant.assistant,
               onPressed: _noop,
             ),
             MinimalGap(MinimalSpacing.s8),
             MinimalComposerAction(
-              style: MinimalComposerStyle.assistant,
+              variant: MinimalComposerVariant.assistant,
               icon: MinimalComposerAction.stop,
               label: 'Stop response',
               onPressed: _noop,
@@ -140,11 +140,11 @@ void _noop() {}
 class _Drafted extends StatefulWidget {
   const _Drafted({
     required this.text,
-    this.style = MinimalComposerStyle.messages,
+    this.style = MinimalComposerVariant.messages,
   });
 
   final String text;
-  final MinimalComposerStyle style;
+  final MinimalComposerVariant style;
 
   @override
   State<_Drafted> createState() => _DraftedState();
@@ -164,10 +164,10 @@ class _DraftedState extends State<_Drafted> {
   @override
   Widget build(BuildContext context) => MinimalComposer(
     controller: _draft,
-    style: widget.style,
+    variant: widget.style,
     model: 'Team only',
     onAttach: () {},
-    onModel: widget.style == MinimalComposerStyle.assistant ? () {} : null,
+    onModel: widget.style == MinimalComposerVariant.assistant ? () {} : null,
     onSend: (_) {},
   );
 }
@@ -229,7 +229,7 @@ class _ThreadState extends State<_Thread> {
             large: false,
           ),
           composer: MinimalComposer(
-            hint: 'Comment on Morning run',
+            hintText: 'Comment on Morning run',
             onAttach: () {},
             onSend: (text) => setState(
               () => _comments.add((who: 'You', at: '28 Aug 07:20', text: text)),
@@ -298,7 +298,7 @@ class _CommentRow extends StatelessWidget {
 
 /// The one-line message box at rest, attach and send inside it.
 Widget kitSpecimenComposerMessages() =>
-    MinimalComposer(hint: 'Message Ada', onAttach: () {}, onSend: (_) {});
+    MinimalComposer(hintText: 'Message Ada', onAttach: () {}, onSend: (_) {});
 
 /// A draft grown line by line, with a file attached; send is live.
 Widget kitSpecimenComposerDrafted() => MinimalComposer(
@@ -315,8 +315,8 @@ Widget kitSpecimenComposerDrafted() => MinimalComposer(
 
 /// The issue-comment box: the writing area over its own toolbar.
 Widget kitSpecimenComposerAssistant() => MinimalComposer(
-  style: MinimalComposerStyle.assistant,
-  hint: 'Leave a comment',
+  variant: MinimalComposerVariant.assistant,
+  hintText: 'Leave a comment',
   model: 'Team only',
   onAttach: () {},
   onModel: () {},
@@ -329,7 +329,7 @@ Widget kitSpecimenComposerAssistant() => MinimalComposer(
 Widget kitSpecimenComposerLayoutThread() => MinimalComposerLayout(
   topBar: const MinimalAppBar(title: 'Comments', subtitle: 'HAB-4'),
   composer: MinimalComposer(
-    hint: 'Comment on Morning run',
+    hintText: 'Comment on Morning run',
     onAttach: () {},
     onSend: (_) {},
   ),

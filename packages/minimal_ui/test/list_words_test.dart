@@ -114,7 +114,7 @@ void main() {
             MinimalCombobox<String>(
               key: ValueKey(icon),
               options: _cities,
-              hint: _hint,
+              hintText: _hint,
               icon: icon,
             ),
           );
@@ -143,7 +143,7 @@ void main() {
             options: _cities,
             values: const [],
             onChanged: (_) {},
-            hint: _hint,
+            hintText: _hint,
           ),
         );
         final hint = tester.getTopLeft(find.text(_hint)).dx;
@@ -164,7 +164,7 @@ void main() {
             options: _cities,
             values: const ['Lisbon'],
             onChanged: (_) {},
-            hint: _hint,
+            hintText: _hint,
           ),
         );
         final tag = tester.getTopLeft(find.text('Lisbon').first).dx;

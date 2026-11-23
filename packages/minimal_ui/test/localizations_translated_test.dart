@@ -20,7 +20,10 @@ Widget _app(Locale locale) => WidgetsApp(
       child: Navigator(
         onGenerateRoute: (_) => PageRouteBuilder<void>(
           pageBuilder: (_, _, _) => const Center(
-            child: SizedBox(width: 320, child: MinimalTextField(label: 'Name')),
+            child: SizedBox(
+              width: 320,
+              child: MinimalTextField(labelText: 'Name'),
+            ),
           ),
         ),
       ),

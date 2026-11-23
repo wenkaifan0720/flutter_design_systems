@@ -19,6 +19,7 @@ import '../internal/controls.dart';
 import '../internal/kit_paint.dart';
 import '../internal/menu_keys.dart';
 import '../internal/styled.dart';
+import '../internal/row_trailing.dart';
 import '../localizations.dart';
 import '../shapes.dart';
 import '../theme.dart';
@@ -39,7 +40,7 @@ class MinimalMenuItem {
     this.onPressed,
     this.icon,
     this.selected = false,
-    this.destructive = false,
+    this.isDestructiveAction = false,
     this.startsGroup = false,
     this.shortcut,
   });
@@ -58,7 +59,7 @@ class MinimalMenuItem {
   final bool selected;
 
   /// The destructive register: the label and glyph in the destructive ink.
-  final bool destructive;
+  final bool isDestructiveAction;
 
   /// Draw a hairline above this item, opening a new group.
   final bool startsGroup;
@@ -106,7 +107,8 @@ enum MinimalMenuTrigger {
 /// them as this card's items.
 ///
 /// [MinimalMenu.button] draws the kit's own trigger, so a page never draws
-/// one: a glyph alone is the 32 px outlined square a bar action wears; a
+/// one: a glyph alone is the 32 px outlined square a bar action wears (in a
+/// [MinimalListTile]'s trailing slot, the glyph alone, ghost); a
 /// glyph with [text] is a pill of the same height holding the current choice
 /// and a disclosure chevron (`Sort: Streak ▾`). `small` takes both to 28,
 /// level with small buttons, chips and filters.
@@ -299,6 +301,7 @@ class _MinimalMenuState extends State<MinimalMenu> {
     final t = context.minimalTheme;
     final icon = widget.icon;
     final text = widget.text;
+    final ghost = MinimalRowTrailing.inRow(context);
     final side = widget.small
         ? MinimalChromeMetrics.controlSm
         : MinimalChromeMetrics.barControl;
@@ -307,15 +310,21 @@ class _MinimalMenuState extends State<MinimalMenu> {
         (text == null
             // The icon button's square, at the theme's density: a hairline
             // on whatever it stands on, so a selected row's wash runs under
-            // it.
+            // it. In a list row's trailing slot it is ghost, the glyph alone
+            // in the row's quiet ink: the row's hairlines frame it already.
             ? Container(
                 width: t.density.height(side),
                 height: t.density.height(side),
-                decoration: minimalFrame(
-                  t.shapes.small,
-                  side: BorderSide(color: t.border, width: t.rim),
+                decoration: ghost
+                    ? null
+                    : minimalFrame(
+                        t.shapes.small,
+                        side: BorderSide(color: t.border, width: t.rim),
+                      ),
+                child: MinimalIcon(
+                  icon!,
+                  color: ghost ? t.mutedForeground : t.foreground,
                 ),
-                child: MinimalIcon(icon!, color: t.foreground),
               )
             // The square's height, at the theme's density: the pill stands
             // level with the squares and buttons beside it.
@@ -484,7 +493,7 @@ class _MinimalContextMenuState extends State<_MinimalContextMenu> {
             icon: item.icon,
             checked: item.selected,
             choosing: choosing,
-            destructive: item.destructive,
+            destructive: item.isDestructiveAction,
             style: widget.style,
             trailing: keys == null ? null : MinimalKbd.shortcut(keys),
             ring: true,
@@ -976,7 +985,7 @@ class _MenuAction extends StatelessWidget {
     // A menu that picks one says its choice as Minimal says one: the chosen
     // item's words in the full ink at medium weight, with its check, and the
     // others muted.
-    final ink = item.destructive
+    final ink = item.isDestructiveAction
         ? t.destructiveInk
         : choosing && !item.selected
         ? t.mutedForeground
@@ -1022,7 +1031,7 @@ class _MenuAction extends StatelessWidget {
                     MinimalIcon(
                       icon,
                       size: MinimalIconSize.i16,
-                      color: item.destructive
+                      color: item.isDestructiveAction
                           ? t.destructiveInk
                           : t.mutedForeground,
                     ),

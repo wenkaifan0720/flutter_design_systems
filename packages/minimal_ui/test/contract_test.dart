@@ -489,7 +489,7 @@ void main() {
       final external = TextEditingController(text: 'External');
       addTearDown(external.dispose);
       Widget field(TextEditingController? c) =>
-          _page(MinimalTextField(label: 'Name', controller: c));
+          _page(MinimalTextField(labelText: 'Name', controller: c));
 
       await tester.pumpWidget(field(null));
       await tester.enterText(find.byType(EditableText), 'Owned');
@@ -510,7 +510,7 @@ void main() {
       final node = FocusNode();
       addTearDown(node.dispose);
       Widget field(FocusNode? f) =>
-          _page(MinimalSearchField(hint: 'Search', focusNode: f));
+          _page(MinimalSearchField(hintText: 'Search', focusNode: f));
       await tester.pumpWidget(field(null));
       await tester.pumpWidget(field(node));
       await tester.tap(find.byType(EditableText));
@@ -522,7 +522,7 @@ void main() {
       tester,
     ) async {
       await tester.pumpWidget(
-        _page(const MinimalInputRow(label: 'Name', hint: 'Stretch')),
+        _page(const MinimalInputRow(labelText: 'Name', hintText: 'Stretch')),
       );
       final row = tester.getRect(find.byType(MinimalInputRow));
       expect(row.height, greaterThanOrEqualTo(MinimalLayout.minHitTarget));
@@ -583,7 +583,8 @@ void main() {
       expect(find.text('New habit'), findsOneWidget);
     });
 
-    testWidgets('a stacked sheet footer keeps the accessory at the start', (
+    testWidgets('a stacked sheet footer keeps the accessory at the start, '
+        'the actions under it in one column, the confirming one on top', (
       tester,
     ) async {
       await tester.pumpWidget(
@@ -593,10 +594,11 @@ void main() {
             child: MinimalBottomSheet(
               title: 'New habit',
               accessory: Text('Create another habit after this one'),
-              leading: MinimalSheetAction('Cancel'),
+              leading: MinimalSheetAction.cancel('Cancel'),
               trailing: MinimalSheetAction(
                 'Create habit',
                 isDefaultAction: true,
+                onPressed: _confirm,
               ),
               child: SizedBox(height: 20),
             ),
@@ -607,10 +609,17 @@ void main() {
       final accessory = tester.getRect(
         find.text('Create another habit after this one'),
       );
-      final create = tester.getRect(find.text('Create habit'));
-      expect(create.top, greaterThan(accessory.bottom));
+      final create = tester.getRect(
+        find.widgetWithText(MinimalButton, 'Create habit'),
+      );
+      final cancel = tester.getRect(
+        find.widgetWithText(MinimalButton, 'Cancel'),
+      );
       expect(accessory.left - card.left, lessThan(30));
-      expect(card.right - create.right, lessThan(40));
+      expect(create.top, greaterThan(accessory.bottom));
+      expect(cancel.top, greaterThan(create.bottom));
+      expect(create.width, cancel.width);
+      expect(card.right - create.right, lessThan(30));
     });
 
     testWidgets('a glyph-only tab still says what it is', (tester) async {
@@ -723,3 +732,6 @@ void main() {
     });
   });
 }
+
+/// A sheet's confirming action that does nothing here.
+void _confirm() {}

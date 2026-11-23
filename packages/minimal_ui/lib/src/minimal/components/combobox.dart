@@ -89,7 +89,7 @@ double _rowStart(BuildContext context, double value, MinimalStyle? style) =>
 /// the panel over `components.menu`.
 ///
 /// ```dart
-/// MinimalCombobox<String>(label: 'City', options: const ['Lisbon', 'London', 'Lyon'], value: city, onSelected: setCity)
+/// MinimalCombobox<String>(labelText: 'City', options: const ['Lisbon', 'London', 'Lyon'], value: city, onSelected: setCity)
 /// ```
 class MinimalCombobox<T extends Object> extends StatelessWidget {
   /// A combobox over [options].
@@ -98,14 +98,14 @@ class MinimalCombobox<T extends Object> extends StatelessWidget {
     this.options = const [],
     this.search,
     this.debounceDuration,
-    this.displayString = _text,
+    this.displayStringForOption = _text,
     this.value,
     this.onSelected,
     this.requireSelection = false,
-    this.label,
-    this.hint,
-    this.helper,
-    this.error,
+    this.labelText,
+    this.hintText,
+    this.helperText,
+    this.errorText,
     this.icon,
     this.enabled = true,
     this.controller,
@@ -115,7 +115,7 @@ class MinimalCombobox<T extends Object> extends StatelessWidget {
     this.autofocus = false,
   });
 
-  /// The options typing filters (case-insensitively, by [displayString]),
+  /// The options typing filters (case-insensitively, by [displayStringForOption]),
   /// when there is no [search].
   final Iterable<T> options;
 
@@ -128,7 +128,7 @@ class MinimalCombobox<T extends Object> extends StatelessWidget {
   final Duration? debounceDuration;
 
   /// An option's words: what the filter matches and the field shows.
-  final String Function(T option) displayString;
+  final String Function(T option) displayStringForOption;
 
   /// The option taken: checked in the list, and the field's text while it
   /// is not being edited.
@@ -141,16 +141,16 @@ class MinimalCombobox<T extends Object> extends StatelessWidget {
   final bool requireSelection;
 
   /// The field's name, over the box.
-  final String? label;
+  final String? labelText;
 
   /// What the empty field shows.
-  final String? hint;
+  final String? hintText;
 
-  /// A quiet line under the box; the [error] replaces it.
-  final String? helper;
+  /// A quiet line under the box; the [errorText] replaces it.
+  final String? helperText;
 
   /// The message under the box.
-  final String? error;
+  final String? errorText;
 
   /// A glyph at the box's start (a search glass).
   final IconData? icon;
@@ -203,7 +203,7 @@ class MinimalCombobox<T extends Object> extends StatelessWidget {
       options: options,
       search: search,
       debounceDuration: debounceDuration,
-      displayStringForOption: displayString,
+      displayStringForOption: displayStringForOption,
       value: value,
       onSelected: onSelected,
       // The pointer's row and the keys' are painted alike (the muted fill):
@@ -212,34 +212,37 @@ class MinimalCombobox<T extends Object> extends StatelessWidget {
       requireSelection: requireSelection,
       controller: controller,
       focusNode: focusNode,
-      semanticLabel: label,
-      fieldBuilder: (context, field) => MinimalTextField(
-        label: label,
-        hint: hint,
-        helper: helper,
-        error: error,
-        icon: icon,
-        enabled: enabled,
-        controller: field.controller,
-        focusNode: field.focusNode,
-        autofocus: autofocus,
-        // Enter in onEditingComplete, with no onSubmitted: the field keeps the
-        // focus, and Flutter restarts the text input of a field told of a submit
-        // that still holds it, which in a browser then takes no typing.
-        onEditingComplete: field.submit,
-        fieldStyle: fieldStyle,
-        trailing: Padding(
-          padding: const EdgeInsetsDirectional.only(end: MinimalSpacing.s8),
-          child: MinimalIcon(
-            LucideIcons.chevronsUpDown,
-            size: MinimalIconSize.i16,
-            color: t.textTertiary,
+      semanticLabel: labelText,
+      fieldBuilder: (context, field) => MinimalFieldOpenScope(
+        open: field.isOpen,
+        child: MinimalTextField(
+          labelText: labelText,
+          hintText: hintText,
+          helperText: helperText,
+          errorText: errorText,
+          icon: icon,
+          enabled: enabled,
+          controller: field.controller,
+          focusNode: field.focusNode,
+          autofocus: autofocus,
+          // Enter in onEditingComplete, with no onSubmitted: the field keeps the
+          // focus, and Flutter restarts the text input of a field told of a submit
+          // that still holds it, which in a browser then takes no typing.
+          onEditingComplete: field.submit,
+          fieldStyle: fieldStyle,
+          trailing: Padding(
+            padding: const EdgeInsetsDirectional.only(end: MinimalSpacing.s8),
+            child: MinimalIcon(
+              LucideIcons.chevronsUpDown,
+              size: MinimalIconSize.i16,
+              color: t.textTertiary,
+            ),
           ),
         ),
       ),
       optionBuilder: (context, option, states) => MinimalKitRow(
         states: states,
-        label: displayString(option),
+        label: displayStringForOption(option),
         checked: states.chosen,
         choosing: value != null,
         start: start,
@@ -317,8 +320,8 @@ class MinimalCombobox<T extends Object> extends StatelessWidget {
       )
       ..add(
         ObjectFlagProperty<String Function(T option)>.has(
-          'displayString',
-          displayString,
+          'displayStringForOption',
+          displayStringForOption,
         ),
       )
       ..add(DiagnosticsProperty<T>('value', value, defaultValue: null))
@@ -330,10 +333,10 @@ class MinimalCombobox<T extends Object> extends StatelessWidget {
           ifTrue: 'requireSelection',
         ),
       )
-      ..add(StringProperty('label', label, defaultValue: null))
-      ..add(StringProperty('hint', hint, defaultValue: null))
-      ..add(StringProperty('helper', helper, defaultValue: null))
-      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
+      ..add(StringProperty('helperText', helperText, defaultValue: null))
+      ..add(StringProperty('errorText', errorText, defaultValue: null))
       ..add(DiagnosticsProperty<IconData>('icon', icon, defaultValue: null))
       ..add(FlagProperty('enabled', value: enabled, ifFalse: 'enabled: false'))
       ..add(
@@ -379,25 +382,26 @@ class MinimalCombobox<T extends Object> extends StatelessWidget {
 /// same as an action. The behaviour is ui_core's ([RawTagInput]);
 /// Minimal paints it. [fieldStyle] dresses the box over
 /// `components.textField`; [listStyle] the panel over `components.menu`.
+/// With no [onChanged] it is disabled: it dims, its tags lose their remove
+/// keys and the field takes no typing.
 ///
 /// ```dart
-/// MinimalMultiSelect<String>(label: 'Labels', values: labels, options: const ['Bug', 'Design', 'Docs'], onChanged: setLabels)
+/// MinimalMultiSelect<String>(labelText: 'Labels', values: labels, options: const ['Bug', 'Design', 'Docs'], onChanged: setLabels)
 /// ```
 class MinimalMultiSelect<T extends Object> extends StatefulWidget {
   /// A multi-select over [values].
   const MinimalMultiSelect({
     super.key,
     required this.values,
-    required this.onChanged,
+    this.onChanged,
     this.options = const [],
-    this.displayString = _text,
+    this.displayStringForOption = _text,
     this.onCreate,
     this.maxTags,
-    this.label,
-    this.hint,
-    this.helper,
-    this.error,
-    this.enabled = true,
+    this.labelText,
+    this.hintText,
+    this.helperText,
+    this.errorText,
     this.fieldStyle,
     this.listStyle,
     this.focusNode,
@@ -407,14 +411,16 @@ class MinimalMultiSelect<T extends Object> extends StatefulWidget {
   /// The chosen values, in order.
   final List<T> values;
 
-  /// Called with the new list as a tag is added or removed.
-  final ValueChanged<List<T>> onChanged;
+  /// Called with the new list as a tag is added or removed; null disables
+  /// the field: it dims, its tags lose their remove keys and it takes no
+  /// typing, as a Flutter control with a null `onChanged` does.
+  final ValueChanged<List<T>>? onChanged;
 
   /// What typing suggests (less what is chosen).
   final Iterable<T> options;
 
   /// A value's words.
-  final String Function(T value) displayString;
+  final String Function(T value) displayStringForOption;
 
   /// Makes a value of free text, or null to refuse it; null takes only
   /// suggestions.
@@ -424,19 +430,16 @@ class MinimalMultiSelect<T extends Object> extends StatefulWidget {
   final int? maxTags;
 
   /// The field's name, over the box.
-  final String? label;
+  final String? labelText;
 
   /// What the empty field shows.
-  final String? hint;
+  final String? hintText;
 
-  /// A quiet line under the box; the [error] replaces it.
-  final String? helper;
+  /// A quiet line under the box; the [errorText] replaces it.
+  final String? helperText;
 
   /// The message under the box.
-  final String? error;
-
-  /// Whether it takes input.
-  final bool enabled;
+  final String? errorText;
 
   /// The box's style, over `components.textField`.
   final MinimalStyle? fieldStyle;
@@ -464,19 +467,18 @@ class MinimalMultiSelect<T extends Object> extends StatefulWidget {
       ..add(IterableProperty<T>('options', options))
       ..add(
         ObjectFlagProperty<String Function(T value)>.has(
-          'displayString',
-          displayString,
+          'displayStringForOption',
+          displayStringForOption,
         ),
       )
       ..add(
         ObjectFlagProperty<T? Function(String text)>.has('onCreate', onCreate),
       )
       ..add(IntProperty('maxTags', maxTags, defaultValue: null))
-      ..add(StringProperty('label', label, defaultValue: null))
-      ..add(StringProperty('hint', hint, defaultValue: null))
-      ..add(StringProperty('helper', helper, defaultValue: null))
-      ..add(StringProperty('error', error, defaultValue: null))
-      ..add(FlagProperty('enabled', value: enabled, ifFalse: 'enabled: false'))
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
+      ..add(StringProperty('helperText', helperText, defaultValue: null))
+      ..add(StringProperty('errorText', errorText, defaultValue: null))
       ..add(
         DiagnosticsProperty<MinimalStyle>(
           'fieldStyle',
@@ -512,10 +514,11 @@ class _MinimalMultiSelectState<T extends Object>
       widget.focusNode ??
       (_owned ??= FocusNode(debugLabel: 'MinimalMultiSelect'));
 
-  // A disabled field still lists each tag's Remove action (ui_core's tag
-  // input has no disabled state); running it changes nothing.
+  /// Whether it takes input: an [MinimalMultiSelect.onChanged] to call.
+  bool get _enabled => widget.onChanged != null;
+
   void _changed(List<T> values) {
-    if (widget.enabled) widget.onChanged(values);
+    if (_enabled) widget.onChanged?.call(values);
   }
 
   @override
@@ -528,7 +531,7 @@ class _MinimalMultiSelectState<T extends Object>
   Widget build(BuildContext context) {
     final t = context.minimalTheme;
     final words = MinimalLocalizations.of(context);
-    final label = widget.label;
+    final label = widget.labelText;
     // The suggestions open on the box's edges (ui_core opens them from the
     // layout, which draws the box); their words start on the tags' words:
     // the box's rim and inset, a tag's hairline and its leading air.
@@ -565,11 +568,9 @@ class _MinimalMultiSelectState<T extends Object>
           _tagWords,
       widget.listStyle,
     );
-    final error = widget.error;
-    final message = error ?? widget.helper;
 
     Widget tag(T value, RawTagDetails tag) {
-      final name = widget.displayString(value);
+      final name = widget.displayStringForOption(value);
       final shape = MinimalShapes.inset(tagBox.shape ?? t.shapes.small, inset);
       return Container(
         height: tagHeight,
@@ -595,7 +596,7 @@ class _MinimalMultiSelectState<T extends Object>
               const MinimalGap(MinimalSpacing.s2),
               // The remove key stands the tag's whole height, so the box's
               // air above and below the tag reaches it.
-              if (widget.enabled)
+              if (_enabled)
                 SizedBox(
                   height: tagHeight - 2 * t.hairline,
                   child: MinimalPressable(
@@ -621,8 +622,8 @@ class _MinimalMultiSelectState<T extends Object>
 
     Widget group(Widget child) => DesignInputGroup(
       focusNode: _focus,
-      enabled: widget.enabled,
-      isError: error != null,
+      enabled: _enabled,
+      isError: widget.errorText != null,
       child: child,
       builder: (context, states, child) {
         final so = MinimalStyleOf([
@@ -676,7 +677,7 @@ class _MinimalMultiSelectState<T extends Object>
       // One place, as the combobox's.
       highlightFollowsPointer: true,
       options: widget.options,
-      displayStringForOption: widget.displayString,
+      displayStringForOption: widget.displayStringForOption,
       onCreate: widget.onCreate,
       maxTags: widget.maxTags,
       focusNode: _focus,
@@ -687,13 +688,13 @@ class _MinimalMultiSelectState<T extends Object>
           controller: field.controller,
           focusNode: field.focusNode,
           autofocus: widget.autofocus,
-          enabled: widget.enabled,
+          enabled: _enabled,
           // Enter in onEditingComplete, with no onSubmitted: the field keeps the
           // focus, and Flutter restarts the text input of a field told of a submit
           // that still holds it, which in a browser then takes no typing.
           onEditingComplete: field.submit,
           style: t.body.c(t.foreground),
-          hint: widget.values.isEmpty ? widget.hint : null,
+          hint: widget.values.isEmpty ? widget.hintText : null,
           hintStyle: t.body.c(t.mutedForeground),
         );
         // The line by its capitals, level with the tags' words beside it.
@@ -708,7 +709,8 @@ class _MinimalMultiSelectState<T extends Object>
           ),
           child: text,
         );
-        if (label != null) text = Semantics(label: label, child: text);
+        // The input says whether the suggestions are showing.
+        text = Semantics(label: label, expanded: field.isOpen, child: text);
         if (Material.maybeOf(context) == null) {
           text = Material(type: MaterialType.transparency, child: text);
         }
@@ -716,7 +718,7 @@ class _MinimalMultiSelectState<T extends Object>
       },
       optionBuilder: (context, option, states) => MinimalKitRow(
         states: states,
-        label: widget.displayString(option),
+        label: widget.displayStringForOption(option),
         start: start,
         style: widget.listStyle,
       ),
@@ -751,32 +753,46 @@ class _MinimalMultiSelectState<T extends Object>
       ),
     );
 
-    final column = Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        if (label != null) ...[
-          ExcludeSemantics(
-            child: Text(label, style: t.caption.medium.c(t.foreground)),
-          ),
-          const MinimalGap(MinimalChromeMetrics.iconGap),
-        ],
-        // At a finger the field stands in a band as tall as the floor.
-        minimalTapStrip(context, input),
-        if (message != null) ...[
-          const MinimalGap(MinimalChromeMetrics.iconGap),
-          Semantics(
-            liveRegion: error != null,
-            child: Text(
-              message,
-              style: t.caption.c(
-                error != null ? t.destructiveInk : t.mutedForeground,
+    // ui_core's decorator names the field by the label and gives it the
+    // error and the help as its hint; Minimal draws the words.
+    final column = RawInputDecorator(
+      labelText: label,
+      helperText: widget.helperText,
+      errorText: widget.errorText,
+      enabled: _enabled,
+      focusNode: _focus,
+      // At a finger the field stands in a band as tall as the floor.
+      child: minimalTapStrip(context, input),
+      builder: (context, parts) {
+        final name = parts.label;
+        final message = parts.error ?? parts.helper;
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (name != null) ...[
+              DefaultTextStyle.merge(
+                style: t.caption.medium.c(t.foreground),
+                child: name,
               ),
-            ),
-          ),
-        ],
-      ],
+              const MinimalGap(MinimalChromeMetrics.iconGap),
+            ],
+            parts.control,
+            if (message != null) ...[
+              const MinimalGap(MinimalChromeMetrics.iconGap),
+              DefaultTextStyle.merge(
+                style: t.caption.c(
+                  parts.errorText != null
+                      ? t.destructiveInk
+                      : t.mutedForeground,
+                ),
+                child: message,
+              ),
+            ],
+          ],
+        );
+      },
     );
-    return widget.enabled ? column : Opacity(opacity: 0.45, child: column);
+    return _enabled ? column : Opacity(opacity: 0.45, child: column);
   }
 }
