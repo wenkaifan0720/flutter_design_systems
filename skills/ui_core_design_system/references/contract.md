@@ -738,6 +738,14 @@ with data counts; `yIncludesZero` is on by default. Pass the caller's
 the reader's digits show (Arabic-Indic digits in Arabic), and never force a
 chart left to right.
 
+Reorderable lists: `reorder.handle(grip)` wraps the grip in a `Focus` that
+the keys reach (Alt with Up or Down moves the row), but hands the grip no
+state. Build the grip's face in a widget under it that reads
+`Focus.of(context).hasPrimaryFocus`, listens for
+`FocusManager.instance.highlightMode` changes, and marks keyboard focus in
+the look's language, as on every other stop. A grip the keys reach that
+nothing marks is a focus nobody can find.
+
 ## The shims, and when they go away
 
 Three ui_core widgets cover Flutter faults that are fixed, or being fixed, in
