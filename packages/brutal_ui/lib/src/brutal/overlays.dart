@@ -12,8 +12,9 @@ import 'package:ui_core/ui_core.dart';
 import 'package:ui_core/host.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
-import 'lists.dart';
+import 'internal/focus_ink.dart';
 import 'internal/ruled_column.dart';
+import 'lists.dart';
 import 'surface.dart';
 import 'theme.dart';
 
@@ -999,8 +1000,11 @@ class _Toast extends StatelessWidget {
     final c = theme.colors;
     final t = details.toast;
     final layered = DesignStyleOf([style, theme.toastStyle], const {});
-    final block = layered.fill ?? c.ink;
-    final paper = layered.foreground ?? c.onColor(block);
+    // A raised Brutal surface, as a dialog, a menu and a list are: the
+    // surface in the ink rule, on the hard ink shadow.
+    final block = layered.fill ?? c.surface;
+    final ink =
+        layered.foreground ?? (block == c.surface ? c.ink : c.onColor(block));
     final words = RawWidgetsLocalizations.of(context);
     Widget cell({
       required String label,
@@ -1014,12 +1018,12 @@ class _Toast extends StatelessWidget {
         semanticLabel: label,
         builder: (context, states, _) {
           final lit = states.contains(WidgetState.pressed);
-          final fg = lit ? block : paper;
+          final fg = lit ? block : ink;
           return AnimatedBrutalSurface(
             stiffness: BrutalMotion.colorStiffness,
             face: BrutalFace(
-              fill: lit ? paper : paper.withValues(alpha: 0),
-              border: paper.withValues(alpha: 0),
+              fill: lit ? ink : ink.withValues(alpha: 0),
+              border: ink.withValues(alpha: 0),
               foreground: fg,
               borderWidth: 0,
             ),
@@ -1033,7 +1037,7 @@ class _Toast extends StatelessWidget {
         },
       ),
     );
-    final rule = BrutalRule(vertical: true, color: paper);
+    final rule = BrutalRule(vertical: true, color: ink);
     final opacity = details.animation.drive(
       Animatable<double>.fromCallback((v) => v.clamp(0.0, 1.0)),
     );
@@ -1045,9 +1049,12 @@ class _Toast extends StatelessWidget {
         child: BrutalSurface(
           face: BrutalFace(
             fill: block,
-            border: layered.side?.color ?? layered.edge ?? c.ink,
-            foreground: paper,
-            focus: details.focused ? c.ink : c.ink.withValues(alpha: 0),
+            border: layered.side?.color ?? layered.edge ?? ink,
+            foreground: ink,
+            shadow: c.ink,
+            focus: details.focused
+                ? brutalFocusInk(c, c.ink)
+                : c.ink.withValues(alpha: 0),
           ),
           child: IntrinsicHeight(
             child: Row(
@@ -1070,14 +1077,14 @@ class _Toast extends StatelessWidget {
                           Text(
                             t.title!,
                             style: theme.textTheme.label.copyWith(
-                              color: paper,
+                              color: ink,
                               fontWeight: FontWeight.w700,
                             ),
                           ),
                         Text(
                           t.message,
                           style: layered.text(
-                            theme.textTheme.body.copyWith(color: paper),
+                            theme.textTheme.body.copyWith(color: ink),
                           ),
                         ),
                       ],

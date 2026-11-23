@@ -9,6 +9,7 @@ library;
 
 import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:ui_core/ui_core.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -1169,8 +1170,10 @@ class _BrutalCodeFieldState extends State<BrutalCodeField> {
 }
 
 /// The raised panel a field's suggestions stand on: a menu, so it reads
-/// [BrutalThemeData.menuStyle]'s `fill` and `edge`.
-Widget _suggestions(BuildContext context, Widget list) {
+/// [BrutalThemeData.menuStyle]'s `fill` and `edge`. It lies on [field]'s
+/// rule, below the field or above it, so the two meet on one rule as a
+/// select's list meets its button.
+Widget _suggestions(BuildContext context, Widget list, {GlobalKey? field}) {
   final theme = BrutalTheme.of(context);
   final c = theme.colors;
   final panel = DesignStyleOf([theme.menuStyle], const {});
@@ -1178,7 +1181,7 @@ Widget _suggestions(BuildContext context, Widget list) {
   // As the select's list: the rule is drawn over the panel, so the panel is
   // the field's width from the field's edge as drawn too; its rows stand
   // inside the rule.
-  return BrutalSurface(
+  final surface = BrutalSurface(
     face: BrutalFace(
       fill: panel.fill ?? c.surface,
       border: rule,
@@ -1194,6 +1197,113 @@ Widget _suggestions(BuildContext context, Widget list) {
       child: Padding(padding: EdgeInsets.all(theme.borderWidth), child: list),
     ),
   );
+  if (field == null) return surface;
+  return _OnFieldRule(field: field, rule: theme.borderWidth, child: surface);
+}
+
+/// Moves its child by one [rule] onto [field]'s edge: up over the field's
+/// lower rule when it stands below the field, down over its upper rule
+/// when above. The autocomplete lays the list against the field's outer
+/// edge, on either side.
+class _OnFieldRule extends SingleChildRenderObjectWidget {
+  const _OnFieldRule({
+    required this.field,
+    required this.rule,
+    required super.child,
+  });
+
+  final GlobalKey field;
+  final double rule;
+
+  @override
+  RenderObject createRenderObject(BuildContext context) =>
+      _RenderOnFieldRule(field, rule);
+
+  @override
+  void updateRenderObject(
+    BuildContext context,
+    _RenderOnFieldRule renderObject,
+  ) {
+    renderObject
+      ..field = field
+      ..rule = rule;
+  }
+}
+
+class _RenderOnFieldRule extends RenderProxyBox {
+  _RenderOnFieldRule(this._field, this._rule);
+
+  GlobalKey _field;
+  set field(GlobalKey value) {
+    if (identical(value, _field)) return;
+    _field = value;
+    markNeedsPaint();
+  }
+
+  double _rule;
+  set rule(double value) {
+    if (value == _rule) return;
+    _rule = value;
+    markNeedsPaint();
+  }
+
+  // Read as it paints, once the field and the list both stand where they
+  // will; hit tests follow what was painted.
+  Offset _shift = Offset.zero;
+
+  Offset _onRule() {
+    final box = _field.currentContext?.findRenderObject();
+    if (box is! RenderBox || !box.attached || !box.hasSize || !hasSize) {
+      return Offset.zero;
+    }
+    final field = MatrixUtils.transformRect(
+      box.getTransformTo(null),
+      Offset.zero & box.size,
+    );
+    final top = localToGlobal(Offset.zero).dy;
+    if (top >= field.bottom - 1) return Offset(0, -_rule);
+    if (top + size.height <= field.top + 1) return Offset(0, _rule);
+    return Offset.zero;
+  }
+
+  @override
+  void paint(PaintingContext context, Offset offset) {
+    _shift = _onRule();
+    if (child != null) context.paintChild(child!, offset + _shift);
+  }
+
+  @override
+  bool hitTestChildren(BoxHitTestResult result, {required Offset position}) =>
+      child != null &&
+      result.addWithPaintOffset(
+        offset: _shift,
+        position: position,
+        hitTest: (result, position) =>
+            child!.hitTest(result, position: position),
+      );
+
+  @override
+  void applyPaintTransform(RenderBox child, Matrix4 transform) {
+    transform.translateByDouble(_shift.dx, _shift.dy, 0, 1);
+  }
+}
+
+/// Holds one key for a field across its rebuilds, for its suggestions to
+/// find it by.
+class _FieldKey extends StatefulWidget {
+  const _FieldKey({required this.builder});
+
+  final Widget Function(BuildContext context, GlobalKey field) builder;
+
+  @override
+  State<_FieldKey> createState() => _FieldKeyState();
+}
+
+class _FieldKeyState extends State<_FieldKey> {
+  final _field = GlobalKey();
+
+  @override
+  Widget build(BuildContext context) => widget.builder(context, _field);
 }
 
 /// What the suggestions say when nothing matches.
@@ -1361,7 +1471,10 @@ class BrutalCombobox<T extends Object> extends StatelessWidget {
   final BrutalStyle? style;
 
   @override
-  Widget build(BuildContext context) => BrutalFieldFrame(
+  Widget build(BuildContext context) =>
+      _FieldKey(builder: (context, key) => _build(context, key));
+
+  Widget _build(BuildContext context, GlobalKey key) => BrutalFieldFrame(
     labelText: labelText,
     helperText: helperText,
     errorText: errorText,
@@ -1380,6 +1493,7 @@ class BrutalCombobox<T extends Object> extends StatelessWidget {
       highlightFollowsPointer: true,
       semanticLabel: labelText,
       fieldBuilder: (context, field) => BrutalTextField(
+        key: key,
         controller: field.controller,
         focusNode: field.focusNode,
         hintText: hintText,
@@ -1419,7 +1533,8 @@ class BrutalCombobox<T extends Object> extends StatelessWidget {
         states: states,
         checked: states.contains(WidgetState.selected),
       ),
-      surfaceBuilder: _suggestions,
+      surfaceBuilder: (context, list) =>
+          _suggestions(context, list, field: key),
       emptyBuilder: (context) => _nothing(context, emptyText),
       loadingBuilder: _searching,
       errorBuilder: _failed,
@@ -1565,6 +1680,7 @@ class BrutalTagInput<T extends Object> extends StatefulWidget {
 
 class _BrutalTagInputState<T extends Object> extends State<BrutalTagInput<T>> {
   final _focus = FocusNode();
+  final _box = GlobalKey();
 
   @override
   void initState() {
@@ -1629,6 +1745,7 @@ class _BrutalTagInputState<T extends Object> extends State<BrutalTagInput<T>> {
             excludeFromSemantics: true,
             onTap: widget.enabled ? _focus.requestFocus : null,
             child: AnimatedBrutalSurface(
+              key: _box,
               stiffness: BrutalMotion.colorStiffness,
               face: BrutalFace(
                 fill: layered.fill ?? c.surface,
@@ -1687,7 +1804,8 @@ class _BrutalTagInputState<T extends Object> extends State<BrutalTagInput<T>> {
           states: states,
           checked: states.contains(WidgetState.selected),
         ),
-        surfaceBuilder: _suggestions,
+        surfaceBuilder: (context, list) =>
+            _suggestions(context, list, field: _box),
         loadingBuilder: _searching,
         errorBuilder: _failed,
       ),

@@ -1,3 +1,10 @@
+## 0.4.1
+
+- `BrutalDatePicker`'s and `BrutalDateRangePicker`'s calendar stands as wide as its field, edge to edge with it, as a select's list does, on a phone and on a wide window. It stood a fixed width: about 10 narrower than a phone's field, and about half as wide as a wide one.
+- The calendar's header is a row of its day grid: the arrows are each a day's column wide and the month's name spans the five between, every rule on the grid's rules. The arrows stood a fixed width, off the columns below.
+- A `BrutalCombobox`'s and a `BrutalTagInput`'s suggestions meet the field on one rule, below it or above it, as a select's list meets its button. They stacked two rules (4 px of ink) where they met.
+- A toast stands as every raised Brutal surface does: a paper face in the ink rule, on the look's hard ink shadow, clear of the tab bar. It stood flat, an ink band. A focused toast's bar now shows on the shadow.
+
 ## 0.4.0
 
 - Needs ui_core 0.5.1.

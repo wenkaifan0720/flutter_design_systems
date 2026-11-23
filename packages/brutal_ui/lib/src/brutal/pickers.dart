@@ -384,19 +384,16 @@ class _BrutalCalendarState extends State<BrutalCalendar> {
                   : pressed
                   ? c.paper
                   : c.ink;
-              return SizedBox(
-                width: dayHeight + w,
-                child: _Cell(
-                  height: dayHeight + w,
-                  rule: rule,
-                  fill: pressed ? c.ink : null,
-                  focus: states.contains(WidgetState.focused)
-                      ? (pressed ? c.paper : c.ink)
-                      : null,
-                  child: Transform.flip(
-                    flipX: rtl,
-                    child: Icon(icon, size: frame.iconSize ?? 20, color: ink),
-                  ),
+              return _Cell(
+                height: dayHeight + w,
+                rule: rule,
+                fill: pressed ? c.ink : null,
+                focus: states.contains(WidgetState.focused)
+                    ? (pressed ? c.paper : c.ink)
+                    : null,
+                child: Transform.flip(
+                  flipX: rtl,
+                  child: Icon(icon, size: frame.iconSize ?? 20, color: ink),
                 ),
               );
             },
@@ -411,29 +408,42 @@ class _BrutalCalendarState extends State<BrutalCalendar> {
           months: widget.months,
           autofocus: widget.autofocus,
           onChanged: _changed,
-          headerBuilder: (context, header) => Row(
-            children: [
-              turn(
-                LucideIcons.chevronLeft,
-                words.previousMonthTooltip,
-                header.previous,
-              ),
-              Expanded(
-                child: _Cell(
-                  height: dayHeight + w,
-                  rule: rule,
-                  child: DesignCapCenter(
-                    capHeightFactor: BrutalTheme.of(context).capHeightFactor,
-                    child: Text(header.label, maxLines: 1, style: t.label),
+          // The header is a row of the day grid: each way a day's column
+          // wide, the month's name over the five between, on the grid's
+          // rules.
+          headerBuilder: (context, header) => IntrinsicHeight(
+            // Every cell the row's height (the arrows' tap target's, where
+            // it is taller than a cell), so its rules meet the table's.
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(
+                  child: turn(
+                    LucideIcons.chevronLeft,
+                    words.previousMonthTooltip,
+                    header.previous,
                   ),
                 ),
-              ),
-              turn(
-                LucideIcons.chevronRight,
-                words.nextMonthTooltip,
-                header.next,
-              ),
-            ],
+                Expanded(
+                  flex: 5,
+                  child: _Cell(
+                    height: dayHeight + w,
+                    rule: rule,
+                    child: DesignCapCenter(
+                      capHeightFactor: BrutalTheme.of(context).capHeightFactor,
+                      child: Text(header.label, maxLines: 1, style: t.label),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: turn(
+                    LucideIcons.chevronRight,
+                    words.nextMonthTooltip,
+                    header.next,
+                  ),
+                ),
+              ],
+            ),
           ),
           weekdayBuilder: (context, weekday, label) => _Cell(
             height: 32,
@@ -637,14 +647,27 @@ Widget _panel(
   BuildContext context,
   RawPopoverInfo info,
   List<BrutalStyle?> layers,
-  Widget child,
-) {
-  final c = BrutalTheme.of(context).colors;
+  Widget child, {
+  required double month,
+}) {
+  final theme = BrutalTheme.of(context);
+  final c = theme.colors;
   final layered = DesignStyleOf(layers, const {});
+  // As wide as its field, edge to edge with it, as a select's list stands;
+  // never under the calendar's own width.
+  final edges = 2 * (BrutalSpacing.medium + theme.borderWidth);
+  final width = math.min(
+    math.max(info.anchorRect.width, month + edges),
+    info.maxSize.width,
+  );
   return FadeTransition(
     opacity: info.animation,
     child: ConstrainedBox(
-      constraints: BoxConstraints(maxHeight: info.maxSize.height),
+      constraints: BoxConstraints(
+        maxHeight: info.maxSize.height,
+        minWidth: width,
+        maxWidth: width,
+      ),
       child: BrutalSurface(
         face: BrutalFace(
           fill: layered.fill ?? c.surface,
@@ -765,21 +788,19 @@ class BrutalDatePicker extends StatelessWidget {
           context,
           info,
           layers,
-          SizedBox(
-            width: 320,
-            child: BrutalCalendar(
-              firstDate: firstDate,
-              lastDate: lastDate,
-              selectedDate: value,
-              currentDate: currentDate,
-              autofocus: true,
-              style: style,
-              onDateChanged: (d) {
-                info.close();
-                onChanged?.call(d);
-              },
-            ),
+          BrutalCalendar(
+            firstDate: firstDate,
+            lastDate: lastDate,
+            selectedDate: value,
+            currentDate: currentDate,
+            autofocus: true,
+            style: style,
+            onDateChanged: (d) {
+              info.close();
+              onChanged?.call(d);
+            },
           ),
+          month: 320,
         ),
       ),
       label: labelText,
@@ -915,22 +936,20 @@ class BrutalDateRangePicker extends StatelessWidget {
           context,
           info,
           layers,
-          SizedBox(
-            width: two ? 600 : 320,
-            child: BrutalCalendar.range(
-              firstDate: firstDate,
-              lastDate: lastDate,
-              selectedRange: value,
-              currentDate: currentDate,
-              months: two ? 2 : 1,
-              autofocus: true,
-              style: style,
-              onRangeChanged: (r) {
-                info.close();
-                onChanged?.call(r);
-              },
-            ),
+          BrutalCalendar.range(
+            firstDate: firstDate,
+            lastDate: lastDate,
+            selectedRange: value,
+            currentDate: currentDate,
+            months: two ? 2 : 1,
+            autofocus: true,
+            style: style,
+            onRangeChanged: (r) {
+              info.close();
+              onChanged?.call(r);
+            },
           ),
+          month: two ? 600 : 320,
         ),
       ),
       label: labelText,
