@@ -216,22 +216,22 @@ class _AddonText extends StatelessWidget {
 /// A control with its label above it and its help or error under it
 /// (shadcn's `FormField`; ui_core's `RawInputDecorator`): the label in
 /// `labelLarge` `onSurface` (`primary` while the control has focus, `error`
-/// with [error]), a required field's asterisk after it, the help in
+/// with [errorText]), a required field's asterisk after it, the help in
 /// `bodySmall` `onSurfaceVariant` and the error in its place in `error`, as
 /// a text field's supporting text. A screen reader hears the label as the
 /// control's name and the error and help as its hint, once. Wrap the
 /// fields in ui_core's `DesignForm` to validate them together.
 ///
 /// ```dart
-/// ExpressiveFormField(label: 'Notify me', help: 'At most once a day', child: ExpressiveSwitch(value: on, onChanged: setOn))
+/// ExpressiveFormField(labelText: 'Notify me', helperText: 'At most once a day', child: ExpressiveSwitch(value: on, onChanged: setOn))
 /// ```
 class ExpressiveFormField extends StatelessWidget {
-  /// [child] labelled [label].
+  /// [child] labelled [labelText].
   const ExpressiveFormField({
     required this.child,
-    this.label,
-    this.help,
-    this.error,
+    this.labelText,
+    this.helperText,
+    this.errorText,
     this.required = false,
     this.enabled = true,
     this.focusNode,
@@ -243,13 +243,13 @@ class ExpressiveFormField extends StatelessWidget {
   final Widget child;
 
   /// What the control is.
-  final String? label;
+  final String? labelText;
 
   /// A line of help under it.
-  final String? help;
+  final String? helperText;
 
   /// What is wrong; null while the value is fine.
-  final String? error;
+  final String? errorText;
 
   /// Whether it must be filled: an asterisk after the label.
   final bool required;
@@ -269,9 +269,9 @@ class ExpressiveFormField extends StatelessWidget {
     final t = context.expressiveTheme;
     final c = t.colors;
     return RawInputDecorator(
-      labelText: label,
-      helperText: help,
-      errorText: error,
+      labelText: labelText,
+      helperText: helperText,
+      errorText: errorText,
       required: required,
       enabled: enabled,
       focusNode: focusNode,
@@ -340,9 +340,9 @@ class ExpressiveFormField extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(StringProperty('label', label, defaultValue: null))
-      ..add(StringProperty('help', help, defaultValue: null))
-      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
+      ..add(StringProperty('helperText', helperText, defaultValue: null))
+      ..add(StringProperty('errorText', errorText, defaultValue: null))
       ..add(FlagProperty('required', value: required, ifTrue: 'required'))
       ..add(DiagnosticsProperty<bool>('enabled', enabled, defaultValue: true))
       ..add(

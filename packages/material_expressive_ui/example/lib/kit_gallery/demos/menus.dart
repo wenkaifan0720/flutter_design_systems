@@ -444,10 +444,10 @@ class _MultiSelectState extends State<_MultiSelect> {
       // The field's visible label comes from the form field around it (the
       // multi-select's own label is its name for a screen reader).
       ExpressiveFormField(
-        label: 'Topics',
-        help: 'Type to filter; Backspace steps onto the chips.',
+        labelText: 'Topics',
+        helperText: 'Type to filter; Backspace steps onto the chips.',
         child: ExpressiveMultiSelect<String>(
-          label: 'Topics',
+          labelText: 'Topics',
           hintText: 'Add a topic',
           options: _topics,
           values: _chosen,
@@ -460,7 +460,7 @@ class _MultiSelectState extends State<_MultiSelect> {
 
 /// Two topics chosen in the field.
 Widget kitSpecimenMultiSelectTags() => ExpressiveMultiSelect<String>(
-  label: 'Topics',
+  labelText: 'Topics',
   hintText: 'Add a topic',
   options: _topics,
   values: const <String>['design', 'writing'],

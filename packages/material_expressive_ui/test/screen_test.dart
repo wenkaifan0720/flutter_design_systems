@@ -20,7 +20,7 @@ final ExpressiveThemeData _theme = ExpressiveThemeData.preset(
 
 Widget _app(Widget home) => MaterialApp(
   builder: (context, app) =>
-      ExpressiveHost(light: _theme, brightness: Brightness.light, child: app!),
+      ExpressiveHost(theme: _theme, brightness: Brightness.light, child: app!),
   home: home,
 );
 

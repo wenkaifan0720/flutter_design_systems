@@ -16,7 +16,7 @@ final ExpressiveThemeData _theme = ExpressiveThemeData.preset(
 
 Widget _app(Widget child, {TextDirection direction = TextDirection.ltr}) =>
     ExpressiveHost(
-      light: _theme,
+      theme: _theme,
       brightness: Brightness.light,
       child: Directionality(
         textDirection: direction,
@@ -407,7 +407,7 @@ void main() {
   group('ExpressivePageDots', () {
     testWidgets('a dot per page, the current one a pill', (tester) async {
       await tester.pumpWidget(
-        _app(const ExpressivePageDots(count: 4, selectedIndex: 1)),
+        _app(const ExpressivePageDots(pageCount: 4, page: 1)),
       );
       await tester.pumpAndSettle();
       final boxes = tester
@@ -427,7 +427,7 @@ void main() {
     testWidgets('the current pill is primary, the other dots outline '
         '(3:1 against the page, as a control needs)', (tester) async {
       await tester.pumpWidget(
-        _app(const ExpressivePageDots(count: 3, selectedIndex: 0)),
+        _app(const ExpressivePageDots(pageCount: 3, page: 0)),
       );
       await tester.pumpAndSettle();
       final colors = tester
@@ -457,8 +457,8 @@ void main() {
               SizedBox(
                 width: width,
                 child: ExpressivePageDots(
-                  count: 4,
-                  selectedIndex: 0,
+                  pageCount: 4,
+                  page: 0,
                   onChanged: (index) => chosen = index,
                 ),
               ),
@@ -486,8 +486,8 @@ void main() {
         _app(
           StatefulBuilder(
             builder: (context, setState) => ExpressivePageDots(
-              count: 4,
-              selectedIndex: page,
+              pageCount: 4,
+              page: page,
               onChanged: (i) => setState(() => page = i),
             ),
           ),

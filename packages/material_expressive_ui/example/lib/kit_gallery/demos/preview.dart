@@ -120,8 +120,8 @@ class _Phone {
   Widget get preview => ExpressivePreview(
     platform: kitPlatform,
     brightness: brightness,
-    light: kitTheme(Brightness.light),
-    dark: kitTheme(Brightness.dark),
+    theme: kitTheme(Brightness.light),
+    darkTheme: kitTheme(Brightness.dark),
     device: true,
     navigationMode: navigationMode,
     presentation: presentation,

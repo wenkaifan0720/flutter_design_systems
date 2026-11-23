@@ -16,7 +16,7 @@ import 'package:material_expressive_ui/material_expressive_ui.dart';
 import 'package:material_expressive_ui/material_expressive_host.dart';
 
 Widget _app(Widget child) => ExpressiveHost(
-  light: ExpressiveThemeData.preset('baseline', Brightness.light),
+  theme: ExpressiveThemeData.preset('baseline', Brightness.light),
   brightness: Brightness.light,
   child: Directionality(
     textDirection: TextDirection.ltr,

@@ -27,7 +27,7 @@ Widget host(Widget child, {TextDirection direction = TextDirection.ltr}) =>
       builder: (context, app) => Directionality(
         textDirection: direction,
         child: ExpressiveHost(
-          light: bloom,
+          theme: bloom,
           brightness: Brightness.light,
           child: app!,
         ),

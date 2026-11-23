@@ -48,8 +48,8 @@ class ExpressivePreview extends StatefulWidget {
     required this.child,
     this.platform = PreviewPlatform.android,
     this.brightness = Brightness.light,
-    this.light,
-    this.dark,
+    this.theme,
+    this.darkTheme,
     this.presentation = RoutePresentation.root,
     this.drawer = false,
     this.under,
@@ -71,10 +71,10 @@ class ExpressivePreview extends StatefulWidget {
   final Brightness brightness;
 
   /// The light theme; null wears the default preset's.
-  final ExpressiveThemeData? light;
+  final ExpressiveThemeData? theme;
 
   /// The dark theme; null wears the default preset's.
-  final ExpressiveThemeData? dark;
+  final ExpressiveThemeData? darkTheme;
 
   /// The register the page stands in: [RoutePresentation.root] (the default),
   /// [RoutePresentation.pushed] (raised on an [ExpressivePage] route) or
@@ -147,15 +147,15 @@ class ExpressivePreview extends StatefulWidget {
       )
       ..add(
         DiagnosticsProperty<ExpressiveThemeData?>(
-          'light',
-          light,
+          'theme',
+          theme,
           defaultValue: null,
         ),
       )
       ..add(
         DiagnosticsProperty<ExpressiveThemeData?>(
-          'dark',
-          dark,
+          'darkTheme',
+          darkTheme,
           defaultValue: null,
         ),
       )
@@ -261,8 +261,8 @@ class _ExpressivePreviewState extends State<ExpressivePreview> {
       debugShowCheckedModeBanner: false,
       builder: (context, _) {
         final host = ExpressiveHost(
-          light: widget.light,
-          dark: widget.dark,
+          theme: widget.theme,
+          darkTheme: widget.darkTheme,
           brightness: widget.brightness,
           child: insets == null
               ? navigator

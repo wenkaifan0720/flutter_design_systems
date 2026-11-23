@@ -1,0 +1,87 @@
+// Each name material_expressive_ui 0.5.0 renamed, used once; dart fix renames it (material_expressive_ui.dart.expect).
+import 'package:material_expressive_ui/material_expressive_parts.dart';
+
+dynamic d;
+
+void constructors() {
+  ExpressiveHost(
+    child: d,
+    theme: d,
+    darkTheme: d,
+    highContrastTheme: d,
+    highContrastDarkTheme: d,
+  );
+  ExpressivePreview(child: d, theme: d, darkTheme: d);
+  ExpressiveFormField(child: d, labelText: d, helperText: d, errorText: d);
+  ExpressiveFileUpload(labelText: d, onBrowse: d, helperText: d);
+  ExpressiveMultiSelect<Object>(options: d, values: d, onChanged: d, labelText: d);
+  ExpressiveSelect<Object>(options: d, value: d, onChanged: d, labelText: d);
+  ExpressiveCombobox<Object>(options: d, labelText: d);
+  ExpressiveTextField(labelText: d);
+  ExpressiveTextArea(labelText: d);
+  ExpressivePasswordField(labelText: d);
+  ExpressiveNumberField(value: d, onChanged: d, labelText: d);
+  ExpressiveInputOtp(obscureText: d);
+  ExpressivePageDots(pageCount: d, page: d);
+  ExpressivePagination(page: d, pageCount: d, onChanged: d);
+  ExpressiveSwipeAction(label: d, icon: d, onPressed: d, isDestructiveAction: d);
+  ExpressiveMenuItem(d, isDestructiveAction: d);
+  ExpressiveMenuBarEntry(d, isDestructiveAction: d);
+  ExpressiveDialogAction(d, isDestructiveAction: d);
+}
+
+void fields(
+  ExpressiveHost a0,
+  ExpressiveHost a1,
+  ExpressiveHost a2,
+  ExpressiveHost a3,
+  ExpressivePreview a4,
+  ExpressivePreview a5,
+  ExpressiveFormField a6,
+  ExpressiveFormField a7,
+  ExpressiveFormField a8,
+  ExpressiveFileUpload a9,
+  ExpressiveFileUpload a10,
+  ExpressiveMultiSelect<Object> a11,
+  ExpressiveSelect<Object> a12,
+  ExpressiveCombobox<Object> a13,
+  ExpressiveTextField a14,
+  ExpressiveTextArea a15,
+  ExpressivePasswordField a16,
+  ExpressiveNumberField a17,
+  ExpressiveInputOtp a18,
+  ExpressivePageDots a19,
+  ExpressivePageDots a20,
+  ExpressivePagination a21,
+  ExpressiveSwipeAction a22,
+  ExpressiveMenuItem a23,
+  ExpressiveMenuBarEntry a24,
+  ExpressiveDialogAction a25,
+) {
+  a0.theme;
+  a1.darkTheme;
+  a2.highContrastTheme;
+  a3.highContrastDarkTheme;
+  a4.theme;
+  a5.darkTheme;
+  a6.labelText;
+  a7.helperText;
+  a8.errorText;
+  a9.labelText;
+  a10.helperText;
+  a11.labelText;
+  a12.labelText;
+  a13.labelText;
+  a14.labelText;
+  a15.labelText;
+  a16.labelText;
+  a17.labelText;
+  a18.obscureText;
+  a19.pageCount;
+  a20.page;
+  a21.pageCount;
+  a22.isDestructiveAction;
+  a23.isDestructiveAction;
+  a24.isDestructiveAction;
+  a25.isDestructiveAction;
+}

@@ -21,7 +21,7 @@ const _paper = Color(0xFFFFFFFF);
 Widget _host(Widget child, ExpressiveDensity density) => MaterialApp(
   debugShowCheckedModeBanner: false,
   home: ExpressiveHost(
-    light: ExpressiveThemeData.preset(
+    theme: ExpressiveThemeData.preset(
       'baseline',
       Brightness.light,
     ).copyWith(density: density),

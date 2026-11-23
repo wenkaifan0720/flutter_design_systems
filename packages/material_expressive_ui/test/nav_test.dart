@@ -29,7 +29,7 @@ Widget _app(
   double dpr = 1,
   ExpressiveThemeData? theme,
 }) => ExpressiveHost(
-  light: theme ?? _theme,
+  theme: theme ?? _theme,
   brightness: Brightness.light,
   child: Directionality(
     textDirection: TextDirection.ltr,
@@ -173,7 +173,7 @@ void main() {
     );
     await tester.pumpWidget(
       ExpressiveHost(
-        light: theme,
+        theme: theme,
         brightness: Brightness.light,
         child: Directionality(
           textDirection: TextDirection.ltr,
@@ -679,7 +679,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           builder: (context, child) => ExpressiveHost(
-            light: _theme,
+            theme: _theme,
             brightness: Brightness.light,
             child: child!,
           ),

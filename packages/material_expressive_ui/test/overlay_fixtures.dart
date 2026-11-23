@@ -5,6 +5,7 @@ import 'dart:async';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_expressive_ui/material_expressive_ui.dart';
+import 'package:material_expressive_ui/material_expressive_host.dart';
 
 /// Opens one overlay from [context].
 typedef OverlayOpener = void Function(BuildContext context);
@@ -59,19 +60,19 @@ final overlayRoutes = <String, OverlayOpener>{
   'date picker': (context) => showExpressiveDatePicker(
     context: context,
     initialDate: DateTime(2026, 11, 8),
-    today: DateTime(2026, 11, 8),
+    currentDate: DateTime(2026, 11, 8),
   ),
   'date input': (context) => showExpressiveDatePicker(
     context: context,
     initialDate: DateTime(2026, 11, 8),
-    today: DateTime(2026, 11, 8),
+    currentDate: DateTime(2026, 11, 8),
     initialMode: ExpressiveDatePickerMode.input,
   ),
   'date range picker': (context) => showExpressiveDateRangePicker(
     context: context,
     initialStart: DateTime(2026, 11, 8),
     initialEnd: DateTime(2026, 11, 12),
-    today: DateTime(2026, 11, 8),
+    currentDate: DateTime(2026, 11, 8),
   ),
   'time picker': (context) => showExpressiveTimePicker(
     context: context,
@@ -90,7 +91,7 @@ final overlayRoutes = <String, OverlayOpener>{
 final raisedOverlays = <String, (Widget, Future<void> Function(WidgetTester))>{
   'select': (
     ExpressiveSelect<int>(
-      label: 'Size',
+      labelText: 'Size',
       value: 1,
       options: const [
         ExpressiveSelectOption(1, 'Small'),
@@ -164,8 +165,17 @@ final raisedOverlays = <String, (Widget, Future<void> Function(WidgetTester))>{
   ),
 };
 
-/// A WidgetsApp with only [theme] above it, showing [home].
-Widget overlayHost(ExpressiveThemeData theme, WidgetBuilder home) => WidgetsApp(
+/// The overlays that show in the [ExpressiveHost]'s toaster, so they open
+/// under the host where the others have the theme alone.
+const hostedOverlays = {'snack bar'};
+
+/// A WidgetsApp with only [theme] above it, showing [home]; [hosted], the
+/// [ExpressiveHost] on [theme] in the theme's place.
+Widget overlayHost(
+  ExpressiveThemeData theme,
+  WidgetBuilder home, {
+  bool hosted = false,
+}) => WidgetsApp(
   color: theme.colors.primary,
   debugShowCheckedModeBanner: false,
   pageRouteBuilder: <T>(RouteSettings settings, WidgetBuilder builder) =>
@@ -173,7 +183,9 @@ Widget overlayHost(ExpressiveThemeData theme, WidgetBuilder home) => WidgetsApp(
         settings: settings,
         pageBuilder: (context, _, _) => builder(context),
       ),
-  builder: (context, child) => ExpressiveTheme(data: theme, child: child!),
+  builder: (context, child) => hosted
+      ? ExpressiveHost(theme: theme, darkTheme: theme, child: child!)
+      : ExpressiveTheme(data: theme, child: child!),
   home: Builder(builder: home),
 );
 
@@ -198,6 +210,7 @@ Future<void> forEachOverlay(
     await tester.pumpWidget(
       overlayHost(
         theme,
+        hosted: hostedOverlays.contains(name),
         (context) => Center(
           child: GestureDetector(
             key: const ValueKey('open'),

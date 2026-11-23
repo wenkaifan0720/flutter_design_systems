@@ -23,7 +23,7 @@ import 'support/tiers.dart';
 Widget _host(Widget child) => MaterialApp(
   debugShowCheckedModeBanner: false,
   home: ExpressiveHost(
-    light: ExpressiveThemeData.preset('baseline', Brightness.light),
+    theme: ExpressiveThemeData.preset('baseline', Brightness.light),
     brightness: Brightness.light,
     // A help cursor around the part: a part that defers shows it.
     child: MouseRegion(

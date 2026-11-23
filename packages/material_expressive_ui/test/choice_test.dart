@@ -17,7 +17,7 @@ final ExpressiveThemeData _theme = ExpressiveThemeData.preset(
 );
 
 Widget _app(Widget child, {double textScale = 1}) => ExpressiveHost(
-  light: _theme,
+  theme: _theme,
   brightness: Brightness.light,
   child: Directionality(
     textDirection: TextDirection.ltr,
@@ -82,7 +82,7 @@ void main() {
           for (final direction in TextDirection.values) {
             await tester.pumpWidget(
               ExpressiveHost(
-                light: _theme.copyWith(density: density),
+                theme: _theme.copyWith(density: density),
                 brightness: Brightness.light,
                 child: Directionality(
                   textDirection: direction,

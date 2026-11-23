@@ -73,7 +73,7 @@ final ExpressiveThemeData _themed = _base.copyWith(
 Widget _host(WidgetBuilder builder, {ExpressiveThemeData? theme}) =>
     MaterialApp(
       builder: (context, app) => ExpressiveHost(
-        light: theme ?? _themed,
+        theme: theme ?? _themed,
         brightness: Brightness.light,
         child: app!,
       ),
@@ -461,7 +461,9 @@ void main() {
   testWidgets('text fields paint the text field theme', (tester) async {
     for (final style in ExpressiveTextFieldKind.values) {
       await tester.pumpWidget(
-        _host((context) => ExpressiveTextField(kind: style, label: style.name)),
+        _host(
+          (context) => ExpressiveTextField(kind: style, labelText: style.name),
+        ),
       );
       await tester.pumpAndSettle();
       final field = find.byType(ExpressiveTextField);

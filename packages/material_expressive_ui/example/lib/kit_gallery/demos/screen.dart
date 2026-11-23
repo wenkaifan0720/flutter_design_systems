@@ -169,8 +169,8 @@ class _NewEntry extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       spacing: ExpressiveSpacing.s16,
       children: <Widget>[
-        ExpressiveTextField(label: 'Title'),
-        ExpressiveTextArea(label: 'What happened today?'),
+        ExpressiveTextField(labelText: 'Title'),
+        ExpressiveTextArea(labelText: 'What happened today?'),
         _Note(
           'A full-screen dialog: close, the title and the confirm action '
           'in the bar, over the surface.',

@@ -38,8 +38,8 @@ final OracleGroup pickersScenes = OracleGroup(
       DefaultWidgetsLocalizations.delegate,
     ],
     child: ExpressiveHost(
-      light: context.expressiveTheme,
-      dark: context.expressiveTheme,
+      theme: context.expressiveTheme,
+      darkTheme: context.expressiveTheme,
       brightness: context.expressiveTheme.brightness,
       child: scene,
     ),

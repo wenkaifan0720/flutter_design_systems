@@ -289,7 +289,9 @@ class _ExpressiveShellScaffoldState extends State<ExpressiveShellScaffold> {
             visible: visible,
             child: _ReportHeight(
               onHeight: _measuredBand,
-              child: _grounded(media, stack),
+              // Snackbars stand above the bar, the action and the
+              // accessory, wherever they ride.
+              child: RawToasterKeepClear(child: _grounded(media, stack)),
             ),
           ),
         ),
@@ -350,11 +352,14 @@ class _ExpressiveShellScaffoldState extends State<ExpressiveShellScaffold> {
                     bottom: 0,
                     child: _Yield(
                       visible: visible,
-                      child: Padding(
-                        padding: EdgeInsets.only(bottom: inset),
-                        child: _ReportHeight(
-                          onHeight: _measuredAccessory,
-                          child: _grounded(media, accessory),
+                      // Snackbars stand above the accessory.
+                      child: RawToasterKeepClear(
+                        child: Padding(
+                          padding: EdgeInsets.only(bottom: inset),
+                          child: _ReportHeight(
+                            onHeight: _measuredAccessory,
+                            child: _grounded(media, accessory),
+                          ),
                         ),
                       ),
                     ),

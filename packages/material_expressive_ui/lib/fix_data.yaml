@@ -1,0 +1,516 @@
+# material_expressive_ui's renames in 0.5.0, which `dart fix` makes. Each lists the package's libraries, as dart fix renames a
+# name only where it is imported through a listed library.
+version: 1
+transforms:
+  - title: "Rename to 'theme'"
+    date: 2026-11-22
+    element:
+      uris: &uris ['material_expressive_ui.dart', 'package:material_expressive_ui/material_expressive_parts.dart', 'package:material_expressive_ui/material_expressive_host.dart']
+      constructor: ''
+      inClass: 'ExpressiveHost'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'light'
+        newName: 'theme'
+  - title: "Rename to 'theme'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'light'
+      inClass: 'ExpressiveHost'
+    changes:
+      - kind: 'rename'
+        newName: 'theme'
+  - title: "Rename to 'darkTheme'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'ExpressiveHost'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'dark'
+        newName: 'darkTheme'
+  - title: "Rename to 'darkTheme'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'dark'
+      inClass: 'ExpressiveHost'
+    changes:
+      - kind: 'rename'
+        newName: 'darkTheme'
+  - title: "Rename to 'highContrastTheme'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'ExpressiveHost'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'highContrastLight'
+        newName: 'highContrastTheme'
+  - title: "Rename to 'highContrastTheme'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'highContrastLight'
+      inClass: 'ExpressiveHost'
+    changes:
+      - kind: 'rename'
+        newName: 'highContrastTheme'
+  - title: "Rename to 'highContrastDarkTheme'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'ExpressiveHost'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'highContrastDark'
+        newName: 'highContrastDarkTheme'
+  - title: "Rename to 'highContrastDarkTheme'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'highContrastDark'
+      inClass: 'ExpressiveHost'
+    changes:
+      - kind: 'rename'
+        newName: 'highContrastDarkTheme'
+  - title: "Rename to 'theme'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'ExpressivePreview'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'light'
+        newName: 'theme'
+  - title: "Rename to 'theme'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'light'
+      inClass: 'ExpressivePreview'
+    changes:
+      - kind: 'rename'
+        newName: 'theme'
+  - title: "Rename to 'darkTheme'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'ExpressivePreview'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'dark'
+        newName: 'darkTheme'
+  - title: "Rename to 'darkTheme'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'dark'
+      inClass: 'ExpressivePreview'
+    changes:
+      - kind: 'rename'
+        newName: 'darkTheme'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'ExpressiveFormField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'ExpressiveFormField'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'ExpressiveFormField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'help'
+        newName: 'helperText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'help'
+      inClass: 'ExpressiveFormField'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'ExpressiveFormField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'error'
+        newName: 'errorText'
+  - title: "Rename to 'errorText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'error'
+      inClass: 'ExpressiveFormField'
+    changes:
+      - kind: 'rename'
+        newName: 'errorText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'ExpressiveFileUpload'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'ExpressiveFileUpload'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'ExpressiveFileUpload'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'supportingText'
+        newName: 'helperText'
+  - title: "Rename to 'helperText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'supportingText'
+      inClass: 'ExpressiveFileUpload'
+    changes:
+      - kind: 'rename'
+        newName: 'helperText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'ExpressiveMultiSelect'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'ExpressiveMultiSelect'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'ExpressiveSelect'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'ExpressiveSelect'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'ExpressiveCombobox'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'ExpressiveCombobox'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'ExpressiveTextField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'ExpressiveTextField'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'ExpressiveTextArea'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'ExpressiveTextArea'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'ExpressivePasswordField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'ExpressivePasswordField'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'ExpressiveNumberField'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'label'
+        newName: 'labelText'
+  - title: "Rename to 'labelText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'label'
+      inClass: 'ExpressiveNumberField'
+    changes:
+      - kind: 'rename'
+        newName: 'labelText'
+  - title: "Rename to 'obscureText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'ExpressiveInputOtp'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'obscure'
+        newName: 'obscureText'
+  - title: "Rename to 'obscureText'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'obscure'
+      inClass: 'ExpressiveInputOtp'
+    changes:
+      - kind: 'rename'
+        newName: 'obscureText'
+  - title: "Rename to 'pageCount'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'ExpressivePageDots'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'count'
+        newName: 'pageCount'
+  - title: "Rename to 'pageCount'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'count'
+      inClass: 'ExpressivePageDots'
+    changes:
+      - kind: 'rename'
+        newName: 'pageCount'
+  - title: "Rename to 'page'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'ExpressivePageDots'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'selectedIndex'
+        newName: 'page'
+  - title: "Rename to 'page'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'selectedIndex'
+      inClass: 'ExpressivePageDots'
+    changes:
+      - kind: 'rename'
+        newName: 'page'
+  - title: "Rename to 'pageCount'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'ExpressivePagination'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'count'
+        newName: 'pageCount'
+  - title: "Rename to 'pageCount'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'count'
+      inClass: 'ExpressivePagination'
+    changes:
+      - kind: 'rename'
+        newName: 'pageCount'
+  - title: "Rename to 'isDestructiveAction'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'ExpressiveSwipeAction'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'destructive'
+        newName: 'isDestructiveAction'
+  - title: "Rename to 'isDestructiveAction'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'destructive'
+      inClass: 'ExpressiveSwipeAction'
+    changes:
+      - kind: 'rename'
+        newName: 'isDestructiveAction'
+  - title: "Rename to 'isDestructiveAction'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'ExpressiveMenuItem'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'destructive'
+        newName: 'isDestructiveAction'
+  - title: "Rename to 'isDestructiveAction'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'destructive'
+      inClass: 'ExpressiveMenuItem'
+    changes:
+      - kind: 'rename'
+        newName: 'isDestructiveAction'
+  - title: "Rename to 'isDestructiveAction'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'ExpressiveMenuBarEntry'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'destructive'
+        newName: 'isDestructiveAction'
+  - title: "Rename to 'isDestructiveAction'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'destructive'
+      inClass: 'ExpressiveMenuBarEntry'
+    changes:
+      - kind: 'rename'
+        newName: 'isDestructiveAction'
+  - title: "Rename to 'isDestructiveAction'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      constructor: ''
+      inClass: 'ExpressiveDialogAction'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'destructive'
+        newName: 'isDestructiveAction'
+  - title: "Rename to 'isDestructiveAction'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      field: 'destructive'
+      inClass: 'ExpressiveDialogAction'
+    changes:
+      - kind: 'rename'
+        newName: 'isDestructiveAction'
+  - title: "Rename to 'currentDate'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      function: 'showExpressiveDatePicker'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'today'
+        newName: 'currentDate'
+  - title: "Rename to 'currentDate'"
+    date: 2026-11-22
+    element:
+      uris: *uris
+      function: 'showExpressiveDateRangePicker'
+    changes:
+      - kind: 'renameParameter'
+        oldName: 'today'
+        newName: 'currentDate'

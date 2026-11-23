@@ -21,7 +21,7 @@ final ExpressiveThemeData bloom = ExpressiveThemeData.preset(
 
 Widget host(Widget child) => MaterialApp(
   builder: (context, app) =>
-      ExpressiveHost(light: bloom, brightness: Brightness.light, child: app!),
+      ExpressiveHost(theme: bloom, brightness: Brightness.light, child: app!),
   home: Padding(
     padding: const EdgeInsets.all(24),
     child: Align(
@@ -38,7 +38,7 @@ const List<ExpressiveSelectOption<String>> projects = [
 ];
 
 Widget select({String label = 'Project'}) => ExpressiveSelect<String>(
-  label: label,
+  labelText: label,
   options: projects,
   value: 'studio',
   onChanged: (_) {},
@@ -160,7 +160,7 @@ void main() {
     await tester.pumpWidget(
       host(
         ExpressiveCombobox<String>(
-          label: 'Assignee',
+          labelText: 'Assignee',
           options: const [
             ExpressiveSelectOption('maya', 'Maya Reed'),
             ExpressiveSelectOption('sam', 'Sam Okafor'),

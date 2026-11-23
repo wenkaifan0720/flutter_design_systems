@@ -68,8 +68,8 @@ final OracleGroup toastScenes = OracleGroup(
   id: 'toast',
   // The host gives the buttons the platform ripple.
   frame: (context, scene) => ExpressiveHost(
-    light: context.expressiveTheme,
-    dark: context.expressiveTheme,
+    theme: context.expressiveTheme,
+    darkTheme: context.expressiveTheme,
     brightness: context.expressiveTheme.brightness,
     child: scene,
   ),

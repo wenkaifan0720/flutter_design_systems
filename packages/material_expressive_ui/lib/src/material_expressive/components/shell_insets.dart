@@ -1,7 +1,8 @@
 /// [ExpressiveShellInsets]: the bottom allowance the shell asks each branch
 /// root to reserve, apart from the shell itself (`shell.dart`), so a part
-/// that keeps clear of the shell's bar (the snackbar) never takes the
-/// router the shell stands on.
+/// that keeps clear of the shell's bar never takes the router the shell
+/// stands on. Snackbars keep clear of the bar by ui_core's
+/// `RawToasterKeepClear`, which the shell sets round it.
 library;
 
 import 'package:flutter/widgets.dart';

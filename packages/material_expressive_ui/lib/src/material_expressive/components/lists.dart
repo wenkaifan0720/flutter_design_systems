@@ -1965,7 +1965,7 @@ class ExpressiveSwipeAction {
     required this.icon,
     required this.onPressed,
     this.emphasized = false,
-    this.destructive = false,
+    this.isDestructiveAction = false,
     this.style,
   });
 
@@ -1987,7 +1987,7 @@ class ExpressiveSwipeAction {
   final bool emphasized;
 
   /// A destructive action: `error` colours on the emphasized shape.
-  final bool destructive;
+  final bool isDestructiveAction;
 }
 
 /// A row that reveals actions by a horizontal swipe (Material's reveal
@@ -1999,7 +1999,7 @@ class ExpressiveSwipeAction {
 /// first) once. Every action is also a screen-reader action on the row.
 ///
 /// ```dart
-/// ExpressiveSwipeActions(trailing: [ExpressiveSwipeAction(label: 'Delete', icon: ExpressiveSymbols.delete, destructive: true, onPressed: delete), ExpressiveSwipeAction(label: 'Archive', icon: ExpressiveSymbols.archive, onPressed: archive)], child: ExpressiveListTile(title: Text('Trip')))
+/// ExpressiveSwipeActions(trailing: [ExpressiveSwipeAction(label: 'Delete', icon: ExpressiveSymbols.delete, isDestructiveAction: true, onPressed: delete), ExpressiveSwipeAction(label: 'Archive', icon: ExpressiveSymbols.archive, onPressed: archive)], child: ExpressiveListTile(title: Text('Trip')))
 /// ```
 class ExpressiveSwipeActions extends StatefulWidget {
   /// A row of [child] that reveals [leading] and [trailing] actions on a swipe.
@@ -2253,10 +2253,10 @@ class _RevealButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.expressiveTheme;
     final c = t.colors;
-    final emphasized = action.emphasized || action.destructive;
+    final emphasized = action.emphasized || action.isDestructiveAction;
     final Color container;
     final Color content;
-    if (action.destructive) {
+    if (action.isDestructiveAction) {
       container = c.error;
       content = c.onError;
     } else if (emphasized) {

@@ -223,7 +223,7 @@ class _DialogsState extends State<_Dialogs> {
           final d = await showExpressiveDatePicker(
             context: context,
             initialDate: DateTime(2026, 9, 18),
-            today: _today,
+            currentDate: _today,
           );
           if (d != null) _show('Date: ${ExpressiveFormat.date(d)}');
         },
@@ -234,7 +234,7 @@ class _DialogsState extends State<_Dialogs> {
         onPressed: () async {
           final r = await showExpressiveDateRangePicker(
             context: context,
-            today: _today,
+            currentDate: _today,
           );
           if (r != null) {
             _show(

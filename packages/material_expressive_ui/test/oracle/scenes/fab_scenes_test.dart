@@ -204,8 +204,8 @@ final OracleGroup fabScenes = OracleGroup(
     ExpressiveFabMenu.debugPartWrapper ??= (part, child) =>
         OracleTag(part, child: child);
     return ExpressiveHost(
-      light: context.expressiveTheme,
-      dark: context.expressiveTheme,
+      theme: context.expressiveTheme,
+      darkTheme: context.expressiveTheme,
       brightness: context.expressiveTheme.brightness,
       child: scene,
     );

@@ -63,8 +63,8 @@ Widget kitSurface({required Brightness brightness, required Widget child}) =>
       builder: (context) => ExpressivePreview(
         platform: kitPlatform,
         brightness: brightness,
-        light: kitTheme(Brightness.light),
-        dark: kitTheme(Brightness.dark),
+        theme: kitTheme(Brightness.light),
+        darkTheme: kitTheme(Brightness.dark),
         systemBars: !KitLiveViewport.of(context),
         child: child,
       ),
@@ -522,8 +522,8 @@ Widget kitSpecimenStage({
         builder: (context, home) => Directionality(
           textDirection: Directionality.maybeOf(outer) ?? TextDirection.ltr,
           child: ExpressiveHost(
-            light: ExpressiveThemeData.preset(style, Brightness.light),
-            dark: ExpressiveThemeData.preset(style, Brightness.dark),
+            theme: ExpressiveThemeData.preset(style, Brightness.light),
+            darkTheme: ExpressiveThemeData.preset(style, Brightness.dark),
             brightness: brightness,
             child: home ?? const SizedBox.shrink(),
           ),
@@ -572,8 +572,8 @@ class _KitStage extends StatelessWidget {
 /// dark themes in [brightness], with the host's page transitions and ground.
 Widget kitHost({required Brightness brightness, required Widget child}) =>
     ExpressiveHost(
-      light: kitTheme(Brightness.light),
-      dark: kitTheme(Brightness.dark),
+      theme: kitTheme(Brightness.light),
+      darkTheme: kitTheme(Brightness.dark),
       brightness: brightness,
       child: child,
     );

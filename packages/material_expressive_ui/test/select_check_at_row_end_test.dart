@@ -23,7 +23,7 @@ Widget _host(TextDirection direction) => MaterialApp(
   builder: (context, app) => Directionality(
     textDirection: direction,
     child: ExpressiveHost(
-      light: bloom,
+      theme: bloom,
       brightness: Brightness.light,
       child: app!,
     ),
@@ -35,7 +35,7 @@ Widget _host(TextDirection direction) => MaterialApp(
       child: SizedBox(
         width: 400,
         child: ExpressiveSelect<String>(
-          label: 'Project',
+          labelText: 'Project',
           options: const [
             ExpressiveSelectOption('studio', 'Open studio'),
             ExpressiveSelectOption('series', 'Workshop series'),

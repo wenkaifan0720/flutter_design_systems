@@ -21,8 +21,8 @@ void main() {
       late BuildContext inside;
       await tester.pumpWidget(
         ExpressiveHost(
-          light: ExpressiveThemeData.preset('bloom', Brightness.light),
-          dark: ExpressiveThemeData.preset('bloom', Brightness.dark),
+          theme: ExpressiveThemeData.preset('bloom', Brightness.light),
+          darkTheme: ExpressiveThemeData.preset('bloom', Brightness.dark),
           brightness: brightness,
           child: Builder(
             builder: (context) {
@@ -89,8 +89,8 @@ void main() {
         MediaQuery(
           data: MediaQueryData(highContrast: high),
           child: ExpressiveHost(
-            light: light,
-            highContrastLight: highContrastLight,
+            theme: light,
+            highContrastTheme: highContrastLight,
             brightness: Brightness.light,
             child: Builder(
               builder: (context) {
@@ -164,7 +164,7 @@ void main() {
       Directionality(
         textDirection: TextDirection.ltr,
         child: ExpressiveHost(
-          light: theme,
+          theme: theme,
           brightness: Brightness.light,
           child: Material(
             type: MaterialType.transparency,

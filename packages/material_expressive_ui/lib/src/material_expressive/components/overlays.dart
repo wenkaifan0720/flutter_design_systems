@@ -24,6 +24,7 @@ import '../internal/tokens/plain_tooltip_tokens.g.dart';
 import '../internal/tokens/rich_tooltip_tokens.g.dart';
 import '../internal/tokens/scrim_tokens.g.dart';
 import '../internal/tokens/text_button_tokens.g.dart';
+import '../internal/width_probe.dart';
 import '../motion.dart';
 import '../shape.dart';
 import '../states.dart';
@@ -375,7 +376,7 @@ mixin ExpressiveBackHandleRoute<T> on ModalRoute<T> {
 
 /// One action of an [ExpressiveDialog]: a text button, or with
 /// [filled] a filled one, its words in the `error` role when it is
-/// [destructive]. A press closes the dialog (its route returns [value]) and
+/// [isDestructiveAction]. A press closes the dialog (its route returns [value]) and
 /// then runs [onPressed]; [closesDialog] false keeps the dialog open.
 @immutable
 class ExpressiveDialogAction {
@@ -387,7 +388,7 @@ class ExpressiveDialogAction {
     this.closesDialog = true,
     this.enabled = true,
     this.filled = false,
-    this.destructive = false,
+    this.isDestructiveAction = false,
   });
 
   /// The button's text.
@@ -411,7 +412,7 @@ class ExpressiveDialogAction {
   /// Whether the action loses something (Discard, Delete): a text action's
   /// words in the scheme's `error`, as a menu's destructive item sets them;
   /// a [filled] one filled in `error` under `onError`.
-  final bool destructive;
+  final bool isDestructiveAction;
 
   /// Whether the action can be pressed. It is drawn out of use, too, when
   /// a press would do nothing: no [onPressed] and [closesDialog] false.
@@ -604,11 +605,10 @@ class ExpressiveDialog extends StatelessWidget {
   }
 }
 
-/// The actions as Material's dialog lays them (Flutter's `AlertDialog`
-/// holds them in an [OverflowBar]; Compose's `AlertDialogFlowRow` holds its
-/// two): one row in reading order, the confirm action (the last) at its
-/// end, while they all fit; otherwise one column, the confirm action on
-/// top, each at the dialog's end. Never two in a row with one under them.
+/// The actions in ui_core's [RawActionBar], as every look's dialog lays
+/// them: one row in reading order, the confirm action (the last) at its
+/// end, while they all fit; otherwise one column of one width, the confirm
+/// action on top. Never two in a row with one under them.
 class _DialogActions extends StatelessWidget {
   const _DialogActions({required this.actions});
 
@@ -627,12 +627,9 @@ class _DialogActions extends StatelessWidget {
       0,
       AlertDialogBehavior.actionRunSpacing,
     );
-    return OverflowBar(
-      alignment: MainAxisAlignment.end,
+    return RawActionBar(
       spacing: AlertDialogBehavior.actionSpacing,
       overflowSpacing: runSpacing,
-      overflowAlignment: OverflowBarAlignment.end,
-      overflowDirection: VerticalDirection.up,
       children: <Widget>[
         for (final action in actions) _action(context, action),
       ],
@@ -653,7 +650,7 @@ class _DialogActions extends StatelessWidget {
         ? ExpressiveFilledButton(
             action.label,
             onPressed: press,
-            style: action.destructive
+            style: action.isDestructiveAction
                 ? ExpressiveFilledButton.styleFrom(
                     backgroundColor: c.error,
                     foregroundColor: c.onError,
@@ -663,7 +660,7 @@ class _DialogActions extends StatelessWidget {
         : _TextAction(
             label: action.label,
             onPressed: press,
-            destructive: action.destructive,
+            destructive: action.isDestructiveAction,
           );
   }
 }
@@ -708,19 +705,30 @@ class _TextAction extends StatelessWidget {
       color: content.withValues(alpha: 0),
       contentColor: content,
       onPressed: onPressed,
-      child: ExpressiveStyledContent(
-        minimumSize: const Size(
-          AlertDialogBehavior.actionMinWidth,
-          ButtonSmallTokens.containerHeight,
+      // Stacked, the action bar gives every action the column's width: the
+      // words stand at its end, where they stand in a row (as Compose's
+      // AlertDialog stacks its text buttons, at the end of each line).
+      child: ExpressiveFillProbedWidth(
+        child: Align(
+          alignment: AlignmentDirectional.centerEnd,
+          widthFactor: 1,
+          heightFactor: 1,
+          child: ExpressiveStyledContent(
+            minimumSize: const Size(
+              AlertDialogBehavior.actionMinWidth,
+              ButtonSmallTokens.containerHeight,
+            ),
+            padding: const EdgeInsets.symmetric(
+              horizontal: AlertDialogBehavior.actionHorizontalPadding,
+              vertical: ButtonBehavior.verticalPadding,
+            ),
+            textStyle: t.type.of(DialogTokens.actionLabelTextFont),
+            // Compose's TextButton text wraps: a label wider than the
+            // dialog (large text) breaks between its words rather than
+            // losing its end.
+            child: Text(label, textAlign: TextAlign.center),
+          ),
         ),
-        padding: const EdgeInsets.symmetric(
-          horizontal: AlertDialogBehavior.actionHorizontalPadding,
-          vertical: ButtonBehavior.verticalPadding,
-        ),
-        textStyle: t.type.of(DialogTokens.actionLabelTextFont),
-        // Compose's TextButton text wraps: a label wider than the dialog
-        // (large text) breaks between its words rather than losing its end.
-        child: Text(label, textAlign: TextAlign.center),
       ),
     );
   }

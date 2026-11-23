@@ -32,7 +32,7 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         builder: (context, app) => ExpressiveHost(
-          light: _theme,
+          theme: _theme,
           brightness: Brightness.light,
           child: app!,
         ),
@@ -81,7 +81,7 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         builder: (context, app) => ExpressiveHost(
-          light: _theme,
+          theme: _theme,
           brightness: Brightness.light,
           child: app!,
         ),

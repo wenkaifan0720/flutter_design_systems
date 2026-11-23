@@ -26,7 +26,7 @@ final ExpressiveThemeData _theme = ExpressiveThemeData.preset(
 );
 
 Widget _app(Widget child, {bool hero = false}) => ExpressiveHost(
-  light: _theme,
+  theme: _theme,
   brightness: Brightness.light,
   child: Directionality(
     textDirection: TextDirection.ltr,
@@ -500,7 +500,7 @@ void main() {
         await tester.pumpWidget(
           MaterialApp(
             builder: (context, app) => ExpressiveHost(
-              light: _theme,
+              theme: _theme,
               brightness: Brightness.light,
               child: app!,
             ),

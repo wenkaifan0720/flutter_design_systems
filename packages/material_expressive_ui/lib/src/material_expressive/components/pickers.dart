@@ -2032,7 +2032,7 @@ class _DateFieldState extends State<_DateField> {
       style: _pickerControlStyle(context.expressiveTheme.datePickerTheme),
       controller: _text,
       kind: ExpressiveTextFieldKind.outlined,
-      label: widget.label,
+      labelText: widget.label,
       hintText: ExpressiveLocalizations.of(context).datePattern,
       semanticLabel:
           '${widget.label}, ${ExpressiveLocalizations.of(context).datePattern}',
@@ -2739,7 +2739,7 @@ class _ExpressiveDockedDatePickerState
       style: context.expressiveTheme.datePickerTheme.layeredUnder(widget.style),
       controller: _text,
       kind: widget.kind,
-      label: widget.label ?? ExpressiveLocalizations.of(context).date,
+      labelText: widget.label ?? ExpressiveLocalizations.of(context).date,
       hintText: ExpressiveLocalizations.of(context).datePattern,
       helperText: widget.supportingText,
       readOnly: true,
@@ -2797,9 +2797,9 @@ class ExpressiveDatePickerDialog extends StatelessWidget {
       child: ExpressiveSurface(
         style: style,
         componentStyle: t.datePickerTheme,
-        padding: constraints.maxWidth < DatePickerModalTokens.containerWidth
-            ? const EdgeInsets.symmetric(horizontal: ExpressiveSpacing.s16)
-            : EdgeInsets.zero,
+        padding: EdgeInsets.symmetric(
+          horizontal: _dateDialogMargin(constraints.maxWidth),
+        ),
         shape: t.shapes.of(DatePickerModalTokens.containerShape),
         color: t.colors.role(DatePickerModalTokens.containerColor),
         contentColor: t.colors.onSurface,
@@ -2852,6 +2852,18 @@ class ExpressiveDatePickerDialog extends StatelessWidget {
   }
 }
 
+// Narrower than its container, the date dialog keeps a 16 margin round the
+// picker; where the dialog holds seven whole days but the margin would leave
+// the calendar under them (it would pan, the week's end out of sight), only
+// what the week leaves. Narrower than the week, the calendar pans anyway and
+// the margin keeps the header inside the corners.
+double _dateDialogMargin(double width) {
+  const week = DatePickerBehavior.cellSize * DateTime.daysPerWeek;
+  if (width >= DatePickerModalTokens.containerWidth) return 0;
+  if (width < week) return ExpressiveSpacing.s16;
+  return clampDouble((width - week) / 2, 0, ExpressiveSpacing.s16);
+}
+
 /// Raises an [ExpressiveDatePicker] in an [ExpressiveDatePickerDialog] and
 /// resolves to the day confirmed with OK, or null when cancelled. The
 /// choice is a draft until OK, which waits for one.
@@ -2864,7 +2876,7 @@ Future<DateTime?> showExpressiveDatePicker({
   bool Function(DateTime day)? selectableDay,
   ExpressiveDatePickerMode initialMode = ExpressiveDatePickerMode.picker,
   String? title,
-  DateTime? today,
+  DateTime? currentDate,
   int? firstDayOfWeek,
   String? confirmLabel,
   String? dismissLabel,
@@ -2895,7 +2907,7 @@ Future<DateTime?> showExpressiveDatePicker({
           selectableDayPredicate: selectableDay,
           initialMode: initialMode,
           title: title,
-          currentDate: today,
+          currentDate: currentDate,
           firstDayOfWeek: firstDayOfWeek,
         ),
       ),
@@ -2915,7 +2927,7 @@ Future<({DateTime start, DateTime end})?> showExpressiveDateRangePicker({
   DateTime? lastDate,
   bool Function(DateTime day)? selectableDay,
   String? title,
-  DateTime? today,
+  DateTime? currentDate,
   int? firstDayOfWeek,
   String? confirmLabel,
   String? dismissLabel,
@@ -2953,7 +2965,7 @@ Future<({DateTime start, DateTime end})?> showExpressiveDateRangePicker({
             lastDate: lastDate,
             selectableDayPredicate: selectableDay,
             title: title,
-            currentDate: today,
+            currentDate: currentDate,
             firstDayOfWeek: firstDayOfWeek,
           ),
         );

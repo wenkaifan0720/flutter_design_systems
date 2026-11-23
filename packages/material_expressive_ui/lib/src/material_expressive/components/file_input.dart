@@ -37,7 +37,7 @@ class ExpressiveChosenFile {
 /// A file input: a drop area on `surfaceContainerLow` at the large corner
 /// step, its edge a solid `outline` hairline as a field's (Material draws
 /// no dashed edges: a surface's edge is a line), holding an `upload` glyph in
-/// `primary`, [label] in `titleSmall`, [supportingText] in `bodySmall` and
+/// `primary`, [labelText] in `titleSmall`, [helperText] in `bodySmall` and
 /// a tonal button that calls [onBrowse] (the app opens its picker). While
 /// [dragging] (the app's drop target says a drag hovers) the area fills
 /// `primaryContainer` under a solid 2dp `primary` edge; an [errorText]
@@ -48,14 +48,14 @@ class ExpressiveChosenFile {
 /// drop target and picker.
 ///
 /// ```dart
-/// ExpressiveFileUpload(label: 'Drop a receipt here', supportingText: 'PDF or JPG, up to 10 MB', onBrowse: pickFiles, files: chosen, onRemove: remove)
+/// ExpressiveFileUpload(labelText: 'Drop a receipt here', helperText: 'PDF or JPG, up to 10 MB', onBrowse: pickFiles, files: chosen, onRemove: remove)
 /// ```
 class ExpressiveFileUpload extends StatelessWidget {
-  /// A drop area saying [label], opening the picker through [onBrowse].
+  /// A drop area saying [labelText], opening the picker through [onBrowse].
   const ExpressiveFileUpload({
-    required this.label,
+    required this.labelText,
     required this.onBrowse,
-    this.supportingText,
+    this.helperText,
     this.browseLabel,
     this.dragging = false,
     this.errorText,
@@ -74,11 +74,11 @@ class ExpressiveFileUpload extends StatelessWidget {
   final bool autofocus;
 
   /// What the area asks for: `Drop a receipt here`.
-  final String label;
+  final String labelText;
 
   /// What it takes, under the label: `PDF or JPG, up to 10 MB`; none when
   /// null.
-  final String? supportingText;
+  final String? helperText;
 
   /// Opens the platform's picker; the button is disabled when null.
   final VoidCallback? onBrowse;
@@ -119,7 +119,7 @@ class ExpressiveFileUpload extends StatelessWidget {
     final area = Semantics(
       container: true,
       label: semanticLabel ?? strings.fileInput,
-      hint: label,
+      hint: labelText,
       child: CustomPaint(
         foregroundPainter: _Edge(
           shape: shape,
@@ -146,7 +146,7 @@ class ExpressiveFileUpload extends StatelessWidget {
                 ),
               ),
               Text(
-                label,
+                labelText,
                 textAlign: TextAlign.center,
                 style: t.type.titleSmall.copyWith(
                   color: dragging
@@ -154,7 +154,7 @@ class ExpressiveFileUpload extends StatelessWidget {
                       : colors.onSurface,
                 ),
               ),
-              if (supportingText case final text?)
+              if (helperText case final text?)
                 Text(
                   text,
                   textAlign: TextAlign.center,
@@ -206,10 +206,8 @@ class ExpressiveFileUpload extends StatelessWidget {
         ),
       )
       ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
-      ..add(StringProperty('label', label))
-      ..add(
-        StringProperty('supportingText', supportingText, defaultValue: null),
-      )
+      ..add(StringProperty('labelText', labelText))
+      ..add(StringProperty('helperText', helperText, defaultValue: null))
       ..add(ObjectFlagProperty<VoidCallback?>.has('onBrowse', onBrowse))
       ..add(StringProperty('browseLabel', browseLabel, defaultValue: null))
       ..add(FlagProperty('dragging', value: dragging, ifTrue: 'dragging'))

@@ -129,7 +129,8 @@ final _parts = <String, _Part>{
     ),
   ),
   'ExpressiveFileUpload': _Part(
-    (hit) => ExpressiveFileUpload(label: 'Drop a receipt here', onBrowse: hit),
+    (hit) =>
+        ExpressiveFileUpload(labelText: 'Drop a receipt here', onBrowse: hit),
   ),
   'ExpressiveIconButton': _Part(
     (hit) => ExpressiveIconButton(
@@ -246,8 +247,7 @@ final _parts = <String, _Part>{
   // The dots are one adjustable node (increase, decrease) a tap either side moves, not a focus stop: the pager they
   // name takes the keys.
   'ExpressivePageDots': _Part(
-    (hit) =>
-        ExpressivePageDots(count: 5, selectedIndex: 1, onChanged: _on(hit)),
+    (hit) => ExpressivePageDots(pageCount: 5, page: 1, onChanged: _on(hit)),
     focus: false,
     keys: false,
     pressable: false,
@@ -518,7 +518,7 @@ final _parts = <String, _Part>{
     (hit) => ExpressiveNumberField(
       value: 2,
       max: 8,
-      label: 'Guests',
+      labelText: 'Guests',
       onChanged: _on(hit),
     ),
   ),
@@ -549,13 +549,13 @@ final _parts = <String, _Part>{
   ),
   // The fields take text with or without a callback; Enter is a newline or a submit, not a press.
   'ExpressiveTextField': _Part(
-    (hit) => ExpressiveTextField(label: 'Name', onChanged: _on(hit)),
+    (hit) => ExpressiveTextField(labelText: 'Name', onChanged: _on(hit)),
     keys: false,
     pressable: false,
     disables: false,
   ),
   'ExpressiveTextArea': _Part(
-    (hit) => ExpressiveTextArea(label: 'Note', onChanged: _on(hit)),
+    (hit) => ExpressiveTextArea(labelText: 'Note', onChanged: _on(hit)),
     keys: false,
     pressable: false,
     disables: false,
@@ -579,7 +579,7 @@ final _parts = <String, _Part>{
   ),
   'ExpressiveSelect': _Part(
     (hit) => ExpressiveSelect<String>(
-      label: 'Fruit',
+      labelText: 'Fruit',
       options: const [
         ExpressiveSelectOption('apple', 'Apple'),
         ExpressiveSelectOption('pear', 'Pear'),
@@ -593,7 +593,7 @@ final _parts = <String, _Part>{
   ),
   'ExpressiveCombobox': _Part(
     (hit) => ExpressiveCombobox<String>(
-      label: 'Fruit',
+      labelText: 'Fruit',
       options: const [
         ExpressiveSelectOption('apple', 'Apple'),
         ExpressiveSelectOption('pear', 'Pear'),
@@ -613,7 +613,8 @@ final _parts = <String, _Part>{
     disables: false,
   ),
   'ExpressivePasswordField': _Part(
-    (hit) => ExpressivePasswordField(label: 'Password', onChanged: _on(hit)),
+    (hit) =>
+        ExpressivePasswordField(labelText: 'Password', onChanged: _on(hit)),
     keys: false,
     pressable: false,
     disables: false,
@@ -631,7 +632,7 @@ final _parts = <String, _Part>{
   ),
   'ExpressiveMultiSelect': _Part(
     (hit) => ExpressiveMultiSelect<String>(
-      label: 'Sizes',
+      labelText: 'Sizes',
       options: const [
         ExpressiveSelectOption('s', 'Small'),
         ExpressiveSelectOption('m', 'Medium'),
@@ -836,7 +837,7 @@ Widget _host(
       context,
     ).copyWith(disableAnimations: still, textScaler: TextScaler.linear(scale)),
     child: ExpressiveHost(
-      light: _light,
+      theme: _light,
       brightness: Brightness.light,
       child: Directionality(textDirection: direction, child: page!),
     ),

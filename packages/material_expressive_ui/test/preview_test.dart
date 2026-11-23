@@ -100,7 +100,14 @@ void main() {
           EdgeInsets.zero,
           reason: 'the page\'s SafeArea consumed the bars',
         );
-        final outer = tester.element(find.byType(SafeArea));
+        // The SafeArea the page stands in (the host's toaster keeps one of
+        // its own beside the app).
+        final outer = tester.element(
+          find.ancestor(
+            of: find.byKey(_pageKey),
+            matching: find.byType(SafeArea),
+          ),
+        );
         expect(MediaQuery.paddingOf(outer), insets);
         // The page stands clear of both bars.
         final page = tester.getRect(find.byKey(_pageKey));
@@ -526,7 +533,7 @@ void main() {
         MaterialApp(
           home: ExpressivePreview(
             brightness: Brightness.dark,
-            dark: bloom,
+            darkTheme: bloom,
             child: SafeArea(
               child: Column(
                 children: <Widget>[

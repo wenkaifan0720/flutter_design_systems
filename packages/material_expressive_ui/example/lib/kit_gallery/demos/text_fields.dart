@@ -62,13 +62,13 @@ class _Styles extends StatelessWidget {
     'Filled and outlined',
     children: <Widget>[
       for (final style in ExpressiveTextFieldKind.values) ...<Widget>[
-        ExpressiveTextField(kind: style, label: 'Trip name'),
+        ExpressiveTextField(kind: style, labelText: 'Trip name'),
         _WithText(
           'Lisbon in spring',
           (controller) => ExpressiveTextField(
             kind: style,
             controller: controller,
-            label: 'Trip name',
+            labelText: 'Trip name',
             helperText: 'Shown to everyone you invite',
           ),
         ),
@@ -86,13 +86,13 @@ class _Expressive extends StatelessWidget {
     children: <Widget>[
       const ExpressiveTextField(
         rounded: true,
-        label: 'Guest name',
+        labelText: 'Guest name',
         leading: Icon(ExpressiveSymbols.person),
       ),
       const ExpressiveTextField(
         kind: ExpressiveTextFieldKind.outlined,
         rounded: true,
-        label: 'Guest name',
+        labelText: 'Guest name',
         leading: Icon(ExpressiveSymbols.person),
       ),
       _WithText(
@@ -101,7 +101,7 @@ class _Expressive extends StatelessWidget {
           rounded: true,
           tonal: true,
           controller: controller,
-          label: 'Guest name',
+          labelText: 'Guest name',
           leading: const Icon(ExpressiveSymbols.person),
         ),
       ),
@@ -127,7 +127,7 @@ class _Decorations extends StatelessWidget {
         '240',
         (controller) => ExpressiveTextField(
           controller: controller,
-          label: 'Nightly budget',
+          labelText: 'Nightly budget',
           prefix: r'$',
           suffix: 'USD',
           keyboardType: TextInputType.number,
@@ -135,7 +135,7 @@ class _Decorations extends StatelessWidget {
       ),
       const ExpressiveTextField(
         kind: ExpressiveTextFieldKind.outlined,
-        label: 'Luggage allowance',
+        labelText: 'Luggage allowance',
         alwaysMinimizeLabel: true,
         hintText: '23',
         suffix: 'kg',
@@ -146,7 +146,7 @@ class _Decorations extends StatelessWidget {
         (controller) => ExpressiveTextField(
           controller: controller,
           kind: ExpressiveTextFieldKind.outlined,
-          label: 'Host email',
+          labelText: 'Host email',
           leading: const Icon(ExpressiveSymbols.email),
           trailing: const Icon(ExpressiveSymbols.checkCircle),
           keyboardType: TextInputType.emailAddress,
@@ -168,7 +168,7 @@ class _Secure extends StatelessWidget {
         (controller) => ExpressiveTextField(
           controller: controller,
           obscureText: true,
-          label: 'Password',
+          labelText: 'Password',
           leading: const Icon(ExpressiveSymbols.lock),
           helperText: 'At least 12 characters',
         ),
@@ -176,7 +176,7 @@ class _Secure extends StatelessWidget {
       const ExpressiveTextField(
         kind: ExpressiveTextFieldKind.outlined,
         obscureText: true,
-        label: 'Confirm password',
+        labelText: 'Confirm password',
       ),
     ],
   );
@@ -193,20 +193,20 @@ class _Errors extends StatelessWidget {
         'maya@',
         (controller) => ExpressiveTextField(
           controller: controller,
-          label: 'Email',
+          labelText: 'Email',
           errorText: 'Enter a full address, like maya@example.com',
           trailing: const Icon(ExpressiveSymbols.error),
         ),
       ),
       const ExpressiveTextField(
         kind: ExpressiveTextFieldKind.outlined,
-        label: 'Check-in date',
+        labelText: 'Check-in date',
         errorText: 'Choose a date after today',
       ),
       const ExpressiveTextField(
         rounded: true,
         tonal: true,
-        label: 'Room',
+        labelText: 'Room',
         errorText: '',
       ),
       const ExpressiveFieldError('Pick at least one room type to continue'),
@@ -226,7 +226,7 @@ class _Counter extends StatelessWidget {
         (controller) => ExpressiveTextField(
           controller: controller,
           kind: ExpressiveTextFieldKind.outlined,
-          label: 'Headline',
+          labelText: 'Headline',
           helperText: 'A short line for the listing',
           maxLength: 40,
         ),
@@ -246,14 +246,14 @@ class _Inactive extends StatelessWidget {
         'Harbour House',
         (controller) => ExpressiveTextField(
           controller: controller,
-          label: 'Property',
+          labelText: 'Property',
           leading: const Icon(ExpressiveSymbols.home),
           enabled: false,
         ),
       ),
       const ExpressiveTextField(
         kind: ExpressiveTextFieldKind.outlined,
-        label: 'Promo code',
+        labelText: 'Promo code',
         helperText: 'Available after your first stay',
         enabled: false,
       ),
@@ -262,7 +262,7 @@ class _Inactive extends StatelessWidget {
         (controller) => ExpressiveTextField(
           controller: controller,
           kind: ExpressiveTextFieldKind.outlined,
-          label: 'Booking reference',
+          labelText: 'Booking reference',
           readOnly: true,
         ),
       ),
@@ -282,14 +282,14 @@ class _Areas extends StatelessWidget {
         '22:40. Could the key be left with the café next door?',
         (controller) => ExpressiveTextArea(
           controller: controller,
-          label: 'Note for the host',
+          labelText: 'Note for the host',
           maxLength: 280,
         ),
       ),
       const ExpressiveTextArea(
         kind: ExpressiveTextFieldKind.outlined,
         rounded: true,
-        label: 'What made the stay special?',
+        labelText: 'What made the stay special?',
         hintText: 'The view, the breakfast, the welcome…',
         minLines: 4,
       ),
@@ -318,7 +318,7 @@ class _Codes extends StatelessWidget {
             length: 4,
             kind: ExpressiveTextFieldKind.filled,
             rounded: true,
-            obscure: true,
+            obscureText: true,
             semanticLabel: 'PIN',
           ),
         ),
@@ -337,7 +337,7 @@ class _Codes extends StatelessWidget {
 
 /// A filled field with its glyph and supporting line.
 Widget kitSpecimenTextFieldFilled() => const ExpressiveTextField(
-  label: 'Trip name',
+  labelText: 'Trip name',
   leading: Icon(ExpressiveSymbols.flight),
   helperText: 'Shown to everyone you invite',
 );
@@ -345,13 +345,13 @@ Widget kitSpecimenTextFieldFilled() => const ExpressiveTextField(
 /// An outlined password field with its reveal control.
 Widget kitSpecimenTextFieldPassword() => const ExpressiveTextField(
   kind: ExpressiveTextFieldKind.outlined,
-  label: 'Password',
+  labelText: 'Password',
   obscureText: true,
 );
 
 /// A note field three lines tall.
 Widget kitSpecimenTextAreaNote() => const ExpressiveTextArea(
-  label: 'Note for your host',
+  labelText: 'Note for your host',
   helperText: 'Arrival time, dietary needs, anything else',
 );
 
@@ -381,8 +381,8 @@ class _FilesState extends State<_Files> {
     'File input · chosen files, a drag over it, a refused file',
     children: <Widget>[
       ExpressiveFileUpload(
-        label: 'Drop receipts here',
-        supportingText: 'PDF or JPG, up to 10 MB each',
+        labelText: 'Drop receipts here',
+        helperText: 'PDF or JPG, up to 10 MB each',
         onBrowse: () {},
         files: _files,
         onRemove: (i) => setState(
@@ -391,14 +391,14 @@ class _FilesState extends State<_Files> {
       ),
       const SizedBox(height: kitGap * 2),
       ExpressiveFileUpload(
-        label: 'Release to add 3 files',
+        labelText: 'Release to add 3 files',
         onBrowse: () {},
         dragging: true,
       ),
       const SizedBox(height: kitGap * 2),
       ExpressiveFileUpload(
-        label: 'Drop a profile photo here',
-        supportingText: 'PNG or JPG',
+        labelText: 'Drop a profile photo here',
+        helperText: 'PNG or JPG',
         onBrowse: () {},
         errorText: 'That file is a PDF; choose a PNG or JPG',
       ),
@@ -408,8 +408,8 @@ class _FilesState extends State<_Files> {
 
 /// A file input with two files chosen.
 Widget kitSpecimenFileInputChosen() => ExpressiveFileUpload(
-  label: 'Drop receipts here',
-  supportingText: 'PDF or JPG, up to 10 MB each',
+  labelText: 'Drop receipts here',
+  helperText: 'PDF or JPG, up to 10 MB each',
   onBrowse: () {},
   files: _chosen,
   onRemove: (_) {},
@@ -447,8 +447,8 @@ class _FieldsState extends State<_Fields> {
     crossAxisAlignment: CrossAxisAlignment.stretch,
     children: <Widget>[
       ExpressiveFormField(
-        label: 'Notify me',
-        help: 'At most once a day',
+        labelText: 'Notify me',
+        helperText: 'At most once a day',
         child: Align(
           alignment: AlignmentDirectional.centerStart,
           child: ExpressiveSwitch(
@@ -459,9 +459,9 @@ class _FieldsState extends State<_Fields> {
       ),
       const SizedBox(height: ExpressiveSpacing.s16),
       ExpressiveFormField(
-        label: 'Display name',
+        labelText: 'Display name',
         required: true,
-        error: _name.trim().isEmpty ? 'Give a name others will see' : null,
+        errorText: _name.trim().isEmpty ? 'Give a name others will see' : null,
         child: ExpressiveTextField(
           kind: ExpressiveTextFieldKind.outlined,
           // A placeholder that can't pass for a typed name: "Ada" did, under
@@ -478,7 +478,7 @@ class _FieldsState extends State<_Fields> {
 /// A password field, its text hidden behind the eye.
 Widget kitSpecimenPasswordField() => const ExpressivePasswordField(
   kind: ExpressiveTextFieldKind.outlined,
-  label: 'Password',
+  labelText: 'Password',
   helperText: 'At least 12 characters',
 );
 
@@ -498,8 +498,8 @@ Widget kitSpecimenInputGroupUrl() => ExpressiveInputGroup(
 
 /// A switch with its label above and its help under it.
 Widget kitSpecimenFormFieldNotify() => ExpressiveFormField(
-  label: 'Notify me',
-  help: 'At most once a day',
+  labelText: 'Notify me',
+  helperText: 'At most once a day',
   child: Align(
     alignment: AlignmentDirectional.centerStart,
     child: ExpressiveSwitch(value: true, onChanged: (_) {}),

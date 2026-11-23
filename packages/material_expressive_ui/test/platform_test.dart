@@ -101,7 +101,10 @@ void main() {
           _app(
             ExpressiveScaffold(
               title: 'Entry',
-              body: ExpressiveTextField(controller: controller, label: 'Note'),
+              body: ExpressiveTextField(
+                controller: controller,
+                labelText: 'Note',
+              ),
             ),
           ),
         );

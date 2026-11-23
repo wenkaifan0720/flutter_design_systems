@@ -69,7 +69,7 @@ class ExpressiveMenuItem extends ExpressiveMenuEntry {
     this.supportingText,
     this.trailingText,
     this.trailingIcon,
-    this.destructive = false,
+    this.isDestructiveAction = false,
   });
 
   /// The label.
@@ -82,7 +82,7 @@ class ExpressiveMenuItem extends ExpressiveMenuEntry {
   /// label and icons take the `error` role, as Compose's
   /// `MenuDefaults.itemColors(textColor = error)` sets a loss. A vibrant
   /// menu keeps its own colours.
-  final bool destructive;
+  final bool isDestructiveAction;
 
   /// A leading glyph.
   final IconData? icon;
@@ -1151,7 +1151,7 @@ class _MenuEntryTileState extends State<_MenuEntryTile> {
               enabled: enabled,
               selected: false,
             ),
-            loss: entry.destructive && enabled && !widget.vibrant,
+            loss: entry.isDestructiveAction && enabled && !widget.vibrant,
           ),
           role: ExpressivePressRole.button,
           onPressed: enabled
@@ -3622,7 +3622,7 @@ Widget _entering(Animation<double> presence, Widget child) => AnimatedBuilder(
 /// a search has not found.
 ///
 /// ```dart
-/// ExpressiveMultiSelect<String>(label: 'Tags', options: const [ExpressiveSelectOption('red', 'Red'), ExpressiveSelectOption('blue', 'Blue')], values: tags, onChanged: setTags)
+/// ExpressiveMultiSelect<String>(labelText: 'Tags', options: const [ExpressiveSelectOption('red', 'Red'), ExpressiveSelectOption('blue', 'Blue')], values: tags, onChanged: setTags)
 /// ```
 class ExpressiveMultiSelect<T extends Object> extends StatefulWidget {
   /// A multi-select of [options] with [values] chosen.
@@ -3630,7 +3630,7 @@ class ExpressiveMultiSelect<T extends Object> extends StatefulWidget {
     required this.options,
     required this.values,
     required this.onChanged,
-    this.label,
+    this.labelText,
     this.hintText,
     this.maxValues,
     this.onCreate,
@@ -3670,7 +3670,7 @@ class ExpressiveMultiSelect<T extends Object> extends StatefulWidget {
   final ValueChanged<List<T>>? onChanged;
 
   /// What the field is called to assistive technology.
-  final String? label;
+  final String? labelText;
 
   /// Shown in the field while it is empty.
   final String? hintText;
@@ -3705,7 +3705,7 @@ class ExpressiveMultiSelect<T extends Object> extends StatefulWidget {
       ..add(
         ObjectFlagProperty<ValueChanged<List<T>>?>.has('onChanged', onChanged),
       )
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
       ..add(StringProperty('hintText', hintText, defaultValue: null))
       ..add(IntProperty('maxValues', maxValues, defaultValue: null))
       ..add(
@@ -3907,7 +3907,7 @@ class _ExpressiveMultiSelectState<T extends Object>
           displayStringForOption: _label,
           onCreate: widget.onCreate,
           maxTags: widget.maxValues,
-          semanticLabel: widget.label,
+          semanticLabel: widget.labelText,
           deleteLabel: ExpressiveLocalizations.of(context).removeTag,
           // Its own width (what is typed, or the placeholder), at least
           // 120dp: beside the chips while it fits, under them only when it
@@ -3921,7 +3921,9 @@ class _ExpressiveMultiSelectState<T extends Object>
                 focusNode: field.focusNode,
                 enabled: enabled,
                 hintText: widget.values.isEmpty ? widget.hintText : null,
-                semanticLabel: widget.label,
+                semanticLabel: widget.labelText,
+                // The entry says whether its list stands open.
+                expanded: field.isOpen,
                 // Enter adds a value and the field keeps the focus for the
                 // next: onEditingComplete, never onSubmitted, whose restart
                 // of the text input a browser types into no more.
@@ -4000,7 +4002,7 @@ class ExpressiveMenuBarEntry {
     this.children,
     this.shortcut,
     this.checked,
-    this.destructive = false,
+    this.isDestructiveAction = false,
   }) : _divider = false;
 
   /// A hairline between groups of items.
@@ -4010,7 +4012,7 @@ class ExpressiveMenuBarEntry {
       children = null,
       shortcut = null,
       checked = null,
-      destructive = false,
+      isDestructiveAction = false,
       _divider = true;
 
   /// What it says.
@@ -4030,7 +4032,7 @@ class ExpressiveMenuBarEntry {
 
   /// Whether it destroys something (Delete, Remove): its label and icons
   /// take the `error` role, as an [ExpressiveMenuItem]'s do.
-  final bool destructive;
+  final bool isDestructiveAction;
 
   /// Whether it can be chosen: it has [onPressed] or [children], as a
   /// Flutter menu item without a handler is disabled.
@@ -4048,7 +4050,7 @@ class ExpressiveMenuBarEntry {
               : <RawMenuEntry>[for (final child in children!) child._design()],
           shortcut: shortcut,
           checked: checked,
-          isDestructiveAction: destructive,
+          isDestructiveAction: isDestructiveAction,
         );
 }
 

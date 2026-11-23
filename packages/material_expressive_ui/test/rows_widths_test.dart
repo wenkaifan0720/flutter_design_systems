@@ -220,11 +220,11 @@ List<String> _wordsEdge(
   Set<Element> before,
 ) {
   final (name, labels) = switch (held.widget) {
-    ExpressiveSelect(:final label, :final options) => (
+    ExpressiveSelect(labelText: final label, :final options) => (
       label,
       [for (final o in options) o.label],
     ),
-    ExpressiveCombobox(:final label, :final options) => (
+    ExpressiveCombobox(labelText: final label, :final options) => (
       label,
       [for (final o in options) o.label],
     ),
@@ -264,8 +264,8 @@ List<String> _cutValues(WidgetTester tester) {
   final cut = <String>[];
   for (final field in find.byWidgetPredicate(_opensList).evaluate()) {
     final label = switch (field.widget) {
-      ExpressiveSelect(:final label) => label,
-      ExpressiveCombobox(:final label) => label,
+      ExpressiveSelect(labelText: final label) => label,
+      ExpressiveCombobox(labelText: final label) => label,
       _ => null,
     };
     void visit(RenderObject node) {

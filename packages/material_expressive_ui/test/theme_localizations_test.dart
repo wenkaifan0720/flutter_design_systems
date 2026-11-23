@@ -87,7 +87,7 @@ void main() {
                 return Center(
                   child: ExpressiveTextField(
                     controller: controller,
-                    label: 'Name',
+                    labelText: 'Name',
                   ),
                 );
               },
@@ -170,7 +170,10 @@ void _fieldInApp(
           return Center(
             child: SizedBox(
               width: 300,
-              child: ExpressiveTextField(controller: controller, label: 'Name'),
+              child: ExpressiveTextField(
+                controller: controller,
+                labelText: 'Name',
+              ),
             ),
           );
         },

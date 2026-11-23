@@ -2,17 +2,16 @@
 library;
 
 import 'dart:async';
-import 'dart:collection';
 import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
 
 import '../component_themes.dart';
 import '../elevation.dart';
 import '../icons.dart';
-import '../internal/docked_band.dart';
 import '../internal/tokens/behavior.g.dart';
 import '../internal/tokens/button_small_tokens.g.dart';
 import '../internal/tokens/keys.g.dart';
@@ -23,7 +22,7 @@ import '../internal/styled_content.dart';
 import '../strings.dart';
 import '../theme.dart';
 import 'icon_buttons.dart';
-import 'shell_insets.dart';
+import '../internal/snack_host.dart';
 import '../internal/style_layers.dart';
 
 /// How long a snackbar stays up (Compose's `SnackbarDuration`).
@@ -47,13 +46,20 @@ enum ExpressiveSnackBarDuration {
 
 /// Shows [message] as a snackbar (Material's `ScaffoldMessenger.showSnackBar`
 /// with a `SnackBar`, Compose's `SnackbarHostState.showSnackbar`): a
-/// transient bottom notification above the shell's bar and action — a
-/// confirmation the page does not have to hold — after any snackbar already
-/// showing or queued. [actionLabel] + [onAction] add ONE inline action — the
-/// undo pattern; tapping it dismisses the snackbar and runs [onAction].
-/// [withDismissAction] adds the close button; [actionOnNewLine] puts the
-/// action under a long message. [duration] defaults to short, with or
-/// without an action.
+/// transient bottom notification above the shell's bar and action, a
+/// screen's docked footer and the keyboard — a confirmation the page does
+/// not have to hold — after any snackbar already showing or queued: one
+/// shows at a time, in order. [actionLabel] + [onAction] add ONE inline
+/// action — the undo pattern; tapping it runs [onAction] and dismisses the
+/// snackbar. [withDismissAction] adds the close button; [actionOnNewLine]
+/// puts the action under a long message. [duration] defaults to short, with
+/// or without an action. A snackbar with an action stays up while a screen
+/// reader drives the device (`MediaQueryData.accessibleNavigation`), as
+/// Material's does; a pointer over it or the focus in it (F6 takes the
+/// focus there) holds its time.
+///
+/// It shows in the [ExpressiveHost] inside the app, above its navigator:
+/// `MaterialApp(builder: (context, child) => ExpressiveHost(child: child!))`.
 ///
 /// ```dart
 /// showExpressiveSnackBar(context, 'Message archived', actionLabel: 'Undo', onAction: undo);
@@ -68,42 +74,55 @@ void showExpressiveSnackBar(
   ExpressiveSnackBarDuration? duration,
   ExpressiveComponentThemeData? style,
 }) {
-  final overlay = Overlay.of(context, rootOverlay: true);
-  final media = MediaQuery.of(overlay.context);
-  // The shell's allowance is measured from the display edge and already
-  // spans the device inset (and the FAB with its gap), so the insets are
-  // a max, not a sum.
-  final bottom = math.max(
-    math.max(media.padding.bottom, media.viewInsets.bottom),
-    // The shell's bar, or the route's own docked footer or bar.
-    math.max(
-      ExpressiveShellInsets.of(context),
-      expressiveDockedBandOf(context),
-    ),
-  );
-  final queue = _queues[overlay] ??= _ToastQueue(overlay);
-  queue.enqueue(
-    _ToastRequest(
+  final toaster = RawToaster.maybeOf(context);
+  if (toaster == null) {
+    throw FlutterError.fromParts(<DiagnosticsNode>[
+      ErrorSummary(
+        'showExpressiveSnackBar found no ExpressiveHost above this context.',
+      ),
+      ErrorDescription(
+        'Snackbars show in the ExpressiveHost inside the app, above its '
+        'navigator, which keeps them clear of the bars and footers under '
+        'them.',
+      ),
+      ErrorHint(
+        "Mount it in the app's builder: "
+        'MaterialApp(builder: (context, child) => '
+        'ExpressiveHost(child: child!)).',
+      ),
+      context.describeElement('The context that showed the snackbar was'),
+    ]);
+  }
+  final controller = toaster.show(
+    RawToast(
       message: message,
-      style: style,
       actionLabel: actionLabel,
-      onAction: onAction,
-      withDismissAction: withDismissAction,
-      actionOnNewLine: actionOnNewLine,
-      duration: duration ?? ExpressiveSnackBarDuration.short,
-      bottom: bottom,
-      themes: InheritedTheme.capture(from: context, to: overlay.context),
+      // An action with nothing to run still takes the snackbar down.
+      onAction: actionLabel == null ? null : onAction ?? _noAction,
+      duration: (duration ?? ExpressiveSnackBarDuration.short).timeout,
+      data: ExpressiveSnackData(
+        style: style,
+        withDismissAction: withDismissAction,
+        actionOnNewLine: actionOnNewLine,
+        themes: InheritedTheme.capture(from: context, to: toaster.context),
+      ),
     ),
   );
+  final open = expressiveSnackBars[toaster] ??= <RawToastController>[];
+  open.add(controller);
+  unawaited(controller.closed.then((_) => open.remove(controller)));
 }
 
-/// Dismisses the snackbar showing over [context]'s root overlay, if any; the
-/// next queued one follows (Material's
+void _noAction() {}
+
+/// Dismisses the snackbar showing (or, while one leaves, the next in line);
+/// the next queued one follows (Material's
 /// `ScaffoldMessenger.hideCurrentSnackBar`).
 void hideCurrentExpressiveSnackBar(BuildContext context) {
-  final overlay = Overlay.maybeOf(context, rootOverlay: true);
-  if (overlay == null) return;
-  _queues[overlay]?.current?.dismiss();
+  final toaster = RawToaster.maybeOf(context);
+  final open = toaster == null ? null : expressiveSnackBars[toaster];
+  if (open == null || open.isEmpty) return;
+  open.removeAt(0).dismiss();
 }
 
 /// The snackbar itself (Compose's `Snackbar`, Material's `SnackBar`):
@@ -656,178 +675,7 @@ class _RenderSnackbar extends RenderBox
 }
 
 // ---------------------------------------------------------------------------
-// The host: SnackbarHostState's queue and FadeInFadeOutWithScale.
-
-/// Each root overlay's queue of toasts.
-final Expando<_ToastQueue> _queues = Expando<_ToastQueue>('ExpressiveSnackBar');
-
-class _ToastRequest {
-  _ToastRequest({
-    required this.message,
-    required this.actionLabel,
-    required this.onAction,
-    required this.withDismissAction,
-    required this.actionOnNewLine,
-    required this.duration,
-    required this.bottom,
-    required this.themes,
-    required this.style,
-  });
-
-  final String message;
-  final String? actionLabel;
-  final VoidCallback? onAction;
-  final bool withDismissAction;
-  final bool actionOnNewLine;
-  final ExpressiveSnackBarDuration duration;
-  final double bottom;
-  final CapturedThemes themes;
-  final ExpressiveComponentThemeData? style;
-
-  /// Set by the queue while this toast is the current one.
-  VoidCallback? _resolve;
-
-  /// Takes the toast down (the timeout, the close button, the action,
-  /// assistive technology's dismiss); the queue moves on.
-  void dismiss() => _resolve?.call();
-}
-
-class _ToastQueue {
-  _ToastQueue(this.overlay);
-
-  final OverlayState overlay;
-  final Queue<_ToastRequest> _pending = Queue<_ToastRequest>();
-
-  /// The toast showing now.
-  _ToastRequest? current;
-
-  /// The current toast and those still animating out behind it.
-  final List<_ToastRequest> _shown = <_ToastRequest>[];
-  OverlayEntry? _entry;
-  Timer? _timer;
-
-  void enqueue(_ToastRequest request) {
-    _pending.add(request);
-    if (current == null) _next();
-  }
-
-  /// `SnackbarHostState`'s mutex: the next request becomes current the
-  /// moment the last resolves, so the two cross-fade.
-  void _next() {
-    _timer?.cancel();
-    _timer = null;
-    if (_pending.isEmpty) {
-      current = null;
-      _entry?.markNeedsBuild();
-      return;
-    }
-    final request = _pending.removeFirst();
-    current = request;
-    _shown.add(request);
-    request._resolve = () {
-      request._resolve = null;
-      _next();
-    };
-    if (request.duration.timeout case final timeout?) {
-      _timer = Timer(timeout, request.dismiss);
-    }
-    final entry = _entry;
-    if (entry == null) {
-      late final OverlayEntry made;
-      made = OverlayEntry(
-        builder: (context) =>
-            _QueueLifetime(onDispose: () => _abandon(made), child: _layer()),
-      );
-      overlay.insert(_entry = made);
-    } else {
-      entry.markNeedsBuild();
-    }
-  }
-
-  void _exited(_ToastRequest request) {
-    _shown.remove(request);
-    final entry = _entry;
-    if (entry == null) return;
-    if (_shown.isEmpty && current == null) {
-      _entry = null;
-      _queues[overlay] = null;
-      entry
-        ..remove()
-        ..dispose();
-    } else {
-      entry.markNeedsBuild();
-    }
-  }
-
-  /// [entry]'s layer left the tree. Taken down by the queue, it is already
-  /// disposed; otherwise the overlay went with the tree the toast stood in
-  /// (a page, a preview, a test torn down): the timeout has nothing left to
-  /// take down, and the entry goes with the overlay.
-  void _abandon(OverlayEntry entry) {
-    if (!identical(entry, _entry)) return;
-    _timer?.cancel();
-    _timer = null;
-    _entry = null;
-    if (identical(_queues[overlay], this)) _queues[overlay] = null;
-    entry
-      ..remove()
-      ..dispose();
-  }
-
-  Widget _layer() => Positioned.fill(
-    child: Stack(
-      children: <Widget>[
-        for (final request in _shown)
-          Positioned(
-            key: ObjectKey(request),
-            left: 0,
-            right: 0,
-            bottom: request.bottom,
-            child: Semantics(
-              container: true,
-              liveRegion: identical(request, current),
-              onDismiss: identical(request, current) ? request.dismiss : null,
-              child: ExcludeSemantics(
-                excluding: !identical(request, current),
-                child: IgnorePointer(
-                  ignoring: !identical(request, current),
-                  child: ExpressiveSnackBarTransition(
-                    visible: identical(request, current),
-                    onExited: () => _exited(request),
-                    // `Snackbar(snackbarData)`'s margin, centred as
-                    // `Scaffold` places the host.
-                    child: Align(
-                      alignment: Alignment.bottomCenter,
-                      heightFactor: 1,
-                      child: Padding(
-                        padding: const EdgeInsets.all(SnackbarBehavior.margin),
-                        child: request.themes.wrap(
-                          ExpressiveSnackBar(
-                            request.message,
-                            style: request.style,
-                            actionLabel: request.actionLabel,
-                            onAction: request.actionLabel == null
-                                ? null
-                                : () {
-                                    request.dismiss();
-                                    request.onAction?.call();
-                                  },
-                            withDismissAction: request.withDismissAction,
-                            onDismiss: request.dismiss,
-                            actionOnNewLine: request.actionOnNewLine,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-      ],
-    ),
-  );
-}
+// The host's transition: FadeInFadeOutWithScale.
 
 /// How a toast enters and leaves (Compose's `FadeInFadeOutWithScale`
 /// item): opacity on `SnackbarHostBehavior.opacityMotion` and scale about
@@ -939,26 +787,4 @@ class _ExpressiveSnackBarTransitionState
     ),
     child: widget.child,
   );
-}
-
-/// Runs [onDispose] when the toast layer leaves the tree.
-class _QueueLifetime extends StatefulWidget {
-  const _QueueLifetime({required this.onDispose, required this.child});
-
-  final VoidCallback onDispose;
-  final Widget child;
-
-  @override
-  State<_QueueLifetime> createState() => _QueueLifetimeState();
-}
-
-class _QueueLifetimeState extends State<_QueueLifetime> {
-  @override
-  void dispose() {
-    widget.onDispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) => widget.child;
 }

@@ -53,7 +53,7 @@ final List<_Part> _parts = [
       build: (typed) => ExpressiveTextField(
         kind: kind,
         controller: _text(typed, 'Kirk Creek'),
-        label: 'Where you stay',
+        labelText: 'Where you stay',
         hintText: 'Campground',
       ),
       box: null,
@@ -89,7 +89,7 @@ final List<_Part> _parts = [
       build: (typed) => ExpressiveTextArea(
         kind: kind,
         controller: _text(typed, 'Bring the stove.'),
-        label: 'Notes',
+        labelText: 'Notes',
       ),
       box: null,
       hint: null,
@@ -218,7 +218,7 @@ void main() {
                   MaterialApp(
                     key: ValueKey('$platform/$typed'),
                     home: ExpressiveHost(
-                      light: theme,
+                      theme: theme,
                       brightness: Brightness.light,
                       child: Align(
                         alignment: AlignmentDirectional.topStart,

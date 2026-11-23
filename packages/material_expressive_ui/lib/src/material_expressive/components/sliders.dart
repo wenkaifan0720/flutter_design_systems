@@ -2127,10 +2127,10 @@ class _SliderFrame extends StatelessWidget {
 /// A whole-number quantity between two tonal icon buttons, − and +: a
 /// cart line, guests, servings. Holding a button repeats; each button
 /// disables at its bound. [format] shows the value (a unit, a price);
-/// [label] names the quantity to a screen reader ("Increase Guests").
+/// [labelText] names the quantity to a screen reader ("Increase Guests").
 ///
 /// ```dart
-/// ExpressiveNumberField(value: guests, min: 1, max: 8, label: 'Guests', onChanged: (v) => setState(() => guests = v))
+/// ExpressiveNumberField(value: guests, min: 1, max: 8, labelText: 'Guests', onChanged: (v) => setState(() => guests = v))
 /// ```
 class ExpressiveNumberField extends StatefulWidget {
   /// A quantity stepper at [value] between [min] and [max], reporting a change through [onChanged].
@@ -2141,7 +2141,7 @@ class ExpressiveNumberField extends StatefulWidget {
     this.min = 0,
     this.max = 99,
     this.step = 1,
-    this.label,
+    this.labelText,
     this.format,
     super.key,
   }) : assert(min <= max, 'min must not exceed max'),
@@ -2167,7 +2167,7 @@ class ExpressiveNumberField extends StatefulWidget {
 
   /// What the quantity is, for a screen reader (the strings' `quantity`
   /// when null).
-  final String? label;
+  final String? labelText;
 
   /// How the value reads; its decimal digits when null.
   final String Function(int value)? format;
@@ -2194,7 +2194,7 @@ class ExpressiveNumberField extends StatefulWidget {
       ..add(IntProperty('min', min, defaultValue: 0))
       ..add(IntProperty('max', max, defaultValue: 99))
       ..add(IntProperty('step', step, defaultValue: 1))
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
       ..add(
         ObjectFlagProperty<String Function(int value)?>.has('format', format),
       );
@@ -2339,7 +2339,7 @@ class _QuantityStepperState extends State<ExpressiveNumberField> {
   }
 
   String _label(BuildContext context) =>
-      widget.label ?? ExpressiveLocalizations.of(context).quantity;
+      widget.labelText ?? ExpressiveLocalizations.of(context).quantity;
 
   @override
   Widget build(BuildContext context) {

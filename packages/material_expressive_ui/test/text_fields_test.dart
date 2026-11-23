@@ -32,7 +32,7 @@ Widget _app(
 }) => MaterialApp(
   theme: ThemeData(platform: platform),
   home: ExpressiveHost(
-    light: _theme,
+    theme: _theme,
     brightness: Brightness.light,
     child: Builder(
       builder: (context) => MediaQuery(
@@ -134,7 +134,7 @@ void main() {
         _app(
           SizedBox(
             width: 240,
-            child: ExpressiveTextField(kind: kind, label: 'Name'),
+            child: ExpressiveTextField(kind: kind, labelText: 'Name'),
           ),
         ),
       );
@@ -185,7 +185,7 @@ void main() {
     await tester.pumpWidget(
       _app(
         ExpressiveTextField(
-          label: 'Name',
+          labelText: 'Name',
           controller: controller,
           onSubmitted: (v) => submitted = v,
           textInputAction: TextInputAction.done,
@@ -219,20 +219,20 @@ void main() {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
             ExpressiveTextField(
-              label: 'Trip name',
+              labelText: 'Trip name',
               hintText: 'Name',
               leading: Icon(ExpressiveSymbols.flight),
               helperText: 'Only invited people can see this trip.',
             ),
             ExpressiveTextField(
               kind: ExpressiveTextFieldKind.outlined,
-              label: 'Nightly budget',
+              labelText: 'Nightly budget',
               prefix: r'$',
               suffix: 'USD',
               maxLength: 6,
             ),
-            ExpressiveTextField(obscureText: true, label: 'Password'),
-            ExpressiveTextArea(label: 'Note for the host'),
+            ExpressiveTextField(obscureText: true, labelText: 'Password'),
+            ExpressiveTextArea(labelText: 'Note for the host'),
             ExpressiveInputOtp(),
           ],
         ),
@@ -248,7 +248,9 @@ void main() {
     testWidgets('keeps Compose\'s minimum size, the label centred at rest', (
       tester,
     ) async {
-      await tester.pumpWidget(_app(const ExpressiveTextField(label: 'City')));
+      await tester.pumpWidget(
+        _app(const ExpressiveTextField(labelText: 'City')),
+      );
       final field = _rectOf(tester, _field);
       expect(field.size, const Size(280, 56));
       // Expanded label: bodyLarge's 24dp line, centred in the container by
@@ -261,7 +263,9 @@ void main() {
     testWidgets('focus minimizes the label on the spring and keeps 56dp', (
       tester,
     ) async {
-      await tester.pumpWidget(_app(const ExpressiveTextField(label: 'City')));
+      await tester.pumpWidget(
+        _app(const ExpressiveTextField(labelText: 'City')),
+      );
       final field = _rectOf(tester, _field);
       final rest = _rectOf(tester, find.text('City')).top - field.top;
       await tester.tap(_field);
@@ -304,7 +308,7 @@ void main() {
       await tester.pumpWidget(
         _app(
           const ExpressiveTextField(
-            label: 'Guest',
+            labelText: 'Guest',
             leading: Icon(ExpressiveSymbols.person),
             trailing: Icon(ExpressiveSymbols.close),
           ),
@@ -325,7 +329,7 @@ void main() {
       await tester.pumpWidget(
         _app(
           const ExpressiveTextField(
-            label: 'City',
+            labelText: 'City',
             helperText: 'Where you stay',
           ),
         ),
@@ -346,7 +350,7 @@ void main() {
         _app(
           const ExpressiveTextField(
             kind: ExpressiveTextFieldKind.outlined,
-            label: 'City',
+            labelText: 'City',
           ),
         ),
       );
@@ -372,7 +376,7 @@ void main() {
     await tester.pumpWidget(
       _app(
         const ExpressiveTextField(
-          label: 'City',
+          labelText: 'City',
           leading: Icon(ExpressiveSymbols.place),
         ),
         direction: TextDirection.rtl,
@@ -390,7 +394,7 @@ void main() {
     tester,
   ) async {
     await tester.pumpWidget(
-      _app(const ExpressiveTextField(label: 'City', hintText: 'Lisbon')),
+      _app(const ExpressiveTextField(labelText: 'City', hintText: 'Lisbon')),
     );
     expect(find.text('Lisbon'), findsNothing);
     await tester.tap(_field);
@@ -404,7 +408,11 @@ void main() {
   testWidgets('prefix and suffix show with the input', (tester) async {
     await tester.pumpWidget(
       _app(
-        const ExpressiveTextField(label: 'Budget', prefix: r'$', suffix: 'USD'),
+        const ExpressiveTextField(
+          labelText: 'Budget',
+          prefix: r'$',
+          suffix: 'USD',
+        ),
       ),
     );
     expect(find.text(r'$'), findsNothing);
@@ -420,7 +428,7 @@ void main() {
     tester,
   ) async {
     await tester.pumpWidget(
-      _app(const ExpressiveTextField(label: 'Headline', maxLength: 5)),
+      _app(const ExpressiveTextField(labelText: 'Headline', maxLength: 5)),
     );
     expect(find.text('0/5'), findsOneWidget);
     await tester.enterText(find.byType(EditableText), 'Sea view');
@@ -432,7 +440,7 @@ void main() {
     tester,
   ) async {
     await tester.pumpWidget(
-      _app(const ExpressiveTextField(label: 'Password', obscureText: true)),
+      _app(const ExpressiveTextField(labelText: 'Password', obscureText: true)),
     );
     EditableText editable() =>
         tester.widget<EditableText>(find.byType(EditableText));
@@ -446,7 +454,7 @@ void main() {
 
   testWidgets('a disabled field takes no focus', (tester) async {
     await tester.pumpWidget(
-      _app(const ExpressiveTextField(label: 'City', enabled: false)),
+      _app(const ExpressiveTextField(labelText: 'City', enabled: false)),
     );
     await tester.tap(_field);
     await tester.pumpAndSettle();
@@ -458,7 +466,7 @@ void main() {
   ) async {
     final semantics = tester.ensureSemantics();
     await tester.pumpWidget(
-      _app(const ExpressiveTextField(label: 'Email', errorText: 'Invalid')),
+      _app(const ExpressiveTextField(labelText: 'Email', errorText: 'Invalid')),
     );
     final node = tester
         .getSemantics(find.byType(EditableText))
@@ -473,7 +481,7 @@ void main() {
     final controller = TextEditingController();
     addTearDown(controller.dispose);
     await tester.pumpWidget(
-      _app(ExpressiveTextArea(label: 'Note', controller: controller)),
+      _app(ExpressiveTextArea(labelText: 'Note', controller: controller)),
     );
     final three = _rectOf(tester, find.byType(ExpressiveTextArea)).height;
     // 8 + 16 label + three 24dp lines + 8.
@@ -493,7 +501,7 @@ void main() {
     await tester.pumpWidget(
       _app(
         ExpressiveTextArea(
-          label: 'Note',
+          labelText: 'Note',
           textInputAction: TextInputAction.done,
           onEditingComplete: () => completed++,
           onSubmitted: (v) => submitted = v,
@@ -513,7 +521,7 @@ void main() {
     await tester.pumpWidget(
       _app(
         ExpressiveTextField(
-          label: 'Country',
+          labelText: 'Country',
           readOnly: true,
           trailing: const Icon(ExpressiveSymbols.arrowDropDown),
           onTap: () => taps++,
@@ -546,12 +554,12 @@ void main() {
           children: <Widget>[
             SizedBox(
               width: 200,
-              child: ExpressiveTextField(label: 'City', controller: typed),
+              child: ExpressiveTextField(labelText: 'City', controller: typed),
             ),
             SizedBox(
               width: 200,
               child: ExpressiveTextField(
-                label: 'City',
+                labelText: 'City',
                 controller: chosen,
                 readOnly: true,
               ),
@@ -761,7 +769,7 @@ void main() {
                       kind: style,
                       rounded: rounded,
                       tonal: tonal,
-                      label: 'Label',
+                      labelText: 'Label',
                       helperText: 'Supporting',
                     ),
               const ExpressiveFieldError('Something is wrong'),

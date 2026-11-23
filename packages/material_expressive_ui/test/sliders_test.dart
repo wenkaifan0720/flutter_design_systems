@@ -24,7 +24,7 @@ Widget _app(
   TextDirection direction = TextDirection.ltr,
   double width = 300,
 }) => ExpressiveHost(
-  light: _theme,
+  theme: _theme,
   brightness: Brightness.light,
   child: Directionality(
     textDirection: direction,
@@ -42,7 +42,7 @@ Widget _app(
 
 /// Places the control in a padded, scrollable column.
 Widget _scrollingHost(Widget child) => ExpressiveHost(
-  light: _theme,
+  theme: _theme,
   brightness: Brightness.light,
   child: Directionality(
     textDirection: TextDirection.ltr,
@@ -617,7 +617,7 @@ void main() {
               value: value,
               min: 1,
               max: 5,
-              label: 'Guests',
+              labelText: 'Guests',
               onChanged: (v) => update(() => value = v),
             ),
           ),
@@ -649,7 +649,7 @@ void main() {
           StatefulBuilder(
             builder: (context, update) => ExpressiveNumberField(
               value: value,
-              label: 'Servings',
+              labelText: 'Servings',
               onChanged: (v) => update(() => value = v),
             ),
           ),

@@ -11,8 +11,8 @@ import '../harness/oracle.dart';
 final OracleGroup loadingScenes = OracleGroup(
   id: 'loading',
   frame: (context, scene) => ExpressiveHost(
-    light: context.expressiveTheme,
-    dark: context.expressiveTheme,
+    theme: context.expressiveTheme,
+    darkTheme: context.expressiveTheme,
     brightness: context.expressiveTheme.brightness,
     child: scene,
   ),

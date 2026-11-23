@@ -16,7 +16,7 @@ import 'package:material_expressive_ui/material_expressive_host.dart';
 Widget _page(Widget child) => MaterialApp(
   debugShowCheckedModeBanner: false,
   builder: (context, app) => ExpressiveHost(
-    light: ExpressiveThemeData.preset('bloom', Brightness.light),
+    theme: ExpressiveThemeData.preset('bloom', Brightness.light),
     brightness: Brightness.light,
     child: app!,
   ),
@@ -86,7 +86,7 @@ void main() {
       _page(
         StatefulBuilder(
           builder: (context, setState) => ExpressiveMultiSelect<String>(
-            label: 'Colours',
+            labelText: 'Colours',
             options: _colours,
             values: values,
             onCreate: (text) => text,
@@ -111,7 +111,7 @@ void main() {
     await tester.pumpWidget(
       _page(
         ExpressiveCombobox<String>(
-          label: 'Colour',
+          labelText: 'Colour',
           options: _colours,
           onSubmitted: submitted.add,
         ),
@@ -125,7 +125,7 @@ void main() {
       'focus up', (tester) async {
     final submitted = <String>[];
     await tester.pumpWidget(
-      _page(ExpressiveTextField(label: 'Code', onSubmitted: submitted.add)),
+      _page(ExpressiveTextField(labelText: 'Code', onSubmitted: submitted.add)),
     );
     await tester.showKeyboard(find.byType(EditableText));
     await tester.enterText(find.byType(EditableText), 'SAVE10');

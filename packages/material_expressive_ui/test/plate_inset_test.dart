@@ -105,8 +105,8 @@ Widget _host(
   Widget child,
 ) => MaterialApp(
   home: ExpressiveHost(
-    light: theme,
-    dark: theme,
+    theme: theme,
+    darkTheme: theme,
     brightness: theme.brightness,
     child: Directionality(
       textDirection: direction,

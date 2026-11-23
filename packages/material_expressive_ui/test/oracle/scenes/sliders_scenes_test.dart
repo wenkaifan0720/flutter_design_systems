@@ -27,8 +27,8 @@ Widget _slider(String tag, Widget slider) => OracleTag(
 final OracleGroup slidersScenes = OracleGroup(
   id: 'sliders',
   frame: (context, scene) => ExpressiveHost(
-    light: context.expressiveTheme,
-    dark: context.expressiveTheme,
+    theme: context.expressiveTheme,
+    darkTheme: context.expressiveTheme,
     brightness: context.expressiveTheme.brightness,
     child: scene,
   ),

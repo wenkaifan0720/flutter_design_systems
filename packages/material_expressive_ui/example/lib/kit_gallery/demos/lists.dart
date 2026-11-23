@@ -393,7 +393,7 @@ class _SwipeState extends State<_Swipe> {
               ExpressiveSwipeAction(
                 label: 'Delete',
                 icon: ExpressiveSymbols.delete,
-                destructive: true,
+                isDestructiveAction: true,
                 onPressed: () => setState(() => _last = 'Deleted the trip'),
               ),
               ExpressiveSwipeAction(

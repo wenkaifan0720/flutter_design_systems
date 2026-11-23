@@ -54,7 +54,7 @@ class _FieldState extends State<_Field> {
             ? ExpressiveLabelPosition.inside
             : null,
         enabled: widget.state != _State.disabled,
-        label: 'Label',
+        labelText: 'Label',
         helperText: error ? null : 'Supporting text',
         errorText: error ? 'Error message' : null,
       ),
@@ -77,8 +77,8 @@ final OracleGroup textFieldsScenes = OracleGroup(
         DefaultWidgetsLocalizations.delegate,
       ],
       child: ExpressiveHost(
-        light: theme,
-        dark: theme,
+        theme: theme,
+        darkTheme: theme,
         brightness: theme.brightness,
         child: Overlay(
           initialEntries: <OverlayEntry>[

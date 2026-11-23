@@ -91,8 +91,8 @@ class _EverydayHost extends StatelessWidget {
           textDirection:
               Directionality.maybeOf(context) ?? Directionality.of(inner),
           child: ExpressiveHost(
-            light: kitTheme(Brightness.light),
-            dark: kitTheme(Brightness.dark),
+            theme: kitTheme(Brightness.light),
+            darkTheme: kitTheme(Brightness.dark),
             brightness: brightness,
             // Its own navigator, not its app's: on the web an app's navigator
             // lets Tab leave the window at the page's last control, and the

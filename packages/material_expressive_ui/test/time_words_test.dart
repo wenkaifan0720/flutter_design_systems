@@ -55,7 +55,7 @@ Future<ExpressiveLocalizations> _words(
         pageBuilder: (context, _, _) => builder(context),
       ),
       builder: (context, child) => ExpressiveHost(
-        light: _theme,
+        theme: _theme,
         brightness: Brightness.light,
         child: child!,
       ),

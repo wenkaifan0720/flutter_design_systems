@@ -21,7 +21,7 @@ const ValueKey<String> _badge = ValueKey<String>('badge');
 
 Widget _app(Widget child, {TextDirection direction = TextDirection.ltr}) =>
     ExpressiveHost(
-      light: _theme,
+      theme: _theme,
       brightness: Brightness.light,
       child: Directionality(
         textDirection: direction,

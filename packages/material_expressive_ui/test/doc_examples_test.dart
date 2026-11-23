@@ -225,8 +225,8 @@ final Map<String, DocExample> _examples = {
   'ExpressivePageDots': (context) {
     final controller = _own(ExpressiveCarouselController());
     return ExpressivePageDots(
-      count: 5,
-      selectedIndex: controller.currentItem,
+      pageCount: 5,
+      page: controller.currentItem,
       onChanged: controller.animateToItem,
     );
   },
@@ -462,8 +462,8 @@ final Map<String, DocExample> _examples = {
     void remove(int index) {}
     const chosen = [ExpressiveChosenFile('receipt.pdf', detail: '84 KB')];
     return ExpressiveFileUpload(
-      label: 'Drop a receipt here',
-      supportingText: 'PDF or JPG, up to 10 MB',
+      labelText: 'Drop a receipt here',
+      helperText: 'PDF or JPG, up to 10 MB',
       onBrowse: pickFiles,
       files: chosen,
       onRemove: remove,
@@ -477,8 +477,8 @@ final Map<String, DocExample> _examples = {
     const on = true;
     void setOn(bool value) {}
     return ExpressiveFormField(
-      label: 'Notify me',
-      help: 'At most once a day',
+      labelText: 'Notify me',
+      helperText: 'At most once a day',
       child: ExpressiveSwitch(value: on, onChanged: setOn),
     );
   },
@@ -539,7 +539,7 @@ final Map<String, DocExample> _examples = {
         ExpressiveSwipeAction(
           label: 'Delete',
           icon: ExpressiveSymbols.delete,
-          destructive: true,
+          isDestructiveAction: true,
           onPressed: delete,
         ),
         ExpressiveSwipeAction(
@@ -615,7 +615,7 @@ final Map<String, DocExample> _examples = {
     const tags = ['red'];
     void setTags(List<String> value) {}
     return ExpressiveMultiSelect<String>(
-      label: 'Tags',
+      labelText: 'Tags',
       options: const [
         ExpressiveSelectOption('red', 'Red'),
         ExpressiveSelectOption('blue', 'Blue'),
@@ -873,7 +873,7 @@ final Map<String, DocExample> _examples = {
         value: guests,
         min: 1,
         max: 8,
-        label: 'Guests',
+        labelText: 'Guests',
         onChanged: (v) => setState(() => guests = v),
       ),
     );
@@ -924,7 +924,7 @@ final Map<String, DocExample> _examples = {
   ),
   'ExpressivePasswordField': (context) {
     final password = _own(TextEditingController());
-    return ExpressivePasswordField(label: 'Password', controller: password);
+    return ExpressivePasswordField(labelText: 'Password', controller: password);
   },
   'showExpressiveSnackBar': (context) {
     void undo() {}
@@ -953,7 +953,7 @@ final Map<String, DocExample> _examples = {
     return StatefulBuilder(
       builder: (context, setState) => ExpressivePagination(
         page: page,
-        count: 12,
+        pageCount: 12,
         onChanged: (p) => setState(() => page = p),
       ),
     );
@@ -1018,8 +1018,8 @@ final Map<String, DocExample> _examples = {
     const brand = Color(0xff00695c);
     const child = ExpressiveFilledButton('Save');
     return ExpressiveHost(
-      light: ExpressiveThemeData.from(seed: brand),
-      highContrastLight: ExpressiveThemeData.from(
+      theme: ExpressiveThemeData.from(seed: brand),
+      highContrastTheme: ExpressiveThemeData.from(
         seed: brand,
         contrastLevel: 1,
       ),

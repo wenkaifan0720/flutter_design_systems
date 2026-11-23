@@ -23,7 +23,7 @@ ExpressiveColorScheme get _c => _theme.colors;
 /// [child] at the top of an Expressive app, [width] wide.
 Widget _app(Widget child, {double width = 412}) => MaterialApp(
   builder: (context, app) =>
-      ExpressiveHost(light: _theme, brightness: Brightness.light, child: app!),
+      ExpressiveHost(theme: _theme, brightness: Brightness.light, child: app!),
   home: Align(
     alignment: Alignment.topLeft,
     child: SizedBox(width: width, child: child),

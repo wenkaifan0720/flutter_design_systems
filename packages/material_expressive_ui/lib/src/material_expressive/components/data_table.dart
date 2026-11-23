@@ -147,7 +147,7 @@ class ExpressiveDataTable<R> extends StatelessWidget {
                   alignment: AlignmentDirectional.centerEnd,
                   child: ExpressivePagination(
                     page: controller.page + 1,
-                    count: pages,
+                    pageCount: pages,
                     onChanged: (page) => controller.goToPage(page - 1),
                   ),
                 ),

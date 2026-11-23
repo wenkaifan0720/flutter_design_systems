@@ -1,3 +1,29 @@
+## 0.5.0
+
+- Needs ui_core 0.5.1.
+- Parameters take the names Flutter gives the same thing. A field's words are named as `InputDecoration` names them: `labelText`, `hintText`, `helperText` and `errorText`. Each parameter's field takes the new name too. `dart fix --apply` makes every rename below; `material_expressive_ui`'s `lib/fix_data.yaml` holds them.
+  - `light` → `theme`: `ExpressiveHost`, `ExpressivePreview`
+  - `dark` → `darkTheme`: `ExpressiveHost`, `ExpressivePreview`
+  - `highContrastLight` → `highContrastTheme`: `ExpressiveHost`
+  - `highContrastDark` → `highContrastDarkTheme`: `ExpressiveHost`
+  - `label` → `labelText`: `ExpressiveFormField`, `ExpressiveFileUpload`, `ExpressiveMultiSelect`, `ExpressiveSelect`, `ExpressiveCombobox`, `ExpressiveTextField`, `ExpressiveTextArea`, `ExpressivePasswordField`, `ExpressiveNumberField`
+  - `help` → `helperText`: `ExpressiveFormField`
+  - `error` → `errorText`: `ExpressiveFormField`
+  - `supportingText` → `helperText`: `ExpressiveFileUpload`
+  - `obscure` → `obscureText`: `ExpressiveInputOtp`
+  - `count` → `pageCount`: `ExpressivePageDots`, `ExpressivePagination`
+  - `selectedIndex` → `page`: `ExpressivePageDots`
+  - `destructive` → `isDestructiveAction`: `ExpressiveSwipeAction`, `ExpressiveMenuItem`, `ExpressiveMenuBarEntry`, `ExpressiveDialogAction`
+  - `today` → `currentDate`: `showExpressiveDatePicker`, `showExpressiveDateRangePicker`, as `ExpressiveDatePicker` names it
+- Removes `ExpressiveLocalizations.hideSuggestions`, deprecated in 0.4.1: a combobox's arrow keeps the name Show suggestions open or closed. No `dart fix` moves it.
+- `showExpressiveSnackBar` needs an `ExpressiveHost` inside the app, above its navigator: `MaterialApp(builder: (context, child) => ExpressiveHost(child: child!))`. Without one it throws a `FlutterError` that says so; 0.4.1 showed the snackbar in any app's root overlay.
+- Snackbars show in ui_core's `RawToaster`, which `ExpressiveHost` mounts over the app. One shows at a time, in order, and the next enters once the last has faded, as Material's `ScaffoldMessenger` hands them on (0.4.1 cross-faded them). The fade and scale are 0.4.1's, frame for frame. A snackbar with an action stays up while a screen reader drives the device (`accessibleNavigation`); a pointer over it or the focus in it holds its time; F6 moves the focus to it and Escape dismisses it. Snackbars stand above every route, dialogs and sheets included.
+- A snackbar keeps clear of what `RawToasterKeepClear` marks: the shell's bar, action and accessory, a screen's docked footer and bottom bar, and the keyboard. `ShellInsets` no longer moves it: a custom shell wraps its bar in `RawToasterKeepClear`. The parts' `ExpressiveDockedBand`, `expressiveDockedBandOf` and `expressiveClearDockedBand`, which measured a screen's docked band for the snackbar, are removed; no `dart fix` moves them.
+- A field's help and error are read on the field, by ui_core's `RawInputDecorator`: a text field's, a text area's, a password field's, a select's and a combobox's. The field's node is the decorator's, over the whole field; the drawn line stays out of the tree. Beside a key of its own (a password's reveal, a combobox's toggle) the entry is still the field's node.
+- A multi-select's entry says whether its list stands open (expanded or collapsed), as a combobox's does.
+- A dialog's actions are laid out by ui_core's `RawActionBar`: side by side while they fit, else one column of one width with the confirming action on top. A filled action fills the column with its words in the middle; a text action's words stand at the column's end, where 0.4.1 stood each stacked action at its own width.
+- The date picker dialog shows the whole week on a phone whose dialog holds seven whole days but not the container's 360 (390 and 393 wide among them). Its narrow margin gave the calendar less than seven days, so the calendar panned: Saturday and the next month's arrow stood cut off at the dialog's edge. The margin now gives way to the week; narrower than the week, the calendar pans as before.
+
 ## 0.4.1
 
 - Needs ui_core 0.4.1.

@@ -15,8 +15,8 @@ Widget _stack(List<Widget> children) =>
 final OracleGroup feedbackScenes = OracleGroup(
   id: 'feedback',
   frame: (context, scene) => ExpressiveHost(
-    light: context.expressiveTheme,
-    dark: context.expressiveTheme,
+    theme: context.expressiveTheme,
+    darkTheme: context.expressiveTheme,
     brightness: context.expressiveTheme.brightness,
     // The wavy indicators are hero widgets.
     child: ExpressiveHeroMoment(child: scene),

@@ -15,7 +15,7 @@ import 'package:material_expressive_ui/material_expressive_host.dart';
 Widget _host(Widget child, {Locale? locale}) => MaterialApp(
   debugShowCheckedModeBanner: false,
   builder: (context, app) => ExpressiveHost(
-    light: ExpressiveThemeData.preset('bloom', Brightness.light),
+    theme: ExpressiveThemeData.preset('bloom', Brightness.light),
     brightness: Brightness.light,
     child: app!,
   ),

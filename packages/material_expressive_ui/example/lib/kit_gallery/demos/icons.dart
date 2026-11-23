@@ -143,7 +143,7 @@ class _GlyphsState extends State<_Glyphs> {
       children: <Widget>[
         ExpressiveTextField(
           key: const ValueKey('gallery-symbol-filter'),
-          label: 'Find symbols',
+          labelText: 'Find symbols',
           hintText: 'Search by name',
           leading: const Icon(ExpressiveSymbols.search),
           onChanged: (value) => setState(() {

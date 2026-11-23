@@ -31,7 +31,7 @@ Widget host(
   );
   return MaterialApp(
     builder: (context, app) =>
-        ExpressiveHost(light: bloom, brightness: Brightness.light, child: app!),
+        ExpressiveHost(theme: bloom, brightness: Brightness.light, child: app!),
     home: inner == null
         ? Builder(builder: page)
         // A page in a nested navigator, as a shell's content is.
@@ -92,7 +92,7 @@ void main() {
                 options: sizes,
                 value: 'm',
                 onChanged: (_) {},
-                label: 'Size',
+                labelText: 'Size',
               ),
             ),
             direction: direction,
@@ -167,7 +167,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           builder: (context, app) => ExpressiveHost(
-            light: bloom,
+            theme: bloom,
             brightness: Brightness.light,
             child: app!,
           ),
@@ -208,7 +208,7 @@ void main() {
             width: 320,
             child: ExpressiveCombobox<String>(
               options: sizes,
-              label: 'Size',
+              labelText: 'Size',
               menuController: menu,
             ),
           ),
@@ -245,7 +245,7 @@ void main() {
             width: 320,
             child: ExpressiveCombobox<String>(
               options: sizes,
-              label: 'Size',
+              labelText: 'Size',
               menuController: menu,
             ),
           ),
@@ -279,7 +279,7 @@ void main() {
             width: 320,
             child: ExpressiveCombobox<String>(
               options: sizes,
-              label: 'Size',
+              labelText: 'Size',
               menuController: menu,
             ),
           ),

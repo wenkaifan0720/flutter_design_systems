@@ -18,7 +18,7 @@ final ExpressiveThemeData bloom = ExpressiveThemeData.preset(
 
 Widget host(Widget child) => MaterialApp(
   builder: (context, app) =>
-      ExpressiveHost(light: bloom, brightness: Brightness.light, child: app!),
+      ExpressiveHost(theme: bloom, brightness: Brightness.light, child: app!),
   home: Padding(
     padding: const EdgeInsets.all(24),
     child: Align(alignment: AlignmentDirectional.topStart, child: child),
@@ -52,7 +52,7 @@ void main() {
                 ExpressiveMenuItem(
                   'Delete',
                   icon: ExpressiveSymbols.delete,
-                  destructive: true,
+                  isDestructiveAction: true,
                   onPressed: () {},
                 ),
               ],
@@ -91,7 +91,7 @@ void main() {
                 ExpressiveMenuBarEntry('Rename', onPressed: () {}),
                 ExpressiveMenuBarEntry(
                   'Delete',
-                  destructive: true,
+                  isDestructiveAction: true,
                   onPressed: () {},
                 ),
               ],
@@ -129,7 +129,7 @@ void main() {
                 title: 'Unsaved changes',
                 actions: [
                   ExpressiveDialogAction('Cancel'),
-                  ExpressiveDialogAction('Discard', destructive: true),
+                  ExpressiveDialogAction('Discard', isDestructiveAction: true),
                 ],
               ),
               ExpressiveDialog(
@@ -139,7 +139,7 @@ void main() {
                   ExpressiveDialogAction(
                     'Delete',
                     filled: true,
-                    destructive: true,
+                    isDestructiveAction: true,
                   ),
                 ],
               ),

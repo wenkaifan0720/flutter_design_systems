@@ -25,7 +25,7 @@ final ExpressiveCornerBorder _pressed = _theme.shapes.small;
 final ExpressiveCornerBorder _selected = _theme.shapes.medium;
 
 Widget _app(Widget child) => ExpressiveHost(
-  light: _theme,
+  theme: _theme,
   brightness: Brightness.light,
   child: Directionality(
     textDirection: TextDirection.ltr,

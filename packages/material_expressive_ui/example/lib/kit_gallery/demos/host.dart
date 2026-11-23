@@ -65,8 +65,8 @@ class _NestedHost extends StatelessWidget {
         ClipRRect(
           borderRadius: BorderRadius.circular(ExpressiveSpacing.s16),
           child: ExpressiveHost(
-            light: kitTheme(Brightness.light),
-            dark: kitTheme(Brightness.dark),
+            theme: kitTheme(Brightness.light),
+            darkTheme: kitTheme(Brightness.dark),
             brightness: other,
             child: Padding(
               padding: const EdgeInsets.all(ExpressiveChromeMetrics.margin),

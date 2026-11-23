@@ -2532,29 +2532,29 @@ class _RenderCarouselViewport extends RenderProxyBox {
 /// it is [touchHeight]. Announced as "Page n of count" (or [semanticLabel]).
 ///
 /// ```dart
-/// ExpressivePageDots(count: 5, selectedIndex: controller.currentItem, onChanged: controller.animateToItem)
+/// ExpressivePageDots(pageCount: 5, page: controller.currentItem, onChanged: controller.animateToItem)
 /// ```
 class ExpressivePageDots extends StatelessWidget {
-  /// A page indicator of [count] dots with [selectedIndex] current.
+  /// A page indicator of [pageCount] dots with [page] current.
   const ExpressivePageDots({
-    required this.count,
-    required this.selectedIndex,
+    required this.pageCount,
+    required this.page,
     this.onChanged,
     this.semanticLabel,
     this.style,
     super.key,
-  }) : assert(count >= 0),
-       assert(count == 0 || (selectedIndex >= 0 && selectedIndex < count));
+  }) : assert(pageCount >= 0),
+       assert(pageCount == 0 || (page >= 0 && page < pageCount));
 
   /// Stateful mark fill, outline and shape. Padding and minimumSize apply
   /// to the indicator; iconSize sets the dot diameter and three-dot pill length.
   final ExpressiveComponentThemeData? style;
 
   /// How many pages there are.
-  final int count;
+  final int pageCount;
 
   /// The current page.
-  final int selectedIndex;
+  final int page;
 
   /// What choosing page `i` does; display-only when null.
   final ValueChanged<int>? onChanged;
@@ -2577,7 +2577,7 @@ class ExpressivePageDots extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (count == 0) return const SizedBox.shrink();
+    if (pageCount == 0) return const SizedBox.shrink();
     final theme = context.expressiveTheme;
     final colors = theme.colors;
     final visual = theme.pageDotsTheme.layeredUnder(style);
@@ -2586,9 +2586,7 @@ class ExpressivePageDots extends StatelessWidget {
     final spacing = theme.density.padding(const EdgeInsets.all(gap)).left;
     final shape = theme.shapes.corner(ExpressiveCorner.full);
     OutlinedBorder outline(int i) {
-      final states = <WidgetState>{
-        if (i == selectedIndex) WidgetState.selected,
-      };
+      final states = <WidgetState>{if (i == page) WidgetState.selected};
       final border = visual.shape?.resolve(states) ?? shape;
       final ink = visual.outline?.resolve(states);
       return border.copyWith(
@@ -2603,14 +2601,12 @@ class ExpressivePageDots extends StatelessWidget {
     }
 
     Color fill(int i) {
-      final states = <WidgetState>{
-        if (i == selectedIndex) WidgetState.selected,
-      };
+      final states = <WidgetState>{if (i == page) WidgetState.selected};
       return Color.alphaBlend(
         visual.overlayColor?.resolve(states) ?? expressiveTransparent,
         visual.backgroundColor?.resolve(states) ??
             visual.foregroundColor?.resolve(states) ??
-            (i == selectedIndex ? colors.primary : colors.outline),
+            (i == page ? colors.primary : colors.outline),
       );
     }
 
@@ -2619,9 +2615,9 @@ class ExpressivePageDots extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       spacing: spacing,
       children: <Widget>[
-        for (var i = 0; i < count; i++)
+        for (var i = 0; i < pageCount; i++)
           ExpressiveSpringValue(
-            value: i == selectedIndex ? pill : dot,
+            value: i == page ? pill : dot,
             motion: ExpressiveMotionKey.fastSpatial,
             builder: (context, length, _) => ExpressiveSpringColor(
               value: fill(i),
@@ -2692,23 +2688,21 @@ class ExpressivePageDots extends StatelessWidget {
           );
     final label = semanticLabel;
     final value = ExpressiveLocalizations.of(context)
-        .carouselPage(selectedIndex + 1, count);
+        .carouselPage(page + 1, pageCount);
     return Semantics(
       container: true,
       label: label,
       value: value,
-      increasedValue: select != null && selectedIndex + 1 < count
-          ? 'Page ${selectedIndex + 2} of $count'
+      increasedValue: select != null && page + 1 < pageCount
+          ? 'Page ${page + 2} of $pageCount'
           : null,
-      decreasedValue: select != null && selectedIndex > 0
-          ? 'Page $selectedIndex of $count'
+      decreasedValue: select != null && page > 0
+          ? 'Page $page of $pageCount'
           : null,
-      onIncrease: select != null && selectedIndex + 1 < count
-          ? () => select(selectedIndex + 1)
+      onIncrease: select != null && page + 1 < pageCount
+          ? () => select(page + 1)
           : null,
-      onDecrease: select != null && selectedIndex > 0
-          ? () => select(selectedIndex - 1)
-          : null,
+      onDecrease: select != null && page > 0 ? () => select(page - 1) : null,
       child: ExcludeSemantics(
         child: ConstrainedBox(
           constraints: BoxConstraints(
@@ -2739,15 +2733,15 @@ class ExpressivePageDots extends StatelessWidget {
     final box = context.findRenderObject() as RenderBox?;
     final width = box?.size.width ?? 0;
     final rtl = Directionality.maybeOf(context) == TextDirection.rtl;
-    final total = dot * (count - 1) + pill + spacing * (count - 1);
+    final total = dot * (pageCount - 1) + pill + spacing * (pageCount - 1);
     final origin = (width - total) / 2;
     var x = position.dx - origin;
     if (rtl) x = total - x;
     var best = 0;
     var bestDistance = double.infinity;
     var cursor = 0.0;
-    for (var i = 0; i < count; i++) {
-      final length = i == selectedIndex ? pill : dot;
+    for (var i = 0; i < pageCount; i++) {
+      final length = i == page ? pill : dot;
       final distance = (x - (cursor + length / 2)).abs();
       if (distance < bestDistance) {
         bestDistance = distance;
@@ -2769,8 +2763,8 @@ class ExpressivePageDots extends StatelessWidget {
           defaultValue: null,
         ),
       )
-      ..add(IntProperty('count', count))
-      ..add(IntProperty('selectedIndex', selectedIndex))
+      ..add(IntProperty('pageCount', pageCount))
+      ..add(IntProperty('page', page))
       ..add(ObjectFlagProperty<ValueChanged<int>?>.has('onChanged', onChanged))
       ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
   }

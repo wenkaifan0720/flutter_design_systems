@@ -1208,7 +1208,9 @@ class ExpressiveSemanticsGroup extends SingleChildRenderObjectWidget {
   }
 }
 
-class _RenderMergeSemantics extends RenderProxyBox {
+// A [RenderMergeSemantics]: what reads a field's controls (ui_core's
+// decorator) sees each one as a node of its own.
+class _RenderMergeSemantics extends RenderMergeSemantics {
   _RenderMergeSemantics(this._interactive);
 
   bool _interactive;

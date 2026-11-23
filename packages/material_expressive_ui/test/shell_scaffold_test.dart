@@ -184,7 +184,7 @@ Future<_AppState> _pump(
     MaterialApp(
       debugShowCheckedModeBanner: false,
       builder: (context, navigator) => ExpressiveHost(
-        light: _theme,
+        theme: _theme,
         brightness: Brightness.light,
         child: navigator!,
       ),

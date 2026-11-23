@@ -1,0 +1,10 @@
+// The functions whose parameters material_expressive_ui 0.5.0 renamed, each used once; dart fix renames them
+// (functions.dart.expect).
+import 'package:material_expressive_ui/material_expressive_ui.dart';
+
+dynamic d;
+
+void functions() {
+  showExpressiveDatePicker(context: d, today: d);
+  showExpressiveDateRangePicker(context: d, today: d);
+}

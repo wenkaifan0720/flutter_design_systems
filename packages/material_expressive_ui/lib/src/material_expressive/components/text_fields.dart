@@ -57,7 +57,7 @@ enum ExpressiveLabelPosition {
 ///
 /// [style] picks the container, [rounded] Expressive's rounded shape
 /// (`TextFieldDefaults.roundedShape`) and [tonal] its tonal colours
-/// (`TextFieldDefaults.tonalColors()`). The [label] rests inside the field
+/// (`TextFieldDefaults.tonalColors()`). The [labelText] rests inside the field
 /// while it is empty and unfocused and moves to its minimized place — the
 /// top of a filled field, the outline's cutout — on focus or input.
 /// [helperText] sits under the field; [errorText] replaces it in the
@@ -76,7 +76,7 @@ class ExpressiveTextField extends StatefulWidget {
     this.style,
     this.rounded = false,
     this.tonal = false,
-    this.label,
+    this.labelText,
     this.labelPosition,
     this.alwaysMinimizeLabel = false,
     this.hintText,
@@ -117,7 +117,7 @@ class ExpressiveTextField extends StatefulWidget {
     required this.style,
     required this.rounded,
     required this.tonal,
-    required this.label,
+    required this.labelText,
     required this.labelPosition,
     required this.alwaysMinimizeLabel,
     required this.hintText,
@@ -169,7 +169,7 @@ class ExpressiveTextField extends StatefulWidget {
 
   /// The label: inside the field when it is empty and unfocused, minimized
   /// otherwise.
-  final String? label;
+  final String? labelText;
 
   /// Where the label rests once minimized; null is the style's own —
   /// inside a filled or tonal field, in an outlined field's cutout.
@@ -251,7 +251,7 @@ class ExpressiveTextField extends StatefulWidget {
   /// Told on a tap on the field (a read-only field that opens a picker).
   final GestureTapCallback? onTap;
 
-  /// What a screen reader calls the field; [label], then [hintText],
+  /// What a screen reader calls the field; [labelText], then [hintText],
   /// when null.
   final String? semanticLabel;
 
@@ -303,7 +303,7 @@ class ExpressiveTextField extends StatefulWidget {
       )
       ..add(FlagProperty('rounded', value: rounded, ifTrue: 'rounded'))
       ..add(FlagProperty('tonal', value: tonal, ifTrue: 'tonal'))
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
       ..add(
         EnumProperty<ExpressiveLabelPosition>(
           'labelPosition',
@@ -404,7 +404,7 @@ class ExpressiveTextArea extends StatelessWidget {
     this.style,
     this.rounded = false,
     this.tonal = false,
-    this.label,
+    this.labelText,
     this.labelPosition,
     this.alwaysMinimizeLabel = false,
     this.hintText,
@@ -448,8 +448,8 @@ class ExpressiveTextArea extends StatelessWidget {
   /// See [ExpressiveTextField.tonal].
   final bool tonal;
 
-  /// See [ExpressiveTextField.label].
-  final String? label;
+  /// See [ExpressiveTextField.labelText].
+  final String? labelText;
 
   /// See [ExpressiveTextField.labelPosition].
   final ExpressiveLabelPosition? labelPosition;
@@ -531,7 +531,7 @@ class ExpressiveTextArea extends StatelessWidget {
     style: style,
     rounded: rounded,
     tonal: tonal,
-    label: label,
+    labelText: labelText,
     labelPosition: labelPosition,
     alwaysMinimizeLabel: alwaysMinimizeLabel,
     hintText: hintText,
@@ -588,7 +588,7 @@ class ExpressiveTextArea extends StatelessWidget {
       )
       ..add(FlagProperty('rounded', value: rounded, ifTrue: 'rounded'))
       ..add(FlagProperty('tonal', value: tonal, ifTrue: 'tonal'))
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
       ..add(
         EnumProperty<ExpressiveLabelPosition>(
           'labelPosition',
@@ -729,7 +729,7 @@ class ExpressiveInputOtp extends StatefulWidget {
     this.style,
     this.rounded = false,
     this.numeric = true,
-    this.obscure = false,
+    this.obscureText = false,
     this.enabled = true,
     this.autofocus = false,
     this.isError = false,
@@ -768,7 +768,7 @@ class ExpressiveInputOtp extends StatefulWidget {
   final bool numeric;
 
   /// Whether the characters are shown as dots (a PIN).
-  final bool obscure;
+  final bool obscureText;
 
   /// Whether the input takes input.
   final bool enabled;
@@ -847,7 +847,7 @@ class ExpressiveInputOtp extends StatefulWidget {
       )
       ..add(FlagProperty('rounded', value: rounded, ifTrue: 'rounded'))
       ..add(DiagnosticsProperty<bool>('numeric', numeric, defaultValue: true))
-      ..add(FlagProperty('obscure', value: obscure, ifTrue: 'obscure'))
+      ..add(FlagProperty('obscureText', value: obscureText, ifTrue: 'obscure'))
       ..add(DiagnosticsProperty<bool>('enabled', enabled, defaultValue: true))
       ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
       ..add(FlagProperty('isError', value: isError, ifTrue: 'isError'))
@@ -1327,7 +1327,7 @@ class _ExpressiveTextFieldState extends State<ExpressiveTextField>
   bool get _owning => _focusNode.hasFocus || _expanded;
 
   bool get _showExpandedLabel =>
-      widget.label != null && !widget.alwaysMinimizeLabel;
+      widget.labelText != null && !widget.alwaysMinimizeLabel;
 
   _Phase get _phaseNow {
     if (_owning) return _Phase.focused;
@@ -1401,7 +1401,7 @@ class _ExpressiveTextFieldState extends State<ExpressiveTextField>
       }
       _focusNode.addListener(_update);
     }
-    if (oldWidget.label != widget.label ||
+    if (oldWidget.labelText != widget.labelText ||
         oldWidget.alwaysMinimizeLabel != widget.alwaysMinimizeLabel) {
       _phase = _phaseNow;
       _label.value = _labelTarget(_phase);
@@ -1554,7 +1554,7 @@ class _ExpressiveTextFieldState extends State<ExpressiveTextField>
             WidgetState.hovered,
           })
         : null;
-    final hasLabel = widget.label != null;
+    final hasLabel = widget.labelText != null;
     // Compose's defaults: Inside for TextField, Cutout for OutlinedTextField;
     // tonal colours are meant for Inside (`tonalColors()`'s doc).
     final position =
@@ -1697,9 +1697,7 @@ class _ExpressiveTextFieldState extends State<ExpressiveTextField>
         decorate == null ? editable : decorate(editable);
     final input = _InputNode(
       expanded: ExpressiveFieldNodeHost.expandedOf(context),
-      label: widget.semanticLabel ?? widget.label ?? widget.hintText,
       invalid: isError,
-      textDirection: Directionality.of(context),
       child: line(
         decorated(
           widget.readOnly && widget._singleLine && !widget.obscureText
@@ -1767,7 +1765,7 @@ class _ExpressiveTextFieldState extends State<ExpressiveTextField>
                 final p = _label.value;
                 return line(
                   Text(
-                    widget.label!,
+                    widget.labelText!,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle.lerp(
@@ -1795,6 +1793,7 @@ class _ExpressiveTextFieldState extends State<ExpressiveTextField>
     final supportingLine = error == null || error.isEmpty
         ? widget.helperText
         : error;
+    final shownError = error == null || error.isEmpty ? null : error;
     Widget? supporting;
     if (supportingLine != null || widget.maxLength != null) {
       final style = bodySmall.copyWith(color: resolve(colors.supporting));
@@ -1816,11 +1815,9 @@ class _ExpressiveTextFieldState extends State<ExpressiveTextField>
                     ? const SizedBox.shrink()
                     // A disabled field's supporting line is the field's
                     // (Compose's decoration box, in its disabled node).
-                    : Semantics(
-                        liveRegion: error != null && error.isNotEmpty,
-                        enabled: enabled ? null : false,
-                        child: Text(supportingLine, style: style),
-                      ),
+                    // The decorator's words: read on the field's node
+                    // as its hint, and the error announced as it shows.
+                    : _SupportingWords(style: style),
               ),
               if (widget.maxLength != null)
                 Padding(
@@ -1937,6 +1934,19 @@ class _ExpressiveTextFieldState extends State<ExpressiveTextField>
         child: field,
       );
     }
+    // ui_core's decorator reads the field: its help and error are the
+    // input's hint, and the supporting line draws its words.
+    field = RawInputDecorator(
+      labelText: widget.semanticLabel ?? widget.labelText ?? widget.hintText,
+      helperText: widget.helperText,
+      errorText: shownError,
+      invalid: isError,
+      enabled: enabled,
+      focusNode: _focusNode,
+      builder: (context, parts) =>
+          _FieldParts(parts: parts, child: parts.control),
+      child: field,
+    );
     return MouseRegion(
       cursor: cursor,
       onEnter: (_) => setState(() => _hovered = true),
@@ -1946,28 +1956,56 @@ class _ExpressiveTextFieldState extends State<ExpressiveTextField>
   }
 }
 
-/// The input's node, as large as the field's container: Compose's text
-/// field is one node over its decorated box (`BasicTextField`'s
-/// `decorationBox`), so assistive technology and touch-target checks read
-/// the container, not the line of text. It carries the field's label and
-/// validity, and under a select or a combobox whether its menu is open.
+/// A field's parts from its decorator, for its supporting line.
+class _FieldParts extends InheritedWidget {
+  const _FieldParts({required this.parts, required super.child});
+
+  final RawInputDecoratorDetails parts;
+
+  static RawInputDecoratorDetails? maybeOf(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<_FieldParts>()?.parts;
+
+  @override
+  bool updateShouldNotify(_FieldParts oldWidget) =>
+      parts.helper != oldWidget.parts.helper ||
+      parts.error != oldWidget.parts.error;
+}
+
+/// The supporting line's words: the decorator's error, else its help.
+class _SupportingWords extends StatelessWidget {
+  const _SupportingWords({required this.style});
+
+  final TextStyle style;
+
+  @override
+  Widget build(BuildContext context) {
+    final parts = _FieldParts.maybeOf(context);
+    final words = parts?.error ?? parts?.helper;
+    return words == null
+        ? const SizedBox.shrink()
+        : DefaultTextStyle(style: style, child: words);
+  }
+}
+
+/// What the input adds to the field's node: whether its menu is open
+/// (under a select or a combobox) and whether its value is invalid. The
+/// field's decorator ([RawInputDecorator]) makes the node, over the whole
+/// field as Material's text field's is, and names it: the input joins it,
+/// alone or beside a key of its own (a password's reveal, a combobox's
+/// toggle).
 class _InputNode extends SingleChildRenderObjectWidget {
   const _InputNode({
     required this.expanded,
-    required this.label,
     required this.invalid,
-    required this.textDirection,
     required super.child,
   });
 
   final bool? expanded;
-  final String? label;
   final bool invalid;
-  final TextDirection textDirection;
 
   @override
   _RenderInputNode createRenderObject(BuildContext context) =>
-      _RenderInputNode(expanded, label, invalid, textDirection);
+      _RenderInputNode(expanded, invalid);
 
   @override
   void updateRenderObject(
@@ -1975,30 +2013,16 @@ class _InputNode extends SingleChildRenderObjectWidget {
     _RenderInputNode renderObject,
   ) => renderObject
     ..expanded = expanded
-    ..label = label
-    ..invalid = invalid
-    ..textDirection = textDirection;
+    ..invalid = invalid;
 }
 
 class _RenderInputNode extends RenderProxyBox {
-  _RenderInputNode(
-    this._expanded,
-    this._label,
-    this._invalid,
-    this._textDirection,
-  );
+  _RenderInputNode(this._expanded, this._invalid);
 
   bool? _expanded;
   set expanded(bool? value) {
     if (value == _expanded) return;
     _expanded = value;
-    markNeedsSemanticsUpdate();
-  }
-
-  String? _label;
-  set label(String? value) {
-    if (value == _label) return;
-    _label = value;
     markNeedsSemanticsUpdate();
   }
 
@@ -2009,42 +2033,13 @@ class _RenderInputNode extends RenderProxyBox {
     markNeedsSemanticsUpdate();
   }
 
-  TextDirection _textDirection;
-  set textDirection(TextDirection value) {
-    if (value == _textDirection) return;
-    _textDirection = value;
-    markNeedsSemanticsUpdate();
-  }
-
-  /// The field's container in this box's coordinates, set by the field's
-  /// layout.
-  Rect? _container;
-  set container(Rect value) {
-    if (value == _container) return;
-    _container = value;
-    markNeedsSemanticsUpdate();
-  }
-
-  @override
-  Rect get semanticBounds =>
-      _container?.expandToInclude(super.semanticBounds) ?? super.semanticBounds;
-
   @override
   void describeSemanticsConfiguration(SemanticsConfiguration config) {
-    // Its own node, over the container: unbounded, the field would join
-    // whatever node is nearest above it (a list row's, its words and all).
     super.describeSemanticsConfiguration(config);
-    config.isSemanticBoundary = true;
     if (_expanded != null) config.isExpanded = _expanded;
     config.validationResult = _invalid
         ? SemanticsValidationResult.invalid
         : SemanticsValidationResult.none;
-    final label = _label;
-    if (label != null) {
-      config
-        ..label = label
-        ..textDirection = _textDirection;
-    }
   }
 }
 
@@ -2595,12 +2590,6 @@ class _RenderField extends RenderBox
     }
     _placement = placement;
     size = placement.size;
-    final input = childForSlot(_Slot.input);
-    if (input is _RenderInputNode) {
-      input.container = _container.shift(
-        -(input.parentData! as BoxParentData).offset,
-      );
-    }
   }
 
   Rect get _container =>
@@ -2845,7 +2834,7 @@ class _ExpressiveCodeInputState extends State<ExpressiveInputOtp> {
       autofocus: widget.autofocus,
       enabled: enabled,
       isError: isError,
-      obscureText: widget.obscure,
+      obscureText: widget.obscureText,
       keyboardType: widget.numeric ? TextInputType.number : TextInputType.text,
       textInputAction: widget.textInputAction,
       onEditingComplete: widget.onEditingComplete,
@@ -2968,7 +2957,7 @@ class _CellPainter extends CustomPainter {
 /// offers saved passwords.
 ///
 /// ```dart
-/// ExpressivePasswordField(label: 'Password', controller: password)
+/// ExpressivePasswordField(labelText: 'Password', controller: password)
 /// ```
 class ExpressivePasswordField extends StatelessWidget {
   /// A password field.
@@ -2976,7 +2965,7 @@ class ExpressivePasswordField extends StatelessWidget {
     this.controller,
     this.focusNode,
     this.kind = ExpressiveTextFieldKind.filled,
-    this.label,
+    this.labelText,
     this.hintText,
     this.helperText,
     this.errorText,
@@ -3000,7 +2989,7 @@ class ExpressivePasswordField extends StatelessWidget {
   final ExpressiveTextFieldKind kind;
 
   /// The label.
-  final String? label;
+  final String? labelText;
 
   /// Shown while it is empty.
   final String? hintText;
@@ -3046,7 +3035,7 @@ class ExpressivePasswordField extends StatelessWidget {
         controller: controller,
         focusNode: focusNode,
         kind: kind,
-        label: label,
+        labelText: labelText,
         hintText: hintText,
         helperText: helperText,
         errorText: errorText,
@@ -3098,7 +3087,7 @@ class ExpressivePasswordField extends StatelessWidget {
           defaultValue: ExpressiveTextFieldKind.filled,
         ),
       )
-      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
       ..add(StringProperty('hintText', hintText, defaultValue: null))
       ..add(StringProperty('helperText', helperText, defaultValue: null))
       ..add(StringProperty('errorText', errorText, defaultValue: null))
