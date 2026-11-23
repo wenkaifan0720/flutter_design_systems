@@ -348,7 +348,7 @@ class _SelectListState<T> extends State<_SelectList<T>> {
           final pressed = states.contains(WidgetState.pressed);
           final plate = glossRowPlate(
             c,
-            lit: !light && lit,
+            lit: lit,
             pressed: pressed,
             radius: _radius - _inset,
           );

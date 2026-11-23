@@ -1,3 +1,12 @@
+## 0.3.1
+
+- The row the pointer or the keys are on in a `GlossCombobox`'s or a `GlossSelect`'s list, a menu and the command palette stands on a plate plainly deeper than the rows beside it, by day as by night. By day it stood about 3/255 from them.
+- By night a key that destroys (a dialog's "Remove recipe") is a pearl moulded in ruby, its light words at 4.5:1 or more, plainly red beside a neutral key at rest, hovered, focused and pressed. Its rose words read at about 2.6:1 on the slate pearl, nearly lost beside its neighbour. By day it is unchanged.
+- By night a toast's action ("Undo") is a lighter jade that reads at 4.5:1 on the toast. It read at about 3.1:1.
+- `GlossDatePicker`'s and `GlossDateRangePicker`'s calendar opens clear of the whole field, its label too, as Material's menus do: above a field low on a wide window it covered the label. One month stands at the field's width, edge to edge with it, where on a phone it ran about 7 past each side.
+- Right to left, Gloss's light comes from the right, the reading start: the glaze on a lit row, a focused field's lip, a key, a switch, a checkbox, a slider and a range runs from the right, mirrored. It ran from the left in both directions.
+- The calendar's chosen day, and a range's two ends, sit in a well lit jade, as an on switch's groove and a slider's run do, rather than as a raised gel bead, the key Gloss keeps for a screen's one action.
+
 ## 0.3.0
 
 - Needs ui_core 0.5.1.

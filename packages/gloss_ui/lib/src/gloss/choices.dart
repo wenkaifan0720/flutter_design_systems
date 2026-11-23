@@ -152,6 +152,7 @@ class GlossCheckbox extends StatelessWidget {
               context,
               glossGlazeOf(c, states),
               (light) => _SocketPainter(
+                rtl: Directionality.of(context) == TextDirection.rtl,
                 colors: c,
                 t: t,
                 round: false,
@@ -292,6 +293,7 @@ class _RadioSocket extends StatelessWidget {
           context,
           glossGlazeOf(c, states),
           (light) => _SocketPainter(
+            rtl: Directionality.of(context) == TextDirection.rtl,
             colors: c,
             t: t,
             round: true,
@@ -576,8 +578,25 @@ class _GlossRadioRow<T> extends StatelessWidget {
   }
 }
 
+// Gloss is lit once, from above and the reading start: right to left, what
+// [paint] draws in [rect] (a face, even about its middle) is turned about
+// its middle, so its light runs from the right.
+void _fromStart(Canvas canvas, Rect rect, bool rtl, VoidCallback paint) {
+  if (!rtl) {
+    paint();
+    return;
+  }
+  canvas
+    ..save()
+    ..translate(rect.center.dx * 2, 0)
+    ..scale(-1, 1);
+  paint();
+  canvas.restore();
+}
+
 class _SocketPainter extends CustomPainter {
   _SocketPainter({
+    this.rtl = false,
     required this.colors,
     required this.t,
     required this.round,
@@ -598,6 +617,7 @@ class _SocketPainter extends CustomPainter {
   final Color? fill;
   final Color focus;
   final bool highContrast;
+  final bool rtl;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -617,12 +637,17 @@ class _SocketPainter extends CustomPainter {
       travel: pressed ? 0.7 : 0,
     );
     if (highContrast) socket = socket.copyWith(edge: colors.ink);
-    paintGlossFace(
+    _fromStart(
       canvas,
       rect,
-      socket,
-      brightness: colors.brightness,
-      highContrast: highContrast,
+      rtl,
+      () => paintGlossFace(
+        canvas,
+        rect,
+        socket,
+        brightness: colors.brightness,
+        highContrast: highContrast,
+      ),
     );
     final shown = t.clamp(0.0, 1.2);
     if (shown <= 0.01) return;
@@ -652,12 +677,17 @@ class _SocketPainter extends CustomPainter {
       rect.inflate(4),
       Paint()..color = Color.fromRGBO(0, 0, 0, shown.clamp(0.0, 1.0)),
     );
-    paintGlossFace(
+    _fromStart(
       canvas,
       seat,
-      gel,
-      brightness: colors.brightness,
-      highContrast: highContrast,
+      rtl,
+      () => paintGlossFace(
+        canvas,
+        seat,
+        gel,
+        brightness: colors.brightness,
+        highContrast: highContrast,
+      ),
     );
     if (!round) {
       final mark = Paint()
@@ -696,7 +726,8 @@ class _SocketPainter extends CustomPainter {
       old.disabled != disabled ||
       old.fill != fill ||
       old.focus != focus ||
-      old.highContrast != highContrast;
+      old.highContrast != highContrast ||
+      old.rtl != rtl;
 }
 
 /// A Gloss switch: a capsule slot pressed into the surface with a pearl bead
@@ -894,15 +925,20 @@ class _SwitchPainter extends CustomPainter {
     final on = t.clamp(0.0, 1.0);
     final day = colors.brightness == Brightness.light;
     // The groove, pressed into the porcelain.
-    paintGlossFace(
+    _fromStart(
       canvas,
       rect,
-      GlossFace.well(colors).copyWith(
-        lift: disabled ? -0.5 : -1,
-        edge: highContrast ? colors.ink : const Color(0x00000000),
+      rtl,
+      () => paintGlossFace(
+        canvas,
+        rect,
+        GlossFace.well(colors).copyWith(
+          lift: disabled ? -0.5 : -1,
+          edge: highContrast ? colors.ink : const Color(0x00000000),
+        ),
+        brightness: colors.brightness,
+        highContrast: highContrast,
       ),
-      brightness: colors.brightness,
-      highContrast: highContrast,
     );
     // The gel moulded into it: smoke when off, jade when on, one glossy
     // tube whose colour runs between the two as the bead travels.
@@ -930,12 +966,17 @@ class _SwitchPainter extends CustomPainter {
         glow: const Color(0x00000000),
       );
     }
-    paintGlossFace(
+    _fromStart(
       canvas,
       rect.deflate(2),
-      gel.copyWith(edge: highContrast ? colors.ink : null, focus: focus),
-      brightness: colors.brightness,
-      highContrast: highContrast,
+      rtl,
+      () => paintGlossFace(
+        canvas,
+        rect.deflate(2),
+        gel.copyWith(edge: highContrast ? colors.ink : null, focus: focus),
+        brightness: colors.brightness,
+        highContrast: highContrast,
+      ),
     );
     // The bead.
     const bead = _GlossSwitchState._bead;
@@ -963,12 +1004,17 @@ class _SwitchPainter extends CustomPainter {
       bead + squeeze,
       bead,
     );
-    paintGlossFace(
+    _fromStart(
       canvas,
       shaped,
-      pearl,
-      brightness: colors.brightness,
-      highContrast: highContrast,
+      rtl,
+      () => paintGlossFace(
+        canvas,
+        shaped,
+        pearl,
+        brightness: colors.brightness,
+        highContrast: highContrast,
+      ),
     );
   }
 
@@ -1800,14 +1846,19 @@ class _GroovePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final rect = Offset.zero & size;
-    paintGlossFace(
+    _fromStart(
       canvas,
       rect,
-      GlossFace.well(colors).copyWith(
-        lift: enabled ? -1 : -0.5,
-        edge: highContrast ? colors.ink : const Color(0x00000000),
+      rtl,
+      () => paintGlossFace(
+        canvas,
+        rect,
+        GlossFace.well(colors).copyWith(
+          lift: enabled ? -1 : -0.5,
+          edge: highContrast ? colors.ink : const Color(0x00000000),
+        ),
+        highContrast: highContrast,
       ),
-      highContrast: highContrast,
     );
     // The lit part, from the start to the value (the bead's centre).
     final lit = 5 + fraction * (size.width - 10);
@@ -1828,7 +1879,12 @@ class _GroovePainter extends CustomPainter {
         bottom: colors.inkDisabled,
       );
     }
-    paintGlossFace(canvas, litRect, face, highContrast: highContrast);
+    _fromStart(
+      canvas,
+      litRect,
+      rtl,
+      () => paintGlossFace(canvas, litRect, face, highContrast: highContrast),
+    );
   }
 
   @override

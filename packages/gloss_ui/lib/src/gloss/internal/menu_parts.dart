@@ -26,8 +26,9 @@ GlossFace glossPanelFace(GlossColors c, {double radius = glossPanelCorner}) {
 }
 
 /// A row's plate in a floating list, in [c]: clear at rest, a pale glaze
-/// when [lit] (the pointer's or the keys' row), pressed into a well under a
-/// press. Concentric with the panel: its corner is the panel's less the
+/// when [lit] (the pointer's or the keys' row), by day as by night, deep
+/// enough to tell from the rows beside it at a glance; pressed into a well
+/// under a press. Concentric with the panel: its corner is the panel's less the
 /// inset.
 GlossFace glossRowPlate(
   GlossColors c, {
@@ -41,9 +42,9 @@ GlossFace glossRowPlate(
   }
   if (lit) {
     return GlossFace(
-      top: light ? const Color(0xFFE9EEF2) : const Color(0xFF3A4048),
-      middle: light ? const Color(0xFFE6EBF0) : const Color(0xFF373D44),
-      bottom: light ? const Color(0xFFE2E8ED) : const Color(0xFF343A40),
+      top: light ? const Color(0xFFDFE5EA) : const Color(0xFF4E545C),
+      middle: light ? const Color(0xFFDBE2E8) : const Color(0xFF4A5058),
+      bottom: light ? const Color(0xFFD7DEE4) : const Color(0xFF464C54),
       foreground: c.ink,
       radius: radius,
     );

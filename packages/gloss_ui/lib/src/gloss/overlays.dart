@@ -1278,6 +1278,25 @@ class _ActionSheet<T> extends StatelessWidget {
   }
 }
 
+// [words] lightened, keeping their hue, until they read at 4.5:1 on the
+// light where words stand on [face] (from its crown's fall to its middle):
+// by night a coloured word on the moonlit pearl. Words that read are kept.
+Color _readableOn(GlossFace face, Color words) {
+  final behind = Color.lerp(face.top, face.middle, 0.4)!;
+  double contrast(Color a) {
+    final x = a.computeLuminance(), y = behind.computeLuminance();
+    return x > y ? (x + .05) / (y + .05) : (y + .05) / (x + .05);
+  }
+
+  if (contrast(words) >= 4.6) return words;
+  final hsl = HSLColor.fromColor(words);
+  for (var l = hsl.lightness; l < 1; l += .01) {
+    final lighter = hsl.withLightness(l).toColor();
+    if (contrast(lighter) >= 4.6) return lighter;
+  }
+  return const Color(0xFFFFFFFF);
+}
+
 /// Where Gloss's toasts float: put it once under [GlossTheme], above the
 /// navigator, and call [showGlossToast].
 ///
@@ -1375,6 +1394,13 @@ class _Toast extends StatelessWidget {
                       GlossButton.text(
                         t.actionLabel!,
                         onPressed: details.runAction,
+                        // Jade on the pearl, as light as it must be by
+                        // night to read there.
+                        style: GlossStyle(
+                          foreground: WidgetStatePropertyAll(
+                            _readableOn(face, c.jadeInk),
+                          ),
+                        ),
                       ),
                       const SizedBox(width: GlossSpacing.tight),
                     ],

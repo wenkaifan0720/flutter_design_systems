@@ -156,6 +156,22 @@ class GlossRangeSlider extends StatelessWidget {
   }
 }
 
+// Gloss is lit once, from above and the reading start: right to left, what
+// [paint] draws in [rect] (a face, even about its middle) is turned about
+// its middle, so its light runs from the right.
+void _fromStart(Canvas canvas, Rect rect, bool rtl, VoidCallback paint) {
+  if (!rtl) {
+    paint();
+    return;
+  }
+  canvas
+    ..save()
+    ..translate(rect.center.dx * 2, 0)
+    ..scale(-1, 1);
+  paint();
+  canvas.restore();
+}
+
 class _RangeGroove extends CustomPainter {
   _RangeGroove({
     required this.c,
@@ -180,14 +196,19 @@ class _RangeGroove extends CustomPainter {
     if (size.isEmpty) return;
     // The core track spans from the first thumb's center to the last one's.
     final radius = size.height / 2;
-    paintGlossFace(
+    _fromStart(
       canvas,
       Rect.fromLTRB(-radius, 0, size.width + radius, size.height),
-      GlossFace.well(c).copyWith(
-        lift: enabled ? -1 : -0.5,
-        edge: highContrast ? c.ink : const Color(0x00000000),
+      rtl,
+      () => paintGlossFace(
+        canvas,
+        Rect.fromLTRB(-radius, 0, size.width + radius, size.height),
+        GlossFace.well(c).copyWith(
+          lift: enabled ? -1 : -0.5,
+          edge: highContrast ? c.ink : const Color(0x00000000),
+        ),
+        highContrast: highContrast,
       ),
-      highContrast: highContrast,
     );
     final a = start * size.width;
     final b = end * size.width;
@@ -209,7 +230,12 @@ class _RangeGroove extends CustomPainter {
         bottom: c.inkDisabled,
       );
     }
-    paintGlossFace(canvas, lit, face, highContrast: highContrast);
+    _fromStart(
+      canvas,
+      lit,
+      rtl,
+      () => paintGlossFace(canvas, lit, face, highContrast: highContrast),
+    );
   }
 
   @override

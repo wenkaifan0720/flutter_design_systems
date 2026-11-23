@@ -784,7 +784,7 @@ class _OptionRow extends StatelessWidget {
       child: AnimatedGlossSurface(
         face: glossRowPlate(
           c,
-          lit: focused && c.brightness == Brightness.dark,
+          lit: focused,
           pressed: states.contains(WidgetState.pressed),
         ).copyWith(foreground: ink, focus: glossGlazeOf(c, states)),
         child: Padding(
