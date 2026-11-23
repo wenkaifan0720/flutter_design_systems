@@ -301,10 +301,16 @@ class ComicColors with Diagnosticable {
     required this.highlight,
   });
 
-  /// The ink of the Ben-Day screen over the page behind an open surface: black, its alpha the share of the page the
-  /// dots cover: a quarter by day, a third by night, where a flat veil darkens no more. Denser, the dots run together,
-  /// a checker by day and a sieve of the page's light by night.
-  Color get scrim => dark ? const Color(0x55000000) : const Color(0x40000000);
+  /// The ink of the Ben-Day screen over the page behind an open surface, its alpha the share of the page the dots
+  /// cover, a quarter. Denser, the dots run together into a checker.
+  ///
+  /// By day it's the page's words' own ink ([text]): a dot that lands on a letter is the letter's ink, so no word under
+  /// the screen is perforated. At night [ComicScreenScrim] first dims the page under its own ground ([background]), and
+  /// the dots are the panels' navy ([card]) brought to stand 1.3:1 off that ground: a quiet screen that keeps the page
+  /// behind darker than the panel open over it. Cream dots made the page behind glare brighter than the dialog, and
+  /// black ones punched holes in its cream lettering.
+  Color get scrim => (dark ? _nightScreen(background, card, text) : text)
+      .withValues(alpha: 0x40 / 0xFF);
 
   /// Semantic status inks on the current panel ground.
   ComicTones get tones => status ?? (dark ? ComicTones.dark : ComicTones.light);
@@ -2649,4 +2655,23 @@ ComicColors _comicFrom(
     nightLine: ink,
     series: base.series,
   );
+}
+
+// The night screen's dot: [panel] moved toward [ground] or toward [lettering], whichever way it must go, until it stands
+// 1.3:1 off [ground]: low enough to recede, high enough to read as a screen.
+Color _nightScreen(Color ground, Color panel, Color lettering) {
+  final want = 1.3 * (ground.computeLuminance() + .05) - .05;
+  final (from, to) = panel.computeLuminance() < want
+      ? (panel, lettering)
+      : (ground, panel);
+  var low = 0.0, high = 1.0;
+  for (var i = 0; i < 24; i++) {
+    final t = (low + high) / 2;
+    if (Color.lerp(from, to, t)!.computeLuminance() < want) {
+      low = t;
+    } else {
+      high = t;
+    }
+  }
+  return Color.lerp(from, to, high)!;
 }

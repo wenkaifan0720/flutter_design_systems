@@ -1530,8 +1530,10 @@ class _CalendarDay extends StatelessWidget {
     final t = ComicTheme.of(context), c = t.colors;
     final end = day.selected || day.isRangeStart || day.isRangeEnd;
     final between = !end && (day.inRange || day.inPreview);
+    // A lit day's contour is the ink on its lamp, which reads by night too: the night line's cream stood 1.2:1 on
+    // the yellow.
     final rim = end
-        ? BorderSide(color: c.nightLine, width: 2.5)
+        ? BorderSide(color: c.onCaption, width: 2.5)
         : day.inMonth
         ? BorderSide(color: c.divider, width: 1)
         : BorderSide.none;
@@ -1989,7 +1991,7 @@ class _ComicWheelPickerState<T> extends State<ComicWheelPicker<T>>
                         decoration: ShapeDecoration(
                           color: c.caption,
                           shape: band.copyWith(
-                            side: BorderSide(color: c.nightLine, width: 2.5),
+                            side: BorderSide(color: c.onCaption, width: 2.5),
                           ),
                         ),
                       ),

@@ -38,7 +38,7 @@ Future<T?> showComicSheet<T>(
   final navigator = Navigator.of(context, rootNavigator: useRootNavigator);
   final carry = comicCarryTo(context, navigator);
   return navigator.push<T>(
-    // The page behind is screened with dots, not dimmed (law 1), as behind every raised layer of Comic's.
+    // The page behind is screened with dots (law 1), as behind every raised layer of Comic's.
     RawSideSheetRoute<T>(
       barrierBuilder: (context, animation) => ComicScreenScrim(
         animation: animation,

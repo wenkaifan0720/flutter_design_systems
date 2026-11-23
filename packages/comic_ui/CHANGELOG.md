@@ -1,3 +1,12 @@
+## 0.5.1
+
+- `showComicDatePicker`'s dialog is as wide as its calendar, as Material's is: on a wide screen it left an empty strip of paper at the month's end.
+- A `ComicCombobox`'s list stands clear of its field, opened below it or above it, with a strip of paper between the two: their prints met, doubled at the end and notched the corner.
+- The chosen day of a `ComicDatePicker` or a `ComicDateRangePicker`, and the chosen row of a `ComicWheelPicker`, keep a dark edge on their yellow at night: the cream rim all but vanished there.
+- The screen of dots behind a modal no longer punches holes in the words under it. By day its dots print in the page's own lettering ink (`ComicColors.scrim`). At night the page is first dimmed under its dark ground, then screened in quiet navy dots that leave its lettering whole and keep it darker than the dialog over it.
+- A `ComicDatePicker`'s rules are one weight: where two days met, their two outlines stood a double rule.
+- In Comic's menus and lists, the row the keys or the pointer are on carries an ink rule at its start, so a keyboard user finds it at a glance: a faint wash alone told it from its neighbours.
+
 ## 0.5.0
 
 - Needs ui_core 0.5.1.

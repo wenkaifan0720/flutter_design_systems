@@ -6,6 +6,7 @@ import 'package:ui_core/ui_core.dart';
 
 import 'dart:math' as math;
 
+import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart' show DateFormat;
@@ -274,57 +275,7 @@ class _ComicDatePickerState extends State<ComicDatePicker> {
           !_day(widget.firstDate!).isAfter(_day(widget.lastDate!)),
     );
     final t = ComicTheme.of(context), locale = _locale(context);
-    // Reserve the measured day label and its actual outline insets. An
-    // arbitrary text allowance made even an ordinary phone scroll sideways.
-    // The numbers grow at most twice (see [_grid]), so they are measured so.
-    // A day keeps a touch's width (48) where seven fit; where they don't (a
-    // phone's dialog) they narrow, but never so far that a number comes within
-    // 4 of its day's outline, the corner's curve included.
-    var minimumDayWidth = ComicDatePicker.dayWidth, narrowestDay = 0.0;
-    final direction = Directionality.of(context);
-    for (final states in const <Set<WidgetState>>[
-      {},
-      {WidgetState.selected},
-      {WidgetState.disabled},
-    ]) {
-      final look = comicStyleOf([widget.style, t.datePickerTheme], states);
-      final shape = look.shape ?? t.shapes.small;
-      final rim = comicRim(
-        t,
-        look,
-        t.colors.divider,
-        states.contains(WidgetState.selected) ? 2.5 : 1,
-      );
-      final inset = shape
-          .copyWith(side: rim)
-          .dimensions
-          .resolve(direction)
-          .horizontal;
-      final padding = look.padding(direction)?.horizontal ?? 0;
-      final corner = comicCornerInset(shape, direction);
-      final painter = TextPainter(
-        textDirection: direction,
-        textScaler: MediaQuery.textScalerOf(context)
-            .clamp(maxScaleFactor: comicCalendarScaleMost),
-      );
-      for (var day = 1; day <= 31; day++) {
-        painter.text = TextSpan(
-          text: '$day',
-          style: t.type.body.merge(look.textStyle),
-        );
-        painter.layout();
-        minimumDayWidth = math.max(
-          minimumDayWidth,
-          (painter.width + inset / 2 + padding).ceilToDouble(),
-        );
-        narrowestDay = math.max(
-          narrowestDay,
-          (painter.width + inset + padding + 2 * (_dayClearance + corner))
-              .ceilToDouble(),
-        );
-      }
-      painter.dispose();
-    }
+    final (minimumDayWidth, narrowestDay) = _dayWidths(context, widget.style);
     final count = DateTime(_month.year, _month.month + 1, 0).day;
     final lead = (_month.weekday - widget.firstWeekday + 7) % 7;
     final heading = widget.monthNames == null
@@ -340,6 +291,9 @@ class _ComicDatePickerState extends State<ComicDatePicker> {
         _month.isBefore(
           DateTime(widget.lastDate!.year, widget.lastDate!.month),
         );
+    // The month's rules, laid once where two days meet (see [_DayRules]).
+    final rest = comicStyleOf([widget.style, t.datePickerTheme], const {});
+    final rule = comicRim(t, rest, t.colors.divider, 1);
     Widget cell(int day) {
       final date = DateTime(_month.year, _month.month, day),
           selected = widget.value != null && date == _day(widget.value!);
@@ -368,10 +322,12 @@ class _ComicDatePickerState extends State<ComicDatePicker> {
         ], const {}).shapes(t.shapes.small),
         builder: (context, states) {
           final look = comicStyleOf([widget.style, t.datePickerTheme], states);
+          // The chosen day's lamp keeps the ink contour every lit fill has, by night too: the night line's cream
+          // on the yellow stood 1.2:1, the day's edge gone.
           final rim = comicRim(
             t,
             look,
-            selected ? t.colors.nightLine : t.colors.divider,
+            selected ? t.colors.onCaption : t.colors.divider,
             selected ? 2.5 : 1,
           );
           // Every day reserves the thickest rim a day can have, so choosing
@@ -396,7 +352,20 @@ class _ComicDatePickerState extends State<ComicDatePicker> {
               decoration: ShapeDecoration(
                 color: look.fill ?? (selected ? t.colors.caption : null),
                 shape: (shape ?? const RoundedRectangleBorder()).copyWith(
-                  side: rim,
+                  // A resting day leaves its edges to the month's rules; the chosen day and one under the keys, the
+                  // pointer or a press draw their own, which lifts with the day.
+                  side:
+                      selected ||
+                          rim != rule ||
+                          states.any(
+                            const {
+                              WidgetState.focused,
+                              WidgetState.hovered,
+                              WidgetState.pressed,
+                            }.contains,
+                          )
+                      ? rim
+                      : BorderSide.none,
                 ),
               ),
               // A day is as tall as it is wide, as a month's days in the calendar: its number stands in the middle.
@@ -502,6 +471,8 @@ class _ComicDatePickerState extends State<ComicDatePicker> {
           cell,
           minimumDayWidth,
           math.max(narrowestDay, _narrowestDay),
+          rule,
+          rest.shape ?? t.shapes.small,
         ),
       ),
     );
@@ -517,6 +488,8 @@ class _ComicDatePickerState extends State<ComicDatePicker> {
     Widget Function(int) cell,
     double minimumDayWidth,
     double narrowestDay,
+    BorderSide rule,
+    OutlinedBorder ruleShape,
   ) {
     final t = ComicTheme.of(context);
     final words = ComicLocalizations.of(context);
@@ -588,21 +561,43 @@ class _ComicDatePickerState extends State<ComicDatePicker> {
                         ],
                       ),
                     ),
-                    for (var row = 0; row < (count + lead + 6) ~/ 7; row++)
-                      Row(
+                    // Two days side by side share one rule, as heavy as the month's outer rule: each day's own outline
+                    // stood two rules deep against its neighbour's.
+                    CustomPaint(
+                      painter: _DayRules(
+                        lead: lead,
+                        count: count,
+                        side: rule,
+                        shape: ruleShape,
+                        direction: Directionality.of(context),
+                        devicePixelRatio:
+                            MediaQuery.maybeDevicePixelRatioOf(context) ?? 1,
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          for (var col = 0; col < 7; col++)
-                            Expanded(
-                              child:
-                                  row * 7 + col - lead + 1 < 1 ||
-                                      row * 7 + col - lead + 1 > count
-                                  ? const SizedBox(
-                                      height: ComicDatePicker.dayWidth,
-                                    )
-                                  : cell(row * 7 + col - lead + 1),
+                          for (
+                            var row = 0;
+                            row < (count + lead + 6) ~/ 7;
+                            row++
+                          )
+                            Row(
+                              children: [
+                                for (var col = 0; col < 7; col++)
+                                  Expanded(
+                                    child:
+                                        row * 7 + col - lead + 1 < 1 ||
+                                            row * 7 + col - lead + 1 > count
+                                        ? const SizedBox(
+                                            height: ComicDatePicker.dayWidth,
+                                          )
+                                        : cell(row * 7 + col - lead + 1),
+                                  ),
+                              ],
                             ),
                         ],
                       ),
+                    ),
                   ],
                 ),
               ),
@@ -871,32 +866,42 @@ Future<DateTime?> showComicDatePicker(
   return showComicDialog<DateTime>(
     context,
     builder: (context) => StatefulBuilder(
-      builder: (context, setState) => ComicDialog(
-        title: title ?? ComicLocalizations.of(context).chooseDate,
-        content: [
-          ComicDatePicker(
-            value: picked,
-            firstDate: firstDate,
-            lastDate: lastDate,
-            currentDate: currentDate,
-            onChanged: (day) => setState(() => picked = day),
-            // The keys start on the chosen day.
-            autofocus: true,
+      builder: (context, setState) => Center(
+        // As wide as its content, the calendar's seven days, as Material's date picker dialog is: at the panel's
+        // widest the month left a strip of empty paper at its end.
+        child: IntrinsicWidth(
+          child: ComicDialog(
+            title: title ?? ComicLocalizations.of(context).chooseDate,
+            content: [
+              _NaturalWidth(
+                width: 7 * _dayWidths(context, null).$1,
+                child: ComicDatePicker(
+                  value: picked,
+                  firstDate: firstDate,
+                  lastDate: lastDate,
+                  currentDate: currentDate,
+                  onChanged: (day) => setState(() => picked = day),
+                  // The keys start on the chosen day.
+                  autofocus: true,
+                ),
+              ),
+            ],
+            actions: [
+              ComicButton(
+                cancelText ??
+                    RawWidgetsLocalizations.of(context).cancelButtonLabel,
+                onPressed: () => Navigator.pop(context),
+              ),
+              ComicButton.filled(
+                confirmText ?? ComicLocalizations.of(context).choose,
+                size: ComicButtonSize.small,
+                onPressed: picked == null
+                    ? null
+                    : () => Navigator.pop(context, picked),
+              ),
+            ],
           ),
-        ],
-        actions: [
-          ComicButton(
-            cancelText ?? RawWidgetsLocalizations.of(context).cancelButtonLabel,
-            onPressed: () => Navigator.pop(context),
-          ),
-          ComicButton.filled(
-            confirmText ?? ComicLocalizations.of(context).choose,
-            size: ComicButtonSize.small,
-            onPressed: picked == null
-                ? null
-                : () => Navigator.pop(context, picked),
-          ),
-        ],
+        ),
       ),
     ),
   );
@@ -946,4 +951,163 @@ Future<ComicTime?> showComicTimePicker(
       ),
     ),
   );
+}
+
+/// A day's width in a calendar under [context] (each of seven at least, where they fit) and the narrowest a day may
+/// grow, for the calendar and for the dialog that holds one.
+(double, double) _dayWidths(BuildContext context, ComicStyle? style) {
+  // Reserve the measured day label and its actual outline insets. An
+  // arbitrary text allowance made even an ordinary phone scroll sideways.
+  // The numbers grow at most twice (see [_grid]), so they are measured so.
+  // A day keeps a touch's width (48) where seven fit; where they don't (a
+  // phone's dialog) they narrow, but never so far that a number comes within
+  // 4 of its day's outline, the corner's curve included.
+  final t = ComicTheme.of(context);
+  var minimumDayWidth = ComicDatePicker.dayWidth, narrowestDay = 0.0;
+  final direction = Directionality.of(context);
+  for (final states in const <Set<WidgetState>>[
+    {},
+    {WidgetState.selected},
+    {WidgetState.disabled},
+  ]) {
+    final look = comicStyleOf([style, t.datePickerTheme], states);
+    final shape = look.shape ?? t.shapes.small;
+    final rim = comicRim(
+      t,
+      look,
+      t.colors.divider,
+      states.contains(WidgetState.selected) ? 2.5 : 1,
+    );
+    final inset = shape
+        .copyWith(side: rim)
+        .dimensions
+        .resolve(direction)
+        .horizontal;
+    final padding = look.padding(direction)?.horizontal ?? 0;
+    final corner = comicCornerInset(shape, direction);
+    final painter = TextPainter(
+      textDirection: direction,
+      textScaler: MediaQuery.textScalerOf(context)
+          .clamp(maxScaleFactor: comicCalendarScaleMost),
+    );
+    for (var day = 1; day <= 31; day++) {
+      painter.text = TextSpan(
+        text: '$day',
+        style: t.type.body.merge(look.textStyle),
+      );
+      painter.layout();
+      minimumDayWidth = math.max(
+        minimumDayWidth,
+        (painter.width + inset / 2 + padding).ceilToDouble(),
+      );
+      narrowestDay = math.max(
+        narrowestDay,
+        (painter.width + inset + padding + 2 * (_dayClearance + corner))
+            .ceilToDouble(),
+      );
+    }
+    painter.dispose();
+  }
+  return (minimumDayWidth, narrowestDay);
+}
+
+/// The month's rules: every day's outline, laid in one stroke so that where two days meet the rule is laid once, on
+/// whole device pixels and inside the weeks' box.
+class _DayRules extends CustomPainter {
+  _DayRules({
+    required this.lead,
+    required this.count,
+    required this.side,
+    required this.shape,
+    required this.direction,
+    required this.devicePixelRatio,
+  });
+
+  final int lead, count;
+  final BorderSide side;
+  final OutlinedBorder shape;
+  final TextDirection direction;
+  final double devicePixelRatio;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (side.style == BorderStyle.none || side.width <= 0 || count == 0) return;
+    final rows = (count + lead + 6) ~/ 7;
+    final half = side.width / 2;
+    // A boundary on whole device pixels, the stroke laid from it toward the day after (the last within the box).
+    double at(double v, double most) =>
+        ((v * devicePixelRatio).roundToDouble() / devicePixelRatio + half)
+            .clamp(half, most - half);
+    final width = size.width / 7, height = size.height / rows;
+    final rtl = direction == TextDirection.rtl;
+    final outline = shape.copyWith(side: BorderSide.none);
+    final path = Path();
+    for (var day = 1; day <= count; day++) {
+      final i = day - 1 + lead, row = i ~/ 7, column = i % 7;
+      final start = rtl ? 7 - column - 1 : column;
+      path.addPath(
+        outline.getOuterPath(
+          Rect.fromLTRB(
+            at(start * width, size.width),
+            at(row * height, size.height),
+            at((start + 1) * width, size.width),
+            at((row + 1) * height, size.height),
+          ),
+          textDirection: direction,
+        ),
+        Offset.zero,
+      );
+    }
+    canvas.drawPath(
+      path,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = side.width
+        ..color = side.color,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_DayRules oldDelegate) =>
+      oldDelegate.lead != lead ||
+      oldDelegate.count != count ||
+      oldDelegate.side != side ||
+      oldDelegate.shape != shape ||
+      oldDelegate.direction != direction ||
+      oldDelegate.devicePixelRatio != devicePixelRatio;
+}
+
+/// Reports [width] as its child's natural width, without asking the child (a calendar lays out its days by the room it
+/// is given), so an [IntrinsicWidth] above sizes a dialog to its calendar. Layout and paint are the child's own.
+class _NaturalWidth extends SingleChildRenderObjectWidget {
+  const _NaturalWidth({required this.width, required super.child});
+
+  final double width;
+
+  @override
+  _RenderNaturalWidth createRenderObject(BuildContext context) =>
+      _RenderNaturalWidth(width);
+
+  @override
+  void updateRenderObject(
+    BuildContext context,
+    _RenderNaturalWidth renderObject,
+  ) => renderObject.width = width;
+}
+
+class _RenderNaturalWidth extends RenderProxyBox {
+  _RenderNaturalWidth(this._width);
+
+  double _width;
+  set width(double value) {
+    if (value == _width) return;
+    _width = value;
+    markNeedsLayout();
+  }
+
+  @override
+  double computeMinIntrinsicWidth(double height) => _width;
+
+  @override
+  double computeMaxIntrinsicWidth(double height) => _width;
 }

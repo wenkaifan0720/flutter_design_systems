@@ -101,8 +101,8 @@ class _ComicRoute<T> extends PopupRoute<T> with ComicScreenedRoute<T> {
   bool get barrierDismissible => dismissible;
   @override
   String get barrierLabel => closeLabel;
-  // The page behind is screened, not dimmed (law 1: nothing see-through): Ben-Day dots of the night ink swell over
-  // it as the layer comes in, and the barrier under them takes the presses.
+  // The page behind is screened (law 1): Ben-Day dots swell over it as the layer comes in, over an overprint of the
+  // ground at night, and the barrier under them takes the presses.
   @override
   Color? get barrierColor => null;
 
@@ -2604,53 +2604,60 @@ class ComicMenuRowFace extends StatelessWidget {
             shape: outline,
             color: checked ? t.colors.caption : t.colors.card,
           ),
-          child: Padding(
-            padding: EdgeInsetsDirectional.fromSTEB(
-              (start ?? 12) + (lead ?? 0),
-              12,
-              12,
-              12,
-            ),
-            child: IconTheme.merge(
-              data: IconThemeData(color: ink),
-              child: Row(
-                children: [
-                  if (icon != null) ...[
-                    Icon(icon, size: 20),
-                    const SizedBox(width: ComicSpace.close),
-                  ],
-                  Expanded(
-                    child: CapLabel(
-                      child: Text(
-                        label,
-                        style: t.type.body.copyWith(color: ink),
+          // The keys' and the pointer's row carries a rule of ink at its start, as wide as a plate is deep: the dots
+          // under it alone stood 15 of 255 from its neighbours, too faint to find at a glance.
+          child: CustomPaint(
+            painter: lit
+                ? _LitRule(ink, outline, Directionality.of(context))
+                : null,
+            child: Padding(
+              padding: EdgeInsetsDirectional.fromSTEB(
+                (start ?? 12) + (lead ?? 0),
+                12,
+                12,
+                12,
+              ),
+              child: IconTheme.merge(
+                data: IconThemeData(color: ink),
+                child: Row(
+                  children: [
+                    if (icon != null) ...[
+                      Icon(icon, size: 20),
+                      const SizedBox(width: ComicSpace.close),
+                    ],
+                    Expanded(
+                      child: CapLabel(
+                        child: Text(
+                          label,
+                          style: t.type.body.copyWith(color: ink),
+                        ),
                       ),
                     ),
-                  ),
-                  if (trailing != null) ...[
-                    const SizedBox(width: ComicSpace.close),
-                    // Words (a shortcut's) put their capitals on the row's middle, as the label's are: centred by
-                    // their box, small words sit high. An icon is centred as it is.
-                    if (trailing is Text)
-                      CapLabel(
-                        child: DefaultTextStyle.merge(
+                    if (trailing != null) ...[
+                      const SizedBox(width: ComicSpace.close),
+                      // Words (a shortcut's) put their capitals on the row's middle, as the label's are: centred by
+                      // their box, small words sit high. An icon is centred as it is.
+                      if (trailing is Text)
+                        CapLabel(
+                          child: DefaultTextStyle.merge(
+                            style: t.type.small.copyWith(color: ink),
+                            child: trailing!,
+                          ),
+                        )
+                      else
+                        DefaultTextStyle.merge(
                           style: t.type.small.copyWith(color: ink),
                           child: trailing!,
                         ),
-                      )
-                    else
-                      DefaultTextStyle.merge(
-                        style: t.type.small.copyWith(color: ink),
-                        child: trailing!,
+                    ],
+                    if (checked && mark) ...[
+                      const SizedBox(width: ComicSpace.close),
+                      const ExcludeSemantics(
+                        child: Icon(ComicGlyphs.check, size: 20),
                       ),
+                    ],
                   ],
-                  if (checked && mark) ...[
-                    const SizedBox(width: ComicSpace.close),
-                    const ExcludeSemantics(
-                      child: Icon(ComicGlyphs.check, size: 20),
-                    ),
-                  ],
-                ],
+                ),
               ),
             ),
           ),
@@ -2902,9 +2909,19 @@ class _ComicComboboxState<T extends Object> extends State<ComicCombobox<T>> {
         start: comicFieldListWords(ComicTheme.of(context), widget.style),
       ),
       // The list starts on the field's face, which the focus lifts toward the start.
+      // Two panels, a gutter of paper between them: the list stands a plate's depth clear of the focused field's
+      // print, which it touched, the two prints doubling at the end and notching the corner.
       surfaceBuilder: (_, list) => comicListOnLiftedField(
         context,
-        ComicRaisedFrame(style: widget.style, child: list),
+        Padding(
+          padding: EdgeInsets.only(
+            // Opened below: the field's print, then a plate's depth of paper.
+            top: ComicTheme.of(context).focus.width + comicRaisedPlate,
+            // Opened above: the list's own print, a plate's depth of paper, then the field's lift.
+            bottom: 2 * comicRaisedPlate + comicFocusLift,
+          ),
+          child: ComicRaisedFrame(style: widget.style, child: list),
+        ),
       ),
       emptyBuilder: (context) => comicSearchNote(
         context,
@@ -2982,9 +2999,13 @@ Widget comicSearchFailed(
   );
 }
 
-/// The page behind a modal, screened back in Ben-Day dots of [ink], not dimmed: the dots cover as much of the page as
-/// [ink]'s alpha would darken it (0x40 black, a quarter), so the page recedes as far as under a veil while its colours
-/// between the dots stay its own. The dots swell in with the route and shrink away with it.
+/// The page behind a modal, screened back in Ben-Day dots of [ink]: the dots cover as much of the page as [ink]'s alpha
+/// would darken it (0x40, a quarter), so the page recedes while its colours between the dots stay its own. The dots
+/// swell in with the route and shrink away with it.
+///
+/// Under a night [ComicTheme] the page is first dimmed under an overprint of its own ground ink, as process inks
+/// overprint, and the dots only lighten what lies under them: the page behind sits darker than the panel open over it,
+/// and a dot that lands on dimmed lettering leaves it whole.
 ///
 /// ```dart
 /// ComicScreenScrim(animation: animation, ink: ComicTheme.of(context).colors.scrim)
@@ -3006,6 +3027,10 @@ class ComicScreenScrim extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final dpr = MediaQuery.maybeDevicePixelRatioOf(context) ?? 1;
+    final colors = ComicTheme.maybeOf(context)?.colors;
+    final ground = colors != null && colors.brightness == Brightness.dark
+        ? colors.background
+        : null;
     // Staggered rows half a pitch apart put two dots in each pitch square: they cover 2 pi r^2 / pitch^2 of it.
     final full = comicScrimPitch * math.sqrt(ink.a / (2 * math.pi));
     return RepaintBoundary(
@@ -3013,6 +3038,8 @@ class ComicScreenScrim extends StatelessWidget {
         animation: animation,
         builder: (context, _) => SizedBox.expand(
           child: CustomPaint(
+            // The night's dots blend with the page under them: a cached picture of them alone would lose it.
+            willChange: ground != null,
             painter: _ScrimPainter(
               ink.withValues(alpha: 1),
               ComicScreenGrid(
@@ -3020,6 +3047,9 @@ class ComicScreenScrim extends StatelessWidget {
                 // The tone grows with the dots' area, so evenly with the route.
                 full * math.sqrt(animation.value.clamp(0.0, 1.0)),
                 dpr,
+              ),
+              ground?.withValues(
+                alpha: _nightDim * animation.value.clamp(0.0, 1.0),
               ),
             ),
           ),
@@ -3037,26 +3067,43 @@ class ComicScreenScrim extends StatelessWidget {
   }
 }
 
+// How much of the night page the ground's overprint takes back.
+const double _nightDim = .65;
+
 class _ScrimPainter extends CustomPainter {
-  const _ScrimPainter(this.ink, this.grid);
+  const _ScrimPainter(this.ink, this.grid, [this.dim]);
   final Color ink;
   final ComicScreenGrid grid;
 
+  // The night's overprint of the page's ground, under the dots; null by day.
+  final Color? dim;
+
   @override
   void paint(Canvas canvas, Size size) {
+    final rect = Offset.zero & size;
+    final dim = this.dim;
+    if (dim == null) {
+      if (grid.radius > 0) grid.paint(canvas, rect, ink);
+      return;
+    }
+    canvas.drawRect(rect, Paint()..color = dim);
     if (grid.radius <= 0) return;
-    grid.paint(canvas, Offset.zero & size, ink);
+    // The dots only lighten: where the dimmed page is lighter than they are, on a letter, it stays as it is.
+    canvas.saveLayer(rect, Paint()..blendMode = BlendMode.lighten);
+    grid.paint(canvas, rect, ink);
+    canvas.restore();
   }
 
   @override
   bool shouldRepaint(_ScrimPainter old) =>
       old.ink != ink ||
+      old.dim != dim ||
       old.grid.radius != grid.radius ||
       old.grid.pitch != grid.pitch;
 }
 
-/// A modal route whose page behind is screened in Ben-Day dots, not dimmed: a [ComicScreenScrim] of [screenInk] under its
-/// barrier, which still takes the presses. Give the route no barrier colour of its own.
+/// A modal route whose page behind is screened in Ben-Day dots (and, at night, dimmed under them): a [ComicScreenScrim]
+/// of [screenInk] under its barrier, which still takes the presses. Give the route no barrier colour of its own.
 ///
 /// ```dart
 /// class IssueRoute<T> extends RawDialogRoute<T> with ComicScreenedRoute<T> { IssueRoute({required super.pageBuilder}) : super(barrierColor: null, barrierLabel: 'Close'); @override Color? get screenInk => const Color(0x99000000); }
@@ -3085,3 +3132,36 @@ mixin ComicScreenedRoute<T> on ModalRoute<T> {
 /// The modal screen's dot pitch, and the dot radius of a screen a quarter of the page in ink, for artwork that
 /// matches it.
 const double comicScrimPitch = 6, comicScrimRadius = 1.25;
+
+// The rule at a lit row's start, inside the row's outline.
+class _LitRule extends CustomPainter {
+  _LitRule(this.ink, this.outline, this.direction);
+
+  final Color ink;
+  final OutlinedBorder outline;
+  final TextDirection direction;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final whole = Offset.zero & size;
+    final rule = direction == TextDirection.rtl
+        ? Rect.fromLTRB(
+            size.width - comicRaisedPlate,
+            0,
+            size.width,
+            size.height,
+          )
+        : Rect.fromLTRB(0, 0, comicRaisedPlate, size.height);
+    canvas
+      ..save()
+      ..clipPath(outline.getOuterPath(whole, textDirection: direction))
+      ..drawRect(rule, Paint()..color = ink)
+      ..restore();
+  }
+
+  @override
+  bool shouldRepaint(_LitRule oldDelegate) =>
+      oldDelegate.ink != ink ||
+      oldDelegate.outline != outline ||
+      oldDelegate.direction != direction;
+}

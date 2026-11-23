@@ -139,6 +139,7 @@ const _flows = <String, String>{
       'the full height of its column, at the rail\'s own width',
   'ComicHighlight':
       'paints the wash and ring to the part it wraps, at that part\'s size',
+  'ComicMenuRowFace': 'a row the width it is given; a lit row\'s rule paints down its start, at the row\'s height',
   'ComicRating':
       'a row of stars, each in its own target, standing at the start',
   'ComicTier': 'its panels share a row the width it is given',

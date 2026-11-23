@@ -83,7 +83,17 @@ void main() {
             .widget<ComicScreenScrim>(find.byType(ComicScreenScrim))
             .ink;
         expect(ink, c.scrim);
-        expect(ink.r + ink.g + ink.b, 0);
+        if (dark) {
+          // A quiet screen at night: the dots stand 1.2 to 1.4:1 off the page's ground.
+          final dot = ink.withValues(alpha: 1).computeLuminance();
+          expect(
+            (dot + .05) / (c.background.computeLuminance() + .05),
+            inInclusiveRange(1.2, 1.4),
+          );
+        } else {
+          // The words' own ink: a dot that lands on a letter is lost in it, so no word is perforated.
+          expect(ink.withValues(alpha: 1).toARGB32(), c.text.toARGB32());
+        }
         expect(ink.a, inExclusiveRange(0, 1));
       },
     );

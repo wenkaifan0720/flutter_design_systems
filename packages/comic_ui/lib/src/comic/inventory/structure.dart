@@ -407,7 +407,7 @@ Future<void> showComicCommand(
   );
   return showDesignCommandPalette(
     context: context,
-    // Screened with dots, not dimmed (law 1).
+    // Screened with dots (law 1), over an overprint of the ground at night.
     barrierBuilder: (context, animation) => ComicScreenScrim(
       animation: animation,
       ink: ComicTheme.of(context).colors.scrim,
